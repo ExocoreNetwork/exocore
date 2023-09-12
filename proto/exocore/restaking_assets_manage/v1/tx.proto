@@ -19,8 +19,11 @@ message ReStakingAssetInfo {
   uint32 Decimals=4;
   uint64 TotalSupply=5;
   uint64 ReStakingTotalAmount=6;
-  uint64 ExoCoreTokenIndex = 7;
+  uint64 ExoCoreAssetIndex = 7;
   uint64 ExoCoreChainIndex=8;
+  string AssetMetaInfo =9;
 }
+
+
 
 

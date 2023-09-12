@@ -1,3 +1,5 @@
+// Copyright Tharsis Labs Ltd.(Evmos)
+// SPDX-License-Identifier:ENCL-1.0(https://github.com/evmos/evmos/blob/main/LICENSE)
 package types
 
 import (
@@ -28,13 +30,44 @@ func init() {
 const (
 	prefixClientChainInfo = iota + 1
 	prefixReStakingAssetInfo
+	prefixReStakingAssetList
+
+	prefixReStakerAssetInfos
+	prefixReStakerAssetList
+	prefixReStakerExocoreAddr
+	prefixOperatorAssetInfos
+	prefixOperatorAssetList
+	prefixOperatorOptedInMiddleWareAssetInfos
 )
 
 // KVStore key prefixes
 var (
-	// KeyPrefixClientChainInfo key->value: chainIndex->ChainInfo
+	// KeyPrefixClientChainInfo key->value: chainIndex->ClientChainInfo
 	KeyPrefixClientChainInfo = []byte{prefixClientChainInfo}
 
-	// KeyPrefixReStakingAssetInfo key->value: tokenIndex->tokenInfo
+	// KeyPrefixReStakingAssetInfo AssetId = AssetAddr+'_'+chainIndex
+	// KeyPrefixReStakingAssetInfo key->value: AssetId->ReStakingAssetInfo
 	KeyPrefixReStakingAssetInfo = []byte{prefixReStakingAssetInfo}
+
+	// KeyPrefixReStakingAssetList list: ReStakingAssetList
+	KeyPrefixReStakingAssetList = []byte{prefixReStakingAssetList}
+
+	// KeyPrefixReStakerExoCoreAddr key-value: clientChainAddr+'_'+ExoCoreChainIndex : exoCoreAddr
+	KeyPrefixReStakerExoCoreAddr = []byte{prefixReStakerExocoreAddr}
+
+	// KeyPrefixReStakerAssetInfos key->value: clientChainAddr+'_'+ExoCoreChainIndex+'_'+AssetId->amount
+	// or reStakerAddr+'_'+tokenIndex->amount ?
+	KeyPrefixReStakerAssetInfos = []byte{prefixReStakerAssetInfos}
+
+	// KeyPrefixReStakerAssetList key->value: reStakerAddr->ReStakingAssetList
+	KeyPrefixReStakerAssetList = []byte{prefixReStakerAssetList}
+
+	// KeyPrefixOperatorAssetInfos key->value: operatorAddr+'_'+AssetId->amount
+	KeyPrefixOperatorAssetInfos = []byte{prefixOperatorAssetInfos}
+
+	// KeyPrefixOperatorAssetList key->value: operatorAddr ->ReStakingAssetList
+	KeyPrefixOperatorAssetList = []byte{prefixOperatorAssetList}
+
+	// KeyPrefixOperatorOptedInMiddleWareAssetInfos key->value: operatorAddr+'_'+AssetId->middleWareAddr
+	KeyPrefixOperatorOptedInMiddleWareAssetInfos = []byte{prefixOperatorOptedInMiddleWareAssetInfos}
 )

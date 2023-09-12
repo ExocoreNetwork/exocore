@@ -1,6 +1,9 @@
+// Copyright Tharsis Labs Ltd.(Evmos)
+// SPDX-License-Identifier:ENCL-1.0(https://github.com/evmos/evmos/blob/main/LICENSE)
 package restaking_assets_manage
 
 import (
+	"cosmossdk.io/math"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/codec"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
@@ -9,6 +12,7 @@ import (
 	simtypes "github.com/cosmos/cosmos-sdk/types/simulation"
 	"github.com/exocore/x/deposit/keeper"
 	"github.com/exocore/x/deposit/types"
+	types2 "github.com/exocore/x/restaking_assets_manage/types"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	"github.com/spf13/cobra"
 )
@@ -110,7 +114,7 @@ type ReStakingTokenInfo struct {
 	//record operator reStaking info
 	operator->mapping(tokenIndex->amount)
 	operator->ReStakingTokenList ?
-	operator->mapping(middleWareAddr->mapping(tokenIndex->amount)) ?
+	operator->mapping(tokenIndex->middleWareAddress) ?
 
 
 	//stored info in delegation module
@@ -124,4 +128,14 @@ type ReStakingTokenInfo struct {
 	middleWareAddr->OptedInOperatorInfo
 */
 type IReStakingAssetsManage interface {
+	SetClientChainInfo(info *types2.ClientChainInfo) (exoCoreChainIndex uint64, err error)
+	GetClientChainInfoByIndex(exoCoreChainIndex uint64) (info types2.ClientChainInfo, err error)
+	GetAllClientChainInfo() (infos map[uint64]types2.ClientChainInfo, err error)
+
+	SetReStakingAssetInfo(info *types2.ReStakingAssetInfo) (exoCoreAssetIndex uint64, err error)
+	GetReStakingAssetInfo(assetId string) (info types2.ReStakingAssetInfo, err error)
+	GetReStakingAssetsInfoList() (list []types2.ReStakingAssetInfo, err error)
+
+	GetReStakerAssetInfos(reStakerAddr string) (assetsInfo map[uint64]math.Uint, err error)
+	GetReStakerSpecifiedAssetAmount(reStakerAddr string, assetId string) (amount math.Uint, err error)
 }
