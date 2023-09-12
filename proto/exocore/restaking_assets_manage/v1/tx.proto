@@ -1,0 +1,26 @@
+// Copyright Tharsis Labs Ltd.(Evmos)
+// SPDX-License-Identifier:ENCL-1.0(https://github.com/evmos/evmos/blob/main/LICENSE)
+syntax = "proto3";
+package exocore.restaking_assets_manage.v1;
+
+option go_package = "github.com/exocore/x/restaking_assets_manage/types";
+
+message ClientChainInfo {
+  string ChainName = 1;
+  string ChainMetaInfo = 2;
+  uint64 ChainId = 3;
+  uint64 ExoCoreChainIndex = 4;
+}
+
+message ReStakingAssetInfo {
+  string Name =1;
+  string Symbol=2;
+  string Address=3;
+  uint32 Decimals=4;
+  uint64 TotalSupply=5;
+  uint64 ReStakingTotalAmount=6;
+  uint64 ExoCoreTokenIndex = 7;
+  uint64 ExoCoreChainIndex=8;
+}
+
+
