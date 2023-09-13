@@ -42,6 +42,37 @@ const (
 
 // KVStore key prefixes
 var (
+	/*
+		exoCore stored info:
+
+		//stored info in restaking_assets_manage module
+		//used to record supported client chain and reStaking token info
+		chainIndex->ChainInfo
+		tokenIndex->tokenInfo
+		chainList ?
+		tokenList ?
+
+		//record restaker reStaking info
+		restaker->mapping(tokenIndex->amount)
+		restaker->ReStakingTokenList ?
+		restakerList?
+
+		//record operator reStaking info
+		operator->mapping(tokenIndex->amount)
+		operator->ReStakingTokenList ?
+		operator->mapping(tokenIndex->middleWareAddress) ?
+
+
+		//stored info in delegation module
+		//record the operator info which restaker delegate to
+		restaker->mapping(operator->mapping(tokenIndex->amount))
+		restaker->operatorList
+		operator->operatorInfo
+
+		//stored info in middleWare module
+		middleWareAddr->middleWareInfo
+		middleWareAddr->OptedInOperatorInfo
+	*/
 	// KeyPrefixClientChainInfo key->value: chainIndex->ClientChainInfo
 	KeyPrefixClientChainInfo = []byte{prefixClientChainInfo}
 
@@ -49,25 +80,20 @@ var (
 	// KeyPrefixReStakingAssetInfo key->value: AssetId->ReStakingAssetInfo
 	KeyPrefixReStakingAssetInfo = []byte{prefixReStakingAssetInfo}
 
-	// KeyPrefixReStakingAssetList list: ReStakingAssetList
-	KeyPrefixReStakingAssetList = []byte{prefixReStakingAssetList}
-
-	// KeyPrefixReStakerExoCoreAddr key-value: clientChainAddr+'_'+ExoCoreChainIndex : exoCoreAddr
+	// KeyPrefixReStakerExoCoreAddr reStakerId = clientChainAddr+'_'+ExoCoreChainIndex
+	// KeyPrefixReStakerExoCoreAddr key-value: reStakerId->exoCoreAddr
 	KeyPrefixReStakerExoCoreAddr = []byte{prefixReStakerExocoreAddr}
 
-	// KeyPrefixReStakerAssetInfos key->value: clientChainAddr+'_'+ExoCoreChainIndex+'_'+AssetId->amount
+	// KeyPrefixReStakerAssetInfos key->value: reStakerId+'_'+AssetId->amount
+	// or reStakerId->mapping(AssetId->amount)
 	// or reStakerAddr+'_'+tokenIndex->amount ?
 	KeyPrefixReStakerAssetInfos = []byte{prefixReStakerAssetInfos}
 
-	// KeyPrefixReStakerAssetList key->value: reStakerAddr->ReStakingAssetList
-	KeyPrefixReStakerAssetList = []byte{prefixReStakerAssetList}
-
 	// KeyPrefixOperatorAssetInfos key->value: operatorAddr+'_'+AssetId->amount
+	// or operatorAddr->mapping(AssetId->amount) ?
 	KeyPrefixOperatorAssetInfos = []byte{prefixOperatorAssetInfos}
 
-	// KeyPrefixOperatorAssetList key->value: operatorAddr ->ReStakingAssetList
-	KeyPrefixOperatorAssetList = []byte{prefixOperatorAssetList}
-
-	// KeyPrefixOperatorOptedInMiddleWareAssetInfos key->value: operatorAddr+'_'+AssetId->middleWareAddr
+	// KeyPrefixOperatorOptedInMiddleWareAssetInfos key->value: operatorAddr+'_'+AssetId->mapping(middleWareAddr->struct{})
+	//or operatorAddr->mapping(AssetId->mapping(middleWareAddr->struct{})) ?
 	KeyPrefixOperatorOptedInMiddleWareAssetInfos = []byte{prefixOperatorOptedInMiddleWareAssetInfos}
 )

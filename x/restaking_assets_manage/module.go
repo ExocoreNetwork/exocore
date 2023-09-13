@@ -89,44 +89,6 @@ type ReStakingTokenInfo struct {
 }
 
 // IReStakingAssetsManage interface provided by restaking_assets_manage
-/*
-	Eigenlayer:
-	@notice Mapping: staker => Strategy => number of shares which they currently hold
-    mapping(address => mapping(IStrategy => uint256)) public stakerStrategyShares;
-	@notice Mapping: staker => array of strategies in which they have nonzero shares
-    mapping(address => IStrategy[]) public stakerStrategyList;
-
-
-	exoCore stored info:
-
-	//stored info in restaking_assets_manage module
-	//used to record supported client chain and reStaking token info
-	chainIndex->ChainInfo
-	tokenIndex->tokenInfo
-	chainList ?
-	tokenList ?
-
-	//record restaker reStaking info
-	restaker->mapping(tokenIndex->amount)
-	restaker->ReStakingTokenList ?
-	restakerList?
-
-	//record operator reStaking info
-	operator->mapping(tokenIndex->amount)
-	operator->ReStakingTokenList ?
-	operator->mapping(tokenIndex->middleWareAddress) ?
-
-
-	//stored info in delegation module
-	//record the operator info which restaker delegate to
-	restaker->mapping(operator->mapping(tokenIndex->amount))
-	restaker->operatorList
-	operator->operatorInfo
-
-	//stored info in middleWare module
-	middleWareAddr->middleWareInfo
-	middleWareAddr->OptedInOperatorInfo
-*/
 type IReStakingAssetsManage interface {
 	SetClientChainInfo(info *types2.ClientChainInfo) (exoCoreChainIndex uint64, err error)
 	GetClientChainInfoByIndex(exoCoreChainIndex uint64) (info types2.ClientChainInfo, err error)
@@ -134,8 +96,20 @@ type IReStakingAssetsManage interface {
 
 	SetReStakingAssetInfo(info *types2.ReStakingAssetInfo) (exoCoreAssetIndex uint64, err error)
 	GetReStakingAssetInfo(assetId string) (info types2.ReStakingAssetInfo, err error)
-	GetReStakingAssetsInfoList() (list []types2.ReStakingAssetInfo, err error)
+	GetAllReStakingAssetsInfo() (allAssets map[string]types2.ReStakingAssetInfo, err error)
 
-	GetReStakerAssetInfos(reStakerAddr string) (assetsInfo map[uint64]math.Uint, err error)
-	GetReStakerSpecifiedAssetAmount(reStakerAddr string, assetId string) (amount math.Uint, err error)
+	GetReStakerExoCoreAddr(reStakerId string) (addr sdk.Address, err error)
+	SetReStakerExoCoreAddr(reStakerId string) (err error)
+	GetReStakerAssetInfos(reStakerId string) (assetsInfo map[string]math.Uint, err error)
+	GetReStakerSpecifiedAssetAmount(reStakerId string, assetId string) (amount math.Uint, err error)
+	IncreaseReStakerAssetsAmount(reStakerId string, assetsAddAmount map[string]math.Uint) (err error)
+	DecreaseReStakerAssetsAmount(reStakerId string, assetsSubAmount map[string]math.Uint) (err error)
+
+	GetOperatorAssetInfos(operatorAddr sdk.Address) (assetsInfo map[string]math.Uint, err error)
+	GetOperatorSpecifiedAssetAmount(operatorAddr sdk.Address, assetId string) (amount math.Uint, err error)
+	IncreaseOperatorAssetsAmount(operatorAddr sdk.Address, assetsAddAmount map[string]math.Uint) (err error)
+	DecreaseOperatorAssetsAmount(operatorAddr sdk.Address, assetsSubAmount map[string]math.Uint) (err error)
+	GetOperatorAssetOptedInMiddleWare(operatorAddr sdk.Address, assetId string) (middleWares []sdk.Address, err error)
+	GetAllOperatorAssetOptedInMiddleWare(operatorAddr sdk.Address) (optedInInfos map[string][]sdk.Address, err error)
+	SetOperatorAssetOptedInMiddleWare(operatorAddr sdk.Address, setInfo map[string]sdk.Address) (middleWares []sdk.Address, err error)
 }
