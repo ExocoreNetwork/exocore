@@ -30,14 +30,13 @@ func init() {
 const (
 	prefixClientChainInfo = iota + 1
 	prefixReStakingAssetInfo
-	prefixReStakingAssetList
-
 	prefixReStakerAssetInfos
-	prefixReStakerAssetList
-	prefixReStakerExocoreAddr
 	prefixOperatorAssetInfos
-	prefixOperatorAssetList
 	prefixOperatorOptedInMiddleWareAssetInfos
+
+	prefixReStakingAssetList
+	prefixReStakerAssetList
+	prefixOperatorAssetList
 )
 
 // KVStore key prefixes
@@ -80,10 +79,7 @@ var (
 	// KeyPrefixReStakingAssetInfo key->value: AssetId->ReStakingAssetInfo
 	KeyPrefixReStakingAssetInfo = []byte{prefixReStakingAssetInfo}
 
-	// KeyPrefixReStakerExoCoreAddr reStakerId = clientChainAddr+'_'+ExoCoreChainIndex
-	// KeyPrefixReStakerExoCoreAddr key-value: reStakerId->exoCoreAddr
-	KeyPrefixReStakerExoCoreAddr = []byte{prefixReStakerExocoreAddr}
-
+	// KeyPrefixReStakerAssetInfos reStakerId = clientChainAddr+'_'+ExoCoreChainIndex
 	// KeyPrefixReStakerAssetInfos key->value: reStakerId+'_'+AssetId->amount
 	// or reStakerId->mapping(AssetId->amount)
 	// or reStakerAddr+'_'+tokenIndex->amount ?

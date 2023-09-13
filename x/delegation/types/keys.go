@@ -10,7 +10,7 @@ import (
 // constants
 const (
 	// module name
-	ModuleName = "deposit"
+	ModuleName = "delegation"
 
 	// StoreKey to be used when creating the KVStore
 	StoreKey = ModuleName
@@ -27,11 +27,10 @@ func init() {
 }
 
 const (
-	prefixReStakerExocoreAddr = iota + 1
+	prefixOperatorInfo = iota + 1
 )
 
 var (
-	// KeyPrefixReStakerExoCoreAddr reStakerId = clientChainAddr+'_'+ExoCoreChainIndex
-	// KeyPrefixReStakerExoCoreAddr key-value: reStakerId->exoCoreAddr
-	KeyPrefixReStakerExoCoreAddr = []byte{prefixReStakerExocoreAddr}
+	// KeyPrefixOperatorInfo key-value: operatorAddr->operatorInfo
+	KeyPrefixOperatorInfo = []byte{prefixOperatorInfo}
 )

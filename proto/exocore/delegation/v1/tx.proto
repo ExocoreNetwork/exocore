@@ -1,0 +1,17 @@
+// Copyright Tharsis Labs Ltd.(Evmos)
+// SPDX-License-Identifier:ENCL-1.0(https://github.com/evmos/evmos/blob/main/LICENSE)
+syntax = "proto3";
+package exocore.delegation.v1;
+
+option go_package = "github.com/exocore/x/delegation/types";
+
+message OperationInfo {
+  string ChainName = 1;
+  string ChainMetaInfo = 2;
+  uint64 ChainId = 3;
+  uint64 ExoCoreChainIndex = 4;
+}
+
+
+
+

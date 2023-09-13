@@ -60,7 +60,7 @@ func (b AppModuleBasic) GetQueryCmd() *cobra.Command {
 
 type AppModule struct {
 	AppModuleBasic
-	keeper keeper.Keeper
+	keeper *keeper.Keeper
 }
 
 func (am AppModule) GenerateGenesisState(input *module.SimulationState) {
@@ -88,7 +88,7 @@ type ReStakingTokenInfo struct {
 	TokenName    string
 }
 
-// IReStakingAssetsManage interface provided by restaking_assets_manage
+// IReStakingAssetsManage interface will be implemented by restaking_assets_manage keeper
 type IReStakingAssetsManage interface {
 	SetClientChainInfo(info *types2.ClientChainInfo) (exoCoreChainIndex uint64, err error)
 	GetClientChainInfoByIndex(exoCoreChainIndex uint64) (info types2.ClientChainInfo, err error)
@@ -98,8 +98,6 @@ type IReStakingAssetsManage interface {
 	GetReStakingAssetInfo(assetId string) (info types2.ReStakingAssetInfo, err error)
 	GetAllReStakingAssetsInfo() (allAssets map[string]types2.ReStakingAssetInfo, err error)
 
-	GetReStakerExoCoreAddr(reStakerId string) (addr sdk.Address, err error)
-	SetReStakerExoCoreAddr(reStakerId string) (err error)
 	GetReStakerAssetInfos(reStakerId string) (assetsInfo map[string]math.Uint, err error)
 	GetReStakerSpecifiedAssetAmount(reStakerId string, assetId string) (amount math.Uint, err error)
 	IncreaseReStakerAssetsAmount(reStakerId string, assetsAddAmount map[string]math.Uint) (err error)
@@ -110,6 +108,8 @@ type IReStakingAssetsManage interface {
 	IncreaseOperatorAssetsAmount(operatorAddr sdk.Address, assetsAddAmount map[string]math.Uint) (err error)
 	DecreaseOperatorAssetsAmount(operatorAddr sdk.Address, assetsSubAmount map[string]math.Uint) (err error)
 	GetOperatorAssetOptedInMiddleWare(operatorAddr sdk.Address, assetId string) (middleWares []sdk.Address, err error)
+
+	// GetAllOperatorAssetOptedInMiddleWare can also be implemented in operator optedIn module
 	GetAllOperatorAssetOptedInMiddleWare(operatorAddr sdk.Address) (optedInInfos map[string][]sdk.Address, err error)
 	SetOperatorAssetOptedInMiddleWare(operatorAddr sdk.Address, setInfo map[string]sdk.Address) (middleWares []sdk.Address, err error)
 }
