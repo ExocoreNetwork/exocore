@@ -3,6 +3,8 @@
 package deposit
 
 import (
+	"context"
+	"cosmossdk.io/math"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/codec"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
@@ -82,6 +84,11 @@ func (am AppModule) WeightedOperations(simState module.SimulationState) []simtyp
 type IDeposit interface {
 	// PostTxProcessing automatically call PostTxProcessing to update deposit state after receiving deposit event tx from layerZero protocol
 	PostTxProcessing(ctx sdk.Context, msg core.Message, receipt *ethtypes.Receipt) error
+
+	// SetReStakerExoCoreAddr handle the SetReStakerExoCoreAddr txs from msg service
+	SetReStakerExoCoreAddr(ctx context.Context, reStakerId string) (err error)
 	GetReStakerExoCoreAddr(reStakerId string) (addr sdk.Address, err error)
-	SetReStakerExoCoreAddr(reStakerId string) (err error)
+
+	// Deposit internal func for PostTxProcessing
+	Deposit(reStakerId string, assetsInfo map[string]math.Uint) error
 }

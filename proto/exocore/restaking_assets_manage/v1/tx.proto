@@ -24,6 +24,10 @@ message ReStakingAssetInfo {
   string AssetMetaInfo =9;
 }
 
+message ReStakerSingleAssetInfo {
+  uint64 TotalDepositAmount =1;
+  uint64 CanWithDrawAmount =2;
+}
 
 
 

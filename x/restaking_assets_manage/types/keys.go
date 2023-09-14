@@ -80,7 +80,7 @@ var (
 	KeyPrefixReStakingAssetInfo = []byte{prefixReStakingAssetInfo}
 
 	// KeyPrefixReStakerAssetInfos reStakerId = clientChainAddr+'_'+ExoCoreChainIndex
-	// KeyPrefixReStakerAssetInfos key->value: reStakerId+'_'+AssetId->amount
+	// KeyPrefixReStakerAssetInfos key->value: reStakerId+'_'+AssetId->ReStakerSingleAssetInfo
 	// or reStakerId->mapping(AssetId->amount)
 	// or reStakerAddr+'_'+tokenIndex->amount ?
 	KeyPrefixReStakerAssetInfos = []byte{prefixReStakerAssetInfos}

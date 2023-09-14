@@ -3,6 +3,8 @@
 package delegation
 
 import (
+	"context"
+	"cosmossdk.io/math"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/codec"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
@@ -11,6 +13,7 @@ import (
 	simtypes "github.com/cosmos/cosmos-sdk/types/simulation"
 	"github.com/ethereum/go-ethereum/core"
 	ethtypes "github.com/ethereum/go-ethereum/core/types"
+	types2 "github.com/exocore/x/delegation/types"
 	"github.com/exocore/x/deposit/keeper"
 	"github.com/exocore/x/deposit/types"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
@@ -78,8 +81,24 @@ func (am AppModule) WeightedOperations(simState module.SimulationState) []simtyp
 	panic("implement me")
 }
 
+type UnDelegateReqRecord struct {
+	ReStakerId string
+	// tokenId->operatorAddr->amount
+	OperatorAssetsInfo map[string]map[string]math.Uint
+	BlockNumber        uint64
+	Nonce              uint64
+}
+
 // IDelegation interface will be implemented by deposit keeper
 type IDelegation interface {
 	// PostTxProcessing automatically call PostTxProcessing to update delegation state after receiving delegation event tx from layerZero protocol
 	PostTxProcessing(ctx sdk.Context, msg core.Message, receipt *ethtypes.Receipt) error
+	// RegisterOperator handle the registerOperator txs from msg service
+	RegisterOperator(context.Context, *types2.OperatorInfo) (*types2.RegisterOperatorResponse, error)
+	// DelegateAssetToOperator internal func for PostTxProcessing
+	DelegateAssetToOperator(reStakerId string, operatorAssetsInfo map[string]map[string]math.Uint, approvedInfo map[string]*types2.DelegationApproveInfo) error
+	// UnDelegateAssetFromOperator internal func for PostTxProcessing
+	UnDelegateAssetFromOperator(reStakerId string, operatorAssetsInfo map[string]map[string]math.Uint) error
+	// CompleteUnDelegateAssetFromOperator scheduled execute to handle UnDelegateAssetFromOperator through two steps
+	CompleteUnDelegateAssetFromOperator() error
 }

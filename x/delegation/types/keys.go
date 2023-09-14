@@ -28,9 +28,25 @@ func init() {
 
 const (
 	prefixOperatorInfo = iota + 1
+	prefixRestakerDelegationInfo
+	prefixDelegationUsedSalt
+	prefixOperatorApprovedInfo
+
+	prefixUndelegationInfo
 )
 
 var (
 	// KeyPrefixOperatorInfo key-value: operatorAddr->operatorInfo
 	KeyPrefixOperatorInfo = []byte{prefixOperatorInfo}
+	// KeyPrefixRestakerDelegationInfo reStakerId = clientChainAddr+'_'+ExoCoreChainIndex
+	// KeyPrefixRestakerDelegationInfo key-value: reStakerId -> map[assetId]ReStakerDelegatedSingleAssetInfo
+	// ReStakerDelegatedSingleAssetInfo :
+	KeyPrefixRestakerDelegationInfo = []byte{prefixRestakerDelegationInfo}
+	// KeyPrefixDelegationUsedSalt key->value: operatorApproveAddr->map[salt]{}
+	KeyPrefixDelegationUsedSalt = []byte{prefixDelegationUsedSalt}
+	// KeyPrefixOperatorApprovedInfo key-value: operatorApproveAddr->map[reStakerId]{}
+	KeyPrefixOperatorApprovedInfo = []byte{prefixOperatorApprovedInfo}
+
+	//KeyPrefixUnDelegationInfo key-value: ReStakerId+'_'+nonce -> UnDelegateReqRecord
+	KeyPrefixUnDelegationInfo = []byte{prefixUndelegationInfo}
 )
