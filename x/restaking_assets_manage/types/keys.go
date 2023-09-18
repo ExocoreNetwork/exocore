@@ -81,12 +81,11 @@ var (
 
 	// KeyPrefixReStakerAssetInfos reStakerId = clientChainAddr+'_'+ExoCoreChainIndex
 	// KeyPrefixReStakerAssetInfos key->value: reStakerId+'_'+AssetId->ReStakerSingleAssetInfo
-	// or reStakerId->mapping(AssetId->amount)
-	// or reStakerAddr+'_'+tokenIndex->amount ?
+	// or reStakerId->mapping(AssetId->ReStakerSingleAssetInfo)?
 	KeyPrefixReStakerAssetInfos = []byte{prefixReStakerAssetInfos}
 
-	// KeyPrefixOperatorAssetInfos key->value: operatorAddr+'_'+AssetId->amount
-	// or operatorAddr->mapping(AssetId->amount) ?
+	// KeyPrefixOperatorAssetInfos key->value: operatorAddr+'_'+AssetId->OperatorSingleAssetInfo
+	// or operatorAddr->mapping(AssetId->OperatorSingleAssetInfo) ?
 	KeyPrefixOperatorAssetInfos = []byte{prefixOperatorAssetInfos}
 
 	// KeyPrefixOperatorOptedInMiddleWareAssetInfos key->value: operatorAddr+'_'+AssetId->mapping(middleWareAddr->struct{})

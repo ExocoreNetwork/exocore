@@ -26,7 +26,12 @@ message ReStakingAssetInfo {
 
 message ReStakerSingleAssetInfo {
   uint64 TotalDepositAmount =1;
-  uint64 CanWithDrawAmount =2;
+  uint64 CanWithdrawAmount =2;
+}
+
+message OperatorSingleAssetInfo{
+  uint64 TotalAmount =1;
+  uint64 OperatorOwnAmount =2;
 }
 
 

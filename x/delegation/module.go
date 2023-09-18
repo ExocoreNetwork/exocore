@@ -82,6 +82,7 @@ func (am AppModule) WeightedOperations(simState module.SimulationState) []simtyp
 }
 
 type UnDelegateReqRecord struct {
+	TxId       string
 	ReStakerId string
 	// tokenId->operatorAddr->amount
 	OperatorAssetsInfo map[string]map[string]math.Uint
