@@ -1,0 +1,32 @@
+// Copyright Tharsis Labs Ltd.(Evmos)
+// SPDX-License-Identifier:ENCL-1.0(https://github.com/evmos/evmos/blob/main/LICENSE)
+syntax = "proto3";
+package exocore.native_token.v1;
+
+import "cosmos/msg/v1/msg.proto";
+import "cosmos_proto/cosmos.proto";
+
+option go_package = "github.com/exocore/x/native_token/types";
+
+message ValidatorInfo {
+  enum ValidatorStatus {
+    ACTIVE = 0;
+    INACTIVE = 1;
+    WITHDRAWN = 2;
+  }
+  ValidatorStatus Status = 1;
+  uint64 ValidatorIndex = 2;
+  uint64 StakedBalanceGwei = 3;
+  uint64 MostRecentBalanceUpdateBlockNumber = 4;
+}
+
+message NativeTokenStakerInfo {
+  uint64 TotalValidatorBalances = 1;
+  uint64 UnStakedValueFromPOS = 2;
+  string PodAddress =3;
+  map<string,ValidatorInfo> ValidatorsInfo=4;
+}
+
+
+
+

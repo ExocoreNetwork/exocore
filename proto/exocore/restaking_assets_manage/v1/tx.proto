@@ -10,6 +10,7 @@ message ClientChainInfo {
   string ChainMetaInfo = 2;
   uint64 ChainId = 3;
   uint64 ExoCoreChainIndex = 4;
+  uint64 FinalityNeedBlockDelay = 5;
 }
 
 message ReStakingAssetInfo {

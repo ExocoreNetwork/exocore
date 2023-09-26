@@ -11,7 +11,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/module"
 	simtypes "github.com/cosmos/cosmos-sdk/types/simulation"
 	"github.com/exocore/x/deposit/keeper"
-	"github.com/exocore/x/deposit/types"
 	types2 "github.com/exocore/x/restaking_assets_manage/types"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	"github.com/spf13/cobra"
@@ -30,7 +29,7 @@ type AppModuleBasic struct {
 }
 
 func (b AppModuleBasic) Name() string {
-	return types.ModuleName
+	return types2.ModuleName
 }
 
 func (b AppModuleBasic) RegisterLegacyAminoCodec(amino *codec.LegacyAmino) {
