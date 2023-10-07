@@ -5,22 +5,37 @@ package exocore.delegation.v1;
 
 import "cosmos/msg/v1/msg.proto";
 import "cosmos_proto/cosmos.proto";
+import "gogoproto/gogo.proto";
 
 option go_package = "github.com/exocore/x/delegation/types";
 
 message ReStakerDelegatedSingleAssetInfo {
-  string AssetId =1;
-  uint64 TotalDelegatedAmount =2;
-  map<string,uint64> PerOperatorAmount =3;
+  string AssetId = 1;
+  string TotalDelegatedAmount = 2
+  [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.nullable) = false
+  ];
+  message ValueField {
+    string Amount = 1
+    [
+      (cosmos_proto.scalar) = "cosmos.Int",
+      (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+      (gogoproto.nullable) = false
+    ];
+  }
+  map<string, ValueField> PerOperatorAmounts = 3;
 }
 
 message OperatorInfo {
   option (cosmos.msg.v1.signer) = "FromAddress";
-  string FromAddress =1[(cosmos_proto.scalar) = "cosmos.AddressString"];;
+  string FromAddress = 1
+  [(cosmos_proto.scalar) = "cosmos.AddressString"];
   string EarningsAddr = 2;
   string ApproveAddr = 3;
   uint64 RegisterEffectiveDelayBlocks = 4;
-  string OperatorMetaInfo =5;
+  string OperatorMetaInfo = 5;
 }
 
 message DelegationApproveInfo{

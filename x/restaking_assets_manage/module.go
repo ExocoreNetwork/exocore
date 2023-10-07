@@ -4,6 +4,8 @@ package restaking_assets_manage
 
 import (
 	"cosmossdk.io/math"
+	"encoding/json"
+	"fmt"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/codec"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
@@ -35,6 +37,22 @@ func (b AppModuleBasic) Name() string {
 func (b AppModuleBasic) RegisterLegacyAminoCodec(amino *codec.LegacyAmino) {
 	//TODO implement me
 	panic("implement me")
+}
+
+// DefaultGenesis returns default genesis state as raw bytes for the auth
+// module.
+func (AppModuleBasic) DefaultGenesis(cdc codec.JSONCodec) json.RawMessage {
+	return cdc.MustMarshalJSON(types.DefaultGenesisState())
+}
+
+// ValidateGenesis performs genesis state validation for the auth module.
+func (AppModuleBasic) ValidateGenesis(cdc codec.JSONCodec, config client.TxEncodingConfig, bz json.RawMessage) error {
+	var data types.GenesisState
+	if err := cdc.UnmarshalJSON(bz, &data); err != nil {
+		return fmt.Errorf("failed to unmarshal %s genesis state: %w", types.ModuleName, err)
+	}
+
+	return types.ValidateGenesis(data)
 }
 
 func (b AppModuleBasic) RegisterInterfaces(registry codectypes.InterfaceRegistry) {

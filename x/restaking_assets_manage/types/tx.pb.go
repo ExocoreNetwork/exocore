@@ -5,6 +5,9 @@ package types
 
 import (
 	fmt "fmt"
+	_ "github.com/cosmos/cosmos-proto"
+	github_com_cosmos_cosmos_sdk_types "github.com/cosmos/cosmos-sdk/types"
+	_ "github.com/cosmos/gogoproto/gogoproto"
 	proto "github.com/cosmos/gogoproto/proto"
 	io "io"
 	math "math"
@@ -25,9 +28,10 @@ const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 type ClientChainInfo struct {
 	ChainName              string `protobuf:"bytes,1,opt,name=ChainName,proto3" json:"ChainName,omitempty"`
 	ChainMetaInfo          string `protobuf:"bytes,2,opt,name=ChainMetaInfo,proto3" json:"ChainMetaInfo,omitempty"`
-	ChainId                uint64 `protobuf:"varint,3,opt,name=ChainId,proto3" json:"ChainId,omitempty"`
+	OriginChainId          uint64 `protobuf:"varint,3,opt,name=OriginChainId,proto3" json:"OriginChainId,omitempty"`
 	ExoCoreChainIndex      uint64 `protobuf:"varint,4,opt,name=ExoCoreChainIndex,proto3" json:"ExoCoreChainIndex,omitempty"`
 	FinalityNeedBlockDelay uint64 `protobuf:"varint,5,opt,name=FinalityNeedBlockDelay,proto3" json:"FinalityNeedBlockDelay,omitempty"`
+	LayerZeroChainId       uint64 `protobuf:"varint,6,opt,name=LayerZeroChainId,proto3" json:"LayerZeroChainId,omitempty"`
 }
 
 func (m *ClientChainInfo) Reset()         { *m = ClientChainInfo{} }
@@ -77,9 +81,9 @@ func (m *ClientChainInfo) GetChainMetaInfo() string {
 	return ""
 }
 
-func (m *ClientChainInfo) GetChainId() uint64 {
+func (m *ClientChainInfo) GetOriginChainId() uint64 {
 	if m != nil {
-		return m.ChainId
+		return m.OriginChainId
 	}
 	return 0
 }
@@ -98,23 +102,116 @@ func (m *ClientChainInfo) GetFinalityNeedBlockDelay() uint64 {
 	return 0
 }
 
+func (m *ClientChainInfo) GetLayerZeroChainId() uint64 {
+	if m != nil {
+		return m.LayerZeroChainId
+	}
+	return 0
+}
+
+type ClientChainTokenInfo struct {
+	Name              string                                 `protobuf:"bytes,1,opt,name=Name,proto3" json:"Name,omitempty"`
+	Symbol            string                                 `protobuf:"bytes,2,opt,name=Symbol,proto3" json:"Symbol,omitempty"`
+	Address           string                                 `protobuf:"bytes,3,opt,name=Address,proto3" json:"Address,omitempty"`
+	Decimals          uint32                                 `protobuf:"varint,4,opt,name=Decimals,proto3" json:"Decimals,omitempty"`
+	TotalSupply       github_com_cosmos_cosmos_sdk_types.Int `protobuf:"bytes,5,opt,name=TotalSupply,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Int" json:"TotalSupply"`
+	LayerZeroChainId  uint64                                 `protobuf:"varint,6,opt,name=LayerZeroChainId,proto3" json:"LayerZeroChainId,omitempty"`
+	ExoCoreChainIndex uint64                                 `protobuf:"varint,7,opt,name=ExoCoreChainIndex,proto3" json:"ExoCoreChainIndex,omitempty"`
+	AssetMetaInfo     string                                 `protobuf:"bytes,8,opt,name=AssetMetaInfo,proto3" json:"AssetMetaInfo,omitempty"`
+}
+
+func (m *ClientChainTokenInfo) Reset()         { *m = ClientChainTokenInfo{} }
+func (m *ClientChainTokenInfo) String() string { return proto.CompactTextString(m) }
+func (*ClientChainTokenInfo) ProtoMessage()    {}
+func (*ClientChainTokenInfo) Descriptor() ([]byte, []int) {
+	return fileDescriptor_b24e66e530cc30d1, []int{1}
+}
+func (m *ClientChainTokenInfo) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *ClientChainTokenInfo) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_ClientChainTokenInfo.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *ClientChainTokenInfo) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_ClientChainTokenInfo.Merge(m, src)
+}
+func (m *ClientChainTokenInfo) XXX_Size() int {
+	return m.Size()
+}
+func (m *ClientChainTokenInfo) XXX_DiscardUnknown() {
+	xxx_messageInfo_ClientChainTokenInfo.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_ClientChainTokenInfo proto.InternalMessageInfo
+
+func (m *ClientChainTokenInfo) GetName() string {
+	if m != nil {
+		return m.Name
+	}
+	return ""
+}
+
+func (m *ClientChainTokenInfo) GetSymbol() string {
+	if m != nil {
+		return m.Symbol
+	}
+	return ""
+}
+
+func (m *ClientChainTokenInfo) GetAddress() string {
+	if m != nil {
+		return m.Address
+	}
+	return ""
+}
+
+func (m *ClientChainTokenInfo) GetDecimals() uint32 {
+	if m != nil {
+		return m.Decimals
+	}
+	return 0
+}
+
+func (m *ClientChainTokenInfo) GetLayerZeroChainId() uint64 {
+	if m != nil {
+		return m.LayerZeroChainId
+	}
+	return 0
+}
+
+func (m *ClientChainTokenInfo) GetExoCoreChainIndex() uint64 {
+	if m != nil {
+		return m.ExoCoreChainIndex
+	}
+	return 0
+}
+
+func (m *ClientChainTokenInfo) GetAssetMetaInfo() string {
+	if m != nil {
+		return m.AssetMetaInfo
+	}
+	return ""
+}
+
 type ReStakingAssetInfo struct {
-	Name                 string `protobuf:"bytes,1,opt,name=Name,proto3" json:"Name,omitempty"`
-	Symbol               string `protobuf:"bytes,2,opt,name=Symbol,proto3" json:"Symbol,omitempty"`
-	Address              string `protobuf:"bytes,3,opt,name=Address,proto3" json:"Address,omitempty"`
-	Decimals             uint32 `protobuf:"varint,4,opt,name=Decimals,proto3" json:"Decimals,omitempty"`
-	TotalSupply          uint64 `protobuf:"varint,5,opt,name=TotalSupply,proto3" json:"TotalSupply,omitempty"`
-	ReStakingTotalAmount uint64 `protobuf:"varint,6,opt,name=ReStakingTotalAmount,proto3" json:"ReStakingTotalAmount,omitempty"`
-	ExoCoreAssetIndex    uint64 `protobuf:"varint,7,opt,name=ExoCoreAssetIndex,proto3" json:"ExoCoreAssetIndex,omitempty"`
-	ExoCoreChainIndex    uint64 `protobuf:"varint,8,opt,name=ExoCoreChainIndex,proto3" json:"ExoCoreChainIndex,omitempty"`
-	AssetMetaInfo        string `protobuf:"bytes,9,opt,name=AssetMetaInfo,proto3" json:"AssetMetaInfo,omitempty"`
+	AssetBasicInfo       *ClientChainTokenInfo                  `protobuf:"bytes,1,opt,name=AssetBasicInfo,proto3" json:"AssetBasicInfo,omitempty"`
+	ReStakingTotalAmount github_com_cosmos_cosmos_sdk_types.Int `protobuf:"bytes,2,opt,name=ReStakingTotalAmount,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Int" json:"ReStakingTotalAmount"`
 }
 
 func (m *ReStakingAssetInfo) Reset()         { *m = ReStakingAssetInfo{} }
 func (m *ReStakingAssetInfo) String() string { return proto.CompactTextString(m) }
 func (*ReStakingAssetInfo) ProtoMessage()    {}
 func (*ReStakingAssetInfo) Descriptor() ([]byte, []int) {
-	return fileDescriptor_b24e66e530cc30d1, []int{1}
+	return fileDescriptor_b24e66e530cc30d1, []int{2}
 }
 func (m *ReStakingAssetInfo) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -143,79 +240,23 @@ func (m *ReStakingAssetInfo) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_ReStakingAssetInfo proto.InternalMessageInfo
 
-func (m *ReStakingAssetInfo) GetName() string {
+func (m *ReStakingAssetInfo) GetAssetBasicInfo() *ClientChainTokenInfo {
 	if m != nil {
-		return m.Name
+		return m.AssetBasicInfo
 	}
-	return ""
-}
-
-func (m *ReStakingAssetInfo) GetSymbol() string {
-	if m != nil {
-		return m.Symbol
-	}
-	return ""
-}
-
-func (m *ReStakingAssetInfo) GetAddress() string {
-	if m != nil {
-		return m.Address
-	}
-	return ""
-}
-
-func (m *ReStakingAssetInfo) GetDecimals() uint32 {
-	if m != nil {
-		return m.Decimals
-	}
-	return 0
-}
-
-func (m *ReStakingAssetInfo) GetTotalSupply() uint64 {
-	if m != nil {
-		return m.TotalSupply
-	}
-	return 0
-}
-
-func (m *ReStakingAssetInfo) GetReStakingTotalAmount() uint64 {
-	if m != nil {
-		return m.ReStakingTotalAmount
-	}
-	return 0
-}
-
-func (m *ReStakingAssetInfo) GetExoCoreAssetIndex() uint64 {
-	if m != nil {
-		return m.ExoCoreAssetIndex
-	}
-	return 0
-}
-
-func (m *ReStakingAssetInfo) GetExoCoreChainIndex() uint64 {
-	if m != nil {
-		return m.ExoCoreChainIndex
-	}
-	return 0
-}
-
-func (m *ReStakingAssetInfo) GetAssetMetaInfo() string {
-	if m != nil {
-		return m.AssetMetaInfo
-	}
-	return ""
+	return nil
 }
 
 type ReStakerSingleAssetInfo struct {
-	TotalDepositAmount uint64 `protobuf:"varint,1,opt,name=TotalDepositAmount,proto3" json:"TotalDepositAmount,omitempty"`
-	CanWithdrawAmount  uint64 `protobuf:"varint,2,opt,name=CanWithdrawAmount,proto3" json:"CanWithdrawAmount,omitempty"`
+	TotalDepositAmount github_com_cosmos_cosmos_sdk_types.Int `protobuf:"bytes,1,opt,name=TotalDepositAmount,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Int" json:"TotalDepositAmount"`
+	CanWithdrawAmount  github_com_cosmos_cosmos_sdk_types.Int `protobuf:"bytes,2,opt,name=CanWithdrawAmount,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Int" json:"CanWithdrawAmount"`
 }
 
 func (m *ReStakerSingleAssetInfo) Reset()         { *m = ReStakerSingleAssetInfo{} }
 func (m *ReStakerSingleAssetInfo) String() string { return proto.CompactTextString(m) }
 func (*ReStakerSingleAssetInfo) ProtoMessage()    {}
 func (*ReStakerSingleAssetInfo) Descriptor() ([]byte, []int) {
-	return fileDescriptor_b24e66e530cc30d1, []int{2}
+	return fileDescriptor_b24e66e530cc30d1, []int{3}
 }
 func (m *ReStakerSingleAssetInfo) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -244,30 +285,16 @@ func (m *ReStakerSingleAssetInfo) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_ReStakerSingleAssetInfo proto.InternalMessageInfo
 
-func (m *ReStakerSingleAssetInfo) GetTotalDepositAmount() uint64 {
-	if m != nil {
-		return m.TotalDepositAmount
-	}
-	return 0
-}
-
-func (m *ReStakerSingleAssetInfo) GetCanWithdrawAmount() uint64 {
-	if m != nil {
-		return m.CanWithdrawAmount
-	}
-	return 0
-}
-
 type OperatorSingleAssetInfo struct {
-	TotalAmount       uint64 `protobuf:"varint,1,opt,name=TotalAmount,proto3" json:"TotalAmount,omitempty"`
-	OperatorOwnAmount uint64 `protobuf:"varint,2,opt,name=OperatorOwnAmount,proto3" json:"OperatorOwnAmount,omitempty"`
+	TotalAmount       github_com_cosmos_cosmos_sdk_types.Int `protobuf:"bytes,1,opt,name=TotalAmount,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Int" json:"TotalAmount"`
+	OperatorOwnAmount github_com_cosmos_cosmos_sdk_types.Int `protobuf:"bytes,2,opt,name=OperatorOwnAmount,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Int" json:"OperatorOwnAmount"`
 }
 
 func (m *OperatorSingleAssetInfo) Reset()         { *m = OperatorSingleAssetInfo{} }
 func (m *OperatorSingleAssetInfo) String() string { return proto.CompactTextString(m) }
 func (*OperatorSingleAssetInfo) ProtoMessage()    {}
 func (*OperatorSingleAssetInfo) Descriptor() ([]byte, []int) {
-	return fileDescriptor_b24e66e530cc30d1, []int{3}
+	return fileDescriptor_b24e66e530cc30d1, []int{4}
 }
 func (m *OperatorSingleAssetInfo) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -296,22 +323,9 @@ func (m *OperatorSingleAssetInfo) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_OperatorSingleAssetInfo proto.InternalMessageInfo
 
-func (m *OperatorSingleAssetInfo) GetTotalAmount() uint64 {
-	if m != nil {
-		return m.TotalAmount
-	}
-	return 0
-}
-
-func (m *OperatorSingleAssetInfo) GetOperatorOwnAmount() uint64 {
-	if m != nil {
-		return m.OperatorOwnAmount
-	}
-	return 0
-}
-
 func init() {
 	proto.RegisterType((*ClientChainInfo)(nil), "exocore.restaking_assets_manage.v1.ClientChainInfo")
+	proto.RegisterType((*ClientChainTokenInfo)(nil), "exocore.restaking_assets_manage.v1.ClientChainTokenInfo")
 	proto.RegisterType((*ReStakingAssetInfo)(nil), "exocore.restaking_assets_manage.v1.ReStakingAssetInfo")
 	proto.RegisterType((*ReStakerSingleAssetInfo)(nil), "exocore.restaking_assets_manage.v1.ReStakerSingleAssetInfo")
 	proto.RegisterType((*OperatorSingleAssetInfo)(nil), "exocore.restaking_assets_manage.v1.OperatorSingleAssetInfo")
@@ -322,37 +336,45 @@ func init() {
 }
 
 var fileDescriptor_b24e66e530cc30d1 = []byte{
-	// 465 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x74, 0x53, 0x41, 0x6b, 0xdb, 0x30,
-	0x18, 0x8d, 0xb3, 0x2c, 0x6d, 0xbe, 0x12, 0xc6, 0xc4, 0x68, 0xcd, 0x18, 0x26, 0x98, 0x1e, 0x0a,
-	0x1b, 0x0e, 0xed, 0x60, 0xf7, 0x34, 0xd9, 0x60, 0xb0, 0xb5, 0xe0, 0x0c, 0x06, 0xbb, 0x14, 0x25,
-	0xfe, 0x96, 0x88, 0xca, 0x92, 0x91, 0x94, 0xc6, 0xf9, 0x17, 0xfb, 0x59, 0x3b, 0x8d, 0x5e, 0x06,
-	0x3b, 0x8e, 0xe4, 0x8f, 0x0c, 0xcb, 0x76, 0x12, 0x2f, 0xc9, 0xcd, 0xef, 0x7b, 0x4f, 0xfe, 0xde,
-	0x7b, 0x42, 0xf0, 0x1a, 0x53, 0x39, 0x96, 0x0a, 0xbb, 0x0a, 0xb5, 0xa1, 0xf7, 0x4c, 0x4c, 0xee,
-	0xa8, 0xd6, 0x68, 0xf4, 0x5d, 0x4c, 0x05, 0x9d, 0x60, 0xf7, 0xe1, 0xb2, 0x6b, 0xd2, 0x20, 0x51,
-	0xd2, 0x48, 0xe2, 0x17, 0xe2, 0xe0, 0x80, 0x38, 0x78, 0xb8, 0xf4, 0x7f, 0x3b, 0xf0, 0xac, 0xcf,
-	0x19, 0x0a, 0xd3, 0x9f, 0x52, 0x26, 0x3e, 0x8a, 0xef, 0x92, 0xbc, 0x82, 0x96, 0x05, 0x37, 0x34,
-	0x46, 0xd7, 0xe9, 0x38, 0x17, 0xad, 0x70, 0x33, 0x20, 0xe7, 0xd0, 0xb6, 0xe0, 0x33, 0x1a, 0x9a,
-	0xc9, 0xdd, 0xba, 0x55, 0x54, 0x87, 0xc4, 0x85, 0xa3, 0xfc, 0x87, 0x91, 0xfb, 0xa4, 0xe3, 0x5c,
-	0x34, 0xc2, 0x12, 0x92, 0x37, 0xf0, 0xfc, 0x7d, 0x2a, 0xfb, 0x52, 0x61, 0xb1, 0x31, 0xc2, 0xd4,
-	0x6d, 0x58, 0xcd, 0x2e, 0x41, 0xde, 0xc1, 0xe9, 0x07, 0x26, 0x28, 0x67, 0x66, 0x71, 0x83, 0x18,
-	0x5d, 0x73, 0x39, 0xbe, 0x1f, 0x20, 0xa7, 0x0b, 0xf7, 0xa9, 0x3d, 0x72, 0x80, 0xf5, 0x7f, 0xd5,
-	0x81, 0x84, 0x38, 0xcc, 0x63, 0xf7, 0xb2, 0xd4, 0xd6, 0x16, 0x81, 0xc6, 0x56, 0x2a, 0xfb, 0x4d,
-	0x4e, 0xa1, 0x39, 0x5c, 0xc4, 0x23, 0xc9, 0x8b, 0x24, 0x05, 0xca, 0x22, 0xf4, 0xa2, 0x48, 0xa1,
-	0xd6, 0x36, 0x42, 0x2b, 0x2c, 0x21, 0x79, 0x09, 0xc7, 0x03, 0x1c, 0xb3, 0x98, 0x72, 0x6d, 0x9d,
-	0xb7, 0xc3, 0x35, 0x26, 0x1d, 0x38, 0xf9, 0x22, 0x0d, 0xe5, 0xc3, 0x59, 0x92, 0xf0, 0xd2, 0xe5,
-	0xf6, 0x88, 0x5c, 0xc1, 0x8b, 0xb5, 0x33, 0x3b, 0xef, 0xc5, 0x72, 0x26, 0x8c, 0xdb, 0xb4, 0xd2,
-	0xbd, 0xdc, 0x56, 0x69, 0x45, 0x96, 0xac, 0xb4, 0xa3, 0x4a, 0x69, 0x1b, 0x62, 0x7f, 0xc5, 0xc7,
-	0x87, 0x2a, 0x3e, 0x87, 0xb6, 0x3d, 0xbb, 0xbe, 0xd0, 0x56, 0x7e, 0xa1, 0x95, 0xa1, 0x3f, 0x87,
-	0xb3, 0xdc, 0x19, 0xaa, 0x21, 0x13, 0x13, 0x8e, 0x9b, 0x52, 0x03, 0x20, 0xd6, 0xeb, 0x00, 0x13,
-	0xa9, 0x99, 0x29, 0xe2, 0x38, 0x76, 0xdf, 0x1e, 0x26, 0xb3, 0xd7, 0xa7, 0xe2, 0x2b, 0x33, 0xd3,
-	0x48, 0xd1, 0x79, 0x21, 0xaf, 0xe7, 0xf6, 0x76, 0x08, 0x9f, 0xc1, 0xd9, 0x6d, 0x82, 0x8a, 0x1a,
-	0xb9, 0xb3, 0xb8, 0xec, 0xba, 0xb2, 0xf1, 0xe4, 0xbf, 0xde, 0xca, 0xc3, 0xb7, 0x73, 0x51, 0x5d,
-	0xb5, 0x43, 0x5c, 0x7f, 0xfa, 0xb9, 0xf4, 0x9c, 0xc7, 0xa5, 0xe7, 0xfc, 0x5d, 0x7a, 0xce, 0x8f,
-	0x95, 0x57, 0x7b, 0x5c, 0x79, 0xb5, 0x3f, 0x2b, 0xaf, 0xf6, 0xed, 0x6a, 0xc2, 0xcc, 0x74, 0x36,
-	0x0a, 0xc6, 0x32, 0xee, 0x96, 0x4f, 0x30, 0x3d, 0xf8, 0x08, 0xcd, 0x22, 0x41, 0x3d, 0x6a, 0xda,
-	0x57, 0xf8, 0xf6, 0x5f, 0x00, 0x00, 0x00, 0xff, 0xff, 0xac, 0x33, 0x1c, 0x14, 0xb4, 0x03, 0x00,
-	0x00,
+	// 597 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xac, 0x54, 0xdf, 0x6a, 0x13, 0x4f,
+	0x14, 0xce, 0xf6, 0xd7, 0x5f, 0xdb, 0x4c, 0xa9, 0xda, 0x21, 0xb4, 0x6b, 0x90, 0x6d, 0x59, 0x8a,
+	0x14, 0xb5, 0x1b, 0x5a, 0x41, 0xbc, 0xf0, 0x26, 0x7f, 0x14, 0x02, 0xb5, 0x81, 0x4d, 0x41, 0xe8,
+	0x85, 0x71, 0xb2, 0x7b, 0xdc, 0x8c, 0xd9, 0x9d, 0x59, 0x76, 0x26, 0x6d, 0xf2, 0x10, 0x82, 0x0f,
+	0xe3, 0x43, 0xf4, 0xb2, 0x78, 0x55, 0xbc, 0x28, 0x92, 0x20, 0x78, 0xef, 0x0b, 0xc8, 0xce, 0x6e,
+	0xd2, 0xc4, 0x24, 0x88, 0x98, 0xab, 0xdd, 0x73, 0xce, 0x37, 0xdf, 0x99, 0xef, 0x3b, 0x87, 0x41,
+	0x8f, 0xa1, 0xcb, 0x1d, 0x1e, 0x41, 0x21, 0x02, 0x21, 0x49, 0x9b, 0x32, 0xaf, 0x41, 0x84, 0x00,
+	0x29, 0x1a, 0x01, 0x61, 0xc4, 0x83, 0xc2, 0xf9, 0x61, 0x41, 0x76, 0xad, 0x30, 0xe2, 0x92, 0x63,
+	0x33, 0x05, 0x5b, 0x73, 0xc0, 0xd6, 0xf9, 0x61, 0x3e, 0xe7, 0x71, 0x8f, 0x2b, 0x78, 0x21, 0xfe,
+	0x4b, 0x4e, 0xe6, 0xef, 0x3b, 0x5c, 0x04, 0x5c, 0x34, 0x92, 0x42, 0x12, 0x24, 0x25, 0xf3, 0xe3,
+	0x12, 0xba, 0x5b, 0xf6, 0x29, 0x30, 0x59, 0x6e, 0x11, 0xca, 0xaa, 0xec, 0x3d, 0xc7, 0x0f, 0x50,
+	0x56, 0x05, 0x27, 0x24, 0x00, 0x5d, 0xdb, 0xd5, 0xf6, 0xb3, 0xf6, 0x6d, 0x02, 0xef, 0xa1, 0x0d,
+	0x15, 0xbc, 0x06, 0x49, 0x62, 0xb8, 0xbe, 0xa4, 0x10, 0x93, 0xc9, 0x18, 0x55, 0x8b, 0xa8, 0x47,
+	0x59, 0x42, 0xeb, 0xea, 0xff, 0xed, 0x6a, 0xfb, 0xcb, 0xf6, 0x64, 0x12, 0x3f, 0x41, 0x9b, 0x2f,
+	0xbb, 0xbc, 0xcc, 0x23, 0x48, 0xbb, 0xbb, 0xd0, 0xd5, 0x97, 0x15, 0x72, 0xba, 0x80, 0x9f, 0xa1,
+	0xad, 0x57, 0x94, 0x11, 0x9f, 0xca, 0xde, 0x09, 0x80, 0x5b, 0xf2, 0xb9, 0xd3, 0xae, 0x80, 0x4f,
+	0x7a, 0xfa, 0xff, 0xea, 0xc8, 0x9c, 0x2a, 0x7e, 0x84, 0xee, 0x1d, 0x93, 0x1e, 0x44, 0x67, 0x10,
+	0xf1, 0xe1, 0x75, 0x56, 0xd4, 0x89, 0xa9, 0xbc, 0x79, 0xbd, 0x84, 0x72, 0x63, 0x7e, 0x9c, 0xf2,
+	0x36, 0x24, 0xa6, 0x60, 0xb4, 0x3c, 0xe6, 0x87, 0xfa, 0xc7, 0x5b, 0x68, 0xa5, 0xde, 0x0b, 0x9a,
+	0xdc, 0x4f, 0x3d, 0x48, 0x23, 0xac, 0xa3, 0xd5, 0xa2, 0xeb, 0x46, 0x20, 0x84, 0x92, 0x9d, 0xb5,
+	0x87, 0x21, 0xce, 0xa3, 0xb5, 0x0a, 0x38, 0x34, 0x20, 0xbe, 0x50, 0x3a, 0x37, 0xec, 0x51, 0x8c,
+	0xdf, 0xa2, 0xf5, 0x53, 0x2e, 0x89, 0x5f, 0xef, 0x84, 0xa1, 0x9f, 0x68, 0xca, 0x96, 0x5e, 0x5c,
+	0xde, 0xec, 0x64, 0xbe, 0xde, 0xec, 0x3c, 0xf4, 0xa8, 0x6c, 0x75, 0x9a, 0x96, 0xc3, 0x83, 0x74,
+	0x80, 0xe9, 0xe7, 0x40, 0xb8, 0xed, 0x82, 0xec, 0x85, 0x20, 0xac, 0x2a, 0x93, 0x5f, 0x3e, 0x1f,
+	0xa0, 0x74, 0xbe, 0x55, 0x26, 0xed, 0x71, 0xc2, 0xbf, 0xb1, 0x61, 0xf6, 0x60, 0x56, 0xe7, 0x0d,
+	0x66, 0x0f, 0x6d, 0x14, 0xe3, 0x4d, 0x1c, 0xad, 0xc4, 0x5a, 0xb2, 0x12, 0x13, 0x49, 0xf3, 0x87,
+	0x86, 0xb0, 0x0d, 0xf5, 0x64, 0x75, 0x55, 0x49, 0x19, 0xfb, 0x0e, 0xdd, 0x51, 0x41, 0x89, 0x08,
+	0xea, 0xa8, 0xd3, 0xb1, 0xc5, 0xeb, 0x47, 0xcf, 0xad, 0x3f, 0xef, 0xbb, 0x35, 0x6b, 0x54, 0xf6,
+	0x6f, 0x7c, 0x38, 0x44, 0xb9, 0x51, 0x5f, 0x65, 0x48, 0x31, 0xe0, 0x1d, 0x26, 0x93, 0xa1, 0xfd,
+	0xa3, 0xc3, 0x33, 0x99, 0xcd, 0x9f, 0x1a, 0xda, 0x4e, 0x0a, 0x10, 0xd5, 0x29, 0xf3, 0x7c, 0xb8,
+	0xd5, 0xeb, 0x23, 0xac, 0xa0, 0x15, 0x08, 0xb9, 0xa0, 0x32, 0xbd, 0x8b, 0xb6, 0x80, 0xbb, 0xcc,
+	0xe0, 0xc5, 0x1f, 0xd0, 0x66, 0x99, 0xb0, 0x37, 0x54, 0xb6, 0xdc, 0x88, 0x5c, 0x2c, 0x50, 0xf8,
+	0x34, 0xad, 0xf9, 0x5d, 0x43, 0xdb, 0xb5, 0x10, 0x22, 0x22, 0xf9, 0x94, 0xea, 0xe1, 0x72, 0x2f,
+	0x50, 0xee, 0x38, 0x61, 0xac, 0x73, 0xd8, 0xba, 0x76, 0xc1, 0x16, 0xa9, 0x73, 0x8a, 0xb6, 0x74,
+	0x7c, 0xd9, 0x37, 0xb4, 0xab, 0xbe, 0xa1, 0x7d, 0xeb, 0x1b, 0xda, 0xa7, 0x81, 0x91, 0xb9, 0x1a,
+	0x18, 0x99, 0xeb, 0x81, 0x91, 0x39, 0x3b, 0x1a, 0x6b, 0x31, 0x7c, 0xda, 0xbb, 0x73, 0x1f, 0x77,
+	0xd5, 0xb2, 0xb9, 0xa2, 0x1e, 0xe2, 0xa7, 0xbf, 0x02, 0x00, 0x00, 0xff, 0xff, 0xb0, 0x92, 0xc4,
+	0x04, 0x0c, 0x06, 0x00, 0x00,
 }
 
 func (m *ClientChainInfo) Marshal() (dAtA []byte, err error) {
@@ -375,6 +397,11 @@ func (m *ClientChainInfo) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	_ = i
 	var l int
 	_ = l
+	if m.LayerZeroChainId != 0 {
+		i = encodeVarintTx(dAtA, i, uint64(m.LayerZeroChainId))
+		i--
+		dAtA[i] = 0x30
+	}
 	if m.FinalityNeedBlockDelay != 0 {
 		i = encodeVarintTx(dAtA, i, uint64(m.FinalityNeedBlockDelay))
 		i--
@@ -385,8 +412,8 @@ func (m *ClientChainInfo) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		i--
 		dAtA[i] = 0x20
 	}
-	if m.ChainId != 0 {
-		i = encodeVarintTx(dAtA, i, uint64(m.ChainId))
+	if m.OriginChainId != 0 {
+		i = encodeVarintTx(dAtA, i, uint64(m.OriginChainId))
 		i--
 		dAtA[i] = 0x18
 	}
@@ -407,7 +434,7 @@ func (m *ClientChainInfo) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
-func (m *ReStakingAssetInfo) Marshal() (dAtA []byte, err error) {
+func (m *ClientChainTokenInfo) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -417,12 +444,12 @@ func (m *ReStakingAssetInfo) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *ReStakingAssetInfo) MarshalTo(dAtA []byte) (int, error) {
+func (m *ClientChainTokenInfo) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *ReStakingAssetInfo) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *ClientChainTokenInfo) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
@@ -432,28 +459,28 @@ func (m *ReStakingAssetInfo) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		copy(dAtA[i:], m.AssetMetaInfo)
 		i = encodeVarintTx(dAtA, i, uint64(len(m.AssetMetaInfo)))
 		i--
-		dAtA[i] = 0x4a
+		dAtA[i] = 0x42
 	}
 	if m.ExoCoreChainIndex != 0 {
 		i = encodeVarintTx(dAtA, i, uint64(m.ExoCoreChainIndex))
 		i--
-		dAtA[i] = 0x40
-	}
-	if m.ExoCoreAssetIndex != 0 {
-		i = encodeVarintTx(dAtA, i, uint64(m.ExoCoreAssetIndex))
-		i--
 		dAtA[i] = 0x38
 	}
-	if m.ReStakingTotalAmount != 0 {
-		i = encodeVarintTx(dAtA, i, uint64(m.ReStakingTotalAmount))
+	if m.LayerZeroChainId != 0 {
+		i = encodeVarintTx(dAtA, i, uint64(m.LayerZeroChainId))
 		i--
 		dAtA[i] = 0x30
 	}
-	if m.TotalSupply != 0 {
-		i = encodeVarintTx(dAtA, i, uint64(m.TotalSupply))
-		i--
-		dAtA[i] = 0x28
+	{
+		size := m.TotalSupply.Size()
+		i -= size
+		if _, err := m.TotalSupply.MarshalTo(dAtA[i:]); err != nil {
+			return 0, err
+		}
+		i = encodeVarintTx(dAtA, i, uint64(size))
 	}
+	i--
+	dAtA[i] = 0x2a
 	if m.Decimals != 0 {
 		i = encodeVarintTx(dAtA, i, uint64(m.Decimals))
 		i--
@@ -483,6 +510,51 @@ func (m *ReStakingAssetInfo) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
+func (m *ReStakingAssetInfo) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *ReStakingAssetInfo) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *ReStakingAssetInfo) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	{
+		size := m.ReStakingTotalAmount.Size()
+		i -= size
+		if _, err := m.ReStakingTotalAmount.MarshalTo(dAtA[i:]); err != nil {
+			return 0, err
+		}
+		i = encodeVarintTx(dAtA, i, uint64(size))
+	}
+	i--
+	dAtA[i] = 0x12
+	if m.AssetBasicInfo != nil {
+		{
+			size, err := m.AssetBasicInfo.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintTx(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
 func (m *ReStakerSingleAssetInfo) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
@@ -503,16 +575,26 @@ func (m *ReStakerSingleAssetInfo) MarshalToSizedBuffer(dAtA []byte) (int, error)
 	_ = i
 	var l int
 	_ = l
-	if m.CanWithdrawAmount != 0 {
-		i = encodeVarintTx(dAtA, i, uint64(m.CanWithdrawAmount))
-		i--
-		dAtA[i] = 0x10
+	{
+		size := m.CanWithdrawAmount.Size()
+		i -= size
+		if _, err := m.CanWithdrawAmount.MarshalTo(dAtA[i:]); err != nil {
+			return 0, err
+		}
+		i = encodeVarintTx(dAtA, i, uint64(size))
 	}
-	if m.TotalDepositAmount != 0 {
-		i = encodeVarintTx(dAtA, i, uint64(m.TotalDepositAmount))
-		i--
-		dAtA[i] = 0x8
+	i--
+	dAtA[i] = 0x12
+	{
+		size := m.TotalDepositAmount.Size()
+		i -= size
+		if _, err := m.TotalDepositAmount.MarshalTo(dAtA[i:]); err != nil {
+			return 0, err
+		}
+		i = encodeVarintTx(dAtA, i, uint64(size))
 	}
+	i--
+	dAtA[i] = 0xa
 	return len(dAtA) - i, nil
 }
 
@@ -536,16 +618,26 @@ func (m *OperatorSingleAssetInfo) MarshalToSizedBuffer(dAtA []byte) (int, error)
 	_ = i
 	var l int
 	_ = l
-	if m.OperatorOwnAmount != 0 {
-		i = encodeVarintTx(dAtA, i, uint64(m.OperatorOwnAmount))
-		i--
-		dAtA[i] = 0x10
+	{
+		size := m.OperatorOwnAmount.Size()
+		i -= size
+		if _, err := m.OperatorOwnAmount.MarshalTo(dAtA[i:]); err != nil {
+			return 0, err
+		}
+		i = encodeVarintTx(dAtA, i, uint64(size))
 	}
-	if m.TotalAmount != 0 {
-		i = encodeVarintTx(dAtA, i, uint64(m.TotalAmount))
-		i--
-		dAtA[i] = 0x8
+	i--
+	dAtA[i] = 0x12
+	{
+		size := m.TotalAmount.Size()
+		i -= size
+		if _, err := m.TotalAmount.MarshalTo(dAtA[i:]); err != nil {
+			return 0, err
+		}
+		i = encodeVarintTx(dAtA, i, uint64(size))
 	}
+	i--
+	dAtA[i] = 0xa
 	return len(dAtA) - i, nil
 }
 
@@ -574,8 +666,8 @@ func (m *ClientChainInfo) Size() (n int) {
 	if l > 0 {
 		n += 1 + l + sovTx(uint64(l))
 	}
-	if m.ChainId != 0 {
-		n += 1 + sovTx(uint64(m.ChainId))
+	if m.OriginChainId != 0 {
+		n += 1 + sovTx(uint64(m.OriginChainId))
 	}
 	if m.ExoCoreChainIndex != 0 {
 		n += 1 + sovTx(uint64(m.ExoCoreChainIndex))
@@ -583,10 +675,13 @@ func (m *ClientChainInfo) Size() (n int) {
 	if m.FinalityNeedBlockDelay != 0 {
 		n += 1 + sovTx(uint64(m.FinalityNeedBlockDelay))
 	}
+	if m.LayerZeroChainId != 0 {
+		n += 1 + sovTx(uint64(m.LayerZeroChainId))
+	}
 	return n
 }
 
-func (m *ReStakingAssetInfo) Size() (n int) {
+func (m *ClientChainTokenInfo) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -607,14 +702,10 @@ func (m *ReStakingAssetInfo) Size() (n int) {
 	if m.Decimals != 0 {
 		n += 1 + sovTx(uint64(m.Decimals))
 	}
-	if m.TotalSupply != 0 {
-		n += 1 + sovTx(uint64(m.TotalSupply))
-	}
-	if m.ReStakingTotalAmount != 0 {
-		n += 1 + sovTx(uint64(m.ReStakingTotalAmount))
-	}
-	if m.ExoCoreAssetIndex != 0 {
-		n += 1 + sovTx(uint64(m.ExoCoreAssetIndex))
+	l = m.TotalSupply.Size()
+	n += 1 + l + sovTx(uint64(l))
+	if m.LayerZeroChainId != 0 {
+		n += 1 + sovTx(uint64(m.LayerZeroChainId))
 	}
 	if m.ExoCoreChainIndex != 0 {
 		n += 1 + sovTx(uint64(m.ExoCoreChainIndex))
@@ -626,18 +717,31 @@ func (m *ReStakingAssetInfo) Size() (n int) {
 	return n
 }
 
+func (m *ReStakingAssetInfo) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.AssetBasicInfo != nil {
+		l = m.AssetBasicInfo.Size()
+		n += 1 + l + sovTx(uint64(l))
+	}
+	l = m.ReStakingTotalAmount.Size()
+	n += 1 + l + sovTx(uint64(l))
+	return n
+}
+
 func (m *ReStakerSingleAssetInfo) Size() (n int) {
 	if m == nil {
 		return 0
 	}
 	var l int
 	_ = l
-	if m.TotalDepositAmount != 0 {
-		n += 1 + sovTx(uint64(m.TotalDepositAmount))
-	}
-	if m.CanWithdrawAmount != 0 {
-		n += 1 + sovTx(uint64(m.CanWithdrawAmount))
-	}
+	l = m.TotalDepositAmount.Size()
+	n += 1 + l + sovTx(uint64(l))
+	l = m.CanWithdrawAmount.Size()
+	n += 1 + l + sovTx(uint64(l))
 	return n
 }
 
@@ -647,12 +751,10 @@ func (m *OperatorSingleAssetInfo) Size() (n int) {
 	}
 	var l int
 	_ = l
-	if m.TotalAmount != 0 {
-		n += 1 + sovTx(uint64(m.TotalAmount))
-	}
-	if m.OperatorOwnAmount != 0 {
-		n += 1 + sovTx(uint64(m.OperatorOwnAmount))
-	}
+	l = m.TotalAmount.Size()
+	n += 1 + l + sovTx(uint64(l))
+	l = m.OperatorOwnAmount.Size()
+	n += 1 + l + sovTx(uint64(l))
 	return n
 }
 
@@ -757,9 +859,9 @@ func (m *ClientChainInfo) Unmarshal(dAtA []byte) error {
 			iNdEx = postIndex
 		case 3:
 			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field ChainId", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field OriginChainId", wireType)
 			}
-			m.ChainId = 0
+			m.OriginChainId = 0
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowTx
@@ -769,7 +871,7 @@ func (m *ClientChainInfo) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				m.ChainId |= uint64(b&0x7F) << shift
+				m.OriginChainId |= uint64(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
@@ -812,6 +914,25 @@ func (m *ClientChainInfo) Unmarshal(dAtA []byte) error {
 					break
 				}
 			}
+		case 6:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field LayerZeroChainId", wireType)
+			}
+			m.LayerZeroChainId = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.LayerZeroChainId |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
 		default:
 			iNdEx = preIndex
 			skippy, err := skipTx(dAtA[iNdEx:])
@@ -833,7 +954,7 @@ func (m *ClientChainInfo) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *ReStakingAssetInfo) Unmarshal(dAtA []byte) error {
+func (m *ClientChainTokenInfo) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -856,10 +977,10 @@ func (m *ReStakingAssetInfo) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: ReStakingAssetInfo: wiretype end group for non-group")
+			return fmt.Errorf("proto: ClientChainTokenInfo: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: ReStakingAssetInfo: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: ClientChainTokenInfo: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
@@ -978,10 +1099,10 @@ func (m *ReStakingAssetInfo) Unmarshal(dAtA []byte) error {
 				}
 			}
 		case 5:
-			if wireType != 0 {
+			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field TotalSupply", wireType)
 			}
-			m.TotalSupply = 0
+			var stringLen uint64
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowTx
@@ -991,16 +1112,31 @@ func (m *ReStakingAssetInfo) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				m.TotalSupply |= uint64(b&0x7F) << shift
+				stringLen |= uint64(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
 			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.TotalSupply.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
 		case 6:
 			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field ReStakingTotalAmount", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field LayerZeroChainId", wireType)
 			}
-			m.ReStakingTotalAmount = 0
+			m.LayerZeroChainId = 0
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowTx
@@ -1010,31 +1146,12 @@ func (m *ReStakingAssetInfo) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				m.ReStakingTotalAmount |= uint64(b&0x7F) << shift
+				m.LayerZeroChainId |= uint64(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
 			}
 		case 7:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field ExoCoreAssetIndex", wireType)
-			}
-			m.ExoCoreAssetIndex = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowTx
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				m.ExoCoreAssetIndex |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-		case 8:
 			if wireType != 0 {
 				return fmt.Errorf("proto: wrong wireType = %d for field ExoCoreChainIndex", wireType)
 			}
@@ -1053,7 +1170,7 @@ func (m *ReStakingAssetInfo) Unmarshal(dAtA []byte) error {
 					break
 				}
 			}
-		case 9:
+		case 8:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field AssetMetaInfo", wireType)
 			}
@@ -1106,6 +1223,126 @@ func (m *ReStakingAssetInfo) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
+func (m *ReStakingAssetInfo) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowTx
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: ReStakingAssetInfo: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: ReStakingAssetInfo: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field AssetBasicInfo", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if m.AssetBasicInfo == nil {
+				m.AssetBasicInfo = &ClientChainTokenInfo{}
+			}
+			if err := m.AssetBasicInfo.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field ReStakingTotalAmount", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.ReStakingTotalAmount.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipTx(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthTx
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
 func (m *ReStakerSingleAssetInfo) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -1136,10 +1373,10 @@ func (m *ReStakerSingleAssetInfo) Unmarshal(dAtA []byte) error {
 		}
 		switch fieldNum {
 		case 1:
-			if wireType != 0 {
+			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field TotalDepositAmount", wireType)
 			}
-			m.TotalDepositAmount = 0
+			var stringLen uint64
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowTx
@@ -1149,16 +1386,31 @@ func (m *ReStakerSingleAssetInfo) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				m.TotalDepositAmount |= uint64(b&0x7F) << shift
+				stringLen |= uint64(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
 			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.TotalDepositAmount.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
 		case 2:
-			if wireType != 0 {
+			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field CanWithdrawAmount", wireType)
 			}
-			m.CanWithdrawAmount = 0
+			var stringLen uint64
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowTx
@@ -1168,11 +1420,26 @@ func (m *ReStakerSingleAssetInfo) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				m.CanWithdrawAmount |= uint64(b&0x7F) << shift
+				stringLen |= uint64(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
 			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.CanWithdrawAmount.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
 		default:
 			iNdEx = preIndex
 			skippy, err := skipTx(dAtA[iNdEx:])
@@ -1224,10 +1491,10 @@ func (m *OperatorSingleAssetInfo) Unmarshal(dAtA []byte) error {
 		}
 		switch fieldNum {
 		case 1:
-			if wireType != 0 {
+			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field TotalAmount", wireType)
 			}
-			m.TotalAmount = 0
+			var stringLen uint64
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowTx
@@ -1237,16 +1504,31 @@ func (m *OperatorSingleAssetInfo) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				m.TotalAmount |= uint64(b&0x7F) << shift
+				stringLen |= uint64(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
 			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.TotalAmount.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
 		case 2:
-			if wireType != 0 {
+			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field OperatorOwnAmount", wireType)
 			}
-			m.OperatorOwnAmount = 0
+			var stringLen uint64
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowTx
@@ -1256,11 +1538,26 @@ func (m *OperatorSingleAssetInfo) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				m.OperatorOwnAmount |= uint64(b&0x7F) << shift
+				stringLen |= uint64(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
 			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.OperatorOwnAmount.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
 		default:
 			iNdEx = preIndex
 			skippy, err := skipTx(dAtA[iNdEx:])

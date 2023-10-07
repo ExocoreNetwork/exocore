@@ -3,36 +3,74 @@
 syntax = "proto3";
 package exocore.restaking_assets_manage.v1;
 
+import "gogoproto/gogo.proto";
+import "cosmos_proto/cosmos.proto";
+
 option go_package = "github.com/exocore/x/restaking_assets_manage/types";
 
 message ClientChainInfo {
   string ChainName = 1;
   string ChainMetaInfo = 2;
-  uint64 ChainId = 3;
+  uint64 OriginChainId = 3;
   uint64 ExoCoreChainIndex = 4;
   uint64 FinalityNeedBlockDelay = 5;
+  uint64 LayerZeroChainId = 6;
+}
+
+message ClientChainTokenInfo {
+  string Name = 1;
+  string Symbol = 2;
+  string Address = 3;
+  uint32 Decimals = 4;
+  string TotalSupply = 5
+  [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.nullable) = false
+  ];
+  uint64 LayerZeroChainId = 6;
+  uint64 ExoCoreChainIndex = 7;
+  string AssetMetaInfo = 8;
 }
 
 message ReStakingAssetInfo {
-  string Name =1;
-  string Symbol=2;
-  string Address=3;
-  uint32 Decimals=4;
-  uint64 TotalSupply=5;
-  uint64 ReStakingTotalAmount=6;
-  uint64 ExoCoreAssetIndex = 7;
-  uint64 ExoCoreChainIndex=8;
-  string AssetMetaInfo =9;
+  ClientChainTokenInfo AssetBasicInfo = 1;
+  string ReStakingTotalAmount = 2
+  [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.nullable) = false
+  ];
 }
 
 message ReStakerSingleAssetInfo {
-  uint64 TotalDepositAmount =1;
-  uint64 CanWithdrawAmount =2;
+  string TotalDepositAmount = 1
+  [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.nullable) = false
+  ];
+  string CanWithdrawAmount = 2
+  [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.nullable) = false
+  ];
 }
 
 message OperatorSingleAssetInfo{
-  uint64 TotalAmount =1;
-  uint64 OperatorOwnAmount =2;
+  string TotalAmount = 1
+  [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.nullable) = false
+  ];
+  string OperatorOwnAmount = 2
+  [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.nullable) = false
+  ];
 }
 
 

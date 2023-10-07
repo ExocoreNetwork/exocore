@@ -5,6 +5,7 @@ package exocore.native_token.v1;
 
 import "cosmos/msg/v1/msg.proto";
 import "cosmos_proto/cosmos.proto";
+import "gogoproto/gogo.proto";
 
 option go_package = "github.com/exocore/x/native_token/types";
 
@@ -16,13 +17,28 @@ message ValidatorInfo {
   }
   ValidatorStatus Status = 1;
   uint64 ValidatorIndex = 2;
-  uint64 StakedBalanceGwei = 3;
+  string StakedBalanceGwei = 3
+  [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.nullable) = false
+  ];
   uint64 MostRecentBalanceUpdateBlockNumber = 4;
 }
 
 message NativeTokenStakerInfo {
-  uint64 TotalValidatorBalances = 1;
-  uint64 UnStakedValueFromPOS = 2;
+  string TotalValidatorBalances = 1
+  [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.nullable) = false
+  ];
+  string UnStakedValueFromPOS = 2
+  [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.nullable) = false
+  ];
   string PodAddress =3;
   map<string,ValidatorInfo> ValidatorsInfo=4;
 }
