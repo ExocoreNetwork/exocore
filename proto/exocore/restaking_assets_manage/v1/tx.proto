@@ -33,9 +33,9 @@ message ClientChainTokenInfo {
   string AssetMetaInfo = 8;
 }
 
-message ReStakingAssetInfo {
+message StakingAssetInfo {
   ClientChainTokenInfo AssetBasicInfo = 1;
-  string ReStakingTotalAmount = 2
+  string StakingTotalAmount = 2
   [
     (cosmos_proto.scalar) = "cosmos.Int",
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
@@ -43,7 +43,7 @@ message ReStakingAssetInfo {
   ];
 }
 
-message ReStakerSingleAssetInfo {
+message StakerSingleAssetInfo {
   string TotalDepositAmount = 1
   [
     (cosmos_proto.scalar) = "cosmos.Int",
@@ -72,6 +72,3 @@ message OperatorSingleAssetInfo{
     (gogoproto.nullable) = false
   ];
 }
-
-
-

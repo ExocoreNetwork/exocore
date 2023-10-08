@@ -15,20 +15,30 @@ type Keeper struct {
 	cdc      codec.BinaryCodec
 }
 
+func (k Keeper) GetAllOperatorAssetOptedInMiddleWare(operatorAddr sdk.Address) (optedInInfos map[string][]sdk.Address, err error) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (k Keeper) SetOperatorAssetOptedInMiddleWare(operatorAddr sdk.Address, setInfo map[string]sdk.Address) (middleWares []sdk.Address, err error) {
+	//TODO implement me
+	panic("implement me")
+}
+
 // IReStakingAssetsManage interface will be implemented by restaking_assets_manage keeper
 type IReStakingAssetsManage interface {
 	SetClientChainInfo(info *types2.ClientChainInfo) (exoCoreChainIndex uint64, err error)
-	GetClientChainInfoByIndex(exoCoreChainIndex uint64) (info types2.ClientChainInfo, err error)
+	GetClientChainInfoByIndex(index uint64) (info types2.ClientChainInfo, err error)
 	GetAllClientChainInfo() (infos map[uint64]types2.ClientChainInfo, err error)
 
-	SetReStakingAssetInfo(info *types2.ReStakingAssetInfo) (exoCoreAssetIndex uint64, err error)
-	GetReStakingAssetInfo(assetId string) (info types2.ReStakingAssetInfo, err error)
-	GetAllReStakingAssetsInfo() (allAssets map[string]types2.ReStakingAssetInfo, err error)
+	SetStakingAssetInfo(info *types2.StakingAssetInfo) (exoCoreAssetIndex uint64, err error)
+	GetStakingAssetInfo(assetId string) (info types2.StakingAssetInfo, err error)
+	GetAllStakingAssetsInfo() (allAssets map[string]types2.StakingAssetInfo, err error)
 
-	GetReStakerAssetInfos(reStakerId string) (assetsInfo map[string]math.Uint, err error)
-	GetReStakerSpecifiedAssetAmount(reStakerId string, assetId string) (amount math.Uint, err error)
-	IncreaseReStakerAssetsAmount(reStakerId string, assetsAddAmount map[string]math.Uint) (err error)
-	DecreaseReStakerAssetsAmount(reStakerId string, assetsSubAmount map[string]math.Uint) (err error)
+	GetStakerAssetInfos(stakerId string) (assetsInfo map[string]math.Uint, err error)
+	GetStakerSpecifiedAssetAmount(stakerId string, assetId string) (amount math.Uint, err error)
+	IncreaseStakerAssetsAmount(stakerId string, assetsAddAmount map[string]math.Uint) (err error)
+	DecreaseStakerAssetsAmount(stakerId string, assetsSubAmount map[string]math.Uint) (err error)
 
 	GetOperatorAssetInfos(operatorAddr sdk.Address) (assetsInfo map[string]math.Uint, err error)
 	GetOperatorSpecifiedAssetAmount(operatorAddr sdk.Address, assetId string) (amount math.Uint, err error)

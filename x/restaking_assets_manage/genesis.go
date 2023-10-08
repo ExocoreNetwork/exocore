@@ -1,3 +1,5 @@
+// Copyright Tharsis Labs Ltd.(Evmos)
+// SPDX-License-Identifier:ENCL-1.0(https://github.com/evmos/evmos/blob/main/LICENSE)
 package restaking_assets_manage
 
 import (
@@ -21,7 +23,7 @@ func DefaultGenesisState() *types2.GenesisState {
 	return NewGenesisState([]*types2.ClientChainInfo{}, []*types2.ClientChainTokenInfo{})
 }
 
-// GetGenesisStateFromAppState returns x/auth GenesisState given raw application
+// GetGenesisStateFromAppState returns x/restaking_assets_manage GenesisState given raw application
 // genesis state.
 func GetGenesisStateFromAppState(cdc codec.Codec, appState map[string]json.RawMessage) types2.GenesisState {
 	var genesisState types2.GenesisState

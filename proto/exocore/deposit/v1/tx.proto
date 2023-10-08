@@ -1,0 +1,35 @@
+// Copyright Tharsis Labs Ltd.(Evmos)
+// SPDX-License-Identifier:ENCL-1.0(https://github.com/evmos/evmos/blob/main/LICENSE)
+syntax = "proto3";
+package exocore.deposit.v1;
+
+import "cosmos/msg/v1/msg.proto";
+import "cosmos_proto/cosmos.proto";
+import "gogoproto/gogo.proto";
+import "amino/amino.proto";
+
+option go_package = "github.com/exocore/x/deposit/types";
+
+service Msg {
+
+  option (cosmos.msg.v1.service) = true;
+
+  rpc SetStakerExoCoreAddr(MsgSetExoCoreAddr) returns (MsgSetExoCoreAddrResponse);
+
+}
+
+
+message MsgSetExoCoreAddr {
+  option (cosmos.msg.v1.signer) = "fromAddress";
+  option (amino.name) = "cosmos-sdk/MsgSetExoCoreAddr";
+
+  option (gogoproto.equal) = false;
+  option (gogoproto.goproto_getters) = false;
+
+  string   fromAddress = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+  string   setAddress = 2 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+  string   stakerId = 3;
+}
+message MsgSetExoCoreAddrResponse {}
+
+

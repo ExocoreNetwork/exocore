@@ -1,0 +1,28 @@
+// Copyright Tharsis Labs Ltd.(Evmos)
+// SPDX-License-Identifier:ENCL-1.0(https://github.com/evmos/evmos/blob/main/LICENSE)
+syntax = "proto3";
+package exocore.deposit.v1;
+
+import "gogoproto/gogo.proto";
+import "google/api/annotations.proto";
+import "cosmos/query/v1/query.proto";
+import "cosmos_proto/cosmos.proto";
+
+option go_package = "github.com/exocore/x/deposit/types";
+
+message QueryStakerExCoreAddr {
+  string StakerId =1;
+}
+
+message QueryStakerExCoreAddrResponse{
+  string ExCoreAddr =1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+}
+
+service Query {
+  // Balance queries the balance of a single coin for a single account.
+  rpc GetStakerExoCoreAddr(QueryStakerExCoreAddr) returns (QueryStakerExCoreAddrResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/cosmos/deposit/v1/GetStakerExoCoreAddr/{StakerId}";
+  }
+}
+

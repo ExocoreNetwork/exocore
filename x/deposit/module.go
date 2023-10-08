@@ -3,16 +3,13 @@
 package deposit
 
 import (
-	"context"
-	"cosmossdk.io/math"
+	"cosmossdk.io/core/appmodule"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/codec"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 	simtypes "github.com/cosmos/cosmos-sdk/types/simulation"
-	"github.com/ethereum/go-ethereum/core"
-	ethtypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/exocore/x/deposit/keeper"
 	"github.com/exocore/x/deposit/types"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
@@ -62,7 +59,21 @@ func (b AppModuleBasic) GetQueryCmd() *cobra.Command {
 
 type AppModule struct {
 	AppModuleBasic
-	keeper *keeper.Keeper
+	keeper keeper.Keeper
+}
+
+var _ appmodule.AppModule = AppModule{}
+
+// IsOnePerModuleType implements the depinject.OnePerModuleType interface.
+func (am AppModule) IsOnePerModuleType() {}
+
+// IsAppModule implements the appmodule.AppModule interface.
+func (am AppModule) IsAppModule() {}
+
+// RegisterServices registers module services.
+func (am AppModule) RegisterServices(cfg module.Configurator) {
+	types.RegisterMsgServer(cfg.MsgServer(), &am.keeper)
+	types.RegisterQueryServer(cfg.QueryServer(), am.keeper)
 }
 
 func (am AppModule) GenerateGenesisState(input *module.SimulationState) {
@@ -78,17 +89,4 @@ func (am AppModule) RegisterStoreDecoder(registry sdk.StoreDecoderRegistry) {
 func (am AppModule) WeightedOperations(simState module.SimulationState) []simtypes.WeightedOperation {
 	//TODO implement me
 	panic("implement me")
-}
-
-// IDeposit interface will be implemented by deposit keeper
-type IDeposit interface {
-	// PostTxProcessing automatically call PostTxProcessing to update deposit state after receiving deposit event tx from layerZero protocol
-	PostTxProcessing(ctx sdk.Context, msg core.Message, receipt *ethtypes.Receipt) error
-
-	// SetReStakerExoCoreAddr handle the SetReStakerExoCoreAddr txs from msg service
-	SetReStakerExoCoreAddr(ctx context.Context, reStakerId string) (err error)
-	GetReStakerExoCoreAddr(reStakerId string) (addr sdk.Address, err error)
-
-	// Deposit internal func for PostTxProcessing
-	Deposit(reStakerId string, assetsInfo map[string]math.Uint) error
 }
