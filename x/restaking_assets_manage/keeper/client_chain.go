@@ -7,12 +7,12 @@ func (k Keeper) SetClientChainInfo(info *types2.ClientChainInfo) (exoCoreChainIn
 	panic("implement me")
 }
 
-func (k Keeper) GetClientChainInfoByIndex(index uint64) (info types2.ClientChainInfo, err error) {
+func (k Keeper) GetClientChainInfoByIndex(index uint64) (info *types2.ClientChainInfo, err error) {
 	//TODO implement me
 	panic("implement me")
 }
 
-func (k Keeper) GetAllClientChainInfo() (infos map[uint64]types2.ClientChainInfo, err error) {
+func (k Keeper) GetAllClientChainInfo() (infos map[uint64]*types2.ClientChainInfo, err error) {
 	//TODO implement me
 	panic("implement me")
 }

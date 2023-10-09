@@ -34,6 +34,8 @@ const (
 	prefixOperatorAssetInfos
 	prefixOperatorOptedInMiddleWareAssetInfos
 
+	prefixReStakerExocoreAddr
+
 	prefixReStakingAssetList
 	prefixReStakerAssetList
 	prefixOperatorAssetList
@@ -91,4 +93,8 @@ var (
 	// KeyPrefixOperatorOptedInMiddleWareAssetInfos key->value: operatorAddr+'_'+AssetId->mapping(middleWareAddr->struct{})
 	//or operatorAddr->mapping(AssetId->mapping(middleWareAddr->struct{})) ?
 	KeyPrefixOperatorOptedInMiddleWareAssetInfos = []byte{prefixOperatorOptedInMiddleWareAssetInfos}
+
+	// KeyPrefixReStakerExoCoreAddr reStakerId = clientChainAddr+'_'+ExoCoreChainIndex
+	// KeyPrefixReStakerExoCoreAddr key-value: reStakerId->exoCoreAddr
+	KeyPrefixReStakerExoCoreAddr = []byte{prefixReStakerExocoreAddr}
 )

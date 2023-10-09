@@ -80,6 +80,18 @@ type AppModule struct {
 	keeper keeper.Keeper
 }
 
+// IsOnePerModuleType implements the depinject.OnePerModuleType interface.
+func (am AppModule) IsOnePerModuleType() {}
+
+// IsAppModule implements the appmodule.AppModule interface.
+func (am AppModule) IsAppModule() {}
+
+// RegisterServices registers module services.
+func (am AppModule) RegisterServices(cfg module.Configurator) {
+	types2.RegisterMsgServer(cfg.MsgServer(), &am.keeper)
+	types2.RegisterQueryServer(cfg.QueryServer(), am.keeper)
+}
+
 func (am AppModule) InitGenesis(ctx sdk.Context, cdc codec.JSONCodec, data json.RawMessage) []abci.ValidatorUpdate {
 	var genesisState types2.GenesisState
 	cdc.MustUnmarshalJSON(data, &genesisState)

@@ -25,10 +25,6 @@ type IDeposit interface {
 	// PostTxProcessing automatically call PostTxProcessing to update deposit state after receiving deposit event tx from layerZero protocol
 	PostTxProcessing(ctx sdk.Context, msg core.Message, receipt *ethtypes.Receipt) error
 
-	// SetStakerExoCoreAddr handle the SetStakerExoCoreAddr txs from msg service
-	SetStakerExoCoreAddr(ctx sdk.Context, stakerId string) (err error)
-	GetStakerExoCoreAddr(stakerId string) (addr sdk.Address, err error)
-
 	// Deposit internal func for PostTxProcessing
 	Deposit(reStakerId string, assetsInfo map[string]math.Uint) error
 }

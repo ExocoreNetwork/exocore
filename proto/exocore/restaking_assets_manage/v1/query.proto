@@ -1,0 +1,124 @@
+// Copyright Tharsis Labs Ltd.(Evmos)
+// SPDX-License-Identifier:ENCL-1.0(https://github.com/evmos/evmos/blob/main/LICENSE)
+syntax = "proto3";
+package exocore.restaking_assets_manage.v1;
+
+import "gogoproto/gogo.proto";
+import "google/api/annotations.proto";
+import "cosmos/query/v1/query.proto";
+import "cosmos_proto/cosmos.proto";
+import "exocore/restaking_assets_manage/v1/tx.proto";
+
+option go_package = "github.com/exocore/x/restaking_assets_manage/types";
+
+message QueryClientChainInfo {
+  uint64 chainIndex = 1;
+}
+
+message QueryAllClientChainInfo{}
+message QueryAllClientChainInfoResponse{
+  map<uint64, ClientChainInfo> allClientChainInfos = 1;
+}
+
+message QueryStakingAssetInfo{
+  string assetId = 1;
+}
+
+message QueryAllStakingAssetsInfo{}
+message QueryAllStakingAssetsInfoResponse{
+  map<string, StakingAssetInfo> allStakingAssetsInfo = 1;
+}
+
+message QueryStakerAssetInfo{
+  string stakerId = 1;
+}
+message QueryAssetInfoResponse{
+  message ValueField {
+    string Amount = 1
+    [
+      (cosmos_proto.scalar) = "cosmos.Uint",
+      (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Uint",
+      (gogoproto.nullable) = false
+    ];
+  }
+  map<string, ValueField> assetAmounts = 1;
+}
+
+message QuerySpecifiedAssetAmountReq{
+  string stakerId = 1;
+  string assetId = 2;
+}
+
+message QuerySpecifiedAssetAmountReqResponse{
+  string Amount = 1
+  [
+    (cosmos_proto.scalar) = "cosmos.Uint",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Uint",
+    (gogoproto.nullable) = false
+  ];
+}
+
+message QueryOperatorAssetInfos{
+  string operatorAddr = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+}
+
+message QueryOperatorSpecifiedAssetAmountReq{
+  string operatorAddr = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+  string assetId = 2;
+}
+
+message QueryStakerExCoreAddr {
+  string StakerId = 1;
+}
+
+message QueryStakerExCoreAddrResponse{
+  string ExCoreAddr = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+}
+
+service Query {
+  // Balance queries the balance of a single coin for a single account.
+  rpc QueClientChainInfoByIndex(QueryClientChainInfo) returns (ClientChainInfo) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/cosmos/restaking_assets_manage/v1/QueClientChainInfoByIndex";
+  }
+  rpc QueAllClientChainInfo(QueryAllClientChainInfo) returns (QueryAllClientChainInfoResponse){
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/cosmos/restaking_assets_manage/v1/QueAllClientChainInfo";
+  }
+
+  rpc QueStakingAssetInfo(QueryStakingAssetInfo)returns(StakingAssetInfo){
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/cosmos/restaking_assets_manage/v1/QueStakingAssetInfo";
+  }
+
+  rpc QueAllStakingAssetsInfo(QueryAllStakingAssetsInfo)returns(QueryAllStakingAssetsInfoResponse){
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/cosmos/restaking_assets_manage/v1/QueAllStakingAssetsInfo";
+  }
+
+  rpc QueStakerAssetInfos(QueryStakerAssetInfo)returns(QueryAssetInfoResponse){
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/cosmos/restaking_assets_manage/v1/QueStakerAssetInfos";
+  }
+
+  rpc QueStakerSpecifiedAssetAmount(QuerySpecifiedAssetAmountReq)returns(QuerySpecifiedAssetAmountReqResponse){
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/cosmos/restaking_assets_manage/v1/QueStakerSpecifiedAssetAmount";
+  }
+
+  rpc QueOperatorAssetInfos(QueryOperatorAssetInfos)returns(QueryAssetInfoResponse){
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/cosmos/restaking_assets_manage/v1/QueOperatorAssetInfos";
+  }
+
+  rpc QueOperatorSpecifiedAssetAmount(QueryOperatorSpecifiedAssetAmountReq) returns(QuerySpecifiedAssetAmountReqResponse){
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/cosmos/restaking_assets_manage/v1/QueStakerSpecifiedAssetAmount";
+  }
+
+  rpc QueStakerExoCoreAddr(QueryStakerExCoreAddr) returns (QueryStakerExCoreAddrResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/cosmos/restaking_assets_manage/v1/QueStakerExoCoreAddr/{StakerId}";
+  }
+}
+

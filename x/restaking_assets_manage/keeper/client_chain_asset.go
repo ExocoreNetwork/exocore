@@ -7,12 +7,12 @@ func (k Keeper) SetStakingAssetInfo(info *types2.StakingAssetInfo) (exoCoreAsset
 	panic("implement me")
 }
 
-func (k Keeper) GetStakingAssetInfo(assetId string) (info types2.StakingAssetInfo, err error) {
+func (k Keeper) GetStakingAssetInfo(assetId string) (info *types2.StakingAssetInfo, err error) {
 	//TODO implement me
 	panic("implement me")
 }
 
-func (k Keeper) GetAllStakingAssetsInfo() (allAssets map[string]types2.StakingAssetInfo, err error) {
+func (k Keeper) GetAllStakingAssetsInfo() (allAssets map[string]*types2.StakingAssetInfo, err error) {
 	//TODO implement me
 	panic("implement me")
 }

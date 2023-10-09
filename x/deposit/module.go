@@ -3,7 +3,6 @@
 package deposit
 
 import (
-	"cosmossdk.io/core/appmodule"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/codec"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
@@ -62,8 +61,7 @@ type AppModule struct {
 	keeper keeper.Keeper
 }
 
-var _ appmodule.AppModule = AppModule{}
-
+/*
 // IsOnePerModuleType implements the depinject.OnePerModuleType interface.
 func (am AppModule) IsOnePerModuleType() {}
 
@@ -74,7 +72,7 @@ func (am AppModule) IsAppModule() {}
 func (am AppModule) RegisterServices(cfg module.Configurator) {
 	types.RegisterMsgServer(cfg.MsgServer(), &am.keeper)
 	types.RegisterQueryServer(cfg.QueryServer(), am.keeper)
-}
+}*/
 
 func (am AppModule) GenerateGenesisState(input *module.SimulationState) {
 	//TODO implement me

@@ -2,7 +2,7 @@ package keeper
 
 import "cosmossdk.io/math"
 
-func (k Keeper) GetStakerAssetInfos(reStakerId string) (assetsInfo map[string]math.Uint, err error) {
+func (k Keeper) GetStakerAssetInfos(stakerId string) (assetsInfo map[string]math.Uint, err error) {
 	//TODO implement me
 	panic("implement me")
 }

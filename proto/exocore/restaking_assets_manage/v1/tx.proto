@@ -3,8 +3,10 @@
 syntax = "proto3";
 package exocore.restaking_assets_manage.v1;
 
-import "gogoproto/gogo.proto";
+import "cosmos/msg/v1/msg.proto";
 import "cosmos_proto/cosmos.proto";
+import "gogoproto/gogo.proto";
+import "amino/amino.proto";
 
 option go_package = "github.com/exocore/x/restaking_assets_manage/types";
 
@@ -15,6 +17,7 @@ message ClientChainInfo {
   uint64 ExoCoreChainIndex = 4;
   uint64 FinalityNeedBlockDelay = 5;
   uint64 LayerZeroChainId = 6;
+  string SignatureType = 7;
 }
 
 message ClientChainTokenInfo {
@@ -24,8 +27,8 @@ message ClientChainTokenInfo {
   uint32 Decimals = 4;
   string TotalSupply = 5
   [
-    (cosmos_proto.scalar) = "cosmos.Int",
-    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (cosmos_proto.scalar) = "cosmos.Uint",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Uint",
     (gogoproto.nullable) = false
   ];
   uint64 LayerZeroChainId = 6;
@@ -37,8 +40,8 @@ message StakingAssetInfo {
   ClientChainTokenInfo AssetBasicInfo = 1;
   string StakingTotalAmount = 2
   [
-    (cosmos_proto.scalar) = "cosmos.Int",
-    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (cosmos_proto.scalar) = "cosmos.Uint",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Uint",
     (gogoproto.nullable) = false
   ];
 }
@@ -46,14 +49,14 @@ message StakingAssetInfo {
 message StakerSingleAssetInfo {
   string TotalDepositAmount = 1
   [
-    (cosmos_proto.scalar) = "cosmos.Int",
-    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (cosmos_proto.scalar) = "cosmos.Uint",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Uint",
     (gogoproto.nullable) = false
   ];
   string CanWithdrawAmount = 2
   [
-    (cosmos_proto.scalar) = "cosmos.Int",
-    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (cosmos_proto.scalar) = "cosmos.Uint",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Uint",
     (gogoproto.nullable) = false
   ];
 }
@@ -61,14 +64,36 @@ message StakerSingleAssetInfo {
 message OperatorSingleAssetInfo{
   string TotalAmount = 1
   [
-    (cosmos_proto.scalar) = "cosmos.Int",
-    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (cosmos_proto.scalar) = "cosmos.Uint",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Uint",
     (gogoproto.nullable) = false
   ];
   string OperatorOwnAmount = 2
   [
-    (cosmos_proto.scalar) = "cosmos.Int",
-    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (cosmos_proto.scalar) = "cosmos.Uint",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Uint",
     (gogoproto.nullable) = false
   ];
+}
+
+message MsgSetExoCoreAddr {
+  option (cosmos.msg.v1.signer) = "fromAddress";
+  option (amino.name) = "cosmos-sdk/MsgSetExoCoreAddr";
+
+  option (gogoproto.equal) = false;
+  option (gogoproto.goproto_getters) = false;
+
+  string   fromAddress = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+  string   setAddress = 2 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+  string   stakerId = 3;
+  string   StakerClientChainSignature = 4;
+}
+message MsgSetExoCoreAddrResponse {}
+
+service Msg {
+
+  option (cosmos.msg.v1.service) = true;
+
+  rpc SetStakerExoCoreAddr(MsgSetExoCoreAddr) returns (MsgSetExoCoreAddrResponse);
+
 }
