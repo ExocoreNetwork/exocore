@@ -1,0 +1,13 @@
+syntax = "proto3";
+package exocore.reward.v1beta1;
+
+
+
+message RefundMsgRequest {
+
+}
+
+message RefundMsgResponse {
+  bytes data = 1;
+  string log = 2;
+}
