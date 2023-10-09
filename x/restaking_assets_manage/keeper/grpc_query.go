@@ -9,11 +9,13 @@ import (
 )
 
 func (k Keeper) QueClientChainInfoByIndex(ctx context.Context, info *types2.QueryClientChainInfo) (*types2.ClientChainInfo, error) {
-	return k.GetClientChainInfoByIndex(info.ChainIndex)
+	c := sdk.UnwrapSDKContext(ctx)
+	return k.GetClientChainInfoByIndex(c, info.ChainIndex)
 }
 
 func (k Keeper) QueAllClientChainInfo(ctx context.Context, info *types2.QueryAllClientChainInfo) (*types2.QueryAllClientChainInfoResponse, error) {
-	allInfo, err := k.GetAllClientChainInfo()
+	c := sdk.UnwrapSDKContext(ctx)
+	allInfo, err := k.GetAllClientChainInfo(c)
 	if err != nil {
 		return nil, err
 	}
@@ -21,11 +23,13 @@ func (k Keeper) QueAllClientChainInfo(ctx context.Context, info *types2.QueryAll
 }
 
 func (k Keeper) QueStakingAssetInfo(ctx context.Context, info *types2.QueryStakingAssetInfo) (*types2.StakingAssetInfo, error) {
-	return k.GetStakingAssetInfo(info.AssetId)
+	c := sdk.UnwrapSDKContext(ctx)
+	return k.GetStakingAssetInfo(c, info.AssetId)
 }
 
 func (k Keeper) QueAllStakingAssetsInfo(ctx context.Context, info *types2.QueryAllStakingAssetsInfo) (*types2.QueryAllStakingAssetsInfoResponse, error) {
-	allInfo, err := k.GetAllStakingAssetsInfo()
+	c := sdk.UnwrapSDKContext(ctx)
+	allInfo, err := k.GetAllStakingAssetsInfo(c)
 	if err != nil {
 		return nil, err
 	}
@@ -33,7 +37,8 @@ func (k Keeper) QueAllStakingAssetsInfo(ctx context.Context, info *types2.QueryA
 }
 
 func (k Keeper) QueStakerAssetInfos(ctx context.Context, info *types2.QueryStakerAssetInfo) (*types2.QueryAssetInfoResponse, error) {
-	assetInfo, err := k.GetStakerAssetInfos(info.StakerId)
+	c := sdk.UnwrapSDKContext(ctx)
+	assetInfo, err := k.GetStakerAssetInfos(c, info.StakerId)
 	if err != nil {
 		return nil, err
 	}
@@ -47,7 +52,8 @@ func (k Keeper) QueStakerAssetInfos(ctx context.Context, info *types2.QueryStake
 }
 
 func (k Keeper) QueStakerSpecifiedAssetAmount(ctx context.Context, req *types2.QuerySpecifiedAssetAmountReq) (*types2.QuerySpecifiedAssetAmountReqResponse, error) {
-	amount, err := k.GetStakerSpecifiedAssetAmount(req.StakerId, req.AssetId)
+	c := sdk.UnwrapSDKContext(ctx)
+	amount, err := k.GetStakerSpecifiedAssetAmount(c, req.StakerId, req.AssetId)
 	if err != nil {
 		return nil, err
 	}
@@ -57,11 +63,12 @@ func (k Keeper) QueStakerSpecifiedAssetAmount(ctx context.Context, req *types2.Q
 }
 
 func (k Keeper) QueOperatorAssetInfos(ctx context.Context, infos *types2.QueryOperatorAssetInfos) (*types2.QueryAssetInfoResponse, error) {
+	c := sdk.UnwrapSDKContext(ctx)
 	addr, err := sdk.AccAddressFromBech32(infos.OperatorAddr)
 	if err != nil {
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
-	assetInfo, err := k.GetOperatorAssetInfos(addr)
+	assetInfo, err := k.GetOperatorAssetInfos(c, addr)
 	if err != nil {
 		return nil, err
 	}
@@ -75,11 +82,12 @@ func (k Keeper) QueOperatorAssetInfos(ctx context.Context, infos *types2.QueryOp
 }
 
 func (k Keeper) QueOperatorSpecifiedAssetAmount(ctx context.Context, req *types2.QueryOperatorSpecifiedAssetAmountReq) (*types2.QuerySpecifiedAssetAmountReqResponse, error) {
+	c := sdk.UnwrapSDKContext(ctx)
 	addr, err := sdk.AccAddressFromBech32(req.OperatorAddr)
 	if err != nil {
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
-	amount, err := k.GetOperatorSpecifiedAssetAmount(addr, req.AssetId)
+	amount, err := k.GetOperatorSpecifiedAssetAmount(c, addr, req.AssetId)
 	if err != nil {
 		return nil, err
 	}
@@ -89,7 +97,8 @@ func (k Keeper) QueOperatorSpecifiedAssetAmount(ctx context.Context, req *types2
 }
 
 func (k Keeper) QueStakerExoCoreAddr(ctx context.Context, req *types2.QueryStakerExCoreAddr) (*types2.QueryStakerExCoreAddrResponse, error) {
-	exoCoreAddr, err := k.GetStakerExoCoreAddr(ctx, req.StakerId)
+	c := sdk.UnwrapSDKContext(ctx)
+	exoCoreAddr, err := k.GetStakerExoCoreAddr(c, req.StakerId)
 	if err != nil {
 		return nil, err
 	}
