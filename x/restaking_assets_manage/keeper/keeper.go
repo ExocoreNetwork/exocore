@@ -3,6 +3,7 @@
 package keeper
 
 import (
+	"context"
 	"cosmossdk.io/math"
 	"github.com/cosmos/cosmos-sdk/codec"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
@@ -33,7 +34,7 @@ type IReStakingAssetsManage interface {
 
 	SetStakingAssetInfo(ctx sdk.Context, info *types2.StakingAssetInfo) (exoCoreAssetIndex uint64, err error)
 	GetStakingAssetInfo(ctx sdk.Context, assetId string) (info *types2.StakingAssetInfo, err error)
-	GetAllStakingAssetsInfo() (ctx sdk.Context, allAssets map[string]*types2.StakingAssetInfo, err error)
+	GetAllStakingAssetsInfo(ctx sdk.Context) (allAssets map[string]*types2.StakingAssetInfo, err error)
 
 	GetStakerAssetInfos(ctx sdk.Context, stakerId string) (assetsInfo map[string]math.Uint, err error)
 	GetStakerSpecifiedAssetAmount(ctx sdk.Context, stakerId string, assetId string) (amount math.Uint, err error)
@@ -46,7 +47,7 @@ type IReStakingAssetsManage interface {
 	DecreaseOperatorAssetsAmount(ctx sdk.Context, operatorAddr sdk.Address, assetsSubAmount map[string]math.Uint) (err error)
 
 	// SetStakerExoCoreAddr handle the SetStakerExoCoreAddr txs from msg service
-	SetStakerExoCoreAddr(ctx sdk.Context, addr *types2.MsgSetExoCoreAddr) (*types2.MsgSetExoCoreAddrResponse, error)
+	SetStakerExoCoreAddr(ctx context.Context, addr *types2.MsgSetExoCoreAddr) (*types2.MsgSetExoCoreAddrResponse, error)
 	GetStakerExoCoreAddr(ctx sdk.Context, stakerId string) (string, error)
 
 	// GetOperatorAssetOptedInMiddleWare :the following three interfaces can be implemented in operator optedIn module

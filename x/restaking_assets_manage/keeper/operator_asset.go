@@ -25,7 +25,7 @@ func (k Keeper) DecreaseOperatorAssetsAmount(ctx sdk.Context, operatorAddr sdk.A
 	panic("implement me")
 }
 
-func (k Keeper) GetOperatorAssetOptedInMiddleWare(ctx sdk.Context, operatorAddr sdk.Address, assetId string) (middleWares []sdk.Address, err error) {
+func (k Keeper) GetOperatorAssetOptedInMiddleWare(operatorAddr sdk.Address, assetId string) (middleWares []sdk.Address, err error) {
 	//TODO implement me
 	panic("implement me")
 }
