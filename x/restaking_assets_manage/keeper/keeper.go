@@ -28,11 +28,11 @@ func (k Keeper) SetOperatorAssetOptedInMiddleWare(operatorAddr sdk.Address, setI
 
 // IReStakingAssetsManage interface will be implemented by restaking_assets_manage keeper
 type IReStakingAssetsManage interface {
-	SetClientChainInfo(ctx sdk.Context, info *types2.ClientChainInfo) (exoCoreChainIndex uint64, err error)
+	SetClientChainInfo(ctx sdk.Context, info *types2.ClientChainInfo) (err error)
 	GetClientChainInfoByIndex(ctx sdk.Context, index uint64) (info *types2.ClientChainInfo, err error)
 	GetAllClientChainInfo(ctx sdk.Context) (infos map[uint64]*types2.ClientChainInfo, err error)
 
-	SetStakingAssetInfo(ctx sdk.Context, info *types2.StakingAssetInfo) (exoCoreAssetIndex uint64, err error)
+	SetStakingAssetInfo(ctx sdk.Context, info *types2.StakingAssetInfo) (err error)
 	GetStakingAssetInfo(ctx sdk.Context, assetId string) (info *types2.StakingAssetInfo, err error)
 	GetAllStakingAssetsInfo(ctx sdk.Context) (allAssets map[string]*types2.StakingAssetInfo, err error)
 

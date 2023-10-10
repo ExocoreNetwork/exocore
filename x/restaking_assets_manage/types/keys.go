@@ -36,6 +36,8 @@ const (
 
 	prefixReStakerExocoreAddr
 
+	prefixReStakerExocoreAddrReverse
+
 	prefixReStakingAssetList
 	prefixReStakerAssetList
 	prefixOperatorAssetList
@@ -97,4 +99,7 @@ var (
 	// KeyPrefixReStakerExoCoreAddr reStakerId = clientChainAddr+'_'+ExoCoreChainIndex
 	// KeyPrefixReStakerExoCoreAddr key-value: reStakerId->exoCoreAddr
 	KeyPrefixReStakerExoCoreAddr = []byte{prefixReStakerExocoreAddr}
+	//KeyPrefixReStakerExoCoreAddrReverse k->v: exocoreAddress -> map[clientChainIndex]clientChainAddress
+	// used to retrieve all user assets based on their exoCore address
+	KeyPrefixReStakerExoCoreAddrReverse = []byte{prefixReStakerExocoreAddrReverse}
 )
