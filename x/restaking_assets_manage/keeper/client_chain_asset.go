@@ -10,7 +10,6 @@ import (
 
 // SetStakingAssetInfo todo: Temporarily use clientChainAssetAddr+'_'+layerZeroChainId as the key.
 func (k Keeper) SetStakingAssetInfo(ctx sdk.Context, info *types2.StakingAssetInfo) (err error) {
-	//TODO implement me
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types2.KeyPrefixReStakingAssetInfo)
 	//key := common.HexToAddress(incentive.Contract)
 	bz := k.cdc.MustMarshal(info)

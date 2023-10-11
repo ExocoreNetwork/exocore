@@ -14,15 +14,15 @@ message DelegatedSingleAssetInfo {
   string AssetId = 1;
   string TotalDelegatedAmount = 2
   [
-    (cosmos_proto.scalar) = "cosmos.Uint",
-    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Uint",
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
     (gogoproto.nullable) = false
   ];
   message ValueField {
     string Amount = 1
     [
-      (cosmos_proto.scalar) = "cosmos.Uint",
-      (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Uint",
+      (cosmos_proto.scalar) = "cosmos.Int",
+      (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
       (gogoproto.nullable) = false
     ];
   }
@@ -62,8 +62,8 @@ message DelegationIncOrDecInfo{
   message ValueField {
     string Amount = 1
     [
-      (cosmos_proto.scalar) = "cosmos.Uint",
-      (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Uint",
+      (cosmos_proto.scalar) = "cosmos.Int",
+      (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
       (gogoproto.nullable) = false
     ];
   }

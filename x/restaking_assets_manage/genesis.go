@@ -51,13 +51,14 @@ func InitGenesis(
 ) {
 	//todo: might need to sort the clientChains and tokens before handling.
 
+	c := sdk.UnwrapSDKContext(ctx)
 	//save default supported client chain
 	for _, chain := range data.DefaultSupportedClientChains {
-		k.SetClientChainInfo(chain)
+		k.SetClientChainInfo(c, chain)
 	}
 	//save default supported client chain assets
 	for _, asset := range data.DefaultSupportedClientChainTokens {
-		k.SetStakingAssetInfo(&types2.StakingAssetInfo{
+		k.SetStakingAssetInfo(c, &types2.StakingAssetInfo{
 			AssetBasicInfo:     asset,
 			StakingTotalAmount: math.NewUint(0),
 		})
@@ -67,13 +68,14 @@ func InitGenesis(
 // ExportGenesis export module status
 func ExportGenesis(ctx sdk.Context, k keeper.Keeper) *types2.GenesisState {
 	clientChainList := make([]*types2.ClientChainInfo, 0)
-	clientChainInfo, _ := k.GetAllClientChainInfo()
+	c := sdk.UnwrapSDKContext(ctx)
+	clientChainInfo, _ := k.GetAllClientChainInfo(c)
 	for _, v := range clientChainInfo {
 		clientChainList = append(clientChainList, v)
 	}
 
 	clientChainAssetsList := make([]*types2.ClientChainTokenInfo, 0)
-	clientChainAssets, _ := k.GetAllStakingAssetsInfo()
+	clientChainAssets, _ := k.GetAllStakingAssetsInfo(c)
 	for _, v := range clientChainAssets {
 		clientChainAssetsList = append(clientChainAssetsList, v.AssetBasicInfo)
 	}

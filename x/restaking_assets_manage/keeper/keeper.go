@@ -36,10 +36,9 @@ type IReStakingAssetsManage interface {
 	GetStakingAssetInfo(ctx sdk.Context, assetId string) (info *types2.StakingAssetInfo, err error)
 	GetAllStakingAssetsInfo(ctx sdk.Context) (allAssets map[string]*types2.StakingAssetInfo, err error)
 
-	GetStakerAssetInfos(ctx sdk.Context, stakerId string) (assetsInfo map[string]math.Uint, err error)
-	GetStakerSpecifiedAssetAmount(ctx sdk.Context, stakerId string, assetId string) (amount math.Uint, err error)
-	IncreaseStakerAssetsAmount(ctx sdk.Context, stakerId string, assetsAddAmount map[string]math.Uint) (err error)
-	DecreaseStakerAssetsAmount(ctx sdk.Context, stakerId string, assetsSubAmount map[string]math.Uint) (err error)
+	GetStakerAssetInfos(ctx sdk.Context, stakerId string) (assetsInfo map[string]*types2.StakerSingleAssetInfo, err error)
+	GetStakerSpecifiedAssetInfo(ctx sdk.Context, stakerId string, assetId string) (info *types2.StakerSingleAssetInfo, err error)
+	UpdateStakerAssetsState(ctx sdk.Context, stakerId string, assetsUpdate map[string]types2.StakerSingleAssetInfo) (err error)
 
 	GetOperatorAssetInfos(ctx sdk.Context, operatorAddr sdk.Address) (assetsInfo map[string]math.Uint, err error)
 	GetOperatorSpecifiedAssetAmount(ctx sdk.Context, operatorAddr sdk.Address, assetId string) (amount math.Uint, err error)

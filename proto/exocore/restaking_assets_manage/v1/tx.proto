@@ -27,8 +27,8 @@ message ClientChainTokenInfo {
   uint32 Decimals = 4;
   string TotalSupply = 5
   [
-    (cosmos_proto.scalar) = "cosmos.Uint",
-    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Uint",
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
     (gogoproto.nullable) = false
   ];
   uint64 LayerZeroChainId = 6;
@@ -40,8 +40,8 @@ message StakingAssetInfo {
   ClientChainTokenInfo AssetBasicInfo = 1;
   string StakingTotalAmount = 2
   [
-    (cosmos_proto.scalar) = "cosmos.Uint",
-    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Uint",
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
     (gogoproto.nullable) = false
   ];
 }
@@ -49,31 +49,39 @@ message StakingAssetInfo {
 message StakerSingleAssetInfo {
   string TotalDepositAmount = 1
   [
-    (cosmos_proto.scalar) = "cosmos.Uint",
-    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Uint",
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
     (gogoproto.nullable) = false
   ];
   string CanWithdrawAmount = 2
   [
-    (cosmos_proto.scalar) = "cosmos.Uint",
-    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Uint",
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
     (gogoproto.nullable) = false
   ];
+}
+
+message StakerAllAssetsInfo {
+  map<string, StakerSingleAssetInfo> allAssetsState = 1;
 }
 
 message OperatorSingleAssetInfo{
   string TotalAmount = 1
   [
-    (cosmos_proto.scalar) = "cosmos.Uint",
-    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Uint",
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
     (gogoproto.nullable) = false
   ];
   string OperatorOwnAmount = 2
   [
-    (cosmos_proto.scalar) = "cosmos.Uint",
-    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Uint",
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
     (gogoproto.nullable) = false
   ];
+}
+
+message OperatorAllAssetsInfo {
+  map<string, OperatorSingleAssetInfo> allAssetsState = 1;
 }
 
 message MsgSetExoCoreAddr {

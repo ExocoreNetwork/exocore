@@ -26,7 +26,7 @@ func (k Keeper) SetStakerExoCoreAddr(ctx context.Context, addrInfo *types2.MsgSe
 	key := strings.Join([]string{addrInfo.ClientChainAddr, hexutil.EncodeUint64(addrInfo.ClientChainIndex)}, "_")
 	store.Set([]byte(key), bz)
 
-	//save to KeyPrefixReStakerExoCoreAddrReverse
+	//todo: save to KeyPrefixReStakerExoCoreAddrReverse
 
 	return &types2.MsgSetExoCoreAddrResponse{}, nil
 }
