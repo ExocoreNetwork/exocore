@@ -5,6 +5,7 @@ package types
 import (
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	"github.com/ethereum/go-ethereum/common"
+	"strings"
 )
 
 // constants
@@ -103,3 +104,7 @@ var (
 	// used to retrieve all user assets based on their exoCore address
 	KeyPrefixReStakerExoCoreAddrReverse = []byte{prefixReStakerExocoreAddrReverse}
 )
+
+func GetAssetStateKey(stakerId, assetId string) []byte {
+	return []byte(strings.Join([]string{stakerId, assetId}, "_"))
+}

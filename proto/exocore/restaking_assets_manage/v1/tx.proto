@@ -46,14 +46,14 @@ message StakingAssetInfo {
   ];
 }
 
-message StakerSingleAssetInfo {
-  string TotalDepositAmount = 1
+message StakerSingleAssetOrChangeInfo {
+  string TotalDepositAmountOrWantChangeValue = 1
   [
     (cosmos_proto.scalar) = "cosmos.Int",
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
     (gogoproto.nullable) = false
   ];
-  string CanWithdrawAmount = 2
+  string CanWithdrawAmountOrWantChangeValue = 2
   [
     (cosmos_proto.scalar) = "cosmos.Int",
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
@@ -62,17 +62,17 @@ message StakerSingleAssetInfo {
 }
 
 message StakerAllAssetsInfo {
-  map<string, StakerSingleAssetInfo> allAssetsState = 1;
+  map<string, StakerSingleAssetOrChangeInfo> allAssetsState = 1;
 }
 
-message OperatorSingleAssetInfo{
-  string TotalAmount = 1
+message OperatorSingleAssetOrChangeInfo{
+  string TotalAmountOrWantChangeValue = 1
   [
     (cosmos_proto.scalar) = "cosmos.Int",
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
     (gogoproto.nullable) = false
   ];
-  string OperatorOwnAmount = 2
+  string OperatorOwnAmountOrWantChangeValue = 2
   [
     (cosmos_proto.scalar) = "cosmos.Int",
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
@@ -81,12 +81,12 @@ message OperatorSingleAssetInfo{
 }
 
 message OperatorAllAssetsInfo {
-  map<string, OperatorSingleAssetInfo> allAssetsState = 1;
+  map<string, OperatorSingleAssetOrChangeInfo> allAssetsState = 1;
 }
 
 message MsgSetExoCoreAddr {
   option (cosmos.msg.v1.signer) = "fromAddress";
-  option (amino.name) = "cosmos-sdk/MsgSetExoCoreAddr";
+  option (amino.name) = "exocore/MsgSetExoCoreAddr";
 
   option (gogoproto.equal) = false;
   option (gogoproto.goproto_getters) = false;

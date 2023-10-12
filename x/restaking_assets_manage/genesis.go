@@ -60,7 +60,7 @@ func InitGenesis(
 	for _, asset := range data.DefaultSupportedClientChainTokens {
 		k.SetStakingAssetInfo(c, &types2.StakingAssetInfo{
 			AssetBasicInfo:     asset,
-			StakingTotalAmount: math.NewUint(0),
+			StakingTotalAmount: math.NewInt(0),
 		})
 	}
 }

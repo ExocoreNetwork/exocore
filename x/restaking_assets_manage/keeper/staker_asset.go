@@ -8,18 +8,14 @@ import (
 	"strings"
 )
 
-func GetStakerAssetStateKey(stakerId, assetId string) []byte {
-	return []byte(strings.Join([]string{stakerId, assetId}, "_"))
-}
-
-func (k Keeper) GetStakerAssetInfos(ctx sdk.Context, stakerId string) (assetsInfo map[string]*types2.StakerSingleAssetInfo, err error) {
+func (k Keeper) GetStakerAssetInfos(ctx sdk.Context, stakerId string) (assetsInfo map[string]*types2.StakerSingleAssetOrChangeInfo, err error) {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types2.KeyPrefixReStakerAssetInfos)
-	iterator := sdk.KVStorePrefixIterator(store, types2.KeyPrefixReStakerAssetInfos)
+	iterator := sdk.KVStorePrefixIterator(store, []byte(stakerId))
 	defer iterator.Close()
 
-	ret := make(map[string]*types2.StakerSingleAssetInfo, 0)
+	ret := make(map[string]*types2.StakerSingleAssetOrChangeInfo, 0)
 	for ; iterator.Valid(); iterator.Next() {
-		var stateInfo types2.StakerSingleAssetInfo
+		var stateInfo types2.StakerSingleAssetOrChangeInfo
 		k.cdc.MustUnmarshal(iterator.Value(), &stateInfo)
 		stringList := strings.SplitAfter(string(iterator.Key()), "_")
 		assetId := stringList[len(stringList)-1]
@@ -28,9 +24,9 @@ func (k Keeper) GetStakerAssetInfos(ctx sdk.Context, stakerId string) (assetsInf
 	return ret, nil
 }
 
-func (k Keeper) GetStakerSpecifiedAssetInfo(ctx sdk.Context, stakerId string, assetId string) (info *types2.StakerSingleAssetInfo, err error) {
+func (k Keeper) GetStakerSpecifiedAssetInfo(ctx sdk.Context, stakerId string, assetId string) (info *types2.StakerSingleAssetOrChangeInfo, err error) {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types2.KeyPrefixReStakerAssetInfos)
-	key := GetStakerAssetStateKey(stakerId, assetId)
+	key := types2.GetAssetStateKey(stakerId, assetId)
 	ifExist := store.Has(key)
 	if !ifExist {
 		return nil, types2.ErrNoStakerAssetKey
@@ -38,38 +34,46 @@ func (k Keeper) GetStakerSpecifiedAssetInfo(ctx sdk.Context, stakerId string, as
 
 	value := store.Get(key)
 
-	ret := types2.StakerSingleAssetInfo{}
+	ret := types2.StakerSingleAssetOrChangeInfo{}
 	k.cdc.MustUnmarshal(value, &ret)
 	return &ret, nil
 }
 
-func (k Keeper) UpdateStakerAssetsState(ctx sdk.Context, stakerId string, assetsUpdate map[string]types2.StakerSingleAssetInfo) (err error) {
+func (k Keeper) UpdateStakerAssetsState(ctx sdk.Context, stakerId string, assetsUpdate map[string]types2.StakerSingleAssetOrChangeInfo) (err error) {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types2.KeyPrefixReStakerAssetInfos)
 	for assetId, changeAmount := range assetsUpdate {
-		key := GetStakerAssetStateKey(stakerId, assetId)
+		key := types2.GetAssetStateKey(stakerId, assetId)
 		isExit := store.Has(key)
-		assetState := types2.StakerSingleAssetInfo{
-			TotalDepositAmount: math.NewInt(0),
-			CanWithdrawAmount:  math.NewInt(0),
+		assetState := types2.StakerSingleAssetOrChangeInfo{
+			TotalDepositAmountOrWantChangeValue: math.NewInt(0),
+			CanWithdrawAmountOrWantChangeValue:  math.NewInt(0),
 		}
 		if isExit {
 			value := store.Get(key)
 			k.cdc.MustUnmarshal(value, &assetState)
 		}
 
-		if changeAmount.TotalDepositAmount.IsZero() && changeAmount.CanWithdrawAmount.IsZero() {
+		if changeAmount.TotalDepositAmountOrWantChangeValue.IsZero() && changeAmount.CanWithdrawAmountOrWantChangeValue.IsZero() {
 			return types2.ErrInputUpdateStateIsZero
 		}
 
-		if changeAmount.TotalDepositAmount.IsNegative() {
-			if assetState.TotalDepositAmount.LT(changeAmount.TotalDepositAmount.Abs()) {
+		if changeAmount.TotalDepositAmountOrWantChangeValue.IsNegative() {
+			if assetState.TotalDepositAmountOrWantChangeValue.LT(changeAmount.TotalDepositAmountOrWantChangeValue.Abs()) {
 				return types2.ErrSubDepositAmountIsMoreThanOrigin
 			}
 		}
-		if changeAmount.CanWithdrawAmount.IsNegative() {
-			if assetState.CanWithdrawAmount.LT(changeAmount.CanWithdrawAmount.Abs()) {
+		if changeAmount.CanWithdrawAmountOrWantChangeValue.IsNegative() {
+			if assetState.CanWithdrawAmountOrWantChangeValue.LT(changeAmount.CanWithdrawAmountOrWantChangeValue.Abs()) {
 				return types2.ErrSubCanWithdrawAmountIsMoreThanOrigin
 			}
+		}
+
+		if !changeAmount.TotalDepositAmountOrWantChangeValue.IsZero() {
+			assetState.TotalDepositAmountOrWantChangeValue.Add(changeAmount.TotalDepositAmountOrWantChangeValue)
+		}
+
+		if !changeAmount.CanWithdrawAmountOrWantChangeValue.IsZero() {
+			assetState.CanWithdrawAmountOrWantChangeValue.Add(changeAmount.CanWithdrawAmountOrWantChangeValue)
 		}
 
 		bz := k.cdc.MustMarshal(&assetState)

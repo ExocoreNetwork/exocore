@@ -38,62 +38,38 @@ func (k Keeper) QueAllStakingAssetsInfo(ctx context.Context, info *types2.QueryA
 
 func (k Keeper) QueStakerAssetInfos(ctx context.Context, info *types2.QueryStakerAssetInfo) (*types2.QueryAssetInfoResponse, error) {
 	c := sdk.UnwrapSDKContext(ctx)
-	assetInfo, err := k.GetStakerAssetInfos(c, info.StakerId)
+	assetInfos, err := k.GetStakerAssetInfos(c, info.StakerId)
 	if err != nil {
 		return nil, err
 	}
-	response := &types2.QueryAssetInfoResponse{AssetAmounts: make(map[string]*types2.QueryAssetInfoResponse_ValueField, 0)}
-	for k, v := range assetInfo {
-		response.AssetAmounts[k] = &types2.QueryAssetInfoResponse_ValueField{
-			Amount: v,
-		}
-	}
-	return response, nil
+	return &types2.QueryAssetInfoResponse{AssetInfos: assetInfos}, nil
 }
 
-func (k Keeper) QueStakerSpecifiedAssetAmount(ctx context.Context, req *types2.QuerySpecifiedAssetAmountReq) (*types2.QuerySpecifiedAssetAmountReqResponse, error) {
+func (k Keeper) QueStakerSpecifiedAssetAmount(ctx context.Context, req *types2.QuerySpecifiedAssetAmountReq) (*types2.StakerSingleAssetOrChangeInfo, error) {
 	c := sdk.UnwrapSDKContext(ctx)
-	amount, err := k.GetStakerSpecifiedAssetAmount(c, req.StakerId, req.AssetId)
-	if err != nil {
-		return nil, err
-	}
-	return &types2.QuerySpecifiedAssetAmountReqResponse{
-		Amount: amount,
-	}, nil
+	return k.GetStakerSpecifiedAssetInfo(c, req.StakerId, req.AssetId)
 }
 
-func (k Keeper) QueOperatorAssetInfos(ctx context.Context, infos *types2.QueryOperatorAssetInfos) (*types2.QueryAssetInfoResponse, error) {
+func (k Keeper) QueOperatorAssetInfos(ctx context.Context, infos *types2.QueryOperatorAssetInfos) (*types2.QueryOperatorAssetInfosResponse, error) {
 	c := sdk.UnwrapSDKContext(ctx)
 	addr, err := sdk.AccAddressFromBech32(infos.OperatorAddr)
 	if err != nil {
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
-	assetInfo, err := k.GetOperatorAssetInfos(c, addr)
+	assetInfos, err := k.GetOperatorAssetInfos(c, addr)
 	if err != nil {
 		return nil, err
 	}
-	response := &types2.QueryAssetInfoResponse{AssetAmounts: make(map[string]*types2.QueryAssetInfoResponse_ValueField, 0)}
-	for k, v := range assetInfo {
-		response.AssetAmounts[k] = &types2.QueryAssetInfoResponse_ValueField{
-			Amount: v,
-		}
-	}
-	return response, nil
+	return &types2.QueryOperatorAssetInfosResponse{AssetInfos: assetInfos}, nil
 }
 
-func (k Keeper) QueOperatorSpecifiedAssetAmount(ctx context.Context, req *types2.QueryOperatorSpecifiedAssetAmountReq) (*types2.QuerySpecifiedAssetAmountReqResponse, error) {
+func (k Keeper) QueOperatorSpecifiedAssetAmount(ctx context.Context, req *types2.QueryOperatorSpecifiedAssetAmountReq) (*types2.OperatorSingleAssetOrChangeInfo, error) {
 	c := sdk.UnwrapSDKContext(ctx)
 	addr, err := sdk.AccAddressFromBech32(req.OperatorAddr)
 	if err != nil {
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
-	amount, err := k.GetOperatorSpecifiedAssetAmount(c, addr, req.AssetId)
-	if err != nil {
-		return nil, err
-	}
-	return &types2.QuerySpecifiedAssetAmountReqResponse{
-		Amount: amount,
-	}, nil
+	return k.GetOperatorSpecifiedAssetInfo(c, addr, req.AssetId)
 }
 
 func (k Keeper) QueStakerExoCoreAddr(ctx context.Context, req *types2.QueryStakerExCoreAddr) (*types2.QueryStakerExCoreAddrResponse, error) {

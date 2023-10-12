@@ -7,7 +7,6 @@ import (
 	context "context"
 	fmt "fmt"
 	_ "github.com/cosmos/cosmos-proto"
-	github_com_cosmos_cosmos_sdk_types "github.com/cosmos/cosmos-sdk/types"
 	_ "github.com/cosmos/cosmos-sdk/types/query"
 	_ "github.com/cosmos/gogoproto/gogoproto"
 	grpc1 "github.com/cosmos/gogoproto/grpc"
@@ -325,7 +324,7 @@ func (m *QueryStakerAssetInfo) GetStakerId() string {
 }
 
 type QueryAssetInfoResponse struct {
-	AssetAmounts map[string]*QueryAssetInfoResponse_ValueField `protobuf:"bytes,1,rep,name=assetAmounts,proto3" json:"assetAmounts,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
+	AssetInfos map[string]*StakerSingleAssetOrChangeInfo `protobuf:"bytes,1,rep,name=assetInfos,proto3" json:"assetInfos,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
 }
 
 func (m *QueryAssetInfoResponse) Reset()         { *m = QueryAssetInfoResponse{} }
@@ -361,49 +360,12 @@ func (m *QueryAssetInfoResponse) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_QueryAssetInfoResponse proto.InternalMessageInfo
 
-func (m *QueryAssetInfoResponse) GetAssetAmounts() map[string]*QueryAssetInfoResponse_ValueField {
+func (m *QueryAssetInfoResponse) GetAssetInfos() map[string]*StakerSingleAssetOrChangeInfo {
 	if m != nil {
-		return m.AssetAmounts
+		return m.AssetInfos
 	}
 	return nil
 }
-
-type QueryAssetInfoResponse_ValueField struct {
-	Amount github_com_cosmos_cosmos_sdk_types.Int `protobuf:"bytes,1,opt,name=Amount,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Int" json:"Amount"`
-}
-
-func (m *QueryAssetInfoResponse_ValueField) Reset()         { *m = QueryAssetInfoResponse_ValueField{} }
-func (m *QueryAssetInfoResponse_ValueField) String() string { return proto.CompactTextString(m) }
-func (*QueryAssetInfoResponse_ValueField) ProtoMessage()    {}
-func (*QueryAssetInfoResponse_ValueField) Descriptor() ([]byte, []int) {
-	return fileDescriptor_6d13900d4f268106, []int{7, 0}
-}
-func (m *QueryAssetInfoResponse_ValueField) XXX_Unmarshal(b []byte) error {
-	return m.Unmarshal(b)
-}
-func (m *QueryAssetInfoResponse_ValueField) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	if deterministic {
-		return xxx_messageInfo_QueryAssetInfoResponse_ValueField.Marshal(b, m, deterministic)
-	} else {
-		b = b[:cap(b)]
-		n, err := m.MarshalToSizedBuffer(b)
-		if err != nil {
-			return nil, err
-		}
-		return b[:n], nil
-	}
-}
-func (m *QueryAssetInfoResponse_ValueField) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_QueryAssetInfoResponse_ValueField.Merge(m, src)
-}
-func (m *QueryAssetInfoResponse_ValueField) XXX_Size() int {
-	return m.Size()
-}
-func (m *QueryAssetInfoResponse_ValueField) XXX_DiscardUnknown() {
-	xxx_messageInfo_QueryAssetInfoResponse_ValueField.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_QueryAssetInfoResponse_ValueField proto.InternalMessageInfo
 
 type QuerySpecifiedAssetAmountReq struct {
 	StakerId string `protobuf:"bytes,1,opt,name=stakerId,proto3" json:"stakerId,omitempty"`
@@ -457,43 +419,6 @@ func (m *QuerySpecifiedAssetAmountReq) GetAssetId() string {
 	return ""
 }
 
-type QuerySpecifiedAssetAmountReqResponse struct {
-	Amount github_com_cosmos_cosmos_sdk_types.Int `protobuf:"bytes,1,opt,name=Amount,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Int" json:"Amount"`
-}
-
-func (m *QuerySpecifiedAssetAmountReqResponse) Reset()         { *m = QuerySpecifiedAssetAmountReqResponse{} }
-func (m *QuerySpecifiedAssetAmountReqResponse) String() string { return proto.CompactTextString(m) }
-func (*QuerySpecifiedAssetAmountReqResponse) ProtoMessage()    {}
-func (*QuerySpecifiedAssetAmountReqResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_6d13900d4f268106, []int{9}
-}
-func (m *QuerySpecifiedAssetAmountReqResponse) XXX_Unmarshal(b []byte) error {
-	return m.Unmarshal(b)
-}
-func (m *QuerySpecifiedAssetAmountReqResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	if deterministic {
-		return xxx_messageInfo_QuerySpecifiedAssetAmountReqResponse.Marshal(b, m, deterministic)
-	} else {
-		b = b[:cap(b)]
-		n, err := m.MarshalToSizedBuffer(b)
-		if err != nil {
-			return nil, err
-		}
-		return b[:n], nil
-	}
-}
-func (m *QuerySpecifiedAssetAmountReqResponse) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_QuerySpecifiedAssetAmountReqResponse.Merge(m, src)
-}
-func (m *QuerySpecifiedAssetAmountReqResponse) XXX_Size() int {
-	return m.Size()
-}
-func (m *QuerySpecifiedAssetAmountReqResponse) XXX_DiscardUnknown() {
-	xxx_messageInfo_QuerySpecifiedAssetAmountReqResponse.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_QuerySpecifiedAssetAmountReqResponse proto.InternalMessageInfo
-
 type QueryOperatorAssetInfos struct {
 	OperatorAddr string `protobuf:"bytes,1,opt,name=operatorAddr,proto3" json:"operatorAddr,omitempty"`
 }
@@ -502,7 +427,7 @@ func (m *QueryOperatorAssetInfos) Reset()         { *m = QueryOperatorAssetInfos
 func (m *QueryOperatorAssetInfos) String() string { return proto.CompactTextString(m) }
 func (*QueryOperatorAssetInfos) ProtoMessage()    {}
 func (*QueryOperatorAssetInfos) Descriptor() ([]byte, []int) {
-	return fileDescriptor_6d13900d4f268106, []int{10}
+	return fileDescriptor_6d13900d4f268106, []int{9}
 }
 func (m *QueryOperatorAssetInfos) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -536,6 +461,50 @@ func (m *QueryOperatorAssetInfos) GetOperatorAddr() string {
 		return m.OperatorAddr
 	}
 	return ""
+}
+
+type QueryOperatorAssetInfosResponse struct {
+	AssetInfos map[string]*OperatorSingleAssetOrChangeInfo `protobuf:"bytes,1,rep,name=assetInfos,proto3" json:"assetInfos,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
+}
+
+func (m *QueryOperatorAssetInfosResponse) Reset()         { *m = QueryOperatorAssetInfosResponse{} }
+func (m *QueryOperatorAssetInfosResponse) String() string { return proto.CompactTextString(m) }
+func (*QueryOperatorAssetInfosResponse) ProtoMessage()    {}
+func (*QueryOperatorAssetInfosResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_6d13900d4f268106, []int{10}
+}
+func (m *QueryOperatorAssetInfosResponse) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QueryOperatorAssetInfosResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryOperatorAssetInfosResponse.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QueryOperatorAssetInfosResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryOperatorAssetInfosResponse.Merge(m, src)
+}
+func (m *QueryOperatorAssetInfosResponse) XXX_Size() int {
+	return m.Size()
+}
+func (m *QueryOperatorAssetInfosResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryOperatorAssetInfosResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryOperatorAssetInfosResponse proto.InternalMessageInfo
+
+func (m *QueryOperatorAssetInfosResponse) GetAssetInfos() map[string]*OperatorSingleAssetOrChangeInfo {
+	if m != nil {
+		return m.AssetInfos
+	}
+	return nil
 }
 
 type QueryOperatorSpecifiedAssetAmountReq struct {
@@ -689,11 +658,11 @@ func init() {
 	proto.RegisterMapType((map[string]*StakingAssetInfo)(nil), "exocore.restaking_assets_manage.v1.QueryAllStakingAssetsInfoResponse.AllStakingAssetsInfoEntry")
 	proto.RegisterType((*QueryStakerAssetInfo)(nil), "exocore.restaking_assets_manage.v1.QueryStakerAssetInfo")
 	proto.RegisterType((*QueryAssetInfoResponse)(nil), "exocore.restaking_assets_manage.v1.QueryAssetInfoResponse")
-	proto.RegisterMapType((map[string]*QueryAssetInfoResponse_ValueField)(nil), "exocore.restaking_assets_manage.v1.QueryAssetInfoResponse.AssetAmountsEntry")
-	proto.RegisterType((*QueryAssetInfoResponse_ValueField)(nil), "exocore.restaking_assets_manage.v1.QueryAssetInfoResponse.ValueField")
+	proto.RegisterMapType((map[string]*StakerSingleAssetOrChangeInfo)(nil), "exocore.restaking_assets_manage.v1.QueryAssetInfoResponse.AssetInfosEntry")
 	proto.RegisterType((*QuerySpecifiedAssetAmountReq)(nil), "exocore.restaking_assets_manage.v1.QuerySpecifiedAssetAmountReq")
-	proto.RegisterType((*QuerySpecifiedAssetAmountReqResponse)(nil), "exocore.restaking_assets_manage.v1.QuerySpecifiedAssetAmountReqResponse")
 	proto.RegisterType((*QueryOperatorAssetInfos)(nil), "exocore.restaking_assets_manage.v1.QueryOperatorAssetInfos")
+	proto.RegisterType((*QueryOperatorAssetInfosResponse)(nil), "exocore.restaking_assets_manage.v1.QueryOperatorAssetInfosResponse")
+	proto.RegisterMapType((map[string]*OperatorSingleAssetOrChangeInfo)(nil), "exocore.restaking_assets_manage.v1.QueryOperatorAssetInfosResponse.AssetInfosEntry")
 	proto.RegisterType((*QueryOperatorSpecifiedAssetAmountReq)(nil), "exocore.restaking_assets_manage.v1.QueryOperatorSpecifiedAssetAmountReq")
 	proto.RegisterType((*QueryStakerExCoreAddr)(nil), "exocore.restaking_assets_manage.v1.QueryStakerExCoreAddr")
 	proto.RegisterType((*QueryStakerExCoreAddrResponse)(nil), "exocore.restaking_assets_manage.v1.QueryStakerExCoreAddrResponse")
@@ -704,69 +673,68 @@ func init() {
 }
 
 var fileDescriptor_6d13900d4f268106 = []byte{
-	// 989 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xd4, 0x57, 0x4d, 0x6f, 0x1b, 0x45,
-	0x18, 0xce, 0xb8, 0xb4, 0xb4, 0x6f, 0x7b, 0x28, 0xd3, 0x00, 0xce, 0xb4, 0x38, 0x61, 0x85, 0x50,
-	0x04, 0xca, 0xae, 0xe2, 0xa0, 0xca, 0x0d, 0x01, 0xd5, 0x36, 0x86, 0x1a, 0x15, 0x55, 0x75, 0x2a,
-	0x10, 0x1f, 0x92, 0xb5, 0xb1, 0xa7, 0xdb, 0x55, 0xec, 0x1d, 0x77, 0x67, 0x1d, 0xd9, 0x2a, 0xe5,
-	0x80, 0x10, 0xe2, 0x84, 0x90, 0xca, 0xff, 0x80, 0x43, 0x0f, 0xfc, 0x84, 0x4a, 0x5c, 0xa2, 0x22,
-	0x04, 0xe2, 0x50, 0x55, 0x09, 0x08, 0xfe, 0x01, 0x12, 0x27, 0xe4, 0x99, 0xfd, 0xf2, 0x7e, 0x38,
-	0x6b, 0xbb, 0x1c, 0x38, 0xd9, 0x33, 0xef, 0xbc, 0x1f, 0xcf, 0xfb, 0xec, 0xbc, 0xcf, 0x2e, 0xa8,
-	0x74, 0xc0, 0x5a, 0xcc, 0xa6, 0x9a, 0x4d, 0xb9, 0xa3, 0xef, 0x9a, 0x96, 0xd1, 0xd4, 0x39, 0xa7,
-	0x0e, 0x6f, 0x76, 0x75, 0x4b, 0x37, 0xa8, 0xb6, 0xb7, 0xae, 0xdd, 0xee, 0x53, 0x7b, 0xa8, 0xf6,
-	0x6c, 0xe6, 0x30, 0xac, 0xb8, 0xe7, 0xd5, 0x94, 0xf3, 0xea, 0xde, 0x3a, 0x59, 0x34, 0x98, 0xc1,
-	0xc4, 0x71, 0x6d, 0xf4, 0x4f, 0x7a, 0x92, 0x0b, 0x06, 0x63, 0x46, 0x87, 0x6a, 0x7a, 0xcf, 0xd4,
-	0x74, 0xcb, 0x62, 0x8e, 0xee, 0x98, 0xcc, 0xe2, 0xae, 0xf5, 0x7c, 0x8b, 0xf1, 0x2e, 0xe3, 0x32,
-	0x57, 0x24, 0x29, 0x59, 0x92, 0xc6, 0xa6, 0x8c, 0x29, 0x17, 0xae, 0xe9, 0xd5, 0x0c, 0xf5, 0x3b,
-	0x03, 0x79, 0x58, 0xb9, 0x08, 0x8b, 0xd7, 0x47, 0x61, 0xab, 0x1d, 0x93, 0x5a, 0x4e, 0xf5, 0x96,
-	0x6e, 0x5a, 0x75, 0xeb, 0x26, 0xc3, 0x05, 0x80, 0x96, 0x5c, 0xb4, 0xe9, 0x20, 0x8f, 0x56, 0xd0,
-	0xea, 0x53, 0x8d, 0xd0, 0x8e, 0xb2, 0x04, 0xcf, 0x0b, 0xbf, 0x72, 0xa7, 0x13, 0x71, 0x55, 0xbe,
-	0xcb, 0xc1, 0x72, 0x8a, 0xad, 0x41, 0x79, 0x8f, 0x59, 0x9c, 0xe2, 0xaf, 0x11, 0x9c, 0xd3, 0x63,
-	0x66, 0x9e, 0x47, 0x2b, 0xc7, 0x56, 0x4f, 0x17, 0x3f, 0x51, 0x8f, 0x6e, 0xa9, 0x7a, 0x44, 0x0a,
-	0x35, 0x6e, 0xe2, 0x35, 0xcb, 0xb1, 0x87, 0x8d, 0xa4, 0xc4, 0xe4, 0x0e, 0xe4, 0xd3, 0x1c, 0xf0,
-	0x59, 0x38, 0xb6, 0x4b, 0x87, 0x6e, 0x13, 0x46, 0x7f, 0x71, 0x1d, 0x8e, 0xef, 0xe9, 0x9d, 0x3e,
-	0xcd, 0xe7, 0x56, 0xd0, 0xea, 0xe9, 0xe2, 0x46, 0x96, 0x7a, 0xa3, 0x75, 0xca, 0x08, 0x9b, 0xb9,
-	0x12, 0x52, 0xd6, 0xe1, 0x59, 0x81, 0x66, 0x5b, 0xfa, 0x96, 0x47, 0xae, 0x82, 0x85, 0x3c, 0x3c,
-	0x2d, 0xe2, 0xd4, 0xdb, 0x22, 0xfb, 0xa9, 0x86, 0xb7, 0x54, 0xce, 0xc3, 0x92, 0xd7, 0x80, 0xb0,
-	0x17, 0x17, 0x0c, 0xfc, 0x90, 0x83, 0x17, 0x53, 0xad, 0x3e, 0x07, 0xf7, 0x10, 0x2c, 0xea, 0x09,
-	0x07, 0x5c, 0x12, 0x9a, 0xd3, 0x90, 0x90, 0x9a, 0x45, 0x4d, 0x32, 0x4a, 0x1e, 0x12, 0x93, 0x93,
-	0xbb, 0xb0, 0x94, 0xea, 0x12, 0x66, 0xe2, 0x94, 0x64, 0xe2, 0xdd, 0x71, 0x26, 0x5e, 0xcb, 0x52,
-	0x74, 0xb4, 0xcd, 0x61, 0x2a, 0x8a, 0xee, 0x7d, 0x18, 0x9d, 0xa1, 0x76, 0xc0, 0x04, 0x81, 0x93,
-	0x5c, 0x6c, 0xf9, 0x54, 0xf8, 0x6b, 0xe5, 0xef, 0x1c, 0x3c, 0x27, 0x1b, 0xe1, 0x47, 0xf4, 0x7a,
-	0xdc, 0x83, 0x33, 0x22, 0x7d, 0xb9, 0xcb, 0xfa, 0x96, 0xe3, 0x3d, 0xdf, 0x57, 0xb3, 0xb7, 0x36,
-	0x1a, 0x51, 0x2d, 0x87, 0xc2, 0xc9, 0x3e, 0x8e, 0x65, 0x20, 0x3b, 0x00, 0xef, 0x8f, 0xd0, 0xbc,
-	0x6d, 0xd2, 0x4e, 0x1b, 0xdf, 0x80, 0x13, 0xd2, 0x20, 0x8b, 0xae, 0x6c, 0x3d, 0x78, 0xb4, 0xbc,
-	0xf0, 0xdb, 0xa3, 0xe5, 0x97, 0x0d, 0xd3, 0xb9, 0xd5, 0xdf, 0x51, 0x5b, 0xac, 0xeb, 0x0e, 0x0f,
-	0xf7, 0x67, 0x8d, 0xb7, 0x77, 0x35, 0x67, 0xd8, 0xa3, 0x5c, 0xad, 0x5b, 0xce, 0xc3, 0xfb, 0x6b,
-	0xe0, 0xce, 0x96, 0xba, 0xe5, 0x34, 0xdc, 0x58, 0xe4, 0x4b, 0x04, 0xcf, 0xc4, 0xea, 0x48, 0x20,
-	0xe7, 0xe3, 0x71, 0x72, 0x6a, 0x73, 0xc0, 0x0e, 0x30, 0x85, 0xd9, 0xba, 0x01, 0x17, 0x24, 0x5b,
-	0x3d, 0xda, 0x32, 0x6f, 0x9a, 0xb4, 0x1d, 0xaa, 0xaa, 0x41, 0x6f, 0x4f, 0x62, 0x2d, 0x7c, 0xb7,
-	0x72, 0xe3, 0x77, 0xeb, 0x53, 0x78, 0x69, 0x52, 0x54, 0x9f, 0xdc, 0xff, 0xa4, 0xb9, 0xca, 0x07,
-	0xee, 0x64, 0xbd, 0xd6, 0xa3, 0xb6, 0xee, 0xb0, 0xe0, 0x19, 0xe4, 0x78, 0x0b, 0xce, 0x30, 0x6f,
-	0xb7, 0xdd, 0xb6, 0xdd, 0xb4, 0xf9, 0x87, 0xf7, 0xd7, 0x16, 0xdd, 0x40, 0xa3, 0x6d, 0xca, 0xf9,
-	0xb6, 0x63, 0x9b, 0x96, 0xd1, 0x18, 0x3b, 0xad, 0x7c, 0xe6, 0xc2, 0xf2, 0x02, 0xa7, 0x35, 0x6d,
-	0xae, 0x2c, 0x13, 0xda, 0xba, 0x11, 0x9a, 0x72, 0xd4, 0xae, 0x0d, 0xaa, 0xcc, 0xa6, 0xc2, 0x85,
-	0xc0, 0xc9, 0xed, 0x08, 0x4b, 0xde, 0x5a, 0xf9, 0x10, 0x5e, 0x48, 0x74, 0xf2, 0x49, 0x28, 0x01,
-	0x04, 0xbb, 0x47, 0xd6, 0x1a, 0x3a, 0x5b, 0xfc, 0xf6, 0x2c, 0x1c, 0x17, 0xb1, 0xf1, 0xcf, 0x48,
-	0x4c, 0xd3, 0xc8, 0x84, 0xae, 0x0c, 0x85, 0xd4, 0xe1, 0x52, 0xe6, 0xc7, 0x36, 0x12, 0x80, 0xcc,
-	0xa2, 0x0b, 0x4a, 0xfd, 0xab, 0x3f, 0xbf, 0x7f, 0x05, 0x7d, 0xfe, 0xd3, 0xef, 0xf7, 0x72, 0x6f,
-	0xe2, 0x2d, 0xef, 0x01, 0x9a, 0xa0, 0xe5, 0xe9, 0x95, 0x3f, 0x46, 0xa2, 0xe5, 0x71, 0x61, 0xc3,
-	0xaf, 0xcf, 0xa1, 0xb0, 0xa4, 0xfa, 0x04, 0xe4, 0x59, 0xa9, 0x05, 0x30, 0x37, 0x71, 0x29, 0x1b,
-	0xcc, 0x04, 0x20, 0x3f, 0x22, 0x38, 0x77, 0xbd, 0x4f, 0x63, 0xca, 0x79, 0x29, 0x73, 0x8d, 0x51,
-	0x57, 0x32, 0x93, 0x86, 0x28, 0xd5, 0x00, 0x4f, 0x09, 0x5f, 0xcc, 0x86, 0x27, 0x56, 0xf5, 0x5f,
-	0x48, 0x5c, 0xfe, 0x24, 0x01, 0xc4, 0x6f, 0xcc, 0xa5, 0xc7, 0xa4, 0xf6, 0x44, 0xe4, 0x5c, 0x79,
-	0x27, 0x80, 0xb9, 0x85, 0x37, 0x33, 0xd3, 0x16, 0x87, 0xb3, 0x1f, 0x10, 0x47, 0xc3, 0x33, 0xae,
-	0x34, 0x15, 0x71, 0x21, 0x57, 0xb2, 0x39, 0xbb, 0xbc, 0xcc, 0xcc, 0xde, 0x58, 0xe9, 0xff, 0x20,
-	0x31, 0xac, 0xe4, 0x7e, 0xd2, 0x74, 0xc5, 0x97, 0xb3, 0x83, 0x4b, 0x1e, 0xce, 0xe4, 0xca, 0xbc,
-	0x11, 0x7c, 0xc8, 0xef, 0x05, 0x90, 0x2b, 0xf8, 0xf2, 0x34, 0x90, 0x13, 0xa1, 0xfd, 0x22, 0x67,
-	0x4d, 0x82, 0x6a, 0x65, 0x9f, 0x35, 0x71, 0xe7, 0xb9, 0x48, 0x9d, 0x65, 0xc4, 0x24, 0xd4, 0xff,
-	0x85, 0xfc, 0x9e, 0x99, 0x24, 0x9b, 0xf8, 0xca, 0xd4, 0x18, 0xff, 0x77, 0x04, 0xff, 0x81, 0xc4,
-	0xab, 0xb1, 0x27, 0xc4, 0xcc, 0x97, 0xef, 0x4b, 0x53, 0xde, 0xd8, 0x40, 0x82, 0x49, 0x79, 0x66,
-	0x57, 0x1f, 0xe5, 0xb5, 0x00, 0xe5, 0x5b, 0xb8, 0x32, 0x0d, 0xca, 0x10, 0x06, 0xed, 0x8e, 0xf7,
-	0xc2, 0x71, 0xb7, 0x72, 0xf5, 0xc1, 0x41, 0x01, 0xed, 0x1f, 0x14, 0xd0, 0xe3, 0x83, 0x02, 0xfa,
-	0xe6, 0xb0, 0xb0, 0xb0, 0x7f, 0x58, 0x58, 0xf8, 0xf5, 0xb0, 0xb0, 0xf0, 0x51, 0x31, 0xf4, 0x5e,
-	0xe7, 0x7d, 0x63, 0x0f, 0x52, 0x53, 0x89, 0xf7, 0xbc, 0x9d, 0x13, 0xe2, 0x33, 0x7b, 0xe3, 0xdf,
-	0x00, 0x00, 0x00, 0xff, 0xff, 0xd3, 0x17, 0xe5, 0xa4, 0x55, 0x10, 0x00, 0x00,
+	// 961 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xac, 0x57, 0x4d, 0x4f, 0x03, 0x45,
+	0x18, 0x66, 0x8a, 0x28, 0x0c, 0x26, 0x92, 0xa1, 0x6a, 0xbb, 0x60, 0xc5, 0x8d, 0x07, 0xa2, 0x71,
+	0x37, 0x14, 0x43, 0x4a, 0x41, 0x43, 0x5b, 0x1b, 0x2d, 0xd1, 0x10, 0x5a, 0x13, 0x82, 0x31, 0x69,
+	0x96, 0x76, 0x58, 0x56, 0xda, 0x9d, 0xb2, 0xb3, 0x25, 0x6d, 0x08, 0xc6, 0x70, 0xd1, 0x93, 0xd1,
+	0x70, 0xf4, 0x47, 0xe8, 0xc1, 0x83, 0x3f, 0xc1, 0xc4, 0x0b, 0xd1, 0x98, 0x78, 0x24, 0xa0, 0xd1,
+	0xbb, 0x3f, 0x40, 0xd3, 0xd9, 0xcf, 0x6e, 0x77, 0xcb, 0xf4, 0xe3, 0xd6, 0x9d, 0xf7, 0xf3, 0x79,
+	0x9f, 0xe9, 0xfb, 0xec, 0x42, 0x09, 0x77, 0x48, 0x8d, 0x18, 0x58, 0x36, 0x30, 0x35, 0x95, 0x73,
+	0x4d, 0x57, 0xab, 0x0a, 0xa5, 0xd8, 0xa4, 0xd5, 0xa6, 0xa2, 0x2b, 0x2a, 0x96, 0x2f, 0x37, 0xe4,
+	0x8b, 0x36, 0x36, 0xba, 0x52, 0xcb, 0x20, 0x26, 0x41, 0xa2, 0xed, 0x2f, 0x45, 0xf8, 0x4b, 0x97,
+	0x1b, 0x42, 0x5c, 0x25, 0x2a, 0x61, 0xee, 0x72, 0xef, 0x97, 0x15, 0x29, 0xac, 0xaa, 0x84, 0xa8,
+	0x0d, 0x2c, 0x2b, 0x2d, 0x4d, 0x56, 0x74, 0x9d, 0x98, 0x8a, 0xa9, 0x11, 0x9d, 0xda, 0xd6, 0x95,
+	0x1a, 0xa1, 0x4d, 0x42, 0xad, 0x5a, 0x81, 0xa2, 0x42, 0xd2, 0x32, 0x56, 0xad, 0x9c, 0xd6, 0x83,
+	0x6d, 0x7a, 0x93, 0xa3, 0x7f, 0xb3, 0x63, 0x39, 0x8b, 0x5b, 0x30, 0x7e, 0xd8, 0x4b, 0x5b, 0x68,
+	0x68, 0x58, 0x37, 0x0b, 0x67, 0x8a, 0xa6, 0x97, 0xf4, 0x53, 0x82, 0x52, 0x10, 0xd6, 0xac, 0x87,
+	0x3a, 0xee, 0x24, 0xc0, 0x1a, 0x58, 0x7f, 0xa6, 0xec, 0x3b, 0x11, 0x93, 0xf0, 0x65, 0x16, 0x97,
+	0x6b, 0x34, 0x02, 0xa1, 0xe2, 0xf7, 0x31, 0xf8, 0x6a, 0x84, 0xad, 0x8c, 0x69, 0x8b, 0xe8, 0x14,
+	0xa3, 0xaf, 0x01, 0x5c, 0x56, 0x06, 0xcc, 0x34, 0x01, 0xd6, 0x66, 0xd7, 0x17, 0xd3, 0x9f, 0x4a,
+	0x4f, 0x8f, 0x54, 0x7a, 0xa2, 0x84, 0x34, 0x68, 0xa2, 0x45, 0xdd, 0x34, 0xba, 0xe5, 0xb0, 0xc2,
+	0xc2, 0x15, 0x4c, 0x44, 0x05, 0xa0, 0x25, 0x38, 0x7b, 0x8e, 0xbb, 0xf6, 0x10, 0x7a, 0x3f, 0x51,
+	0x09, 0xce, 0x5d, 0x2a, 0x8d, 0x36, 0x4e, 0xc4, 0xd6, 0xc0, 0xfa, 0x62, 0x7a, 0x93, 0xa7, 0xdf,
+	0x60, 0x9f, 0x56, 0x86, 0x6c, 0x2c, 0x03, 0xc4, 0x0d, 0xf8, 0x22, 0x43, 0x53, 0xb1, 0x62, 0x73,
+	0xbd, 0x50, 0xc6, 0x42, 0x02, 0x3e, 0xc7, 0xf2, 0x94, 0xea, 0xac, 0xfa, 0x42, 0xd9, 0x79, 0x14,
+	0x57, 0x60, 0xd2, 0x19, 0x80, 0x3f, 0x8a, 0x32, 0x06, 0x7e, 0x8a, 0xc1, 0xd7, 0x22, 0xad, 0x2e,
+	0x07, 0xb7, 0x00, 0xc6, 0x95, 0x10, 0x07, 0x9b, 0x84, 0xea, 0x28, 0x24, 0x44, 0x56, 0x91, 0xc2,
+	0x8c, 0x16, 0x0f, 0xa1, 0xc5, 0x85, 0x6b, 0x98, 0x8c, 0x0c, 0xf1, 0x33, 0xb1, 0x60, 0x31, 0xb1,
+	0xdf, 0xcf, 0xc4, 0xdb, 0x3c, 0x4d, 0x07, 0xc7, 0xec, 0xa7, 0x22, 0x6d, 0xff, 0x1f, 0x7a, 0x3e,
+	0xd8, 0xf0, 0x98, 0x10, 0xe0, 0x3c, 0x65, 0x47, 0x2e, 0x15, 0xee, 0xb3, 0xf8, 0x65, 0x0c, 0xbe,
+	0x64, 0x0d, 0xc2, 0xcd, 0xe8, 0xcc, 0xf8, 0x33, 0x08, 0x15, 0xe7, 0xd0, 0xb9, 0xdd, 0xfb, 0xfc,
+	0x83, 0x0d, 0xe6, 0x93, 0xdc, 0x13, 0xfb, 0x2e, 0xfb, 0xb2, 0x0b, 0x5f, 0x00, 0xf8, 0x42, 0xc0,
+	0x1e, 0x32, 0xb0, 0xa3, 0xfe, 0x81, 0xe5, 0x78, 0x07, 0x86, 0x8d, 0x8a, 0xa6, 0xab, 0x0d, 0xcc,
+	0x2a, 0x1c, 0x18, 0x85, 0x33, 0x45, 0x57, 0x71, 0x70, 0x7a, 0x1f, 0xc3, 0x55, 0x6b, 0x7a, 0x2d,
+	0x5c, 0xd3, 0x4e, 0x35, 0x5c, 0x67, 0xde, 0xb9, 0x26, 0x69, 0xeb, 0x66, 0x19, 0x5f, 0x0c, 0x9b,
+	0xa2, 0xff, 0xae, 0xc7, 0xfa, 0xef, 0xfa, 0x91, 0xbd, 0x6b, 0x0e, 0x5a, 0xd8, 0x50, 0x4c, 0xe2,
+	0xb1, 0x42, 0xd1, 0x2e, 0x7c, 0x9e, 0x38, 0xa7, 0xf5, 0xba, 0x61, 0x25, 0xcd, 0x27, 0x7e, 0xfd,
+	0xf1, 0xad, 0xb8, 0xbd, 0x13, 0x7b, 0xc7, 0x98, 0xd2, 0x8a, 0x69, 0x68, 0xba, 0x5a, 0xee, 0xf3,
+	0x16, 0xbf, 0x73, 0x36, 0xd5, 0x60, 0x66, 0x97, 0x41, 0x1a, 0xc2, 0x60, 0x85, 0x9b, 0xc1, 0xe8,
+	0xc4, 0x43, 0xa9, 0xbc, 0xe1, 0xa2, 0xf2, 0xb8, 0x9f, 0xca, 0x02, 0x4f, 0x57, 0x4e, 0x43, 0x1c,
+	0x64, 0x7e, 0x0e, 0x5f, 0xef, 0xc3, 0x10, 0x45, 0xea, 0x44, 0x1c, 0x0c, 0xa1, 0x7d, 0xd3, 0xb7,
+	0x15, 0xb1, 0x51, 0xec, 0x14, 0x88, 0x81, 0x59, 0x88, 0x00, 0xe7, 0x2b, 0x81, 0x5b, 0xe4, 0x3c,
+	0x8b, 0xc7, 0xf0, 0x95, 0xd0, 0x20, 0x97, 0xcf, 0x0c, 0x84, 0xde, 0xe9, 0x93, 0xbd, 0xfa, 0x7c,
+	0xd3, 0xdf, 0x2e, 0xc1, 0x39, 0x96, 0x1b, 0xfd, 0x0e, 0xd8, 0xf6, 0x0d, 0x6c, 0xf4, 0x7c, 0x97,
+	0x49, 0x23, 0xca, 0x70, 0xdf, 0x8e, 0x40, 0x02, 0x61, 0x1c, 0x1d, 0x11, 0x4b, 0x5f, 0xfd, 0xfd,
+	0xc3, 0x1b, 0xe0, 0xe6, 0xb7, 0x3f, 0x6f, 0x63, 0xef, 0xa2, 0x5d, 0xfb, 0x55, 0x60, 0x98, 0xf6,
+	0x47, 0x77, 0x7e, 0x0f, 0xd8, 0xc8, 0x07, 0x85, 0x10, 0xed, 0x4c, 0xa0, 0xc8, 0x42, 0x61, 0x0a,
+	0x72, 0x2e, 0x16, 0x3d, 0x98, 0x59, 0x94, 0xe1, 0x83, 0x19, 0x02, 0xe4, 0x17, 0x00, 0x97, 0x0f,
+	0xdb, 0x78, 0x40, 0x69, 0xb7, 0xb9, 0x7b, 0x0c, 0x86, 0x0a, 0x63, 0x69, 0x8e, 0x58, 0xf0, 0xf0,
+	0x64, 0xd0, 0x16, 0x1f, 0x9e, 0x81, 0xae, 0xff, 0x01, 0x6c, 0x35, 0x86, 0x09, 0x26, 0x7a, 0x67,
+	0x22, 0xfd, 0x16, 0x8a, 0x53, 0x91, 0x7f, 0xf1, 0x7d, 0x0f, 0xe6, 0x2e, 0xca, 0x72, 0xd3, 0x36,
+	0x08, 0xe7, 0xce, 0x23, 0x0e, 0xfb, 0x15, 0x20, 0x33, 0x12, 0x71, 0xbe, 0x50, 0x21, 0x3b, 0xbe,
+	0x0e, 0x8f, 0xcd, 0x5e, 0x5f, 0xeb, 0xff, 0x02, 0xb6, 0xac, 0x6c, 0x75, 0x0d, 0xd9, 0xae, 0x68,
+	0x8f, 0x1f, 0x5c, 0xf8, 0x72, 0x16, 0x26, 0xd7, 0x77, 0xf1, 0x23, 0x0f, 0x6b, 0x1e, 0xed, 0x8d,
+	0x82, 0x35, 0x14, 0x93, 0xbd, 0x64, 0x42, 0xc4, 0x7c, 0x67, 0x02, 0x59, 0x1d, 0x61, 0xc9, 0x44,
+	0x6b, 0xf2, 0x58, 0x4b, 0x26, 0x04, 0xc8, 0x7f, 0x80, 0xbd, 0x57, 0x0c, 0x13, 0x4e, 0xf4, 0xc1,
+	0xc8, 0xfd, 0x46, 0x51, 0x3c, 0x0d, 0xdd, 0x9f, 0x36, 0xc9, 0x7f, 0x01, 0xf6, 0x1e, 0xed, 0xa8,
+	0x30, 0x71, 0xb5, 0x7b, 0x7b, 0xc4, 0xbf, 0xab, 0xa7, 0xbf, 0x7c, 0x57, 0x79, 0xa8, 0xf8, 0x8b,
+	0x07, 0x1e, 0xca, 0xf7, 0x50, 0x7e, 0x14, 0x94, 0x3e, 0x0c, 0xf2, 0x95, 0xf3, 0xb6, 0x71, 0x9d,
+	0xff, 0xf0, 0xe7, 0x87, 0x14, 0xb8, 0x7b, 0x48, 0x81, 0xfb, 0x87, 0x14, 0xf8, 0xe6, 0x31, 0x35,
+	0x73, 0xf7, 0x98, 0x9a, 0xf9, 0xe3, 0x31, 0x35, 0xf3, 0x49, 0x5a, 0xd5, 0xcc, 0xb3, 0xf6, 0x89,
+	0x54, 0x23, 0x4d, 0xd9, 0xf9, 0x20, 0xef, 0x44, 0x96, 0x32, 0xbb, 0x2d, 0x4c, 0x4f, 0x9e, 0x65,
+	0xdf, 0xe4, 0x9b, 0xff, 0x07, 0x00, 0x00, 0xff, 0xff, 0x68, 0x0e, 0xfc, 0xcc, 0x82, 0x10, 0x00,
+	0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -787,9 +755,9 @@ type QueryClient interface {
 	QueStakingAssetInfo(ctx context.Context, in *QueryStakingAssetInfo, opts ...grpc.CallOption) (*StakingAssetInfo, error)
 	QueAllStakingAssetsInfo(ctx context.Context, in *QueryAllStakingAssetsInfo, opts ...grpc.CallOption) (*QueryAllStakingAssetsInfoResponse, error)
 	QueStakerAssetInfos(ctx context.Context, in *QueryStakerAssetInfo, opts ...grpc.CallOption) (*QueryAssetInfoResponse, error)
-	QueStakerSpecifiedAssetAmount(ctx context.Context, in *QuerySpecifiedAssetAmountReq, opts ...grpc.CallOption) (*QuerySpecifiedAssetAmountReqResponse, error)
-	QueOperatorAssetInfos(ctx context.Context, in *QueryOperatorAssetInfos, opts ...grpc.CallOption) (*QueryAssetInfoResponse, error)
-	QueOperatorSpecifiedAssetAmount(ctx context.Context, in *QueryOperatorSpecifiedAssetAmountReq, opts ...grpc.CallOption) (*QuerySpecifiedAssetAmountReqResponse, error)
+	QueStakerSpecifiedAssetAmount(ctx context.Context, in *QuerySpecifiedAssetAmountReq, opts ...grpc.CallOption) (*StakerSingleAssetOrChangeInfo, error)
+	QueOperatorAssetInfos(ctx context.Context, in *QueryOperatorAssetInfos, opts ...grpc.CallOption) (*QueryOperatorAssetInfosResponse, error)
+	QueOperatorSpecifiedAssetAmount(ctx context.Context, in *QueryOperatorSpecifiedAssetAmountReq, opts ...grpc.CallOption) (*OperatorSingleAssetOrChangeInfo, error)
 	QueStakerExoCoreAddr(ctx context.Context, in *QueryStakerExCoreAddr, opts ...grpc.CallOption) (*QueryStakerExCoreAddrResponse, error)
 }
 
@@ -846,8 +814,8 @@ func (c *queryClient) QueStakerAssetInfos(ctx context.Context, in *QueryStakerAs
 	return out, nil
 }
 
-func (c *queryClient) QueStakerSpecifiedAssetAmount(ctx context.Context, in *QuerySpecifiedAssetAmountReq, opts ...grpc.CallOption) (*QuerySpecifiedAssetAmountReqResponse, error) {
-	out := new(QuerySpecifiedAssetAmountReqResponse)
+func (c *queryClient) QueStakerSpecifiedAssetAmount(ctx context.Context, in *QuerySpecifiedAssetAmountReq, opts ...grpc.CallOption) (*StakerSingleAssetOrChangeInfo, error) {
+	out := new(StakerSingleAssetOrChangeInfo)
 	err := c.cc.Invoke(ctx, "/exocore.restaking_assets_manage.v1.Query/QueStakerSpecifiedAssetAmount", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -855,8 +823,8 @@ func (c *queryClient) QueStakerSpecifiedAssetAmount(ctx context.Context, in *Que
 	return out, nil
 }
 
-func (c *queryClient) QueOperatorAssetInfos(ctx context.Context, in *QueryOperatorAssetInfos, opts ...grpc.CallOption) (*QueryAssetInfoResponse, error) {
-	out := new(QueryAssetInfoResponse)
+func (c *queryClient) QueOperatorAssetInfos(ctx context.Context, in *QueryOperatorAssetInfos, opts ...grpc.CallOption) (*QueryOperatorAssetInfosResponse, error) {
+	out := new(QueryOperatorAssetInfosResponse)
 	err := c.cc.Invoke(ctx, "/exocore.restaking_assets_manage.v1.Query/QueOperatorAssetInfos", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -864,8 +832,8 @@ func (c *queryClient) QueOperatorAssetInfos(ctx context.Context, in *QueryOperat
 	return out, nil
 }
 
-func (c *queryClient) QueOperatorSpecifiedAssetAmount(ctx context.Context, in *QueryOperatorSpecifiedAssetAmountReq, opts ...grpc.CallOption) (*QuerySpecifiedAssetAmountReqResponse, error) {
-	out := new(QuerySpecifiedAssetAmountReqResponse)
+func (c *queryClient) QueOperatorSpecifiedAssetAmount(ctx context.Context, in *QueryOperatorSpecifiedAssetAmountReq, opts ...grpc.CallOption) (*OperatorSingleAssetOrChangeInfo, error) {
+	out := new(OperatorSingleAssetOrChangeInfo)
 	err := c.cc.Invoke(ctx, "/exocore.restaking_assets_manage.v1.Query/QueOperatorSpecifiedAssetAmount", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -890,9 +858,9 @@ type QueryServer interface {
 	QueStakingAssetInfo(context.Context, *QueryStakingAssetInfo) (*StakingAssetInfo, error)
 	QueAllStakingAssetsInfo(context.Context, *QueryAllStakingAssetsInfo) (*QueryAllStakingAssetsInfoResponse, error)
 	QueStakerAssetInfos(context.Context, *QueryStakerAssetInfo) (*QueryAssetInfoResponse, error)
-	QueStakerSpecifiedAssetAmount(context.Context, *QuerySpecifiedAssetAmountReq) (*QuerySpecifiedAssetAmountReqResponse, error)
-	QueOperatorAssetInfos(context.Context, *QueryOperatorAssetInfos) (*QueryAssetInfoResponse, error)
-	QueOperatorSpecifiedAssetAmount(context.Context, *QueryOperatorSpecifiedAssetAmountReq) (*QuerySpecifiedAssetAmountReqResponse, error)
+	QueStakerSpecifiedAssetAmount(context.Context, *QuerySpecifiedAssetAmountReq) (*StakerSingleAssetOrChangeInfo, error)
+	QueOperatorAssetInfos(context.Context, *QueryOperatorAssetInfos) (*QueryOperatorAssetInfosResponse, error)
+	QueOperatorSpecifiedAssetAmount(context.Context, *QueryOperatorSpecifiedAssetAmountReq) (*OperatorSingleAssetOrChangeInfo, error)
 	QueStakerExoCoreAddr(context.Context, *QueryStakerExCoreAddr) (*QueryStakerExCoreAddrResponse, error)
 }
 
@@ -915,13 +883,13 @@ func (*UnimplementedQueryServer) QueAllStakingAssetsInfo(ctx context.Context, re
 func (*UnimplementedQueryServer) QueStakerAssetInfos(ctx context.Context, req *QueryStakerAssetInfo) (*QueryAssetInfoResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method QueStakerAssetInfos not implemented")
 }
-func (*UnimplementedQueryServer) QueStakerSpecifiedAssetAmount(ctx context.Context, req *QuerySpecifiedAssetAmountReq) (*QuerySpecifiedAssetAmountReqResponse, error) {
+func (*UnimplementedQueryServer) QueStakerSpecifiedAssetAmount(ctx context.Context, req *QuerySpecifiedAssetAmountReq) (*StakerSingleAssetOrChangeInfo, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method QueStakerSpecifiedAssetAmount not implemented")
 }
-func (*UnimplementedQueryServer) QueOperatorAssetInfos(ctx context.Context, req *QueryOperatorAssetInfos) (*QueryAssetInfoResponse, error) {
+func (*UnimplementedQueryServer) QueOperatorAssetInfos(ctx context.Context, req *QueryOperatorAssetInfos) (*QueryOperatorAssetInfosResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method QueOperatorAssetInfos not implemented")
 }
-func (*UnimplementedQueryServer) QueOperatorSpecifiedAssetAmount(ctx context.Context, req *QueryOperatorSpecifiedAssetAmountReq) (*QuerySpecifiedAssetAmountReqResponse, error) {
+func (*UnimplementedQueryServer) QueOperatorSpecifiedAssetAmount(ctx context.Context, req *QueryOperatorSpecifiedAssetAmountReq) (*OperatorSingleAssetOrChangeInfo, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method QueOperatorSpecifiedAssetAmount not implemented")
 }
 func (*UnimplementedQueryServer) QueStakerExoCoreAddr(ctx context.Context, req *QueryStakerExCoreAddr) (*QueryStakerExCoreAddrResponse, error) {
@@ -1389,9 +1357,9 @@ func (m *QueryAssetInfoResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) 
 	_ = i
 	var l int
 	_ = l
-	if len(m.AssetAmounts) > 0 {
-		for k := range m.AssetAmounts {
-			v := m.AssetAmounts[k]
+	if len(m.AssetInfos) > 0 {
+		for k := range m.AssetInfos {
+			v := m.AssetInfos[k]
 			baseI := i
 			if v != nil {
 				{
@@ -1415,39 +1383,6 @@ func (m *QueryAssetInfoResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) 
 			dAtA[i] = 0xa
 		}
 	}
-	return len(dAtA) - i, nil
-}
-
-func (m *QueryAssetInfoResponse_ValueField) Marshal() (dAtA []byte, err error) {
-	size := m.Size()
-	dAtA = make([]byte, size)
-	n, err := m.MarshalToSizedBuffer(dAtA[:size])
-	if err != nil {
-		return nil, err
-	}
-	return dAtA[:n], nil
-}
-
-func (m *QueryAssetInfoResponse_ValueField) MarshalTo(dAtA []byte) (int, error) {
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
-}
-
-func (m *QueryAssetInfoResponse_ValueField) MarshalToSizedBuffer(dAtA []byte) (int, error) {
-	i := len(dAtA)
-	_ = i
-	var l int
-	_ = l
-	{
-		size := m.Amount.Size()
-		i -= size
-		if _, err := m.Amount.MarshalTo(dAtA[i:]); err != nil {
-			return 0, err
-		}
-		i = encodeVarintQuery(dAtA, i, uint64(size))
-	}
-	i--
-	dAtA[i] = 0xa
 	return len(dAtA) - i, nil
 }
 
@@ -1488,39 +1423,6 @@ func (m *QuerySpecifiedAssetAmountReq) MarshalToSizedBuffer(dAtA []byte) (int, e
 	return len(dAtA) - i, nil
 }
 
-func (m *QuerySpecifiedAssetAmountReqResponse) Marshal() (dAtA []byte, err error) {
-	size := m.Size()
-	dAtA = make([]byte, size)
-	n, err := m.MarshalToSizedBuffer(dAtA[:size])
-	if err != nil {
-		return nil, err
-	}
-	return dAtA[:n], nil
-}
-
-func (m *QuerySpecifiedAssetAmountReqResponse) MarshalTo(dAtA []byte) (int, error) {
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
-}
-
-func (m *QuerySpecifiedAssetAmountReqResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
-	i := len(dAtA)
-	_ = i
-	var l int
-	_ = l
-	{
-		size := m.Amount.Size()
-		i -= size
-		if _, err := m.Amount.MarshalTo(dAtA[i:]); err != nil {
-			return 0, err
-		}
-		i = encodeVarintQuery(dAtA, i, uint64(size))
-	}
-	i--
-	dAtA[i] = 0xa
-	return len(dAtA) - i, nil
-}
-
 func (m *QueryOperatorAssetInfos) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
@@ -1547,6 +1449,55 @@ func (m *QueryOperatorAssetInfos) MarshalToSizedBuffer(dAtA []byte) (int, error)
 		i = encodeVarintQuery(dAtA, i, uint64(len(m.OperatorAddr)))
 		i--
 		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *QueryOperatorAssetInfosResponse) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QueryOperatorAssetInfosResponse) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QueryOperatorAssetInfosResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.AssetInfos) > 0 {
+		for k := range m.AssetInfos {
+			v := m.AssetInfos[k]
+			baseI := i
+			if v != nil {
+				{
+					size, err := v.MarshalToSizedBuffer(dAtA[:i])
+					if err != nil {
+						return 0, err
+					}
+					i -= size
+					i = encodeVarintQuery(dAtA, i, uint64(size))
+				}
+				i--
+				dAtA[i] = 0x12
+			}
+			i -= len(k)
+			copy(dAtA[i:], k)
+			i = encodeVarintQuery(dAtA, i, uint64(len(k)))
+			i--
+			dAtA[i] = 0xa
+			i = encodeVarintQuery(dAtA, i, uint64(baseI-i))
+			i--
+			dAtA[i] = 0xa
+		}
 	}
 	return len(dAtA) - i, nil
 }
@@ -1765,8 +1716,8 @@ func (m *QueryAssetInfoResponse) Size() (n int) {
 	}
 	var l int
 	_ = l
-	if len(m.AssetAmounts) > 0 {
-		for k, v := range m.AssetAmounts {
+	if len(m.AssetInfos) > 0 {
+		for k, v := range m.AssetInfos {
 			_ = k
 			_ = v
 			l = 0
@@ -1778,17 +1729,6 @@ func (m *QueryAssetInfoResponse) Size() (n int) {
 			n += mapEntrySize + 1 + sovQuery(uint64(mapEntrySize))
 		}
 	}
-	return n
-}
-
-func (m *QueryAssetInfoResponse_ValueField) Size() (n int) {
-	if m == nil {
-		return 0
-	}
-	var l int
-	_ = l
-	l = m.Amount.Size()
-	n += 1 + l + sovQuery(uint64(l))
 	return n
 }
 
@@ -1809,17 +1749,6 @@ func (m *QuerySpecifiedAssetAmountReq) Size() (n int) {
 	return n
 }
 
-func (m *QuerySpecifiedAssetAmountReqResponse) Size() (n int) {
-	if m == nil {
-		return 0
-	}
-	var l int
-	_ = l
-	l = m.Amount.Size()
-	n += 1 + l + sovQuery(uint64(l))
-	return n
-}
-
 func (m *QueryOperatorAssetInfos) Size() (n int) {
 	if m == nil {
 		return 0
@@ -1829,6 +1758,28 @@ func (m *QueryOperatorAssetInfos) Size() (n int) {
 	l = len(m.OperatorAddr)
 	if l > 0 {
 		n += 1 + l + sovQuery(uint64(l))
+	}
+	return n
+}
+
+func (m *QueryOperatorAssetInfosResponse) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if len(m.AssetInfos) > 0 {
+		for k, v := range m.AssetInfos {
+			_ = k
+			_ = v
+			l = 0
+			if v != nil {
+				l = v.Size()
+				l += 1 + sovQuery(uint64(l))
+			}
+			mapEntrySize := 1 + len(k) + sovQuery(uint64(len(k))) + l
+			n += mapEntrySize + 1 + sovQuery(uint64(mapEntrySize))
+		}
 	}
 	return n
 }
@@ -2590,7 +2541,7 @@ func (m *QueryAssetInfoResponse) Unmarshal(dAtA []byte) error {
 		switch fieldNum {
 		case 1:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field AssetAmounts", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field AssetInfos", wireType)
 			}
 			var msglen int
 			for shift := uint(0); ; shift += 7 {
@@ -2617,11 +2568,11 @@ func (m *QueryAssetInfoResponse) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			if m.AssetAmounts == nil {
-				m.AssetAmounts = make(map[string]*QueryAssetInfoResponse_ValueField)
+			if m.AssetInfos == nil {
+				m.AssetInfos = make(map[string]*StakerSingleAssetOrChangeInfo)
 			}
 			var mapkey string
-			var mapvalue *QueryAssetInfoResponse_ValueField
+			var mapvalue *StakerSingleAssetOrChangeInfo
 			for iNdEx < postIndex {
 				entryPreIndex := iNdEx
 				var wire uint64
@@ -2695,7 +2646,7 @@ func (m *QueryAssetInfoResponse) Unmarshal(dAtA []byte) error {
 					if postmsgIndex > l {
 						return io.ErrUnexpectedEOF
 					}
-					mapvalue = &QueryAssetInfoResponse_ValueField{}
+					mapvalue = &StakerSingleAssetOrChangeInfo{}
 					if err := mapvalue.Unmarshal(dAtA[iNdEx:postmsgIndex]); err != nil {
 						return err
 					}
@@ -2715,91 +2666,7 @@ func (m *QueryAssetInfoResponse) Unmarshal(dAtA []byte) error {
 					iNdEx += skippy
 				}
 			}
-			m.AssetAmounts[mapkey] = mapvalue
-			iNdEx = postIndex
-		default:
-			iNdEx = preIndex
-			skippy, err := skipQuery(dAtA[iNdEx:])
-			if err != nil {
-				return err
-			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
-				return ErrInvalidLengthQuery
-			}
-			if (iNdEx + skippy) > l {
-				return io.ErrUnexpectedEOF
-			}
-			iNdEx += skippy
-		}
-	}
-
-	if iNdEx > l {
-		return io.ErrUnexpectedEOF
-	}
-	return nil
-}
-func (m *QueryAssetInfoResponse_ValueField) Unmarshal(dAtA []byte) error {
-	l := len(dAtA)
-	iNdEx := 0
-	for iNdEx < l {
-		preIndex := iNdEx
-		var wire uint64
-		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
-				return ErrIntOverflowQuery
-			}
-			if iNdEx >= l {
-				return io.ErrUnexpectedEOF
-			}
-			b := dAtA[iNdEx]
-			iNdEx++
-			wire |= uint64(b&0x7F) << shift
-			if b < 0x80 {
-				break
-			}
-		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
-		if wireType == 4 {
-			return fmt.Errorf("proto: ValueField: wiretype end group for non-group")
-		}
-		if fieldNum <= 0 {
-			return fmt.Errorf("proto: ValueField: illegal tag %d (wire type %d)", fieldNum, wire)
-		}
-		switch fieldNum {
-		case 1:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Amount", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowQuery
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthQuery
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLengthQuery
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			if err := m.Amount.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
-				return err
-			}
+			m.AssetInfos[mapkey] = mapvalue
 			iNdEx = postIndex
 		default:
 			iNdEx = preIndex
@@ -2936,90 +2803,6 @@ func (m *QuerySpecifiedAssetAmountReq) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *QuerySpecifiedAssetAmountReqResponse) Unmarshal(dAtA []byte) error {
-	l := len(dAtA)
-	iNdEx := 0
-	for iNdEx < l {
-		preIndex := iNdEx
-		var wire uint64
-		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
-				return ErrIntOverflowQuery
-			}
-			if iNdEx >= l {
-				return io.ErrUnexpectedEOF
-			}
-			b := dAtA[iNdEx]
-			iNdEx++
-			wire |= uint64(b&0x7F) << shift
-			if b < 0x80 {
-				break
-			}
-		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
-		if wireType == 4 {
-			return fmt.Errorf("proto: QuerySpecifiedAssetAmountReqResponse: wiretype end group for non-group")
-		}
-		if fieldNum <= 0 {
-			return fmt.Errorf("proto: QuerySpecifiedAssetAmountReqResponse: illegal tag %d (wire type %d)", fieldNum, wire)
-		}
-		switch fieldNum {
-		case 1:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Amount", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowQuery
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthQuery
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLengthQuery
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			if err := m.Amount.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
-				return err
-			}
-			iNdEx = postIndex
-		default:
-			iNdEx = preIndex
-			skippy, err := skipQuery(dAtA[iNdEx:])
-			if err != nil {
-				return err
-			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
-				return ErrInvalidLengthQuery
-			}
-			if (iNdEx + skippy) > l {
-				return io.ErrUnexpectedEOF
-			}
-			iNdEx += skippy
-		}
-	}
-
-	if iNdEx > l {
-		return io.ErrUnexpectedEOF
-	}
-	return nil
-}
 func (m *QueryOperatorAssetInfos) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -3080,6 +2863,185 @@ func (m *QueryOperatorAssetInfos) Unmarshal(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			m.OperatorAddr = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *QueryOperatorAssetInfosResponse) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryOperatorAssetInfosResponse: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryOperatorAssetInfosResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field AssetInfos", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if m.AssetInfos == nil {
+				m.AssetInfos = make(map[string]*OperatorSingleAssetOrChangeInfo)
+			}
+			var mapkey string
+			var mapvalue *OperatorSingleAssetOrChangeInfo
+			for iNdEx < postIndex {
+				entryPreIndex := iNdEx
+				var wire uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return ErrIntOverflowQuery
+					}
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					wire |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				fieldNum := int32(wire >> 3)
+				if fieldNum == 1 {
+					var stringLenmapkey uint64
+					for shift := uint(0); ; shift += 7 {
+						if shift >= 64 {
+							return ErrIntOverflowQuery
+						}
+						if iNdEx >= l {
+							return io.ErrUnexpectedEOF
+						}
+						b := dAtA[iNdEx]
+						iNdEx++
+						stringLenmapkey |= uint64(b&0x7F) << shift
+						if b < 0x80 {
+							break
+						}
+					}
+					intStringLenmapkey := int(stringLenmapkey)
+					if intStringLenmapkey < 0 {
+						return ErrInvalidLengthQuery
+					}
+					postStringIndexmapkey := iNdEx + intStringLenmapkey
+					if postStringIndexmapkey < 0 {
+						return ErrInvalidLengthQuery
+					}
+					if postStringIndexmapkey > l {
+						return io.ErrUnexpectedEOF
+					}
+					mapkey = string(dAtA[iNdEx:postStringIndexmapkey])
+					iNdEx = postStringIndexmapkey
+				} else if fieldNum == 2 {
+					var mapmsglen int
+					for shift := uint(0); ; shift += 7 {
+						if shift >= 64 {
+							return ErrIntOverflowQuery
+						}
+						if iNdEx >= l {
+							return io.ErrUnexpectedEOF
+						}
+						b := dAtA[iNdEx]
+						iNdEx++
+						mapmsglen |= int(b&0x7F) << shift
+						if b < 0x80 {
+							break
+						}
+					}
+					if mapmsglen < 0 {
+						return ErrInvalidLengthQuery
+					}
+					postmsgIndex := iNdEx + mapmsglen
+					if postmsgIndex < 0 {
+						return ErrInvalidLengthQuery
+					}
+					if postmsgIndex > l {
+						return io.ErrUnexpectedEOF
+					}
+					mapvalue = &OperatorSingleAssetOrChangeInfo{}
+					if err := mapvalue.Unmarshal(dAtA[iNdEx:postmsgIndex]); err != nil {
+						return err
+					}
+					iNdEx = postmsgIndex
+				} else {
+					iNdEx = entryPreIndex
+					skippy, err := skipQuery(dAtA[iNdEx:])
+					if err != nil {
+						return err
+					}
+					if (skippy < 0) || (iNdEx+skippy) < 0 {
+						return ErrInvalidLengthQuery
+					}
+					if (iNdEx + skippy) > postIndex {
+						return io.ErrUnexpectedEOF
+					}
+					iNdEx += skippy
+				}
+			}
+			m.AssetInfos[mapkey] = mapvalue
 			iNdEx = postIndex
 		default:
 			iNdEx = preIndex

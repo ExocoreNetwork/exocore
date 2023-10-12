@@ -61,6 +61,13 @@ type AppModule struct {
 	keeper keeper.Keeper
 }
 
+func NewAppModule(cdc codec.Codec, keeper keeper.Keeper) AppModule {
+	return AppModule{
+		AppModuleBasic: AppModuleBasic{},
+		keeper:         keeper,
+	}
+}
+
 /*
 // IsOnePerModuleType implements the depinject.OnePerModuleType interface.
 func (am AppModule) IsOnePerModuleType() {}

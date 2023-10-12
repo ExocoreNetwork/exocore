@@ -4,7 +4,6 @@ package keeper
 
 import (
 	"context"
-	"cosmossdk.io/math"
 	"github.com/cosmos/cosmos-sdk/codec"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -14,6 +13,16 @@ import (
 type Keeper struct {
 	storeKey storetypes.StoreKey
 	cdc      codec.BinaryCodec
+}
+
+func NewKeeper(
+	storeKey storetypes.StoreKey,
+	cdc codec.BinaryCodec,
+) Keeper {
+	return Keeper{
+		storeKey: storeKey,
+		cdc:      cdc,
+	}
 }
 
 func (k Keeper) GetAllOperatorAssetOptedInMiddleWare(operatorAddr sdk.Address) (optedInInfos map[string][]sdk.Address, err error) {
@@ -36,14 +45,13 @@ type IReStakingAssetsManage interface {
 	GetStakingAssetInfo(ctx sdk.Context, assetId string) (info *types2.StakingAssetInfo, err error)
 	GetAllStakingAssetsInfo(ctx sdk.Context) (allAssets map[string]*types2.StakingAssetInfo, err error)
 
-	GetStakerAssetInfos(ctx sdk.Context, stakerId string) (assetsInfo map[string]*types2.StakerSingleAssetInfo, err error)
-	GetStakerSpecifiedAssetInfo(ctx sdk.Context, stakerId string, assetId string) (info *types2.StakerSingleAssetInfo, err error)
-	UpdateStakerAssetsState(ctx sdk.Context, stakerId string, assetsUpdate map[string]types2.StakerSingleAssetInfo) (err error)
+	GetStakerAssetInfos(ctx sdk.Context, stakerId string) (assetsInfo map[string]*types2.StakerSingleAssetOrChangeInfo, err error)
+	GetStakerSpecifiedAssetInfo(ctx sdk.Context, stakerId string, assetId string) (info *types2.StakerSingleAssetOrChangeInfo, err error)
+	UpdateStakerAssetsState(ctx sdk.Context, stakerId string, assetsUpdate map[string]types2.StakerSingleAssetOrChangeInfo) (err error)
 
-	GetOperatorAssetInfos(ctx sdk.Context, operatorAddr sdk.Address) (assetsInfo map[string]math.Uint, err error)
-	GetOperatorSpecifiedAssetAmount(ctx sdk.Context, operatorAddr sdk.Address, assetId string) (amount math.Uint, err error)
-	IncreaseOperatorAssetsAmount(ctx sdk.Context, operatorAddr sdk.Address, assetsAddAmount map[string]math.Uint) (err error)
-	DecreaseOperatorAssetsAmount(ctx sdk.Context, operatorAddr sdk.Address, assetsSubAmount map[string]math.Uint) (err error)
+	GetOperatorAssetInfos(ctx sdk.Context, operatorAddr sdk.Address) (assetsInfo map[string]*types2.OperatorSingleAssetOrChangeInfo, err error)
+	GetOperatorSpecifiedAssetInfo(ctx sdk.Context, operatorAddr sdk.Address, assetId string) (info *types2.OperatorSingleAssetOrChangeInfo, err error)
+	UpdateOperatorAssetsState(ctx sdk.Context, operatorAddr sdk.Address, assetsUpdate map[string]types2.OperatorSingleAssetOrChangeInfo) (err error)
 
 	// SetStakerExoCoreAddr handle the SetStakerExoCoreAddr txs from msg service
 	SetStakerExoCoreAddr(ctx context.Context, addr *types2.MsgSetExoCoreAddr) (*types2.MsgSetExoCoreAddrResponse, error)

@@ -5,6 +5,13 @@ package app
 import (
 	"encoding/json"
 	"fmt"
+	ethante "github.com/evmos/evmos/v14/app/ante/evm"
+	feemarkettypes "github.com/evmos/evmos/v14/x/feemarket/types"
+	delegationKeeper "github.com/exocore/x/delegation/keeper"
+	depositKeeper "github.com/exocore/x/deposit/keeper"
+	"github.com/exocore/x/restaking_assets_manage"
+	stakingAssetsManageKeeper "github.com/exocore/x/restaking_assets_manage/keeper"
+	stakingAssetsManageTypes "github.com/exocore/x/restaking_assets_manage/types"
 	"io"
 	"net/http"
 	"os"
@@ -118,7 +125,11 @@ import (
 	"github.com/evmos/evmos/v14/x/evm"
 	evmtypes "github.com/evmos/evmos/v14/x/evm/types"
 
+	evmkeeper "github.com/evmos/evmos/v14/x/evm/keeper"
+
+	consensusparamkeeper "github.com/cosmos/cosmos-sdk/x/consensus/keeper"
 	consensusparamtypes "github.com/cosmos/cosmos-sdk/x/consensus/types"
+	feemarketkeeper "github.com/evmos/evmos/v14/x/feemarket/keeper"
 
 	// unnamed import of statik for swagger UI support
 	_ "github.com/evmos/evmos/v14/client/docs/statik"
@@ -175,6 +186,10 @@ var (
 		vesting.AppModuleBasic{},
 		evm.AppModuleBasic{},
 		consensus.AppModuleBasic{},
+		//exoCore staking modules
+		restaking_assets_manage.AppModuleBasic{},
+		/*		deposit.AppModuleBasic{},
+				delegation.AppModuleBasic{},*/
 	)
 
 	// module account permissions
@@ -231,9 +246,20 @@ type ExocoreApp struct {
 	ParamsKeeper     paramskeeper.Keeper
 	UpgradeKeeper    upgradekeeper.Keeper
 
+	ConsensusParamsKeeper consensusparamkeeper.Keeper
+
 	// make scoped keepers public for test purposes
 	ScopedIBCKeeper      capabilitykeeper.ScopedKeeper
 	ScopedTransferKeeper capabilitykeeper.ScopedKeeper
+
+	// Ethermint keepers
+	EvmKeeper       *evmkeeper.Keeper
+	FeeMarketKeeper feemarketkeeper.Keeper
+
+	//exoCore staking module keepers
+	StakingAssetsManageKeeper stakingAssetsManageKeeper.Keeper
+	DepositKeeper             depositKeeper.Keeper
+	DelegationKeeper          delegationKeeper.Keeper
 
 	// the module manager
 	mm *module.Manager
@@ -285,14 +311,18 @@ func NewExocoreApp(
 		authtypes.StoreKey, banktypes.StoreKey, stakingtypes.StoreKey, minttypes.StoreKey,
 		distrtypes.StoreKey, slashingtypes.StoreKey,
 		govtypes.StoreKey, paramstypes.StoreKey, upgradetypes.StoreKey,
-		evidencetypes.StoreKey, ibcexported.StoreKey, ibctransfertypes.StoreKey, capabilitytypes.StoreKey, feegrant.StoreKey,
-		feegrant.StoreKey,
+		evidencetypes.StoreKey, ibcexported.StoreKey, ibctransfertypes.StoreKey, capabilitytypes.StoreKey,
+		consensusparamtypes.StoreKey, feegrant.StoreKey, crisistypes.StoreKey,
 		// ethermint keys
-		evmtypes.StoreKey,
+		evmtypes.StoreKey, feemarkettypes.StoreKey,
+		//exoCore module keys
+		stakingAssetsManageTypes.StoreKey,
+		/*		delegationTypes.StoreKey,
+				depositTypes.StoreKey,*/
 	)
 
 	// Add the EVM transient store key
-	tkeys := sdk.NewTransientStoreKeys(paramstypes.TStoreKey)
+	tkeys := sdk.NewTransientStoreKeys(paramstypes.TStoreKey, evmtypes.TransientKey, feemarkettypes.TransientKey)
 	memKeys := sdk.NewMemoryStoreKeys(capabilitytypes.MemStoreKey)
 
 	// load state streaming if enabled
@@ -351,11 +381,34 @@ func NewExocoreApp(
 	app.FeeGrantKeeper = feegrantkeeper.NewKeeper(appCodec, keys[feegrant.StoreKey], accountK)
 	app.UpgradeKeeper = *upgradekeeper.NewKeeper(skipUpgradeHeights, keys[upgradetypes.StoreKey], appCodec, homePath, app.BaseApp, authAddr)
 
+	// set the BaseApp's parameter store
+	app.ConsensusParamsKeeper = consensusparamkeeper.NewKeeper(appCodec, keys[consensusparamtypes.StoreKey], authAddr)
+	bApp.SetParamStore(&app.ConsensusParamsKeeper)
 	// Create IBC Keeper
+	app.CapabilityKeeper = capabilitykeeper.NewKeeper(appCodec, keys[capabilitytypes.StoreKey], memKeys[capabilitytypes.MemStoreKey])
+
 	scopedIBCKeeper := app.CapabilityKeeper.ScopeToModule(ibcexported.ModuleName)
 	app.IBCKeeper = ibckeeper.NewKeeper(
 		appCodec, keys[ibcexported.StoreKey], app.GetSubspace(ibcexported.ModuleName), stakingKeeper, app.UpgradeKeeper, scopedIBCKeeper,
 	)
+
+	tracer := cast.ToString(appOpts.Get(srvflags.EVMTracer))
+
+	// Create Ethermint keepers
+	app.FeeMarketKeeper = feemarketkeeper.NewKeeper(
+		appCodec, authtypes.NewModuleAddress(govtypes.ModuleName),
+		keys[feemarkettypes.StoreKey],
+		tkeys[feemarkettypes.TransientKey],
+		app.GetSubspace(feemarkettypes.ModuleName),
+	)
+
+	evmKeeper := evmkeeper.NewKeeper(
+		appCodec, keys[evmtypes.StoreKey], tkeys[evmtypes.TransientKey], authtypes.NewModuleAddress(govtypes.ModuleName),
+		app.AccountKeeper, app.BankKeeper, stakingKeeper, app.FeeMarketKeeper,
+		tracer, app.GetSubspace(evmtypes.ModuleName),
+	)
+
+	app.EvmKeeper = evmKeeper
 
 	// register the proposal types
 	govRouter := govv1beta1.NewRouter()
@@ -396,6 +449,9 @@ func NewExocoreApp(
 	// If evidence needs to be handled for the app, set routes in router here and seal
 	app.EvidenceKeeper = *evidenceKeeper
 
+	//set exoCore staking keepers
+	app.StakingAssetsManageKeeper = stakingAssetsManageKeeper.NewKeeper(keys[stakingAssetsManageTypes.StoreKey], appCodec)
+
 	/****  Module Options ****/
 
 	// NOTE: we may consider parsing `appOpts` inside module constructors. For the moment
@@ -422,6 +478,7 @@ func NewExocoreApp(
 		evidence.NewAppModule(app.EvidenceKeeper),
 		params.NewAppModule(app.ParamsKeeper),
 		feegrantmodule.NewAppModule(appCodec, accountK, bankK, app.FeeGrantKeeper, app.interfaceRegistry),
+		restaking_assets_manage.NewAppModule(appCodec, app.StakingAssetsManageKeeper),
 	)
 
 	// During begin block slashing happens after distr.BeginBlocker so that
@@ -451,6 +508,8 @@ func NewExocoreApp(
 		feegrant.ModuleName,
 		paramstypes.ModuleName,
 		consensusparamtypes.ModuleName,
+		//ExoCore modules
+		stakingAssetsManageTypes.ModuleName,
 	)
 
 	// NOTE: fee market module must go last in order to retrieve the block gas used.
@@ -476,6 +535,8 @@ func NewExocoreApp(
 		upgradetypes.ModuleName,
 		// Evmos modules
 		consensusparamtypes.ModuleName,
+		//ExoCore modules
+		stakingAssetsManageTypes.ModuleName,
 	)
 
 	// NOTE: The genutils module must occur after staking so that pools are
@@ -507,6 +568,8 @@ func NewExocoreApp(
 		feegrant.ModuleName,
 		paramstypes.ModuleName,
 		upgradetypes.ModuleName,
+		//ExoCore modules
+		stakingAssetsManageTypes.ModuleName,
 		// Evmos modules
 		// NOTE: crisis module must go at the end to check for invariants on each module
 		crisistypes.ModuleName,
@@ -558,6 +621,9 @@ func (app *ExocoreApp) setAnteHandler(txConfig client.TxConfig, maxGasWanted uin
 		SignModeHandler:        txConfig.SignModeHandler(),
 		SigGasConsumer:         ante.SigVerificationGasConsumer,
 		MaxTxGasWanted:         maxGasWanted,
+		FeeMarketKeeper:        app.FeeMarketKeeper,
+		EvmKeeper:              app.EvmKeeper,
+		TxFeeChecker:           ethante.NewDynamicFeeChecker(app.EvmKeeper),
 	}
 
 	if err := options.Validate(); err != nil {

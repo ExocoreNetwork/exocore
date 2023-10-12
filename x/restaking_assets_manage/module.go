@@ -3,6 +3,7 @@
 package restaking_assets_manage
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	abci "github.com/cometbft/cometbft/abci/types"
@@ -35,8 +36,7 @@ func (b AppModuleBasic) Name() string {
 }
 
 func (b AppModuleBasic) RegisterLegacyAminoCodec(amino *codec.LegacyAmino) {
-	//TODO implement me
-	panic("implement me")
+	types2.RegisterLegacyAminoCodec(amino)
 }
 
 // DefaultGenesis returns default genesis state as raw bytes for the auth
@@ -56,13 +56,13 @@ func (AppModuleBasic) ValidateGenesis(cdc codec.JSONCodec, config client.TxEncod
 }
 
 func (b AppModuleBasic) RegisterInterfaces(registry codectypes.InterfaceRegistry) {
-	//TODO implement me
-	panic("implement me")
+	types2.RegisterInterfaces(registry)
 }
 
-func (b AppModuleBasic) RegisterGRPCGatewayRoutes(context client.Context, mux *runtime.ServeMux) {
-	//TODO implement me
-	panic("implement me")
+func (b AppModuleBasic) RegisterGRPCGatewayRoutes(c client.Context, serveMux *runtime.ServeMux) {
+	if err := types2.RegisterQueryHandlerClient(context.Background(), serveMux, types2.NewQueryClient(c)); err != nil {
+		panic(err)
+	}
 }
 
 func (b AppModuleBasic) GetTxCmd() *cobra.Command {
@@ -78,6 +78,13 @@ func (b AppModuleBasic) GetQueryCmd() *cobra.Command {
 type AppModule struct {
 	AppModuleBasic
 	keeper keeper.Keeper
+}
+
+func NewAppModule(cdc codec.Codec, keeper keeper.Keeper) AppModule {
+	return AppModule{
+		AppModuleBasic: AppModuleBasic{},
+		keeper:         keeper,
+	}
 }
 
 // IsOnePerModuleType implements the depinject.OnePerModuleType interface.
