@@ -47,11 +47,11 @@ type IReStakingAssetsManage interface {
 
 	GetStakerAssetInfos(ctx sdk.Context, stakerId string) (assetsInfo map[string]*types2.StakerSingleAssetOrChangeInfo, err error)
 	GetStakerSpecifiedAssetInfo(ctx sdk.Context, stakerId string, assetId string) (info *types2.StakerSingleAssetOrChangeInfo, err error)
-	UpdateStakerAssetsState(ctx sdk.Context, stakerId string, assetsUpdate map[string]types2.StakerSingleAssetOrChangeInfo) (err error)
+	UpdateStakerAssetState(ctx sdk.Context, stakerId string, assetId string, changeAmount types2.StakerSingleAssetOrChangeInfo) (err error)
 
 	GetOperatorAssetInfos(ctx sdk.Context, operatorAddr sdk.Address) (assetsInfo map[string]*types2.OperatorSingleAssetOrChangeInfo, err error)
 	GetOperatorSpecifiedAssetInfo(ctx sdk.Context, operatorAddr sdk.Address, assetId string) (info *types2.OperatorSingleAssetOrChangeInfo, err error)
-	UpdateOperatorAssetsState(ctx sdk.Context, operatorAddr sdk.Address, assetsUpdate map[string]types2.OperatorSingleAssetOrChangeInfo) (err error)
+	UpdateOperatorAssetState(ctx sdk.Context, operatorAddr sdk.Address, assetId string, changeAmount types2.OperatorSingleAssetOrChangeInfo) (err error)
 
 	// SetStakerExoCoreAddr handle the SetStakerExoCoreAddr txs from msg service
 	SetStakerExoCoreAddr(ctx context.Context, addr *types2.MsgSetExoCoreAddr) (*types2.MsgSetExoCoreAddrResponse, error)

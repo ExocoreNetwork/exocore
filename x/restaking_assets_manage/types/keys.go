@@ -5,6 +5,7 @@ package types
 import (
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	"github.com/ethereum/go-ethereum/common"
+	"log"
 	"strings"
 )
 
@@ -106,5 +107,11 @@ var (
 )
 
 func GetAssetStateKey(stakerId, assetId string) []byte {
-	return []byte(strings.Join([]string{stakerId, assetId}, "_"))
+	return []byte(strings.Join([]string{stakerId, assetId}, "/"))
+}
+
+func ParseStakerAndAssetIdFromKey(key []byte) (stakerId string, assetId string) {
+	stringList := strings.Split(string(key), "/")
+	log.Println("the stringList is:", stringList)
+	return stringList[0], stringList[1]
 }
