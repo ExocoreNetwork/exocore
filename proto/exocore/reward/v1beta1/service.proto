@@ -4,7 +4,8 @@ package exocore.reward.v1beta1;
 option go_package = "github.com/exocore/x/reward/types";
 
 import "exocore/reward/v1beta1/tx.proto";
-import "google.golang.org/protobuf/proto"
+import "exocore/reward/v1beta1/query.proto";
+import "google/api/annotations.proto";
 
 // Msg defines the Msg service.
 service MsgService {
@@ -19,17 +20,9 @@ service MsgService {
 
 // QueryService defines the gRPC querier service.
 service QueryService {
-  rpc InflationRate(InflationRateRequest) returns (InflationRateResponse) {
-    option (google.api.http) = {
-      // TODO
-      get : ""
-    };
-  }
-
   rpc Params(ParamsRequest) returns (ParamsResponse) {
     option (google.api.http) = {
-      //TODO
-      get : ""
+      get : "/axelar/reward/v1beta1/params"
     };
   }
 }

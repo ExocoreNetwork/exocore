@@ -12,9 +12,12 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/module"
 	"github.com/exocore/x/evm/client/cli"
 	"github.com/exocore/x/evm/keeper"
+	"github.com/exocore/x/reward/types"
 	"github.com/gorilla/mux"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	"github.com/spf13/cobra"
+
+	cdctypes "github.com/cosmos/cosmos-sdk/codec/types"
 )
 
 var (
