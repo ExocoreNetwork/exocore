@@ -67,46 +67,46 @@ service Query {
   // Balance queries the balance of a single coin for a single account.
   rpc QueClientChainInfoByIndex(QueryClientChainInfo) returns (ClientChainInfo) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/cosmos/restaking_assets_manage/v1/QueClientChainInfoByIndex";
+    option (google.api.http).get = "/exocore/restaking_assets_manage/v1/QueClientChainInfoByIndex";
   }
   rpc QueAllClientChainInfo(QueryAllClientChainInfo) returns (QueryAllClientChainInfoResponse){
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/cosmos/restaking_assets_manage/v1/QueAllClientChainInfo";
+    option (google.api.http).get = "/exocore/restaking_assets_manage/v1/QueAllClientChainInfo";
   }
 
   rpc QueStakingAssetInfo(QueryStakingAssetInfo)returns(StakingAssetInfo){
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/cosmos/restaking_assets_manage/v1/QueStakingAssetInfo";
+    option (google.api.http).get = "/exocore/restaking_assets_manage/v1/QueStakingAssetInfo";
   }
 
   rpc QueAllStakingAssetsInfo(QueryAllStakingAssetsInfo)returns(QueryAllStakingAssetsInfoResponse){
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/cosmos/restaking_assets_manage/v1/QueAllStakingAssetsInfo";
+    option (google.api.http).get = "/exocore/restaking_assets_manage/v1/QueAllStakingAssetsInfo";
   }
 
   rpc QueStakerAssetInfos(QueryStakerAssetInfo)returns(QueryAssetInfoResponse){
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/cosmos/restaking_assets_manage/v1/QueStakerAssetInfos";
+    option (google.api.http).get = "/exocore/restaking_assets_manage/v1/QueStakerAssetInfos";
   }
 
   rpc QueStakerSpecifiedAssetAmount(QuerySpecifiedAssetAmountReq)returns(StakerSingleAssetOrChangeInfo){
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/cosmos/restaking_assets_manage/v1/QueStakerSpecifiedAssetAmount";
+    option (google.api.http).get = "/exocore/restaking_assets_manage/v1/QueStakerSpecifiedAssetAmount";
   }
 
   rpc QueOperatorAssetInfos(QueryOperatorAssetInfos)returns(QueryOperatorAssetInfosResponse){
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/cosmos/restaking_assets_manage/v1/QueOperatorAssetInfos";
+    option (google.api.http).get = "/exocore/restaking_assets_manage/v1/QueOperatorAssetInfos";
   }
 
   rpc QueOperatorSpecifiedAssetAmount(QueryOperatorSpecifiedAssetAmountReq) returns(OperatorSingleAssetOrChangeInfo){
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/cosmos/restaking_assets_manage/v1/QueStakerSpecifiedAssetAmount";
+    option (google.api.http).get = "/exocore/restaking_assets_manage/v1/QueStakerSpecifiedAssetAmount";
   }
 
   rpc QueStakerExoCoreAddr(QueryStakerExCoreAddr) returns (QueryStakerExCoreAddrResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/cosmos/restaking_assets_manage/v1/QueStakerExoCoreAddr/{StakerId}";
+    option (google.api.http).get = "/exocore/restaking_assets_manage/v1/QueStakerExoCoreAddr/{StakerId}";
   }
 }
 

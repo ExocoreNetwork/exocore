@@ -9,6 +9,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/core"
 	ethtypes "github.com/ethereum/go-ethereum/core/types"
+	types2 "github.com/exocore/x/deposit/types"
 	"github.com/exocore/x/restaking_assets_manage/keeper"
 )
 
@@ -27,4 +28,7 @@ type IDeposit interface {
 
 	// Deposit internal func for PostTxProcessing
 	Deposit(reStakerId string, assetsInfo map[string]math.Uint) error
+
+	SetParams(ctx sdk.Context, params *types2.Params) error
+	GetParams(ctx sdk.Context) (*types2.Params, error)
 }

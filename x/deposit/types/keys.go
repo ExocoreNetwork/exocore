@@ -26,14 +26,10 @@ func init() {
 	ModuleAddress = common.BytesToAddress(authtypes.NewModuleAddress(ModuleName).Bytes())
 }
 
-/*
 const (
-	prefixReStakerExocoreAddr = iota + 1
+	prefixParams = iota + 1
 )
 
 var (
-	// KeyPrefixReStakerExoCoreAddr reStakerId = clientChainAddr+'_'+ExoCoreChainIndex
-	// KeyPrefixReStakerExoCoreAddr key-value: reStakerId->exoCoreAddr
-	KeyPrefixReStakerExoCoreAddr = []byte{prefixReStakerExocoreAddr}
+	KeyPrefixParams = []byte{prefixParams}
 )
-*/
