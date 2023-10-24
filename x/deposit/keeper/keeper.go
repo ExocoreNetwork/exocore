@@ -3,7 +3,6 @@
 package keeper
 
 import (
-	"cosmossdk.io/math"
 	"github.com/cosmos/cosmos-sdk/codec"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -27,7 +26,7 @@ type IDeposit interface {
 	PostTxProcessing(ctx sdk.Context, msg core.Message, receipt *ethtypes.Receipt) error
 
 	// Deposit internal func for PostTxProcessing
-	Deposit(reStakerId string, assetsInfo map[string]math.Uint) error
+	Deposit(ctx sdk.Context, event *DepositParams) error
 
 	SetParams(ctx sdk.Context, params *types2.Params) error
 	GetParams(ctx sdk.Context) (*types2.Params, error)

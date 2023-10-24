@@ -14,6 +14,9 @@ func (k Keeper) SetParams(ctx sdk.Context, params *types2.Params) error {
 	if !common.IsHexAddress(params.ExoCoreLzAppAddress) {
 		return types2.ErrInvalidEvmAddressFormat
 	}
+	if len(common.FromHex(params.ExoCoreLzAppEventTopic)) != common.HashLength {
+		return types2.ErrInvalidLzUaTopicIdLength
+	}
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types2.KeyPrefixParams)
 	//key := common.HexToAddress(incentive.Contract)
 	bz := k.cdc.MustMarshal(params)
