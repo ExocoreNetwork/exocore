@@ -1,7 +1,18 @@
 syntax = "proto3";
+
 package exocore.reward;
 
 option go_package = "github.com/exocore/x/reward/types";
 
 // Msg defines the Msg service.
-service Msg {}
+service Msg {
+  rpc ClaimRewardRequest (MsgClaimRewardRequest) returns (MsgClaimRewardRequestResponse);
+}
+message MsgClaimRewardRequest {
+  string creator       = 1;
+  uint64 id            = 2;
+  string rewardAddress = 3;
+}
+
+message MsgClaimRewardRequestResponse {}
+

@@ -15,7 +15,7 @@ var _ = strconv.Itoa(0)
 
 func CmdClaimRewardRequest() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "claim-reward-request [id] [rewardaddress]",
+		Use:   "claim-reward-request [id] [reward-address]",
 		Short: "Broadcast message claim-reward-request",
 		Args:  cobra.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) (err error) {
@@ -23,7 +23,7 @@ func CmdClaimRewardRequest() *cobra.Command {
             		if err != nil {
                 		return err
             		}
-             argRewardaddress := args[1]
+             argRewardAddress := args[1]
             
 			clientCtx, err := client.GetClientTxContext(cmd)
 			if err != nil {
@@ -33,7 +33,7 @@ func CmdClaimRewardRequest() *cobra.Command {
 			msg := types.NewMsgClaimRewardRequest(
 				clientCtx.GetFromAddress().String(),
 				argId,
-				argRewardaddress,
+				argRewardAddress,
 				
 			)
 			if err := msg.ValidateBasic(); err != nil {
