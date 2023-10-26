@@ -87,6 +87,5 @@ type AppModule struct {
 	multiSig     types.MultiSig
 	snapshotter  types.Snapshotter
 	msgSvcRouter *baseapp.MsgServiceRouter
-	router       sdk.Router
 	bank         types.Banker
 }
