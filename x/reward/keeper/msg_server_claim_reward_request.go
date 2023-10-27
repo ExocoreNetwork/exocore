@@ -3,16 +3,15 @@ package keeper
 import (
 	"context"
 
-    "github.com/exocore/x/reward/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/exocore/x/reward/types"
 )
 
-
-func (k msgServer) ClaimRewardRequest(goCtx context.Context,  msg *types.MsgClaimRewardRequest) (*types.MsgClaimRewardRequestResponse, error) {
+func (k msgServer) ClaimRewardRequest(goCtx context.Context, msg *types.MsgClaimRewardRequest) (*types.MsgClaimRewardResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
-    // TODO: Handling the message
-    _ = ctx
+	// TODO: Handling the message
+	_ = ctx
 
-	return &types.MsgClaimRewardRequestResponse{}, nil
+	return &types.MsgClaimRewardResponse{}, nil
 }

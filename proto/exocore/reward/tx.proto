@@ -1,22 +1,27 @@
 syntax = "proto3";
 
 package exocore.reward;
+import "google/protobuf/any.proto";
+import "gogoproto/gogo.proto";
+import "cosmos_proto/cosmos.proto";
 
 option go_package = "github.com/exocore/x/reward/types";
 
 // Msg defines the Msg service.
 service Msg {
-  rpc ClaimRewardRequest  (MsgClaimRewardRequest ) returns (MsgClaimRewardRequestResponse );
+  rpc ClaimRewardRequest  (MsgClaimRewardRequest ) returns (MsgClaimRewardResponse );
   rpc RewardDetail        (MsgRewardDetail       ) returns (MsgRewardDetailResponse       );
-  rpc ClaimRewardResponse (MsgClaimRewardResponse) returns (MsgClaimRewardResponseResponse);
 }
 message MsgClaimRewardRequest {
   string creator       = 1;
   uint64 id            = 2;
   string rewardAddress = 3;
+  bytes sender = 4 [ (gogoproto.casttype) =
+  "github.com/cosmos/cosmos-sdk/types.AccAddress" ];
+google.protobuf.Any inner_message = 5
+[ (cosmos_proto.accepts_interface) = "Refundable" ];
 }
 
-message MsgClaimRewardRequestResponse {}
 
 message MsgRewardDetail {
   string creator = 1;
@@ -26,8 +31,7 @@ message MsgRewardDetail {
 message MsgRewardDetailResponse {}
 
 message MsgClaimRewardResponse {
-  string creator = 1;
+  bytes data = 1;
 }
 
-message MsgClaimRewardResponseResponse {}
 
