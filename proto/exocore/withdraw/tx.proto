@@ -1,0 +1,7 @@
+syntax = "proto3";
+package exocore.withdraw;
+
+option go_package = "github.com/exocore/x/withdraw/types";
+
+// Msg defines the Msg service.
+service Msg {}
