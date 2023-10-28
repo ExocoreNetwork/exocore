@@ -7,6 +7,7 @@ option go_package = "github.com/exocore/x/withdraw/types";
 
 // Params defines the parameters for the module.
 message Params {
-  option (gogoproto.goproto_stringer) = false;
+  string   exoCoreLzAppAddress = 1;
+  string   exoCoreLzAppEventTopic =2;
   
 }

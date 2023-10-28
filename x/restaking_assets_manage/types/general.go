@@ -8,6 +8,14 @@ const (
 	ExoCoreOperatorAddrLength = 45
 )
 
+type GeneralAssetsAddr [32]byte
+
+type GeneralClientChainAddr [32]byte
+
+type CrossChainOpType uint8
+
+type WithdrawerAddress [32]byte
+
 const (
 	Deposit CrossChainOpType = iota
 	WithdrawPrinciple
@@ -15,5 +23,3 @@ const (
 	DelegationTo
 	UnDelegationFrom
 )
-
-type CrossChainOpType uint8

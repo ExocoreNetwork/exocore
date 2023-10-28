@@ -12,12 +12,13 @@ const (
 
 	// MemStoreKey defines the in-memory store key
 	MemStoreKey = "mem_withdraw"
-
-    
 )
 
-
-
 func KeyPrefix(p string) []byte {
-    return []byte(p)
+	return []byte(p)
 }
+
+var (
+	ParamsKey     = []byte{0x01}
+	DepositPrefix = []byte{0x02}
+)

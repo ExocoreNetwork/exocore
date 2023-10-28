@@ -10,7 +10,6 @@ option go_package = "github.com/exocore/x/reward/types";
 // Msg defines the Msg service.
 service Msg {
   rpc ClaimRewardRequest  (MsgClaimRewardRequest ) returns (MsgClaimRewardResponse );
-  rpc RewardDetail        (MsgRewardDetail       ) returns (MsgRewardDetailResponse       );
 }
 message MsgClaimRewardRequest {
   string creator       = 1;

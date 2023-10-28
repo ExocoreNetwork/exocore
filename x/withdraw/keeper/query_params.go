@@ -5,15 +5,15 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/exocore/x/withdraw/types"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 )
 
 func (k Keeper) Params(goCtx context.Context, req *types.QueryParamsRequest) (*types.QueryParamsResponse, error) {
-	if req == nil {
-		return nil, status.Error(codes.InvalidArgument, "invalid request")
+	c := sdk.UnwrapSDKContext(goCtx)
+	params, err := k.GetParams(c)
+	if err != nil {
+		return nil, err
 	}
-	ctx := sdk.UnwrapSDKContext(goCtx)
-
-	return &types.QueryParamsResponse{Params: k.GetParams(ctx)}, nil
+	return &types.QueryParamsResponse{
+		Params: params,
+	}, nil
 }
