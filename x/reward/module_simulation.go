@@ -3,14 +3,14 @@ package reward
 import (
 	"math/rand"
 
-	"github.com/exocore/testutil/sample"
-	rewardsimulation "github.com/exocore/x/reward/simulation"
-	"github.com/exocore/x/reward/types"
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 	simtypes "github.com/cosmos/cosmos-sdk/types/simulation"
 	"github.com/cosmos/cosmos-sdk/x/simulation"
+	"github.com/exocore/testutil/sample"
+	rewardsimulation "github.com/exocore/x/reward/simulation"
+	"github.com/exocore/x/reward/types"
 )
 
 // avoid unused import issue
@@ -23,7 +23,7 @@ var (
 )
 
 const (
-    opWeightMsgClaimRewardRequest = "op_weight_msg_claim_reward_request"
+	opWeightMsgClaimRewardRequest = "op_weight_msg_claim_reward_request"
 	// TODO: Determine the simulation weight value
 	defaultWeightMsgClaimRewardRequest int = 100
 
@@ -45,7 +45,7 @@ func (AppModule) GenerateGenesisState(simState *module.SimulationState) {
 		accs[i] = acc.Address.String()
 	}
 	rewardGenesis := types.GenesisState{
-		Params:	types.DefaultParams(),
+		Params: types.DefaultParams(),
 		// this line is used by starport scaffolding # simapp/module/genesisState
 	}
 	simState.GenState[types.ModuleName] = simState.Cdc.MustMarshalJSON(&rewardGenesis)
@@ -91,10 +91,6 @@ func (am AppModule) WeightedOperations(simState module.SimulationState) []simtyp
 			weightMsgClaimRewardResponse = defaultWeightMsgClaimRewardResponse
 		},
 	)
-	operations = append(operations, simulation.NewWeightedOperation(
-		weightMsgClaimRewardResponse,
-		rewardsimulation.SimulateMsgClaimRewardResponse(am.accountKeeper, am.bankKeeper, am.keeper),
-	))
 
 	// this line is used by starport scaffolding # simapp/module/operation
 
@@ -104,30 +100,22 @@ func (am AppModule) WeightedOperations(simState module.SimulationState) []simtyp
 // ProposalMsgs returns msgs used for governance proposals for simulations.
 func (am AppModule) ProposalMsgs(simState module.SimulationState) []simtypes.WeightedProposalMsg {
 	return []simtypes.WeightedProposalMsg{
-	    simulation.NewWeightedProposalMsg(
-	opWeightMsgClaimRewardRequest,
-	defaultWeightMsgClaimRewardRequest,
-	func(r *rand.Rand, ctx sdk.Context, accs []simtypes.Account) sdk.Msg {
-		rewardsimulation.SimulateMsgClaimRewardRequest(am.accountKeeper, am.bankKeeper, am.keeper)
-		return nil
-	},
-),
-simulation.NewWeightedProposalMsg(
-	opWeightMsgRewardDetail,
-	defaultWeightMsgRewardDetail,
-	func(r *rand.Rand, ctx sdk.Context, accs []simtypes.Account) sdk.Msg {
-		rewardsimulation.SimulateMsgRewardDetail(am.accountKeeper, am.bankKeeper, am.keeper)
-		return nil
-	},
-),
-simulation.NewWeightedProposalMsg(
-	opWeightMsgClaimRewardResponse,
-	defaultWeightMsgClaimRewardResponse,
-	func(r *rand.Rand, ctx sdk.Context, accs []simtypes.Account) sdk.Msg {
-		rewardsimulation.SimulateMsgClaimRewardResponse(am.accountKeeper, am.bankKeeper, am.keeper)
-		return nil
-	},
-),
-// this line is used by starport scaffolding # simapp/module/OpMsg
+		simulation.NewWeightedProposalMsg(
+			opWeightMsgClaimRewardRequest,
+			defaultWeightMsgClaimRewardRequest,
+			func(r *rand.Rand, ctx sdk.Context, accs []simtypes.Account) sdk.Msg {
+				rewardsimulation.SimulateMsgClaimRewardRequest(am.accountKeeper, am.bankKeeper, am.keeper)
+				return nil
+			},
+		),
+		simulation.NewWeightedProposalMsg(
+			opWeightMsgRewardDetail,
+			defaultWeightMsgRewardDetail,
+			func(r *rand.Rand, ctx sdk.Context, accs []simtypes.Account) sdk.Msg {
+				rewardsimulation.SimulateMsgRewardDetail(am.accountKeeper, am.bankKeeper, am.keeper)
+				return nil
+			},
+		),
+		// this line is used by starport scaffolding # simapp/module/OpMsg
 	}
 }

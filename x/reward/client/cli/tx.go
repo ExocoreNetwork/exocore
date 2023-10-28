@@ -15,11 +15,6 @@ var (
 	DefaultRelativePacketTimeoutTimestamp = uint64((time.Duration(10) * time.Minute).Nanoseconds())
 )
 
-const (
-	flagPacketTimeoutTimestamp = "packet-timeout-timestamp"
-	listSeparator              = ","
-)
-
 // GetTxCmd returns the transaction commands for this module
 func GetTxCmd() *cobra.Command {
 	cmd := &cobra.Command{
@@ -31,9 +26,8 @@ func GetTxCmd() *cobra.Command {
 	}
 
 	cmd.AddCommand(CmdClaimRewardRequest())
-cmd.AddCommand(CmdRewardDetail())
-cmd.AddCommand(CmdClaimRewardResponse())
-// this line is used by starport scaffolding # 1
+	cmd.AddCommand(CmdRewardDetail())
+	// this line is used by starport scaffolding # 1
 
-	return cmd 
+	return cmd
 }

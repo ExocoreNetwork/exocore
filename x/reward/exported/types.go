@@ -8,7 +8,6 @@ import (
 type RewardPool interface {
 	AddReward(sdk.ValAddress, sdk.Coin)
 	ClearRewards(sdk.ValAddress)
-	ReleaseRewards(sdk.ValAddress) error
 }
 
 // Refundable message
