@@ -1,7 +1,16 @@
 syntax = "proto3";
+
 package exocore.withdraw;
 
 option go_package = "github.com/exocore/x/withdraw/types";
 
 // Msg defines the Msg service.
-service Msg {}
+service Msg {
+  rpc Withdraw (MsgWithdraw) returns (MsgWithdrawResponse);
+}
+message MsgWithdraw {
+  string creator = 1;
+}
+
+message MsgWithdrawResponse {}
+
