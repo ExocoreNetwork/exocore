@@ -1,6 +1,9 @@
 package keeper
 
 import (
+	"context"
+
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/exocore/x/reward/types"
 )
 
@@ -8,10 +11,13 @@ type msgServer struct {
 	Keeper
 }
 
-// NewMsgServerImpl returns an implementation of the MsgServer interface
-// for the provided Keeper.
-func NewMsgServerImpl(keeper Keeper) types.MsgServer {
-	return &msgServer{Keeper: keeper}
+func (k Keeper) UpdateParams(ctx context.Context, params *types.MsgUpdateParams) (*types.MsgUpdateParamsResponse, error) {
+	c := sdk.UnwrapSDKContext(ctx)
+	err := k.SetParams(c, &params.Params)
+	if err != nil {
+		return nil, err
+	}
+	return nil, nil
 }
 
 var _ types.MsgServer = msgServer{}

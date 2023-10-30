@@ -3,29 +3,33 @@ package keeper
 import (
 	"bytes"
 	"encoding/binary"
+	"fmt"
 	"log"
 	"math/big"
+	"strings"
 
 	errorsmod "cosmossdk.io/errors"
 	sdkmath "cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/core"
 	ethtypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/evmos/evmos/v14/rpc/namespaces/ethereum/eth/filters"
 	"github.com/exocore/x/restaking_assets_manage/types"
+	rtypes "github.com/exocore/x/reward/types"
 )
 
 type RewardParams struct {
-	clientChainLzId uint64
-	action          types.CrossChainOpType
-	assetsAddress   types.GeneralAssetsAddr
-	depositAddress  types.GeneralClientChainAddr
-	opAmount        sdkmath.Int
+	clientChainLzId       uint64
+	action                types.CrossChainOpType
+	assetsAddress         types.GeneralAssetsAddr
+	withdrawRewardAddress types.GeneralClientChainAddr
+	opAmount              sdkmath.Int
 }
 
 func getRewardParamsFromEventLog(log *ethtypes.Log) (*RewardParams, error) {
-	// check if action is deposit
+	// check if action is to get reward
 	var action types.CrossChainOpType
 	var err error
 	readStart := 0
@@ -35,7 +39,7 @@ func getRewardParamsFromEventLog(log *ethtypes.Log) (*RewardParams, error) {
 	if err != nil {
 		return nil, errorsmod.Wrap(err, "error occurred when binary read action")
 	}
-	if action != types.DepositAction {
+	if action != types.WithDrawReward {
 		// not handle the actions that isn't deposit
 		return nil, nil
 	}
@@ -53,8 +57,8 @@ func getRewardParamsFromEventLog(log *ethtypes.Log) (*RewardParams, error) {
 	readStart = readEnd
 	readEnd += types.GeneralClientChainAddrLength
 	r = bytes.NewReader(log.Data[readStart:readEnd])
-	var depositAddress types.GeneralClientChainAddr
-	err = binary.Read(r, binary.BigEndian, depositAddress)
+	var rewardAddr types.GeneralClientChainAddr
+	err = binary.Read(r, binary.BigEndian, rewardAddr)
 	if err != nil {
 		return nil, errorsmod.Wrap(err, "error occurred when binary read assets address")
 	}
@@ -70,98 +74,21 @@ func getRewardParamsFromEventLog(log *ethtypes.Log) (*RewardParams, error) {
 		return nil, errorsmod.Wrap(err, "error occurred when binary read clientChainLzId from topic")
 	}
 
-	return &DepositParams{
-		clientChainLzId: clientChainLzId,
-		action:          action,
-		assetsAddress:   assetsAddress,
-		depositAddress:  depositAddress,
-		opAmount:        amount,
+	return &RewardParams{
+		clientChainLzId:       clientChainLzId,
+		action:                action,
+		assetsAddress:         assetsAddress,
+		withdrawRewardAddress: rewardAddr,
+		opAmount:              amount,
 	}, nil
 }
 
-// To be decided here!
-// func (k Keeper) sendRewards(ctx sdk.Context, rewards []*types.MsgRewardDetail, addr string, rewardProgramDenom string) (sdk.Coin, error) {
-// 	amount := sdk.NewInt64Coin(rewardProgramDenom, 0)
-
-// 	if len(rewards) == 0 {
-// 		return amount, nil
-// 	}
-
-// 	for _, reward := range rewards {
-// 		amount.Denom = reward.GetClaimPeriodReward().Denom
-// 		amount = amount.Add(reward.GetClaimPeriodReward())
-// 	}
-
-// 	return k.sendCoinsToAccount(ctx, amount, addr)
-// }
-
-// // sendCoinsToAccount is mainly for `SendCoinsFromModuleToAccount`
-// func (k Keeper) sendCoinsToAccount(ctx sdk.Context, amount sdk.Coin, addr string) (sdk.Coin, error) {
-// 	if amount.IsZero() {
-// 		return sdk.NewInt64Coin(amount.GetDenom(), 0), nil
-// 	}
-
-// 	acc, err := sdk.AccAddressFromBech32(addr)
-// 	if err != nil {
-// 		return sdk.NewInt64Coin(amount.Denom, 0), err
-// 	}
-
-// 	err = k.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, acc, sdk.NewCoins(amount))
-// 	if err != nil {
-// 		return sdk.NewInt64Coin(amount.Denom, 0), err
-// 	}
-
-// 	return amount, nil
-// }
-
-// // Get reward value of the corresponding address in the rewards pool
-// func (p rewardPool) getRewards(address sdk.ValAddress) (sdk.Coins, bool) {
-// 	for _, reward := range p.Rewards {
-// 		if reward.Validator.Equals(address) {
-// 			return reward.Coins, true
-// 		}
-// 	}
-
-// 	return sdk.Coins{}, false
-// }
-
-// // Add and record for the corresponding reward in the rewards pool
-// func (p *rewardPool) AddReward(address sdk.ValAddress, coin sdk.Coin) {
-// 	defer func() {
-// 		p.k.Logger(p.ctx).Debug("adding rewards in pool", "pool", p.Name, "validator", address.String(), "coin", coin.String())
-
-// 		p.k.setPool(p.ctx, p.Pool)
-// 	}()
-
-// 	if coin.Amount.IsZero() {
-// 		return
-// 	}
-
-// 	for i, reward := range p.Rewards {
-// 		if reward.Validator.Equals(address) {
-// 			p.Rewards[i].Coins = reward.Coins.Add(coin)
-// 			return
-// 		}
-// 	}
-
-// 	p.Rewards = append(p.Rewards, types.Pool_Reward{
-// 		Validator: address,
-// 		Coins:     sdk.NewCoins(coin),
-// 	})
-// }
-
-// // Clear rewards of the specific address
-// func (p *rewardPool) ClearRewards(address sdk.ValAddress) {
-// 	for i, reward := range p.Rewards {
-// 		if reward.Validator.Equals(address) {
-// 			p.k.Logger(p.ctx).Info("clearing rewards in pool", "pool", p.Name, "validator", address.String())
-
-// 			p.Rewards = append(p.Rewards[:i], p.Rewards[i+1:]...)
-// 			p.k.setPool(p.ctx, p.Pool)
-// 			return
-// 		}
-// 	}
-// }
+func getStakeIDAndAssetId(params *RewardParams) (stakeId string, assetId string) {
+	clientChainLzIdStr := hexutil.EncodeUint64(params.clientChainLzId)
+	stakeId = strings.Join([]string{hexutil.Encode(params.withdrawRewardAddress[:]), clientChainLzIdStr}, "_")
+	assetId = strings.Join([]string{hexutil.Encode(params.assetsAddress[:]), clientChainLzIdStr}, "_")
+	return
+}
 
 func (k Keeper) PostTxProcessing(ctx sdk.Context, msg core.Message, receipt *ethtypes.Receipt) error {
 	//TODO check if contract address is valid layerZero relayer address
@@ -182,17 +109,40 @@ func (k Keeper) PostTxProcessing(ctx sdk.Context, msg core.Message, receipt *eth
 	}
 
 	for _, log := range needLogs {
-		depositParams, err := getDepositParamsFromEventLog(log)
+		rewardParams, err := getRewardParamsFromEventLog(log)
 		if err != nil {
 			return err
 		}
-		if depositParams != nil {
-			err = k.Deposit(ctx, depositParams)
+		if rewardParams != nil {
+			err = k.RewardForWithdraw(ctx, rewardParams)
 			if err != nil {
 				// todo: need to test if the changed storage state will be reverted if there is an error occurred
 				return err
 			}
 		}
+	}
+	return nil
+}
+
+func (k Keeper) RewardForWithdraw(ctx sdk.Context, event *RewardParams) error {
+	//check event parameter then execute RewardForWithdraw operation
+	if event.opAmount.IsNegative() {
+		return errorsmod.Wrap(rtypes.ErrRewardAmountIsNegative, fmt.Sprintf("the amount is:%s", event.opAmount))
+	}
+	stakeId, assetId := getStakeIDAndAssetId(event)
+	//check is asset exist
+	if !k.retakingStateKeeper.StakingAssetIsExist(ctx, assetId) {
+		return errorsmod.Wrap(rtypes.ErrRewardAssetNotExist, fmt.Sprintf("the assetId is:%s", assetId))
+	}
+
+	//TODO
+	changeAmount := types.StakerSingleAssetOrChangeInfo{
+		TotalDepositAmountOrWantChangeValue: event.opAmount,
+		CanWithdrawAmountOrWantChangeValue:  event.opAmount,
+	}
+	err := k.retakingStateKeeper.UpdateStakerAssetState(ctx, stakeId, assetId, changeAmount)
+	if err != nil {
+		return err
 	}
 	return nil
 }

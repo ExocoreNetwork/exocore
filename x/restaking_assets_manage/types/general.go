@@ -3,6 +3,9 @@ package types
 const (
 	CrossChainActionLength       = 1
 	CrossChainOpAmountLength     = 32
+	GeneralAssetsAddrLength      = 32
+	GeneralClientChainAddrLength = 32
+
 	ClientChainLzIdIndexInTopics = 1
 
 	ExoCoreOperatorAddrLength = 45

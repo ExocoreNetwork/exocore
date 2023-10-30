@@ -39,7 +39,7 @@ func getWithdrawParamsFromEventLog(log *ethtypes.Log) (*WithdrawParams, error) {
 	if err != nil {
 		return nil, errorsmod.Wrap(err, "error occurred when binary read action")
 	}
-	if action != types.WithdrawAction {
+	if action != types.WithdrawPrinciple {
 		// not handle the actions that isn't withdraw
 		return nil, nil
 	}
