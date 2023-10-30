@@ -9,7 +9,8 @@ import (
 
 // GetParams get all parameters as types.Params
 func (k Keeper) GetParams(ctx sdk.Context) (*types.Params, error) {
-	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.ParamsKey)
+
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefixParams)
 	ifExist := store.Has(types.ParamsKey)
 	if !ifExist {
 		return nil, types.ErrNoParamsKey
@@ -31,7 +32,8 @@ func (k Keeper) SetParams(ctx sdk.Context, params *types.Params) error {
 	if len(common.FromHex(params.ExoCoreLzAppEventTopic)) != common.HashLength {
 		return types.ErrInvalidLzUaTopicIdLength
 	}
-	store := ctx.KVStore(k.storeKey)
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefixParams)
+	//key := common.HexToAddress(incentive.Contract)
 	bz := k.cdc.MustMarshal(params)
 	store.Set(types.ParamsKey, bz)
 	return nil

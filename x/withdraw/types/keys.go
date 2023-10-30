@@ -18,7 +18,12 @@ func KeyPrefix(p string) []byte {
 	return []byte(p)
 }
 
+const (
+	prefixParams = iota + 1
+)
+
 var (
-	ParamsKey     = []byte{0x01}
-	DepositPrefix = []byte{0x02}
+	ParamsKey       = []byte("Params")
+	DepositPrefix   = []byte{0x02}
+	KeyPrefixParams = []byte{prefixParams}
 )

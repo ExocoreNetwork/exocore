@@ -12,12 +12,18 @@ const (
 
 	// MemStoreKey defines the in-memory store key
 	MemStoreKey = "mem_reward"
-
-    
 )
 
-
-
 func KeyPrefix(p string) []byte {
-    return []byte(p)
+	return []byte(p)
 }
+
+const (
+	prefixParams = iota + 1
+)
+
+var (
+	KeyPrefixParams = []byte{prefixParams}
+
+	ParamsKey = []byte("Params")
+)
