@@ -24,7 +24,7 @@ func (k Keeper) ClientChainInfoIsExist(ctx sdk.Context, index uint64) bool {
 
 func (k Keeper) GetClientChainInfoByIndex(ctx sdk.Context, index uint64) (info *types2.ClientChainInfo, err error) {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types2.KeyPrefixClientChainInfo)
-	ifExist := store.Has([]byte(hexutil.EncodeUint64(info.LayerZeroChainId)))
+	ifExist := store.Has([]byte(hexutil.EncodeUint64(index)))
 	if !ifExist {
 		return nil, types2.ErrNoClientChainKey
 	}

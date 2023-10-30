@@ -46,7 +46,7 @@ func Test_DecodeThroughBigEndian(t *testing.T) {
 	log.Println("the action is:", action)
 
 	r = bytes.NewReader(payloadBytes[1:21])
-	var tokenAddress types2.GeneralAssetsAddr
+	var tokenAddress types2.GeneralAddr
 	err = binary.Read(r, binary.BigEndian, tokenAddress)
 	assert.NoError(t, err)
 	log.Println("the tokenAddress is:", tokenAddress)

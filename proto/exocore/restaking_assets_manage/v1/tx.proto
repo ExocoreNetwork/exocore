@@ -18,6 +18,7 @@ message ClientChainInfo {
   uint64 FinalityNeedBlockDelay = 5;
   uint64 LayerZeroChainId = 6;
   string SignatureType = 7;
+  uint32 AddressLength = 8;
 }
 
 message ClientChainTokenInfo {

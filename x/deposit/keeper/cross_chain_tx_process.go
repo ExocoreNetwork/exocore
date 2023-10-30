@@ -22,41 +22,53 @@ import (
 type DepositParams struct {
 	clientChainLzId uint64
 	action          types.CrossChainOpType
-	assetsAddress   types.GeneralAssetsAddr
-	depositAddress  types.GeneralClientChainAddr
+	assetsAddress   []byte
+	depositAddress  []byte
 	opAmount        sdkmath.Int
 }
 
-func getDepositParamsFromEventLog(log *ethtypes.Log) (*DepositParams, error) {
+func (k Keeper) getDepositParamsFromEventLog(ctx sdk.Context, log *ethtypes.Log) (*DepositParams, error) {
 	// check if action is deposit
 	var action types.CrossChainOpType
 	var err error
-	readStart := 0
-	readEnd := types.CrossChainActionLength
+	readStart := uint32(0)
+	readEnd := uint32(types.CrossChainActionLength)
 	r := bytes.NewReader(log.Data[readStart:readEnd])
 	err = binary.Read(r, binary.BigEndian, &action)
 	if err != nil {
 		return nil, errorsmod.Wrap(err, "error occurred when binary read action")
 	}
-	if action != types.DepositAction {
+	if action != types.Deposit {
 		// not handle the actions that isn't deposit
 		return nil, nil
 	}
 
+	var clientChainLzId uint64
+	r = bytes.NewReader(log.Topics[types.ClientChainLzIdIndexInTopics][:])
+	err = binary.Read(r, binary.BigEndian, &clientChainLzId)
+	if err != nil {
+		return nil, errorsmod.Wrap(err, "error occurred when binary read clientChainLzId from topic")
+	}
+
+	clientChainInfo, err := k.retakingStateKeeper.GetClientChainInfoByIndex(ctx, clientChainLzId)
+	if err != nil {
+		return nil, errorsmod.Wrap(err, "error occurred when get client chain info")
+	}
+
 	//decode the action parameters
 	readStart = readEnd
-	readEnd += types.GeneralAssetsAddrLength
+	readEnd += clientChainInfo.AddressLength
 	r = bytes.NewReader(log.Data[readStart:readEnd])
-	var assetsAddress types.GeneralAssetsAddr
+	assetsAddress := make([]byte, clientChainInfo.AddressLength)
 	err = binary.Read(r, binary.BigEndian, assetsAddress)
 	if err != nil {
 		return nil, errorsmod.Wrap(err, "error occurred when binary read assets address")
 	}
 
 	readStart = readEnd
-	readEnd += types.GeneralClientChainAddrLength
+	readEnd += clientChainInfo.AddressLength
 	r = bytes.NewReader(log.Data[readStart:readEnd])
-	var depositAddress types.GeneralClientChainAddr
+	depositAddress := make([]byte, clientChainInfo.AddressLength)
 	err = binary.Read(r, binary.BigEndian, depositAddress)
 	if err != nil {
 		return nil, errorsmod.Wrap(err, "error occurred when binary read assets address")
@@ -65,13 +77,6 @@ func getDepositParamsFromEventLog(log *ethtypes.Log) (*DepositParams, error) {
 	readStart = readEnd
 	readEnd += types.CrossChainOpAmountLength
 	amount := sdkmath.NewIntFromBigInt(big.NewInt(0).SetBytes(log.Data[readStart:readEnd]))
-
-	var clientChainLzId uint64
-	r = bytes.NewReader(log.Topics[types.ClientChainLzIdIndexInTopics][:])
-	err = binary.Read(r, binary.BigEndian, &clientChainLzId)
-	if err != nil {
-		return nil, errorsmod.Wrap(err, "error occurred when binary read clientChainLzId from topic")
-	}
 
 	return &DepositParams{
 		clientChainLzId: clientChainLzId,
@@ -84,17 +89,15 @@ func getDepositParamsFromEventLog(log *ethtypes.Log) (*DepositParams, error) {
 
 func getStakeIDAndAssetId(params *DepositParams) (stakeId string, assetId string) {
 	clientChainLzIdStr := hexutil.EncodeUint64(params.clientChainLzId)
-	stakeId = strings.Join([]string{hexutil.Encode(params.depositAddress[:]), clientChainLzIdStr}, "_")
-	assetId = strings.Join([]string{hexutil.Encode(params.assetsAddress[:]), clientChainLzIdStr}, "_")
+	stakeId = strings.Join([]string{hexutil.Encode(params.depositAddress), clientChainLzIdStr}, "_")
+	assetId = strings.Join([]string{hexutil.Encode(params.assetsAddress), clientChainLzIdStr}, "_")
 	return
 }
 
-func (k Keeper) PostTxProcessing(ctx sdk.Context, msg core.Message, receipt *ethtypes.Receipt) error {
-	//TODO check if contract address is valid layerZero relayer address
-	//check if log address and topicId is valid
+func (k Keeper) FilterCrossChainEventLogs(ctx sdk.Context, msg core.Message, receipt *ethtypes.Receipt) ([]*ethtypes.Log, error) {
 	params, err := k.GetParams(ctx)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	//filter needed logs
 	addresses := []common.Address{common.HexToAddress(params.ExoCoreLzAppAddress)}
@@ -102,20 +105,30 @@ func (k Keeper) PostTxProcessing(ctx sdk.Context, msg core.Message, receipt *eth
 		{common.HexToHash(params.ExoCoreLzAppEventTopic)},
 	}
 	needLogs := filters.FilterLogs(receipt.Logs, nil, nil, addresses, topics)
+	return needLogs, nil
+}
+
+func (k Keeper) PostTxProcessing(ctx sdk.Context, msg core.Message, receipt *ethtypes.Receipt) error {
+	//TODO check if contract address is valid layerZero relayer address
+
+	needLogs, err := k.FilterCrossChainEventLogs(ctx, msg, receipt)
+	if err != nil {
+		return err
+	}
 	if len(needLogs) == 0 {
 		log.Println("the hook message doesn't have any event needed to handle")
 		return nil
 	}
 
 	for _, log := range needLogs {
-		depositParams, err := getDepositParamsFromEventLog(log)
+		depositParams, err := k.getDepositParamsFromEventLog(ctx, log)
 		if err != nil {
 			return err
 		}
 		if depositParams != nil {
 			err = k.Deposit(ctx, depositParams)
 			if err != nil {
-				// todo: need to test if the changed storage state will be reverted if there is an error occurred
+				// todo: need to test if the changed storage state will be reverted when there is an error occurred
 				return err
 			}
 		}
@@ -124,12 +137,12 @@ func (k Keeper) PostTxProcessing(ctx sdk.Context, msg core.Message, receipt *eth
 }
 
 func (k Keeper) Deposit(ctx sdk.Context, event *DepositParams) error {
-	//check event parameter then execute deposit operation
+	//check event parameter before executing deposit operation
 	if event.opAmount.IsNegative() {
 		return errorsmod.Wrap(types2.ErrDepositAmountIsNegative, fmt.Sprintf("the amount is:%s", event.opAmount))
 	}
 	stakeId, assetId := getStakeIDAndAssetId(event)
-	//check is asset exist
+	//check if asset exist
 	if !k.retakingStateKeeper.StakingAssetIsExist(ctx, assetId) {
 		return errorsmod.Wrap(types2.ErrDepositAssetNotExist, fmt.Sprintf("the assetId is:%s", assetId))
 	}

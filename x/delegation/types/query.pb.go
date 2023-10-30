@@ -31,24 +31,24 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
-type QueryDelegationInfo struct {
+type DelegationInfoReq struct {
 	StakerId   string   `protobuf:"bytes,1,opt,name=stakerId,proto3" json:"stakerId,omitempty"`
 	ExCoreAddr string   `protobuf:"bytes,2,opt,name=exCoreAddr,proto3" json:"exCoreAddr,omitempty"`
 	AssetIds   []string `protobuf:"bytes,3,rep,name=assetIds,proto3" json:"assetIds,omitempty"`
 }
 
-func (m *QueryDelegationInfo) Reset()         { *m = QueryDelegationInfo{} }
-func (m *QueryDelegationInfo) String() string { return proto.CompactTextString(m) }
-func (*QueryDelegationInfo) ProtoMessage()    {}
-func (*QueryDelegationInfo) Descriptor() ([]byte, []int) {
+func (m *DelegationInfoReq) Reset()         { *m = DelegationInfoReq{} }
+func (m *DelegationInfoReq) String() string { return proto.CompactTextString(m) }
+func (*DelegationInfoReq) ProtoMessage()    {}
+func (*DelegationInfoReq) Descriptor() ([]byte, []int) {
 	return fileDescriptor_aab345e1cf20490c, []int{0}
 }
-func (m *QueryDelegationInfo) XXX_Unmarshal(b []byte) error {
+func (m *DelegationInfoReq) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *QueryDelegationInfo) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *DelegationInfoReq) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_QueryDelegationInfo.Marshal(b, m, deterministic)
+		return xxx_messageInfo_DelegationInfoReq.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -58,33 +58,33 @@ func (m *QueryDelegationInfo) XXX_Marshal(b []byte, deterministic bool) ([]byte,
 		return b[:n], nil
 	}
 }
-func (m *QueryDelegationInfo) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_QueryDelegationInfo.Merge(m, src)
+func (m *DelegationInfoReq) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_DelegationInfoReq.Merge(m, src)
 }
-func (m *QueryDelegationInfo) XXX_Size() int {
+func (m *DelegationInfoReq) XXX_Size() int {
 	return m.Size()
 }
-func (m *QueryDelegationInfo) XXX_DiscardUnknown() {
-	xxx_messageInfo_QueryDelegationInfo.DiscardUnknown(m)
+func (m *DelegationInfoReq) XXX_DiscardUnknown() {
+	xxx_messageInfo_DelegationInfoReq.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_QueryDelegationInfo proto.InternalMessageInfo
+var xxx_messageInfo_DelegationInfoReq proto.InternalMessageInfo
 
-func (m *QueryDelegationInfo) GetStakerId() string {
+func (m *DelegationInfoReq) GetStakerId() string {
 	if m != nil {
 		return m.StakerId
 	}
 	return ""
 }
 
-func (m *QueryDelegationInfo) GetExCoreAddr() string {
+func (m *DelegationInfoReq) GetExCoreAddr() string {
 	if m != nil {
 		return m.ExCoreAddr
 	}
 	return ""
 }
 
-func (m *QueryDelegationInfo) GetAssetIds() []string {
+func (m *DelegationInfoReq) GetAssetIds() []string {
 	if m != nil {
 		return m.AssetIds
 	}
@@ -135,44 +135,92 @@ func (m *QueryDelegationInfoResponse) GetDelegationInfos() map[string]*Delegated
 	return nil
 }
 
+type QueryOperatorInfoReq struct {
+	OperatorAddr string `protobuf:"bytes,1,opt,name=OperatorAddr,proto3" json:"OperatorAddr,omitempty"`
+}
+
+func (m *QueryOperatorInfoReq) Reset()         { *m = QueryOperatorInfoReq{} }
+func (m *QueryOperatorInfoReq) String() string { return proto.CompactTextString(m) }
+func (*QueryOperatorInfoReq) ProtoMessage()    {}
+func (*QueryOperatorInfoReq) Descriptor() ([]byte, []int) {
+	return fileDescriptor_aab345e1cf20490c, []int{2}
+}
+func (m *QueryOperatorInfoReq) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QueryOperatorInfoReq) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryOperatorInfoReq.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QueryOperatorInfoReq) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryOperatorInfoReq.Merge(m, src)
+}
+func (m *QueryOperatorInfoReq) XXX_Size() int {
+	return m.Size()
+}
+func (m *QueryOperatorInfoReq) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryOperatorInfoReq.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryOperatorInfoReq proto.InternalMessageInfo
+
+func (m *QueryOperatorInfoReq) GetOperatorAddr() string {
+	if m != nil {
+		return m.OperatorAddr
+	}
+	return ""
+}
+
 func init() {
-	proto.RegisterType((*QueryDelegationInfo)(nil), "exocore.delegation.v1.QueryDelegationInfo")
+	proto.RegisterType((*DelegationInfoReq)(nil), "exocore.delegation.v1.DelegationInfoReq")
 	proto.RegisterType((*QueryDelegationInfoResponse)(nil), "exocore.delegation.v1.QueryDelegationInfoResponse")
 	proto.RegisterMapType((map[string]*DelegatedSingleAssetInfo)(nil), "exocore.delegation.v1.QueryDelegationInfoResponse.DelegationInfosEntry")
+	proto.RegisterType((*QueryOperatorInfoReq)(nil), "exocore.delegation.v1.QueryOperatorInfoReq")
 }
 
 func init() { proto.RegisterFile("exocore/delegation/v1/query.proto", fileDescriptor_aab345e1cf20490c) }
 
 var fileDescriptor_aab345e1cf20490c = []byte{
-	// 438 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x94, 0x92, 0x41, 0x6b, 0xd4, 0x40,
-	0x14, 0xc7, 0x77, 0x36, 0x54, 0x74, 0x7a, 0x50, 0xc7, 0x15, 0x62, 0x2a, 0x61, 0x5d, 0x10, 0x6b,
-	0xc1, 0x0c, 0x8d, 0x1e, 0x8a, 0x17, 0x69, 0xb5, 0x94, 0x3d, 0x9a, 0xde, 0xbc, 0x48, 0xba, 0x79,
-	0x8e, 0xa1, 0xe9, 0xbc, 0x74, 0x66, 0x76, 0x49, 0xae, 0x82, 0xe8, 0x51, 0xf0, 0x53, 0x78, 0x13,
-	0xf4, 0x43, 0x78, 0x2c, 0x7a, 0xf1, 0x28, 0xbb, 0x82, 0x5f, 0x43, 0x26, 0x49, 0x6b, 0x1b, 0xa3,
-	0xe8, 0x6d, 0xde, 0xfc, 0xff, 0xf9, 0xcd, 0xff, 0xbd, 0x3c, 0x7a, 0x03, 0x0a, 0x9c, 0xa0, 0x02,
-	0x9e, 0x40, 0x06, 0x22, 0x36, 0x29, 0x4a, 0x3e, 0x5b, 0xe7, 0x87, 0x53, 0x50, 0x65, 0x90, 0x2b,
-	0x34, 0xc8, 0xae, 0x36, 0x96, 0xe0, 0x97, 0x25, 0x98, 0xad, 0x7b, 0x03, 0x81, 0x02, 0x2b, 0x07,
-	0xb7, 0xa7, 0xda, 0xec, 0x5d, 0x17, 0x88, 0x22, 0x03, 0x1e, 0xe7, 0x29, 0x8f, 0xa5, 0x44, 0x53,
-	0xf9, 0x75, 0xa3, 0xae, 0x4c, 0x50, 0x1f, 0xa0, 0xae, 0xf1, 0xad, 0x77, 0xbc, 0x6b, 0xb5, 0xf8,
-	0xb4, 0x66, 0xd6, 0x45, 0x23, 0xf9, 0xdd, 0x29, 0x4d, 0x51, 0xeb, 0xa3, 0x57, 0x84, 0x5e, 0x79,
-	0x6c, 0x51, 0x8f, 0x4e, 0xf4, 0xb1, 0x7c, 0x86, 0xcc, 0xa3, 0xe7, 0xb5, 0x89, 0xf7, 0x41, 0x8d,
-	0x13, 0x97, 0x0c, 0xc9, 0xea, 0x85, 0xe8, 0xa4, 0x66, 0x1b, 0x94, 0x42, 0xf1, 0x10, 0x15, 0x6c,
-	0x26, 0x89, 0x72, 0xfb, 0x56, 0xdd, 0x72, 0x3f, 0x7f, 0xbc, 0x33, 0x68, 0x5e, 0xb6, 0xd7, 0xa0,
-	0xf5, 0xae, 0x51, 0xa9, 0x14, 0xd1, 0x29, 0xaf, 0xa5, 0xc6, 0x5a, 0x83, 0x19, 0x27, 0xda, 0x75,
-	0x86, 0x8e, 0xa5, 0x1e, 0xd7, 0xa3, 0x97, 0x7d, 0xba, 0xd2, 0x91, 0x24, 0x02, 0x9d, 0xa3, 0xd4,
-	0xc0, 0x0e, 0xe9, 0xc5, 0xe4, 0x8c, 0xa2, 0x5d, 0x32, 0x74, 0x56, 0x97, 0xc3, 0x9d, 0xa0, 0x73,
-	0xcc, 0xc1, 0x5f, 0x60, 0xc1, 0xd9, 0x6b, 0xbd, 0x2d, 0x8d, 0x2a, 0xa3, 0x36, 0xdf, 0xd3, 0x74,
-	0xd0, 0x65, 0x64, 0x97, 0xa8, 0xb3, 0x0f, 0x65, 0x33, 0x17, 0x7b, 0x64, 0xdb, 0x74, 0x69, 0x16,
-	0x67, 0x53, 0xa8, 0xa6, 0xb1, 0x1c, 0xf2, 0x3f, 0x44, 0x6a, 0x68, 0x90, 0xec, 0xa6, 0x52, 0x64,
-	0xb0, 0x59, 0xf5, 0x6e, 0x73, 0xd5, 0x5f, 0xdf, 0xef, 0x6f, 0x90, 0xf0, 0x03, 0xa1, 0x4b, 0x55,
-	0x74, 0xf6, 0x8e, 0xd0, 0xcb, 0x3b, 0x60, 0x5a, 0x7f, 0x66, 0xed, 0xdf, 0xdb, 0xf5, 0xc2, 0xff,
-	0x1f, 0xcd, 0xe8, 0xde, 0xeb, 0x1f, 0xef, 0xd7, 0xc8, 0x8b, 0x2f, 0xdf, 0xdf, 0xf6, 0x6f, 0xb3,
-	0x5b, 0xcd, 0x36, 0xb5, 0xd6, 0xe7, 0xb7, 0x54, 0x5b, 0x0f, 0x3e, 0xcd, 0x7d, 0x72, 0x34, 0xf7,
-	0xc9, 0xb7, 0xb9, 0x4f, 0xde, 0x2c, 0xfc, 0xde, 0xd1, 0xc2, 0xef, 0x7d, 0x5d, 0xf8, 0xbd, 0x27,
-	0x37, 0x45, 0x6a, 0x9e, 0x4f, 0xf7, 0x82, 0x09, 0x1e, 0xf0, 0xe3, 0x65, 0x2c, 0x4e, 0xf3, 0x4c,
-	0x99, 0x83, 0xde, 0x3b, 0x57, 0xed, 0xe3, 0xdd, 0x9f, 0x01, 0x00, 0x00, 0xff, 0xff, 0xe2, 0x10,
-	0xde, 0x96, 0x57, 0x03, 0x00, 0x00,
+	// 496 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x94, 0x53, 0xcf, 0x8b, 0xd3, 0x40,
+	0x14, 0xee, 0xa4, 0xac, 0xe8, 0xac, 0xa0, 0x3b, 0x56, 0x88, 0x59, 0x09, 0x35, 0xa2, 0x84, 0x15,
+	0x13, 0xb6, 0x22, 0x2c, 0x22, 0xc8, 0xae, 0x2e, 0x4b, 0x4f, 0x62, 0xd7, 0x93, 0x17, 0xc9, 0x36,
+	0xcf, 0x18, 0xb6, 0x9b, 0x97, 0xce, 0x4c, 0x4b, 0x7b, 0x15, 0x16, 0x3c, 0x0a, 0xe2, 0x3f, 0xe1,
+	0xc9, 0x83, 0x7f, 0x84, 0x07, 0x0f, 0x8b, 0x5e, 0x3c, 0x4a, 0x2b, 0xf8, 0x6f, 0xc8, 0x4c, 0xd2,
+	0x1f, 0xa9, 0x69, 0xc5, 0x5b, 0xde, 0xfb, 0xbe, 0xf9, 0xde, 0x37, 0xdf, 0xbc, 0xd0, 0x1b, 0x30,
+	0xc0, 0x36, 0x72, 0xf0, 0x43, 0xe8, 0x40, 0x14, 0xc8, 0x18, 0x13, 0xbf, 0xbf, 0xed, 0x77, 0x7b,
+	0xc0, 0x87, 0x5e, 0xca, 0x51, 0x22, 0xbb, 0x9a, 0x53, 0xbc, 0x19, 0xc5, 0xeb, 0x6f, 0x5b, 0xb5,
+	0x08, 0x23, 0xd4, 0x0c, 0x5f, 0x7d, 0x65, 0x64, 0xeb, 0x7a, 0x84, 0x18, 0x75, 0xc0, 0x0f, 0xd2,
+	0xd8, 0x0f, 0x92, 0x04, 0xa5, 0xe6, 0x8b, 0x1c, 0xdd, 0x6c, 0xa3, 0x38, 0x41, 0x91, 0xc9, 0x2f,
+	0xcc, 0xb1, 0xae, 0x65, 0xe0, 0xcb, 0x4c, 0x33, 0x2b, 0x72, 0xc8, 0x2e, 0x77, 0x29, 0x07, 0x19,
+	0xee, 0x9c, 0x12, 0xba, 0xf1, 0x64, 0x0a, 0x35, 0x93, 0x57, 0xd8, 0x82, 0x2e, 0xb3, 0xe8, 0x79,
+	0x21, 0x83, 0x63, 0xe0, 0xcd, 0xd0, 0x24, 0x75, 0xe2, 0x5e, 0x68, 0x4d, 0x6b, 0xb6, 0x43, 0x29,
+	0x0c, 0x1e, 0x23, 0x87, 0xdd, 0x30, 0xe4, 0xa6, 0xa1, 0xd0, 0x3d, 0xf3, 0xdb, 0xe7, 0xbb, 0xb5,
+	0x7c, 0xae, 0x6a, 0x83, 0x10, 0x87, 0x92, 0xc7, 0x49, 0xd4, 0x9a, 0xe3, 0x2a, 0xd5, 0x40, 0x08,
+	0x90, 0xcd, 0x50, 0x98, 0xd5, 0x7a, 0x55, 0xa9, 0x4e, 0x6a, 0xe7, 0xd4, 0xa0, 0x9b, 0xcf, 0xd4,
+	0x95, 0x16, 0xcd, 0x88, 0x14, 0x13, 0x01, 0xac, 0x4b, 0x2f, 0x85, 0x05, 0x44, 0x98, 0xa4, 0x5e,
+	0x75, 0xd7, 0x1b, 0x07, 0x5e, 0x69, 0xc8, 0xde, 0x0a, 0x31, 0xaf, 0xd8, 0x16, 0xfb, 0x89, 0xe4,
+	0xc3, 0xd6, 0xa2, 0xbe, 0x25, 0x68, 0xad, 0x8c, 0xc8, 0x2e, 0xd3, 0xea, 0x31, 0x0c, 0xf3, 0x5c,
+	0xd4, 0x27, 0xdb, 0xa7, 0x6b, 0xfd, 0xa0, 0xd3, 0x03, 0x9d, 0xc6, 0x7a, 0xc3, 0x5f, 0x62, 0x29,
+	0x57, 0x83, 0xf0, 0x30, 0x4e, 0xa2, 0x0e, 0xec, 0xea, 0xbb, 0x2b, 0x5f, 0xd9, 0xe9, 0x07, 0xc6,
+	0x0e, 0x71, 0x9e, 0xd3, 0x9a, 0x76, 0xfe, 0x34, 0x05, 0x1e, 0x48, 0xe4, 0x93, 0x17, 0x79, 0x48,
+	0x2f, 0x4e, 0x5a, 0x3a, 0x77, 0xf2, 0x8f, 0xdc, 0x0b, 0xec, 0xc6, 0x57, 0x83, 0xae, 0x69, 0x59,
+	0xf6, 0x81, 0xd0, 0x8d, 0xbf, 0x06, 0xb0, 0x3b, 0xab, 0x42, 0x5c, 0xb0, 0x62, 0xdd, 0x5c, 0x42,
+	0x9e, 0xe7, 0x39, 0xde, 0x9b, 0xef, 0xbf, 0xde, 0x1b, 0x2e, 0xbb, 0xed, 0x97, 0x2f, 0xe0, 0x01,
+	0xc8, 0x82, 0x83, 0x8f, 0x84, 0x5e, 0x29, 0x79, 0x32, 0xe6, 0xae, 0xce, 0x72, 0xb6, 0xb3, 0x56,
+	0xe3, 0xff, 0x17, 0xc1, 0xb9, 0xff, 0xf6, 0xf7, 0xa7, 0x2d, 0xa2, 0xad, 0x6e, 0x31, 0x77, 0xb9,
+	0xd5, 0xe2, 0xf1, 0xbd, 0x47, 0x5f, 0x46, 0x36, 0x39, 0x1b, 0xd9, 0xe4, 0xe7, 0xc8, 0x26, 0xef,
+	0xc6, 0x76, 0xe5, 0x6c, 0x6c, 0x57, 0x7e, 0x8c, 0xed, 0xca, 0x8b, 0x5b, 0x51, 0x2c, 0x5f, 0xf7,
+	0x8e, 0xbc, 0x36, 0x9e, 0x4c, 0xd5, 0x06, 0xf3, 0x7a, 0x72, 0x98, 0x82, 0x38, 0x3a, 0xa7, 0x7f,
+	0xbe, 0x7b, 0x7f, 0x02, 0x00, 0x00, 0xff, 0xff, 0xf6, 0xe2, 0x44, 0xf4, 0x44, 0x04, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -187,8 +235,9 @@ const _ = grpc.SupportPackageIsVersion4
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
 type QueryClient interface {
+	QueryOperatorInfo(ctx context.Context, in *QueryOperatorInfoReq, opts ...grpc.CallOption) (*OperatorInfo, error)
 	// Balance queries the balance of a single coin for a single account.
-	GetDelegationInfo(ctx context.Context, in *QueryDelegationInfo, opts ...grpc.CallOption) (*QueryDelegationInfoResponse, error)
+	QueryDelegationInfo(ctx context.Context, in *DelegationInfoReq, opts ...grpc.CallOption) (*QueryDelegationInfoResponse, error)
 }
 
 type queryClient struct {
@@ -199,9 +248,18 @@ func NewQueryClient(cc grpc1.ClientConn) QueryClient {
 	return &queryClient{cc}
 }
 
-func (c *queryClient) GetDelegationInfo(ctx context.Context, in *QueryDelegationInfo, opts ...grpc.CallOption) (*QueryDelegationInfoResponse, error) {
+func (c *queryClient) QueryOperatorInfo(ctx context.Context, in *QueryOperatorInfoReq, opts ...grpc.CallOption) (*OperatorInfo, error) {
+	out := new(OperatorInfo)
+	err := c.cc.Invoke(ctx, "/exocore.delegation.v1.Query/QueryOperatorInfo", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *queryClient) QueryDelegationInfo(ctx context.Context, in *DelegationInfoReq, opts ...grpc.CallOption) (*QueryDelegationInfoResponse, error) {
 	out := new(QueryDelegationInfoResponse)
-	err := c.cc.Invoke(ctx, "/exocore.delegation.v1.Query/GetDelegationInfo", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/exocore.delegation.v1.Query/QueryDelegationInfo", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -210,36 +268,58 @@ func (c *queryClient) GetDelegationInfo(ctx context.Context, in *QueryDelegation
 
 // QueryServer is the server API for Query service.
 type QueryServer interface {
+	QueryOperatorInfo(context.Context, *QueryOperatorInfoReq) (*OperatorInfo, error)
 	// Balance queries the balance of a single coin for a single account.
-	GetDelegationInfo(context.Context, *QueryDelegationInfo) (*QueryDelegationInfoResponse, error)
+	QueryDelegationInfo(context.Context, *DelegationInfoReq) (*QueryDelegationInfoResponse, error)
 }
 
 // UnimplementedQueryServer can be embedded to have forward compatible implementations.
 type UnimplementedQueryServer struct {
 }
 
-func (*UnimplementedQueryServer) GetDelegationInfo(ctx context.Context, req *QueryDelegationInfo) (*QueryDelegationInfoResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetDelegationInfo not implemented")
+func (*UnimplementedQueryServer) QueryOperatorInfo(ctx context.Context, req *QueryOperatorInfoReq) (*OperatorInfo, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method QueryOperatorInfo not implemented")
+}
+func (*UnimplementedQueryServer) QueryDelegationInfo(ctx context.Context, req *DelegationInfoReq) (*QueryDelegationInfoResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method QueryDelegationInfo not implemented")
 }
 
 func RegisterQueryServer(s grpc1.Server, srv QueryServer) {
 	s.RegisterService(&_Query_serviceDesc, srv)
 }
 
-func _Query_GetDelegationInfo_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(QueryDelegationInfo)
+func _Query_QueryOperatorInfo_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryOperatorInfoReq)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(QueryServer).GetDelegationInfo(ctx, in)
+		return srv.(QueryServer).QueryOperatorInfo(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/exocore.delegation.v1.Query/GetDelegationInfo",
+		FullMethod: "/exocore.delegation.v1.Query/QueryOperatorInfo",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(QueryServer).GetDelegationInfo(ctx, req.(*QueryDelegationInfo))
+		return srv.(QueryServer).QueryOperatorInfo(ctx, req.(*QueryOperatorInfoReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Query_QueryDelegationInfo_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DelegationInfoReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).QueryDelegationInfo(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/exocore.delegation.v1.Query/QueryDelegationInfo",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).QueryDelegationInfo(ctx, req.(*DelegationInfoReq))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -249,15 +329,19 @@ var _Query_serviceDesc = grpc.ServiceDesc{
 	HandlerType: (*QueryServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "GetDelegationInfo",
-			Handler:    _Query_GetDelegationInfo_Handler,
+			MethodName: "QueryOperatorInfo",
+			Handler:    _Query_QueryOperatorInfo_Handler,
+		},
+		{
+			MethodName: "QueryDelegationInfo",
+			Handler:    _Query_QueryDelegationInfo_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
 	Metadata: "exocore/delegation/v1/query.proto",
 }
 
-func (m *QueryDelegationInfo) Marshal() (dAtA []byte, err error) {
+func (m *DelegationInfoReq) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -267,12 +351,12 @@ func (m *QueryDelegationInfo) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *QueryDelegationInfo) MarshalTo(dAtA []byte) (int, error) {
+func (m *DelegationInfoReq) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *QueryDelegationInfo) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *DelegationInfoReq) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
@@ -352,6 +436,36 @@ func (m *QueryDelegationInfoResponse) MarshalToSizedBuffer(dAtA []byte) (int, er
 	return len(dAtA) - i, nil
 }
 
+func (m *QueryOperatorInfoReq) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QueryOperatorInfoReq) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QueryOperatorInfoReq) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.OperatorAddr) > 0 {
+		i -= len(m.OperatorAddr)
+		copy(dAtA[i:], m.OperatorAddr)
+		i = encodeVarintQuery(dAtA, i, uint64(len(m.OperatorAddr)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
 func encodeVarintQuery(dAtA []byte, offset int, v uint64) int {
 	offset -= sovQuery(v)
 	base := offset
@@ -363,7 +477,7 @@ func encodeVarintQuery(dAtA []byte, offset int, v uint64) int {
 	dAtA[offset] = uint8(v)
 	return base
 }
-func (m *QueryDelegationInfo) Size() (n int) {
+func (m *DelegationInfoReq) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -408,13 +522,26 @@ func (m *QueryDelegationInfoResponse) Size() (n int) {
 	return n
 }
 
+func (m *QueryOperatorInfoReq) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.OperatorAddr)
+	if l > 0 {
+		n += 1 + l + sovQuery(uint64(l))
+	}
+	return n
+}
+
 func sovQuery(x uint64) (n int) {
 	return (math_bits.Len64(x|1) + 6) / 7
 }
 func sozQuery(x uint64) (n int) {
 	return sovQuery(uint64((x << 1) ^ uint64((int64(x) >> 63))))
 }
-func (m *QueryDelegationInfo) Unmarshal(dAtA []byte) error {
+func (m *DelegationInfoReq) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -437,10 +564,10 @@ func (m *QueryDelegationInfo) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: QueryDelegationInfo: wiretype end group for non-group")
+			return fmt.Errorf("proto: DelegationInfoReq: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: QueryDelegationInfo: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: DelegationInfoReq: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
@@ -717,6 +844,88 @@ func (m *QueryDelegationInfoResponse) Unmarshal(dAtA []byte) error {
 				}
 			}
 			m.DelegationInfos[mapkey] = mapvalue
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *QueryOperatorInfoReq) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryOperatorInfoReq: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryOperatorInfoReq: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field OperatorAddr", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.OperatorAddr = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
 		default:
 			iNdEx = preIndex
