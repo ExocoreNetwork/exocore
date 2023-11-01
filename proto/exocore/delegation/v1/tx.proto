@@ -10,6 +10,15 @@ import "amino/amino.proto";
 
 option go_package = "github.com/exocore/x/delegation/types";
 
+message ValueField {
+  string Amount = 1
+  [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.nullable) = false
+  ];
+}
+
 message DelegatedSingleAssetInfo {
   string AssetId = 1;
   string TotalDelegatedAmount = 2
@@ -18,14 +27,6 @@ message DelegatedSingleAssetInfo {
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
     (gogoproto.nullable) = false
   ];
-  message ValueField {
-    string Amount = 1
-    [
-      (cosmos_proto.scalar) = "cosmos.Int",
-      (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
-      (gogoproto.nullable) = false
-    ];
-  }
   map<string, ValueField> PerOperatorAmounts = 3;
 }
 

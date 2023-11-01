@@ -3,9 +3,10 @@
 package types
 
 import (
+	errorsmod "cosmossdk.io/errors"
+	"fmt"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	"github.com/ethereum/go-ethereum/common"
-	"log"
 	"strings"
 )
 
@@ -110,8 +111,10 @@ func GetAssetStateKey(stakerId, assetId string) []byte {
 	return []byte(strings.Join([]string{stakerId, assetId}, "/"))
 }
 
-func ParseStakerAndAssetIdFromKey(key []byte) (stakerId string, assetId string) {
+func ParseStakerAndAssetIdFromKey(key []byte) (stakerId string, assetId string, err error) {
 	stringList := strings.Split(string(key), "/")
-	log.Println("the stringList is:", stringList)
-	return stringList[0], stringList[1]
+	if len(stringList) != 2 {
+		return "", "", errorsmod.Wrap(ErrParseAssetsStateKey, fmt.Sprintf("the stringList is:%v", stringList))
+	}
+	return stringList[0], stringList[1], nil
 }

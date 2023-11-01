@@ -16,7 +16,10 @@ func (k Keeper) GetOperatorAssetInfos(ctx sdk.Context, operatorAddr sdk.Address)
 	for ; iterator.Valid(); iterator.Next() {
 		var stateInfo types2.OperatorSingleAssetOrChangeInfo
 		k.cdc.MustUnmarshal(iterator.Value(), &stateInfo)
-		_, assetId := types2.ParseStakerAndAssetIdFromKey(iterator.Key())
+		_, assetId, err := types2.ParseStakerAndAssetIdFromKey(iterator.Key())
+		if err != nil {
+			return nil, err
+		}
 		ret[assetId] = &stateInfo
 	}
 	return ret, nil
@@ -43,35 +46,46 @@ func (k Keeper) UpdateOperatorAssetState(ctx sdk.Context, operatorAddr sdk.Addre
 	key := types2.GetAssetStateKey(operatorAddr.String(), assetId)
 	isExit := store.Has(key)
 	assetState := types2.OperatorSingleAssetOrChangeInfo{
-		TotalAmountOrWantChangeValue:       math.NewInt(0),
-		OperatorOwnAmountOrWantChangeValue: math.NewInt(0),
+		TotalAmountOrWantChangeValue:            math.NewInt(0),
+		OperatorOwnAmountOrWantChangeValue:      math.NewInt(0),
+		WaitUnDelegationAmountOrWantChangeValue: math.NewInt(0),
 	}
 	if isExit {
 		value := store.Get(key)
 		k.cdc.MustUnmarshal(value, &assetState)
 	}
 
-	if changeAmount.TotalAmountOrWantChangeValue.IsZero() && changeAmount.OperatorOwnAmountOrWantChangeValue.IsZero() {
-		return types2.ErrInputUpdateStateIsZero
-	}
-
-	if changeAmount.TotalAmountOrWantChangeValue.IsNegative() {
-		if assetState.TotalAmountOrWantChangeValue.LT(changeAmount.TotalAmountOrWantChangeValue.Abs()) {
-			return types2.ErrSubOperatorTotalAmountIsMoreThanOrigin
+	if !changeAmount.TotalAmountOrWantChangeValue.IsNil() {
+		if changeAmount.TotalAmountOrWantChangeValue.IsNegative() {
+			if assetState.TotalAmountOrWantChangeValue.LT(changeAmount.TotalAmountOrWantChangeValue.Abs()) {
+				return types2.ErrSubAmountIsMoreThanOrigin
+			}
 		}
-	}
-	if changeAmount.OperatorOwnAmountOrWantChangeValue.IsNegative() {
-		if assetState.OperatorOwnAmountOrWantChangeValue.LT(changeAmount.OperatorOwnAmountOrWantChangeValue.Abs()) {
-			return types2.ErrSubOperatorOwnAmountIsMoreThanOrigin
+		if !changeAmount.TotalAmountOrWantChangeValue.IsZero() {
+			assetState.TotalAmountOrWantChangeValue = assetState.TotalAmountOrWantChangeValue.Add(changeAmount.TotalAmountOrWantChangeValue)
 		}
 	}
 
-	if !changeAmount.TotalAmountOrWantChangeValue.IsZero() {
-		assetState.TotalAmountOrWantChangeValue = assetState.TotalAmountOrWantChangeValue.Add(changeAmount.TotalAmountOrWantChangeValue)
+	if !changeAmount.OperatorOwnAmountOrWantChangeValue.IsNil() {
+		if changeAmount.OperatorOwnAmountOrWantChangeValue.IsNegative() {
+			if assetState.OperatorOwnAmountOrWantChangeValue.LT(changeAmount.OperatorOwnAmountOrWantChangeValue.Abs()) {
+				return types2.ErrSubAmountIsMoreThanOrigin
+			}
+		}
+		if !changeAmount.OperatorOwnAmountOrWantChangeValue.IsZero() {
+			assetState.OperatorOwnAmountOrWantChangeValue = assetState.OperatorOwnAmountOrWantChangeValue.Add(changeAmount.OperatorOwnAmountOrWantChangeValue)
+		}
 	}
 
-	if !changeAmount.OperatorOwnAmountOrWantChangeValue.IsZero() {
-		assetState.OperatorOwnAmountOrWantChangeValue = assetState.OperatorOwnAmountOrWantChangeValue.Add(changeAmount.OperatorOwnAmountOrWantChangeValue)
+	if !changeAmount.WaitUnDelegationAmountOrWantChangeValue.IsNil() {
+		if changeAmount.WaitUnDelegationAmountOrWantChangeValue.IsNegative() {
+			if assetState.WaitUnDelegationAmountOrWantChangeValue.LT(changeAmount.WaitUnDelegationAmountOrWantChangeValue.Abs()) {
+				return types2.ErrSubAmountIsMoreThanOrigin
+			}
+		}
+		if !changeAmount.WaitUnDelegationAmountOrWantChangeValue.IsZero() {
+			assetState.WaitUnDelegationAmountOrWantChangeValue = assetState.WaitUnDelegationAmountOrWantChangeValue.Add(changeAmount.WaitUnDelegationAmountOrWantChangeValue)
+		}
 	}
 
 	bz := k.cdc.MustMarshal(&assetState)

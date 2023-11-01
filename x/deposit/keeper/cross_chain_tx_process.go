@@ -8,7 +8,6 @@ import (
 	"fmt"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/core"
 	ethtypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/evmos/evmos/v14/rpc/namespaces/ethereum/eth/filters"
@@ -16,14 +15,13 @@ import (
 	"github.com/exocore/x/restaking_assets_manage/types"
 	"log"
 	"math/big"
-	"strings"
 )
 
 type DepositParams struct {
 	clientChainLzId uint64
 	action          types.CrossChainOpType
 	assetsAddress   []byte
-	depositAddress  []byte
+	stakerAddress   []byte
 	opAmount        sdkmath.Int
 }
 
@@ -82,16 +80,9 @@ func (k Keeper) getDepositParamsFromEventLog(ctx sdk.Context, log *ethtypes.Log)
 		clientChainLzId: clientChainLzId,
 		action:          action,
 		assetsAddress:   assetsAddress,
-		depositAddress:  depositAddress,
+		stakerAddress:   depositAddress,
 		opAmount:        amount,
 	}, nil
-}
-
-func getStakeIDAndAssetId(params *DepositParams) (stakeId string, assetId string) {
-	clientChainLzIdStr := hexutil.EncodeUint64(params.clientChainLzId)
-	stakeId = strings.Join([]string{hexutil.Encode(params.depositAddress), clientChainLzIdStr}, "_")
-	assetId = strings.Join([]string{hexutil.Encode(params.assetsAddress), clientChainLzIdStr}, "_")
-	return
 }
 
 func (k Keeper) FilterCrossChainEventLogs(ctx sdk.Context, msg core.Message, receipt *ethtypes.Receipt) ([]*ethtypes.Log, error) {
@@ -141,7 +132,7 @@ func (k Keeper) Deposit(ctx sdk.Context, event *DepositParams) error {
 	if event.opAmount.IsNegative() {
 		return errorsmod.Wrap(types2.ErrDepositAmountIsNegative, fmt.Sprintf("the amount is:%s", event.opAmount))
 	}
-	stakeId, assetId := getStakeIDAndAssetId(event)
+	stakeId, assetId := types.GetStakeIDAndAssetId(event.clientChainLzId, event.stakerAddress, event.assetsAddress)
 	//check if asset exist
 	if !k.retakingStateKeeper.StakingAssetIsExist(ctx, assetId) {
 		return errorsmod.Wrap(types2.ErrDepositAssetNotExist, fmt.Sprintf("the assetId is:%s", assetId))

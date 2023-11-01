@@ -20,9 +20,9 @@ var (
 
 	ErrNoStakerAssetKey = errorsmod.Register(ModuleName, 5, "there is no stored key for the input staker and assetId")
 
-	ErrSubOperatorTotalAmountIsMoreThanOrigin = errorsmod.Register(ModuleName, 6, "the operator total amount that want to decrease is more than the original state")
+	ErrSubAmountIsMoreThanOrigin = errorsmod.Register(ModuleName, 6, "the amount that want to decrease is more than the original state amount")
 
-	ErrSubOperatorOwnAmountIsMoreThanOrigin = errorsmod.Register(ModuleName, 7, "the operator ownAmount that want to decrease is more than the original state")
+	ErrNoOperatorAssetKey = errorsmod.Register(ModuleName, 7, "there is no stored key for the input operator address and assetId")
 
-	ErrNoOperatorAssetKey = errorsmod.Register(ModuleName, 8, "there is no stored key for the input operator address and assetId")
+	ErrParseAssetsStateKey = errorsmod.Register(ModuleName, 8, "assets state key can't be parsed")
 )

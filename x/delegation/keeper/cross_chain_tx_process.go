@@ -8,6 +8,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/core"
 	ethtypes "github.com/ethereum/go-ethereum/core/types"
+	types2 "github.com/exocore/x/delegation/types"
 	"github.com/exocore/x/restaking_assets_manage/types"
 	"log"
 	"math/big"
@@ -99,8 +100,50 @@ func (k Keeper) getParamsFromEventLog(ctx sdk.Context, log *ethtypes.Log) (*Dele
 	}, nil
 }
 
-func (k Keeper) DelegateOrUnDelegation(ctx sdk.Context, params *DelegationOrUnDelegationParams) error {
+// DelegateTo : It doesn't need to check the active status of the operator in middlewares when delegating assets to the operator. This is because it adds assets to the operator's amount. But it needs to check if operator has been slashed or frozen.
+func (k Keeper) DelegateTo(ctx sdk.Context, params *DelegationOrUnDelegationParams) error {
+	// check if the delegatedTo address is an operator
+	if !k.IsOperator(ctx, params.operatorAddress) {
+		return types2.ErrOperatorNotExist
+	}
 
+	// check if the operator has been slashed or frozen
+	if k.slashKeeper.IsOperatorFrozen(params.operatorAddress) {
+		return types2.ErrOperatorIsFrozen
+	}
+
+	//todo: The operator approved signature might be needed here in future
+
+	//update the related states
+	if params.opAmount.IsNegative() {
+		return types2.ErrOpAmountIsNegative
+	}
+
+	stakerId, assetId := types.GetStakeIDAndAssetId(params.clientChainLzId, params.stakerAddress, params.assetsAddress)
+	err := k.retakingStateKeeper.UpdateStakerAssetState(ctx, stakerId, assetId, types.StakerSingleAssetOrChangeInfo{
+		CanWithdrawAmountOrWantChangeValue: params.opAmount.Neg(),
+	})
+	if err != nil {
+		return err
+	}
+
+	err = k.retakingStateKeeper.UpdateOperatorAssetState(ctx, params.operatorAddress, assetId, types.OperatorSingleAssetOrChangeInfo{
+		TotalAmountOrWantChangeValue: params.opAmount,
+	})
+	if err != nil {
+		return err
+	}
+
+	delegatorAndAmount := make(map[string]sdkmath.Int)
+	delegatorAndAmount[params.operatorAddress.String()] = params.opAmount
+	err = k.UpdateDelegationState(ctx, stakerId, assetId, delegatorAndAmount)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (k Keeper) UnDelegateFrom(ctx sdk.Context, params *DelegationOrUnDelegationParams) error {
 	return nil
 }
 func (k Keeper) PostTxProcessing(ctx sdk.Context, msg core.Message, receipt *ethtypes.Receipt) error {
@@ -115,12 +158,16 @@ func (k Keeper) PostTxProcessing(ctx sdk.Context, msg core.Message, receipt *eth
 	}
 
 	for _, log := range needLogs {
-		depositParams, err := k.getParamsFromEventLog(ctx, log)
+		delegationParams, err := k.getParamsFromEventLog(ctx, log)
 		if err != nil {
 			return err
 		}
-		if depositParams != nil {
-			err = k.DelegateOrUnDelegation(ctx, depositParams)
+		if delegationParams != nil {
+			if delegationParams.action == types.DelegationTo {
+				err = k.DelegateTo(ctx, delegationParams)
+			} else if delegationParams.action == types.UnDelegationFrom {
+				err = k.UnDelegateFrom(ctx, delegationParams)
+			}
 			if err != nil {
 				// todo: need to test if the changed storage state will be reverted when there is an error occurred
 				return err

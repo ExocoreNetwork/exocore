@@ -3,8 +3,11 @@
 package types
 
 import (
+	errorsmod "cosmossdk.io/errors"
+	"fmt"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	"github.com/ethereum/go-ethereum/common"
+	"strings"
 )
 
 // constants
@@ -39,8 +42,7 @@ var (
 	// KeyPrefixOperatorInfo key-value: operatorAddr->operatorInfo
 	KeyPrefixOperatorInfo = []byte{prefixOperatorInfo}
 	// KeyPrefixRestakerDelegationInfo reStakerId = clientChainAddr+'_'+ExoCoreChainIndex
-	// KeyPrefixRestakerDelegationInfo key-value: reStakerId -> map[assetId]ReStakerDelegatedSingleAssetInfo
-	// ReStakerDelegatedSingleAssetInfo :
+	// KeyPrefixRestakerDelegationInfo key-value: reStakerId +'/'+assetId+'/'+operatorAddr -> delegationAmount
 	KeyPrefixRestakerDelegationInfo = []byte{prefixRestakerDelegationInfo}
 	// KeyPrefixDelegationUsedSalt key->value: operatorApproveAddr->map[salt]{}
 	KeyPrefixDelegationUsedSalt = []byte{prefixDelegationUsedSalt}
@@ -50,3 +52,15 @@ var (
 	//KeyPrefixUnDelegationInfo key-value: ReStakerId+'_'+nonce -> UnDelegateReqRecord
 	KeyPrefixUnDelegationInfo = []byte{prefixUndelegationInfo}
 )
+
+func GetDelegationStateKey(stakerId, assetId, operatorAddr string) []byte {
+	return []byte(strings.Join([]string{stakerId, assetId, operatorAddr}, "/"))
+}
+
+func ParseStakerAssetIdAndOperatorAddrFromKey(key []byte) (keys *SingleDelegationInfoReq, err error) {
+	stringList := strings.Split(string(key), "/")
+	if len(stringList) != 3 {
+		return nil, errorsmod.Wrap(ErrParseDelegationKey, fmt.Sprintf("the stringList is:%v", stringList))
+	}
+	return &SingleDelegationInfoReq{StakerId: stringList[0], AssetId: stringList[1], OperatorAddr: stringList[2]}, nil
+}

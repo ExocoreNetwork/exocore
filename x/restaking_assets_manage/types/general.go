@@ -1,5 +1,10 @@
 package types
 
+import (
+	"github.com/ethereum/go-ethereum/common/hexutil"
+	"strings"
+)
+
 const (
 	CrossChainActionLength       = 1
 	CrossChainOpAmountLength     = 32
@@ -26,3 +31,10 @@ const (
 	DelegationTo
 	UnDelegationFrom
 )
+
+func GetStakeIDAndAssetId(clientChainLzId uint64, stakerAddress []byte, assetsAddress []byte) (stakeId string, assetId string) {
+	clientChainLzIdStr := hexutil.EncodeUint64(clientChainLzId)
+	stakeId = strings.Join([]string{hexutil.Encode(stakerAddress), clientChainLzIdStr}, "_")
+	assetId = strings.Join([]string{hexutil.Encode(assetsAddress), clientChainLzIdStr}, "_")
+	return
+}

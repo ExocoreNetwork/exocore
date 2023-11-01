@@ -4,6 +4,8 @@ package keeper
 
 import (
 	"context"
+	errorsmod "cosmossdk.io/errors"
+	"fmt"
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/store/prefix"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
@@ -22,6 +24,7 @@ type Keeper struct {
 	//other keepers
 	retakingStateKeeper keeper.Keeper
 	depositKeeper       keeper2.Keeper
+	slashKeeper         types2.ISlashKeeper
 }
 
 func (k Keeper) CompleteUnDelegateAssetFromOperator() error {
@@ -30,28 +33,42 @@ func (k Keeper) CompleteUnDelegateAssetFromOperator() error {
 }
 
 func (k Keeper) SetOperatorInfo(ctx sdk.Context, addr string, info *types2.OperatorInfo) (err error) {
+	opAccAddr, err := sdk.AccAddressFromBech32(addr)
+	if err != nil {
+		return errorsmod.Wrap(err, "SetOperatorInfo: error occurred when parse acc address from Bech32")
+	}
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types2.KeyPrefixOperatorInfo)
 	//todo: think about the difference between init and update in future
+
 	//key := common.HexToAddress(incentive.Contract)
 	bz := k.cdc.MustMarshal(info)
 
-	store.Set([]byte(addr), bz)
+	store.Set(opAccAddr, bz)
 	return nil
 }
 
 func (k Keeper) GetOperatorInfo(ctx sdk.Context, addr string) (info *types2.OperatorInfo, err error) {
+	opAccAddr, err := sdk.AccAddressFromBech32(addr)
+	if err != nil {
+		return nil, errorsmod.Wrap(err, "GetOperatorInfo: error occurred when parse acc address from Bech32")
+	}
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types2.KeyPrefixOperatorInfo)
 	//key := common.HexToAddress(incentive.Contract)
-	ifExist := store.Has([]byte(addr))
+	ifExist := store.Has(opAccAddr)
 	if !ifExist {
-		return nil, types2.ErrNoOperatorInfoKey
+		return nil, errorsmod.Wrap(types2.ErrNoKeyInTheStore, fmt.Sprintf("GetOperatorInfo: key is %s", opAccAddr))
 	}
 
-	value := store.Get([]byte(addr))
+	value := store.Get(opAccAddr)
 
 	ret := types2.OperatorInfo{}
 	k.cdc.MustUnmarshal(value, &ret)
 	return &ret, nil
+}
+
+func (k Keeper) IsOperator(ctx sdk.Context, addr sdk.AccAddress) bool {
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), types2.KeyPrefixOperatorInfo)
+	return store.Has(addr)
 }
 
 // IDelegation interface will be implemented by deposit keeper
@@ -66,8 +83,9 @@ type IDelegation interface {
 	// UnDelegateAssetFromOperator handle the UnDelegateAssetFromOperator txs from msg service
 	UnDelegateAssetFromOperator(ctx context.Context, delegation *types2.MsgUnDelegation) (*types2.UnDelegationResponse, error)
 
-	//GetDelegationInfo grpc_query interface
-	//GetDelegationInfo(context.Context, *types2.DelegationInfoReq) (*types2.QueryDelegationInfoResponse, error)
+	GetSingleDelegationInfo(ctx sdk.Context, stakerId, assetId, operatorAddr string) (*types2.ValueField, error)
+
+	GetDelegationInfo(ctx sdk.Context, stakerId, assetId string) (*types2.QueryDelegationInfoResponse, error)
 
 	// CompleteUnDelegateAssetFromOperator scheduled execute to handle UnDelegateAssetFromOperator through two steps
 	CompleteUnDelegateAssetFromOperator() error

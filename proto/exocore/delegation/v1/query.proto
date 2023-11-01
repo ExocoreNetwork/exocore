@@ -13,12 +13,18 @@ option go_package = "github.com/exocore/x/delegation/types";
 
 message DelegationInfoReq {
   string stakerId = 1;
-  string exCoreAddr = 2 [(cosmos_proto.scalar) = "cosmos.AddressString"];
-  repeated string assetIds = 3;
+  string assetId = 2;
 }
 
 message QueryDelegationInfoResponse{
-  map<string, DelegatedSingleAssetInfo> delegationInfos = 1;
+  ValueField TotalDelegatedAmount = 1;
+  map<string, ValueField > delegationInfos = 2;
+}
+
+message SingleDelegationInfoReq {
+  string stakerId = 1;
+  string operatorAddr = 2 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+  string assetId = 3;
 }
 
 message QueryOperatorInfoReq {
@@ -34,6 +40,11 @@ service Query {
   rpc QueryDelegationInfo(DelegationInfoReq) returns (QueryDelegationInfoResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
     option (google.api.http).get = "/exocore/delegation/v1/GetDelegationInfo";
+  }
+
+  rpc QuerySingleDelegationInfo(SingleDelegationInfoReq) returns(ValueField){
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/exocore/delegation/v1/QuerySingleDelegationInfo";
   }
 }
 

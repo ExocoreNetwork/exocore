@@ -16,7 +16,10 @@ func (k Keeper) GetStakerAssetInfos(ctx sdk.Context, stakerId string) (assetsInf
 	for ; iterator.Valid(); iterator.Next() {
 		var stateInfo types2.StakerSingleAssetOrChangeInfo
 		k.cdc.MustUnmarshal(iterator.Value(), &stateInfo)
-		_, assetId := types2.ParseStakerAndAssetIdFromKey(iterator.Key())
+		_, assetId, err := types2.ParseStakerAndAssetIdFromKey(iterator.Key())
+		if err != nil {
+			return nil, err
+		}
 		ret[assetId] = &stateInfo
 	}
 	return ret, nil
@@ -51,28 +54,29 @@ func (k Keeper) UpdateStakerAssetState(ctx sdk.Context, stakerId string, assetId
 		k.cdc.MustUnmarshal(value, &assetState)
 	}
 
-	if changeAmount.TotalDepositAmountOrWantChangeValue.IsZero() && changeAmount.CanWithdrawAmountOrWantChangeValue.IsZero() {
-		return types2.ErrInputUpdateStateIsZero
-	}
-
-	if changeAmount.TotalDepositAmountOrWantChangeValue.IsNegative() {
-		if assetState.TotalDepositAmountOrWantChangeValue.LT(changeAmount.TotalDepositAmountOrWantChangeValue.Abs()) {
-			return types2.ErrSubDepositAmountIsMoreThanOrigin
+	if !changeAmount.TotalDepositAmountOrWantChangeValue.IsNil() {
+		if changeAmount.TotalDepositAmountOrWantChangeValue.IsNegative() {
+			if assetState.TotalDepositAmountOrWantChangeValue.LT(changeAmount.TotalDepositAmountOrWantChangeValue.Abs()) {
+				return types2.ErrSubDepositAmountIsMoreThanOrigin
+			}
 		}
-	}
-	if changeAmount.CanWithdrawAmountOrWantChangeValue.IsNegative() {
-		if assetState.CanWithdrawAmountOrWantChangeValue.LT(changeAmount.CanWithdrawAmountOrWantChangeValue.Abs()) {
-			return types2.ErrSubCanWithdrawAmountIsMoreThanOrigin
+		if !changeAmount.TotalDepositAmountOrWantChangeValue.IsZero() {
+			assetState.TotalDepositAmountOrWantChangeValue = assetState.TotalDepositAmountOrWantChangeValue.Add(changeAmount.TotalDepositAmountOrWantChangeValue)
 		}
 	}
 
-	if !changeAmount.TotalDepositAmountOrWantChangeValue.IsZero() {
-		assetState.TotalDepositAmountOrWantChangeValue = assetState.TotalDepositAmountOrWantChangeValue.Add(changeAmount.TotalDepositAmountOrWantChangeValue)
+	if !changeAmount.CanWithdrawAmountOrWantChangeValue.IsNil() {
+		if changeAmount.CanWithdrawAmountOrWantChangeValue.IsNegative() {
+			if assetState.CanWithdrawAmountOrWantChangeValue.LT(changeAmount.CanWithdrawAmountOrWantChangeValue.Abs()) {
+				return types2.ErrSubCanWithdrawAmountIsMoreThanOrigin
+			}
+		}
+
+		if !changeAmount.CanWithdrawAmountOrWantChangeValue.IsZero() {
+			assetState.CanWithdrawAmountOrWantChangeValue = assetState.CanWithdrawAmountOrWantChangeValue.Add(changeAmount.CanWithdrawAmountOrWantChangeValue)
+		}
 	}
 
-	if !changeAmount.CanWithdrawAmountOrWantChangeValue.IsZero() {
-		assetState.CanWithdrawAmountOrWantChangeValue = assetState.CanWithdrawAmountOrWantChangeValue.Add(changeAmount.CanWithdrawAmountOrWantChangeValue)
-	}
 	bz := k.cdc.MustMarshal(&assetState)
 	store.Set(key, bz)
 
