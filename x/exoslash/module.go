@@ -20,10 +20,7 @@ import (
 var (
 	_ module.AppModule      = AppModule{}
 	_ module.AppModuleBasic = AppModuleBasic{}
-)
 
-// ----------------------------------------------------------------------------
-// AppModuleBasic
 // ----------------------------------------------------------------------------
 
 // AppModuleBasic implements the AppModuleBasic interface that defines the independent methods a Cosmos SDK module needs to implement.
@@ -97,17 +94,8 @@ func NewAppModule(
 	return AppModule{
 		AppModuleBasic: NewAppModuleBasic(cdc),
 		keeper:         keeper,
-	}
-}
-
-// RegisterServices registers a gRPC query service to respond to the module-specific gRPC queries
-func (am AppModule) RegisterServices(cfg module.Configurator) {
 	//types.RegisterMsgServer(cfg.MsgServer(), keeper.NewMsgServerImpl(am.keeper))
-	types.RegisterQueryServer(cfg.QueryServer(), am.keeper)
 }
-
-// RegisterInvariants registers the invariants of the module. If an invariant deviates from its predicted value, the InvariantRegistry triggers appropriate logic (most often the chain will be halted)
-func (am AppModule) RegisterInvariants(_ sdk.InvariantRegistry) {}
 
 // // InitGenesis performs the module's genesis initialization. It returns no validator updates.
 // func (am AppModule) InitGenesis(ctx sdk.Context, cdc codec.JSONCodec, gs json.RawMessage) []abci.ValidatorUpdate {
