@@ -1,0 +1,13 @@
+syntax = "proto3";
+package exocore.exoslash;
+
+// this line is used by starport scaffolding # proto/tx/import
+
+option go_package = "github.com/exocore/x/exoslash/types";
+
+// Msg defines the Msg service.
+service Msg {
+    // this line is used by starport scaffolding # proto/tx/rpc
+}
+
+// this line is used by starport scaffolding # proto/tx/message

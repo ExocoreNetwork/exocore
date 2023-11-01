@@ -2,6 +2,10 @@ package types
 
 import (
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
+<<<<<<< HEAD
+=======
+	"gopkg.in/yaml.v2"
+>>>>>>> b0c35ca (add exoslash module)
 )
 
 var _ paramtypes.ParamSet = (*Params)(nil)
