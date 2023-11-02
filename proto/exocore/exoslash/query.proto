@@ -1,30 +1,31 @@
 syntax = "proto3";
-package exocore.exoslash;
+package exocore.exoslash.v1;
 
 import "gogoproto/gogo.proto";
 import "google/api/annotations.proto";
-import "cosmos/base/query/v1beta1/pagination.proto";
-import "exoslash/params.proto";
+import "cosmos/query/v1/query.proto";
+import "cosmos_proto/cosmos.proto";
+import "exocore/exoslash/params.proto";
 // this line is used by starport scaffolding # 1
 
 option go_package = "github.com/exocore/x/exoslash/types";
 
-// Query defines the gRPC querier service.
-service Query {
-  // Parameters queries the parameters of the module.
-  rpc Params(QueryParamsRequest) returns (QueryParamsResponse) {
-    option (google.api.http).get = "/exoslash/exoslash/params";
-  }
-  // this line is used by starport scaffolding # 2
-}
-
-// QueryParamsRequest is request type for the Query/Params RPC method.
+// QueryParamsRequest is the request type for the Query/Params RPC method.
 message QueryParamsRequest {}
 
-// QueryParamsResponse is response type for the Query/Params RPC method.
+// QueryParamsResponse is the response type for the Query/Params RPC
+// method.
 message QueryParamsResponse {
-  // params holds all the parameters of this module.
-  Params params = 1 [(gogoproto.nullable) = false];
+  Params params = 1 ;
 }
 
-// this line is used by starport scaffolding # 3
+// Query defines the gRPC querier service.
+service Query {
+  // Params retrieves the deposit module params
+  rpc Params(QueryParamsRequest) returns (QueryParamsResponse) {
+    option (google.api.http).get = "/exocore/exoslash/v1/params";
+  }
+}
+
+
+
