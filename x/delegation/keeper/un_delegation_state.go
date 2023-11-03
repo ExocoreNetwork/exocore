@@ -10,10 +10,10 @@ import (
 	"strings"
 )
 
-type GetStakerUnDelegationRecordType uint8
+type GetUnDelegationRecordType uint8
 
 const (
-	PendingRecords GetStakerUnDelegationRecordType = iota
+	PendingRecords GetUnDelegationRecordType = iota
 	CompletedRecords
 	AllRecords
 )
@@ -45,7 +45,7 @@ func (k Keeper) SetSingleUnDelegationRecord(ctx sdk.Context, record *types.UnDel
 	return nil
 }
 
-func (k Keeper) GetUnDelegationRecords(ctx sdk.Context, singleRecordKeys []string) (record []*types.UnDelegationRecord, err error) {
+func (k Keeper) GetUnDelegationRecords(ctx sdk.Context, singleRecordKeys []string, getType GetUnDelegationRecordType) (record []*types.UnDelegationRecord, err error) {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefixUnDelegationInfo)
 	ret := make([]*types.UnDelegationRecord, 0)
 	for _, singleRecordKey := range singleRecordKeys {
@@ -58,9 +58,21 @@ func (k Keeper) GetUnDelegationRecords(ctx sdk.Context, singleRecordKeys []strin
 		} else {
 			return nil, errorsmod.Wrap(types.ErrNoKeyInTheStore, fmt.Sprintf("GetSingleDelegationRecord: key is %s", singleRecordKey))
 		}
-		ret = append(ret, &unDelegationRecord)
-	}
 
+		if getType == PendingRecords {
+			if unDelegationRecord.IsPending {
+				ret = append(ret, &unDelegationRecord)
+			}
+		} else if getType == CompletedRecords {
+			if !unDelegationRecord.IsPending {
+				ret = append(ret, &unDelegationRecord)
+			}
+		} else if getType == AllRecords {
+			ret = append(ret, &unDelegationRecord)
+		} else {
+			return nil, errorsmod.Wrap(types.ErrStakerGetRecordType, fmt.Sprintf("the getType is:%v", getType))
+		}
+	}
 	return ret, nil
 }
 
@@ -83,36 +95,13 @@ func (k Keeper) GetStakerUnDelegationRecKeys(ctx sdk.Context, stakerId, assetId 
 	return ret, nil
 }
 
-func (k Keeper) GetStakerUnDelegationPendingRecords(ctx sdk.Context, stakerId, assetId string, getType GetStakerUnDelegationRecordType) (records []*types.UnDelegationRecord, err error) {
-	ret := make([]*types.UnDelegationRecord, 0)
+func (k Keeper) GetStakerUnDelegationRecords(ctx sdk.Context, stakerId, assetId string, getType GetUnDelegationRecordType) (records []*types.UnDelegationRecord, err error) {
 	recordKeys, err := k.GetStakerUnDelegationRecKeys(ctx, stakerId, assetId)
 	if err != nil {
 		return nil, err
 	}
 
-	getAllRecords, err := k.GetUnDelegationRecords(ctx, recordKeys)
-	if err != nil {
-		return nil, err
-	}
-
-	if getType == AllRecords {
-		return getAllRecords, nil
-	}
-
-	for _, record := range getAllRecords {
-		if getType == PendingRecords {
-			if record.IsPending {
-				ret = append(ret, record)
-			}
-		} else if getType == CompletedRecords {
-			if !record.IsPending {
-				ret = append(ret, record)
-			}
-		} else {
-			return nil, errorsmod.Wrap(types.ErrStakerGetRecordType, fmt.Sprintf("the getType is:%v", getType))
-		}
-	}
-	return ret, nil
+	return k.GetUnDelegationRecords(ctx, recordKeys, getType)
 }
 
 func (k Keeper) SetWaitCompleteUnDelegationInfo(ctx sdk.Context, height, lzNonce uint64, recordKey string) error {
@@ -139,5 +128,6 @@ func (k Keeper) GetWaitCompleteUnDelegationRecords(ctx sdk.Context, height uint6
 	if err != nil {
 		return nil, err
 	}
-	return k.GetUnDelegationRecords(ctx, recordKeys)
+	// The states of records stored by WaitCompleteUnDelegations kvStore should always be IsPending,so using AllRecords as getType here is ok.
+	return k.GetUnDelegationRecords(ctx, recordKeys, AllRecords)
 }
