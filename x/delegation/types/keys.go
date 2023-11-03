@@ -7,6 +7,7 @@ import (
 	"fmt"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/common/hexutil"
 	"strings"
 )
 
@@ -35,7 +36,11 @@ const (
 	prefixDelegationUsedSalt
 	prefixOperatorApprovedInfo
 
-	prefixUndelegationInfo
+	prefixUnDelegationInfo
+
+	prefixStakerUnDelegationInfo
+
+	prefixWaitCompleteUnDelegations
 )
 
 var (
@@ -49,8 +54,13 @@ var (
 	// KeyPrefixOperatorApprovedInfo key-value: operatorApproveAddr->map[reStakerId]{}
 	KeyPrefixOperatorApprovedInfo = []byte{prefixOperatorApprovedInfo}
 
-	//KeyPrefixUnDelegationInfo key-value: ReStakerId+'_'+nonce -> UnDelegateReqRecord
-	KeyPrefixUnDelegationInfo = []byte{prefixUndelegationInfo}
+	//KeyPrefixUnDelegationInfo singleRecordKey = lzNonce+'/'+txHash+'/'+operatorAddr
+	// singleRecordKey -> UnDelegateReqRecord
+	KeyPrefixUnDelegationInfo = []byte{prefixUnDelegationInfo}
+	//KeyPrefixStakerUnDelegationInfo reStakerId+'/'+assetId+'/'+lzNonce -> singleRecordKey
+	KeyPrefixStakerUnDelegationInfo = []byte{prefixStakerUnDelegationInfo}
+	//KeyPrefixWaitCompleteUnDelegations completeHeight +'/'+lzNonce -> singleRecordKey
+	KeyPrefixWaitCompleteUnDelegations = []byte{prefixWaitCompleteUnDelegations}
 )
 
 func GetDelegationStateKey(stakerId, assetId, operatorAddr string) []byte {
@@ -63,4 +73,16 @@ func ParseStakerAssetIdAndOperatorAddrFromKey(key []byte) (keys *SingleDelegatio
 		return nil, errorsmod.Wrap(ErrParseDelegationKey, fmt.Sprintf("the stringList is:%v", stringList))
 	}
 	return &SingleDelegationInfoReq{StakerId: stringList[0], AssetId: stringList[1], OperatorAddr: stringList[2]}, nil
+}
+
+func GetUnDelegationRecordKey(lzNonce uint64, txHash string, operatorAddr string) []byte {
+	return []byte(strings.Join([]string{hexutil.EncodeUint64(lzNonce), txHash, operatorAddr}, "/"))
+}
+
+func GetStakerUnDelegationRecordKey(stakerId, assetId string, lzNonce uint64) []byte {
+	return []byte(strings.Join([]string{stakerId, assetId, hexutil.EncodeUint64(lzNonce)}, "/"))
+}
+
+func GetWaitCompleteRecordKey(height, lzNonce uint64) []byte {
+	return []byte(strings.Join([]string{hexutil.EncodeUint64(height), hexutil.EncodeUint64(lzNonce)}, "/"))
 }

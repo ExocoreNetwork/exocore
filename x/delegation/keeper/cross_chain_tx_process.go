@@ -6,6 +6,7 @@ import (
 	sdkmath "cosmossdk.io/math"
 	"encoding/binary"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core"
 	ethtypes "github.com/ethereum/go-ethereum/core/types"
 	types2 "github.com/exocore/x/delegation/types"
@@ -21,7 +22,8 @@ type DelegationOrUnDelegationParams struct {
 	operatorAddress sdk.AccAddress
 	stakerAddress   []byte
 	opAmount        sdkmath.Int
-
+	lzNonce         uint64
+	txHash          common.Hash
 	//todo: The operator approved signature might be needed here in future
 }
 
@@ -52,6 +54,13 @@ func (k Keeper) getParamsFromEventLog(ctx sdk.Context, log *ethtypes.Log) (*Dele
 	clientChainInfo, err := k.retakingStateKeeper.GetClientChainInfoByIndex(ctx, clientChainLzId)
 	if err != nil {
 		return nil, errorsmod.Wrap(err, "error occurred when get client chain info")
+	}
+
+	var lzNonce uint64
+	r = bytes.NewReader(log.Topics[types.LzNonceIndexInTopics][:])
+	err = binary.Read(r, binary.BigEndian, &lzNonce)
+	if err != nil {
+		return nil, errorsmod.Wrap(err, "error occurred when binary read lzNonce from topic")
 	}
 
 	//decode the action parameters
@@ -97,6 +106,8 @@ func (k Keeper) getParamsFromEventLog(ctx sdk.Context, log *ethtypes.Log) (*Dele
 		stakerAddress:   stakerAddress,
 		operatorAddress: opAccAddr,
 		opAmount:        amount,
+		lzNonce:         lzNonce,
+		txHash:          log.TxHash,
 	}, nil
 }
 
@@ -144,6 +155,7 @@ func (k Keeper) DelegateTo(ctx sdk.Context, params *DelegationOrUnDelegationPara
 }
 
 func (k Keeper) UnDelegateFrom(ctx sdk.Context, params *DelegationOrUnDelegationParams) error {
+
 	return nil
 }
 func (k Keeper) PostTxProcessing(ctx sdk.Context, msg core.Message, receipt *ethtypes.Receipt) error {

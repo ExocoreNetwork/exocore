@@ -60,6 +60,12 @@ message StakerSingleAssetOrChangeInfo {
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
     (gogoproto.nullable) = false
   ];
+  string WaitUnDelegationAmountOrWantChangeValue = 3
+  [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.nullable) = false
+  ];
 }
 
 message StakerAllAssetsInfo {

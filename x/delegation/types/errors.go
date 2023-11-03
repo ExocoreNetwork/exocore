@@ -15,4 +15,6 @@ var (
 	ErrSubAmountIsGreaterThanOriginal = errorsmod.Register(ModuleName, 5, "the sub amount is greater than the original amount")
 
 	ErrParseDelegationKey = errorsmod.Register(ModuleName, 6, "delegation state key can't be parsed")
+
+	ErrStakerGetRecordType = errorsmod.Register(ModuleName, 6, "the input getType is error when get staker unDelegation records")
 )

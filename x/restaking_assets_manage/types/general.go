@@ -11,7 +11,8 @@ const (
 	GeneralAssetsAddrLength      = 32
 	GeneralClientChainAddrLength = 32
 
-	ClientChainLzIdIndexInTopics = 1
+	ClientChainLzIdIndexInTopics = 0
+	LzNonceIndexInTopics         = 2
 
 	ExoCoreOperatorAddrLength = 45
 )

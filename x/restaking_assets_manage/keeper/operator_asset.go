@@ -1,7 +1,9 @@
 package keeper
 
 import (
+	errorsmod "cosmossdk.io/errors"
 	"cosmossdk.io/math"
+	"fmt"
 	"github.com/cosmos/cosmos-sdk/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	types2 "github.com/exocore/x/restaking_assets_manage/types"
@@ -58,7 +60,7 @@ func (k Keeper) UpdateOperatorAssetState(ctx sdk.Context, operatorAddr sdk.Addre
 	if !changeAmount.TotalAmountOrWantChangeValue.IsNil() {
 		if changeAmount.TotalAmountOrWantChangeValue.IsNegative() {
 			if assetState.TotalAmountOrWantChangeValue.LT(changeAmount.TotalAmountOrWantChangeValue.Abs()) {
-				return types2.ErrSubAmountIsMoreThanOrigin
+				return errorsmod.Wrap(types2.ErrSubAmountIsMoreThanOrigin, fmt.Sprintf("TotalAmount:%s,changeValue:%s", assetState.TotalAmountOrWantChangeValue, changeAmount.TotalAmountOrWantChangeValue))
 			}
 		}
 		if !changeAmount.TotalAmountOrWantChangeValue.IsZero() {
@@ -69,7 +71,7 @@ func (k Keeper) UpdateOperatorAssetState(ctx sdk.Context, operatorAddr sdk.Addre
 	if !changeAmount.OperatorOwnAmountOrWantChangeValue.IsNil() {
 		if changeAmount.OperatorOwnAmountOrWantChangeValue.IsNegative() {
 			if assetState.OperatorOwnAmountOrWantChangeValue.LT(changeAmount.OperatorOwnAmountOrWantChangeValue.Abs()) {
-				return types2.ErrSubAmountIsMoreThanOrigin
+				return errorsmod.Wrap(types2.ErrSubAmountIsMoreThanOrigin, fmt.Sprintf("OperatorOwnAmount:%s,changeValue:%s", assetState.OperatorOwnAmountOrWantChangeValue, changeAmount.OperatorOwnAmountOrWantChangeValue))
 			}
 		}
 		if !changeAmount.OperatorOwnAmountOrWantChangeValue.IsZero() {
@@ -80,7 +82,7 @@ func (k Keeper) UpdateOperatorAssetState(ctx sdk.Context, operatorAddr sdk.Addre
 	if !changeAmount.WaitUnDelegationAmountOrWantChangeValue.IsNil() {
 		if changeAmount.WaitUnDelegationAmountOrWantChangeValue.IsNegative() {
 			if assetState.WaitUnDelegationAmountOrWantChangeValue.LT(changeAmount.WaitUnDelegationAmountOrWantChangeValue.Abs()) {
-				return types2.ErrSubAmountIsMoreThanOrigin
+				return errorsmod.Wrap(types2.ErrSubAmountIsMoreThanOrigin, fmt.Sprintf("WaitUnDelegationAmount:%s,changeValue:%s", assetState.WaitUnDelegationAmountOrWantChangeValue, changeAmount.WaitUnDelegationAmountOrWantChangeValue))
 			}
 		}
 		if !changeAmount.WaitUnDelegationAmountOrWantChangeValue.IsZero() {

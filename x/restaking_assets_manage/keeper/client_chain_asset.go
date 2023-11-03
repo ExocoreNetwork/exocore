@@ -1,12 +1,45 @@
 package keeper
 
 import (
+	errorsmod "cosmossdk.io/errors"
+	sdkmath "cosmossdk.io/math"
+	"fmt"
 	"github.com/cosmos/cosmos-sdk/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	types2 "github.com/exocore/x/restaking_assets_manage/types"
 	"strings"
 )
+
+func (k Keeper) UpdateStakingAssetTotalAmount(ctx sdk.Context, assetId string, changeAmount sdkmath.Int) (err error) {
+	if changeAmount.IsNil() {
+		return nil
+	}
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), types2.KeyPrefixReStakingAssetInfo)
+	key := []byte(assetId)
+	ifExist := store.Has(key)
+	if !ifExist {
+		return types2.ErrNoClientChainAssetKey
+	}
+
+	value := store.Get(key)
+
+	ret := types2.StakingAssetInfo{}
+	k.cdc.MustUnmarshal(value, &ret)
+
+	if changeAmount.IsNegative() {
+		if ret.StakingTotalAmount.LT(changeAmount.Neg()) {
+			return errorsmod.Wrap(types2.ErrSubAmountIsMoreThanOrigin, fmt.Sprintf("StakingTotalAmount:%s,changeValue:%s", ret.StakingTotalAmount, changeAmount))
+		}
+	}
+	ret.StakingTotalAmount = ret.StakingTotalAmount.Add(changeAmount)
+
+	bz := k.cdc.MustMarshal(&ret)
+
+	store.Set(key, bz)
+
+	return nil
+}
 
 // SetStakingAssetInfo todo: Temporarily use clientChainAssetAddr+'_'+layerZeroChainId as the key.
 func (k Keeper) SetStakingAssetInfo(ctx sdk.Context, info *types2.StakingAssetInfo) (err error) {

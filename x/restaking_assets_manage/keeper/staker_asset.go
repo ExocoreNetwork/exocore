@@ -1,7 +1,9 @@
 package keeper
 
 import (
+	errorsmod "cosmossdk.io/errors"
 	"cosmossdk.io/math"
+	"fmt"
 	"github.com/cosmos/cosmos-sdk/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	types2 "github.com/exocore/x/restaking_assets_manage/types"
@@ -46,8 +48,9 @@ func (k Keeper) UpdateStakerAssetState(ctx sdk.Context, stakerId string, assetId
 	key := types2.GetAssetStateKey(stakerId, assetId)
 	isExit := store.Has(key)
 	assetState := types2.StakerSingleAssetOrChangeInfo{
-		TotalDepositAmountOrWantChangeValue: math.NewInt(0),
-		CanWithdrawAmountOrWantChangeValue:  math.NewInt(0),
+		TotalDepositAmountOrWantChangeValue:     math.NewInt(0),
+		CanWithdrawAmountOrWantChangeValue:      math.NewInt(0),
+		WaitUnDelegationAmountOrWantChangeValue: math.NewInt(0),
 	}
 	if isExit {
 		value := store.Get(key)
@@ -57,7 +60,7 @@ func (k Keeper) UpdateStakerAssetState(ctx sdk.Context, stakerId string, assetId
 	if !changeAmount.TotalDepositAmountOrWantChangeValue.IsNil() {
 		if changeAmount.TotalDepositAmountOrWantChangeValue.IsNegative() {
 			if assetState.TotalDepositAmountOrWantChangeValue.LT(changeAmount.TotalDepositAmountOrWantChangeValue.Abs()) {
-				return types2.ErrSubDepositAmountIsMoreThanOrigin
+				return errorsmod.Wrap(types2.ErrSubAmountIsMoreThanOrigin, fmt.Sprintf("TotalDepositAmount:%s,changeValue:%s", assetState.TotalDepositAmountOrWantChangeValue, changeAmount.TotalDepositAmountOrWantChangeValue))
 			}
 		}
 		if !changeAmount.TotalDepositAmountOrWantChangeValue.IsZero() {
@@ -68,12 +71,24 @@ func (k Keeper) UpdateStakerAssetState(ctx sdk.Context, stakerId string, assetId
 	if !changeAmount.CanWithdrawAmountOrWantChangeValue.IsNil() {
 		if changeAmount.CanWithdrawAmountOrWantChangeValue.IsNegative() {
 			if assetState.CanWithdrawAmountOrWantChangeValue.LT(changeAmount.CanWithdrawAmountOrWantChangeValue.Abs()) {
-				return types2.ErrSubCanWithdrawAmountIsMoreThanOrigin
+				return errorsmod.Wrap(types2.ErrSubAmountIsMoreThanOrigin, fmt.Sprintf("CanWithdrawAmount:%s,changeValue:%s", assetState.CanWithdrawAmountOrWantChangeValue, changeAmount.CanWithdrawAmountOrWantChangeValue))
 			}
 		}
 
 		if !changeAmount.CanWithdrawAmountOrWantChangeValue.IsZero() {
 			assetState.CanWithdrawAmountOrWantChangeValue = assetState.CanWithdrawAmountOrWantChangeValue.Add(changeAmount.CanWithdrawAmountOrWantChangeValue)
+		}
+	}
+
+	if !changeAmount.WaitUnDelegationAmountOrWantChangeValue.IsNil() {
+		if changeAmount.WaitUnDelegationAmountOrWantChangeValue.IsNegative() {
+			if assetState.WaitUnDelegationAmountOrWantChangeValue.LT(changeAmount.WaitUnDelegationAmountOrWantChangeValue.Abs()) {
+				return errorsmod.Wrap(types2.ErrSubAmountIsMoreThanOrigin, fmt.Sprintf("WaitUnDelegationAmount:%s,changeValue:%s", assetState.WaitUnDelegationAmountOrWantChangeValue, changeAmount.WaitUnDelegationAmountOrWantChangeValue))
+			}
+		}
+
+		if !changeAmount.WaitUnDelegationAmountOrWantChangeValue.IsZero() {
+			assetState.WaitUnDelegationAmountOrWantChangeValue = assetState.WaitUnDelegationAmountOrWantChangeValue.Add(changeAmount.WaitUnDelegationAmountOrWantChangeValue)
 		}
 	}
 
