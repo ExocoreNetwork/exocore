@@ -1,0 +1,99 @@
+// Copyright Tharsis Labs Ltd.(Evmos)
+// SPDX-License-Identifier:ENCL-1.0(https://github.com/evmos/evmos/blob/main/LICENSE)
+syntax = "proto3";
+package exocore.delegation.v1;
+
+import "cosmos/msg/v1/msg.proto";
+import "cosmos_proto/cosmos.proto";
+import "gogoproto/gogo.proto";
+import "amino/amino.proto";
+
+option go_package = "github.com/exocore/x/delegation/types";
+
+message ValueField {
+  string Amount = 1
+  [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.nullable) = false
+  ];
+}
+
+message DelegatedSingleAssetInfo {
+  string AssetId = 1;
+  string TotalDelegatedAmount = 2
+  [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.nullable) = false
+  ];
+  map<string, ValueField> PerOperatorAmounts = 3;
+}
+
+message OperatorInfo{
+  string EarningsAddr = 1;
+  string ApproveAddr = 2;
+  string OperatorMetaInfo = 3;
+}
+
+message RegisterOperatorReq {
+  option (cosmos.msg.v1.signer) = "FromAddress";
+  option (amino.name) = "cosmos-sdk/OperatorInfo";
+  option (gogoproto.equal) = false;
+  option (gogoproto.goproto_getters) = false;
+
+  string FromAddress = 1
+  [(cosmos_proto.scalar) = "cosmos.AddressString"];
+  OperatorInfo info = 2;
+}
+
+message DelegationApproveInfo{
+  string signature = 1;
+  string salt = 2;
+}
+
+message RegisterOperatorResponse{}
+
+message DelegationIncOrDecInfo{
+  option (cosmos.msg.v1.signer) = "fromAddress";
+  option (amino.name) = "cosmos-sdk/MsgAddOrDecreaseDelegation";
+
+  option (gogoproto.equal) = false;
+  option (gogoproto.goproto_getters) = false;
+
+  string   fromAddress = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+
+  message ValueField {
+    string Amount = 1
+    [
+      (cosmos_proto.scalar) = "cosmos.Int",
+      (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+      (gogoproto.nullable) = false
+    ];
+  }
+  map<string, ValueField> perOperatorAmounts = 2;
+}
+
+message MsgDelegation{
+  DelegationIncOrDecInfo baseInfo = 1;
+  DelegationApproveInfo approvedInfo = 2;
+}
+message DelegationResponse{}
+
+message MsgUnDelegation{
+  DelegationIncOrDecInfo baseInfo = 1;
+}
+message UnDelegationResponse{}
+
+// Msg defines the delegation Msg service.
+service Msg {
+  option (cosmos.msg.v1.service) = true;
+  // CreateClawbackVestingAccount creats a vesting account that is subject to clawback.
+  rpc RegisterOperator(RegisterOperatorReq) returns (RegisterOperatorResponse);
+  rpc DelegateAssetToOperator(MsgDelegation) returns (DelegationResponse);
+  rpc UnDelegateAssetFromOperator(MsgUnDelegation) returns (UnDelegationResponse);
+}
+
+
+
+

@@ -1,0 +1,12 @@
+syntax = "proto3";
+package exocore.reward;
+
+import "gogoproto/gogo.proto";
+import "exocore/reward/params.proto";
+
+option go_package = "github.com/exocore/x/reward/types";
+
+// GenesisState defines the reward module's genesis state.
+message GenesisState {
+  Params params = 1 [(gogoproto.nullable) = false];
+}

@@ -1,0 +1,14 @@
+// Copyright Tharsis Labs Ltd.(Evmos)
+// SPDX-License-Identifier:ENCL-1.0(https://github.com/evmos/evmos/blob/main/LICENSE)
+syntax = "proto3";
+package exocore.deposit.v1;
+
+import "gogoproto/gogo.proto";
+
+option go_package = "github.com/exocore/x/deposit/types";
+
+// GenesisState defines the restaking_assets_manage module's genesis state.
+message Params {
+  string   exoCoreLzAppAddress = 1;
+  string   exoCoreLzAppEventTopic =2;
+}
