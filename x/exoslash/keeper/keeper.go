@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	"context"
 	"fmt"
 	ethtypes "github.com/ethereum/go-ethereum/core/types"
 	delegationKeeper "github.com/exocore/x/delegation/keeper"
@@ -36,6 +37,26 @@ type (
 		delegationKeeper    delegationKeeper.Keeper
 	}
 )
+
+func (k Keeper) Params(ctx context.Context, request *types.QueryParamsRequest) (*types.QueryParamsResponse, error) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (k Keeper) Params(ctx context.Context, request *types.QueryParamsRequest) (*types.QueryParamsResponse, error) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (k Keeper) Params(ctx context.Context, request *types.QueryParamsRequest) (*types.QueryParamsResponse, error) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (k Keeper) Params(ctx context.Context, request *types.QueryParamsRequest) (*types.QueryParamsResponse, error) {
+	//TODO implement me
+	panic("implement me")
+}
 
 func NewKeeper(
 	cdc codec.BinaryCodec,
