@@ -1,13 +1,19 @@
 syntax = "proto3";
-package exocore.exoslash.v1;
+package exocore.exoslas.v1;
 
-import "exocore/exoslash/params.proto";
+import "exocore/exoslash/v1/params.proto";
 import "gogoproto/gogo.proto";
 import "cosmos/msg/v1/msg.proto";
 
 option go_package = "github.com/exocore/x/exoslash/types";
 
 // Msg defines the Msg service.
+service Msg {
+  rpc UpdateParams  (MsgUpdateParams ) returns (MsgUpdateParamsResponse );
+}
+
+// MsgUpdateParams is the Msg/UpdateParams request type for Erc20 parameters.
+// Since: cosmos-sdk 0.47
 message MsgUpdateParams {
   //todo: temporarily not update configuration through gov module
   //option (cosmos.msg.v1.signer) = "authority";
@@ -19,15 +25,7 @@ message MsgUpdateParams {
   Params params = 1 [(gogoproto.nullable) = false];
 }
 
-message OperatorFrozenStatus {
-  map<string, bool> allAssetsState = 1;
-}
-
+// MsgUpdateParamsResponse defines the response structure for executing a
+// MsgUpdateParams message.
+// Since: cosmos-sdk 0.47
 message MsgUpdateParamsResponse {}
-
-service Msg {
-
-  option (cosmos.msg.v1.service) = true;
-
-  rpc UpdateParams(MsgUpdateParams) returns (MsgUpdateParamsResponse);
-}

@@ -5,7 +5,7 @@ import "gogoproto/gogo.proto";
 import "google/api/annotations.proto";
 import "cosmos/query/v1/query.proto";
 import "cosmos_proto/cosmos.proto";
-import "exocore/exoslash/params.proto";
+import "exocore/exoslash/v1/params.proto";
 // this line is used by starport scaffolding # 1
 
 option go_package = "github.com/exocore/x/exoslash/types";
