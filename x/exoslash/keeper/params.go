@@ -4,37 +4,35 @@ import (
 	"github.com/cosmos/cosmos-sdk/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/common"
-	types2 "github.com/exocore/x/deposit/types"
+	"github.com/exocore/x/reward/types"
 )
 
-var ParamsKey = []byte("Params")
-
-func (k Keeper) SetParams(ctx sdk.Context, params *types2.Params) error {
+func (k Keeper) SetParams(ctx sdk.Context, params *types.Params) error {
 	//check if addr is evm address
 	if !common.IsHexAddress(params.ExoCoreLzAppAddress) {
-		return types2.ErrInvalidEvmAddressFormat
+		return types.ErrInvalidEvmAddressFormat
 	}
 	if len(common.FromHex(params.ExoCoreLzAppEventTopic)) != common.HashLength {
-		return types2.ErrInvalidLzUaTopicIdLength
+		return types.ErrInvalidLzUaTopicIdLength
 	}
-	store := prefix.NewStore(ctx.KVStore(k.storeKey), types2.KeyPrefixParams)
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefixParams)
 	//key := common.HexToAddress(incentive.Contract)
 	bz := k.cdc.MustMarshal(params)
-	store.Set(ParamsKey, bz)
+	store.Set(types.ParamsKey, bz)
 	return nil
 }
 
-func (k Keeper) GetParams(ctx sdk.Context) (*types2.Params, error) {
+func (k Keeper) GetParams(ctx sdk.Context) (*types.Params, error) {
 
-	store := prefix.NewStore(ctx.KVStore(k.storeKey), types2.KeyPrefixParams)
-	ifExist := store.Has(ParamsKey)
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefixParams)
+	ifExist := store.Has(types.ParamsKey)
 	if !ifExist {
-		return nil, types2.ErrNoParamsKey
+		return nil, types.ErrNoParamsKey
 	}
 
-	value := store.Get(ParamsKey)
+	value := store.Get(types.ParamsKey)
 
-	ret := &types2.Params{}
+	ret := &types.Params{}
 	k.cdc.MustUnmarshal(value, ret)
 	return ret, nil
 }

@@ -31,12 +31,8 @@ func (p Params) Validate() error {
 	return nil
 }
 
-<<<<<<< HEAD
-// // String implements the Stringer interface.
-// func (p Params) String() string {
-// 	out, _ := yaml.Marshal(p)
-// }
-=======
 // String implements the Stringer interface.
 func (p Params) String() string {
 	out, _ := yaml.Marshal(p)
+
+
