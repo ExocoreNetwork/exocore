@@ -36,21 +36,6 @@ func (k Keeper) Params(ctx context.Context, request *types.QueryParamsRequest) (
 	panic("implement me")
 }
 
-func (k Keeper) Params(ctx context.Context, request *types.QueryParamsRequest) (*types.QueryParamsResponse, error) {
-	//TODO implement me
-	panic("implement me")
-}
-
-func (k Keeper) Params(ctx context.Context, request *types.QueryParamsRequest) (*types.QueryParamsResponse, error) {
-	//TODO implement me
-	panic("implement me")
-}
-
-func (k Keeper) Params(ctx context.Context, request *types.QueryParamsRequest) (*types.QueryParamsResponse, error) {
-	//TODO implement me
-	panic("implement me")
-}
-
 func NewKeeper(
 	cdc codec.BinaryCodec,
 	storeKey,

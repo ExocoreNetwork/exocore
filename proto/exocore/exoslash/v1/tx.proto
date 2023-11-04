@@ -1,5 +1,5 @@
 syntax = "proto3";
-package exocore.exoslas.v1;
+package exocore.exoslash.v1;
 
 import "exocore/exoslash/v1/params.proto";
 import "gogoproto/gogo.proto";
