@@ -19,13 +19,22 @@ func KeyPrefix(p string) []byte {
 }
 
 const (
+<<<<<<< HEAD
 	prefixParams       = iota + 1
 	prefixOperatorInfo = iota + 1
+=======
+	prefixParams = iota + 1
+>>>>>>> eebca7f (implement slash interface)
 )
 
 var (
 	KeyPrefixParams = []byte{prefixParams}
+<<<<<<< HEAD
 	// KeyPrefixOperatorInfo key-value: operatorAddr->operatorInfo
 	KeyPrefixOperatorInfo = []byte{prefixOperatorInfo}
 	ParamsKey             = []byte("Params")
+=======
+
+	ParamsKey = []byte("Params")
+>>>>>>> eebca7f (implement slash interface)
 )

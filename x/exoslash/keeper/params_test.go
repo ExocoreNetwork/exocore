@@ -1,6 +1,7 @@
 package keeper_test
 
 import (
+<<<<<<< HEAD
 	types2 "github.com/exocore/x/exoslash/types"
 )
 
@@ -15,4 +16,10 @@ func (suite *KeeperTestSuite) TestParams() {
 	getParams, err := suite.app.ExoslashKeeper.GetParams(suite.ctx)
 	suite.NoError(err)
 	suite.Equal(*params, *getParams)
+=======
+	"testing"
+)
+
+func TestGetParams(t *testing.T) {
+>>>>>>> eebca7f (implement slash interface)
 }
