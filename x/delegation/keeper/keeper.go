@@ -22,9 +22,10 @@ type Keeper struct {
 	cdc      codec.BinaryCodec
 
 	//other keepers
-	retakingStateKeeper keeper.Keeper
-	depositKeeper       keeper2.Keeper
-	slashKeeper         types2.ISlashKeeper
+	retakingStateKeeper   keeper.Keeper
+	depositKeeper         keeper2.Keeper
+	slashKeeper           types2.ISlashKeeper
+	operatorOptedInKeeper types2.OperatorOptedInMiddlewareKeeper
 }
 
 func (k Keeper) CompleteUnDelegateAssetFromOperator() error {
@@ -83,7 +84,7 @@ type IDelegation interface {
 	// UnDelegateAssetFromOperator handle the UnDelegateAssetFromOperator txs from msg service
 	UnDelegateAssetFromOperator(ctx context.Context, delegation *types2.MsgUnDelegation) (*types2.UnDelegationResponse, error)
 
-	GetSingleDelegationInfo(ctx sdk.Context, stakerId, assetId, operatorAddr string) (*types2.ValueField, error)
+	GetSingleDelegationInfo(ctx sdk.Context, stakerId, assetId, operatorAddr string) (*types2.DelegationAmounts, error)
 
 	GetDelegationInfo(ctx sdk.Context, stakerId, assetId string) (*types2.QueryDelegationInfoResponse, error)
 

@@ -25,6 +25,8 @@ func (k Keeper) SetUnDelegationStates(ctx sdk.Context, records []*types.UnDelega
 	//key := common.HexToAddress(incentive.Contract)
 	for _, record := range records {
 		bz := k.cdc.MustMarshal(record)
+		//todo: check if the following state can only be set once?
+
 		singleRecKey := types.GetUnDelegationRecordKey(record.LzTxNonce, record.TxHash, record.OperatorAddr)
 		singleRecordStore.Set(singleRecKey, bz)
 
@@ -32,17 +34,17 @@ func (k Keeper) SetUnDelegationStates(ctx sdk.Context, records []*types.UnDelega
 		stakerUnDelegationStore.Set(stakerKey, singleRecKey)
 
 		waitCompleteKey := types.GetWaitCompleteRecordKey(record.CompleteBlockNumber, record.LzTxNonce)
-		waitCompleteStore.Set(waitCompleteKey, []byte(singleRecKey))
+		waitCompleteStore.Set(waitCompleteKey, singleRecKey)
 	}
 	return nil
 }
 
-func (k Keeper) SetSingleUnDelegationRecord(ctx sdk.Context, record *types.UnDelegationRecord) error {
+func (k Keeper) SetSingleUnDelegationRecord(ctx sdk.Context, record *types.UnDelegationRecord) (recordKey []byte, err error) {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefixUnDelegationInfo)
 	bz := k.cdc.MustMarshal(record)
 	key := types.GetUnDelegationRecordKey(record.LzTxNonce, record.TxHash, record.OperatorAddr)
 	store.Set(key, bz)
-	return nil
+	return key, nil
 }
 
 func (k Keeper) GetUnDelegationRecords(ctx sdk.Context, singleRecordKeys []string, getType GetUnDelegationRecordType) (record []*types.UnDelegationRecord, err error) {
@@ -76,10 +78,10 @@ func (k Keeper) GetUnDelegationRecords(ctx sdk.Context, singleRecordKeys []strin
 	return ret, nil
 }
 
-func (k Keeper) SetStakerUnDelegationInfo(ctx sdk.Context, stakerId, assetId, recordKey string, lzNonce uint64) error {
+func (k Keeper) SetStakerUnDelegationInfo(ctx sdk.Context, stakerId, assetId string, recordKey []byte, lzNonce uint64) error {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefixStakerUnDelegationInfo)
 	key := types.GetStakerUnDelegationRecordKey(stakerId, assetId, lzNonce)
-	store.Set(key, []byte(recordKey))
+	store.Set(key, recordKey)
 	return nil
 }
 

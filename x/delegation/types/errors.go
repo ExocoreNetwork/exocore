@@ -16,5 +16,7 @@ var (
 
 	ErrParseDelegationKey = errorsmod.Register(ModuleName, 6, "delegation state key can't be parsed")
 
-	ErrStakerGetRecordType = errorsmod.Register(ModuleName, 6, "the input getType is error when get staker unDelegation records")
+	ErrStakerGetRecordType = errorsmod.Register(ModuleName, 7, "the input getType is error when get staker unDelegation records")
+
+	ErrUnDelegationAmountTooBig = errorsmod.Register(ModuleName, 8, "the UnDelegation amount is bigger than the delegated amount")
 )

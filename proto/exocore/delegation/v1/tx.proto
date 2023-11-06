@@ -82,6 +82,7 @@ message UnDelegationRecord{
   uint64 CompleteBlockNumber = 7;
   uint64 LzTxNonce = 8;
   ValueField amount = 9;
+  ValueField actualCompletedAmount = 10;
 }
 
 message UnDelegationRecordKeyList {

@@ -16,9 +16,14 @@ message DelegationInfoReq {
   string assetId = 2;
 }
 
+message DelegationAmounts{
+  ValueField CanUnDelegationAmount = 1;
+  ValueField WaitUnDelegationAmount = 2;
+}
+
 message QueryDelegationInfoResponse{
   ValueField TotalDelegatedAmount = 1;
-  map<string, ValueField > delegationInfos = 2;
+  map<string, DelegationAmounts > delegationInfos = 2;
 }
 
 message SingleDelegationInfoReq {
@@ -42,7 +47,7 @@ service Query {
     option (google.api.http).get = "/exocore/delegation/v1/GetDelegationInfo";
   }
 
-  rpc QuerySingleDelegationInfo(SingleDelegationInfoReq) returns(ValueField){
+  rpc QuerySingleDelegationInfo(SingleDelegationInfoReq) returns(DelegationAmounts){
     option (cosmos.query.v1.module_query_safe) = true;
     option (google.api.http).get = "/exocore/delegation/v1/QuerySingleDelegationInfo";
   }

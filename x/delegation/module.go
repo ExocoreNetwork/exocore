@@ -4,6 +4,7 @@ package delegation
 
 import (
 	"cosmossdk.io/math"
+	abci "github.com/cometbft/cometbft/abci/types"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/codec"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
@@ -94,6 +95,13 @@ func (am AppModule) RegisterStoreDecoder(registry sdk.StoreDecoderRegistry) {
 func (am AppModule) WeightedOperations(simState module.SimulationState) []simtypes.WeightedOperation {
 	//TODO implement me
 	panic("implement me")
+}
+
+// EndBlock executes all ABCI EndBlock logic respective to the claim module. It
+// returns no validator updates.
+func (am AppModule) EndBlock(ctx sdk.Context, req abci.RequestEndBlock) []abci.ValidatorUpdate {
+	am.keeper.EndBlock(ctx, req)
+	return []abci.ValidatorUpdate{}
 }
 
 type UnDelegateReqRecord struct {
