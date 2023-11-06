@@ -17,3 +17,13 @@ const (
 func KeyPrefix(p string) []byte {
 	return []byte(p)
 }
+
+const (
+	prefixParams = iota + 1
+)
+
+var (
+	KeyPrefixParams = []byte{prefixParams}
+
+	ParamsKey = []byte("Params")
+)
