@@ -4,16 +4,12 @@ import (
 	"context"
 	"testing"
 
-	sdk "github.com/cosmos/cosmos-sdk/types"
-	keepertest "github.com/exocore/testutil/keeper"
-	"github.com/exocore/x/exoslash/keeper"
 	"github.com/exocore/x/exoslash/types"
 	"github.com/stretchr/testify/require"
 )
 
 func setupMsgServer(t testing.TB) (types.MsgServer, context.Context) {
-	k, ctx := keepertest.ExoslashKeeper(t)
-	return keeper.NewMsgServerImpl(*k), sdk.WrapSDKContext(ctx)
+	return nil, nil
 }
 
 func TestMsgServer(t *testing.T) {

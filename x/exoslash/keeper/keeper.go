@@ -1,12 +1,10 @@
 package keeper
 
 import (
-	"context"
 	"fmt"
 	ethtypes "github.com/ethereum/go-ethereum/core/types"
 	delegationKeeper "github.com/exocore/x/delegation/keeper"
 	depositKeeper "github.com/exocore/x/deposit/keeper"
-	depositTypes "github.com/exocore/x/deposit/types"
 	retakingStateKeeper "github.com/exocore/x/restaking_assets_manage/keeper"
 
 	"github.com/cometbft/cometbft/libs/log"
@@ -30,11 +28,6 @@ type (
 		delegationKeeper    delegationKeeper.Keeper
 	}
 )
-
-func (k Keeper) Params(ctx context.Context, request *types.QueryParamsRequest) (*types.QueryParamsResponse, error) {
-	//TODO implement me
-	panic("implement me")
-}
 
 func NewKeeper(
 	cdc codec.BinaryCodec,
@@ -66,6 +59,6 @@ type IEXOSlash interface {
 	FreezeOperator(ctx sdk.Context, event *SlashParams) error
 	ResetFrozenStatus(ctx sdk.Context, event *SlashParams) error
 	IsOperatorFrozen(ctx sdk.Context, event *SlashParams) error
-	SetParams(ctx sdk.Context, params *depositTypes.Params) error
-	GetParams(ctx sdk.Context) (*depositTypes.Params, error)
+	SetParams(ctx sdk.Context, params *types.Params) error
+	GetParams(ctx sdk.Context) (*types.Params, error)
 }

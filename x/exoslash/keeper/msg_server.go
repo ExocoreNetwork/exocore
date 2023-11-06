@@ -4,7 +4,7 @@ import (
 	"context"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/exocore/x/reward/types"
+	"github.com/exocore/x/exoslash/types"
 )
 
 type msgServer struct {
