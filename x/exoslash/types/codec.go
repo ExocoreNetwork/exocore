@@ -31,10 +31,13 @@ func init() {
 	amino.Seal()
 }
 
+<<<<<<< HEAD
 func RegisterCodec(cdc *codec.LegacyAmino) {
 
 }
 
+=======
+>>>>>>> f3ac4aa (implement slash interface)
 // RegisterInterfaces register implementations
 func RegisterInterfaces(registry codectypes.InterfaceRegistry) {
 	registry.RegisterImplementations(

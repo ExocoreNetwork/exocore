@@ -4,7 +4,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/exocore/x/reward/types"
+	"github.com/exocore/x/exoslash/types"
 )
 
 func (k Keeper) SetParams(ctx sdk.Context, params *types.Params) error {

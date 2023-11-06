@@ -97,11 +97,21 @@ func NewAppModule(
 	//types.RegisterMsgServer(cfg.MsgServer(), keeper.NewMsgServerImpl(am.keeper))
 }
 
+<<<<<<< HEAD
 // // InitGenesis performs the module's genesis initialization. It returns no validator updates.
 // func (am AppModule) InitGenesis(ctx sdk.Context, cdc codec.JSONCodec, gs json.RawMessage) []abci.ValidatorUpdate {
 // 	var genState types.GenesisState
 // 	// Initialize global index to index in genesis state
 // 	cdc.MustUnmarshalJSON(gs, &genState)
+=======
+// RegisterServices registers a gRPC query service to respond to the module-specific gRPC queries
+func (am AppModule) RegisterServices(cfg module.Configurator) {
+	//types.RegisterMsgServer(cfg.MsgServer(), &am.keeper)
+	//	types.RegisterQueryServer(cfg.QueryServer(), am.keeper)
+	types.RegisterMsgServer(cfg.MsgServer(), &am.keeper)
+	//types2.RegisterQueryServer(cfg.QueryServer(), am.keeper)
+}
+>>>>>>> f3ac4aa (implement slash interface)
 
 // 	InitGenesis(ctx, am.keeper, genState)
 
