@@ -20,12 +20,19 @@ import (
 )
 
 type SlashParams struct {
-	clientChainLzId uint64
-	action          types.CrossChainOpType
-	assetsAddress   []byte
+	ClientChainLzId           uint64
+	Action                    types.CrossChainOpType
+	AssetsAddress             []byte
+	OperatorAddress           sdk.AccAddress
+	StakerAddress             []byte
+	OpAmount                  sdkmath.Int
+	MiddlewareContractAddress []byte
+	Proportion                sdkmath.LegacyDec
+	Evidence                  string
+}
+type OperatorFrozenStatus struct {
 	operatorAddress sdk.AccAddress
-	stakerAddress   []byte
-	opAmount        sdkmath.Int
+	status          bool
 }
 
 func (k Keeper) getParamsFromEventLog(ctx sdk.Context, log *ethtypes.Log) (*SlashParams, error) {
@@ -92,19 +99,19 @@ func (k Keeper) getParamsFromEventLog(ctx sdk.Context, log *ethtypes.Log) (*Slas
 	amount := sdkmath.NewIntFromBigInt(big.NewInt(0).SetBytes(log.Data[readStart:readEnd]))
 
 	return &SlashParams{
-		clientChainLzId: clientChainLzId,
-		action:          action,
-		assetsAddress:   assetsAddress,
-		stakerAddress:   stakerAddress,
-		operatorAddress: opAccAddr,
-		opAmount:        amount,
+		ClientChainLzId: clientChainLzId,
+		Action:          action,
+		AssetsAddress:   assetsAddress,
+		StakerAddress:   stakerAddress,
+		OperatorAddress: opAccAddr,
+		OpAmount:        amount,
 	}, nil
 }
 
 func getStakeIDAndAssetId(params *SlashParams) (stakeId string, assetId string) {
-	clientChainLzIdStr := hexutil.EncodeUint64(params.clientChainLzId)
-	stakeId = strings.Join([]string{hexutil.Encode(params.stakerAddress[:]), clientChainLzIdStr}, "_")
-	assetId = strings.Join([]string{hexutil.Encode(params.assetsAddress[:]), clientChainLzIdStr}, "_")
+	clientChainLzIdStr := hexutil.EncodeUint64(params.ClientChainLzId)
+	stakeId = strings.Join([]string{hexutil.Encode(params.StakerAddress[:]), clientChainLzIdStr}, "_")
+	assetId = strings.Join([]string{hexutil.Encode(params.AssetsAddress[:]), clientChainLzIdStr}, "_")
 	return
 }
 
@@ -149,10 +156,15 @@ func (k Keeper) PostTxProcessing(ctx sdk.Context, msg core.Message, receipt *eth
 	return nil
 }
 
+func (k Keeper) OptIntoSlashing(ctx sdk.Context, event *SlashParams) error {
+	//TODO implement me
+	panic("implement me")
+}
+
 func (k Keeper) Slash(ctx sdk.Context, event *SlashParams) error {
 	//check event parameter then execute slash operation
-	if event.opAmount.IsNegative() {
-		return errorsmod.Wrap(rtypes.ErrSlashAmountIsNegative, fmt.Sprintf("the amount is:%s", event.opAmount))
+	if event.OpAmount.IsNegative() {
+		return errorsmod.Wrap(rtypes.ErrSlashAmountIsNegative, fmt.Sprintf("the amount is:%s", event.OpAmount))
 	}
 	stakeId, assetId := getStakeIDAndAssetId(event)
 	//check is asset exist
@@ -162,8 +174,8 @@ func (k Keeper) Slash(ctx sdk.Context, event *SlashParams) error {
 
 	//TODO
 	changeAmount := types.StakerSingleAssetOrChangeInfo{
-		TotalDepositAmountOrWantChangeValue: event.opAmount,
-		CanWithdrawAmountOrWantChangeValue:  event.opAmount,
+		TotalDepositAmountOrWantChangeValue: event.OpAmount,
+		CanWithdrawAmountOrWantChangeValue:  event.OpAmount,
 	}
 	err := k.retakingStateKeeper.UpdateStakerAssetState(ctx, stakeId, assetId, changeAmount)
 	if err != nil {
@@ -184,4 +196,7 @@ func (k Keeper) ResetFrozenStatus(ctx sdk.Context, event *SlashParams) error {
 func (k Keeper) IsOperatorFrozen(ctx sdk.Context, event *SlashParams) error {
 	//TODO implement me
 	panic("implement me")
+}
+func (k Keeper) OperatorAssetSlashedProportion(ctx sdk.Context, opAddr sdk.AccAddress, assetId string, startHeight, endHeight uint64) sdkmath.LegacyDec {
+	return sdkmath.LegacyNewDec(3)
 }

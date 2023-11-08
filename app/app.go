@@ -34,6 +34,7 @@ import (
 	"github.com/exocore/x/deposit"
 	depositKeeper "github.com/exocore/x/deposit/keeper"
 	depositTypes "github.com/exocore/x/deposit/types"
+	exoslashkeeper "github.com/exocore/x/exoslash/keeper"
 	"github.com/exocore/x/restaking_assets_manage"
 	stakingAssetsManageKeeper "github.com/exocore/x/restaking_assets_manage/keeper"
 	stakingAssetsManageTypes "github.com/exocore/x/restaking_assets_manage/types"
@@ -350,6 +351,7 @@ type ExocoreApp struct {
 	WithdrawKeeper            withdrawKeeper.Keeper
 	RewardKeeper              rewardKeeper.Keeper
 
+	ExoSlashKeeper exoslashkeeper.Keeper
 	// the module manager
 	mm *module.Manager
 
