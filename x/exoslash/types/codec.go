@@ -31,6 +31,10 @@ func init() {
 	amino.Seal()
 }
 
+func RegisterCodec(cdc *codec.LegacyAmino) {
+
+}
+
 // RegisterInterfaces register implementations
 func RegisterInterfaces(registry codectypes.InterfaceRegistry) {
 	registry.RegisterImplementations(

@@ -218,3 +218,6 @@ func (k Keeper) OperatorAssetSlashedProportion(ctx sdk.Context, opAddr sdk.AccAd
 	//TODO
 	return sdkmath.LegacyNewDec(3)
 }
+func (k Keeper) OperatorAssetSlashedProportion(ctx sdk.Context, opAddr sdk.AccAddress, assetId string, startHeight, endHeight uint64) sdkmath.LegacyDec {
+	return sdkmath.LegacyNewDec(3)
+}
