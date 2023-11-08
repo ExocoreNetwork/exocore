@@ -2,9 +2,13 @@ package keeper
 
 import (
 <<<<<<< HEAD
+<<<<<<< HEAD
 	sdkmath "cosmossdk.io/math"
 	"fmt"
 =======
+=======
+	sdkmath "cosmossdk.io/math"
+>>>>>>> 104cf78 (add some test and fix bugs)
 	"fmt"
 	ethtypes "github.com/ethereum/go-ethereum/core/types"
 	delegationKeeper "github.com/exocore/x/delegation/keeper"
@@ -66,5 +70,9 @@ type IEXOSlash interface {
 	IsOperatorFrozen(ctx sdk.Context, event *SlashParams) error
 	SetParams(ctx sdk.Context, params *types.Params) error
 	GetParams(ctx sdk.Context) (*types.Params, error)
+<<<<<<< HEAD
 >>>>>>> eebca7f (implement slash interface)
+=======
+	OperatorAssetSlashedProportion(ctx sdk.Context, opAddr sdk.AccAddress, assetId string, startHeight, endHeight uint64) sdkmath.LegacyDec
+>>>>>>> 104cf78 (add some test and fix bugs)
 }

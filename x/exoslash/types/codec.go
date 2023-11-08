@@ -38,6 +38,10 @@ func RegisterCodec(cdc *codec.LegacyAmino) {
 >>>>>>> eebca7f (implement slash interface)
 }
 
+func RegisterCodec(cdc *codec.LegacyAmino) {
+
+}
+
 // RegisterInterfaces register implementations
 func RegisterInterfaces(registry codectypes.InterfaceRegistry) {
 	registry.RegisterImplementations(

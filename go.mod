@@ -215,7 +215,11 @@ replace (
 	github.com/99designs/keyring => github.com/cosmos/keyring v1.2.0
 	github.com/cosmos/cosmos-sdk => github.com/evmos/cosmos-sdk v0.47.4-evmos.2
 <<<<<<< HEAD
+<<<<<<< HEAD
 	//fix cosmos-sdk error
+=======
+	// use Cosmos-SDK fork to enable Ledger functionality
+>>>>>>> 104cf78 (add some test and fix bugs)
 =======
 	// use Cosmos-SDK fork to enable Ledger functionality
 >>>>>>> 104cf78 (add some test and fix bugs)
@@ -227,7 +231,10 @@ replace (
 	// replace broken goleveldb
 	github.com/syndtr/goleveldb => github.com/syndtr/goleveldb v1.0.1-0.20210819022825-2ae1ddf74ef7
 <<<<<<< HEAD
+<<<<<<< HEAD
 	//fix cosmos-sdk error
+=======
+>>>>>>> 104cf78 (add some test and fix bugs)
 =======
 >>>>>>> 104cf78 (add some test and fix bugs)
 	golang.org/x/exp => golang.org/x/exp v0.0.0-20230515195305-f3d0a9c9a5cc

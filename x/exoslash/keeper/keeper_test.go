@@ -52,17 +52,29 @@ func (suite *KeeperTestSuite) TestSlash() {
 	stakerAddress := common.HexToAddress("0xdAC17F958D2ee523a2206206994597C13D831ec7")
 	middlewareContractAddress := common.HexToAddress("0xdAC17F958D2ee523a2206206994597C13D831ec7")
 	slashEvent := &exoslashkeeper.SlashParams{
+<<<<<<< HEAD
 		ClientChainLzId:           3,
 		Action:                    types.Slash,
+=======
+
+		ClientChainLzId:           3,
+		Action:                    types.Deposit,
+>>>>>>> 104cf78 (add some test and fix bugs)
 		AssetsAddress:             usdtAddress.Bytes(),
 		OperatorAddress:           opAccAddr,
 		StakerAddress:             stakerAddress.Bytes(),
 		OpAmount:                  sdkmath.NewInt(200),
 		MiddlewareContractAddress: middlewareContractAddress.Bytes(),
 		Proportion:                sdkmath.LegacyNewDecFromInt(sdkmath.NewInt(3)),
+<<<<<<< HEAD
 		Proof:                     nil,
 	}
 	suite.NoError(suite.app.ExoslashKeeper.Slash(suite.ctx, slashEvent))
+=======
+		Evidence:                  "",
+	}
+	suite.NoError(suite.app.ExoSlashKeeper.Slash(suite.ctx, slashEvent))
+>>>>>>> 104cf78 (add some test and fix bugs)
 }
 
 func (suite *KeeperTestSuite) DoSetupTest(t require.TestingT) {

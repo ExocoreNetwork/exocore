@@ -25,10 +25,17 @@ type SlashParams struct {
 	AssetsAddress             []byte
 	OperatorAddress           sdk.AccAddress
 	StakerAddress             []byte
+<<<<<<< HEAD
 	MiddlewareContractAddress []byte
 	Proportion                sdkmath.LegacyDec
 	OpAmount                  sdkmath.Int
 	Proof                     []byte
+=======
+	OpAmount                  sdkmath.Int
+	MiddlewareContractAddress []byte
+	Proportion                sdkmath.LegacyDec
+	Evidence                  string
+>>>>>>> 104cf78 (add some test and fix bugs)
 }
 type OperatorFrozenStatus struct {
 	operatorAddress sdk.AccAddress
@@ -174,8 +181,11 @@ func (k Keeper) Slash(ctx sdk.Context, event *SlashParams) error {
 	//the stakes are frozen for the impacted middleware, and deposits and withdrawals are disabled as well.
 	//All pending deposits and withdrawals for the current epoch will be invalidated.
 	//check event parameter then execute slash operation
+<<<<<<< HEAD
 	_ = k.SetFrozenStatus(ctx, string(event.OperatorAddress), true)
 
+=======
+>>>>>>> 104cf78 (add some test and fix bugs)
 	if event.OpAmount.IsNegative() {
 		return errorsmod.Wrap(rtypes.ErrSlashAmountIsNegative, fmt.Sprintf("the amount is:%s", event.OpAmount))
 	}
@@ -212,5 +222,8 @@ func (k Keeper) IsOperatorFrozen(ctx sdk.Context, event *SlashParams) (bool, err
 }
 func (k Keeper) OperatorAssetSlashedProportion(ctx sdk.Context, opAddr sdk.AccAddress, assetId string, startHeight, endHeight uint64) sdkmath.LegacyDec {
 	//TODO
+	return sdkmath.LegacyNewDec(3)
+}
+func (k Keeper) OperatorAssetSlashedProportion(ctx sdk.Context, opAddr sdk.AccAddress, assetId string, startHeight, endHeight uint64) sdkmath.LegacyDec {
 	return sdkmath.LegacyNewDec(3)
 }
