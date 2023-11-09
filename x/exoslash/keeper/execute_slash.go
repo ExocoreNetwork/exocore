@@ -2,10 +2,14 @@ package keeper
 
 import (
 	"bytes"
-	errorsmod "cosmossdk.io/errors"
-	sdkmath "cosmossdk.io/math"
 	"encoding/binary"
 	"fmt"
+	"log"
+	"math/big"
+	"strings"
+
+	errorsmod "cosmossdk.io/errors"
+	sdkmath "cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
@@ -14,9 +18,6 @@ import (
 	"github.com/evmos/evmos/v14/rpc/namespaces/ethereum/eth/filters"
 	rtypes "github.com/exocore/x/exoslash/types"
 	"github.com/exocore/x/restaking_assets_manage/types"
-	"log"
-	"math/big"
-	"strings"
 )
 
 type SlashParams struct {
@@ -219,5 +220,6 @@ func (k Keeper) OperatorAssetSlashedProportion(ctx sdk.Context, opAddr sdk.AccAd
 	return sdkmath.LegacyNewDec(3)
 }
 func (k Keeper) OperatorAssetSlashedProportion(ctx sdk.Context, opAddr sdk.AccAddress, assetId string, startHeight, endHeight uint64) sdkmath.LegacyDec {
+	//TODO
 	return sdkmath.LegacyNewDec(3)
 }
