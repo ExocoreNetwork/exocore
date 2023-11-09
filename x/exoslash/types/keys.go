@@ -19,11 +19,13 @@ func KeyPrefix(p string) []byte {
 }
 
 const (
-	prefixParams = iota + 1
+	prefixParams       = iota + 1
+	prefixOperatorInfo = iota + 1
 )
 
 var (
 	KeyPrefixParams = []byte{prefixParams}
-
-	ParamsKey = []byte("Params")
+	// KeyPrefixOperatorInfo key-value: operatorAddr->operatorInfo
+	KeyPrefixOperatorInfo = []byte{prefixOperatorInfo}
+	ParamsKey             = []byte("Params")
 )

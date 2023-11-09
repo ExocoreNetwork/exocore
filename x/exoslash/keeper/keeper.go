@@ -60,7 +60,7 @@ type IEXOSlash interface {
 	Slash(ctx sdk.Context, event *SlashParams) error
 	FreezeOperator(ctx sdk.Context, event *SlashParams) error
 	ResetFrozenStatus(ctx sdk.Context, event *SlashParams) error
-	IsOperatorFrozen(ctx sdk.Context, event *SlashParams) error
+	IsOperatorFrozen(ctx sdk.Context, event *SlashParams) (bool, error)
 	SetParams(ctx sdk.Context, params *types.Params) error
 	GetParams(ctx sdk.Context) (*types.Params, error)
 	OperatorAssetSlashedProportion(ctx sdk.Context, opAddr sdk.AccAddress, assetId string, startHeight, endHeight uint64) sdkmath.LegacyDec

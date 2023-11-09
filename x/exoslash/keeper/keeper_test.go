@@ -52,16 +52,15 @@ func (suite *KeeperTestSuite) TestSlash() {
 	stakerAddress := common.HexToAddress("0xdAC17F958D2ee523a2206206994597C13D831ec7")
 	middlewareContractAddress := common.HexToAddress("0xdAC17F958D2ee523a2206206994597C13D831ec7")
 	slashEvent := &exoslashkeeper.SlashParams{
-
 		ClientChainLzId:           3,
-		Action:                    types.Deposit,
+		Action:                    types.Slash,
 		AssetsAddress:             usdtAddress.Bytes(),
 		OperatorAddress:           opAccAddr,
 		StakerAddress:             stakerAddress.Bytes(),
 		OpAmount:                  sdkmath.NewInt(200),
 		MiddlewareContractAddress: middlewareContractAddress.Bytes(),
 		Proportion:                sdkmath.LegacyNewDecFromInt(sdkmath.NewInt(3)),
-		Evidence:                  "",
+		Proof:                     nil,
 	}
 	suite.NoError(suite.app.ExoSlashKeeper.Slash(suite.ctx, slashEvent))
 }
