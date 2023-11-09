@@ -53,6 +53,7 @@ func (suite *KeeperTestSuite) TestSlash() {
 	middlewareContractAddress := common.HexToAddress("0xdAC17F958D2ee523a2206206994597C13D831ec7")
 	slashEvent := &exoslashkeeper.SlashParams{
 <<<<<<< HEAD
+<<<<<<< HEAD
 		ClientChainLzId:           3,
 		Action:                    types.Slash,
 =======
@@ -60,6 +61,10 @@ func (suite *KeeperTestSuite) TestSlash() {
 		ClientChainLzId:           3,
 		Action:                    types.Deposit,
 >>>>>>> 104cf78 (add some test and fix bugs)
+=======
+		ClientChainLzId:           3,
+		Action:                    types.Slash,
+>>>>>>> 5429dca (add unti test for slash and fix some  bugs)
 		AssetsAddress:             usdtAddress.Bytes(),
 		OperatorAddress:           opAccAddr,
 		StakerAddress:             stakerAddress.Bytes(),
@@ -67,11 +72,15 @@ func (suite *KeeperTestSuite) TestSlash() {
 		MiddlewareContractAddress: middlewareContractAddress.Bytes(),
 		Proportion:                sdkmath.LegacyNewDecFromInt(sdkmath.NewInt(3)),
 <<<<<<< HEAD
+<<<<<<< HEAD
 		Proof:                     nil,
 	}
 	suite.NoError(suite.app.ExoslashKeeper.Slash(suite.ctx, slashEvent))
 =======
 		Evidence:                  "",
+=======
+		Proof:                     nil,
+>>>>>>> 5429dca (add unti test for slash and fix some  bugs)
 	}
 	suite.NoError(suite.app.ExoSlashKeeper.Slash(suite.ctx, slashEvent))
 >>>>>>> 104cf78 (add some test and fix bugs)
