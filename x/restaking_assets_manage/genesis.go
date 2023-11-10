@@ -21,7 +21,26 @@ func NewGenesisState(chain []*types2.ClientChainInfo, token []*types2.ClientChai
 
 // DefaultGenesisState - Return a default genesis state
 func DefaultGenesisState() *types2.GenesisState {
-	return NewGenesisState([]*types2.ClientChainInfo{}, []*types2.ClientChainTokenInfo{})
+	//todo: set eth as client chain and usdt as asset in the genesis state
+	ethClientChain := &types2.ClientChainInfo{
+		ChainName:              "ethereum",
+		ChainMetaInfo:          "ethereum block chain",
+		OriginChainId:          1,
+		FinalityNeedBlockDelay: 10,
+		LayerZeroChainId:       101,
+		AddressLength:          20,
+	}
+	usdtClientChainAsset := &types2.ClientChainTokenInfo{
+		Name:             "Tether USD",
+		Symbol:           "USDT",
+		Address:          "0xdAC17F958D2ee523a2206206994597C13D831ec7",
+		Decimals:         6,
+		LayerZeroChainId: ethClientChain.LayerZeroChainId,
+		AssetMetaInfo:    "Tether USD token",
+	}
+	totalSupply, _ := sdk.NewIntFromString("40022689732746729")
+	usdtClientChainAsset.TotalSupply = totalSupply
+	return NewGenesisState([]*types2.ClientChainInfo{ethClientChain}, []*types2.ClientChainTokenInfo{usdtClientChainAsset})
 }
 
 // GetGenesisStateFromAppState returns x/restaking_assets_manage GenesisState given raw application
@@ -52,16 +71,25 @@ func InitGenesis(
 	//todo: might need to sort the clientChains and tokens before handling.
 
 	c := sdk.UnwrapSDKContext(ctx)
+	var err error
 	//save default supported client chain
 	for _, chain := range data.DefaultSupportedClientChains {
-		k.SetClientChainInfo(c, chain)
+		ctx.Logger().Info("set client chain info", "info", chain)
+		err = k.SetClientChainInfo(c, chain)
+		if err != nil {
+			panic(err)
+		}
 	}
 	//save default supported client chain assets
 	for _, asset := range data.DefaultSupportedClientChainTokens {
-		k.SetStakingAssetInfo(c, &types2.StakingAssetInfo{
+		ctx.Logger().Info("set client chain asset info", "info", asset)
+		err = k.SetStakingAssetInfo(c, &types2.StakingAssetInfo{
 			AssetBasicInfo:     asset,
 			StakingTotalAmount: math.NewInt(0),
 		})
+		if err != nil {
+			panic(err)
+		}
 	}
 }
 

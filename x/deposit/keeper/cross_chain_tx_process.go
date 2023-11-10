@@ -18,15 +18,15 @@ import (
 )
 
 type DepositParams struct {
-	clientChainLzId uint64
-	action          types.CrossChainOpType
-	assetsAddress   []byte
-	stakerAddress   []byte
-	opAmount        sdkmath.Int
+	ClientChainLzId uint64
+	Action          types.CrossChainOpType
+	AssetsAddress   []byte
+	StakerAddress   []byte
+	OpAmount        sdkmath.Int
 }
 
 func (k Keeper) getDepositParamsFromEventLog(ctx sdk.Context, log *ethtypes.Log) (*DepositParams, error) {
-	// check if action is deposit
+	// check if Action is deposit
 	var action types.CrossChainOpType
 	var err error
 	readStart := uint32(0)
@@ -34,7 +34,7 @@ func (k Keeper) getDepositParamsFromEventLog(ctx sdk.Context, log *ethtypes.Log)
 	r := bytes.NewReader(log.Data[readStart:readEnd])
 	err = binary.Read(r, binary.BigEndian, &action)
 	if err != nil {
-		return nil, errorsmod.Wrap(err, "error occurred when binary read action")
+		return nil, errorsmod.Wrap(err, "error occurred when binary read Action")
 	}
 	if action != types.Deposit {
 		// not handle the actions that isn't deposit
@@ -45,7 +45,7 @@ func (k Keeper) getDepositParamsFromEventLog(ctx sdk.Context, log *ethtypes.Log)
 	r = bytes.NewReader(log.Topics[types.ClientChainLzIdIndexInTopics][:])
 	err = binary.Read(r, binary.BigEndian, &clientChainLzId)
 	if err != nil {
-		return nil, errorsmod.Wrap(err, "error occurred when binary read clientChainLzId from topic")
+		return nil, errorsmod.Wrap(err, "error occurred when binary read ClientChainLzId from topic")
 	}
 
 	clientChainInfo, err := k.retakingStateKeeper.GetClientChainInfoByIndex(ctx, clientChainLzId)
@@ -53,7 +53,7 @@ func (k Keeper) getDepositParamsFromEventLog(ctx sdk.Context, log *ethtypes.Log)
 		return nil, errorsmod.Wrap(err, "error occurred when get client chain info")
 	}
 
-	//decode the action parameters
+	//decode the Action parameters
 	readStart = readEnd
 	readEnd += clientChainInfo.AddressLength
 	r = bytes.NewReader(log.Data[readStart:readEnd])
@@ -77,11 +77,11 @@ func (k Keeper) getDepositParamsFromEventLog(ctx sdk.Context, log *ethtypes.Log)
 	amount := sdkmath.NewIntFromBigInt(big.NewInt(0).SetBytes(log.Data[readStart:readEnd]))
 
 	return &DepositParams{
-		clientChainLzId: clientChainLzId,
-		action:          action,
-		assetsAddress:   assetsAddress,
-		stakerAddress:   depositAddress,
-		opAmount:        amount,
+		ClientChainLzId: clientChainLzId,
+		Action:          action,
+		AssetsAddress:   assetsAddress,
+		StakerAddress:   depositAddress,
+		OpAmount:        amount,
 	}, nil
 }
 
@@ -129,23 +129,23 @@ func (k Keeper) PostTxProcessing(ctx sdk.Context, msg core.Message, receipt *eth
 
 func (k Keeper) Deposit(ctx sdk.Context, event *DepositParams) error {
 	//check event parameter before executing deposit operation
-	if event.opAmount.IsNegative() {
-		return errorsmod.Wrap(types2.ErrDepositAmountIsNegative, fmt.Sprintf("the amount is:%s", event.opAmount))
+	if event.OpAmount.IsNegative() {
+		return errorsmod.Wrap(types2.ErrDepositAmountIsNegative, fmt.Sprintf("the amount is:%s", event.OpAmount))
 	}
-	stakeId, assetId := types.GetStakeIDAndAssetId(event.clientChainLzId, event.stakerAddress, event.assetsAddress)
+	stakeId, assetId := types.GetStakeIDAndAssetId(event.ClientChainLzId, event.StakerAddress, event.AssetsAddress)
 	//check if asset exist
 	if !k.retakingStateKeeper.StakingAssetIsExist(ctx, assetId) {
 		return errorsmod.Wrap(types2.ErrDepositAssetNotExist, fmt.Sprintf("the assetId is:%s", assetId))
 	}
 	changeAmount := types.StakerSingleAssetOrChangeInfo{
-		TotalDepositAmountOrWantChangeValue: event.opAmount,
-		CanWithdrawAmountOrWantChangeValue:  event.opAmount,
+		TotalDepositAmountOrWantChangeValue: event.OpAmount,
+		CanWithdrawAmountOrWantChangeValue:  event.OpAmount,
 	}
 	err := k.retakingStateKeeper.UpdateStakerAssetState(ctx, stakeId, assetId, changeAmount)
 	if err != nil {
 		return err
 	}
-	err = k.retakingStateKeeper.UpdateStakingAssetTotalAmount(ctx, assetId, event.opAmount)
+	err = k.retakingStateKeeper.UpdateStakingAssetTotalAmount(ctx, assetId, event.OpAmount)
 	if err != nil {
 		return err
 	}

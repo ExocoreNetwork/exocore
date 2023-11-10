@@ -12,6 +12,23 @@ type ISlashKeeper interface {
 	OperatorAssetSlashedProportion(ctx sdk.Context, opAddr sdk.AccAddress, assetId string, startHeight, endHeight uint64) sdkmath.LegacyDec
 }
 
+// VirtualISlashKeeper todo: When the actual keeper functionality has not been implemented yet, temporarily use the virtual keeper.
+type VirtualISlashKeeper struct{}
+
+func (VirtualISlashKeeper) IsOperatorFrozen(ctx sdk.Context, opAddr sdk.AccAddress) bool {
+	return false
+}
+
+func (VirtualISlashKeeper) OperatorAssetSlashedProportion(ctx sdk.Context, opAddr sdk.AccAddress, assetId string, startHeight, endHeight uint64) sdkmath.LegacyDec {
+	return sdkmath.LegacyNewDec(0)
+}
+
 type OperatorOptedInMiddlewareKeeper interface {
 	GetOperatorCanUnDelegateHeight(ctx sdk.Context, assetId string, opAddr sdk.AccAddress, startHeight uint64) uint64
+}
+
+type VirtualOperatorOptedInKeeper struct{}
+
+func (VirtualOperatorOptedInKeeper) GetOperatorCanUnDelegateHeight(ctx sdk.Context, assetId string, opAddr sdk.AccAddress, startHeight uint64) uint64 {
+	return startHeight + 10
 }

@@ -27,7 +27,7 @@ func (suite *KeeperTestSuite) DoSetupTest(t require.TestingT) {
 	consAddress := sdk.ConsAddress(privCons.PubKey().Address())
 
 	chainID := utils.TestnetChainID + "-1"
-	suite.app = app.Setup(false, feemarkettypes.DefaultGenesisState(), chainID)
+	suite.app = app.Setup(false, feemarkettypes.DefaultGenesisState(), chainID, true)
 	header := testutil.NewHeader(
 		1, time.Now().UTC(), chainID, consAddress, nil, nil,
 	)

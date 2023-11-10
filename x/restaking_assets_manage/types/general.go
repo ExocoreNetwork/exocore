@@ -35,7 +35,12 @@ const (
 
 func GetStakeIDAndAssetId(clientChainLzId uint64, stakerAddress []byte, assetsAddress []byte) (stakeId string, assetId string) {
 	clientChainLzIdStr := hexutil.EncodeUint64(clientChainLzId)
-	stakeId = strings.Join([]string{hexutil.Encode(stakerAddress), clientChainLzIdStr}, "_")
-	assetId = strings.Join([]string{hexutil.Encode(assetsAddress), clientChainLzIdStr}, "_")
+	if stakerAddress != nil {
+		stakeId = strings.Join([]string{hexutil.Encode(stakerAddress), clientChainLzIdStr}, "_")
+	}
+
+	if assetsAddress != nil {
+		assetId = strings.Join([]string{hexutil.Encode(assetsAddress), clientChainLzIdStr}, "_")
+	}
 	return
 }

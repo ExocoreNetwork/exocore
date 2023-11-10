@@ -3,7 +3,6 @@
 package delegation
 
 import (
-	"cosmossdk.io/math"
 	abci "github.com/cometbft/cometbft/abci/types"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -34,13 +33,11 @@ func (b AppModuleBasic) Name() string {
 }
 
 func (b AppModuleBasic) RegisterLegacyAminoCodec(amino *codec.LegacyAmino) {
-	//TODO implement me
-	panic("implement me")
+	types2.RegisterLegacyAminoCodec(amino)
 }
 
 func (b AppModuleBasic) RegisterInterfaces(registry codectypes.InterfaceRegistry) {
-	//TODO implement me
-	panic("implement me")
+	types2.RegisterInterfaces(registry)
 }
 
 func (b AppModuleBasic) RegisterGRPCGatewayRoutes(context client.Context, mux *runtime.ServeMux) {
@@ -102,13 +99,4 @@ func (am AppModule) WeightedOperations(simState module.SimulationState) []simtyp
 func (am AppModule) EndBlock(ctx sdk.Context, req abci.RequestEndBlock) []abci.ValidatorUpdate {
 	am.keeper.EndBlock(ctx, req)
 	return []abci.ValidatorUpdate{}
-}
-
-type UnDelegateReqRecord struct {
-	TxId       string
-	ReStakerId string
-	// tokenId->operatorAddr->amount
-	OperatorAssetsInfo map[string]map[string]math.Uint
-	BlockNumber        uint64
-	Nonce              uint64
 }

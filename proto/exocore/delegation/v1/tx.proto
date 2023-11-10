@@ -34,6 +34,7 @@ message OperatorInfo{
   string EarningsAddr = 1;
   string ApproveAddr = 2;
   string OperatorMetaInfo = 3;
+  map<uint64,string> ClientChainEarningsAddr =4;
 }
 
 message RegisterOperatorReq {

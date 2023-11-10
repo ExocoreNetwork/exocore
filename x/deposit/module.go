@@ -32,13 +32,11 @@ func (b AppModuleBasic) Name() string {
 }
 
 func (b AppModuleBasic) RegisterLegacyAminoCodec(amino *codec.LegacyAmino) {
-	//TODO implement me
-	panic("implement me")
+	types.RegisterLegacyAminoCodec(amino)
 }
 
 func (b AppModuleBasic) RegisterInterfaces(registry codectypes.InterfaceRegistry) {
-	//TODO implement me
-	panic("implement me")
+	types.RegisterInterfaces(registry)
 }
 
 func (b AppModuleBasic) RegisterGRPCGatewayRoutes(context client.Context, mux *runtime.ServeMux) {

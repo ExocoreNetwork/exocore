@@ -23,7 +23,7 @@ func Test_DepositEventPayloadDecode(t *testing.T) {
 	log.Println("the payloadBytes length is:", len(payloadBytes))
 
 	action := payloadBytes[0]
-	log.Println("the action is:", action)
+	log.Println("the Action is:", action)
 
 	tokenAddress := hexutil.Encode(payloadBytes[1:21])
 	toAddress := hexutil.Encode(payloadBytes[21:41])
@@ -42,7 +42,7 @@ func Test_DecodeThroughBigEndian(t *testing.T) {
 	err = binary.Read(r, binary.BigEndian, &action)
 	assert.NoError(t, err)
 
-	log.Println("the action is:", action)
+	log.Println("the Action is:", action)
 
 	r = bytes.NewReader(payloadBytes[1:21])
 	tokenAddress := make([]byte, 0)

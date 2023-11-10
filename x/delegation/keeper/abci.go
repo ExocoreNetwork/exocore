@@ -41,7 +41,8 @@ func (k Keeper) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.Validat
 		if proportion.IsNil() || proportion.IsNegative() || proportion.GT(sdkmath.LegacyNewDec(1)) {
 			panic(fmt.Sprintf("the proportion is invalid,it is:%v", proportion))
 		}
-		actualCanUnDelegateAmount := proportion.MulInt(record.Amount.Amount).TruncateInt()
+		canUnDelegateProportion := sdkmath.LegacyNewDec(1).Sub(proportion)
+		actualCanUnDelegateAmount := canUnDelegateProportion.MulInt(record.Amount.Amount).TruncateInt()
 		record.ActualCompletedAmount.Amount = actualCanUnDelegateAmount
 		recordAmountNeg := record.Amount.Amount.Neg()
 
