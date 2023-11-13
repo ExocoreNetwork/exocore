@@ -51,8 +51,9 @@ func (k Keeper) SetOperatorInfo(ctx sdk.Context, addr string, info *types2.Opera
 	if err != nil {
 		return errorsmod.Wrap(err, "SetOperatorInfo: error occurred when parse acc address from Bech32")
 	}
+	// todo: to check the validation of input info
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types2.KeyPrefixOperatorInfo)
-	//todo: think about the difference between init and update in future
+	// todo: think about the difference between init and update in future
 
 	//key := common.HexToAddress(incentive.Contract)
 	bz := k.cdc.MustMarshal(info)

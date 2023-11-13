@@ -7,6 +7,10 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
+var (
+	CanUnDelegationDelayHeight = uint64(10)
+)
+
 type ISlashKeeper interface {
 	IsOperatorFrozen(ctx sdk.Context, opAddr sdk.AccAddress) bool
 	OperatorAssetSlashedProportion(ctx sdk.Context, opAddr sdk.AccAddress, assetId string, startHeight, endHeight uint64) sdkmath.LegacyDec
@@ -30,5 +34,5 @@ type OperatorOptedInMiddlewareKeeper interface {
 type VirtualOperatorOptedInKeeper struct{}
 
 func (VirtualOperatorOptedInKeeper) GetOperatorCanUnDelegateHeight(ctx sdk.Context, assetId string, opAddr sdk.AccAddress, startHeight uint64) uint64 {
-	return startHeight + 10
+	return startHeight + CanUnDelegationDelayHeight
 }

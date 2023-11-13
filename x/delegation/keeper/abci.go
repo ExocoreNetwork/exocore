@@ -42,14 +42,14 @@ func (k Keeper) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.Validat
 			panic(fmt.Sprintf("the proportion is invalid,it is:%v", proportion))
 		}
 		canUnDelegateProportion := sdkmath.LegacyNewDec(1).Sub(proportion)
-		actualCanUnDelegateAmount := canUnDelegateProportion.MulInt(record.Amount.Amount).TruncateInt()
-		record.ActualCompletedAmount.Amount = actualCanUnDelegateAmount
-		recordAmountNeg := record.Amount.Amount.Neg()
+		actualCanUnDelegateAmount := canUnDelegateProportion.MulInt(record.Amount).TruncateInt()
+		record.ActualCompletedAmount = actualCanUnDelegateAmount
+		recordAmountNeg := record.Amount.Neg()
 
 		//update delegation state
 		delegatorAndAmount := make(map[string]*types2.DelegationAmounts)
 		delegatorAndAmount[record.OperatorAddr] = &types2.DelegationAmounts{
-			WaitUnDelegationAmount: &types2.ValueField{Amount: recordAmountNeg},
+			WaitUnDelegationAmount: recordAmountNeg,
 		}
 		err = k.UpdateDelegationState(ctx, record.StakerId, record.AssetId, delegatorAndAmount)
 		if err != nil {

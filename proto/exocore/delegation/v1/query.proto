@@ -17,12 +17,27 @@ message DelegationInfoReq {
 }
 
 message DelegationAmounts{
-  ValueField CanUnDelegationAmount = 1;
-  ValueField WaitUnDelegationAmount = 2;
+  string CanUnDelegationAmount = 1
+  [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.nullable) = false
+  ];
+  string WaitUnDelegationAmount = 2
+  [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.nullable) = false
+  ];
 }
 
 message QueryDelegationInfoResponse{
-  ValueField TotalDelegatedAmount = 1;
+  string TotalDelegatedAmount = 1
+  [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.nullable) = false
+  ];
   map<string, DelegationAmounts > delegationInfos = 2;
 }
 

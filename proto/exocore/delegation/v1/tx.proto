@@ -34,7 +34,7 @@ message OperatorInfo{
   string EarningsAddr = 1;
   string ApproveAddr = 2;
   string OperatorMetaInfo = 3;
-  map<uint64,string> ClientChainEarningsAddr =4;
+  map<uint64, string> ClientChainEarningsAddr = 4;
 }
 
 message RegisterOperatorReq {
@@ -82,8 +82,18 @@ message UnDelegationRecord{
   uint64 BlockNumber = 6;
   uint64 CompleteBlockNumber = 7;
   uint64 LzTxNonce = 8;
-  ValueField amount = 9;
-  ValueField actualCompletedAmount = 10;
+  string amount = 9
+  [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.nullable) = false
+  ];
+  string actualCompletedAmount =10
+  [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.nullable) = false
+  ];
 }
 
 message UnDelegationRecordKeyList {

@@ -44,3 +44,15 @@ func GetStakeIDAndAssetId(clientChainLzId uint64, stakerAddress []byte, assetsAd
 	}
 	return
 }
+
+func GetStakeIDAndAssetIdFromStr(clientChainLzId uint64, stakerAddress string, assetsAddress string) (stakeId string, assetId string) {
+	clientChainLzIdStr := hexutil.EncodeUint64(clientChainLzId)
+	if stakerAddress != "" {
+		stakeId = strings.Join([]string{strings.ToLower(stakerAddress), clientChainLzIdStr}, "_")
+	}
+
+	if assetsAddress != "" {
+		assetId = strings.Join([]string{strings.ToLower(assetsAddress), clientChainLzIdStr}, "_")
+	}
+	return
+}

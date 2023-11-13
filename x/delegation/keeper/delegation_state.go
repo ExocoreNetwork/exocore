@@ -26,7 +26,7 @@ func (k Keeper) UpdateStakerDelegationTotalAmount(ctx sdk.Context, stakerId stri
 
 	if opAmount.IsNegative() {
 		if amount.Amount.GT(opAmount.Neg()) {
-			return errorsmod.Wrap(types2.ErrSubAmountIsGreaterThanOriginal, fmt.Sprintf("the opAmount is:%s,the originalAmount is:%s", opAmount, amount.Amount))
+			return errorsmod.Wrap(types2.ErrSubAmountIsGreaterThanOriginal, fmt.Sprintf("the OpAmount is:%s,the originalAmount is:%s", opAmount, amount.Amount))
 		}
 	}
 	amount.Amount = amount.Amount.Add(opAmount)
@@ -55,7 +55,10 @@ func (k Keeper) UpdateDelegationState(ctx sdk.Context, stakerId string, assetId 
 	//todo: think about the difference between init and update in future
 
 	for opAddr, amounts := range delegationAmounts {
-		if amounts.CanUnDelegationAmount.Amount.IsNil() && amounts.WaitUnDelegationAmount.Amount.IsNil() {
+		if amounts == nil {
+			continue
+		}
+		if amounts.CanUnDelegationAmount.IsNil() && amounts.WaitUnDelegationAmount.IsNil() {
 			continue
 		}
 		//check operator address validation
@@ -66,30 +69,30 @@ func (k Keeper) UpdateDelegationState(ctx sdk.Context, stakerId string, assetId 
 		singleStateKey := types2.GetDelegationStateKey(stakerId, assetId, opAddr)
 		isExit := store.Has(singleStateKey)
 		delegationState := types2.DelegationAmounts{
-			CanUnDelegationAmount:  &types2.ValueField{Amount: sdkmath.NewInt(0)},
-			WaitUnDelegationAmount: &types2.ValueField{Amount: sdkmath.NewInt(0)},
+			CanUnDelegationAmount:  sdkmath.NewInt(0),
+			WaitUnDelegationAmount: sdkmath.NewInt(0),
 		}
 		if isExit {
 			value := store.Get(singleStateKey)
 			k.cdc.MustUnmarshal(value, &delegationState)
 		}
 
-		if !amounts.CanUnDelegationAmount.Amount.IsNil() {
-			if amounts.CanUnDelegationAmount.Amount.IsNegative() {
-				if delegationState.CanUnDelegationAmount.Amount.LT(amounts.CanUnDelegationAmount.Amount.Neg()) {
-					return errorsmod.Wrap(types2.ErrSubAmountIsGreaterThanOriginal, fmt.Sprintf("UpdateDelegationState CanUnDelegationAmount the opAmount is:%s,the originalAmount is:%s", amounts.CanUnDelegationAmount.Amount, delegationState.CanUnDelegationAmount.Amount))
+		if !amounts.CanUnDelegationAmount.IsNil() && !amounts.CanUnDelegationAmount.IsZero() {
+			if amounts.CanUnDelegationAmount.IsNegative() {
+				if delegationState.CanUnDelegationAmount.LT(amounts.CanUnDelegationAmount.Neg()) {
+					return errorsmod.Wrap(types2.ErrSubAmountIsGreaterThanOriginal, fmt.Sprintf("UpdateDelegationState CanUnDelegationAmount the OpAmount is:%s,the originalAmount is:%s", amounts.CanUnDelegationAmount, delegationState.CanUnDelegationAmount))
 				}
 			}
-			delegationState.CanUnDelegationAmount.Amount = delegationState.CanUnDelegationAmount.Amount.Add(amounts.CanUnDelegationAmount.Amount)
+			delegationState.CanUnDelegationAmount = delegationState.CanUnDelegationAmount.Add(amounts.CanUnDelegationAmount)
 		}
 
-		if !amounts.WaitUnDelegationAmount.Amount.IsNil() {
-			if amounts.WaitUnDelegationAmount.Amount.IsNegative() {
-				if delegationState.WaitUnDelegationAmount.Amount.LT(amounts.WaitUnDelegationAmount.Amount.Neg()) {
-					return errorsmod.Wrap(types2.ErrSubAmountIsGreaterThanOriginal, fmt.Sprintf("UpdateDelegationState WaitUnDelegationAmount the opAmount is:%s,the originalAmount is:%s", amounts.WaitUnDelegationAmount.Amount, delegationState.WaitUnDelegationAmount.Amount))
+		if !amounts.WaitUnDelegationAmount.IsNil() && !amounts.WaitUnDelegationAmount.IsZero() {
+			if amounts.WaitUnDelegationAmount.IsNegative() {
+				if delegationState.WaitUnDelegationAmount.LT(amounts.WaitUnDelegationAmount.Neg()) {
+					return errorsmod.Wrap(types2.ErrSubAmountIsGreaterThanOriginal, fmt.Sprintf("UpdateDelegationState WaitUnDelegationAmount the OpAmount is:%s,the originalAmount is:%s", amounts.WaitUnDelegationAmount, delegationState.WaitUnDelegationAmount))
 				}
 			}
-			delegationState.WaitUnDelegationAmount.Amount = delegationState.WaitUnDelegationAmount.Amount.Add(amounts.WaitUnDelegationAmount.Amount)
+			delegationState.WaitUnDelegationAmount = delegationState.WaitUnDelegationAmount.Add(amounts.WaitUnDelegationAmount)
 		}
 
 		//save single operator delegation state
@@ -121,7 +124,7 @@ func (k Keeper) GetDelegationInfo(ctx sdk.Context, stakerId, assetId string) (*t
 	if err != nil {
 		return nil, err
 	}
-	ret.TotalDelegatedAmount.Amount = totalAmount
+	ret.TotalDelegatedAmount = totalAmount
 
 	store := prefix.NewStore(c.KVStore(k.storeKey), types2.KeyPrefixRestakerDelegationInfo)
 	iterator := sdk.KVStorePrefixIterator(store, types2.GetDelegationStateIteratorPrefix(stakerId, assetId))

@@ -32,4 +32,17 @@ func (suite *KeeperTestSuite) TestDeposit() {
 	err = suite.app.DepositKeeper.Deposit(suite.ctx, event)
 	suite.NoError(err)
 
+	//check state after deposit
+	stakerId, assetId := types.GetStakeIDAndAssetId(event.ClientChainLzId, event.StakerAddress, event.AssetsAddress)
+	info, err := suite.app.StakingAssetsManageKeeper.GetStakerSpecifiedAssetInfo(suite.ctx, stakerId, assetId)
+	suite.NoError(err)
+	suite.Equal(types.StakerSingleAssetOrChangeInfo{
+		TotalDepositAmountOrWantChangeValue:     event.OpAmount,
+		CanWithdrawAmountOrWantChangeValue:      event.OpAmount,
+		WaitUnDelegationAmountOrWantChangeValue: sdkmath.NewInt(0),
+	}, *info)
+
+	assetInfo, err := suite.app.StakingAssetsManageKeeper.GetStakingAssetInfo(suite.ctx, assetId)
+	suite.NoError(err)
+	suite.Equal(event.OpAmount, assetInfo.StakingTotalAmount)
 }

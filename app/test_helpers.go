@@ -5,7 +5,6 @@ package app
 
 import (
 	"encoding/json"
-	"github.com/exocore/x/restaking_assets_manage/types"
 	"os"
 	"time"
 
@@ -111,16 +110,6 @@ func Setup(
 	if !isCheckTx {
 		// init chain must be called to stop deliverState from being nil
 		genesisState := NewDefaultGenesisState()
-
-		logger.Info("the genesisState is:")
-		for module, state := range genesisState {
-			if module == types.ModuleName {
-				jsonBytes, _ := state.MarshalJSON()
-				logger.Info("the restaking_assets_manage genesis state is", "state", jsonBytes)
-			}
-
-		}
-
 		genesisState = GenesisStateWithValSet(app, genesisState, valSet, []authtypes.GenesisAccount{acc}, balance)
 
 		// Verify feeMarket genesis
