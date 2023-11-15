@@ -2,6 +2,7 @@ package keeper_test
 
 import (
 	sdkmath "cosmossdk.io/math"
+	abci "github.com/cometbft/cometbft/abci/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/common"
 	keeper2 "github.com/exocore/x/delegation/keeper"
@@ -170,6 +171,7 @@ func (suite *KeeperTestSuite) TestUnDelegateFrom() {
 	unDelegationRecord.CompleteBlockNumber = unDelegationRecord.BlockNumber + types2.CanUnDelegationDelayHeight
 	suite.Equal(unDelegationRecord, records[0])
 
+	suite.ctx.Logger().Info("the complete block number is:", "height", unDelegationRecord.CompleteBlockNumber)
 	waitUnDelegationRecords, err := suite.app.DelegationKeeper.GetWaitCompleteUnDelegationRecords(suite.ctx, unDelegationRecord.CompleteBlockNumber)
 	suite.NoError(err)
 	suite.Equal(1, len(waitUnDelegationRecords))
@@ -177,5 +179,102 @@ func (suite *KeeperTestSuite) TestUnDelegateFrom() {
 }
 
 func (suite *KeeperTestSuite) TestCompleteUnDelegation() {
+	usdtAddress := common.HexToAddress("0xdAC17F958D2ee523a2206206994597C13D831ec7")
+	clientChainLzId := uint64(101)
 
+	depositEvent := &keeper.DepositParams{
+		ClientChainLzId: clientChainLzId,
+		Action:          types.Deposit,
+		StakerAddress:   suite.address[:],
+		OpAmount:        sdkmath.NewInt(100),
+	}
+	depositEvent.AssetsAddress = usdtAddress[:]
+	err := suite.app.DepositKeeper.Deposit(suite.ctx, depositEvent)
+	suite.NoError(err)
+
+	opAccAddr, err := sdk.AccAddressFromBech32("evmos1fl48vsnmsdzcv85q5d2q4z5ajdha8yu3h6cprl")
+	suite.NoError(err)
+	delegationEvent := &keeper2.DelegationOrUnDelegationParams{
+		ClientChainLzId: clientChainLzId,
+		Action:          types.DelegationTo,
+		AssetsAddress:   usdtAddress[:],
+		OperatorAddress: opAccAddr,
+		StakerAddress:   suite.address[:],
+		OpAmount:        sdkmath.NewInt(50),
+		LzNonce:         0,
+		TxHash:          common.HexToHash("0x24c4a315d757249c12a7a1d7b6fb96261d49deee26f06a3e1787d008b445c3ac"),
+	}
+	registerReq := &types2.RegisterOperatorReq{
+		FromAddress: opAccAddr.String(),
+		Info: &types2.OperatorInfo{
+			EarningsAddr: opAccAddr.String(),
+		},
+	}
+	_, err = suite.app.DelegationKeeper.RegisterOperator(suite.ctx, registerReq)
+	suite.NoError(err)
+
+	err = suite.app.DelegationKeeper.DelegateTo(suite.ctx, delegationEvent)
+	suite.NoError(err)
+
+	delegationEvent.LzNonce = 1
+	err = suite.app.DelegationKeeper.UnDelegateFrom(suite.ctx, delegationEvent)
+	suite.NoError(err)
+	unDelegateHeight := suite.ctx.BlockHeight()
+	suite.ctx.Logger().Info("the ctx block height is:", "height", unDelegateHeight)
+
+	//test complete unDelegation
+	completeBlockNumber := unDelegateHeight + int64(types2.CanUnDelegationDelayHeight)
+	suite.ctx = suite.ctx.WithBlockHeight(completeBlockNumber)
+	suite.app.DelegationKeeper.EndBlock(suite.ctx, abci.RequestEndBlock{})
+
+	//check state
+	stakerId, assetId := types.GetStakeIDAndAssetId(delegationEvent.ClientChainLzId, delegationEvent.StakerAddress, delegationEvent.AssetsAddress)
+	restakerState, err := suite.app.StakingAssetsManageKeeper.GetStakerSpecifiedAssetInfo(suite.ctx, stakerId, assetId)
+	suite.NoError(err)
+	suite.Equal(types.StakerSingleAssetOrChangeInfo{
+		TotalDepositAmountOrWantChangeValue:     depositEvent.OpAmount,
+		CanWithdrawAmountOrWantChangeValue:      depositEvent.OpAmount,
+		WaitUnDelegationAmountOrWantChangeValue: sdkmath.NewInt(0),
+	}, *restakerState)
+
+	operatorState, err := suite.app.StakingAssetsManageKeeper.GetOperatorSpecifiedAssetInfo(suite.ctx, opAccAddr, assetId)
+	suite.NoError(err)
+	suite.Equal(types.OperatorSingleAssetOrChangeInfo{
+		TotalAmountOrWantChangeValue:            sdkmath.NewInt(0),
+		OperatorOwnAmountOrWantChangeValue:      sdkmath.NewInt(0),
+		WaitUnDelegationAmountOrWantChangeValue: sdkmath.NewInt(0),
+	}, *operatorState)
+
+	specifiedDelegationAmount, err := suite.app.DelegationKeeper.GetSingleDelegationInfo(suite.ctx, stakerId, assetId, opAccAddr.String())
+	suite.NoError(err)
+	suite.Equal(types2.DelegationAmounts{
+		CanUnDelegationAmount:  sdkmath.NewInt(0),
+		WaitUnDelegationAmount: sdkmath.NewInt(0),
+	}, *specifiedDelegationAmount)
+
+	totalDelegationAmount, err := suite.app.DelegationKeeper.GetStakerDelegationTotalAmount(suite.ctx, stakerId, assetId)
+	suite.NoError(err)
+	suite.Equal(sdkmath.NewInt(0), totalDelegationAmount)
+
+	records, err := suite.app.DelegationKeeper.GetStakerUnDelegationRecords(suite.ctx, stakerId, assetId, keeper2.CompletedRecords)
+	suite.NoError(err)
+	suite.Equal(1, len(records))
+	unDelegationRecord := &types2.UnDelegationRecord{
+		StakerId:              stakerId,
+		AssetId:               assetId,
+		OperatorAddr:          delegationEvent.OperatorAddress.String(),
+		TxHash:                delegationEvent.TxHash.String(),
+		IsPending:             false,
+		BlockNumber:           uint64(unDelegateHeight),
+		LzTxNonce:             delegationEvent.LzNonce,
+		Amount:                delegationEvent.OpAmount,
+		ActualCompletedAmount: delegationEvent.OpAmount,
+		CompleteBlockNumber:   uint64(completeBlockNumber),
+	}
+	suite.Equal(unDelegationRecord, records[0])
+
+	waitUnDelegationRecords, err := suite.app.DelegationKeeper.GetWaitCompleteUnDelegationRecords(suite.ctx, unDelegationRecord.CompleteBlockNumber)
+	suite.NoError(err)
+	suite.Equal(1, len(waitUnDelegationRecords))
+	suite.Equal(unDelegationRecord, waitUnDelegationRecords[0])
 }

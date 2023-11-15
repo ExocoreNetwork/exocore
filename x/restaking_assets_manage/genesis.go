@@ -74,7 +74,6 @@ func InitGenesis(
 	var err error
 	//save default supported client chain
 	for _, chain := range data.DefaultSupportedClientChains {
-		ctx.Logger().Info("set client chain info", "info", chain)
 		err = k.SetClientChainInfo(c, chain)
 		if err != nil {
 			panic(err)
@@ -82,7 +81,6 @@ func InitGenesis(
 	}
 	//save default supported client chain assets
 	for _, asset := range data.DefaultSupportedClientChainTokens {
-		ctx.Logger().Info("set client chain asset info", "info", asset)
 		err = k.SetStakingAssetInfo(c, &types2.StakingAssetInfo{
 			AssetBasicInfo:     asset,
 			StakingTotalAmount: math.NewInt(0),

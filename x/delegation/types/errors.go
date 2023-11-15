@@ -21,4 +21,6 @@ var (
 	ErrUnDelegationAmountTooBig = errorsmod.Register(ModuleName, 8, "the UnDelegation amount is bigger than the delegated amount")
 
 	ErrNotSupportYet = errorsmod.Register(ModuleName, 9, "don't have supported it yet")
+
+	ErrCliCmdInputArg = errorsmod.Register(ModuleName, 10, "there is an error in the input client command args")
 )

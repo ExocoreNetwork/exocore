@@ -130,6 +130,9 @@ func (k Keeper) GetWaitCompleteUnDelegationRecords(ctx sdk.Context, height uint6
 	if err != nil {
 		return nil, err
 	}
+	if len(recordKeys) == 0 {
+		return nil, nil
+	}
 	// The states of records stored by WaitCompleteUnDelegations kvStore should always be IsPending,so using AllRecords as getType here is ok.
 	return k.GetUnDelegationRecords(ctx, recordKeys, AllRecords)
 }

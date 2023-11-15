@@ -13,6 +13,7 @@ import (
 
 // EndBlock : completed unDelegation events according to the canCompleted blockHeight
 func (k Keeper) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.ValidatorUpdate {
+	ctx.Logger().Info("the blockHeight is:", "height", ctx.BlockHeight())
 	records, err := k.GetWaitCompleteUnDelegationRecords(ctx, uint64(ctx.BlockHeight()))
 	if err != nil {
 		panic(err)

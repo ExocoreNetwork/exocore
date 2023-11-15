@@ -19,4 +19,6 @@ var (
 	ErrNoOperatorAssetKey = errorsmod.Register(ModuleName, 4, "there is no stored key for the input operator address and assetId")
 
 	ErrParseAssetsStateKey = errorsmod.Register(ModuleName, 5, "assets state key can't be parsed")
+
+	ErrCliCmdInputArg = errorsmod.Register(ModuleName, 6, "there is an error in the input client command args")
 )

@@ -13,7 +13,7 @@ import (
 
 // constants
 const (
-	// module name
+	// ModuleName module name
 	ModuleName = "delegation"
 
 	// StoreKey to be used when creating the KVStore

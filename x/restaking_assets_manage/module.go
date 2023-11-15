@@ -13,6 +13,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 	simtypes "github.com/cosmos/cosmos-sdk/types/simulation"
+	"github.com/exocore/x/restaking_assets_manage/client/cli"
 	"github.com/exocore/x/restaking_assets_manage/keeper"
 	types2 "github.com/exocore/x/restaking_assets_manage/types"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
@@ -66,13 +67,11 @@ func (b AppModuleBasic) RegisterGRPCGatewayRoutes(c client.Context, serveMux *ru
 }
 
 func (b AppModuleBasic) GetTxCmd() *cobra.Command {
-	//TODO implement me
-	panic("implement me")
+	return nil
 }
 
 func (b AppModuleBasic) GetQueryCmd() *cobra.Command {
-	//TODO implement me
-	panic("implement me")
+	return cli.GetQueryCmd()
 }
 
 type AppModule struct {
