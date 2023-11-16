@@ -3,13 +3,14 @@
 package delegation
 
 import (
-	"cosmossdk.io/math"
+	abci "github.com/cometbft/cometbft/abci/types"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/codec"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 	simtypes "github.com/cosmos/cosmos-sdk/types/simulation"
+	"github.com/exocore/x/delegation/client/cli"
 	"github.com/exocore/x/delegation/keeper"
 	types2 "github.com/exocore/x/delegation/types"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
@@ -33,13 +34,11 @@ func (b AppModuleBasic) Name() string {
 }
 
 func (b AppModuleBasic) RegisterLegacyAminoCodec(amino *codec.LegacyAmino) {
-	//TODO implement me
-	panic("implement me")
+	types2.RegisterLegacyAminoCodec(amino)
 }
 
 func (b AppModuleBasic) RegisterInterfaces(registry codectypes.InterfaceRegistry) {
-	//TODO implement me
-	panic("implement me")
+	types2.RegisterInterfaces(registry)
 }
 
 func (b AppModuleBasic) RegisterGRPCGatewayRoutes(context client.Context, mux *runtime.ServeMux) {
@@ -48,13 +47,11 @@ func (b AppModuleBasic) RegisterGRPCGatewayRoutes(context client.Context, mux *r
 }
 
 func (b AppModuleBasic) GetTxCmd() *cobra.Command {
-	//TODO implement me
-	panic("implement me")
+	return cli.NewTxCmd()
 }
 
 func (b AppModuleBasic) GetQueryCmd() *cobra.Command {
-	//TODO implement me
-	panic("implement me")
+	return cli.GetQueryCmd()
 }
 
 type AppModule struct {
@@ -96,11 +93,9 @@ func (am AppModule) WeightedOperations(simState module.SimulationState) []simtyp
 	panic("implement me")
 }
 
-type UnDelegateReqRecord struct {
-	TxId       string
-	ReStakerId string
-	// tokenId->operatorAddr->amount
-	OperatorAssetsInfo map[string]map[string]math.Uint
-	BlockNumber        uint64
-	Nonce              uint64
+// EndBlock executes all ABCI EndBlock logic respective to the claim module. It
+// returns no validator updates.
+func (am AppModule) EndBlock(ctx sdk.Context, req abci.RequestEndBlock) []abci.ValidatorUpdate {
+	am.keeper.EndBlock(ctx, req)
+	return []abci.ValidatorUpdate{}
 }

@@ -8,7 +8,7 @@ import (
 
 var _ types2.QueryServer = Keeper{}
 
-func (k Keeper) QuerySingleDelegationInfo(ctx context.Context, req *types2.SingleDelegationInfoReq) (*types2.ValueField, error) {
+func (k Keeper) QuerySingleDelegationInfo(ctx context.Context, req *types2.SingleDelegationInfoReq) (*types2.DelegationAmounts, error) {
 	c := sdk.UnwrapSDKContext(ctx)
 	return k.GetSingleDelegationInfo(c, req.StakerId, req.AssetId, req.OperatorAddr)
 }

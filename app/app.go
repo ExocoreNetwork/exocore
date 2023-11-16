@@ -7,8 +7,12 @@ import (
 	"fmt"
 	ethante "github.com/evmos/evmos/v14/app/ante/evm"
 	feemarkettypes "github.com/evmos/evmos/v14/x/feemarket/types"
+	"github.com/exocore/x/delegation"
 	delegationKeeper "github.com/exocore/x/delegation/keeper"
+	delegationTypes "github.com/exocore/x/delegation/types"
+	"github.com/exocore/x/deposit"
 	depositKeeper "github.com/exocore/x/deposit/keeper"
+	depositTypes "github.com/exocore/x/deposit/types"
 	"github.com/exocore/x/restaking_assets_manage"
 	stakingAssetsManageKeeper "github.com/exocore/x/restaking_assets_manage/keeper"
 	stakingAssetsManageTypes "github.com/exocore/x/restaking_assets_manage/types"
@@ -188,8 +192,8 @@ var (
 		consensus.AppModuleBasic{},
 		//exoCore staking modules
 		restaking_assets_manage.AppModuleBasic{},
-		/*		deposit.AppModuleBasic{},
-				delegation.AppModuleBasic{},*/
+		deposit.AppModuleBasic{},
+		delegation.AppModuleBasic{},
 	)
 
 	// module account permissions
@@ -317,8 +321,8 @@ func NewExocoreApp(
 		evmtypes.StoreKey, feemarkettypes.StoreKey,
 		//exoCore module keys
 		stakingAssetsManageTypes.StoreKey,
-		/*		delegationTypes.StoreKey,
-				depositTypes.StoreKey,*/
+		delegationTypes.StoreKey,
+		depositTypes.StoreKey,
 	)
 
 	// Add the EVM transient store key
@@ -451,6 +455,9 @@ func NewExocoreApp(
 
 	//set exoCore staking keepers
 	app.StakingAssetsManageKeeper = stakingAssetsManageKeeper.NewKeeper(keys[stakingAssetsManageTypes.StoreKey], appCodec)
+	app.DepositKeeper = depositKeeper.NewKeeper(keys[depositTypes.StoreKey], appCodec, app.StakingAssetsManageKeeper)
+	//todo: need to replace the virtual keepers with actual keepers after they have been implemented
+	app.DelegationKeeper = delegationKeeper.NewKeeper(keys[depositTypes.StoreKey], appCodec, app.StakingAssetsManageKeeper, app.DepositKeeper, delegationTypes.VirtualISlashKeeper{}, delegationTypes.VirtualOperatorOptedInKeeper{})
 
 	/****  Module Options ****/
 
@@ -478,7 +485,10 @@ func NewExocoreApp(
 		evidence.NewAppModule(app.EvidenceKeeper),
 		params.NewAppModule(app.ParamsKeeper),
 		feegrantmodule.NewAppModule(appCodec, accountK, bankK, app.FeeGrantKeeper, app.interfaceRegistry),
+		// exoCore app modules
 		restaking_assets_manage.NewAppModule(appCodec, app.StakingAssetsManageKeeper),
+		deposit.NewAppModule(appCodec, app.DepositKeeper),
+		delegation.NewAppModule(appCodec, app.DelegationKeeper),
 	)
 
 	// During begin block slashing happens after distr.BeginBlocker so that
@@ -510,6 +520,8 @@ func NewExocoreApp(
 		consensusparamtypes.ModuleName,
 		//ExoCore modules
 		stakingAssetsManageTypes.ModuleName,
+		depositTypes.ModuleName,
+		delegationTypes.ModuleName,
 	)
 
 	// NOTE: fee market module must go last in order to retrieve the block gas used.
@@ -537,6 +549,8 @@ func NewExocoreApp(
 		consensusparamtypes.ModuleName,
 		//ExoCore modules
 		stakingAssetsManageTypes.ModuleName,
+		depositTypes.ModuleName,
+		delegationTypes.ModuleName,
 	)
 
 	// NOTE: The genutils module must occur after staking so that pools are
@@ -570,6 +584,8 @@ func NewExocoreApp(
 		upgradetypes.ModuleName,
 		//ExoCore modules
 		stakingAssetsManageTypes.ModuleName,
+		depositTypes.ModuleName,
+		delegationTypes.ModuleName,
 		// Evmos modules
 		// NOTE: crisis module must go at the end to check for invariants on each module
 		crisistypes.ModuleName,

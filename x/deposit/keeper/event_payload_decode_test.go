@@ -7,7 +7,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
-	types2 "github.com/exocore/x/restaking_assets_manage/types"
 	"github.com/stretchr/testify/assert"
 	"log"
 	"math/big"
@@ -24,7 +23,7 @@ func Test_DepositEventPayloadDecode(t *testing.T) {
 	log.Println("the payloadBytes length is:", len(payloadBytes))
 
 	action := payloadBytes[0]
-	log.Println("the action is:", action)
+	log.Println("the Action is:", action)
 
 	tokenAddress := hexutil.Encode(payloadBytes[1:21])
 	toAddress := hexutil.Encode(payloadBytes[21:41])
@@ -43,10 +42,10 @@ func Test_DecodeThroughBigEndian(t *testing.T) {
 	err = binary.Read(r, binary.BigEndian, &action)
 	assert.NoError(t, err)
 
-	log.Println("the action is:", action)
+	log.Println("the Action is:", action)
 
 	r = bytes.NewReader(payloadBytes[1:21])
-	var tokenAddress types2.GeneralAddr
+	tokenAddress := make([]byte, 0)
 	err = binary.Read(r, binary.BigEndian, tokenAddress)
 	assert.NoError(t, err)
 	log.Println("the tokenAddress is:", tokenAddress)

@@ -22,14 +22,28 @@ type Keeper struct {
 	cdc      codec.BinaryCodec
 
 	//other keepers
-	retakingStateKeeper keeper.Keeper
-	depositKeeper       keeper2.Keeper
-	slashKeeper         types2.ISlashKeeper
+	retakingStateKeeper   keeper.Keeper
+	depositKeeper         keeper2.Keeper
+	slashKeeper           types2.ISlashKeeper
+	operatorOptedInKeeper types2.OperatorOptedInMiddlewareKeeper
 }
 
-func (k Keeper) CompleteUnDelegateAssetFromOperator() error {
-	//TODO implement me
-	panic("implement me")
+func NewKeeper(
+	storeKey storetypes.StoreKey,
+	cdc codec.BinaryCodec,
+	retakingStateKeeper keeper.Keeper,
+	depositKeeper keeper2.Keeper,
+	slashKeeper types2.ISlashKeeper,
+	operatorOptedInKeeper types2.OperatorOptedInMiddlewareKeeper,
+) Keeper {
+	return Keeper{
+		storeKey:              storeKey,
+		cdc:                   cdc,
+		retakingStateKeeper:   retakingStateKeeper,
+		depositKeeper:         depositKeeper,
+		slashKeeper:           slashKeeper,
+		operatorOptedInKeeper: operatorOptedInKeeper,
+	}
 }
 
 func (k Keeper) SetOperatorInfo(ctx sdk.Context, addr string, info *types2.OperatorInfo) (err error) {
@@ -37,8 +51,9 @@ func (k Keeper) SetOperatorInfo(ctx sdk.Context, addr string, info *types2.Opera
 	if err != nil {
 		return errorsmod.Wrap(err, "SetOperatorInfo: error occurred when parse acc address from Bech32")
 	}
+	// todo: to check the validation of input info
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types2.KeyPrefixOperatorInfo)
-	//todo: think about the difference between init and update in future
+	// todo: think about the difference between init and update in future
 
 	//key := common.HexToAddress(incentive.Contract)
 	bz := k.cdc.MustMarshal(info)
@@ -83,10 +98,7 @@ type IDelegation interface {
 	// UnDelegateAssetFromOperator handle the UnDelegateAssetFromOperator txs from msg service
 	UnDelegateAssetFromOperator(ctx context.Context, delegation *types2.MsgUnDelegation) (*types2.UnDelegationResponse, error)
 
-	GetSingleDelegationInfo(ctx sdk.Context, stakerId, assetId, operatorAddr string) (*types2.ValueField, error)
+	GetSingleDelegationInfo(ctx sdk.Context, stakerId, assetId, operatorAddr string) (*types2.DelegationAmounts, error)
 
 	GetDelegationInfo(ctx sdk.Context, stakerId, assetId string) (*types2.QueryDelegationInfoResponse, error)
-
-	// CompleteUnDelegateAssetFromOperator scheduled execute to handle UnDelegateAssetFromOperator through two steps
-	CompleteUnDelegateAssetFromOperator() error
 }

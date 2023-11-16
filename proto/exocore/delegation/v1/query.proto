@@ -16,9 +16,29 @@ message DelegationInfoReq {
   string assetId = 2;
 }
 
+message DelegationAmounts{
+  string CanUnDelegationAmount = 1
+  [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.nullable) = false
+  ];
+  string WaitUnDelegationAmount = 2
+  [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.nullable) = false
+  ];
+}
+
 message QueryDelegationInfoResponse{
-  ValueField TotalDelegatedAmount = 1;
-  map<string, ValueField > delegationInfos = 2;
+  string TotalDelegatedAmount = 1
+  [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.nullable) = false
+  ];
+  map<string, DelegationAmounts > delegationInfos = 2;
 }
 
 message SingleDelegationInfoReq {
@@ -42,7 +62,7 @@ service Query {
     option (google.api.http).get = "/exocore/delegation/v1/GetDelegationInfo";
   }
 
-  rpc QuerySingleDelegationInfo(SingleDelegationInfoReq) returns(ValueField){
+  rpc QuerySingleDelegationInfo(SingleDelegationInfoReq) returns(DelegationAmounts){
     option (cosmos.query.v1.module_query_safe) = true;
     option (google.api.http).get = "/exocore/delegation/v1/QuerySingleDelegationInfo";
   }

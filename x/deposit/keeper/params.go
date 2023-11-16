@@ -5,6 +5,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/common"
 	types2 "github.com/exocore/x/deposit/types"
+	"strings"
 )
 
 var ParamsKey = []byte("Params")
@@ -17,6 +18,8 @@ func (k Keeper) SetParams(ctx sdk.Context, params *types2.Params) error {
 	if len(common.FromHex(params.ExoCoreLzAppEventTopic)) != common.HashLength {
 		return types2.ErrInvalidLzUaTopicIdLength
 	}
+	params.ExoCoreLzAppAddress = strings.ToLower(params.ExoCoreLzAppAddress)
+	params.ExoCoreLzAppEventTopic = strings.ToLower(params.ExoCoreLzAppEventTopic)
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types2.KeyPrefixParams)
 	//key := common.HexToAddress(incentive.Contract)
 	bz := k.cdc.MustMarshal(params)

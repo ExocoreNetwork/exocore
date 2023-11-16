@@ -5,6 +5,7 @@ package app
 
 import (
 	"encoding/json"
+	"os"
 	"time"
 
 	"cosmossdk.io/simapp"
@@ -73,6 +74,7 @@ func Setup(
 	isCheckTx bool,
 	feemarketGenesis *feemarkettypes.GenesisState,
 	chainID string,
+	isPrintLog bool,
 ) *ExocoreApp {
 	privVal := mock.NewPV()
 	pubKey, _ := privVal.GetPubKey()
@@ -90,8 +92,15 @@ func Setup(
 	}
 
 	db := dbm.NewMemDB()
+	var logger log.Logger
+	if isPrintLog {
+		logger = log.NewTMLogger(log.NewSyncWriter(os.Stdout))
+	} else {
+		logger = log.NewNopLogger()
+	}
+
 	app := NewExocoreApp(
-		log.NewNopLogger(),
+		logger,
 		db, nil, true, map[int64]bool{},
 		DefaultNodeHome, 5,
 		encoding.MakeConfig(ModuleBasics),
@@ -101,7 +110,6 @@ func Setup(
 	if !isCheckTx {
 		// init chain must be called to stop deliverState from being nil
 		genesisState := NewDefaultGenesisState()
-
 		genesisState = GenesisStateWithValSet(app, genesisState, valSet, []authtypes.GenesisAccount{acc}, balance)
 
 		// Verify feeMarket genesis

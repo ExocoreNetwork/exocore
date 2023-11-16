@@ -11,7 +11,8 @@ const (
 	GeneralAssetsAddrLength      = 32
 	GeneralClientChainAddrLength = 32
 
-	ClientChainLzIdIndexInTopics = 1
+	ClientChainLzIdIndexInTopics = 0
+	LzNonceIndexInTopics         = 2
 
 	ExoCoreOperatorAddrLength = 45
 )
@@ -34,7 +35,24 @@ const (
 
 func GetStakeIDAndAssetId(clientChainLzId uint64, stakerAddress []byte, assetsAddress []byte) (stakeId string, assetId string) {
 	clientChainLzIdStr := hexutil.EncodeUint64(clientChainLzId)
-	stakeId = strings.Join([]string{hexutil.Encode(stakerAddress), clientChainLzIdStr}, "_")
-	assetId = strings.Join([]string{hexutil.Encode(assetsAddress), clientChainLzIdStr}, "_")
+	if stakerAddress != nil {
+		stakeId = strings.Join([]string{hexutil.Encode(stakerAddress), clientChainLzIdStr}, "_")
+	}
+
+	if assetsAddress != nil {
+		assetId = strings.Join([]string{hexutil.Encode(assetsAddress), clientChainLzIdStr}, "_")
+	}
+	return
+}
+
+func GetStakeIDAndAssetIdFromStr(clientChainLzId uint64, stakerAddress string, assetsAddress string) (stakeId string, assetId string) {
+	clientChainLzIdStr := hexutil.EncodeUint64(clientChainLzId)
+	if stakerAddress != "" {
+		stakeId = strings.Join([]string{strings.ToLower(stakerAddress), clientChainLzIdStr}, "_")
+	}
+
+	if assetsAddress != "" {
+		assetId = strings.Join([]string{strings.ToLower(assetsAddress), clientChainLzIdStr}, "_")
+	}
 	return
 }

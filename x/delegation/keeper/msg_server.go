@@ -2,6 +2,7 @@ package keeper
 
 import (
 	context "context"
+	errorsmod "cosmossdk.io/errors"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/exocore/x/delegation/types"
 )
@@ -19,11 +20,9 @@ func (k Keeper) RegisterOperator(ctx context.Context, req *types.RegisterOperato
 
 // DelegateAssetToOperator todo: Delegation and unDelegation from exoCore chain directly will be implemented in future.At the moment,they are executed from client chain
 func (k Keeper) DelegateAssetToOperator(ctx context.Context, delegation *types.MsgDelegation) (*types.DelegationResponse, error) {
-	//TODO implement me
-	panic("implement me")
+	return nil, errorsmod.Wrap(types.ErrNotSupportYet, "func:DelegateAssetToOperator")
 }
 
 func (k Keeper) UnDelegateAssetFromOperator(ctx context.Context, delegation *types.MsgUnDelegation) (*types.UnDelegationResponse, error) {
-	//TODO implement me
-	panic("implement me")
+	return nil, errorsmod.Wrap(types.ErrNotSupportYet, "func:UnDelegateAssetFromOperator")
 }

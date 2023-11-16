@@ -1,0 +1,138 @@
+package keeper
+
+import (
+	errorsmod "cosmossdk.io/errors"
+	"fmt"
+	"github.com/cosmos/cosmos-sdk/store/prefix"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/ethereum/go-ethereum/common/hexutil"
+	"github.com/exocore/x/delegation/types"
+	"strings"
+)
+
+type GetUnDelegationRecordType uint8
+
+const (
+	PendingRecords GetUnDelegationRecordType = iota
+	CompletedRecords
+	AllRecords
+)
+
+func (k Keeper) SetUnDelegationStates(ctx sdk.Context, records []*types.UnDelegationRecord) error {
+	singleRecordStore := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefixUnDelegationInfo)
+	stakerUnDelegationStore := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefixStakerUnDelegationInfo)
+	waitCompleteStore := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefixWaitCompleteUnDelegations)
+	//key := common.HexToAddress(incentive.Contract)
+	for _, record := range records {
+		bz := k.cdc.MustMarshal(record)
+		//todo: check if the following state can only be set once?
+
+		singleRecKey := types.GetUnDelegationRecordKey(record.LzTxNonce, record.TxHash, record.OperatorAddr)
+		singleRecordStore.Set(singleRecKey, bz)
+
+		stakerKey := types.GetStakerUnDelegationRecordKey(record.StakerId, record.AssetId, record.LzTxNonce)
+		stakerUnDelegationStore.Set(stakerKey, singleRecKey)
+
+		waitCompleteKey := types.GetWaitCompleteRecordKey(record.CompleteBlockNumber, record.LzTxNonce)
+		waitCompleteStore.Set(waitCompleteKey, singleRecKey)
+	}
+	return nil
+}
+
+func (k Keeper) SetSingleUnDelegationRecord(ctx sdk.Context, record *types.UnDelegationRecord) (recordKey []byte, err error) {
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefixUnDelegationInfo)
+	bz := k.cdc.MustMarshal(record)
+	key := types.GetUnDelegationRecordKey(record.LzTxNonce, record.TxHash, record.OperatorAddr)
+	store.Set(key, bz)
+	return key, nil
+}
+
+func (k Keeper) GetUnDelegationRecords(ctx sdk.Context, singleRecordKeys []string, getType GetUnDelegationRecordType) (record []*types.UnDelegationRecord, err error) {
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefixUnDelegationInfo)
+	ret := make([]*types.UnDelegationRecord, 0)
+	for _, singleRecordKey := range singleRecordKeys {
+		keyBytes := []byte(singleRecordKey)
+		isExit := store.Has(keyBytes)
+		unDelegationRecord := types.UnDelegationRecord{}
+		if isExit {
+			value := store.Get(keyBytes)
+			k.cdc.MustUnmarshal(value, &unDelegationRecord)
+		} else {
+			return nil, errorsmod.Wrap(types.ErrNoKeyInTheStore, fmt.Sprintf("GetSingleDelegationRecord: key is %s", singleRecordKey))
+		}
+
+		if getType == PendingRecords {
+			if unDelegationRecord.IsPending {
+				ret = append(ret, &unDelegationRecord)
+			}
+		} else if getType == CompletedRecords {
+			if !unDelegationRecord.IsPending {
+				ret = append(ret, &unDelegationRecord)
+			}
+		} else if getType == AllRecords {
+			ret = append(ret, &unDelegationRecord)
+		} else {
+			return nil, errorsmod.Wrap(types.ErrStakerGetRecordType, fmt.Sprintf("the getType is:%v", getType))
+		}
+	}
+	return ret, nil
+}
+
+func (k Keeper) SetStakerUnDelegationInfo(ctx sdk.Context, stakerId, assetId string, recordKey []byte, lzNonce uint64) error {
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefixStakerUnDelegationInfo)
+	key := types.GetStakerUnDelegationRecordKey(stakerId, assetId, lzNonce)
+	store.Set(key, recordKey)
+	return nil
+}
+
+func (k Keeper) GetStakerUnDelegationRecKeys(ctx sdk.Context, stakerId, assetId string) (recordKeyList []string, err error) {
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefixStakerUnDelegationInfo)
+	iterator := sdk.KVStorePrefixIterator(store, []byte(strings.Join([]string{stakerId, assetId}, "/")))
+	defer iterator.Close()
+
+	ret := make([]string, 0)
+	for ; iterator.Valid(); iterator.Next() {
+		ret = append(ret, string(iterator.Value()))
+	}
+	return ret, nil
+}
+
+func (k Keeper) GetStakerUnDelegationRecords(ctx sdk.Context, stakerId, assetId string, getType GetUnDelegationRecordType) (records []*types.UnDelegationRecord, err error) {
+	recordKeys, err := k.GetStakerUnDelegationRecKeys(ctx, stakerId, assetId)
+	if err != nil {
+		return nil, err
+	}
+
+	return k.GetUnDelegationRecords(ctx, recordKeys, getType)
+}
+
+func (k Keeper) SetWaitCompleteUnDelegationInfo(ctx sdk.Context, height, lzNonce uint64, recordKey string) error {
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefixWaitCompleteUnDelegations)
+	key := types.GetWaitCompleteRecordKey(height, lzNonce)
+	store.Set(key, []byte(recordKey))
+	return nil
+}
+
+func (k Keeper) GetWaitCompleteUnDelegationRecKeys(ctx sdk.Context, height uint64) (recordKeyList []string, err error) {
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefixWaitCompleteUnDelegations)
+	iterator := sdk.KVStorePrefixIterator(store, []byte(hexutil.EncodeUint64(height)))
+	defer iterator.Close()
+
+	ret := make([]string, 0)
+	for ; iterator.Valid(); iterator.Next() {
+		ret = append(ret, string(iterator.Value()))
+	}
+	return ret, nil
+}
+
+func (k Keeper) GetWaitCompleteUnDelegationRecords(ctx sdk.Context, height uint64) (records []*types.UnDelegationRecord, err error) {
+	recordKeys, err := k.GetWaitCompleteUnDelegationRecKeys(ctx, height)
+	if err != nil {
+		return nil, err
+	}
+	if len(recordKeys) == 0 {
+		return nil, nil
+	}
+	// The states of records stored by WaitCompleteUnDelegations kvStore should always be IsPending,so using AllRecords as getType here is ok.
+	return k.GetUnDelegationRecords(ctx, recordKeys, AllRecords)
+}

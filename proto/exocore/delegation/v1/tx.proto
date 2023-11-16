@@ -34,6 +34,7 @@ message OperatorInfo{
   string EarningsAddr = 1;
   string ApproveAddr = 2;
   string OperatorMetaInfo = 3;
+  map<uint64, string> ClientChainEarningsAddr = 4;
 }
 
 message RegisterOperatorReq {
@@ -63,14 +64,6 @@ message DelegationIncOrDecInfo{
 
   string   fromAddress = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
 
-  message ValueField {
-    string Amount = 1
-    [
-      (cosmos_proto.scalar) = "cosmos.Int",
-      (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
-      (gogoproto.nullable) = false
-    ];
-  }
   map<string, ValueField> perOperatorAmounts = 2;
 }
 
@@ -78,6 +71,35 @@ message MsgDelegation{
   DelegationIncOrDecInfo baseInfo = 1;
   DelegationApproveInfo approvedInfo = 2;
 }
+
+message UnDelegationRecord{
+  string stakerId = 1;
+  string assetId = 2;
+  string OperatorAddr = 3
+  [(cosmos_proto.scalar) = "cosmos.AddressString"];
+  string txHash = 4;
+  bool isPending = 5;
+  uint64 BlockNumber = 6;
+  uint64 CompleteBlockNumber = 7;
+  uint64 LzTxNonce = 8;
+  string amount = 9
+  [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.nullable) = false
+  ];
+  string actualCompletedAmount =10
+  [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.nullable) = false
+  ];
+}
+
+message UnDelegationRecordKeyList {
+  repeated string keyList = 1;
+}
+
 message DelegationResponse{}
 
 message MsgUnDelegation{

@@ -12,17 +12,13 @@ var (
 	ErrNoClientChainKey      = errorsmod.Register(ModuleName, 0, "there is no stored key for the input chain index")
 	ErrNoClientChainAssetKey = errorsmod.Register(ModuleName, 1, "there is no stored key for the input assetId")
 
-	ErrInputUpdateStateIsZero = errorsmod.Register(ModuleName, 2, "all of the input parameter value are zero")
+	ErrNoStakerAssetKey = errorsmod.Register(ModuleName, 2, "there is no stored key for the input staker and assetId")
 
-	ErrSubDepositAmountIsMoreThanOrigin = errorsmod.Register(ModuleName, 3, "the staker deposit amount that want to decrease is more than the original state")
+	ErrSubAmountIsMoreThanOrigin = errorsmod.Register(ModuleName, 3, "the amount that want to decrease is more than the original state amount")
 
-	ErrSubCanWithdrawAmountIsMoreThanOrigin = errorsmod.Register(ModuleName, 4, "the staker canWithdraw amount that want to decrease is more than the original state")
+	ErrNoOperatorAssetKey = errorsmod.Register(ModuleName, 4, "there is no stored key for the input operator address and assetId")
 
-	ErrNoStakerAssetKey = errorsmod.Register(ModuleName, 5, "there is no stored key for the input staker and assetId")
+	ErrParseAssetsStateKey = errorsmod.Register(ModuleName, 5, "assets state key can't be parsed")
 
-	ErrSubAmountIsMoreThanOrigin = errorsmod.Register(ModuleName, 6, "the amount that want to decrease is more than the original state amount")
-
-	ErrNoOperatorAssetKey = errorsmod.Register(ModuleName, 7, "there is no stored key for the input operator address and assetId")
-
-	ErrParseAssetsStateKey = errorsmod.Register(ModuleName, 8, "assets state key can't be parsed")
+	ErrCliCmdInputArg = errorsmod.Register(ModuleName, 6, "there is an error in the input client command args")
 )

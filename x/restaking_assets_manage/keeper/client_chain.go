@@ -37,7 +37,7 @@ func (k Keeper) GetClientChainInfoByIndex(ctx sdk.Context, index uint64) (info *
 }
 
 func (k Keeper) GetAllClientChainInfo(ctx sdk.Context) (infos map[uint64]*types2.ClientChainInfo, err error) {
-	store := prefix.NewStore(ctx.KVStore(k.storeKey), types2.KeyPrefixClientChainInfo)
+	store := ctx.KVStore(k.storeKey)
 	iterator := sdk.KVStorePrefixIterator(store, types2.KeyPrefixClientChainInfo)
 	defer iterator.Close()
 

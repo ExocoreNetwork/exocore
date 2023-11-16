@@ -20,6 +20,18 @@ type Keeper struct {
 	retakingStateKeeper keeper.Keeper
 }
 
+func NewKeeper(
+	storeKey storetypes.StoreKey,
+	cdc codec.BinaryCodec,
+	retakingStateKeeper keeper.Keeper,
+) Keeper {
+	return Keeper{
+		storeKey:            storeKey,
+		cdc:                 cdc,
+		retakingStateKeeper: retakingStateKeeper,
+	}
+}
+
 // IDeposit interface will be implemented by deposit keeper
 type IDeposit interface {
 	// PostTxProcessing automatically call PostTxProcessing to update deposit state after receiving deposit event tx from layerZero protocol
