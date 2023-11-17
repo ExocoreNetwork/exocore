@@ -5,7 +5,9 @@ package app
 import (
 	"encoding/json"
 	"fmt"
+	authzkeeper "github.com/cosmos/cosmos-sdk/x/authz/keeper"
 	ethante "github.com/evmos/evmos/v14/app/ante/evm"
+	"github.com/evmos/evmos/v14/x/feemarket"
 	feemarkettypes "github.com/evmos/evmos/v14/x/feemarket/types"
 	"github.com/exocore/x/delegation"
 	delegationKeeper "github.com/exocore/x/delegation/keeper"
@@ -42,7 +44,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/server/api"
 	"github.com/cosmos/cosmos-sdk/server/config"
 	authkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
-	minttypes "github.com/cosmos/cosmos-sdk/x/mint/types"
 	ica "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts"
 	icahosttypes "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/host/types"
 	icatypes "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/types"
@@ -135,6 +136,7 @@ import (
 	consensusparamtypes "github.com/cosmos/cosmos-sdk/x/consensus/types"
 	feemarketkeeper "github.com/evmos/evmos/v14/x/feemarket/keeper"
 
+	icahostkeeper "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/host/keeper"
 	// unnamed import of statik for swagger UI support
 	_ "github.com/evmos/evmos/v14/client/docs/statik"
 
@@ -151,7 +153,9 @@ func init() {
 	if err != nil {
 		panic(err)
 	}
-
+	// modify fee market parameter defaults through global
+	feemarkettypes.DefaultMinGasPrice = MainnetMinGasPrices
+	feemarkettypes.DefaultMinGasMultiplier = MainnetMinGasMultiplier
 	DefaultNodeHome = filepath.Join(userHomeDir, "."+Name)
 }
 
@@ -189,6 +193,7 @@ var (
 		transfer.AppModuleBasic{AppModuleBasic: &ibctransfer.AppModuleBasic{}},
 		vesting.AppModuleBasic{},
 		evm.AppModuleBasic{},
+		feemarket.AppModuleBasic{},
 		consensus.AppModuleBasic{},
 		//exoCore staking modules
 		restaking_assets_manage.AppModuleBasic{},
@@ -236,20 +241,22 @@ type ExocoreApp struct {
 	memKeys map[string]*storetypes.MemoryStoreKey
 
 	// keepers
-	AccountKeeper    authkeeper.AccountKeeper
-	BankKeeper       bankkeeper.Keeper
-	StakingKeeper    stakingkeeper.Keeper
-	CrisisKeeper     crisiskeeper.Keeper
-	DistrKeeper      distrkeeper.Keeper
-	SlashingKeeper   slashingkeeper.Keeper
-	IBCKeeper        *ibckeeper.Keeper // IBC Keeper must be a pointer in the app, so we can SetRouter on it correctly
-	EvidenceKeeper   evidencekeeper.Keeper
-	TransferKeeper   transferkeeper.Keeper
-	CapabilityKeeper *capabilitykeeper.Keeper
-	FeeGrantKeeper   feegrantkeeper.Keeper
-	ParamsKeeper     paramskeeper.Keeper
-	UpgradeKeeper    upgradekeeper.Keeper
-
+	AccountKeeper         authkeeper.AccountKeeper
+	BankKeeper            bankkeeper.Keeper
+	CapabilityKeeper      *capabilitykeeper.Keeper
+	StakingKeeper         stakingkeeper.Keeper
+	SlashingKeeper        slashingkeeper.Keeper
+	DistrKeeper           distrkeeper.Keeper
+	GovKeeper             govkeeper.Keeper
+	CrisisKeeper          crisiskeeper.Keeper
+	UpgradeKeeper         upgradekeeper.Keeper
+	ParamsKeeper          paramskeeper.Keeper
+	FeeGrantKeeper        feegrantkeeper.Keeper
+	AuthzKeeper           authzkeeper.Keeper
+	IBCKeeper             *ibckeeper.Keeper // IBC Keeper must be a pointer in the app, so we can SetRouter on it correctly
+	ICAHostKeeper         icahostkeeper.Keeper
+	EvidenceKeeper        evidencekeeper.Keeper
+	TransferKeeper        transferkeeper.Keeper
 	ConsensusParamsKeeper consensusparamkeeper.Keeper
 
 	// make scoped keepers public for test purposes
@@ -312,11 +319,15 @@ func NewExocoreApp(
 
 	keys := sdk.NewKVStoreKeys(
 		// SDK keys
-		authtypes.StoreKey, banktypes.StoreKey, stakingtypes.StoreKey, minttypes.StoreKey,
+		authtypes.StoreKey, banktypes.StoreKey, stakingtypes.StoreKey,
 		distrtypes.StoreKey, slashingtypes.StoreKey,
 		govtypes.StoreKey, paramstypes.StoreKey, upgradetypes.StoreKey,
-		evidencetypes.StoreKey, ibcexported.StoreKey, ibctransfertypes.StoreKey, capabilitytypes.StoreKey,
-		consensusparamtypes.StoreKey, feegrant.StoreKey, crisistypes.StoreKey,
+		evidencetypes.StoreKey, capabilitytypes.StoreKey, consensusparamtypes.StoreKey,
+		feegrant.StoreKey, authzkeeper.StoreKey, crisistypes.StoreKey,
+		// ibc keys
+		ibcexported.StoreKey, ibctransfertypes.StoreKey,
+		// ica keys
+		icahosttypes.StoreKey,
 		// ethermint keys
 		evmtypes.StoreKey, feemarkettypes.StoreKey,
 		//exoCore module keys
@@ -352,6 +363,14 @@ func NewExocoreApp(
 	// get authority address
 	authAddr := authtypes.NewModuleAddress(govtypes.ModuleName).String()
 
+	// set the BaseApp's parameter store
+	app.ConsensusParamsKeeper = consensusparamkeeper.NewKeeper(appCodec, keys[consensusparamtypes.StoreKey], authAddr)
+	bApp.SetParamStore(&app.ConsensusParamsKeeper)
+
+	// add capability keeper and ScopeToModule for ibc module
+	app.CapabilityKeeper = capabilitykeeper.NewKeeper(appCodec, keys[capabilitytypes.StoreKey], memKeys[capabilitytypes.MemStoreKey])
+	// Create IBC Keeper
+	scopedIBCKeeper := app.CapabilityKeeper.ScopeToModule(ibcexported.ModuleName)
 	// add account keepers
 	accountK := authkeeper.NewAccountKeeper(
 		appCodec, keys[authtypes.StoreKey],
@@ -385,16 +404,7 @@ func NewExocoreApp(
 	app.FeeGrantKeeper = feegrantkeeper.NewKeeper(appCodec, keys[feegrant.StoreKey], accountK)
 	app.UpgradeKeeper = *upgradekeeper.NewKeeper(skipUpgradeHeights, keys[upgradetypes.StoreKey], appCodec, homePath, app.BaseApp, authAddr)
 
-	// set the BaseApp's parameter store
-	app.ConsensusParamsKeeper = consensusparamkeeper.NewKeeper(appCodec, keys[consensusparamtypes.StoreKey], authAddr)
-	bApp.SetParamStore(&app.ConsensusParamsKeeper)
-	// Create IBC Keeper
-	app.CapabilityKeeper = capabilitykeeper.NewKeeper(appCodec, keys[capabilitytypes.StoreKey], memKeys[capabilitytypes.MemStoreKey])
-
-	scopedIBCKeeper := app.CapabilityKeeper.ScopeToModule(ibcexported.ModuleName)
-	app.IBCKeeper = ibckeeper.NewKeeper(
-		appCodec, keys[ibcexported.StoreKey], app.GetSubspace(ibcexported.ModuleName), stakingKeeper, app.UpgradeKeeper, scopedIBCKeeper,
-	)
+	app.AuthzKeeper = authzkeeper.NewKeeper(keys[authzkeeper.StoreKey], appCodec, app.MsgServiceRouter(), app.AccountKeeper)
 
 	tracer := cast.ToString(appOpts.Get(srvflags.EVMTracer))
 
@@ -413,6 +423,11 @@ func NewExocoreApp(
 	)
 
 	app.EvmKeeper = evmKeeper
+
+	// Create IBC Keeper
+	app.IBCKeeper = ibckeeper.NewKeeper(
+		appCodec, keys[ibcexported.StoreKey], app.GetSubspace(ibcexported.ModuleName), stakingKeeper, app.UpgradeKeeper, scopedIBCKeeper,
+	)
 
 	// register the proposal types
 	govRouter := govv1beta1.NewRouter()
@@ -485,6 +500,16 @@ func NewExocoreApp(
 		evidence.NewAppModule(app.EvidenceKeeper),
 		params.NewAppModule(app.ParamsKeeper),
 		feegrantmodule.NewAppModule(appCodec, accountK, bankK, app.FeeGrantKeeper, app.interfaceRegistry),
+		authzmodule.NewAppModule(appCodec, app.AuthzKeeper, app.AccountKeeper, app.BankKeeper, app.interfaceRegistry),
+		consensus.NewAppModule(appCodec, app.ConsensusParamsKeeper),
+
+		// ibc modules
+		ibc.NewAppModule(app.IBCKeeper),
+		ica.NewAppModule(nil, &app.ICAHostKeeper),
+
+		// Ethermint app modules
+		evm.NewAppModule(app.EvmKeeper, app.AccountKeeper, app.GetSubspace(evmtypes.ModuleName)),
+		feemarket.NewAppModule(app.FeeMarketKeeper, app.GetSubspace(feemarkettypes.ModuleName)),
 		// exoCore app modules
 		restaking_assets_manage.NewAppModule(appCodec, app.StakingAssetsManageKeeper),
 		deposit.NewAppModule(appCodec, app.DepositKeeper),
@@ -500,6 +525,7 @@ func NewExocoreApp(
 	app.mm.SetOrderBeginBlockers(
 		upgradetypes.ModuleName,
 		capabilitytypes.ModuleName,
+		feemarkettypes.ModuleName,
 		evmtypes.ModuleName,
 		distrtypes.ModuleName,
 		slashingtypes.ModuleName,
@@ -530,6 +556,7 @@ func NewExocoreApp(
 		govtypes.ModuleName,
 		stakingtypes.ModuleName,
 		evmtypes.ModuleName,
+		feemarkettypes.ModuleName,
 		// no-op modules
 		ibcexported.ModuleName,
 		ibctransfertypes.ModuleName,
@@ -574,6 +601,7 @@ func NewExocoreApp(
 		evmtypes.ModuleName,
 		// NOTE: feemarket module needs to be initialized before genutil module:
 		// gentx transactions use MinGasPriceDecorator.AnteHandle
+		feemarkettypes.ModuleName,
 		genutiltypes.ModuleName,
 		evidencetypes.ModuleName,
 		ibctransfertypes.ModuleName,
@@ -617,7 +645,7 @@ func NewExocoreApp(
 			os.Exit(1)
 		}
 	}
-
+	app.ScopedIBCKeeper = scopedIBCKeeper
 	return app
 }
 
