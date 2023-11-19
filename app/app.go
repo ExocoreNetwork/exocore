@@ -3,16 +3,24 @@
 package app
 
 import (
-	autocliv1 "cosmossdk.io/api/cosmos/autocli/v1"
-	reflectionv1 "cosmossdk.io/api/cosmos/reflection/v1"
 	"encoding/json"
 	"fmt"
+	"io"
+	"net/http"
+	"os"
+	"path/filepath"
+	"sort"
+
+	autocliv1 "cosmossdk.io/api/cosmos/autocli/v1"
+	reflectionv1 "cosmossdk.io/api/cosmos/reflection/v1"
 	authzkeeper "github.com/cosmos/cosmos-sdk/x/authz/keeper"
 	ibctesting "github.com/cosmos/ibc-go/v7/testing"
+
 	ethante "github.com/evmos/evmos/v14/app/ante/evm"
 	"github.com/evmos/evmos/v14/ethereum/eip712"
 
 	"context"
+
 	"github.com/evmos/evmos/v14/x/feemarket"
 	feemarkettypes "github.com/evmos/evmos/v14/x/feemarket/types"
 	"github.com/evmos/evmos/v14/x/incentives"
@@ -29,11 +37,12 @@ import (
 	"github.com/exocore/x/restaking_assets_manage"
 	stakingAssetsManageKeeper "github.com/exocore/x/restaking_assets_manage/keeper"
 	stakingAssetsManageTypes "github.com/exocore/x/restaking_assets_manage/types"
-	"io"
-	"net/http"
-	"os"
-	"path/filepath"
-	"sort"
+	"github.com/exocore/x/reward"
+	rewardKeeper "github.com/exocore/x/reward/keeper"
+	rewardTypes "github.com/exocore/x/reward/types"
+	"github.com/exocore/x/withdraw"
+	withdrawKeeper "github.com/exocore/x/withdraw/keeper"
+	withdrawTypes "github.com/exocore/x/withdraw/types"
 
 	runtimeservices "github.com/cosmos/cosmos-sdk/runtime/services"
 
@@ -336,6 +345,8 @@ type ExocoreApp struct {
 	StakingAssetsManageKeeper stakingAssetsManageKeeper.Keeper
 	DepositKeeper             depositKeeper.Keeper
 	DelegationKeeper          delegationKeeper.Keeper
+	WithdrawKeeper            withdrawKeeper.Keeper
+	RewardKeeper              rewardKeeper.Keeper
 
 	// the module manager
 	mm *module.Manager
@@ -415,6 +426,8 @@ func NewExocoreApp(
 		stakingAssetsManageTypes.StoreKey,
 		delegationTypes.StoreKey,
 		depositTypes.StoreKey,
+		withdrawTypes.StoreKey,
+		rewardTypes.StoreKey,
 	)
 
 	// Add the EVM transient store key
@@ -709,6 +722,8 @@ func NewExocoreApp(
 	//todo: need to replace the virtual keepers with actual keepers after they have been implemented
 	app.DelegationKeeper = delegationKeeper.NewKeeper(keys[depositTypes.StoreKey], appCodec, app.StakingAssetsManageKeeper, app.DepositKeeper, delegationTypes.VirtualISlashKeeper{}, delegationTypes.VirtualOperatorOptedInKeeper{})
 
+	app.WithdrawKeeper = *withdrawKeeper.NewKeeper(appCodec, keys[withdrawTypes.StoreKey], app.StakingAssetsManageKeeper)
+	app.RewardKeeper = *rewardKeeper.NewKeeper(appCodec, keys[rewardTypes.StoreKey], app.StakingAssetsManageKeeper)
 	/****  Module Options ****/
 
 	// NOTE: we may consider parsing `appOpts` inside module constructors. For the moment
@@ -764,6 +779,8 @@ func NewExocoreApp(
 		restaking_assets_manage.NewAppModule(appCodec, app.StakingAssetsManageKeeper),
 		deposit.NewAppModule(appCodec, app.DepositKeeper),
 		delegation.NewAppModule(appCodec, app.DelegationKeeper),
+		withdraw.NewAppModule(appCodec, app.WithdrawKeeper),
+		reward.NewAppModule(appCodec, app.RewardKeeper),
 	)
 
 	// During begin block slashing happens after distr.BeginBlocker so that
@@ -807,6 +824,8 @@ func NewExocoreApp(
 		stakingAssetsManageTypes.ModuleName,
 		depositTypes.ModuleName,
 		delegationTypes.ModuleName,
+		withdrawTypes.ModuleName,
+		rewardTypes.ModuleName,
 	)
 
 	// NOTE: fee market module must go last in order to retrieve the block gas used.
@@ -846,6 +865,8 @@ func NewExocoreApp(
 		stakingAssetsManageTypes.ModuleName,
 		depositTypes.ModuleName,
 		delegationTypes.ModuleName,
+		withdrawTypes.ModuleName,
+		rewardTypes.ModuleName,
 	)
 
 	// NOTE: The genutils module must occur after staking so that pools are
@@ -883,6 +904,8 @@ func NewExocoreApp(
 		stakingAssetsManageTypes.ModuleName,
 		depositTypes.ModuleName,
 		delegationTypes.ModuleName,
+		withdrawTypes.ModuleName,
+		rewardTypes.ModuleName,
 		// Evmos modules
 		vestingtypes.ModuleName,
 		inflationtypes.ModuleName,

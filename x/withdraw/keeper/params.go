@@ -1,6 +1,8 @@
 package keeper
 
 import (
+	"strings"
+
 	"github.com/cosmos/cosmos-sdk/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/common"
@@ -32,6 +34,8 @@ func (k Keeper) SetParams(ctx sdk.Context, params *types.Params) error {
 	if len(common.FromHex(params.ExoCoreLzAppEventTopic)) != common.HashLength {
 		return types.ErrInvalidLzUaTopicIdLength
 	}
+	params.ExoCoreLzAppAddress = strings.ToLower(params.ExoCoreLzAppAddress)
+	params.ExoCoreLzAppEventTopic = strings.ToLower(params.ExoCoreLzAppEventTopic)
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefixParams)
 	//key := common.HexToAddress(incentive.Contract)
 	bz := k.cdc.MustMarshal(params)
