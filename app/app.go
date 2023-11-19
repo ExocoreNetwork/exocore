@@ -5,6 +5,28 @@ package app
 import (
 	"encoding/json"
 	"fmt"
+<<<<<<< HEAD
+=======
+	"github.com/exocore/x/exoslash"
+	"io"
+	"net/http"
+	"os"
+	"path/filepath"
+	"sort"
+
+	ethante "github.com/evmos/evmos/v14/app/ante/evm"
+	feemarkettypes "github.com/evmos/evmos/v14/x/feemarket/types"
+	"github.com/exocore/x/delegation"
+	delegationKeeper "github.com/exocore/x/delegation/keeper"
+	delegationTypes "github.com/exocore/x/delegation/types"
+	"github.com/exocore/x/deposit"
+	depositKeeper "github.com/exocore/x/deposit/keeper"
+<<<<<<< HEAD
+<<<<<<< HEAD
+	depositTypes "github.com/exocore/x/deposit/types"
+<<<<<<< HEAD
+=======
+>>>>>>> 9cee0c7 (integrate exoslash modules to app.go)
 	exoslashkeeper "github.com/exocore/x/exoslash/keeper"
 	"github.com/exocore/x/restaking_assets_manage"
 	stakingAssetsManageKeeper "github.com/exocore/x/restaking_assets_manage/keeper"
@@ -14,6 +36,19 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
+=======
+	exoslashKeeper "github.com/exocore/x/exoslash/keeper"
+	exoslashTypes "github.com/exocore/x/exoslash/types"
+	"github.com/exocore/x/restaking_assets_manage"
+	stakingAssetsManageKeeper "github.com/exocore/x/restaking_assets_manage/keeper"
+	stakingAssetsManageTypes "github.com/exocore/x/restaking_assets_manage/types"
+	rewardKeeper "github.com/exocore/x/reward/keeper"
+	rewardTypes "github.com/exocore/x/reward/types"
+	withdrawTypes "github.com/exocore/x/withdraw/types"
+	"github.com/gorilla/mux"
+	"github.com/rakyll/statik/fs"
+	"github.com/spf13/cast"
+>>>>>>> 5cb1355 (integrate exoslash modules to app.go)
 
 	autocliv1 "cosmossdk.io/api/cosmos/autocli/v1"
 	reflectionv1 "cosmossdk.io/api/cosmos/reflection/v1"
@@ -352,10 +387,16 @@ type ExocoreApp struct {
 	StakingAssetsManageKeeper stakingAssetsManageKeeper.Keeper
 	DepositKeeper             depositKeeper.Keeper
 	DelegationKeeper          delegationKeeper.Keeper
+<<<<<<< HEAD
 	WithdrawKeeper            withdrawKeeper.Keeper
 	RewardKeeper              rewardKeeper.Keeper
 
 	ExoSlashKeeper exoslashkeeper.Keeper
+=======
+	RewardKeeper              rewardKeeper.Keeper
+	ExoslashKeeper            exoslashKeeper.Keeper
+
+>>>>>>> 9cee0c7 (integrate exoslash modules to app.go)
 	// the module manager
 	mm *module.Manager
 
@@ -436,6 +477,10 @@ func NewExocoreApp(
 		depositTypes.StoreKey,
 		withdrawTypes.StoreKey,
 		rewardTypes.StoreKey,
+<<<<<<< HEAD
+=======
+		exoslashTypes.StoreKey,
+>>>>>>> 9cee0c7 (integrate exoslash modules to app.go)
 	)
 
 	// Add the EVM transient store key
@@ -730,8 +775,12 @@ func NewExocoreApp(
 	//todo: need to replace the virtual keepers with actual keepers after they have been implemented
 	app.DelegationKeeper = delegationKeeper.NewKeeper(keys[depositTypes.StoreKey], appCodec, app.StakingAssetsManageKeeper, app.DepositKeeper, delegationTypes.VirtualISlashKeeper{}, delegationTypes.VirtualOperatorOptedInKeeper{})
 
+<<<<<<< HEAD
 	app.WithdrawKeeper = *withdrawKeeper.NewKeeper(appCodec, keys[withdrawTypes.StoreKey], app.StakingAssetsManageKeeper)
 	app.RewardKeeper = *rewardKeeper.NewKeeper(appCodec, keys[rewardTypes.StoreKey], app.StakingAssetsManageKeeper)
+=======
+	app.ExoslashKeeper = *exoslashKeeper.NewKeeper(appCodec, keys[exoslashTypes.StoreKey], app.StakingAssetsManageKeeper)
+>>>>>>> 9cee0c7 (integrate exoslash modules to app.go)
 	/****  Module Options ****/
 
 	// NOTE: we may consider parsing `appOpts` inside module constructors. For the moment
@@ -787,8 +836,12 @@ func NewExocoreApp(
 		restaking_assets_manage.NewAppModule(appCodec, app.StakingAssetsManageKeeper),
 		deposit.NewAppModule(appCodec, app.DepositKeeper),
 		delegation.NewAppModule(appCodec, app.DelegationKeeper),
+<<<<<<< HEAD
 		withdraw.NewAppModule(appCodec, app.WithdrawKeeper),
 		reward.NewAppModule(appCodec, app.RewardKeeper),
+=======
+		exoslash.NewAppModule(appCodec, app.ExoslashKeeper),
+>>>>>>> 9cee0c7 (integrate exoslash modules to app.go)
 	)
 
 	// During begin block slashing happens after distr.BeginBlocker so that
@@ -834,6 +887,10 @@ func NewExocoreApp(
 		delegationTypes.ModuleName,
 		withdrawTypes.ModuleName,
 		rewardTypes.ModuleName,
+<<<<<<< HEAD
+=======
+		exoslashTypes.ModuleName,
+>>>>>>> 9cee0c7 (integrate exoslash modules to app.go)
 	)
 
 	// NOTE: fee market module must go last in order to retrieve the block gas used.
@@ -875,6 +932,10 @@ func NewExocoreApp(
 		delegationTypes.ModuleName,
 		withdrawTypes.ModuleName,
 		rewardTypes.ModuleName,
+<<<<<<< HEAD
+=======
+		exoslashTypes.ModuleName,
+>>>>>>> 9cee0c7 (integrate exoslash modules to app.go)
 	)
 
 	// NOTE: The genutils module must occur after staking so that pools are
@@ -914,6 +975,7 @@ func NewExocoreApp(
 		delegationTypes.ModuleName,
 		withdrawTypes.ModuleName,
 		rewardTypes.ModuleName,
+		exoslashTypes.ModuleName,
 		// Evmos modules
 		vestingtypes.ModuleName,
 		inflationtypes.ModuleName,

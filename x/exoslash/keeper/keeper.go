@@ -5,6 +5,7 @@ import (
 <<<<<<< HEAD
 	sdkmath "cosmossdk.io/math"
 	"fmt"
+<<<<<<< HEAD
 =======
 =======
 	sdkmath "cosmossdk.io/math"
@@ -16,6 +17,8 @@ import (
 	retakingStateKeeper "github.com/exocore/x/restaking_assets_manage/keeper"
 
 >>>>>>> eebca7f (implement slash interface)
+=======
+>>>>>>> 5cb1355 (integrate exoslash modules to app.go)
 	"github.com/cometbft/cometbft/libs/log"
 	"github.com/cosmos/cosmos-sdk/codec"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
@@ -32,6 +35,9 @@ type Keeper struct {
 	storeKey storetypes.StoreKey
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 5cb1355 (integrate exoslash modules to app.go)
 	//other keepers
 	retakingStateKeeper keeper.Keeper
 }
@@ -42,9 +48,15 @@ func NewKeeper(
 	cdc codec.BinaryCodec,
 	storeKey storetypes.StoreKey,
 	retakingStateKeeper keeper.Keeper,
+<<<<<<< HEAD
 ) Keeper {
 
 	return Keeper{
+=======
+) *Keeper {
+
+	return &Keeper{
+>>>>>>> 5cb1355 (integrate exoslash modules to app.go)
 		cdc:                 cdc,
 		storeKey:            storeKey,
 		retakingStateKeeper: retakingStateKeeper,

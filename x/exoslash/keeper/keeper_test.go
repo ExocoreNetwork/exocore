@@ -82,8 +82,12 @@ func (suite *KeeperTestSuite) TestSlash() {
 		Proof:                     nil,
 >>>>>>> 5429dca (add unti test for slash and fix some  bugs)
 	}
+<<<<<<< HEAD
 	suite.NoError(suite.app.ExoSlashKeeper.Slash(suite.ctx, slashEvent))
 >>>>>>> 104cf78 (add some test and fix bugs)
+=======
+	suite.NoError(suite.app.ExoslashKeeper.Slash(suite.ctx, slashEvent))
+>>>>>>> 5cb1355 (integrate exoslash modules to app.go)
 }
 
 func (suite *KeeperTestSuite) DoSetupTest(t require.TestingT) {
