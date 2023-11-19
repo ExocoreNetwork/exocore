@@ -461,6 +461,7 @@ func NewExocoreApp(
 		depositTypes.StoreKey,
 		withdrawTypes.StoreKey,
 		rewardTypes.StoreKey,
+		exoslashTypes.StoreKey,
 	)
 
 	// Add the EVM transient store key
