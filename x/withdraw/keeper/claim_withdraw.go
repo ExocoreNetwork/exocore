@@ -21,11 +21,11 @@ import (
 )
 
 type WithdrawParams struct {
-	clientChainLzId uint64
-	action          types.CrossChainOpType
-	assetsAddress   types.GeneralAssetsAddr
-	withdrawAddress types.GeneralClientChainAddr
-	opAmount        sdkmath.Int
+	ClientChainLzId uint64
+	Action          types.CrossChainOpType
+	AssetsAddress   []byte
+	WithdrawAddress []byte
+	OpAmount        sdkmath.Int
 }
 
 func getWithdrawParamsFromEventLog(log *ethtypes.Log) (*WithdrawParams, error) {
@@ -48,7 +48,7 @@ func getWithdrawParamsFromEventLog(log *ethtypes.Log) (*WithdrawParams, error) {
 	readStart = readEnd
 	readEnd += types.GeneralAssetsAddrLength
 	r = bytes.NewReader(log.Data[readStart:readEnd])
-	var assetsAddress types.GeneralAssetsAddr
+	var assetsAddress []byte
 	err = binary.Read(r, binary.BigEndian, assetsAddress)
 	if err != nil {
 		return nil, errorsmod.Wrap(err, "error occurred when binary read assets address")
@@ -57,7 +57,7 @@ func getWithdrawParamsFromEventLog(log *ethtypes.Log) (*WithdrawParams, error) {
 	readStart = readEnd
 	readEnd += types.GeneralClientChainAddrLength
 	r = bytes.NewReader(log.Data[readStart:readEnd])
-	var withdrawAddress types.GeneralClientChainAddr
+	var withdrawAddress []byte
 	err = binary.Read(r, binary.BigEndian, withdrawAddress)
 	if err != nil {
 		return nil, errorsmod.Wrap(err, "error occurred when binary read assets address")
@@ -75,18 +75,18 @@ func getWithdrawParamsFromEventLog(log *ethtypes.Log) (*WithdrawParams, error) {
 	}
 
 	return &WithdrawParams{
-		clientChainLzId: clientChainLzId,
-		action:          action,
-		assetsAddress:   assetsAddress,
-		withdrawAddress: withdrawAddress,
-		opAmount:        amount,
+		ClientChainLzId: clientChainLzId,
+		Action:          action,
+		AssetsAddress:   assetsAddress,
+		WithdrawAddress: withdrawAddress,
+		OpAmount:        amount,
 	}, nil
 }
 
 func getStakeIDAndAssetId(params *WithdrawParams) (stakeId string, assetId string) {
-	clientChainLzIdStr := hexutil.EncodeUint64(params.clientChainLzId)
-	stakeId = strings.Join([]string{hexutil.Encode(params.withdrawAddress[:]), clientChainLzIdStr}, "_")
-	assetId = strings.Join([]string{hexutil.Encode(params.assetsAddress[:]), clientChainLzIdStr}, "_")
+	clientChainLzIdStr := hexutil.EncodeUint64(params.ClientChainLzId)
+	stakeId = strings.Join([]string{hexutil.Encode(params.WithdrawAddress[:]), clientChainLzIdStr}, "_")
+	assetId = strings.Join([]string{hexutil.Encode(params.AssetsAddress[:]), clientChainLzIdStr}, "_")
 	return
 }
 
@@ -126,8 +126,8 @@ func (k Keeper) PostTxProcessing(ctx sdk.Context, msg core.Message, receipt *eth
 
 func (k Keeper) Withdraw(ctx sdk.Context, event *WithdrawParams) error {
 	//check event parameter then execute deposit operation
-	if event.opAmount.IsNegative() {
-		return errorsmod.Wrap(wtypes.ErrWithdrawAmountIsNegative, fmt.Sprintf("the amount is:%s", event.opAmount))
+	if event.OpAmount.IsNegative() {
+		return errorsmod.Wrap(wtypes.ErrWithdrawAmountIsNegative, fmt.Sprintf("the amount is:%s", event.OpAmount))
 	}
 	stakeId, assetId := getStakeIDAndAssetId(event)
 	//check is asset exist
@@ -135,11 +135,14 @@ func (k Keeper) Withdraw(ctx sdk.Context, event *WithdrawParams) error {
 		return errorsmod.Wrap(wtypes.ErrWithdrawAssetNotExist, fmt.Sprintf("the assetId is:%s", assetId))
 	}
 	changeAmount := types.StakerSingleAssetOrChangeInfo{
-		TotalDepositAmountOrWantChangeValue: event.opAmount,
-		CanWithdrawAmountOrWantChangeValue:  event.opAmount,
+		TotalDepositAmountOrWantChangeValue: event.OpAmount.Neg(),
+		CanWithdrawAmountOrWantChangeValue:  event.OpAmount.Neg(),
 	}
 	err := k.retakingStateKeeper.UpdateStakerAssetState(ctx, stakeId, assetId, changeAmount)
 	if err != nil {
+		return err
+	}
+	if err = k.retakingStateKeeper.UpdateStakingAssetTotalAmount(ctx, assetId, event.OpAmount.Neg()); err != nil {
 		return err
 	}
 	return nil
