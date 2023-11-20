@@ -62,7 +62,7 @@ func (suite *KeeperTestSuite) TestSlash() {
 		Proportion:                sdkmath.LegacyNewDecFromInt(sdkmath.NewInt(3)),
 		Proof:                     nil,
 	}
-	suite.NoError(suite.app.ExoSlashKeeper.Slash(suite.ctx, slashEvent))
+	suite.NoError(suite.app.ExoslashKeeper.Slash(suite.ctx, slashEvent))
 }
 
 func (suite *KeeperTestSuite) DoSetupTest(t require.TestingT) {

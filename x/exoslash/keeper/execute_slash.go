@@ -130,7 +130,16 @@ func (k Keeper) FilterCrossChainEventLogs(ctx sdk.Context, msg core.Message, rec
 }
 
 func (k Keeper) PostTxProcessing(ctx sdk.Context, msg core.Message, receipt *ethtypes.Receipt) error {
-	needLogs, err := k.depositKeeper.FilterCrossChainEventLogs(ctx, msg, receipt)
+	params, err := k.GetParams(ctx)
+	if err != nil {
+		return err
+	}
+	//filter needed logs
+	addresses := []common.Address{common.HexToAddress(params.ExoCoreLzAppAddress)}
+	topics := [][]common.Hash{
+		{common.HexToHash(params.ExoCoreLzAppEventTopic)},
+	}
+	needLogs := filters.FilterLogs(receipt.Logs, nil, nil, addresses, topics)
 	if err != nil {
 		return err
 	}
