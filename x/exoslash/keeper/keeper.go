@@ -49,6 +49,7 @@ func NewKeeper(
 	storeKey storetypes.StoreKey,
 	retakingStateKeeper keeper.Keeper,
 <<<<<<< HEAD
+<<<<<<< HEAD
 ) Keeper {
 
 	return Keeper{
@@ -57,6 +58,11 @@ func NewKeeper(
 
 	return &Keeper{
 >>>>>>> 5cb1355 (integrate exoslash modules to app.go)
+=======
+) Keeper {
+
+	return Keeper{
+>>>>>>> 2109599 (fix msg not implement)
 		cdc:                 cdc,
 		storeKey:            storeKey,
 		retakingStateKeeper: retakingStateKeeper,

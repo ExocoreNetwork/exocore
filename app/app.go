@@ -5,8 +5,6 @@ package app
 import (
 	"encoding/json"
 	"fmt"
-<<<<<<< HEAD
-=======
 	"github.com/exocore/x/exoslash"
 	"io"
 	"net/http"
@@ -21,12 +19,7 @@ import (
 	delegationTypes "github.com/exocore/x/delegation/types"
 	"github.com/exocore/x/deposit"
 	depositKeeper "github.com/exocore/x/deposit/keeper"
-<<<<<<< HEAD
-<<<<<<< HEAD
 	depositTypes "github.com/exocore/x/deposit/types"
-<<<<<<< HEAD
-=======
->>>>>>> 9cee0c7 (integrate exoslash modules to app.go)
 	exoslashkeeper "github.com/exocore/x/exoslash/keeper"
 	"github.com/exocore/x/restaking_assets_manage"
 	stakingAssetsManageKeeper "github.com/exocore/x/restaking_assets_manage/keeper"
@@ -36,7 +29,6 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
-=======
 	exoslashKeeper "github.com/exocore/x/exoslash/keeper"
 	exoslashTypes "github.com/exocore/x/exoslash/types"
 	"github.com/exocore/x/restaking_assets_manage"
@@ -48,7 +40,6 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/rakyll/statik/fs"
 	"github.com/spf13/cast"
->>>>>>> 5cb1355 (integrate exoslash modules to app.go)
 
 	autocliv1 "cosmossdk.io/api/cosmos/autocli/v1"
 	reflectionv1 "cosmossdk.io/api/cosmos/reflection/v1"
@@ -387,16 +378,10 @@ type ExocoreApp struct {
 	StakingAssetsManageKeeper stakingAssetsManageKeeper.Keeper
 	DepositKeeper             depositKeeper.Keeper
 	DelegationKeeper          delegationKeeper.Keeper
-<<<<<<< HEAD
 	WithdrawKeeper            withdrawKeeper.Keeper
 	RewardKeeper              rewardKeeper.Keeper
 
 	ExoSlashKeeper exoslashkeeper.Keeper
-=======
-	RewardKeeper              rewardKeeper.Keeper
-	ExoslashKeeper            exoslashKeeper.Keeper
-
->>>>>>> 9cee0c7 (integrate exoslash modules to app.go)
 	// the module manager
 	mm *module.Manager
 
@@ -477,10 +462,6 @@ func NewExocoreApp(
 		depositTypes.StoreKey,
 		withdrawTypes.StoreKey,
 		rewardTypes.StoreKey,
-<<<<<<< HEAD
-=======
-		exoslashTypes.StoreKey,
->>>>>>> 9cee0c7 (integrate exoslash modules to app.go)
 	)
 
 	// Add the EVM transient store key
@@ -776,11 +757,15 @@ func NewExocoreApp(
 	app.DelegationKeeper = delegationKeeper.NewKeeper(keys[depositTypes.StoreKey], appCodec, app.StakingAssetsManageKeeper, app.DepositKeeper, delegationTypes.VirtualISlashKeeper{}, delegationTypes.VirtualOperatorOptedInKeeper{})
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 	app.WithdrawKeeper = *withdrawKeeper.NewKeeper(appCodec, keys[withdrawTypes.StoreKey], app.StakingAssetsManageKeeper)
 	app.RewardKeeper = *rewardKeeper.NewKeeper(appCodec, keys[rewardTypes.StoreKey], app.StakingAssetsManageKeeper)
 =======
 	app.ExoslashKeeper = *exoslashKeeper.NewKeeper(appCodec, keys[exoslashTypes.StoreKey], app.StakingAssetsManageKeeper)
 >>>>>>> 9cee0c7 (integrate exoslash modules to app.go)
+=======
+	app.ExoslashKeeper = exoslashKeeper.NewKeeper(appCodec, keys[exoslashTypes.StoreKey], app.StakingAssetsManageKeeper)
+>>>>>>> 618a29f (fix msg not implement)
 	/****  Module Options ****/
 
 	// NOTE: we may consider parsing `appOpts` inside module constructors. For the moment
