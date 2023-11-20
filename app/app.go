@@ -13,32 +13,8 @@ import (
 
 	"github.com/exocore/x/exoslash"
 
-	"io"
-	"net/http"
-	"os"
-	"path/filepath"
-	"sort"
-
-	ethante "github.com/evmos/evmos/v14/app/ante/evm"
-	feemarkettypes "github.com/evmos/evmos/v14/x/feemarket/types"
-	"github.com/exocore/x/delegation"
-	delegationKeeper "github.com/exocore/x/delegation/keeper"
-	delegationTypes "github.com/exocore/x/delegation/types"
-	"github.com/exocore/x/deposit"
-	depositKeeper "github.com/exocore/x/deposit/keeper"
-	depositTypes "github.com/exocore/x/deposit/types"
-	exoslashKeeper "github.com/exocore/x/exoslash/keeper"
-	exoslashkeeper "github.com/exocore/x/exoslash/keeper"
+	slashKeeper "github.com/exocore/x/exoslash/keeper"
 	exoslashTypes "github.com/exocore/x/exoslash/types"
-	"github.com/exocore/x/restaking_assets_manage"
-	stakingAssetsManageKeeper "github.com/exocore/x/restaking_assets_manage/keeper"
-	stakingAssetsManageTypes "github.com/exocore/x/restaking_assets_manage/types"
-	rewardKeeper "github.com/exocore/x/reward/keeper"
-	rewardTypes "github.com/exocore/x/reward/types"
-	withdrawTypes "github.com/exocore/x/withdraw/types"
-	"github.com/gorilla/mux"
-	"github.com/rakyll/statik/fs"
-	"github.com/spf13/cast"
 
 	autocliv1 "cosmossdk.io/api/cosmos/autocli/v1"
 	reflectionv1 "cosmossdk.io/api/cosmos/reflection/v1"
@@ -63,7 +39,6 @@ import (
 	"github.com/exocore/x/deposit"
 	depositKeeper "github.com/exocore/x/deposit/keeper"
 	depositTypes "github.com/exocore/x/deposit/types"
-	exoslashkeeper "github.com/exocore/x/exoslash/keeper"
 	"github.com/exocore/x/restaking_assets_manage"
 	stakingAssetsManageKeeper "github.com/exocore/x/restaking_assets_manage/keeper"
 	stakingAssetsManageTypes "github.com/exocore/x/restaking_assets_manage/types"
@@ -287,8 +262,6 @@ var (
 		restaking_assets_manage.AppModuleBasic{},
 		deposit.AppModuleBasic{},
 		delegation.AppModuleBasic{},
-		withdraw.AppModuleBasic{},
-		reward.AppModuleBasic{},
 	)
 
 	// module account permissions
@@ -380,7 +353,7 @@ type ExocoreApp struct {
 	WithdrawKeeper            withdrawKeeper.Keeper
 	RewardKeeper              rewardKeeper.Keeper
 
-	ExoSlashKeeper exoslashkeeper.Keeper
+	ExoSlashKeeper slashKeeper.Keeper
 	// the module manager
 	mm *module.Manager
 
@@ -758,7 +731,8 @@ func NewExocoreApp(
 
 	app.WithdrawKeeper = *withdrawKeeper.NewKeeper(appCodec, keys[withdrawTypes.StoreKey], app.StakingAssetsManageKeeper)
 	app.RewardKeeper = *rewardKeeper.NewKeeper(appCodec, keys[rewardTypes.StoreKey], app.StakingAssetsManageKeeper)
-	app.ExoslashKeeper = *exoslashKeeper.NewKeeper(appCodec, keys[exoslashTypes.StoreKey], app.StakingAssetsManageKeeper)
+	app.ExoSlashKeeper = slashKeeper.NewKeeper(appCodec, keys[exoslashTypes.StoreKey], app.StakingAssetsManageKeeper)
+
 	/****  Module Options ****/
 
 	// NOTE: we may consider parsing `appOpts` inside module constructors. For the moment
@@ -816,7 +790,7 @@ func NewExocoreApp(
 		delegation.NewAppModule(appCodec, app.DelegationKeeper),
 		withdraw.NewAppModule(appCodec, app.WithdrawKeeper),
 		reward.NewAppModule(appCodec, app.RewardKeeper),
-		exoslash.NewAppModule(appCodec, app.ExoslashKeeper),
+		exoslash.NewAppModule(appCodec, app.ExoSlashKeeper),
 	)
 
 	// During begin block slashing happens after distr.BeginBlocker so that

@@ -19,5 +19,3 @@ func (k Keeper) UpdateParams(ctx context.Context, params *types.MsgUpdateParams)
 	}
 	return nil, nil
 }
-
-var _ types.MsgServer = msgServer{}

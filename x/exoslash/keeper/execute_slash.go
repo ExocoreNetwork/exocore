@@ -166,16 +166,16 @@ func (k Keeper) PostTxProcessing(ctx sdk.Context, msg core.Message, receipt *eth
 	return nil
 }
 
-func (k Keeper) OptIntoSlashing(ctx sdk.Context, event *SlashParams) error {
-	//TODO implement me
-	panic("implement me")
-}
+// func (k Keeper) OptIntoSlashing(ctx sdk.Context, event *SlashParams) error {
+// 	//TODO implement me
+// 	panic("implement me")
+// }
 
 func (k Keeper) Slash(ctx sdk.Context, event *SlashParams) error {
 	//the stakes are frozen for the impacted middleware, and deposits and withdrawals are disabled as well.
 	//All pending deposits and withdrawals for the current epoch will be invalidated.
 	//check event parameter then execute slash operation
-	_ = k.SetFrozenStatus(ctx, string(event.OperatorAddress), true)
+	//	_ = k.SetFrozenStatus(ctx, string(event.OperatorAddress), true)
 
 	if event.OpAmount.IsNegative() {
 		return errorsmod.Wrap(rtypes.ErrSlashAmountIsNegative, fmt.Sprintf("the amount is:%s", event.OpAmount))
@@ -188,38 +188,33 @@ func (k Keeper) Slash(ctx sdk.Context, event *SlashParams) error {
 
 	//TODO Processing Slash Core Logic
 	changeAmount := types.StakerSingleAssetOrChangeInfo{
-		TotalDepositAmountOrWantChangeValue: event.OpAmount,
-		CanWithdrawAmountOrWantChangeValue:  event.OpAmount,
+		TotalDepositAmountOrWantChangeValue: event.OpAmount.Neg(),
+		CanWithdrawAmountOrWantChangeValue:  event.OpAmount.Neg(),
 	}
 	err := k.retakingStateKeeper.UpdateStakerAssetState(ctx, stakeId, assetId, changeAmount)
 	if err != nil {
 		return err
 	}
+	if err = k.retakingStateKeeper.UpdateStakingAssetTotalAmount(ctx, assetId, event.OpAmount.Neg()); err != nil {
+		return err
+	}
 	return nil
 }
 
-func (k Keeper) FreezeOperator(ctx sdk.Context, event *SlashParams) error {
-	k.SetFrozenStatus(ctx, string(event.OperatorAddress), true)
-	return nil
-}
+// func (k Keeper) FreezeOperator(ctx sdk.Context, event *SlashParams) error {
+// 	k.SetFrozenStatus(ctx, string(event.OperatorAddress), true)
+// 	return nil
+// }
 
-func (k Keeper) ResetFrozenStatus(ctx sdk.Context, event *SlashParams) error {
-	k.SetFrozenStatus(ctx, string(event.OperatorAddress), true)
-	return nil
-}
-func (k Keeper) IsOperatorFrozen(ctx sdk.Context, event *SlashParams) (bool, error) {
-	return k.GetFrozenStatus(ctx, string(event.OperatorAddress))
+//	func (k Keeper) ResetFrozenStatus(ctx sdk.Context, event *SlashParams) error {
+//		k.SetFrozenStatus(ctx, string(event.OperatorAddress), true)
+//		return nil
+//	}
+// func (k Keeper) IsOperatorFrozen(ctx sdk.Context, event *SlashParams) (bool, error) {
+// 	return k.GetFrozenStatus(ctx, string(event.OperatorAddress))
 
-}
-func (k Keeper) OperatorAssetSlashedProportion(ctx sdk.Context, opAddr sdk.AccAddress, assetId string, startHeight, endHeight uint64) sdkmath.LegacyDec {
-	//TODO
-	return sdkmath.LegacyNewDec(3)
-}
-func (k Keeper) OperatorAssetSlashedProportion(ctx sdk.Context, opAddr sdk.AccAddress, assetId string, startHeight, endHeight uint64) sdkmath.LegacyDec {
-	//TODO
-	return sdkmath.LegacyNewDec(3)
-}
-func (k Keeper) OperatorAssetSlashedProportion(ctx sdk.Context, opAddr sdk.AccAddress, assetId string, startHeight, endHeight uint64) sdkmath.LegacyDec {
-	//TODO
-	return sdkmath.LegacyNewDec(3)
-}
+// }
+// func (k Keeper) OperatorAssetSlashedProportion(ctx sdk.Context, opAddr sdk.AccAddress, assetId string, startHeight, endHeight uint64) sdkmath.LegacyDec {
+// 	//TODO
+// 	return sdkmath.LegacyNewDec(3)
+// }

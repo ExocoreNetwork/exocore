@@ -9,6 +9,7 @@ import (
 
 var (
 	amino = codec.NewLegacyAmino()
+
 	// ModuleCdc references the global erc20 module codec. Note, the codec should
 	// ONLY be used in certain instances of tests and for JSON encoding.
 	//
@@ -29,10 +30,6 @@ const (
 func init() {
 	RegisterLegacyAminoCodec(amino)
 	amino.Seal()
-}
-
-func RegisterCodec(cdc *codec.LegacyAmino) {
-
 }
 
 // RegisterInterfaces register implementations

@@ -2,10 +2,13 @@ package keeper
 
 import (
 	"bytes"
-	errorsmod "cosmossdk.io/errors"
-	sdkmath "cosmossdk.io/math"
 	"encoding/binary"
 	"fmt"
+	"log"
+	"math/big"
+
+	errorsmod "cosmossdk.io/errors"
+	sdkmath "cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core"
@@ -13,8 +16,6 @@ import (
 	"github.com/evmos/evmos/v14/rpc/namespaces/ethereum/eth/filters"
 	types2 "github.com/exocore/x/deposit/types"
 	"github.com/exocore/x/restaking_assets_manage/types"
-	"log"
-	"math/big"
 )
 
 type DepositParams struct {

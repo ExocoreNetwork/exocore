@@ -19,8 +19,8 @@ func KeyPrefix(p string) []byte {
 }
 
 const (
-	prefixParams       = iota + 1
-	prefixOperatorInfo = iota + 1
+	prefixParams       = 1
+	prefixOperatorInfo = 2
 )
 
 var (
