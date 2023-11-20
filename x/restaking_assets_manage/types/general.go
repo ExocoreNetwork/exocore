@@ -31,6 +31,7 @@ const (
 	WithDrawReward
 	DelegationTo
 	UnDelegationFrom
+	Slash
 )
 
 func GetStakeIDAndAssetId(clientChainLzId uint64, stakerAddress []byte, assetsAddress []byte) (stakeId string, assetId string) {

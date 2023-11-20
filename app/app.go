@@ -11,6 +11,11 @@ import (
 	"path/filepath"
 	"sort"
 
+	"github.com/exocore/x/exoslash"
+
+	slashKeeper "github.com/exocore/x/exoslash/keeper"
+	exoslashTypes "github.com/exocore/x/exoslash/types"
+
 	autocliv1 "cosmossdk.io/api/cosmos/autocli/v1"
 	reflectionv1 "cosmossdk.io/api/cosmos/reflection/v1"
 	authzkeeper "github.com/cosmos/cosmos-sdk/x/authz/keeper"
@@ -257,8 +262,6 @@ var (
 		restaking_assets_manage.AppModuleBasic{},
 		deposit.AppModuleBasic{},
 		delegation.AppModuleBasic{},
-		withdraw.AppModuleBasic{},
-		reward.AppModuleBasic{},
 	)
 
 	// module account permissions
@@ -350,6 +353,7 @@ type ExocoreApp struct {
 	WithdrawKeeper            withdrawKeeper.Keeper
 	RewardKeeper              rewardKeeper.Keeper
 
+	ExoSlashKeeper slashKeeper.Keeper
 	// the module manager
 	mm *module.Manager
 
@@ -430,6 +434,7 @@ func NewExocoreApp(
 		depositTypes.StoreKey,
 		withdrawTypes.StoreKey,
 		rewardTypes.StoreKey,
+		exoslashTypes.StoreKey,
 	)
 
 	// Add the EVM transient store key
@@ -726,6 +731,8 @@ func NewExocoreApp(
 
 	app.WithdrawKeeper = *withdrawKeeper.NewKeeper(appCodec, keys[withdrawTypes.StoreKey], app.StakingAssetsManageKeeper)
 	app.RewardKeeper = *rewardKeeper.NewKeeper(appCodec, keys[rewardTypes.StoreKey], app.StakingAssetsManageKeeper)
+	app.ExoSlashKeeper = slashKeeper.NewKeeper(appCodec, keys[exoslashTypes.StoreKey], app.StakingAssetsManageKeeper)
+
 	/****  Module Options ****/
 
 	// NOTE: we may consider parsing `appOpts` inside module constructors. For the moment
@@ -783,6 +790,7 @@ func NewExocoreApp(
 		delegation.NewAppModule(appCodec, app.DelegationKeeper),
 		withdraw.NewAppModule(appCodec, app.WithdrawKeeper),
 		reward.NewAppModule(appCodec, app.RewardKeeper),
+		exoslash.NewAppModule(appCodec, app.ExoSlashKeeper),
 	)
 
 	// During begin block slashing happens after distr.BeginBlocker so that
@@ -828,6 +836,7 @@ func NewExocoreApp(
 		delegationTypes.ModuleName,
 		withdrawTypes.ModuleName,
 		rewardTypes.ModuleName,
+		exoslashTypes.ModuleName,
 	)
 
 	// NOTE: fee market module must go last in order to retrieve the block gas used.
@@ -869,6 +878,7 @@ func NewExocoreApp(
 		delegationTypes.ModuleName,
 		withdrawTypes.ModuleName,
 		rewardTypes.ModuleName,
+		exoslashTypes.ModuleName,
 	)
 
 	// NOTE: The genutils module must occur after staking so that pools are
@@ -908,6 +918,7 @@ func NewExocoreApp(
 		delegationTypes.ModuleName,
 		withdrawTypes.ModuleName,
 		rewardTypes.ModuleName,
+		exoslashTypes.ModuleName,
 		// Evmos modules
 		vestingtypes.ModuleName,
 		inflationtypes.ModuleName,
