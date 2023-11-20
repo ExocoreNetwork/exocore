@@ -3,6 +3,7 @@
 package deposit
 
 import (
+	"context"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/codec"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
@@ -40,9 +41,10 @@ func (b AppModuleBasic) RegisterInterfaces(registry codectypes.InterfaceRegistry
 	types.RegisterInterfaces(registry)
 }
 
-func (b AppModuleBasic) RegisterGRPCGatewayRoutes(context client.Context, mux *runtime.ServeMux) {
-	//TODO implement me
-	panic("implement me")
+func (b AppModuleBasic) RegisterGRPCGatewayRoutes(c client.Context, serveMux *runtime.ServeMux) {
+	if err := types.RegisterQueryHandlerClient(context.Background(), serveMux, types.NewQueryClient(c)); err != nil {
+		panic(err)
+	}
 }
 
 func (b AppModuleBasic) GetTxCmd() *cobra.Command {
@@ -78,17 +80,15 @@ func (am AppModule) RegisterServices(cfg module.Configurator) {
 	types.RegisterQueryServer(cfg.QueryServer(), am.keeper)
 }*/
 
-func (am AppModule) GenerateGenesisState(input *module.SimulationState) {
-	//TODO implement me
-	panic("implement me")
+// GenerateGenesisState creates a randomized GenState of the inflation module.
+func (am AppModule) GenerateGenesisState(_ *module.SimulationState) {
 }
 
-func (am AppModule) RegisterStoreDecoder(registry sdk.StoreDecoderRegistry) {
-	//TODO implement me
-	panic("implement me")
+// RegisterStoreDecoder registers a decoder for inflation module's types.
+func (am AppModule) RegisterStoreDecoder(_ sdk.StoreDecoderRegistry) {
 }
 
-func (am AppModule) WeightedOperations(simState module.SimulationState) []simtypes.WeightedOperation {
-	//TODO implement me
-	panic("implement me")
+// WeightedOperations doesn't return any inflation module operation.
+func (am AppModule) WeightedOperations(_ module.SimulationState) []simtypes.WeightedOperation {
+	return []simtypes.WeightedOperation{}
 }

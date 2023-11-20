@@ -3,6 +3,7 @@
 package delegation
 
 import (
+	"context"
 	abci "github.com/cometbft/cometbft/abci/types"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -41,9 +42,10 @@ func (b AppModuleBasic) RegisterInterfaces(registry codectypes.InterfaceRegistry
 	types2.RegisterInterfaces(registry)
 }
 
-func (b AppModuleBasic) RegisterGRPCGatewayRoutes(context client.Context, mux *runtime.ServeMux) {
-	//TODO implement me
-	panic("implement me")
+func (b AppModuleBasic) RegisterGRPCGatewayRoutes(c client.Context, serveMux *runtime.ServeMux) {
+	if err := types2.RegisterQueryHandlerClient(context.Background(), serveMux, types2.NewQueryClient(c)); err != nil {
+		panic(err)
+	}
 }
 
 func (b AppModuleBasic) GetTxCmd() *cobra.Command {
@@ -79,18 +81,13 @@ func (am AppModule) RegisterServices(cfg module.Configurator) {
 }
 
 func (am AppModule) GenerateGenesisState(input *module.SimulationState) {
-	//TODO implement me
-	panic("implement me")
 }
 
 func (am AppModule) RegisterStoreDecoder(registry sdk.StoreDecoderRegistry) {
-	//TODO implement me
-	panic("implement me")
 }
 
 func (am AppModule) WeightedOperations(simState module.SimulationState) []simtypes.WeightedOperation {
-	//TODO implement me
-	panic("implement me")
+	return []simtypes.WeightedOperation{}
 }
 
 // EndBlock executes all ABCI EndBlock logic respective to the claim module. It

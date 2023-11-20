@@ -110,17 +110,15 @@ func (am AppModule) ExportGenesis(ctx sdk.Context, cdc codec.JSONCodec) json.Raw
 	return cdc.MustMarshalJSON(gs)
 }
 
-func (am AppModule) GenerateGenesisState(input *module.SimulationState) {
-	//TODO implement me
-	panic("implement me")
+// GenerateGenesisState creates a randomized GenState of the inflation module.
+func (am AppModule) GenerateGenesisState(_ *module.SimulationState) {
 }
 
-func (am AppModule) RegisterStoreDecoder(registry sdk.StoreDecoderRegistry) {
-	//TODO implement me
-	panic("implement me")
+// RegisterStoreDecoder registers a decoder for inflation module's types.
+func (am AppModule) RegisterStoreDecoder(_ sdk.StoreDecoderRegistry) {
 }
 
-func (am AppModule) WeightedOperations(simState module.SimulationState) []simtypes.WeightedOperation {
-	//TODO implement me
-	panic("implement me")
+// WeightedOperations doesn't return any inflation module operation.
+func (am AppModule) WeightedOperations(_ module.SimulationState) []simtypes.WeightedOperation {
+	return []simtypes.WeightedOperation{}
 }
