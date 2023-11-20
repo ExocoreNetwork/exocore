@@ -41,7 +41,7 @@ require (
 )
 
 require (
-	cosmossdk.io/api v0.3.1 // indirect
+	cosmossdk.io/api v0.3.1
 	github.com/btcsuite/btcd v0.23.3 // indirect
 	github.com/btcsuite/btcd/btcutil v1.1.3 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect

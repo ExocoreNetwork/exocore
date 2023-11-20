@@ -257,6 +257,8 @@ var (
 		restaking_assets_manage.AppModuleBasic{},
 		deposit.AppModuleBasic{},
 		delegation.AppModuleBasic{},
+		withdraw.AppModuleBasic{},
+		reward.AppModuleBasic{},
 	)
 
 	// module account permissions
