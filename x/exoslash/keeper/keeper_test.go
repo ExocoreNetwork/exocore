@@ -13,6 +13,7 @@ import (
 	"github.com/exocore/app"
 	"github.com/exocore/utils"
 	exoslashkeeper "github.com/exocore/x/exoslash/keeper"
+	types2 "github.com/exocore/x/exoslash/types"
 	"github.com/exocore/x/restaking_assets_manage/types"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -47,47 +48,47 @@ func (suite *KeeperTestSuite) SetupTest() {
 	suite.DoSetupTest(suite.T())
 }
 func (suite *KeeperTestSuite) TestSlash() {
-	usdtAddress := common.HexToAddress("0xdAC17F958D2ee523a2206206994597C13D831ec7")
+	usdtAddress := common.HexToAddress("0xdac17f958d2ee523a2206206994597c13d831ec7")
 	opAccAddr, _ := sdk.AccAddressFromBech32("evmos1fl48vsnmsdzcv85q5d2q4z5ajdha8yu3h6cprl")
-	stakerAddress := common.HexToAddress("0xdAC17F958D2ee523a2206206994597C13D831ec7")
-	middlewareContractAddress := common.HexToAddress("0xdAC17F958D2ee523a2206206994597C13D831ec7")
+	stakerAddress := common.HexToAddress("0x4675C7e5BaAFBFFbca748158bEcBA61ef3b0a263")
+	middlewareContractAddress := common.HexToAddress("0x95222290dd7278aa3ddd389cc1e1d165cc4bafe5")
 	slashEvent := &exoslashkeeper.SlashParams{
-<<<<<<< HEAD
-<<<<<<< HEAD
 		ClientChainLzId:           3,
 		Action:                    types.Slash,
-=======
-
-		ClientChainLzId:           3,
-		Action:                    types.Deposit,
->>>>>>> 104cf78 (add some test and fix bugs)
-=======
-		ClientChainLzId:           3,
-		Action:                    types.Slash,
->>>>>>> 5429dca (add unti test for slash and fix some  bugs)
 		AssetsAddress:             usdtAddress.Bytes(),
 		OperatorAddress:           opAccAddr,
 		StakerAddress:             stakerAddress.Bytes(),
 		OpAmount:                  sdkmath.NewInt(200),
 		MiddlewareContractAddress: middlewareContractAddress.Bytes(),
 		Proportion:                sdkmath.LegacyNewDecFromInt(sdkmath.NewInt(3)),
-<<<<<<< HEAD
-<<<<<<< HEAD
 		Proof:                     nil,
 	}
-	suite.NoError(suite.app.ExoslashKeeper.Slash(suite.ctx, slashEvent))
-=======
-		Evidence:                  "",
-=======
-		Proof:                     nil,
->>>>>>> 5429dca (add unti test for slash and fix some  bugs)
-	}
-<<<<<<< HEAD
-	suite.NoError(suite.app.ExoSlashKeeper.Slash(suite.ctx, slashEvent))
->>>>>>> 104cf78 (add some test and fix bugs)
-=======
-	suite.NoError(suite.app.ExoslashKeeper.Slash(suite.ctx, slashEvent))
->>>>>>> 5cb1355 (integrate exoslash modules to app.go)
+	err := suite.app.ExoslashKeeper.Slash(suite.ctx, slashEvent)
+
+	suite.ErrorContains(err, types2.ErrSlashAssetNotExist.Error())
+
+	assets, err := suite.app.StakingAssetsManageKeeper.GetAllStakingAssetsInfo(suite.ctx)
+	suite.NoError(err)
+	suite.app.Logger().Info("the assets is:", "assets", assets)
+
+	//test the normal case
+	slashEvent.AssetsAddress = stakerAddress[:]
+	err = suite.app.ExoslashKeeper.Slash(suite.ctx, slashEvent)
+	suite.NoError(err)
+
+	//check state after slash
+	stakerId, assetId := types.GetStakeIDAndAssetId(slashEvent.ClientChainLzId, slashEvent.StakerAddress, slashEvent.AssetsAddress)
+	info, err := suite.app.StakingAssetsManageKeeper.GetStakerSpecifiedAssetInfo(suite.ctx, stakerId, assetId)
+	suite.NoError(err)
+	suite.Equal(types.StakerSingleAssetOrChangeInfo{
+		TotalDepositAmountOrWantChangeValue:     slashEvent.OpAmount,
+		CanWithdrawAmountOrWantChangeValue:      slashEvent.OpAmount,
+		WaitUnDelegationAmountOrWantChangeValue: sdkmath.NewInt(0),
+	}, *info)
+
+	assetInfo, err := suite.app.StakingAssetsManageKeeper.GetStakingAssetInfo(suite.ctx, assetId)
+	suite.NoError(err)
+	suite.Equal(slashEvent.OpAmount, assetInfo.StakingTotalAmount)
 }
 
 func (suite *KeeperTestSuite) DoSetupTest(t require.TestingT) {

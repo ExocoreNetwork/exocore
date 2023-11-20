@@ -5,7 +5,14 @@ package app
 import (
 	"encoding/json"
 	"fmt"
+	"io"
+	"net/http"
+	"os"
+	"path/filepath"
+	"sort"
+
 	"github.com/exocore/x/exoslash"
+
 	"io"
 	"net/http"
 	"os"
@@ -20,16 +27,8 @@ import (
 	"github.com/exocore/x/deposit"
 	depositKeeper "github.com/exocore/x/deposit/keeper"
 	depositTypes "github.com/exocore/x/deposit/types"
-	exoslashkeeper "github.com/exocore/x/exoslash/keeper"
-	"github.com/exocore/x/restaking_assets_manage"
-	stakingAssetsManageKeeper "github.com/exocore/x/restaking_assets_manage/keeper"
-	stakingAssetsManageTypes "github.com/exocore/x/restaking_assets_manage/types"
-	"io"
-	"net/http"
-	"os"
-	"path/filepath"
-	"sort"
 	exoslashKeeper "github.com/exocore/x/exoslash/keeper"
+	exoslashkeeper "github.com/exocore/x/exoslash/keeper"
 	exoslashTypes "github.com/exocore/x/exoslash/types"
 	"github.com/exocore/x/restaking_assets_manage"
 	stakingAssetsManageKeeper "github.com/exocore/x/restaking_assets_manage/keeper"
@@ -756,16 +755,9 @@ func NewExocoreApp(
 	//todo: need to replace the virtual keepers with actual keepers after they have been implemented
 	app.DelegationKeeper = delegationKeeper.NewKeeper(keys[depositTypes.StoreKey], appCodec, app.StakingAssetsManageKeeper, app.DepositKeeper, delegationTypes.VirtualISlashKeeper{}, delegationTypes.VirtualOperatorOptedInKeeper{})
 
-<<<<<<< HEAD
-<<<<<<< HEAD
 	app.WithdrawKeeper = *withdrawKeeper.NewKeeper(appCodec, keys[withdrawTypes.StoreKey], app.StakingAssetsManageKeeper)
 	app.RewardKeeper = *rewardKeeper.NewKeeper(appCodec, keys[rewardTypes.StoreKey], app.StakingAssetsManageKeeper)
-=======
 	app.ExoslashKeeper = *exoslashKeeper.NewKeeper(appCodec, keys[exoslashTypes.StoreKey], app.StakingAssetsManageKeeper)
->>>>>>> 9cee0c7 (integrate exoslash modules to app.go)
-=======
-	app.ExoslashKeeper = exoslashKeeper.NewKeeper(appCodec, keys[exoslashTypes.StoreKey], app.StakingAssetsManageKeeper)
->>>>>>> 618a29f (fix msg not implement)
 	/****  Module Options ****/
 
 	// NOTE: we may consider parsing `appOpts` inside module constructors. For the moment
@@ -821,12 +813,9 @@ func NewExocoreApp(
 		restaking_assets_manage.NewAppModule(appCodec, app.StakingAssetsManageKeeper),
 		deposit.NewAppModule(appCodec, app.DepositKeeper),
 		delegation.NewAppModule(appCodec, app.DelegationKeeper),
-<<<<<<< HEAD
 		withdraw.NewAppModule(appCodec, app.WithdrawKeeper),
 		reward.NewAppModule(appCodec, app.RewardKeeper),
-=======
 		exoslash.NewAppModule(appCodec, app.ExoslashKeeper),
->>>>>>> 9cee0c7 (integrate exoslash modules to app.go)
 	)
 
 	// During begin block slashing happens after distr.BeginBlocker so that
@@ -872,10 +861,7 @@ func NewExocoreApp(
 		delegationTypes.ModuleName,
 		withdrawTypes.ModuleName,
 		rewardTypes.ModuleName,
-<<<<<<< HEAD
-=======
 		exoslashTypes.ModuleName,
->>>>>>> 9cee0c7 (integrate exoslash modules to app.go)
 	)
 
 	// NOTE: fee market module must go last in order to retrieve the block gas used.
@@ -917,10 +903,7 @@ func NewExocoreApp(
 		delegationTypes.ModuleName,
 		withdrawTypes.ModuleName,
 		rewardTypes.ModuleName,
-<<<<<<< HEAD
-=======
 		exoslashTypes.ModuleName,
->>>>>>> 9cee0c7 (integrate exoslash modules to app.go)
 	)
 
 	// NOTE: The genutils module must occur after staking so that pools are

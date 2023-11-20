@@ -29,13 +29,6 @@ const (
 func init() {
 	RegisterLegacyAminoCodec(amino)
 	amino.Seal()
-<<<<<<< HEAD
-}
-
-func RegisterCodec(cdc *codec.LegacyAmino) {
-
-=======
->>>>>>> eebca7f (implement slash interface)
 }
 
 func RegisterCodec(cdc *codec.LegacyAmino) {

@@ -1,24 +1,8 @@
 package keeper
 
 import (
-<<<<<<< HEAD
-<<<<<<< HEAD
 	sdkmath "cosmossdk.io/math"
 	"fmt"
-<<<<<<< HEAD
-=======
-=======
-	sdkmath "cosmossdk.io/math"
->>>>>>> 104cf78 (add some test and fix bugs)
-	"fmt"
-	ethtypes "github.com/ethereum/go-ethereum/core/types"
-	delegationKeeper "github.com/exocore/x/delegation/keeper"
-	depositKeeper "github.com/exocore/x/deposit/keeper"
-	retakingStateKeeper "github.com/exocore/x/restaking_assets_manage/keeper"
-
->>>>>>> eebca7f (implement slash interface)
-=======
->>>>>>> 5cb1355 (integrate exoslash modules to app.go)
 	"github.com/cometbft/cometbft/libs/log"
 	"github.com/cosmos/cosmos-sdk/codec"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
@@ -34,35 +18,17 @@ type Keeper struct {
 	cdc      codec.BinaryCodec
 	storeKey storetypes.StoreKey
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 5cb1355 (integrate exoslash modules to app.go)
 	//other keepers
 	retakingStateKeeper keeper.Keeper
 }
 
-=======
->>>>>>> eebca7f (implement slash interface)
 func NewKeeper(
 	cdc codec.BinaryCodec,
 	storeKey storetypes.StoreKey,
 	retakingStateKeeper keeper.Keeper,
-<<<<<<< HEAD
-<<<<<<< HEAD
 ) Keeper {
 
 	return Keeper{
-=======
-) *Keeper {
-
-	return &Keeper{
->>>>>>> 5cb1355 (integrate exoslash modules to app.go)
-=======
-) Keeper {
-
-	return Keeper{
->>>>>>> 2109599 (fix msg not implement)
 		cdc:                 cdc,
 		storeKey:            storeKey,
 		retakingStateKeeper: retakingStateKeeper,
@@ -79,22 +45,8 @@ type IEXOSlash interface {
 	Slash(ctx sdk.Context, event *SlashParams) error
 	FreezeOperator(ctx sdk.Context, event *SlashParams) error
 	ResetFrozenStatus(ctx sdk.Context, event *SlashParams) error
-<<<<<<< HEAD
-<<<<<<< HEAD
 	IsOperatorFrozen(ctx sdk.Context, event *SlashParams) (bool, error)
 	SetParams(ctx sdk.Context, params *types.Params) error
 	GetParams(ctx sdk.Context) (*types.Params, error)
 	OperatorAssetSlashedProportion(ctx sdk.Context, opAddr sdk.AccAddress, assetId string, startHeight, endHeight uint64) sdkmath.LegacyDec
-=======
-	IsOperatorFrozen(ctx sdk.Context, event *SlashParams) error
-=======
-	IsOperatorFrozen(ctx sdk.Context, event *SlashParams) (bool, error)
->>>>>>> 5429dca (add unti test for slash and fix some  bugs)
-	SetParams(ctx sdk.Context, params *types.Params) error
-	GetParams(ctx sdk.Context) (*types.Params, error)
-<<<<<<< HEAD
->>>>>>> eebca7f (implement slash interface)
-=======
-	OperatorAssetSlashedProportion(ctx sdk.Context, opAddr sdk.AccAddress, assetId string, startHeight, endHeight uint64) sdkmath.LegacyDec
->>>>>>> 104cf78 (add some test and fix bugs)
 }
