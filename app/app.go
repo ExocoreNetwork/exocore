@@ -3,10 +3,23 @@
 package app
 
 import (
+	autocliv1 "cosmossdk.io/api/cosmos/autocli/v1"
+	reflectionv1 "cosmossdk.io/api/cosmos/reflection/v1"
 	"encoding/json"
 	"fmt"
+	authzkeeper "github.com/cosmos/cosmos-sdk/x/authz/keeper"
+	ibctesting "github.com/cosmos/ibc-go/v7/testing"
 	ethante "github.com/evmos/evmos/v14/app/ante/evm"
+	"github.com/evmos/evmos/v14/ethereum/eip712"
+
+	"context"
+	"github.com/evmos/evmos/v14/x/feemarket"
 	feemarkettypes "github.com/evmos/evmos/v14/x/feemarket/types"
+	"github.com/evmos/evmos/v14/x/incentives"
+	"github.com/evmos/evmos/v14/x/inflation"
+	"github.com/evmos/evmos/v14/x/recovery"
+	"github.com/evmos/evmos/v14/x/revenue/v1"
+	vestingtypes "github.com/evmos/evmos/v14/x/vesting/types"
 	"github.com/exocore/x/delegation"
 	delegationKeeper "github.com/exocore/x/delegation/keeper"
 	delegationTypes "github.com/exocore/x/delegation/types"
@@ -21,6 +34,8 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
+
+	runtimeservices "github.com/cosmos/cosmos-sdk/runtime/services"
 
 	"github.com/gorilla/mux"
 	"github.com/rakyll/statik/fs"
@@ -42,8 +57,8 @@ import (
 	"github.com/cosmos/cosmos-sdk/server/api"
 	"github.com/cosmos/cosmos-sdk/server/config"
 	authkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
-	minttypes "github.com/cosmos/cosmos-sdk/x/mint/types"
 	ica "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts"
+	icahost "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/host"
 	icahosttypes "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/host/types"
 	icatypes "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/types"
 	ibctestingtypes "github.com/cosmos/ibc-go/v7/testing/types"
@@ -55,6 +70,7 @@ import (
 	ibcclient "github.com/cosmos/ibc-go/v7/modules/core/02-client"
 	ibcclientclient "github.com/cosmos/ibc-go/v7/modules/core/02-client/client"
 	ibcclienttypes "github.com/cosmos/ibc-go/v7/modules/core/02-client/types"
+	porttypes "github.com/cosmos/ibc-go/v7/modules/core/05-port/types"
 	ibcexported "github.com/cosmos/ibc-go/v7/modules/core/exported"
 	ibckeeper "github.com/cosmos/ibc-go/v7/modules/core/keeper"
 	ibctm "github.com/cosmos/ibc-go/v7/modules/light-clients/07-tendermint"
@@ -78,7 +94,6 @@ import (
 	authsims "github.com/cosmos/cosmos-sdk/x/auth/simulation"
 	authtx "github.com/cosmos/cosmos-sdk/x/auth/tx"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
-	"github.com/cosmos/cosmos-sdk/x/auth/vesting"
 	"github.com/cosmos/cosmos-sdk/x/authz"
 	authzmodule "github.com/cosmos/cosmos-sdk/x/authz/module"
 	"github.com/cosmos/cosmos-sdk/x/bank"
@@ -135,6 +150,28 @@ import (
 	consensusparamtypes "github.com/cosmos/cosmos-sdk/x/consensus/types"
 	feemarketkeeper "github.com/evmos/evmos/v14/x/feemarket/keeper"
 
+	icahostkeeper "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/host/keeper"
+
+	incentiveskeeper "github.com/evmos/evmos/v14/x/incentives/keeper"
+	inflationkeeper "github.com/evmos/evmos/v14/x/inflation/keeper"
+	inflationtypes "github.com/evmos/evmos/v14/x/inflation/types"
+	recoverykeeper "github.com/evmos/evmos/v14/x/recovery/keeper"
+	recoverytypes "github.com/evmos/evmos/v14/x/recovery/types"
+	revenuekeeper "github.com/evmos/evmos/v14/x/revenue/v1/keeper"
+	revenuetypes "github.com/evmos/evmos/v14/x/revenue/v1/types"
+	"github.com/evmos/evmos/v14/x/vesting"
+	vestingkeeper "github.com/evmos/evmos/v14/x/vesting/keeper"
+
+	"github.com/evmos/evmos/v14/x/claims"
+	claimskeeper "github.com/evmos/evmos/v14/x/claims/keeper"
+	claimstypes "github.com/evmos/evmos/v14/x/claims/types"
+	"github.com/evmos/evmos/v14/x/epochs"
+	epochskeeper "github.com/evmos/evmos/v14/x/epochs/keeper"
+	epochstypes "github.com/evmos/evmos/v14/x/epochs/types"
+	"github.com/evmos/evmos/v14/x/erc20"
+	erc20keeper "github.com/evmos/evmos/v14/x/erc20/keeper"
+	erc20types "github.com/evmos/evmos/v14/x/erc20/types"
+
 	// unnamed import of statik for swagger UI support
 	_ "github.com/evmos/evmos/v14/client/docs/statik"
 
@@ -153,6 +190,14 @@ func init() {
 	}
 
 	DefaultNodeHome = filepath.Join(userHomeDir, "."+Name)
+
+	// manually update the power reduction by replacing micro (u) -> atto (a) evmos
+	sdk.DefaultPowerReduction = evmostypes.PowerReduction
+	// modify fee market parameter defaults through global
+	feemarkettypes.DefaultMinGasPrice = MainnetMinGasPrices
+	feemarkettypes.DefaultMinGasMultiplier = MainnetMinGasMultiplier
+	// modify default min commission to 5%
+	stakingtypes.DefaultMinCommissionRate = sdk.NewDecWithPrec(5, 2)
 }
 
 var (
@@ -189,6 +234,15 @@ var (
 		transfer.AppModuleBasic{AppModuleBasic: &ibctransfer.AppModuleBasic{}},
 		vesting.AppModuleBasic{},
 		evm.AppModuleBasic{},
+		feemarket.AppModuleBasic{},
+		// evmos modules
+		inflation.AppModuleBasic{},
+		erc20.AppModuleBasic{},
+		incentives.AppModuleBasic{},
+		epochs.AppModuleBasic{},
+		claims.AppModuleBasic{},
+		recovery.AppModuleBasic{},
+		revenue.AppModuleBasic{},
 		consensus.AppModuleBasic{},
 		//exoCore staking modules
 		restaking_assets_manage.AppModuleBasic{},
@@ -206,7 +260,12 @@ var (
 		ibctransfertypes.ModuleName:    {authtypes.Minter, authtypes.Burner},
 		icatypes.ModuleName:            nil,
 		evmtypes.ModuleName:            {authtypes.Minter, authtypes.Burner}, // used for secure addition and subtraction of balance using module account
+		inflationtypes.ModuleName:      {authtypes.Minter},
+		erc20types.ModuleName:          {authtypes.Minter, authtypes.Burner},
+		claimstypes.ModuleName:         nil,
+		incentivestypes.ModuleName:     {authtypes.Minter, authtypes.Burner},
 	}
+
 	// module accounts that are allowed to receive tokens
 	allowedReceivingModAcc = map[string]bool{
 		incentivestypes.ModuleName: true,
@@ -215,6 +274,7 @@ var (
 
 var (
 	_ servertypes.Application = (*ExocoreApp)(nil)
+	_ ibctesting.TestingApp   = (*ExocoreApp)(nil)
 )
 
 // ExocoreApp implements an extended ABCI application. It is an application
@@ -236,20 +296,22 @@ type ExocoreApp struct {
 	memKeys map[string]*storetypes.MemoryStoreKey
 
 	// keepers
-	AccountKeeper    authkeeper.AccountKeeper
-	BankKeeper       bankkeeper.Keeper
-	StakingKeeper    stakingkeeper.Keeper
-	CrisisKeeper     crisiskeeper.Keeper
-	DistrKeeper      distrkeeper.Keeper
-	SlashingKeeper   slashingkeeper.Keeper
-	IBCKeeper        *ibckeeper.Keeper // IBC Keeper must be a pointer in the app, so we can SetRouter on it correctly
-	EvidenceKeeper   evidencekeeper.Keeper
-	TransferKeeper   transferkeeper.Keeper
-	CapabilityKeeper *capabilitykeeper.Keeper
-	FeeGrantKeeper   feegrantkeeper.Keeper
-	ParamsKeeper     paramskeeper.Keeper
-	UpgradeKeeper    upgradekeeper.Keeper
-
+	AccountKeeper         authkeeper.AccountKeeper
+	BankKeeper            bankkeeper.Keeper
+	CapabilityKeeper      *capabilitykeeper.Keeper
+	StakingKeeper         stakingkeeper.Keeper
+	SlashingKeeper        slashingkeeper.Keeper
+	DistrKeeper           distrkeeper.Keeper
+	GovKeeper             govkeeper.Keeper
+	CrisisKeeper          crisiskeeper.Keeper
+	UpgradeKeeper         upgradekeeper.Keeper
+	ParamsKeeper          paramskeeper.Keeper
+	FeeGrantKeeper        feegrantkeeper.Keeper
+	AuthzKeeper           authzkeeper.Keeper
+	IBCKeeper             *ibckeeper.Keeper // IBC Keeper must be a pointer in the app, so we can SetRouter on it correctly
+	ICAHostKeeper         icahostkeeper.Keeper
+	EvidenceKeeper        evidencekeeper.Keeper
+	TransferKeeper        transferkeeper.Keeper
 	ConsensusParamsKeeper consensusparamkeeper.Keeper
 
 	// make scoped keepers public for test purposes
@@ -259,6 +321,16 @@ type ExocoreApp struct {
 	// Ethermint keepers
 	EvmKeeper       *evmkeeper.Keeper
 	FeeMarketKeeper feemarketkeeper.Keeper
+
+	// Evmos keepers
+	InflationKeeper  inflationkeeper.Keeper
+	ClaimsKeeper     *claimskeeper.Keeper
+	Erc20Keeper      erc20keeper.Keeper
+	IncentivesKeeper incentiveskeeper.Keeper
+	EpochsKeeper     epochskeeper.Keeper
+	VestingKeeper    vestingkeeper.Keeper
+	RecoveryKeeper   *recoverykeeper.Keeper
+	RevenueKeeper    revenuekeeper.Keeper
 
 	//exoCore staking module keepers
 	StakingAssetsManageKeeper stakingAssetsManageKeeper.Keeper
@@ -270,6 +342,16 @@ type ExocoreApp struct {
 
 	// the configurator
 	configurator module.Configurator
+
+	// simulation manager
+	sm *module.SimulationManager
+
+	tpsCounter *tpsCounter
+}
+
+// SimulationManager implements runtime.AppI
+func (*ExocoreApp) SimulationManager() *module.SimulationManager {
+	panic("unimplemented")
 }
 
 // NewExocoreApp is the constructor for new Exocore
@@ -288,6 +370,8 @@ func NewExocoreApp(
 	appCodec := encodingConfig.Codec
 	cdc := encodingConfig.Amino
 	interfaceRegistry := encodingConfig.InterfaceRegistry
+
+	eip712.SetEncodingConfig(encodingConfig)
 
 	// Setup Mempool and Proposal Handlers
 	baseAppOptions = append(baseAppOptions, func(app *baseapp.BaseApp) {
@@ -312,13 +396,21 @@ func NewExocoreApp(
 
 	keys := sdk.NewKVStoreKeys(
 		// SDK keys
-		authtypes.StoreKey, banktypes.StoreKey, stakingtypes.StoreKey, minttypes.StoreKey,
+		authtypes.StoreKey, banktypes.StoreKey, stakingtypes.StoreKey,
 		distrtypes.StoreKey, slashingtypes.StoreKey,
 		govtypes.StoreKey, paramstypes.StoreKey, upgradetypes.StoreKey,
-		evidencetypes.StoreKey, ibcexported.StoreKey, ibctransfertypes.StoreKey, capabilitytypes.StoreKey,
-		consensusparamtypes.StoreKey, feegrant.StoreKey, crisistypes.StoreKey,
+		evidencetypes.StoreKey, capabilitytypes.StoreKey, consensusparamtypes.StoreKey,
+		feegrant.StoreKey, authzkeeper.StoreKey, crisistypes.StoreKey,
+		// ibc keys
+		ibcexported.StoreKey, ibctransfertypes.StoreKey,
+		// ica keys
+		icahosttypes.StoreKey,
 		// ethermint keys
 		evmtypes.StoreKey, feemarkettypes.StoreKey,
+		// evmos keys
+		inflationtypes.StoreKey, erc20types.StoreKey, incentivestypes.StoreKey,
+		epochstypes.StoreKey, claimstypes.StoreKey, vestingtypes.StoreKey,
+		revenuetypes.StoreKey, recoverytypes.StoreKey,
 		//exoCore module keys
 		stakingAssetsManageTypes.StoreKey,
 		delegationTypes.StoreKey,
@@ -352,6 +444,20 @@ func NewExocoreApp(
 	// get authority address
 	authAddr := authtypes.NewModuleAddress(govtypes.ModuleName).String()
 
+	// set the BaseApp's parameter store
+	app.ConsensusParamsKeeper = consensusparamkeeper.NewKeeper(appCodec, keys[consensusparamtypes.StoreKey], authAddr)
+	bApp.SetParamStore(&app.ConsensusParamsKeeper)
+
+	// add capability keeper and ScopeToModule for ibc module
+	app.CapabilityKeeper = capabilitykeeper.NewKeeper(appCodec, keys[capabilitytypes.StoreKey], memKeys[capabilitytypes.MemStoreKey])
+
+	scopedIBCKeeper := app.CapabilityKeeper.ScopeToModule(ibcexported.ModuleName)
+	scopedTransferKeeper := app.CapabilityKeeper.ScopeToModule(ibctransfertypes.ModuleName)
+	scopedICAHostKeeper := app.CapabilityKeeper.ScopeToModule(icahosttypes.SubModuleName)
+
+	// Applications that wish to enforce statically created ScopedKeepers should call `Seal` after creating
+	// their scoped modules in `NewApp` with `ScopeToModule`
+	app.CapabilityKeeper.Seal()
 	// add account keepers
 	accountK := authkeeper.NewAccountKeeper(
 		appCodec, keys[authtypes.StoreKey],
@@ -385,16 +491,7 @@ func NewExocoreApp(
 	app.FeeGrantKeeper = feegrantkeeper.NewKeeper(appCodec, keys[feegrant.StoreKey], accountK)
 	app.UpgradeKeeper = *upgradekeeper.NewKeeper(skipUpgradeHeights, keys[upgradetypes.StoreKey], appCodec, homePath, app.BaseApp, authAddr)
 
-	// set the BaseApp's parameter store
-	app.ConsensusParamsKeeper = consensusparamkeeper.NewKeeper(appCodec, keys[consensusparamtypes.StoreKey], authAddr)
-	bApp.SetParamStore(&app.ConsensusParamsKeeper)
-	// Create IBC Keeper
-	app.CapabilityKeeper = capabilitykeeper.NewKeeper(appCodec, keys[capabilitytypes.StoreKey], memKeys[capabilitytypes.MemStoreKey])
-
-	scopedIBCKeeper := app.CapabilityKeeper.ScopeToModule(ibcexported.ModuleName)
-	app.IBCKeeper = ibckeeper.NewKeeper(
-		appCodec, keys[ibcexported.StoreKey], app.GetSubspace(ibcexported.ModuleName), stakingKeeper, app.UpgradeKeeper, scopedIBCKeeper,
-	)
+	app.AuthzKeeper = authzkeeper.NewKeeper(keys[authzkeeper.StoreKey], appCodec, app.MsgServiceRouter(), app.AccountKeeper)
 
 	tracer := cast.ToString(appOpts.Get(srvflags.EVMTracer))
 
@@ -414,12 +511,20 @@ func NewExocoreApp(
 
 	app.EvmKeeper = evmKeeper
 
+	// Create IBC Keeper
+	app.IBCKeeper = ibckeeper.NewKeeper(
+		appCodec, keys[ibcexported.StoreKey], app.GetSubspace(ibcexported.ModuleName), stakingKeeper, app.UpgradeKeeper, scopedIBCKeeper,
+	)
+
 	// register the proposal types
 	govRouter := govv1beta1.NewRouter()
 	govRouter.AddRoute(govtypes.RouterKey, govv1beta1.ProposalHandler).
 		AddRoute(paramproposal.RouterKey, params.NewParamChangeProposalHandler(app.ParamsKeeper)).
 		AddRoute(upgradetypes.RouterKey, upgrade.NewSoftwareUpgradeProposalHandler(&app.UpgradeKeeper)).
-		AddRoute(ibcclienttypes.RouterKey, ibcclient.NewClientProposalHandler(app.IBCKeeper.ClientKeeper))
+		AddRoute(ibcclienttypes.RouterKey, ibcclient.NewClientProposalHandler(app.IBCKeeper.ClientKeeper)).
+		AddRoute(erc20types.RouterKey, erc20.NewErc20ProposalHandler(&app.Erc20Keeper)).
+		AddRoute(incentivestypes.RouterKey, incentives.NewIncentivesProposalHandler(&app.IncentivesKeeper)).
+		AddRoute(vestingtypes.RouterKey, vesting.NewVestingProposalHandler(&app.VestingKeeper))
 
 	govConfig := govtypes.DefaultConfig()
 	/*
@@ -434,6 +539,18 @@ func NewExocoreApp(
 	// Set legacy router for backwards compatibility with gov v1beta1
 	govKeeper.SetLegacyRouter(govRouter)
 
+	// Evmos Keeper
+	app.InflationKeeper = inflationkeeper.NewKeeper(
+		keys[inflationtypes.StoreKey], appCodec, authtypes.NewModuleAddress(govtypes.ModuleName),
+		app.AccountKeeper, app.BankKeeper, app.DistrKeeper, stakingKeeper,
+		authtypes.FeeCollectorName,
+	)
+
+	app.ClaimsKeeper = claimskeeper.NewKeeper(
+		appCodec, keys[claimstypes.StoreKey], authtypes.NewModuleAddress(govtypes.ModuleName),
+		app.AccountKeeper, app.BankKeeper, stakingKeeper, app.DistrKeeper, app.IBCKeeper.ChannelKeeper,
+	)
+
 	// register the staking hooks
 	// NOTE: stakingKeeper above is passed by reference, so that it will contain these hooks
 	// NOTE: Distr, Slashing and Claim must be created before calling the Hooks method to avoid returning a Keeper without its table generated
@@ -441,10 +558,143 @@ func NewExocoreApp(
 		stakingtypes.NewMultiStakingHooks(
 			app.DistrKeeper.Hooks(),
 			app.SlashingKeeper.Hooks(),
+			app.ClaimsKeeper.Hooks(),
 		),
 	)
 
 	app.StakingKeeper = *stakingKeeper
+
+	app.VestingKeeper = vestingkeeper.NewKeeper(
+		keys[vestingtypes.StoreKey], authtypes.NewModuleAddress(govtypes.ModuleName), appCodec,
+		app.AccountKeeper, app.BankKeeper, app.DistrKeeper, app.StakingKeeper,
+	)
+
+	app.Erc20Keeper = erc20keeper.NewKeeper(
+		keys[erc20types.StoreKey], appCodec, authtypes.NewModuleAddress(govtypes.ModuleName),
+		app.AccountKeeper, app.BankKeeper, app.EvmKeeper, app.StakingKeeper, app.ClaimsKeeper,
+	)
+
+	app.IncentivesKeeper = incentiveskeeper.NewKeeper(
+		keys[incentivestypes.StoreKey], appCodec, authtypes.NewModuleAddress(govtypes.ModuleName),
+		app.AccountKeeper, app.BankKeeper, app.InflationKeeper, app.StakingKeeper, app.EvmKeeper,
+	)
+
+	app.RevenueKeeper = revenuekeeper.NewKeeper(
+		keys[revenuetypes.StoreKey], appCodec, authtypes.NewModuleAddress(govtypes.ModuleName),
+		app.BankKeeper, app.DistrKeeper, app.AccountKeeper, app.EvmKeeper,
+		authtypes.FeeCollectorName,
+	)
+
+	app.TransferKeeper = transferkeeper.NewKeeper(
+		appCodec, keys[ibctransfertypes.StoreKey], app.GetSubspace(ibctransfertypes.ModuleName),
+		app.ClaimsKeeper, // ICS4 Wrapper: claims IBC middleware
+		app.IBCKeeper.ChannelKeeper, &app.IBCKeeper.PortKeeper,
+		app.AccountKeeper, app.BankKeeper, scopedTransferKeeper,
+		app.Erc20Keeper, // Add ERC20 Keeper for ERC20 transfers
+	)
+
+	// We call this after setting the hooks to ensure that the hooks are set on the keeper
+	evmKeeper.WithPrecompiles(
+		evmkeeper.AvailablePrecompiles(
+			*stakingKeeper,
+			app.DistrKeeper,
+			app.VestingKeeper,
+			app.AuthzKeeper,
+			app.TransferKeeper,
+			app.IBCKeeper.ChannelKeeper,
+		),
+	)
+
+	epochsKeeper := epochskeeper.NewKeeper(appCodec, keys[epochstypes.StoreKey])
+	app.EpochsKeeper = *epochsKeeper.SetHooks(
+		epochskeeper.NewMultiEpochHooks(
+			// insert epoch hooks receivers here
+			app.IncentivesKeeper.Hooks(),
+			app.InflationKeeper.Hooks(),
+		),
+	)
+
+	app.GovKeeper = *govKeeper.SetHooks(
+		govtypes.NewMultiGovHooks(
+			app.ClaimsKeeper.Hooks(),
+		),
+	)
+
+	app.EvmKeeper = app.EvmKeeper.SetHooks(
+		evmkeeper.NewMultiEvmHooks(
+			app.Erc20Keeper.Hooks(),
+			app.IncentivesKeeper.Hooks(),
+			app.RevenueKeeper.Hooks(),
+			app.ClaimsKeeper.Hooks(),
+		),
+	)
+
+	app.RecoveryKeeper = recoverykeeper.NewKeeper(
+		keys[recoverytypes.StoreKey],
+		appCodec,
+		authtypes.NewModuleAddress(govtypes.ModuleName),
+		app.AccountKeeper,
+		app.BankKeeper,
+		app.IBCKeeper.ChannelKeeper,
+		app.TransferKeeper,
+		app.ClaimsKeeper,
+	)
+
+	// NOTE: app.Erc20Keeper is already initialized elsewhere
+
+	// Set the ICS4 wrappers for custom module middlewares
+	app.RecoveryKeeper.SetICS4Wrapper(app.IBCKeeper.ChannelKeeper)
+	app.ClaimsKeeper.SetICS4Wrapper(app.RecoveryKeeper)
+
+	// Override the ICS20 app module
+	transferModule := transfer.NewAppModule(app.TransferKeeper)
+
+	// Create the app.ICAHostKeeper
+	app.ICAHostKeeper = icahostkeeper.NewKeeper(
+		appCodec, app.keys[icahosttypes.StoreKey],
+		app.GetSubspace(icahosttypes.SubModuleName),
+		app.ClaimsKeeper,
+		app.IBCKeeper.ChannelKeeper,
+		&app.IBCKeeper.PortKeeper,
+		app.AccountKeeper,
+		scopedICAHostKeeper,
+		bApp.MsgServiceRouter(),
+	)
+
+	// create host IBC module
+	icaHostIBCModule := icahost.NewIBCModule(app.ICAHostKeeper)
+
+	/*
+		Create Transfer Stack
+
+		transfer stack contains (from bottom to top):
+			- ERC-20 Middleware
+		 	- Recovery Middleware
+		 	- Airdrop Claims Middleware
+			- IBC Transfer
+
+		SendPacket, since it is originating from the application to core IBC:
+		 	transferKeeper.SendPacket -> claim.SendPacket -> recovery.SendPacket -> erc20.SendPacket -> channel.SendPacket
+
+		RecvPacket, message that originates from core IBC and goes down to app, the flow is the other way
+			channel.RecvPacket -> erc20.OnRecvPacket -> recovery.OnRecvPacket -> claim.OnRecvPacket -> transfer.OnRecvPacket
+	*/
+
+	// create IBC module from top to bottom of stack
+	var transferStack porttypes.IBCModule
+
+	transferStack = transfer.NewIBCModule(app.TransferKeeper)
+	transferStack = claims.NewIBCMiddleware(*app.ClaimsKeeper, transferStack)
+	transferStack = recovery.NewIBCMiddleware(*app.RecoveryKeeper, transferStack)
+	transferStack = erc20.NewIBCMiddleware(app.Erc20Keeper, transferStack)
+
+	// Create static IBC router, add transfer route, then set and seal it
+	ibcRouter := porttypes.NewRouter()
+	ibcRouter.
+		AddRoute(icahosttypes.SubModuleName, icaHostIBCModule).
+		AddRoute(ibctransfertypes.ModuleName, transferStack)
+
+	app.IBCKeeper.SetRouter(ibcRouter)
 
 	// create evidence keeper with router
 	evidenceKeeper := evidencekeeper.NewKeeper(
@@ -485,6 +735,31 @@ func NewExocoreApp(
 		evidence.NewAppModule(app.EvidenceKeeper),
 		params.NewAppModule(app.ParamsKeeper),
 		feegrantmodule.NewAppModule(appCodec, accountK, bankK, app.FeeGrantKeeper, app.interfaceRegistry),
+		authzmodule.NewAppModule(appCodec, app.AuthzKeeper, app.AccountKeeper, app.BankKeeper, app.interfaceRegistry),
+		consensus.NewAppModule(appCodec, app.ConsensusParamsKeeper),
+
+		// ibc modules
+		ibc.NewAppModule(app.IBCKeeper),
+		ica.NewAppModule(nil, &app.ICAHostKeeper),
+		transferModule,
+		// Ethermint app modules
+		evm.NewAppModule(app.EvmKeeper, app.AccountKeeper, app.GetSubspace(evmtypes.ModuleName)),
+		feemarket.NewAppModule(app.FeeMarketKeeper, app.GetSubspace(feemarkettypes.ModuleName)),
+		// Evmos app modules
+		inflation.NewAppModule(app.InflationKeeper, app.AccountKeeper, app.StakingKeeper,
+			app.GetSubspace(inflationtypes.ModuleName)),
+		erc20.NewAppModule(app.Erc20Keeper, app.AccountKeeper,
+			app.GetSubspace(erc20types.ModuleName)),
+		incentives.NewAppModule(app.IncentivesKeeper, app.AccountKeeper,
+			app.GetSubspace(incentivestypes.ModuleName)),
+		epochs.NewAppModule(appCodec, app.EpochsKeeper),
+		claims.NewAppModule(appCodec, *app.ClaimsKeeper,
+			app.GetSubspace(claimstypes.ModuleName)),
+		vesting.NewAppModule(app.VestingKeeper, app.AccountKeeper, app.BankKeeper, app.StakingKeeper),
+		recovery.NewAppModule(*app.RecoveryKeeper,
+			app.GetSubspace(recoverytypes.ModuleName)),
+		revenue.NewAppModule(app.RevenueKeeper, app.AccountKeeper,
+			app.GetSubspace(revenuetypes.ModuleName)),
 		// exoCore app modules
 		restaking_assets_manage.NewAppModule(appCodec, app.StakingAssetsManageKeeper),
 		deposit.NewAppModule(appCodec, app.DepositKeeper),
@@ -500,6 +775,9 @@ func NewExocoreApp(
 	app.mm.SetOrderBeginBlockers(
 		upgradetypes.ModuleName,
 		capabilitytypes.ModuleName,
+		// Note: epochs' begin should be "real" start of epochs, we keep epochs beginblock at the beginning
+		epochstypes.ModuleName,
+		feemarkettypes.ModuleName,
 		evmtypes.ModuleName,
 		distrtypes.ModuleName,
 		slashingtypes.ModuleName,
@@ -517,6 +795,13 @@ func NewExocoreApp(
 		authz.ModuleName,
 		feegrant.ModuleName,
 		paramstypes.ModuleName,
+		vestingtypes.ModuleName,
+		inflationtypes.ModuleName,
+		erc20types.ModuleName,
+		claimstypes.ModuleName,
+		incentivestypes.ModuleName,
+		recoverytypes.ModuleName,
+		revenuetypes.ModuleName,
 		consensusparamtypes.ModuleName,
 		//ExoCore modules
 		stakingAssetsManageTypes.ModuleName,
@@ -530,6 +815,10 @@ func NewExocoreApp(
 		govtypes.ModuleName,
 		stakingtypes.ModuleName,
 		evmtypes.ModuleName,
+		feemarkettypes.ModuleName,
+		// Note: epochs' endblock should be "real" end of epochs, we keep epochs endblock at the end
+		epochstypes.ModuleName,
+		claimstypes.ModuleName,
 		// no-op modules
 		ibcexported.ModuleName,
 		ibctransfertypes.ModuleName,
@@ -546,6 +835,12 @@ func NewExocoreApp(
 		paramstypes.ModuleName,
 		upgradetypes.ModuleName,
 		// Evmos modules
+		vestingtypes.ModuleName,
+		inflationtypes.ModuleName,
+		erc20types.ModuleName,
+		incentivestypes.ModuleName,
+		recoverytypes.ModuleName,
+		revenuetypes.ModuleName,
 		consensusparamtypes.ModuleName,
 		//ExoCore modules
 		stakingAssetsManageTypes.ModuleName,
@@ -565,6 +860,7 @@ func NewExocoreApp(
 		banktypes.ModuleName,
 		distrtypes.ModuleName,
 		// NOTE: staking requires the claiming hook
+		claimstypes.ModuleName,
 		stakingtypes.ModuleName,
 		slashingtypes.ModuleName,
 		govtypes.ModuleName,
@@ -574,6 +870,7 @@ func NewExocoreApp(
 		evmtypes.ModuleName,
 		// NOTE: feemarket module needs to be initialized before genutil module:
 		// gentx transactions use MinGasPriceDecorator.AnteHandle
+		feemarkettypes.ModuleName,
 		genutiltypes.ModuleName,
 		evidencetypes.ModuleName,
 		ibctransfertypes.ModuleName,
@@ -587,6 +884,13 @@ func NewExocoreApp(
 		depositTypes.ModuleName,
 		delegationTypes.ModuleName,
 		// Evmos modules
+		vestingtypes.ModuleName,
+		inflationtypes.ModuleName,
+		erc20types.ModuleName,
+		incentivestypes.ModuleName,
+		epochstypes.ModuleName,
+		recoverytypes.ModuleName,
+		revenuetypes.ModuleName,
 		// NOTE: crisis module must go at the end to check for invariants on each module
 		crisistypes.ModuleName,
 		consensusparamtypes.ModuleName,
@@ -596,6 +900,28 @@ func NewExocoreApp(
 	app.configurator = module.NewConfigurator(app.appCodec, app.MsgServiceRouter(), app.GRPCQueryRouter())
 	app.mm.RegisterServices(app.configurator)
 
+	// add test gRPC service for testing gRPC queries in isolation
+	// testdata.RegisterTestServiceServer(app.GRPCQueryRouter(), testdata.TestServiceImpl{})
+
+	// create the simulation manager and define the order of the modules for deterministic simulations
+	//
+	// NOTE: this is not required apps that don't use the simulator for fuzz testing
+	// transactions
+	overrideModules := map[string]module.AppModuleSimulation{
+		authtypes.ModuleName: auth.NewAppModule(app.appCodec, app.AccountKeeper, authsims.RandomGenesisAccounts, app.GetSubspace(authtypes.ModuleName)),
+	}
+	app.sm = module.NewSimulationManagerFromAppModules(app.mm.Modules, overrideModules)
+
+	autocliv1.RegisterQueryServer(app.GRPCQueryRouter(), runtimeservices.NewAutoCLIQueryService(app.mm.Modules))
+
+	reflectionSvc, err := runtimeservices.NewReflectionService()
+	if err != nil {
+		panic(err)
+	}
+	reflectionv1.RegisterReflectionServiceServer(app.GRPCQueryRouter(), reflectionSvc)
+
+	app.sm.RegisterStoreDecoders()
+
 	// initialize stores
 	app.MountKVStores(keys)
 	app.MountTransientStores(tkeys)
@@ -604,12 +930,12 @@ func NewExocoreApp(
 	// initialize BaseApp
 	app.SetInitChainer(app.InitChainer)
 	app.SetBeginBlocker(app.BeginBlocker)
-	app.SetEndBlocker(app.EndBlocker)
 
 	maxGasWanted := cast.ToUint64(appOpts.Get(srvflags.EVMMaxTxGasWanted))
 
 	app.setAnteHandler(encodingConfig.TxConfig, maxGasWanted)
 	app.setPostHandler()
+	app.SetEndBlocker(app.EndBlocker)
 
 	if loadLatest {
 		if err := app.LoadLatestVersion(); err != nil {
@@ -617,6 +943,17 @@ func NewExocoreApp(
 			os.Exit(1)
 		}
 	}
+
+	app.ScopedIBCKeeper = scopedIBCKeeper
+	app.ScopedTransferKeeper = scopedTransferKeeper
+
+	// Finally start the tpsCounter.
+	app.tpsCounter = newTPSCounter(logger)
+	go func() {
+		// Unfortunately golangci-lint is so pedantic
+		// so we have to ignore this error explicitly.
+		_ = app.tpsCounter.start(context.Background())
+	}()
 
 	return app
 }
