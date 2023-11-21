@@ -24,7 +24,7 @@ func DefaultGenesisState() *types2.GenesisState {
 	//todo: set eth as client chain and usdt as asset in the genesis state
 	ethClientChain := &types2.ClientChainInfo{
 		ChainName:              "ethereum",
-		ChainMetaInfo:          "ethereum block chain",
+		ChainMetaInfo:          "ethereum blockchain",
 		OriginChainId:          1,
 		FinalityNeedBlockDelay: 10,
 		LayerZeroChainId:       101,

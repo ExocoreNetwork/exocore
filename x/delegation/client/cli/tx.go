@@ -54,7 +54,8 @@ func RegisterOperator() *cobra.Command {
 				},
 			}
 			lastArgs := args[3:]
-			clientChainEarningAddress := make(map[uint64]string)
+			clientChainEarningAddress := &types2.ClientChainEarningAddrList{}
+			clientChainEarningAddress.EarningInfoList = make([]*types2.ClientChainEarningAddrInfo, 0)
 			for _, arg := range lastArgs {
 				strList := strings.Split(arg, ":")
 				if len(strList) != 2 {
@@ -64,7 +65,10 @@ func RegisterOperator() *cobra.Command {
 				if err != nil {
 					return err
 				}
-				clientChainEarningAddress[clientChainLzId] = strList[1]
+				clientChainEarningAddress.EarningInfoList = append(clientChainEarningAddress.EarningInfoList,
+					&types2.ClientChainEarningAddrInfo{
+						LzClientChainId: clientChainLzId, ClientChainEarningAddr: strList[1],
+					})
 			}
 			msg.Info.ClientChainEarningsAddr = clientChainEarningAddress
 			if err := msg.ValidateBasic(); err != nil {
