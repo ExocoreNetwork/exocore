@@ -264,6 +264,7 @@ var (
 		delegation.AppModuleBasic{},
 		withdraw.AppModuleBasic{},
 		reward.AppModuleBasic{},
+		exoslash.AppModuleBasic{},
 	)
 
 	// module account permissions
