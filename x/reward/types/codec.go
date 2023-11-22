@@ -23,7 +23,7 @@ var (
 
 const (
 	// Amino names
-	updateParamsName = "exocore/MsgUpdateParams"
+	updateParamsName = "exocore/MsgUpdateParamsForReward"
 )
 
 // NOTE: This is required for the GetSignBytes function
