@@ -3,6 +3,7 @@
 package keeper
 
 import (
+	"github.com/exocore/precompiles/delegation"
 	"math/big"
 
 	tmtypes "github.com/cometbft/cometbft/types"
@@ -161,6 +162,9 @@ func (k *Keeper) ApplyTransaction(ctx sdk.Context, tx *ethtypes.Transaction) (*t
 		// thus restricted to be used only inside `ApplyMessage`.
 		tmpCtx, commit = ctx.CacheContext()
 	}
+
+	//set txHase for delegation module
+	tmpCtx.WithValue(delegation.CtxKeyTxHash, txConfig.TxHash)
 
 	// pass true to commit the StateDB
 	res, err := k.ApplyMessageWithConfig(tmpCtx, msg, nil, true, cfg, txConfig)

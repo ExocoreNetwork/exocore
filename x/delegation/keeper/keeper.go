@@ -10,6 +10,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/store/prefix"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core"
 	ethtypes "github.com/ethereum/go-ethereum/core/types"
 	types2 "github.com/exocore/x/delegation/types"
@@ -84,6 +85,10 @@ func (k Keeper) GetOperatorInfo(ctx sdk.Context, addr string) (info *types2.Oper
 func (k Keeper) IsOperator(ctx sdk.Context, addr sdk.AccAddress) bool {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types2.KeyPrefixOperatorInfo)
 	return store.Has(addr)
+}
+
+func (k Keeper) GetExoCoreLzAppAddress(ctx sdk.Context) (common.Address, error) {
+	return k.depositKeeper.GetExoCoreLzAppAddress(ctx)
 }
 
 // IDelegation interface will be implemented by deposit keeper

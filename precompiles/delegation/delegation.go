@@ -1,13 +1,13 @@
 // Copyright Tharsis Labs Ltd.(Evmos)
 // SPDX-License-Identifier:ENCL-1.0(https://github.com/evmos/evmos/blob/main/LICENSE)
 
-package deposit
+package delegation
 
 import (
 	"bytes"
 	"embed"
 	"fmt"
-	depositKeeper "github.com/exocore/x/deposit/keeper"
+	delegationKeeper "github.com/exocore/x/delegation/keeper"
 
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	authzkeeper "github.com/cosmos/cosmos-sdk/x/authz/keeper"
@@ -27,13 +27,13 @@ var f embed.FS
 // Precompile defines the precompiled contract for deposit.
 type Precompile struct {
 	cmn.Precompile
-	depositKeeper depositKeeper.Keeper
+	delegationKeeper delegationKeeper.Keeper
 }
 
 // NewPrecompile creates a new deposit Precompile instance as a
 // PrecompiledContract interface.
 func NewPrecompile(
-	depositKeeper depositKeeper.Keeper,
+	delegationKeeper delegationKeeper.Keeper,
 	authzKeeper authzkeeper.Keeper,
 ) (*Precompile, error) {
 	abiBz, err := f.ReadFile("abi.json")
@@ -54,14 +54,14 @@ func NewPrecompile(
 			TransientKVGasConfig: storetypes.TransientGasConfig(),
 			ApprovalExpiration:   cmn.DefaultExpirationDuration, // should be configurable in the future.
 		},
-		depositKeeper: depositKeeper,
+		delegationKeeper: delegationKeeper,
 	}, nil
 }
 
-// Address defines the address of the deposit compile contract.
-// address: 0x0000000000000000000000000000000000000804
+// Address defines the address of the delegation compile contract.
+// address: 0x0000000000000000000000000000000000000805
 func (p Precompile) Address() common.Address {
-	return common.HexToAddress("0x0000000000000000000000000000000000000804")
+	return common.HexToAddress("0x0000000000000000000000000000000000000805")
 }
 
 // RequiredGas calculates the precompiled contract's base gas rate.
@@ -90,8 +90,10 @@ func (p Precompile) Run(evm *vm.EVM, contract *vm.Contract, readOnly bool) (bz [
 
 	switch method.Name {
 	// deposit transactions
-	case MethodDepositTo:
-		bz, err = p.DepositTo(ctx, evm.Origin, contract, stateDB, method, args)
+	case MethodDelegateToThroughClientChain:
+		bz, err = p.DelegateToThroughClientChain(ctx, evm.Origin, contract, stateDB, method, args)
+	case MethodUnDelegateFromThroughClientChain:
+		bz, err = p.UnDelegateFromThroughClientChain(ctx, evm.Origin, contract, stateDB, method, args)
 	}
 
 	if err != nil {
@@ -113,7 +115,8 @@ func (p Precompile) Run(evm *vm.EVM, contract *vm.Contract, readOnly bool) (bz [
 //   - DepositTo
 func (Precompile) IsTransaction(methodID string) bool {
 	switch methodID {
-	case MethodDepositTo:
+	case MethodDelegateToThroughClientChain,
+		MethodUnDelegateFromThroughClientChain:
 		return true
 	default:
 		return false

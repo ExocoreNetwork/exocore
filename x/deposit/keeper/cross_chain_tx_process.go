@@ -1,19 +1,10 @@
 package keeper
 
 import (
-	"bytes"
-	"encoding/binary"
-	"fmt"
-	"log"
-	"math/big"
-
 	errorsmod "cosmossdk.io/errors"
 	sdkmath "cosmossdk.io/math"
+	"fmt"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/core"
-	ethtypes "github.com/ethereum/go-ethereum/core/types"
-	"github.com/evmos/evmos/v14/rpc/namespaces/ethereum/eth/filters"
 	types2 "github.com/exocore/x/deposit/types"
 	"github.com/exocore/x/restaking_assets_manage/types"
 )
@@ -26,7 +17,7 @@ type DepositParams struct {
 	OpAmount        sdkmath.Int
 }
 
-func (k Keeper) getDepositParamsFromEventLog(ctx sdk.Context, log *ethtypes.Log) (*DepositParams, error) {
+/*func (k Keeper) getDepositParamsFromEventLog(ctx sdk.Context, log *ethtypes.Log) (*DepositParams, error) {
 	// check if Action is deposit
 	var action types.CrossChainOpType
 	var err error
@@ -126,7 +117,7 @@ func (k Keeper) PostTxProcessing(ctx sdk.Context, msg core.Message, receipt *eth
 		}
 	}
 	return nil
-}
+}*/
 
 func (k Keeper) Deposit(ctx sdk.Context, event *DepositParams) error {
 	//check event parameter before executing deposit operation

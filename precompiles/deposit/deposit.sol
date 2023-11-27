@@ -2,7 +2,7 @@
 pragma solidity >=0.8.17 .0;
 
 /// @dev The DEPOSIT contract's address.
-address constant DEPOSIT_PRECOMPILE_ADDRESS = 0x0000000000000000000000000000000000000801;
+address constant DEPOSIT_PRECOMPILE_ADDRESS = 0x0000000000000000000000000000000000000804;
 
 /// @dev The DEPOSIT contract's instance.
 DepositI constant DEPOSIT_CONTRACT = DepositI(
@@ -12,7 +12,7 @@ DepositI constant DEPOSIT_CONTRACT = DepositI(
 /// @author Exocore Team
 /// @title Deposit Precompile Contract
 /// @dev The interface through which solidity contracts will interact with Deposit
-/// @custom:address 0x0000000000000000000000000000000000000801
+/// @custom:address 0x0000000000000000000000000000000000000804
 interface DepositI {
 /// TRANSACTIONS
 /// @dev deposit the client chain assets to the staker, that will change the state in deposit module

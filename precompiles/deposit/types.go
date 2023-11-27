@@ -16,25 +16,25 @@ func GetDepositToParamsFromInputs(args []interface{}) (*keeper.DepositParams, er
 	depositParams := &keeper.DepositParams{}
 	clientChainLzID, ok := args[0].(uint64)
 	if !ok {
-		return nil, fmt.Errorf(ErrContractInputParaType, 0, reflect.TypeOf(args[0]), clientChainLzID)
+		return nil, fmt.Errorf(ErrContractInputParaOrType, 0, reflect.TypeOf(args[0]), clientChainLzID)
 	}
 	depositParams.ClientChainLzId = clientChainLzID
 
 	assetAddr, ok := args[1].([]byte)
 	if !ok || assetAddr == nil {
-		return nil, fmt.Errorf(ErrContractInputParaType, 1, reflect.TypeOf(args[0]), assetAddr)
+		return nil, fmt.Errorf(ErrContractInputParaOrType, 1, reflect.TypeOf(args[0]), assetAddr)
 	}
 	depositParams.AssetsAddress = assetAddr
 
 	stakerAddr, ok := args[2].([]byte)
 	if !ok || stakerAddr == nil {
-		return nil, fmt.Errorf(ErrContractInputParaType, 2, reflect.TypeOf(args[0]), stakerAddr)
+		return nil, fmt.Errorf(ErrContractInputParaOrType, 2, reflect.TypeOf(args[0]), stakerAddr)
 	}
 	depositParams.StakerAddress = stakerAddr
 
 	opAmount, ok := args[3].(*big.Int)
 	if !ok || opAmount == nil || opAmount.Cmp(big.NewInt(0)) == 0 {
-		return nil, fmt.Errorf(ErrContractInputParaType, 3, reflect.TypeOf(args[0]), opAmount)
+		return nil, fmt.Errorf(ErrContractInputParaOrType, 3, reflect.TypeOf(args[0]), opAmount)
 	}
 	depositParams.OpAmount = sdkmath.NewIntFromBigInt(opAmount)
 	return depositParams, nil

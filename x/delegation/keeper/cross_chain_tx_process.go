@@ -8,11 +8,9 @@ import (
 	"fmt"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/core"
 	ethtypes "github.com/ethereum/go-ethereum/core/types"
 	types2 "github.com/exocore/x/delegation/types"
 	"github.com/exocore/x/restaking_assets_manage/types"
-	"log"
 	"math/big"
 )
 
@@ -223,7 +221,8 @@ func (k Keeper) UndelegateFrom(ctx sdk.Context, params *DelegationOrUndelegation
 	}
 	return nil
 }
-func (k Keeper) PostTxProcessing(ctx sdk.Context, msg core.Message, receipt *ethtypes.Receipt) error {
+
+/*func (k Keeper) PostTxProcessing(ctx sdk.Context, msg core.Message, receipt *ethtypes.Receipt) error {
 	needLogs, err := k.depositKeeper.FilterCrossChainEventLogs(ctx, msg, receipt)
 	if err != nil {
 		return err
@@ -254,3 +253,4 @@ func (k Keeper) PostTxProcessing(ctx sdk.Context, msg core.Message, receipt *eth
 	}
 	return nil
 }
+*/

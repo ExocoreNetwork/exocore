@@ -41,3 +41,11 @@ func (k Keeper) GetParams(ctx sdk.Context) (*types2.Params, error) {
 	k.cdc.MustUnmarshal(value, ret)
 	return ret, nil
 }
+
+func (k Keeper) GetExoCoreLzAppAddress(ctx sdk.Context) (common.Address, error) {
+	depositModuleParam, err := k.GetParams(ctx)
+	if err != nil {
+		return common.Address{}, err
+	}
+	return common.HexToAddress(depositModuleParam.ExoCoreLzAppAddress), nil
+}
