@@ -480,7 +480,7 @@ localnet-build:
 #localnet-start: localnet-stop localnet-build
 localnet-start: localnet-build localnet-stop
 	docker run --rm -v $(CURDIR)/build/.testnets:/data exocore/node \
-			  testnet init-files --v 4 -o /data --starting-ip-address 192.168.10.2 --keyring-backend=test
+			  testnet init-files --chain-id evmos_9000-8808 --v 4 -o /data --starting-ip-address 192.168.10.2 --keyring-backend=test
 	docker-compose up -d
 
 # Stop testnet
