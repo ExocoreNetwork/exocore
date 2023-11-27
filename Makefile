@@ -474,11 +474,13 @@ proto-download-deps:
 
 # Build image for a local testnet
 localnet-build:
-	@$(MAKE) -C networks/local
+	$(MAKE) -C networks
 
 # Start a 4-node testnet locally
-localnet-start: localnet-stop localnet-build
-	@if ! [ -f build/node0/$(EVMOS_BINARY)/config/genesis.json ]; then docker run --rm -v $(CURDIR)/build:/evmos:Z evmos/node "./evmosd testnet init-files --v 4 -o /evmos --keyring-backend=test --starting-ip-address 192.167.10.2"; fi
+#localnet-start: localnet-stop localnet-build
+localnet-start: localnet-build localnet-stop
+	docker run --rm -v $(CURDIR)/build/.testnets:/data exocore/node \
+			  testnet init-files --v 4 -o /data --starting-ip-address 192.168.10.2 --keyring-backend=test
 	docker-compose up -d
 
 # Stop testnet
