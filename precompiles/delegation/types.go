@@ -16,11 +16,11 @@ func GetDelegationParamsFromInputs(args []interface{}) (*keeper2.DelegationOrUnD
 		return nil, fmt.Errorf(cmn.ErrInvalidNumberOfArgs, 6, len(args))
 	}
 	delegationParams := &keeper2.DelegationOrUnDelegationParams{}
-	clientChainLzID, ok := args[0].(uint64)
+	clientChainLzID, ok := args[0].(uint16)
 	if !ok {
 		return nil, fmt.Errorf(ErrContractInputParaOrType, 0, reflect.TypeOf(args[0]), clientChainLzID)
 	}
-	delegationParams.ClientChainLzId = clientChainLzID
+	delegationParams.ClientChainLzId = uint64(clientChainLzID)
 
 	txLzNonce, ok := args[1].(uint64)
 	if !ok {

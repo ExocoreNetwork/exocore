@@ -5,7 +5,7 @@ pragma solidity >=0.8.17 .0;
 address constant DEPOSIT_PRECOMPILE_ADDRESS = 0x0000000000000000000000000000000000000804;
 
 /// @dev The DEPOSIT contract's instance.
-DepositI constant DEPOSIT_CONTRACT = DepositI(
+IDeposit constant DEPOSIT_CONTRACT = IDeposit(
     DEPOSIT_PRECOMPILE_ADDRESS
 );
 
@@ -13,7 +13,7 @@ DepositI constant DEPOSIT_CONTRACT = DepositI(
 /// @title Deposit Precompile Contract
 /// @dev The interface through which solidity contracts will interact with Deposit
 /// @custom:address 0x0000000000000000000000000000000000000804
-interface DepositI {
+interface IDeposit {
 /// TRANSACTIONS
 /// @dev deposit the client chain assets to the staker, that will change the state in deposit module
 /// Note that this address cannot be a module account.
@@ -21,8 +21,8 @@ interface DepositI {
 /// @param AssetsAddress The client chain asset Address
 /// @param StakerAddress The staker address
 /// @param OpAmount The deposit amount
-    function DepositTo(
-        uint64 ClientChainLzId,
+    function depositTo(
+        uint16 ClientChainLzId,
         bytes memory AssetsAddress,
         bytes memory StakerAddress,
         uint256 OpAmount

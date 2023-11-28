@@ -14,11 +14,11 @@ func GetDepositToParamsFromInputs(args []interface{}) (*keeper.DepositParams, er
 		return nil, fmt.Errorf(cmn.ErrInvalidNumberOfArgs, 4, len(args))
 	}
 	depositParams := &keeper.DepositParams{}
-	clientChainLzID, ok := args[0].(uint64)
+	clientChainLzID, ok := args[0].(uint16)
 	if !ok {
 		return nil, fmt.Errorf(ErrContractInputParaOrType, 0, reflect.TypeOf(args[0]), clientChainLzID)
 	}
-	depositParams.ClientChainLzId = clientChainLzID
+	depositParams.ClientChainLzId = uint64(clientChainLzID)
 
 	assetAddr, ok := args[1].([]byte)
 	if !ok || assetAddr == nil {

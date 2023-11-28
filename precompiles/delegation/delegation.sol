@@ -5,7 +5,7 @@ pragma solidity >=0.8.17 .0;
 address constant DELEGATION_PRECOMPILE_ADDRESS = 0x0000000000000000000000000000000000000805;
 
 /// @dev The delegation contract's instance.
-DelegationI constant DELEGATION_CONTRACT = DelegationI(
+IDelegation constant DELEGATION_CONTRACT = IDelegation(
     DELEGATION_PRECOMPILE_ADDRESS
 );
 
@@ -13,7 +13,7 @@ DelegationI constant DELEGATION_CONTRACT = DelegationI(
 /// @title delegation Precompile Contract
 /// @dev The interface through which solidity contracts will interact with delegation
 /// @custom:address 0x0000000000000000000000000000000000000805
-interface DelegationI {
+interface IDelegation {
 /// TRANSACTIONS
 /// @dev delegate the client chain assets to the operator through client chain, that will change the states in delegation and restaking_assets_manage module
 /// Note that this address cannot be a module account.
@@ -23,8 +23,8 @@ interface DelegationI {
 /// @param StakerAddress The staker address
 /// @param OperatorAddr  The operator address that wants to be delegated to
 /// @param OpAmount The delegation amount
-    function DelegateToThroughClientChain(
-        uint64 ClientChainLzId,
+    function delegateToThroughClientChain(
+        uint16 ClientChainLzId,
         uint64 LzNonce,
         bytes memory AssetsAddress,
         bytes memory StakerAddress,
@@ -41,8 +41,8 @@ interface DelegationI {
 /// @param StakerAddress The staker address
 /// @param OperatorAddr  The operator address that wants to unDelegate from
 /// @param OpAmount The unDelegation amount
-    function UnDelegateFromThroughClientChain(
-        uint64 ClientChainLzId,
+    function unDelegateFromThroughClientChain(
+        uint16 ClientChainLzId,
         uint64 LzNonce,
         bytes memory AssetsAddress,
         bytes memory StakerAddress,
