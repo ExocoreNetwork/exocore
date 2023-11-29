@@ -18,8 +18,7 @@ func (k Keeper) UpdateStakerDelegationTotalAmount(ctx sdk.Context, stakerId stri
 	store := prefix.NewStore(c.KVStore(k.storeKey), types2.KeyPrefixRestakerDelegationInfo)
 	amount := types2.ValueField{Amount: sdkmath.NewInt(0)}
 	key := types.GetAssetStateKey(stakerId, assetId)
-	isExit := store.Has(key)
-	if isExit {
+	if store.Has(key) {
 		value := store.Get(key)
 		k.cdc.MustUnmarshal(value, &amount)
 	}
@@ -58,7 +57,7 @@ func (k Keeper) UpdateDelegationState(ctx sdk.Context, stakerId string, assetId 
 		if amounts == nil {
 			continue
 		}
-		if amounts.CanUnDelegationAmount.IsNil() && amounts.WaitUnDelegationAmount.IsNil() {
+		if amounts.CanUndelegationAmount.IsNil() && amounts.WaitUndelegationAmount.IsNil() {
 			continue
 		}
 		//check operator address validation
@@ -67,32 +66,32 @@ func (k Keeper) UpdateDelegationState(ctx sdk.Context, stakerId string, assetId 
 			return types2.OperatorAddrIsNotAccAddr
 		}
 		singleStateKey := types2.GetDelegationStateKey(stakerId, assetId, opAddr)
-		isExit := store.Has(singleStateKey)
 		delegationState := types2.DelegationAmounts{
-			CanUnDelegationAmount:  sdkmath.NewInt(0),
-			WaitUnDelegationAmount: sdkmath.NewInt(0),
+			CanUndelegationAmount:  sdkmath.NewInt(0),
+			WaitUndelegationAmount: sdkmath.NewInt(0),
 		}
-		if isExit {
+
+		if store.Has(singleStateKey) {
 			value := store.Get(singleStateKey)
 			k.cdc.MustUnmarshal(value, &delegationState)
 		}
 
-		if !amounts.CanUnDelegationAmount.IsNil() && !amounts.CanUnDelegationAmount.IsZero() {
-			if amounts.CanUnDelegationAmount.IsNegative() {
-				if delegationState.CanUnDelegationAmount.LT(amounts.CanUnDelegationAmount.Neg()) {
-					return errorsmod.Wrap(types2.ErrSubAmountIsGreaterThanOriginal, fmt.Sprintf("UpdateDelegationState CanUnDelegationAmount the OpAmount is:%s,the originalAmount is:%s", amounts.CanUnDelegationAmount, delegationState.CanUnDelegationAmount))
+		if !amounts.CanUndelegationAmount.IsNil() && !amounts.CanUndelegationAmount.IsZero() {
+			if amounts.CanUndelegationAmount.IsNegative() {
+				if delegationState.CanUndelegationAmount.LT(amounts.CanUndelegationAmount.Neg()) {
+					return errorsmod.Wrap(types2.ErrSubAmountIsGreaterThanOriginal, fmt.Sprintf("UpdateDelegationState CanUndelegationAmount the OpAmount is:%s,the originalAmount is:%s", amounts.CanUndelegationAmount, delegationState.CanUndelegationAmount))
 				}
 			}
-			delegationState.CanUnDelegationAmount = delegationState.CanUnDelegationAmount.Add(amounts.CanUnDelegationAmount)
+			delegationState.CanUndelegationAmount = delegationState.CanUndelegationAmount.Add(amounts.CanUndelegationAmount)
 		}
 
-		if !amounts.WaitUnDelegationAmount.IsNil() && !amounts.WaitUnDelegationAmount.IsZero() {
-			if amounts.WaitUnDelegationAmount.IsNegative() {
-				if delegationState.WaitUnDelegationAmount.LT(amounts.WaitUnDelegationAmount.Neg()) {
-					return errorsmod.Wrap(types2.ErrSubAmountIsGreaterThanOriginal, fmt.Sprintf("UpdateDelegationState WaitUnDelegationAmount the OpAmount is:%s,the originalAmount is:%s", amounts.WaitUnDelegationAmount, delegationState.WaitUnDelegationAmount))
+		if !amounts.WaitUndelegationAmount.IsNil() && !amounts.WaitUndelegationAmount.IsZero() {
+			if amounts.WaitUndelegationAmount.IsNegative() {
+				if delegationState.WaitUndelegationAmount.LT(amounts.WaitUndelegationAmount.Neg()) {
+					return errorsmod.Wrap(types2.ErrSubAmountIsGreaterThanOriginal, fmt.Sprintf("UpdateDelegationState WaitUndelegationAmount the OpAmount is:%s,the originalAmount is:%s", amounts.WaitUndelegationAmount, delegationState.WaitUndelegationAmount))
 				}
 			}
-			delegationState.WaitUnDelegationAmount = delegationState.WaitUnDelegationAmount.Add(amounts.WaitUnDelegationAmount)
+			delegationState.WaitUndelegationAmount = delegationState.WaitUndelegationAmount.Add(amounts.WaitUndelegationAmount)
 		}
 
 		//save single operator delegation state

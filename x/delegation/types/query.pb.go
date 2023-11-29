@@ -85,8 +85,8 @@ func (m *DelegationInfoReq) GetAssetId() string {
 }
 
 type DelegationAmounts struct {
-	CanUnDelegationAmount  github_com_cosmos_cosmos_sdk_types.Int `protobuf:"bytes,1,opt,name=CanUnDelegationAmount,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Int" json:"CanUnDelegationAmount"`
-	WaitUnDelegationAmount github_com_cosmos_cosmos_sdk_types.Int `protobuf:"bytes,2,opt,name=WaitUnDelegationAmount,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Int" json:"WaitUnDelegationAmount"`
+	CanUndelegationAmount  github_com_cosmos_cosmos_sdk_types.Int `protobuf:"bytes,1,opt,name=CanUndelegationAmount,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Int" json:"CanUndelegationAmount"`
+	WaitUndelegationAmount github_com_cosmos_cosmos_sdk_types.Int `protobuf:"bytes,2,opt,name=WaitUndelegationAmount,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Int" json:"WaitUndelegationAmount"`
 }
 
 func (m *DelegationAmounts) Reset()         { *m = DelegationAmounts{} }
@@ -537,9 +537,9 @@ func (m *DelegationAmounts) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	var l int
 	_ = l
 	{
-		size := m.WaitUnDelegationAmount.Size()
+		size := m.WaitUndelegationAmount.Size()
 		i -= size
-		if _, err := m.WaitUnDelegationAmount.MarshalTo(dAtA[i:]); err != nil {
+		if _, err := m.WaitUndelegationAmount.MarshalTo(dAtA[i:]); err != nil {
 			return 0, err
 		}
 		i = encodeVarintQuery(dAtA, i, uint64(size))
@@ -547,9 +547,9 @@ func (m *DelegationAmounts) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i--
 	dAtA[i] = 0x12
 	{
-		size := m.CanUnDelegationAmount.Size()
+		size := m.CanUndelegationAmount.Size()
 		i -= size
-		if _, err := m.CanUnDelegationAmount.MarshalTo(dAtA[i:]); err != nil {
+		if _, err := m.CanUndelegationAmount.MarshalTo(dAtA[i:]); err != nil {
 			return 0, err
 		}
 		i = encodeVarintQuery(dAtA, i, uint64(size))
@@ -726,9 +726,9 @@ func (m *DelegationAmounts) Size() (n int) {
 	}
 	var l int
 	_ = l
-	l = m.CanUnDelegationAmount.Size()
+	l = m.CanUndelegationAmount.Size()
 	n += 1 + l + sovQuery(uint64(l))
-	l = m.WaitUnDelegationAmount.Size()
+	l = m.WaitUndelegationAmount.Size()
 	n += 1 + l + sovQuery(uint64(l))
 	return n
 }
@@ -942,7 +942,7 @@ func (m *DelegationAmounts) Unmarshal(dAtA []byte) error {
 		switch fieldNum {
 		case 1:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field CanUnDelegationAmount", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field CanUndelegationAmount", wireType)
 			}
 			var stringLen uint64
 			for shift := uint(0); ; shift += 7 {
@@ -970,13 +970,13 @@ func (m *DelegationAmounts) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			if err := m.CanUnDelegationAmount.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+			if err := m.CanUndelegationAmount.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
 		case 2:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field WaitUnDelegationAmount", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field WaitUndelegationAmount", wireType)
 			}
 			var stringLen uint64
 			for shift := uint(0); ; shift += 7 {
@@ -1004,7 +1004,7 @@ func (m *DelegationAmounts) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			if err := m.WaitUnDelegationAmount.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+			if err := m.WaitUndelegationAmount.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex

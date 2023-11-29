@@ -49,7 +49,7 @@ func (k Keeper) getDepositParamsFromEventLog(ctx sdk.Context, log *ethtypes.Log)
 		return nil, errorsmod.Wrap(err, "error occurred when binary read ClientChainLzId from topic")
 	}
 
-	clientChainInfo, err := k.retakingStateKeeper.GetClientChainInfoByIndex(ctx, clientChainLzId)
+	clientChainInfo, err := k.restakingStateKeeper.GetClientChainInfoByIndex(ctx, clientChainLzId)
 	if err != nil {
 		return nil, errorsmod.Wrap(err, "error occurred when get client chain info")
 	}
@@ -135,18 +135,18 @@ func (k Keeper) Deposit(ctx sdk.Context, event *DepositParams) error {
 	}
 	stakeId, assetId := types.GetStakeIDAndAssetId(event.ClientChainLzId, event.StakerAddress, event.AssetsAddress)
 	//check if asset exist
-	if !k.retakingStateKeeper.StakingAssetIsExist(ctx, assetId) {
+	if !k.restakingStateKeeper.IsStakingAsset(ctx, assetId) {
 		return errorsmod.Wrap(types2.ErrDepositAssetNotExist, fmt.Sprintf("the assetId is:%s", assetId))
 	}
 	changeAmount := types.StakerSingleAssetOrChangeInfo{
 		TotalDepositAmountOrWantChangeValue: event.OpAmount,
 		CanWithdrawAmountOrWantChangeValue:  event.OpAmount,
 	}
-	err := k.retakingStateKeeper.UpdateStakerAssetState(ctx, stakeId, assetId, changeAmount)
+	err := k.restakingStateKeeper.UpdateStakerAssetState(ctx, stakeId, assetId, changeAmount)
 	if err != nil {
 		return err
 	}
-	err = k.retakingStateKeeper.UpdateStakingAssetTotalAmount(ctx, assetId, event.OpAmount)
+	err = k.restakingStateKeeper.UpdateStakingAssetTotalAmount(ctx, assetId, event.OpAmount)
 	if err != nil {
 		return err
 	}

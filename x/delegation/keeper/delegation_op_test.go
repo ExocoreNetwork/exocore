@@ -27,9 +27,9 @@ func (suite *KeeperTestSuite) TestDelegateTo() {
 
 	opAccAddr, err := sdk.AccAddressFromBech32("evmos1fl48vsnmsdzcv85q5d2q4z5ajdha8yu3h6cprl")
 	suite.NoError(err)
-	delegationEvent := &keeper2.DelegationOrUnDelegationParams{
+	delegationEvent := &keeper2.DelegationOrUndelegationParams{
 		ClientChainLzId: clientChainLzId,
-		Action:          types.DelegationTo,
+		Action:          types.DelegateTo,
 		AssetsAddress:   usdtAddress[:],
 		OperatorAddress: opAccAddr,
 		StakerAddress:   suite.address[:],
@@ -73,8 +73,8 @@ func (suite *KeeperTestSuite) TestDelegateTo() {
 	specifiedDelegationAmount, err := suite.app.DelegationKeeper.GetSingleDelegationInfo(suite.ctx, stakerId, assetId, opAccAddr.String())
 	suite.NoError(err)
 	suite.Equal(types2.DelegationAmounts{
-		CanUnDelegationAmount:  delegationEvent.OpAmount,
-		WaitUnDelegationAmount: sdkmath.NewInt(0),
+		CanUndelegationAmount:  delegationEvent.OpAmount,
+		WaitUndelegationAmount: sdkmath.NewInt(0),
 	}, *specifiedDelegationAmount)
 
 	totalDelegationAmount, err := suite.app.DelegationKeeper.GetStakerDelegationTotalAmount(suite.ctx, stakerId, assetId)
@@ -98,9 +98,9 @@ func (suite *KeeperTestSuite) TestUnDelegateFrom() {
 
 	opAccAddr, err := sdk.AccAddressFromBech32("evmos1fl48vsnmsdzcv85q5d2q4z5ajdha8yu3h6cprl")
 	suite.NoError(err)
-	delegationEvent := &keeper2.DelegationOrUnDelegationParams{
+	delegationEvent := &keeper2.DelegationOrUndelegationParams{
 		ClientChainLzId: clientChainLzId,
-		Action:          types.DelegationTo,
+		Action:          types.DelegateTo,
 		AssetsAddress:   usdtAddress[:],
 		OperatorAddress: opAccAddr,
 		StakerAddress:   suite.address[:],
@@ -122,7 +122,7 @@ func (suite *KeeperTestSuite) TestUnDelegateFrom() {
 
 	//test unDelegation
 	delegationEvent.LzNonce = 1
-	err = suite.app.DelegationKeeper.UnDelegateFrom(suite.ctx, delegationEvent)
+	err = suite.app.DelegationKeeper.UndelegateFrom(suite.ctx, delegationEvent)
 	suite.NoError(err)
 
 	//check state
@@ -146,8 +146,8 @@ func (suite *KeeperTestSuite) TestUnDelegateFrom() {
 	specifiedDelegationAmount, err := suite.app.DelegationKeeper.GetSingleDelegationInfo(suite.ctx, stakerId, assetId, opAccAddr.String())
 	suite.NoError(err)
 	suite.Equal(types2.DelegationAmounts{
-		CanUnDelegationAmount:  sdkmath.NewInt(0),
-		WaitUnDelegationAmount: delegationEvent.OpAmount,
+		CanUndelegationAmount:  sdkmath.NewInt(0),
+		WaitUndelegationAmount: delegationEvent.OpAmount,
 	}, *specifiedDelegationAmount)
 
 	totalDelegationAmount, err := suite.app.DelegationKeeper.GetStakerDelegationTotalAmount(suite.ctx, stakerId, assetId)
@@ -194,9 +194,9 @@ func (suite *KeeperTestSuite) TestCompleteUnDelegation() {
 
 	opAccAddr, err := sdk.AccAddressFromBech32("evmos1fl48vsnmsdzcv85q5d2q4z5ajdha8yu3h6cprl")
 	suite.NoError(err)
-	delegationEvent := &keeper2.DelegationOrUnDelegationParams{
+	delegationEvent := &keeper2.DelegationOrUndelegationParams{
 		ClientChainLzId: clientChainLzId,
-		Action:          types.DelegationTo,
+		Action:          types.DelegateTo,
 		AssetsAddress:   usdtAddress[:],
 		OperatorAddress: opAccAddr,
 		StakerAddress:   suite.address[:],
@@ -217,7 +217,7 @@ func (suite *KeeperTestSuite) TestCompleteUnDelegation() {
 	suite.NoError(err)
 
 	delegationEvent.LzNonce = 1
-	err = suite.app.DelegationKeeper.UnDelegateFrom(suite.ctx, delegationEvent)
+	err = suite.app.DelegationKeeper.UndelegateFrom(suite.ctx, delegationEvent)
 	suite.NoError(err)
 	unDelegateHeight := suite.ctx.BlockHeight()
 	suite.ctx.Logger().Info("the ctx block height is:", "height", unDelegateHeight)
@@ -248,8 +248,8 @@ func (suite *KeeperTestSuite) TestCompleteUnDelegation() {
 	specifiedDelegationAmount, err := suite.app.DelegationKeeper.GetSingleDelegationInfo(suite.ctx, stakerId, assetId, opAccAddr.String())
 	suite.NoError(err)
 	suite.Equal(types2.DelegationAmounts{
-		CanUnDelegationAmount:  sdkmath.NewInt(0),
-		WaitUnDelegationAmount: sdkmath.NewInt(0),
+		CanUndelegationAmount:  sdkmath.NewInt(0),
+		WaitUndelegationAmount: sdkmath.NewInt(0),
 	}, *specifiedDelegationAmount)
 
 	totalDelegationAmount, err := suite.app.DelegationKeeper.GetStakerDelegationTotalAmount(suite.ctx, stakerId, assetId)

@@ -57,8 +57,8 @@ func RegisterOperator() *cobra.Command {
 			clientChainEarningAddress := make(map[uint64]string)
 			for _, arg := range lastArgs {
 				strList := strings.Split(arg, ":")
-				if len(strList) != 2{
-					return errorsmod.Wrap(types2.ErrCliCmdInputArg,fmt.Sprintf("the error input arg is:%s",arg))
+				if len(strList) != 2 {
+					return errorsmod.Wrap(types2.ErrCliCmdInputArg, fmt.Sprintf("the error input arg is:%s", arg))
 				}
 				clientChainLzId, err := strconv.ParseUint(strList[0], 10, 64)
 				if err != nil {

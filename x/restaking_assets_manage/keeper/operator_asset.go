@@ -46,17 +46,19 @@ func (k Keeper) UpdateOperatorAssetState(ctx sdk.Context, operatorAddr sdk.Addre
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types2.KeyPrefixOperatorAssetInfos)
 
 	key := types2.GetAssetStateKey(operatorAddr.String(), assetId)
-	isExit := store.Has(key)
 	assetState := types2.OperatorSingleAssetOrChangeInfo{
 		TotalAmountOrWantChangeValue:            math.NewInt(0),
 		OperatorOwnAmountOrWantChangeValue:      math.NewInt(0),
 		WaitUnDelegationAmountOrWantChangeValue: math.NewInt(0),
 	}
-	if isExit {
+	if store.Has(key) {
 		value := store.Get(key)
 		k.cdc.MustUnmarshal(value, &assetState)
 	}
 
+	// ASK: All these following operations are repetitive logic. Should refactor them into a helper function like:
+	// update(valueToUpdate Int, newValue Int)
+	// Same for such logic across all the codebase.
 	if !changeAmount.TotalAmountOrWantChangeValue.IsNil() {
 		if changeAmount.TotalAmountOrWantChangeValue.IsNegative() {
 			if assetState.TotalAmountOrWantChangeValue.LT(changeAmount.TotalAmountOrWantChangeValue.Abs()) {
@@ -82,7 +84,7 @@ func (k Keeper) UpdateOperatorAssetState(ctx sdk.Context, operatorAddr sdk.Addre
 	if !changeAmount.WaitUnDelegationAmountOrWantChangeValue.IsNil() {
 		if changeAmount.WaitUnDelegationAmountOrWantChangeValue.IsNegative() {
 			if assetState.WaitUnDelegationAmountOrWantChangeValue.LT(changeAmount.WaitUnDelegationAmountOrWantChangeValue.Abs()) {
-				return errorsmod.Wrap(types2.ErrSubAmountIsMoreThanOrigin, fmt.Sprintf("WaitUnDelegationAmount:%s,changeValue:%s", assetState.WaitUnDelegationAmountOrWantChangeValue, changeAmount.WaitUnDelegationAmountOrWantChangeValue))
+				return errorsmod.Wrap(types2.ErrSubAmountIsMoreThanOrigin, fmt.Sprintf("WaitUndelegationAmount:%s,changeValue:%s", assetState.WaitUnDelegationAmountOrWantChangeValue, changeAmount.WaitUnDelegationAmountOrWantChangeValue))
 			}
 		}
 		if !changeAmount.WaitUnDelegationAmountOrWantChangeValue.IsZero() {

@@ -35,8 +35,8 @@ func (k Keeper) SetOperatorAssetOptedInMiddleWare(operatorAddr sdk.Address, setI
 	panic("implement me")
 }
 
-// IReStakingAssetsManage interface will be implemented by restaking_assets_manage keeper
-type IReStakingAssetsManage interface {
+// IRestakingAssetsManage interface will be implemented by restaking_assets_manage keeper
+type IRestakingAssetsManage interface {
 	SetClientChainInfo(ctx sdk.Context, info *types2.ClientChainInfo) (err error)
 	GetClientChainInfoByIndex(ctx sdk.Context, index uint64) (info *types2.ClientChainInfo, err error)
 	GetAllClientChainInfo(ctx sdk.Context) (infos map[uint64]*types2.ClientChainInfo, err error)
