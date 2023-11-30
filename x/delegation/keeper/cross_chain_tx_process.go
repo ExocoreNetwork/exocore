@@ -133,7 +133,7 @@ func (k Keeper) DelegateTo(ctx sdk.Context, params *DelegationOrUndelegationPara
 
 	stakerId, assetId := types.GetStakeIDAndAssetId(params.ClientChainLzId, params.StakerAddress, params.AssetsAddress)
 	err := k.restakingStateKeeper.UpdateStakerAssetState(ctx, stakerId, assetId, types.StakerSingleAssetOrChangeInfo{
-		CanWithdrawAmountOrWantChangeValue: params.OpAmount.Neg(), // QUESTION: why is OpAmount negated here?
+		CanWithdrawAmountOrWantChangeValue: params.OpAmount.Neg(),
 	})
 	if err != nil {
 		return err

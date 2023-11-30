@@ -56,7 +56,7 @@ func (k Keeper) UpdateOperatorAssetState(ctx sdk.Context, operatorAddr sdk.Addre
 		k.cdc.MustUnmarshal(value, &assetState)
 	}
 
-	// ASK: All these following operations are repetitive logic. Should refactor them into a helper function like:
+	// TODO(Chuang): All these following operations are repetitive logic. Should refactor them into a helper function like:
 	// update(valueToUpdate Int, newValue Int)
 	// Same for such logic across all the codebase.
 	if !changeAmount.TotalAmountOrWantChangeValue.IsNil() {
