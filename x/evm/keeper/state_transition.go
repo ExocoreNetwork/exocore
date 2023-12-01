@@ -163,9 +163,6 @@ func (k *Keeper) ApplyTransaction(ctx sdk.Context, tx *ethtypes.Transaction) (*t
 		tmpCtx, commit = ctx.CacheContext()
 	}
 
-	//set txHase for delegation module
-	tmpCtx.WithValue(delegation.CtxKeyTxHash, txConfig.TxHash)
-
 	// pass true to commit the StateDB
 	res, err := k.ApplyMessageWithConfig(tmpCtx, msg, nil, true, cfg, txConfig)
 	if err != nil {
@@ -318,6 +315,9 @@ func (k *Keeper) ApplyMessageWithConfig(ctx sdk.Context,
 	} else if !cfg.Params.EnableCall && msg.To() != nil {
 		return nil, errorsmod.Wrap(types.ErrCallDisabled, "failed to call contract")
 	}
+
+	//set txHash for delegation module
+	ctx = ctx.WithValue(delegation.CtxKeyTxHash, txConfig.TxHash)
 
 	stateDB := statedb.New(ctx, k, txConfig)
 	evm := k.NewEVM(ctx, msg, cfg, tracer, stateDB)

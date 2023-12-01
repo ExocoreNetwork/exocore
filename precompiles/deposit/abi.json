@@ -3,9 +3,9 @@
     "inputs":
     [
       {
-        "internalType": "uint64",
+        "internalType": "uint16",
         "name": "ClientChainLzId",
-        "type": "uint64"
+        "type": "uint16"
       },
       {
         "internalType": "bytes",
@@ -23,13 +23,18 @@
         "type": "uint256"
       }
     ],
-    "name": "DepositTo",
+    "name": "depositTo",
     "outputs":
     [
       {
         "internalType": "bool",
         "name": "success",
         "type": "bool"
+      },
+      {
+        "internalType": "uint256",
+        "name": "latestAssetState",
+        "type": "uint256"
       }
     ],
     "stateMutability": "nonpayable",

@@ -119,19 +119,19 @@ func (k Keeper) PostTxProcessing(ctx sdk.Context, msg core.Message, receipt *eth
 	return nil
 }*/
 
-func (k Keeper) Deposit(ctx sdk.Context, event *DepositParams) error {
-	//check event parameter before executing deposit operation
-	if event.OpAmount.IsNegative() {
-		return errorsmod.Wrap(types2.ErrDepositAmountIsNegative, fmt.Sprintf("the amount is:%s", event.OpAmount))
+func (k Keeper) Deposit(ctx sdk.Context, params *DepositParams) error {
+	//check params parameter before executing deposit operation
+	if params.OpAmount.IsNegative() {
+		return errorsmod.Wrap(types2.ErrDepositAmountIsNegative, fmt.Sprintf("the amount is:%s", params.OpAmount))
 	}
-	stakeId, assetId := types.GetStakeIDAndAssetId(event.ClientChainLzId, event.StakerAddress, event.AssetsAddress)
+	stakeId, assetId := types.GetStakeIDAndAssetId(params.ClientChainLzId, params.StakerAddress, params.AssetsAddress)
 	//check if asset exist
 	if !k.restakingStateKeeper.IsStakingAsset(ctx, assetId) {
 		return errorsmod.Wrap(types2.ErrDepositAssetNotExist, fmt.Sprintf("the assetId is:%s", assetId))
 	}
 	changeAmount := types.StakerSingleAssetOrChangeInfo{
-		TotalDepositAmountOrWantChangeValue: event.OpAmount,
-		CanWithdrawAmountOrWantChangeValue:  event.OpAmount,
+		TotalDepositAmountOrWantChangeValue: params.OpAmount,
+		CanWithdrawAmountOrWantChangeValue:  params.OpAmount,
 	}
 	err := k.restakingStateKeeper.UpdateStakerAssetState(ctx, stakeId, assetId, changeAmount)
 	if err != nil {

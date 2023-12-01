@@ -633,6 +633,7 @@ func NewExocoreApp(
 			app.IBCKeeper.ChannelKeeper,
 			app.DepositKeeper,
 			app.DelegationKeeper,
+			app.StakingAssetsManageKeeper,
 		),
 	)
 

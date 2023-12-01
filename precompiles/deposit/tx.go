@@ -9,12 +9,13 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/vm"
+	"github.com/exocore/x/restaking_assets_manage/types"
 )
 
 const (
 	// MethodDepositTo defines the ABI method name for the deposit
 	// DepositTo transaction.
-	MethodDepositTo = "DepositTo"
+	MethodDepositTo = "depositTo"
 )
 
 // DepositTo deposit the client chain assets to the staker, that will change the state in deposit module.
@@ -26,7 +27,7 @@ func (p Precompile) DepositTo(
 	method *abi.Method,
 	args []interface{},
 ) ([]byte, error) {
-	//check the invalidation of caller contract
+	//check the invalidation of caller contract,the caller must be exoCore LzApp contract
 	depositModuleParam, err := p.depositKeeper.GetParams(ctx)
 	if err != nil {
 		return nil, err
@@ -36,14 +37,24 @@ func (p Precompile) DepositTo(
 		return nil, fmt.Errorf(ErrContractCaller, contract.CallerAddress, exoCoreLzAppAddr)
 	}
 
-	depositParams, err := GetDepositToParamsFromInputs(args)
+	//parse the depositTo input params
+	depositParams, err := p.GetDepositToParamsFromInputs(ctx, args)
 	if err != nil {
 		return nil, err
 	}
 
+	//call depositKeeper to execute the deposit action
 	err = p.depositKeeper.Deposit(ctx, depositParams)
 	if err != nil {
 		return nil, err
 	}
-	return method.Outputs.Pack(true)
+
+	//get the latest asset state of staker to return.
+	stakerId, assetId := types.GetStakeIDAndAssetId(depositParams.ClientChainLzId, depositParams.StakerAddress, depositParams.AssetsAddress)
+	info, err := p.stakingStateKeeper.GetStakerSpecifiedAssetInfo(ctx, stakerId, assetId)
+	if err != nil {
+		return nil, err
+	}
+
+	return method.Outputs.Pack(true, info.TotalDepositAmountOrWantChangeValue.BigInt())
 }

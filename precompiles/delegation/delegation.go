@@ -8,6 +8,7 @@ import (
 	"embed"
 	"fmt"
 	delegationKeeper "github.com/exocore/x/delegation/keeper"
+	stakingStateKeeper "github.com/exocore/x/restaking_assets_manage/keeper"
 
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	authzkeeper "github.com/cosmos/cosmos-sdk/x/authz/keeper"
@@ -27,12 +28,14 @@ var f embed.FS
 // Precompile defines the precompiled contract for deposit.
 type Precompile struct {
 	cmn.Precompile
-	delegationKeeper delegationKeeper.Keeper
+	stakingStateKeeper stakingStateKeeper.Keeper
+	delegationKeeper   delegationKeeper.Keeper
 }
 
 // NewPrecompile creates a new deposit Precompile instance as a
 // PrecompiledContract interface.
 func NewPrecompile(
+	stakingStateKeeper stakingStateKeeper.Keeper,
 	delegationKeeper delegationKeeper.Keeper,
 	authzKeeper authzkeeper.Keeper,
 ) (*Precompile, error) {
@@ -54,7 +57,8 @@ func NewPrecompile(
 			TransientKVGasConfig: storetypes.TransientGasConfig(),
 			ApprovalExpiration:   cmn.DefaultExpirationDuration, // should be configurable in the future.
 		},
-		delegationKeeper: delegationKeeper,
+		delegationKeeper:   delegationKeeper,
+		stakingStateKeeper: stakingStateKeeper,
 	}, nil
 }
 
@@ -87,13 +91,12 @@ func (p Precompile) Run(evm *vm.EVM, contract *vm.Contract, readOnly bool) (bz [
 	// This handles any out of gas errors that may occur during the execution of a precompile tx or query.
 	// It avoids panics and returns the out of gas error so the EVM can continue gracefully.
 	defer cmn.HandleGasError(ctx, contract, initialGas, &err)()
-
 	switch method.Name {
 	// deposit transactions
 	case MethodDelegateToThroughClientChain:
 		bz, err = p.DelegateToThroughClientChain(ctx, evm.Origin, contract, stateDB, method, args)
-	case MethodUnDelegateFromThroughClientChain:
-		bz, err = p.UnDelegateFromThroughClientChain(ctx, evm.Origin, contract, stateDB, method, args)
+	case MethodUndelegateFromThroughClientChain:
+		bz, err = p.UndelegateFromThroughClientChain(ctx, evm.Origin, contract, stateDB, method, args)
 	}
 
 	if err != nil {
@@ -116,7 +119,7 @@ func (p Precompile) Run(evm *vm.EVM, contract *vm.Contract, readOnly bool) (bz [
 func (Precompile) IsTransaction(methodID string) bool {
 	switch methodID {
 	case MethodDelegateToThroughClientChain,
-		MethodUnDelegateFromThroughClientChain:
+		MethodUndelegateFromThroughClientChain:
 		return true
 	default:
 		return false

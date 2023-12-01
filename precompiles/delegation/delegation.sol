@@ -33,7 +33,7 @@ interface IDelegation {
     ) external returns (bool success);
 
 /// TRANSACTIONS
-/// @dev unDelegate the client chain assets from the operator through client chain, that will change the states in delegation and restaking_assets_manage module
+/// @dev undelegate the client chain assets from the operator through client chain, that will change the states in delegation and restaking_assets_manage module
 /// Note that this address cannot be a module account.
 /// @param ClientChainLzId The lzId of client chain
 /// @param LzNonce The cross chain tx layerZero nonce
@@ -41,7 +41,7 @@ interface IDelegation {
 /// @param StakerAddress The staker address
 /// @param OperatorAddr  The operator address that wants to unDelegate from
 /// @param OpAmount The unDelegation amount
-    function unDelegateFromThroughClientChain(
+    function undelegateFromThroughClientChain(
         uint16 ClientChainLzId,
         uint64 LzNonce,
         bytes memory AssetsAddress,

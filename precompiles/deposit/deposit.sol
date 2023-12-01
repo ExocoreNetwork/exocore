@@ -26,6 +26,6 @@ interface IDeposit {
         bytes memory AssetsAddress,
         bytes memory StakerAddress,
         uint256 OpAmount
-    ) external returns (bool success);
+    ) external returns (bool success,uint256 latestAssetState);
 }
 

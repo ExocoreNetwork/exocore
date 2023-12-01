@@ -5,6 +5,7 @@ package keeper
 
 import (
 	"fmt"
+	stakingStateKeeper "github.com/exocore/x/restaking_assets_manage/keeper"
 
 	delegationKeeper "github.com/exocore/x/delegation/keeper"
 	depositKeeper "github.com/exocore/x/deposit/keeper"
@@ -39,6 +40,7 @@ func AvailablePrecompiles(
 	channelKeeper channelkeeper.Keeper,
 	depositKeeper depositKeeper.Keeper,
 	delegationKeeper delegationKeeper.Keeper,
+	stakingStateKeeper stakingStateKeeper.Keeper,
 ) map[common.Address]vm.PrecompiledContract {
 	// Clone the mapping from the latest EVM fork.
 	precompiles := maps.Clone(vm.PrecompiledContractsBerlin)
@@ -64,11 +66,11 @@ func AvailablePrecompiles(
 	}
 
 	//add exoCore chain preCompiles
-	depositPrecompile, err := depositprecompile.NewPrecompile(depositKeeper, authzKeeper)
+	depositPrecompile, err := depositprecompile.NewPrecompile(stakingStateKeeper, depositKeeper, authzKeeper)
 	if err != nil {
 		panic(fmt.Errorf("failed to load deposit precompile: %w", err))
 	}
-	delegationPrecompile, err := delegationprecompile.NewPrecompile(delegationKeeper, authzKeeper)
+	delegationPrecompile, err := delegationprecompile.NewPrecompile(stakingStateKeeper, delegationKeeper, authzKeeper)
 	if err != nil {
 		panic(fmt.Errorf("failed to load delegation precompile: %w", err))
 	}

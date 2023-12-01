@@ -15,11 +15,11 @@ import (
 const (
 	// MethodDelegateToThroughClientChain defines the ABI method name for the
 	// DelegateToThroughClientChain transaction.
-	MethodDelegateToThroughClientChain = "DelegateToThroughClientChain"
+	MethodDelegateToThroughClientChain = "delegateToThroughClientChain"
 
-	// MethodUnDelegateFromThroughClientChain defines the ABI method name for the
-	// UnDelegateFromThroughClientChain transaction.
-	MethodUnDelegateFromThroughClientChain = "UnDelegateFromThroughClientChain"
+	// MethodUndelegateFromThroughClientChain defines the ABI method name for the
+	// UndelegateFromThroughClientChain transaction.
+	MethodUndelegateFromThroughClientChain = "undelegateFromThroughClientChain"
 
 	CtxKeyTxHash = "TxHash"
 )
@@ -42,7 +42,7 @@ func (p Precompile) DelegateToThroughClientChain(
 		return nil, fmt.Errorf(ErrContractCaller, contract.CallerAddress, exoCoreLzAppAddr)
 	}
 
-	delegationParams, err := GetDelegationParamsFromInputs(args)
+	delegationParams, err := p.GetDelegationParamsFromInputs(ctx, args)
 	if err != nil {
 		return nil, err
 	}
@@ -54,8 +54,8 @@ func (p Precompile) DelegateToThroughClientChain(
 	return method.Outputs.Pack(true)
 }
 
-// UnDelegateFromThroughClientChain unDelegation the client chain assets from the operator through client chain, that will change the states in delegation and restaking_assets_manage module
-func (p Precompile) UnDelegateFromThroughClientChain(
+// UndelegateFromThroughClientChain unDelegation the client chain assets from the operator through client chain, that will change the states in delegation and restaking_assets_manage module
+func (p Precompile) UndelegateFromThroughClientChain(
 	ctx sdk.Context,
 	origin common.Address,
 	contract *vm.Contract,
@@ -72,7 +72,7 @@ func (p Precompile) UnDelegateFromThroughClientChain(
 		return nil, fmt.Errorf(ErrContractCaller, contract.CallerAddress, exoCoreLzAppAddr)
 	}
 
-	unDelegationParams, err := GetDelegationParamsFromInputs(args)
+	unDelegationParams, err := p.GetDelegationParamsFromInputs(ctx, args)
 	if err != nil {
 		return nil, err
 	}

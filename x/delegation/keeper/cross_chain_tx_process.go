@@ -130,7 +130,19 @@ func (k Keeper) DelegateTo(ctx sdk.Context, params *DelegationOrUndelegationPara
 	}
 
 	stakerId, assetId := types.GetStakeIDAndAssetId(params.ClientChainLzId, params.StakerAddress, params.AssetsAddress)
-	err := k.restakingStateKeeper.UpdateStakerAssetState(ctx, stakerId, assetId, types.StakerSingleAssetOrChangeInfo{
+
+	//check if the staker asset has been deposited and the canWithdraw amount is bigger than the delegation amount
+	info, err := k.restakingStateKeeper.GetStakerSpecifiedAssetInfo(ctx, stakerId, assetId)
+	if err != nil {
+		return err
+	}
+
+	if info.CanWithdrawAmountOrWantChangeValue.LT(params.OpAmount) {
+		return types2.ErrDelegationAmountTooBig
+	}
+
+	//update staker asset state
+	err = k.restakingStateKeeper.UpdateStakerAssetState(ctx, stakerId, assetId, types.StakerSingleAssetOrChangeInfo{
 		CanWithdrawAmountOrWantChangeValue: params.OpAmount.Neg(),
 	})
 	if err != nil {
