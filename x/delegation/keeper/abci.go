@@ -26,7 +26,7 @@ func (k Keeper) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.Validat
 		operatorAccAddress := sdk.MustAccAddressFromBech32(record.OperatorAddr)
 		if k.slashKeeper.IsOperatorFrozen(ctx, operatorAccAddress) {
 			//reSet the completed height if the operator is frozen
-			record.CompleteBlockNumber = k.operatorOptedInKeeper.GetOperatorCanUnDelegateHeight(ctx, record.AssetId, operatorAccAddress, record.BlockNumber)
+			record.CompleteBlockNumber = k.operatorOptedInKeeper.GetOperatorCanUndelegateHeight(ctx, record.AssetId, operatorAccAddress, record.BlockNumber)
 			if record.CompleteBlockNumber <= uint64(ctx.BlockHeight()) {
 				panic(fmt.Sprintf("the reset completedHeight isn't in future,setHeight:%v,curHeight:%v", record.CompleteBlockNumber, ctx.BlockHeight()))
 			}
@@ -50,7 +50,7 @@ func (k Keeper) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.Validat
 		//update delegation state
 		delegatorAndAmount := make(map[string]*types2.DelegationAmounts)
 		delegatorAndAmount[record.OperatorAddr] = &types2.DelegationAmounts{
-			WaitUnDelegationAmount: recordAmountNeg,
+			WaitUndelegationAmount: recordAmountNeg,
 		}
 		err = k.UpdateDelegationState(ctx, record.StakerId, record.AssetId, delegatorAndAmount)
 		if err != nil {
@@ -64,7 +64,7 @@ func (k Keeper) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.Validat
 		}
 
 		//update the staker state
-		err := k.retakingStateKeeper.UpdateStakerAssetState(ctx, record.StakerId, record.AssetId, types.StakerSingleAssetOrChangeInfo{
+		err := k.restakingStateKeeper.UpdateStakerAssetState(ctx, record.StakerId, record.AssetId, types.StakerSingleAssetOrChangeInfo{
 			CanWithdrawAmountOrWantChangeValue:      actualCanUnDelegateAmount,
 			WaitUnDelegationAmountOrWantChangeValue: recordAmountNeg,
 		})
@@ -73,7 +73,7 @@ func (k Keeper) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.Validat
 		}
 
 		//update the operator state
-		err = k.retakingStateKeeper.UpdateOperatorAssetState(ctx, operatorAccAddress, record.AssetId, types.OperatorSingleAssetOrChangeInfo{
+		err = k.restakingStateKeeper.UpdateOperatorAssetState(ctx, operatorAccAddress, record.AssetId, types.OperatorSingleAssetOrChangeInfo{
 			TotalAmountOrWantChangeValue:            actualCanUnDelegateAmount.Neg(),
 			WaitUnDelegationAmountOrWantChangeValue: recordAmountNeg,
 		})

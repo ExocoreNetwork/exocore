@@ -131,7 +131,7 @@ func (k Keeper) RewardForWithdraw(ctx sdk.Context, event *RewardParams) error {
 	}
 	stakeId, assetId := getStakeIDAndAssetId(event)
 	//check is asset exist
-	if !k.retakingStateKeeper.StakingAssetIsExist(ctx, assetId) {
+	if !k.retakingStateKeeper.IsStakingAsset(ctx, assetId) {
 		return errorsmod.Wrap(rtypes.ErrRewardAssetNotExist, fmt.Sprintf("the assetId is:%s", assetId))
 	}
 

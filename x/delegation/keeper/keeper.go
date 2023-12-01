@@ -22,7 +22,7 @@ type Keeper struct {
 	cdc      codec.BinaryCodec
 
 	//other keepers
-	retakingStateKeeper   keeper.Keeper
+	restakingStateKeeper  keeper.Keeper
 	depositKeeper         keeper2.Keeper
 	slashKeeper           types2.ISlashKeeper
 	operatorOptedInKeeper types2.OperatorOptedInMiddlewareKeeper
@@ -39,7 +39,7 @@ func NewKeeper(
 	return Keeper{
 		storeKey:              storeKey,
 		cdc:                   cdc,
-		retakingStateKeeper:   retakingStateKeeper,
+		restakingStateKeeper:  retakingStateKeeper,
 		depositKeeper:         depositKeeper,
 		slashKeeper:           slashKeeper,
 		operatorOptedInKeeper: operatorOptedInKeeper,

@@ -47,7 +47,7 @@ func (k Keeper) getParamsFromEventLog(ctx sdk.Context, log *ethtypes.Log) (*Slas
 	if err != nil {
 		return nil, errorsmod.Wrap(err, "error occurred when binary read action")
 	}
-	if action != types.DelegationTo && action != types.UnDelegationFrom {
+	if action != types.DelegateTo && action != types.UndelegateFrom {
 		// not handle the actions that isn't deposit
 		return nil, nil
 	}
@@ -182,7 +182,7 @@ func (k Keeper) Slash(ctx sdk.Context, event *SlashParams) error {
 	}
 	stakeId, assetId := getStakeIDAndAssetId(event)
 	//check is asset exist
-	if !k.retakingStateKeeper.StakingAssetIsExist(ctx, assetId) {
+	if !k.retakingStateKeeper.IsStakingAsset(ctx, assetId) {
 		return errorsmod.Wrap(rtypes.ErrSlashAssetNotExist, fmt.Sprintf("the assetId is:%s", assetId))
 	}
 

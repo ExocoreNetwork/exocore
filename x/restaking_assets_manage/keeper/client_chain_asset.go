@@ -50,7 +50,7 @@ func (k Keeper) SetStakingAssetInfo(ctx sdk.Context, info *types2.StakingAssetIn
 	return nil
 }
 
-func (k Keeper) StakingAssetIsExist(ctx sdk.Context, assetId string) bool {
+func (k Keeper) IsStakingAsset(ctx sdk.Context, assetId string) bool {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types2.KeyPrefixReStakingAssetInfo)
 	return store.Has([]byte(assetId))
 }

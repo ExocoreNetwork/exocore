@@ -28,11 +28,11 @@ func (VirtualISlashKeeper) OperatorAssetSlashedProportion(ctx sdk.Context, opAdd
 }
 
 type OperatorOptedInMiddlewareKeeper interface {
-	GetOperatorCanUnDelegateHeight(ctx sdk.Context, assetId string, opAddr sdk.AccAddress, startHeight uint64) uint64
+	GetOperatorCanUndelegateHeight(ctx sdk.Context, assetId string, opAddr sdk.AccAddress, startHeight uint64) uint64
 }
 
 type VirtualOperatorOptedInKeeper struct{}
 
-func (VirtualOperatorOptedInKeeper) GetOperatorCanUnDelegateHeight(ctx sdk.Context, assetId string, opAddr sdk.AccAddress, startHeight uint64) uint64 {
+func (VirtualOperatorOptedInKeeper) GetOperatorCanUndelegateHeight(ctx sdk.Context, assetId string, opAddr sdk.AccAddress, startHeight uint64) uint64 {
 	return startHeight + CanUnDelegationDelayHeight
 }

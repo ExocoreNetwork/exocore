@@ -46,13 +46,12 @@ func (k Keeper) UpdateStakerAssetState(ctx sdk.Context, stakerId string, assetId
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types2.KeyPrefixReStakerAssetInfos)
 
 	key := types2.GetAssetStateKey(stakerId, assetId)
-	isExit := store.Has(key)
 	assetState := types2.StakerSingleAssetOrChangeInfo{
 		TotalDepositAmountOrWantChangeValue:     math.NewInt(0),
 		CanWithdrawAmountOrWantChangeValue:      math.NewInt(0),
 		WaitUnDelegationAmountOrWantChangeValue: math.NewInt(0),
 	}
-	if isExit {
+	if store.Has(key) {
 		value := store.Get(key)
 		k.cdc.MustUnmarshal(value, &assetState)
 	}
@@ -83,7 +82,7 @@ func (k Keeper) UpdateStakerAssetState(ctx sdk.Context, stakerId string, assetId
 	if !changeAmount.WaitUnDelegationAmountOrWantChangeValue.IsNil() {
 		if changeAmount.WaitUnDelegationAmountOrWantChangeValue.IsNegative() {
 			if assetState.WaitUnDelegationAmountOrWantChangeValue.LT(changeAmount.WaitUnDelegationAmountOrWantChangeValue.Abs()) {
-				return errorsmod.Wrap(types2.ErrSubAmountIsMoreThanOrigin, fmt.Sprintf("WaitUnDelegationAmount:%s,changeValue:%s", assetState.WaitUnDelegationAmountOrWantChangeValue, changeAmount.WaitUnDelegationAmountOrWantChangeValue))
+				return errorsmod.Wrap(types2.ErrSubAmountIsMoreThanOrigin, fmt.Sprintf("WaitUndelegationAmount:%s,changeValue:%s", assetState.WaitUnDelegationAmountOrWantChangeValue, changeAmount.WaitUnDelegationAmountOrWantChangeValue))
 			}
 		}
 

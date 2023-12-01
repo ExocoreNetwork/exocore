@@ -32,14 +32,14 @@ func init() {
 // prefix bytes for the reStaking assets manage store
 const (
 	prefixClientChainInfo = iota + 1
-	prefixReStakingAssetInfo
-	prefixReStakerAssetInfos
-	prefixOperatorAssetInfos
-	prefixOperatorOptedInMiddleWareAssetInfos
+	prefixRestakingAssetInfo
+	prefixRestakerAssetInfo
+	prefixOperatorAssetInfo
+	prefixOperatorOptedInMiddlewareAssetInfo
 
-	prefixReStakerExocoreAddr
+	prefixRestakerExocoreAddr
 
-	prefixReStakerExocoreAddrReverse
+	prefixRestakerExocoreAddrReverse
 
 	prefixReStakingAssetList
 	prefixReStakerAssetList
@@ -84,27 +84,27 @@ var (
 
 	// KeyPrefixReStakingAssetInfo AssetId = AssetAddr+'_'+chainIndex
 	// KeyPrefixReStakingAssetInfo key->value: AssetId->ReStakingAssetInfo
-	KeyPrefixReStakingAssetInfo = []byte{prefixReStakingAssetInfo}
+	KeyPrefixReStakingAssetInfo = []byte{prefixRestakingAssetInfo}
 
 	// KeyPrefixReStakerAssetInfos reStakerId = clientChainAddr+'_'+ExoCoreChainIndex
 	// KeyPrefixReStakerAssetInfos key->value: reStakerId+'_'+AssetId->ReStakerSingleAssetInfo
 	// or reStakerId->mapping(AssetId->ReStakerSingleAssetInfo)?
-	KeyPrefixReStakerAssetInfos = []byte{prefixReStakerAssetInfos}
+	KeyPrefixReStakerAssetInfos = []byte{prefixRestakerAssetInfo}
 
 	// KeyPrefixOperatorAssetInfos key->value: operatorAddr+'_'+AssetId->OperatorSingleAssetInfo
 	// or operatorAddr->mapping(AssetId->OperatorSingleAssetInfo) ?
-	KeyPrefixOperatorAssetInfos = []byte{prefixOperatorAssetInfos}
+	KeyPrefixOperatorAssetInfos = []byte{prefixOperatorAssetInfo}
 
 	// KeyPrefixOperatorOptedInMiddleWareAssetInfos key->value: operatorAddr+'_'+AssetId->mapping(middleWareAddr->struct{})
 	//or operatorAddr->mapping(AssetId->mapping(middleWareAddr->struct{})) ?
-	KeyPrefixOperatorOptedInMiddleWareAssetInfos = []byte{prefixOperatorOptedInMiddleWareAssetInfos}
+	KeyPrefixOperatorOptedInMiddleWareAssetInfos = []byte{prefixOperatorOptedInMiddlewareAssetInfo}
 
 	// KeyPrefixReStakerExoCoreAddr reStakerId = clientChainAddr+'_'+ExoCoreChainIndex
 	// KeyPrefixReStakerExoCoreAddr key-value: reStakerId->exoCoreAddr
-	KeyPrefixReStakerExoCoreAddr = []byte{prefixReStakerExocoreAddr}
+	KeyPrefixReStakerExoCoreAddr = []byte{prefixRestakerExocoreAddr}
 	//KeyPrefixReStakerExoCoreAddrReverse k->v: exocoreAddress -> map[clientChainIndex]clientChainAddress
 	// used to retrieve all user assets based on their exoCore address
-	KeyPrefixReStakerExoCoreAddrReverse = []byte{prefixReStakerExocoreAddrReverse}
+	KeyPrefixReStakerExoCoreAddrReverse = []byte{prefixRestakerExocoreAddrReverse}
 )
 
 func GetAssetStateKey(stakerId, assetId string) []byte {

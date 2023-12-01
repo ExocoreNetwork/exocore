@@ -17,7 +17,7 @@ type (
 		storeKey storetypes.StoreKey
 
 		//other keepers
-		retakingStateKeeper keeper.Keeper
+		restakingStateKeeper keeper.Keeper
 	}
 )
 
@@ -28,9 +28,9 @@ func NewKeeper(
 ) *Keeper {
 
 	return &Keeper{
-		cdc:                 cdc,
-		storeKey:            storeKey,
-		retakingStateKeeper: retakingStateKeeper,
+		cdc:                  cdc,
+		storeKey:             storeKey,
+		restakingStateKeeper: retakingStateKeeper,
 	}
 }
 
