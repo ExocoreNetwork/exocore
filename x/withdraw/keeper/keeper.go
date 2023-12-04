@@ -24,13 +24,13 @@ type (
 func NewKeeper(
 	cdc codec.BinaryCodec,
 	storeKey storetypes.StoreKey,
-	retakingStateKeeper keeper.Keeper,
+	restakingStateKeeper keeper.Keeper,
 ) *Keeper {
 
 	return &Keeper{
 		cdc:                  cdc,
 		storeKey:             storeKey,
-		restakingStateKeeper: retakingStateKeeper,
+		restakingStateKeeper: restakingStateKeeper,
 	}
 }
 

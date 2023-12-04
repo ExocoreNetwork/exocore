@@ -54,7 +54,7 @@ func (p Precompile) DelegateToThroughClientChain(
 	return method.Outputs.Pack(true)
 }
 
-// UndelegateFromThroughClientChain unDelegation the client chain assets from the operator through client chain, that will change the states in delegation and restaking_assets_manage module
+// UndelegateFromThroughClientChain Undelegation the client chain assets from the operator through client chain, that will change the states in delegation and restaking_assets_manage module
 func (p Precompile) UndelegateFromThroughClientChain(
 	ctx sdk.Context,
 	origin common.Address,
@@ -72,7 +72,7 @@ func (p Precompile) UndelegateFromThroughClientChain(
 		return nil, fmt.Errorf(ErrContractCaller, contract.CallerAddress, exoCoreLzAppAddr)
 	}
 
-	unDelegationParams, err := p.GetDelegationParamsFromInputs(ctx, args)
+	UndelegationParams, err := p.GetDelegationParamsFromInputs(ctx, args)
 	if err != nil {
 		return nil, err
 	}
@@ -81,9 +81,9 @@ func (p Precompile) UndelegateFromThroughClientChain(
 	if !ok || txHash.Bytes() == nil {
 		return nil, fmt.Errorf(ErrCtxTxHash, reflect.TypeOf(ctx.Value(CtxKeyTxHash)), txHash)
 	}
-	unDelegationParams.TxHash = txHash
+	UndelegationParams.TxHash = txHash
 
-	err = p.delegationKeeper.UnDelegateFrom(ctx, unDelegationParams)
+	err = p.delegationKeeper.UndelegateFrom(ctx, UndelegationParams)
 	if err != nil {
 		return nil, err
 	}

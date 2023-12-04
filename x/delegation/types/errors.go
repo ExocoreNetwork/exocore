@@ -8,7 +8,7 @@ var (
 
 	ErrOperatorNotExist = errorsmod.Register(ModuleName, 2, "the operator has not been registered")
 
-	ErrOpAmountIsNegative = errorsmod.Register(ModuleName, 3, "the delegation or unDelegation amount is negative")
+	ErrOpAmountIsNegative = errorsmod.Register(ModuleName, 3, "the delegation or Undelegation amount is negative")
 
 	OperatorAddrIsNotAccAddr = errorsmod.Register(ModuleName, 4, "the operator address isn't a valid acc addr")
 
@@ -16,7 +16,7 @@ var (
 
 	ErrParseDelegationKey = errorsmod.Register(ModuleName, 6, "delegation state key can't be parsed")
 
-	ErrStakerGetRecordType = errorsmod.Register(ModuleName, 7, "the input getType is error when get staker unDelegation records")
+	ErrStakerGetRecordType = errorsmod.Register(ModuleName, 7, "the input getType is error when get staker Undelegation records")
 
 	ErrUndelegationAmountTooBig = errorsmod.Register(ModuleName, 8, "the Undelegation amount is bigger than the delegated amount")
 

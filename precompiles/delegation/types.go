@@ -13,11 +13,11 @@ import (
 	"reflect"
 )
 
-func (p Precompile) GetDelegationParamsFromInputs(ctx sdk.Context, args []interface{}) (*keeper2.DelegationOrUnDelegationParams, error) {
+func (p Precompile) GetDelegationParamsFromInputs(ctx sdk.Context, args []interface{}) (*keeper2.DelegationOrUndelegationParams, error) {
 	if len(args) != 6 {
 		return nil, fmt.Errorf(cmn.ErrInvalidNumberOfArgs, 6, len(args))
 	}
-	delegationParams := &keeper2.DelegationOrUnDelegationParams{}
+	delegationParams := &keeper2.DelegationOrUndelegationParams{}
 	clientChainLzID, ok := args[0].(uint16)
 	if !ok {
 		return nil, fmt.Errorf(ErrContractInputParaOrType, 0, reflect.TypeOf(args[0]), clientChainLzID)

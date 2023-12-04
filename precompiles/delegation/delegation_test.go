@@ -313,7 +313,7 @@ func (s *PrecompileTestSuite) TestRunUnDelegateFromThroughClientChain() {
 
 	delegateAsset := func(staker []byte, delegateAmount sdkmath.Int) {
 		//deposit asset for delegation test
-		delegateToParams := &keeper2.DelegationOrUnDelegationParams{
+		delegateToParams := &keeper2.DelegationOrUndelegationParams{
 			ClientChainLzId: 101,
 			Action:          types.DelegateTo,
 			StakerAddress:   staker,

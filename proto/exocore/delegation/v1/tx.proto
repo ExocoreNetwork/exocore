@@ -81,7 +81,7 @@ message MsgDelegation{
   DelegationApproveInfo approvedInfo = 2;
 }
 
-message UnDelegationRecord{
+message UndelegationRecord{
   string stakerId = 1;
   string assetId = 2;
   string OperatorAddr = 3
@@ -105,16 +105,16 @@ message UnDelegationRecord{
   ];
 }
 
-message UnDelegationRecordKeyList {
+message UndelegationRecordKeyList {
   repeated string keyList = 1;
 }
 
 message DelegationResponse{}
 
-message MsgUnDelegation{
+message MsgUndelegation{
   DelegationIncOrDecInfo baseInfo = 1;
 }
-message UnDelegationResponse{}
+message UndelegationResponse{}
 
 // Msg defines the delegation Msg service.
 service Msg {
@@ -122,7 +122,7 @@ service Msg {
   // CreateClawbackVestingAccount creats a vesting account that is subject to clawback.
   rpc RegisterOperator(RegisterOperatorReq) returns (RegisterOperatorResponse);
   rpc DelegateAssetToOperator(MsgDelegation) returns (DelegationResponse);
-  rpc UnDelegateAssetFromOperator(MsgUnDelegation) returns (UnDelegationResponse);
+  rpc UndelegateAssetFromOperator(MsgUndelegation) returns (UndelegationResponse);
 }
 
 

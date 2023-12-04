@@ -100,8 +100,8 @@ type IDelegation interface {
 	RegisterOperator(ctx context.Context, req *types2.RegisterOperatorReq) (*types2.RegisterOperatorResponse, error)
 	// DelegateAssetToOperator handle the DelegateAssetToOperator txs from msg service
 	DelegateAssetToOperator(ctx context.Context, delegation *types2.MsgDelegation) (*types2.DelegationResponse, error)
-	// UnDelegateAssetFromOperator handle the UnDelegateAssetFromOperator txs from msg service
-	UnDelegateAssetFromOperator(ctx context.Context, delegation *types2.MsgUnDelegation) (*types2.UnDelegationResponse, error)
+	// UndelegateAssetFromOperator handle the UndelegateAssetFromOperator txs from msg service
+	UndelegateAssetFromOperator(ctx context.Context, delegation *types2.MsgUndelegation) (*types2.UndelegationResponse, error)
 
 	GetSingleDelegationInfo(ctx sdk.Context, stakerId, assetId, operatorAddr string) (*types2.DelegationAmounts, error)
 

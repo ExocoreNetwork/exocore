@@ -502,7 +502,7 @@ func (m *MsgDelegation) GetApprovedInfo() *DelegationApproveInfo {
 	return nil
 }
 
-type UnDelegationRecord struct {
+type UndelegationRecord struct {
 	StakerId              string                                 `protobuf:"bytes,1,opt,name=stakerId,proto3" json:"stakerId,omitempty"`
 	AssetId               string                                 `protobuf:"bytes,2,opt,name=assetId,proto3" json:"assetId,omitempty"`
 	OperatorAddr          string                                 `protobuf:"bytes,3,opt,name=OperatorAddr,proto3" json:"OperatorAddr,omitempty"`
@@ -515,18 +515,18 @@ type UnDelegationRecord struct {
 	ActualCompletedAmount github_com_cosmos_cosmos_sdk_types.Int `protobuf:"bytes,10,opt,name=actualCompletedAmount,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Int" json:"actualCompletedAmount"`
 }
 
-func (m *UnDelegationRecord) Reset()         { *m = UnDelegationRecord{} }
-func (m *UnDelegationRecord) String() string { return proto.CompactTextString(m) }
-func (*UnDelegationRecord) ProtoMessage()    {}
-func (*UnDelegationRecord) Descriptor() ([]byte, []int) {
+func (m *UndelegationRecord) Reset()         { *m = UndelegationRecord{} }
+func (m *UndelegationRecord) String() string { return proto.CompactTextString(m) }
+func (*UndelegationRecord) ProtoMessage()    {}
+func (*UndelegationRecord) Descriptor() ([]byte, []int) {
 	return fileDescriptor_16596a15a828f109, []int{10}
 }
-func (m *UnDelegationRecord) XXX_Unmarshal(b []byte) error {
+func (m *UndelegationRecord) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *UnDelegationRecord) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *UndelegationRecord) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_UnDelegationRecord.Marshal(b, m, deterministic)
+		return xxx_messageInfo_UndelegationRecord.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -536,90 +536,90 @@ func (m *UnDelegationRecord) XXX_Marshal(b []byte, deterministic bool) ([]byte, 
 		return b[:n], nil
 	}
 }
-func (m *UnDelegationRecord) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_UnDelegationRecord.Merge(m, src)
+func (m *UndelegationRecord) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_UndelegationRecord.Merge(m, src)
 }
-func (m *UnDelegationRecord) XXX_Size() int {
+func (m *UndelegationRecord) XXX_Size() int {
 	return m.Size()
 }
-func (m *UnDelegationRecord) XXX_DiscardUnknown() {
-	xxx_messageInfo_UnDelegationRecord.DiscardUnknown(m)
+func (m *UndelegationRecord) XXX_DiscardUnknown() {
+	xxx_messageInfo_UndelegationRecord.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_UnDelegationRecord proto.InternalMessageInfo
+var xxx_messageInfo_UndelegationRecord proto.InternalMessageInfo
 
-func (m *UnDelegationRecord) GetStakerId() string {
+func (m *UndelegationRecord) GetStakerId() string {
 	if m != nil {
 		return m.StakerId
 	}
 	return ""
 }
 
-func (m *UnDelegationRecord) GetAssetId() string {
+func (m *UndelegationRecord) GetAssetId() string {
 	if m != nil {
 		return m.AssetId
 	}
 	return ""
 }
 
-func (m *UnDelegationRecord) GetOperatorAddr() string {
+func (m *UndelegationRecord) GetOperatorAddr() string {
 	if m != nil {
 		return m.OperatorAddr
 	}
 	return ""
 }
 
-func (m *UnDelegationRecord) GetTxHash() string {
+func (m *UndelegationRecord) GetTxHash() string {
 	if m != nil {
 		return m.TxHash
 	}
 	return ""
 }
 
-func (m *UnDelegationRecord) GetIsPending() bool {
+func (m *UndelegationRecord) GetIsPending() bool {
 	if m != nil {
 		return m.IsPending
 	}
 	return false
 }
 
-func (m *UnDelegationRecord) GetBlockNumber() uint64 {
+func (m *UndelegationRecord) GetBlockNumber() uint64 {
 	if m != nil {
 		return m.BlockNumber
 	}
 	return 0
 }
 
-func (m *UnDelegationRecord) GetCompleteBlockNumber() uint64 {
+func (m *UndelegationRecord) GetCompleteBlockNumber() uint64 {
 	if m != nil {
 		return m.CompleteBlockNumber
 	}
 	return 0
 }
 
-func (m *UnDelegationRecord) GetLzTxNonce() uint64 {
+func (m *UndelegationRecord) GetLzTxNonce() uint64 {
 	if m != nil {
 		return m.LzTxNonce
 	}
 	return 0
 }
 
-type UnDelegationRecordKeyList struct {
+type UndelegationRecordKeyList struct {
 	KeyList []string `protobuf:"bytes,1,rep,name=keyList,proto3" json:"keyList,omitempty"`
 }
 
-func (m *UnDelegationRecordKeyList) Reset()         { *m = UnDelegationRecordKeyList{} }
-func (m *UnDelegationRecordKeyList) String() string { return proto.CompactTextString(m) }
-func (*UnDelegationRecordKeyList) ProtoMessage()    {}
-func (*UnDelegationRecordKeyList) Descriptor() ([]byte, []int) {
+func (m *UndelegationRecordKeyList) Reset()         { *m = UndelegationRecordKeyList{} }
+func (m *UndelegationRecordKeyList) String() string { return proto.CompactTextString(m) }
+func (*UndelegationRecordKeyList) ProtoMessage()    {}
+func (*UndelegationRecordKeyList) Descriptor() ([]byte, []int) {
 	return fileDescriptor_16596a15a828f109, []int{11}
 }
-func (m *UnDelegationRecordKeyList) XXX_Unmarshal(b []byte) error {
+func (m *UndelegationRecordKeyList) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *UnDelegationRecordKeyList) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *UndelegationRecordKeyList) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_UnDelegationRecordKeyList.Marshal(b, m, deterministic)
+		return xxx_messageInfo_UndelegationRecordKeyList.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -629,19 +629,19 @@ func (m *UnDelegationRecordKeyList) XXX_Marshal(b []byte, deterministic bool) ([
 		return b[:n], nil
 	}
 }
-func (m *UnDelegationRecordKeyList) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_UnDelegationRecordKeyList.Merge(m, src)
+func (m *UndelegationRecordKeyList) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_UndelegationRecordKeyList.Merge(m, src)
 }
-func (m *UnDelegationRecordKeyList) XXX_Size() int {
+func (m *UndelegationRecordKeyList) XXX_Size() int {
 	return m.Size()
 }
-func (m *UnDelegationRecordKeyList) XXX_DiscardUnknown() {
-	xxx_messageInfo_UnDelegationRecordKeyList.DiscardUnknown(m)
+func (m *UndelegationRecordKeyList) XXX_DiscardUnknown() {
+	xxx_messageInfo_UndelegationRecordKeyList.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_UnDelegationRecordKeyList proto.InternalMessageInfo
+var xxx_messageInfo_UndelegationRecordKeyList proto.InternalMessageInfo
 
-func (m *UnDelegationRecordKeyList) GetKeyList() []string {
+func (m *UndelegationRecordKeyList) GetKeyList() []string {
 	if m != nil {
 		return m.KeyList
 	}
@@ -684,22 +684,22 @@ func (m *DelegationResponse) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_DelegationResponse proto.InternalMessageInfo
 
-type MsgUnDelegation struct {
+type MsgUndelegation struct {
 	BaseInfo *DelegationIncOrDecInfo `protobuf:"bytes,1,opt,name=baseInfo,proto3" json:"baseInfo,omitempty"`
 }
 
-func (m *MsgUnDelegation) Reset()         { *m = MsgUnDelegation{} }
-func (m *MsgUnDelegation) String() string { return proto.CompactTextString(m) }
-func (*MsgUnDelegation) ProtoMessage()    {}
-func (*MsgUnDelegation) Descriptor() ([]byte, []int) {
+func (m *MsgUndelegation) Reset()         { *m = MsgUndelegation{} }
+func (m *MsgUndelegation) String() string { return proto.CompactTextString(m) }
+func (*MsgUndelegation) ProtoMessage()    {}
+func (*MsgUndelegation) Descriptor() ([]byte, []int) {
 	return fileDescriptor_16596a15a828f109, []int{13}
 }
-func (m *MsgUnDelegation) XXX_Unmarshal(b []byte) error {
+func (m *MsgUndelegation) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *MsgUnDelegation) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *MsgUndelegation) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_MsgUnDelegation.Marshal(b, m, deterministic)
+		return xxx_messageInfo_MsgUndelegation.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -709,40 +709,40 @@ func (m *MsgUnDelegation) XXX_Marshal(b []byte, deterministic bool) ([]byte, err
 		return b[:n], nil
 	}
 }
-func (m *MsgUnDelegation) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_MsgUnDelegation.Merge(m, src)
+func (m *MsgUndelegation) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MsgUndelegation.Merge(m, src)
 }
-func (m *MsgUnDelegation) XXX_Size() int {
+func (m *MsgUndelegation) XXX_Size() int {
 	return m.Size()
 }
-func (m *MsgUnDelegation) XXX_DiscardUnknown() {
-	xxx_messageInfo_MsgUnDelegation.DiscardUnknown(m)
+func (m *MsgUndelegation) XXX_DiscardUnknown() {
+	xxx_messageInfo_MsgUndelegation.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_MsgUnDelegation proto.InternalMessageInfo
+var xxx_messageInfo_MsgUndelegation proto.InternalMessageInfo
 
-func (m *MsgUnDelegation) GetBaseInfo() *DelegationIncOrDecInfo {
+func (m *MsgUndelegation) GetBaseInfo() *DelegationIncOrDecInfo {
 	if m != nil {
 		return m.BaseInfo
 	}
 	return nil
 }
 
-type UnDelegationResponse struct {
+type UndelegationResponse struct {
 }
 
-func (m *UnDelegationResponse) Reset()         { *m = UnDelegationResponse{} }
-func (m *UnDelegationResponse) String() string { return proto.CompactTextString(m) }
-func (*UnDelegationResponse) ProtoMessage()    {}
-func (*UnDelegationResponse) Descriptor() ([]byte, []int) {
+func (m *UndelegationResponse) Reset()         { *m = UndelegationResponse{} }
+func (m *UndelegationResponse) String() string { return proto.CompactTextString(m) }
+func (*UndelegationResponse) ProtoMessage()    {}
+func (*UndelegationResponse) Descriptor() ([]byte, []int) {
 	return fileDescriptor_16596a15a828f109, []int{14}
 }
-func (m *UnDelegationResponse) XXX_Unmarshal(b []byte) error {
+func (m *UndelegationResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *UnDelegationResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *UndelegationResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_UnDelegationResponse.Marshal(b, m, deterministic)
+		return xxx_messageInfo_UndelegationResponse.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -752,17 +752,17 @@ func (m *UnDelegationResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte
 		return b[:n], nil
 	}
 }
-func (m *UnDelegationResponse) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_UnDelegationResponse.Merge(m, src)
+func (m *UndelegationResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_UndelegationResponse.Merge(m, src)
 }
-func (m *UnDelegationResponse) XXX_Size() int {
+func (m *UndelegationResponse) XXX_Size() int {
 	return m.Size()
 }
-func (m *UnDelegationResponse) XXX_DiscardUnknown() {
-	xxx_messageInfo_UnDelegationResponse.DiscardUnknown(m)
+func (m *UndelegationResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_UndelegationResponse.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_UnDelegationResponse proto.InternalMessageInfo
+var xxx_messageInfo_UndelegationResponse proto.InternalMessageInfo
 
 func init() {
 	proto.RegisterType((*ValueField)(nil), "exocore.delegation.v1.ValueField")
@@ -777,17 +777,17 @@ func init() {
 	proto.RegisterType((*DelegationIncOrDecInfo)(nil), "exocore.delegation.v1.DelegationIncOrDecInfo")
 	proto.RegisterMapType((map[string]*ValueField)(nil), "exocore.delegation.v1.DelegationIncOrDecInfo.PerOperatorAmountsEntry")
 	proto.RegisterType((*MsgDelegation)(nil), "exocore.delegation.v1.MsgDelegation")
-	proto.RegisterType((*UnDelegationRecord)(nil), "exocore.delegation.v1.UnDelegationRecord")
-	proto.RegisterType((*UnDelegationRecordKeyList)(nil), "exocore.delegation.v1.UnDelegationRecordKeyList")
+	proto.RegisterType((*UndelegationRecord)(nil), "exocore.delegation.v1.UndelegationRecord")
+	proto.RegisterType((*UndelegationRecordKeyList)(nil), "exocore.delegation.v1.UndelegationRecordKeyList")
 	proto.RegisterType((*DelegationResponse)(nil), "exocore.delegation.v1.DelegationResponse")
-	proto.RegisterType((*MsgUnDelegation)(nil), "exocore.delegation.v1.MsgUnDelegation")
-	proto.RegisterType((*UnDelegationResponse)(nil), "exocore.delegation.v1.UnDelegationResponse")
+	proto.RegisterType((*MsgUndelegation)(nil), "exocore.delegation.v1.MsgUndelegation")
+	proto.RegisterType((*UndelegationResponse)(nil), "exocore.delegation.v1.UndelegationResponse")
 }
 
 func init() { proto.RegisterFile("exocore/delegation/v1/tx.proto", fileDescriptor_16596a15a828f109) }
 
 var fileDescriptor_16596a15a828f109 = []byte{
-	// 1081 bytes of a gzipped FileDescriptorProto
+	// 1082 bytes of a gzipped FileDescriptorProto
 	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xc4, 0x57, 0xcd, 0x6e, 0x23, 0x45,
 	0x10, 0xf6, 0xc4, 0xd9, 0xfc, 0x94, 0x83, 0x12, 0x7a, 0xf3, 0x33, 0x3b, 0x20, 0x27, 0x0c, 0xec,
 	0x2a, 0x04, 0x62, 0x93, 0xf0, 0xb3, 0xc8, 0x5a, 0x09, 0xe5, 0x6f, 0xc1, 0x62, 0xbd, 0x1b, 0xcd,
@@ -835,27 +835,27 @@ var fileDescriptor_16596a15a828f109 = []byte{
 	0x0d, 0x9e, 0xab, 0x31, 0x2f, 0x91, 0xa0, 0x2a, 0x4c, 0xd4, 0x6d, 0x26, 0xf2, 0x2c, 0x3c, 0x2d,
 	0xac, 0xaf, 0x5e, 0x28, 0x58, 0x56, 0x6f, 0x3b, 0xda, 0x85, 0x29, 0x5b, 0x56, 0x8d, 0x5b, 0x4d,
 	0xca, 0xf6, 0xf5, 0x73, 0xe1, 0x52, 0xa5, 0x66, 0xf5, 0x21, 0x98, 0x7f, 0xe7, 0x01, 0x7d, 0x44,
-	0x12, 0x4b, 0x0b, 0x3b, 0x34, 0x72, 0x91, 0x01, 0x13, 0x8c, 0xdb, 0x0d, 0x1c, 0xf5, 0xc6, 0x58,
-	0x6f, 0x1d, 0x4f, 0x38, 0x5b, 0x4d, 0x38, 0x59, 0x90, 0xdd, 0x25, 0xba, 0x95, 0x34, 0x24, 0xd1,
-	0x03, 0xf2, 0xe7, 0x54, 0x57, 0x9f, 0x35, 0x9a, 0x87, 0x31, 0xde, 0xfe, 0xc0, 0x66, 0x07, 0xa2,
-	0x77, 0x4c, 0x5a, 0x6a, 0x15, 0xdf, 0x0d, 0x9f, 0xed, 0x62, 0xe2, 0xfa, 0xc4, 0xd3, 0xaf, 0x2c,
-	0x69, 0xcb, 0x13, 0x56, 0x22, 0x88, 0x1b, 0xda, 0x66, 0x40, 0x9d, 0xc6, 0xdd, 0x56, 0xb3, 0x8e,
-	0x23, 0x7d, 0x4c, 0xf4, 0xd8, 0xb4, 0x08, 0xbd, 0x01, 0x57, 0xb7, 0x68, 0x33, 0x0c, 0x30, 0xc7,
-	0x69, 0xcb, 0x71, 0x61, 0x39, 0x4c, 0x15, 0x33, 0xde, 0x79, 0xb0, 0xd7, 0xbe, 0x4b, 0x89, 0x83,
-	0xf5, 0x09, 0x61, 0x97, 0x08, 0xe2, 0x47, 0x85, 0x2d, 0x27, 0xf7, 0xe4, 0x65, 0x3c, 0x2a, 0x24,
-	0x16, 0x8a, 0x60, 0xce, 0x76, 0x78, 0xcb, 0x0e, 0xba, 0x0e, 0x75, 0x9f, 0x07, 0x70, 0x09, 0x24,
-	0xc3, 0xa1, 0xcd, 0xb7, 0xe1, 0xda, 0x60, 0xee, 0x3f, 0xc4, 0x1d, 0x31, 0x3b, 0x75, 0x18, 0x6f,
-	0xc8, 0x4f, 0x31, 0x33, 0x27, 0xad, 0xee, 0xd2, 0x9c, 0x05, 0x94, 0xde, 0xa4, 0x9a, 0xce, 0x67,
-	0x30, 0x5d, 0x63, 0x5e, 0x1a, 0xef, 0x12, 0x2b, 0xdf, 0x9c, 0x87, 0xd9, 0x7e, 0x57, 0x25, 0xeb,
-	0xfa, 0x6f, 0x23, 0x90, 0xaf, 0x31, 0x0f, 0x51, 0x98, 0x39, 0xdb, 0x0e, 0xd1, 0x4a, 0x06, 0xd9,
-	0x90, 0x21, 0x62, 0x94, 0xff, 0xb3, 0xad, 0x24, 0x46, 0x5f, 0xc0, 0x42, 0xf7, 0xa9, 0x24, 0xde,
-	0x48, 0x7b, 0xb4, 0xc7, 0xfb, 0x4a, 0x06, 0x56, 0x5f, 0x5b, 0x30, 0x5e, 0x3d, 0x37, 0x14, 0x3d,
-	0xae, 0x08, 0x5e, 0xe8, 0x1d, 0x5e, 0xb2, 0xc5, 0x03, 0xa7, 0xc7, 0x77, 0x23, 0x9b, 0x2f, 0x1d,
-	0x33, 0xe3, 0xb5, 0x0c, 0xbb, 0x61, 0x81, 0x35, 0xae, 0x7c, 0x73, 0x7a, 0xb4, 0xa2, 0x6d, 0xbe,
-	0xf7, 0xf8, 0xb8, 0xa8, 0x3d, 0x39, 0x2e, 0x6a, 0xbf, 0x1f, 0x17, 0xb5, 0x1f, 0x4f, 0x8a, 0xb9,
-	0x27, 0x27, 0xc5, 0xdc, 0x2f, 0x27, 0xc5, 0xdc, 0x27, 0xd7, 0x53, 0x95, 0xd8, 0xfd, 0x21, 0xd0,
-	0x4e, 0xff, 0x14, 0x10, 0xc5, 0x58, 0x1f, 0x13, 0xef, 0xf2, 0x37, 0xff, 0x09, 0x00, 0x00, 0xff,
-	0xff, 0x1a, 0xff, 0xda, 0x1e, 0x2d, 0x0c, 0x00, 0x00,
+	0x92, 0x7d, 0x16, 0x76, 0x68, 0xe4, 0x22, 0x03, 0x26, 0x18, 0xb7, 0x1b, 0x38, 0xea, 0x8d, 0xb1,
+	0xde, 0x3a, 0x9e, 0x70, 0xb6, 0x9a, 0x70, 0xb2, 0x20, 0xbb, 0x4b, 0x74, 0x2b, 0x69, 0x48, 0xa2,
+	0x07, 0xe4, 0xcf, 0xa9, 0xae, 0x3e, 0x6b, 0x34, 0x0f, 0x63, 0xbc, 0xfd, 0x81, 0xcd, 0x0e, 0x44,
+	0xef, 0x98, 0xb4, 0xd4, 0x2a, 0xbe, 0x1b, 0x3e, 0xdb, 0xc5, 0xc4, 0xf5, 0x89, 0xa7, 0x5f, 0x59,
+	0xd2, 0x96, 0x27, 0xac, 0x44, 0x10, 0x37, 0xb4, 0xcd, 0x80, 0x3a, 0x8d, 0xbb, 0xad, 0x66, 0x1d,
+	0x47, 0xfa, 0x98, 0xe8, 0xb1, 0x69, 0x11, 0x7a, 0x03, 0xae, 0x6e, 0xd1, 0x66, 0x18, 0x60, 0x8e,
+	0xd3, 0x96, 0xe3, 0xc2, 0x72, 0x98, 0x2a, 0x66, 0xbc, 0xf3, 0x60, 0xaf, 0x7d, 0x97, 0x12, 0x07,
+	0xeb, 0x13, 0xc2, 0x2e, 0x11, 0xc4, 0x8f, 0x0a, 0x5b, 0x4e, 0xee, 0xc9, 0xcb, 0x78, 0x54, 0x48,
+	0x2c, 0x14, 0xc1, 0x9c, 0xed, 0xf0, 0x96, 0x1d, 0x74, 0x1d, 0xea, 0x3e, 0x0f, 0xe0, 0x12, 0x48,
+	0x86, 0x43, 0x9b, 0x6f, 0xc3, 0xb5, 0xc1, 0xdc, 0x7f, 0x88, 0x3b, 0x62, 0x76, 0xea, 0x30, 0xde,
+	0x90, 0x9f, 0x62, 0x66, 0x4e, 0x5a, 0xdd, 0xa5, 0x39, 0x0b, 0x68, 0x3b, 0xb5, 0x49, 0x35, 0x9d,
+	0xcf, 0x60, 0xba, 0xc6, 0xbc, 0x34, 0xde, 0x25, 0x56, 0xbe, 0x39, 0x0f, 0xb3, 0xfd, 0xae, 0x4a,
+	0xd6, 0xf5, 0xdf, 0x46, 0x20, 0x5f, 0x63, 0x1e, 0xa2, 0x30, 0x73, 0xb6, 0x1d, 0xa2, 0x95, 0x0c,
+	0xb2, 0x21, 0x43, 0xc4, 0x28, 0xff, 0x67, 0x5b, 0x49, 0x8c, 0xbe, 0x80, 0x85, 0xee, 0x53, 0x49,
+	0xbc, 0x91, 0xf6, 0x68, 0x8f, 0xf7, 0x95, 0x0c, 0xac, 0xbe, 0xb6, 0x60, 0xbc, 0x7a, 0x6e, 0x28,
+	0x7a, 0x5c, 0x11, 0xbc, 0xd0, 0x3b, 0xbc, 0x64, 0x8b, 0x07, 0x4e, 0x8f, 0xef, 0x46, 0x36, 0x5f,
+	0x3a, 0x66, 0xc6, 0x6b, 0x19, 0x76, 0xc3, 0x02, 0x6b, 0x5c, 0xf9, 0xe6, 0xf4, 0x68, 0x45, 0xdb,
+	0x7c, 0xef, 0xf1, 0x71, 0x51, 0x7b, 0x72, 0x5c, 0xd4, 0x7e, 0x3f, 0x2e, 0x6a, 0x3f, 0x9e, 0x14,
+	0x73, 0x4f, 0x4e, 0x8a, 0xb9, 0x5f, 0x4e, 0x8a, 0xb9, 0x4f, 0xae, 0xa7, 0x2a, 0xb1, 0xfb, 0x43,
+	0xa0, 0x9d, 0xfe, 0x29, 0x20, 0x8a, 0xb1, 0x3e, 0x26, 0xde, 0xe5, 0x6f, 0xfe, 0x13, 0x00, 0x00,
+	0xff, 0xff, 0x33, 0xe0, 0x8a, 0x0c, 0x2d, 0x0c, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -873,7 +873,7 @@ type MsgClient interface {
 	// CreateClawbackVestingAccount creats a vesting account that is subject to clawback.
 	RegisterOperator(ctx context.Context, in *RegisterOperatorReq, opts ...grpc.CallOption) (*RegisterOperatorResponse, error)
 	DelegateAssetToOperator(ctx context.Context, in *MsgDelegation, opts ...grpc.CallOption) (*DelegationResponse, error)
-	UnDelegateAssetFromOperator(ctx context.Context, in *MsgUnDelegation, opts ...grpc.CallOption) (*UnDelegationResponse, error)
+	UndelegateAssetFromOperator(ctx context.Context, in *MsgUndelegation, opts ...grpc.CallOption) (*UndelegationResponse, error)
 }
 
 type msgClient struct {
@@ -902,9 +902,9 @@ func (c *msgClient) DelegateAssetToOperator(ctx context.Context, in *MsgDelegati
 	return out, nil
 }
 
-func (c *msgClient) UnDelegateAssetFromOperator(ctx context.Context, in *MsgUnDelegation, opts ...grpc.CallOption) (*UnDelegationResponse, error) {
-	out := new(UnDelegationResponse)
-	err := c.cc.Invoke(ctx, "/exocore.delegation.v1.Msg/UnDelegateAssetFromOperator", in, out, opts...)
+func (c *msgClient) UndelegateAssetFromOperator(ctx context.Context, in *MsgUndelegation, opts ...grpc.CallOption) (*UndelegationResponse, error) {
+	out := new(UndelegationResponse)
+	err := c.cc.Invoke(ctx, "/exocore.delegation.v1.Msg/UndelegateAssetFromOperator", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -916,7 +916,7 @@ type MsgServer interface {
 	// CreateClawbackVestingAccount creats a vesting account that is subject to clawback.
 	RegisterOperator(context.Context, *RegisterOperatorReq) (*RegisterOperatorResponse, error)
 	DelegateAssetToOperator(context.Context, *MsgDelegation) (*DelegationResponse, error)
-	UnDelegateAssetFromOperator(context.Context, *MsgUnDelegation) (*UnDelegationResponse, error)
+	UndelegateAssetFromOperator(context.Context, *MsgUndelegation) (*UndelegationResponse, error)
 }
 
 // UnimplementedMsgServer can be embedded to have forward compatible implementations.
@@ -929,8 +929,8 @@ func (*UnimplementedMsgServer) RegisterOperator(ctx context.Context, req *Regist
 func (*UnimplementedMsgServer) DelegateAssetToOperator(ctx context.Context, req *MsgDelegation) (*DelegationResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DelegateAssetToOperator not implemented")
 }
-func (*UnimplementedMsgServer) UnDelegateAssetFromOperator(ctx context.Context, req *MsgUnDelegation) (*UnDelegationResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method UnDelegateAssetFromOperator not implemented")
+func (*UnimplementedMsgServer) UndelegateAssetFromOperator(ctx context.Context, req *MsgUndelegation) (*UndelegationResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UndelegateAssetFromOperator not implemented")
 }
 
 func RegisterMsgServer(s grpc1.Server, srv MsgServer) {
@@ -973,20 +973,20 @@ func _Msg_DelegateAssetToOperator_Handler(srv interface{}, ctx context.Context, 
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Msg_UnDelegateAssetFromOperator_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(MsgUnDelegation)
+func _Msg_UndelegateAssetFromOperator_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MsgUndelegation)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(MsgServer).UnDelegateAssetFromOperator(ctx, in)
+		return srv.(MsgServer).UndelegateAssetFromOperator(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/exocore.delegation.v1.Msg/UnDelegateAssetFromOperator",
+		FullMethod: "/exocore.delegation.v1.Msg/UndelegateAssetFromOperator",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MsgServer).UnDelegateAssetFromOperator(ctx, req.(*MsgUnDelegation))
+		return srv.(MsgServer).UndelegateAssetFromOperator(ctx, req.(*MsgUndelegation))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -1004,8 +1004,8 @@ var _Msg_serviceDesc = grpc.ServiceDesc{
 			Handler:    _Msg_DelegateAssetToOperator_Handler,
 		},
 		{
-			MethodName: "UnDelegateAssetFromOperator",
-			Handler:    _Msg_UnDelegateAssetFromOperator_Handler,
+			MethodName: "UndelegateAssetFromOperator",
+			Handler:    _Msg_UndelegateAssetFromOperator_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
@@ -1444,7 +1444,7 @@ func (m *MsgDelegation) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
-func (m *UnDelegationRecord) Marshal() (dAtA []byte, err error) {
+func (m *UndelegationRecord) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -1454,12 +1454,12 @@ func (m *UnDelegationRecord) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *UnDelegationRecord) MarshalTo(dAtA []byte) (int, error) {
+func (m *UndelegationRecord) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *UnDelegationRecord) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *UndelegationRecord) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
@@ -1540,7 +1540,7 @@ func (m *UnDelegationRecord) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
-func (m *UnDelegationRecordKeyList) Marshal() (dAtA []byte, err error) {
+func (m *UndelegationRecordKeyList) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -1550,12 +1550,12 @@ func (m *UnDelegationRecordKeyList) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *UnDelegationRecordKeyList) MarshalTo(dAtA []byte) (int, error) {
+func (m *UndelegationRecordKeyList) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *UnDelegationRecordKeyList) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *UndelegationRecordKeyList) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
@@ -1595,7 +1595,7 @@ func (m *DelegationResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
-func (m *MsgUnDelegation) Marshal() (dAtA []byte, err error) {
+func (m *MsgUndelegation) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -1605,12 +1605,12 @@ func (m *MsgUnDelegation) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *MsgUnDelegation) MarshalTo(dAtA []byte) (int, error) {
+func (m *MsgUndelegation) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *MsgUnDelegation) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *MsgUndelegation) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
@@ -1630,7 +1630,7 @@ func (m *MsgUnDelegation) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
-func (m *UnDelegationResponse) Marshal() (dAtA []byte, err error) {
+func (m *UndelegationResponse) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -1640,12 +1640,12 @@ func (m *UnDelegationResponse) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *UnDelegationResponse) MarshalTo(dAtA []byte) (int, error) {
+func (m *UndelegationResponse) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *UnDelegationResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *UndelegationResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
@@ -1845,7 +1845,7 @@ func (m *MsgDelegation) Size() (n int) {
 	return n
 }
 
-func (m *UnDelegationRecord) Size() (n int) {
+func (m *UndelegationRecord) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -1886,7 +1886,7 @@ func (m *UnDelegationRecord) Size() (n int) {
 	return n
 }
 
-func (m *UnDelegationRecordKeyList) Size() (n int) {
+func (m *UndelegationRecordKeyList) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -1910,7 +1910,7 @@ func (m *DelegationResponse) Size() (n int) {
 	return n
 }
 
-func (m *MsgUnDelegation) Size() (n int) {
+func (m *MsgUndelegation) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -1923,7 +1923,7 @@ func (m *MsgUnDelegation) Size() (n int) {
 	return n
 }
 
-func (m *UnDelegationResponse) Size() (n int) {
+func (m *UndelegationResponse) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -3249,7 +3249,7 @@ func (m *MsgDelegation) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *UnDelegationRecord) Unmarshal(dAtA []byte) error {
+func (m *UndelegationRecord) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -3272,10 +3272,10 @@ func (m *UnDelegationRecord) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: UnDelegationRecord: wiretype end group for non-group")
+			return fmt.Errorf("proto: UndelegationRecord: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: UnDelegationRecord: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: UndelegationRecord: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
@@ -3572,7 +3572,7 @@ func (m *UnDelegationRecord) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *UnDelegationRecordKeyList) Unmarshal(dAtA []byte) error {
+func (m *UndelegationRecordKeyList) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -3595,10 +3595,10 @@ func (m *UnDelegationRecordKeyList) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: UnDelegationRecordKeyList: wiretype end group for non-group")
+			return fmt.Errorf("proto: UndelegationRecordKeyList: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: UnDelegationRecordKeyList: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: UndelegationRecordKeyList: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
@@ -3704,7 +3704,7 @@ func (m *DelegationResponse) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *MsgUnDelegation) Unmarshal(dAtA []byte) error {
+func (m *MsgUndelegation) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -3727,10 +3727,10 @@ func (m *MsgUnDelegation) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: MsgUnDelegation: wiretype end group for non-group")
+			return fmt.Errorf("proto: MsgUndelegation: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: MsgUnDelegation: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: MsgUndelegation: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
@@ -3790,7 +3790,7 @@ func (m *MsgUnDelegation) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *UnDelegationResponse) Unmarshal(dAtA []byte) error {
+func (m *UndelegationResponse) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -3813,10 +3813,10 @@ func (m *UnDelegationResponse) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: UnDelegationResponse: wiretype end group for non-group")
+			return fmt.Errorf("proto: UndelegationResponse: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: UnDelegationResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: UndelegationResponse: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		default:

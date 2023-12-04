@@ -40,7 +40,7 @@ interface IDelegation {
 /// @param AssetsAddress The client chain asset Address
 /// @param StakerAddress The staker address
 /// @param OperatorAddr  The operator address that wants to unDelegate from
-/// @param OpAmount The unDelegation amount
+/// @param OpAmount The Undelegation amount
     function undelegateFromThroughClientChain(
         uint16 ClientChainLzId,
         uint64 LzNonce,

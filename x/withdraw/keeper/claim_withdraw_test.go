@@ -46,7 +46,7 @@ func (suite *KeeperTestSuite) TestClaimWithdrawRequest() {
 	suite.Equal(types.StakerSingleAssetOrChangeInfo{
 		TotalDepositAmountOrWantChangeValue:     depositEvent.OpAmount,
 		CanWithdrawAmountOrWantChangeValue:      depositEvent.OpAmount,
-		WaitUnDelegationAmountOrWantChangeValue: sdkmath.NewInt(0),
+		WaitUndelegationAmountOrWantChangeValue: sdkmath.NewInt(0),
 	}, *info)
 	//test the normal case
 	event.AssetsAddress = usdtAddress[:]
@@ -60,7 +60,7 @@ func (suite *KeeperTestSuite) TestClaimWithdrawRequest() {
 	suite.Equal(types.StakerSingleAssetOrChangeInfo{
 		TotalDepositAmountOrWantChangeValue:     sdkmath.NewInt(10),
 		CanWithdrawAmountOrWantChangeValue:      sdkmath.NewInt(10),
-		WaitUnDelegationAmountOrWantChangeValue: sdkmath.NewInt(0),
+		WaitUndelegationAmountOrWantChangeValue: sdkmath.NewInt(0),
 	}, *info)
 
 	assetInfo, err := suite.app.StakingAssetsManageKeeper.GetStakingAssetInfo(suite.ctx, assetId)

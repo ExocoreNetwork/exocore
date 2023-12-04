@@ -137,7 +137,7 @@ func (k Keeper) Deposit(ctx sdk.Context, params *DepositParams) error {
 	if err != nil {
 		return err
 	}
-	err = k.restakingStateKeeper.UpdateStakingAssetTotalAmount(ctx, assetId, event.OpAmount)
+	err = k.restakingStateKeeper.UpdateStakingAssetTotalAmount(ctx, assetId, params.OpAmount)
 	if err != nil {
 		return err
 	}
