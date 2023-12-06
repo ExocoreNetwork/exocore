@@ -476,11 +476,15 @@ proto-download-deps:
 localnet-build:
 	$(MAKE) -C networks
 
+# Generate multi node configuration files and initialize configurations
+localnet-init: localnet-stop
+	docker run --rm -v $(CURDIR)/build/.testnets:/data exocore/node \
+			  testnet init-files --chain-id evmos_9000-8808 --v 4 -o /data --starting-ip-address 192.168.10.2 --keyring-backend=test  && \
+	./networks/init-node.sh
+
 # Start a 4-node testnet locally
 #localnet-start: localnet-stop localnet-build
-localnet-start: localnet-build localnet-stop
-	docker run --rm -v $(CURDIR)/build/.testnets:/data exocore/node \
-			  testnet init-files --chain-id evmos_9000-8808 --v 4 -o /data --starting-ip-address 192.168.10.2 --keyring-backend=test
+localnet-start: localnet-stop localnet-init
 	docker-compose up -d
 
 # Stop testnet
@@ -489,8 +493,8 @@ localnet-stop:
 
 # Clean testnet
 localnet-clean:
-	docker-compose down
-	sudo rm -rf build/*
+	docker-compose down ;\
+	rm -rf $(shell pwd)/build
 
  # Reset testnet
 localnet-unsafe-reset:
