@@ -9,6 +9,26 @@ import (
 	types2 "github.com/exocore/x/restaking_assets_manage/types"
 )
 
+// It's used to update asset state,negative or positive `changeValue` represents a decrease or increase in the asset state
+// newValue = valueToUpdate + changeVale
+func updateAssetValue(valueToUpdate *math.Int, changeValue *math.Int) error {
+	if valueToUpdate == nil || changeValue == nil {
+		return errorsmod.Wrap(types2.ErrInputPointerIsNil, fmt.Sprintf("valueToUpdate:%v,changeValue:%v", valueToUpdate, changeValue))
+	}
+
+	if !changeValue.IsNil() {
+		if changeValue.IsNegative() {
+			if valueToUpdate.LT(changeValue.Neg()) {
+				return errorsmod.Wrap(types2.ErrSubAmountIsMoreThanOrigin, fmt.Sprintf("valueToUpdate:%s,changeValue:%s", *valueToUpdate, *changeValue))
+			}
+		}
+		if !changeValue.IsZero() {
+			*valueToUpdate = valueToUpdate.Add(*changeValue)
+		}
+	}
+	return nil
+}
+
 func (k Keeper) GetStakerAssetInfos(ctx sdk.Context, stakerId string) (assetsInfo map[string]*types2.StakerSingleAssetOrChangeInfo, err error) {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types2.KeyPrefixReStakerAssetInfos)
 	iterator := sdk.KVStorePrefixIterator(store, []byte(stakerId))
@@ -42,55 +62,36 @@ func (k Keeper) GetStakerSpecifiedAssetInfo(ctx sdk.Context, stakerId string, as
 	return &ret, nil
 }
 
+// UpdateStakerAssetState It's used to update the staker asset state
 func (k Keeper) UpdateStakerAssetState(ctx sdk.Context, stakerId string, assetId string, changeAmount types2.StakerSingleAssetOrChangeInfo) (err error) {
+	//get the latest state,use the default initial state if the state hasn't been stored
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types2.KeyPrefixReStakerAssetInfos)
-
 	key := types2.GetAssetStateKey(stakerId, assetId)
 	assetState := types2.StakerSingleAssetOrChangeInfo{
 		TotalDepositAmountOrWantChangeValue:     math.NewInt(0),
 		CanWithdrawAmountOrWantChangeValue:      math.NewInt(0),
-		WaitUnDelegationAmountOrWantChangeValue: math.NewInt(0),
+		WaitUndelegationAmountOrWantChangeValue: math.NewInt(0),
 	}
 	if store.Has(key) {
 		value := store.Get(key)
 		k.cdc.MustUnmarshal(value, &assetState)
 	}
 
-	if !changeAmount.TotalDepositAmountOrWantChangeValue.IsNil() {
-		if changeAmount.TotalDepositAmountOrWantChangeValue.IsNegative() {
-			if assetState.TotalDepositAmountOrWantChangeValue.LT(changeAmount.TotalDepositAmountOrWantChangeValue.Abs()) {
-				return errorsmod.Wrap(types2.ErrSubAmountIsMoreThanOrigin, fmt.Sprintf("TotalDepositAmount:%s,changeValue:%s", assetState.TotalDepositAmountOrWantChangeValue, changeAmount.TotalDepositAmountOrWantChangeValue))
-			}
-		}
-		if !changeAmount.TotalDepositAmountOrWantChangeValue.IsZero() {
-			assetState.TotalDepositAmountOrWantChangeValue = assetState.TotalDepositAmountOrWantChangeValue.Add(changeAmount.TotalDepositAmountOrWantChangeValue)
-		}
+	// update all states of the specified restaker asset
+	err = updateAssetValue(&assetState.TotalDepositAmountOrWantChangeValue, &changeAmount.TotalDepositAmountOrWantChangeValue)
+	if err != nil {
+		return errorsmod.Wrap(err, "UpdateStakerAssetState TotalDepositAmountOrWantChangeValue error")
+	}
+	err = updateAssetValue(&assetState.CanWithdrawAmountOrWantChangeValue, &changeAmount.CanWithdrawAmountOrWantChangeValue)
+	if err != nil {
+		return errorsmod.Wrap(err, "UpdateStakerAssetState CanWithdrawAmountOrWantChangeValue error")
+	}
+	err = updateAssetValue(&assetState.WaitUndelegationAmountOrWantChangeValue, &changeAmount.WaitUndelegationAmountOrWantChangeValue)
+	if err != nil {
+		return errorsmod.Wrap(err, "UpdateStakerAssetState WaitUndelegationAmountOrWantChangeValue error")
 	}
 
-	if !changeAmount.CanWithdrawAmountOrWantChangeValue.IsNil() {
-		if changeAmount.CanWithdrawAmountOrWantChangeValue.IsNegative() {
-			if assetState.CanWithdrawAmountOrWantChangeValue.LT(changeAmount.CanWithdrawAmountOrWantChangeValue.Abs()) {
-				return errorsmod.Wrap(types2.ErrSubAmountIsMoreThanOrigin, fmt.Sprintf("CanWithdrawAmount:%s,changeValue:%s", assetState.CanWithdrawAmountOrWantChangeValue, changeAmount.CanWithdrawAmountOrWantChangeValue))
-			}
-		}
-
-		if !changeAmount.CanWithdrawAmountOrWantChangeValue.IsZero() {
-			assetState.CanWithdrawAmountOrWantChangeValue = assetState.CanWithdrawAmountOrWantChangeValue.Add(changeAmount.CanWithdrawAmountOrWantChangeValue)
-		}
-	}
-
-	if !changeAmount.WaitUnDelegationAmountOrWantChangeValue.IsNil() {
-		if changeAmount.WaitUnDelegationAmountOrWantChangeValue.IsNegative() {
-			if assetState.WaitUnDelegationAmountOrWantChangeValue.LT(changeAmount.WaitUnDelegationAmountOrWantChangeValue.Abs()) {
-				return errorsmod.Wrap(types2.ErrSubAmountIsMoreThanOrigin, fmt.Sprintf("WaitUndelegationAmount:%s,changeValue:%s", assetState.WaitUnDelegationAmountOrWantChangeValue, changeAmount.WaitUnDelegationAmountOrWantChangeValue))
-			}
-		}
-
-		if !changeAmount.WaitUnDelegationAmountOrWantChangeValue.IsZero() {
-			assetState.WaitUnDelegationAmountOrWantChangeValue = assetState.WaitUnDelegationAmountOrWantChangeValue.Add(changeAmount.WaitUnDelegationAmountOrWantChangeValue)
-		}
-	}
-
+	//store the updated state
 	bz := k.cdc.MustMarshal(&assetState)
 	store.Set(key, bz)
 

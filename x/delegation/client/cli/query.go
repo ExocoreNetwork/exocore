@@ -91,10 +91,10 @@ func QueryDelegationInfo() *cobra.Command {
 	return cmd
 }
 
-// QueryOperatorInfo queries delegation info
+// QueryOperatorInfo queries operator info
 func QueryOperatorInfo() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "QueryOperatorInfo stakerId assetId",
+		Use:   "QueryOperatorInfo operatorAddr",
 		Short: "Get operator info",
 		Long:  "Get operator info",
 		Args:  cobra.ExactArgs(1),

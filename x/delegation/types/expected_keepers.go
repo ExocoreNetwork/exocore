@@ -8,7 +8,7 @@ import (
 )
 
 var (
-	CanUnDelegationDelayHeight = uint64(10)
+	CanUndelegationDelayHeight = uint64(10)
 )
 
 type ISlashKeeper interface {
@@ -34,5 +34,5 @@ type OperatorOptedInMiddlewareKeeper interface {
 type VirtualOperatorOptedInKeeper struct{}
 
 func (VirtualOperatorOptedInKeeper) GetOperatorCanUndelegateHeight(ctx sdk.Context, assetId string, opAddr sdk.AccAddress, startHeight uint64) uint64 {
-	return startHeight + CanUnDelegationDelayHeight
+	return startHeight + CanUndelegationDelayHeight
 }

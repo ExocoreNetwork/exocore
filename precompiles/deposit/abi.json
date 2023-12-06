@@ -1,0 +1,43 @@
+[
+  {
+    "inputs":
+    [
+      {
+        "internalType": "uint16",
+        "name": "ClientChainLzId",
+        "type": "uint16"
+      },
+      {
+        "internalType": "bytes",
+        "name": "AssetsAddress",
+        "type": "bytes"
+      },
+      {
+        "internalType": "bytes",
+        "name": "StakerAddress",
+        "type": "bytes"
+      },
+      {
+        "internalType": "uint256",
+        "name": "OpAmount",
+        "type": "uint256"
+      }
+    ],
+    "name": "depositTo",
+    "outputs":
+    [
+      {
+        "internalType": "bool",
+        "name": "success",
+        "type": "bool"
+      },
+      {
+        "internalType": "uint256",
+        "name": "latestAssetState",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  }
+]

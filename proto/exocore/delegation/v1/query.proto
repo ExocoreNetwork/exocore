@@ -17,13 +17,13 @@ message DelegationInfoReq {
 }
 
 message DelegationAmounts{
-  string CanUnDelegationAmount = 1
+  string CanUndelegationAmount = 1
   [
     (cosmos_proto.scalar) = "cosmos.Int",
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
     (gogoproto.nullable) = false
   ];
-  string WaitUnDelegationAmount = 2
+  string WaitUndelegationAmount = 2
   [
     (cosmos_proto.scalar) = "cosmos.Int",
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",

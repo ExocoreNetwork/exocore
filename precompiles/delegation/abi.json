@@ -1,0 +1,94 @@
+[
+  {
+    "inputs":
+    [
+      {
+        "internalType": "uint16",
+        "name": "ClientChainLzId",
+        "type": "uint16"
+      },
+      {
+        "internalType": "uint64",
+        "name": "LzNonce",
+        "type": "uint64"
+      },
+      {
+        "internalType": "bytes",
+        "name": "AssetsAddress",
+        "type": "bytes"
+      },
+      {
+        "internalType": "bytes",
+        "name": "StakerAddress",
+        "type": "bytes"
+      },
+      {
+        "internalType": "bytes",
+        "name": "OperatorAddr",
+        "type": "bytes"
+      },
+      {
+        "internalType": "uint256",
+        "name": "OpAmount",
+        "type": "uint256"
+      }
+    ],
+    "name": "delegateToThroughClientChain",
+    "outputs":
+    [
+      {
+        "internalType": "bool",
+        "name": "success",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs":
+    [
+      {
+        "internalType": "uint16",
+        "name": "ClientChainLzId",
+        "type": "uint16"
+      },
+      {
+        "internalType": "uint64",
+        "name": "LzNonce",
+        "type": "uint64"
+      },
+      {
+        "internalType": "bytes",
+        "name": "AssetsAddress",
+        "type": "bytes"
+      },
+      {
+        "internalType": "bytes",
+        "name": "StakerAddress",
+        "type": "bytes"
+      },
+      {
+        "internalType": "bytes",
+        "name": "OperatorAddr",
+        "type": "bytes"
+      },
+      {
+        "internalType": "uint256",
+        "name": "OpAmount",
+        "type": "uint256"
+      }
+    ],
+    "name": "undelegateFromThroughClientChain",
+    "outputs":
+    [
+      {
+        "internalType": "bool",
+        "name": "success",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  }
+]

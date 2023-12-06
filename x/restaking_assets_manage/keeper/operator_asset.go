@@ -3,7 +3,6 @@ package keeper
 import (
 	errorsmod "cosmossdk.io/errors"
 	"cosmossdk.io/math"
-	"fmt"
 	"github.com/cosmos/cosmos-sdk/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	types2 "github.com/exocore/x/restaking_assets_manage/types"
@@ -42,56 +41,36 @@ func (k Keeper) GetOperatorSpecifiedAssetInfo(ctx sdk.Context, operatorAddr sdk.
 	return &ret, nil
 }
 
+// UpdateOperatorAssetState It's used to update the operator state
 func (k Keeper) UpdateOperatorAssetState(ctx sdk.Context, operatorAddr sdk.Address, assetId string, changeAmount types2.OperatorSingleAssetOrChangeInfo) (err error) {
+	//get the latest state,use the default initial state if the state hasn't been stored
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types2.KeyPrefixOperatorAssetInfos)
-
 	key := types2.GetAssetStateKey(operatorAddr.String(), assetId)
 	assetState := types2.OperatorSingleAssetOrChangeInfo{
 		TotalAmountOrWantChangeValue:            math.NewInt(0),
 		OperatorOwnAmountOrWantChangeValue:      math.NewInt(0),
-		WaitUnDelegationAmountOrWantChangeValue: math.NewInt(0),
+		WaitUndelegationAmountOrWantChangeValue: math.NewInt(0),
 	}
 	if store.Has(key) {
 		value := store.Get(key)
 		k.cdc.MustUnmarshal(value, &assetState)
 	}
 
-	// TODO(Chuang): All these following operations are repetitive logic. Should refactor them into a helper function like:
-	// update(valueToUpdate Int, newValue Int)
-	// Same for such logic across all the codebase.
-	if !changeAmount.TotalAmountOrWantChangeValue.IsNil() {
-		if changeAmount.TotalAmountOrWantChangeValue.IsNegative() {
-			if assetState.TotalAmountOrWantChangeValue.LT(changeAmount.TotalAmountOrWantChangeValue.Abs()) {
-				return errorsmod.Wrap(types2.ErrSubAmountIsMoreThanOrigin, fmt.Sprintf("TotalAmount:%s,changeValue:%s", assetState.TotalAmountOrWantChangeValue, changeAmount.TotalAmountOrWantChangeValue))
-			}
-		}
-		if !changeAmount.TotalAmountOrWantChangeValue.IsZero() {
-			assetState.TotalAmountOrWantChangeValue = assetState.TotalAmountOrWantChangeValue.Add(changeAmount.TotalAmountOrWantChangeValue)
-		}
+	// update all states of the specified operator asset
+	err = updateAssetValue(&assetState.TotalAmountOrWantChangeValue, &changeAmount.TotalAmountOrWantChangeValue)
+	if err != nil {
+		return errorsmod.Wrap(err, "UpdateOperatorAssetState TotalAmountOrWantChangeValue error")
+	}
+	err = updateAssetValue(&assetState.OperatorOwnAmountOrWantChangeValue, &changeAmount.OperatorOwnAmountOrWantChangeValue)
+	if err != nil {
+		return errorsmod.Wrap(err, "UpdateOperatorAssetState OperatorOwnAmountOrWantChangeValue error")
+	}
+	err = updateAssetValue(&assetState.WaitUndelegationAmountOrWantChangeValue, &changeAmount.WaitUndelegationAmountOrWantChangeValue)
+	if err != nil {
+		return errorsmod.Wrap(err, "UpdateOperatorAssetState WaitUndelegationAmountOrWantChangeValue error")
 	}
 
-	if !changeAmount.OperatorOwnAmountOrWantChangeValue.IsNil() {
-		if changeAmount.OperatorOwnAmountOrWantChangeValue.IsNegative() {
-			if assetState.OperatorOwnAmountOrWantChangeValue.LT(changeAmount.OperatorOwnAmountOrWantChangeValue.Abs()) {
-				return errorsmod.Wrap(types2.ErrSubAmountIsMoreThanOrigin, fmt.Sprintf("OperatorOwnAmount:%s,changeValue:%s", assetState.OperatorOwnAmountOrWantChangeValue, changeAmount.OperatorOwnAmountOrWantChangeValue))
-			}
-		}
-		if !changeAmount.OperatorOwnAmountOrWantChangeValue.IsZero() {
-			assetState.OperatorOwnAmountOrWantChangeValue = assetState.OperatorOwnAmountOrWantChangeValue.Add(changeAmount.OperatorOwnAmountOrWantChangeValue)
-		}
-	}
-
-	if !changeAmount.WaitUnDelegationAmountOrWantChangeValue.IsNil() {
-		if changeAmount.WaitUnDelegationAmountOrWantChangeValue.IsNegative() {
-			if assetState.WaitUnDelegationAmountOrWantChangeValue.LT(changeAmount.WaitUnDelegationAmountOrWantChangeValue.Abs()) {
-				return errorsmod.Wrap(types2.ErrSubAmountIsMoreThanOrigin, fmt.Sprintf("WaitUndelegationAmount:%s,changeValue:%s", assetState.WaitUnDelegationAmountOrWantChangeValue, changeAmount.WaitUnDelegationAmountOrWantChangeValue))
-			}
-		}
-		if !changeAmount.WaitUnDelegationAmountOrWantChangeValue.IsZero() {
-			assetState.WaitUnDelegationAmountOrWantChangeValue = assetState.WaitUnDelegationAmountOrWantChangeValue.Add(changeAmount.WaitUnDelegationAmountOrWantChangeValue)
-		}
-	}
-
+	//store the updated state
 	bz := k.cdc.MustMarshal(&assetState)
 	store.Set(key, bz)
 	return nil

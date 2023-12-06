@@ -28,7 +28,7 @@ const (
 	// Amino names
 	registerOperator            = "exocore/RegisterOperatorReq"
 	delegateAssetToOperator     = "exocore/MsgDelegation"
-	unDelegateAssetFromOperator = "exocore/MsgUnDelegation"
+	UndelegateAssetFromOperator = "exocore/MsgUndelegation"
 )
 
 // NOTE: This is required for the GetSignBytes function
@@ -43,7 +43,7 @@ func RegisterInterfaces(registry codectypes.InterfaceRegistry) {
 		(*sdk.Msg)(nil),
 		&RegisterOperatorReq{},
 		&MsgDelegation{},
-		&MsgUnDelegation{},
+		&MsgUndelegation{},
 	)
 	msgservice.RegisterMsgServiceDesc(registry, &_Msg_serviceDesc)
 }
@@ -54,5 +54,5 @@ func RegisterInterfaces(registry codectypes.InterfaceRegistry) {
 func RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) {
 	cdc.RegisterConcrete(&RegisterOperatorReq{}, registerOperator, nil)
 	cdc.RegisterConcrete(&MsgDelegation{}, delegateAssetToOperator, nil)
-	cdc.RegisterConcrete(&MsgUnDelegation{}, unDelegateAssetFromOperator, nil)
+	cdc.RegisterConcrete(&MsgUndelegation{}, UndelegateAssetFromOperator, nil)
 }

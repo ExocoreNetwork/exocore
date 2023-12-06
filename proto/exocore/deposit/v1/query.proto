@@ -24,7 +24,7 @@ message QueryParamsResponse {
 service Query {
   // Params retrieves the deposit module params
   rpc Params(QueryParamsRequest) returns (QueryParamsResponse) {
-    option (google.api.http).get = "/exocore/deposit/v1/params";
+    option (google.api.http).get = "/exocore/deposit/v1/Params";
   }
 }
 

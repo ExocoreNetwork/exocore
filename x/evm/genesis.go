@@ -13,8 +13,8 @@ import (
 	"github.com/ethereum/go-ethereum/crypto"
 
 	evmostypes "github.com/evmos/evmos/v14/types"
-	"github.com/evmos/evmos/v14/x/evm/keeper"
 	"github.com/evmos/evmos/v14/x/evm/types"
+	"github.com/exocore/x/evm/keeper"
 )
 
 // InitGenesis initializes genesis state based on exported genesis

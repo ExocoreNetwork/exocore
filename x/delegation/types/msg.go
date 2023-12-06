@@ -10,7 +10,7 @@ import (
 
 var _ sdk.Msg = &RegisterOperatorReq{}
 var _ sdk.Msg = &MsgDelegation{}
-var _ sdk.Msg = &MsgUnDelegation{}
+var _ sdk.Msg = &MsgUndelegation{}
 
 // GetSigners returns the expected signers for a MsgUpdateParams message.
 func (m *RegisterOperatorReq) GetSigners() []sdk.AccAddress {
@@ -51,13 +51,13 @@ func (m *MsgDelegation) GetSignBytes() []byte {
 }
 
 // GetSigners returns the expected signers for a MsgUpdateParams message.
-func (m *MsgUnDelegation) GetSigners() []sdk.AccAddress {
+func (m *MsgUndelegation) GetSigners() []sdk.AccAddress {
 	addr := sdk.MustAccAddressFromBech32(m.BaseInfo.FromAddress)
 	return []sdk.AccAddress{addr}
 }
 
 // ValidateBasic does a sanity check of the provided data
-func (m *MsgUnDelegation) ValidateBasic() error {
+func (m *MsgUndelegation) ValidateBasic() error {
 	if _, err := sdk.AccAddressFromBech32(m.BaseInfo.FromAddress); err != nil {
 		return errorsmod.Wrap(err, "invalid from address")
 	}
@@ -65,6 +65,6 @@ func (m *MsgUnDelegation) ValidateBasic() error {
 }
 
 // GetSignBytes implements the LegacyMsg interface.
-func (m *MsgUnDelegation) GetSignBytes() []byte {
+func (m *MsgUndelegation) GetSignBytes() []byte {
 	return nil
 }

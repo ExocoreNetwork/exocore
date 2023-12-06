@@ -3,6 +3,7 @@
 package keeper
 
 import (
+	"github.com/exocore/precompiles/delegation"
 	"math/big"
 
 	tmtypes "github.com/cometbft/cometbft/types"
@@ -314,6 +315,9 @@ func (k *Keeper) ApplyMessageWithConfig(ctx sdk.Context,
 	} else if !cfg.Params.EnableCall && msg.To() != nil {
 		return nil, errorsmod.Wrap(types.ErrCallDisabled, "failed to call contract")
 	}
+
+	//set txHash for delegation module
+	ctx = ctx.WithValue(delegation.CtxKeyTxHash, txConfig.TxHash)
 
 	stateDB := statedb.New(ctx, k, txConfig)
 	evm := k.NewEVM(ctx, msg, cfg, tracer, stateDB)

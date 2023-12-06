@@ -8,11 +8,9 @@ import (
 	"fmt"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/core"
 	ethtypes "github.com/ethereum/go-ethereum/core/types"
 	types2 "github.com/exocore/x/delegation/types"
 	"github.com/exocore/x/restaking_assets_manage/types"
-	"log"
 	"math/big"
 )
 
@@ -132,7 +130,19 @@ func (k Keeper) DelegateTo(ctx sdk.Context, params *DelegationOrUndelegationPara
 	}
 
 	stakerId, assetId := types.GetStakeIDAndAssetId(params.ClientChainLzId, params.StakerAddress, params.AssetsAddress)
-	err := k.restakingStateKeeper.UpdateStakerAssetState(ctx, stakerId, assetId, types.StakerSingleAssetOrChangeInfo{
+
+	//check if the staker asset has been deposited and the canWithdraw amount is bigger than the delegation amount
+	info, err := k.restakingStateKeeper.GetStakerSpecifiedAssetInfo(ctx, stakerId, assetId)
+	if err != nil {
+		return err
+	}
+
+	if info.CanWithdrawAmountOrWantChangeValue.LT(params.OpAmount) {
+		return types2.ErrDelegationAmountTooBig
+	}
+
+	//update staker asset state
+	err = k.restakingStateKeeper.UpdateStakerAssetState(ctx, stakerId, assetId, types.StakerSingleAssetOrChangeInfo{
 		CanWithdrawAmountOrWantChangeValue: params.OpAmount.Neg(),
 	})
 	if err != nil {
@@ -162,25 +172,25 @@ func (k Keeper) DelegateTo(ctx sdk.Context, params *DelegationOrUndelegationPara
 }
 
 func (k Keeper) UndelegateFrom(ctx sdk.Context, params *DelegationOrUndelegationParams) error {
-	// check if the unDelegatedFrom address is an operator
+	// check if the UndelegatedFrom address is an operator
 	if !k.IsOperator(ctx, params.OperatorAddress) {
 		return types2.ErrOperatorNotExist
 	}
 	if params.OpAmount.IsNegative() {
 		return types2.ErrOpAmountIsNegative
 	}
-	// get staker delegation state, then check the validation of undelegation amount
+	// get staker delegation state, then check the validation of Undelegation amount
 	stakerId, assetId := types.GetStakeIDAndAssetId(params.ClientChainLzId, params.StakerAddress, params.AssetsAddress)
 	delegationState, err := k.GetSingleDelegationInfo(ctx, stakerId, assetId, params.OperatorAddress.String())
 	if err != nil {
 		return err
 	}
 	if params.OpAmount.GT(delegationState.CanUndelegationAmount) {
-		return errorsmod.Wrap(types2.ErrUndelegationAmountTooBig, fmt.Sprintf("unDelegationAmount:%s,CanUndelegationAmount:%s", params.OpAmount, delegationState.CanUndelegationAmount))
+		return errorsmod.Wrap(types2.ErrUndelegationAmountTooBig, fmt.Sprintf("UndelegationAmount:%s,CanUndelegationAmount:%s", params.OpAmount, delegationState.CanUndelegationAmount))
 	}
 
-	//record unDelegation event
-	r := &types2.UnDelegationRecord{
+	//record Undelegation event
+	r := &types2.UndelegationRecord{
 		StakerId:              stakerId,
 		AssetId:               assetId,
 		OperatorAddr:          params.OperatorAddress.String(),
@@ -192,7 +202,7 @@ func (k Keeper) UndelegateFrom(ctx sdk.Context, params *DelegationOrUndelegation
 		ActualCompletedAmount: sdkmath.NewInt(0),
 	}
 	r.CompleteBlockNumber = k.operatorOptedInKeeper.GetOperatorCanUndelegateHeight(ctx, assetId, params.OperatorAddress, r.BlockNumber)
-	err = k.SetUnDelegationStates(ctx, []*types2.UnDelegationRecord{r})
+	err = k.SetUndelegationStates(ctx, []*types2.UndelegationRecord{r})
 	if err != nil {
 		return err
 	}
@@ -210,20 +220,21 @@ func (k Keeper) UndelegateFrom(ctx sdk.Context, params *DelegationOrUndelegation
 
 	//update staker and operator assets state
 	err = k.restakingStateKeeper.UpdateStakerAssetState(ctx, stakerId, assetId, types.StakerSingleAssetOrChangeInfo{
-		WaitUnDelegationAmountOrWantChangeValue: params.OpAmount,
+		WaitUndelegationAmountOrWantChangeValue: params.OpAmount,
 	})
 	if err != nil {
 		return err
 	}
 	err = k.restakingStateKeeper.UpdateOperatorAssetState(ctx, params.OperatorAddress, assetId, types.OperatorSingleAssetOrChangeInfo{
-		WaitUnDelegationAmountOrWantChangeValue: params.OpAmount,
+		WaitUndelegationAmountOrWantChangeValue: params.OpAmount,
 	})
 	if err != nil {
 		return err
 	}
 	return nil
 }
-func (k Keeper) PostTxProcessing(ctx sdk.Context, msg core.Message, receipt *ethtypes.Receipt) error {
+
+/*func (k Keeper) PostTxProcessing(ctx sdk.Context, msg core.Message, receipt *ethtypes.Receipt) error {
 	needLogs, err := k.depositKeeper.FilterCrossChainEventLogs(ctx, msg, receipt)
 	if err != nil {
 		return err
@@ -254,3 +265,4 @@ func (k Keeper) PostTxProcessing(ctx sdk.Context, msg core.Message, receipt *eth
 	}
 	return nil
 }
+*/

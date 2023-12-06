@@ -6,6 +6,7 @@ package cli
 import (
 	"context"
 	errorsmod "cosmossdk.io/errors"
+	"fmt"
 	"github.com/exocore/x/restaking_assets_manage/types"
 	"strconv"
 
@@ -100,19 +101,25 @@ func QueAllClientChainInfo() *cobra.Command {
 // QueStakingAssetInfo queries staking asset info
 func QueStakingAssetInfo() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "QueStakingAssetInfo assetId",
+		Use:   "QueStakingAssetInfo assetAddr clientChainLzId",
 		Short: "Get staking asset info",
 		Long:  "Get staking asset info",
-		Args:  cobra.ExactArgs(1),
+		Args:  cobra.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx, err := client.GetClientQueryContext(cmd)
 			if err != nil {
 				return err
 			}
 
+			clientChainLzId, err := strconv.ParseUint(args[1], 10, 64)
+			if err != nil {
+				return errorsmod.Wrap(types.ErrCliCmdInputArg, fmt.Sprintf("error arg is:%v", args[1]))
+			}
+
+			_, assetId := types.GetStakeIDAndAssetIdFromStr(clientChainLzId, "", args[0])
 			queryClient := types.NewQueryClient(clientCtx)
 			req := &types.QueryStakingAssetInfo{
-				AssetId: args[0],
+				AssetId: assetId,
 			}
 			res, err := queryClient.QueStakingAssetInfo(context.Background(), req)
 			if err != nil {

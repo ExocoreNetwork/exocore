@@ -1,19 +1,10 @@
 package keeper
 
 import (
-	"bytes"
-	"encoding/binary"
-	"fmt"
-	"log"
-	"math/big"
-
 	errorsmod "cosmossdk.io/errors"
 	sdkmath "cosmossdk.io/math"
+	"fmt"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/core"
-	ethtypes "github.com/ethereum/go-ethereum/core/types"
-	"github.com/evmos/evmos/v14/rpc/namespaces/ethereum/eth/filters"
 	types2 "github.com/exocore/x/deposit/types"
 	"github.com/exocore/x/restaking_assets_manage/types"
 )
@@ -26,7 +17,7 @@ type DepositParams struct {
 	OpAmount        sdkmath.Int
 }
 
-func (k Keeper) getDepositParamsFromEventLog(ctx sdk.Context, log *ethtypes.Log) (*DepositParams, error) {
+/*func (k Keeper) getDepositParamsFromEventLog(ctx sdk.Context, log *ethtypes.Log) (*DepositParams, error) {
 	// check if Action is deposit
 	var action types.CrossChainOpType
 	var err error
@@ -126,27 +117,27 @@ func (k Keeper) PostTxProcessing(ctx sdk.Context, msg core.Message, receipt *eth
 		}
 	}
 	return nil
-}
+}*/
 
-func (k Keeper) Deposit(ctx sdk.Context, event *DepositParams) error {
-	//check event parameter before executing deposit operation
-	if event.OpAmount.IsNegative() {
-		return errorsmod.Wrap(types2.ErrDepositAmountIsNegative, fmt.Sprintf("the amount is:%s", event.OpAmount))
+func (k Keeper) Deposit(ctx sdk.Context, params *DepositParams) error {
+	//check params parameter before executing deposit operation
+	if params.OpAmount.IsNegative() {
+		return errorsmod.Wrap(types2.ErrDepositAmountIsNegative, fmt.Sprintf("the amount is:%s", params.OpAmount))
 	}
-	stakeId, assetId := types.GetStakeIDAndAssetId(event.ClientChainLzId, event.StakerAddress, event.AssetsAddress)
+	stakeId, assetId := types.GetStakeIDAndAssetId(params.ClientChainLzId, params.StakerAddress, params.AssetsAddress)
 	//check if asset exist
 	if !k.restakingStateKeeper.IsStakingAsset(ctx, assetId) {
 		return errorsmod.Wrap(types2.ErrDepositAssetNotExist, fmt.Sprintf("the assetId is:%s", assetId))
 	}
 	changeAmount := types.StakerSingleAssetOrChangeInfo{
-		TotalDepositAmountOrWantChangeValue: event.OpAmount,
-		CanWithdrawAmountOrWantChangeValue:  event.OpAmount,
+		TotalDepositAmountOrWantChangeValue: params.OpAmount,
+		CanWithdrawAmountOrWantChangeValue:  params.OpAmount,
 	}
 	err := k.restakingStateKeeper.UpdateStakerAssetState(ctx, stakeId, assetId, changeAmount)
 	if err != nil {
 		return err
 	}
-	err = k.restakingStateKeeper.UpdateStakingAssetTotalAmount(ctx, assetId, event.OpAmount)
+	err = k.restakingStateKeeper.UpdateStakingAssetTotalAmount(ctx, assetId, params.OpAmount)
 	if err != nil {
 		return err
 	}

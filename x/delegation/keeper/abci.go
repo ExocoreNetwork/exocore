@@ -11,10 +11,10 @@ import (
 	"github.com/exocore/x/restaking_assets_manage/types"
 )
 
-// EndBlock : completed unDelegation events according to the canCompleted blockHeight
+// EndBlock : completed Undelegation events according to the canCompleted blockHeight
 func (k Keeper) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.ValidatorUpdate {
 	ctx.Logger().Info("the blockHeight is:", "height", ctx.BlockHeight())
-	records, err := k.GetWaitCompleteUnDelegationRecords(ctx, uint64(ctx.BlockHeight()))
+	records, err := k.GetWaitCompleteUndelegationRecords(ctx, uint64(ctx.BlockHeight()))
 	if err != nil {
 		panic(err)
 	}
@@ -30,21 +30,21 @@ func (k Keeper) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.Validat
 			if record.CompleteBlockNumber <= uint64(ctx.BlockHeight()) {
 				panic(fmt.Sprintf("the reset completedHeight isn't in future,setHeight:%v,curHeight:%v", record.CompleteBlockNumber, ctx.BlockHeight()))
 			}
-			_, err = k.SetSingleUnDelegationRecord(ctx, record)
+			_, err = k.SetSingleUndelegationRecord(ctx, record)
 			if err != nil {
 				panic(err)
 			}
 			continue
 		}
 
-		//get operator slashed proportion to calculate the actual canUnDelegated asset amount
+		//get operator slashed proportion to calculate the actual canUndelegated asset amount
 		proportion := k.slashKeeper.OperatorAssetSlashedProportion(ctx, operatorAccAddress, record.AssetId, record.BlockNumber, record.CompleteBlockNumber)
 		if proportion.IsNil() || proportion.IsNegative() || proportion.GT(sdkmath.LegacyNewDec(1)) {
 			panic(fmt.Sprintf("the proportion is invalid,it is:%v", proportion))
 		}
-		canUnDelegateProportion := sdkmath.LegacyNewDec(1).Sub(proportion)
-		actualCanUnDelegateAmount := canUnDelegateProportion.MulInt(record.Amount).TruncateInt()
-		record.ActualCompletedAmount = actualCanUnDelegateAmount
+		canUndelegateProportion := sdkmath.LegacyNewDec(1).Sub(proportion)
+		actualCanUndelegateAmount := canUndelegateProportion.MulInt(record.Amount).TruncateInt()
+		record.ActualCompletedAmount = actualCanUndelegateAmount
 		recordAmountNeg := record.Amount.Neg()
 
 		//update delegation state
@@ -65,8 +65,8 @@ func (k Keeper) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.Validat
 
 		//update the staker state
 		err := k.restakingStateKeeper.UpdateStakerAssetState(ctx, record.StakerId, record.AssetId, types.StakerSingleAssetOrChangeInfo{
-			CanWithdrawAmountOrWantChangeValue:      actualCanUnDelegateAmount,
-			WaitUnDelegationAmountOrWantChangeValue: recordAmountNeg,
+			CanWithdrawAmountOrWantChangeValue:      actualCanUndelegateAmount,
+			WaitUndelegationAmountOrWantChangeValue: recordAmountNeg,
 		})
 		if err != nil {
 			panic(err)
@@ -74,16 +74,16 @@ func (k Keeper) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.Validat
 
 		//update the operator state
 		err = k.restakingStateKeeper.UpdateOperatorAssetState(ctx, operatorAccAddress, record.AssetId, types.OperatorSingleAssetOrChangeInfo{
-			TotalAmountOrWantChangeValue:            actualCanUnDelegateAmount.Neg(),
-			WaitUnDelegationAmountOrWantChangeValue: recordAmountNeg,
+			TotalAmountOrWantChangeValue:            actualCanUndelegateAmount.Neg(),
+			WaitUndelegationAmountOrWantChangeValue: recordAmountNeg,
 		})
 		if err != nil {
 			panic(err)
 		}
 
-		//update unDelegation record
+		//update Undelegation record
 		record.IsPending = false
-		_, err = k.SetSingleUnDelegationRecord(ctx, record)
+		_, err = k.SetSingleUndelegationRecord(ctx, record)
 		if err != nil {
 			panic(err)
 		}

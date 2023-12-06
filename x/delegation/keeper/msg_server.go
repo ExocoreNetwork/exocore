@@ -18,11 +18,11 @@ func (k Keeper) RegisterOperator(ctx context.Context, req *types.RegisterOperato
 	return nil, nil
 }
 
-// DelegateAssetToOperator todo: Delegation and unDelegation from exoCore chain directly will be implemented in future.At the moment,they are executed from client chain
+// DelegateAssetToOperator todo: Delegation and Undelegation from exoCore chain directly will be implemented in future.At the moment,they are executed from client chain
 func (k Keeper) DelegateAssetToOperator(ctx context.Context, delegation *types.MsgDelegation) (*types.DelegationResponse, error) {
 	return nil, errorsmod.Wrap(types.ErrNotSupportYet, "func:DelegateAssetToOperator")
 }
 
-func (k Keeper) UnDelegateAssetFromOperator(ctx context.Context, delegation *types.MsgUnDelegation) (*types.UnDelegationResponse, error) {
-	return nil, errorsmod.Wrap(types.ErrNotSupportYet, "func:UnDelegateAssetFromOperator")
+func (k Keeper) UndelegateAssetFromOperator(ctx context.Context, delegation *types.MsgUndelegation) (*types.UndelegationResponse, error) {
+	return nil, errorsmod.Wrap(types.ErrNotSupportYet, "func:UndelegateAssetFromOperator")
 }
