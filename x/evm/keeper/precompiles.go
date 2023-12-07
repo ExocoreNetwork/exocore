@@ -6,19 +6,20 @@ package keeper
 import (
 	"fmt"
 	stakingStateKeeper "github.com/exocore/x/restaking_assets_manage/keeper"
+	rewardKeeper "github.com/exocore/x/reward/keeper"
+	withdrawKeeper "github.com/exocore/x/withdraw/keeper"
 
 	delegationKeeper "github.com/exocore/x/delegation/keeper"
 	depositKeeper "github.com/exocore/x/deposit/keeper"
 
 	"golang.org/x/exp/maps"
 
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/core/vm"
-
 	authzkeeper "github.com/cosmos/cosmos-sdk/x/authz/keeper"
 	distributionkeeper "github.com/cosmos/cosmos-sdk/x/distribution/keeper"
 	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
 	channelkeeper "github.com/cosmos/ibc-go/v7/modules/core/04-channel/keeper"
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/core/vm"
 	distprecompile "github.com/evmos/evmos/v14/precompiles/distribution"
 	ics20precompile "github.com/evmos/evmos/v14/precompiles/ics20"
 	stakingprecompile "github.com/evmos/evmos/v14/precompiles/staking"
@@ -27,6 +28,10 @@ import (
 	vestingkeeper "github.com/evmos/evmos/v14/x/vesting/keeper"
 	delegationprecompile "github.com/exocore/precompiles/delegation"
 	depositprecompile "github.com/exocore/precompiles/deposit"
+	rewardPrecompile "github.com/exocore/precompiles/reward"
+	slashPrecompile "github.com/exocore/precompiles/slash"
+	withdrawPrecompile "github.com/exocore/precompiles/withdraw"
+	exoslashKeeper "github.com/exocore/x/exoslash/keeper"
 )
 
 // AvailablePrecompiles returns the list of all available precompiled contracts.
@@ -41,6 +46,9 @@ func AvailablePrecompiles(
 	depositKeeper depositKeeper.Keeper,
 	delegationKeeper delegationKeeper.Keeper,
 	stakingStateKeeper stakingStateKeeper.Keeper,
+	withdrawKeeper withdrawKeeper.Keeper,
+	slashKeeper exoslashKeeper.Keeper,
+	rewardKeeper rewardKeeper.Keeper,
 ) map[common.Address]vm.PrecompiledContract {
 	// Clone the mapping from the latest EVM fork.
 	precompiles := maps.Clone(vm.PrecompiledContractsBerlin)
@@ -74,6 +82,21 @@ func AvailablePrecompiles(
 	if err != nil {
 		panic(fmt.Errorf("failed to load delegation precompile: %w", err))
 	}
+	withdrawPrecompile, err := withdrawPrecompile.NewPrecompile(stakingStateKeeper, withdrawKeeper, authzKeeper)
+	if err != nil {
+		panic(fmt.Errorf("failed to load  withdraw precompile: %w", err))
+	}
+	slashPrecompile, err := slashPrecompile.NewPrecompile(slashKeeper, authzKeeper)
+	if err != nil {
+		panic(fmt.Errorf("failed to load  slash precompile: %w", err))
+	}
+	rewardPrecompile, err := rewardPrecompile.NewPrecompile(stakingStateKeeper, rewardKeeper, authzKeeper)
+	if err != nil {
+		panic(fmt.Errorf("failed to load  reward precompile: %w", err))
+	}
+	precompiles[slashPrecompile.Address()] = slashPrecompile
+	precompiles[rewardPrecompile.Address()] = rewardPrecompile
+	precompiles[withdrawPrecompile.Address()] = withdrawPrecompile
 	precompiles[depositPrecompile.Address()] = depositPrecompile
 	precompiles[delegationPrecompile.Address()] = delegationPrecompile
 

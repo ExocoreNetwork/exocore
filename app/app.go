@@ -634,6 +634,9 @@ func NewExocoreApp(
 			app.DepositKeeper,
 			app.DelegationKeeper,
 			app.StakingAssetsManageKeeper,
+			app.WithdrawKeeper,
+			app.ExoSlashKeeper,
+			app.RewardKeeper,
 		),
 	)
 
