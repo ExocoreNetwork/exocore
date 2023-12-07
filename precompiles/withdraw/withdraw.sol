@@ -26,6 +26,6 @@ interface IWithdraw {
         bytes memory AssetsAddress,
         bytes memory WithdrawAddress,
         uint256 OpAmount
-    ) external returns (bool success);
+    ) external returns (bool success,uint256 latestAssetState);
 }
 
