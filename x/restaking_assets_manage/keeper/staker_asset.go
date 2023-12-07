@@ -9,9 +9,9 @@ import (
 	types2 "github.com/exocore/x/restaking_assets_manage/types"
 )
 
-// It's used to update asset state,negative or positive `changeValue` represents a decrease or increase in the asset state
+// UpdateAssetValue It's used to update asset state,negative or positive `changeValue` represents a decrease or increase in the asset state
 // newValue = valueToUpdate + changeVale
-func updateAssetValue(valueToUpdate *math.Int, changeValue *math.Int) error {
+func UpdateAssetValue(valueToUpdate *math.Int, changeValue *math.Int) error {
 	if valueToUpdate == nil || changeValue == nil {
 		return errorsmod.Wrap(types2.ErrInputPointerIsNil, fmt.Sprintf("valueToUpdate:%v,changeValue:%v", valueToUpdate, changeValue))
 	}
@@ -78,15 +78,15 @@ func (k Keeper) UpdateStakerAssetState(ctx sdk.Context, stakerId string, assetId
 	}
 
 	// update all states of the specified restaker asset
-	err = updateAssetValue(&assetState.TotalDepositAmountOrWantChangeValue, &changeAmount.TotalDepositAmountOrWantChangeValue)
+	err = UpdateAssetValue(&assetState.TotalDepositAmountOrWantChangeValue, &changeAmount.TotalDepositAmountOrWantChangeValue)
 	if err != nil {
 		return errorsmod.Wrap(err, "UpdateStakerAssetState TotalDepositAmountOrWantChangeValue error")
 	}
-	err = updateAssetValue(&assetState.CanWithdrawAmountOrWantChangeValue, &changeAmount.CanWithdrawAmountOrWantChangeValue)
+	err = UpdateAssetValue(&assetState.CanWithdrawAmountOrWantChangeValue, &changeAmount.CanWithdrawAmountOrWantChangeValue)
 	if err != nil {
 		return errorsmod.Wrap(err, "UpdateStakerAssetState CanWithdrawAmountOrWantChangeValue error")
 	}
-	err = updateAssetValue(&assetState.WaitUndelegationAmountOrWantChangeValue, &changeAmount.WaitUndelegationAmountOrWantChangeValue)
+	err = UpdateAssetValue(&assetState.WaitUndelegationAmountOrWantChangeValue, &changeAmount.WaitUndelegationAmountOrWantChangeValue)
 	if err != nil {
 		return errorsmod.Wrap(err, "UpdateStakerAssetState WaitUndelegationAmountOrWantChangeValue error")
 	}

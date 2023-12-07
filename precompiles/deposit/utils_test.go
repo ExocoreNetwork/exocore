@@ -3,6 +3,8 @@ package deposit_test
 import (
 	"encoding/json"
 	"github.com/exocore/precompiles/deposit"
+	"github.com/exocore/testutil"
+	testutiltx "github.com/exocore/testutil/tx"
 	"time"
 
 	abci "github.com/cometbft/cometbft/abci/types"
@@ -20,8 +22,6 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	ethtypes "github.com/ethereum/go-ethereum/core/types"
 	cmn "github.com/evmos/evmos/v14/precompiles/common"
-	evmosutil "github.com/evmos/evmos/v14/testutil"
-	evmosutiltx "github.com/evmos/evmos/v14/testutil/tx"
 	evmostypes "github.com/evmos/evmos/v14/types"
 	"github.com/evmos/evmos/v14/x/evm/statedb"
 	evmtypes "github.com/evmos/evmos/v14/x/evm/types"
@@ -110,7 +110,7 @@ func (s *PrecompileTestSuite) SetupWithGenesisValSet(valSet *tmtypes.ValidatorSe
 	app.Commit()
 
 	// instantiate new header
-	header := evmosutil.NewHeader(
+	header := testutil.NewHeader(
 		2,
 		time.Now().UTC(),
 		cmn.DefaultChainID,
@@ -147,10 +147,10 @@ func (s *PrecompileTestSuite) DoSetupTest() {
 	signers[pubKey2.Address().String()] = privVal2
 
 	// generate genesis account
-	addr, priv := evmosutiltx.NewAddrKey()
+	addr, priv := testutiltx.NewAddrKey()
 	s.privKey = priv
 	s.address = addr
-	s.signer = evmosutiltx.NewSigner(priv)
+	s.signer = testutiltx.NewSigner(priv)
 
 	baseAcc := authtypes.NewBaseAccount(priv.PubKey().Address().Bytes(), priv.PubKey(), 0, 0)
 
@@ -197,4 +197,23 @@ func (s *PrecompileTestSuite) DoSetupTest() {
 	queryHelperEvm := baseapp.NewQueryServerTestHelper(s.ctx, s.app.InterfaceRegistry())
 	evmtypes.RegisterQueryServer(queryHelperEvm, s.app.EvmKeeper)
 	s.queryClientEVM = evmtypes.NewQueryClient(queryHelperEvm)
+}
+
+// DeployContract deploys a contract that calls the deposit precompile's methods for testing purposes.
+func (s *PrecompileTestSuite) DeployContract(contract evmtypes.CompiledContract) (addr common.Address, err error) {
+	addr, err = testutil.DeployContract(
+		s.ctx,
+		s.app,
+		s.privKey,
+		s.queryClientEVM,
+		contract,
+	)
+	return
+}
+
+// NextBlock commits the current block and sets up the next block.
+func (s *PrecompileTestSuite) NextBlock() {
+	var err error
+	s.ctx, err = testutil.CommitAndCreateNewCtx(s.ctx, s.app, time.Second, s.valSet)
+	s.Require().NoError(err)
 }

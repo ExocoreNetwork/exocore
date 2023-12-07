@@ -4,32 +4,32 @@
     [
       {
         "internalType": "uint16",
-        "name": "ClientChainLzId",
+        "name": "clientChainLzId",
         "type": "uint16"
       },
       {
         "internalType": "uint64",
-        "name": "LzNonce",
+        "name": "lzNonce",
         "type": "uint64"
       },
       {
         "internalType": "bytes",
-        "name": "AssetsAddress",
+        "name": "assetsAddress",
         "type": "bytes"
       },
       {
         "internalType": "bytes",
-        "name": "StakerAddress",
+        "name": "stakerAddress",
         "type": "bytes"
       },
       {
         "internalType": "bytes",
-        "name": "OperatorAddr",
+        "name": "operatorAddr",
         "type": "bytes"
       },
       {
         "internalType": "uint256",
-        "name": "OpAmount",
+        "name": "opAmount",
         "type": "uint256"
       }
     ],
@@ -50,32 +50,32 @@
     [
       {
         "internalType": "uint16",
-        "name": "ClientChainLzId",
+        "name": "clientChainLzId",
         "type": "uint16"
       },
       {
         "internalType": "uint64",
-        "name": "LzNonce",
+        "name": "lzNonce",
         "type": "uint64"
       },
       {
         "internalType": "bytes",
-        "name": "AssetsAddress",
+        "name": "assetsAddress",
         "type": "bytes"
       },
       {
         "internalType": "bytes",
-        "name": "StakerAddress",
+        "name": "stakerAddress",
         "type": "bytes"
       },
       {
         "internalType": "bytes",
-        "name": "OperatorAddr",
+        "name": "operatorAddr",
         "type": "bytes"
       },
       {
         "internalType": "uint256",
-        "name": "OpAmount",
+        "name": "opAmount",
         "type": "uint256"
       }
     ],

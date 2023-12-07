@@ -17,37 +17,37 @@ interface IDelegation {
 /// TRANSACTIONS
 /// @dev delegate the client chain assets to the operator through client chain, that will change the states in delegation and restaking_assets_manage module
 /// Note that this address cannot be a module account.
-/// @param ClientChainLzId The lzId of client chain
-/// @param LzNonce The cross chain tx layerZero nonce
-/// @param AssetsAddress The client chain asset Address
-/// @param StakerAddress The staker address
-/// @param OperatorAddr  The operator address that wants to be delegated to
-/// @param OpAmount The delegation amount
+/// @param clientChainLzId The lzId of client chain
+/// @param lzNonce The cross chain tx layerZero nonce
+/// @param assetsAddress The client chain asset Address
+/// @param stakerAddress The staker address
+/// @param operatorAddr  The operator address that wants to be delegated to
+/// @param opAmount The delegation amount
     function delegateToThroughClientChain(
-        uint16 ClientChainLzId,
-        uint64 LzNonce,
-        bytes memory AssetsAddress,
-        bytes memory StakerAddress,
-        bytes memory OperatorAddr,
-        uint256 OpAmount
+        uint16 clientChainLzId,
+        uint64 lzNonce,
+        bytes memory assetsAddress,
+        bytes memory stakerAddress,
+        bytes memory operatorAddr,
+        uint256 opAmount
     ) external returns (bool success);
 
 /// TRANSACTIONS
 /// @dev undelegate the client chain assets from the operator through client chain, that will change the states in delegation and restaking_assets_manage module
 /// Note that this address cannot be a module account.
-/// @param ClientChainLzId The lzId of client chain
-/// @param LzNonce The cross chain tx layerZero nonce
-/// @param AssetsAddress The client chain asset Address
-/// @param StakerAddress The staker address
-/// @param OperatorAddr  The operator address that wants to unDelegate from
-/// @param OpAmount The Undelegation amount
+/// @param clientChainLzId The lzId of client chain
+/// @param lzNonce The cross chain tx layerZero nonce
+/// @param assetsAddress The client chain asset Address
+/// @param stakerAddress The staker address
+/// @param operatorAddr  The operator address that wants to unDelegate from
+/// @param opAmount The Undelegation amount
     function undelegateFromThroughClientChain(
-        uint16 ClientChainLzId,
-        uint64 LzNonce,
-        bytes memory AssetsAddress,
-        bytes memory StakerAddress,
-        bytes memory OperatorAddr,
-        uint256 OpAmount
+        uint16 clientChainLzId,
+        uint64 lzNonce,
+        bytes memory assetsAddress,
+        bytes memory stakerAddress,
+        bytes memory operatorAddr,
+        uint256 opAmount
     ) external returns (bool success);
 }
 

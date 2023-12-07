@@ -17,15 +17,15 @@ interface IDeposit {
 /// TRANSACTIONS
 /// @dev deposit the client chain assets to the staker, that will change the state in deposit module
 /// Note that this address cannot be a module account.
-/// @param ClientChainLzId The lzId of client chain
-/// @param AssetsAddress The client chain asset Address
-/// @param StakerAddress The staker address
-/// @param OpAmount The deposit amount
+/// @param clientChainLzId The lzId of client chain
+/// @param assetsAddress The client chain asset Address
+/// @param stakerAddress The staker address
+/// @param opAmount The deposit amount
     function depositTo(
-        uint16 ClientChainLzId,
-        bytes memory AssetsAddress,
-        bytes memory StakerAddress,
-        uint256 OpAmount
+        uint16 clientChainLzId,
+        bytes memory assetsAddress,
+        bytes memory stakerAddress,
+        uint256 opAmount
     ) external returns (bool success,uint256 latestAssetState);
 }
 
