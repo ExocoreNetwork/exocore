@@ -3,8 +3,6 @@
 package testutil
 
 import (
-	"encoding/json"
-	"fmt"
 	"time"
 
 	errorsmod "cosmossdk.io/errors"
@@ -188,8 +186,6 @@ func BroadcastTxBytes(app *app.ExocoreApp, txEncoder sdk.TxEncoder, tx sdk.Tx) (
 
 	req := abci.RequestDeliverTx{Tx: bz}
 	res := app.BaseApp.DeliverTx(req)
-	resBytes, _ := json.MarshalIndent(res, "", " ")
-	fmt.Println(string(resBytes))
 	if res.Code != 0 {
 		return abci.ResponseDeliverTx{}, errorsmod.Wrapf(errortypes.ErrInvalidRequest, res.Log)
 	}

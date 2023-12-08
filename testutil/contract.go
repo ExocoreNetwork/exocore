@@ -145,7 +145,6 @@ func CheckEthTxResponse(r abci.ResponseDeliverTx, cdc codec.Codec) ([]*evm.MsgEt
 	if len(txData.MsgResponses) == 0 {
 		return nil, fmt.Errorf("no message responses found")
 	}
-
 	responses := make([]*evm.MsgEthereumTxResponse, 0, len(txData.MsgResponses))
 	for i := range txData.MsgResponses {
 		var res evm.MsgEthereumTxResponse
