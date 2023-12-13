@@ -3,6 +3,8 @@ package delegation_test
 import (
 	"encoding/json"
 	"github.com/exocore/precompiles/delegation"
+	"github.com/exocore/testutil"
+	testutiltx "github.com/exocore/testutil/tx"
 	"time"
 
 	abci "github.com/cometbft/cometbft/abci/types"
@@ -20,8 +22,6 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	ethtypes "github.com/ethereum/go-ethereum/core/types"
 	cmn "github.com/evmos/evmos/v14/precompiles/common"
-	evmosutil "github.com/evmos/evmos/v14/testutil"
-	evmosutiltx "github.com/evmos/evmos/v14/testutil/tx"
 	evmostypes "github.com/evmos/evmos/v14/types"
 	evmtypes "github.com/evmos/evmos/v14/x/evm/types"
 	inflationtypes "github.com/evmos/evmos/v14/x/inflation/types"
@@ -109,7 +109,7 @@ func (s *PrecompileTestSuite) SetupWithGenesisValSet(valSet *tmtypes.ValidatorSe
 	app.Commit()
 
 	// instantiate new header
-	header := evmosutil.NewHeader(
+	header := testutil.NewHeader(
 		2,
 		time.Now().UTC(),
 		cmn.DefaultChainID,
@@ -146,10 +146,10 @@ func (s *PrecompileTestSuite) DoSetupTest() {
 	signers[pubKey2.Address().String()] = privVal2
 
 	// generate genesis account
-	addr, priv := evmosutiltx.NewAddrKey()
+	addr, priv := testutiltx.NewAddrKey()
 	s.privKey = priv
 	s.address = addr
-	s.signer = evmosutiltx.NewSigner(priv)
+	s.signer = testutiltx.NewSigner(priv)
 
 	baseAcc := authtypes.NewBaseAccount(priv.PubKey().Address().Bytes(), priv.PubKey(), 0, 0)
 

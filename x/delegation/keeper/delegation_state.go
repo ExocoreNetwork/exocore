@@ -7,6 +7,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	types2 "github.com/exocore/x/delegation/types"
+	"github.com/exocore/x/restaking_assets_manage/keeper"
 	"github.com/exocore/x/restaking_assets_manage/types"
 )
 
@@ -76,22 +77,14 @@ func (k Keeper) UpdateDelegationState(ctx sdk.Context, stakerId string, assetId 
 			k.cdc.MustUnmarshal(value, &delegationState)
 		}
 
-		if !amounts.CanUndelegationAmount.IsNil() && !amounts.CanUndelegationAmount.IsZero() {
-			if amounts.CanUndelegationAmount.IsNegative() {
-				if delegationState.CanUndelegationAmount.LT(amounts.CanUndelegationAmount.Neg()) {
-					return errorsmod.Wrap(types2.ErrSubAmountIsGreaterThanOriginal, fmt.Sprintf("UpdateDelegationState CanUndelegationAmount the OpAmount is:%s,the originalAmount is:%s", amounts.CanUndelegationAmount, delegationState.CanUndelegationAmount))
-				}
-			}
-			delegationState.CanUndelegationAmount = delegationState.CanUndelegationAmount.Add(amounts.CanUndelegationAmount)
+		err = keeper.UpdateAssetValue(&delegationState.CanUndelegationAmount, &amounts.CanUndelegationAmount)
+		if err != nil {
+			return errorsmod.Wrap(err, "UpdateDelegationState CanUndelegationAmount error")
 		}
 
-		if !amounts.WaitUndelegationAmount.IsNil() && !amounts.WaitUndelegationAmount.IsZero() {
-			if amounts.WaitUndelegationAmount.IsNegative() {
-				if delegationState.WaitUndelegationAmount.LT(amounts.WaitUndelegationAmount.Neg()) {
-					return errorsmod.Wrap(types2.ErrSubAmountIsGreaterThanOriginal, fmt.Sprintf("UpdateDelegationState WaitUndelegationAmount the OpAmount is:%s,the originalAmount is:%s", amounts.WaitUndelegationAmount, delegationState.WaitUndelegationAmount))
-				}
-			}
-			delegationState.WaitUndelegationAmount = delegationState.WaitUndelegationAmount.Add(amounts.WaitUndelegationAmount)
+		err = keeper.UpdateAssetValue(&delegationState.WaitUndelegationAmount, &amounts.WaitUndelegationAmount)
+		if err != nil {
+			return errorsmod.Wrap(err, "UpdateDelegationState WaitUndelegationAmount error")
 		}
 
 		//save single operator delegation state

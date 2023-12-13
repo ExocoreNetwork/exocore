@@ -6,6 +6,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	types2 "github.com/exocore/x/evm/types"
 
 	"github.com/gorilla/mux"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
@@ -56,7 +57,7 @@ func (AppModuleBasic) ConsensusVersion() uint64 {
 // DefaultGenesis returns default genesis state as raw bytes for the evm
 // module.
 func (AppModuleBasic) DefaultGenesis(cdc codec.JSONCodec) json.RawMessage {
-	return cdc.MustMarshalJSON(types.DefaultGenesisState())
+	return cdc.MustMarshalJSON(types2.DefaultGenesisState())
 }
 
 // ValidateGenesis is the validation check of the Genesis
