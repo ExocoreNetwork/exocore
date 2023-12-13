@@ -1,8 +1,7 @@
-// SPDX-License-Identifier: LGPL-3.0-only
 pragma solidity >=0.8.17 .0;
 
 /// @dev The WITHDRAW contract's address.
-address constant WITHDRAW_PRECOMPILE_ADDRESS = 0x0000000000000000000000000000000000000807;
+address constant WITHDRAW_PRECOMPILE_ADDRESS = 0x0000000000000000000000000000000000000808;
 
 /// @dev The WITHDRAW contract's instance.
 IWithdraw constant WITHDRAW_CONTRACT = IWithdraw(
@@ -12,7 +11,7 @@ IWithdraw constant WITHDRAW_CONTRACT = IWithdraw(
 /// @author Exocore Team
 /// @title WITHDRAW Precompile Contract
 /// @dev The interface through which solidity contracts will interact with WITHDRAW
-/// @custom:address 0x0000000000000000000000000000000000000807
+/// @custom:address 0x0000000000000000000000000000000000000808
 interface IWithdraw {
 /// TRANSACTIONS
 /// @dev withdraw To the staker, that will change the state in withdraw module

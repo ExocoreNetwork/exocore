@@ -1,6 +1,3 @@
-// Copyright Tharsis Labs Ltd.(Evmos)
-// SPDX-License-Identifier:ENCL-1.0(https://github.com/evmos/evmos/blob/main/LICENSE)
-
 package reward
 
 import (
@@ -64,9 +61,9 @@ func NewPrecompile(
 }
 
 // Address defines the address of the reward compile contract.
-// address: 0x0000000000000000000000000000000000000804
+// address: 0x0000000000000000000000000000000000000806
 func (p Precompile) Address() common.Address {
-	return common.HexToAddress("0x0000000000000000000000000000000000000804")
+	return common.HexToAddress("0x0000000000000000000000000000000000000806")
 }
 
 // RequiredGas calculates the precompiled contract's base gas rate.

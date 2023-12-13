@@ -1,6 +1,3 @@
-// Copyright Tharsis Labs Ltd.(Evmos)
-// SPDX-License-Identifier:ENCL-1.0(https://github.com/evmos/evmos/blob/main/LICENSE)
-
 package slash
 
 import (
@@ -36,7 +33,7 @@ func (p Precompile) SubmitSlash(
 		return nil, fmt.Errorf(ErrContractCaller, contract.CallerAddress, exoCoreLzAppAddr)
 	}
 
-	slashParam, err := GetSlashParamsFromInputs(args)
+	slashParam, err := p.GetSlashParamsFromInputs(ctx, args)
 	if err != nil {
 		return nil, err
 	}

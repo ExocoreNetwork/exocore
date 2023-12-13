@@ -1,6 +1,3 @@
-// Copyright Tharsis Labs Ltd.(Evmos)
-// SPDX-License-Identifier:ENCL-1.0(https://github.com/evmos/evmos/blob/main/LICENSE)
-
 package slash
 
 import (
@@ -16,6 +13,7 @@ import (
 	"github.com/ethereum/go-ethereum/core/vm"
 	cmn "github.com/evmos/evmos/v14/precompiles/common"
 	slashKeeper "github.com/exocore/x/exoslash/keeper"
+	stakingStateKeeper "github.com/exocore/x/restaking_assets_manage/keeper"
 )
 
 var _ vm.PrecompiledContract = &Precompile{}
@@ -27,6 +25,7 @@ var f embed.FS
 
 // Precompile defines the precompiled contract for slash.
 type Precompile struct {
+	stakingStateKeeper stakingStateKeeper.Keeper
 	cmn.Precompile
 	slashKeeper slashKeeper.Keeper
 }
@@ -34,6 +33,7 @@ type Precompile struct {
 // NewPrecompile creates a new slash Precompile instance as a
 // PrecompiledContract interface.
 func NewPrecompile(
+	stakingStateKeeper stakingStateKeeper.Keeper,
 	slashKeeper slashKeeper.Keeper,
 	authzKeeper authzkeeper.Keeper,
 ) (*Precompile, error) {
@@ -55,14 +55,15 @@ func NewPrecompile(
 			TransientKVGasConfig: storetypes.TransientGasConfig(),
 			ApprovalExpiration:   cmn.DefaultExpirationDuration, // should be configurable in the future.
 		},
-		slashKeeper: slashKeeper,
+		stakingStateKeeper: stakingStateKeeper,
+		slashKeeper:        slashKeeper,
 	}, nil
 }
 
 // Address defines the address of the slash compile contract.
-// address: 0x0000000000000000000000000000000000000804
+// address: 0x0000000000000000000000000000000000000807
 func (p Precompile) Address() common.Address {
-	return common.HexToAddress("0x0000000000000000000000000000000000000804")
+	return common.HexToAddress("0x0000000000000000000000000000000000000807")
 }
 
 // RequiredGas calculates the precompiled contract's base gas rate.

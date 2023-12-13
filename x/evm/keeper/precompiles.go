@@ -86,7 +86,7 @@ func AvailablePrecompiles(
 	if err != nil {
 		panic(fmt.Errorf("failed to load  withdraw precompile: %w", err))
 	}
-	slashPrecompile, err := slashPrecompile.NewPrecompile(slashKeeper, authzKeeper)
+	slashPrecompile, err := slashPrecompile.NewPrecompile(stakingStateKeeper, slashKeeper, authzKeeper)
 	if err != nil {
 		panic(fmt.Errorf("failed to load  slash precompile: %w", err))
 	}

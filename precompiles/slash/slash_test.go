@@ -1,21 +1,19 @@
-// Copyright Tharsis Labs Ltd.(Evmos)
-// SPDX-License-Identifier:ENCL-1.0(https://github.com/evmos/evmos/blob/main/LICENSE)
 package slash_test
 
 import (
-	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdkmath "cosmossdk.io/math"
 	"github.com/ethereum/go-ethereum/common"
 	ethtypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/core/vm"
+	"github.com/evmos/evmos/v14/x/evm/statedb"
 	evmtypes "github.com/evmos/evmos/v14/x/evm/types"
 	"github.com/exocore/app"
 	"github.com/exocore/precompiles/slash"
-	"github.com/exocore/precompiles/withdraw"
-	"github.com/exocore/utils"
+	"github.com/exocore/x/deposit/keeper"
+	depositParams "github.com/exocore/x/deposit/types"
+	slashParams "github.com/exocore/x/exoslash/types"
 	"github.com/exocore/x/restaking_assets_manage/types"
-	types1 "github.com/exocore/x/withdraw/types"
 	"math/big"
-	"strings"
 )
 
 func (s *PrecompileTestSuite) TestIsTransaction() {
@@ -50,36 +48,46 @@ func paddingClientChainAddress(input []byte, outputLength int) []byte {
 	return input
 }
 
-// TestRun tests the precompiles Run method withdraw.
-func (s *PrecompileTestSuite) TestRunWithdraw() {
-	//withdraw params for test
-	exoCoreLzAppAddress := "0x3fC91A3afd70395Cd496C647d5a6CC9D4B2b7FAD"
+// TestRun tests the precompiles Run method submitSlash.
+func (s *PrecompileTestSuite) TestRunSlash() {
+	//deposit params for test
 	exoCoreLzAppEventTopic := "0xc6a377bfc4eb120024a8ac08eef205be16b817020812c73223e81d1bdb9708ec"
-	usdtAddress := paddingClientChainAddress(common.FromHex("0xdAC17F958D2ee523a2206206994597C13D831ec7"), types.GeneralClientChainAddrLength)
-	usdcAddress := paddingClientChainAddress(common.FromHex("0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"), types.GeneralClientChainAddrLength)
+	usdtAddress := common.FromHex("0xdAC17F958D2ee523a2206206994597C13D831ec7")
 	clientChainLzId := 101
-	withdrawAddr := paddingClientChainAddress(s.address.Bytes(), types.GeneralClientChainAddrLength)
-	opAmount := big.NewInt(100)
-	assetAddr := usdtAddress
-	commonMalleate := func() (common.Address, []byte) {
-		valAddr, err := sdk.ValAddressFromBech32(s.validators[0].OperatorAddress)
+	slashAmount := big.NewInt(10)
+	depositAmount := big.NewInt(100)
+	assetAddr := paddingClientChainAddress(usdtAddress, types.GeneralClientChainAddrLength)
+	depositAsset := func(staker []byte, depositAmount sdkmath.Int) {
+		//deposit asset for slash test
+		params := &keeper.DepositParams{
+			ClientChainLzId: 101,
+			Action:          types.Deposit,
+			StakerAddress:   staker,
+			AssetsAddress:   usdtAddress,
+			OpAmount:        depositAmount,
+		}
+		err := s.app.DepositKeeper.Deposit(s.ctx, params)
 		s.Require().NoError(err)
-		val, _ := s.app.StakingKeeper.GetValidator(s.ctx, valAddr)
-		coins := sdk.NewCoins(sdk.NewCoin(utils.BaseDenom, sdk.NewInt(1e18)))
-		s.app.DistrKeeper.AllocateTokensToValidator(s.ctx, val, sdk.NewDecCoinsFromCoins(coins...))
+	}
+
+	commonMalleate := func() (common.Address, []byte) {
+		// Prepare the call input for slash test
 		input, err := s.precompile.Pack(
-			withdraw.MethodWithdraw,
+			slash.MethodSlash,
 			uint16(clientChainLzId),
 			assetAddr,
-			withdrawAddr,
-			opAmount,
+			paddingClientChainAddress(s.address.Bytes(), types.GeneralClientChainAddrLength),
+			slashAmount,
+			common.FromHex("0x2E756b8faBeA234b9900767b69D6387400CDC396"),
+			common.FromHex("0xceb69f6342ece283b2f5c9088ff249b5d0ae66ea"),
+			"5",
+			"slash",
 		)
 		s.Require().NoError(err, "failed to pack input")
 		return s.address, input
 	}
-	successRet, err := s.precompile.Methods[withdraw.MethodWithdraw].Outputs.Pack(true, opAmount)
+	successRet, err := s.precompile.Methods[slash.MethodSlash].Outputs.Pack(true)
 	s.Require().NoError(err)
-
 	testcases := []struct {
 		name        string
 		malleate    func() (common.Address, []byte)
@@ -89,53 +97,20 @@ func (s *PrecompileTestSuite) TestRunWithdraw() {
 		returnBytes []byte
 	}{
 		{
-			name: "fail - withdraw transaction will fail because the exoCoreLzAppAddress haven't been stored",
+			name: "pass - slash via pre-compiles",
 			malleate: func() (common.Address, []byte) {
-				return commonMalleate()
-			},
-			readOnly:    false,
-			expPass:     false,
-			errContains: types1.ErrNoParamsKey.Error(),
-		},
-		{
-			name: "fail - withdraw transaction will fail because the contract caller isn't the exoCoreLzAppAddr",
-			malleate: func() (common.Address, []byte) {
-				withdrawModuleParam := &types1.Params{
-					ExoCoreLzAppAddress:    exoCoreLzAppAddress,
-					ExoCoreLzAppEventTopic: exoCoreLzAppEventTopic,
-				}
-				err := s.app.WithdrawKeeper.SetParams(s.ctx, withdrawModuleParam)
-				s.Require().NoError(err)
-				return commonMalleate()
-			},
-			readOnly:    false,
-			expPass:     false,
-			errContains: strings.Split(withdraw.ErrContractCaller, ",")[0],
-		},
-		{
-			name: "fail - withdraw transaction will fail because the staked asset hasn't been registered",
-			malleate: func() (common.Address, []byte) {
-				withdrawModuleParam := &types1.Params{
+				depositModuleParam := &depositParams.Params{
 					ExoCoreLzAppAddress:    s.address.String(),
 					ExoCoreLzAppEventTopic: exoCoreLzAppEventTopic,
 				}
-				err := s.app.WithdrawKeeper.SetParams(s.ctx, withdrawModuleParam)
+				err := s.app.DepositKeeper.SetParams(s.ctx, depositModuleParam)
 				s.Require().NoError(err)
-				assetAddr = usdcAddress
-				return commonMalleate()
-			},
-			readOnly:    false,
-			expPass:     false,
-			errContains: types1.ErrWithdrawAssetNotExist.Error(),
-		},
-		{
-			name: "pass - withdraw transaction",
-			malleate: func() (common.Address, []byte) {
-				withdrawModuleParam := &types1.Params{
+				depositAsset(s.address.Bytes(), sdkmath.NewIntFromBigInt(depositAmount))
+				slashModuleParam := &slashParams.Params{
 					ExoCoreLzAppAddress:    s.address.String(),
 					ExoCoreLzAppEventTopic: exoCoreLzAppEventTopic,
 				}
-				err := s.app.WithdrawKeeper.SetParams(s.ctx, withdrawModuleParam)
+				err = s.app.ExoSlashKeeper.SetParams(s.ctx, slashModuleParam)
 				s.Require().NoError(err)
 				return commonMalleate()
 			},
@@ -144,7 +119,6 @@ func (s *PrecompileTestSuite) TestRunWithdraw() {
 			expPass:     true,
 		},
 	}
-
 	for _, tc := range testcases {
 		tc := tc
 		s.Run(tc.name, func() {
@@ -186,11 +160,12 @@ func (s *PrecompileTestSuite) TestRunWithdraw() {
 			msg, err := msgEthereumTx.AsMessage(s.ethSigner, baseFee)
 			s.Require().NoError(err, "failed to instantiate Ethereum message")
 
+			// Create StateDB
+			s.stateDB = statedb.New(s.ctx, s.app.EvmKeeper, statedb.NewEmptyTxConfig(common.BytesToHash(s.ctx.HeaderHash().Bytes())))
 			// Instantiate EVM
 			evm := s.app.EvmKeeper.NewEVM(
 				s.ctx, msg, cfg, nil, s.stateDB,
 			)
-
 			params := s.app.EvmKeeper.GetParams(s.ctx)
 			activePrecompiles := params.GetActivePrecompilesAddrs()
 			precompileMap := s.app.EvmKeeper.Precompiles(activePrecompiles...)

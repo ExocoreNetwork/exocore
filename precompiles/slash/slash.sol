@@ -1,31 +1,37 @@
-// SPDX-License-Identifier: LGPL-3.0-only
 pragma solidity >=0.8.17 .0;
 
-/// @dev The WITHDRAW contract's address.
-address constant WITHDRAW_PRECOMPILE_ADDRESS = 0x0000000000000000000000000000000000000807;
+/// @dev The SLASH contract's address.
+address constant SLASH_PRECOMPILE_ADDRESS = 0x0000000000000000000000000000000000000807;
 
-/// @dev The WITHDRAW contract's instance.
-IWithdraw constant WITHDRAW_CONTRACT = IWithdraw(
-    WITHDRAW_PRECOMPILE_ADDRESS
+/// @dev The SLASH contract's instance.
+ISlash constant SLASH_CONTRACT = ISlash(
+    SLASH_PRECOMPILE_ADDRESS
 );
 
 /// @author Exocore Team
-/// @title WITHDRAW Precompile Contract
-/// @dev The interface through which solidity contracts will interact with WITHDRAW
+/// @title Slash Precompile Contract
+/// @dev The interface through which solidity contracts will interact with Slash
 /// @custom:address 0x0000000000000000000000000000000000000807
-interface IWithdraw {
+interface ISlash {
 /// TRANSACTIONS
-/// @dev withdraw To the staker, that will change the state in withdraw module
+/// @dev Slash the oprator, that will change the state in Slash module
 /// Note that this address cannot be a module account.
-/// @param ClientChainLzId The lzId of client chain
-/// @param AssetsAddress The client chain asset Address
-/// @param WithdrawAddress The withdraw address
-/// @param OpAmount The withdraw amount
-    function withdrawTo(
-        uint16 ClientChainLzId,
-        bytes memory AssetsAddress,
-        bytes memory WithdrawAddress,
-        uint256 OpAmount
+/// @param clientChainLzId The lzId of client chain
+/// @param assetsAddress The client chain asset Address
+/// @param opAmount The Slash amount
+/// @param operatorAddress The Slashed OperatorAddress
+/// @param middlewareContractAddress The middleware address
+/// @param proportion The Slash proportion
+/// @param proof The Slash proof
+
+    function submitSlash(
+        uint16 clientChainLzId,
+        bytes memory assetsAddress,
+        bytes memory stakerAddress,
+        uint256 opAmount,
+        bytes memory operatorAddress,
+        bytes memory middlewareContractAddress,
+        string memory proportion,
+        string memory proof
     ) external returns (bool success);
 }
-
