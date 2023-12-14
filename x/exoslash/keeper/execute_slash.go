@@ -172,11 +172,10 @@ func (k Keeper) PostTxProcessing(ctx sdk.Context, msg core.Message, receipt *eth
 // }
 
 func (k Keeper) Slash(ctx sdk.Context, event *SlashParams) error {
-	//the stakes are frozen for the impacted middleware, and deposits and withdrawals are disabled as well.
-	//All pending deposits and withdrawals for the current epoch will be invalidated.
-	//check event parameter then execute slash operation
+	//TODO the stakes are frozen for the impacted middleware, and deposits and withdrawals are disabled as well. All pending deposits and withdrawals for the current epoch will be invalidated.
 	//	_ = k.SetFrozenStatus(ctx, string(event.OperatorAddress), true)
 
+	//check event parameter then execute slash operation
 	if event.OpAmount.IsNegative() {
 		return errorsmod.Wrap(rtypes.ErrSlashAmountIsNegative, fmt.Sprintf("the amount is:%s", event.OpAmount))
 	}
@@ -186,7 +185,6 @@ func (k Keeper) Slash(ctx sdk.Context, event *SlashParams) error {
 		return errorsmod.Wrap(rtypes.ErrSlashAssetNotExist, fmt.Sprintf("the assetId is:%s", assetId))
 	}
 
-	//TODO Processing Slash Core Logic
 	changeAmount := types.StakerSingleAssetOrChangeInfo{
 		TotalDepositAmountOrWantChangeValue: event.OpAmount.Neg(),
 		CanWithdrawAmountOrWantChangeValue:  event.OpAmount.Neg(),
