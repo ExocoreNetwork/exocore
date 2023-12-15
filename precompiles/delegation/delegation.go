@@ -100,6 +100,7 @@ func (p Precompile) Run(evm *vm.EVM, contract *vm.Contract, readOnly bool) (bz [
 	}
 
 	if err != nil {
+		ctx.Logger().Error("call delegation precompile error", "err", err)
 		return nil, err
 	}
 
