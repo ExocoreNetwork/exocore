@@ -192,10 +192,10 @@ func QueStakerAssetInfos() *cobra.Command {
 // QueStakerSpecifiedAssetAmount queries staker specified asset info
 func QueStakerSpecifiedAssetAmount() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "QueStakerSpecifiedAssetAmount stakerId assetId",
+		Use:   "QueStakerSpecifiedAssetAmount clientChainId stakerAddr assetAddr",
 		Short: "Get staker specified asset state",
 		Long:  "Get staker specified asset state",
-		Args:  cobra.ExactArgs(2),
+		Args:  cobra.ExactArgs(3),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx, err := client.GetClientQueryContext(cmd)
 			if err != nil {
@@ -203,9 +203,14 @@ func QueStakerSpecifiedAssetAmount() *cobra.Command {
 			}
 
 			queryClient := types.NewQueryClient(clientCtx)
+			clientChainLzId, err := strconv.ParseUint(args[0], 10, 64)
+			if err != nil {
+				return errorsmod.Wrap(types.ErrCliCmdInputArg, err.Error())
+			}
+			stakerId, assetId := types.GetStakeIDAndAssetIdFromStr(clientChainLzId, args[1], args[2])
 			req := &types.QuerySpecifiedAssetAmountReq{
-				StakerId: args[0],
-				AssetId:  args[1],
+				StakerId: stakerId,
+				AssetId:  assetId,
 			}
 			res, err := queryClient.QueStakerSpecifiedAssetAmount(context.Background(), req)
 			if err != nil {
@@ -251,20 +256,25 @@ func QueOperatorAssetInfos() *cobra.Command {
 // QueOperatorSpecifiedAssetAmount queries specified operator asset info
 func QueOperatorSpecifiedAssetAmount() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "QueOperatorSpecifiedAssetAmount operatorAddr assetId",
+		Use:   "QueOperatorSpecifiedAssetAmount operatorAddr clientChainId assetAddr",
 		Short: "Get operator specified asset state",
 		Long:  "Get operator specified asset state",
-		Args:  cobra.ExactArgs(2),
+		Args:  cobra.ExactArgs(3),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx, err := client.GetClientQueryContext(cmd)
 			if err != nil {
 				return err
 			}
 
+			clientChainLzId, err := strconv.ParseUint(args[1], 10, 64)
+			if err != nil {
+				return errorsmod.Wrap(types.ErrCliCmdInputArg, err.Error())
+			}
+			_, assetId := types.GetStakeIDAndAssetIdFromStr(clientChainLzId, "", args[2])
 			queryClient := types.NewQueryClient(clientCtx)
 			req := &types.QueryOperatorSpecifiedAssetAmountReq{
 				OperatorAddr: args[0],
-				AssetId:      args[1],
+				AssetId:      assetId,
 			}
 			res, err := queryClient.QueOperatorSpecifiedAssetAmount(context.Background(), req)
 			if err != nil {

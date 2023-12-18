@@ -52,7 +52,7 @@ func (k Keeper) GetStakerSpecifiedAssetInfo(ctx sdk.Context, stakerId string, as
 	key := types2.GetAssetStateKey(stakerId, assetId)
 	ifExist := store.Has(key)
 	if !ifExist {
-		return nil, types2.ErrNoStakerAssetKey
+		return nil, errorsmod.Wrap(types2.ErrNoStakerAssetKey, fmt.Sprintf("the key is:%s", key))
 	}
 
 	value := store.Get(key)
