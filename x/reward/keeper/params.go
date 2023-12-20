@@ -8,7 +8,7 @@ import (
 )
 
 func (k Keeper) SetParams(ctx sdk.Context, params *types.Params) error {
-	//check if addr is evm address
+	// check if addr is evm address
 	if !common.IsHexAddress(params.ExoCoreLzAppAddress) {
 		return types.ErrInvalidEvmAddressFormat
 	}
@@ -16,14 +16,13 @@ func (k Keeper) SetParams(ctx sdk.Context, params *types.Params) error {
 		return types.ErrInvalidLzUaTopicIdLength
 	}
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefixParams)
-	//key := common.HexToAddress(incentive.Contract)
+	// key := common.HexToAddress(incentive.Contract)
 	bz := k.cdc.MustMarshal(params)
 	store.Set(types.ParamsKey, bz)
 	return nil
 }
 
 func (k Keeper) GetParams(ctx sdk.Context) (*types.Params, error) {
-
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefixParams)
 	ifExist := store.Has(types.ParamsKey)
 	if !ifExist {

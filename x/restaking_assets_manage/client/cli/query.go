@@ -1,14 +1,12 @@
-// Copyright Tharsis Labs Ltd.(Evmos)
-// SPDX-License-Identifier:ENCL-1.0(https://github.com/evmos/evmos/blob/main/LICENSE)
-
 package cli
 
 import (
 	"context"
-	errorsmod "cosmossdk.io/errors"
 	"fmt"
-	"github.com/exocore/x/restaking_assets_manage/types"
 	"strconv"
+
+	errorsmod "cosmossdk.io/errors"
+	"github.com/exocore/x/restaking_assets_manage/types"
 
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
@@ -34,7 +32,7 @@ func GetQueryCmd() *cobra.Command {
 		QueStakerSpecifiedAssetAmount(),
 		QueOperatorAssetInfos(),
 		QueOperatorSpecifiedAssetAmount(),
-		//QueStakerExoCoreAddr(),
+		// QueStakerExoCoreAddr(),
 	)
 	return cmd
 }

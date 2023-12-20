@@ -2,6 +2,7 @@ package reward
 
 import (
 	"fmt"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
@@ -24,7 +25,7 @@ func (p Precompile) Reward(
 	method *abi.Method,
 	args []interface{},
 ) ([]byte, error) {
-	//check the invalidation of caller contract
+	// check the invalidation of caller contract
 	rewardModuleParam, err := p.rewardKeeper.GetParams(ctx)
 	if err != nil {
 		return nil, err
@@ -43,7 +44,7 @@ func (p Precompile) Reward(
 	if err != nil {
 		return nil, err
 	}
-	//get the latest asset state of staker to return.
+	// get the latest asset state of staker to return.
 	stakerId, assetId := types.GetStakeIDAndAssetId(rewardParam.ClientChainLzId, rewardParam.WithdrawRewardAddress, rewardParam.AssetsAddress)
 	info, err := p.stakingStateKeeper.GetStakerSpecifiedAssetInfo(ctx, stakerId, assetId)
 	if err != nil {

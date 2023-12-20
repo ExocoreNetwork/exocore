@@ -1,6 +1,8 @@
 package reward_test
 
 import (
+	"math/big"
+
 	sdkmath "cosmossdk.io/math"
 	"github.com/ethereum/go-ethereum/common"
 	ethtypes "github.com/ethereum/go-ethereum/core/types"
@@ -13,8 +15,6 @@ import (
 	depositParams "github.com/exocore/x/deposit/types"
 	"github.com/exocore/x/restaking_assets_manage/types"
 	rewardParams "github.com/exocore/x/reward/types"
-
-	"math/big"
 )
 
 func (s *PrecompileTestSuite) TestIsTransaction() {
@@ -41,6 +41,7 @@ func (s *PrecompileTestSuite) TestIsTransaction() {
 		})
 	}
 }
+
 func paddingClientChainAddress(input []byte, outputLength int) []byte {
 	if len(input) < outputLength {
 		padding := make([]byte, outputLength-len(input))
@@ -51,7 +52,7 @@ func paddingClientChainAddress(input []byte, outputLength int) []byte {
 
 // TestRun tests the precompiled Run method reward.
 func (s *PrecompileTestSuite) TestRunRewardThroughClientChain() {
-	//deposit params for test
+	// deposit params for test
 	exoCoreLzAppEventTopic := "0xc6a377bfc4eb120024a8ac08eef205be16b817020812c73223e81d1bdb9708ec"
 	usdtAddress := common.FromHex("0xdAC17F958D2ee523a2206206994597C13D831ec7")
 	clientChainLzId := 101
@@ -59,7 +60,7 @@ func (s *PrecompileTestSuite) TestRunRewardThroughClientChain() {
 	depositAmount := big.NewInt(100)
 	assetAddr := paddingClientChainAddress(usdtAddress, types.GeneralClientChainAddrLength)
 	depositAsset := func(staker []byte, depositAmount sdkmath.Int) {
-		//deposit asset for reward test
+		// deposit asset for reward test
 		params := &keeper.DepositParams{
 			ClientChainLzId: 101,
 			Action:          types.Deposit,

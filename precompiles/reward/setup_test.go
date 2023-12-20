@@ -1,8 +1,9 @@
 package reward_test
 
 import (
-	"github.com/exocore/precompiles/reward"
 	"testing"
+
+	"github.com/exocore/precompiles/reward"
 
 	"github.com/evmos/evmos/v14/x/evm/statedb"
 

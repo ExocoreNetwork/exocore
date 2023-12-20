@@ -1,10 +1,8 @@
-// Copyright Tharsis Labs Ltd.(Evmos)
-// SPDX-License-Identifier:ENCL-1.0(https://github.com/evmos/evmos/blob/main/LICENSE)
-
 package keeper
 
 import (
 	"fmt"
+
 	stakingStateKeeper "github.com/exocore/x/restaking_assets_manage/keeper"
 	rewardKeeper "github.com/exocore/x/reward/keeper"
 	withdrawKeeper "github.com/exocore/x/withdraw/keeper"
@@ -31,7 +29,7 @@ import (
 	rewardPrecompile "github.com/exocore/precompiles/reward"
 	slashPrecompile "github.com/exocore/precompiles/slash"
 	withdrawPrecompile "github.com/exocore/precompiles/withdraw"
-	exoslashKeeper "github.com/exocore/x/exoslash/keeper"
+	exoslashKeeper "github.com/exocore/x/slash/keeper"
 )
 
 // AvailablePrecompiles returns the list of all available precompiled contracts.
@@ -73,7 +71,7 @@ func AvailablePrecompiles(
 		panic(fmt.Errorf("failed to load vesting precompile: %w", err))
 	}
 
-	//add exoCore chain preCompiles
+	// add exoCore chain preCompiles
 	depositPrecompile, err := depositprecompile.NewPrecompile(stakingStateKeeper, depositKeeper, authzKeeper)
 	if err != nil {
 		panic(fmt.Errorf("failed to load deposit precompile: %w", err))

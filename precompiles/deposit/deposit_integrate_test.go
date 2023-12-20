@@ -1,14 +1,15 @@
 package deposit_test
 
 import (
+	"math/big"
+	"strings"
+
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/exocore/precompiles/deposit"
 	"github.com/exocore/precompiles/testutil"
 	"github.com/exocore/precompiles/testutil/contracts"
 	types3 "github.com/exocore/x/deposit/types"
 	"github.com/exocore/x/restaking_assets_manage/types"
-	"math/big"
-	"strings"
 )
 
 // General variables used for integration tests
@@ -26,7 +27,7 @@ var (
 )
 
 func (s *PrecompileTestSuite) TestCallDepositToFromEOA() {
-	//deposit params for test
+	// deposit params for test
 	exoCoreLzAppAddress := "0x3fC91A3afd70395Cd496C647d5a6CC9D4B2b7FAD"
 	exoCoreLzAppEventTopic := "0xc6a377bfc4eb120024a8ac08eef205be16b817020812c73223e81d1bdb9708ec"
 	depositParams := types3.Params{
@@ -66,13 +67,13 @@ func (s *PrecompileTestSuite) TestCallDepositToFromEOA() {
 			opAmount)
 	}
 
-	//test caller error
+	// test caller error
 	beforeEach()
 	setDepositToArgs := prepareFunc(&depositParams, method)
 	_, _, err := contracts.CallContractAndCheckLogs(s.ctx, s.app, setDepositToArgs, passCheck)
 	s.Require().ErrorContains(err, strings.Split(deposit.ErrContractCaller, ",")[0])
 
-	//test success
+	// test success
 	beforeEach()
 	depositParams.ExoCoreLzAppAddress = s.address.String()
 	setDepositToArgs = prepareFunc(&depositParams, method)
@@ -83,7 +84,7 @@ func (s *PrecompileTestSuite) TestCallDepositToFromEOA() {
 }
 
 func (s *PrecompileTestSuite) TestCallDepositToFromContract() {
-	//deposit params for test
+	// deposit params for test
 	exoCoreLzAppAddress := "0x3fC91A3afd70395Cd496C647d5a6CC9D4B2b7FAD"
 	exoCoreLzAppEventTopic := "0xc6a377bfc4eb120024a8ac08eef205be16b817020812c73223e81d1bdb9708ec"
 	depositParams := types3.Params{
@@ -100,7 +101,7 @@ func (s *PrecompileTestSuite) TestCallDepositToFromContract() {
 	var contractAddr common.Address
 	var err error
 
-	//deploy the caller contract
+	// deploy the caller contract
 	s.SetupTest()
 	contractAddr, err = s.DeployContract(contracts.DepositCallerContract)
 	s.Require().NoError(err)
@@ -136,7 +137,7 @@ func (s *PrecompileTestSuite) TestCallDepositToFromContract() {
 			opAmount)
 	}
 
-	//testDepositTo
+	// testDepositTo
 	beforeEach()
 	depositParams.ExoCoreLzAppAddress = contractAddr.String()
 	setDepositToArgs := prepareFunc(&depositParams, "testDepositTo")
@@ -147,23 +148,23 @@ func (s *PrecompileTestSuite) TestCallDepositToFromContract() {
 		s.Require().NoError(err)
 		s.Require().Equal(successRet, ethRes.Ret)*/
 
-	//testCallDepositToAndEmitEvent
+	// testCallDepositToAndEmitEvent
 	beforeEach()
 	setDepositToArgs = prepareFunc(&depositParams, "testCallDepositToAndEmitEvent")
-	//todo: need to check why can't get the ethereum log
-	//eventCheck := passCheck.WithExpEvents("callDepositToResult")
+	// todo: need to check why can't get the ethereum log
+	// eventCheck := passCheck.WithExpEvents("callDepositToResult")
 	_, _, err = contracts.CallContractAndCheckLogs(s.ctx, s.app, setDepositToArgs, passCheck)
 	s.Require().NoError(err)
 	/*	successRet, err = contracts.DepositCallerContract.ABI.Methods["testCallDepositToAndEmitEvent"].Outputs.Pack(true, opAmount)
 		s.Require().NoError(err)
 		s.Require().Equal(successRet, ethRes.Ret)*/
 
-	//testCallDepositToWithTryCatch
+	// testCallDepositToWithTryCatch
 	beforeEach()
 	depositParams.ExoCoreLzAppAddress = exoCoreLzAppAddress
 	setDepositToArgs = prepareFunc(&depositParams, "testCallDepositToWithTryCatch")
-	//eventCheck = passCheck.WithExpEvents("ErrorOccurred")
-	//todo: need to check the ethereum log
+	// eventCheck = passCheck.WithExpEvents("ErrorOccurred")
+	// todo: need to check the ethereum log
 	_, _, err = contracts.CallContractAndCheckLogs(s.ctx, s.app, setDepositToArgs, passCheck)
 	s.Require().NoError(err)
 	/*	successRet, err = contracts.DepositCallerContract.ABI.Methods["testCallDepositToWithTryCatch"].Outputs.Pack(false, big.NewInt(0))

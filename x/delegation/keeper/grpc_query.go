@@ -2,22 +2,24 @@ package keeper
 
 import (
 	"context"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	types2 "github.com/exocore/x/delegation/types"
+	delegationtype "github.com/exocore/x/delegation/types"
 )
 
-var _ types2.QueryServer = Keeper{}
+var _ delegationtype.QueryServer = Keeper{}
 
-func (k Keeper) QuerySingleDelegationInfo(ctx context.Context, req *types2.SingleDelegationInfoReq) (*types2.DelegationAmounts, error) {
+func (k Keeper) QuerySingleDelegationInfo(ctx context.Context, req *delegationtype.SingleDelegationInfoReq) (*delegationtype.DelegationAmounts, error) {
 	c := sdk.UnwrapSDKContext(ctx)
 	return k.GetSingleDelegationInfo(c, req.StakerId, req.AssetId, req.OperatorAddr)
 }
 
-func (k Keeper) QueryDelegationInfo(ctx context.Context, info *types2.DelegationInfoReq) (*types2.QueryDelegationInfoResponse, error) {
+func (k Keeper) QueryDelegationInfo(ctx context.Context, info *delegationtype.DelegationInfoReq) (*delegationtype.QueryDelegationInfoResponse, error) {
 	c := sdk.UnwrapSDKContext(ctx)
 	return k.GetDelegationInfo(c, info.StakerId, info.AssetId)
 }
-func (k Keeper) QueryOperatorInfo(ctx context.Context, req *types2.QueryOperatorInfoReq) (*types2.OperatorInfo, error) {
+
+func (k Keeper) QueryOperatorInfo(ctx context.Context, req *delegationtype.QueryOperatorInfoReq) (*delegationtype.OperatorInfo, error) {
 	c := sdk.UnwrapSDKContext(ctx)
 	return k.GetOperatorInfo(c, req.OperatorAddr)
 }

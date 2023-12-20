@@ -1,6 +1,9 @@
 package deposit_test
 
 import (
+	"math/big"
+	"strings"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/common"
 	ethtypes "github.com/ethereum/go-ethereum/core/types"
@@ -11,8 +14,6 @@ import (
 	"github.com/exocore/precompiles/deposit"
 	types3 "github.com/exocore/x/deposit/types"
 	"github.com/exocore/x/restaking_assets_manage/types"
-	"math/big"
-	"strings"
 )
 
 func (s *PrecompileTestSuite) TestIsTransaction() {
@@ -50,7 +51,7 @@ func paddingClientChainAddress(input []byte, outputLength int) []byte {
 
 // TestRunDepositTo tests DepositTo method through calling Run function..
 func (s *PrecompileTestSuite) TestRunDepositTo() {
-	//deposit params for test
+	// deposit params for test
 	exoCoreLzAppAddress := "0x3fC91A3afd70395Cd496C647d5a6CC9D4B2b7FAD"
 	exoCoreLzAppEventTopic := "0xc6a377bfc4eb120024a8ac08eef205be16b817020812c73223e81d1bdb9708ec"
 	usdtAddress := paddingClientChainAddress(common.FromHex("0xdAC17F958D2ee523a2206206994597C13D831ec7"), types.GeneralClientChainAddrLength)

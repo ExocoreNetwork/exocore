@@ -1,14 +1,16 @@
 package reward
 
 import (
-	sdkmath "cosmossdk.io/math"
 	"fmt"
+	"math/big"
+	"reflect"
+
+	sdkmath "cosmossdk.io/math"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	cmn "github.com/evmos/evmos/v14/precompiles/common"
 	"github.com/exocore/x/restaking_assets_manage/types"
 	"github.com/exocore/x/reward/keeper"
-	"math/big"
-	"reflect"
 )
 
 func (p Precompile) GetRewardParamsFromInputs(ctx sdk.Context, args []interface{}) (*keeper.RewardParams, error) {
@@ -28,7 +30,7 @@ func (p Precompile) GetRewardParamsFromInputs(ctx sdk.Context, args []interface{
 	}
 	clientChainAddrLength := info.AddressLength
 
-	//the length of client chain address inputted by caller is 32, so we need to check the length and remove the padding according to the actual length.
+	// the length of client chain address inputted by caller is 32, so we need to check the length and remove the padding according to the actual length.
 	assetAddr, ok := args[1].([]byte)
 	if !ok || assetAddr == nil {
 		return nil, fmt.Errorf(ErrContractInputParaOrType, 1, reflect.TypeOf(args[0]), assetAddr)

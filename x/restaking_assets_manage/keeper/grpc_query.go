@@ -2,55 +2,56 @@ package keeper
 
 import (
 	"context"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	types2 "github.com/exocore/x/restaking_assets_manage/types"
+	restakingtype "github.com/exocore/x/restaking_assets_manage/types"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
 
-func (k Keeper) QueClientChainInfoByIndex(ctx context.Context, info *types2.QueryClientChainInfo) (*types2.ClientChainInfo, error) {
+func (k Keeper) QueClientChainInfoByIndex(ctx context.Context, info *restakingtype.QueryClientChainInfo) (*restakingtype.ClientChainInfo, error) {
 	c := sdk.UnwrapSDKContext(ctx)
 	return k.GetClientChainInfoByIndex(c, info.ChainIndex)
 }
 
-func (k Keeper) QueAllClientChainInfo(ctx context.Context, info *types2.QueryAllClientChainInfo) (*types2.QueryAllClientChainInfoResponse, error) {
+func (k Keeper) QueAllClientChainInfo(ctx context.Context, info *restakingtype.QueryAllClientChainInfo) (*restakingtype.QueryAllClientChainInfoResponse, error) {
 	c := sdk.UnwrapSDKContext(ctx)
 	allInfo, err := k.GetAllClientChainInfo(c)
 	if err != nil {
 		return nil, err
 	}
-	return &types2.QueryAllClientChainInfoResponse{AllClientChainInfos: allInfo}, nil
+	return &restakingtype.QueryAllClientChainInfoResponse{AllClientChainInfos: allInfo}, nil
 }
 
-func (k Keeper) QueStakingAssetInfo(ctx context.Context, info *types2.QueryStakingAssetInfo) (*types2.StakingAssetInfo, error) {
+func (k Keeper) QueStakingAssetInfo(ctx context.Context, info *restakingtype.QueryStakingAssetInfo) (*restakingtype.StakingAssetInfo, error) {
 	c := sdk.UnwrapSDKContext(ctx)
 	return k.GetStakingAssetInfo(c, info.AssetId)
 }
 
-func (k Keeper) QueAllStakingAssetsInfo(ctx context.Context, info *types2.QueryAllStakingAssetsInfo) (*types2.QueryAllStakingAssetsInfoResponse, error) {
+func (k Keeper) QueAllStakingAssetsInfo(ctx context.Context, info *restakingtype.QueryAllStakingAssetsInfo) (*restakingtype.QueryAllStakingAssetsInfoResponse, error) {
 	c := sdk.UnwrapSDKContext(ctx)
 	allInfo, err := k.GetAllStakingAssetsInfo(c)
 	if err != nil {
 		return nil, err
 	}
-	return &types2.QueryAllStakingAssetsInfoResponse{AllStakingAssetsInfo: allInfo}, nil
+	return &restakingtype.QueryAllStakingAssetsInfoResponse{AllStakingAssetsInfo: allInfo}, nil
 }
 
-func (k Keeper) QueStakerAssetInfos(ctx context.Context, info *types2.QueryStakerAssetInfo) (*types2.QueryAssetInfoResponse, error) {
+func (k Keeper) QueStakerAssetInfos(ctx context.Context, info *restakingtype.QueryStakerAssetInfo) (*restakingtype.QueryAssetInfoResponse, error) {
 	c := sdk.UnwrapSDKContext(ctx)
 	assetInfos, err := k.GetStakerAssetInfos(c, info.StakerId)
 	if err != nil {
 		return nil, err
 	}
-	return &types2.QueryAssetInfoResponse{AssetInfos: assetInfos}, nil
+	return &restakingtype.QueryAssetInfoResponse{AssetInfos: assetInfos}, nil
 }
 
-func (k Keeper) QueStakerSpecifiedAssetAmount(ctx context.Context, req *types2.QuerySpecifiedAssetAmountReq) (*types2.StakerSingleAssetOrChangeInfo, error) {
+func (k Keeper) QueStakerSpecifiedAssetAmount(ctx context.Context, req *restakingtype.QuerySpecifiedAssetAmountReq) (*restakingtype.StakerSingleAssetOrChangeInfo, error) {
 	c := sdk.UnwrapSDKContext(ctx)
 	return k.GetStakerSpecifiedAssetInfo(c, req.StakerId, req.AssetId)
 }
 
-func (k Keeper) QueOperatorAssetInfos(ctx context.Context, infos *types2.QueryOperatorAssetInfos) (*types2.QueryOperatorAssetInfosResponse, error) {
+func (k Keeper) QueOperatorAssetInfos(ctx context.Context, infos *restakingtype.QueryOperatorAssetInfos) (*restakingtype.QueryOperatorAssetInfosResponse, error) {
 	c := sdk.UnwrapSDKContext(ctx)
 	addr, err := sdk.AccAddressFromBech32(infos.OperatorAddr)
 	if err != nil {
@@ -60,10 +61,10 @@ func (k Keeper) QueOperatorAssetInfos(ctx context.Context, infos *types2.QueryOp
 	if err != nil {
 		return nil, err
 	}
-	return &types2.QueryOperatorAssetInfosResponse{AssetInfos: assetInfos}, nil
+	return &restakingtype.QueryOperatorAssetInfosResponse{AssetInfos: assetInfos}, nil
 }
 
-func (k Keeper) QueOperatorSpecifiedAssetAmount(ctx context.Context, req *types2.QueryOperatorSpecifiedAssetAmountReq) (*types2.OperatorSingleAssetOrChangeInfo, error) {
+func (k Keeper) QueOperatorSpecifiedAssetAmount(ctx context.Context, req *restakingtype.QueryOperatorSpecifiedAssetAmountReq) (*restakingtype.OperatorSingleAssetOrChangeInfo, error) {
 	c := sdk.UnwrapSDKContext(ctx)
 	addr, err := sdk.AccAddressFromBech32(req.OperatorAddr)
 	if err != nil {
@@ -72,11 +73,11 @@ func (k Keeper) QueOperatorSpecifiedAssetAmount(ctx context.Context, req *types2
 	return k.GetOperatorSpecifiedAssetInfo(c, addr, req.AssetId)
 }
 
-func (k Keeper) QueStakerExoCoreAddr(ctx context.Context, req *types2.QueryStakerExCoreAddr) (*types2.QueryStakerExCoreAddrResponse, error) {
+func (k Keeper) QueStakerExoCoreAddr(ctx context.Context, req *restakingtype.QueryStakerExCoreAddr) (*restakingtype.QueryStakerExCoreAddrResponse, error) {
 	c := sdk.UnwrapSDKContext(ctx)
 	exoCoreAddr, err := k.GetStakerExoCoreAddr(c, req.StakerId)
 	if err != nil {
 		return nil, err
 	}
-	return &types2.QueryStakerExCoreAddrResponse{ExCoreAddr: exoCoreAddr}, nil
+	return &restakingtype.QueryStakerExCoreAddrResponse{ExCoreAddr: exoCoreAddr}, nil
 }

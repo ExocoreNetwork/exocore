@@ -1,0 +1,14 @@
+syntax = "proto3";
+package exocore.slash;
+
+import "gogoproto/gogo.proto";
+import "exocore/slash/params.proto";
+// this line is used by starport scaffolding # genesis/proto/import
+
+option go_package = "github.com/exocore/x/slash/types";
+
+// GenesisState defines the exoslash module's genesis state.
+message GenesisState {
+  Params params = 1 [(gogoproto.nullable) = false];
+  // this line is used by starport scaffolding # genesis/proto/state
+}

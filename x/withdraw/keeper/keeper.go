@@ -16,7 +16,7 @@ type (
 		cdc      codec.BinaryCodec
 		storeKey storetypes.StoreKey
 
-		//other keepers
+		// restaking keepers for asset status update
 		restakingStateKeeper keeper.Keeper
 	}
 )
@@ -26,7 +26,6 @@ func NewKeeper(
 	storeKey storetypes.StoreKey,
 	restakingStateKeeper keeper.Keeper,
 ) *Keeper {
-
 	return &Keeper{
 		cdc:                  cdc,
 		storeKey:             storeKey,

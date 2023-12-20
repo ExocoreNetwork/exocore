@@ -1,8 +1,9 @@
 package delegation_test
 
 import (
-	"github.com/exocore/precompiles/delegation"
 	"testing"
+
+	"github.com/exocore/precompiles/delegation"
 
 	"github.com/evmos/evmos/v14/x/evm/statedb"
 

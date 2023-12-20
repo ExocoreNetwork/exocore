@@ -1,9 +1,8 @@
-// Copyright Tharsis Labs Ltd.(Evmos)
-// SPDX-License-Identifier:ENCL-1.0(https://github.com/evmos/evmos/blob/main/LICENSE)
 package delegation
 
 import (
 	"context"
+
 	abci "github.com/cometbft/cometbft/abci/types"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -13,7 +12,7 @@ import (
 	simtypes "github.com/cosmos/cosmos-sdk/types/simulation"
 	"github.com/exocore/x/delegation/client/cli"
 	"github.com/exocore/x/delegation/keeper"
-	types2 "github.com/exocore/x/delegation/types"
+	delegationtype "github.com/exocore/x/delegation/types"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	"github.com/spf13/cobra"
 )
@@ -27,23 +26,22 @@ var (
 	_ module.AppModuleSimulation = AppModule{}
 )
 
-type AppModuleBasic struct {
-}
+type AppModuleBasic struct{}
 
 func (b AppModuleBasic) Name() string {
-	return types2.ModuleName
+	return delegationtype.ModuleName
 }
 
 func (b AppModuleBasic) RegisterLegacyAminoCodec(amino *codec.LegacyAmino) {
-	types2.RegisterLegacyAminoCodec(amino)
+	delegationtype.RegisterLegacyAminoCodec(amino)
 }
 
 func (b AppModuleBasic) RegisterInterfaces(registry codectypes.InterfaceRegistry) {
-	types2.RegisterInterfaces(registry)
+	delegationtype.RegisterInterfaces(registry)
 }
 
 func (b AppModuleBasic) RegisterGRPCGatewayRoutes(c client.Context, serveMux *runtime.ServeMux) {
-	if err := types2.RegisterQueryHandlerClient(context.Background(), serveMux, types2.NewQueryClient(c)); err != nil {
+	if err := delegationtype.RegisterQueryHandlerClient(context.Background(), serveMux, delegationtype.NewQueryClient(c)); err != nil {
 		panic(err)
 	}
 }
@@ -76,8 +74,8 @@ func (am AppModule) IsAppModule() {}
 
 // RegisterServices registers module services.
 func (am AppModule) RegisterServices(cfg module.Configurator) {
-	types2.RegisterMsgServer(cfg.MsgServer(), &am.keeper)
-	types2.RegisterQueryServer(cfg.QueryServer(), am.keeper)
+	delegationtype.RegisterMsgServer(cfg.MsgServer(), &am.keeper)
+	delegationtype.RegisterQueryServer(cfg.QueryServer(), am.keeper)
 }
 
 func (am AppModule) GenerateGenesisState(input *module.SimulationState) {

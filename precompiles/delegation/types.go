@@ -1,16 +1,18 @@
 package delegation
 
 import (
+	"fmt"
+	"math/big"
+	"reflect"
+
 	errorsmod "cosmossdk.io/errors"
 	sdkmath "cosmossdk.io/math"
-	"fmt"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	cmn "github.com/evmos/evmos/v14/precompiles/common"
 	"github.com/exocore/precompiles/deposit"
 	keeper2 "github.com/exocore/x/delegation/keeper"
 	"github.com/exocore/x/restaking_assets_manage/types"
-	"math/big"
-	"reflect"
 )
 
 func (p Precompile) GetDelegationParamsFromInputs(ctx sdk.Context, args []interface{}) (*keeper2.DelegationOrUndelegationParams, error) {
@@ -36,7 +38,7 @@ func (p Precompile) GetDelegationParamsFromInputs(ctx sdk.Context, args []interf
 	}
 	delegationParams.LzNonce = txLzNonce
 
-	//the length of client chain address inputted by caller is 32, so we need to check the length and remove the padding according to the actual length.
+	// the length of client chain address inputted by caller is 32, so we need to check the length and remove the padding according to the actual length.
 	assetAddr, ok := args[2].([]byte)
 	if !ok || assetAddr == nil {
 		return nil, fmt.Errorf(ErrContractInputParaOrType, 2, reflect.TypeOf(args[2]), assetAddr)
@@ -55,7 +57,7 @@ func (p Precompile) GetDelegationParamsFromInputs(ctx sdk.Context, args []interf
 	}
 	delegationParams.StakerAddress = stakerAddr[:clientChainAddrLength]
 
-	//the input operator address is cosmos accAddress type,so we need to check the length and decode it through Bench32
+	// the input operator address is cosmos accAddress type,so we need to check the length and decode it through Bench32
 	operatorAddr, ok := args[4].([]byte)
 	if !ok || operatorAddr == nil {
 		return nil, fmt.Errorf(ErrContractInputParaOrType, 4, reflect.TypeOf(args[4]), operatorAddr)

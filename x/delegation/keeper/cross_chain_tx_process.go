@@ -2,16 +2,18 @@ package keeper
 
 import (
 	"bytes"
-	errorsmod "cosmossdk.io/errors"
-	sdkmath "cosmossdk.io/math"
 	"encoding/binary"
 	"fmt"
+	"math/big"
+
+	errorsmod "cosmossdk.io/errors"
+	sdkmath "cosmossdk.io/math"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/common"
 	ethtypes "github.com/ethereum/go-ethereum/core/types"
-	types2 "github.com/exocore/x/delegation/types"
+	delegationtype "github.com/exocore/x/delegation/types"
 	"github.com/exocore/x/restaking_assets_manage/types"
-	"math/big"
 )
 
 type DelegationOrUndelegationParams struct {
@@ -23,7 +25,7 @@ type DelegationOrUndelegationParams struct {
 	OpAmount        sdkmath.Int
 	LzNonce         uint64
 	TxHash          common.Hash
-	//todo: The operator approved signature might be needed here in future
+	// todo: The operator approved signature might be needed here in future
 }
 
 // solidity encode: bytes memory actionArgs = abi.encodePacked(token, operator, msg.sender, amount);
@@ -62,7 +64,7 @@ func (k Keeper) getParamsFromEventLog(ctx sdk.Context, log *ethtypes.Log) (*Dele
 		return nil, errorsmod.Wrap(err, "error occurred when binary read LzNonce from topic")
 	}
 
-	//decode the Action parameters
+	// decode the Action parameters
 	readStart = readEnd
 	readEnd += clientChainInfo.AddressLength
 	r = bytes.NewReader(log.Data[readStart:readEnd])
@@ -110,38 +112,39 @@ func (k Keeper) getParamsFromEventLog(ctx sdk.Context, log *ethtypes.Log) (*Dele
 	}, nil
 }
 
-// DelegateTo : It doesn't need to check the active status of the operator in middlewares when delegating assets to the operator. This is because it adds assets to the operator's amount. But it needs to check if operator has been slashed or frozen.
+// DelegateTo : It doesn't need to check the active status of the operator in middlewares when delegating assets to the operator.
+// This is because it adds assets to the operator's amount. But it needs to check if operator has been slashed or frozen.
 func (k Keeper) DelegateTo(ctx sdk.Context, params *DelegationOrUndelegationParams) error {
 	// check if the delegatedTo address is an operator
 	if !k.IsOperator(ctx, params.OperatorAddress) {
-		return types2.ErrOperatorNotExist
+		return delegationtype.ErrOperatorNotExist
 	}
 
 	// check if the operator has been slashed or frozen
 	if k.slashKeeper.IsOperatorFrozen(ctx, params.OperatorAddress) {
-		return types2.ErrOperatorIsFrozen
+		return delegationtype.ErrOperatorIsFrozen
 	}
 
-	//todo: The operator approved signature might be needed here in future
+	// todo: The operator approved signature might be needed here in future
 
-	//update the related states
+	// update the related states
 	if params.OpAmount.IsNegative() {
-		return types2.ErrOpAmountIsNegative
+		return delegationtype.ErrOpAmountIsNegative
 	}
 
 	stakerId, assetId := types.GetStakeIDAndAssetId(params.ClientChainLzId, params.StakerAddress, params.AssetsAddress)
 
-	//check if the staker asset has been deposited and the canWithdraw amount is bigger than the delegation amount
+	// check if the staker asset has been deposited and the canWithdraw amount is bigger than the delegation amount
 	info, err := k.restakingStateKeeper.GetStakerSpecifiedAssetInfo(ctx, stakerId, assetId)
 	if err != nil {
 		return err
 	}
 
 	if info.CanWithdrawAmountOrWantChangeValue.LT(params.OpAmount) {
-		return types2.ErrDelegationAmountTooBig
+		return delegationtype.ErrDelegationAmountTooBig
 	}
 
-	//update staker asset state
+	// update staker asset state
 	err = k.restakingStateKeeper.UpdateStakerAssetState(ctx, stakerId, assetId, types.StakerSingleAssetOrChangeInfo{
 		CanWithdrawAmountOrWantChangeValue: params.OpAmount.Neg(),
 	})
@@ -156,8 +159,8 @@ func (k Keeper) DelegateTo(ctx sdk.Context, params *DelegationOrUndelegationPara
 		return err
 	}
 
-	delegatorAndAmount := make(map[string]*types2.DelegationAmounts)
-	delegatorAndAmount[params.OperatorAddress.String()] = &types2.DelegationAmounts{
+	delegatorAndAmount := make(map[string]*delegationtype.DelegationAmounts)
+	delegatorAndAmount[params.OperatorAddress.String()] = &delegationtype.DelegationAmounts{
 		CanUndelegationAmount: params.OpAmount,
 	}
 	err = k.UpdateDelegationState(ctx, stakerId, assetId, delegatorAndAmount)
@@ -174,10 +177,10 @@ func (k Keeper) DelegateTo(ctx sdk.Context, params *DelegationOrUndelegationPara
 func (k Keeper) UndelegateFrom(ctx sdk.Context, params *DelegationOrUndelegationParams) error {
 	// check if the UndelegatedFrom address is an operator
 	if !k.IsOperator(ctx, params.OperatorAddress) {
-		return types2.ErrOperatorNotExist
+		return delegationtype.ErrOperatorNotExist
 	}
 	if params.OpAmount.IsNegative() {
-		return types2.ErrOpAmountIsNegative
+		return delegationtype.ErrOpAmountIsNegative
 	}
 	// get staker delegation state, then check the validation of Undelegation amount
 	stakerId, assetId := types.GetStakeIDAndAssetId(params.ClientChainLzId, params.StakerAddress, params.AssetsAddress)
@@ -186,11 +189,11 @@ func (k Keeper) UndelegateFrom(ctx sdk.Context, params *DelegationOrUndelegation
 		return err
 	}
 	if params.OpAmount.GT(delegationState.CanUndelegationAmount) {
-		return errorsmod.Wrap(types2.ErrUndelegationAmountTooBig, fmt.Sprintf("UndelegationAmount:%s,CanUndelegationAmount:%s", params.OpAmount, delegationState.CanUndelegationAmount))
+		return errorsmod.Wrap(delegationtype.ErrUndelegationAmountTooBig, fmt.Sprintf("UndelegationAmount:%s,CanUndelegationAmount:%s", params.OpAmount, delegationState.CanUndelegationAmount))
 	}
 
-	//record Undelegation event
-	r := &types2.UndelegationRecord{
+	// record Undelegation event
+	r := &delegationtype.UndelegationRecord{
 		StakerId:              stakerId,
 		AssetId:               assetId,
 		OperatorAddr:          params.OperatorAddress.String(),
@@ -202,14 +205,14 @@ func (k Keeper) UndelegateFrom(ctx sdk.Context, params *DelegationOrUndelegation
 		ActualCompletedAmount: sdkmath.NewInt(0),
 	}
 	r.CompleteBlockNumber = k.operatorOptedInKeeper.GetOperatorCanUndelegateHeight(ctx, assetId, params.OperatorAddress, r.BlockNumber)
-	err = k.SetUndelegationStates(ctx, []*types2.UndelegationRecord{r})
+	err = k.SetUndelegationStates(ctx, []*delegationtype.UndelegationRecord{r})
 	if err != nil {
 		return err
 	}
 
-	//update delegation state
-	delegatorAndAmount := make(map[string]*types2.DelegationAmounts)
-	delegatorAndAmount[params.OperatorAddress.String()] = &types2.DelegationAmounts{
+	// update delegation state
+	delegatorAndAmount := make(map[string]*delegationtype.DelegationAmounts)
+	delegatorAndAmount[params.OperatorAddress.String()] = &delegationtype.DelegationAmounts{
 		CanUndelegationAmount:  params.OpAmount.Neg(),
 		WaitUndelegationAmount: params.OpAmount,
 	}
@@ -218,7 +221,7 @@ func (k Keeper) UndelegateFrom(ctx sdk.Context, params *DelegationOrUndelegation
 		return err
 	}
 
-	//update staker and operator assets state
+	// update staker and operator assets state
 	err = k.restakingStateKeeper.UpdateStakerAssetState(ctx, stakerId, assetId, types.StakerSingleAssetOrChangeInfo{
 		WaitUndelegationAmountOrWantChangeValue: params.OpAmount,
 	})

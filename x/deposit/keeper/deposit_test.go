@@ -4,7 +4,7 @@ import (
 	sdkmath "cosmossdk.io/math"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/exocore/x/deposit/keeper"
-	types2 "github.com/exocore/x/deposit/types"
+	deposittype "github.com/exocore/x/deposit/types"
 	"github.com/exocore/x/restaking_assets_manage/types"
 )
 
@@ -18,21 +18,21 @@ func (suite *KeeperTestSuite) TestDeposit() {
 		OpAmount:        sdkmath.NewInt(100),
 	}
 
-	//test the case that the deposit asset hasn't registered
+	// test the case that the deposit asset hasn't registered
 	params.AssetsAddress = usdcAddress[:]
 	err := suite.app.DepositKeeper.Deposit(suite.ctx, params)
-	suite.ErrorContains(err, types2.ErrDepositAssetNotExist.Error())
+	suite.ErrorContains(err, deposittype.ErrDepositAssetNotExist.Error())
 
 	assets, err := suite.app.StakingAssetsManageKeeper.GetAllStakingAssetsInfo(suite.ctx)
 	suite.NoError(err)
 	suite.app.Logger().Info("the assets is:", "assets", assets)
 
-	//test the normal case
+	// test the normal case
 	params.AssetsAddress = usdtAddress[:]
 	err = suite.app.DepositKeeper.Deposit(suite.ctx, params)
 	suite.NoError(err)
 
-	//check state after deposit
+	// check state after deposit
 	stakerId, assetId := types.GetStakeIDAndAssetId(params.ClientChainLzId, params.StakerAddress, params.AssetsAddress)
 	info, err := suite.app.StakingAssetsManageKeeper.GetStakerSpecifiedAssetInfo(suite.ctx, stakerId, assetId)
 	suite.NoError(err)
