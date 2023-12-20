@@ -12,7 +12,7 @@ import (
 const (
 	// MethodWithdraw defines the ABI method name for the withdrawal
 	//  transaction.
-	MethodWithdraw = "withdraw"
+	MethodWithdraw = "withdrawPrinciple"
 )
 
 // Withdraw assets to the staker, that will change the state in withdraw module.
