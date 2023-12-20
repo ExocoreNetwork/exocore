@@ -30,7 +30,7 @@ func (suite *KeeperTestSuite) TestUpdateStakerAssetsState() {
 	/*	ethUniInitialChangeValue.TotalDepositAmountOrWantChangeValue = math.NewInt(0)
 		ethUniInitialChangeValue.CanWithdrawAmountOrWantChangeValue = math.NewInt(0)
 		err = suite.app.StakingAssetsManageKeeper.UpdateStakerAssetState(suite.ctx, stakerId, ethUniAssetId, ethUniInitialChangeValue)
-		suite.Require().Error(err, types2.ErrInputUpdateStateIsZero)*/
+		suite.Require().Error(err, restakingtype.ErrInputUpdateStateIsZero)*/
 
 	// test valid increase of staker asset state
 	ethUniInitialChangeValue.TotalDepositAmountOrWantChangeValue = math.NewInt(500)
