@@ -1,10 +1,8 @@
-// Copyright Tharsis Labs Ltd.(Evmos)
-// SPDX-License-Identifier:ENCL-1.0(https://github.com/evmos/evmos/blob/main/LICENSE)
-
 package deposit
 
 import (
 	"fmt"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
@@ -27,7 +25,7 @@ func (p Precompile) DepositTo(
 	method *abi.Method,
 	args []interface{},
 ) ([]byte, error) {
-	//check the invalidation of caller contract,the caller must be exoCore LzApp contract
+	// check the invalidation of caller contract,the caller must be exoCore LzApp contract
 	depositModuleParam, err := p.depositKeeper.GetParams(ctx)
 	if err != nil {
 		return nil, err
@@ -37,19 +35,19 @@ func (p Precompile) DepositTo(
 		return nil, fmt.Errorf(ErrContractCaller, contract.CallerAddress, exoCoreLzAppAddr)
 	}
 
-	//parse the depositTo input params
+	// parse the depositTo input params
 	depositParams, err := p.GetDepositToParamsFromInputs(ctx, args)
 	if err != nil {
 		return nil, err
 	}
 
-	//call depositKeeper to execute the deposit action
+	// call depositKeeper to execute the deposit action
 	err = p.depositKeeper.Deposit(ctx, depositParams)
 	if err != nil {
 		return nil, err
 	}
 
-	//get the latest asset state of staker to return.
+	// get the latest asset state of staker to return.
 	stakerId, assetId := types.GetStakeIDAndAssetId(depositParams.ClientChainLzId, depositParams.StakerAddress, depositParams.AssetsAddress)
 	info, err := p.stakingStateKeeper.GetStakerSpecifiedAssetInfo(ctx, stakerId, assetId)
 	if err != nil {

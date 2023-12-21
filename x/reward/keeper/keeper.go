@@ -16,7 +16,7 @@ type Keeper struct {
 	cdc      codec.BinaryCodec
 	storeKey storetypes.StoreKey
 
-	//other keepers
+	// other keepers
 	restakingStateKeeper keeper.Keeper
 }
 
@@ -25,7 +25,6 @@ func NewKeeper(
 	storeKey storetypes.StoreKey,
 	restakingStateKeeper keeper.Keeper,
 ) *Keeper {
-
 	return &Keeper{
 		cdc:                  cdc,
 		storeKey:             storeKey,

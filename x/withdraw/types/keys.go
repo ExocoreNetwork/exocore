@@ -9,9 +9,6 @@ const (
 
 	// RouterKey defines the module's message routing key
 	RouterKey = ModuleName
-
-	// MemStoreKey defines the in-memory store key
-	MemStoreKey = "mem_withdraw"
 )
 
 func KeyPrefix(p string) []byte {
@@ -23,7 +20,6 @@ const (
 )
 
 var (
-	ParamsKey       = []byte("Params")
-	DepositPrefix   = []byte{0x02}
+	ParamsKey       = []byte("WithdrawParams")
 	KeyPrefixParams = []byte{prefixParams}
 )

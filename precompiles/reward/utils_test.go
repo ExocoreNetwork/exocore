@@ -2,6 +2,8 @@ package reward_test
 
 import (
 	"encoding/json"
+	"time"
+
 	abci "github.com/cometbft/cometbft/abci/types"
 	"github.com/cometbft/cometbft/crypto/tmhash"
 	tmtypes "github.com/cometbft/cometbft/types"
@@ -28,7 +30,6 @@ import (
 	evmosapp "github.com/exocore/app"
 	"github.com/exocore/precompiles/reward"
 	"github.com/exocore/utils"
-	"time"
 )
 
 // SetupWithGenesisValSet initializes a new EvmosApp with a validator set and genesis accounts

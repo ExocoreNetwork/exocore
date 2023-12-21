@@ -1,5 +1,3 @@
-// Copyright Tharsis Labs Ltd.(Evmos)
-// SPDX-License-Identifier:ENCL-1.0(https://github.com/evmos/evmos/blob/main/LICENSE)
 package types
 
 import (
@@ -30,6 +28,4 @@ const (
 	prefixParams = iota + 1
 )
 
-var (
-	KeyPrefixParams = []byte{prefixParams}
-)
+var KeyPrefixParams = []byte{prefixParams}

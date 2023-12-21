@@ -44,7 +44,7 @@ func getRewardParamsFromEventLog(log *ethtypes.Log) (*RewardParams, error) {
 		return nil, nil
 	}
 
-	//decode the action parameters
+	// decode the action parameters
 	readStart = readEnd
 	readEnd += types.GeneralAssetsAddrLength
 	r = bytes.NewReader(log.Data[readStart:readEnd])
@@ -91,13 +91,13 @@ func getStakeIDAndAssetId(params *RewardParams) (stakeId string, assetId string)
 }
 
 func (k Keeper) PostTxProcessing(ctx sdk.Context, msg core.Message, receipt *ethtypes.Receipt) error {
-	//TODO check if contract address is valid layerZero relayer address
-	//check if log address and topicId is valid
+	// TODO check if contract address is valid layerZero relayer address
+	// check if log address and topicId is valid
 	params, err := k.GetParams(ctx)
 	if err != nil {
 		return err
 	}
-	//filter needed logs
+	// filter needed logs
 	addresses := []common.Address{common.HexToAddress(params.ExoCoreLzAppAddress)}
 	topics := [][]common.Hash{
 		{common.HexToHash(params.ExoCoreLzAppEventTopic)},
@@ -125,17 +125,17 @@ func (k Keeper) PostTxProcessing(ctx sdk.Context, msg core.Message, receipt *eth
 }
 
 func (k Keeper) RewardForWithdraw(ctx sdk.Context, event *RewardParams) error {
-	//check event parameter then execute RewardForWithdraw operation
+	// check event parameter then execute RewardForWithdraw operation
 	if event.OpAmount.IsNegative() {
 		return errorsmod.Wrap(rtypes.ErrRewardAmountIsNegative, fmt.Sprintf("the amount is:%s", event.OpAmount))
 	}
 	stakeId, assetId := getStakeIDAndAssetId(event)
-	//check is asset exist
+	// check is asset exist
 	if !k.restakingStateKeeper.IsStakingAsset(ctx, assetId) {
 		return errorsmod.Wrap(rtypes.ErrRewardAssetNotExist, fmt.Sprintf("the assetId is:%s", assetId))
 	}
 
-	//TODO
+	// TODO
 	changeAmount := types.StakerSingleAssetOrChangeInfo{
 		TotalDepositAmountOrWantChangeValue: event.OpAmount,
 		CanWithdrawAmountOrWantChangeValue:  event.OpAmount,

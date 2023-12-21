@@ -1,5 +1,3 @@
-// Copyright Tharsis Labs Ltd.(Evmos)
-// SPDX-License-Identifier:ENCL-1.0(https://github.com/evmos/evmos/blob/main/LICENSE)
 package types
 
 import (
@@ -7,9 +5,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-var (
-	CanUndelegationDelayHeight = uint64(10)
-)
+var CanUndelegationDelayHeight = uint64(10)
 
 type ISlashKeeper interface {
 	IsOperatorFrozen(ctx sdk.Context, opAddr sdk.AccAddress) bool

@@ -8,7 +8,7 @@ import (
 func (suite *KeeperTestSuite) TestGenesisClientChainAndAssetInfo() {
 	defaultGensisState := restaking_assets_manage.DefaultGenesisState()
 
-	//test the client chains getting
+	// test the client chains getting
 	clientChains, err := suite.app.StakingAssetsManageKeeper.GetAllClientChainInfo(suite.ctx)
 	suite.NoError(err)
 	suite.ctx.Logger().Info("the clientChains is:", "info", clientChains)
@@ -22,7 +22,7 @@ func (suite *KeeperTestSuite) TestGenesisClientChainAndAssetInfo() {
 	suite.NoError(err)
 	suite.Equal(clientChains[101], chainInfo)
 
-	//test the client chain assets getting
+	// test the client chain assets getting
 	assets, err := suite.app.StakingAssetsManageKeeper.GetAllStakingAssetsInfo(suite.ctx)
 	suite.NoError(err)
 	for _, asset := range defaultGensisState.DefaultSupportedClientChainTokens {

@@ -2,10 +2,11 @@ package deposit_test
 
 import (
 	"encoding/json"
+	"time"
+
 	"github.com/exocore/precompiles/deposit"
 	"github.com/exocore/testutil"
 	testutiltx "github.com/exocore/testutil/tx"
-	"time"
 
 	abci "github.com/cometbft/cometbft/abci/types"
 	"github.com/cometbft/cometbft/crypto/tmhash"

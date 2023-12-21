@@ -5,19 +5,19 @@ import (
 	"cosmossdk.io/math"
 	"github.com/cosmos/cosmos-sdk/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	types2 "github.com/exocore/x/restaking_assets_manage/types"
+	restakingtype "github.com/exocore/x/restaking_assets_manage/types"
 )
 
-func (k Keeper) GetOperatorAssetInfos(ctx sdk.Context, operatorAddr sdk.Address) (assetsInfo map[string]*types2.OperatorSingleAssetOrChangeInfo, err error) {
-	store := prefix.NewStore(ctx.KVStore(k.storeKey), types2.KeyPrefixOperatorAssetInfos)
+func (k Keeper) GetOperatorAssetInfos(ctx sdk.Context, operatorAddr sdk.Address) (assetsInfo map[string]*restakingtype.OperatorSingleAssetOrChangeInfo, err error) {
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), restakingtype.KeyPrefixOperatorAssetInfos)
 	iterator := sdk.KVStorePrefixIterator(store, operatorAddr.Bytes())
 	defer iterator.Close()
 
-	ret := make(map[string]*types2.OperatorSingleAssetOrChangeInfo, 0)
+	ret := make(map[string]*restakingtype.OperatorSingleAssetOrChangeInfo, 0)
 	for ; iterator.Valid(); iterator.Next() {
-		var stateInfo types2.OperatorSingleAssetOrChangeInfo
+		var stateInfo restakingtype.OperatorSingleAssetOrChangeInfo
 		k.cdc.MustUnmarshal(iterator.Value(), &stateInfo)
-		_, assetId, err := types2.ParseStakerAndAssetIdFromKey(iterator.Key())
+		_, assetId, err := restakingtype.ParseStakerAndAssetIdFromKey(iterator.Key())
 		if err != nil {
 			return nil, err
 		}
@@ -26,27 +26,27 @@ func (k Keeper) GetOperatorAssetInfos(ctx sdk.Context, operatorAddr sdk.Address)
 	return ret, nil
 }
 
-func (k Keeper) GetOperatorSpecifiedAssetInfo(ctx sdk.Context, operatorAddr sdk.Address, assetId string) (info *types2.OperatorSingleAssetOrChangeInfo, err error) {
-	store := prefix.NewStore(ctx.KVStore(k.storeKey), types2.KeyPrefixOperatorAssetInfos)
-	key := types2.GetAssetStateKey(operatorAddr.String(), assetId)
+func (k Keeper) GetOperatorSpecifiedAssetInfo(ctx sdk.Context, operatorAddr sdk.Address, assetId string) (info *restakingtype.OperatorSingleAssetOrChangeInfo, err error) {
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), restakingtype.KeyPrefixOperatorAssetInfos)
+	key := restakingtype.GetAssetStateKey(operatorAddr.String(), assetId)
 	ifExist := store.Has(key)
 	if !ifExist {
-		return nil, types2.ErrNoOperatorAssetKey
+		return nil, restakingtype.ErrNoOperatorAssetKey
 	}
 
 	value := store.Get(key)
 
-	ret := types2.OperatorSingleAssetOrChangeInfo{}
+	ret := restakingtype.OperatorSingleAssetOrChangeInfo{}
 	k.cdc.MustUnmarshal(value, &ret)
 	return &ret, nil
 }
 
-// UpdateOperatorAssetState It's used to update the operator state
-func (k Keeper) UpdateOperatorAssetState(ctx sdk.Context, operatorAddr sdk.Address, assetId string, changeAmount types2.OperatorSingleAssetOrChangeInfo) (err error) {
-	//get the latest state,use the default initial state if the state hasn't been stored
-	store := prefix.NewStore(ctx.KVStore(k.storeKey), types2.KeyPrefixOperatorAssetInfos)
-	key := types2.GetAssetStateKey(operatorAddr.String(), assetId)
-	assetState := types2.OperatorSingleAssetOrChangeInfo{
+// UpdateOperatorAssetState is used to update the operator state
+func (k Keeper) UpdateOperatorAssetState(ctx sdk.Context, operatorAddr sdk.Address, assetId string, changeAmount restakingtype.OperatorSingleAssetOrChangeInfo) (err error) {
+	// get the latest state,use the default initial state if the state hasn't been stored
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), restakingtype.KeyPrefixOperatorAssetInfos)
+	key := restakingtype.GetAssetStateKey(operatorAddr.String(), assetId)
+	assetState := restakingtype.OperatorSingleAssetOrChangeInfo{
 		TotalAmountOrWantChangeValue:            math.NewInt(0),
 		OperatorOwnAmountOrWantChangeValue:      math.NewInt(0),
 		WaitUndelegationAmountOrWantChangeValue: math.NewInt(0),
@@ -70,13 +70,13 @@ func (k Keeper) UpdateOperatorAssetState(ctx sdk.Context, operatorAddr sdk.Addre
 		return errorsmod.Wrap(err, "UpdateOperatorAssetState WaitUndelegationAmountOrWantChangeValue error")
 	}
 
-	//store the updated state
+	// store the updated state
 	bz := k.cdc.MustMarshal(&assetState)
 	store.Set(key, bz)
 	return nil
 }
 
 func (k Keeper) GetOperatorAssetOptedInMiddleWare(operatorAddr sdk.Address, assetId string) (middleWares []sdk.Address, err error) {
-	//TODO implement me
+	// TODO implement me
 	panic("implement me")
 }

@@ -1,8 +1,12 @@
 package delegation_test
 
 import (
-	sdkmath "cosmossdk.io/math"
 	"fmt"
+	"math/big"
+	"strings"
+
+	sdkmath "cosmossdk.io/math"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/common"
 	ethtypes "github.com/ethereum/go-ethereum/core/types"
@@ -14,12 +18,10 @@ import (
 	"github.com/exocore/precompiles/delegation"
 	"github.com/exocore/precompiles/deposit"
 	keeper2 "github.com/exocore/x/delegation/keeper"
-	types2 "github.com/exocore/x/delegation/types"
+	delegationtype "github.com/exocore/x/delegation/types"
 	"github.com/exocore/x/deposit/keeper"
 	types3 "github.com/exocore/x/deposit/types"
 	"github.com/exocore/x/restaking_assets_manage/types"
-	"math/big"
-	"strings"
 )
 
 func (s *PrecompileTestSuite) TestIsTransaction() {
@@ -62,7 +64,7 @@ func paddingClientChainAddress(input []byte, outputLength int) []byte {
 
 // TestRun tests DelegateToThroughClientChain method through calling Run function.
 func (s *PrecompileTestSuite) TestRunDelegateToThroughClientChain() {
-	//deposit params for test
+	// deposit params for test
 	exoCoreLzAppAddress := "0x3fC91A3afd70395Cd496C647d5a6CC9D4B2b7FAD"
 	exoCoreLzAppEventTopic := "0xc6a377bfc4eb120024a8ac08eef205be16b817020812c73223e81d1bdb9708ec"
 	usdtAddress := common.FromHex("0xdAC17F958D2ee523a2206206994597C13D831ec7")
@@ -74,7 +76,7 @@ func (s *PrecompileTestSuite) TestRunDelegateToThroughClientChain() {
 	smallDepositAmount := big.NewInt(20)
 	assetAddr := paddingClientChainAddress(usdtAddress, types.GeneralClientChainAddrLength)
 	depositAsset := func(staker []byte, depositAmount sdkmath.Int) {
-		//deposit asset for delegation test
+		// deposit asset for delegation test
 		params := &keeper.DepositParams{
 			ClientChainLzId: 101,
 			Action:          types.Deposit,
@@ -86,9 +88,9 @@ func (s *PrecompileTestSuite) TestRunDelegateToThroughClientChain() {
 		s.Require().NoError(err)
 	}
 	registerOperator := func() {
-		registerReq := &types2.RegisterOperatorReq{
+		registerReq := &delegationtype.RegisterOperatorReq{
 			FromAddress: opAccAddr,
-			Info: &types2.OperatorInfo{
+			Info: &delegationtype.OperatorInfo{
 				EarningsAddr: opAccAddr,
 			},
 		}
@@ -96,7 +98,7 @@ func (s *PrecompileTestSuite) TestRunDelegateToThroughClientChain() {
 		s.NoError(err)
 	}
 	commonMalleate := func() (common.Address, []byte) {
-		//prepare the call input for delegation test
+		// prepare the call input for delegation test
 		valAddr, err := sdk.ValAddressFromBech32(s.validators[0].OperatorAddress)
 		s.Require().NoError(err)
 		val, _ := s.app.StakingKeeper.GetValidator(s.ctx, valAddr)
@@ -162,7 +164,7 @@ func (s *PrecompileTestSuite) TestRunDelegateToThroughClientChain() {
 			},
 			readOnly:    false,
 			expPass:     false,
-			errContains: types2.ErrOperatorNotExist.Error(),
+			errContains: delegationtype.ErrOperatorNotExist.Error(),
 		},
 		{
 			name: "fail - delegateToThroughClientChain transaction will fail because the delegated asset hasn't been deposited",
@@ -195,7 +197,7 @@ func (s *PrecompileTestSuite) TestRunDelegateToThroughClientChain() {
 			},
 			readOnly:    false,
 			expPass:     false,
-			errContains: types2.ErrDelegationAmountTooBig.Error(),
+			errContains: delegationtype.ErrDelegationAmountTooBig.Error(),
 		},
 		{
 			name: "pass - delegateToThroughClientChain transaction",
@@ -289,7 +291,7 @@ func (s *PrecompileTestSuite) TestRunDelegateToThroughClientChain() {
 
 // TestRun tests DelegateToThroughClientChain method through calling Run function.
 func (s *PrecompileTestSuite) TestRunUnDelegateFromThroughClientChain() {
-	//deposit params for test
+	// deposit params for test
 	exoCoreLzAppEventTopic := "0xc6a377bfc4eb120024a8ac08eef205be16b817020812c73223e81d1bdb9708ec"
 	usdtAddress := common.FromHex("0xdAC17F958D2ee523a2206206994597C13D831ec7")
 	operatorAddr := "evmos1fl48vsnmsdzcv85q5d2q4z5ajdha8yu3h6cprl"
@@ -299,7 +301,7 @@ func (s *PrecompileTestSuite) TestRunUnDelegateFromThroughClientChain() {
 	depositAmount := big.NewInt(100)
 	assetAddr := paddingClientChainAddress(usdtAddress, types.GeneralClientChainAddrLength)
 	depositAsset := func(staker []byte, depositAmount sdkmath.Int) {
-		//deposit asset for delegation test
+		// deposit asset for delegation test
 		params := &keeper.DepositParams{
 			ClientChainLzId: 101,
 			Action:          types.Deposit,
@@ -312,7 +314,7 @@ func (s *PrecompileTestSuite) TestRunUnDelegateFromThroughClientChain() {
 	}
 
 	delegateAsset := func(staker []byte, delegateAmount sdkmath.Int) {
-		//deposit asset for delegation test
+		// deposit asset for delegation test
 		delegateToParams := &keeper2.DelegationOrUndelegationParams{
 			ClientChainLzId: 101,
 			Action:          types.DelegateTo,
@@ -328,9 +330,9 @@ func (s *PrecompileTestSuite) TestRunUnDelegateFromThroughClientChain() {
 		s.Require().NoError(err)
 	}
 	registerOperator := func() {
-		registerReq := &types2.RegisterOperatorReq{
+		registerReq := &delegationtype.RegisterOperatorReq{
 			FromAddress: operatorAddr,
-			Info: &types2.OperatorInfo{
+			Info: &delegationtype.OperatorInfo{
 				EarningsAddr: operatorAddr,
 			},
 		}
@@ -338,7 +340,7 @@ func (s *PrecompileTestSuite) TestRunUnDelegateFromThroughClientChain() {
 		s.NoError(err)
 	}
 	commonMalleate := func() (common.Address, []byte) {
-		//prepare the call input for delegation test
+		// prepare the call input for delegation test
 		valAddr, err := sdk.ValAddressFromBech32(s.validators[0].OperatorAddress)
 		s.Require().NoError(err)
 		val, _ := s.app.StakingKeeper.GetValidator(s.ctx, valAddr)
@@ -427,7 +429,7 @@ func (s *PrecompileTestSuite) TestRunUnDelegateFromThroughClientChain() {
 			msg, err := msgEthereumTx.AsMessage(s.ethSigner, baseFee)
 			s.Require().NoError(err, "failed to instantiate Ethereum message")
 
-			//set txHash for delegation module
+			// set txHash for delegation module
 			fmt.Println("the txHash is:", msgEthereumTx.Hash)
 			s.ctx = s.ctx.WithValue(delegation.CtxKeyTxHash, common.HexToHash(msgEthereumTx.Hash))
 			// Create StateDB

@@ -11,12 +11,11 @@ import (
 	"github.com/cosmos/cosmos-sdk/client/tx"
 
 	// "github.com/cosmos/cosmos-sdk/client/flags"
+	paramstypes "github.com/exocore/x/deposit/types"
 	"github.com/exocore/x/withdraw/types"
 )
 
-var (
-	DefaultRelativePacketTimeoutTimestamp = uint64((time.Duration(10) * time.Minute).Nanoseconds())
-)
+var DefaultRelativePacketTimeoutTimestamp = uint64((time.Duration(10) * time.Minute).Nanoseconds())
 
 const (
 	flagPacketTimeoutTimestamp = "packet-timeout-timestamp"
@@ -26,8 +25,8 @@ const (
 // GetTxCmd returns the transaction commands for this module
 func GetTxCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:                        types.ModuleName,
-		Short:                      fmt.Sprintf("%s transactions subcommands", types.ModuleName),
+		Use:                        paramstypes.ModuleName,
+		Short:                      fmt.Sprintf("%s transactions subcommands", paramstypes.ModuleName),
 		DisableFlagParsing:         true,
 		SuggestionsMinimumDistance: 2,
 		RunE:                       client.ValidateCmd,
@@ -55,7 +54,7 @@ func UpdateParams() *cobra.Command {
 			sender := cliCtx.GetFromAddress()
 			msg := &types.MsgUpdateParams{
 				Authority: sender.String(),
-				Params: types.Params{
+				Params: paramstypes.Params{
 					ExoCoreLzAppAddress:    args[0],
 					ExoCoreLzAppEventTopic: args[1],
 				},

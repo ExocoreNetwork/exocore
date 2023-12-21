@@ -1,6 +1,3 @@
-// Copyright Tharsis Labs Ltd.(Evmos)
-// SPDX-License-Identifier:ENCL-1.0(https://github.com/evmos/evmos/blob/main/LICENSE)
-
 package types
 
 import (
@@ -8,9 +5,11 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-var _ sdk.Msg = &RegisterOperatorReq{}
-var _ sdk.Msg = &MsgDelegation{}
-var _ sdk.Msg = &MsgUndelegation{}
+var (
+	_ sdk.Msg = &RegisterOperatorReq{}
+	_ sdk.Msg = &MsgDelegation{}
+	_ sdk.Msg = &MsgUndelegation{}
+)
 
 // GetSigners returns the expected signers for a MsgUpdateParams message.
 func (m *RegisterOperatorReq) GetSigners() []sdk.AccAddress {

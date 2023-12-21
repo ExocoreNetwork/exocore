@@ -2,15 +2,17 @@ package keeper_test
 
 import (
 	"bytes"
-	"cosmossdk.io/math"
 	"encoding/binary"
+	"log"
+	"math/big"
+	"testing"
+
+	"cosmossdk.io/math"
+
 	"github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/stretchr/testify/assert"
-	"log"
-	"math/big"
-	"testing"
 )
 
 func Test_DepositEventPayloadDecode(t *testing.T) {
@@ -19,7 +21,7 @@ func Test_DepositEventPayloadDecode(t *testing.T) {
 	log.Println("the payload original data is:", payload)
 	payloadBytes, err := hexutil.Decode(payload)
 	assert.NoError(t, err)
-	//assert.Equal(t, 73, len(payloadBytes))
+	// assert.Equal(t, 73, len(payloadBytes))
 	log.Println("the payloadBytes length is:", len(payloadBytes))
 
 	action := payloadBytes[0]

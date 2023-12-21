@@ -2,6 +2,7 @@ package withdraw
 
 import (
 	"fmt"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
@@ -10,8 +11,7 @@ import (
 )
 
 const (
-	// MethodWithdraw defines the ABI method name for the withdrawal
-	//  transaction.
+	// MethodWithdraw defines the ABI method name for the withdrawal transaction.
 	MethodWithdraw = "withdrawPrinciple"
 )
 
@@ -24,7 +24,7 @@ func (p Precompile) Withdraw(
 	method *abi.Method,
 	args []interface{},
 ) ([]byte, error) {
-	//check the invalidation of caller contract
+	// check the invalidation of caller contract
 	withdrawModuleParam, err := p.withdrawKeeper.GetParams(ctx)
 	if err != nil {
 		return nil, err
@@ -43,7 +43,7 @@ func (p Precompile) Withdraw(
 	if err != nil {
 		return nil, err
 	}
-	//get the latest asset state of staker to return.
+	// get the latest asset state of staker to return.
 	stakerId, assetId := types.GetStakeIDAndAssetId(withdrawParam.ClientChainLzId, withdrawParam.WithdrawAddress, withdrawParam.AssetsAddress)
 	info, err := p.stakingStateKeeper.GetStakerSpecifiedAssetInfo(ctx, stakerId, assetId)
 	if err != nil {

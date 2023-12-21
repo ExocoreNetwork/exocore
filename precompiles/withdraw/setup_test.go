@@ -1,8 +1,9 @@
 package withdraw_test
 
 import (
-	"github.com/exocore/precompiles/withdraw"
 	"testing"
+
+	"github.com/exocore/precompiles/withdraw"
 
 	"github.com/evmos/evmos/v14/x/evm/statedb"
 

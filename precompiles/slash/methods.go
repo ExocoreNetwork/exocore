@@ -2,6 +2,7 @@ package slash
 
 import (
 	"fmt"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
@@ -23,7 +24,7 @@ func (p Precompile) SubmitSlash(
 	method *abi.Method,
 	args []interface{},
 ) ([]byte, error) {
-	//check the invalidation of caller contract
+	// check the invalidation of caller contract
 	slashModuleParam, err := p.slashKeeper.GetParams(ctx)
 	if err != nil {
 		return nil, err

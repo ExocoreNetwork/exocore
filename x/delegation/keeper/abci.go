@@ -1,13 +1,12 @@
-// Copyright Tharsis Labs Ltd.(Evmos)
-// SPDX-License-Identifier:ENCL-1.0(https://github.com/evmos/evmos/blob/main/LICENSE)
 package keeper
 
 import (
-	sdkmath "cosmossdk.io/math"
 	"fmt"
+
+	sdkmath "cosmossdk.io/math"
 	abci "github.com/cometbft/cometbft/abci/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	types2 "github.com/exocore/x/delegation/types"
+	delegationtype "github.com/exocore/x/delegation/types"
 	"github.com/exocore/x/restaking_assets_manage/types"
 )
 
@@ -25,7 +24,7 @@ func (k Keeper) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.Validat
 		// check if the operator has been slashed or frozen
 		operatorAccAddress := sdk.MustAccAddressFromBech32(record.OperatorAddr)
 		if k.slashKeeper.IsOperatorFrozen(ctx, operatorAccAddress) {
-			//reSet the completed height if the operator is frozen
+			// reSet the completed height if the operator is frozen
 			record.CompleteBlockNumber = k.operatorOptedInKeeper.GetOperatorCanUndelegateHeight(ctx, record.AssetId, operatorAccAddress, record.BlockNumber)
 			if record.CompleteBlockNumber <= uint64(ctx.BlockHeight()) {
 				panic(fmt.Sprintf("the reset completedHeight isn't in future,setHeight:%v,curHeight:%v", record.CompleteBlockNumber, ctx.BlockHeight()))
@@ -37,7 +36,7 @@ func (k Keeper) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.Validat
 			continue
 		}
 
-		//get operator slashed proportion to calculate the actual canUndelegated asset amount
+		// get operator slashed proportion to calculate the actual canUndelegated asset amount
 		proportion := k.slashKeeper.OperatorAssetSlashedProportion(ctx, operatorAccAddress, record.AssetId, record.BlockNumber, record.CompleteBlockNumber)
 		if proportion.IsNil() || proportion.IsNegative() || proportion.GT(sdkmath.LegacyNewDec(1)) {
 			panic(fmt.Sprintf("the proportion is invalid,it is:%v", proportion))
@@ -47,9 +46,9 @@ func (k Keeper) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.Validat
 		record.ActualCompletedAmount = actualCanUndelegateAmount
 		recordAmountNeg := record.Amount.Neg()
 
-		//update delegation state
-		delegatorAndAmount := make(map[string]*types2.DelegationAmounts)
-		delegatorAndAmount[record.OperatorAddr] = &types2.DelegationAmounts{
+		// update delegation state
+		delegatorAndAmount := make(map[string]*delegationtype.DelegationAmounts)
+		delegatorAndAmount[record.OperatorAddr] = &delegationtype.DelegationAmounts{
 			WaitUndelegationAmount: recordAmountNeg,
 		}
 		err = k.UpdateDelegationState(ctx, record.StakerId, record.AssetId, delegatorAndAmount)
@@ -57,13 +56,13 @@ func (k Keeper) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.Validat
 			panic(err)
 		}
 
-		//todo: if use recordAmount as an input parameter, the delegation total amount won't need to be subtracted when the related operator is slashed.
+		// todo: if use recordAmount as an input parameter, the delegation total amount won't need to be subtracted when the related operator is slashed.
 		err = k.UpdateStakerDelegationTotalAmount(ctx, record.StakerId, record.AssetId, recordAmountNeg)
 		if err != nil {
 			panic(err)
 		}
 
-		//update the staker state
+		// update the staker state
 		err := k.restakingStateKeeper.UpdateStakerAssetState(ctx, record.StakerId, record.AssetId, types.StakerSingleAssetOrChangeInfo{
 			CanWithdrawAmountOrWantChangeValue:      actualCanUndelegateAmount,
 			WaitUndelegationAmountOrWantChangeValue: recordAmountNeg,
@@ -72,7 +71,7 @@ func (k Keeper) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.Validat
 			panic(err)
 		}
 
-		//update the operator state
+		// update the operator state
 		err = k.restakingStateKeeper.UpdateOperatorAssetState(ctx, operatorAccAddress, record.AssetId, types.OperatorSingleAssetOrChangeInfo{
 			TotalAmountOrWantChangeValue:            actualCanUndelegateAmount.Neg(),
 			WaitUndelegationAmountOrWantChangeValue: recordAmountNeg,
@@ -81,7 +80,7 @@ func (k Keeper) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.Validat
 			panic(err)
 		}
 
-		//update Undelegation record
+		// update Undelegation record
 		record.IsPending = false
 		_, err = k.SetSingleUndelegationRecord(ctx, record)
 		if err != nil {

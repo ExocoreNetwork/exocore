@@ -1,11 +1,10 @@
-// Copyright Tharsis Labs Ltd.(Evmos)
-// SPDX-License-Identifier:ENCL-1.0(https://github.com/evmos/evmos/blob/main/LICENSE)
 package restaking_assets_manage
 
 import (
 	"context"
 	"encoding/json"
 	"fmt"
+
 	abci "github.com/cometbft/cometbft/abci/types"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -15,7 +14,7 @@ import (
 	simtypes "github.com/cosmos/cosmos-sdk/types/simulation"
 	"github.com/exocore/x/restaking_assets_manage/client/cli"
 	"github.com/exocore/x/restaking_assets_manage/keeper"
-	types2 "github.com/exocore/x/restaking_assets_manage/types"
+	restakingtype "github.com/exocore/x/restaking_assets_manage/types"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	"github.com/spf13/cobra"
 )
@@ -29,15 +28,14 @@ var (
 	_ module.AppModuleSimulation = AppModule{}
 )
 
-type AppModuleBasic struct {
-}
+type AppModuleBasic struct{}
 
 func (b AppModuleBasic) Name() string {
-	return types2.ModuleName
+	return restakingtype.ModuleName
 }
 
 func (b AppModuleBasic) RegisterLegacyAminoCodec(amino *codec.LegacyAmino) {
-	types2.RegisterLegacyAminoCodec(amino)
+	restakingtype.RegisterLegacyAminoCodec(amino)
 }
 
 // DefaultGenesis returns default genesis state as raw bytes for the auth
@@ -48,20 +46,20 @@ func (AppModuleBasic) DefaultGenesis(cdc codec.JSONCodec) json.RawMessage {
 
 // ValidateGenesis performs genesis state validation for the auth module.
 func (AppModuleBasic) ValidateGenesis(cdc codec.JSONCodec, config client.TxEncodingConfig, bz json.RawMessage) error {
-	var data types2.GenesisState
+	var data restakingtype.GenesisState
 	if err := cdc.UnmarshalJSON(bz, &data); err != nil {
-		return fmt.Errorf("failed to unmarshal %s genesis state: %w", types2.ModuleName, err)
+		return fmt.Errorf("failed to unmarshal %s genesis state: %w", restakingtype.ModuleName, err)
 	}
 
 	return ValidateGenesis(data)
 }
 
 func (b AppModuleBasic) RegisterInterfaces(registry codectypes.InterfaceRegistry) {
-	types2.RegisterInterfaces(registry)
+	restakingtype.RegisterInterfaces(registry)
 }
 
 func (b AppModuleBasic) RegisterGRPCGatewayRoutes(c client.Context, serveMux *runtime.ServeMux) {
-	if err := types2.RegisterQueryHandlerClient(context.Background(), serveMux, types2.NewQueryClient(c)); err != nil {
+	if err := restakingtype.RegisterQueryHandlerClient(context.Background(), serveMux, restakingtype.NewQueryClient(c)); err != nil {
 		panic(err)
 	}
 }
@@ -94,12 +92,12 @@ func (am AppModule) IsAppModule() {}
 
 // RegisterServices registers module services.
 func (am AppModule) RegisterServices(cfg module.Configurator) {
-	types2.RegisterMsgServer(cfg.MsgServer(), &am.keeper)
-	types2.RegisterQueryServer(cfg.QueryServer(), am.keeper)
+	restakingtype.RegisterMsgServer(cfg.MsgServer(), &am.keeper)
+	restakingtype.RegisterQueryServer(cfg.QueryServer(), am.keeper)
 }
 
 func (am AppModule) InitGenesis(ctx sdk.Context, cdc codec.JSONCodec, data json.RawMessage) []abci.ValidatorUpdate {
-	var genesisState types2.GenesisState
+	var genesisState restakingtype.GenesisState
 	cdc.MustUnmarshalJSON(data, &genesisState)
 	InitGenesis(ctx, am.keeper, genesisState)
 	return []abci.ValidatorUpdate{}

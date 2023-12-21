@@ -1,6 +1,8 @@
 package keeper_test
 
 import (
+	"time"
+
 	"github.com/cosmos/cosmos-sdk/crypto/keys/ed25519"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/common"
@@ -12,7 +14,6 @@ import (
 	"github.com/exocore/utils"
 	"github.com/stretchr/testify/require"
 	"golang.org/x/exp/rand"
-	"time"
 )
 
 // Test helpers
@@ -23,7 +24,7 @@ func (suite *KeeperTestSuite) DoSetupTest(t require.TestingT) {
 	suite.address = common.BytesToAddress(priv.PubKey().Address().Bytes())
 	suite.signer = utiltx.NewSigner(priv)
 
-	//accAddress
+	// accAddress
 	pubBz := make([]byte, ed25519.PubKeySize)
 	pub := &ed25519.PubKey{Key: pubBz}
 	rand.Read(pub.Key)

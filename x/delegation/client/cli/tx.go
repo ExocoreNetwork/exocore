@@ -1,16 +1,14 @@
-// Copyright Tharsis Labs Ltd.(Evmos)
-// SPDX-License-Identifier:ENCL-1.0(https://github.com/evmos/evmos/blob/main/LICENSE)
-
 package cli
 
 import (
-	errorsmod "cosmossdk.io/errors"
 	"fmt"
-	"github.com/cosmos/cosmos-sdk/client/flags"
-	types2 "github.com/exocore/x/delegation/types"
-	"github.com/spf13/cobra"
 	"strconv"
 	"strings"
+
+	errorsmod "cosmossdk.io/errors"
+	"github.com/cosmos/cosmos-sdk/client/flags"
+	delegationtype "github.com/exocore/x/delegation/types"
+	"github.com/spf13/cobra"
 
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/tx"
@@ -19,7 +17,7 @@ import (
 // NewTxCmd returns a root CLI command handler for deposit commands
 func NewTxCmd() *cobra.Command {
 	txCmd := &cobra.Command{
-		Use:                        types2.ModuleName,
+		Use:                        delegationtype.ModuleName,
 		Short:                      "delegation subcommands",
 		DisableFlagParsing:         true,
 		SuggestionsMinimumDistance: 2,
@@ -45,28 +43,28 @@ func RegisterOperator() *cobra.Command {
 			}
 
 			sender := cliCtx.GetFromAddress()
-			msg := &types2.RegisterOperatorReq{
+			msg := &delegationtype.RegisterOperatorReq{
 				FromAddress: sender.String(),
-				Info: &types2.OperatorInfo{
+				Info: &delegationtype.OperatorInfo{
 					EarningsAddr:     args[0],
 					ApproveAddr:      args[1],
 					OperatorMetaInfo: args[2],
 				},
 			}
 			lastArgs := args[3:]
-			clientChainEarningAddress := &types2.ClientChainEarningAddrList{}
-			clientChainEarningAddress.EarningInfoList = make([]*types2.ClientChainEarningAddrInfo, 0)
+			clientChainEarningAddress := &delegationtype.ClientChainEarningAddrList{}
+			clientChainEarningAddress.EarningInfoList = make([]*delegationtype.ClientChainEarningAddrInfo, 0)
 			for _, arg := range lastArgs {
 				strList := strings.Split(arg, ":")
 				if len(strList) != 2 {
-					return errorsmod.Wrap(types2.ErrCliCmdInputArg, fmt.Sprintf("the error input arg is:%s", arg))
+					return errorsmod.Wrap(delegationtype.ErrCliCmdInputArg, fmt.Sprintf("the error input arg is:%s", arg))
 				}
 				clientChainLzId, err := strconv.ParseUint(strList[0], 10, 64)
 				if err != nil {
 					return err
 				}
 				clientChainEarningAddress.EarningInfoList = append(clientChainEarningAddress.EarningInfoList,
-					&types2.ClientChainEarningAddrInfo{
+					&delegationtype.ClientChainEarningAddrInfo{
 						LzClientChainId: clientChainLzId, ClientChainEarningAddr: strList[1],
 					})
 			}

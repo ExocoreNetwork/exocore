@@ -1,15 +1,13 @@
-// Copyright Tharsis Labs Ltd.(Evmos)
-// SPDX-License-Identifier:ENCL-1.0(https://github.com/evmos/evmos/blob/main/LICENSE)
-
 package delegation
 
 import (
 	"fmt"
+	"reflect"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/vm"
-	"reflect"
 )
 
 const (
@@ -33,7 +31,7 @@ func (p Precompile) DelegateToThroughClientChain(
 	method *abi.Method,
 	args []interface{},
 ) ([]byte, error) {
-	//check the invalidation of caller contract
+	// check the invalidation of caller contract
 	exoCoreLzAppAddr, err := p.delegationKeeper.GetExoCoreLzAppAddress(ctx)
 	if err != nil {
 		return nil, err
@@ -63,7 +61,7 @@ func (p Precompile) UndelegateFromThroughClientChain(
 	method *abi.Method,
 	args []interface{},
 ) ([]byte, error) {
-	//check the invalidation of caller contract
+	// check the invalidation of caller contract
 	exoCoreLzAppAddr, err := p.delegationKeeper.GetExoCoreLzAppAddress(ctx)
 	if err != nil {
 		return nil, err
