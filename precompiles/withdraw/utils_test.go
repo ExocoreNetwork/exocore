@@ -29,6 +29,7 @@ import (
 	inflationtypes "github.com/evmos/evmos/v14/x/inflation/types"
 	evmosapp "github.com/exocore/app"
 	"github.com/exocore/precompiles/withdraw"
+	testutiltx "github.com/exocore/testutil/tx"
 	"github.com/exocore/utils"
 )
 
@@ -149,7 +150,7 @@ func (s *PrecompileTestSuite) DoSetupTest() {
 	signers[pubKey2.Address().String()] = privVal2
 
 	// generate genesis account
-	addr, priv := evmosutiltx.NewAddrKey()
+	addr, priv := testutiltx.NewAddrKey()
 	s.privKey = priv
 	s.address = addr
 	s.signer = evmosutiltx.NewSigner(priv)

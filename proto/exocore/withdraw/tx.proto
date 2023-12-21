@@ -6,8 +6,7 @@ import "cosmos/msg/v1/msg.proto";
 import "cosmos_proto/cosmos.proto";
 import "gogoproto/gogo.proto";
 import "amino/amino.proto";
-import "exocore/withdraw/params.proto";
-
+import "exocore/deposit/v1/deposit.proto";
 option go_package = "github.com/exocore/x/withdraw/types";
 
 // MsgUpdateParams is the Msg/UpdateParams request type for Erc20 parameters.
@@ -20,7 +19,7 @@ message MsgUpdateParams {
 
   // params defines the x/evm parameters to update.
   // NOTE: All parameters must be supplied.
-  Params params = 2 [(gogoproto.nullable) = false];
+  exocore.deposit.v1.Params params = 2 [(gogoproto.nullable) = false];
 }
 
 // MsgUpdateParamsResponse defines the response structure for executing a
