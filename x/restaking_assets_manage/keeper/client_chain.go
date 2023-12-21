@@ -8,9 +8,10 @@ import (
 )
 
 // SetClientChainInfo todo: Temporarily use layerZeroChainId as key.
+// It provides a function to register the client chains supported by exoCore.It's called by genesis configuration now,however it will be called by the governance in the future
 func (k Keeper) SetClientChainInfo(ctx sdk.Context, info *restakingtype.ClientChainInfo) (err error) {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), restakingtype.KeyPrefixClientChainInfo)
-	// key := common.HexToAddress(incentive.Contract)
+	//key := common.HexToAddress(incentive.Contract)
 	bz := k.cdc.MustMarshal(info)
 
 	store.Set([]byte(hexutil.EncodeUint64(info.LayerZeroChainId)), bz)
@@ -22,6 +23,7 @@ func (k Keeper) ClientChainInfoIsExist(ctx sdk.Context, index uint64) bool {
 	return store.Has([]byte(hexutil.EncodeUint64(index)))
 }
 
+// GetClientChainInfoByIndex using layerZeroChainId as the query index.
 func (k Keeper) GetClientChainInfoByIndex(ctx sdk.Context, index uint64) (info *restakingtype.ClientChainInfo, err error) {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), restakingtype.KeyPrefixClientChainInfo)
 	ifExist := store.Has([]byte(hexutil.EncodeUint64(index)))

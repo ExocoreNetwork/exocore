@@ -1,23 +1,22 @@
 package keeper
 
 import (
-	"fmt"
-
-	errorsmod "cosmossdk.io/errors"
 	sdkmath "cosmossdk.io/math"
 	"github.com/cosmos/cosmos-sdk/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	restakingtype "github.com/exocore/x/restaking_assets_manage/types"
 )
 
+// UpdateStakingAssetTotalAmount updating the total deposited amount of a specified asset in exoCore chain
+// The function will be called when stakers deposit and withdraw their assets
 func (k Keeper) UpdateStakingAssetTotalAmount(ctx sdk.Context, assetId string, changeAmount sdkmath.Int) (err error) {
 	if changeAmount.IsNil() {
 		return nil
 	}
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), restakingtype.KeyPrefixReStakingAssetInfo)
 	key := []byte(assetId)
-	isExist := store.Has(key)
-	if !isExist {
+	ifExist := store.Has(key)
+	if !ifExist {
 		return restakingtype.ErrNoClientChainAssetKey
 	}
 
@@ -26,13 +25,11 @@ func (k Keeper) UpdateStakingAssetTotalAmount(ctx sdk.Context, assetId string, c
 	ret := restakingtype.StakingAssetInfo{}
 	k.cdc.MustUnmarshal(value, &ret)
 
-	if changeAmount.IsNegative() {
-		if ret.StakingTotalAmount.LT(changeAmount.Neg()) {
-			return errorsmod.Wrap(restakingtype.ErrSubAmountIsMoreThanOrigin, fmt.Sprintf("StakingTotalAmount:%s,changeValue:%s", ret.StakingTotalAmount, changeAmount))
-		}
+	//calculate and set new amount
+	err = UpdateAssetValue(&ret.StakingTotalAmount, &changeAmount)
+	if err != nil {
+		return err
 	}
-	ret.StakingTotalAmount = ret.StakingTotalAmount.Add(changeAmount)
-
 	bz := k.cdc.MustMarshal(&ret)
 
 	store.Set(key, bz)
@@ -41,9 +38,10 @@ func (k Keeper) UpdateStakingAssetTotalAmount(ctx sdk.Context, assetId string, c
 }
 
 // SetStakingAssetInfo todo: Temporarily use clientChainAssetAddr+'_'+layerZeroChainId as the key.
+// It provides a function to register the client chain assets supported by exoCore.It's called by genesis configuration now,however it will be called by the governance in the future
 func (k Keeper) SetStakingAssetInfo(ctx sdk.Context, info *restakingtype.StakingAssetInfo) (err error) {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), restakingtype.KeyPrefixReStakingAssetInfo)
-	// key := common.HexToAddress(incentive.Contract)
+	//key := common.HexToAddress(incentive.Contract)
 	bz := k.cdc.MustMarshal(info)
 
 	_, assetId := restakingtype.GetStakeIDAndAssetIdFromStr(info.AssetBasicInfo.LayerZeroChainId, "", info.AssetBasicInfo.Address)

@@ -24,11 +24,13 @@ func NewKeeper(
 	}
 }
 
+// GetAllOperatorAssetOptedInMiddleWare This function should be implemented in the operator opt-in module
 func (k Keeper) GetAllOperatorAssetOptedInMiddleWare(operatorAddr sdk.Address) (optedInInfos map[string][]sdk.Address, err error) {
 	// TODO implement me
 	panic("implement me")
 }
 
+// SetOperatorAssetOptedInMiddleWare This function should be implemented in the operator opt-in module
 func (k Keeper) SetOperatorAssetOptedInMiddleWare(operatorAddr sdk.Address, setInfo map[string]sdk.Address) (middleWares []sdk.Address, err error) {
 	// TODO implement me
 	panic("implement me")
@@ -56,7 +58,7 @@ type IRestakingAssetsManage interface {
 	SetStakerExoCoreAddr(ctx context.Context, addr *restakingtype.MsgSetExoCoreAddr) (*restakingtype.MsgSetExoCoreAddrResponse, error)
 	GetStakerExoCoreAddr(ctx sdk.Context, stakerId string) (string, error)
 
-	// GetOperatorAssetOptedInMiddleWare :the following three interfaces can be implemented in operator optedIn module
+	// GetOperatorAssetOptedInMiddleWare :the following three interfaces should be implemented in operator opt-in module
 	GetOperatorAssetOptedInMiddleWare(operatorAddr sdk.Address, assetId string) (middleWares []sdk.Address, err error)
 	GetAllOperatorAssetOptedInMiddleWare(operatorAddr sdk.Address) (optedInInfos map[string][]sdk.Address, err error)
 	SetOperatorAssetOptedInMiddleWare(operatorAddr sdk.Address, setInfo map[string]sdk.Address) (middleWares []sdk.Address, err error)

@@ -13,6 +13,7 @@ import (
 	"github.com/exocore/x/restaking_assets_manage/types"
 )
 
+// UpdateStakerDelegationTotalAmount
 func (k Keeper) UpdateStakerDelegationTotalAmount(ctx sdk.Context, stakerId string, assetId string, opAmount sdkmath.Int) error {
 	if opAmount.IsNil() || opAmount.IsZero() {
 		return nil
