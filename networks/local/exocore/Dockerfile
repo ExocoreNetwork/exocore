@@ -3,7 +3,7 @@ RUN apk add build-base linux-headers git
 # Set working directory for the build
 WORKDIR work
 # Add source files
-COPY .  ./
+COPY . ./
 # build exocore
 #COPY ./evmosd /go/work/build
 RUN LEDGER_ENABLED=false make build
