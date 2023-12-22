@@ -202,7 +202,7 @@ func (k Keeper) UndelegateFrom(ctx sdk.Context, params *DelegationOrUndelegation
 		ActualCompletedAmount: sdkmath.NewInt(0),
 	}
 	r.CompleteBlockNumber = k.operatorOptedInKeeper.GetOperatorCanUndelegateHeight(ctx, assetId, params.OperatorAddress, r.BlockNumber)
-	err = k.SetUndelegationStates(ctx, []*delegationtype.UndelegationRecord{r})
+	err = k.SetUndelegationRecords(ctx, []*delegationtype.UndelegationRecord{r})
 	if err != nil {
 		return err
 	}
