@@ -1,10 +1,9 @@
-// Copyright Tharsis Labs Ltd.(Evmos)
-// SPDX-License-Identifier:ENCL-1.0(https://github.com/evmos/evmos/blob/main/LICENSE)
 package keeper
 
 import (
-	"github.com/exocore/precompiles/delegation"
 	"math/big"
+
+	"github.com/exocore/precompiles/delegation"
 
 	tmtypes "github.com/cometbft/cometbft/types"
 
@@ -315,7 +314,7 @@ func (k *Keeper) ApplyMessageWithConfig(ctx sdk.Context,
 		return nil, errorsmod.Wrap(types.ErrCallDisabled, "failed to call contract")
 	}
 
-	//set txHash for delegation module
+	// set txHash for delegation module
 	ctx = ctx.WithValue(delegation.CtxKeyTxHash, txConfig.TxHash)
 
 	stateDB := statedb.New(ctx, k, txConfig)

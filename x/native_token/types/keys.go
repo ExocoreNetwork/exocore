@@ -1,5 +1,3 @@
-// Copyright Tharsis Labs Ltd.(Evmos)
-// SPDX-License-Identifier:ENCL-1.0(https://github.com/evmos/evmos/blob/main/LICENSE)
 package types
 
 import (
@@ -30,8 +28,6 @@ const (
 	prefixReStakerExocoreAddr = iota + 1
 )
 
-var (
-	// KeyPrefixReStakerExoCoreAddr reStakerId = clientChainAddr+'_'+ExoCoreChainIndex
-	// KeyPrefixReStakerExoCoreAddr key-value: reStakerId->exoCoreAddr
-	KeyPrefixReStakerExoCoreAddr = []byte{prefixReStakerExocoreAddr}
-)
+// KeyPrefixReStakerExoCoreAddr reStakerId = clientChainAddr+'_'+ExoCoreChainIndex
+// KeyPrefixReStakerExoCoreAddr key-value: reStakerId->exoCoreAddr
+var KeyPrefixReStakerExoCoreAddr = []byte{prefixReStakerExocoreAddr}

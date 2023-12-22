@@ -1,11 +1,12 @@
 package keeper
 
 import (
+	"fmt"
+
 	errorsmod "cosmossdk.io/errors"
 	sdkmath "cosmossdk.io/math"
-	"fmt"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	types2 "github.com/exocore/x/deposit/types"
+	despoittypes "github.com/exocore/x/deposit/types"
 	"github.com/exocore/x/restaking_assets_manage/types"
 )
 
@@ -120,14 +121,14 @@ func (k Keeper) PostTxProcessing(ctx sdk.Context, msg core.Message, receipt *eth
 }*/
 
 func (k Keeper) Deposit(ctx sdk.Context, params *DepositParams) error {
-	//check params parameter before executing deposit operation
+	// check params parameter before executing deposit operation
 	if params.OpAmount.IsNegative() {
-		return errorsmod.Wrap(types2.ErrDepositAmountIsNegative, fmt.Sprintf("the amount is:%s", params.OpAmount))
+		return errorsmod.Wrap(despoittypes.ErrDepositAmountIsNegative, fmt.Sprintf("the amount is:%s", params.OpAmount))
 	}
 	stakeId, assetId := types.GetStakeIDAndAssetId(params.ClientChainLzId, params.StakerAddress, params.AssetsAddress)
-	//check if asset exist
+	// check if asset exist
 	if !k.restakingStateKeeper.IsStakingAsset(ctx, assetId) {
-		return errorsmod.Wrap(types2.ErrDepositAssetNotExist, fmt.Sprintf("the assetId is:%s", assetId))
+		return errorsmod.Wrap(despoittypes.ErrDepositAssetNotExist, fmt.Sprintf("the assetId is:%s", assetId))
 	}
 	changeAmount := types.StakerSingleAssetOrChangeInfo{
 		TotalDepositAmountOrWantChangeValue: params.OpAmount,

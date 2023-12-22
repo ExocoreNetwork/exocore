@@ -2,13 +2,14 @@ package keeper
 
 import (
 	"context"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	types2 "github.com/exocore/x/deposit/types"
+	deposittype "github.com/exocore/x/deposit/types"
 )
 
-var _ types2.MsgServer = &Keeper{}
+var _ deposittype.MsgServer = &Keeper{}
 
-func (k Keeper) UpdateParams(ctx context.Context, params *types2.MsgUpdateParams) (*types2.MsgUpdateParamsResponse, error) {
+func (k Keeper) UpdateParams(ctx context.Context, params *deposittype.MsgUpdateParams) (*deposittype.MsgUpdateParamsResponse, error) {
 	c := sdk.UnwrapSDKContext(ctx)
 	err := k.SetParams(c, &params.Params)
 	if err != nil {

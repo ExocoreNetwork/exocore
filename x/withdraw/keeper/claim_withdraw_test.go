@@ -6,7 +6,7 @@ import (
 	depositKeeper "github.com/exocore/x/deposit/keeper"
 	"github.com/exocore/x/restaking_assets_manage/types"
 	"github.com/exocore/x/withdraw/keeper"
-	types2 "github.com/exocore/x/withdraw/types"
+	withdrawtype "github.com/exocore/x/withdraw/types"
 )
 
 func (suite *KeeperTestSuite) TestClaimWithdrawRequest() {
@@ -31,10 +31,10 @@ func (suite *KeeperTestSuite) TestClaimWithdrawRequest() {
 	err := suite.app.DepositKeeper.Deposit(suite.ctx, depositEvent)
 	suite.NoError(err)
 
-	//test the case that the withdraw asset hasn't registered
+	// test the case that the withdraw asset hasn't registered
 	event.AssetsAddress = usdcAddress[:]
 	err = suite.app.WithdrawKeeper.Withdraw(suite.ctx, event)
-	suite.ErrorContains(err, types2.ErrWithdrawAssetNotExist.Error())
+	suite.ErrorContains(err, withdrawtype.ErrWithdrawAssetNotExist.Error())
 
 	assets, err := suite.app.StakingAssetsManageKeeper.GetAllStakingAssetsInfo(suite.ctx)
 	suite.NoError(err)
@@ -48,12 +48,12 @@ func (suite *KeeperTestSuite) TestClaimWithdrawRequest() {
 		CanWithdrawAmountOrWantChangeValue:      depositEvent.OpAmount,
 		WaitUndelegationAmountOrWantChangeValue: sdkmath.NewInt(0),
 	}, *info)
-	//test the normal case
+	// test the normal case
 	event.AssetsAddress = usdtAddress[:]
 	err = suite.app.WithdrawKeeper.Withdraw(suite.ctx, event)
 	suite.NoError(err)
 
-	//check state after withdraw
+	// check state after withdraw
 	stakerId, assetId = types.GetStakeIDAndAssetId(event.ClientChainLzId, event.WithdrawAddress, event.AssetsAddress)
 	info, err = suite.app.StakingAssetsManageKeeper.GetStakerSpecifiedAssetInfo(suite.ctx, stakerId, assetId)
 	suite.NoError(err)

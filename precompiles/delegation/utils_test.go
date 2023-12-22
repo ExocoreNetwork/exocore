@@ -2,10 +2,11 @@ package delegation_test
 
 import (
 	"encoding/json"
+	"time"
+
 	"github.com/exocore/precompiles/delegation"
 	"github.com/exocore/testutil"
 	testutiltx "github.com/exocore/testutil/tx"
-	"time"
 
 	abci "github.com/cometbft/cometbft/abci/types"
 	"github.com/cometbft/cometbft/crypto/tmhash"
@@ -34,7 +35,7 @@ import (
 // of one consensus engine unit (10^6) in the default token of the simapp from first genesis
 // account. A Nop logger is set in SimApp.
 func (s *PrecompileTestSuite) SetupWithGenesisValSet(valSet *tmtypes.ValidatorSet, genAccs []authtypes.GenesisAccount, balances ...banktypes.Balance) {
-	appI, genesisState := evmosapp.SetupTestingApp(cmn.DefaultChainID)()
+	appI, genesisState := evmosapp.SetupTestingApp(cmn.DefaultChainID, false)()
 	app, ok := appI.(*evmosapp.ExocoreApp)
 	s.Require().True(ok)
 

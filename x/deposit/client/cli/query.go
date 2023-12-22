@@ -1,11 +1,9 @@
-// Copyright Tharsis Labs Ltd.(Evmos)
-// SPDX-License-Identifier:ENCL-1.0(https://github.com/evmos/evmos/blob/main/LICENSE)
-
 package cli
 
 import (
 	"context"
-	types2 "github.com/exocore/x/deposit/types"
+
+	deposittype "github.com/exocore/x/deposit/types"
 
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
@@ -15,7 +13,7 @@ import (
 // GetQueryCmd returns the parent command for all incentives CLI query commands.
 func GetQueryCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:                        types2.ModuleName,
+		Use:                        deposittype.ModuleName,
 		Short:                      "Querying commands for the deposit module",
 		DisableFlagParsing:         true,
 		SuggestionsMinimumDistance: 2,
@@ -41,9 +39,9 @@ func GetParamsCmd() *cobra.Command {
 				return err
 			}
 
-			queryClient := types2.NewQueryClient(clientCtx)
+			queryClient := deposittype.NewQueryClient(clientCtx)
 
-			req := &types2.QueryParamsRequest{}
+			req := &deposittype.QueryParamsRequest{}
 
 			res, err := queryClient.Params(context.Background(), req)
 			if err != nil {

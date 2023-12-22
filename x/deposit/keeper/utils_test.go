@@ -1,6 +1,8 @@
 package keeper_test
 
 import (
+	"time"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/evmos/evmos/v14/crypto/ethsecp256k1"
@@ -10,7 +12,6 @@ import (
 	"github.com/exocore/app"
 	"github.com/exocore/utils"
 	"github.com/stretchr/testify/require"
-	"time"
 )
 
 // Test helpers

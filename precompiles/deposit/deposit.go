@@ -1,12 +1,10 @@
-// Copyright Tharsis Labs Ltd.(Evmos)
-// SPDX-License-Identifier:ENCL-1.0(https://github.com/evmos/evmos/blob/main/LICENSE)
-
 package deposit
 
 import (
 	"bytes"
 	"embed"
 	"fmt"
+
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	authzkeeper "github.com/cosmos/cosmos-sdk/x/authz/keeper"
 	"github.com/ethereum/go-ethereum/accounts/abi"
@@ -99,6 +97,7 @@ func (p Precompile) Run(evm *vm.EVM, contract *vm.Contract, readOnly bool) (bz [
 	}
 
 	if err != nil {
+		ctx.Logger().Error("call deposit precompile error", "module", "deposit precompile", "err", err)
 		return nil, err
 	}
 

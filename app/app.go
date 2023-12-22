@@ -1,8 +1,7 @@
-// Copyright Tharsis Labs Ltd.(Evmos)
-// SPDX-License-Identifier:ENCL-1.0(https://github.com/evmos/evmos/blob/main/LICENSE)
 package app
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -11,10 +10,10 @@ import (
 	"path/filepath"
 	"sort"
 
-	"github.com/exocore/x/exoslash"
+	exoslash "github.com/exocore/x/slash"
 
-	slashKeeper "github.com/exocore/x/exoslash/keeper"
-	exoslashTypes "github.com/exocore/x/exoslash/types"
+	slashKeeper "github.com/exocore/x/slash/keeper"
+	exoslashTypes "github.com/exocore/x/slash/types"
 
 	autocliv1 "cosmossdk.io/api/cosmos/autocli/v1"
 	reflectionv1 "cosmossdk.io/api/cosmos/reflection/v1"
@@ -23,8 +22,6 @@ import (
 
 	ethante "github.com/evmos/evmos/v14/app/ante/evm"
 	"github.com/evmos/evmos/v14/ethereum/eip712"
-
-	"context"
 
 	"github.com/evmos/evmos/v14/x/feemarket"
 	feemarkettypes "github.com/evmos/evmos/v14/x/feemarket/types"
@@ -258,7 +255,7 @@ var (
 		recovery.AppModuleBasic{},
 		revenue.AppModuleBasic{},
 		consensus.AppModuleBasic{},
-		//exoCore staking modules
+		// exoCore staking modules
 		restaking_assets_manage.AppModuleBasic{},
 		deposit.AppModuleBasic{},
 		delegation.AppModuleBasic{},
@@ -349,7 +346,7 @@ type ExocoreApp struct {
 	RecoveryKeeper   *recoverykeeper.Keeper
 	RevenueKeeper    revenuekeeper.Keeper
 
-	//exoCore staking module keepers
+	// exocore staking module keepers
 	StakingAssetsManageKeeper stakingAssetsManageKeeper.Keeper
 	DepositKeeper             depositKeeper.Keeper
 	DelegationKeeper          delegationKeeper.Keeper
@@ -431,7 +428,7 @@ func NewExocoreApp(
 		inflationtypes.StoreKey, erc20types.StoreKey, incentivestypes.StoreKey,
 		epochstypes.StoreKey, claimstypes.StoreKey, vestingtypes.StoreKey,
 		revenuetypes.StoreKey, recoverytypes.StoreKey,
-		//exoCore module keys
+		// exoCore module keys
 		stakingAssetsManageTypes.StoreKey,
 		delegationTypes.StoreKey,
 		depositTypes.StoreKey,
@@ -616,12 +613,14 @@ func NewExocoreApp(
 		app.Erc20Keeper, // Add ERC20 Keeper for ERC20 transfers
 	)
 
-	//set exoCore staking keepers
+	// set exoCore staking keepers
 	app.StakingAssetsManageKeeper = stakingAssetsManageKeeper.NewKeeper(keys[stakingAssetsManageTypes.StoreKey], appCodec)
 	app.DepositKeeper = depositKeeper.NewKeeper(keys[depositTypes.StoreKey], appCodec, app.StakingAssetsManageKeeper)
-	//todo: need to replace the virtual keepers with actual keepers after they have been implemented
+	// todo: need to replace the virtual keepers with actual keepers after they have been implemented
 	app.DelegationKeeper = delegationKeeper.NewKeeper(keys[depositTypes.StoreKey], appCodec, app.StakingAssetsManageKeeper, app.DepositKeeper, delegationTypes.VirtualISlashKeeper{}, delegationTypes.VirtualOperatorOptedInKeeper{})
-
+	app.WithdrawKeeper = *withdrawKeeper.NewKeeper(appCodec, keys[withdrawTypes.StoreKey], app.StakingAssetsManageKeeper, app.DepositKeeper)
+	app.RewardKeeper = *rewardKeeper.NewKeeper(appCodec, keys[rewardTypes.StoreKey], app.StakingAssetsManageKeeper)
+	app.ExoSlashKeeper = slashKeeper.NewKeeper(appCodec, keys[exoslashTypes.StoreKey], app.StakingAssetsManageKeeper)
 	// We call this after setting the hooks to ensure that the hooks are set on the keeper
 	evmKeeper.WithPrecompiles(
 		evmkeeper.AvailablePrecompiles(
@@ -738,10 +737,6 @@ func NewExocoreApp(
 	// If evidence needs to be handled for the app, set routes in router here and seal
 	app.EvidenceKeeper = *evidenceKeeper
 
-	app.WithdrawKeeper = *withdrawKeeper.NewKeeper(appCodec, keys[withdrawTypes.StoreKey], app.StakingAssetsManageKeeper)
-	app.RewardKeeper = *rewardKeeper.NewKeeper(appCodec, keys[rewardTypes.StoreKey], app.StakingAssetsManageKeeper)
-	app.ExoSlashKeeper = slashKeeper.NewKeeper(appCodec, keys[exoslashTypes.StoreKey], app.StakingAssetsManageKeeper)
-
 	/****  Module Options ****/
 
 	// NOTE: we may consider parsing `appOpts` inside module constructors. For the moment
@@ -839,7 +834,7 @@ func NewExocoreApp(
 		recoverytypes.ModuleName,
 		revenuetypes.ModuleName,
 		consensusparamtypes.ModuleName,
-		//ExoCore modules
+		// ExoCore modules
 		stakingAssetsManageTypes.ModuleName,
 		depositTypes.ModuleName,
 		delegationTypes.ModuleName,
@@ -881,7 +876,7 @@ func NewExocoreApp(
 		recoverytypes.ModuleName,
 		revenuetypes.ModuleName,
 		consensusparamtypes.ModuleName,
-		//ExoCore modules
+		// ExoCore modules
 		stakingAssetsManageTypes.ModuleName,
 		depositTypes.ModuleName,
 		delegationTypes.ModuleName,
@@ -921,7 +916,7 @@ func NewExocoreApp(
 		feegrant.ModuleName,
 		paramstypes.ModuleName,
 		upgradetypes.ModuleName,
-		//ExoCore modules
+		// ExoCore modules
 		stakingAssetsManageTypes.ModuleName,
 		depositTypes.ModuleName,
 		delegationTypes.ModuleName,

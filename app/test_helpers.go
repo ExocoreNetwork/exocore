@@ -1,6 +1,3 @@
-// Copyright Tharsis Labs Ltd.(Evmos)
-// SPDX-License-Identifier:ENCL-1.0(https://github.com/evmos/evmos/blob/main/LICENSE)
-
 package app
 
 import (
@@ -41,7 +38,7 @@ func init() {
 }
 
 // DefaultTestingAppInit defines the IBC application used for testing
-var DefaultTestingAppInit func(chainID string) func() (ibctesting.TestingApp, map[string]json.RawMessage) = SetupTestingApp
+var DefaultTestingAppInit func(chainID string, isPrintLog bool) func() (ibctesting.TestingApp, map[string]json.RawMessage) = SetupTestingApp
 
 // DefaultConsensusParams defines the default Tendermint consensus params used in
 // Evmos testing.
@@ -205,12 +202,16 @@ func GenesisStateWithValSet(app *ExocoreApp, genesisState simapp.GenesisState,
 // SetupTestingApp initializes the IBC-go testing application
 // need to keep this design to comply with the ibctesting SetupTestingApp func
 // and be able to set the chainID for the tests properly
-func SetupTestingApp(chainID string) func() (ibctesting.TestingApp, map[string]json.RawMessage) {
+func SetupTestingApp(chainID string, isPrintLog bool) func() (ibctesting.TestingApp, map[string]json.RawMessage) {
 	return func() (ibctesting.TestingApp, map[string]json.RawMessage) {
 		db := dbm.NewMemDB()
 		cfg := encoding.MakeConfig(ModuleBasics)
+		logger := log.NewNopLogger()
+		if isPrintLog {
+			logger = log.NewTMLogger(log.NewSyncWriter(os.Stdout))
+		}
 		app := NewExocoreApp(
-			log.NewNopLogger(),
+			logger,
 			db, nil, true,
 			map[int64]bool{},
 			DefaultNodeHome, 5, cfg,

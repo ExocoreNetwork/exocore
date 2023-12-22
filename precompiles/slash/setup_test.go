@@ -1,8 +1,9 @@
 package slash_test
 
 import (
-	"github.com/exocore/precompiles/slash"
 	"testing"
+
+	"github.com/exocore/precompiles/slash"
 
 	"github.com/evmos/evmos/v14/x/evm/statedb"
 

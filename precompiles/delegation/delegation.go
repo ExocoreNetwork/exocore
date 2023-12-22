@@ -1,12 +1,10 @@
-// Copyright Tharsis Labs Ltd.(Evmos)
-// SPDX-License-Identifier:ENCL-1.0(https://github.com/evmos/evmos/blob/main/LICENSE)
-
 package delegation
 
 import (
 	"bytes"
 	"embed"
 	"fmt"
+
 	delegationKeeper "github.com/exocore/x/delegation/keeper"
 	stakingStateKeeper "github.com/exocore/x/restaking_assets_manage/keeper"
 
@@ -100,6 +98,7 @@ func (p Precompile) Run(evm *vm.EVM, contract *vm.Contract, readOnly bool) (bz [
 	}
 
 	if err != nil {
+		ctx.Logger().Error("call delegation precompile error", "module", "delegation precompile", "err", err)
 		return nil, err
 	}
 

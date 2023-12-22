@@ -1,13 +1,15 @@
 package keeper
 
 import (
-	errorsmod "cosmossdk.io/errors"
 	"fmt"
+	"strings"
+
+	errorsmod "cosmossdk.io/errors"
+
 	"github.com/cosmos/cosmos-sdk/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/exocore/x/delegation/types"
-	"strings"
 )
 
 type GetUndelegationRecordType uint8
@@ -22,10 +24,10 @@ func (k Keeper) SetUndelegationStates(ctx sdk.Context, records []*types.Undelega
 	singleRecordStore := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefixUndelegationInfo)
 	stakerUndelegationStore := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefixStakerUndelegationInfo)
 	waitCompleteStore := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefixWaitCompleteUndelegations)
-	//key := common.HexToAddress(incentive.Contract)
+	// key := common.HexToAddress(incentive.Contract)
 	for _, record := range records {
 		bz := k.cdc.MustMarshal(record)
-		//todo: check if the following state can only be set once?
+		// todo: check if the following state can only be set once?
 
 		singleRecKey := types.GetUndelegationRecordKey(record.LzTxNonce, record.TxHash, record.OperatorAddr)
 		singleRecordStore.Set(singleRecKey, bz)

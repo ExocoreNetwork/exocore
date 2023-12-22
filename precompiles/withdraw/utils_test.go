@@ -2,6 +2,8 @@ package withdraw_test
 
 import (
 	"encoding/json"
+	"time"
+
 	abci "github.com/cometbft/cometbft/abci/types"
 	"github.com/cometbft/cometbft/crypto/tmhash"
 	tmtypes "github.com/cometbft/cometbft/types"
@@ -27,8 +29,8 @@ import (
 	inflationtypes "github.com/evmos/evmos/v14/x/inflation/types"
 	evmosapp "github.com/exocore/app"
 	"github.com/exocore/precompiles/withdraw"
+	testutiltx "github.com/exocore/testutil/tx"
 	"github.com/exocore/utils"
-	"time"
 )
 
 // SetupWithGenesisValSet initializes a new EvmosApp with a validator set and genesis accounts
@@ -36,7 +38,7 @@ import (
 // of one consensus engine unit (10^6) in the default token of the simapp from first genesis
 // account. A Nop logger is set in SimApp.
 func (s *PrecompileTestSuite) SetupWithGenesisValSet(valSet *tmtypes.ValidatorSet, genAccs []authtypes.GenesisAccount, balances ...banktypes.Balance) {
-	appI, genesisState := evmosapp.SetupTestingApp(cmn.DefaultChainID)()
+	appI, genesisState := evmosapp.SetupTestingApp(cmn.DefaultChainID, false)()
 	app, ok := appI.(*evmosapp.ExocoreApp)
 	s.Require().True(ok)
 
@@ -148,7 +150,7 @@ func (s *PrecompileTestSuite) DoSetupTest() {
 	signers[pubKey2.Address().String()] = privVal2
 
 	// generate genesis account
-	addr, priv := evmosutiltx.NewAddrKey()
+	addr, priv := testutiltx.NewAddrKey()
 	s.privKey = priv
 	s.address = addr
 	s.signer = evmosutiltx.NewSigner(priv)

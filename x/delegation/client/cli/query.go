@@ -1,11 +1,12 @@
-// Copyright Tharsis Labs Ltd.(Evmos)
-// SPDX-License-Identifier:ENCL-1.0(https://github.com/evmos/evmos/blob/main/LICENSE)
-
 package cli
 
 import (
 	"context"
-	types2 "github.com/exocore/x/delegation/types"
+	"strconv"
+
+	errorsmod "cosmossdk.io/errors"
+	delegationtype "github.com/exocore/x/delegation/types"
+	"github.com/exocore/x/restaking_assets_manage/types"
 
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
@@ -15,7 +16,7 @@ import (
 // GetQueryCmd returns the parent command for all incentives CLI query commands.
 func GetQueryCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:                        types2.ModuleName,
+		Use:                        delegationtype.ModuleName,
 		Short:                      "Querying commands for the delegation module",
 		DisableFlagParsing:         true,
 		SuggestionsMinimumDistance: 2,
@@ -33,21 +34,26 @@ func GetQueryCmd() *cobra.Command {
 // QuerySingleDelegationInfo queries the single delegation info
 func QuerySingleDelegationInfo() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "QuerySingleDelegationInfo stakerId assetId operatorAddr",
+		Use:   "QuerySingleDelegationInfo clientChainId stakerAddr assetAddr operatorAddr",
 		Short: "Get single delegation info",
 		Long:  "Get single delegation info",
-		Args:  cobra.ExactArgs(3),
+		Args:  cobra.ExactArgs(4),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx, err := client.GetClientQueryContext(cmd)
 			if err != nil {
 				return err
 			}
 
-			queryClient := types2.NewQueryClient(clientCtx)
-			req := &types2.SingleDelegationInfoReq{
-				StakerId:     args[0],
-				AssetId:      args[1],
-				OperatorAddr: args[2],
+			queryClient := delegationtype.NewQueryClient(clientCtx)
+			clientChainLzId, err := strconv.ParseUint(args[0], 10, 64)
+			if err != nil {
+				return errorsmod.Wrap(types.ErrCliCmdInputArg, err.Error())
+			}
+			stakerId, assetId := types.GetStakeIDAndAssetIdFromStr(clientChainLzId, args[1], args[2])
+			req := &delegationtype.SingleDelegationInfoReq{
+				StakerId:     stakerId,
+				AssetId:      assetId,
+				OperatorAddr: args[3],
 			}
 			res, err := queryClient.QuerySingleDelegationInfo(context.Background(), req)
 			if err != nil {
@@ -74,8 +80,8 @@ func QueryDelegationInfo() *cobra.Command {
 				return err
 			}
 
-			queryClient := types2.NewQueryClient(clientCtx)
-			req := &types2.DelegationInfoReq{
+			queryClient := delegationtype.NewQueryClient(clientCtx)
+			req := &delegationtype.DelegationInfoReq{
 				StakerId: args[0],
 				AssetId:  args[1],
 			}
@@ -104,8 +110,8 @@ func QueryOperatorInfo() *cobra.Command {
 				return err
 			}
 
-			queryClient := types2.NewQueryClient(clientCtx)
-			req := &types2.QueryOperatorInfoReq{
+			queryClient := delegationtype.NewQueryClient(clientCtx)
+			req := &delegationtype.QueryOperatorInfoReq{
 				OperatorAddr: args[0],
 			}
 			res, err := queryClient.QueryOperatorInfo(context.Background(), req)

@@ -5,7 +5,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/exocore/x/restaking_assets_manage/types"
 	"github.com/exocore/x/reward/keeper"
-	types2 "github.com/exocore/x/reward/types"
+	rewardtype "github.com/exocore/x/reward/types"
 )
 
 func (suite *KeeperTestSuite) TestClaimWithdrawRequest() {
@@ -18,17 +18,17 @@ func (suite *KeeperTestSuite) TestClaimWithdrawRequest() {
 		OpAmount:              sdkmath.NewInt(10),
 	}
 
-	//test the case that the deposit asset hasn't registered
+	// test the case that the deposit asset hasn't registered
 	event.AssetsAddress = usdcAddress[:]
 	err := suite.app.RewardKeeper.RewardForWithdraw(suite.ctx, event)
-	suite.ErrorContains(err, types2.ErrRewardAssetNotExist.Error())
+	suite.ErrorContains(err, rewardtype.ErrRewardAssetNotExist.Error())
 
-	//test the normal case
+	// test the normal case
 	event.AssetsAddress = usdtAddress[:]
 	err = suite.app.RewardKeeper.RewardForWithdraw(suite.ctx, event)
 	suite.NoError(err)
 
-	//check state after reward
+	// check state after reward
 	stakerId, assetId := types.GetStakeIDAndAssetId(event.ClientChainLzId, event.WithdrawRewardAddress, event.AssetsAddress)
 	info, err := suite.app.StakingAssetsManageKeeper.GetStakerSpecifiedAssetInfo(suite.ctx, stakerId, assetId)
 	suite.NoError(err)

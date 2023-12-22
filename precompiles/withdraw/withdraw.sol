@@ -16,15 +16,14 @@ interface IWithdraw {
 /// TRANSACTIONS
 /// @dev withdraw To the staker, that will change the state in withdraw module
 /// Note that this address cannot be a module account.
-/// @param ClientChainLzId The lzId of client chain
-/// @param AssetsAddress The client chain asset Address
-/// @param WithdrawAddress The withdraw address
-/// @param OpAmount The withdraw amount
-    function withdrawTo(
-        uint16 ClientChainLzId,
-        bytes memory AssetsAddress,
-        bytes memory WithdrawAddress,
-        uint256 OpAmount
+/// @param clientChainLzId The lzId of client chain
+/// @param assetsAddress The client chain asset Address
+/// @param withdrawAddress The withdraw address
+/// @param opAmount The withdraw amount
+    function withdrawPrinciple(
+        uint16 clientChainLzId,
+        bytes memory assetsAddress,
+        bytes memory withdrawAddress,
+        uint256 opAmount
     ) external returns (bool success,uint256 latestAssetState);
 }
-

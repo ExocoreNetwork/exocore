@@ -1,9 +1,8 @@
-// Copyright Tharsis Labs Ltd.(Evmos)
-// SPDX-License-Identifier:ENCL-1.0(https://github.com/evmos/evmos/blob/main/LICENSE)
 package native_token
 
 import (
 	"context"
+
 	"cosmossdk.io/math"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -28,35 +27,34 @@ var (
 	_ module.AppModuleSimulation = AppModule{}
 )
 
-type AppModuleBasic struct {
-}
+type AppModuleBasic struct{}
 
 func (b AppModuleBasic) Name() string {
 	return types.ModuleName
 }
 
 func (b AppModuleBasic) RegisterLegacyAminoCodec(amino *codec.LegacyAmino) {
-	//TODO implement me
+	// TODO implement me
 	panic("implement me")
 }
 
 func (b AppModuleBasic) RegisterInterfaces(registry codectypes.InterfaceRegistry) {
-	//TODO implement me
+	// TODO implement me
 	panic("implement me")
 }
 
 func (b AppModuleBasic) RegisterGRPCGatewayRoutes(context client.Context, mux *runtime.ServeMux) {
-	//TODO implement me
+	// TODO implement me
 	panic("implement me")
 }
 
 func (b AppModuleBasic) GetTxCmd() *cobra.Command {
-	//TODO implement me
+	// TODO implement me
 	panic("implement me")
 }
 
 func (b AppModuleBasic) GetQueryCmd() *cobra.Command {
-	//TODO implement me
+	// TODO implement me
 	panic("implement me")
 }
 
@@ -66,17 +64,17 @@ type AppModule struct {
 }
 
 func (am AppModule) GenerateGenesisState(input *module.SimulationState) {
-	//TODO implement me
+	// TODO implement me
 	panic("implement me")
 }
 
 func (am AppModule) RegisterStoreDecoder(registry sdk.StoreDecoderRegistry) {
-	//TODO implement me
+	// TODO implement me
 	panic("implement me")
 }
 
 func (am AppModule) WeightedOperations(simState module.SimulationState) []simtypes.WeightedOperation {
-	//TODO implement me
+	// TODO implement me
 	panic("implement me")
 }
 

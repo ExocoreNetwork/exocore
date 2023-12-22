@@ -1,14 +1,13 @@
-// Copyright Tharsis Labs Ltd.(Evmos)
-// SPDX-License-Identifier:ENCL-1.0(https://github.com/evmos/evmos/blob/main/LICENSE)
 package types
 
 import (
-	errorsmod "cosmossdk.io/errors"
 	"fmt"
+	"strings"
+
+	errorsmod "cosmossdk.io/errors"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
-	"strings"
 )
 
 // constants
@@ -48,9 +47,9 @@ var (
 	KeyPrefixOperatorInfo = []byte{prefixOperatorInfo}
 	// KeyPrefixRestakerDelegationInfo reStakerId = clientChainAddr+'_'+ExoCoreChainIndex
 	// KeyPrefixRestakerDelegationInfo
-	//key-value:
-	//reStakerId +'/'+assetId -> totalDelegationAmount
-	//reStakerId +'/'+assetId+'/'+operatorAddr -> delegationAmounts
+	// key-value:
+	// reStakerId +'/'+assetId -> totalDelegationAmount
+	// reStakerId +'/'+assetId+'/'+operatorAddr -> delegationAmounts
 
 	KeyPrefixRestakerDelegationInfo = []byte{prefixRestakerDelegationInfo}
 	// KeyPrefixDelegationUsedSalt key->value: operatorApproveAddr->map[salt]{}
@@ -58,12 +57,12 @@ var (
 	// KeyPrefixOperatorApprovedInfo key-value: operatorApproveAddr->map[reStakerId]{}
 	KeyPrefixOperatorApprovedInfo = []byte{prefixOperatorApprovedInfo}
 
-	//KeyPrefixUndelegationInfo singleRecordKey = lzNonce+'/'+txHash+'/'+operatorAddr
+	// KeyPrefixUndelegationInfo singleRecordKey = lzNonce+'/'+txHash+'/'+operatorAddr
 	// singleRecordKey -> UndelegateReqRecord
 	KeyPrefixUndelegationInfo = []byte{prefixUndelegationInfo}
-	//KeyPrefixStakerUndelegationInfo reStakerId+'/'+assetId+'/'+lzNonce -> singleRecordKey
+	// KeyPrefixStakerUndelegationInfo reStakerId+'/'+assetId+'/'+lzNonce -> singleRecordKey
 	KeyPrefixStakerUndelegationInfo = []byte{prefixStakerUndelegationInfo}
-	//KeyPrefixWaitCompleteUndelegations completeHeight +'/'+lzNonce -> singleRecordKey
+	// KeyPrefixWaitCompleteUndelegations completeHeight +'/'+lzNonce -> singleRecordKey
 	KeyPrefixWaitCompleteUndelegations = []byte{prefixWaitCompleteUndelegations}
 )
 

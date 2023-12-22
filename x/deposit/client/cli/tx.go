@@ -1,11 +1,8 @@
-// Copyright Tharsis Labs Ltd.(Evmos)
-// SPDX-License-Identifier:ENCL-1.0(https://github.com/evmos/evmos/blob/main/LICENSE)
-
 package cli
 
 import (
 	"github.com/cosmos/cosmos-sdk/client/flags"
-	types2 "github.com/exocore/x/deposit/types"
+	deposittype "github.com/exocore/x/deposit/types"
 	"github.com/spf13/cobra"
 
 	"github.com/cosmos/cosmos-sdk/client"
@@ -15,7 +12,7 @@ import (
 // NewTxCmd returns a root CLI command handler for deposit commands
 func NewTxCmd() *cobra.Command {
 	txCmd := &cobra.Command{
-		Use:                        types2.ModuleName,
+		Use:                        deposittype.ModuleName,
 		Short:                      "deposit subcommands",
 		DisableFlagParsing:         true,
 		SuggestionsMinimumDistance: 2,
@@ -32,7 +29,7 @@ func NewTxCmd() *cobra.Command {
 func UpdateParams() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "UpdateParams ExoCoreLZAppAddr ExoCoreLzAppEventTopic",
-		Short: "set ExoCoreLZAppAddr and ExoCoreLzAppEventTopic params to deposit module",
+		Short: "Set ExoCoreLZAppAddr and ExoCoreLzAppEventTopic params to deposit module",
 		Args:  cobra.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cliCtx, err := client.GetClientTxContext(cmd)
@@ -41,9 +38,9 @@ func UpdateParams() *cobra.Command {
 			}
 
 			sender := cliCtx.GetFromAddress()
-			msg := &types2.MsgUpdateParams{
+			msg := &deposittype.MsgUpdateParams{
 				Authority: sender.String(),
-				Params: types2.Params{
+				Params: deposittype.Params{
 					ExoCoreLzAppAddress:    args[0],
 					ExoCoreLzAppEventTopic: args[1],
 				},

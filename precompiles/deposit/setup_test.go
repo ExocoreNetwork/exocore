@@ -1,8 +1,9 @@
 package deposit_test
 
 import (
-	"github.com/exocore/precompiles/deposit"
 	"testing"
+
+	"github.com/exocore/precompiles/deposit"
 
 	"github.com/evmos/evmos/v14/x/evm/statedb"
 

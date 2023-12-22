@@ -1,12 +1,11 @@
-// Copyright Tharsis Labs Ltd.(Evmos)
-// SPDX-License-Identifier:ENCL-1.0(https://github.com/evmos/evmos/blob/main/LICENSE)
 package evm
 
 import (
 	"context"
 	"encoding/json"
 	"fmt"
-	types2 "github.com/exocore/x/evm/types"
+
+	evmtype "github.com/exocore/x/evm/types"
 
 	"github.com/gorilla/mux"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
@@ -57,7 +56,7 @@ func (AppModuleBasic) ConsensusVersion() uint64 {
 // DefaultGenesis returns default genesis state as raw bytes for the evm
 // module.
 func (AppModuleBasic) DefaultGenesis(cdc codec.JSONCodec) json.RawMessage {
-	return cdc.MustMarshalJSON(types2.DefaultGenesisState())
+	return cdc.MustMarshalJSON(evmtype.DefaultGenesisState())
 }
 
 // ValidateGenesis is the validation check of the Genesis

@@ -2,6 +2,8 @@ package slash_test
 
 import (
 	"encoding/json"
+	"time"
+
 	abci "github.com/cometbft/cometbft/abci/types"
 	"github.com/cometbft/cometbft/crypto/tmhash"
 	tmtypes "github.com/cometbft/cometbft/types"
@@ -28,7 +30,6 @@ import (
 	evmosapp "github.com/exocore/app"
 	"github.com/exocore/precompiles/slash"
 	"github.com/exocore/utils"
-	"time"
 )
 
 // SetupWithGenesisValSet initializes a new EvmosApp with a validator set and genesis accounts
@@ -36,7 +37,7 @@ import (
 // of one consensus engine unit (10^6) in the default token of the simapp from first genesis
 // account. A Nop logger is set in SimApp.
 func (s *PrecompileTestSuite) SetupWithGenesisValSet(valSet *tmtypes.ValidatorSet, genAccs []authtypes.GenesisAccount, balances ...banktypes.Balance) {
-	appI, genesisState := evmosapp.SetupTestingApp(cmn.DefaultChainID)()
+	appI, genesisState := evmosapp.SetupTestingApp(cmn.DefaultChainID, false)()
 	app, ok := appI.(*evmosapp.ExocoreApp)
 	s.Require().True(ok)
 
