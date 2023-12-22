@@ -2,9 +2,8 @@ package keeper
 
 import (
 	"context"
-	"fmt"
-
 	errorsmod "cosmossdk.io/errors"
+	"fmt"
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/store/prefix"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
@@ -21,7 +20,7 @@ type Keeper struct {
 	storeKey storetypes.StoreKey
 	cdc      codec.BinaryCodec
 
-	// other keepers
+	//other keepers
 	restakingStateKeeper  keeper.Keeper
 	depositKeeper         depositkeeper.Keeper
 	slashKeeper           delegationtype.ISlashKeeper
@@ -46,6 +45,9 @@ func NewKeeper(
 	}
 }
 
+// SetOperatorInfo This function is used to register to be an operator in exoCore, the provided info will be stored on the chain.
+// Once an address has become an operator,the operator can't return to a normal address.But the operator can update the info through this function
+// As for the operator opt-in function,it needs to be implemented in operator opt-in or AVS module
 func (k Keeper) SetOperatorInfo(ctx sdk.Context, addr string, info *delegationtype.OperatorInfo) (err error) {
 	opAccAddr, err := sdk.AccAddressFromBech32(addr)
 	if err != nil {
@@ -55,7 +57,7 @@ func (k Keeper) SetOperatorInfo(ctx sdk.Context, addr string, info *delegationty
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), delegationtype.KeyPrefixOperatorInfo)
 	// todo: think about the difference between init and update in future
 
-	// key := common.HexToAddress(incentive.Contract)
+	//key := common.HexToAddress(incentive.Contract)
 	bz := k.cdc.MustMarshal(info)
 
 	store.Set(opAccAddr, bz)
@@ -68,9 +70,9 @@ func (k Keeper) GetOperatorInfo(ctx sdk.Context, addr string) (info *delegationt
 		return nil, errorsmod.Wrap(err, "GetOperatorInfo: error occurred when parse acc address from Bech32")
 	}
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), delegationtype.KeyPrefixOperatorInfo)
-	// key := common.HexToAddress(incentive.Contract)
-	isExist := store.Has(opAccAddr)
-	if !isExist {
+	//key := common.HexToAddress(incentive.Contract)
+	ifExist := store.Has(opAccAddr)
+	if !ifExist {
 		return nil, errorsmod.Wrap(delegationtype.ErrNoKeyInTheStore, fmt.Sprintf("GetOperatorInfo: key is %s", opAccAddr))
 	}
 
@@ -86,6 +88,8 @@ func (k Keeper) IsOperator(ctx sdk.Context, addr sdk.AccAddress) bool {
 	return store.Has(addr)
 }
 
+// GetExoCoreLzAppAddress Get exoCoreLzAppAddr from deposit keeper,it will be used when check the caller of precompile contract.
+// This function needs to be moved to `restaking_assets_manage` module,which will facilitate its use for the other modules
 func (k Keeper) GetExoCoreLzAppAddress(ctx sdk.Context) (common.Address, error) {
 	return k.depositKeeper.GetExoCoreLzAppAddress(ctx)
 }

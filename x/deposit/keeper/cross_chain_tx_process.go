@@ -12,12 +12,14 @@ import (
 
 type DepositParams struct {
 	ClientChainLzId uint64
-	Action          types.CrossChainOpType
-	AssetsAddress   []byte
-	StakerAddress   []byte
-	OpAmount        sdkmath.Int
+	// The action field might need to be removed,it will be used when called from event hook.
+	Action        types.CrossChainOpType
+	AssetsAddress []byte
+	StakerAddress []byte
+	OpAmount      sdkmath.Int
 }
 
+// The event hook process has been deprecated, now we use precompile contract to trigger the calls.
 /*func (k Keeper) getDepositParamsFromEventLog(ctx sdk.Context, log *ethtypes.Log) (*DepositParams, error) {
 	// check if Action is deposit
 	var action types.CrossChainOpType
@@ -120,6 +122,7 @@ func (k Keeper) PostTxProcessing(ctx sdk.Context, msg core.Message, receipt *eth
 	return nil
 }*/
 
+// Deposit the deposit precompile contract will call this function to update asset state when there is a deposit.
 func (k Keeper) Deposit(ctx sdk.Context, params *DepositParams) error {
 	// check params parameter before executing deposit operation
 	if params.OpAmount.IsNegative() {
@@ -134,10 +137,13 @@ func (k Keeper) Deposit(ctx sdk.Context, params *DepositParams) error {
 		TotalDepositAmountOrWantChangeValue: params.OpAmount,
 		CanWithdrawAmountOrWantChangeValue:  params.OpAmount,
 	}
+	// update asset state of the specified staker
 	err := k.restakingStateKeeper.UpdateStakerAssetState(ctx, stakeId, assetId, changeAmount)
 	if err != nil {
 		return err
 	}
+
+	// update total amount of the deposited asset
 	err = k.restakingStateKeeper.UpdateStakingAssetTotalAmount(ctx, assetId, params.OpAmount)
 	if err != nil {
 		return err
