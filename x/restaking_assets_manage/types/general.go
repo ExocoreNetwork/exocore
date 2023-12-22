@@ -35,6 +35,7 @@ const (
 	Slash
 )
 
+// GetStakeIDAndAssetId stakerId = stakerAddress+'_'+clientChainLzId,assetId = assetAddress+'_'+clientChainLzId
 func GetStakeIDAndAssetId(clientChainLzId uint64, stakerAddress []byte, assetsAddress []byte) (stakeId string, assetId string) {
 	clientChainLzIdStr := hexutil.EncodeUint64(clientChainLzId)
 	if stakerAddress != nil {
@@ -47,6 +48,7 @@ func GetStakeIDAndAssetId(clientChainLzId uint64, stakerAddress []byte, assetsAd
 	return
 }
 
+// GetStakeIDAndAssetIdFromStr stakerId = stakerAddress+'_'+clientChainLzId,assetId = assetAddress+'_'+clientChainLzId
 func GetStakeIDAndAssetIdFromStr(clientChainLzId uint64, stakerAddress string, assetsAddress string) (stakeId string, assetId string) {
 	clientChainLzIdStr := hexutil.EncodeUint64(clientChainLzId)
 	if stakerAddress != "" {

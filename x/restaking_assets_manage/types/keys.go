@@ -106,6 +106,7 @@ var (
 	KeyPrefixReStakerExoCoreAddrReverse = []byte{prefixRestakerExocoreAddrReverse}
 )
 
+// GetAssetStateKey assetStateKey = stakerId+'/'+assetId
 func GetAssetStateKey(stakerId, assetId string) []byte {
 	return []byte(strings.Join([]string{stakerId, assetId}, "/"))
 }
