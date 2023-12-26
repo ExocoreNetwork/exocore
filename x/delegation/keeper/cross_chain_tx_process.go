@@ -112,7 +112,7 @@ type DelegationOrUndelegationParams struct {
 func (k Keeper) DelegateTo(ctx sdk.Context, params *DelegationOrUndelegationParams) error {
 	// check if the delegatedTo address is an operator
 	if !k.IsOperator(ctx, params.OperatorAddress) {
-		return delegationtype.ErrOperatorNotExist
+		return errorsmod.Wrap(delegationtype.ErrOperatorNotExist, fmt.Sprintf("input opreatorAddr is:%s", params.OperatorAddress))
 	}
 
 	// check if the operator has been slashed or frozen
@@ -136,7 +136,7 @@ func (k Keeper) DelegateTo(ctx sdk.Context, params *DelegationOrUndelegationPara
 	}
 
 	if info.CanWithdrawAmountOrWantChangeValue.LT(params.OpAmount) {
-		return delegationtype.ErrDelegationAmountTooBig
+		return errorsmod.Wrap(delegationtype.ErrDelegationAmountTooBig, fmt.Sprintf("the opAmount is:%s the canWithdraw amount is:%s", params.OpAmount, info.CanWithdrawAmountOrWantChangeValue))
 	}
 
 	//update staker asset state
