@@ -184,7 +184,7 @@ build-all: tools build lint test vulncheck
 .PHONY: distclean clean build-all
 
 ###############################################################################
-###                          Tools & Dependencies                           ###
+###                          makTools & Dependencies                           ###
 ###############################################################################
 
 TOOLS_DESTDIR  ?= $(GOPATH)/bin
@@ -478,8 +478,7 @@ localnet-build:
 
 # Generate multi node configuration files and initialize configurations
 localnet-init: localnet-stop
-	docker run --rm -v $(CURDIR)/build/.testnets:/data exocore/node \
-			  testnet init-files --chain-id evmos_9000-8808 --v 4 -o /data --starting-ip-address 192.168.10.2 --keyring-backend=test  && \
+	evmosd testnet init-files --chain-id evmos_9000-8808 --v 4 -o $(CURDIR)/build/.testnets/ data --starting-ip-address 192.168.10.2 && \
 	./networks/init-node.sh
 
 # Start a 4-node testnet locally
