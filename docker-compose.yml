@@ -17,6 +17,7 @@ services:
       - "1317:1317"
       - "9090:9090"
       - "8545:8545"
+      - "26661:26660"
     volumes:
       - ./build/.testnets:/data:Z
     networks:
@@ -39,6 +40,7 @@ services:
       - "1318:1317"
       - "9091:9090"
       - "8546:8545"
+      - "26662:26660"
     volumes:
       - ./build/.testnets:/data:Z
     networks:
@@ -61,6 +63,7 @@ services:
       - "1319:1317"
       - "9092:9090"
       - "8547:8545"
+      - "26663:26660"
     volumes:
       - ./build/.testnets:/data:Z
     networks:
@@ -83,6 +86,7 @@ services:
       - "1320:1317"
       - "9093:9090"
       - "8548:8545"
+      - "26664:26660"
     volumes:
       - ./build/.testnets:/data:Z
     networks:

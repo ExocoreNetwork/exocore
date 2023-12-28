@@ -12,7 +12,7 @@ RUN LEDGER_ENABLED=false make build
 FROM alpine AS run
 RUN apk add bash curl jq
 EXPOSE 26656 26657 1317 9090 8545 8546
-CMD ["start", "--log_format", "plain","--chain-id","evmos_9000-8808"]
+CMD ["start", "--log_format", "plain","--chain-id","evmos_9000-8808", "--metrics", "--json-rpc.api", "eth,txpool,personal,net,debug,web3", "--api.enable", "--json-rpc.enable", "true"]
 STOPSIGNAL SIGTERM
 VOLUME /exocore
 WORKDIR /exocore
