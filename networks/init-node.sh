@@ -29,9 +29,9 @@ for node in {0..3}; do
     sed -i.bak 's/127.0.0.1/0.0.0.0/g' "$APP_TOML"
 
     # enable prometheus metrics
-    sed -i 's/prometheus = false/prometheus = true/' "$CONFIG_TOML"
-    sed -i 's/prometheus-retention-time = 0/prometheus-retention-time  = 1000000000000/g' "$APP_TOML"
-    sed -i 's/enabled = false/enabled = true/g' "$APP_TOML"
+    sed -i.bak 's/prometheus = false/prometheus = true/' "$CONFIG_TOML"
+    sed -i.bak 's/prometheus-retention-time = 0/prometheus-retention-time  = 1000000000000/g' "$APP_TOML"
+    sed -i.bak 's/enabled = false/enabled = true/g' "$APP_TOML"
 
     # use timeout_commit 1s to make test faster
     sed -i.bak 's/timeout_commit = "3s"/timeout_commit = "1s"/g' "$CONFIG_TOML"
