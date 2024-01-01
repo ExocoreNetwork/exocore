@@ -478,7 +478,7 @@ localnet-build:
 
 # Generate multi node configuration files and initialize configurations
 localnet-init: localnet-stop
-	evmosd testnet init-files --chain-id evmos_9000-8808 --v 4 -o $(CURDIR)/build/.testnets/ data --starting-ip-address 192.168.10.2 && \
+	evmosd testnet init-files --chain-id evmos_9000-8808 --v 4 -o  $(CURDIR)/build/.testnets --starting-ip-address 192.168.10.2 --keyring-backend=os  && \
 	./networks/init-node.sh
 
 # Start a 4-node testnet locally

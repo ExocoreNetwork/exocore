@@ -19,10 +19,13 @@ for node in {0..3}; do
     # Update total supply with claim values
     # Bc is required to add this big numbers
     # total_supply=$(bc <<< "$amount_to_claim+$validators_supply")
-    #total_supply=100004000000000000000010000
+    #total_supply=20000000000000000000000
     #jq -r --arg total_supply "$total_supply" '.app_state.bank.supply[0].amount=$total_supply' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
-
-
+    # Set gas limit in genesis
+  	jq '.consensus_params["block"]["max_gas"]="40000000"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
+	  # Set claims start time
+	  current_date=$(date -u +"%Y-%m-%dT%TZ")
+	  jq -r --arg current_date "$current_date" '.app_state["claims"]["params"]["airdrop_start_time"]=$current_date' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
     # make sure the localhost IP is 0.0.0.0
     sed -i.bak 's/localhost/0.0.0.0/g' "$CONFIG_TOML"
     sed -i.bak 's/localhost/0.0.0.0/g' "$APP_TOML"
@@ -38,6 +41,7 @@ for node in {0..3}; do
 
     # Enable the APIs for the tests to be successful
     sed -i.bak 's/enable = false/enable = true/g' "$APP_TOML"
+    sed -i.bak 's/swagger = false/swagger = true/g' "$APP_TOML"
 
   echo "Modified configurations for node$node"
 done
