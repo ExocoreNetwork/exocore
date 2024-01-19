@@ -9,6 +9,7 @@ import (
 	abci "github.com/cometbft/cometbft/abci/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/common"
+	types2 "github.com/exocore/x/operator/types"
 )
 
 func (suite *KeeperTestSuite) TestDelegateTo() {
@@ -40,13 +41,13 @@ func (suite *KeeperTestSuite) TestDelegateTo() {
 	err = suite.app.DelegationKeeper.DelegateTo(suite.ctx, delegationParams)
 	suite.EqualError(err, delegationtype.ErrOperatorNotExist.Error())
 
-	registerReq := &delegationtype.RegisterOperatorReq{
+	registerReq := &types2.RegisterOperatorReq{
 		FromAddress: opAccAddr.String(),
-		Info: &delegationtype.OperatorInfo{
+		Info: &types2.OperatorInfo{
 			EarningsAddr: opAccAddr.String(),
 		},
 	}
-	_, err = suite.app.DelegationKeeper.RegisterOperator(suite.ctx, registerReq)
+	_, err = suite.app.OperatorKeeper.RegisterOperator(suite.ctx, registerReq)
 	suite.NoError(err)
 
 	err = suite.app.DelegationKeeper.DelegateTo(suite.ctx, delegationParams)
@@ -108,13 +109,13 @@ func (suite *KeeperTestSuite) TestUndelegateFrom() {
 		LzNonce:         0,
 		TxHash:          common.HexToHash("0x24c4a315d757249c12a7a1d7b6fb96261d49deee26f06a3e1787d008b445c3ac"),
 	}
-	registerReq := &delegationtype.RegisterOperatorReq{
+	registerReq := &types2.RegisterOperatorReq{
 		FromAddress: opAccAddr.String(),
-		Info: &delegationtype.OperatorInfo{
+		Info: &types2.OperatorInfo{
 			EarningsAddr: opAccAddr.String(),
 		},
 	}
-	_, err = suite.app.DelegationKeeper.RegisterOperator(suite.ctx, registerReq)
+	_, err = suite.app.OperatorKeeper.RegisterOperator(suite.ctx, registerReq)
 	suite.NoError(err)
 
 	err = suite.app.DelegationKeeper.DelegateTo(suite.ctx, delegationEvent)
@@ -204,13 +205,13 @@ func (suite *KeeperTestSuite) TestCompleteUndelegation() {
 		LzNonce:         0,
 		TxHash:          common.HexToHash("0x24c4a315d757249c12a7a1d7b6fb96261d49deee26f06a3e1787d008b445c3ac"),
 	}
-	registerReq := &delegationtype.RegisterOperatorReq{
+	registerReq := &types2.RegisterOperatorReq{
 		FromAddress: opAccAddr.String(),
-		Info: &delegationtype.OperatorInfo{
+		Info: &types2.OperatorInfo{
 			EarningsAddr: opAccAddr.String(),
 		},
 	}
-	_, err = suite.app.DelegationKeeper.RegisterOperator(suite.ctx, registerReq)
+	_, err = suite.app.OperatorKeeper.RegisterOperator(suite.ctx, registerReq)
 	suite.NoError(err)
 
 	err = suite.app.DelegationKeeper.DelegateTo(suite.ctx, delegationEvent)

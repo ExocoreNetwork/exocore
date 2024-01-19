@@ -1,0 +1,83 @@
+syntax = "proto3";
+package exocore.operator.v1;
+
+import "cosmos/msg/v1/msg.proto";
+import "cosmos_proto/cosmos.proto";
+import "gogoproto/gogo.proto";
+import "amino/amino.proto";
+
+option go_package = "github.com/exocore/x/operator/types";
+
+message clientChainEarningAddrList {
+  repeated clientChainEarningAddrInfo EarningInfoList = 1;
+}
+
+message clientChainEarningAddrInfo {
+  uint64 lzClientChainId = 1;
+  string clientChainEarningAddr = 2;
+}
+
+message OperatorInfo{
+  string EarningsAddr = 1;
+  string ApproveAddr = 2;
+  string OperatorMetaInfo = 3;
+  clientChainEarningAddrList ClientChainEarningsAddr = 4;
+}
+
+message OptedInfo {
+  string SlashContract = 1;
+  uint64 OptedInHeight = 2;
+  uint64 OptedOutHeight = 3;
+}
+
+message AssetOptedInState{
+  string Amount = 1
+  [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.nullable) = false
+  ];
+
+  string Value = 2
+  [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.nullable) = false
+  ];
+}
+
+message OperatorSlashInfo {
+  string SlashContract = 1;
+  uint64 SlashHeight = 2;
+  uint64 ExecuteHeight = 3;
+  string SlashProportion = 4
+  [
+    (cosmos_proto.scalar) = "cosmos.Dec",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+    (gogoproto.nullable) = false
+  ];
+}
+
+message RegisterOperatorReq {
+  option (cosmos.msg.v1.signer) = "FromAddress";
+  option (amino.name) = "cosmos-sdk/OperatorInfo";
+  option (gogoproto.equal) = false;
+  option (gogoproto.goproto_getters) = false;
+
+  string FromAddress = 1
+  [(cosmos_proto.scalar) = "cosmos.AddressString"];
+  OperatorInfo info = 2;
+}
+
+message RegisterOperatorResponse{}
+
+// Msg defines the delegation Msg service.
+service Msg {
+  option (cosmos.msg.v1.service) = true;
+  // CreateClawbackVestingAccount creats a vesting account that is subject to clawback.
+  rpc RegisterOperator(RegisterOperatorReq) returns (RegisterOperatorResponse);
+}
+
+
+
+

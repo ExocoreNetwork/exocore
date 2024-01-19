@@ -106,15 +106,14 @@ var (
 	KeyPrefixReStakerExoCoreAddrReverse = []byte{prefixRestakerExocoreAddrReverse}
 )
 
-// GetAssetStateKey assetStateKey = stakerId+'/'+assetId
-func GetAssetStateKey(stakerId, assetId string) []byte {
-	return []byte(strings.Join([]string{stakerId, assetId}, "/"))
+func GetJoinedStoreKey(keys ...string) []byte {
+	return []byte(strings.Join(keys, "/"))
 }
 
-func ParseStakerAndAssetIdFromKey(key []byte) (stakerId string, assetId string, err error) {
+func ParseJoinedStoreKey(key []byte, number int) (keys []string, err error) {
 	stringList := strings.Split(string(key), "/")
-	if len(stringList) != 2 {
-		return "", "", errorsmod.Wrap(ErrParseAssetsStateKey, fmt.Sprintf("the stringList is:%v", stringList))
+	if len(stringList) != number {
+		return nil, errorsmod.Wrap(ErrParseAssetsStateKey, fmt.Sprintf("expected length:%d,actual length:%d,the stringList is:%v", number, len(stringList), stringList))
 	}
-	return stringList[0], stringList[1], nil
+	return stringList, nil
 }

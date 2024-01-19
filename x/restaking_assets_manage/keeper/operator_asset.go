@@ -21,10 +21,11 @@ func (k Keeper) GetOperatorAssetInfos(ctx sdk.Context, operatorAddr sdk.Address)
 	for ; iterator.Valid(); iterator.Next() {
 		var stateInfo restakingtype.OperatorSingleAssetOrChangeInfo
 		k.cdc.MustUnmarshal(iterator.Value(), &stateInfo)
-		_, assetId, err := restakingtype.ParseStakerAndAssetIdFromKey(iterator.Key())
+		keyList, err := restakingtype.ParseJoinedStoreKey(iterator.Key(), 2)
 		if err != nil {
 			return nil, err
 		}
+		assetId := keyList[1]
 		ret[assetId] = &stateInfo
 	}
 	return ret, nil
@@ -32,7 +33,7 @@ func (k Keeper) GetOperatorAssetInfos(ctx sdk.Context, operatorAddr sdk.Address)
 
 func (k Keeper) GetOperatorSpecifiedAssetInfo(ctx sdk.Context, operatorAddr sdk.Address, assetId string) (info *restakingtype.OperatorSingleAssetOrChangeInfo, err error) {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), restakingtype.KeyPrefixOperatorAssetInfos)
-	key := restakingtype.GetAssetStateKey(operatorAddr.String(), assetId)
+	key := restakingtype.GetJoinedStoreKey(operatorAddr.String(), assetId)
 	ifExist := store.Has(key)
 	if !ifExist {
 		return nil, restakingtype.ErrNoOperatorAssetKey
@@ -52,7 +53,7 @@ func (k Keeper) GetOperatorSpecifiedAssetInfo(ctx sdk.Context, operatorAddr sdk.
 func (k Keeper) UpdateOperatorAssetState(ctx sdk.Context, operatorAddr sdk.Address, assetId string, changeAmount restakingtype.OperatorSingleAssetOrChangeInfo) (err error) {
 	//get the latest state,use the default initial state if the state hasn't been stored
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), restakingtype.KeyPrefixOperatorAssetInfos)
-	key := restakingtype.GetAssetStateKey(operatorAddr.String(), assetId)
+	key := restakingtype.GetJoinedStoreKey(operatorAddr.String(), assetId)
 	assetState := restakingtype.OperatorSingleAssetOrChangeInfo{
 		TotalAmountOrWantChangeValue:            math.NewInt(0),
 		OperatorOwnAmountOrWantChangeValue:      math.NewInt(0),
@@ -64,15 +65,15 @@ func (k Keeper) UpdateOperatorAssetState(ctx sdk.Context, operatorAddr sdk.Addre
 	}
 
 	// update all states of the specified operator asset
-	err = UpdateAssetValue(&assetState.TotalAmountOrWantChangeValue, &changeAmount.TotalAmountOrWantChangeValue)
+	err = restakingtype.UpdateAssetValue(&assetState.TotalAmountOrWantChangeValue, &changeAmount.TotalAmountOrWantChangeValue)
 	if err != nil {
 		return errorsmod.Wrap(err, "UpdateOperatorAssetState TotalAmountOrWantChangeValue error")
 	}
-	err = UpdateAssetValue(&assetState.OperatorOwnAmountOrWantChangeValue, &changeAmount.OperatorOwnAmountOrWantChangeValue)
+	err = restakingtype.UpdateAssetValue(&assetState.OperatorOwnAmountOrWantChangeValue, &changeAmount.OperatorOwnAmountOrWantChangeValue)
 	if err != nil {
 		return errorsmod.Wrap(err, "UpdateOperatorAssetState OperatorOwnAmountOrWantChangeValue error")
 	}
-	err = UpdateAssetValue(&assetState.WaitUndelegationAmountOrWantChangeValue, &changeAmount.WaitUndelegationAmountOrWantChangeValue)
+	err = restakingtype.UpdateAssetValue(&assetState.WaitUndelegationAmountOrWantChangeValue, &changeAmount.WaitUndelegationAmountOrWantChangeValue)
 	if err != nil {
 		return errorsmod.Wrap(err, "UpdateOperatorAssetState WaitUndelegationAmountOrWantChangeValue error")
 	}

@@ -22,7 +22,5 @@ var (
 
 	ErrNotSupportYet = errorsmod.Register(ModuleName, 9, "don't have supported it yet")
 
-	ErrCliCmdInputArg = errorsmod.Register(ModuleName, 10, "there is an error in the input client command args")
-
-	ErrDelegationAmountTooBig = errorsmod.Register(ModuleName, 11, "the delegation amount is bigger than the canWithdraw amount")
+	ErrDelegationAmountTooBig = errorsmod.Register(ModuleName, 10, "the delegation amount is bigger than the canWithdraw amount")
 )

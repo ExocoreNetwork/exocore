@@ -29,39 +29,10 @@ message DelegatedSingleAssetInfo {
   map<string, ValueField> PerOperatorAmounts = 3;
 }
 
-message clientChainEarningAddrList {
-  repeated clientChainEarningAddrInfo EarningInfoList = 1;
-}
-
-message clientChainEarningAddrInfo {
-  uint64 lzClientChainId = 1;
-  string clientChainEarningAddr = 2;
-}
-
-message OperatorInfo{
-  string EarningsAddr = 1;
-  string ApproveAddr = 2;
-  string OperatorMetaInfo = 3;
-  clientChainEarningAddrList ClientChainEarningsAddr = 4;
-}
-
-message RegisterOperatorReq {
-  option (cosmos.msg.v1.signer) = "FromAddress";
-  option (amino.name) = "cosmos-sdk/OperatorInfo";
-  option (gogoproto.equal) = false;
-  option (gogoproto.goproto_getters) = false;
-
-  string FromAddress = 1
-  [(cosmos_proto.scalar) = "cosmos.AddressString"];
-  OperatorInfo info = 2;
-}
-
 message DelegationApproveInfo{
   string signature = 1;
   string salt = 2;
 }
-
-message RegisterOperatorResponse{}
 
 message DelegationIncOrDecInfo{
   option (cosmos.msg.v1.signer) = "fromAddress";
@@ -119,7 +90,6 @@ message UndelegationResponse{}
 service Msg {
   option (cosmos.msg.v1.service) = true;
   // CreateClawbackVestingAccount creats a vesting account that is subject to clawback.
-  rpc RegisterOperator(RegisterOperatorReq) returns (RegisterOperatorResponse);
   rpc DelegateAssetToOperator(MsgDelegation) returns (DelegationResponse);
   rpc UndelegateAssetFromOperator(MsgUndelegation) returns (UndelegationResponse);
 }

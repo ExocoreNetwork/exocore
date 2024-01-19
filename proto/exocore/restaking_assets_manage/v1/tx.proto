@@ -8,6 +8,15 @@ import "amino/amino.proto";
 
 option go_package = "github.com/ExocoreNetwork/exocore/x/restaking_assets_manage/types";
 
+message ValueField {
+  string Amount = 1
+  [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.nullable) = false
+  ];
+}
+
 message ClientChainInfo {
   string ChainName = 1;
   string ChainMetaInfo = 2;

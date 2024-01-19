@@ -18,8 +18,3 @@ func (k Keeper) QueryDelegationInfo(ctx context.Context, info *delegationtype.De
 	c := sdk.UnwrapSDKContext(ctx)
 	return k.GetDelegationInfo(c, info.StakerId, info.AssetId)
 }
-
-func (k Keeper) QueryOperatorInfo(ctx context.Context, req *delegationtype.QueryOperatorInfoReq) (*delegationtype.OperatorInfo, error) {
-	c := sdk.UnwrapSDKContext(ctx)
-	return k.GetOperatorInfo(c, req.OperatorAddr)
-}

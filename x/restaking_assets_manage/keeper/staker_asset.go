@@ -10,26 +10,6 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-// UpdateAssetValue It's used to update asset state,negative or positive `changeValue` represents a decrease or increase in the asset state
-// newValue = valueToUpdate + changeVale
-func UpdateAssetValue(valueToUpdate *math.Int, changeValue *math.Int) error {
-	if valueToUpdate == nil || changeValue == nil {
-		return errorsmod.Wrap(restakingtype.ErrInputPointerIsNil, fmt.Sprintf("valueToUpdate:%v,changeValue:%v", valueToUpdate, changeValue))
-	}
-
-	if !changeValue.IsNil() {
-		if changeValue.IsNegative() {
-			if valueToUpdate.LT(changeValue.Neg()) {
-				return errorsmod.Wrap(restakingtype.ErrSubAmountIsMoreThanOrigin, fmt.Sprintf("valueToUpdate:%s,changeValue:%s", *valueToUpdate, *changeValue))
-			}
-		}
-		if !changeValue.IsZero() {
-			*valueToUpdate = valueToUpdate.Add(*changeValue)
-		}
-	}
-	return nil
-}
-
 func (k Keeper) GetStakerAssetInfos(ctx sdk.Context, stakerId string) (assetsInfo map[string]*restakingtype.StakerSingleAssetOrChangeInfo, err error) {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), restakingtype.KeyPrefixReStakerAssetInfos)
 	iterator := sdk.KVStorePrefixIterator(store, []byte(stakerId))
@@ -39,10 +19,11 @@ func (k Keeper) GetStakerAssetInfos(ctx sdk.Context, stakerId string) (assetsInf
 	for ; iterator.Valid(); iterator.Next() {
 		var stateInfo restakingtype.StakerSingleAssetOrChangeInfo
 		k.cdc.MustUnmarshal(iterator.Value(), &stateInfo)
-		_, assetId, err := restakingtype.ParseStakerAndAssetIdFromKey(iterator.Key())
+		keyList, err := restakingtype.ParseJoinedStoreKey(iterator.Key(), 2)
 		if err != nil {
 			return nil, err
 		}
+		assetId := keyList[1]
 		ret[assetId] = &stateInfo
 	}
 	return ret, nil
@@ -50,7 +31,7 @@ func (k Keeper) GetStakerAssetInfos(ctx sdk.Context, stakerId string) (assetsInf
 
 func (k Keeper) GetStakerSpecifiedAssetInfo(ctx sdk.Context, stakerId string, assetId string) (info *restakingtype.StakerSingleAssetOrChangeInfo, err error) {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), restakingtype.KeyPrefixReStakerAssetInfos)
-	key := restakingtype.GetAssetStateKey(stakerId, assetId)
+	key := restakingtype.GetJoinedStoreKey(stakerId, assetId)
 	ifExist := store.Has(key)
 	if !ifExist {
 		return nil, errorsmod.Wrap(restakingtype.ErrNoStakerAssetKey, fmt.Sprintf("the key is:%s", key))
@@ -69,7 +50,7 @@ func (k Keeper) GetStakerSpecifiedAssetInfo(ctx sdk.Context, stakerId string, as
 func (k Keeper) UpdateStakerAssetState(ctx sdk.Context, stakerId string, assetId string, changeAmount restakingtype.StakerSingleAssetOrChangeInfo) (err error) {
 	//get the latest state,use the default initial state if the state hasn't been stored
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), restakingtype.KeyPrefixReStakerAssetInfos)
-	key := restakingtype.GetAssetStateKey(stakerId, assetId)
+	key := restakingtype.GetJoinedStoreKey(stakerId, assetId)
 	assetState := restakingtype.StakerSingleAssetOrChangeInfo{
 		TotalDepositAmountOrWantChangeValue:     math.NewInt(0),
 		CanWithdrawAmountOrWantChangeValue:      math.NewInt(0),
@@ -81,15 +62,15 @@ func (k Keeper) UpdateStakerAssetState(ctx sdk.Context, stakerId string, assetId
 	}
 
 	// update all states of the specified restaker asset
-	err = UpdateAssetValue(&assetState.TotalDepositAmountOrWantChangeValue, &changeAmount.TotalDepositAmountOrWantChangeValue)
+	err = restakingtype.UpdateAssetValue(&assetState.TotalDepositAmountOrWantChangeValue, &changeAmount.TotalDepositAmountOrWantChangeValue)
 	if err != nil {
 		return errorsmod.Wrap(err, "UpdateStakerAssetState TotalDepositAmountOrWantChangeValue error")
 	}
-	err = UpdateAssetValue(&assetState.CanWithdrawAmountOrWantChangeValue, &changeAmount.CanWithdrawAmountOrWantChangeValue)
+	err = restakingtype.UpdateAssetValue(&assetState.CanWithdrawAmountOrWantChangeValue, &changeAmount.CanWithdrawAmountOrWantChangeValue)
 	if err != nil {
 		return errorsmod.Wrap(err, "UpdateStakerAssetState CanWithdrawAmountOrWantChangeValue error")
 	}
-	err = UpdateAssetValue(&assetState.WaitUndelegationAmountOrWantChangeValue, &changeAmount.WaitUndelegationAmountOrWantChangeValue)
+	err = restakingtype.UpdateAssetValue(&assetState.WaitUndelegationAmountOrWantChangeValue, &changeAmount.WaitUndelegationAmountOrWantChangeValue)
 	if err != nil {
 		return errorsmod.Wrap(err, "UpdateStakerAssetState WaitUndelegationAmountOrWantChangeValue error")
 	}

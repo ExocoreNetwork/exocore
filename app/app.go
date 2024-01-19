@@ -4,6 +4,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/exocore/x/operator"
+	operatorkeeper "github.com/exocore/x/operator/keeper"
 	"io"
 	"net/http"
 	"os"
@@ -45,6 +47,7 @@ import (
 	"github.com/evmos/evmos/v14/x/recovery"
 	"github.com/evmos/evmos/v14/x/revenue/v1"
 	vestingtypes "github.com/evmos/evmos/v14/x/vesting/types"
+	operatorTypes "github.com/exocore/x/operator/types"
 
 	runtimeservices "github.com/cosmos/cosmos-sdk/runtime/services"
 
@@ -352,6 +355,7 @@ type ExocoreApp struct {
 	DelegationKeeper          delegationKeeper.Keeper
 	WithdrawKeeper            withdrawKeeper.Keeper
 	RewardKeeper              rewardKeeper.Keeper
+	OperatorKeeper            operatorkeeper.Keeper
 
 	ExoSlashKeeper slashKeeper.Keeper
 	// the module manager
@@ -435,6 +439,7 @@ func NewExocoreApp(
 		withdrawTypes.StoreKey,
 		rewardTypes.StoreKey,
 		exoslashTypes.StoreKey,
+		operatorTypes.StoreKey,
 	)
 
 	// Add the EVM transient store key
@@ -616,8 +621,12 @@ func NewExocoreApp(
 	// set exoCore staking keepers
 	app.StakingAssetsManageKeeper = stakingAssetsManageKeeper.NewKeeper(keys[stakingAssetsManageTypes.StoreKey], appCodec)
 	app.DepositKeeper = depositKeeper.NewKeeper(keys[depositTypes.StoreKey], appCodec, app.StakingAssetsManageKeeper)
+
+	app.OperatorKeeper = operatorkeeper.NewKeeper(keys[operatorTypes.StoreKey], appCodec, app.StakingAssetsManageKeeper, nil)
 	// todo: need to replace the virtual keepers with actual keepers after they have been implemented
-	app.DelegationKeeper = delegationKeeper.NewKeeper(keys[depositTypes.StoreKey], appCodec, app.StakingAssetsManageKeeper, app.DepositKeeper, delegationTypes.VirtualISlashKeeper{}, delegationTypes.VirtualOperatorOptedInKeeper{})
+	app.DelegationKeeper = delegationKeeper.NewKeeper(keys[depositTypes.StoreKey], appCodec, app.StakingAssetsManageKeeper, app.DepositKeeper, delegationTypes.VirtualISlashKeeper{}, app.OperatorKeeper)
+	app.OperatorKeeper.RegisterExpectDelegationInterface(app.DelegationKeeper)
+
 	app.WithdrawKeeper = *withdrawKeeper.NewKeeper(appCodec, keys[withdrawTypes.StoreKey], app.StakingAssetsManageKeeper, app.DepositKeeper)
 	app.RewardKeeper = *rewardKeeper.NewKeeper(appCodec, keys[rewardTypes.StoreKey], app.StakingAssetsManageKeeper)
 	app.ExoSlashKeeper = slashKeeper.NewKeeper(appCodec, keys[exoslashTypes.StoreKey], app.StakingAssetsManageKeeper)
@@ -791,6 +800,7 @@ func NewExocoreApp(
 		// exoCore app modules
 		restaking_assets_manage.NewAppModule(appCodec, app.StakingAssetsManageKeeper),
 		deposit.NewAppModule(appCodec, app.DepositKeeper),
+		operator.NewAppModule(appCodec, app.OperatorKeeper),
 		delegation.NewAppModule(appCodec, app.DelegationKeeper),
 		withdraw.NewAppModule(appCodec, app.WithdrawKeeper),
 		reward.NewAppModule(appCodec, app.RewardKeeper),
@@ -837,6 +847,7 @@ func NewExocoreApp(
 		// ExoCore modules
 		stakingAssetsManageTypes.ModuleName,
 		depositTypes.ModuleName,
+		operatorTypes.ModuleName,
 		delegationTypes.ModuleName,
 		withdrawTypes.ModuleName,
 		rewardTypes.ModuleName,
@@ -879,6 +890,7 @@ func NewExocoreApp(
 		// ExoCore modules
 		stakingAssetsManageTypes.ModuleName,
 		depositTypes.ModuleName,
+		operatorTypes.ModuleName,
 		delegationTypes.ModuleName,
 		withdrawTypes.ModuleName,
 		rewardTypes.ModuleName,
@@ -919,6 +931,7 @@ func NewExocoreApp(
 		// ExoCore modules
 		stakingAssetsManageTypes.ModuleName,
 		depositTypes.ModuleName,
+		operatorTypes.ModuleName,
 		delegationTypes.ModuleName,
 		withdrawTypes.ModuleName,
 		rewardTypes.ModuleName,

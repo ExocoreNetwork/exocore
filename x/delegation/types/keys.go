@@ -1,11 +1,10 @@
 package types
 
 import (
-	errorsmod "cosmossdk.io/errors"
-	"fmt"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
+	"github.com/exocore/x/restaking_assets_manage/types"
 	"strings"
 )
 
@@ -29,8 +28,7 @@ func init() {
 }
 
 const (
-	prefixOperatorInfo = iota + 1
-	prefixRestakerDelegationInfo
+	prefixRestakerDelegationInfo = iota + 1
 	prefixDelegationUsedSalt
 	prefixOperatorApprovedInfo
 
@@ -42,14 +40,11 @@ const (
 )
 
 var (
-	// KeyPrefixOperatorInfo key-value: operatorAddr->operatorInfo
-	KeyPrefixOperatorInfo = []byte{prefixOperatorInfo}
 	// KeyPrefixRestakerDelegationInfo reStakerId = clientChainAddr+'_'+ExoCoreChainIndex
 	// KeyPrefixRestakerDelegationInfo
 	// key-value:
 	// reStakerId +'/'+assetId -> totalDelegationAmount
 	// reStakerId +'/'+assetId+'/'+operatorAddr -> delegationAmounts
-
 	KeyPrefixRestakerDelegationInfo = []byte{prefixRestakerDelegationInfo}
 	// KeyPrefixDelegationUsedSalt key->value: operatorApproveAddr->map[salt]{}
 	KeyPrefixDelegationUsedSalt = []byte{prefixDelegationUsedSalt}
@@ -65,10 +60,6 @@ var (
 	KeyPrefixWaitCompleteUndelegations = []byte{prefixWaitCompleteUndelegations}
 )
 
-func GetDelegationStateKey(stakerId, assetId, operatorAddr string) []byte {
-	return []byte(strings.Join([]string{stakerId, assetId, operatorAddr}, "/"))
-}
-
 func GetDelegationStateIteratorPrefix(stakerId, assetId string) []byte {
 	tmp := []byte(strings.Join([]string{stakerId, assetId}, "/"))
 	tmp = append(tmp, '/')
@@ -76,9 +67,9 @@ func GetDelegationStateIteratorPrefix(stakerId, assetId string) []byte {
 }
 
 func ParseStakerAssetIdAndOperatorAddrFromKey(key []byte) (keys *SingleDelegationInfoReq, err error) {
-	stringList := strings.Split(string(key), "/")
-	if len(stringList) != 3 {
-		return nil, errorsmod.Wrap(ErrParseDelegationKey, fmt.Sprintf("the stringList is:%v", stringList))
+	stringList, err := types.ParseJoinedStoreKey(key, 3)
+	if err != nil {
+		return nil, err
 	}
 	return &SingleDelegationInfoReq{StakerId: stringList[0], AssetId: stringList[1], OperatorAddr: stringList[2]}, nil
 }

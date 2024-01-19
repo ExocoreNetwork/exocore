@@ -1,6 +1,9 @@
 package types
 
 import (
+	errorsmod "cosmossdk.io/errors"
+	"cosmossdk.io/math"
+	"fmt"
 	"strings"
 
 	"github.com/ethereum/go-ethereum/common/hexutil"
@@ -59,4 +62,24 @@ func GetStakeIDAndAssetIdFromStr(clientChainLzId uint64, stakerAddress string, a
 		assetId = strings.Join([]string{strings.ToLower(assetsAddress), clientChainLzIdStr}, "_")
 	}
 	return
+}
+
+// UpdateAssetValue It's used to update asset state,negative or positive `changeValue` represents a decrease or increase in the asset state
+// newValue = valueToUpdate + changeVale
+func UpdateAssetValue(valueToUpdate *math.Int, changeValue *math.Int) error {
+	if valueToUpdate == nil || changeValue == nil {
+		return errorsmod.Wrap(ErrInputPointerIsNil, fmt.Sprintf("valueToUpdate:%v,changeValue:%v", valueToUpdate, changeValue))
+	}
+
+	if !changeValue.IsNil() {
+		if changeValue.IsNegative() {
+			if valueToUpdate.LT(changeValue.Neg()) {
+				return errorsmod.Wrap(ErrSubAmountIsMoreThanOrigin, fmt.Sprintf("valueToUpdate:%s,changeValue:%s", *valueToUpdate, *changeValue))
+			}
+		}
+		if !changeValue.IsZero() {
+			*valueToUpdate = valueToUpdate.Add(*changeValue)
+		}
+	}
+	return nil
 }

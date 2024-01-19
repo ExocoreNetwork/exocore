@@ -26,7 +26,7 @@ func (k Keeper) UpdateStakingAssetTotalAmount(ctx sdk.Context, assetId string, c
 	k.cdc.MustUnmarshal(value, &ret)
 
 	//calculate and set new amount
-	err = UpdateAssetValue(&ret.StakingTotalAmount, &changeAmount)
+	err = restakingtype.UpdateAssetValue(&ret.StakingTotalAmount, &changeAmount)
 	if err != nil {
 		return err
 	}

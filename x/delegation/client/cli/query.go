@@ -26,7 +26,6 @@ func GetQueryCmd() *cobra.Command {
 	cmd.AddCommand(
 		QuerySingleDelegationInfo(),
 		QueryDelegationInfo(),
-		QueryOperatorInfo(),
 	)
 	return cmd
 }
@@ -86,35 +85,6 @@ func QueryDelegationInfo() *cobra.Command {
 				AssetId:  args[1],
 			}
 			res, err := queryClient.QueryDelegationInfo(context.Background(), req)
-			if err != nil {
-				return err
-			}
-			return clientCtx.PrintProto(res)
-		},
-	}
-
-	flags.AddQueryFlagsToCmd(cmd)
-	return cmd
-}
-
-// QueryOperatorInfo queries operator info
-func QueryOperatorInfo() *cobra.Command {
-	cmd := &cobra.Command{
-		Use:   "QueryOperatorInfo operatorAddr",
-		Short: "Get operator info",
-		Long:  "Get operator info",
-		Args:  cobra.ExactArgs(1),
-		RunE: func(cmd *cobra.Command, args []string) error {
-			clientCtx, err := client.GetClientQueryContext(cmd)
-			if err != nil {
-				return err
-			}
-
-			queryClient := delegationtype.NewQueryClient(clientCtx)
-			req := &delegationtype.QueryOperatorInfoReq{
-				OperatorAddr: args[0],
-			}
-			res, err := queryClient.QueryOperatorInfo(context.Background(), req)
 			if err != nil {
 				return err
 			}
