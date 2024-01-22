@@ -18,6 +18,8 @@ const (
 	RouterKey = ModuleName
 
 	DefaultOptedOutHeight = uint64(math.MaxUint64)
+
+	UsdValueDefaultDecimal = uint8(8)
 )
 
 // ModuleAddress is the native module address for EVM

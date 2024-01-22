@@ -65,8 +65,8 @@ func (k Keeper) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.Validat
 
 		// update the staker state
 		err := k.restakingStateKeeper.UpdateStakerAssetState(ctx, record.StakerId, record.AssetId, types.StakerSingleAssetOrChangeInfo{
-			CanWithdrawAmountOrWantChangeValue:      actualCanUndelegateAmount,
-			WaitUndelegationAmountOrWantChangeValue: recordAmountNeg,
+			CanWithdrawAmountOrWantChangeValue:   actualCanUndelegateAmount,
+			WaitUnbondingAmountOrWantChangeValue: recordAmountNeg,
 		})
 		if err != nil {
 			panic(err)
@@ -74,8 +74,7 @@ func (k Keeper) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.Validat
 
 		// update the operator state
 		err = k.restakingStateKeeper.UpdateOperatorAssetState(ctx, operatorAccAddress, record.AssetId, types.OperatorSingleAssetOrChangeInfo{
-			TotalAmountOrWantChangeValue:            actualCanUndelegateAmount.Neg(),
-			WaitUndelegationAmountOrWantChangeValue: recordAmountNeg,
+			WaitUnbondingAmountOrWantChangeValue: recordAmountNeg,
 		})
 		if err != nil {
 			panic(err)

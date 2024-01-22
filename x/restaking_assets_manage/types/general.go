@@ -83,3 +83,23 @@ func UpdateAssetValue(valueToUpdate *math.Int, changeValue *math.Int) error {
 	}
 	return nil
 }
+
+// UpdateAssetDecValue It's used to update asset state,negative or positive `changeValue` represents a decrease or increase in the asset state
+// newValue = valueToUpdate + changeVale
+func UpdateAssetDecValue(valueToUpdate *math.LegacyDec, changeValue *math.LegacyDec) error {
+	if valueToUpdate == nil || changeValue == nil {
+		return errorsmod.Wrap(ErrInputPointerIsNil, fmt.Sprintf("valueToUpdate:%v,changeValue:%v", valueToUpdate, changeValue))
+	}
+
+	if !changeValue.IsNil() {
+		if changeValue.IsNegative() {
+			if valueToUpdate.LT(changeValue.Neg()) {
+				return errorsmod.Wrap(ErrSubAmountIsMoreThanOrigin, fmt.Sprintf("valueToUpdate:%s,changeValue:%s", *valueToUpdate, *changeValue))
+			}
+		}
+		if !changeValue.IsZero() {
+			*valueToUpdate = valueToUpdate.Add(*changeValue)
+		}
+	}
+	return nil
+}

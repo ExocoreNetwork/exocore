@@ -52,9 +52,9 @@ func (k Keeper) UpdateStakerAssetState(ctx sdk.Context, stakerId string, assetId
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), restakingtype.KeyPrefixReStakerAssetInfos)
 	key := restakingtype.GetJoinedStoreKey(stakerId, assetId)
 	assetState := restakingtype.StakerSingleAssetOrChangeInfo{
-		TotalDepositAmountOrWantChangeValue:     math.NewInt(0),
-		CanWithdrawAmountOrWantChangeValue:      math.NewInt(0),
-		WaitUndelegationAmountOrWantChangeValue: math.NewInt(0),
+		TotalDepositAmountOrWantChangeValue:  math.NewInt(0),
+		CanWithdrawAmountOrWantChangeValue:   math.NewInt(0),
+		WaitUnbondingAmountOrWantChangeValue: math.NewInt(0),
 	}
 	if store.Has(key) {
 		value := store.Get(key)
@@ -70,7 +70,7 @@ func (k Keeper) UpdateStakerAssetState(ctx sdk.Context, stakerId string, assetId
 	if err != nil {
 		return errorsmod.Wrap(err, "UpdateStakerAssetState CanWithdrawAmountOrWantChangeValue error")
 	}
-	err = restakingtype.UpdateAssetValue(&assetState.WaitUndelegationAmountOrWantChangeValue, &changeAmount.WaitUndelegationAmountOrWantChangeValue)
+	err = restakingtype.UpdateAssetValue(&assetState.WaitUnbondingAmountOrWantChangeValue, &changeAmount.WaitUnbondingAmountOrWantChangeValue)
 	if err != nil {
 		return errorsmod.Wrap(err, "UpdateStakerAssetState WaitUndelegationAmountOrWantChangeValue error")
 	}

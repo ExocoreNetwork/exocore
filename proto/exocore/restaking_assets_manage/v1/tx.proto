@@ -67,7 +67,7 @@ message StakerSingleAssetOrChangeInfo {
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
     (gogoproto.nullable) = false
   ];
-  string WaitUndelegationAmountOrWantChangeValue = 3
+  string WaitUnbondingAmountOrWantChangeValue = 3
   [
     (cosmos_proto.scalar) = "cosmos.Int",
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
@@ -93,7 +93,7 @@ message OperatorSingleAssetOrChangeInfo{
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
     (gogoproto.nullable) = false
   ];
-  string WaitUndelegationAmountOrWantChangeValue = 3
+  string WaitUnbondingAmountOrWantChangeValue = 3
   [
     (cosmos_proto.scalar) = "cosmos.Int",
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",

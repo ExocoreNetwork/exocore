@@ -92,9 +92,9 @@ func (k Keeper) IsOptedIn(ctx sdk.Context, operatorAddr, avsAddr string) bool {
 		return false
 	}
 	if optedInfo.OptedOutHeight != operatortypes.DefaultOptedOutHeight {
-		return true
+		return false
 	}
-	return false
+	return true
 }
 
 func (k Keeper) GetOptedInAVSForOperator(ctx sdk.Context, operatorAddr string) ([]string, error) {

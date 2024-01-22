@@ -167,7 +167,7 @@ func (k Keeper) DelegateTo(ctx sdk.Context, params *DelegationOrUndelegationPara
 		return err
 	}
 	// call operator module to bond the increased assets to the opted-in AVS
-	err = k.expectOperatorInterface.IncreasedOptedInAssets(ctx, stakerId, assetId, params.OperatorAddress.String(), params.OpAmount)
+	err = k.expectOperatorInterface.UpdateOptedInAssetsState(ctx, stakerId, assetId, params.OperatorAddress.String(), params.OpAmount)
 	if err != nil {
 		return err
 	}
@@ -226,20 +226,21 @@ func (k Keeper) UndelegateFrom(ctx sdk.Context, params *DelegationOrUndelegation
 
 	//update staker and operator assets state
 	err = k.restakingStateKeeper.UpdateStakerAssetState(ctx, stakerId, assetId, types.StakerSingleAssetOrChangeInfo{
-		WaitUndelegationAmountOrWantChangeValue: params.OpAmount,
+		WaitUnbondingAmountOrWantChangeValue: params.OpAmount,
 	})
 	if err != nil {
 		return err
 	}
 	err = k.restakingStateKeeper.UpdateOperatorAssetState(ctx, params.OperatorAddress, assetId, types.OperatorSingleAssetOrChangeInfo{
-		WaitUndelegationAmountOrWantChangeValue: params.OpAmount,
+		TotalAmountOrWantChangeValue:         params.OpAmount.Neg(),
+		WaitUnbondingAmountOrWantChangeValue: params.OpAmount,
 	})
 	if err != nil {
 		return err
 	}
 
 	// call operator module to decrease the state of opted-in assets
-	err = k.expectOperatorInterface.DecreaseOptedInAssets(ctx, stakerId, assetId, params.OperatorAddress.String(), params.OpAmount)
+	err = k.expectOperatorInterface.UpdateOptedInAssetsState(ctx, stakerId, assetId, params.OperatorAddress.String(), params.OpAmount.Neg())
 	if err != nil {
 		return err
 	}

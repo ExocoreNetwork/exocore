@@ -17,6 +17,7 @@ type Keeper struct {
 	restakingStateKeeper keeper.Keeper
 	delegationKeeper     operatortypes.ExpectDelegationInterface
 	oracleKeeper         operatortypes.ExpectOracleInterface
+	avsKeeper            operatortypes.ExpectAvsInterface
 }
 
 func NewKeeper(
@@ -24,12 +25,14 @@ func NewKeeper(
 	cdc codec.BinaryCodec,
 	restakingStateKeeper keeper.Keeper,
 	oracleKeeper operatortypes.ExpectOracleInterface,
+	avsKeeper operatortypes.ExpectAvsInterface,
 ) Keeper {
 	return Keeper{
 		storeKey:             storeKey,
 		cdc:                  cdc,
 		restakingStateKeeper: restakingStateKeeper,
 		oracleKeeper:         oracleKeeper,
+		avsKeeper:            avsKeeper,
 	}
 }
 

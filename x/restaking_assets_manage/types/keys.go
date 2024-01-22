@@ -110,6 +110,11 @@ func GetJoinedStoreKey(keys ...string) []byte {
 	return []byte(strings.Join(keys, "/"))
 }
 
+func ParseJoinedKey(key []byte) (keys []string, err error) {
+	stringList := strings.Split(string(key), "/")
+	return stringList, nil
+}
+
 func ParseJoinedStoreKey(key []byte, number int) (keys []string, err error) {
 	stringList := strings.Split(string(key), "/")
 	if len(stringList) != number {

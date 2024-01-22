@@ -55,9 +55,9 @@ func (k Keeper) UpdateOperatorAssetState(ctx sdk.Context, operatorAddr sdk.Addre
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), restakingtype.KeyPrefixOperatorAssetInfos)
 	key := restakingtype.GetJoinedStoreKey(operatorAddr.String(), assetId)
 	assetState := restakingtype.OperatorSingleAssetOrChangeInfo{
-		TotalAmountOrWantChangeValue:            math.NewInt(0),
-		OperatorOwnAmountOrWantChangeValue:      math.NewInt(0),
-		WaitUndelegationAmountOrWantChangeValue: math.NewInt(0),
+		TotalAmountOrWantChangeValue:         math.NewInt(0),
+		OperatorOwnAmountOrWantChangeValue:   math.NewInt(0),
+		WaitUnbondingAmountOrWantChangeValue: math.NewInt(0),
 	}
 	if store.Has(key) {
 		value := store.Get(key)
@@ -73,7 +73,7 @@ func (k Keeper) UpdateOperatorAssetState(ctx sdk.Context, operatorAddr sdk.Addre
 	if err != nil {
 		return errorsmod.Wrap(err, "UpdateOperatorAssetState OperatorOwnAmountOrWantChangeValue error")
 	}
-	err = restakingtype.UpdateAssetValue(&assetState.WaitUndelegationAmountOrWantChangeValue, &changeAmount.WaitUndelegationAmountOrWantChangeValue)
+	err = restakingtype.UpdateAssetValue(&assetState.WaitUnbondingAmountOrWantChangeValue, &changeAmount.WaitUnbondingAmountOrWantChangeValue)
 	if err != nil {
 		return errorsmod.Wrap(err, "UpdateOperatorAssetState WaitUndelegationAmountOrWantChangeValue error")
 	}
@@ -82,10 +82,4 @@ func (k Keeper) UpdateOperatorAssetState(ctx sdk.Context, operatorAddr sdk.Addre
 	bz := k.cdc.MustMarshal(&assetState)
 	store.Set(key, bz)
 	return nil
-}
-
-// GetOperatorAssetOptedInMiddleWare This function should be implemented in the operator opt-in module
-func (k Keeper) GetOperatorAssetOptedInMiddleWare(operatorAddr sdk.Address, assetId string) (middleWares []sdk.Address, err error) {
-	//TODO implement me
-	panic("implement me")
 }

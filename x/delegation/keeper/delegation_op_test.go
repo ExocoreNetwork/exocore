@@ -58,17 +58,17 @@ func (suite *KeeperTestSuite) TestDelegateTo() {
 	restakerState, err := suite.app.StakingAssetsManageKeeper.GetStakerSpecifiedAssetInfo(suite.ctx, stakerId, assetId)
 	suite.NoError(err)
 	suite.Equal(types.StakerSingleAssetOrChangeInfo{
-		TotalDepositAmountOrWantChangeValue:     depositEvent.OpAmount,
-		CanWithdrawAmountOrWantChangeValue:      depositEvent.OpAmount.Sub(delegationParams.OpAmount),
-		WaitUndelegationAmountOrWantChangeValue: sdkmath.NewInt(0),
+		TotalDepositAmountOrWantChangeValue:  depositEvent.OpAmount,
+		CanWithdrawAmountOrWantChangeValue:   depositEvent.OpAmount.Sub(delegationParams.OpAmount),
+		WaitUnbondingAmountOrWantChangeValue: sdkmath.NewInt(0),
 	}, *restakerState)
 
 	operatorState, err := suite.app.StakingAssetsManageKeeper.GetOperatorSpecifiedAssetInfo(suite.ctx, opAccAddr, assetId)
 	suite.NoError(err)
 	suite.Equal(types.OperatorSingleAssetOrChangeInfo{
-		TotalAmountOrWantChangeValue:            delegationParams.OpAmount,
-		OperatorOwnAmountOrWantChangeValue:      sdkmath.NewInt(0),
-		WaitUndelegationAmountOrWantChangeValue: sdkmath.NewInt(0),
+		TotalAmountOrWantChangeValue:         delegationParams.OpAmount,
+		OperatorOwnAmountOrWantChangeValue:   sdkmath.NewInt(0),
+		WaitUnbondingAmountOrWantChangeValue: sdkmath.NewInt(0),
 	}, *operatorState)
 
 	specifiedDelegationAmount, err := suite.app.DelegationKeeper.GetSingleDelegationInfo(suite.ctx, stakerId, assetId, opAccAddr.String())
@@ -131,17 +131,17 @@ func (suite *KeeperTestSuite) TestUndelegateFrom() {
 	restakerState, err := suite.app.StakingAssetsManageKeeper.GetStakerSpecifiedAssetInfo(suite.ctx, stakerId, assetId)
 	suite.NoError(err)
 	suite.Equal(types.StakerSingleAssetOrChangeInfo{
-		TotalDepositAmountOrWantChangeValue:     depositEvent.OpAmount,
-		CanWithdrawAmountOrWantChangeValue:      depositEvent.OpAmount.Sub(delegationEvent.OpAmount),
-		WaitUndelegationAmountOrWantChangeValue: delegationEvent.OpAmount,
+		TotalDepositAmountOrWantChangeValue:  depositEvent.OpAmount,
+		CanWithdrawAmountOrWantChangeValue:   depositEvent.OpAmount.Sub(delegationEvent.OpAmount),
+		WaitUnbondingAmountOrWantChangeValue: delegationEvent.OpAmount,
 	}, *restakerState)
 
 	operatorState, err := suite.app.StakingAssetsManageKeeper.GetOperatorSpecifiedAssetInfo(suite.ctx, opAccAddr, assetId)
 	suite.NoError(err)
 	suite.Equal(types.OperatorSingleAssetOrChangeInfo{
-		TotalAmountOrWantChangeValue:            delegationEvent.OpAmount,
-		OperatorOwnAmountOrWantChangeValue:      sdkmath.NewInt(0),
-		WaitUndelegationAmountOrWantChangeValue: delegationEvent.OpAmount,
+		TotalAmountOrWantChangeValue:         sdkmath.NewInt(0),
+		OperatorOwnAmountOrWantChangeValue:   sdkmath.NewInt(0),
+		WaitUnbondingAmountOrWantChangeValue: delegationEvent.OpAmount,
 	}, *operatorState)
 
 	specifiedDelegationAmount, err := suite.app.DelegationKeeper.GetSingleDelegationInfo(suite.ctx, stakerId, assetId, opAccAddr.String())
@@ -233,17 +233,17 @@ func (suite *KeeperTestSuite) TestCompleteUndelegation() {
 	restakerState, err := suite.app.StakingAssetsManageKeeper.GetStakerSpecifiedAssetInfo(suite.ctx, stakerId, assetId)
 	suite.NoError(err)
 	suite.Equal(types.StakerSingleAssetOrChangeInfo{
-		TotalDepositAmountOrWantChangeValue:     depositEvent.OpAmount,
-		CanWithdrawAmountOrWantChangeValue:      depositEvent.OpAmount,
-		WaitUndelegationAmountOrWantChangeValue: sdkmath.NewInt(0),
+		TotalDepositAmountOrWantChangeValue:  depositEvent.OpAmount,
+		CanWithdrawAmountOrWantChangeValue:   depositEvent.OpAmount,
+		WaitUnbondingAmountOrWantChangeValue: sdkmath.NewInt(0),
 	}, *restakerState)
 
 	operatorState, err := suite.app.StakingAssetsManageKeeper.GetOperatorSpecifiedAssetInfo(suite.ctx, opAccAddr, assetId)
 	suite.NoError(err)
 	suite.Equal(types.OperatorSingleAssetOrChangeInfo{
-		TotalAmountOrWantChangeValue:            sdkmath.NewInt(0),
-		OperatorOwnAmountOrWantChangeValue:      sdkmath.NewInt(0),
-		WaitUndelegationAmountOrWantChangeValue: sdkmath.NewInt(0),
+		TotalAmountOrWantChangeValue:         sdkmath.NewInt(0),
+		OperatorOwnAmountOrWantChangeValue:   sdkmath.NewInt(0),
+		WaitUnbondingAmountOrWantChangeValue: sdkmath.NewInt(0),
 	}, *operatorState)
 
 	specifiedDelegationAmount, err := suite.app.DelegationKeeper.GetSingleDelegationInfo(suite.ctx, stakerId, assetId, opAccAddr.String())

@@ -38,7 +38,6 @@ func init() {
 func RegisterInterfaces(registry codectypes.InterfaceRegistry) {
 	registry.RegisterImplementations(
 		(*sdk.Msg)(nil),
-		&RegisterOperatorReq{},
 		&MsgDelegation{},
 		&MsgUndelegation{},
 	)
@@ -49,7 +48,6 @@ func RegisterInterfaces(registry codectypes.InterfaceRegistry) {
 // concrete types on the provided LegacyAmino codec. These types are used for
 // Amino JSON serialization and EIP-712 compatibility.
 func RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) {
-	cdc.RegisterConcrete(&RegisterOperatorReq{}, registerOperator, nil)
 	cdc.RegisterConcrete(&MsgDelegation{}, delegateAssetToOperator, nil)
 	cdc.RegisterConcrete(&MsgUndelegation{}, UndelegateAssetFromOperator, nil)
 }

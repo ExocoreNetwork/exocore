@@ -27,7 +27,5 @@ type ExpectOperatorInterface interface {
 	IsOperator(ctx sdk.Context, addr sdk.AccAddress) bool
 	GetUnBondingExpirationBlockNumber(ctx sdk.Context, OperatorAddress sdk.AccAddress, startHeight uint64) uint64
 
-	IncreasedOptedInAssets(ctx sdk.Context, stakerId, assetId, operatorAddr string, opAmount sdkmath.Int) error
-
-	DecreaseOptedInAssets(ctx sdk.Context, stakerId, assetId, operatorAddr string, opAmount sdkmath.Int) error
+	UpdateOptedInAssetsState(ctx sdk.Context, stakerId, assetId, operatorAddr string, opAmount sdkmath.Int) error
 }
