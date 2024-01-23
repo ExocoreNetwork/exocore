@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"context"
+	sdkmath "cosmossdk.io/math"
 	"github.com/cosmos/cosmos-sdk/codec"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -53,13 +54,11 @@ type IOperator interface {
 
 	GetUnBondingExpirationBlockNumber(ctx sdk.Context, OperatorAddress sdk.AccAddress, startHeight uint64) uint64
 
-	OptIn(ctx sdk.Context, OperatorAddress sdk.AccAddress, AVSAddr string) error
+	UpdateOptedInAssetsState(ctx sdk.Context, stakerId, assetId, operatorAddr string, opAmount sdkmath.Int) error
+
+	OptIn(ctx sdk.Context, operatorAddress sdk.AccAddress, AVSAddr string) error
 
 	OptOut(ctx sdk.Context, OperatorAddress sdk.AccAddress, AVSAddr string) error
-
-	IncreasedOptedInAssets(ctx sdk.Context, stakerId, assetId, operatorAddr string) error
-
-	DecreaseOptedInAssets(ctx sdk.Context, stakerId, assetId, operatorAddr string) error
 
 	SlashOperator()
 

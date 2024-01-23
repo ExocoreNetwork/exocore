@@ -1,7 +1,9 @@
 package keeper
 
 import (
+	errorsmod "cosmossdk.io/errors"
 	sdkmath "cosmossdk.io/math"
+	"fmt"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/exocore/x/operator/types"
 )
@@ -175,6 +177,76 @@ func (k Keeper) OptIn(ctx sdk.Context, operatorAddress sdk.AccAddress, AVSAddr s
 }
 
 // OptOut call this function to opt out of AVS
-func (k Keeper) OptOut(ctx sdk.Context, OperatorAddress sdk.AccAddress, AVSAddr string) error {
+func (k Keeper) OptOut(ctx sdk.Context, operatorAddress sdk.AccAddress, AVSAddr string) error {
+	//check optedIn info
+	if !k.IsOptedIn(ctx, operatorAddress.String(), AVSAddr) {
+		return types.ErrNotOptedIn
+	}
+
+	//get the Assets opted in the operator
+	operatorAssetsState, err := k.restakingStateKeeper.GetOperatorAssetInfos(ctx, operatorAddress)
+	if err != nil {
+		return err
+	}
+	//get the assets supported by the AVS
+	avsSupportedAssets, err := k.avsKeeper.GetAvsSupportedAssets(ctx, AVSAddr)
+	if err != nil {
+		return err
+	}
+	assetFilter := make(map[string]interface{})
+
+	for _, assetId := range avsSupportedAssets {
+		_, ok := operatorAssetsState[assetId]
+		if !ok {
+			continue
+		}
+		err = k.DeleteOperatorAVSAssetsState(ctx, assetId, AVSAddr, operatorAddress.String())
+		if err != nil {
+			return err
+		}
+		assetFilter[assetId] = nil
+	}
+
+	avsOperatorTotalValue, err := k.GetAVSOperatorTotalValue(ctx, AVSAddr, operatorAddress.String())
+	if err != nil {
+		return err
+	}
+	if avsOperatorTotalValue.IsNegative() {
+		return errorsmod.Wrap(types.ErrTheValueIsNegative, fmt.Sprintf("OptOut,avsOperatorTotalValue:%s", avsOperatorTotalValue))
+	}
+
+	//UpdateAVSTotalValue
+	err = k.UpdateAVSTotalValue(ctx, AVSAddr, avsOperatorTotalValue.Neg())
+	if err != nil {
+		return err
+	}
+	//DeleteAVSOperatorTotalValue
+	err = k.DeleteAVSOperatorTotalValue(ctx, AVSAddr, operatorAddress.String())
+	if err != nil {
+		return err
+	}
+
+	//DeleteAVSOperatorStakerShareValue
+	relatedAssetsState, err := k.delegationKeeper.GetDelegationStateByOperatorAndAssetList(ctx, operatorAddress.String(), assetFilter)
+	if err != nil {
+		return err
+	}
+	for stakerId := range relatedAssetsState {
+		err = k.DeleteAVSOperatorStakerShareValue(ctx, AVSAddr, stakerId, operatorAddress.String())
+		if err != nil {
+			return err
+		}
+	}
+
+	//set opted-out height
+	optedInfo, err := k.GetOptedInfo(ctx, operatorAddress.String(), AVSAddr)
+	if err != nil {
+		return err
+	}
+	optedInfo.OptedOutHeight = uint64(ctx.BlockHeight())
+	err = k.UpdateOptedInfo(ctx, operatorAddress.String(), AVSAddr, optedInfo)
+	if err != nil {
+		return err
+	}
 	return nil
 }

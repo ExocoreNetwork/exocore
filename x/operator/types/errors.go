@@ -16,4 +16,6 @@ var (
 	ErrAlreadyOptedIn = errorsmod.Register(ModuleName, 5, "the operator has already opted in the avs")
 
 	ErrNotOptedIn = errorsmod.Register(ModuleName, 6, "the operator hasn't opted in the avs")
+
+	ErrTheValueIsNegative = errorsmod.Register(ModuleName, 7, "the value is negative")
 )
