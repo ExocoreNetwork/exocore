@@ -94,10 +94,6 @@ var (
 	// or operatorAddr->mapping(AssetId->OperatorSingleAssetInfo) ?
 	KeyPrefixOperatorAssetInfos = []byte{prefixOperatorAssetInfo}
 
-	// KeyPrefixOperatorOptedInMiddleWareAssetInfos key->value: operatorAddr+'_'+AssetId->mapping(middleWareAddr->struct{})
-	// or operatorAddr->mapping(AssetId->mapping(middleWareAddr->struct{})) ?
-	KeyPrefixOperatorOptedInMiddleWareAssetInfos = []byte{prefixOperatorOptedInMiddlewareAssetInfo}
-
 	// KeyPrefixReStakerExoCoreAddr reStakerId = clientChainAddr+'_'+ExoCoreChainIndex
 	// KeyPrefixReStakerExoCoreAddr key-value: reStakerId->exoCoreAddr
 	KeyPrefixReStakerExoCoreAddr = []byte{prefixRestakerExocoreAddr}

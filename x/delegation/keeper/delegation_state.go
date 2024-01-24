@@ -92,6 +92,11 @@ func (k Keeper) UpdateDelegationState(ctx sdk.Context, stakerId string, assetId 
 			return errorsmod.Wrap(err, "UpdateDelegationState WaitUndelegationAmount error")
 		}
 
+		err = stakingtypes.UpdateAssetValue(&delegationState.TotalDelegationAmount, &amounts.TotalDelegationAmount)
+		if err != nil {
+			return errorsmod.Wrap(err, "UpdateDelegationState TotalDelegationAmount error")
+		}
+
 		//save single operator delegation state
 		bz := k.cdc.MustMarshal(&delegationState)
 		store.Set(singleStateKey, bz)

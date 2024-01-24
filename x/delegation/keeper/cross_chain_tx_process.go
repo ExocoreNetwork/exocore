@@ -157,6 +157,7 @@ func (k Keeper) DelegateTo(ctx sdk.Context, params *DelegationOrUndelegationPara
 	delegatorAndAmount := make(map[string]*delegationtype.DelegationAmounts)
 	delegatorAndAmount[params.OperatorAddress.String()] = &delegationtype.DelegationAmounts{
 		CanUndelegationAmount: params.OpAmount,
+		TotalDelegationAmount: params.OpAmount,
 	}
 	err = k.UpdateDelegationState(ctx, stakerId, assetId, delegatorAndAmount)
 	if err != nil {

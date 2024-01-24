@@ -11,7 +11,7 @@ import (
 	restakingtype "github.com/exocore/x/restaking_assets_manage/types"
 )
 
-func (k Keeper) UpdateOperatorSlashInfo(ctx sdk.Context, operatorAddr, avsAddr, slashProofTxId string, slashInfo operatortypes.OperatorSlashInfo) error {
+func (k Keeper) UpdateOperatorSlashInfo(ctx sdk.Context, operatorAddr, avsAddr, slashId string, slashInfo operatortypes.OperatorSlashInfo) error {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), operatortypes.KeyPrefixOperatorSlashInfo)
 
 	//check operator address validation
@@ -19,7 +19,7 @@ func (k Keeper) UpdateOperatorSlashInfo(ctx sdk.Context, operatorAddr, avsAddr, 
 	if err != nil {
 		return restakingtype.OperatorAddrIsNotAccAddr
 	}
-	slashInfoKey := restakingtype.GetJoinedStoreKey(operatorAddr, avsAddr, slashProofTxId)
+	slashInfoKey := restakingtype.GetJoinedStoreKey(operatorAddr, avsAddr, slashId)
 	if store.Has(slashInfoKey) {
 		return errorsmod.Wrap(operatortypes.ErrSlashInfoExist, fmt.Sprintf("slashInfoKey:%s", slashInfoKey))
 	}
@@ -27,13 +27,8 @@ func (k Keeper) UpdateOperatorSlashInfo(ctx sdk.Context, operatorAddr, avsAddr, 
 	if slashInfo.SlashContract == "" {
 		return errorsmod.Wrap(operatortypes.ErrSlashInfo, fmt.Sprintf("err slashContract:%s", slashInfo.SlashContract))
 	}
-
-	curHeight := ctx.BlockHeight()
-	if slashInfo.SlashHeight > uint64(curHeight) {
-		return errorsmod.Wrap(operatortypes.ErrSlashInfo, fmt.Sprintf("err SlashHeight:%v,curHeight:%v", slashInfo.SlashHeight, curHeight))
-	}
-	if slashInfo.SlashHeight > slashInfo.ExecuteHeight {
-		return errorsmod.Wrap(operatortypes.ErrSlashInfo, fmt.Sprintf("err SlashHeight:%v,ExecuteHeight:%v", slashInfo.SlashHeight, slashInfo.ExecuteHeight))
+	if slashInfo.OccurredHeight > slashInfo.SlashHeight {
+		return errorsmod.Wrap(operatortypes.ErrSlashInfo, fmt.Sprintf("err SlashHeight:%v,OccurredHeight:%v", slashInfo.SlashHeight, slashInfo.OccurredHeight))
 	}
 
 	if slashInfo.SlashProportion.IsNil() || slashInfo.SlashProportion.IsNegative() || slashInfo.SlashProportion.GT(sdkmath.LegacyNewDec(1)) {
@@ -46,9 +41,9 @@ func (k Keeper) UpdateOperatorSlashInfo(ctx sdk.Context, operatorAddr, avsAddr, 
 	return nil
 }
 
-func (k Keeper) GetOperatorSlashInfo(ctx sdk.Context, avsAddr, operatorAddr, slashProofTxId string) (changeState *operatortypes.OperatorSlashInfo, err error) {
+func (k Keeper) GetOperatorSlashInfo(ctx sdk.Context, avsAddr, operatorAddr, slashId string) (changeState *operatortypes.OperatorSlashInfo, err error) {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), operatortypes.KeyPrefixOperatorSlashInfo)
-	slashInfoKey := restakingtype.GetJoinedStoreKey(operatorAddr, avsAddr, slashProofTxId)
+	slashInfoKey := restakingtype.GetJoinedStoreKey(operatorAddr, avsAddr, slashId)
 	isExit := store.Has(slashInfoKey)
 	operatorSlashInfo := operatortypes.OperatorSlashInfo{}
 	if isExit {

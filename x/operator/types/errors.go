@@ -18,4 +18,8 @@ var (
 	ErrNotOptedIn = errorsmod.Register(ModuleName, 6, "the operator hasn't opted in the avs")
 
 	ErrTheValueIsNegative = errorsmod.Register(ModuleName, 7, "the value is negative")
+
+	ErrSlashContractNotMatch = errorsmod.Register(ModuleName, 8, "the slash contract isn't the slash contract address saved in the opted-in info")
+
+	ErrSlashOccurredHeight = errorsmod.Register(ModuleName, 9, "the occurred height of slash event is error")
 )

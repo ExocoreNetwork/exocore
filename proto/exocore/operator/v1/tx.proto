@@ -57,9 +57,11 @@ message ValueField {
 
 message OperatorSlashInfo {
   string SlashContract = 1;
-  uint64 SlashHeight = 2;
-  uint64 ExecuteHeight = 3;
-  string SlashProportion = 4
+  int64 SlashHeight = 2;
+  int64 OccurredHeight = 3;
+  int64 ExecuteHeight = 4;
+  bool IsVeto = 5;
+  string SlashProportion = 6
   [
     (cosmos_proto.scalar) = "cosmos.Dec",
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",

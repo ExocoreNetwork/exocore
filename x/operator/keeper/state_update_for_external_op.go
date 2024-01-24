@@ -31,32 +31,40 @@ func (k Keeper) UpdateOptedInAssetsState(ctx sdk.Context, stakerId, assetId, ope
 	opUsdValue := sdkmath.LegacyNewDecFromBigIntWithPrec(value.BigInt(), int64(types.UsdValueDefaultDecimal))
 
 	for _, avs := range avsList {
-		//UpdateAVSOperatorStakerShareValue
-		err = k.UpdateAVSOperatorStakerShareValue(ctx, avs, stakerId, operatorAddr, opUsdValue)
+		//get the assets supported by the AVS
+		avsSupportedAssets, err := k.avsKeeper.GetAvsSupportedAssets(ctx, avs)
 		if err != nil {
 			return err
 		}
 
-		//UpdateOperatorAVSAssetsState
-		changeState := types.AssetOptedInState{
-			Amount: opAmount,
-			Value:  opUsdValue,
-		}
-		err = k.UpdateOperatorAVSAssetsState(ctx, assetId, avs, operatorAddr, changeState)
-		if err != nil {
-			return err
-		}
+		if _, ok := avsSupportedAssets[assetId]; ok {
+			//UpdateAVSOperatorStakerShareValue
+			err = k.UpdateAVSOperatorStakerShareValue(ctx, avs, stakerId, operatorAddr, opUsdValue)
+			if err != nil {
+				return err
+			}
 
-		//UpdateAVSOperatorTotalValue
-		err = k.UpdateAVSOperatorTotalValue(ctx, avs, operatorAddr, opUsdValue)
-		if err != nil {
-			return err
-		}
+			//UpdateOperatorAVSAssetsState
+			changeState := types.AssetOptedInState{
+				Amount: opAmount,
+				Value:  opUsdValue,
+			}
+			err = k.UpdateOperatorAVSAssetsState(ctx, assetId, avs, operatorAddr, changeState)
+			if err != nil {
+				return err
+			}
 
-		//UpdateAVSTotalValue
-		err = k.UpdateAVSTotalValue(ctx, avs, opUsdValue)
-		if err != nil {
-			return err
+			//UpdateAVSOperatorTotalValue
+			err = k.UpdateAVSOperatorTotalValue(ctx, avs, operatorAddr, opUsdValue)
+			if err != nil {
+				return err
+			}
+
+			//UpdateAVSTotalValue
+			err = k.UpdateAVSTotalValue(ctx, avs, opUsdValue)
+			if err != nil {
+				return err
+			}
 		}
 	}
 	return nil
@@ -86,10 +94,11 @@ func (k Keeper) OptIn(ctx sdk.Context, operatorAddress sdk.AccAddress, AVSAddr s
 		return err
 	}
 	totalAssetUsdValue := sdkmath.LegacyNewDec(0)
+	operatorOwnAssetUsdValue := sdkmath.LegacyNewDec(0)
 	assetFilter := make(map[string]interface{})
 	assetInfoRecord := make(map[string]*AssetPriceAndDecimal)
 
-	for _, assetId := range avsSupportedAssets {
+	for assetId := range avsSupportedAssets {
 		operatorAssetState, ok := operatorAssetsState[assetId]
 		if !ok {
 			continue
@@ -115,6 +124,9 @@ func (k Keeper) OptIn(ctx sdk.Context, operatorAddress sdk.AccAddress, AVSAddr s
 		assetValue := operatorAssetState.TotalAmountOrWantChangeValue.Mul(price).Mul(sdkmath.NewIntWithDecimal(1, int(types.UsdValueDefaultDecimal))).Quo(sdkmath.NewIntWithDecimal(1, int(assetInfo.AssetBasicInfo.Decimals)+int(decimal)))
 		assetUsdValue := sdkmath.LegacyNewDecFromBigIntWithPrec(assetValue.BigInt(), int64(types.UsdValueDefaultDecimal))
 
+		operatorOwnAssetValue := operatorAssetState.OperatorOwnAmountOrWantChangeValue.Mul(price).Mul(sdkmath.NewIntWithDecimal(1, int(types.UsdValueDefaultDecimal))).Quo(sdkmath.NewIntWithDecimal(1, int(assetInfo.AssetBasicInfo.Decimals)+int(decimal)))
+		operatorOwnAssetUsdValue = operatorOwnAssetUsdValue.Add(sdkmath.LegacyNewDecFromBigIntWithPrec(operatorOwnAssetValue.BigInt(), int64(types.UsdValueDefaultDecimal)))
+
 		//UpdateOperatorAVSAssetsState
 		changeState := types.AssetOptedInState{
 			Amount: operatorAssetState.TotalAmountOrWantChangeValue,
@@ -126,6 +138,12 @@ func (k Keeper) OptIn(ctx sdk.Context, operatorAddress sdk.AccAddress, AVSAddr s
 		}
 		totalAssetUsdValue = totalAssetUsdValue.Add(assetUsdValue)
 		assetFilter[assetId] = nil
+	}
+
+	//update the share value of operator itself, the input stakerId should be empty
+	err = k.UpdateAVSOperatorStakerShareValue(ctx, AVSAddr, "", operatorAddress.String(), operatorOwnAssetUsdValue)
+	if err != nil {
+		return err
 	}
 
 	//UpdateAVSTotalValue
@@ -195,7 +213,7 @@ func (k Keeper) OptOut(ctx sdk.Context, operatorAddress sdk.AccAddress, AVSAddr 
 	}
 	assetFilter := make(map[string]interface{})
 
-	for _, assetId := range avsSupportedAssets {
+	for assetId := range avsSupportedAssets {
 		_, ok := operatorAssetsState[assetId]
 		if !ok {
 			continue
@@ -213,6 +231,12 @@ func (k Keeper) OptOut(ctx sdk.Context, operatorAddress sdk.AccAddress, AVSAddr 
 	}
 	if avsOperatorTotalValue.IsNegative() {
 		return errorsmod.Wrap(types.ErrTheValueIsNegative, fmt.Sprintf("OptOut,avsOperatorTotalValue:%s", avsOperatorTotalValue))
+	}
+
+	//delete the share value of operator itself, the input stakerId should be empty
+	err = k.DeleteAVSOperatorStakerShareValue(ctx, AVSAddr, "", operatorAddress.String())
+	if err != nil {
+		return err
 	}
 
 	//UpdateAVSTotalValue
@@ -249,4 +273,70 @@ func (k Keeper) OptOut(ctx sdk.Context, operatorAddress sdk.AccAddress, AVSAddr 
 		return err
 	}
 	return nil
+}
+
+type SlashAssetsAndAmount struct {
+	slashFromStakerUnbonding map[string]map[string]sdkmath.Int
+	slashFromStakerOptedIn   map[string]map[string]sdkmath.Int
+
+	slashFromOperatorUnbonding map[string]sdkmath.Int
+	slashFromOperatorOptedIn   map[string]sdkmath.Int
+}
+
+// GetAssetsAndAmountToSlash It will slash the assets that have been undelegated but still locked first, and if there isn't enough to slash, then it will slash the assets that are opting into AVS.
+func (k Keeper) GetAssetsAndAmountToSlash(ctx sdk.Context, operatorAddress sdk.AccAddress, AVSAddr string, occurredHeight int64, slashProportion sdkmath.LegacyDec) (*SlashAssetsAndAmount, error) {
+	ret := SlashAssetsAndAmount{
+		slashFromStakerUnbonding:   make(map[string]map[string]sdkmath.Int, 0),
+		slashFromStakerOptedIn:     make(map[string]map[string]sdkmath.Int, 0),
+		slashFromOperatorUnbonding: make(map[string]sdkmath.Int, 0),
+		slashFromOperatorOptedIn:   make(map[string]sdkmath.Int, 0),
+	}
+
+}
+
+func (k Keeper) Slash(ctx sdk.Context, operatorAddress sdk.AccAddress, AVSAddr, slashContract, slashId string, occurredHeight int64, slashProportion sdkmath.LegacyDec) error {
+	height := ctx.BlockHeight()
+	if occurredHeight > height {
+		return errorsmod.Wrap(types.ErrSlashOccurredHeight, fmt.Sprintf("occurredHeight:%d,curHeight:%d", occurredHeight, height))
+	}
+
+	//get the state when the slash occurred
+	//get the opted-in info
+	ctx = ctx.WithBlockHeight(occurredHeight)
+	optedInfo, err := k.GetOptedInfo(ctx, operatorAddress.String(), AVSAddr)
+	if err != nil {
+		return err
+	}
+	// reset context height
+	ctx = ctx.WithBlockHeight(height)
+
+	if optedInfo.SlashContract != slashContract {
+		return errorsmod.Wrap(types.ErrSlashContractNotMatch, fmt.Sprintf("input slashContract:%s, opted-in slash contract:%s", slashContract, optedInfo.SlashContract))
+	}
+
+	//todo: recording the slash event might be moved to the slash module
+	slashInfo := types.OperatorSlashInfo{
+		SlashContract:   slashContract,
+		SlashHeight:     height,
+		OccurredHeight:  occurredHeight,
+		SlashProportion: slashProportion,
+		ExecuteHeight:   height + types.SlashVetoDuration,
+	}
+	err = k.UpdateOperatorSlashInfo(ctx, operatorAddress.String(), AVSAddr, slashId, slashInfo)
+	if err != nil {
+		return err
+	}
+
+	// get the assets and amounts that should be slashed
+	assetsSlashInfo, err := k.GetAssetsAndAmountToSlash(ctx, operatorAddress, AVSAddr, occurredHeight, slashProportion)
+	if err != nil {
+		return err
+	}
+
+	// update delegation assets state
+
+	// update staker assets state
+
+	// update opted-in state
+
 }

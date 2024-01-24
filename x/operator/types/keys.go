@@ -20,6 +20,8 @@ const (
 	DefaultOptedOutHeight = uint64(math.MaxUint64)
 
 	UsdValueDefaultDecimal = uint8(8)
+
+	SlashVetoDuration = int64(1000)
 )
 
 // ModuleAddress is the native module address for EVM
@@ -68,7 +70,7 @@ var (
 	KeyPrefixAVSOperatorStakerShareState = []byte{prefixOperatorAVSStakerShareState}
 
 	// KeyPrefixOperatorSlashInfo key-value:
-	// operator + '/' + AVSAddr + '/' + slashProofTxId -> OperatorSlashInfo
+	// operator + '/' + AVSAddr + '/' + slashId -> OperatorSlashInfo
 	KeyPrefixOperatorSlashInfo = []byte{prefixOperatorSlashInfo}
 
 	// KeyPrefixSlashAssetsState key-value:

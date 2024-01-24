@@ -14,6 +14,6 @@ type ExpectOracleInterface interface {
 }
 
 type ExpectAvsInterface interface {
-	GetAvsSupportedAssets(ctx sdk.Context, avsAddr string) ([]string, error)
+	GetAvsSupportedAssets(ctx sdk.Context, avsAddr string) (map[string]interface{}, error)
 	GetAvsSlashContract(ctx sdk.Context, avsAddr string) (string, error)
 }
