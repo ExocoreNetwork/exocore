@@ -12,7 +12,8 @@ import (
 
 func (k Keeper) GetOperatorAssetInfos(ctx sdk.Context, operatorAddr sdk.Address) (assetsInfo map[string]*restakingtype.OperatorSingleAssetOrChangeInfo, err error) {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), restakingtype.KeyPrefixOperatorAssetInfos)
-	key := restakingtype.GetAssetStateKey(operatorAddr.String(), "")
+	// the key is the operator address in the bech32 format
+	key := []byte(operatorAddr.String())
 	iterator := sdk.KVStorePrefixIterator(store, key)
 	defer iterator.Close()
 
