@@ -5,7 +5,9 @@ import (
 	sdkmath "cosmossdk.io/math"
 	"fmt"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	delegationtype "github.com/exocore/x/delegation/types"
 	"github.com/exocore/x/operator/types"
+	types2 "github.com/exocore/x/restaking_assets_manage/types"
 )
 
 func (k Keeper) UpdateOptedInAssetsState(ctx sdk.Context, stakerId, assetId, operatorAddr string, opAmount sdkmath.Int) error {
@@ -275,6 +277,8 @@ func (k Keeper) OptOut(ctx sdk.Context, operatorAddress sdk.AccAddress, AVSAddr 
 	return nil
 }
 
+type slashAmounts struct {
+}
 type SlashAssetsAndAmount struct {
 	slashFromStakerUnbonding map[string]map[string]sdkmath.Int
 	slashFromStakerOptedIn   map[string]map[string]sdkmath.Int
@@ -283,7 +287,7 @@ type SlashAssetsAndAmount struct {
 	slashFromOperatorOptedIn   map[string]sdkmath.Int
 }
 
-// GetAssetsAndAmountToSlash It will slash the assets that have been undelegated but still locked first, and if there isn't enough to slash, then it will slash the assets that are opting into AVS.
+// GetAssetsAndAmountToSlash It will slash the assets that are opting into AVS first, and if there isn't enough to slash, then it will slash the assets that have requested to undelegate but still locked.
 func (k Keeper) GetAssetsAndAmountToSlash(ctx sdk.Context, operatorAddress sdk.AccAddress, AVSAddr string, occurredHeight int64, slashProportion sdkmath.LegacyDec) (*SlashAssetsAndAmount, error) {
 	ret := SlashAssetsAndAmount{
 		slashFromStakerUnbonding:   make(map[string]map[string]sdkmath.Int, 0),
@@ -291,7 +295,6 @@ func (k Keeper) GetAssetsAndAmountToSlash(ctx sdk.Context, operatorAddress sdk.A
 		slashFromOperatorUnbonding: make(map[string]sdkmath.Int, 0),
 		slashFromOperatorOptedIn:   make(map[string]sdkmath.Int, 0),
 	}
-
 }
 
 func (k Keeper) Slash(ctx sdk.Context, operatorAddress sdk.AccAddress, AVSAddr, slashContract, slashId string, occurredHeight int64, slashProportion sdkmath.LegacyDec) error {
@@ -332,11 +335,105 @@ func (k Keeper) Slash(ctx sdk.Context, operatorAddress sdk.AccAddress, AVSAddr, 
 	if err != nil {
 		return err
 	}
+	// slash from opted-in assets
+	for stakerId, slashAssets := range assetsSlashInfo.slashFromStakerOptedIn {
+		for assetId, slashAmount := range slashAssets {
+			//update delegation state
+			delegatorAndAmount := make(map[string]*delegationtype.DelegationAmounts)
+			delegatorAndAmount[operatorAddress.String()] = &delegationtype.DelegationAmounts{
+				CanUndelegationAmount: slashAmount.Neg(),
+			}
+			err = k.delegationKeeper.UpdateDelegationState(ctx, stakerId, assetId, delegatorAndAmount)
+			if err != nil {
+				return err
+			}
+			//update staker and operator assets state
+			err = k.restakingStateKeeper.UpdateStakerAssetState(ctx, stakerId, assetId, types2.StakerSingleAssetOrChangeInfo{
+				TotalDepositAmountOrWantChangeValue: slashAmount.Neg(),
+			})
+			if err != nil {
+				return err
+			}
+			err = k.restakingStateKeeper.UpdateOperatorAssetState(ctx, operatorAddress, assetId, types2.OperatorSingleAssetOrChangeInfo{
+				TotalAmountOrWantChangeValue: slashAmount.Neg(),
+			})
+			if err != nil {
+				return err
+			}
+			//decrease the related share value
+			err = k.UpdateOptedInAssetsState(ctx, stakerId, assetId, operatorAddress.String(), slashAmount.Neg())
+			if err != nil {
+				return err
+			}
+			//Record the slash information for scheduled tasks and send it to the client chain once the veto duration expires.
+			err = k.UpdateSlashAssetsState(ctx, assetId, stakerId, uint64(slashInfo.ExecuteHeight), slashAmount)
+			if err != nil {
+				return err
+			}
+		}
+	}
 
-	// update delegation assets state
+	for assetId, slashAmount := range assetsSlashInfo.slashFromOperatorOptedIn {
+		err = k.restakingStateKeeper.UpdateOperatorAssetState(ctx, operatorAddress, assetId, types2.OperatorSingleAssetOrChangeInfo{
+			TotalAmountOrWantChangeValue:       slashAmount.Neg(),
+			OperatorOwnAmountOrWantChangeValue: slashAmount.Neg(),
+		})
+		if err != nil {
+			return err
+		}
+		//decrease the related share value
+		err = k.UpdateOptedInAssetsState(ctx, "", assetId, operatorAddress.String(), slashAmount.Neg())
+		if err != nil {
+			return err
+		}
+		//Record the slash information for scheduled tasks and send it to the client chain once the veto duration expires.
+		err = k.UpdateSlashAssetsState(ctx, assetId, operatorAddress.String(), uint64(slashInfo.ExecuteHeight), slashAmount)
+		if err != nil {
+			return err
+		}
+	}
 
-	// update staker assets state
+	// slash from unbonding assets
+	for stakerId, slashAssets := range assetsSlashInfo.slashFromStakerUnbonding {
+		for assetId, slashAmount := range slashAssets {
+			//update delegation state
+			delegatorAndAmount := make(map[string]*delegationtype.DelegationAmounts)
+			delegatorAndAmount[operatorAddress.String()] = &delegationtype.DelegationAmounts{
+				CanUndelegateAmountAfterSlash: slashAmount.Neg(),
+			}
+			err = k.delegationKeeper.UpdateDelegationState(ctx, stakerId, assetId, delegatorAndAmount)
+			if err != nil {
+				return err
+			}
+			//update staker and operator assets state
+			err = k.restakingStateKeeper.UpdateStakerAssetState(ctx, stakerId, assetId, types2.StakerSingleAssetOrChangeInfo{
+				TotalDepositAmountOrWantChangeValue: slashAmount.Neg(),
+			})
+			if err != nil {
+				return err
+			}
+			//Record the slash information for scheduled tasks and send it to the client chain once the veto duration expires.
+			err = k.UpdateSlashAssetsState(ctx, assetId, stakerId, uint64(slashInfo.ExecuteHeight), slashAmount)
+			if err != nil {
+				return err
+			}
+		}
+	}
 
-	// update opted-in state
+	for assetId, slashAmount := range assetsSlashInfo.slashFromOperatorUnbonding {
+		err = k.restakingStateKeeper.UpdateOperatorAssetState(ctx, operatorAddress, assetId, types2.OperatorSingleAssetOrChangeInfo{
+			TotalAmountOrWantChangeValue:            slashAmount.Neg(),
+			OperatorOwnCanUnbondingAmountAfterSlash: slashAmount.Neg(),
+		})
+		if err != nil {
+			return err
+		}
+		//Record the slash information for scheduled tasks and send it to the client chain once the veto duration expires.
+		err = k.UpdateSlashAssetsState(ctx, assetId, operatorAddress.String(), uint64(slashInfo.ExecuteHeight), slashAmount)
+		if err != nil {
+			return err
+		}
+	}
 
+	return nil
 }

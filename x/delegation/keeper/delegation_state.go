@@ -73,8 +73,9 @@ func (k Keeper) UpdateDelegationState(ctx sdk.Context, stakerId string, assetId 
 		}
 		singleStateKey := stakingtypes.GetJoinedStoreKey(stakerId, assetId, opAddr)
 		delegationState := delegationtype.DelegationAmounts{
-			CanUndelegationAmount:  sdkmath.NewInt(0),
-			WaitUndelegationAmount: sdkmath.NewInt(0),
+			CanUndelegationAmount:         sdkmath.NewInt(0),
+			WaitUndelegationAmount:        sdkmath.NewInt(0),
+			CanUndelegateAmountAfterSlash: sdkmath.NewInt(0),
 		}
 
 		if store.Has(singleStateKey) {
@@ -92,9 +93,9 @@ func (k Keeper) UpdateDelegationState(ctx sdk.Context, stakerId string, assetId 
 			return errorsmod.Wrap(err, "UpdateDelegationState WaitUndelegationAmount error")
 		}
 
-		err = stakingtypes.UpdateAssetValue(&delegationState.TotalDelegationAmount, &amounts.TotalDelegationAmount)
+		err = stakingtypes.UpdateAssetValue(&delegationState.CanUndelegateAmountAfterSlash, &amounts.CanUndelegateAmountAfterSlash)
 		if err != nil {
-			return errorsmod.Wrap(err, "UpdateDelegationState TotalDelegationAmount error")
+			return errorsmod.Wrap(err, "UpdateDelegationState CanUsedToUndelegateAmount error")
 		}
 
 		//save single operator delegation state

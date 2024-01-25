@@ -27,7 +27,7 @@ message DelegationAmounts{
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
     (gogoproto.nullable) = false
   ];
-  string TotalDelegationAmount = 3
+  string CanUndelegateAmountAfterSlash = 3
   [
     (cosmos_proto.scalar) = "cosmos.Int",
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",

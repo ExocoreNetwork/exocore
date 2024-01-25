@@ -76,5 +76,6 @@ var (
 	// KeyPrefixSlashAssetsState key-value:
 	// completeSlashHeight + '/' + assetId -> SlashAmount
 	// completeSlashHeight + '/' + assetId + '/' + stakerId -> SlashAmount
+	// completeSlashHeight + '/' + assetId + '/' + operatorAddr -> SlashAmount
 	KeyPrefixSlashAssetsState = []byte{prefixSlashAssetsState}
 )

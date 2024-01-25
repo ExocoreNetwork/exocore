@@ -55,10 +55,11 @@ func (k Keeper) UpdateOperatorAssetState(ctx sdk.Context, operatorAddr sdk.Addre
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), restakingtype.KeyPrefixOperatorAssetInfos)
 	key := restakingtype.GetJoinedStoreKey(operatorAddr.String(), assetId)
 	assetState := restakingtype.OperatorSingleAssetOrChangeInfo{
-		TotalAmountOrWantChangeValue:         math.NewInt(0),
-		OperatorOwnAmountOrWantChangeValue:   math.NewInt(0),
-		WaitUnbondingAmountOrWantChangeValue: math.NewInt(0),
-		OperatorOwnWaitUnbondingAmount:       math.NewInt(0),
+		TotalAmountOrWantChangeValue:            math.NewInt(0),
+		OperatorOwnAmountOrWantChangeValue:      math.NewInt(0),
+		WaitUnbondingAmountOrWantChangeValue:    math.NewInt(0),
+		OperatorOwnWaitUnbondingAmount:          math.NewInt(0),
+		OperatorOwnCanUnbondingAmountAfterSlash: math.NewInt(0),
 	}
 	if store.Has(key) {
 		value := store.Get(key)
@@ -79,6 +80,10 @@ func (k Keeper) UpdateOperatorAssetState(ctx sdk.Context, operatorAddr sdk.Addre
 		return errorsmod.Wrap(err, "UpdateOperatorAssetState WaitUndelegationAmountOrWantChangeValue error")
 	}
 	err = restakingtype.UpdateAssetValue(&assetState.OperatorOwnWaitUnbondingAmount, &changeAmount.OperatorOwnWaitUnbondingAmount)
+	if err != nil {
+		return errorsmod.Wrap(err, "UpdateOperatorAssetState OperatorOwnWaitUnbondingAmount error")
+	}
+	err = restakingtype.UpdateAssetValue(&assetState.OperatorOwnCanUnbondingAmountAfterSlash, &changeAmount.OperatorOwnCanUnbondingAmountAfterSlash)
 	if err != nil {
 		return errorsmod.Wrap(err, "UpdateOperatorAssetState OperatorOwnWaitUnbondingAmount error")
 	}

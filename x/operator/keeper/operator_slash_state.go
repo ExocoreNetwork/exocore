@@ -55,18 +55,17 @@ func (k Keeper) GetOperatorSlashInfo(ctx sdk.Context, avsAddr, operatorAddr, sla
 	return &operatorSlashInfo, nil
 }
 
-func (k Keeper) UpdateSlashAssetsState(ctx sdk.Context, assetId, stakerId string, completeHeight uint64, opAmount sdkmath.Int) error {
+func (k Keeper) UpdateSlashAssetsState(ctx sdk.Context, assetId, stakerOrOperator string, completeHeight uint64, opAmount sdkmath.Int) error {
 	if opAmount.IsNil() || opAmount.IsZero() {
 		return nil
 	}
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), operatortypes.KeyPrefixSlashAssetsState)
 	var key []byte
-	if stakerId == "" {
-		key = restakingtype.GetJoinedStoreKey(hexutil.EncodeUint64(completeHeight), assetId)
-	} else {
-		key = restakingtype.GetJoinedStoreKey(hexutil.EncodeUint64(completeHeight), assetId, stakerId)
+	if stakerOrOperator == "" || assetId == "" {
+		return errorsmod.Wrap(operatortypes.ErrParameterInvalid, fmt.Sprintf("assetId:%s,stakerOrOperator:%s", assetId, stakerOrOperator))
 	}
 
+	key = restakingtype.GetJoinedStoreKey(hexutil.EncodeUint64(completeHeight), assetId, stakerOrOperator)
 	slashAmount := restakingtype.ValueField{Amount: sdkmath.NewInt(0)}
 	if store.Has(key) {
 		value := store.Get(key)
@@ -78,16 +77,29 @@ func (k Keeper) UpdateSlashAssetsState(ctx sdk.Context, assetId, stakerId string
 	}
 	bz := k.cdc.MustMarshal(&slashAmount)
 	store.Set(key, bz)
+
+	key = restakingtype.GetJoinedStoreKey(hexutil.EncodeUint64(completeHeight), assetId)
+	totalSlashAmount := restakingtype.ValueField{Amount: sdkmath.NewInt(0)}
+	if store.Has(key) {
+		value := store.Get(key)
+		k.cdc.MustUnmarshal(value, &totalSlashAmount)
+	}
+	err = restakingtype.UpdateAssetValue(&totalSlashAmount.Amount, &opAmount)
+	if err != nil {
+		return err
+	}
+	bz = k.cdc.MustMarshal(&slashAmount)
+	store.Set(key, bz)
 	return nil
 }
 
-func (k Keeper) GetSlashAssetsState(ctx sdk.Context, assetId, stakerId string, completeHeight uint64) (sdkmath.Int, error) {
+func (k Keeper) GetSlashAssetsState(ctx sdk.Context, assetId, stakerOrOperator string, completeHeight uint64) (sdkmath.Int, error) {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), operatortypes.KeyPrefixSlashAssetsState)
 	var key []byte
-	if stakerId == "" {
+	if stakerOrOperator == "" {
 		key = restakingtype.GetJoinedStoreKey(hexutil.EncodeUint64(completeHeight), assetId)
 	} else {
-		key = restakingtype.GetJoinedStoreKey(hexutil.EncodeUint64(completeHeight), assetId, stakerId)
+		key = restakingtype.GetJoinedStoreKey(hexutil.EncodeUint64(completeHeight), assetId, stakerOrOperator)
 	}
 	var ret restakingtype.ValueField
 	isExit := store.Has(key)
