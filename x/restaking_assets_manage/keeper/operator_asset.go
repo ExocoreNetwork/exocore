@@ -10,7 +10,7 @@ import (
 
 // This file provides all functions about operator assets state management.
 
-func (k Keeper) GetOperatorAssetInfos(ctx sdk.Context, operatorAddr sdk.Address) (assetsInfo map[string]*restakingtype.OperatorSingleAssetOrChangeInfo, err error) {
+func (k Keeper) GetOperatorAssetInfos(ctx sdk.Context, operatorAddr sdk.Address, assetsFilter map[string]interface{}) (assetsInfo map[string]*restakingtype.OperatorSingleAssetOrChangeInfo, err error) {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), restakingtype.KeyPrefixOperatorAssetInfos)
 	// the key is the operator address in the bech32 format
 	key := []byte(operatorAddr.String())

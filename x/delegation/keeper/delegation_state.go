@@ -148,12 +148,12 @@ func (k Keeper) GetDelegationInfo(ctx sdk.Context, stakerId, assetId string) (*d
 }
 
 // GetDelegationStateByOperatorAndAssetList get the specified assets state delegated to the specified operator
-func (k Keeper) GetDelegationStateByOperatorAndAssetList(ctx sdk.Context, operatorAddr string, assetsFilter map[string]interface{}) (map[string]map[string]sdkmath.Int, error) {
+func (k Keeper) GetDelegationStateByOperatorAndAssetList(ctx sdk.Context, operatorAddr string, assetsFilter map[string]interface{}) (map[string]map[string]delegationtype.DelegationAmounts, error) {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), delegationtype.KeyPrefixRestakerDelegationInfo)
 	iterator := sdk.KVStorePrefixIterator(store, nil)
 	defer iterator.Close()
 
-	ret := make(map[string]map[string]sdkmath.Int, 0)
+	ret := make(map[string]map[string]delegationtype.DelegationAmounts, 0)
 	for ; iterator.Valid(); iterator.Next() {
 		var amounts delegationtype.DelegationAmounts
 		k.cdc.MustUnmarshal(iterator.Value(), &amounts)
@@ -166,9 +166,9 @@ func (k Keeper) GetDelegationStateByOperatorAndAssetList(ctx sdk.Context, operat
 			if operatorAddr == findOperatorAddr {
 				if _, ok := assetsFilter[assetId]; ok {
 					if _, ok := ret[restakerId]; ok {
-						ret[restakerId][assetId] = amounts.CanUndelegationAmount
+						ret[restakerId][assetId] = amounts
 					} else {
-						ret[restakerId] = make(map[string]sdkmath.Int, 0)
+						ret[restakerId] = make(map[string]delegationtype.DelegationAmounts, 0)
 					}
 				}
 			}

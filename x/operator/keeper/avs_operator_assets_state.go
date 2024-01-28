@@ -205,3 +205,20 @@ func (k Keeper) GetAVSOperatorStakerShareValue(ctx sdk.Context, avsAddr, stakerI
 	}
 	return ret.Amount, nil
 }
+
+func (k Keeper) GetAVSOperatorStakerInfo(ctx sdk.Context, avsAddr, operatorAddr string) (map[string]interface{}, error) {
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), operatortypes.KeyPrefixAVSOperatorStakerShareState)
+	stakers := make(map[string]interface{}, 0)
+	iterator := sdk.KVStorePrefixIterator(store, nil)
+	defer iterator.Close()
+	for ; iterator.Valid(); iterator.Next() {
+		keys, err := restakingtype.ParseJoinedStoreKey(iterator.Key(), 3)
+		if err != nil {
+			return nil, err
+		}
+		if keys[1] != "" {
+			stakers[keys[1]] = nil
+		}
+	}
+	return stakers, nil
+}

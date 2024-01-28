@@ -65,7 +65,7 @@ func (k Keeper) QueOperatorAssetInfos(ctx context.Context, infos *restakingtype.
 	if err != nil {
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
-	assetInfos, err := k.GetOperatorAssetInfos(c, addr)
+	assetInfos, err := k.GetOperatorAssetInfos(c, addr, nil)
 	if err != nil {
 		return nil, err
 	}
