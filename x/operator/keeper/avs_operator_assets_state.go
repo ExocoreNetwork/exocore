@@ -87,6 +87,25 @@ func (k Keeper) UpdateAVSTotalValue(ctx sdk.Context, avsAddr string, opAmount sd
 	return nil
 }
 
+func (k Keeper) BatchUpdateAVSAndOperatorTotalValue(ctx sdk.Context, avsOperatorChange map[string]sdkmath.LegacyDec) error {
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), operatortypes.KeyPrefixAVSOperatorAssetsTotalValue)
+	for avs, opAmount := range avsOperatorChange {
+		key := []byte(avs)
+		totalValue := operatortypes.ValueField{Amount: sdkmath.LegacyNewDec(0)}
+		if store.Has(key) {
+			value := store.Get(key)
+			k.cdc.MustUnmarshal(value, &totalValue)
+		}
+		err := restakingtype.UpdateAssetDecValue(&totalValue.Amount, &opAmount)
+		if err != nil {
+			return err
+		}
+		bz := k.cdc.MustMarshal(&totalValue)
+		store.Set(key, bz)
+	}
+	return nil
+}
+
 func (k Keeper) GetAVSTotalValue(ctx sdk.Context, avsAddr string) (sdkmath.LegacyDec, error) {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), operatortypes.KeyPrefixAVSOperatorAssetsTotalValue)
 	var ret operatortypes.ValueField
@@ -162,6 +181,28 @@ func (k Keeper) GetOperatorAVSAssetsState(ctx sdk.Context, assetId, avsAddr, ope
 		return nil, errorsmod.Wrap(operatortypes.ErrNoKeyInTheStore, fmt.Sprintf("GetOperatorAVSAssetsState: key is %s", stateKey))
 	}
 	return &assetOptedInState, nil
+}
+
+func (k Keeper) IterateUpdateOperatorAVSAssets(ctx sdk.Context, assetId string, f func(assetId string, keys []string, state *operatortypes.AssetOptedInState) error) (err error) {
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), operatortypes.KeyPrefixOperatorAVSSingleAssetState)
+	iterator := sdk.KVStorePrefixIterator(store, []byte(assetId))
+	defer iterator.Close()
+
+	for ; iterator.Valid(); iterator.Next() {
+		keys, err := restakingtype.ParseJoinedStoreKey(iterator.Key(), 3)
+		if err != nil {
+			return err
+		}
+		assetOptedInState := &operatortypes.AssetOptedInState{}
+		k.cdc.MustUnmarshal(iterator.Value(), assetOptedInState)
+		err = f(assetId, keys, assetOptedInState)
+		if err != nil {
+			return err
+		}
+		bz := k.cdc.MustMarshal(assetOptedInState)
+		store.Set(iterator.Key(), bz)
+	}
+	return nil
 }
 
 func (k Keeper) UpdateAVSOperatorStakerShareValue(ctx sdk.Context, avsAddr, stakerId, operatorAddr string, opAmount sdkmath.LegacyDec) error {

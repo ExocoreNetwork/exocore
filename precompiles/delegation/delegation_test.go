@@ -2,6 +2,7 @@ package delegation_test
 
 import (
 	"fmt"
+	operatortypes "github.com/exocore/x/operator/types"
 	"math/big"
 	"strings"
 
@@ -88,13 +89,13 @@ func (s *PrecompileTestSuite) TestRunDelegateToThroughClientChain() {
 		s.Require().NoError(err)
 	}
 	registerOperator := func() {
-		registerReq := &delegationtype.RegisterOperatorReq{
+		registerReq := &operatortypes.RegisterOperatorReq{
 			FromAddress: opAccAddr,
-			Info: &delegationtype.OperatorInfo{
+			Info: &operatortypes.OperatorInfo{
 				EarningsAddr: opAccAddr,
 			},
 		}
-		_, err := s.app.DelegationKeeper.RegisterOperator(s.ctx, registerReq)
+		_, err := s.app.OperatorKeeper.RegisterOperator(s.ctx, registerReq)
 		s.NoError(err)
 	}
 	commonMalleate := func() (common.Address, []byte) {
@@ -330,13 +331,13 @@ func (s *PrecompileTestSuite) TestRunUnDelegateFromThroughClientChain() {
 		s.Require().NoError(err)
 	}
 	registerOperator := func() {
-		registerReq := &delegationtype.RegisterOperatorReq{
+		registerReq := &operatortypes.RegisterOperatorReq{
 			FromAddress: operatorAddr,
-			Info: &delegationtype.OperatorInfo{
+			Info: &operatortypes.OperatorInfo{
 				EarningsAddr: operatorAddr,
 			},
 		}
-		_, err := s.app.DelegationKeeper.RegisterOperator(s.ctx, registerReq)
+		_, err := s.app.OperatorKeeper.RegisterOperator(s.ctx, registerReq)
 		s.NoError(err)
 	}
 	commonMalleate := func() (common.Address, []byte) {

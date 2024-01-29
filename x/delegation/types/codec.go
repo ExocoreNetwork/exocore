@@ -23,7 +23,6 @@ var (
 
 const (
 	// Amino names
-	registerOperator            = "exocore/RegisterOperatorReq"
 	delegateAssetToOperator     = "exocore/MsgDelegation"
 	UndelegateAssetFromOperator = "exocore/MsgUndelegation"
 )

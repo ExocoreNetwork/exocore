@@ -11,8 +11,14 @@ type ExpectDelegationInterface interface {
 	UpdateDelegationState(ctx sdk.Context, stakerId string, assetId string, delegationAmounts map[string]*delegationtype.DelegationAmounts) (err error)
 }
 
+type PriceChange struct {
+	OriginalPrice sdkmath.Int
+	NewPrice      sdkmath.Int
+	Decimal       uint8
+}
 type ExpectOracleInterface interface {
 	GetSpecifiedAssetsPrice(ctx sdk.Context, assetsId string) (sdkmath.Int, uint8, error)
+	GetPriceChangeAssets(ctx sdk.Context) (map[string]*PriceChange, error)
 }
 
 type ExpectAvsInterface interface {
