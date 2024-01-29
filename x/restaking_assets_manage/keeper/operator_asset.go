@@ -93,3 +93,25 @@ func (k Keeper) UpdateOperatorAssetState(ctx sdk.Context, operatorAddr sdk.Addre
 	store.Set(key, bz)
 	return nil
 }
+
+func (k Keeper) IteratorOperatorAssetState(ctx sdk.Context, f func(operatorAddr, assetId string, state *restakingtype.OperatorSingleAssetOrChangeInfo) error) error {
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), restakingtype.KeyPrefixOperatorAssetInfos)
+	iterator := sdk.KVStorePrefixIterator(store, nil)
+	defer iterator.Close()
+
+	for ; iterator.Valid(); iterator.Next() {
+		var amounts restakingtype.OperatorSingleAssetOrChangeInfo
+		k.cdc.MustUnmarshal(iterator.Value(), &amounts)
+		keys, err := restakingtype.ParseJoinedKey(iterator.Key())
+		if err != nil {
+			return err
+		}
+		if len(keys) == 3 {
+			err = f(keys[0], keys[1], &amounts)
+			if err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}

@@ -226,6 +226,21 @@ func (k Keeper) UpdateAVSOperatorStakerShareValue(ctx sdk.Context, avsAddr, stak
 	return nil
 }
 
+func (k Keeper) BatchSetAVSOperatorStakerShare(ctx sdk.Context, newValues map[string]sdkmath.LegacyDec) error {
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), operatortypes.KeyPrefixAVSOperatorStakerShareState)
+	for key, value := range newValues {
+		optedInValue := operatortypes.ValueField{Amount: value}
+		if store.Has([]byte(key)) {
+			value := store.Get([]byte(key))
+			k.cdc.MustUnmarshal(value, &optedInValue)
+		}
+
+		bz := k.cdc.MustMarshal(&optedInValue)
+		store.Set([]byte(key), bz)
+	}
+	return nil
+}
+
 func (k Keeper) DeleteAVSOperatorStakerShareValue(ctx sdk.Context, avsAddr, stakerId, operatorAddr string) error {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), operatortypes.KeyPrefixAVSOperatorStakerShareState)
 	key := restakingtype.GetJoinedStoreKey(avsAddr, stakerId, operatorAddr)

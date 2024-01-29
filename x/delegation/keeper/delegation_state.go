@@ -176,3 +176,25 @@ func (k Keeper) GetDelegationStateByOperatorAndAssetList(ctx sdk.Context, operat
 	}
 	return ret, nil
 }
+
+func (k Keeper) IteratorDelegationState(ctx sdk.Context, f func(restakerId, assetId, operatorAddr string, state *delegationtype.DelegationAmounts) error) error {
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), delegationtype.KeyPrefixRestakerDelegationInfo)
+	iterator := sdk.KVStorePrefixIterator(store, nil)
+	defer iterator.Close()
+
+	for ; iterator.Valid(); iterator.Next() {
+		var amounts delegationtype.DelegationAmounts
+		k.cdc.MustUnmarshal(iterator.Value(), &amounts)
+		keys, err := stakingtypes.ParseJoinedKey(iterator.Key())
+		if err != nil {
+			return err
+		}
+		if len(keys) == 3 {
+			err = f(keys[0], keys[1], keys[2], &amounts)
+			if err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}
