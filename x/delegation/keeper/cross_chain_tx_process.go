@@ -224,6 +224,10 @@ func (k Keeper) UndelegateFrom(ctx sdk.Context, params *DelegationOrUndelegation
 	if err != nil {
 		return err
 	}
+	err = k.UpdateStakerDelegationTotalAmount(ctx, stakerId, assetId, params.OpAmount.Neg())
+	if err != nil {
+		return err
+	}
 
 	//update staker and operator assets state
 	err = k.restakingStateKeeper.UpdateStakerAssetState(ctx, stakerId, assetId, types.StakerSingleAssetOrChangeInfo{

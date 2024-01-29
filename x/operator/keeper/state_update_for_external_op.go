@@ -378,6 +378,10 @@ func (k Keeper) SlashStaker(ctx sdk.Context, operatorAddress sdk.AccAddress, sla
 			if err != nil {
 				return err
 			}
+			err = k.delegationKeeper.UpdateStakerDelegationTotalAmount(ctx, stakerId, assetId, slashInfo.AmountFromOptedIn.Neg())
+			if err != nil {
+				return err
+			}
 
 			slashSumValue := slashInfo.AmountFromUnbonding.Add(slashInfo.AmountFromOptedIn)
 			//update staker and operator assets state
