@@ -33,25 +33,14 @@ func (k *Keeper) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.Valida
 		}
 		//UpdateOperatorAVSAssetsState
 		f := func(assetId string, keys []string, state *operatortypes.AssetOptedInState) error {
-			newAssetValue := state.Amount.Mul(priceChange.NewPrice).Mul(sdkmath.NewIntWithDecimal(1, int(operatortypes.USDValueDefaultDecimal))).Quo(sdkmath.NewIntWithDecimal(1, int(assetInfo.AssetBasicInfo.Decimals)+int(priceChange.Decimal)))
-			newAssetUSDValue := sdkmath.LegacyNewDecFromBigIntWithPrec(newAssetValue.BigInt(), int64(operatortypes.USDValueDefaultDecimal))
+			newAssetUSDValue := CalculateShare(state.Amount, priceChange.NewPrice, assetInfo.AssetBasicInfo.Decimals, priceChange.Decimal)
 			changeValue := newAssetUSDValue.Sub(state.Value)
 			state.Value = newAssetUSDValue
 
 			avsAddr := keys[1]
 			avsOperator := string(types.GetJoinedStoreKey(keys[1], keys[2]))
-			avsOperatorShareChange[avsAddr] = avsOperatorShareChange[avsAddr].Add(changeValue)
-			if value, ok := avsOperatorShareChange[avsAddr]; ok {
-				avsOperatorShareChange[avsAddr] = value.Add(changeValue)
-			} else {
-				avsOperatorShareChange[avsAddr] = changeValue
-			}
-			if value, ok := avsOperatorShareChange[avsOperator]; ok {
-				avsOperatorShareChange[avsOperator] = value.Add(changeValue)
-			} else {
-				avsOperatorShareChange[avsOperator] = changeValue
-			}
-
+			AddShareInMap(avsOperatorShareChange, avsAddr, changeValue)
+			AddShareInMap(avsOperatorShareChange, avsOperator, changeValue)
 			assetsOperator[assetId][keys[2]] = avsAddr
 			return nil
 		}
@@ -72,18 +61,13 @@ func (k *Keeper) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.Valida
 		priceChange := priceChangeAssets[assetId]
 		assetDecimal := assetsDecimal[assetId]
 		if avsAddr, ok := assetsOperator[assetId][operatorAddr]; ok {
-			newAssetValue := state.CanUndelegationAmount.Mul(priceChange.NewPrice).Mul(sdkmath.NewIntWithDecimal(1, int(operatortypes.USDValueDefaultDecimal))).Quo(sdkmath.NewIntWithDecimal(1, int(assetDecimal)+int(priceChange.Decimal)))
-			newAssetUSDValue := sdkmath.LegacyNewDecFromBigIntWithPrec(newAssetValue.BigInt(), int64(operatortypes.USDValueDefaultDecimal))
+			newAssetUSDValue := CalculateShare(state.CanUndelegationAmount, priceChange.NewPrice, assetDecimal, priceChange.Decimal)
 			key := string(types.GetJoinedStoreKey(avsAddr, restakerId, operatorAddr))
-			if value, ok := stakerOperatorNewShare[key]; ok {
-				stakerOperatorNewShare[key] = value.Add(newAssetUSDValue)
-			} else {
-				stakerOperatorNewShare[key] = newAssetUSDValue
-			}
+			AddShareInMap(stakerOperatorNewShare, key, newAssetUSDValue)
 		}
 		return nil
 	}
-	err = k.delegationKeeper.IteratorDelegationState(ctx, stakerShareHandleFunc)
+	err = k.delegationKeeper.IterateDelegationState(ctx, stakerShareHandleFunc)
 	if err != nil {
 		panic(err)
 	}
@@ -92,14 +76,9 @@ func (k *Keeper) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.Valida
 		priceChange := priceChangeAssets[assetId]
 		assetDecimal := assetsDecimal[assetId]
 		if avsAddr, ok := assetsOperator[assetId][operatorAddr]; ok {
-			newAssetValue := state.OperatorOwnAmountOrWantChangeValue.Mul(priceChange.NewPrice).Mul(sdkmath.NewIntWithDecimal(1, int(operatortypes.USDValueDefaultDecimal))).Quo(sdkmath.NewIntWithDecimal(1, int(assetDecimal)+int(priceChange.Decimal)))
-			newAssetUSDValue := sdkmath.LegacyNewDecFromBigIntWithPrec(newAssetValue.BigInt(), int64(operatortypes.USDValueDefaultDecimal))
+			newAssetUSDValue := CalculateShare(state.OperatorOwnAmountOrWantChangeValue, priceChange.NewPrice, assetDecimal, priceChange.Decimal)
 			key := string(types.GetJoinedStoreKey(avsAddr, "", operatorAddr))
-			if value, ok := stakerOperatorNewShare[key]; ok {
-				stakerOperatorNewShare[key] = value.Add(newAssetUSDValue)
-			} else {
-				stakerOperatorNewShare[key] = newAssetUSDValue
-			}
+			AddShareInMap(stakerOperatorNewShare, key, newAssetUSDValue)
 		}
 		return nil
 	}

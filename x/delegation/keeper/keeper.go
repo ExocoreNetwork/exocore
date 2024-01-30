@@ -21,10 +21,10 @@ type Keeper struct {
 	cdc      codec.BinaryCodec
 
 	//other keepers
-	restakingStateKeeper    keeper.Keeper
-	depositKeeper           depositkeeper.Keeper
-	slashKeeper             delegationtype.ISlashKeeper
-	expectOperatorInterface delegationtype.ExpectOperatorInterface
+	restakingStateKeeper      keeper.Keeper
+	depositKeeper             depositkeeper.Keeper
+	slashKeeper               delegationtype.ISlashKeeper
+	expectedOperatorInterface delegationtype.ExpectedOperatorInterface
 }
 
 func NewKeeper(
@@ -33,15 +33,15 @@ func NewKeeper(
 	restakingStateKeeper keeper.Keeper,
 	depositKeeper depositkeeper.Keeper,
 	slashKeeper delegationtype.ISlashKeeper,
-	operatorKeeper delegationtype.ExpectOperatorInterface,
+	operatorKeeper delegationtype.ExpectedOperatorInterface,
 ) Keeper {
 	return Keeper{
-		storeKey:                storeKey,
-		cdc:                     cdc,
-		restakingStateKeeper:    restakingStateKeeper,
-		depositKeeper:           depositKeeper,
-		slashKeeper:             slashKeeper,
-		expectOperatorInterface: operatorKeeper,
+		storeKey:                  storeKey,
+		cdc:                       cdc,
+		restakingStateKeeper:      restakingStateKeeper,
+		depositKeeper:             depositKeeper,
+		slashKeeper:               slashKeeper,
+		expectedOperatorInterface: operatorKeeper,
 	}
 }
 

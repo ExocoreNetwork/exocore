@@ -111,7 +111,7 @@ type DelegationOrUndelegationParams struct {
 // DelegateTo : It doesn't need to check the active status of the operator in middlewares when delegating assets to the operator. This is because it adds assets to the operator's amount. But it needs to check if operator has been slashed or frozen.
 func (k Keeper) DelegateTo(ctx sdk.Context, params *DelegationOrUndelegationParams) error {
 	// check if the delegatedTo address is an operator
-	if !k.expectOperatorInterface.IsOperator(ctx, params.OperatorAddress) {
+	if !k.expectedOperatorInterface.IsOperator(ctx, params.OperatorAddress) {
 		return errorsmod.Wrap(delegationtype.ErrOperatorNotExist, fmt.Sprintf("input opreatorAddr is:%s", params.OperatorAddress))
 	}
 
@@ -167,7 +167,7 @@ func (k Keeper) DelegateTo(ctx sdk.Context, params *DelegationOrUndelegationPara
 		return err
 	}
 	// call operator module to bond the increased assets to the opted-in AVS
-	err = k.expectOperatorInterface.UpdateOptedInAssetsState(ctx, stakerId, assetId, params.OperatorAddress.String(), params.OpAmount)
+	err = k.expectedOperatorInterface.UpdateOptedInAssetsState(ctx, stakerId, assetId, params.OperatorAddress.String(), params.OpAmount)
 	if err != nil {
 		return err
 	}
@@ -179,7 +179,7 @@ func (k Keeper) DelegateTo(ctx sdk.Context, params *DelegationOrUndelegationPara
 // So we use two steps to handle the undelegation. Fist,record the undelegation request and the corresponding exit time which needs to be obtained from the operator opt-in module. Then,we handle the record when the exit time has expired.
 func (k Keeper) UndelegateFrom(ctx sdk.Context, params *DelegationOrUndelegationParams) error {
 	// check if the UndelegatedFrom address is an operator
-	if !k.expectOperatorInterface.IsOperator(ctx, params.OperatorAddress) {
+	if !k.expectedOperatorInterface.IsOperator(ctx, params.OperatorAddress) {
 		return delegationtype.ErrOperatorNotExist
 	}
 	if params.OpAmount.IsNegative() {
@@ -207,7 +207,7 @@ func (k Keeper) UndelegateFrom(ctx sdk.Context, params *DelegationOrUndelegation
 		Amount:                params.OpAmount,
 		ActualCompletedAmount: sdkmath.NewInt(0),
 	}
-	r.CompleteBlockNumber = k.expectOperatorInterface.GetUnBondingExpirationBlockNumber(ctx, params.OperatorAddress, r.BlockNumber)
+	r.CompleteBlockNumber = k.expectedOperatorInterface.GetUnBondingExpirationBlockNumber(ctx, params.OperatorAddress, r.BlockNumber)
 	err = k.SetUndelegationRecords(ctx, []*delegationtype.UndelegationRecord{r})
 	if err != nil {
 		return err
@@ -218,7 +218,7 @@ func (k Keeper) UndelegateFrom(ctx sdk.Context, params *DelegationOrUndelegation
 	delegatorAndAmount[params.OperatorAddress.String()] = &delegationtype.DelegationAmounts{
 		CanUndelegationAmount:         params.OpAmount.Neg(),
 		WaitUndelegationAmount:        params.OpAmount,
-		CanUndelegateAmountAfterSlash: params.OpAmount,
+		UndelegatableAmountAfterSlash: params.OpAmount,
 	}
 	err = k.UpdateDelegationState(ctx, stakerId, assetId, delegatorAndAmount)
 	if err != nil {
@@ -245,7 +245,7 @@ func (k Keeper) UndelegateFrom(ctx sdk.Context, params *DelegationOrUndelegation
 	}
 
 	// call operator module to decrease the state of opted-in assets
-	err = k.expectOperatorInterface.UpdateOptedInAssetsState(ctx, stakerId, assetId, params.OperatorAddress.String(), params.OpAmount.Neg())
+	err = k.expectedOperatorInterface.UpdateOptedInAssetsState(ctx, stakerId, assetId, params.OperatorAddress.String(), params.OpAmount.Neg())
 	if err != nil {
 		return err
 	}

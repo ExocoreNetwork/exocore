@@ -75,7 +75,7 @@ func (k Keeper) UpdateDelegationState(ctx sdk.Context, stakerId string, assetId 
 		delegationState := delegationtype.DelegationAmounts{
 			CanUndelegationAmount:         sdkmath.NewInt(0),
 			WaitUndelegationAmount:        sdkmath.NewInt(0),
-			CanUndelegateAmountAfterSlash: sdkmath.NewInt(0),
+			UndelegatableAmountAfterSlash: sdkmath.NewInt(0),
 		}
 
 		if store.Has(singleStateKey) {
@@ -93,7 +93,7 @@ func (k Keeper) UpdateDelegationState(ctx sdk.Context, stakerId string, assetId 
 			return errorsmod.Wrap(err, "UpdateDelegationState WaitUndelegationAmount error")
 		}
 
-		err = stakingtypes.UpdateAssetValue(&delegationState.CanUndelegateAmountAfterSlash, &amounts.CanUndelegateAmountAfterSlash)
+		err = stakingtypes.UpdateAssetValue(&delegationState.UndelegatableAmountAfterSlash, &amounts.UndelegatableAmountAfterSlash)
 		if err != nil {
 			return errorsmod.Wrap(err, "UpdateDelegationState CanUsedToUndelegateAmount error")
 		}
@@ -147,8 +147,8 @@ func (k Keeper) GetDelegationInfo(ctx sdk.Context, stakerId, assetId string) (*d
 	return &ret, nil
 }
 
-// GetDelegationStateByOperatorAndAssetList get the specified assets state delegated to the specified operator
-func (k Keeper) GetDelegationStateByOperatorAndAssetList(ctx sdk.Context, operatorAddr string, assetsFilter map[string]interface{}) (map[string]map[string]delegationtype.DelegationAmounts, error) {
+// GetDelegationStateByOperatorAndAssets get the specified assets state delegated to the specified operator
+func (k Keeper) GetDelegationStateByOperatorAndAssets(ctx sdk.Context, operatorAddr string, assetsFilter map[string]interface{}) (map[string]map[string]delegationtype.DelegationAmounts, error) {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), delegationtype.KeyPrefixRestakerDelegationInfo)
 	iterator := sdk.KVStorePrefixIterator(store, nil)
 	defer iterator.Close()
@@ -180,7 +180,7 @@ func (k Keeper) GetDelegationStateByOperatorAndAssetList(ctx sdk.Context, operat
 	return ret, nil
 }
 
-func (k Keeper) IteratorDelegationState(ctx sdk.Context, f func(restakerId, assetId, operatorAddr string, state *delegationtype.DelegationAmounts) error) error {
+func (k Keeper) IterateDelegationState(ctx sdk.Context, f func(restakerId, assetId, operatorAddr string, state *delegationtype.DelegationAmounts) error) error {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), delegationtype.KeyPrefixRestakerDelegationInfo)
 	iterator := sdk.KVStorePrefixIterator(store, nil)
 	defer iterator.Close()

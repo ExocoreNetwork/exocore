@@ -16,7 +16,7 @@ func (suite *KeeperTestSuite) TestOperatorInfo() {
 	err := suite.app.OperatorKeeper.SetOperatorInfo(suite.ctx, suite.accAddress.String(), info)
 	suite.NoError(err)
 
-	getOperatorInfo, err := suite.app.OperatorKeeper.GetOperatorInfo(suite.ctx, suite.accAddress.String())
+	getOperatorInfo, err := suite.app.OperatorKeeper.GetOperatorInfo(suite.ctx, &operatortype.GetOperatorInfoReq{OperatorAddr: suite.accAddress.String()})
 	suite.NoError(err)
 	suite.Equal(*info, *getOperatorInfo)
 }

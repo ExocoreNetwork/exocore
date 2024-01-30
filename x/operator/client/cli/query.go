@@ -21,15 +21,15 @@ func GetQueryCmd() *cobra.Command {
 	}
 
 	cmd.AddCommand(
-		QueryOperatorInfo(),
+		GetOperatorInfo(),
 	)
 	return cmd
 }
 
-// QueryOperatorInfo queries operator info
-func QueryOperatorInfo() *cobra.Command {
+// GetOperatorInfo queries operator info
+func GetOperatorInfo() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "QueryOperatorInfo operatorAddr",
+		Use:   "GetOperatorInfo operatorAddr",
 		Short: "Get operator info",
 		Long:  "Get operator info",
 		Args:  cobra.ExactArgs(1),
@@ -40,10 +40,10 @@ func QueryOperatorInfo() *cobra.Command {
 			}
 
 			queryClient := operatortypes.NewQueryClient(clientCtx)
-			req := &operatortypes.QueryOperatorInfoReq{
+			req := &operatortypes.GetOperatorInfoReq{
 				OperatorAddr: args[0],
 			}
-			res, err := queryClient.QueryOperatorInfo(context.Background(), req)
+			res, err := queryClient.GetOperatorInfo(context.Background(), req)
 			if err != nil {
 				return err
 			}

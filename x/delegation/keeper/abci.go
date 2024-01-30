@@ -24,7 +24,7 @@ func (k Keeper) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.Validat
 		//todo: don't think about freezing the operator in current implementation
 		/*		if k.slashKeeper.IsOperatorFrozen(ctx, operatorAccAddress) {
 				// reSet the completed height if the operator is frozen
-				record.CompleteBlockNumber = k.expectOperatorInterface.GetUnBondingExpirationBlockNumber(ctx, operatorAccAddress, record.BlockNumber)
+				record.CompleteBlockNumber = k.expectedOperatorInterface.GetUnBondingExpirationBlockNumber(ctx, operatorAccAddress, record.BlockNumber)
 				if record.CompleteBlockNumber <= uint64(ctx.BlockHeight()) {
 					panic(fmt.Sprintf("the reset completedHeight isn't in future,setHeight:%v,curHeight:%v", record.CompleteBlockNumber, ctx.BlockHeight()))
 				}
@@ -40,8 +40,8 @@ func (k Keeper) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.Validat
 		if err != nil {
 			panic(err)
 		}
-		if record.Amount.GT(delegationInfo.CanUndelegateAmountAfterSlash) {
-			record.ActualCompletedAmount = delegationInfo.CanUndelegateAmountAfterSlash
+		if record.Amount.GT(delegationInfo.UndelegatableAmountAfterSlash) {
+			record.ActualCompletedAmount = delegationInfo.UndelegatableAmountAfterSlash
 		} else {
 			record.ActualCompletedAmount = record.Amount
 		}
@@ -51,7 +51,7 @@ func (k Keeper) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.Validat
 		delegatorAndAmount := make(map[string]*delegationtype.DelegationAmounts)
 		delegatorAndAmount[record.OperatorAddr] = &delegationtype.DelegationAmounts{
 			WaitUndelegationAmount:        recordAmountNeg,
-			CanUndelegateAmountAfterSlash: record.ActualCompletedAmount.Neg(),
+			UndelegatableAmountAfterSlash: record.ActualCompletedAmount.Neg(),
 		}
 		err = k.UpdateDelegationState(ctx, record.StakerId, record.AssetId, delegatorAndAmount)
 		if err != nil {

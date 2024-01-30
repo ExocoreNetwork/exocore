@@ -258,7 +258,7 @@ var (
 		recovery.AppModuleBasic{},
 		revenue.AppModuleBasic{},
 		consensus.AppModuleBasic{},
-		// exoCore modules
+		// Exocore modules
 		restaking_assets_manage.AppModuleBasic{},
 		deposit.AppModuleBasic{},
 		operator.AppModuleBasic{},

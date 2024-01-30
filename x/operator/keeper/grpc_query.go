@@ -9,7 +9,7 @@ import (
 
 var _ operatortypes.QueryServer = &Keeper{}
 
-func (k *Keeper) QueryOperatorInfo(ctx context.Context, req *operatortypes.QueryOperatorInfoReq) (*operatortypes.OperatorInfo, error) {
+func (k *Keeper) GetOperatorInfo(ctx context.Context, req *operatortypes.GetOperatorInfoReq) (*operatortypes.OperatorInfo, error) {
 	c := sdk.UnwrapSDKContext(ctx)
-	return k.GetOperatorInfo(c, req.OperatorAddr)
+	return k.OperatorInfo(c, req.OperatorAddr)
 }

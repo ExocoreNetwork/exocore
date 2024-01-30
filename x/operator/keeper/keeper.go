@@ -49,8 +49,8 @@ func (k *Keeper) GetUnBondingExpirationBlockNumber(ctx sdk.Context, OperatorAddr
 	return startHeight + operatortypes.UnBondingExpiration
 }
 
-// IOperator interface will be implemented by deposit keeper
-type IOperator interface {
+// OperatorKeeper interface will be implemented by deposit keeper
+type OperatorKeeper interface {
 	// RegisterOperator handle the registerOperator txs from msg service
 	RegisterOperator(ctx context.Context, req *operatortypes.RegisterOperatorReq) (*operatortypes.RegisterOperatorResponse, error)
 

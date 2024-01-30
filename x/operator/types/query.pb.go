@@ -31,22 +31,22 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
-type QueryOperatorInfoReq struct {
+type GetOperatorInfoReq struct {
 	OperatorAddr string `protobuf:"bytes,1,opt,name=OperatorAddr,proto3" json:"OperatorAddr,omitempty"`
 }
 
-func (m *QueryOperatorInfoReq) Reset()         { *m = QueryOperatorInfoReq{} }
-func (m *QueryOperatorInfoReq) String() string { return proto.CompactTextString(m) }
-func (*QueryOperatorInfoReq) ProtoMessage()    {}
-func (*QueryOperatorInfoReq) Descriptor() ([]byte, []int) {
+func (m *GetOperatorInfoReq) Reset()         { *m = GetOperatorInfoReq{} }
+func (m *GetOperatorInfoReq) String() string { return proto.CompactTextString(m) }
+func (*GetOperatorInfoReq) ProtoMessage()    {}
+func (*GetOperatorInfoReq) Descriptor() ([]byte, []int) {
 	return fileDescriptor_f91e795a3cecbdbf, []int{0}
 }
-func (m *QueryOperatorInfoReq) XXX_Unmarshal(b []byte) error {
+func (m *GetOperatorInfoReq) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *QueryOperatorInfoReq) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *GetOperatorInfoReq) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_QueryOperatorInfoReq.Marshal(b, m, deterministic)
+		return xxx_messageInfo_GetOperatorInfoReq.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -56,19 +56,19 @@ func (m *QueryOperatorInfoReq) XXX_Marshal(b []byte, deterministic bool) ([]byte
 		return b[:n], nil
 	}
 }
-func (m *QueryOperatorInfoReq) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_QueryOperatorInfoReq.Merge(m, src)
+func (m *GetOperatorInfoReq) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GetOperatorInfoReq.Merge(m, src)
 }
-func (m *QueryOperatorInfoReq) XXX_Size() int {
+func (m *GetOperatorInfoReq) XXX_Size() int {
 	return m.Size()
 }
-func (m *QueryOperatorInfoReq) XXX_DiscardUnknown() {
-	xxx_messageInfo_QueryOperatorInfoReq.DiscardUnknown(m)
+func (m *GetOperatorInfoReq) XXX_DiscardUnknown() {
+	xxx_messageInfo_GetOperatorInfoReq.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_QueryOperatorInfoReq proto.InternalMessageInfo
+var xxx_messageInfo_GetOperatorInfoReq proto.InternalMessageInfo
 
-func (m *QueryOperatorInfoReq) GetOperatorAddr() string {
+func (m *GetOperatorInfoReq) GetOperatorAddr() string {
 	if m != nil {
 		return m.OperatorAddr
 	}
@@ -76,13 +76,13 @@ func (m *QueryOperatorInfoReq) GetOperatorAddr() string {
 }
 
 func init() {
-	proto.RegisterType((*QueryOperatorInfoReq)(nil), "exocore.operator.v1.QueryOperatorInfoReq")
+	proto.RegisterType((*GetOperatorInfoReq)(nil), "exocore.operator.v1.GetOperatorInfoReq")
 }
 
 func init() { proto.RegisterFile("exocore/operator/v1/query.proto", fileDescriptor_f91e795a3cecbdbf) }
 
 var fileDescriptor_f91e795a3cecbdbf = []byte{
-	// 303 bytes of a gzipped FileDescriptorProto
+	// 301 bytes of a gzipped FileDescriptorProto
 	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xe2, 0x92, 0x4f, 0xad, 0xc8, 0x4f,
 	0xce, 0x2f, 0x4a, 0xd5, 0xcf, 0x2f, 0x48, 0x2d, 0x4a, 0x2c, 0xc9, 0x2f, 0xd2, 0x2f, 0x33, 0xd4,
 	0x2f, 0x2c, 0x4d, 0x2d, 0xaa, 0xd4, 0x2b, 0x28, 0xca, 0x2f, 0xc9, 0x17, 0x12, 0x86, 0x2a, 0xd0,
@@ -90,18 +90,18 @@ var fileDescriptor_f91e795a3cecbdbf = []byte{
 	0x10, 0xa5, 0x52, 0x32, 0xe9, 0xf9, 0xf9, 0xe9, 0x39, 0xa9, 0xfa, 0x89, 0x05, 0x99, 0xfa, 0x89,
 	0x79, 0x79, 0xf9, 0x25, 0x89, 0x25, 0x99, 0xf9, 0x79, 0xc5, 0x50, 0x59, 0xe9, 0xe4, 0xfc, 0xe2,
 	0xdc, 0xfc, 0x62, 0x88, 0xe1, 0x68, 0xb6, 0x48, 0x49, 0x42, 0x24, 0xe3, 0x21, 0x66, 0x42, 0x38,
-	0x30, 0x53, 0xb1, 0xb9, 0xb0, 0xa4, 0x02, 0x22, 0xab, 0x14, 0xc2, 0x25, 0x12, 0x08, 0x32, 0xc7,
-	0x1f, 0x2a, 0xe9, 0x99, 0x97, 0x96, 0x1f, 0x94, 0x5a, 0x28, 0x64, 0xc3, 0xc5, 0x03, 0x13, 0x72,
-	0x4c, 0x49, 0x29, 0x92, 0x60, 0x54, 0x60, 0xd4, 0xe0, 0x74, 0x92, 0xb8, 0xb4, 0x45, 0x57, 0x04,
-	0x6a, 0x3a, 0x48, 0x38, 0xb5, 0xb8, 0x38, 0xb8, 0xa4, 0x28, 0x33, 0x2f, 0x3d, 0x08, 0x45, 0xb5,
-	0xd1, 0x6c, 0x46, 0x2e, 0x56, 0xb0, 0xb1, 0x42, 0x13, 0x19, 0xb9, 0x04, 0x31, 0x2c, 0x10, 0xd2,
-	0xd4, 0xc3, 0x12, 0x2a, 0x7a, 0xd8, 0x1c, 0x22, 0xa5, 0x88, 0x55, 0x29, 0xb2, 0x2a, 0x25, 0xbd,
-	0xa6, 0xcb, 0x4f, 0x26, 0x33, 0x69, 0x08, 0xa9, 0xe9, 0xc3, 0xbc, 0x9a, 0x92, 0x9a, 0x93, 0x9a,
-	0x0e, 0x0e, 0x3d, 0x90, 0x67, 0xdd, 0x53, 0x4b, 0x90, 0xd5, 0x3b, 0xd9, 0x9e, 0x78, 0x24, 0xc7,
-	0x78, 0xe1, 0x91, 0x1c, 0xe3, 0x83, 0x47, 0x72, 0x8c, 0x13, 0x1e, 0xcb, 0x31, 0x5c, 0x78, 0x2c,
-	0xc7, 0x70, 0xe3, 0xb1, 0x1c, 0x43, 0x94, 0x72, 0x7a, 0x66, 0x49, 0x46, 0x69, 0x92, 0x5e, 0x72,
-	0x7e, 0x2e, 0xdc, 0xac, 0x0a, 0x44, 0xc0, 0x95, 0x54, 0x16, 0xa4, 0x16, 0x27, 0xb1, 0x81, 0x43,
-	0xce, 0x18, 0x10, 0x00, 0x00, 0xff, 0xff, 0x25, 0x9c, 0x4f, 0x91, 0xfb, 0x01, 0x00, 0x00,
+	0x30, 0x53, 0xb1, 0xb9, 0xb0, 0xa4, 0x02, 0x22, 0xab, 0x14, 0xc4, 0x25, 0xe4, 0x9e, 0x5a, 0xe2,
+	0x0f, 0x95, 0xf2, 0xcc, 0x4b, 0xcb, 0x0f, 0x4a, 0x2d, 0x14, 0xb2, 0xe1, 0xe2, 0x81, 0x09, 0x39,
+	0xa6, 0xa4, 0x14, 0x49, 0x30, 0x2a, 0x30, 0x6a, 0x70, 0x3a, 0x49, 0x5c, 0xda, 0xa2, 0x2b, 0x02,
+	0x35, 0x1b, 0x24, 0x9c, 0x5a, 0x5c, 0x1c, 0x5c, 0x52, 0x94, 0x99, 0x97, 0x1e, 0x84, 0xa2, 0xda,
+	0x68, 0x3a, 0x23, 0x17, 0x6b, 0x20, 0xc8, 0x71, 0x42, 0xbd, 0x8c, 0x5c, 0xfc, 0x68, 0xc6, 0x0b,
+	0xa9, 0xeb, 0x61, 0x09, 0x11, 0x3d, 0x4c, 0x47, 0x48, 0x29, 0x62, 0x55, 0x88, 0xac, 0x4a, 0x49,
+	0xaf, 0xe9, 0xf2, 0x93, 0xc9, 0x4c, 0x1a, 0x42, 0x6a, 0xfa, 0x30, 0x4f, 0xa6, 0xa4, 0xe6, 0xa4,
+	0xa6, 0x83, 0xc3, 0x0d, 0xe4, 0x4d, 0x34, 0x53, 0x9d, 0x6c, 0x4f, 0x3c, 0x92, 0x63, 0xbc, 0xf0,
+	0x48, 0x8e, 0xf1, 0xc1, 0x23, 0x39, 0xc6, 0x09, 0x8f, 0xe5, 0x18, 0x2e, 0x3c, 0x96, 0x63, 0xb8,
+	0xf1, 0x58, 0x8e, 0x21, 0x4a, 0x39, 0x3d, 0xb3, 0x24, 0xa3, 0x34, 0x49, 0x2f, 0x39, 0x3f, 0x17,
+	0x6e, 0x56, 0x05, 0x22, 0xc8, 0x4a, 0x2a, 0x0b, 0x52, 0x8b, 0x93, 0xd8, 0xc0, 0x61, 0x66, 0x0c,
+	0x08, 0x00, 0x00, 0xff, 0xff, 0x59, 0x84, 0xe9, 0xcc, 0xf5, 0x01, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -116,7 +116,7 @@ const _ = grpc.SupportPackageIsVersion4
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
 type QueryClient interface {
-	QueryOperatorInfo(ctx context.Context, in *QueryOperatorInfoReq, opts ...grpc.CallOption) (*OperatorInfo, error)
+	GetOperatorInfo(ctx context.Context, in *GetOperatorInfoReq, opts ...grpc.CallOption) (*OperatorInfo, error)
 }
 
 type queryClient struct {
@@ -127,9 +127,9 @@ func NewQueryClient(cc grpc1.ClientConn) QueryClient {
 	return &queryClient{cc}
 }
 
-func (c *queryClient) QueryOperatorInfo(ctx context.Context, in *QueryOperatorInfoReq, opts ...grpc.CallOption) (*OperatorInfo, error) {
+func (c *queryClient) GetOperatorInfo(ctx context.Context, in *GetOperatorInfoReq, opts ...grpc.CallOption) (*OperatorInfo, error) {
 	out := new(OperatorInfo)
-	err := c.cc.Invoke(ctx, "/exocore.operator.v1.Query/QueryOperatorInfo", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/exocore.operator.v1.Query/GetOperatorInfo", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -138,35 +138,35 @@ func (c *queryClient) QueryOperatorInfo(ctx context.Context, in *QueryOperatorIn
 
 // QueryServer is the server API for Query service.
 type QueryServer interface {
-	QueryOperatorInfo(context.Context, *QueryOperatorInfoReq) (*OperatorInfo, error)
+	GetOperatorInfo(context.Context, *GetOperatorInfoReq) (*OperatorInfo, error)
 }
 
 // UnimplementedQueryServer can be embedded to have forward compatible implementations.
 type UnimplementedQueryServer struct {
 }
 
-func (*UnimplementedQueryServer) QueryOperatorInfo(ctx context.Context, req *QueryOperatorInfoReq) (*OperatorInfo, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method QueryOperatorInfo not implemented")
+func (*UnimplementedQueryServer) GetOperatorInfo(ctx context.Context, req *GetOperatorInfoReq) (*OperatorInfo, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetOperatorInfo not implemented")
 }
 
 func RegisterQueryServer(s grpc1.Server, srv QueryServer) {
 	s.RegisterService(&_Query_serviceDesc, srv)
 }
 
-func _Query_QueryOperatorInfo_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(QueryOperatorInfoReq)
+func _Query_GetOperatorInfo_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetOperatorInfoReq)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(QueryServer).QueryOperatorInfo(ctx, in)
+		return srv.(QueryServer).GetOperatorInfo(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/exocore.operator.v1.Query/QueryOperatorInfo",
+		FullMethod: "/exocore.operator.v1.Query/GetOperatorInfo",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(QueryServer).QueryOperatorInfo(ctx, req.(*QueryOperatorInfoReq))
+		return srv.(QueryServer).GetOperatorInfo(ctx, req.(*GetOperatorInfoReq))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -176,15 +176,15 @@ var _Query_serviceDesc = grpc.ServiceDesc{
 	HandlerType: (*QueryServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "QueryOperatorInfo",
-			Handler:    _Query_QueryOperatorInfo_Handler,
+			MethodName: "GetOperatorInfo",
+			Handler:    _Query_GetOperatorInfo_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
 	Metadata: "exocore/operator/v1/query.proto",
 }
 
-func (m *QueryOperatorInfoReq) Marshal() (dAtA []byte, err error) {
+func (m *GetOperatorInfoReq) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -194,12 +194,12 @@ func (m *QueryOperatorInfoReq) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *QueryOperatorInfoReq) MarshalTo(dAtA []byte) (int, error) {
+func (m *GetOperatorInfoReq) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *QueryOperatorInfoReq) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *GetOperatorInfoReq) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
@@ -225,7 +225,7 @@ func encodeVarintQuery(dAtA []byte, offset int, v uint64) int {
 	dAtA[offset] = uint8(v)
 	return base
 }
-func (m *QueryOperatorInfoReq) Size() (n int) {
+func (m *GetOperatorInfoReq) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -244,7 +244,7 @@ func sovQuery(x uint64) (n int) {
 func sozQuery(x uint64) (n int) {
 	return sovQuery(uint64((x << 1) ^ uint64((int64(x) >> 63))))
 }
-func (m *QueryOperatorInfoReq) Unmarshal(dAtA []byte) error {
+func (m *GetOperatorInfoReq) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -267,10 +267,10 @@ func (m *QueryOperatorInfoReq) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: QueryOperatorInfoReq: wiretype end group for non-group")
+			return fmt.Errorf("proto: GetOperatorInfoReq: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: QueryOperatorInfoReq: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: GetOperatorInfoReq: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:

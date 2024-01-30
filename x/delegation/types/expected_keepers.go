@@ -23,7 +23,7 @@ func (VirtualISlashKeeper) OperatorAssetSlashedProportion(ctx sdk.Context, opAdd
 	return sdkmath.LegacyNewDec(0)
 }
 
-type ExpectOperatorInterface interface {
+type ExpectedOperatorInterface interface {
 	IsOperator(ctx sdk.Context, addr sdk.AccAddress) bool
 	GetUnBondingExpirationBlockNumber(ctx sdk.Context, OperatorAddress sdk.AccAddress, startHeight uint64) uint64
 

@@ -28,7 +28,7 @@ func (k *Keeper) SetOperatorInfo(ctx sdk.Context, addr string, info *operatortyp
 	return nil
 }
 
-func (k *Keeper) GetOperatorInfo(ctx sdk.Context, addr string) (info *operatortypes.OperatorInfo, err error) {
+func (k *Keeper) OperatorInfo(ctx sdk.Context, addr string) (info *operatortypes.OperatorInfo, err error) {
 	opAccAddr, err := sdk.AccAddressFromBech32(addr)
 	if err != nil {
 		return nil, errorsmod.Wrap(err, "GetOperatorInfo: error occurred when parse acc address from Bech32")
