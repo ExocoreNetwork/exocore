@@ -30,13 +30,14 @@ func (k Keeper) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.Validat
 		}
 		//UpdateOperatorAVSAssetsState
 		f := func(assetId string, keys []string, state *operatortypes.AssetOptedInState) error {
-			newAssetValue := state.Amount.Mul(priceChange.NewPrice).Mul(sdkmath.NewIntWithDecimal(1, int(operatortypes.UsdValueDefaultDecimal))).Quo(sdkmath.NewIntWithDecimal(1, int(assetInfo.AssetBasicInfo.Decimals)+int(priceChange.Decimal)))
-			newAssetUsdValue := sdkmath.LegacyNewDecFromBigIntWithPrec(newAssetValue.BigInt(), int64(operatortypes.UsdValueDefaultDecimal))
-			changeValue := newAssetUsdValue.Sub(state.Value)
-			state.Value = newAssetUsdValue
+			newAssetValue := state.Amount.Mul(priceChange.NewPrice).Mul(sdkmath.NewIntWithDecimal(1, int(operatortypes.USDValueDefaultDecimal))).Quo(sdkmath.NewIntWithDecimal(1, int(assetInfo.AssetBasicInfo.Decimals)+int(priceChange.Decimal)))
+			newAssetUSDValue := sdkmath.LegacyNewDecFromBigIntWithPrec(newAssetValue.BigInt(), int64(operatortypes.USDValueDefaultDecimal))
+			changeValue := newAssetUSDValue.Sub(state.Value)
+			state.Value = newAssetUSDValue
 
 			avsAddr := keys[1]
 			avsOperator := string(types.GetJoinedStoreKey(keys[1], keys[2]))
+			avsOperatorShareChange[avsAddr] = avsOperatorShareChange[avsAddr].Add(changeValue)
 			if value, ok := avsOperatorShareChange[avsAddr]; ok {
 				avsOperatorShareChange[avsAddr] = value.Add(changeValue)
 			} else {
@@ -68,13 +69,13 @@ func (k Keeper) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.Validat
 		priceChange := priceChangeAssets[assetId]
 		assetDecimal := assetsDecimal[assetId]
 		if avsAddr, ok := assetsOperator[assetId][operatorAddr]; ok {
-			newAssetValue := state.CanUndelegationAmount.Mul(priceChange.NewPrice).Mul(sdkmath.NewIntWithDecimal(1, int(operatortypes.UsdValueDefaultDecimal))).Quo(sdkmath.NewIntWithDecimal(1, int(assetDecimal)+int(priceChange.Decimal)))
-			newAssetUsdValue := sdkmath.LegacyNewDecFromBigIntWithPrec(newAssetValue.BigInt(), int64(operatortypes.UsdValueDefaultDecimal))
+			newAssetValue := state.CanUndelegationAmount.Mul(priceChange.NewPrice).Mul(sdkmath.NewIntWithDecimal(1, int(operatortypes.USDValueDefaultDecimal))).Quo(sdkmath.NewIntWithDecimal(1, int(assetDecimal)+int(priceChange.Decimal)))
+			newAssetUSDValue := sdkmath.LegacyNewDecFromBigIntWithPrec(newAssetValue.BigInt(), int64(operatortypes.USDValueDefaultDecimal))
 			key := string(types.GetJoinedStoreKey(avsAddr, restakerId, operatorAddr))
 			if value, ok := stakerOperatorNewShare[key]; ok {
-				stakerOperatorNewShare[key] = value.Add(newAssetUsdValue)
+				stakerOperatorNewShare[key] = value.Add(newAssetUSDValue)
 			} else {
-				stakerOperatorNewShare[key] = newAssetUsdValue
+				stakerOperatorNewShare[key] = newAssetUSDValue
 			}
 		}
 		return nil
@@ -88,13 +89,13 @@ func (k Keeper) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.Validat
 		priceChange := priceChangeAssets[assetId]
 		assetDecimal := assetsDecimal[assetId]
 		if avsAddr, ok := assetsOperator[assetId][operatorAddr]; ok {
-			newAssetValue := state.OperatorOwnAmountOrWantChangeValue.Mul(priceChange.NewPrice).Mul(sdkmath.NewIntWithDecimal(1, int(operatortypes.UsdValueDefaultDecimal))).Quo(sdkmath.NewIntWithDecimal(1, int(assetDecimal)+int(priceChange.Decimal)))
-			newAssetUsdValue := sdkmath.LegacyNewDecFromBigIntWithPrec(newAssetValue.BigInt(), int64(operatortypes.UsdValueDefaultDecimal))
+			newAssetValue := state.OperatorOwnAmountOrWantChangeValue.Mul(priceChange.NewPrice).Mul(sdkmath.NewIntWithDecimal(1, int(operatortypes.USDValueDefaultDecimal))).Quo(sdkmath.NewIntWithDecimal(1, int(assetDecimal)+int(priceChange.Decimal)))
+			newAssetUSDValue := sdkmath.LegacyNewDecFromBigIntWithPrec(newAssetValue.BigInt(), int64(operatortypes.USDValueDefaultDecimal))
 			key := string(types.GetJoinedStoreKey(avsAddr, "", operatorAddr))
 			if value, ok := stakerOperatorNewShare[key]; ok {
-				stakerOperatorNewShare[key] = value.Add(newAssetUsdValue)
+				stakerOperatorNewShare[key] = value.Add(newAssetUSDValue)
 			} else {
-				stakerOperatorNewShare[key] = newAssetUsdValue
+				stakerOperatorNewShare[key] = newAssetUSDValue
 			}
 		}
 		return nil

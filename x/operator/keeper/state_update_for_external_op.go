@@ -43,9 +43,9 @@ func (k Keeper) UpdateOptedInAssetsState(ctx sdk.Context, stakerId, assetId, ope
 		return err
 	}
 
-	//opUsdValue = (opAmount*price*10^UsdValueDefaultDecimal)/(10^(asset.decimal+priceDecimal))
-	value := opAmount.Mul(price).Mul(sdkmath.NewIntWithDecimal(1, int(types.UsdValueDefaultDecimal))).Quo(sdkmath.NewIntWithDecimal(1, int(assetInfo.AssetBasicInfo.Decimals)+int(decimal)))
-	opUsdValue := sdkmath.LegacyNewDecFromBigIntWithPrec(value.BigInt(), int64(types.UsdValueDefaultDecimal))
+	//opUSDValue = (opAmount*price*10^USDValueDefaultDecimal)/(10^(asset.decimal+priceDecimal))
+	value := opAmount.Mul(price).Mul(sdkmath.NewIntWithDecimal(1, int(types.USDValueDefaultDecimal))).Quo(sdkmath.NewIntWithDecimal(1, int(assetInfo.AssetBasicInfo.Decimals)+int(decimal)))
+	opUSDValue := sdkmath.LegacyNewDecFromBigIntWithPrec(value.BigInt(), int64(types.USDValueDefaultDecimal))
 
 	for _, avs := range avsList {
 		//get the assets supported by the AVS
@@ -56,7 +56,7 @@ func (k Keeper) UpdateOptedInAssetsState(ctx sdk.Context, stakerId, assetId, ope
 
 		if _, ok := avsSupportedAssets[assetId]; ok {
 			//UpdateAVSOperatorStakerShareValue
-			err = k.UpdateAVSOperatorStakerShareValue(ctx, avs, stakerId, operatorAddr, opUsdValue)
+			err = k.UpdateAVSOperatorStakerShareValue(ctx, avs, stakerId, operatorAddr, opUSDValue)
 			if err != nil {
 				return err
 			}
@@ -64,7 +64,7 @@ func (k Keeper) UpdateOptedInAssetsState(ctx sdk.Context, stakerId, assetId, ope
 			//UpdateOperatorAVSAssetsState
 			changeState := types.AssetOptedInState{
 				Amount: opAmount,
-				Value:  opUsdValue,
+				Value:  opUSDValue,
 			}
 			err = k.UpdateOperatorAVSAssetsState(ctx, assetId, avs, operatorAddr, changeState)
 			if err != nil {
@@ -72,13 +72,13 @@ func (k Keeper) UpdateOptedInAssetsState(ctx sdk.Context, stakerId, assetId, ope
 			}
 
 			//UpdateAVSOperatorTotalValue
-			err = k.UpdateAVSOperatorTotalValue(ctx, avs, operatorAddr, opUsdValue)
+			err = k.UpdateAVSOperatorTotalValue(ctx, avs, operatorAddr, opUSDValue)
 			if err != nil {
 				return err
 			}
 
 			//UpdateAVSTotalValue
-			err = k.UpdateAVSTotalValue(ctx, avs, opUsdValue)
+			err = k.UpdateAVSTotalValue(ctx, avs, opUSDValue)
 			if err != nil {
 				return err
 			}
@@ -105,8 +105,8 @@ func (k Keeper) OptIn(ctx sdk.Context, operatorAddress sdk.AccAddress, AVSAddr s
 		return err
 	}
 
-	totalAssetUsdValue := sdkmath.LegacyNewDec(0)
-	operatorOwnAssetUsdValue := sdkmath.LegacyNewDec(0)
+	totalAssetUSDValue := sdkmath.LegacyNewDec(0)
+	operatorOwnAssetUSDValue := sdkmath.LegacyNewDec(0)
 	assetFilter := make(map[string]interface{})
 	assetInfoRecord := make(map[string]*AssetPriceAndDecimal)
 
@@ -128,39 +128,39 @@ func (k Keeper) OptIn(ctx sdk.Context, operatorAddress sdk.AccAddress, AVSAddr s
 			Decimal:      assetInfo.AssetBasicInfo.Decimals,
 		}
 
-		//assetValue = (amount*price*10^UsdValueDefaultDecimal)/(10^(asset.decimal+priceDecimal))
-		assetValue := operatorAssetState.TotalAmountOrWantChangeValue.Mul(price).Mul(sdkmath.NewIntWithDecimal(1, int(types.UsdValueDefaultDecimal))).Quo(sdkmath.NewIntWithDecimal(1, int(assetInfo.AssetBasicInfo.Decimals)+int(decimal)))
-		assetUsdValue := sdkmath.LegacyNewDecFromBigIntWithPrec(assetValue.BigInt(), int64(types.UsdValueDefaultDecimal))
+		//assetValue = (amount*price*10^USDValueDefaultDecimal)/(10^(asset.decimal+priceDecimal))
+		assetValue := operatorAssetState.TotalAmountOrWantChangeValue.Mul(price).Mul(sdkmath.NewIntWithDecimal(1, int(types.USDValueDefaultDecimal))).Quo(sdkmath.NewIntWithDecimal(1, int(assetInfo.AssetBasicInfo.Decimals)+int(decimal)))
+		assetUSDValue := sdkmath.LegacyNewDecFromBigIntWithPrec(assetValue.BigInt(), int64(types.USDValueDefaultDecimal))
 
-		operatorOwnAssetValue := operatorAssetState.OperatorOwnAmountOrWantChangeValue.Mul(price).Mul(sdkmath.NewIntWithDecimal(1, int(types.UsdValueDefaultDecimal))).Quo(sdkmath.NewIntWithDecimal(1, int(assetInfo.AssetBasicInfo.Decimals)+int(decimal)))
-		operatorOwnAssetUsdValue = operatorOwnAssetUsdValue.Add(sdkmath.LegacyNewDecFromBigIntWithPrec(operatorOwnAssetValue.BigInt(), int64(types.UsdValueDefaultDecimal)))
+		operatorOwnAssetValue := operatorAssetState.OperatorOwnAmountOrWantChangeValue.Mul(price).Mul(sdkmath.NewIntWithDecimal(1, int(types.USDValueDefaultDecimal))).Quo(sdkmath.NewIntWithDecimal(1, int(assetInfo.AssetBasicInfo.Decimals)+int(decimal)))
+		operatorOwnAssetUSDValue = operatorOwnAssetUSDValue.Add(sdkmath.LegacyNewDecFromBigIntWithPrec(operatorOwnAssetValue.BigInt(), int64(types.USDValueDefaultDecimal)))
 
 		//UpdateOperatorAVSAssetsState
 		changeState := types.AssetOptedInState{
 			Amount: operatorAssetState.TotalAmountOrWantChangeValue,
-			Value:  assetUsdValue,
+			Value:  assetUSDValue,
 		}
 		err = k.UpdateOperatorAVSAssetsState(ctx, assetId, AVSAddr, operatorAddress.String(), changeState)
 		if err != nil {
 			return err
 		}
-		totalAssetUsdValue = totalAssetUsdValue.Add(assetUsdValue)
+		totalAssetUSDValue = totalAssetUSDValue.Add(assetUSDValue)
 		assetFilter[assetId] = nil
 	}
 
 	//update the share value of operator itself, the input stakerId should be empty
-	err = k.UpdateAVSOperatorStakerShareValue(ctx, AVSAddr, "", operatorAddress.String(), operatorOwnAssetUsdValue)
+	err = k.UpdateAVSOperatorStakerShareValue(ctx, AVSAddr, "", operatorAddress.String(), operatorOwnAssetUSDValue)
 	if err != nil {
 		return err
 	}
 
 	//UpdateAVSTotalValue
-	err = k.UpdateAVSTotalValue(ctx, AVSAddr, totalAssetUsdValue)
+	err = k.UpdateAVSTotalValue(ctx, AVSAddr, totalAssetUSDValue)
 	if err != nil {
 		return err
 	}
 	//UpdateAVSOperatorTotalValue
-	err = k.UpdateAVSOperatorTotalValue(ctx, AVSAddr, operatorAddress.String(), totalAssetUsdValue)
+	err = k.UpdateAVSOperatorTotalValue(ctx, AVSAddr, operatorAddress.String(), totalAssetUSDValue)
 	if err != nil {
 		return err
 	}
@@ -172,14 +172,14 @@ func (k Keeper) OptIn(ctx sdk.Context, operatorAddress sdk.AccAddress, AVSAddr s
 	}
 
 	for stakerId, assetState := range relatedAssetsState {
-		stakerAssetsUsdValue := sdkmath.LegacyNewDec(0)
+		stakerAssetsUSDValue := sdkmath.LegacyNewDec(0)
 		for assetId, amount := range assetState {
-			singleAssetValue := amount.CanUndelegationAmount.Mul(assetInfoRecord[assetId].Price).Mul(sdkmath.NewIntWithDecimal(1, int(types.UsdValueDefaultDecimal))).Quo(sdkmath.NewIntWithDecimal(1, int(assetInfoRecord[assetId].Decimal)+int(assetInfoRecord[assetId].PriceDecimal)))
-			singleAssetUsdValue := sdkmath.LegacyNewDecFromBigIntWithPrec(singleAssetValue.BigInt(), int64(types.UsdValueDefaultDecimal))
-			stakerAssetsUsdValue = stakerAssetsUsdValue.Add(singleAssetUsdValue)
+			singleAssetValue := amount.CanUndelegationAmount.Mul(assetInfoRecord[assetId].Price).Mul(sdkmath.NewIntWithDecimal(1, int(types.USDValueDefaultDecimal))).Quo(sdkmath.NewIntWithDecimal(1, int(assetInfoRecord[assetId].Decimal)+int(assetInfoRecord[assetId].PriceDecimal)))
+			singleAssetUSDValue := sdkmath.LegacyNewDecFromBigIntWithPrec(singleAssetValue.BigInt(), int64(types.USDValueDefaultDecimal))
+			stakerAssetsUSDValue = stakerAssetsUSDValue.Add(singleAssetUSDValue)
 		}
 
-		err = k.UpdateAVSOperatorStakerShareValue(ctx, AVSAddr, stakerId, operatorAddress.String(), stakerAssetsUsdValue)
+		err = k.UpdateAVSOperatorStakerShareValue(ctx, AVSAddr, stakerId, operatorAddress.String(), stakerAssetsUSDValue)
 		if err != nil {
 			return err
 		}

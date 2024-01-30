@@ -42,7 +42,7 @@ func (k Keeper) RegisterExpectDelegationInterface(delegationKeeper operatortypes
 }
 
 func (k Keeper) GetUnBondingExpirationBlockNumber(ctx sdk.Context, OperatorAddress sdk.AccAddress, startHeight uint64) uint64 {
-	return startHeight + 10
+	return startHeight + operatortypes.UnBondingExpiration
 }
 
 // IOperator interface will be implemented by deposit keeper

@@ -44,9 +44,9 @@ func (suite *KeeperTestSuite) TestSlash() {
 	info, err := suite.app.StakingAssetsManageKeeper.GetStakerSpecifiedAssetInfo(suite.ctx, stakerId, assetId)
 	suite.NoError(err)
 	suite.Equal(types.StakerSingleAssetOrChangeInfo{
-		TotalDepositAmountOrWantChangeValue:     depositEvent.OpAmount,
-		CanWithdrawAmountOrWantChangeValue:      depositEvent.OpAmount,
-		WaitUndelegationAmountOrWantChangeValue: sdkmath.NewInt(0),
+		TotalDepositAmountOrWantChangeValue:  depositEvent.OpAmount,
+		CanWithdrawAmountOrWantChangeValue:   depositEvent.OpAmount,
+		WaitUnbondingAmountOrWantChangeValue: sdkmath.NewInt(0),
 	}, *info)
 
 	// test the normal case
@@ -59,9 +59,9 @@ func (suite *KeeperTestSuite) TestSlash() {
 	info, err = suite.app.StakingAssetsManageKeeper.GetStakerSpecifiedAssetInfo(suite.ctx, stakerId, assetId)
 	suite.NoError(err)
 	suite.Equal(types.StakerSingleAssetOrChangeInfo{
-		TotalDepositAmountOrWantChangeValue:     sdkmath.NewInt(10),
-		CanWithdrawAmountOrWantChangeValue:      sdkmath.NewInt(10),
-		WaitUndelegationAmountOrWantChangeValue: sdkmath.NewInt(0),
+		TotalDepositAmountOrWantChangeValue:  sdkmath.NewInt(10),
+		CanWithdrawAmountOrWantChangeValue:   sdkmath.NewInt(10),
+		WaitUnbondingAmountOrWantChangeValue: sdkmath.NewInt(0),
 	}, *info)
 
 	assetInfo, err := suite.app.StakingAssetsManageKeeper.GetStakingAssetInfo(suite.ctx, assetId)

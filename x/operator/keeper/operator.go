@@ -35,8 +35,8 @@ func (k Keeper) GetOperatorInfo(ctx sdk.Context, addr string) (info *operatortyp
 	}
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), operatortypes.KeyPrefixOperatorInfo)
 	//key := common.HexToAddress(incentive.Contract)
-	ifExist := store.Has(opAccAddr)
-	if !ifExist {
+	isExist := store.Has(opAccAddr)
+	if !isExist {
 		return nil, errorsmod.Wrap(operatortypes.ErrNoKeyInTheStore, fmt.Sprintf("GetOperatorInfo: key is %s", opAccAddr))
 	}
 

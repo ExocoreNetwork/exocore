@@ -37,9 +37,9 @@ func (suite *KeeperTestSuite) TestDeposit() {
 	info, err := suite.app.StakingAssetsManageKeeper.GetStakerSpecifiedAssetInfo(suite.ctx, stakerId, assetId)
 	suite.NoError(err)
 	suite.Equal(types.StakerSingleAssetOrChangeInfo{
-		TotalDepositAmountOrWantChangeValue:     params.OpAmount,
-		CanWithdrawAmountOrWantChangeValue:      params.OpAmount,
-		WaitUndelegationAmountOrWantChangeValue: sdkmath.NewInt(0),
+		TotalDepositAmountOrWantChangeValue:  params.OpAmount,
+		CanWithdrawAmountOrWantChangeValue:   params.OpAmount,
+		WaitUnbondingAmountOrWantChangeValue: sdkmath.NewInt(0),
 	}, *info)
 
 	assetInfo, err := suite.app.StakingAssetsManageKeeper.GetStakingAssetInfo(suite.ctx, assetId)

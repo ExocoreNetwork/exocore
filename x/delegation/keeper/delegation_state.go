@@ -161,17 +161,20 @@ func (k Keeper) GetDelegationStateByOperatorAndAssetList(ctx sdk.Context, operat
 		if err != nil {
 			return nil, err
 		}
-		if len(keys) == 3 {
-			restakerId, assetId, findOperatorAddr := keys[0], keys[1], keys[2]
-			if operatorAddr == findOperatorAddr {
-				if _, ok := assetsFilter[assetId]; ok {
-					if _, ok := ret[restakerId]; ok {
-						ret[restakerId][assetId] = amounts
-					} else {
-						ret[restakerId] = make(map[string]delegationtype.DelegationAmounts, 0)
-					}
-				}
+		if len(keys) != 3 {
+			continue
+		}
+		restakerID, assetID, findOperatorAddr := keys[0], keys[1], keys[2]
+		if operatorAddr != findOperatorAddr {
+			continue
+		}
+		_, assetIDExist := assetsFilter[assetID]
+		_, restakerIDExist := ret[restakerID]
+		if assetIDExist {
+			if restakerIDExist {
+				ret[restakerID] = make(map[string]delegationtype.DelegationAmounts)
 			}
+			ret[restakerID][assetID] = amounts
 		}
 	}
 	return ret, nil

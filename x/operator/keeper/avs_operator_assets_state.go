@@ -57,8 +57,8 @@ func (k Keeper) GetAVSOperatorTotalValue(ctx sdk.Context, avsAddr, operatorAddr 
 	} else {
 		key = restakingtype.GetJoinedStoreKey(avsAddr, operatorAddr)
 	}
-	isExit := store.Has(key)
-	if !isExit {
+	isExist := store.Has(key)
+	if !isExist {
 		return sdkmath.LegacyDec{}, errorsmod.Wrap(operatortypes.ErrNoKeyInTheStore, fmt.Sprintf("GetAVSOperatorTotalValue: key is %s", key))
 	} else {
 		value := store.Get(key)

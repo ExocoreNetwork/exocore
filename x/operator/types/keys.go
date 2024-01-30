@@ -19,9 +19,11 @@ const (
 
 	DefaultOptedOutHeight = uint64(math.MaxUint64)
 
-	UsdValueDefaultDecimal = uint8(8)
+	USDValueDefaultDecimal = uint8(8)
 
 	SlashVetoDuration = int64(1000)
+
+	UnBondingExpiration = 10
 )
 
 // ModuleAddress is the native module address for EVM

@@ -37,6 +37,9 @@ func (k Keeper) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.Validat
 
 		//calculate the actual canUndelegated asset amount
 		delegationInfo, err := k.GetSingleDelegationInfo(ctx, record.StakerId, record.AssetId, record.OperatorAddr)
+		if err != nil {
+			panic(err)
+		}
 		if record.Amount.GT(delegationInfo.CanUndelegateAmountAfterSlash) {
 			record.ActualCompletedAmount = delegationInfo.CanUndelegateAmountAfterSlash
 		} else {
