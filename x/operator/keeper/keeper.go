@@ -37,11 +37,15 @@ func NewKeeper(
 	}
 }
 
-func (k Keeper) RegisterExpectDelegationInterface(delegationKeeper operatortypes.ExpectDelegationInterface) {
+func (k *Keeper) RegisterExpectDelegationInterface(delegationKeeper operatortypes.ExpectDelegationInterface) {
 	k.delegationKeeper = delegationKeeper
 }
 
-func (k Keeper) GetUnBondingExpirationBlockNumber(ctx sdk.Context, OperatorAddress sdk.AccAddress, startHeight uint64) uint64 {
+func (k *Keeper) GetExpectDelegationInterface() operatortypes.ExpectDelegationInterface {
+	return k.delegationKeeper
+}
+
+func (k *Keeper) GetUnBondingExpirationBlockNumber(ctx sdk.Context, OperatorAddress sdk.AccAddress, startHeight uint64) uint64 {
 	return startHeight + operatortypes.UnBondingExpiration
 }
 

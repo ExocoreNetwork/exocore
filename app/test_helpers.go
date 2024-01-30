@@ -95,7 +95,6 @@ func Setup(
 	} else {
 		logger = log.NewNopLogger()
 	}
-
 	app := NewExocoreApp(
 		logger,
 		db, nil, true, map[int64]bool{},

@@ -10,7 +10,7 @@ import (
 	restakingtype "github.com/exocore/x/restaking_assets_manage/types"
 )
 
-func (k Keeper) UpdateAVSOperatorTotalValue(ctx sdk.Context, avsAddr, operatorAddr string, opAmount sdkmath.LegacyDec) error {
+func (k *Keeper) UpdateAVSOperatorTotalValue(ctx sdk.Context, avsAddr, operatorAddr string, opAmount sdkmath.LegacyDec) error {
 	if opAmount.IsNil() || opAmount.IsZero() {
 		return nil
 	}
@@ -36,7 +36,7 @@ func (k Keeper) UpdateAVSOperatorTotalValue(ctx sdk.Context, avsAddr, operatorAd
 	return nil
 }
 
-func (k Keeper) DeleteAVSOperatorTotalValue(ctx sdk.Context, avsAddr, operatorAddr string) error {
+func (k *Keeper) DeleteAVSOperatorTotalValue(ctx sdk.Context, avsAddr, operatorAddr string) error {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), operatortypes.KeyPrefixAVSOperatorAssetsTotalValue)
 	var key []byte
 	if operatorAddr == "" {
@@ -48,7 +48,7 @@ func (k Keeper) DeleteAVSOperatorTotalValue(ctx sdk.Context, avsAddr, operatorAd
 	return nil
 }
 
-func (k Keeper) GetAVSOperatorTotalValue(ctx sdk.Context, avsAddr, operatorAddr string) (sdkmath.LegacyDec, error) {
+func (k *Keeper) GetAVSOperatorTotalValue(ctx sdk.Context, avsAddr, operatorAddr string) (sdkmath.LegacyDec, error) {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), operatortypes.KeyPrefixAVSOperatorAssetsTotalValue)
 	var ret operatortypes.ValueField
 	var key []byte
@@ -67,7 +67,7 @@ func (k Keeper) GetAVSOperatorTotalValue(ctx sdk.Context, avsAddr, operatorAddr 
 	return ret.Amount, nil
 }
 
-func (k Keeper) UpdateAVSTotalValue(ctx sdk.Context, avsAddr string, opAmount sdkmath.LegacyDec) error {
+func (k *Keeper) UpdateAVSTotalValue(ctx sdk.Context, avsAddr string, opAmount sdkmath.LegacyDec) error {
 	if opAmount.IsNil() || opAmount.IsZero() {
 		return nil
 	}
@@ -87,7 +87,7 @@ func (k Keeper) UpdateAVSTotalValue(ctx sdk.Context, avsAddr string, opAmount sd
 	return nil
 }
 
-func (k Keeper) BatchUpdateAVSAndOperatorTotalValue(ctx sdk.Context, avsOperatorChange map[string]sdkmath.LegacyDec) error {
+func (k *Keeper) BatchUpdateAVSAndOperatorTotalValue(ctx sdk.Context, avsOperatorChange map[string]sdkmath.LegacyDec) error {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), operatortypes.KeyPrefixAVSOperatorAssetsTotalValue)
 	for avs, opAmount := range avsOperatorChange {
 		key := []byte(avs)
@@ -106,7 +106,7 @@ func (k Keeper) BatchUpdateAVSAndOperatorTotalValue(ctx sdk.Context, avsOperator
 	return nil
 }
 
-func (k Keeper) GetAVSTotalValue(ctx sdk.Context, avsAddr string) (sdkmath.LegacyDec, error) {
+func (k *Keeper) GetAVSTotalValue(ctx sdk.Context, avsAddr string) (sdkmath.LegacyDec, error) {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), operatortypes.KeyPrefixAVSOperatorAssetsTotalValue)
 	var ret operatortypes.ValueField
 	key := []byte(avsAddr)
@@ -120,7 +120,7 @@ func (k Keeper) GetAVSTotalValue(ctx sdk.Context, avsAddr string) (sdkmath.Legac
 	return ret.Amount, nil
 }
 
-func (k Keeper) UpdateOperatorAVSAssetsState(ctx sdk.Context, assetId, avsAddr, operatorAddr string, changeState operatortypes.AssetOptedInState) error {
+func (k *Keeper) UpdateOperatorAVSAssetsState(ctx sdk.Context, assetId, avsAddr, operatorAddr string, changeState operatortypes.AssetOptedInState) error {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), operatortypes.KeyPrefixOperatorAVSSingleAssetState)
 	if changeState.Amount.IsNil() && changeState.Value.IsNil() {
 		return nil
@@ -157,7 +157,7 @@ func (k Keeper) UpdateOperatorAVSAssetsState(ctx sdk.Context, assetId, avsAddr, 
 	return nil
 }
 
-func (k Keeper) DeleteOperatorAVSAssetsState(ctx sdk.Context, assetId, avsAddr, operatorAddr string) error {
+func (k *Keeper) DeleteOperatorAVSAssetsState(ctx sdk.Context, assetId, avsAddr, operatorAddr string) error {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), operatortypes.KeyPrefixOperatorAVSSingleAssetState)
 	//check operator address validation
 	_, err := sdk.AccAddressFromBech32(operatorAddr)
@@ -169,7 +169,7 @@ func (k Keeper) DeleteOperatorAVSAssetsState(ctx sdk.Context, assetId, avsAddr, 
 	return nil
 }
 
-func (k Keeper) GetOperatorAVSAssetsState(ctx sdk.Context, assetId, avsAddr, operatorAddr string) (changeState *operatortypes.AssetOptedInState, err error) {
+func (k *Keeper) GetOperatorAVSAssetsState(ctx sdk.Context, assetId, avsAddr, operatorAddr string) (changeState *operatortypes.AssetOptedInState, err error) {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), operatortypes.KeyPrefixOperatorAVSSingleAssetState)
 	stateKey := restakingtype.GetJoinedStoreKey(assetId, avsAddr, operatorAddr)
 	isExit := store.Has(stateKey)
@@ -183,7 +183,7 @@ func (k Keeper) GetOperatorAVSAssetsState(ctx sdk.Context, assetId, avsAddr, ope
 	return &assetOptedInState, nil
 }
 
-func (k Keeper) IterateUpdateOperatorAVSAssets(ctx sdk.Context, assetId string, f func(assetId string, keys []string, state *operatortypes.AssetOptedInState) error) (err error) {
+func (k *Keeper) IterateUpdateOperatorAVSAssets(ctx sdk.Context, assetId string, f func(assetId string, keys []string, state *operatortypes.AssetOptedInState) error) (err error) {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), operatortypes.KeyPrefixOperatorAVSSingleAssetState)
 	iterator := sdk.KVStorePrefixIterator(store, []byte(assetId))
 	defer iterator.Close()
@@ -205,7 +205,7 @@ func (k Keeper) IterateUpdateOperatorAVSAssets(ctx sdk.Context, assetId string, 
 	return nil
 }
 
-func (k Keeper) UpdateAVSOperatorStakerShareValue(ctx sdk.Context, avsAddr, stakerId, operatorAddr string, opAmount sdkmath.LegacyDec) error {
+func (k *Keeper) UpdateAVSOperatorStakerShareValue(ctx sdk.Context, avsAddr, stakerId, operatorAddr string, opAmount sdkmath.LegacyDec) error {
 	if opAmount.IsNil() || opAmount.IsZero() {
 		return nil
 	}
@@ -226,7 +226,7 @@ func (k Keeper) UpdateAVSOperatorStakerShareValue(ctx sdk.Context, avsAddr, stak
 	return nil
 }
 
-func (k Keeper) BatchSetAVSOperatorStakerShare(ctx sdk.Context, newValues map[string]sdkmath.LegacyDec) error {
+func (k *Keeper) BatchSetAVSOperatorStakerShare(ctx sdk.Context, newValues map[string]sdkmath.LegacyDec) error {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), operatortypes.KeyPrefixAVSOperatorStakerShareState)
 	for key, value := range newValues {
 		optedInValue := operatortypes.ValueField{Amount: value}
@@ -241,14 +241,14 @@ func (k Keeper) BatchSetAVSOperatorStakerShare(ctx sdk.Context, newValues map[st
 	return nil
 }
 
-func (k Keeper) DeleteAVSOperatorStakerShareValue(ctx sdk.Context, avsAddr, stakerId, operatorAddr string) error {
+func (k *Keeper) DeleteAVSOperatorStakerShareValue(ctx sdk.Context, avsAddr, stakerId, operatorAddr string) error {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), operatortypes.KeyPrefixAVSOperatorStakerShareState)
 	key := restakingtype.GetJoinedStoreKey(avsAddr, stakerId, operatorAddr)
 	store.Delete(key)
 	return nil
 }
 
-func (k Keeper) GetAVSOperatorStakerShareValue(ctx sdk.Context, avsAddr, stakerId, operatorAddr string) (sdkmath.LegacyDec, error) {
+func (k *Keeper) GetAVSOperatorStakerShareValue(ctx sdk.Context, avsAddr, stakerId, operatorAddr string) (sdkmath.LegacyDec, error) {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), operatortypes.KeyPrefixAVSOperatorStakerShareState)
 	var ret operatortypes.ValueField
 	key := restakingtype.GetJoinedStoreKey(avsAddr, stakerId, operatorAddr)
@@ -262,7 +262,7 @@ func (k Keeper) GetAVSOperatorStakerShareValue(ctx sdk.Context, avsAddr, stakerI
 	return ret.Amount, nil
 }
 
-func (k Keeper) GetAVSOperatorStakerInfo(ctx sdk.Context, avsAddr, operatorAddr string) (map[string]interface{}, error) {
+func (k *Keeper) GetAVSOperatorStakerInfo(ctx sdk.Context, avsAddr, operatorAddr string) (map[string]interface{}, error) {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), operatortypes.KeyPrefixAVSOperatorStakerShareState)
 	stakers := make(map[string]interface{}, 0)
 	iterator := sdk.KVStorePrefixIterator(store, nil)

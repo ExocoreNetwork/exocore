@@ -1,7 +1,6 @@
 package delegation_test
 
 import (
-	"fmt"
 	operatortypes "github.com/exocore/x/operator/types"
 	"math/big"
 	"strings"
@@ -431,7 +430,6 @@ func (s *PrecompileTestSuite) TestRunUnDelegateFromThroughClientChain() {
 			s.Require().NoError(err, "failed to instantiate Ethereum message")
 
 			// set txHash for delegation module
-			fmt.Println("the txHash is:", msgEthereumTx.Hash)
 			s.ctx = s.ctx.WithValue(delegation.CtxKeyTxHash, common.HexToHash(msgEthereumTx.Hash))
 			// Create StateDB
 			s.stateDB = statedb.New(s.ctx, s.app.EvmKeeper, statedb.NewEmptyTxConfig(common.BytesToHash(s.ctx.HeaderHash().Bytes())))

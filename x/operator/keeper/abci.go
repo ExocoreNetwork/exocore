@@ -10,10 +10,13 @@ import (
 )
 
 // EndBlock : update the assets' share when their prices change
-func (k Keeper) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.ValidatorUpdate {
+func (k *Keeper) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.ValidatorUpdate {
 	priceChangeAssets, err := k.oracleKeeper.GetPriceChangeAssets(ctx)
 	if err != nil {
 		panic(err)
+	}
+	if priceChangeAssets == nil || len(priceChangeAssets) == 0 {
+		return nil
 	}
 	avsOperatorShareChange := make(map[string]sdkmath.LegacyDec, 0)
 	assetsOperator := make(map[string]map[string]string, 0)

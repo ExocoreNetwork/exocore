@@ -24,6 +24,26 @@ type ExpectOracleInterface interface {
 	GetPriceChangeAssets(ctx sdk.Context) (map[string]*PriceChange, error)
 }
 
+type MockOracle struct{}
+
+func (MockOracle) GetSpecifiedAssetsPrice(ctx sdk.Context, assetsId string) (sdkmath.Int, uint8, error) {
+	return sdkmath.NewInt(1), 0, nil
+}
+
+func (MockOracle) GetPriceChangeAssets(ctx sdk.Context) (map[string]*PriceChange, error) {
+	return nil, nil
+}
+
+type MockAVS struct{}
+
+func (MockAVS) GetAvsSupportedAssets(ctx sdk.Context, avsAddr string) (map[string]interface{}, error) {
+	return nil, nil
+}
+
+func (MockAVS) GetAvsSlashContract(ctx sdk.Context, avsAddr string) (string, error) {
+	return "", nil
+}
+
 type ExpectAvsInterface interface {
 	GetAvsSupportedAssets(ctx sdk.Context, avsAddr string) (map[string]interface{}, error)
 	GetAvsSlashContract(ctx sdk.Context, avsAddr string) (string, error)

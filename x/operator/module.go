@@ -2,7 +2,6 @@ package operator
 
 import (
 	"context"
-
 	abci "github.com/cometbft/cometbft/abci/types"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -75,7 +74,7 @@ func (am AppModule) IsAppModule() {}
 // RegisterServices registers module services.
 func (am AppModule) RegisterServices(cfg module.Configurator) {
 	operatortypes.RegisterMsgServer(cfg.MsgServer(), &am.keeper)
-	operatortypes.RegisterQueryServer(cfg.QueryServer(), am.keeper)
+	operatortypes.RegisterQueryServer(cfg.QueryServer(), &am.keeper)
 }
 
 func (am AppModule) GenerateGenesisState(input *module.SimulationState) {

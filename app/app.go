@@ -258,9 +258,10 @@ var (
 		recovery.AppModuleBasic{},
 		revenue.AppModuleBasic{},
 		consensus.AppModuleBasic{},
-		// exoCore staking modules
+		// exoCore modules
 		restaking_assets_manage.AppModuleBasic{},
 		deposit.AppModuleBasic{},
+		operator.AppModuleBasic{},
 		delegation.AppModuleBasic{},
 		withdraw.AppModuleBasic{},
 		reward.AppModuleBasic{},
@@ -402,7 +403,6 @@ func NewExocoreApp(
 		app.SetPrepareProposal(handler.PrepareProposalHandler())
 		app.SetProcessProposal(handler.ProcessProposalHandler())
 	})
-
 	// NOTE we use custom transaction decoder that supports the sdk.Tx interface instead of sdk.StdTx
 	bApp := baseapp.NewBaseApp(
 		Name,
@@ -621,11 +621,10 @@ func NewExocoreApp(
 	// set exoCore staking keepers
 	app.StakingAssetsManageKeeper = stakingAssetsManageKeeper.NewKeeper(keys[stakingAssetsManageTypes.StoreKey], appCodec)
 	app.DepositKeeper = depositKeeper.NewKeeper(keys[depositTypes.StoreKey], appCodec, app.StakingAssetsManageKeeper)
-
-	app.OperatorKeeper = operatorkeeper.NewKeeper(keys[operatorTypes.StoreKey], appCodec, app.StakingAssetsManageKeeper, nil, nil)
+	app.OperatorKeeper = operatorkeeper.NewKeeper(keys[operatorTypes.StoreKey], appCodec, app.StakingAssetsManageKeeper, operatorTypes.MockOracle{}, operatorTypes.MockAVS{})
 	// todo: need to replace the virtual keepers with actual keepers after they have been implemented
-	app.DelegationKeeper = delegationKeeper.NewKeeper(keys[depositTypes.StoreKey], appCodec, app.StakingAssetsManageKeeper, app.DepositKeeper, delegationTypes.VirtualISlashKeeper{}, app.OperatorKeeper)
-	app.OperatorKeeper.RegisterExpectDelegationInterface(app.DelegationKeeper)
+	app.DelegationKeeper = delegationKeeper.NewKeeper(keys[depositTypes.StoreKey], appCodec, app.StakingAssetsManageKeeper, app.DepositKeeper, delegationTypes.VirtualISlashKeeper{}, &app.OperatorKeeper)
+	app.OperatorKeeper.RegisterExpectDelegationInterface(&app.DelegationKeeper)
 
 	app.WithdrawKeeper = *withdrawKeeper.NewKeeper(appCodec, keys[withdrawTypes.StoreKey], app.StakingAssetsManageKeeper, app.DepositKeeper)
 	app.RewardKeeper = *rewardKeeper.NewKeeper(appCodec, keys[rewardTypes.StoreKey], app.StakingAssetsManageKeeper)
@@ -647,7 +646,6 @@ func NewExocoreApp(
 			app.RewardKeeper,
 		),
 	)
-
 	epochsKeeper := epochskeeper.NewKeeper(appCodec, keys[epochstypes.StoreKey])
 	app.EpochsKeeper = *epochsKeeper.SetHooks(
 		epochskeeper.NewMultiEpochHooks(

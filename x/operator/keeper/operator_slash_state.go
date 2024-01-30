@@ -11,7 +11,7 @@ import (
 	restakingtype "github.com/exocore/x/restaking_assets_manage/types"
 )
 
-func (k Keeper) UpdateOperatorSlashInfo(ctx sdk.Context, operatorAddr, avsAddr, slashId string, slashInfo operatortypes.OperatorSlashInfo) error {
+func (k *Keeper) UpdateOperatorSlashInfo(ctx sdk.Context, operatorAddr, avsAddr, slashId string, slashInfo operatortypes.OperatorSlashInfo) error {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), operatortypes.KeyPrefixOperatorSlashInfo)
 
 	//check operator address validation
@@ -41,7 +41,7 @@ func (k Keeper) UpdateOperatorSlashInfo(ctx sdk.Context, operatorAddr, avsAddr, 
 	return nil
 }
 
-func (k Keeper) GetOperatorSlashInfo(ctx sdk.Context, avsAddr, operatorAddr, slashId string) (changeState *operatortypes.OperatorSlashInfo, err error) {
+func (k *Keeper) GetOperatorSlashInfo(ctx sdk.Context, avsAddr, operatorAddr, slashId string) (changeState *operatortypes.OperatorSlashInfo, err error) {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), operatortypes.KeyPrefixOperatorSlashInfo)
 	slashInfoKey := restakingtype.GetJoinedStoreKey(operatorAddr, avsAddr, slashId)
 	isExit := store.Has(slashInfoKey)
@@ -55,7 +55,7 @@ func (k Keeper) GetOperatorSlashInfo(ctx sdk.Context, avsAddr, operatorAddr, sla
 	return &operatorSlashInfo, nil
 }
 
-func (k Keeper) UpdateSlashAssetsState(ctx sdk.Context, assetId, stakerOrOperator string, completeHeight uint64, opAmount sdkmath.Int) error {
+func (k *Keeper) UpdateSlashAssetsState(ctx sdk.Context, assetId, stakerOrOperator string, completeHeight uint64, opAmount sdkmath.Int) error {
 	if opAmount.IsNil() || opAmount.IsZero() {
 		return nil
 	}
@@ -93,7 +93,7 @@ func (k Keeper) UpdateSlashAssetsState(ctx sdk.Context, assetId, stakerOrOperato
 	return nil
 }
 
-func (k Keeper) GetSlashAssetsState(ctx sdk.Context, assetId, stakerOrOperator string, completeHeight uint64) (sdkmath.Int, error) {
+func (k *Keeper) GetSlashAssetsState(ctx sdk.Context, assetId, stakerOrOperator string, completeHeight uint64) (sdkmath.Int, error) {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), operatortypes.KeyPrefixSlashAssetsState)
 	var key []byte
 	if stakerOrOperator == "" {

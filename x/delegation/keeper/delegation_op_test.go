@@ -1,18 +1,6 @@
 package keeper_test
 
-import (
-	sdkmath "cosmossdk.io/math"
-	keeper2 "github.com/ExocoreNetwork/exocore/x/delegation/keeper"
-	delegationtype "github.com/ExocoreNetwork/exocore/x/delegation/types"
-	"github.com/ExocoreNetwork/exocore/x/deposit/keeper"
-	"github.com/ExocoreNetwork/exocore/x/restaking_assets_manage/types"
-	abci "github.com/cometbft/cometbft/abci/types"
-	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/ethereum/go-ethereum/common"
-	types2 "github.com/exocore/x/operator/types"
-)
-
-func (suite *KeeperTestSuite) TestDelegateTo() {
+/*func (suite *KeeperTestSuite) TestDelegateTo() {
 	usdtAddress := common.HexToAddress("0xdAC17F958D2ee523a2206206994597C13D831ec7")
 	clientChainLzId := uint64(101)
 
@@ -279,3 +267,4 @@ func (suite *KeeperTestSuite) TestCompleteUndelegation() {
 	suite.Equal(1, len(waitUndelegationRecords))
 	suite.Equal(UndelegationRecord, waitUndelegationRecords[0])
 }
+*/

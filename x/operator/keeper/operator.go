@@ -12,7 +12,7 @@ import (
 // SetOperatorInfo This function is used to register to be an operator in exoCore, the provided info will be stored on the chain.
 // Once an address has become an operator,the operator can't return to a normal address.But the operator can update the info through this function
 // As for the operator opt-in function,it needs to be implemented in operator opt-in or AVS module
-func (k Keeper) SetOperatorInfo(ctx sdk.Context, addr string, info *operatortypes.OperatorInfo) (err error) {
+func (k *Keeper) SetOperatorInfo(ctx sdk.Context, addr string, info *operatortypes.OperatorInfo) (err error) {
 	opAccAddr, err := sdk.AccAddressFromBech32(addr)
 	if err != nil {
 		return errorsmod.Wrap(err, "SetOperatorInfo: error occurred when parse acc address from Bech32")
@@ -28,7 +28,7 @@ func (k Keeper) SetOperatorInfo(ctx sdk.Context, addr string, info *operatortype
 	return nil
 }
 
-func (k Keeper) GetOperatorInfo(ctx sdk.Context, addr string) (info *operatortypes.OperatorInfo, err error) {
+func (k *Keeper) GetOperatorInfo(ctx sdk.Context, addr string) (info *operatortypes.OperatorInfo, err error) {
 	opAccAddr, err := sdk.AccAddressFromBech32(addr)
 	if err != nil {
 		return nil, errorsmod.Wrap(err, "GetOperatorInfo: error occurred when parse acc address from Bech32")
@@ -47,12 +47,12 @@ func (k Keeper) GetOperatorInfo(ctx sdk.Context, addr string) (info *operatortyp
 	return &ret, nil
 }
 
-func (k Keeper) IsOperator(ctx sdk.Context, addr sdk.AccAddress) bool {
+func (k *Keeper) IsOperator(ctx sdk.Context, addr sdk.AccAddress) bool {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), operatortypes.KeyPrefixOperatorInfo)
 	return store.Has(addr)
 }
 
-func (k Keeper) UpdateOptedInfo(ctx sdk.Context, operatorAddr, avsAddr string, info *operatortypes.OptedInfo) error {
+func (k *Keeper) UpdateOptedInfo(ctx sdk.Context, operatorAddr, avsAddr string, info *operatortypes.OptedInfo) error {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), operatortypes.KeyPrefixOperatorOptedAVSInfo)
 
 	//check operator address validation
@@ -67,7 +67,7 @@ func (k Keeper) UpdateOptedInfo(ctx sdk.Context, operatorAddr, avsAddr string, i
 	return nil
 }
 
-func (k Keeper) GetOptedInfo(ctx sdk.Context, operatorAddr, avsAddr string) (info *operatortypes.OptedInfo, err error) {
+func (k *Keeper) GetOptedInfo(ctx sdk.Context, operatorAddr, avsAddr string) (info *operatortypes.OptedInfo, err error) {
 	opAccAddr, err := sdk.AccAddressFromBech32(operatorAddr)
 	if err != nil {
 		return nil, errorsmod.Wrap(err, "GetOptedInfo: error occurred when parse acc address from Bech32")
@@ -86,7 +86,7 @@ func (k Keeper) GetOptedInfo(ctx sdk.Context, operatorAddr, avsAddr string) (inf
 	return &ret, nil
 }
 
-func (k Keeper) IsOptedIn(ctx sdk.Context, operatorAddr, avsAddr string) bool {
+func (k *Keeper) IsOptedIn(ctx sdk.Context, operatorAddr, avsAddr string) bool {
 	optedInfo, err := k.GetOptedInfo(ctx, operatorAddr, avsAddr)
 	if err != nil {
 		return false
@@ -97,7 +97,7 @@ func (k Keeper) IsOptedIn(ctx sdk.Context, operatorAddr, avsAddr string) bool {
 	return true
 }
 
-func (k Keeper) GetOptedInAVSForOperator(ctx sdk.Context, operatorAddr string) ([]string, error) {
+func (k *Keeper) GetOptedInAVSForOperator(ctx sdk.Context, operatorAddr string) ([]string, error) {
 	//get all opted-in info
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), operatortypes.KeyPrefixOperatorOptedAVSInfo)
 	iterator := sdk.KVStorePrefixIterator(store, []byte(operatorAddr))

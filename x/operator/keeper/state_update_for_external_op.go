@@ -25,7 +25,7 @@ type SlashAssetsAndAmount struct {
 	slashOperatorInfo map[string]*slashAmounts
 }
 
-func (k Keeper) UpdateOptedInAssetsState(ctx sdk.Context, stakerId, assetId, operatorAddr string, opAmount sdkmath.Int) error {
+func (k *Keeper) UpdateOptedInAssetsState(ctx sdk.Context, stakerId, assetId, operatorAddr string, opAmount sdkmath.Int) error {
 	//get the AVS opted-in by the operator
 	avsList, err := k.GetOptedInAVSForOperator(ctx, operatorAddr)
 	if err != nil {
@@ -88,7 +88,7 @@ func (k Keeper) UpdateOptedInAssetsState(ctx sdk.Context, stakerId, assetId, ope
 }
 
 // OptIn call this function to opt in AVS
-func (k Keeper) OptIn(ctx sdk.Context, operatorAddress sdk.AccAddress, AVSAddr string) error {
+func (k *Keeper) OptIn(ctx sdk.Context, operatorAddress sdk.AccAddress, AVSAddr string) error {
 	//check optedIn info
 	if k.IsOptedIn(ctx, operatorAddress.String(), AVSAddr) {
 		return types.ErrAlreadyOptedIn
@@ -203,7 +203,7 @@ func (k Keeper) OptIn(ctx sdk.Context, operatorAddress sdk.AccAddress, AVSAddr s
 }
 
 // OptOut call this function to opt out of AVS
-func (k Keeper) OptOut(ctx sdk.Context, operatorAddress sdk.AccAddress, AVSAddr string) error {
+func (k *Keeper) OptOut(ctx sdk.Context, operatorAddress sdk.AccAddress, AVSAddr string) error {
 	//check optedIn info
 	if !k.IsOptedIn(ctx, operatorAddress.String(), AVSAddr) {
 		return types.ErrNotOptedIn
@@ -281,7 +281,7 @@ func (k Keeper) OptOut(ctx sdk.Context, operatorAddress sdk.AccAddress, AVSAddr 
 }
 
 // GetAssetsAndAmountToSlash It will slash the assets that are opting into AVS first, and if there isn't enough to slash, then it will slash the assets that have requested to undelegate but still locked.
-func (k Keeper) GetAssetsAndAmountToSlash(ctx sdk.Context, operatorAddress sdk.AccAddress, AVSAddr string, occurredSateHeight int64, slashProportion sdkmath.LegacyDec) (*SlashAssetsAndAmount, error) {
+func (k *Keeper) GetAssetsAndAmountToSlash(ctx sdk.Context, operatorAddress sdk.AccAddress, AVSAddr string, occurredSateHeight int64, slashProportion sdkmath.LegacyDec) (*SlashAssetsAndAmount, error) {
 	ret := &SlashAssetsAndAmount{
 		slashStakerInfo:   make(map[string]map[string]*slashAmounts, 0),
 		slashOperatorInfo: make(map[string]*slashAmounts, 0),
@@ -364,7 +364,7 @@ func (k Keeper) GetAssetsAndAmountToSlash(ctx sdk.Context, operatorAddress sdk.A
 	return ret, nil
 }
 
-func (k Keeper) SlashStaker(ctx sdk.Context, operatorAddress sdk.AccAddress, slashStakerInfo map[string]map[string]*slashAmounts, executeHeight uint64) error {
+func (k *Keeper) SlashStaker(ctx sdk.Context, operatorAddress sdk.AccAddress, slashStakerInfo map[string]map[string]*slashAmounts, executeHeight uint64) error {
 	for stakerId, slashAssets := range slashStakerInfo {
 		for assetId, slashInfo := range slashAssets {
 			//handle the state that needs to be updated when slashing both opted-in and unbonding assets
@@ -415,7 +415,7 @@ func (k Keeper) SlashStaker(ctx sdk.Context, operatorAddress sdk.AccAddress, sla
 	return nil
 }
 
-func (k Keeper) SlashOperator(ctx sdk.Context, operatorAddress sdk.AccAddress, slashOperatorInfo map[string]*slashAmounts, executeHeight uint64) error {
+func (k *Keeper) SlashOperator(ctx sdk.Context, operatorAddress sdk.AccAddress, slashOperatorInfo map[string]*slashAmounts, executeHeight uint64) error {
 	for assetId, slashInfo := range slashOperatorInfo {
 		slashSumValue := slashInfo.AmountFromUnbonding.Add(slashInfo.AmountFromOptedIn)
 		//handle the state that needs to be updated when slashing both opted-in and unbonding assets
@@ -444,7 +444,7 @@ func (k Keeper) SlashOperator(ctx sdk.Context, operatorAddress sdk.AccAddress, s
 }
 
 // Slash The occurredSateHeight should be the height that has the latest stable state.
-func (k Keeper) Slash(ctx sdk.Context, operatorAddress sdk.AccAddress, AVSAddr, slashContract, slashId string, occurredSateHeight int64, slashProportion sdkmath.LegacyDec) error {
+func (k *Keeper) Slash(ctx sdk.Context, operatorAddress sdk.AccAddress, AVSAddr, slashContract, slashId string, occurredSateHeight int64, slashProportion sdkmath.LegacyDec) error {
 	height := ctx.BlockHeight()
 	if occurredSateHeight > height {
 		return errorsmod.Wrap(types.ErrSlashOccurredHeight, fmt.Sprintf("occurredSateHeight:%d,curHeight:%d", occurredSateHeight, height))
