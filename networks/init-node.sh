@@ -42,6 +42,7 @@ for node in {0..3}; do
     # Enable the APIs for the tests to be successful
     sed -i.bak 's/enable = false/enable = true/g' "$APP_TOML"
     sed -i.bak 's/swagger = false/swagger = true/g' "$APP_TOML"
+    sed -i.bak 's/enabled-unsafe-cors = false/enabled-unsafe-cors = true/g' "$APP_TOML"
 
   echo "Modified configurations for node$node"
 done
