@@ -2,16 +2,16 @@
 set -euo pipefail
 set -x
 
-BINARY=/exocore/${BINARY:-evmosd}
+BINARY=/exocore/${BINARY:-exocored}
 ID=${ID:-0}
 LOG=${LOG:-exocore.log}
 
 if ! [ -f "${BINARY}" ]; then
-	echo "The binary $(basename "${BINARY}") cannot be found. Please add the binary to the shared folder. Please use the BINARY environment variable if the name of the binary is not 'evmosd'"
+	echo "The binary $(basename "${BINARY}") cannot be found. Please add the binary to the shared folder. Please use the BINARY environment variable if the name of the binary is not 'exocored'"
 	exit 1
 fi
 
-export EHOME="/data/node${ID}/evmosd"
+export EHOME="/data/node${ID}/exocored"
 export APP_TOML="$EHOME/config/app.toml"
 export CLIENT_TOML="$EHOME/config/client.toml"
 APP_TOML_TMP="$EHOME/config/tmp_app.toml"
