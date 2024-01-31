@@ -45,8 +45,8 @@ func (k *Keeper) GetExpectDelegationInterface() operatortypes.ExpectDelegationIn
 	return k.delegationKeeper
 }
 
-func (k *Keeper) GetUnBondingExpirationBlockNumber(ctx sdk.Context, OperatorAddress sdk.AccAddress, startHeight uint64) uint64 {
-	return startHeight + operatortypes.UnBondingExpiration
+func (k *Keeper) GetUnbondingExpirationBlockNumber(ctx sdk.Context, OperatorAddress sdk.AccAddress, startHeight uint64) uint64 {
+	return startHeight + operatortypes.UnbondingExpiration
 }
 
 // OperatorKeeper interface will be implemented by deposit keeper
@@ -56,7 +56,7 @@ type OperatorKeeper interface {
 
 	IsOperator(ctx sdk.Context, addr sdk.AccAddress) bool
 
-	GetUnBondingExpirationBlockNumber(ctx sdk.Context, OperatorAddress sdk.AccAddress, startHeight uint64) uint64
+	GetUnbondingExpirationBlockNumber(ctx sdk.Context, OperatorAddress sdk.AccAddress, startHeight uint64) uint64
 
 	UpdateOptedInAssetsState(ctx sdk.Context, stakerId, assetId, operatorAddr string, opAmount sdkmath.Int) error
 
