@@ -211,6 +211,8 @@ require (
 )
 
 replace (
+	// use exocore fork of evmos
+	github.com/evmos/evmos/v14   => github.com/ExocoreNetwork/evmos/v14 v14.1.1-0.20240131061032-b1348ea36579
 	// use cosmos fork of keyring
 	github.com/99designs/keyring => github.com/cosmos/keyring v1.2.0
 	// use Cosmos-SDK fork to enable Ledger functionality

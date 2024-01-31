@@ -77,6 +77,9 @@ if [[ $overwrite == "y" || $overwrite == "Y" ]]; then
 	current_date=$(date -u +"%Y-%m-%dT%TZ")
 	jq -r --arg current_date "$current_date" '.app_state["claims"]["params"]["airdrop_start_time"]=$current_date' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
 
+	# Set claims denom
+	jq '.app_state["claims"]["params"]["claims_denom"]="aexo"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
+
 	# Set claims records for validator account
 	amount_to_claim=10000
 	claims_key=${KEYS[0]}
