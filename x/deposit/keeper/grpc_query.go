@@ -3,8 +3,8 @@ package keeper
 import (
 	"context"
 
+	"github.com/ExocoreNetwork/exocore/x/deposit/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/exocore/x/deposit/types"
 )
 
 func (k Keeper) Params(ctx context.Context, req *types.QueryParamsRequest) (*types.QueryParamsResponse, error) {

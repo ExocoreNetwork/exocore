@@ -1,10 +1,10 @@
 package keeper
 
 import (
+	restakingtype "github.com/ExocoreNetwork/exocore/x/restaking_assets_manage/types"
 	"github.com/cosmos/cosmos-sdk/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/common/hexutil"
-	restakingtype "github.com/exocore/x/restaking_assets_manage/types"
 )
 
 // SetClientChainInfo todo: Temporarily use layerZeroChainId as key.

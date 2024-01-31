@@ -1,4 +1,4 @@
-module github.com/exocore
+module github.com/ExocoreNetwork/exocore
 
 go 1.21
 

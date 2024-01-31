@@ -5,9 +5,9 @@ import (
 
 	errorsmod "cosmossdk.io/errors"
 	sdkmath "cosmossdk.io/math"
+	despoittypes "github.com/ExocoreNetwork/exocore/x/deposit/types"
+	"github.com/ExocoreNetwork/exocore/x/restaking_assets_manage/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	despoittypes "github.com/exocore/x/deposit/types"
-	"github.com/exocore/x/restaking_assets_manage/types"
 )
 
 type DepositParams struct {

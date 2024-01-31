@@ -1,7 +1,7 @@
 package keeper
 
 import (
-	"github.com/exocore/x/reward/types"
+	"github.com/ExocoreNetwork/exocore/x/reward/types"
 )
 
 var _ types.QueryServer = Keeper{}

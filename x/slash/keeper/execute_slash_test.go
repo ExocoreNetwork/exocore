@@ -2,11 +2,11 @@ package keeper_test
 
 import (
 	sdkmath "cosmossdk.io/math"
+	depositKeeper "github.com/ExocoreNetwork/exocore/x/deposit/keeper"
+	"github.com/ExocoreNetwork/exocore/x/restaking_assets_manage/types"
+	"github.com/ExocoreNetwork/exocore/x/slash/keeper"
+	slashtype "github.com/ExocoreNetwork/exocore/x/slash/types"
 	"github.com/ethereum/go-ethereum/common"
-	depositKeeper "github.com/exocore/x/deposit/keeper"
-	"github.com/exocore/x/restaking_assets_manage/types"
-	"github.com/exocore/x/slash/keeper"
-	slashtype "github.com/exocore/x/slash/types"
 )
 
 func (suite *KeeperTestSuite) TestSlash() {

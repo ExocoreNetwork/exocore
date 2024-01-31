@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	evmtype "github.com/exocore/x/evm/types"
+	evmtype "github.com/ExocoreNetwork/exocore/x/evm/types"
 
 	"github.com/gorilla/mux"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
@@ -20,9 +20,9 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/module"
 	simtypes "github.com/cosmos/cosmos-sdk/types/simulation"
 
+	"github.com/ExocoreNetwork/exocore/x/evm/client/cli"
+	"github.com/ExocoreNetwork/exocore/x/evm/keeper"
 	"github.com/evmos/evmos/v14/x/evm/types"
-	"github.com/exocore/x/evm/client/cli"
-	"github.com/exocore/x/evm/keeper"
 )
 
 // consensusVersion defines the current x/evm module consensus version.

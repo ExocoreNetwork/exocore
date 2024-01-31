@@ -5,8 +5,8 @@ import (
 	"embed"
 	"fmt"
 
-	delegationKeeper "github.com/exocore/x/delegation/keeper"
-	stakingStateKeeper "github.com/exocore/x/restaking_assets_manage/keeper"
+	delegationKeeper "github.com/ExocoreNetwork/exocore/x/delegation/keeper"
+	stakingStateKeeper "github.com/ExocoreNetwork/exocore/x/restaking_assets_manage/keeper"
 
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	authzkeeper "github.com/cosmos/cosmos-sdk/x/authz/keeper"

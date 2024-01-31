@@ -2,10 +2,10 @@ package keeper_test
 
 import (
 	sdkmath "cosmossdk.io/math"
+	"github.com/ExocoreNetwork/exocore/x/restaking_assets_manage/types"
+	"github.com/ExocoreNetwork/exocore/x/reward/keeper"
+	rewardtype "github.com/ExocoreNetwork/exocore/x/reward/types"
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/exocore/x/restaking_assets_manage/types"
-	"github.com/exocore/x/reward/keeper"
-	rewardtype "github.com/exocore/x/reward/types"
 )
 
 func (suite *KeeperTestSuite) TestClaimWithdrawRequest() {

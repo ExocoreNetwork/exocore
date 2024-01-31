@@ -13,11 +13,11 @@ import (
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/signer/core/apitypes"
 
+	"github.com/ExocoreNetwork/exocore/app"
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
 	cryptocodec "github.com/evmos/evmos/v14/crypto/codec"
 	"github.com/evmos/evmos/v14/ethereum/eip712"
 	"github.com/evmos/evmos/v14/types"
-	"github.com/exocore/app"
 )
 
 type EIP712TxArgs struct {

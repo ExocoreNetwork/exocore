@@ -10,7 +10,7 @@ import (
 	// "github.com/cosmos/cosmos-sdk/client/flags"
 	// sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/exocore/x/withdraw/types"
+	"github.com/ExocoreNetwork/exocore/x/withdraw/types"
 )
 
 // GetQueryCmd returns the cli query commands for this module

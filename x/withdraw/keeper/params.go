@@ -3,11 +3,11 @@ package keeper
 import (
 	"strings"
 
+	paramstypes "github.com/ExocoreNetwork/exocore/x/deposit/types"
+	types "github.com/ExocoreNetwork/exocore/x/withdraw/types"
 	"github.com/cosmos/cosmos-sdk/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/common"
-	paramstypes "github.com/exocore/x/deposit/types"
-	types "github.com/exocore/x/withdraw/types"
 )
 
 // GetParams get all parameters as types.Params

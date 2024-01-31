@@ -21,5 +21,5 @@ for dir in $proto_dirs; do
 done
 
 # move proto files to the right places
-cp -r github.com/exocore/* ./
+cp -r github.com/ExocoreNetwork/exocore/* ./
 rm -rf github.com

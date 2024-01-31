@@ -1,8 +1,8 @@
 package cli
 
 import (
+	deposittype "github.com/ExocoreNetwork/exocore/x/deposit/types"
 	"github.com/cosmos/cosmos-sdk/client/flags"
-	deposittype "github.com/exocore/x/deposit/types"
 	"github.com/spf13/cobra"
 
 	"github.com/cosmos/cosmos-sdk/client"

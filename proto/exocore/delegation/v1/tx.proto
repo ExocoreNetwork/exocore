@@ -7,7 +7,7 @@ import "cosmos_proto/cosmos.proto";
 import "gogoproto/gogo.proto";
 import "amino/amino.proto";
 
-option go_package = "github.com/exocore/x/delegation/types";
+option go_package = "github.com/ExocoreNetwork/exocore/x/delegation/types";
 
 message ValueField {
   string Amount = 1

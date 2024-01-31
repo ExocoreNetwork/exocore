@@ -4,10 +4,10 @@ import (
 	"fmt"
 
 	sdkmath "cosmossdk.io/math"
+	delegationtype "github.com/ExocoreNetwork/exocore/x/delegation/types"
+	"github.com/ExocoreNetwork/exocore/x/restaking_assets_manage/types"
 	abci "github.com/cometbft/cometbft/abci/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	delegationtype "github.com/exocore/x/delegation/types"
-	"github.com/exocore/x/restaking_assets_manage/types"
 )
 
 // EndBlock : completed Undelegation events according to the canCompleted blockHeight

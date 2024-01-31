@@ -5,7 +5,7 @@ package exocore.deposit.v1;
 
 import "gogoproto/gogo.proto";
 
-option go_package = "github.com/exocore/x/deposit/types";
+option go_package = "github.com/ExocoreNetwork/exocore/x/deposit/types";
 
 // GenesisState defines the restaking_assets_manage module's genesis state.
 message Params {

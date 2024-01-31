@@ -3,6 +3,9 @@ package delegation
 import (
 	"context"
 
+	"github.com/ExocoreNetwork/exocore/x/delegation/client/cli"
+	"github.com/ExocoreNetwork/exocore/x/delegation/keeper"
+	delegationtype "github.com/ExocoreNetwork/exocore/x/delegation/types"
 	abci "github.com/cometbft/cometbft/abci/types"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -10,9 +13,6 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 	simtypes "github.com/cosmos/cosmos-sdk/types/simulation"
-	"github.com/exocore/x/delegation/client/cli"
-	"github.com/exocore/x/delegation/keeper"
-	delegationtype "github.com/exocore/x/delegation/types"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	"github.com/spf13/cobra"
 )

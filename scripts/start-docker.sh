@@ -1,7 +1,7 @@
 #!/bin/bash
 
 KEY="dev0"
-CHAINID="exocore_9000-1"
+CHAINID="exocoretestnet_233-1"
 MONIKER="mymoniker"
 DATA_DIR=$(mktemp -d -t exocore-datadir.XXXXX)
 

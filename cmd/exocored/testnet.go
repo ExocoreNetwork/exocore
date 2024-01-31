@@ -44,7 +44,7 @@ import (
 	evmostypes "github.com/evmos/evmos/v14/types"
 	evmtypes "github.com/evmos/evmos/v14/x/evm/types"
 
-	cmdcfg "github.com/evmos/evmos/v14/cmd/config"
+	cmdcfg "github.com/ExocoreNetwork/exocore/cmd/config"
 	evmoskr "github.com/evmos/evmos/v14/crypto/keyring"
 	"github.com/evmos/evmos/v14/testutil/network"
 )
@@ -212,7 +212,7 @@ func initTestnetFiles(
 	args initArgs,
 ) error {
 	if args.chainID == "" {
-		args.chainID = fmt.Sprintf("exocore_%d-1", tmrand.Int63n(9999999999999)+1)
+		args.chainID = fmt.Sprintf("exocoretestnet_%d-1", tmrand.Int63n(9999999999999)+1)
 	}
 
 	nodeIDs := make([]string, args.numValidators)

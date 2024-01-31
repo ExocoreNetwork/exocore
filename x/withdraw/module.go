@@ -12,11 +12,11 @@ import (
 
 	abci "github.com/cometbft/cometbft/abci/types"
 
-	"github.com/exocore/x/withdraw/keeper"
+	"github.com/ExocoreNetwork/exocore/x/withdraw/keeper"
 
-	"github.com/exocore/x/withdraw/types"
+	"github.com/ExocoreNetwork/exocore/x/withdraw/types"
 
-	"github.com/exocore/x/withdraw/client/cli"
+	"github.com/ExocoreNetwork/exocore/x/withdraw/client/cli"
 
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/codec"

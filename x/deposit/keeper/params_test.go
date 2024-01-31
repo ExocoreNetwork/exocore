@@ -1,7 +1,7 @@
 package keeper_test
 
 import (
-	deposittype "github.com/exocore/x/deposit/types"
+	deposittype "github.com/ExocoreNetwork/exocore/x/deposit/types"
 )
 
 func (suite *KeeperTestSuite) TestParams() {

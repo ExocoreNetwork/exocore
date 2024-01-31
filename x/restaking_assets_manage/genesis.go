@@ -4,10 +4,10 @@ import (
 	"encoding/json"
 
 	"cosmossdk.io/math"
+	"github.com/ExocoreNetwork/exocore/x/restaking_assets_manage/keeper"
+	restakingtype "github.com/ExocoreNetwork/exocore/x/restaking_assets_manage/types"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/exocore/x/restaking_assets_manage/keeper"
-	restakingtype "github.com/exocore/x/restaking_assets_manage/types"
 )
 
 // NewGenesisState - Create a new genesis state

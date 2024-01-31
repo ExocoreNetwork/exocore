@@ -3,7 +3,7 @@ package cli
 import (
 	"context"
 
-	deposittype "github.com/exocore/x/deposit/types"
+	deposittype "github.com/ExocoreNetwork/exocore/x/deposit/types"
 
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"

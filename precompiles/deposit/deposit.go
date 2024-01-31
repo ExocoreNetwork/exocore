@@ -5,11 +5,11 @@ import (
 	"embed"
 	"fmt"
 
+	depositKeeper "github.com/ExocoreNetwork/exocore/x/deposit/keeper"
+	stakingStateKeeper "github.com/ExocoreNetwork/exocore/x/restaking_assets_manage/keeper"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	authzkeeper "github.com/cosmos/cosmos-sdk/x/authz/keeper"
 	"github.com/ethereum/go-ethereum/accounts/abi"
-	depositKeeper "github.com/exocore/x/deposit/keeper"
-	stakingStateKeeper "github.com/exocore/x/restaking_assets_manage/keeper"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/vm"

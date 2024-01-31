@@ -5,7 +5,7 @@ import (
 
 	"cosmossdk.io/math"
 
-	restakingtype "github.com/exocore/x/restaking_assets_manage/types"
+	restakingtype "github.com/ExocoreNetwork/exocore/x/restaking_assets_manage/types"
 )
 
 func (suite *KeeperTestSuite) TestUpdateStakerAssetsState() {

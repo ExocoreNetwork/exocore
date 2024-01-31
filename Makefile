@@ -286,7 +286,7 @@ swagger-update-docs: statik
 .PHONY: swagger-update-docs
 
 godocs:
-	@echo "--> Wait a few seconds and visit http://localhost:6060/pkg/github.com/exocore/exocore"
+	@echo "--> Wait a few seconds and visit http://localhost:6060/pkg/github.com/ExocoreNetwork/exocore"
 	godoc -http=:6060
 
 ###############################################################################
@@ -478,7 +478,7 @@ localnet-build:
 
 # Generate multi node configuration files and initialize configurations
 localnet-init: localnet-stop
-	evmosd testnet init-files --chain-id evmos_9000-8808 --v 4 -o  $(CURDIR)/build/.testnets --starting-ip-address 192.168.10.2 --keyring-backend=os  && \
+	exocored testnet init-files --chain-id exocoretestnet_233-1 --v 4 -o  $(CURDIR)/build/.testnets --starting-ip-address 192.168.10.2 --keyring-backend=os  && \
 	./networks/init-node.sh
 
 # Start a 4-node testnet locally
@@ -520,7 +520,7 @@ localnet-show-logstream:
 ###                                Releasing                                ###
 ###############################################################################
 
-PACKAGE_NAME:=github.com/exocore/exocore
+PACKAGE_NAME:=github.com/ExocoreNetwork/exocore
 GOLANG_CROSS_VERSION  = v1.20
 GOPATH ?= '$(HOME)/go'
 release-dry-run:

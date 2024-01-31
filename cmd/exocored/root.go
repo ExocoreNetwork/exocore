@@ -39,6 +39,7 @@ import (
 	genutilcli "github.com/cosmos/cosmos-sdk/x/genutil/client/cli"
 	genutiltypes "github.com/cosmos/cosmos-sdk/x/genutil/types"
 
+	app "github.com/ExocoreNetwork/exocore/app"
 	evmosclient "github.com/evmos/evmos/v14/client"
 	"github.com/evmos/evmos/v14/client/debug"
 	"github.com/evmos/evmos/v14/encoding"
@@ -46,9 +47,8 @@ import (
 	evmosserver "github.com/evmos/evmos/v14/server"
 	servercfg "github.com/evmos/evmos/v14/server/config"
 	srvflags "github.com/evmos/evmos/v14/server/flags"
-	app "github.com/exocore/app"
 
-	cmdcfg "github.com/evmos/evmos/v14/cmd/config"
+	cmdcfg "github.com/ExocoreNetwork/exocore/cmd/config"
 	evmoskr "github.com/evmos/evmos/v14/crypto/keyring"
 )
 
@@ -77,7 +77,7 @@ func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 
 	rootCmd := &cobra.Command{
 		Use:   app.Name,
-		Short: "ExoCore Daemon",
+		Short: "exocore daemon",
 		PersistentPreRunE: func(cmd *cobra.Command, _ []string) error {
 			// set the default command outputs
 			cmd.SetOut(cmd.OutOrStdout())

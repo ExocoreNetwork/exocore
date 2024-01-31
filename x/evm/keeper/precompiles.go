@@ -3,15 +3,21 @@ package keeper
 import (
 	"fmt"
 
-	stakingStateKeeper "github.com/exocore/x/restaking_assets_manage/keeper"
-	rewardKeeper "github.com/exocore/x/reward/keeper"
-	withdrawKeeper "github.com/exocore/x/withdraw/keeper"
+	stakingStateKeeper "github.com/ExocoreNetwork/exocore/x/restaking_assets_manage/keeper"
+	rewardKeeper "github.com/ExocoreNetwork/exocore/x/reward/keeper"
+	withdrawKeeper "github.com/ExocoreNetwork/exocore/x/withdraw/keeper"
 
-	delegationKeeper "github.com/exocore/x/delegation/keeper"
-	depositKeeper "github.com/exocore/x/deposit/keeper"
+	delegationKeeper "github.com/ExocoreNetwork/exocore/x/delegation/keeper"
+	depositKeeper "github.com/ExocoreNetwork/exocore/x/deposit/keeper"
 
 	"golang.org/x/exp/maps"
 
+	delegationprecompile "github.com/ExocoreNetwork/exocore/precompiles/delegation"
+	depositprecompile "github.com/ExocoreNetwork/exocore/precompiles/deposit"
+	rewardPrecompile "github.com/ExocoreNetwork/exocore/precompiles/reward"
+	slashPrecompile "github.com/ExocoreNetwork/exocore/precompiles/slash"
+	withdrawPrecompile "github.com/ExocoreNetwork/exocore/precompiles/withdraw"
+	exoslashKeeper "github.com/ExocoreNetwork/exocore/x/slash/keeper"
 	authzkeeper "github.com/cosmos/cosmos-sdk/x/authz/keeper"
 	distributionkeeper "github.com/cosmos/cosmos-sdk/x/distribution/keeper"
 	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
@@ -24,12 +30,6 @@ import (
 	vestingprecompile "github.com/evmos/evmos/v14/precompiles/vesting"
 	transferkeeper "github.com/evmos/evmos/v14/x/ibc/transfer/keeper"
 	vestingkeeper "github.com/evmos/evmos/v14/x/vesting/keeper"
-	delegationprecompile "github.com/exocore/precompiles/delegation"
-	depositprecompile "github.com/exocore/precompiles/deposit"
-	rewardPrecompile "github.com/exocore/precompiles/reward"
-	slashPrecompile "github.com/exocore/precompiles/slash"
-	withdrawPrecompile "github.com/exocore/precompiles/withdraw"
-	exoslashKeeper "github.com/exocore/x/slash/keeper"
 )
 
 // AvailablePrecompiles returns the list of all available precompiled contracts.

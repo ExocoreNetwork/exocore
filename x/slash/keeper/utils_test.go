@@ -3,13 +3,13 @@ package keeper_test
 import (
 	"time"
 
+	"github.com/ExocoreNetwork/exocore/app"
+	"github.com/ExocoreNetwork/exocore/utils"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/evmos/evmos/v14/crypto/ethsecp256k1"
 	"github.com/evmos/evmos/v14/testutil"
 	utiltx "github.com/evmos/evmos/v14/testutil/tx"
-	"github.com/exocore/app"
-	"github.com/exocore/utils"
 	"github.com/stretchr/testify/require"
 )
 

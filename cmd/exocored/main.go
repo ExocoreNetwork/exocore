@@ -3,13 +3,13 @@ package main
 import (
 	"os"
 
-	"github.com/exocore/app"
+	"github.com/ExocoreNetwork/exocore/app"
 
 	"github.com/cosmos/cosmos-sdk/server"
 	svrcmd "github.com/cosmos/cosmos-sdk/server/cmd"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	cmdcfg "github.com/evmos/evmos/v14/cmd/config"
+	cmdcfg "github.com/ExocoreNetwork/exocore/cmd/config"
 )
 
 func main() {

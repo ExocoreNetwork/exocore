@@ -5,7 +5,7 @@ import "gogoproto/gogo.proto";
 import "exocore/slash/params.proto";
 // this line is used by starport scaffolding # genesis/proto/import
 
-option go_package = "github.com/exocore/x/slash/types";
+option go_package = "github.com/ExocoreNetwork/exocore/x/slash/types";
 
 // GenesisState defines the exoslash module's genesis state.
 message GenesisState {

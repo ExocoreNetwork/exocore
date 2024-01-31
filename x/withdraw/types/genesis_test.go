@@ -3,7 +3,7 @@ package types_test
 import (
 	"testing"
 
-	"github.com/exocore/x/withdraw/types"
+	"github.com/ExocoreNetwork/exocore/x/withdraw/types"
 	"github.com/stretchr/testify/require"
 )
 

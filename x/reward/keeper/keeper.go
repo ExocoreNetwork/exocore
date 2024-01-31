@@ -8,8 +8,8 @@ import (
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/exocore/x/restaking_assets_manage/keeper"
-	"github.com/exocore/x/reward/types"
+	"github.com/ExocoreNetwork/exocore/x/restaking_assets_manage/keeper"
+	"github.com/ExocoreNetwork/exocore/x/reward/types"
 )
 
 type Keeper struct {

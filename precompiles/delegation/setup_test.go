@@ -3,13 +3,14 @@ package delegation_test
 import (
 	"testing"
 
-	"github.com/exocore/precompiles/delegation"
+	"github.com/ExocoreNetwork/exocore/precompiles/delegation"
 
 	"github.com/evmos/evmos/v14/x/evm/statedb"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
+	evmosapp "github.com/ExocoreNetwork/exocore/app"
 	tmtypes "github.com/cometbft/cometbft/types"
 	"github.com/cosmos/cosmos-sdk/crypto/keyring"
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
@@ -18,7 +19,6 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	ethtypes "github.com/ethereum/go-ethereum/core/types"
 	evmtypes "github.com/evmos/evmos/v14/x/evm/types"
-	evmosapp "github.com/exocore/app"
 	"github.com/stretchr/testify/suite"
 )
 

@@ -4,8 +4,8 @@ import (
 	context "context"
 
 	errorsmod "cosmossdk.io/errors"
+	"github.com/ExocoreNetwork/exocore/x/delegation/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/exocore/x/delegation/types"
 )
 
 var _ types.MsgServer = &Keeper{}

@@ -6,7 +6,7 @@ import "gogoproto/gogo.proto";
 import "cosmos_proto/cosmos.proto";
 import "cosmos/msg/v1/msg.proto";
 
-option go_package = "github.com/exocore/x/slash/types";
+option go_package = "github.com/ExocoreNetwork/exocore/x/slash/types";
 
 // Msg defines the Msg service.
 service Msg {
