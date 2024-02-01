@@ -1,6 +1,7 @@
 #!/bin/bash
 
 KEY="dev0"
+# TODO: eoxcore testnet chainid is still under consideration and need to be finalized later
 CHAINID="exocoretestnet_233-1"
 MONIKER="mymoniker"
 DATA_DIR=$(mktemp -d -t exocore-datadir.XXXXX)

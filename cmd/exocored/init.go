@@ -96,6 +96,7 @@ func InitCmd(mbm module.BasicManager, defaultNodeHome string) *cobra.Command {
 
 			chainID, _ := cmd.Flags().GetString(flags.FlagChainID)
 			if chainID == "" {
+				// TODO: default chainid is still under consideration and need to be finalized later
 				chainID = fmt.Sprintf("exocore_233-%v", tmrand.Str(6))
 			}
 

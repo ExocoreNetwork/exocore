@@ -12,6 +12,7 @@ RUN LEDGER_ENABLED=false make build
 FROM alpine AS run
 RUN apk add bash curl jq
 EXPOSE 26656 26657 1317 9090 8545 8546
+# TODO: eoxcore testnet chainid is still under consideration and need to be finalized later
 CMD ["start", "--log_format", "plain","--chain-id","exocoretestnet_233-1", "--metrics", "--json-rpc.api", "eth,txpool,personal,net,debug,web3", "--api.enable", "--json-rpc.enable", "true"]
 STOPSIGNAL SIGTERM
 VOLUME /exocore
