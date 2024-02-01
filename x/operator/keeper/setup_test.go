@@ -3,38 +3,50 @@ package keeper_test
 import (
 	"testing"
 
-	"github.com/cosmos/cosmos-sdk/crypto/keyring"
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/exocore/app"
+	"github.com/evmos/evmos/v14/x/evm/statedb"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
+	tmtypes "github.com/cometbft/cometbft/types"
+	"github.com/cosmos/cosmos-sdk/crypto/keyring"
+	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
+	"github.com/ethereum/go-ethereum/common"
+	ethtypes "github.com/ethereum/go-ethereum/core/types"
+	evmosapp "github.com/exocore/app"
 	"github.com/stretchr/testify/suite"
 )
+
+var s *KeeperTestSuite
 
 type KeeperTestSuite struct {
 	suite.Suite
 
 	ctx        sdk.Context
-	app        *app.ExocoreApp
+	app        *evmosapp.ExocoreApp
 	address    common.Address
-	signer     keyring.Signer
 	accAddress sdk.AccAddress
+
+	validators []stakingtypes.Validator
+	valSet     *tmtypes.ValidatorSet
+	ethSigner  ethtypes.Signer
+	privKey    cryptotypes.PrivKey
+	signer     keyring.Signer
+	bondDenom  string
+	stateDB    *statedb.StateDB
 }
 
-var s *KeeperTestSuite
-
-func TestKeeperTestSuite(t *testing.T) {
+func TestOperatorTestSuite(t *testing.T) {
 	s = new(KeeperTestSuite)
 	suite.Run(t, s)
 
 	// Run Ginkgo integration tests
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Keeper Suite")
+	RunSpecs(t, "operator module Suite")
 }
 
-func (suite *KeeperTestSuite) SetupTest() {
-	suite.DoSetupTest(suite.T())
+func (s *KeeperTestSuite) SetupTest() {
+	s.DoSetupTest()
 }
