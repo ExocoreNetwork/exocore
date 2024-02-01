@@ -113,6 +113,13 @@ if [[ $overwrite == "y" || $overwrite == "Y" ]]; then
 		fi
 	fi
 
+	# remove evmos seeds for localnet
+	if [[ "$OSTYPE" == "darwin"* ]]; then
+		sed -i '' 's/seeds = "[^"]*"/seeds = ""/' "$CONFIG"
+	else
+		sed -i 's/seeds = "[^"]*"/seeds = ""/' "$CONFIG"
+	fi
+
 	# enable prometheus metrics
 	if [[ "$OSTYPE" == "darwin"* ]]; then
 		sed -i '' 's/prometheus = false/prometheus = true/' "$CONFIG"
