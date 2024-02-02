@@ -13,7 +13,9 @@ jobs:
       pull-requests: write  # For reading the PR and posting comment
     runs-on: ubuntu-latest
     steps:
+      # This is used for warning when a PR touches any of the roots, or any function or method directly or indirectly called by a root
       - uses: actions/checkout@v4
       - uses: orijtech/consensuswarn@main
         with:
+          # example.com/pkg/path.Type.Method
           roots: 'github.com/ExocoreNetwork/exocore/app.ExocoreApp.BaseApp.DeliverTx,github.com/ExocoreNetwork/exocore/app.ExocoreApp.BaseApp.BeginBlocker,github.com/ExocoreNetwork/exocore/app.ExocoreApp.BaseApp.EndBlocker'

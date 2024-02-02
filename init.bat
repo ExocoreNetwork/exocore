@@ -9,7 +9,7 @@ rem 3. add path C:\msys64\mingw64\bin
 rem             C:\msys64\usr\bin
 
 set KEY="dev0"
-# TODO: eoxcore testnet chainid is still under consideration and need to be finalized later
+# TODO: exocore testnet chainid is still under consideration and need to be finalized later
 set CHAINID="exocoretestnet_233-1"
 set MONIKER="localtestnet"
 set KEYRING="test"

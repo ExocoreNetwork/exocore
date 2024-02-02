@@ -6,8 +6,8 @@ TMVERSION := $(shell go list -m github.com/cometbft/cometbft | sed 's:.* ::')
 COMMIT := $(shell git log -1 --format='%H')
 LEDGER_ENABLED ?= true
 BINDIR ?= $(GOPATH)/bin
-exocore_BINARY = exocored
-exocore_DIR = exocore
+EXOCORE_BINARY = exocored
+EXOCORE_DIR = exocore
 BUILDDIR ?= $(CURDIR)/build
 HTTPS_GIT := https://github.com/ExocoreNetwork/exocore
 DOCKER := $(shell which docker)
@@ -477,7 +477,7 @@ localnet-build:
 	$(MAKE) -C networks
 
 # Generate multi node configuration files and initialize configurations
-# TODO: eoxcore testnet chainid is still under consideration and need to be finalized later
+# TODO: exocore testnet chainid is still under consideration and need to be finalized later
 localnet-init: localnet-stop
 	exocored testnet init-files --chain-id exocoretestnet_233-1 --v 4 -o  $(CURDIR)/build/.testnets --starting-ip-address 192.168.10.2 --keyring-backend=os  && \
 	./networks/init-node.sh
