@@ -4,6 +4,9 @@ import (
 	errorsmod "cosmossdk.io/errors"
 	"cosmossdk.io/math"
 	"fmt"
+	"github.com/cosmos/cosmos-sdk/store/rootmulti"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"strings"
 
 	"github.com/ethereum/go-ethereum/common/hexutil"
@@ -102,4 +105,50 @@ func UpdateAssetDecValue(valueToUpdate *math.LegacyDec, changeValue *math.Legacy
 		}
 	}
 	return nil
+}
+
+func ContextForHistoricalState(ctx sdk.Context, height int64) (sdk.Context, error) {
+	if height < 0 {
+		return sdk.Context{}, errorsmod.Wrap(sdkerrors.ErrInvalidHeight, fmt.Sprintf("height:%v", height))
+	}
+	cms := ctx.MultiStore()
+	lastBlockHeight := cms.LatestVersion()
+	if lastBlockHeight == 0 {
+		return sdk.Context{}, errorsmod.Wrap(sdkerrors.ErrInvalidHeight, "app is not ready; please wait for first block")
+	}
+	if height > lastBlockHeight {
+		return sdk.Context{},
+			errorsmod.Wrap(
+				sdkerrors.ErrInvalidHeight,
+				"cannot query with height in the future; please provide a valid height",
+			)
+	}
+
+	// when the caller did not provide a query height, manually inject the latest
+	if height == 0 {
+		height = lastBlockHeight
+	}
+	cacheMS, err := cms.CacheMultiStoreWithVersion(height)
+	if err != nil {
+		return sdk.Context{},
+			sdkerrors.Wrapf(
+				sdkerrors.ErrInvalidRequest,
+				"failed to load state at height %d; %s (latest height: %d)", height, err, lastBlockHeight,
+			)
+	}
+
+	// branch the commit-multistore for safety
+	historicalStateCtx := sdk.NewContext(cacheMS, ctx.BlockHeader(), true, ctx.Logger()).
+		WithMinGasPrices(ctx.MinGasPrices()).
+		WithBlockHeight(height)
+	if height != lastBlockHeight {
+		rms, ok := cms.(*rootmulti.Store)
+		if ok {
+			cInfo, err := rms.GetCommitInfo(height)
+			if cInfo != nil && err == nil {
+				ctx = ctx.WithBlockTime(cInfo.Timestamp)
+			}
+		}
+	}
+	return historicalStateCtx, nil
 }

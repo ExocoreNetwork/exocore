@@ -24,7 +24,7 @@ func (k Keeper) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.Validat
 		//todo: don't think about freezing the operator in current implementation
 		/*		if k.slashKeeper.IsOperatorFrozen(ctx, operatorAccAddress) {
 				// reSet the completed height if the operator is frozen
-				record.CompleteBlockNumber = k.expectedOperatorInterface.GetUnBondingExpirationBlockNumber(ctx, operatorAccAddress, record.BlockNumber)
+				record.CompleteBlockNumber = k.expectedOperatorInterface.GetUnbondingExpirationBlockNumber(ctx, operatorAccAddress, record.BlockNumber)
 				if record.CompleteBlockNumber <= uint64(ctx.BlockHeight()) {
 					panic(fmt.Sprintf("the reset completedHeight isn't in future,setHeight:%v,curHeight:%v", record.CompleteBlockNumber, ctx.BlockHeight()))
 				}

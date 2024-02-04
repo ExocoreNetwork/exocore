@@ -57,5 +57,5 @@ func (s *KeeperTestSuite) TestHistoricalOperatorInfo() {
 		OperatorAddr: s.accAddress.String(),
 	})
 	s.NoError(err)
-	s.Equal(getInfo.OperatorMetaInfo, newInfo.OperatorMetaInfo)
+	s.Equal(newInfo.OperatorMetaInfo, getInfo.OperatorMetaInfo)
 }

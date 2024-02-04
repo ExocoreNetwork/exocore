@@ -36,7 +36,7 @@ import (
 // of one consensus engine unit (10^6) in the default token of the simapp from first genesis
 // account. A Nop logger is set in SimApp.
 func (s *PrecompileTestSuite) SetupWithGenesisValSet(valSet *tmtypes.ValidatorSet, genAccs []authtypes.GenesisAccount, balances ...banktypes.Balance) {
-	appI, genesisState := evmosapp.SetupTestingApp(cmn.DefaultChainID, false)()
+	appI, genesisState := evmosapp.SetupTestingApp(cmn.DefaultChainID, nil, false)()
 	app, ok := appI.(*evmosapp.ExocoreApp)
 	s.Require().True(ok)
 
@@ -215,6 +215,6 @@ func (s *PrecompileTestSuite) DeployContract(contract evmtypes.CompiledContract)
 // NextBlock commits the current block and sets up the next block.
 func (s *PrecompileTestSuite) NextBlock() {
 	var err error
-	s.ctx, err = testutil.CommitAndCreateNewCtx(s.ctx, s.app, time.Second, s.valSet)
+	s.ctx, err = testutil.CommitAndCreateNewCtx(s.ctx, s.app, time.Second, s.valSet, false)
 	s.Require().NoError(err)
 }

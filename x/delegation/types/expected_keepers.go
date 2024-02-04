@@ -25,7 +25,7 @@ func (VirtualISlashKeeper) OperatorAssetSlashedProportion(ctx sdk.Context, opAdd
 
 type ExpectedOperatorInterface interface {
 	IsOperator(ctx sdk.Context, addr sdk.AccAddress) bool
-	GetUnBondingExpirationBlockNumber(ctx sdk.Context, OperatorAddress sdk.AccAddress, startHeight uint64) uint64
+	GetUnbondingExpirationBlockNumber(ctx sdk.Context, OperatorAddress sdk.AccAddress, startHeight uint64) uint64
 
 	UpdateOptedInAssetsState(ctx sdk.Context, stakerId, assetId, operatorAddr string, opAmount sdkmath.Int) error
 }

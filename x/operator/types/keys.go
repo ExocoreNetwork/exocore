@@ -23,7 +23,7 @@ const (
 
 	SlashVetoDuration = int64(1000)
 
-	UnBondingExpiration = 10
+	UnbondingExpiration = 10
 )
 
 // ModuleAddress is the native module address for EVM

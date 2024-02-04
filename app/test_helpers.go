@@ -2,6 +2,7 @@ package app
 
 import (
 	"encoding/json"
+	pruningtypes "github.com/cosmos/cosmos-sdk/store/pruning/types"
 	"os"
 	"time"
 
@@ -38,7 +39,7 @@ func init() {
 }
 
 // DefaultTestingAppInit defines the IBC application used for testing
-var DefaultTestingAppInit func(chainID string, isPrintLog bool) func() (ibctesting.TestingApp, map[string]json.RawMessage) = SetupTestingApp
+var DefaultTestingAppInit func(chainID string, pruneOpts *pruningtypes.PruningOptions, isPrintLog bool) func() (ibctesting.TestingApp, map[string]json.RawMessage) = SetupTestingApp
 
 // DefaultConsensusParams defines the default Tendermint consensus params used in
 // Evmos testing.
@@ -201,7 +202,7 @@ func GenesisStateWithValSet(app *ExocoreApp, genesisState simapp.GenesisState,
 // SetupTestingApp initializes the IBC-go testing application
 // need to keep this design to comply with the ibctesting SetupTestingApp func
 // and be able to set the chainID for the tests properly
-func SetupTestingApp(chainID string, isPrintLog bool) func() (ibctesting.TestingApp, map[string]json.RawMessage) {
+func SetupTestingApp(chainID string, pruneOpts *pruningtypes.PruningOptions, isPrintLog bool) func() (ibctesting.TestingApp, map[string]json.RawMessage) {
 	return func() (ibctesting.TestingApp, map[string]json.RawMessage) {
 		db := dbm.NewMemDB()
 		cfg := encoding.MakeConfig(ModuleBasics)
@@ -209,13 +210,18 @@ func SetupTestingApp(chainID string, isPrintLog bool) func() (ibctesting.Testing
 		if isPrintLog {
 			logger = log.NewTMLogger(log.NewSyncWriter(os.Stdout))
 		}
+		baseAppOptions := make([]func(*baseapp.BaseApp), 0)
+		baseAppOptions = append(baseAppOptions, baseapp.SetChainID(chainID))
+		if pruneOpts != nil {
+			baseAppOptions = append(baseAppOptions, baseapp.SetPruning(*pruneOpts))
+		}
 		app := NewExocoreApp(
 			logger,
 			db, nil, true,
 			map[int64]bool{},
 			DefaultNodeHome, 5, cfg,
 			simtestutil.NewAppOptionsWithFlagHome(DefaultNodeHome),
-			baseapp.SetChainID(chainID),
+			baseAppOptions[:]...,
 		)
 		return app, NewDefaultGenesisState()
 	}

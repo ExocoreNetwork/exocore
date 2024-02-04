@@ -207,7 +207,7 @@ func (k Keeper) UndelegateFrom(ctx sdk.Context, params *DelegationOrUndelegation
 		Amount:                params.OpAmount,
 		ActualCompletedAmount: sdkmath.NewInt(0),
 	}
-	r.CompleteBlockNumber = k.expectedOperatorInterface.GetUnBondingExpirationBlockNumber(ctx, params.OperatorAddress, r.BlockNumber)
+	r.CompleteBlockNumber = k.expectedOperatorInterface.GetUnbondingExpirationBlockNumber(ctx, params.OperatorAddress, r.BlockNumber)
 	err = k.SetUndelegationRecords(ctx, []*delegationtype.UndelegationRecord{r})
 	if err != nil {
 		return err
