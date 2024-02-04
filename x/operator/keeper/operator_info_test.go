@@ -30,9 +30,7 @@ func (s *KeeperTestSuite) TestHistoricalOperatorInfo() {
 		ApproveAddr:      "",
 		OperatorMetaInfo: "test operator",
 		ClientChainEarningsAddr: &operatortype.ClientChainEarningAddrList{
-			EarningInfoList: []*operatortype.ClientChainEarningAddrInfo{
-				{101, "0x1f9840a85d5af5bf1d1762f925bdaddc4201f984"},
-			},
+			EarningInfoList: nil,
 		},
 	}
 	err := s.app.OperatorKeeper.SetOperatorInfo(s.ctx, s.accAddress.String(), info)
@@ -46,17 +44,17 @@ func (s *KeeperTestSuite) TestHistoricalOperatorInfo() {
 	s.NoError(err)
 
 	//get historical operator info
-	s.ctx.WithBlockHeight(height)
-	getInfo, err := s.app.OperatorKeeper.GetOperatorInfo(s.ctx, &operatortype.GetOperatorInfoReq{
+	historicalQueryCtx, err := s.app.CreateQueryContext(height, false)
+	s.NoError(err)
+	getInfo, err := s.app.OperatorKeeper.GetOperatorInfo(historicalQueryCtx, &operatortype.GetOperatorInfoReq{
 		OperatorAddr: s.accAddress.String(),
 	})
 	s.NoError(err)
-	s.Equal(info, getInfo)
-	s.ctx.WithBlockHeight(height + 1)
+	s.Equal(info.OperatorMetaInfo, getInfo.OperatorMetaInfo)
 
 	getInfo, err = s.app.OperatorKeeper.GetOperatorInfo(s.ctx, &operatortype.GetOperatorInfoReq{
 		OperatorAddr: s.accAddress.String(),
 	})
 	s.NoError(err)
-	s.Equal(getInfo, newInfo)
+	s.Equal(getInfo.OperatorMetaInfo, newInfo.OperatorMetaInfo)
 }

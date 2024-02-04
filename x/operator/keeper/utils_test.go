@@ -2,6 +2,7 @@ package keeper_test
 
 import (
 	"encoding/json"
+	pruningtypes "github.com/cosmos/cosmos-sdk/store/pruning/types"
 	"golang.org/x/exp/rand"
 	"time"
 
@@ -36,7 +37,8 @@ import (
 // of one consensus engine unit (10^6) in the default token of the simapp from first genesis
 // account. A Nop logger is set in SimApp.
 func (s *KeeperTestSuite) SetupWithGenesisValSet(valSet *tmtypes.ValidatorSet, genAccs []authtypes.GenesisAccount, balances ...banktypes.Balance) {
-	appI, genesisState := evmosapp.SetupTestingApp(cmn.DefaultChainID, false)()
+	pruneOpts := pruningtypes.NewPruningOptionsFromString(pruningtypes.PruningOptionDefault)
+	appI, genesisState := evmosapp.SetupTestingApp(cmn.DefaultChainID, &pruneOpts, false)()
 	app, ok := appI.(*evmosapp.ExocoreApp)
 	s.Require().True(ok)
 

@@ -278,26 +278,26 @@ func (k *Keeper) GetAssetsAndAmountToSlash(ctx sdk.Context, operatorAddress sdk.
 		slashOperatorInfo: make(map[string]*slashAmounts, 0),
 	}
 
-	height := ctx.BlockHeight()
 	//get the state when the slash occurred
-	ctx = ctx.WithBlockHeight(occurredSateHeight)
-	//get assetsInfo supported by AVS
-	assetsFilter, err := k.avsKeeper.GetAvsSupportedAssets(ctx, AVSAddr)
+	historicalSateCtx, err := types2.ContextForHistoricalState(ctx, occurredSateHeight)
 	if err != nil {
 		return nil, err
 	}
-	historyStakerAssets, err := k.delegationKeeper.GetDelegationStateByOperatorAndAssets(ctx, operatorAddress.String(), assetsFilter)
+	//get assetsInfo supported by AVS
+	assetsFilter, err := k.avsKeeper.GetAvsSupportedAssets(historicalSateCtx, AVSAddr)
+	if err != nil {
+		return nil, err
+	}
+	historyStakerAssets, err := k.delegationKeeper.GetDelegationStateByOperatorAndAssets(historicalSateCtx, operatorAddress.String(), assetsFilter)
 	if err != nil {
 		return nil, err
 	}
 
 	//get the Assets opted in the operator
-	historyOperatorAssetsState, err := k.restakingStateKeeper.GetOperatorAssetInfos(ctx, operatorAddress, assetsFilter)
+	historyOperatorAssetsState, err := k.restakingStateKeeper.GetOperatorAssetInfos(historicalSateCtx, operatorAddress, assetsFilter)
 	if err != nil {
 		return nil, err
 	}
-	// reset context height
-	ctx = ctx.WithBlockHeight(height)
 
 	//calculate the actual slash amount according to the history and current state
 	currentStakerAssets, err := k.delegationKeeper.GetDelegationStateByOperatorAndAssets(ctx, operatorAddress.String(), assetsFilter)
@@ -443,19 +443,20 @@ func (k *Keeper) Slash(ctx sdk.Context, operatorAddress sdk.AccAddress, AVSAddr,
 
 	//get the state when the slash occurred
 	//get the opted-in info
-	ctx = ctx.WithBlockHeight(occurredSateHeight)
+	historicalSateCtx, err := types2.ContextForHistoricalState(ctx, occurredSateHeight)
+	if err != nil {
+		return err
+	}
 	if !k.IsOptedIn(ctx, operatorAddress.String(), AVSAddr) {
 		return types.ErrNotOptedIn
 	}
-	optedInfo, err := k.GetOptedInfo(ctx, operatorAddress.String(), AVSAddr)
+	optedInfo, err := k.GetOptedInfo(historicalSateCtx, operatorAddress.String(), AVSAddr)
 	if err != nil {
 		return err
 	}
 	if optedInfo.SlashContract != slashContract {
 		return errorsmod.Wrap(types.ErrSlashContractNotMatch, fmt.Sprintf("input slashContract:%s, opted-in slash contract:%s", slashContract, optedInfo.SlashContract))
 	}
-	// reset context height
-	ctx = ctx.WithBlockHeight(height)
 
 	//todo: recording the slash event might be moved to the slash module
 	slashInfo := types.OperatorSlashInfo{
