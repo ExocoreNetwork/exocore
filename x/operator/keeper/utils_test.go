@@ -126,8 +126,8 @@ func (s *KeeperTestSuite) SetupWithGenesisValSet(valSet *tmtypes.ValidatorSet, g
 		Header: header,
 	})
 
-	// create Context
-	s.ctx = app.BaseApp.NewContext(false, header)
+	// need to create UncachedContext when retrieving historical state
+	s.ctx = app.BaseApp.NewUncachedContext(false, header)
 	s.app = app
 }
 
@@ -204,6 +204,6 @@ func (s *KeeperTestSuite) DoSetupTest() {
 // NextBlock commits the current block and sets up the next block.
 func (s *KeeperTestSuite) NextBlock() {
 	var err error
-	s.ctx, err = testutil.CommitAndCreateNewCtx(s.ctx, s.app, time.Second, s.valSet)
+	s.ctx, err = testutil.CommitAndCreateNewCtx(s.ctx, s.app, time.Second, s.valSet, true)
 	s.Require().NoError(err)
 }

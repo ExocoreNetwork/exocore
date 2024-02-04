@@ -2,6 +2,7 @@ package keeper_test
 
 import (
 	operatortype "github.com/exocore/x/operator/types"
+	"github.com/exocore/x/restaking_assets_manage/types"
 )
 
 func (s *KeeperTestSuite) TestOperatorInfo() {
@@ -44,7 +45,7 @@ func (s *KeeperTestSuite) TestHistoricalOperatorInfo() {
 	s.NoError(err)
 
 	//get historical operator info
-	historicalQueryCtx, err := s.app.CreateQueryContext(height, false)
+	historicalQueryCtx, err := types.ContextForHistoricalState(s.ctx, height)
 	s.NoError(err)
 	getInfo, err := s.app.OperatorKeeper.GetOperatorInfo(historicalQueryCtx, &operatortype.GetOperatorInfoReq{
 		OperatorAddr: s.accAddress.String(),
