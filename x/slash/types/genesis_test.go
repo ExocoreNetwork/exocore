@@ -3,7 +3,7 @@ package types_test
 import (
 	"testing"
 
-	"github.com/exocore/x/slash/types"
+	"github.com/ExocoreNetwork/exocore/x/slash/types"
 	"github.com/stretchr/testify/require"
 )
 

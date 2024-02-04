@@ -4,6 +4,8 @@ import (
 	"context"
 
 	"cosmossdk.io/math"
+	"github.com/ExocoreNetwork/exocore/x/deposit/keeper"
+	"github.com/ExocoreNetwork/exocore/x/native_token/types"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/codec"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
@@ -12,8 +14,6 @@ import (
 	simtypes "github.com/cosmos/cosmos-sdk/types/simulation"
 	"github.com/ethereum/go-ethereum/core"
 	ethtypes "github.com/ethereum/go-ethereum/core/types"
-	"github.com/exocore/x/deposit/keeper"
-	"github.com/exocore/x/native_token/types"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	"github.com/spf13/cobra"
 )

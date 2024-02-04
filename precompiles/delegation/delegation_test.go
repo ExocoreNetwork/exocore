@@ -7,6 +7,14 @@ import (
 
 	sdkmath "cosmossdk.io/math"
 
+	"github.com/ExocoreNetwork/exocore/app"
+	"github.com/ExocoreNetwork/exocore/precompiles/delegation"
+	"github.com/ExocoreNetwork/exocore/precompiles/deposit"
+	keeper2 "github.com/ExocoreNetwork/exocore/x/delegation/keeper"
+	delegationtype "github.com/ExocoreNetwork/exocore/x/delegation/types"
+	"github.com/ExocoreNetwork/exocore/x/deposit/keeper"
+	types3 "github.com/ExocoreNetwork/exocore/x/deposit/types"
+	"github.com/ExocoreNetwork/exocore/x/restaking_assets_manage/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/common"
 	ethtypes "github.com/ethereum/go-ethereum/core/types"
@@ -14,14 +22,6 @@ import (
 	"github.com/evmos/evmos/v14/utils"
 	"github.com/evmos/evmos/v14/x/evm/statedb"
 	evmtypes "github.com/evmos/evmos/v14/x/evm/types"
-	"github.com/exocore/app"
-	"github.com/exocore/precompiles/delegation"
-	"github.com/exocore/precompiles/deposit"
-	keeper2 "github.com/exocore/x/delegation/keeper"
-	delegationtype "github.com/exocore/x/delegation/types"
-	"github.com/exocore/x/deposit/keeper"
-	types3 "github.com/exocore/x/deposit/types"
-	"github.com/exocore/x/restaking_assets_manage/types"
 )
 
 func (s *PrecompileTestSuite) TestIsTransaction() {

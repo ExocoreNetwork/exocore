@@ -5,7 +5,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/spf13/cobra"
 
-	"github.com/exocore/x/withdraw/types"
+	"github.com/ExocoreNetwork/exocore/x/withdraw/types"
 )
 
 func CmdQueryParams() *cobra.Command {

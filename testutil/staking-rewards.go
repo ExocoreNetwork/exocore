@@ -5,6 +5,8 @@ import (
 	"testing"
 
 	sdkmath "cosmossdk.io/math"
+	"github.com/ExocoreNetwork/exocore/app"
+	testutiltx "github.com/ExocoreNetwork/exocore/testutil/tx"
 	"github.com/cosmos/cosmos-sdk/crypto/keys/ed25519"
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -15,8 +17,6 @@ import (
 	teststaking "github.com/cosmos/cosmos-sdk/x/staking/testutil"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	"github.com/evmos/evmos/v14/utils"
-	"github.com/exocore/app"
-	testutiltx "github.com/exocore/testutil/tx"
 	"github.com/stretchr/testify/require"
 )
 

@@ -16,10 +16,10 @@ import (
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	ethtypes "github.com/ethereum/go-ethereum/core/types"
 
+	"github.com/ExocoreNetwork/exocore/app"
 	"github.com/evmos/evmos/v14/server/config"
 	"github.com/evmos/evmos/v14/utils"
 	evmtypes "github.com/evmos/evmos/v14/x/evm/types"
-	"github.com/exocore/app"
 )
 
 // PrepareEthTx creates an ethereum tx and signs it with the provided messages and private key.

@@ -4,10 +4,10 @@ CHAINDIR="$current_dir/build/.testnets"
 
 for node in {0..3}; do
     NODE_DIR="$CHAINDIR/node$node"
-    GENESIS="$NODE_DIR/evmosd/config/genesis.json"
-    TMP_GENESIS="$NODE_DIR/evmosd/config/tmp_genesis.json"
-    APP_TOML="$NODE_DIR/evmosd/config/app.toml"
-    CONFIG_TOML="$NODE_DIR/evmosd/config/config.toml"
+    GENESIS="$NODE_DIR/exocored/config/genesis.json"
+    TMP_GENESIS="$NODE_DIR/exocored/config/tmp_genesis.json"
+    APP_TOML="$NODE_DIR/exocored/config/app.toml"
+    CONFIG_TOML="$NODE_DIR/exocored/config/config.toml"
      # If TMP_GENESIS directory does not exist, create it
         TMP_GENESIS_DIR=$(dirname "$TMP_GENESIS")
         if [ ! -d "$TMP_GENESIS_DIR" ]; then
@@ -42,6 +42,7 @@ for node in {0..3}; do
     # Enable the APIs for the tests to be successful
     sed -i.bak 's/enable = false/enable = true/g' "$APP_TOML"
     sed -i.bak 's/swagger = false/swagger = true/g' "$APP_TOML"
+    sed -i.bak 's/enabled-unsafe-cors = false/enabled-unsafe-cors = true/g' "$APP_TOML"
 
   echo "Modified configurations for node$node"
 done

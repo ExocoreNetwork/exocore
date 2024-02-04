@@ -3,6 +3,8 @@ package keeper_test
 import (
 	"time"
 
+	"github.com/ExocoreNetwork/exocore/app"
+	"github.com/ExocoreNetwork/exocore/utils"
 	"github.com/cosmos/cosmos-sdk/crypto/keys/ed25519"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/common"
@@ -10,8 +12,6 @@ import (
 	"github.com/evmos/evmos/v14/testutil"
 	utiltx "github.com/evmos/evmos/v14/testutil/tx"
 	feemarkettypes "github.com/evmos/evmos/v14/x/feemarket/types"
-	"github.com/exocore/app"
-	"github.com/exocore/utils"
 	"github.com/stretchr/testify/require"
 	"golang.org/x/exp/rand"
 )

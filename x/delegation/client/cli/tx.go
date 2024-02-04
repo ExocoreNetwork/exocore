@@ -6,8 +6,8 @@ import (
 	"strings"
 
 	errorsmod "cosmossdk.io/errors"
+	delegationtype "github.com/ExocoreNetwork/exocore/x/delegation/types"
 	"github.com/cosmos/cosmos-sdk/client/flags"
-	delegationtype "github.com/exocore/x/delegation/types"
 	"github.com/spf13/cobra"
 
 	"github.com/cosmos/cosmos-sdk/client"

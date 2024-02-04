@@ -3,7 +3,7 @@ package keeper
 import (
 	"math/big"
 
-	"github.com/exocore/precompiles/delegation"
+	"github.com/ExocoreNetwork/exocore/precompiles/delegation"
 
 	tmtypes "github.com/cometbft/cometbft/types"
 

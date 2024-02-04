@@ -2,11 +2,11 @@ package keeper_test
 
 import (
 	sdkmath "cosmossdk.io/math"
+	depositKeeper "github.com/ExocoreNetwork/exocore/x/deposit/keeper"
+	"github.com/ExocoreNetwork/exocore/x/restaking_assets_manage/types"
+	"github.com/ExocoreNetwork/exocore/x/withdraw/keeper"
+	withdrawtype "github.com/ExocoreNetwork/exocore/x/withdraw/types"
 	"github.com/ethereum/go-ethereum/common"
-	depositKeeper "github.com/exocore/x/deposit/keeper"
-	"github.com/exocore/x/restaking_assets_manage/types"
-	"github.com/exocore/x/withdraw/keeper"
-	withdrawtype "github.com/exocore/x/withdraw/types"
 )
 
 func (suite *KeeperTestSuite) TestClaimWithdrawRequest() {

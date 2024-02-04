@@ -6,7 +6,7 @@ import "cosmos/msg/v1/msg.proto";
 import "cosmos_proto/cosmos.proto";
 import "gogoproto/gogo.proto";
 
-option go_package = "github.com/exocore/x/native_token/types";
+option go_package = "github.com/ExocoreNetwork/exocore/x/native_token/types";
 
 message ValidatorInfo {
   enum ValidatorStatus {

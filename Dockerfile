@@ -1,6 +1,6 @@
 FROM golang:1.21.0-alpine3.18 AS build-env
 
-WORKDIR /go/src/github.com/evmos/evmos
+WORKDIR /go/src/github.com/ExocoreNetwork/exocore
 
 COPY go.mod go.sum ./
 
@@ -20,16 +20,16 @@ FROM alpine:3.18
 
 WORKDIR /root
 
-COPY --from=build-env /go/src/github.com/evmos/evmos/build/evmosd /usr/bin/evmosd
+COPY --from=build-env /go/src/github.com/ExocoreNetwork/exocore/build/exocored /usr/bin/exocored
 COPY --from=build-env /go/bin/toml-cli /usr/bin/toml-cli
 
 RUN apk add --no-cache ca-certificates=20230506-r0 jq=1.6-r3 curl=8.2.1-r0 bash=5.2.15-r5 vim=9.0.1568-r0 lz4=1.9.4-r4 rclone=1.62.2-r3 \
-    && addgroup -g 1000 evmos \
-    && adduser -S -h /home/evmos -D evmos -u 1000 -G evmos
+    && addgroup -g 1000 exocore \
+    && adduser -S -h /home/exocore -D exocore -u 1000 -G exocore
 
 USER 1000
-WORKDIR /home/evmos
+WORKDIR /home/exocore
 
 EXPOSE 26656 26657 1317 9090 8545 8546
 
-CMD ["evmosd"]
+CMD ["exocored"]

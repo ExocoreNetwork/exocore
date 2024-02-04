@@ -11,8 +11,8 @@ import (
 	"github.com/cosmos/cosmos-sdk/client/tx"
 
 	// "github.com/cosmos/cosmos-sdk/client/flags"
-	paramstypes "github.com/exocore/x/deposit/types"
-	"github.com/exocore/x/withdraw/types"
+	paramstypes "github.com/ExocoreNetwork/exocore/x/deposit/types"
+	"github.com/ExocoreNetwork/exocore/x/withdraw/types"
 )
 
 var DefaultRelativePacketTimeoutTimestamp = uint64((time.Duration(10) * time.Minute).Nanoseconds())

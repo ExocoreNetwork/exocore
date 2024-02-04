@@ -10,10 +10,10 @@ import (
 	"path/filepath"
 	"sort"
 
-	exoslash "github.com/exocore/x/slash"
+	exoslash "github.com/ExocoreNetwork/exocore/x/slash"
 
-	slashKeeper "github.com/exocore/x/slash/keeper"
-	exoslashTypes "github.com/exocore/x/slash/types"
+	slashKeeper "github.com/ExocoreNetwork/exocore/x/slash/keeper"
+	exoslashTypes "github.com/ExocoreNetwork/exocore/x/slash/types"
 
 	autocliv1 "cosmossdk.io/api/cosmos/autocli/v1"
 	reflectionv1 "cosmossdk.io/api/cosmos/reflection/v1"
@@ -23,6 +23,21 @@ import (
 	ethante "github.com/evmos/evmos/v14/app/ante/evm"
 	"github.com/evmos/evmos/v14/ethereum/eip712"
 
+	"github.com/ExocoreNetwork/exocore/x/delegation"
+	delegationKeeper "github.com/ExocoreNetwork/exocore/x/delegation/keeper"
+	delegationTypes "github.com/ExocoreNetwork/exocore/x/delegation/types"
+	"github.com/ExocoreNetwork/exocore/x/deposit"
+	depositKeeper "github.com/ExocoreNetwork/exocore/x/deposit/keeper"
+	depositTypes "github.com/ExocoreNetwork/exocore/x/deposit/types"
+	"github.com/ExocoreNetwork/exocore/x/restaking_assets_manage"
+	stakingAssetsManageKeeper "github.com/ExocoreNetwork/exocore/x/restaking_assets_manage/keeper"
+	stakingAssetsManageTypes "github.com/ExocoreNetwork/exocore/x/restaking_assets_manage/types"
+	"github.com/ExocoreNetwork/exocore/x/reward"
+	rewardKeeper "github.com/ExocoreNetwork/exocore/x/reward/keeper"
+	rewardTypes "github.com/ExocoreNetwork/exocore/x/reward/types"
+	"github.com/ExocoreNetwork/exocore/x/withdraw"
+	withdrawKeeper "github.com/ExocoreNetwork/exocore/x/withdraw/keeper"
+	withdrawTypes "github.com/ExocoreNetwork/exocore/x/withdraw/types"
 	"github.com/evmos/evmos/v14/x/feemarket"
 	feemarkettypes "github.com/evmos/evmos/v14/x/feemarket/types"
 	"github.com/evmos/evmos/v14/x/incentives"
@@ -30,21 +45,6 @@ import (
 	"github.com/evmos/evmos/v14/x/recovery"
 	"github.com/evmos/evmos/v14/x/revenue/v1"
 	vestingtypes "github.com/evmos/evmos/v14/x/vesting/types"
-	"github.com/exocore/x/delegation"
-	delegationKeeper "github.com/exocore/x/delegation/keeper"
-	delegationTypes "github.com/exocore/x/delegation/types"
-	"github.com/exocore/x/deposit"
-	depositKeeper "github.com/exocore/x/deposit/keeper"
-	depositTypes "github.com/exocore/x/deposit/types"
-	"github.com/exocore/x/restaking_assets_manage"
-	stakingAssetsManageKeeper "github.com/exocore/x/restaking_assets_manage/keeper"
-	stakingAssetsManageTypes "github.com/exocore/x/restaking_assets_manage/types"
-	"github.com/exocore/x/reward"
-	rewardKeeper "github.com/exocore/x/reward/keeper"
-	rewardTypes "github.com/exocore/x/reward/types"
-	"github.com/exocore/x/withdraw"
-	withdrawKeeper "github.com/exocore/x/withdraw/keeper"
-	withdrawTypes "github.com/exocore/x/withdraw/types"
 
 	runtimeservices "github.com/cosmos/cosmos-sdk/runtime/services"
 
@@ -149,13 +149,13 @@ import (
 	upgradekeeper "github.com/cosmos/cosmos-sdk/x/upgrade/keeper"
 	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
 
+	"github.com/ExocoreNetwork/exocore/x/evm"
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 	"github.com/evmos/evmos/v14/encoding"
 	evmostypes "github.com/evmos/evmos/v14/types"
 	evmtypes "github.com/evmos/evmos/v14/x/evm/types"
-	"github.com/exocore/x/evm"
 
-	evmkeeper "github.com/exocore/x/evm/keeper"
+	evmkeeper "github.com/ExocoreNetwork/exocore/x/evm/keeper"
 
 	consensusparamkeeper "github.com/cosmos/cosmos-sdk/x/consensus/keeper"
 	consensusparamtypes "github.com/cosmos/cosmos-sdk/x/consensus/types"
@@ -192,7 +192,7 @@ import (
 )
 
 // Name defines the application binary name
-const Name = "exocore"
+const Name = "exocored"
 
 func init() {
 	userHomeDir, err := os.UserHomeDir()
@@ -586,7 +586,7 @@ func NewExocoreApp(
 
 	app.VestingKeeper = vestingkeeper.NewKeeper(
 		keys[vestingtypes.StoreKey], authtypes.NewModuleAddress(govtypes.ModuleName), appCodec,
-		app.AccountKeeper, app.BankKeeper, app.DistrKeeper, app.StakingKeeper,
+		app.AccountKeeper, app.BankKeeper, app.DistrKeeper, app.StakingKeeper, app.GovKeeper,
 	)
 
 	app.Erc20Keeper = erc20keeper.NewKeeper(

@@ -5,8 +5,8 @@ import (
 	"strconv"
 
 	errorsmod "cosmossdk.io/errors"
-	delegationtype "github.com/exocore/x/delegation/types"
-	"github.com/exocore/x/restaking_assets_manage/types"
+	delegationtype "github.com/ExocoreNetwork/exocore/x/delegation/types"
+	"github.com/ExocoreNetwork/exocore/x/restaking_assets_manage/types"
 
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"

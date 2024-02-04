@@ -1,7 +1,7 @@
 package keeper_test
 
 import (
-	withdrawtype "github.com/exocore/x/withdraw/types"
+	withdrawtype "github.com/ExocoreNetwork/exocore/x/withdraw/types"
 )
 
 func (suite *KeeperTestSuite) TestParams() {

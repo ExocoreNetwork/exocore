@@ -2,8 +2,9 @@ package keeper
 
 import (
 	"context"
+
+	restakingtype "github.com/ExocoreNetwork/exocore/x/restaking_assets_manage/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	restakingtype "github.com/exocore/x/restaking_assets_manage/types"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )

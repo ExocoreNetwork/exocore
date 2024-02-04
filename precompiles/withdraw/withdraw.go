@@ -5,6 +5,8 @@ import (
 	"embed"
 	"fmt"
 
+	stakingStateKeeper "github.com/ExocoreNetwork/exocore/x/restaking_assets_manage/keeper"
+	withdrawKeeper "github.com/ExocoreNetwork/exocore/x/withdraw/keeper"
 	"github.com/cometbft/cometbft/libs/log"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -13,8 +15,6 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/vm"
 	cmn "github.com/evmos/evmos/v14/precompiles/common"
-	stakingStateKeeper "github.com/exocore/x/restaking_assets_manage/keeper"
-	withdrawKeeper "github.com/exocore/x/withdraw/keeper"
 )
 
 var _ vm.PrecompiledContract = &Precompile{}

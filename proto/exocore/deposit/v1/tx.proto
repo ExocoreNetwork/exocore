@@ -8,7 +8,7 @@ import "gogoproto/gogo.proto";
 import "amino/amino.proto";
 import "exocore/deposit/v1/deposit.proto";
 
-option go_package = "github.com/exocore/x/deposit/types";
+option go_package = "github.com/ExocoreNetwork/exocore/x/deposit/types";
 
 // MsgUpdateParams is the Msg/UpdateParams request type for Erc20 parameters.
 // Since: cosmos-sdk 0.47

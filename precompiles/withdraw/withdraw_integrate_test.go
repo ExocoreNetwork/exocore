@@ -4,12 +4,12 @@ import (
 	"math/big"
 	"strings"
 
+	"github.com/ExocoreNetwork/exocore/precompiles/testutil"
+	"github.com/ExocoreNetwork/exocore/precompiles/testutil/contracts"
+	"github.com/ExocoreNetwork/exocore/precompiles/withdraw"
+	deposittype "github.com/ExocoreNetwork/exocore/x/deposit/types"
+	"github.com/ExocoreNetwork/exocore/x/restaking_assets_manage/types"
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/exocore/precompiles/testutil"
-	"github.com/exocore/precompiles/testutil/contracts"
-	"github.com/exocore/precompiles/withdraw"
-	deposittype "github.com/exocore/x/deposit/types"
-	"github.com/exocore/x/restaking_assets_manage/types"
 )
 
 // General variables used for integration tests

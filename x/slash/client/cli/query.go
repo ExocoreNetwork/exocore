@@ -3,8 +3,8 @@ package cli
 import (
 	"fmt"
 
+	"github.com/ExocoreNetwork/exocore/x/slash/types"
 	"github.com/cosmos/cosmos-sdk/client"
-	"github.com/exocore/x/slash/types"
 	"github.com/spf13/cobra"
 )
 

@@ -1,6 +1,6 @@
 package keeper_test
 
-import delegationtype "github.com/exocore/x/delegation/types"
+import delegationtype "github.com/ExocoreNetwork/exocore/x/delegation/types"
 
 func (suite *KeeperTestSuite) TestOperatorInfo() {
 	info := &delegationtype.OperatorInfo{

@@ -3,7 +3,7 @@ package keeper
 import (
 	"context"
 
-	"github.com/exocore/x/withdraw/types"
+	"github.com/ExocoreNetwork/exocore/x/withdraw/types"
 )
 
 type msgServer struct {

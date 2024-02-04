@@ -3,8 +3,8 @@ package keeper
 import (
 	"context"
 
+	delegationtype "github.com/ExocoreNetwork/exocore/x/delegation/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	delegationtype "github.com/exocore/x/delegation/types"
 )
 
 var _ delegationtype.QueryServer = Keeper{}

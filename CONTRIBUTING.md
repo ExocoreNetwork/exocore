@@ -1,22 +1,22 @@
 # Exocore Contributor Guidelines
 
 <!-- markdown-link-check-disable -->
-- [Exocore Contributor Guidelines](#Exocore-contributor-guidelines)
-    - [General Procedure](#general-procedure)
-    - [Architecture Decision Records (ADR)](#architecture-decision-records-adr)
-    - [Forking](#forking)
-    - [Dependencies](#dependencies)
-    - [Protobuf](#protobuf)
-    - [Development Procedure](#development-procedure)
-    - [Testing](#testing)
-    - [Updating Documentation](#updating-documentation)
-    - [Branching Model and Release](#branching-model-and-release)
-        - [Commit messages](#commit-messages)
-        - [PR Targeting](#pr-targeting)
-        - [Pull Requests](#pull-requests)
-        - [Process for reviewing PRs](#process-for-reviewing-prs)
-        - [Pull Merge Procedure](#pull-merge-procedure)
-        - [Release Procedure](#release-procedure)
+- [Exocore Contributor Guidelines](#exocore-contributor-guidelines)
+  - [General Procedure](#general-procedure)
+  - [Architecture Decision Records (ADR)](#architecture-decision-records-adr)
+  - [Forking](#forking)
+  - [Dependencies](#dependencies)
+  - [Protobuf](#protobuf)
+  - [Development Procedure](#development-procedure)
+  - [Testing](#testing)
+  - [Updating Documentation](#updating-documentation)
+  - [Branching Model and Release](#branching-model-and-release)
+    - [Commit messages](#commit-messages)
+    - [PR Targeting](#pr-targeting)
+    - [Pull Requests](#pull-requests)
+    - [Process for reviewing PRs](#process-for-reviewing-prs)
+    - [Pull Merge Procedure](#pull-merge-procedure)
+    - [Release Procedure](#release-procedure)
 <!-- markdown-link-check-enable -->
 
 ## <span id="general_procedure">General Procedure</span>
@@ -82,15 +82,15 @@ refer to [Tendermint ADRs](https://github.com/tendermint/tendermint/tree/master/
 ## <span id="forking">Forking</span>
 
 Please note that Go requires code to live under absolute paths, which complicates forking.
-While my fork lives at `https://github.com/ExocoreNetwork/Exocore`,
-the code should never exist at `$GOPATH/src/github.com/ExocoreNetwork/Exocore`.
-Instead, we use `git remote` to add the fork as a new remote for the original repo,`$GOPATH/src/github.com/ExocoreNetwork/Exocore`,
+While my fork lives at `https://github.com/ExocoreNetwork/exocore`,
+the code should never exist at `$GOPATH/src/github.com/ExocoreNetwork/exocore`.
+Instead, we use `git remote` to add the fork as a new remote for the original repo,`$GOPATH/src/github.com/ExocoreNetwork/exocore`,
 and do all the work there.
 
 For instance, to create a fork and work on a branch of it, you would:
 
 1. Create the fork on github, using the fork button.
-2. Go to the original repo checked out locally. (i.e. `$GOPATH/src/github.com/ExocoreNetwork/Exocore`)
+2. Go to the original repo checked out locally. (i.e. `$GOPATH/src/github.com/ExocoreNetwork/exocore`)
 3. `git remote rename origin upstream`
 4. `git remote add origin git@github.com:tharsis/Exocore.git`
 
@@ -178,7 +178,7 @@ For example, in vscode your `.vscode/settings.json` should look like:
 2. `development` must never
    fail `make lint, make test, make test-race, make test-rpc, make test-import`
 3. No `--force` onto `development` (except when reverting a broken commit, which should seldom happen).
-4. Create your feature branch from `development` either on `github.com/ExocoreNetwork/Exocore`, or your fork (
+4. Create your feature branch from `development` either on `github.com/ExocoreNetwork/exocore`, or your fork (
    using `git remote add origin`).
 5. Before submitting a pull request, begin `git rebase` on top of `development`.
 

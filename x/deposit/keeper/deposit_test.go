@@ -2,10 +2,10 @@ package keeper_test
 
 import (
 	sdkmath "cosmossdk.io/math"
+	"github.com/ExocoreNetwork/exocore/x/deposit/keeper"
+	deposittype "github.com/ExocoreNetwork/exocore/x/deposit/types"
+	"github.com/ExocoreNetwork/exocore/x/restaking_assets_manage/types"
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/exocore/x/deposit/keeper"
-	deposittype "github.com/exocore/x/deposit/types"
-	"github.com/exocore/x/restaking_assets_manage/types"
 )
 
 func (suite *KeeperTestSuite) TestDeposit() {

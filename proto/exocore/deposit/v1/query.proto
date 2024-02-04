@@ -8,7 +8,7 @@ import "cosmos/query/v1/query.proto";
 import "cosmos_proto/cosmos.proto";
 import "exocore/deposit/v1/deposit.proto";
 
-option go_package = "github.com/exocore/x/deposit/types";
+option go_package = "github.com/ExocoreNetwork/exocore/x/deposit/types";
 
 // QueryParamsRequest is the request type for the Query/Params RPC method.
 message QueryParamsRequest {}

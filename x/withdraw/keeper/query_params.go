@@ -3,8 +3,8 @@ package keeper
 import (
 	"context"
 
+	"github.com/ExocoreNetwork/exocore/x/withdraw/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/exocore/x/withdraw/types"
 )
 
 func (k Keeper) Params(goCtx context.Context, req *types.QueryParamsRequest) (*types.QueryParamsResponse, error) {

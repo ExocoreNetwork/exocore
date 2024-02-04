@@ -1,8 +1,8 @@
 package keeper_test
 
 import (
-	"github.com/exocore/x/restaking_assets_manage"
-	"github.com/exocore/x/restaking_assets_manage/types"
+	"github.com/ExocoreNetwork/exocore/x/restaking_assets_manage"
+	"github.com/ExocoreNetwork/exocore/x/restaking_assets_manage/types"
 )
 
 func (suite *KeeperTestSuite) TestGenesisClientChainAndAssetInfo() {

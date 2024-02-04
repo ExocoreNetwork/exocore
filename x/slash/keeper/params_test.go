@@ -1,7 +1,7 @@
 package keeper_test
 
 import (
-	slashtype "github.com/exocore/x/slash/types"
+	slashtype "github.com/ExocoreNetwork/exocore/x/slash/types"
 )
 
 func (suite *KeeperTestSuite) TestParams() {

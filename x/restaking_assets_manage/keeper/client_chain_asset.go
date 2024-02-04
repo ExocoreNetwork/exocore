@@ -2,9 +2,9 @@ package keeper
 
 import (
 	sdkmath "cosmossdk.io/math"
+	restakingtype "github.com/ExocoreNetwork/exocore/x/restaking_assets_manage/types"
 	"github.com/cosmos/cosmos-sdk/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	restakingtype "github.com/exocore/x/restaking_assets_manage/types"
 )
 
 // UpdateStakingAssetTotalAmount updating the total deposited amount of a specified asset in exoCore chain

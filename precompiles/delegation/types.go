@@ -8,11 +8,11 @@ import (
 	errorsmod "cosmossdk.io/errors"
 	sdkmath "cosmossdk.io/math"
 
+	"github.com/ExocoreNetwork/exocore/precompiles/deposit"
+	keeper2 "github.com/ExocoreNetwork/exocore/x/delegation/keeper"
+	"github.com/ExocoreNetwork/exocore/x/restaking_assets_manage/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	cmn "github.com/evmos/evmos/v14/precompiles/common"
-	"github.com/exocore/precompiles/deposit"
-	keeper2 "github.com/exocore/x/delegation/keeper"
-	"github.com/exocore/x/restaking_assets_manage/types"
 )
 
 func (p Precompile) GetDelegationParamsFromInputs(ctx sdk.Context, args []interface{}) (*keeper2.DelegationOrUndelegationParams, error) {

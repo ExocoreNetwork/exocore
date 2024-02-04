@@ -3,8 +3,8 @@ package keeper
 import (
 	"context"
 
+	deposittype "github.com/ExocoreNetwork/exocore/x/deposit/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	deposittype "github.com/exocore/x/deposit/types"
 )
 
 var _ deposittype.MsgServer = &Keeper{}
