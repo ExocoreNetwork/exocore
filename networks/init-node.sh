@@ -22,7 +22,7 @@ for node in {0..3}; do
     #total_supply=20000000000000000000000
     #jq -r --arg total_supply "$total_supply" '.app_state.bank.supply[0].amount=$total_supply' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
     # Set gas limit in genesis
-  	jq '.consensus_params["block"]["max_gas"]="40000000"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
+  	jq '.consensus_params["block"]["max_gas"]="1000000000"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
 	  # Set claims start time
 	  current_date=$(date -u +"%Y-%m-%dT%TZ")
 	  jq -r --arg current_date "$current_date" '.app_state["claims"]["params"]["airdrop_start_time"]=$current_date' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
@@ -46,6 +46,3 @@ for node in {0..3}; do
 
   echo "Modified configurations for node$node"
 done
-
-
-
