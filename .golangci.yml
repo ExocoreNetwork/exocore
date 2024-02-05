@@ -5,50 +5,68 @@ run:
 
 linters:
   enable:
+    - asciicheck
+    - decorder
     - dogsled
     - dupl
+    - durationcheck
     - errcheck
+    - errname
+    - errorlint
+    - exportloopref
+    - gci
     - goconst
     - gocritic
+    - godot
+    # Enable this later when design etc are more finalized
+    # - godox
     - gofumpt
-    - revive
+    - gomodguard
     - gosec
     - gosimple
     - govet
+    - grouper
     - ineffassign
-    # - lll TODO: enable
+    - makezero
     - misspell
     - nakedret
+    - nilerr
+    - nilnil
+    - nolintlint
+    - perfsprint
     - prealloc
-    - exportloopref
+    - predeclared
+    - protogetter
+    - reassign
+    - revive
     - staticcheck
     - stylecheck
+    - testifylint
+    - thelper
+    - tparallel
     - typecheck
     - unconvert
     - unparam
     - unused
-    - nolintlint
-    - asciicheck
-    - exportloopref
-    - gofumpt
-    - gomodguard
-
-
+    - usestdlibvars
+    - varnamelen
+    - wastedassign
 
 linters-settings:
   dogsled:
     max-blank-identifiers: 3
-  golint:
-    min-confidence: 0
-  maligned:
-    suggest-new: true
-  misspell:
-    locale: US
-  nolintlint:
-    allow-unused: false
-    allow-leading-space: true
-    require-explanation: false
-    require-specific: false
+  gci:
+    sections:
+      - standard # Standard section: captures all standard packages.
+      - default # Default section: contains all imports that could not be matched to another section type.
+      - blank # blank imports
+      - dot # dot imports
+      - prefix(cosmossdk.io)
+      - prefix(github.com/cosmos/cosmos-sdk)
+      - prefix(github.com/cometbft/cometbft)
+      - prefix(github.com/exocore)
+      - prefix(github.com/ExocoreNetwork/exocore)
+    custom-order: true
   gofumpt:
     lang-version: "1.20"
   gomodguard:
@@ -60,3 +78,42 @@ linters-settings:
         - https://github.com/dgrijalva/jwt-go:                          # Blocked module with version constraint
             version: ">= 4.0.0-preview1"                                # Version constraint, see https://github.com/Masterminds/semver#basic-comparisons
             reason: "CVE-2020-26160"                                    # Reason why the version constraint exists. (Optional)
+  misspell:
+    locale: US
+  nolintlint:
+    allow-unused: false
+    allow-leading-space: true
+    require-explanation: false
+    require-specific: false
+  revive:
+    ignore-generated-header: true
+    severity: error
+    enable-all-rules: true
+    rules:
+    - name: line-length-limit
+      arguments: [96]
+    - name: add-constant
+      arguments:
+      - "allowInts": "0,1,8"
+  staticcheck:
+    checks: [ "all" ]
+  varnamelen:
+    # allow names like transaction tx, priv key pk, bank keeper bk
+    min-name-length: 2
+    check-receiver: false
+    check-return: false
+    check-type-param: false
+    ignore-type-assert-ok: false
+    ignore-map-index-ok: false
+    ignore-chan-recv-ok: false
+    ignore-names:
+      - err
+    ignore-decls:
+      - t testing.T
+      - e error
+      - i int
+      - j int
+      - k int
+      - T any
+      - m map[string]int
+      - c sdk.Context
