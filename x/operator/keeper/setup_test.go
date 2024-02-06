@@ -36,6 +36,10 @@ type KeeperTestSuite struct {
 	signer     keyring.Signer
 	bondDenom  string
 	stateDB    *statedb.StateDB
+
+	//needed by test
+	operatorAddr sdk.AccAddress
+	avsAddr      string
 }
 
 func TestOperatorTestSuite(t *testing.T) {
