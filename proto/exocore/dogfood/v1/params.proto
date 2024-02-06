@@ -9,5 +9,15 @@ option go_package = "github.com/ExocoreNetwork/exocore/x/dogfood/types";
 // Params defines the parameters for the module.
 message Params {
   option (gogoproto.goproto_stringer) = false;
-  
+  // EpochsUntilUnbonded is the number of epochs after which an unbonding
+  // is released. Note that it starts from the beginning of the next epoch
+  // in which the unbonding request was received. At that point, the vote
+  // power is reduced by the amount of the unbonding operation.
+  uint32 epochs_until_unbonded = 1;
+  // EpochIdentifier is the identifier of the epoch (week, hour, day).
+  string epoch_identifier = 2;
+  // MaxValidators is the maximum number of validators.
+  uint32 max_validators = 3;
+  // HistoricalEntries is the number of historical entries to persist.
+  uint32 historical_entries = 4;
 }

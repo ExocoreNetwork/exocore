@@ -21,5 +21,5 @@ func (k Keeper) Params(
 	}
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
-	return &types.QueryParamsResponse{Params: k.GetParams(ctx)}, nil
+	return &types.QueryParamsResponse{Params: k.GetDogfoodParams(ctx)}, nil
 }
