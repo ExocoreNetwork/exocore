@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+package exocore.dogfood.v1;
+
+import "gogoproto/gogo.proto";
+import "exocore/dogfood/v1/params.proto";
+
+option go_package = "github.com/ExocoreNetwork/exocore/x/dogfood/types";
+
+// GenesisState defines the dogfood module's genesis state.
+message GenesisState {
+  Params params = 1 [(gogoproto.nullable) = false];
+}
