@@ -66,3 +66,38 @@ func (k *Keeper) SetHooks(sh types.DogfoodHooks) *Keeper {
 func (k Keeper) Hooks() types.DogfoodHooks {
 	return k.dogfoodHooks
 }
+
+// GetQueuedKeyOperations returns the list of operations that are queued for execution at the
+// end of the current epoch.
+func (k Keeper) GetQueuedOperations(
+	ctx sdk.Context,
+) []types.Operation {
+	store := ctx.KVStore(k.storeKey)
+	bz := store.Get(types.QueuedOperationsKey())
+	if bz == nil {
+		return []types.Operation{}
+	}
+	var operations types.Operations
+	if err := operations.Unmarshal(bz); err != nil {
+		// TODO(mm): any failure to unmarshal is treated as no operations or panic?
+		return []types.Operation{}
+	}
+	return operations.GetList()
+}
+
+// ClearQueuedOperations clears the operations to be executed at the end of the epoch.
+func (k Keeper) ClearQueuedOperations(ctx sdk.Context) {
+	store := ctx.KVStore(k.storeKey)
+	store.Delete(types.QueuedOperationsKey())
+}
+
+// setQueuedOperations is a private, internal function used to update the current queue of
+// operations to be executed at the end of the epoch with the supplied value.
+func (k Keeper) setQueuedOperations(ctx sdk.Context, operations types.Operations) {
+	store := ctx.KVStore(k.storeKey)
+	bz, err := operations.Marshal()
+	if err != nil {
+		panic(err)
+	}
+	store.Set(types.QueuedOperationsKey(), bz)
+}
