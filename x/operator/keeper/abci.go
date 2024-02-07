@@ -48,7 +48,7 @@ func (k *Keeper) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.Valida
 		if _, ok := assetsOperatorAVSInfo[assetId]; !ok {
 			assetsOperatorAVSInfo[assetId] = make(map[string]string, 0)
 		}
-		//UpdateOperatorAVSAssetsState
+		//UpdateStateForAsset
 		f := func(assetId string, keys []string, state *operatortypes.AssetOptedInState) error {
 			newAssetUSDValue := CalculateShare(state.Amount, priceChange.NewPrice, assetInfo.AssetBasicInfo.Decimals, priceChange.Decimal)
 			changeValue := newAssetUSDValue.Sub(state.Value)
@@ -61,18 +61,18 @@ func (k *Keeper) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.Valida
 			assetsOperatorAVSInfo[assetId][keys[2]] = avsAddr
 			return nil
 		}
-		err = k.IterateUpdateOperatorAVSAssets(ctx, assetId, f)
+		err = k.IterateUpdateAssetState(ctx, assetId, f)
 		if err != nil {
 			panic(err)
 		}
 	}
-	//BatchUpdateAVSAndOperatorTotalValue
-	err = k.BatchUpdateAVSAndOperatorTotalValue(ctx, avsOperatorShareChange)
+	//BatchUpdateShareForAVSAndOperator
+	err = k.BatchUpdateShareForAVSAndOperator(ctx, avsOperatorShareChange)
 	if err != nil {
 		panic(err)
 	}
 
-	//update staker's share
+	//update staker'suite share
 	sharedParameter := &SharedParameter{
 		priceChangeAssets:     priceChangeAssets,
 		assetsDecimal:         assetsDecimal,
@@ -96,8 +96,8 @@ func (k *Keeper) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.Valida
 	if err != nil {
 		panic(err)
 	}
-	//BatchSetAVSOperatorStakerShare
-	err = k.BatchSetAVSOperatorStakerShare(ctx, sharedParameter.stakerShare)
+	//BatchSetStakerShare
+	err = k.BatchSetStakerShare(ctx, sharedParameter.stakerShare)
 	if err != nil {
 		panic(err)
 	}

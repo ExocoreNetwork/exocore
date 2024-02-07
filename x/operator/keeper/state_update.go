@@ -20,7 +20,7 @@ type slashAmounts struct {
 	AmountFromUnbonding sdkmath.Int
 	AmountFromOptedIn   sdkmath.Int
 }
-type SlashAssetsAndAmount struct {
+type SlashAssets struct {
 	slashStakerInfo   map[string]map[string]*slashAmounts
 	slashOperatorInfo map[string]*slashAmounts
 }
@@ -51,30 +51,30 @@ func (k *Keeper) UpdateOptedInAssetsState(ctx sdk.Context, stakerId, assetId, op
 		}
 
 		if _, ok := avsSupportedAssets[assetId]; ok {
-			//UpdateAVSOperatorStakerShareValue
-			err = k.UpdateAVSOperatorStakerShareValue(ctx, avs, stakerId, operatorAddr, opUSDValue)
+			//UpdateStakerShare
+			err = k.UpdateStakerShare(ctx, avs, stakerId, operatorAddr, opUSDValue)
 			if err != nil {
 				return err
 			}
 
-			//UpdateOperatorAVSAssetsState
+			//UpdateStateForAsset
 			changeState := types.AssetOptedInState{
 				Amount: opAmount,
 				Value:  opUSDValue,
 			}
-			err = k.UpdateOperatorAVSAssetsState(ctx, assetId, avs, operatorAddr, changeState)
+			err = k.UpdateStateForAsset(ctx, assetId, avs, operatorAddr, changeState)
 			if err != nil {
 				return err
 			}
 
-			//UpdateAVSOperatorTotalValue
-			err = k.UpdateAVSOperatorTotalValue(ctx, avs, operatorAddr, opUSDValue)
+			//UpdateOperatorShare
+			err = k.UpdateOperatorShare(ctx, avs, operatorAddr, opUSDValue)
 			if err != nil {
 				return err
 			}
 
-			//UpdateAVSTotalValue
-			err = k.UpdateAVSTotalValue(ctx, avs, opUSDValue)
+			//UpdateAVSShare
+			err = k.UpdateAVSShare(ctx, avs, opUSDValue)
 			if err != nil {
 				return err
 			}
@@ -127,12 +127,12 @@ func (k *Keeper) OptIn(ctx sdk.Context, operatorAddress sdk.AccAddress, AVSAddr 
 		operatorUSDValue := CalculateShare(operatorAssetState.OperatorOwnAmountOrWantChangeValue, price, assetInfo.AssetBasicInfo.Decimals, decimal)
 		operatorOwnAssetUSDValue = operatorOwnAssetUSDValue.Add(operatorUSDValue)
 
-		//UpdateOperatorAVSAssetsState
+		//UpdateStateForAsset
 		changeState := types.AssetOptedInState{
 			Amount: operatorAssetState.TotalAmountOrWantChangeValue,
 			Value:  assetUSDValue,
 		}
-		err = k.UpdateOperatorAVSAssetsState(ctx, assetId, AVSAddr, operatorAddress.String(), changeState)
+		err = k.UpdateStateForAsset(ctx, assetId, AVSAddr, operatorAddress.String(), changeState)
 		if err != nil {
 			return err
 		}
@@ -141,24 +141,24 @@ func (k *Keeper) OptIn(ctx sdk.Context, operatorAddress sdk.AccAddress, AVSAddr 
 	}
 
 	//update the share value of operator itself, the input stakerId should be empty
-	err = k.UpdateAVSOperatorStakerShareValue(ctx, AVSAddr, "", operatorAddress.String(), operatorOwnAssetUSDValue)
+	err = k.UpdateStakerShare(ctx, AVSAddr, "", operatorAddress.String(), operatorOwnAssetUSDValue)
 	if err != nil {
 		return err
 	}
 
-	//UpdateAVSTotalValue
-	err = k.UpdateAVSTotalValue(ctx, AVSAddr, totalAssetUSDValue)
+	//UpdateAVSShare
+	err = k.UpdateAVSShare(ctx, AVSAddr, totalAssetUSDValue)
 	if err != nil {
 		return err
 	}
-	//UpdateAVSOperatorTotalValue
-	err = k.UpdateAVSOperatorTotalValue(ctx, AVSAddr, operatorAddress.String(), totalAssetUSDValue)
+	//UpdateOperatorShare
+	err = k.UpdateOperatorShare(ctx, AVSAddr, operatorAddress.String(), totalAssetUSDValue)
 	if err != nil {
 		return err
 	}
 
-	//UpdateAVSOperatorStakerShareValue
-	relatedAssetsState, err := k.delegationKeeper.GetDelegationStateByOperatorAndAssets(ctx, operatorAddress.String(), assetFilter)
+	//UpdateStakerShare
+	relatedAssetsState, err := k.delegationKeeper.DelegationStateByOperatorAssets(ctx, operatorAddress.String(), assetFilter)
 	if err != nil {
 		return err
 	}
@@ -170,7 +170,7 @@ func (k *Keeper) OptIn(ctx sdk.Context, operatorAddress sdk.AccAddress, AVSAddr 
 			stakerAssetsUSDValue = stakerAssetsUSDValue.Add(singleAssetUSDValue)
 		}
 
-		err = k.UpdateAVSOperatorStakerShareValue(ctx, AVSAddr, stakerId, operatorAddress.String(), stakerAssetsUSDValue)
+		err = k.UpdateStakerShare(ctx, AVSAddr, stakerId, operatorAddress.String(), stakerAssetsUSDValue)
 		if err != nil {
 			return err
 		}
@@ -214,45 +214,45 @@ func (k *Keeper) OptOut(ctx sdk.Context, operatorAddress sdk.AccAddress, AVSAddr
 	assetFilter := make(map[string]interface{})
 
 	for assetId := range operatorAssets {
-		err = k.DeleteOperatorAVSAssetsState(ctx, assetId, AVSAddr, operatorAddress.String())
+		err = k.DeleteAssetState(ctx, assetId, AVSAddr, operatorAddress.String())
 		if err != nil {
 			return err
 		}
 		assetFilter[assetId] = nil
 	}
 
-	avsOperatorTotalValue, err := k.GetAVSOperatorTotalValue(ctx, AVSAddr, operatorAddress.String())
+	avsOperatorTotalValue, err := k.GetOperatorShare(ctx, AVSAddr, operatorAddress.String())
 	if err != nil {
 		return err
 	}
 	if avsOperatorTotalValue.IsNegative() {
-		return errorsmod.Wrap(types.ErrTheValueIsNegative, fmt.Sprintf("OptOut,avsOperatorTotalValue:%s", avsOperatorTotalValue))
+		return errorsmod.Wrap(types.ErrTheValueIsNegative, fmt.Sprintf("OptOut,avsOperatorTotalValue:%suite", avsOperatorTotalValue))
 	}
 
 	//delete the share value of operator itself, the input stakerId should be empty
-	err = k.DeleteAVSOperatorStakerShareValue(ctx, AVSAddr, "", operatorAddress.String())
+	err = k.DeleteStakerShare(ctx, AVSAddr, "", operatorAddress.String())
 	if err != nil {
 		return err
 	}
 
-	//UpdateAVSTotalValue
-	err = k.UpdateAVSTotalValue(ctx, AVSAddr, avsOperatorTotalValue.Neg())
+	//UpdateAVSShare
+	err = k.UpdateAVSShare(ctx, AVSAddr, avsOperatorTotalValue.Neg())
 	if err != nil {
 		return err
 	}
-	//DeleteAVSOperatorTotalValue
-	err = k.DeleteAVSOperatorTotalValue(ctx, AVSAddr, operatorAddress.String())
+	//DeleteOperatorShare
+	err = k.DeleteOperatorShare(ctx, AVSAddr, operatorAddress.String())
 	if err != nil {
 		return err
 	}
 
-	//DeleteAVSOperatorStakerShareValue
-	relatedAssetsState, err := k.delegationKeeper.GetDelegationStateByOperatorAndAssets(ctx, operatorAddress.String(), assetFilter)
+	//DeleteStakerShare
+	relatedAssetsState, err := k.delegationKeeper.DelegationStateByOperatorAssets(ctx, operatorAddress.String(), assetFilter)
 	if err != nil {
 		return err
 	}
 	for stakerId := range relatedAssetsState {
-		err = k.DeleteAVSOperatorStakerShareValue(ctx, AVSAddr, stakerId, operatorAddress.String())
+		err = k.DeleteStakerShare(ctx, AVSAddr, stakerId, operatorAddress.String())
 		if err != nil {
 			return err
 		}
@@ -271,9 +271,9 @@ func (k *Keeper) OptOut(ctx sdk.Context, operatorAddress sdk.AccAddress, AVSAddr
 	return nil
 }
 
-// GetAssetsAndAmountToSlash It will slash the assets that are opting into AVS first, and if there isn't enough to slash, then it will slash the assets that have requested to undelegate but still locked.
-func (k *Keeper) GetAssetsAndAmountToSlash(ctx sdk.Context, operatorAddress sdk.AccAddress, AVSAddr string, occurredSateHeight int64, slashProportion sdkmath.LegacyDec) (*SlashAssetsAndAmount, error) {
-	ret := &SlashAssetsAndAmount{
+// GetAssetsAmountToSlash It will slash the assets that are opting into AVS first, and if there isn't enough to slash, then it will slash the assets that have requested to undelegate but still locked.
+func (k *Keeper) GetAssetsAmountToSlash(ctx sdk.Context, operatorAddress sdk.AccAddress, AVSAddr string, occurredSateHeight int64, slashProportion sdkmath.LegacyDec) (*SlashAssets, error) {
+	ret := &SlashAssets{
 		slashStakerInfo:   make(map[string]map[string]*slashAmounts, 0),
 		slashOperatorInfo: make(map[string]*slashAmounts, 0),
 	}
@@ -288,7 +288,7 @@ func (k *Keeper) GetAssetsAndAmountToSlash(ctx sdk.Context, operatorAddress sdk.
 	if err != nil {
 		return nil, err
 	}
-	historyStakerAssets, err := k.delegationKeeper.GetDelegationStateByOperatorAndAssets(historicalSateCtx, operatorAddress.String(), assetsFilter)
+	historyStakerAssets, err := k.delegationKeeper.DelegationStateByOperatorAssets(historicalSateCtx, operatorAddress.String(), assetsFilter)
 	if err != nil {
 		return nil, err
 	}
@@ -300,7 +300,7 @@ func (k *Keeper) GetAssetsAndAmountToSlash(ctx sdk.Context, operatorAddress sdk.
 	}
 
 	//calculate the actual slash amount according to the history and current state
-	currentStakerAssets, err := k.delegationKeeper.GetDelegationStateByOperatorAndAssets(ctx, operatorAddress.String(), assetsFilter)
+	currentStakerAssets, err := k.delegationKeeper.DelegationStateByOperatorAssets(ctx, operatorAddress.String(), assetsFilter)
 	if err != nil {
 		return nil, err
 	}
@@ -455,7 +455,7 @@ func (k *Keeper) Slash(ctx sdk.Context, operatorAddress sdk.AccAddress, AVSAddr,
 		return err
 	}
 	if optedInfo.SlashContract != slashContract {
-		return errorsmod.Wrap(types.ErrSlashContractNotMatch, fmt.Sprintf("input slashContract:%s, opted-in slash contract:%s", slashContract, optedInfo.SlashContract))
+		return errorsmod.Wrap(types.ErrSlashContractNotMatch, fmt.Sprintf("input slashContract:%suite, opted-in slash contract:%suite", slashContract, optedInfo.SlashContract))
 	}
 
 	//todo: recording the slash event might be moved to the slash module
@@ -472,7 +472,7 @@ func (k *Keeper) Slash(ctx sdk.Context, operatorAddress sdk.AccAddress, AVSAddr,
 	}
 
 	// get the assets and amounts that should be slashed
-	assetsSlashInfo, err := k.GetAssetsAndAmountToSlash(ctx, operatorAddress, AVSAddr, occurredSateHeight, slashProportion)
+	assetsSlashInfo, err := k.GetAssetsAmountToSlash(ctx, operatorAddress, AVSAddr, occurredSateHeight, slashProportion)
 	if err != nil {
 		return err
 	}

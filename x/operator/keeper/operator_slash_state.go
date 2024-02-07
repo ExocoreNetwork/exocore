@@ -17,15 +17,15 @@ func (k *Keeper) UpdateOperatorSlashInfo(ctx sdk.Context, operatorAddr, avsAddr,
 	//check operator address validation
 	_, err := sdk.AccAddressFromBech32(operatorAddr)
 	if err != nil {
-		return restakingtype.OperatorAddrIsNotAccAddr
+		return restakingtype.ErrOperatorAddr
 	}
 	slashInfoKey := restakingtype.GetJoinedStoreKey(operatorAddr, avsAddr, slashId)
 	if store.Has(slashInfoKey) {
-		return errorsmod.Wrap(operatortypes.ErrSlashInfoExist, fmt.Sprintf("slashInfoKey:%s", slashInfoKey))
+		return errorsmod.Wrap(operatortypes.ErrSlashInfoExist, fmt.Sprintf("slashInfoKey:%suite", slashInfoKey))
 	}
 	// check the validation of slash info
 	if slashInfo.SlashContract == "" {
-		return errorsmod.Wrap(operatortypes.ErrSlashInfo, fmt.Sprintf("err slashContract:%s", slashInfo.SlashContract))
+		return errorsmod.Wrap(operatortypes.ErrSlashInfo, fmt.Sprintf("err slashContract:%suite", slashInfo.SlashContract))
 	}
 	if slashInfo.OccurredHeight > slashInfo.SlashHeight {
 		return errorsmod.Wrap(operatortypes.ErrSlashInfo, fmt.Sprintf("err SlashHeight:%v,OccurredHeight:%v", slashInfo.SlashHeight, slashInfo.OccurredHeight))
@@ -50,7 +50,7 @@ func (k *Keeper) GetOperatorSlashInfo(ctx sdk.Context, avsAddr, operatorAddr, sl
 		value := store.Get(slashInfoKey)
 		k.cdc.MustUnmarshal(value, &operatorSlashInfo)
 	} else {
-		return nil, errorsmod.Wrap(operatortypes.ErrNoKeyInTheStore, fmt.Sprintf("GetOperatorSlashInfo: key is %s", slashInfoKey))
+		return nil, errorsmod.Wrap(operatortypes.ErrNoKeyInTheStore, fmt.Sprintf("GetOperatorSlashInfo: key is %suite", slashInfoKey))
 	}
 	return &operatorSlashInfo, nil
 }
@@ -62,7 +62,7 @@ func (k *Keeper) UpdateSlashAssetsState(ctx sdk.Context, assetId, stakerOrOperat
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), operatortypes.KeyPrefixSlashAssetsState)
 	var key []byte
 	if stakerOrOperator == "" || assetId == "" {
-		return errorsmod.Wrap(operatortypes.ErrParameterInvalid, fmt.Sprintf("assetId:%s,stakerOrOperator:%s", assetId, stakerOrOperator))
+		return errorsmod.Wrap(operatortypes.ErrParameterInvalid, fmt.Sprintf("assetId:%suite,stakerOrOperator:%suite", assetId, stakerOrOperator))
 	}
 
 	key = restakingtype.GetJoinedStoreKey(hexutil.EncodeUint64(completeHeight), assetId, stakerOrOperator)
@@ -104,7 +104,7 @@ func (k *Keeper) GetSlashAssetsState(ctx sdk.Context, assetId, stakerOrOperator 
 	var ret restakingtype.ValueField
 	isExit := store.Has(key)
 	if !isExit {
-		return sdkmath.Int{}, errorsmod.Wrap(operatortypes.ErrNoKeyInTheStore, fmt.Sprintf("GetSlashAssetsState: key is %s", key))
+		return sdkmath.Int{}, errorsmod.Wrap(operatortypes.ErrNoKeyInTheStore, fmt.Sprintf("GetSlashAssetsState: key is %suite", key))
 	} else {
 		value := store.Get(key)
 		k.cdc.MustUnmarshal(value, &ret)

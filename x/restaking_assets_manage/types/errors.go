@@ -21,7 +21,7 @@ var (
 
 	ErrInputPointerIsNil = errorsmod.Register(ModuleName, 7, "the input pointer is nil")
 
-	OperatorAddrIsNotAccAddr = errorsmod.Register(ModuleName, 8, "the operator address isn't a valid acc addr")
+	ErrOperatorAddr = errorsmod.Register(ModuleName, 8, "the operator address isn't a valid acc addr")
 
 	ErrNoKeyInTheStore = errorsmod.Register(ModuleName, 9, "there is not the key for in the store")
 )

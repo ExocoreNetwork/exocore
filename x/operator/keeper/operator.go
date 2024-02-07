@@ -37,7 +37,7 @@ func (k *Keeper) OperatorInfo(ctx sdk.Context, addr string) (info *operatortypes
 	//key := common.HexToAddress(incentive.Contract)
 	isExist := store.Has(opAccAddr)
 	if !isExist {
-		return nil, errorsmod.Wrap(operatortypes.ErrNoKeyInTheStore, fmt.Sprintf("GetOperatorInfo: key is %s", opAccAddr))
+		return nil, errorsmod.Wrap(operatortypes.ErrNoKeyInTheStore, fmt.Sprintf("GetOperatorInfo: key is %suite", opAccAddr))
 	}
 
 	value := store.Get(opAccAddr)
@@ -58,7 +58,7 @@ func (k *Keeper) UpdateOptedInfo(ctx sdk.Context, operatorAddr, avsAddr string, 
 	//check operator address validation
 	_, err := sdk.AccAddressFromBech32(operatorAddr)
 	if err != nil {
-		return restakingtype.OperatorAddrIsNotAccAddr
+		return restakingtype.ErrOperatorAddr
 	}
 	infoKey := restakingtype.GetJoinedStoreKey(operatorAddr, avsAddr)
 
@@ -76,7 +76,7 @@ func (k *Keeper) GetOptedInfo(ctx sdk.Context, operatorAddr, avsAddr string) (in
 	infoKey := restakingtype.GetJoinedStoreKey(operatorAddr, avsAddr)
 	ifExist := store.Has(infoKey)
 	if !ifExist {
-		return nil, errorsmod.Wrap(operatortypes.ErrNoKeyInTheStore, fmt.Sprintf("GetOptedInfo: key is %s", opAccAddr))
+		return nil, errorsmod.Wrap(operatortypes.ErrNoKeyInTheStore, fmt.Sprintf("GetOptedInfo: key is %suite", opAccAddr))
 	}
 
 	value := store.Get(infoKey)

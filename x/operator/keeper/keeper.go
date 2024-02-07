@@ -41,8 +41,8 @@ func (k *Keeper) RegisterExpectDelegationInterface(delegationKeeper operatortype
 	k.delegationKeeper = delegationKeeper
 }
 
-func (k *Keeper) GetExpectDelegationInterface() operatortypes.ExpectDelegationInterface {
-	return k.delegationKeeper
+func (k *Keeper) OracleInterface() operatortypes.ExpectOracleInterface {
+	return k.oracleKeeper
 }
 
 func (k *Keeper) GetUnbondingExpirationBlockNumber(ctx sdk.Context, OperatorAddress sdk.AccAddress, startHeight uint64) uint64 {

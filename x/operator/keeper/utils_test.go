@@ -36,11 +36,11 @@ import (
 // that also act as delegators. For simplicity, each validator is bonded with a delegation
 // of one consensus engine unit (10^6) in the default token of the simapp from first genesis
 // account. A Nop logger is set in SimApp.
-func (s *KeeperTestSuite) SetupWithGenesisValSet(valSet *tmtypes.ValidatorSet, genAccs []authtypes.GenesisAccount, balances ...banktypes.Balance) {
+func (suite *KeeperTestSuite) SetupWithGenesisValSet(valSet *tmtypes.ValidatorSet, genAccs []authtypes.GenesisAccount, balances ...banktypes.Balance) {
 	pruneOpts := pruningtypes.NewPruningOptionsFromString(pruningtypes.PruningOptionDefault)
 	appI, genesisState := evmosapp.SetupTestingApp(cmn.DefaultChainID, &pruneOpts, false)()
 	app, ok := appI.(*evmosapp.ExocoreApp)
-	s.Require().True(ok)
+	suite.Require().True(ok)
 
 	// set genesis accounts
 	authGenesis := authtypes.NewGenesisState(authtypes.DefaultParams(), genAccs)
@@ -53,9 +53,9 @@ func (s *KeeperTestSuite) SetupWithGenesisValSet(valSet *tmtypes.ValidatorSet, g
 
 	for _, val := range valSet.Validators {
 		pk, err := cryptocodec.FromTmPubKeyInterface(val.PubKey)
-		s.Require().NoError(err)
+		suite.Require().NoError(err)
 		pkAny, err := codectypes.NewAnyWithValue(pk)
-		s.Require().NoError(err)
+		suite.Require().NoError(err)
 		validator := stakingtypes.Validator{
 			OperatorAddress:   sdk.ValAddress(val.Address).String(),
 			ConsensusPubkey:   pkAny,
@@ -72,7 +72,7 @@ func (s *KeeperTestSuite) SetupWithGenesisValSet(valSet *tmtypes.ValidatorSet, g
 		validators = append(validators, validator)
 		delegations = append(delegations, stakingtypes.NewDelegation(genAccs[0].GetAddress(), val.Address.Bytes(), sdk.OneDec()))
 	}
-	s.validators = validators
+	suite.validators = validators
 
 	// set validators and delegations
 	stakingParams := stakingtypes.DefaultParams()
@@ -99,7 +99,7 @@ func (s *KeeperTestSuite) SetupWithGenesisValSet(valSet *tmtypes.ValidatorSet, g
 	genesisState[banktypes.ModuleName] = app.AppCodec().MustMarshalJSON(bankGenesis)
 
 	stateBytes, err := json.MarshalIndent(genesisState, "", " ")
-	s.Require().NoError(err)
+	suite.Require().NoError(err)
 
 	// init chain will set the validator set and initialize the genesis accounts
 	app.InitChain(
@@ -127,24 +127,24 @@ func (s *KeeperTestSuite) SetupWithGenesisValSet(valSet *tmtypes.ValidatorSet, g
 	})
 
 	// need to create UncachedContext when retrieving historical state
-	s.ctx = app.BaseApp.NewUncachedContext(false, header)
-	s.app = app
+	suite.ctx = app.BaseApp.NewUncachedContext(false, header)
+	suite.app = app
 }
 
-func (s *KeeperTestSuite) DoSetupTest() {
+func (suite *KeeperTestSuite) DoSetupTest() {
 	// generate validator private/public key
 	privVal := mock.NewPV()
 	pubKey, err := privVal.GetPubKey()
-	s.Require().NoError(err)
+	suite.Require().NoError(err)
 
 	privVal2 := mock.NewPV()
 	pubKey2, err := privVal2.GetPubKey()
-	s.Require().NoError(err)
+	suite.Require().NoError(err)
 
 	// create validator set with two validators
 	validator := tmtypes.NewValidator(pubKey, 1)
 	validator2 := tmtypes.NewValidator(pubKey2, 2)
-	s.valSet = tmtypes.NewValidatorSet([]*tmtypes.Validator{validator, validator2})
+	suite.valSet = tmtypes.NewValidatorSet([]*tmtypes.Validator{validator, validator2})
 	signers := make(map[string]tmtypes.PrivValidator)
 	signers[pubKey.Address().String()] = privVal
 	signers[pubKey2.Address().String()] = privVal2
@@ -153,13 +153,13 @@ func (s *KeeperTestSuite) DoSetupTest() {
 	pubBz := make([]byte, ed25519.PubKeySize)
 	pub := &ed25519.PubKey{Key: pubBz}
 	rand.Read(pub.Key)
-	s.accAddress = sdk.AccAddress(pub.Address())
+	suite.accAddress = sdk.AccAddress(pub.Address())
 
 	// generate genesis account
 	addr, priv := testutiltx.NewAddrKey()
-	s.privKey = priv
-	s.address = addr
-	s.signer = testutiltx.NewSigner(priv)
+	suite.privKey = priv
+	suite.address = addr
+	suite.signer = testutiltx.NewSigner(priv)
 
 	baseAcc := authtypes.NewBaseAccount(priv.PubKey().Address().Bytes(), priv.PubKey(), 0, 0)
 
@@ -175,35 +175,35 @@ func (s *KeeperTestSuite) DoSetupTest() {
 		Coins:   sdk.NewCoins(sdk.NewCoin(utils.BaseDenom, amount)),
 	}
 
-	s.SetupWithGenesisValSet(s.valSet, []authtypes.GenesisAccount{acc}, balance)
+	suite.SetupWithGenesisValSet(suite.valSet, []authtypes.GenesisAccount{acc}, balance)
 
 	// Create StateDB
-	s.stateDB = statedb.New(s.ctx, s.app.EvmKeeper, statedb.NewEmptyTxConfig(common.BytesToHash(s.ctx.HeaderHash().Bytes())))
+	suite.stateDB = statedb.New(suite.ctx, suite.app.EvmKeeper, statedb.NewEmptyTxConfig(common.BytesToHash(suite.ctx.HeaderHash().Bytes())))
 
 	// bond denom
-	stakingParams := s.app.StakingKeeper.GetParams(s.ctx)
+	stakingParams := suite.app.StakingKeeper.GetParams(suite.ctx)
 	stakingParams.BondDenom = utils.BaseDenom
-	s.bondDenom = stakingParams.BondDenom
-	err = s.app.StakingKeeper.SetParams(s.ctx, stakingParams)
-	s.Require().NoError(err)
+	suite.bondDenom = stakingParams.BondDenom
+	err = suite.app.StakingKeeper.SetParams(suite.ctx, stakingParams)
+	suite.Require().NoError(err)
 
-	s.ethSigner = ethtypes.LatestSignerForChainID(s.app.EvmKeeper.ChainID())
+	suite.ethSigner = ethtypes.LatestSignerForChainID(suite.app.EvmKeeper.ChainID())
 
 	coins := sdk.NewCoins(sdk.NewCoin(utils.BaseDenom, sdk.NewInt(5000000000000000000)))
 	inflCoins := sdk.NewCoins(sdk.NewCoin(utils.BaseDenom, sdk.NewInt(2000000000000000000)))
 	distrCoins := sdk.NewCoins(sdk.NewCoin(utils.BaseDenom, sdk.NewInt(3000000000000000000)))
-	err = s.app.BankKeeper.MintCoins(s.ctx, inflationtypes.ModuleName, coins)
-	s.Require().NoError(err)
-	err = s.app.BankKeeper.SendCoinsFromModuleToModule(s.ctx, inflationtypes.ModuleName, authtypes.FeeCollectorName, inflCoins)
-	s.Require().NoError(err)
-	err = s.app.BankKeeper.SendCoinsFromModuleToModule(s.ctx, inflationtypes.ModuleName, distrtypes.ModuleName, distrCoins)
-	s.Require().NoError(err)
+	err = suite.app.BankKeeper.MintCoins(suite.ctx, inflationtypes.ModuleName, coins)
+	suite.Require().NoError(err)
+	err = suite.app.BankKeeper.SendCoinsFromModuleToModule(suite.ctx, inflationtypes.ModuleName, authtypes.FeeCollectorName, inflCoins)
+	suite.Require().NoError(err)
+	err = suite.app.BankKeeper.SendCoinsFromModuleToModule(suite.ctx, inflationtypes.ModuleName, distrtypes.ModuleName, distrCoins)
+	suite.Require().NoError(err)
 
 }
 
 // NextBlock commits the current block and sets up the next block.
-func (s *KeeperTestSuite) NextBlock() {
+func (suite *KeeperTestSuite) NextBlock() {
 	var err error
-	s.ctx, err = testutil.CommitAndCreateNewCtx(s.ctx, s.app, time.Second, s.valSet, true)
-	s.Require().NoError(err)
+	suite.ctx, err = testutil.CommitAndCreateNewCtx(suite.ctx, suite.app, time.Second, suite.valSet, true)
+	suite.Require().NoError(err)
 }

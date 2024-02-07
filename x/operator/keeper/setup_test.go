@@ -1,6 +1,8 @@
 package keeper_test
 
 import (
+	sdkmath "cosmossdk.io/math"
+	"github.com/stretchr/testify/suite"
 	"testing"
 
 	"github.com/evmos/evmos/v14/x/evm/statedb"
@@ -16,7 +18,6 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	ethtypes "github.com/ethereum/go-ethereum/core/types"
 	evmosapp "github.com/exocore/app"
-	"github.com/stretchr/testify/suite"
 )
 
 var s *KeeperTestSuite
@@ -38,8 +39,16 @@ type KeeperTestSuite struct {
 	stateDB    *statedb.StateDB
 
 	//needed by test
-	operatorAddr sdk.AccAddress
-	avsAddr      string
+	operatorAddr          sdk.AccAddress
+	avsAddr               string
+	assetId               string
+	stakerId              string
+	assetAddr             common.Address
+	assetDecimal          uint32
+	clientChainLzId       uint64
+	depositAmount         sdkmath.Int
+	delegationAmount      sdkmath.Int
+	updatedAmountForOptIn sdkmath.Int
 }
 
 func TestOperatorTestSuite(t *testing.T) {
@@ -51,6 +60,6 @@ func TestOperatorTestSuite(t *testing.T) {
 	RunSpecs(t, "operator module Suite")
 }
 
-func (s *KeeperTestSuite) SetupTest() {
-	s.DoSetupTest()
+func (suite *KeeperTestSuite) SetupTest() {
+	suite.DoSetupTest()
 }
