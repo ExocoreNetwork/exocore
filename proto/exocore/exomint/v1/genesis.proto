@@ -1,0 +1,13 @@
+syntax = "proto3";
+package exocore.exomint.v1;
+
+import "gogoproto/gogo.proto";
+
+import "exocore/exomint/v1/params.proto";
+
+option go_package = "github.com/ExocoreNetwork/exocore/x/exomint/types";
+
+// GenesisState defines the exomint module's genesis state.
+message GenesisState {
+  Params params = 1 [(gogoproto.nullable) = false];
+}
