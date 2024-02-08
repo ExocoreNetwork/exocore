@@ -56,3 +56,58 @@ func (k Keeper) GetUnbondingCompletionEpoch(
 	// beginning of epoch 13 or the end of epoch 12.
 	return epochInfo.CurrentEpoch + int64(unbondingEpochs)
 }
+
+// AppendUndelegationsToMature stores that the undelegation with recordKey should be
+// released at the end of the provided epoch.
+func (k Keeper) AppendUndelegationToMature(
+	ctx sdk.Context, epoch int64, recordKey []byte,
+) {
+	prev := k.GetUndelegationsToMature(ctx, epoch)
+	next := types.RecordKeys{
+		List: append(prev, recordKey),
+	}
+	k.setUndelegationsToMature(ctx, epoch, next)
+}
+
+// GetUndelegationsToMature returns all undelegation entries that should be released
+// at the end of the provided epoch.
+func (k Keeper) GetUndelegationsToMature(
+	ctx sdk.Context, epoch int64,
+) [][]byte {
+	store := ctx.KVStore(k.storeKey)
+	key := types.UnbondingReleaseMaturityKey(epoch)
+	bz := store.Get(key)
+	if bz == nil {
+		return [][]byte{}
+	}
+	var res types.RecordKeys
+	if err := res.Unmarshal(bz); err != nil {
+		// should never happen
+		panic(err)
+	}
+	return res.GetList()
+}
+
+// ClearUndelegationsToMature is a pruning method which is called after we mature
+// the undelegation entries.
+func (k Keeper) ClearUndelegationsToMature(
+	ctx sdk.Context, epoch int64,
+) {
+	store := ctx.KVStore(k.storeKey)
+	key := types.UnbondingReleaseMaturityKey(epoch)
+	store.Delete(key)
+}
+
+// setUndelegationsToMature sets all undelegation entries that should be released
+// at the end of the provided epoch.
+func (k Keeper) setUndelegationsToMature(
+	ctx sdk.Context, epoch int64, recordKeys types.RecordKeys,
+) {
+	store := ctx.KVStore(k.storeKey)
+	key := types.UnbondingReleaseMaturityKey(epoch)
+	val, err := recordKeys.Marshal()
+	if err != nil {
+		panic(err)
+	}
+	store.Set(key, val)
+}

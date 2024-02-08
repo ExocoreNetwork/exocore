@@ -30,3 +30,26 @@ type OperatorHooks interface {
 	)
 	AfterOperatorOptOutInitiated(sdk.Context, sdk.AccAddress, string, tmprotocrypto.PublicKey)
 }
+
+// DelegationHooks represent the event hooks for delegation module.
+type DelegationHooks interface {
+	AfterDelegation(sdk.Context, sdk.AccAddress)
+	AfterUndelegationStarted(sdk.Context, sdk.AccAddress, []byte)
+	AfterUndelegationCompleted(sdk.Context, sdk.AccAddress)
+}
+
+// OperatorKeeper represents the expected keeper interface for the operator module.
+type OperatorKeeper interface {
+	GetOperatorConsKeyForChainId(
+		sdk.Context, sdk.AccAddress, string,
+	) (bool, tmprotocrypto.PublicKey, error)
+	IsOperatorOptingOutFromChainId(
+		sdk.Context, sdk.AccAddress, string,
+	) bool
+}
+
+// DelegationKeeper represents the expected keeper interface for the delegation module.
+type DelegationKeeper interface {
+	IncrementUndelegationHoldCount(sdk.Context, []byte)
+	DecrementUndelegationHoldCount(sdk.Context, []byte)
+}

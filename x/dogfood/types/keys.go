@@ -33,6 +33,10 @@ const (
 	// ConsensusAddrsToPruneBytePrefix is the byte prefix to store the list of consensus
 	// addresses that can be pruned from the operator module at the provided epoch.
 	ConsensusAddrsToPruneBytePrefix
+
+	// UnbondingReleaseMaturityBytePrefix is the byte prefix to store the list of undelegations
+	// that will mature at the provided epoch.
+	UnbondingReleaseMaturityBytePrefix
 )
 
 // ExocoreValidatorKey returns the key for the validator store.
@@ -68,5 +72,13 @@ func OperatorOptOutFinishEpochKey(address sdk.AccAddress) []byte {
 func ConsensusAddrsToPruneKey(epoch int64) []byte {
 	return append(
 		[]byte{ConsensusAddrsToPruneBytePrefix},
+		sdk.Uint64ToBigEndian(uint64(epoch))...)
+}
+
+// UnbondingReleaseMaturityKey is the key to lookup the list of undelegations that will mature
+// at the provided epoch.
+func UnbondingReleaseMaturityKey(epoch int64) []byte {
+	return append(
+		[]byte{UnbondingReleaseMaturityBytePrefix},
 		sdk.Uint64ToBigEndian(uint64(epoch))...)
 }
