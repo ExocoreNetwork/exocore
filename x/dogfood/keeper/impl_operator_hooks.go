@@ -32,13 +32,51 @@ func (k *Keeper) OperatorHooks() OperatorHooksWrapper {
 // R I
 // For an operator that is already opted in, the list looks like follows:
 // R O
-// O I
+// O I (reversing the decision to opt out)
 // O I R
 // R O I
 // The impossible list looks like:
 // O R
 // O R I
-// TODO: list out operation results for each of these, and make sure everything is covered below
+// Replacing the key with the same key is not possible, so it is not covered.
+// The assumption is that these are enforced (allowed/denied) by the operator module.
+
+// Cases for a fresh operator:
+// I + O => KeyAdditionOrUpdate + KeyRemoval => Success + Removed => covered.
+// I + R => KeyAdditionOrUpdate (old) + KeyAdditionOrUpdate (new) + KeyRemoval (old) =>
+// 			Success + Success + Removed + => not considered unbonding of the old key since it
+// 											 was not yet effective => covered.
+// I + R + O => KeyAdditionOrUpdate (old) + KeyAdditionOrUpdate (new) + KeyRemoval (old) +
+// 				KeyRemoval (new) =>
+// 				Success (old) + Success (new) + Removed (old) + Removed (new) => covered
+
+// Cases for an operator that has already opted in:
+// R + O => KeyAdditionOrUpdate (new) + KeyRemoval (old) + KeyRemoval (new) =>
+// 			Success (new) + Success (old) + Removed (new) =>
+// 							unbonding data made (old) => covered.
+// O + I
+// O + I case 1 => KeyRemoval (old) + KeyAdditionOrUpdate (new) => Success (old) + Success (new)
+//				=> unbonding data made (old) => covered.
+// O + I case 2 => KeyRemoval (old) + KeyAdditionOrUpdate (old) => Success (old) + Removed (old)
+//				=> unbonding data made (old) and then cleared => covered.
+// O + I + R
+// O + I + R case 1 => KeyRemoval (old) + KeyAdditionOrUpdate (old) + KeyRemoval (old) +
+// 				   KeyAdditionOrUpdate (new) => Success (old) + Removed (old) + Success (old) 					   +
+// Success (new) => unbonding data old made + cleared + made => covered.
+// O + I + R case 2 =>
+// AfterOperatorOptOut(old) => Success => unbonding data made for old
+// AfterOperatorOptIn(new) => Success => no data changed
+// AfterOperatorKeyReplacement(new, new2) =>
+//    new2 operation KeyAdditionOrUpdate => Success => no data changed
+//    new  operation KeyRemoval => Removed => no data changed
+// => covered
+// R + O + I => KeyAdditionOrUpdate (new) + KeyRemoval (old) + KeyRemoval (new) +
+// KeyAdditionOrUpdate (X)
+//              Success + Success (=> unbonding data for old) + Removed (=> no data) +
+// case 1 => X == new => Success => no change => covered
+// case 2 => X == old => Removed => unbonding data for old removed => covered.
+// case 3 => X == abc => Success => no change and unbonding data for old is not removed =>
+// covered.
 
 // AfterOperatorOptIn is the implementation of the operator hooks.
 func (h OperatorHooksWrapper) AfterOperatorOptIn(
