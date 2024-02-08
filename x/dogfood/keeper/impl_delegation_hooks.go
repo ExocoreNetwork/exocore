@@ -120,7 +120,7 @@ func (wrapper DelegationHooksWrapper) AfterUndelegationStarted(
 
 // AfterUndelegationCompleted is called after an undelegation is completed.
 func (DelegationHooksWrapper) AfterUndelegationCompleted(
-	sdk.Context, sdk.AccAddress,
+	sdk.Context, sdk.AccAddress, []byte,
 ) {
 	// no-op
 }

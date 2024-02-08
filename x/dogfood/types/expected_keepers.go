@@ -35,7 +35,7 @@ type OperatorHooks interface {
 type DelegationHooks interface {
 	AfterDelegation(sdk.Context, sdk.AccAddress)
 	AfterUndelegationStarted(sdk.Context, sdk.AccAddress, []byte)
-	AfterUndelegationCompleted(sdk.Context, sdk.AccAddress)
+	AfterUndelegationCompleted(sdk.Context, sdk.AccAddress, []byte)
 }
 
 // OperatorKeeper represents the expected keeper interface for the operator module.
