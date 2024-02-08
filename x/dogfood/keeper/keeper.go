@@ -25,6 +25,7 @@ type (
 		epochsKeeper     types.EpochsKeeper
 		operatorKeeper   types.OperatorKeeper
 		delegationKeeper types.DelegationKeeper
+		restakingKeeper  types.RestakingKeeper
 	}
 )
 
@@ -36,6 +37,7 @@ func NewKeeper(
 	epochsKeeper types.EpochsKeeper,
 	operatorKeeper types.OperatorKeeper,
 	delegationKeeper types.DelegationKeeper,
+	restakingKeeper types.RestakingKeeper,
 ) *Keeper {
 	// set KeyTable if it has not already been set
 	if !ps.HasKeyTable() {
@@ -49,6 +51,7 @@ func NewKeeper(
 		epochsKeeper:     epochsKeeper,
 		operatorKeeper:   operatorKeeper,
 		delegationKeeper: delegationKeeper,
+		restakingKeeper:  restakingKeeper,
 	}
 }
 
