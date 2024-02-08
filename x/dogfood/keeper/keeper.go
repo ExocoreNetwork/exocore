@@ -26,6 +26,7 @@ type (
 		operatorKeeper   types.OperatorKeeper
 		delegationKeeper types.DelegationKeeper
 		restakingKeeper  types.RestakingKeeper
+		slashingKeeper   types.SlashingKeeper
 	}
 )
 
@@ -38,6 +39,7 @@ func NewKeeper(
 	operatorKeeper types.OperatorKeeper,
 	delegationKeeper types.DelegationKeeper,
 	restakingKeeper types.RestakingKeeper,
+	slashingKeeper types.SlashingKeeper,
 ) *Keeper {
 	// set KeyTable if it has not already been set
 	if !ps.HasKeyTable() {
@@ -52,6 +54,7 @@ func NewKeeper(
 		operatorKeeper:   operatorKeeper,
 		delegationKeeper: delegationKeeper,
 		restakingKeeper:  restakingKeeper,
+		slashingKeeper:   slashingKeeper,
 	}
 }
 
