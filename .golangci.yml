@@ -1,3 +1,4 @@
+# https://raw.githubusercontent.com/evmos/evmos/0984dda9993aca5fa0635cc52abd4d97f2a2690e/.golangci.yml
 run:
   tests: true
   timeout: 5m
@@ -5,70 +6,52 @@ run:
 
 linters:
   enable:
-    - asciicheck
-    - decorder
     - dogsled
     - dupl
-    - durationcheck
     - errcheck
-    - errname
-    - errorlint
-    - exportloopref
-    - gci
     - goconst
     - gocritic
-    - godot
-    # Enable this later when design etc are more finalized
-    # - godox
     - gofumpt
-    - gomodguard
+    - revive
     - gosec
     - gosimple
     - govet
-    - grouper
     - ineffassign
-    - makezero
+    # - lll TODO: enable
     - misspell
     - nakedret
-    - nilerr
-    - nilnil
-    - nolintlint
-    - perfsprint
     - prealloc
-    - predeclared
-    - protogetter
-    - reassign
-    - revive
+    - exportloopref
     - staticcheck
     - stylecheck
-    - testifylint
-    - thelper
-    - tparallel
     - typecheck
     - unconvert
     - unparam
     - unused
-    - usestdlibvars
-    - varnamelen
-    - wastedassign
+    - nolintlint
+    - asciicheck
+    - exportloopref
+    - gofumpt
+    - gomodguard
+
+
 
 linters-settings:
   dogsled:
     max-blank-identifiers: 3
-  gci:
-    sections:
-      - standard # Standard section: captures all standard packages.
-      - default # Default section: contains all imports that could not be matched to another section type.
-      - blank # blank imports
-      - dot # dot imports
-      - prefix(cosmossdk.io)
-      - prefix(github.com/cosmos/cosmos-sdk)
-      - prefix(github.com/cometbft/cometbft)
-      - prefix(github.com/exocore)
-      - prefix(github.com/ExocoreNetwork/exocore)
-    custom-order: true
+  golint:
+    min-confidence: 0
+  maligned:
+    suggest-new: true
+  misspell:
+    locale: US
+  nolintlint:
+    allow-unused: false
+    allow-leading-space: true
+    require-explanation: false
+    require-specific: false
   gofumpt:
-    lang-version: "1.20"
+    lang-version: "1.21"
   gomodguard:
     blocked:
       versions:                                                         # List of blocked module version constraints
@@ -78,42 +61,3 @@ linters-settings:
         - https://github.com/dgrijalva/jwt-go:                          # Blocked module with version constraint
             version: ">= 4.0.0-preview1"                                # Version constraint, see https://github.com/Masterminds/semver#basic-comparisons
             reason: "CVE-2020-26160"                                    # Reason why the version constraint exists. (Optional)
-  misspell:
-    locale: US
-  nolintlint:
-    allow-unused: false
-    allow-leading-space: true
-    require-explanation: false
-    require-specific: false
-  revive:
-    ignore-generated-header: true
-    severity: error
-    enable-all-rules: true
-    rules:
-    - name: line-length-limit
-      arguments: [96]
-    - name: add-constant
-      arguments:
-      - "allowInts": "0,1,8"
-  staticcheck:
-    checks: [ "all" ]
-  varnamelen:
-    # allow names like transaction tx, priv key pk, bank keeper bk
-    min-name-length: 2
-    check-receiver: false
-    check-return: false
-    check-type-param: false
-    ignore-type-assert-ok: false
-    ignore-map-index-ok: false
-    ignore-chan-recv-ok: false
-    ignore-names:
-      - err
-    ignore-decls:
-      - t testing.T
-      - e error
-      - i int
-      - j int
-      - k int
-      - T any
-      - m map[string]int
-      - c sdk.Context
