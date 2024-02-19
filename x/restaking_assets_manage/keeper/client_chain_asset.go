@@ -41,7 +41,7 @@ func (k Keeper) UpdateStakingAssetTotalAmount(ctx sdk.Context, assetId string, c
 // It provides a function to register the client chain assets supported by exoCore.It's called by genesis configuration now,however it will be called by the governance in the future
 func (k Keeper) SetStakingAssetInfo(ctx sdk.Context, info *restakingtype.StakingAssetInfo) (err error) {
 	//check if the client chain exist
-	if !k.IsExistClientChain(ctx, info.AssetBasicInfo.LayerZeroChainId) {
+	if !k.IsExistedClientChain(ctx, info.AssetBasicInfo.LayerZeroChainId) {
 		return restakingtype.ErrNoClientChainKey
 	}
 
