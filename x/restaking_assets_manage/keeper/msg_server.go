@@ -4,6 +4,8 @@ import (
 	"context"
 	"strings"
 
+	"cosmossdk.io/math"
+
 	restakingtype "github.com/ExocoreNetwork/exocore/x/restaking_assets_manage/types"
 	"github.com/cosmos/cosmos-sdk/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -30,4 +32,25 @@ func (k Keeper) SetStakerExoCoreAddr(ctx context.Context, addrInfo *restakingtyp
 	// todo: save to KeyPrefixReStakerExoCoreAddrReverse
 
 	return &restakingtype.MsgSetExoCoreAddrResponse{}, nil
+}
+
+func (k Keeper) RegisterClientChain(ctx context.Context, req *restakingtype.RegisterClientChainReq) (*restakingtype.RegisterClientChainResponse, error) {
+	c := sdk.UnwrapSDKContext(ctx)
+	err := k.SetClientChainInfo(c, req.Info)
+	if err != nil {
+		return nil, err
+	}
+	return nil, nil
+}
+
+func (k Keeper) RegisterAsset(ctx context.Context, req *restakingtype.RegisterAssetReq) (*restakingtype.RegisterAssetResponse, error) {
+	c := sdk.UnwrapSDKContext(ctx)
+	err := k.SetStakingAssetInfo(c, &restakingtype.StakingAssetInfo{
+		AssetBasicInfo:     req.Info,
+		StakingTotalAmount: math.NewInt(0),
+	})
+	if err != nil {
+		return nil, err
+	}
+	return nil, nil
 }
