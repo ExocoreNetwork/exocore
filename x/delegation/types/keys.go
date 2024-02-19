@@ -49,8 +49,8 @@ var (
 	// KeyPrefixRestakerDelegationInfo reStakerId = clientChainAddr+'_'+ExoCoreChainIndex
 	// KeyPrefixRestakerDelegationInfo
 	// key-value:
-	// reStakerId +'/'+assetId -> totalDelegationAmount
-	// reStakerId +'/'+assetId+'/'+operatorAddr -> delegationAmounts
+	// reStakerId +'/'+assetID -> totalDelegationAmount
+	// reStakerId +'/'+assetID+'/'+operatorAddr -> delegationAmounts
 
 	KeyPrefixRestakerDelegationInfo = []byte{prefixRestakerDelegationInfo}
 	// KeyPrefixDelegationUsedSalt key->value: operatorApproveAddr->map[salt]{}
@@ -61,23 +61,23 @@ var (
 	// KeyPrefixUndelegationInfo singleRecordKey = lzNonce+'/'+txHash+'/'+operatorAddr
 	// singleRecordKey -> UndelegateReqRecord
 	KeyPrefixUndelegationInfo = []byte{prefixUndelegationInfo}
-	// KeyPrefixStakerUndelegationInfo reStakerId+'/'+assetId+'/'+lzNonce -> singleRecordKey
+	// KeyPrefixStakerUndelegationInfo reStakerId+'/'+assetID+'/'+lzNonce -> singleRecordKey
 	KeyPrefixStakerUndelegationInfo = []byte{prefixStakerUndelegationInfo}
 	// KeyPrefixWaitCompleteUndelegations completeHeight +'/'+lzNonce -> singleRecordKey
 	KeyPrefixWaitCompleteUndelegations = []byte{prefixWaitCompleteUndelegations}
 )
 
-func GetDelegationStateKey(stakerId, assetId, operatorAddr string) []byte {
-	return []byte(strings.Join([]string{stakerId, assetId, operatorAddr}, "/"))
+func GetDelegationStateKey(stakerID, assetID, operatorAddr string) []byte {
+	return []byte(strings.Join([]string{stakerID, assetID, operatorAddr}, "/"))
 }
 
-func GetDelegationStateIteratorPrefix(stakerId, assetId string) []byte {
-	tmp := []byte(strings.Join([]string{stakerId, assetId}, "/"))
+func GetDelegationStateIteratorPrefix(stakerID, assetID string) []byte {
+	tmp := []byte(strings.Join([]string{stakerID, assetID}, "/"))
 	tmp = append(tmp, '/')
 	return tmp
 }
 
-func ParseStakerAssetIdAndOperatorAddrFromKey(key []byte) (keys *SingleDelegationInfoReq, err error) {
+func ParseStakerAssetIDAndOperatorAddrFromKey(key []byte) (keys *SingleDelegationInfoReq, err error) {
 	stringList := strings.Split(string(key), "/")
 	if len(stringList) != 3 {
 		return nil, errorsmod.Wrap(ErrParseDelegationKey, fmt.Sprintf("the stringList is:%v", stringList))
@@ -89,8 +89,8 @@ func GetUndelegationRecordKey(lzNonce uint64, txHash string, operatorAddr string
 	return []byte(strings.Join([]string{hexutil.EncodeUint64(lzNonce), txHash, operatorAddr}, "/"))
 }
 
-func GetStakerUndelegationRecordKey(stakerId, assetId string, lzNonce uint64) []byte {
-	return []byte(strings.Join([]string{stakerId, assetId, hexutil.EncodeUint64(lzNonce)}, "/"))
+func GetStakerUndelegationRecordKey(stakerID, assetID string, lzNonce uint64) []byte {
+	return []byte(strings.Join([]string{stakerID, assetID, hexutil.EncodeUint64(lzNonce)}, "/"))
 }
 
 func GetWaitCompleteRecordKey(height, lzNonce uint64) []byte {

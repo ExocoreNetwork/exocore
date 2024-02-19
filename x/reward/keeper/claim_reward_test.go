@@ -29,8 +29,8 @@ func (suite *KeeperTestSuite) TestClaimWithdrawRequest() {
 	suite.NoError(err)
 
 	// check state after reward
-	stakerId, assetId := types.GetStakeIDAndAssetId(event.ClientChainLzId, event.WithdrawRewardAddress, event.AssetsAddress)
-	info, err := suite.app.StakingAssetsManageKeeper.GetStakerSpecifiedAssetInfo(suite.ctx, stakerId, assetId)
+	stakerID, assetID := types.GetStakeIDAndAssetID(event.ClientChainLzId, event.WithdrawRewardAddress, event.AssetsAddress)
+	info, err := suite.app.StakingAssetsManageKeeper.GetStakerSpecifiedAssetInfo(suite.ctx, stakerID, assetID)
 	suite.NoError(err)
 	suite.Equal(types.StakerSingleAssetOrChangeInfo{
 		TotalDepositAmountOrWantChangeValue:     sdkmath.NewInt(10),
@@ -38,7 +38,7 @@ func (suite *KeeperTestSuite) TestClaimWithdrawRequest() {
 		WaitUndelegationAmountOrWantChangeValue: sdkmath.NewInt(0),
 	}, *info)
 
-	assetInfo, err := suite.app.StakingAssetsManageKeeper.GetStakingAssetInfo(suite.ctx, assetId)
+	assetInfo, err := suite.app.StakingAssetsManageKeeper.GetStakingAssetInfo(suite.ctx, assetID)
 	suite.NoError(err)
 	suite.Equal(sdkmath.NewInt(10), assetInfo.StakingTotalAmount)
 }

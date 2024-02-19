@@ -1,4 +1,4 @@
-package restaking_assets_manage
+package restaking_assets_manage // nolint: revive,stylecheck // Package naming to be fixed later.
 
 import (
 	"encoding/json"
@@ -56,7 +56,7 @@ func GetGenesisStateFromAppState(cdc codec.Codec, appState map[string]json.RawMe
 
 // ValidateGenesis performs basic validation of restaking_assets_manage genesis data returning an
 // error for any failed validation criteria.
-func ValidateGenesis(data restakingtype.GenesisState) error {
+func ValidateGenesis(restakingtype.GenesisState) error {
 	// todo: check the validation of client chain and token info
 	return nil
 }

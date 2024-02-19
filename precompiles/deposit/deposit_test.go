@@ -56,7 +56,7 @@ func (s *PrecompileTestSuite) TestRunDepositTo() {
 	exoCoreLzAppEventTopic := "0xc6a377bfc4eb120024a8ac08eef205be16b817020812c73223e81d1bdb9708ec"
 	usdtAddress := paddingClientChainAddress(common.FromHex("0xdAC17F958D2ee523a2206206994597C13D831ec7"), types.GeneralClientChainAddrLength)
 	usdcAddress := paddingClientChainAddress(common.FromHex("0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"), types.GeneralClientChainAddrLength)
-	clientChainLzId := 101
+	clientChainLzID := 101
 	stakerAddr := paddingClientChainAddress(s.address.Bytes(), types.GeneralClientChainAddrLength)
 	opAmount := big.NewInt(100)
 	assetAddr := usdtAddress
@@ -68,7 +68,7 @@ func (s *PrecompileTestSuite) TestRunDepositTo() {
 		s.app.DistrKeeper.AllocateTokensToValidator(s.ctx, val, sdk.NewDecCoinsFromCoins(coins...))
 		input, err := s.precompile.Pack(
 			deposit.MethodDepositTo,
-			uint16(clientChainLzId),
+			uint16(clientChainLzID),
 			assetAddr,
 			stakerAddr,
 			opAmount,

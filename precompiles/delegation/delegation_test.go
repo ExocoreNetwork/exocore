@@ -69,7 +69,7 @@ func (s *PrecompileTestSuite) TestRunDelegateToThroughClientChain() {
 	exoCoreLzAppEventTopic := "0xc6a377bfc4eb120024a8ac08eef205be16b817020812c73223e81d1bdb9708ec"
 	usdtAddress := common.FromHex("0xdAC17F958D2ee523a2206206994597C13D831ec7")
 	opAccAddr := "evmos1fl48vsnmsdzcv85q5d2q4z5ajdha8yu3h6cprl"
-	clientChainLzId := 101
+	clientChainLzID := 101
 	lzNonce := 0
 	delegationAmount := big.NewInt(50)
 	depositAmount := big.NewInt(100)
@@ -106,7 +106,7 @@ func (s *PrecompileTestSuite) TestRunDelegateToThroughClientChain() {
 		s.app.DistrKeeper.AllocateTokensToValidator(s.ctx, val, sdk.NewDecCoinsFromCoins(coins...))
 		input, err := s.precompile.Pack(
 			delegation.MethodDelegateToThroughClientChain,
-			uint16(clientChainLzId),
+			uint16(clientChainLzID),
 			uint64(lzNonce),
 			assetAddr,
 			paddingClientChainAddress(s.address.Bytes(), types.GeneralClientChainAddrLength),
@@ -295,7 +295,7 @@ func (s *PrecompileTestSuite) TestRunUnDelegateFromThroughClientChain() {
 	exoCoreLzAppEventTopic := "0xc6a377bfc4eb120024a8ac08eef205be16b817020812c73223e81d1bdb9708ec"
 	usdtAddress := common.FromHex("0xdAC17F958D2ee523a2206206994597C13D831ec7")
 	operatorAddr := "evmos1fl48vsnmsdzcv85q5d2q4z5ajdha8yu3h6cprl"
-	clientChainLzId := 101
+	clientChainLzID := 101
 	lzNonce := uint64(0)
 	delegationAmount := big.NewInt(50)
 	depositAmount := big.NewInt(100)
@@ -348,7 +348,7 @@ func (s *PrecompileTestSuite) TestRunUnDelegateFromThroughClientChain() {
 		s.app.DistrKeeper.AllocateTokensToValidator(s.ctx, val, sdk.NewDecCoinsFromCoins(coins...))
 		input, err := s.precompile.Pack(
 			delegation.MethodUndelegateFromThroughClientChain,
-			uint16(clientChainLzId),
+			uint16(clientChainLzID),
 			lzNonce+1,
 			assetAddr,
 			paddingClientChainAddress(s.address.Bytes(), types.GeneralClientChainAddrLength),

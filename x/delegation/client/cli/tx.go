@@ -59,13 +59,13 @@ func RegisterOperator() *cobra.Command {
 				if len(strList) != 2 {
 					return errorsmod.Wrap(delegationtype.ErrCliCmdInputArg, fmt.Sprintf("the error input arg is:%s", arg))
 				}
-				clientChainLzId, err := strconv.ParseUint(strList[0], 10, 64)
+				clientChainLzID, err := strconv.ParseUint(strList[0], 10, 64)
 				if err != nil {
 					return err
 				}
 				clientChainEarningAddress.EarningInfoList = append(clientChainEarningAddress.EarningInfoList,
 					&delegationtype.ClientChainEarningAddrInfo{
-						LzClientChainID: clientChainLzId, ClientChainEarningAddr: strList[1],
+						LzClientChainID: clientChainLzID, ClientChainEarningAddr: strList[1],
 					})
 			}
 			msg.Info.ClientChainEarningsAddr = clientChainEarningAddress

@@ -25,13 +25,13 @@ func NewKeeper(
 }
 
 // GetAllOperatorAssetOptedInMiddleWare This function should be implemented in the operator opt-in module
-func (k Keeper) GetAllOperatorAssetOptedInMiddleWare(operatorAddr sdk.Address) (optedInInfos map[string][]sdk.Address, err error) {
+func (k Keeper) GetAllOperatorAssetOptedInMiddleWare(sdk.Address) (optedInInfos map[string][]sdk.Address, err error) {
 	// TODO implement me
 	panic("implement me")
 }
 
 // SetOperatorAssetOptedInMiddleWare This function should be implemented in the operator opt-in module
-func (k Keeper) SetOperatorAssetOptedInMiddleWare(operatorAddr sdk.Address, setInfo map[string]sdk.Address) (middleWares []sdk.Address, err error) {
+func (k Keeper) SetOperatorAssetOptedInMiddleWare(sdk.Address, map[string]sdk.Address) (middleWares []sdk.Address, err error) {
 	// TODO implement me
 	panic("implement me")
 }
@@ -43,23 +43,23 @@ type IRestakingAssetsManage interface {
 	GetAllClientChainInfo(ctx sdk.Context) (infos map[uint64]*restakingtype.ClientChainInfo, err error)
 
 	SetStakingAssetInfo(ctx sdk.Context, info *restakingtype.StakingAssetInfo) (err error)
-	GetStakingAssetInfo(ctx sdk.Context, assetId string) (info *restakingtype.StakingAssetInfo, err error)
+	GetStakingAssetInfo(ctx sdk.Context, assetID string) (info *restakingtype.StakingAssetInfo, err error)
 	GetAllStakingAssetsInfo(ctx sdk.Context) (allAssets map[string]*restakingtype.StakingAssetInfo, err error)
 
-	GetStakerAssetInfos(ctx sdk.Context, stakerId string) (assetsInfo map[string]*restakingtype.StakerSingleAssetOrChangeInfo, err error)
-	GetStakerSpecifiedAssetInfo(ctx sdk.Context, stakerId string, assetId string) (info *restakingtype.StakerSingleAssetOrChangeInfo, err error)
-	UpdateStakerAssetState(ctx sdk.Context, stakerId string, assetId string, changeAmount restakingtype.StakerSingleAssetOrChangeInfo) (err error)
+	GetStakerAssetInfos(ctx sdk.Context, stakerID string) (assetsInfo map[string]*restakingtype.StakerSingleAssetOrChangeInfo, err error)
+	GetStakerSpecifiedAssetInfo(ctx sdk.Context, stakerID string, assetID string) (info *restakingtype.StakerSingleAssetOrChangeInfo, err error)
+	UpdateStakerAssetState(ctx sdk.Context, stakerID string, assetID string, changeAmount restakingtype.StakerSingleAssetOrChangeInfo) (err error)
 
 	GetOperatorAssetInfos(ctx sdk.Context, operatorAddr sdk.Address) (assetsInfo map[string]*restakingtype.OperatorSingleAssetOrChangeInfo, err error)
-	GetOperatorSpecifiedAssetInfo(ctx sdk.Context, operatorAddr sdk.Address, assetId string) (info *restakingtype.OperatorSingleAssetOrChangeInfo, err error)
-	UpdateOperatorAssetState(ctx sdk.Context, operatorAddr sdk.Address, assetId string, changeAmount restakingtype.OperatorSingleAssetOrChangeInfo) (err error)
+	GetOperatorSpecifiedAssetInfo(ctx sdk.Context, operatorAddr sdk.Address, assetID string) (info *restakingtype.OperatorSingleAssetOrChangeInfo, err error)
+	UpdateOperatorAssetState(ctx sdk.Context, operatorAddr sdk.Address, assetID string, changeAmount restakingtype.OperatorSingleAssetOrChangeInfo) (err error)
 
 	// SetStakerExoCoreAddr handle the SetStakerExoCoreAddr txs from msg service
 	SetStakerExoCoreAddr(ctx context.Context, addr *restakingtype.MsgSetExoCoreAddr) (*restakingtype.MsgSetExoCoreAddrResponse, error)
-	GetStakerExoCoreAddr(ctx sdk.Context, stakerId string) (string, error)
+	GetStakerExoCoreAddr(ctx sdk.Context, stakerID string) (string, error)
 
 	// GetOperatorAssetOptedInMiddleWare :the following three interfaces should be implemented in operator opt-in module
-	GetOperatorAssetOptedInMiddleWare(operatorAddr sdk.Address, assetId string) (middleWares []sdk.Address, err error)
+	GetOperatorAssetOptedInMiddleWare(operatorAddr sdk.Address, assetID string) (middleWares []sdk.Address, err error)
 	GetAllOperatorAssetOptedInMiddleWare(operatorAddr sdk.Address) (optedInInfos map[string][]sdk.Address, err error)
 	SetOperatorAssetOptedInMiddleWare(operatorAddr sdk.Address, setInfo map[string]sdk.Address) (middleWares []sdk.Address, err error)
 }

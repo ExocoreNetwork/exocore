@@ -55,7 +55,7 @@ func (s *PrecompileTestSuite) TestRunRewardThroughClientChain() {
 	// deposit params for test
 	exoCoreLzAppEventTopic := "0xc6a377bfc4eb120024a8ac08eef205be16b817020812c73223e81d1bdb9708ec"
 	usdtAddress := common.FromHex("0xdAC17F958D2ee523a2206206994597C13D831ec7")
-	clientChainLzId := 101
+	clientChainLzID := 101
 	withdrawAmount := big.NewInt(10)
 	depositAmount := big.NewInt(100)
 	assetAddr := paddingClientChainAddress(usdtAddress, types.GeneralClientChainAddrLength)
@@ -76,7 +76,7 @@ func (s *PrecompileTestSuite) TestRunRewardThroughClientChain() {
 		// Prepare the call input for reward test
 		input, err := s.precompile.Pack(
 			reward.MethodReward,
-			uint16(clientChainLzId),
+			uint16(clientChainLzID),
 			assetAddr,
 			paddingClientChainAddress(s.address.Bytes(), types.GeneralClientChainAddrLength),
 			withdrawAmount,

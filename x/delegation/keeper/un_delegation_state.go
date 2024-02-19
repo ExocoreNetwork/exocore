@@ -65,33 +65,34 @@ func (k Keeper) GetUndelegationRecords(ctx sdk.Context, singleRecordKeys []strin
 			return nil, errorsmod.Wrap(types.ErrNoKeyInTheStore, fmt.Sprintf("GetSingleDelegationRecord: key is %s", singleRecordKey))
 		}
 
-		if getType == PendingRecords {
+		switch getType {
+		case PendingRecords:
 			if UndelegationRecord.IsPending {
 				ret = append(ret, &UndelegationRecord)
 			}
-		} else if getType == CompletedRecords {
+		case CompletedRecords:
 			if !UndelegationRecord.IsPending {
 				ret = append(ret, &UndelegationRecord)
 			}
-		} else if getType == AllRecords {
+		case AllRecords:
 			ret = append(ret, &UndelegationRecord)
-		} else {
+		default:
 			return nil, errorsmod.Wrap(types.ErrStakerGetRecordType, fmt.Sprintf("the getType is:%v", getType))
 		}
 	}
 	return ret, nil
 }
 
-func (k Keeper) SetStakerUndelegationInfo(ctx sdk.Context, stakerId, assetId string, recordKey []byte, lzNonce uint64) error {
+func (k Keeper) SetStakerUndelegationInfo(ctx sdk.Context, stakerID, assetID string, recordKey []byte, lzNonce uint64) error {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefixStakerUndelegationInfo)
-	key := types.GetStakerUndelegationRecordKey(stakerId, assetId, lzNonce)
+	key := types.GetStakerUndelegationRecordKey(stakerID, assetID, lzNonce)
 	store.Set(key, recordKey)
 	return nil
 }
 
-func (k Keeper) GetStakerUndelegationRecKeys(ctx sdk.Context, stakerId, assetId string) (recordKeyList []string, err error) {
+func (k Keeper) GetStakerUndelegationRecKeys(ctx sdk.Context, stakerID, assetID string) (recordKeyList []string, err error) {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefixStakerUndelegationInfo)
-	iterator := sdk.KVStorePrefixIterator(store, []byte(strings.Join([]string{stakerId, assetId}, "/")))
+	iterator := sdk.KVStorePrefixIterator(store, []byte(strings.Join([]string{stakerID, assetID}, "/")))
 	defer iterator.Close()
 
 	ret := make([]string, 0)
@@ -101,8 +102,8 @@ func (k Keeper) GetStakerUndelegationRecKeys(ctx sdk.Context, stakerId, assetId 
 	return ret, nil
 }
 
-func (k Keeper) GetStakerUndelegationRecords(ctx sdk.Context, stakerId, assetId string, getType GetUndelegationRecordType) (records []*types.UndelegationRecord, err error) {
-	recordKeys, err := k.GetStakerUndelegationRecKeys(ctx, stakerId, assetId)
+func (k Keeper) GetStakerUndelegationRecords(ctx sdk.Context, stakerID, assetID string, getType GetUndelegationRecordType) (records []*types.UndelegationRecord, err error) {
+	recordKeys, err := k.GetStakerUndelegationRecKeys(ctx, stakerID, assetID)
 	if err != nil {
 		return nil, err
 	}

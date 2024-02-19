@@ -25,9 +25,9 @@ const (
 // DelegateToThroughClientChain delegate the client chain assets to the operator through client chain, that will change the states in delegation and restaking_assets_manage module
 func (p Precompile) DelegateToThroughClientChain(
 	ctx sdk.Context,
-	origin common.Address,
+	_ common.Address,
 	contract *vm.Contract,
-	stateDB vm.StateDB,
+	_ vm.StateDB,
 	method *abi.Method,
 	args []interface{},
 ) ([]byte, error) {
@@ -55,9 +55,9 @@ func (p Precompile) DelegateToThroughClientChain(
 // UndelegateFromThroughClientChain Undelegation the client chain assets from the operator through client chain, that will change the states in delegation and restaking_assets_manage module
 func (p Precompile) UndelegateFromThroughClientChain(
 	ctx sdk.Context,
-	origin common.Address,
+	_ common.Address,
 	contract *vm.Contract,
-	stateDB vm.StateDB,
+	_ vm.StateDB,
 	method *abi.Method,
 	args []interface{},
 ) ([]byte, error) {

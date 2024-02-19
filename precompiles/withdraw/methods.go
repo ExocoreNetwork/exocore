@@ -18,9 +18,9 @@ const (
 // Withdraw assets to the staker, that will change the state in withdraw module.
 func (p Precompile) Withdraw(
 	ctx sdk.Context,
-	origin common.Address,
+	_ common.Address,
 	contract *vm.Contract,
-	stateDB vm.StateDB,
+	_ vm.StateDB,
 	method *abi.Method,
 	args []interface{},
 ) ([]byte, error) {
@@ -44,8 +44,8 @@ func (p Precompile) Withdraw(
 		return nil, err
 	}
 	// get the latest asset state of staker to return.
-	stakerId, assetId := types.GetStakeIDAndAssetId(withdrawParam.ClientChainLzId, withdrawParam.WithdrawAddress, withdrawParam.AssetsAddress)
-	info, err := p.stakingStateKeeper.GetStakerSpecifiedAssetInfo(ctx, stakerId, assetId)
+	stakerID, assetID := types.GetStakeIDAndAssetID(withdrawParam.ClientChainLzID, withdrawParam.WithdrawAddress, withdrawParam.AssetsAddress)
+	info, err := p.stakingStateKeeper.GetStakerSpecifiedAssetInfo(ctx, stakerID, assetID)
 	if err != nil {
 		return nil, err
 	}

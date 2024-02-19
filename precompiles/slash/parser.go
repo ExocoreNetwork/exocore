@@ -21,9 +21,9 @@ func (p Precompile) GetSlashParamsFromInputs(ctx sdk.Context, args []interface{}
 	if !ok {
 		return nil, fmt.Errorf(ErrContractInputParaOrType, 0, reflect.TypeOf(args[0]), clientChainLzID)
 	}
-	slashParams.ClientChainLzId = uint64(clientChainLzID)
+	slashParams.ClientChainLzID = uint64(clientChainLzID)
 
-	info, err := p.stakingStateKeeper.GetClientChainInfoByIndex(ctx, slashParams.ClientChainLzId)
+	info, err := p.stakingStateKeeper.GetClientChainInfoByIndex(ctx, slashParams.ClientChainLzID)
 	if err != nil {
 		return nil, err
 	}

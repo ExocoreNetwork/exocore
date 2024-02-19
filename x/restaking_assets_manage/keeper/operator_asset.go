@@ -21,18 +21,18 @@ func (k Keeper) GetOperatorAssetInfos(ctx sdk.Context, operatorAddr sdk.Address)
 	for ; iterator.Valid(); iterator.Next() {
 		var stateInfo restakingtype.OperatorSingleAssetOrChangeInfo
 		k.cdc.MustUnmarshal(iterator.Value(), &stateInfo)
-		_, assetId, err := restakingtype.ParseStakerAndAssetIdFromKey(iterator.Key())
+		_, assetID, err := restakingtype.ParseStakerAndAssetIDFromKey(iterator.Key())
 		if err != nil {
 			return nil, err
 		}
-		ret[assetId] = &stateInfo
+		ret[assetID] = &stateInfo
 	}
 	return ret, nil
 }
 
-func (k Keeper) GetOperatorSpecifiedAssetInfo(ctx sdk.Context, operatorAddr sdk.Address, assetId string) (info *restakingtype.OperatorSingleAssetOrChangeInfo, err error) {
+func (k Keeper) GetOperatorSpecifiedAssetInfo(ctx sdk.Context, operatorAddr sdk.Address, assetID string) (info *restakingtype.OperatorSingleAssetOrChangeInfo, err error) {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), restakingtype.KeyPrefixOperatorAssetInfos)
-	key := restakingtype.GetAssetStateKey(operatorAddr.String(), assetId)
+	key := restakingtype.GetAssetStateKey(operatorAddr.String(), assetID)
 	ifExist := store.Has(key)
 	if !ifExist {
 		return nil, restakingtype.ErrNoOperatorAssetKey
@@ -49,9 +49,9 @@ func (k Keeper) GetOperatorSpecifiedAssetInfo(ctx sdk.Context, operatorAddr sdk.
 // The input `changeAmount` represents the values that you want to add or decrease,using positive or negative values for increasing and decreasing,respectively. The function will calculate and update new state after a successful check.
 // The function will be called when there is delegation or undelegation related to the operator. In the future,it will also be called when the operator deposit their own assets.
 
-func (k Keeper) UpdateOperatorAssetState(ctx sdk.Context, operatorAddr sdk.Address, assetId string, changeAmount restakingtype.OperatorSingleAssetOrChangeInfo) (err error) {
+func (k Keeper) UpdateOperatorAssetState(ctx sdk.Context, operatorAddr sdk.Address, assetID string, changeAmount restakingtype.OperatorSingleAssetOrChangeInfo) (err error) {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), restakingtype.KeyPrefixOperatorAssetInfos)
-	key := restakingtype.GetAssetStateKey(operatorAddr.String(), assetId)
+	key := restakingtype.GetAssetStateKey(operatorAddr.String(), assetID)
 	assetState := restakingtype.OperatorSingleAssetOrChangeInfo{
 		TotalAmountOrWantChangeValue:            math.NewInt(0),
 		OperatorOwnAmountOrWantChangeValue:      math.NewInt(0),
@@ -82,6 +82,6 @@ func (k Keeper) UpdateOperatorAssetState(ctx sdk.Context, operatorAddr sdk.Addre
 }
 
 // GetOperatorAssetOptedInMiddleWare This function should be implemented in the operator opt-in module
-func (k Keeper) GetOperatorAssetOptedInMiddleWare(operatorAddr sdk.Address, assetId string) (middleWares []sdk.Address, err error) {
+func (k Keeper) GetOperatorAssetOptedInMiddleWare(sdk.Address, string) (middleWares []sdk.Address, err error) {
 	panic("implement me")
 }

@@ -34,7 +34,7 @@ func (k Keeper) SetParams(ctx sdk.Context, params *types.Params) error {
 		return types.ErrInvalidEvmAddressFormat
 	}
 	if len(common.FromHex(params.ExoCoreLzAppEventTopic)) != common.HashLength {
-		return types.ErrInvalidLzUaTopicIdLength
+		return types.ErrInvalidLzUaTopicIDLength
 	}
 	params.ExoCoreLzAppAddress = strings.ToLower(params.ExoCoreLzAppAddress)
 	params.ExoCoreLzAppEventTopic = strings.ToLower(params.ExoCoreLzAppEventTopic)

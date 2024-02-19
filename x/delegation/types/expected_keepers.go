@@ -9,26 +9,26 @@ var CanUndelegationDelayHeight = uint64(10)
 
 type ISlashKeeper interface {
 	IsOperatorFrozen(ctx sdk.Context, opAddr sdk.AccAddress) bool
-	OperatorAssetSlashedProportion(ctx sdk.Context, opAddr sdk.AccAddress, assetId string, startHeight, endHeight uint64) sdkmath.LegacyDec
+	OperatorAssetSlashedProportion(ctx sdk.Context, opAddr sdk.AccAddress, assetID string, startHeight, endHeight uint64) sdkmath.LegacyDec
 }
 
 // VirtualISlashKeeper todo: When the actual keeper functionality has not been implemented yet, temporarily use the virtual keeper.
 type VirtualISlashKeeper struct{}
 
-func (VirtualISlashKeeper) IsOperatorFrozen(ctx sdk.Context, opAddr sdk.AccAddress) bool {
+func (VirtualISlashKeeper) IsOperatorFrozen(sdk.Context, sdk.AccAddress) bool {
 	return false
 }
 
-func (VirtualISlashKeeper) OperatorAssetSlashedProportion(ctx sdk.Context, opAddr sdk.AccAddress, assetId string, startHeight, endHeight uint64) sdkmath.LegacyDec {
+func (VirtualISlashKeeper) OperatorAssetSlashedProportion(sdk.Context, sdk.AccAddress, string, uint64, uint64) sdkmath.LegacyDec {
 	return sdkmath.LegacyNewDec(0)
 }
 
 type OperatorOptedInMiddlewareKeeper interface {
-	GetOperatorCanUndelegateHeight(ctx sdk.Context, assetId string, opAddr sdk.AccAddress, startHeight uint64) uint64
+	GetOperatorCanUndelegateHeight(ctx sdk.Context, assetID string, opAddr sdk.AccAddress, startHeight uint64) uint64
 }
 
 type VirtualOperatorOptedInKeeper struct{}
 
-func (VirtualOperatorOptedInKeeper) GetOperatorCanUndelegateHeight(ctx sdk.Context, assetId string, opAddr sdk.AccAddress, startHeight uint64) uint64 {
+func (VirtualOperatorOptedInKeeper) GetOperatorCanUndelegateHeight(_ sdk.Context, _ string, _ sdk.AccAddress, startHeight uint64) uint64 {
 	return startHeight + CanUndelegationDelayHeight
 }

@@ -24,9 +24,9 @@ func (p Precompile) GetDelegationParamsFromInputs(ctx sdk.Context, args []interf
 	if !ok {
 		return nil, fmt.Errorf(ErrContractInputParaOrType, 0, reflect.TypeOf(args[0]), clientChainLzID)
 	}
-	delegationParams.ClientChainLzId = uint64(clientChainLzID)
+	delegationParams.ClientChainLzID = uint64(clientChainLzID)
 
-	info, err := p.stakingStateKeeper.GetClientChainInfoByIndex(ctx, delegationParams.ClientChainLzId)
+	info, err := p.stakingStateKeeper.GetClientChainInfoByIndex(ctx, delegationParams.ClientChainLzID)
 	if err != nil {
 		return nil, err
 	}
