@@ -16,14 +16,14 @@ interface IDelegation {
 /// TRANSACTIONS
 /// @dev delegate the client chain assets to the operator through client chain, that will change the states in delegation and restaking_assets_manage module
 /// Note that this address cannot be a module account.
-/// @param clientChainLzId The lzId of client chain
+/// @param clientChainLzID The lzId of client chain
 /// @param lzNonce The cross chain tx layerZero nonce
 /// @param assetsAddress The client chain asset Address
 /// @param stakerAddress The staker address
 /// @param operatorAddr  The operator address that wants to be delegated to
 /// @param opAmount The delegation amount
     function delegateToThroughClientChain(
-        uint16 clientChainLzId,
+        uint16 clientChainLzID,
         uint64 lzNonce,
         bytes memory assetsAddress,
         bytes memory stakerAddress,
@@ -34,14 +34,14 @@ interface IDelegation {
 /// TRANSACTIONS
 /// @dev undelegate the client chain assets from the operator through client chain, that will change the states in delegation and restaking_assets_manage module
 /// Note that this address cannot be a module account.
-/// @param clientChainLzId The lzId of client chain
+/// @param clientChainLzID The lzId of client chain
 /// @param lzNonce The cross chain tx layerZero nonce
 /// @param assetsAddress The client chain asset Address
 /// @param stakerAddress The staker address
 /// @param operatorAddr  The operator address that wants to unDelegate from
 /// @param opAmount The Undelegation amount
     function undelegateFromThroughClientChain(
-        uint16 clientChainLzId,
+        uint16 clientChainLzID,
         uint64 lzNonce,
         bytes memory assetsAddress,
         bytes memory stakerAddress,
