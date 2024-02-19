@@ -9,5 +9,5 @@ option go_package = "github.com/ExocoreNetwork/exocore/x/restaking_assets_manage
 // GenesisState defines the restaking_assets_manage module's genesis state.
 message GenesisState {
   repeated ClientChainInfo DefaultSupportedClientChains = 1;
-  repeated ClientChainTokenInfo DefaultSupportedClientChainTokens = 2;
+  repeated AssetInfo DefaultSupportedClientChainTokens = 2;
 }
