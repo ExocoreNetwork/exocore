@@ -37,6 +37,9 @@ linters:
 
 
 linters-settings:
+  err-check:
+    exclude-functions:
+      - types.RegisterQueryHandlerClient
   dogsled:
     max-blank-identifiers: 3
   golint:
