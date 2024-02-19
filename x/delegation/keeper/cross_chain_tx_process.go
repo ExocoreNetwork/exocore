@@ -189,8 +189,8 @@ func (k Keeper) UndelegateFrom(ctx sdk.Context, params *DelegationOrUndelegation
 	}
 
 	r := &delegationtype.UndelegationRecord{
-		StakerId:              stakerId,
-		AssetId:               assetId,
+		StakerID:              stakerId,
+		AssetID:               assetId,
 		OperatorAddr:          params.OperatorAddress.String(),
 		TxHash:                params.TxHash.String(),
 		IsPending:             true,

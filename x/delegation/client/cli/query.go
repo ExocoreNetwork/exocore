@@ -51,8 +51,8 @@ func QuerySingleDelegationInfo() *cobra.Command {
 			}
 			stakerId, assetId := types.GetStakeIDAndAssetIdFromStr(clientChainLzId, args[1], args[2])
 			req := &delegationtype.SingleDelegationInfoReq{
-				StakerId:     stakerId,
-				AssetId:      assetId,
+				StakerID:     stakerId,
+				AssetID:      assetId,
 				OperatorAddr: args[3],
 			}
 			res, err := queryClient.QuerySingleDelegationInfo(context.Background(), req)
@@ -82,8 +82,8 @@ func QueryDelegationInfo() *cobra.Command {
 
 			queryClient := delegationtype.NewQueryClient(clientCtx)
 			req := &delegationtype.DelegationInfoReq{
-				StakerId: args[0],
-				AssetId:  args[1],
+				StakerID: args[0],
+				AssetID:  args[1],
 			}
 			res, err := queryClient.QueryDelegationInfo(context.Background(), req)
 			if err != nil {

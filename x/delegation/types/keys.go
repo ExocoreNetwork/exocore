@@ -82,7 +82,7 @@ func ParseStakerAssetIdAndOperatorAddrFromKey(key []byte) (keys *SingleDelegatio
 	if len(stringList) != 3 {
 		return nil, errorsmod.Wrap(ErrParseDelegationKey, fmt.Sprintf("the stringList is:%v", stringList))
 	}
-	return &SingleDelegationInfoReq{StakerId: stringList[0], AssetId: stringList[1], OperatorAddr: stringList[2]}, nil
+	return &SingleDelegationInfoReq{StakerID: stringList[0], AssetID: stringList[1], OperatorAddr: stringList[2]}, nil
 }
 
 func GetUndelegationRecordKey(lzNonce uint64, txHash string, operatorAddr string) []byte {

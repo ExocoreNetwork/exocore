@@ -65,7 +65,7 @@ func RegisterOperator() *cobra.Command {
 				}
 				clientChainEarningAddress.EarningInfoList = append(clientChainEarningAddress.EarningInfoList,
 					&delegationtype.ClientChainEarningAddrInfo{
-						LzClientChainId: clientChainLzId, ClientChainEarningAddr: strList[1],
+						LzClientChainID: clientChainLzId, ClientChainEarningAddr: strList[1],
 					})
 			}
 			msg.Info.ClientChainEarningsAddr = clientChainEarningAddress

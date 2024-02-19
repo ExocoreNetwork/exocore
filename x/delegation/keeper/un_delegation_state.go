@@ -34,7 +34,7 @@ func (k Keeper) SetUndelegationRecords(ctx sdk.Context, records []*types.Undeleg
 		singleRecKey := types.GetUndelegationRecordKey(record.LzTxNonce, record.TxHash, record.OperatorAddr)
 		singleRecordStore.Set(singleRecKey, bz)
 
-		stakerKey := types.GetStakerUndelegationRecordKey(record.StakerId, record.AssetId, record.LzTxNonce)
+		stakerKey := types.GetStakerUndelegationRecordKey(record.StakerID, record.AssetID, record.LzTxNonce)
 		stakerUndelegationStore.Set(stakerKey, singleRecKey)
 
 		waitCompleteKey := types.GetWaitCompleteRecordKey(record.CompleteBlockNumber, record.LzTxNonce)
