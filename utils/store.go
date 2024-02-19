@@ -169,7 +169,7 @@ type iterator struct {
 	cdc codec.BinaryCodec
 }
 
-// UnmarshalValue returns the value marshalled into the given type
+// UnmarshalValue returns the value marshaled into the given type
 func (i iterator) UnmarshalValue(value codec.ProtoMarshaler) {
 	value.Reset()
 	i.cdc.MustUnmarshalLengthPrefixed(i.Value(), value)

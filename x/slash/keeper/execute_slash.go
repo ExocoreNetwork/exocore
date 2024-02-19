@@ -111,8 +111,8 @@ func (k Keeper) getParamsFromEventLog(ctx sdk.Context, log *ethtypes.Log) (*Slas
 
 func getStakeIDAndAssetId(params *SlashParams) (stakeId string, assetId string) {
 	clientChainLzIdStr := hexutil.EncodeUint64(params.ClientChainLzId)
-	stakeId = strings.Join([]string{hexutil.Encode(params.StakerAddress[:]), clientChainLzIdStr}, "_")
-	assetId = strings.Join([]string{hexutil.Encode(params.AssetsAddress[:]), clientChainLzIdStr}, "_")
+	stakeId = strings.Join([]string{hexutil.Encode(params.StakerAddress), clientChainLzIdStr}, "_")
+	assetId = strings.Join([]string{hexutil.Encode(params.AssetsAddress), clientChainLzIdStr}, "_")
 	return
 }
 

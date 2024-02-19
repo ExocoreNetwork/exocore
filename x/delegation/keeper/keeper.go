@@ -21,7 +21,6 @@ type Keeper struct {
 	storeKey storetypes.StoreKey
 	cdc      codec.BinaryCodec
 
-	//other keepers
 	restakingStateKeeper  keeper.Keeper
 	depositKeeper         depositkeeper.Keeper
 	slashKeeper           delegationtype.ISlashKeeper
@@ -58,7 +57,6 @@ func (k Keeper) SetOperatorInfo(ctx sdk.Context, addr string, info *delegationty
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), delegationtype.KeyPrefixOperatorInfo)
 	// todo: think about the difference between init and update in future
 
-	//key := common.HexToAddress(incentive.Contract)
 	bz := k.cdc.MustMarshal(info)
 
 	store.Set(opAccAddr, bz)
@@ -71,7 +69,7 @@ func (k Keeper) GetOperatorInfo(ctx sdk.Context, addr string) (info *delegationt
 		return nil, errorsmod.Wrap(err, "GetOperatorInfo: error occurred when parse acc address from Bech32")
 	}
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), delegationtype.KeyPrefixOperatorInfo)
-	//key := common.HexToAddress(incentive.Contract)
+
 	ifExist := store.Has(opAccAddr)
 	if !ifExist {
 		return nil, errorsmod.Wrap(delegationtype.ErrNoKeyInTheStore, fmt.Sprintf("GetOperatorInfo: key is %s", opAccAddr))

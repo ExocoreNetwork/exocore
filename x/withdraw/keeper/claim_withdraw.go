@@ -77,8 +77,8 @@ type WithdrawParams struct {
 
 func getStakeIDAndAssetId(params *WithdrawParams) (stakeId string, assetId string) {
 	clientChainLzIdStr := hexutil.EncodeUint64(params.ClientChainLzId)
-	stakeId = strings.Join([]string{hexutil.Encode(params.WithdrawAddress[:]), clientChainLzIdStr}, "_")
-	assetId = strings.Join([]string{hexutil.Encode(params.AssetsAddress[:]), clientChainLzIdStr}, "_")
+	stakeId = strings.Join([]string{hexutil.Encode(params.WithdrawAddress), clientChainLzIdStr}, "_")
+	assetId = strings.Join([]string{hexutil.Encode(params.AssetsAddress), clientChainLzIdStr}, "_")
 	return
 }
 

@@ -20,7 +20,7 @@ type DelegationOrUndelegationParams struct {
 	OpAmount        sdkmath.Int
 	LzNonce         uint64
 	TxHash          common.Hash
-	//todo: The operator approved signature might be needed here in future
+	// todo: The operator approved signature might be needed here in future
 }
 
 // The event hook process has been deprecated, now we use precompile contract to trigger the calls.
@@ -120,16 +120,15 @@ func (k Keeper) DelegateTo(ctx sdk.Context, params *DelegationOrUndelegationPara
 		return delegationtype.ErrOperatorIsFrozen
 	}
 
-	//todo: The operator approved signature might be needed here in future
+	// todo: The operator approved signature might be needed here in future
 
-	//update the related states
+	// update the related states
 	if params.OpAmount.IsNegative() {
 		return delegationtype.ErrOpAmountIsNegative
 	}
 
 	stakerId, assetId := types.GetStakeIDAndAssetId(params.ClientChainLzId, params.StakerAddress, params.AssetsAddress)
 
-	//check if the staker asset has been deposited and the canWithdraw amount is bigger than the delegation amount
 	info, err := k.restakingStateKeeper.GetStakerSpecifiedAssetInfo(ctx, stakerId, assetId)
 	if err != nil {
 		return err
@@ -139,7 +138,6 @@ func (k Keeper) DelegateTo(ctx sdk.Context, params *DelegationOrUndelegationPara
 		return delegationtype.ErrDelegationAmountTooBig
 	}
 
-	//update staker asset state
 	err = k.restakingStateKeeper.UpdateStakerAssetState(ctx, stakerId, assetId, types.StakerSingleAssetOrChangeInfo{
 		CanWithdrawAmountOrWantChangeValue: params.OpAmount.Neg(),
 	})
@@ -190,7 +188,6 @@ func (k Keeper) UndelegateFrom(ctx sdk.Context, params *DelegationOrUndelegation
 		return errorsmod.Wrap(delegationtype.ErrUndelegationAmountTooBig, fmt.Sprintf("UndelegationAmount:%s,CanUndelegationAmount:%s", params.OpAmount, delegationState.CanUndelegationAmount))
 	}
 
-	//record Undelegation event
 	r := &delegationtype.UndelegationRecord{
 		StakerId:              stakerId,
 		AssetId:               assetId,
@@ -208,7 +205,6 @@ func (k Keeper) UndelegateFrom(ctx sdk.Context, params *DelegationOrUndelegation
 		return err
 	}
 
-	//update delegation state
 	delegatorAndAmount := make(map[string]*delegationtype.DelegationAmounts)
 	delegatorAndAmount[params.OperatorAddress.String()] = &delegationtype.DelegationAmounts{
 		CanUndelegationAmount:  params.OpAmount.Neg(),
@@ -219,7 +215,6 @@ func (k Keeper) UndelegateFrom(ctx sdk.Context, params *DelegationOrUndelegation
 		return err
 	}
 
-	//update staker and operator assets state
 	err = k.restakingStateKeeper.UpdateStakerAssetState(ctx, stakerId, assetId, types.StakerSingleAssetOrChangeInfo{
 		WaitUndelegationAmountOrWantChangeValue: params.OpAmount,
 	})

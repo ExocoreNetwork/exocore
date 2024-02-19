@@ -26,7 +26,7 @@ func (suite *KeeperTestSuite) TestUpdateStakerAssetsState() {
 	suite.Require().True(ethUniInitialChangeValue.TotalDepositAmountOrWantChangeValue.Equal(getInfo.TotalDepositAmountOrWantChangeValue))
 	suite.Require().True(ethUniInitialChangeValue.CanWithdrawAmountOrWantChangeValue.Equal(getInfo.CanWithdrawAmountOrWantChangeValue))
 
-	//test ErrInputUpdateStateIsZero
+	// test ErrInputUpdateStateIsZero
 	/*	ethUniInitialChangeValue.TotalDepositAmountOrWantChangeValue = math.NewInt(0)
 		ethUniInitialChangeValue.CanWithdrawAmountOrWantChangeValue = math.NewInt(0)
 		err = suite.app.StakingAssetsManageKeeper.UpdateStakerAssetState(suite.ctx, stakerId, ethUniAssetId, ethUniInitialChangeValue)

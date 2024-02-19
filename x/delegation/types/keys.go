@@ -1,12 +1,14 @@
 package types
 
 import (
-	errorsmod "cosmossdk.io/errors"
 	"fmt"
+	"strings"
+
+	errorsmod "cosmossdk.io/errors"
+
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
-	"strings"
 )
 
 // constants

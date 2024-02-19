@@ -11,7 +11,7 @@ import (
 // It provides a function to register the client chains supported by exoCore.It's called by genesis configuration now,however it will be called by the governance in the future
 func (k Keeper) SetClientChainInfo(ctx sdk.Context, info *restakingtype.ClientChainInfo) (err error) {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), restakingtype.KeyPrefixClientChainInfo)
-	//key := common.HexToAddress(incentive.Contract)
+
 	bz := k.cdc.MustMarshal(info)
 
 	store.Set([]byte(hexutil.EncodeUint64(info.LayerZeroChainId)), bz)

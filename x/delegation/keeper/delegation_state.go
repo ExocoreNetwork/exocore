@@ -59,7 +59,7 @@ func (k Keeper) GetStakerDelegationTotalAmount(ctx sdk.Context, stakerId string,
 // Compared to `UpdateStakerDelegationTotalAmount`,they use the same kv store, but in this function the store key needs to add the operator address as a suffix.
 func (k Keeper) UpdateDelegationState(ctx sdk.Context, stakerId string, assetId string, delegationAmounts map[string]*delegationtype.DelegationAmounts) (err error) {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), delegationtype.KeyPrefixRestakerDelegationInfo)
-	//todo: think about the difference between init and update in future
+	// todo: think about the difference between init and update in future
 
 	for opAddr, amounts := range delegationAmounts {
 		if amounts == nil {
@@ -68,7 +68,7 @@ func (k Keeper) UpdateDelegationState(ctx sdk.Context, stakerId string, assetId 
 		if amounts.CanUndelegationAmount.IsNil() && amounts.WaitUndelegationAmount.IsNil() {
 			continue
 		}
-		//check operator address validation
+
 		_, err := sdk.AccAddressFromBech32(opAddr)
 		if err != nil {
 			return delegationtype.OperatorAddrIsNotAccAddr
@@ -94,7 +94,6 @@ func (k Keeper) UpdateDelegationState(ctx sdk.Context, stakerId string, assetId 
 			return errorsmod.Wrap(err, "UpdateDelegationState WaitUndelegationAmount error")
 		}
 
-		//save single operator delegation state
 		bz := k.cdc.MustMarshal(&delegationState)
 		store.Set(singleStateKey, bz)
 	}

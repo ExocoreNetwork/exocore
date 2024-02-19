@@ -85,8 +85,8 @@ func getRewardParamsFromEventLog(log *ethtypes.Log) (*RewardParams, error) {
 
 func getStakeIDAndAssetId(params *RewardParams) (stakeId string, assetId string) {
 	clientChainLzIdStr := hexutil.EncodeUint64(params.ClientChainLzId)
-	stakeId = strings.Join([]string{hexutil.Encode(params.WithdrawRewardAddress[:]), clientChainLzIdStr}, "_")
-	assetId = strings.Join([]string{hexutil.Encode(params.AssetsAddress[:]), clientChainLzIdStr}, "_")
+	stakeId = strings.Join([]string{hexutil.Encode(params.WithdrawRewardAddress), clientChainLzIdStr}, "_")
+	assetId = strings.Join([]string{hexutil.Encode(params.AssetsAddress), clientChainLzIdStr}, "_")
 	return
 }
 

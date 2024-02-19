@@ -50,7 +50,6 @@ func (k Keeper) GetOperatorSpecifiedAssetInfo(ctx sdk.Context, operatorAddr sdk.
 // The function will be called when there is delegation or undelegation related to the operator. In the future,it will also be called when the operator deposit their own assets.
 
 func (k Keeper) UpdateOperatorAssetState(ctx sdk.Context, operatorAddr sdk.Address, assetId string, changeAmount restakingtype.OperatorSingleAssetOrChangeInfo) (err error) {
-	//get the latest state,use the default initial state if the state hasn't been stored
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), restakingtype.KeyPrefixOperatorAssetInfos)
 	key := restakingtype.GetAssetStateKey(operatorAddr.String(), assetId)
 	assetState := restakingtype.OperatorSingleAssetOrChangeInfo{
@@ -77,7 +76,6 @@ func (k Keeper) UpdateOperatorAssetState(ctx sdk.Context, operatorAddr sdk.Addre
 		return errorsmod.Wrap(err, "UpdateOperatorAssetState WaitUndelegationAmountOrWantChangeValue error")
 	}
 
-	//store the updated state
 	bz := k.cdc.MustMarshal(&assetState)
 	store.Set(key, bz)
 	return nil
@@ -85,6 +83,5 @@ func (k Keeper) UpdateOperatorAssetState(ctx sdk.Context, operatorAddr sdk.Addre
 
 // GetOperatorAssetOptedInMiddleWare This function should be implemented in the operator opt-in module
 func (k Keeper) GetOperatorAssetOptedInMiddleWare(operatorAddr sdk.Address, assetId string) (middleWares []sdk.Address, err error) {
-	//TODO implement me
 	panic("implement me")
 }
