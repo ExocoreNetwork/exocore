@@ -29,7 +29,7 @@ func (k Keeper) QueAllClientChainInfo(ctx context.Context, info *restakingtype.Q
 // QueStakingAssetInfo query the specified client chain asset info by inputting assetId
 func (k Keeper) QueStakingAssetInfo(ctx context.Context, info *restakingtype.QueryStakingAssetInfo) (*restakingtype.StakingAssetInfo, error) {
 	c := sdk.UnwrapSDKContext(ctx)
-	return k.GetStakingAssetInfo(c, info.AssetId)
+	return k.GetStakingAssetInfo(c, info.AssetID)
 }
 
 // QueAllStakingAssetsInfo query the info about all client chain assets that have been registered
@@ -45,7 +45,7 @@ func (k Keeper) QueAllStakingAssetsInfo(ctx context.Context, info *restakingtype
 // QueStakerAssetInfos query th state of all assets for a staker specified by stakerId
 func (k Keeper) QueStakerAssetInfos(ctx context.Context, info *restakingtype.QueryStakerAssetInfo) (*restakingtype.QueryAssetInfoResponse, error) {
 	c := sdk.UnwrapSDKContext(ctx)
-	assetInfos, err := k.GetStakerAssetInfos(c, info.StakerId)
+	assetInfos, err := k.GetStakerAssetInfos(c, info.StakerID)
 	if err != nil {
 		return nil, err
 	}
@@ -55,7 +55,7 @@ func (k Keeper) QueStakerAssetInfos(ctx context.Context, info *restakingtype.Que
 // QueStakerSpecifiedAssetAmount query the specified asset state of a staker, using stakerId and assetId as query parameters
 func (k Keeper) QueStakerSpecifiedAssetAmount(ctx context.Context, req *restakingtype.QuerySpecifiedAssetAmountReq) (*restakingtype.StakerSingleAssetOrChangeInfo, error) {
 	c := sdk.UnwrapSDKContext(ctx)
-	return k.GetStakerSpecifiedAssetInfo(c, req.StakerId, req.AssetId)
+	return k.GetStakerSpecifiedAssetInfo(c, req.StakerID, req.AssetID)
 }
 
 // QueOperatorAssetInfos query th state of all assets for an operator specified by operator address
@@ -79,13 +79,13 @@ func (k Keeper) QueOperatorSpecifiedAssetAmount(ctx context.Context, req *restak
 	if err != nil {
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
-	return k.GetOperatorSpecifiedAssetInfo(c, addr, req.AssetId)
+	return k.GetOperatorSpecifiedAssetInfo(c, addr, req.AssetID)
 }
 
 // QueStakerExoCoreAddr outdated,will be deprecated
 func (k Keeper) QueStakerExoCoreAddr(ctx context.Context, req *restakingtype.QueryStakerExCoreAddr) (*restakingtype.QueryStakerExCoreAddrResponse, error) {
 	c := sdk.UnwrapSDKContext(ctx)
-	exoCoreAddr, err := k.GetStakerExoCoreAddr(c, req.StakerId)
+	exoCoreAddr, err := k.GetStakerExoCoreAddr(c, req.StakerID)
 	if err != nil {
 		return nil, err
 	}

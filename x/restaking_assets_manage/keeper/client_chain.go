@@ -14,7 +14,7 @@ func (k Keeper) SetClientChainInfo(ctx sdk.Context, info *restakingtype.ClientCh
 
 	bz := k.cdc.MustMarshal(info)
 
-	store.Set([]byte(hexutil.EncodeUint64(info.LayerZeroChainId)), bz)
+	store.Set([]byte(hexutil.EncodeUint64(info.LayerZeroChainID)), bz)
 	return nil
 }
 
@@ -47,7 +47,7 @@ func (k Keeper) GetAllClientChainInfo(ctx sdk.Context) (infos map[uint64]*restak
 	for ; iterator.Valid(); iterator.Next() {
 		var chainInfo restakingtype.ClientChainInfo
 		k.cdc.MustUnmarshal(iterator.Value(), &chainInfo)
-		ret[chainInfo.LayerZeroChainId] = &chainInfo
+		ret[chainInfo.LayerZeroChainID] = &chainInfo
 	}
 	return ret, nil
 }

@@ -24,9 +24,9 @@ func DefaultGenesisState() *restakingtype.GenesisState {
 	ethClientChain := &restakingtype.ClientChainInfo{
 		ChainName:              "ethereum",
 		ChainMetaInfo:          "ethereum blockchain",
-		OriginChainId:          1,
+		OriginChainID:          1,
 		FinalityNeedBlockDelay: 10,
-		LayerZeroChainId:       101,
+		LayerZeroChainID:       101,
 		AddressLength:          20,
 	}
 	usdtClientChainAsset := &restakingtype.ClientChainTokenInfo{
@@ -34,7 +34,7 @@ func DefaultGenesisState() *restakingtype.GenesisState {
 		Symbol:           "USDT",
 		Address:          "0xdAC17F958D2ee523a2206206994597C13D831ec7",
 		Decimals:         6,
-		LayerZeroChainId: ethClientChain.LayerZeroChainId,
+		LayerZeroChainID: ethClientChain.LayerZeroChainID,
 		AssetMetaInfo:    "Tether USD token",
 	}
 	totalSupply, _ := sdk.NewIntFromString("40022689732746729")

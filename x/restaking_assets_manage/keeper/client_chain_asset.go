@@ -43,7 +43,7 @@ func (k Keeper) SetStakingAssetInfo(ctx sdk.Context, info *restakingtype.Staking
 
 	bz := k.cdc.MustMarshal(info)
 
-	_, assetId := restakingtype.GetStakeIDAndAssetIdFromStr(info.AssetBasicInfo.LayerZeroChainId, "", info.AssetBasicInfo.Address)
+	_, assetId := restakingtype.GetStakeIDAndAssetIdFromStr(info.AssetBasicInfo.LayerZeroChainID, "", info.AssetBasicInfo.Address)
 	store.Set([]byte(assetId), bz)
 	return nil
 }
@@ -76,7 +76,7 @@ func (k Keeper) GetAllStakingAssetsInfo(ctx sdk.Context) (allAssets map[string]*
 	for ; iterator.Valid(); iterator.Next() {
 		var assetInfo restakingtype.StakingAssetInfo
 		k.cdc.MustUnmarshal(iterator.Value(), &assetInfo)
-		_, assetId := restakingtype.GetStakeIDAndAssetIdFromStr(assetInfo.AssetBasicInfo.LayerZeroChainId, "", assetInfo.AssetBasicInfo.Address)
+		_, assetId := restakingtype.GetStakeIDAndAssetIdFromStr(assetInfo.AssetBasicInfo.LayerZeroChainID, "", assetInfo.AssetBasicInfo.Address)
 		ret[assetId] = &assetInfo
 	}
 	return ret, nil
