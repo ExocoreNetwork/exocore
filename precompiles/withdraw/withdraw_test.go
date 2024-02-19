@@ -7,9 +7,8 @@ import (
 	"github.com/ExocoreNetwork/exocore/app"
 	"github.com/ExocoreNetwork/exocore/precompiles/withdraw"
 	"github.com/ExocoreNetwork/exocore/x/deposit/keeper"
-	depositParams "github.com/ExocoreNetwork/exocore/x/deposit/types"
+	depositparams "github.com/ExocoreNetwork/exocore/x/deposit/types"
 	"github.com/ExocoreNetwork/exocore/x/restaking_assets_manage/types"
-	withdrawParams "github.com/ExocoreNetwork/exocore/x/withdraw/types"
 	"github.com/ethereum/go-ethereum/common"
 	ethtypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/core/vm"
@@ -104,7 +103,7 @@ func (s *PrecompileTestSuite) TestRunWithdrawThroughClientChain() {
 	depositAsset := func(staker []byte, depositAmount sdkmath.Int) {
 		// deposit asset for withdraw test
 		params := &keeper.DepositParams{
-			ClientChainLzId: 101,
+			ClientChainLzID: 101,
 			Action:          types.Deposit,
 			StakerAddress:   staker,
 			AssetsAddress:   usdtAddress,
@@ -139,14 +138,14 @@ func (s *PrecompileTestSuite) TestRunWithdrawThroughClientChain() {
 		{
 			name: "pass - withdraw via pre-compiles",
 			malleate: func() (common.Address, []byte) {
-				depositModuleParam := &depositParams.Params{
+				depositModuleParam := &depositparams.Params{
 					ExoCoreLzAppAddress:    s.address.String(),
 					ExoCoreLzAppEventTopic: exoCoreLzAppEventTopic,
 				}
 				err := s.app.DepositKeeper.SetParams(s.ctx, depositModuleParam)
 				s.Require().NoError(err)
 				depositAsset(s.address.Bytes(), sdkmath.NewIntFromBigInt(depositAmount))
-				withdrawModuleParam := &withdrawParams.Params{
+				withdrawModuleParam := &depositparams.Params{
 					ExoCoreLzAppAddress:    s.address.String(),
 					ExoCoreLzAppEventTopic: exoCoreLzAppEventTopic,
 				}

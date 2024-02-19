@@ -67,7 +67,7 @@ type WithdrawParams struct {
 // 	}
 
 // 	return &WithdrawParams{
-// 		ClientChainLzId: clientChainLzID,
+// 		ClientChainLzID: clientChainLzID,
 // 		Action:          action,
 // 		AssetsAddress:   assetsAddress,
 // 		WithdrawAddress: withdrawAddress,

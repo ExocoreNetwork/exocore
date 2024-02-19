@@ -78,7 +78,7 @@ func (s *PrecompileTestSuite) TestRunDelegateToThroughClientChain() {
 	depositAsset := func(staker []byte, depositAmount sdkmath.Int) {
 		// deposit asset for delegation test
 		params := &keeper.DepositParams{
-			ClientChainLzId: 101,
+			ClientChainLzID: 101,
 			Action:          types.Deposit,
 			StakerAddress:   staker,
 			AssetsAddress:   usdtAddress,
@@ -303,7 +303,7 @@ func (s *PrecompileTestSuite) TestRunUnDelegateFromThroughClientChain() {
 	depositAsset := func(staker []byte, depositAmount sdkmath.Int) {
 		// deposit asset for delegation test
 		params := &keeper.DepositParams{
-			ClientChainLzId: 101,
+			ClientChainLzID: 101,
 			Action:          types.Deposit,
 			StakerAddress:   staker,
 			AssetsAddress:   usdtAddress,
@@ -316,7 +316,7 @@ func (s *PrecompileTestSuite) TestRunUnDelegateFromThroughClientChain() {
 	delegateAsset := func(staker []byte, delegateAmount sdkmath.Int) {
 		// deposit asset for delegation test
 		delegateToParams := &keeper2.DelegationOrUndelegationParams{
-			ClientChainLzId: 101,
+			ClientChainLzID: 101,
 			Action:          types.DelegateTo,
 			StakerAddress:   staker,
 			AssetsAddress:   usdtAddress,

@@ -12,7 +12,7 @@ func (suite *KeeperTestSuite) TestDeposit() {
 	usdtAddress := common.HexToAddress("0xdAC17F958D2ee523a2206206994597C13D831ec7")
 	usdcAddress := common.HexToAddress("0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48")
 	params := &keeper.DepositParams{
-		ClientChainLzId: 101,
+		ClientChainLzID: 101,
 		Action:          types.Deposit,
 		StakerAddress:   suite.address[:],
 		OpAmount:        sdkmath.NewInt(100),
@@ -33,7 +33,7 @@ func (suite *KeeperTestSuite) TestDeposit() {
 	suite.NoError(err)
 
 	// check state after deposit
-	stakerID, assetID := types.GetStakeIDAndAssetID(params.ClientChainLzId, params.StakerAddress, params.AssetsAddress)
+	stakerID, assetID := types.GetStakeIDAndAssetID(params.ClientChainLzID, params.StakerAddress, params.AssetsAddress)
 	info, err := suite.app.StakingAssetsManageKeeper.GetStakerSpecifiedAssetInfo(suite.ctx, stakerID, assetID)
 	suite.NoError(err)
 	suite.Equal(types.StakerSingleAssetOrChangeInfo{

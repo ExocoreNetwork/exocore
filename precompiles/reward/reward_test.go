@@ -62,7 +62,7 @@ func (s *PrecompileTestSuite) TestRunRewardThroughClientChain() {
 	depositAsset := func(staker []byte, depositAmount sdkmath.Int) {
 		// deposit asset for reward test
 		params := &keeper.DepositParams{
-			ClientChainLzId: 101,
+			ClientChainLzID: 101,
 			Action:          types.Deposit,
 			StakerAddress:   staker,
 			AssetsAddress:   usdtAddress,

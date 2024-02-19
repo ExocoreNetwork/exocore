@@ -40,7 +40,7 @@ type DepositParams struct {
 	r = bytes.NewReader(log.Topics[types.ClientChainLzIDIndexInTopics][:])
 	err = binary.Read(r, binary.BigEndian, &clientChainLzID)
 	if err != nil {
-		return nil, errorsmod.Wrap(err, "error occurred when binary read ClientChainLzId from topic")
+		return nil, errorsmod.Wrap(err, "error occurred when binary read ClientChainLzID from topic")
 	}
 
 	clientChainInfo, err := k.restakingStateKeeper.GetClientChainInfoByIndex(ctx, clientChainLzID)
@@ -72,7 +72,7 @@ type DepositParams struct {
 	amount := sdkmath.NewIntFromBigInt(big.NewInt(0).SetBytes(log.Data[readStart:readEnd]))
 
 	return &DepositParams{
-		ClientChainLzId: clientChainLzID,
+		ClientChainLzID: clientChainLzID,
 		Action:          action,
 		AssetsAddress:   assetsAddress,
 		StakerAddress:   depositAddress,

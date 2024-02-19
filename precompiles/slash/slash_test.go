@@ -62,7 +62,7 @@ func (s *PrecompileTestSuite) TestRunSlash() {
 	depositAsset := func(staker []byte, depositAmount sdkmath.Int) {
 		// deposit asset for slash test
 		params := &keeper.DepositParams{
-			ClientChainLzId: 101,
+			ClientChainLzID: 101,
 			Action:          types.Deposit,
 			StakerAddress:   staker,
 			AssetsAddress:   usdtAddress,
