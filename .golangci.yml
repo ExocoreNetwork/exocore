@@ -61,3 +61,11 @@ linters-settings:
         - https://github.com/dgrijalva/jwt-go:                          # Blocked module with version constraint
             version: ">= 4.0.0-preview1"                                # Version constraint, see https://github.com/Masterminds/semver#basic-comparisons
             reason: "CVE-2020-26160"                                    # Reason why the version constraint exists. (Optional)
+
+issues:
+  exclude-rules:
+    # `gofmt` has made this rule strict, which `nolintlint` followed by removing the option.
+    # however, other linters have not yet caught up.
+    - text: 'leading space'
+      linters:
+        - nolintlint
