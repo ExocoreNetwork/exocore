@@ -18,7 +18,7 @@ func (k Keeper) SetClientChainInfo(ctx sdk.Context, info *restakingtype.ClientCh
 	return nil
 }
 
-func (k Keeper) IsExistClientChain(ctx sdk.Context, index uint64) bool {
+func (k Keeper) IsExistedClientChain(ctx sdk.Context, index uint64) bool {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), restakingtype.KeyPrefixClientChainInfo)
 	return store.Has([]byte(hexutil.EncodeUint64(index)))
 }
