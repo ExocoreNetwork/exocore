@@ -1,4 +1,3 @@
-# https://raw.githubusercontent.com/evmos/evmos/0984dda9993aca5fa0635cc52abd4d97f2a2690e/.golangci.yml
 run:
   tests: false
   timeout: 5m
