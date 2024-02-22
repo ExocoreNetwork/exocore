@@ -41,7 +41,10 @@ func newTPSCounter(logger log.Logger) *tpsCounter {
 	return &tpsCounter{logger: logger, doneCh: make(chan bool, 1)}
 }
 
+// nolint: unused // legacy code
 func (tpc *tpsCounter) incrementSuccess() { atomic.AddUint64(&tpc.nSuccessful, 1) }
+
+// nolint: unused // legacy code
 func (tpc *tpsCounter) incrementFailure() { atomic.AddUint64(&tpc.NFailed, 1) }
 
 const defaultTPSReportPeriod = 10 * time.Second

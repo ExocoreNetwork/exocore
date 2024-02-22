@@ -40,9 +40,9 @@ const (
 
 	prefixRestakerExocoreAddrReverse
 
-	prefixReStakingAssetList
-	prefixReStakerAssetList
-	prefixOperatorAssetList
+	// prefixReStakingAssetList
+	// prefixReStakerAssetList
+	// prefixOperatorAssetList
 )
 
 // KVStore key prefixes
@@ -106,12 +106,12 @@ var (
 	KeyPrefixReStakerExoCoreAddrReverse = []byte{prefixRestakerExocoreAddrReverse}
 )
 
-// GetAssetStateKey assetStateKey = stakerId+'/'+assetId
-func GetAssetStateKey(stakerId, assetId string) []byte {
-	return []byte(strings.Join([]string{stakerId, assetId}, "/"))
+// GetAssetStateKey assetStateKey = stakerID+'/'+assetID
+func GetAssetStateKey(stakerID, assetID string) []byte {
+	return []byte(strings.Join([]string{stakerID, assetID}, "/"))
 }
 
-func ParseStakerAndAssetIdFromKey(key []byte) (stakerId string, assetId string, err error) {
+func ParseStakerAndAssetIDFromKey(key []byte) (stakerID string, assetID string, err error) {
 	stringList := strings.Split(string(key), "/")
 	if len(stringList) != 2 {
 		return "", "", errorsmod.Wrap(ErrParseAssetsStateKey, fmt.Sprintf("the stringList is:%v", stringList))

@@ -12,7 +12,7 @@ import (
 )
 
 type DelegationOrUndelegationParams struct {
-	ClientChainLzId uint64
+	ClientChainLzID uint64
 	Action          types.CrossChainOpType
 	AssetsAddress   []byte
 	OperatorAddress sdk.AccAddress
@@ -20,7 +20,7 @@ type DelegationOrUndelegationParams struct {
 	OpAmount        sdkmath.Int
 	LzNonce         uint64
 	TxHash          common.Hash
-	//todo: The operator approved signature might be needed here in future
+	// todo: The operator approved signature might be needed here in future
 }
 
 // The event hook process has been deprecated, now we use precompile contract to trigger the calls.
@@ -42,13 +42,13 @@ type DelegationOrUndelegationParams struct {
 		return nil, nil
 	}
 
-	var clientChainLzId uint64
-	r = bytes.NewReader(log.Topics[types.ClientChainLzIdIndexInTopics][:])
-	err = binary.Read(r, binary.BigEndian, &clientChainLzId)
+	var clientChainLzID uint64
+	r = bytes.NewReader(log.Topics[types.ClientChainLzIDIndexInTopics][:])
+	err = binary.Read(r, binary.BigEndian, &clientChainLzID)
 	if err != nil {
-		return nil, errorsmod.Wrap(err, "error occurred when binary read ClientChainLzId from topic")
+		return nil, errorsmod.Wrap(err, "error occurred when binary read ClientChainLzID from topic")
 	}
-	clientChainInfo, err := k.restakingStateKeeper.GetClientChainInfoByIndex(ctx, clientChainLzId)
+	clientChainInfo, err := k.restakingStateKeeper.GetClientChainInfoByIndex(ctx, clientChainLzID)
 	if err != nil {
 		return nil, errorsmod.Wrap(err, "error occurred when get client chain info")
 	}
@@ -97,7 +97,7 @@ type DelegationOrUndelegationParams struct {
 	amount := sdkmath.NewIntFromBigInt(big.NewInt(0).SetBytes(log.Data[readStart:readEnd]))
 
 	return &DelegationOrUndelegationParams{
-		ClientChainLzId: clientChainLzId,
+		ClientChainLzID: clientChainLzID,
 		Action:          action,
 		AssetsAddress:   assetsAddress,
 		StakerAddress:   stakerAddress,
@@ -120,17 +120,16 @@ func (k Keeper) DelegateTo(ctx sdk.Context, params *DelegationOrUndelegationPara
 		return delegationtype.ErrOperatorIsFrozen
 	}
 
-	//todo: The operator approved signature might be needed here in future
+	// todo: The operator approved signature might be needed here in future
 
-	//update the related states
+	// update the related states
 	if params.OpAmount.IsNegative() {
 		return delegationtype.ErrOpAmountIsNegative
 	}
 
-	stakerId, assetId := types.GetStakeIDAndAssetId(params.ClientChainLzId, params.StakerAddress, params.AssetsAddress)
+	stakerID, assetID := types.GetStakeIDAndAssetID(params.ClientChainLzID, params.StakerAddress, params.AssetsAddress)
 
-	//check if the staker asset has been deposited and the canWithdraw amount is bigger than the delegation amount
-	info, err := k.restakingStateKeeper.GetStakerSpecifiedAssetInfo(ctx, stakerId, assetId)
+	info, err := k.restakingStateKeeper.GetStakerSpecifiedAssetInfo(ctx, stakerID, assetID)
 	if err != nil {
 		return err
 	}
@@ -139,15 +138,14 @@ func (k Keeper) DelegateTo(ctx sdk.Context, params *DelegationOrUndelegationPara
 		return delegationtype.ErrDelegationAmountTooBig
 	}
 
-	//update staker asset state
-	err = k.restakingStateKeeper.UpdateStakerAssetState(ctx, stakerId, assetId, types.StakerSingleAssetOrChangeInfo{
+	err = k.restakingStateKeeper.UpdateStakerAssetState(ctx, stakerID, assetID, types.StakerSingleAssetOrChangeInfo{
 		CanWithdrawAmountOrWantChangeValue: params.OpAmount.Neg(),
 	})
 	if err != nil {
 		return err
 	}
 
-	err = k.restakingStateKeeper.UpdateOperatorAssetState(ctx, params.OperatorAddress, assetId, types.OperatorSingleAssetOrChangeInfo{
+	err = k.restakingStateKeeper.UpdateOperatorAssetState(ctx, params.OperatorAddress, assetID, types.OperatorSingleAssetOrChangeInfo{
 		TotalAmountOrWantChangeValue: params.OpAmount,
 	})
 	if err != nil {
@@ -158,11 +156,11 @@ func (k Keeper) DelegateTo(ctx sdk.Context, params *DelegationOrUndelegationPara
 	delegatorAndAmount[params.OperatorAddress.String()] = &delegationtype.DelegationAmounts{
 		CanUndelegationAmount: params.OpAmount,
 	}
-	err = k.UpdateDelegationState(ctx, stakerId, assetId, delegatorAndAmount)
+	err = k.UpdateDelegationState(ctx, stakerID, assetID, delegatorAndAmount)
 	if err != nil {
 		return err
 	}
-	err = k.UpdateStakerDelegationTotalAmount(ctx, stakerId, assetId, params.OpAmount)
+	err = k.UpdateStakerDelegationTotalAmount(ctx, stakerID, assetID, params.OpAmount)
 	if err != nil {
 		return err
 	}
@@ -181,8 +179,8 @@ func (k Keeper) UndelegateFrom(ctx sdk.Context, params *DelegationOrUndelegation
 		return delegationtype.ErrOpAmountIsNegative
 	}
 	// get staker delegation state, then check the validation of Undelegation amount
-	stakerId, assetId := types.GetStakeIDAndAssetId(params.ClientChainLzId, params.StakerAddress, params.AssetsAddress)
-	delegationState, err := k.GetSingleDelegationInfo(ctx, stakerId, assetId, params.OperatorAddress.String())
+	stakerID, assetID := types.GetStakeIDAndAssetID(params.ClientChainLzID, params.StakerAddress, params.AssetsAddress)
+	delegationState, err := k.GetSingleDelegationInfo(ctx, stakerID, assetID, params.OperatorAddress.String())
 	if err != nil {
 		return err
 	}
@@ -190,10 +188,9 @@ func (k Keeper) UndelegateFrom(ctx sdk.Context, params *DelegationOrUndelegation
 		return errorsmod.Wrap(delegationtype.ErrUndelegationAmountTooBig, fmt.Sprintf("UndelegationAmount:%s,CanUndelegationAmount:%s", params.OpAmount, delegationState.CanUndelegationAmount))
 	}
 
-	//record Undelegation event
 	r := &delegationtype.UndelegationRecord{
-		StakerId:              stakerId,
-		AssetId:               assetId,
+		StakerID:              stakerID,
+		AssetID:               assetID,
 		OperatorAddr:          params.OperatorAddress.String(),
 		TxHash:                params.TxHash.String(),
 		IsPending:             true,
@@ -202,31 +199,29 @@ func (k Keeper) UndelegateFrom(ctx sdk.Context, params *DelegationOrUndelegation
 		Amount:                params.OpAmount,
 		ActualCompletedAmount: sdkmath.NewInt(0),
 	}
-	r.CompleteBlockNumber = k.operatorOptedInKeeper.GetOperatorCanUndelegateHeight(ctx, assetId, params.OperatorAddress, r.BlockNumber)
+	r.CompleteBlockNumber = k.operatorOptedInKeeper.GetOperatorCanUndelegateHeight(ctx, assetID, params.OperatorAddress, r.BlockNumber)
 	err = k.SetUndelegationRecords(ctx, []*delegationtype.UndelegationRecord{r})
 	if err != nil {
 		return err
 	}
 
-	//update delegation state
 	delegatorAndAmount := make(map[string]*delegationtype.DelegationAmounts)
 	delegatorAndAmount[params.OperatorAddress.String()] = &delegationtype.DelegationAmounts{
 		CanUndelegationAmount:  params.OpAmount.Neg(),
 		WaitUndelegationAmount: params.OpAmount,
 	}
-	err = k.UpdateDelegationState(ctx, stakerId, assetId, delegatorAndAmount)
+	err = k.UpdateDelegationState(ctx, stakerID, assetID, delegatorAndAmount)
 	if err != nil {
 		return err
 	}
 
-	//update staker and operator assets state
-	err = k.restakingStateKeeper.UpdateStakerAssetState(ctx, stakerId, assetId, types.StakerSingleAssetOrChangeInfo{
+	err = k.restakingStateKeeper.UpdateStakerAssetState(ctx, stakerID, assetID, types.StakerSingleAssetOrChangeInfo{
 		WaitUndelegationAmountOrWantChangeValue: params.OpAmount,
 	})
 	if err != nil {
 		return err
 	}
-	err = k.restakingStateKeeper.UpdateOperatorAssetState(ctx, params.OperatorAddress, assetId, types.OperatorSingleAssetOrChangeInfo{
+	err = k.restakingStateKeeper.UpdateOperatorAssetState(ctx, params.OperatorAddress, assetID, types.OperatorSingleAssetOrChangeInfo{
 		WaitUndelegationAmountOrWantChangeValue: params.OpAmount,
 	})
 	if err != nil {

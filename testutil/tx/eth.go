@@ -17,8 +17,8 @@ import (
 	ethtypes "github.com/ethereum/go-ethereum/core/types"
 
 	"github.com/ExocoreNetwork/exocore/app"
+	"github.com/ExocoreNetwork/exocore/utils"
 	"github.com/evmos/evmos/v14/server/config"
-	"github.com/evmos/evmos/v14/utils"
 	evmtypes "github.com/evmos/evmos/v14/x/evm/types"
 )
 

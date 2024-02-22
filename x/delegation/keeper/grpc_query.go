@@ -11,12 +11,12 @@ var _ delegationtype.QueryServer = Keeper{}
 
 func (k Keeper) QuerySingleDelegationInfo(ctx context.Context, req *delegationtype.SingleDelegationInfoReq) (*delegationtype.DelegationAmounts, error) {
 	c := sdk.UnwrapSDKContext(ctx)
-	return k.GetSingleDelegationInfo(c, req.StakerId, req.AssetId, req.OperatorAddr)
+	return k.GetSingleDelegationInfo(c, req.StakerID, req.AssetID, req.OperatorAddr)
 }
 
 func (k Keeper) QueryDelegationInfo(ctx context.Context, info *delegationtype.DelegationInfoReq) (*delegationtype.QueryDelegationInfoResponse, error) {
 	c := sdk.UnwrapSDKContext(ctx)
-	return k.GetDelegationInfo(c, info.StakerId, info.AssetId)
+	return k.GetDelegationInfo(c, info.StakerID, info.AssetID)
 }
 
 func (k Keeper) QueryOperatorInfo(ctx context.Context, req *delegationtype.QueryOperatorInfoReq) (*delegationtype.OperatorInfo, error) {

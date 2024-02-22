@@ -1,4 +1,4 @@
-package restaking_assets_manage
+package restaking_assets_manage // nolint: revive,stylecheck // Package naming to be fixed later.
 
 import (
 	"encoding/json"
@@ -26,7 +26,7 @@ func DefaultGenesisState() *restakingtype.GenesisState {
 		MetaInfo:           "ethereum blockchain",
 		ChainId:            1,
 		FinalizationBlocks: 10,
-		LayerZeroChainId:   101,
+		LayerZeroChainID:   101,
 		AddressLength:      20,
 	}
 	usdtClientChainAsset := &restakingtype.AssetInfo{
@@ -34,7 +34,7 @@ func DefaultGenesisState() *restakingtype.GenesisState {
 		Symbol:           "USDT",
 		Address:          "0xdAC17F958D2ee523a2206206994597C13D831ec7",
 		Decimals:         6,
-		LayerZeroChainId: ethClientChain.LayerZeroChainId,
+		LayerZeroChainID: ethClientChain.LayerZeroChainID,
 		MetaInfo:         "Tether USD token",
 	}
 	totalSupply, _ := sdk.NewIntFromString("40022689732746729")
@@ -56,7 +56,7 @@ func GetGenesisStateFromAppState(cdc codec.Codec, appState map[string]json.RawMe
 
 // ValidateGenesis performs basic validation of restaking_assets_manage genesis data returning an
 // error for any failed validation criteria.
-func ValidateGenesis(data restakingtype.GenesisState) error {
+func ValidateGenesis(restakingtype.GenesisState) error {
 	// todo: check the validation of client chain and token info
 	return nil
 }

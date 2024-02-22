@@ -35,7 +35,7 @@ func (s *PrecompileTestSuite) TestCallWithdrawFromEOA() {
 		ExoCoreLzAppEventTopic: exoCoreLzAppEventTopic,
 	}
 	usdtAddress := paddingClientChainAddress(common.FromHex("0xdAC17F958D2ee523a2206206994597C13D831ec7"), types.GeneralClientChainAddrLength)
-	clientChainLzId := 101
+	clientChainLzID := 101
 	stakerAddr := paddingClientChainAddress(s.address.Bytes(), types.GeneralClientChainAddrLength)
 	opAmount := big.NewInt(100)
 	assetAddr := usdtAddress
@@ -61,7 +61,7 @@ func (s *PrecompileTestSuite) TestCallWithdrawFromEOA() {
 		s.Require().NoError(err)
 		defaultWithdrawArgs := defaultCallArgs.WithMethodName(method)
 		return defaultWithdrawArgs.WithArgs(
-			uint16(clientChainLzId),
+			uint16(clientChainLzID),
 			assetAddr,
 			stakerAddr,
 			opAmount)

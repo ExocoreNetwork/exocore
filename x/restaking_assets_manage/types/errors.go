@@ -7,13 +7,13 @@ import (
 // errors
 var (
 	ErrNoClientChainKey      = errorsmod.Register(ModuleName, 0, "there is no stored key for the input chain index")
-	ErrNoClientChainAssetKey = errorsmod.Register(ModuleName, 1, "there is no stored key for the input assetId")
+	ErrNoClientChainAssetKey = errorsmod.Register(ModuleName, 1, "there is no stored key for the input assetID")
 
-	ErrNoStakerAssetKey = errorsmod.Register(ModuleName, 2, "there is no stored key for the input staker and assetId")
+	ErrNoStakerAssetKey = errorsmod.Register(ModuleName, 2, "there is no stored key for the input staker and assetID")
 
 	ErrSubAmountIsMoreThanOrigin = errorsmod.Register(ModuleName, 3, "the amount that want to decrease is more than the original state amount")
 
-	ErrNoOperatorAssetKey = errorsmod.Register(ModuleName, 4, "there is no stored key for the input operator address and assetId")
+	ErrNoOperatorAssetKey = errorsmod.Register(ModuleName, 4, "there is no stored key for the input operator address and assetID")
 
 	ErrParseAssetsStateKey = errorsmod.Register(ModuleName, 5, "assets state key can't be parsed")
 

@@ -3,7 +3,7 @@
     "inputs":[
       {
         "internalType":"uint16",
-        "name":"clientChainLzId",
+        "name":"clientChainLzID",
         "type":"uint16"
       },
       {

@@ -7,6 +7,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
+// nolint: unused // Implementation of the msgServer (via proto) to be done.
 type msgServer struct {
 	Keeper
 }

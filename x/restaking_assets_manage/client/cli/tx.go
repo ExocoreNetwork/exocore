@@ -1,16 +1,17 @@
 package cli
 
 import (
+	"fmt"
+	"strconv"
+	"strings"
+
 	errorsmod "cosmossdk.io/errors"
 	sdkmath "cosmossdk.io/math"
-	"fmt"
 	restakingtype "github.com/ExocoreNetwork/exocore/x/restaking_assets_manage/types"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/client/tx"
 	"github.com/spf13/cobra"
-	"strconv"
-	"strings"
 )
 
 // NewTxCmd returns a root CLI command handler for deposit commands
@@ -51,7 +52,7 @@ func RegisterClientChain() *cobra.Command {
 					MetaInfo: args[1],
 				},
 			}
-			lzChainId, err := strconv.ParseUint(args[2], 10, 64)
+			lzChainID, err := strconv.ParseUint(args[2], 10, 64)
 			if err != nil {
 				return errorsmod.Wrap(restakingtype.ErrCliCmdInputArg, fmt.Sprintf("error arg is:%v", args[2]))
 			}
@@ -59,7 +60,7 @@ func RegisterClientChain() *cobra.Command {
 			if err != nil {
 				return errorsmod.Wrap(restakingtype.ErrCliCmdInputArg, fmt.Sprintf("error arg is:%v", args[3]))
 			}
-			msg.Info.LayerZeroChainId = lzChainId
+			msg.Info.LayerZeroChainID = lzChainID
 			msg.Info.AddressLength = uint32(addressLength)
 			if err := msg.ValidateBasic(); err != nil {
 				return err
@@ -100,7 +101,7 @@ func RegisterAsset() *cobra.Command {
 				return errorsmod.Wrap(restakingtype.ErrCliCmdInputArg, fmt.Sprintf("error arg is:%v", args[4]))
 			}
 
-			lzChainId, err := strconv.ParseUint(args[5], 10, 64)
+			lzChainID, err := strconv.ParseUint(args[5], 10, 64)
 			if err != nil {
 				return errorsmod.Wrap(restakingtype.ErrCliCmdInputArg, fmt.Sprintf("error arg is:%v", args[5]))
 			}
@@ -110,7 +111,7 @@ func RegisterAsset() *cobra.Command {
 			}
 
 			msg.Info.TotalSupply = totalSupply
-			msg.Info.LayerZeroChainId = lzChainId
+			msg.Info.LayerZeroChainID = lzChainID
 			msg.Info.Decimals = uint32(decimal)
 			if err := msg.ValidateBasic(); err != nil {
 				return err

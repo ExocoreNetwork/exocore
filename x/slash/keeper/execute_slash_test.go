@@ -13,14 +13,14 @@ func (suite *KeeperTestSuite) TestSlash() {
 	usdtAddress := common.HexToAddress("0xdAC17F958D2ee523a2206206994597C13D831ec7")
 	usdcAddress := common.HexToAddress("0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48")
 	event := &keeper.SlashParams{
-		ClientChainLzId: 101,
+		ClientChainLzID: 101,
 		Action:          types.Slash,
 		StakerAddress:   suite.address[:],
 		OpAmount:        sdkmath.NewInt(90),
 	}
 
 	depositEvent := &depositKeeper.DepositParams{
-		ClientChainLzId: 101,
+		ClientChainLzID: 101,
 		Action:          types.Deposit,
 		StakerAddress:   suite.address[:],
 		OpAmount:        sdkmath.NewInt(100),
@@ -40,8 +40,8 @@ func (suite *KeeperTestSuite) TestSlash() {
 	suite.NoError(err)
 	suite.app.Logger().Info("the assets is:", "assets", assets)
 
-	stakerId, assetId := types.GetStakeIDAndAssetId(depositEvent.ClientChainLzId, depositEvent.StakerAddress, depositEvent.AssetsAddress)
-	info, err := suite.app.StakingAssetsManageKeeper.GetStakerSpecifiedAssetInfo(suite.ctx, stakerId, assetId)
+	stakerID, assetID := types.GetStakeIDAndAssetID(depositEvent.ClientChainLzID, depositEvent.StakerAddress, depositEvent.AssetsAddress)
+	info, err := suite.app.StakingAssetsManageKeeper.GetStakerSpecifiedAssetInfo(suite.ctx, stakerID, assetID)
 	suite.NoError(err)
 	suite.Equal(types.StakerSingleAssetOrChangeInfo{
 		TotalDepositAmountOrWantChangeValue:     depositEvent.OpAmount,
@@ -55,8 +55,8 @@ func (suite *KeeperTestSuite) TestSlash() {
 	suite.NoError(err)
 
 	// check state after slash
-	stakerId, assetId = types.GetStakeIDAndAssetId(event.ClientChainLzId, event.StakerAddress, event.AssetsAddress)
-	info, err = suite.app.StakingAssetsManageKeeper.GetStakerSpecifiedAssetInfo(suite.ctx, stakerId, assetId)
+	stakerID, assetID = types.GetStakeIDAndAssetID(event.ClientChainLzID, event.StakerAddress, event.AssetsAddress)
+	info, err = suite.app.StakingAssetsManageKeeper.GetStakerSpecifiedAssetInfo(suite.ctx, stakerID, assetID)
 	suite.NoError(err)
 	suite.Equal(types.StakerSingleAssetOrChangeInfo{
 		TotalDepositAmountOrWantChangeValue:     sdkmath.NewInt(10),
@@ -64,7 +64,7 @@ func (suite *KeeperTestSuite) TestSlash() {
 		WaitUndelegationAmountOrWantChangeValue: sdkmath.NewInt(0),
 	}, *info)
 
-	assetInfo, err := suite.app.StakingAssetsManageKeeper.GetStakingAssetInfo(suite.ctx, assetId)
+	assetInfo, err := suite.app.StakingAssetsManageKeeper.GetStakingAssetInfo(suite.ctx, assetID)
 	suite.NoError(err)
 	suite.Equal(sdkmath.NewInt(10), assetInfo.StakingTotalAmount)
 }

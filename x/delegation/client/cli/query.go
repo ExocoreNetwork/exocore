@@ -45,14 +45,14 @@ func QuerySingleDelegationInfo() *cobra.Command {
 			}
 
 			queryClient := delegationtype.NewQueryClient(clientCtx)
-			clientChainLzId, err := strconv.ParseUint(args[0], 10, 64)
+			clientChainLzID, err := strconv.ParseUint(args[0], 10, 64)
 			if err != nil {
 				return errorsmod.Wrap(types.ErrCliCmdInputArg, err.Error())
 			}
-			stakerId, assetId := types.GetStakeIDAndAssetIdFromStr(clientChainLzId, args[1], args[2])
+			stakerID, assetID := types.GetStakeIDAndAssetIDFromStr(clientChainLzID, args[1], args[2])
 			req := &delegationtype.SingleDelegationInfoReq{
-				StakerId:     stakerId,
-				AssetId:      assetId,
+				StakerID:     stakerID,
+				AssetID:      assetID,
 				OperatorAddr: args[3],
 			}
 			res, err := queryClient.QuerySingleDelegationInfo(context.Background(), req)
@@ -70,7 +70,7 @@ func QuerySingleDelegationInfo() *cobra.Command {
 // QueryDelegationInfo queries delegation info
 func QueryDelegationInfo() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "QueryDelegationInfo stakerId assetId",
+		Use:   "QueryDelegationInfo stakerID assetID",
 		Short: "Get delegation info",
 		Long:  "Get delegation info",
 		Args:  cobra.ExactArgs(2),
@@ -82,8 +82,8 @@ func QueryDelegationInfo() *cobra.Command {
 
 			queryClient := delegationtype.NewQueryClient(clientCtx)
 			req := &delegationtype.DelegationInfoReq{
-				StakerId: args[0],
-				AssetId:  args[1],
+				StakerID: args[0],
+				AssetID:  args[1],
 			}
 			res, err := queryClient.QueryDelegationInfo(context.Background(), req)
 			if err != nil {

@@ -21,7 +21,7 @@ import (
 )
 
 type RewardParams struct {
-	ClientChainLzId       uint64
+	ClientChainLzID       uint64
 	Action                types.CrossChainOpType
 	AssetsAddress         []byte
 	WithdrawRewardAddress []byte
@@ -67,15 +67,15 @@ func getRewardParamsFromEventLog(log *ethtypes.Log) (*RewardParams, error) {
 	readEnd += types.CrossChainOpAmountLength
 	amount := sdkmath.NewIntFromBigInt(big.NewInt(0).SetBytes(log.Data[readStart:readEnd]))
 
-	var clientChainLzId uint64
-	r = bytes.NewReader(log.Topics[types.ClientChainLzIdIndexInTopics][:])
-	err = binary.Read(r, binary.BigEndian, &clientChainLzId)
+	var clientChainLzID uint64
+	r = bytes.NewReader(log.Topics[types.ClientChainLzIDIndexInTopics][:])
+	err = binary.Read(r, binary.BigEndian, &clientChainLzID)
 	if err != nil {
-		return nil, errorsmod.Wrap(err, "error occurred when binary read clientChainLzId from topic")
+		return nil, errorsmod.Wrap(err, "error occurred when binary read clientChainLzID from topic")
 	}
 
 	return &RewardParams{
-		ClientChainLzId:       clientChainLzId,
+		ClientChainLzID:       clientChainLzID,
 		Action:                action,
 		AssetsAddress:         assetsAddress,
 		WithdrawRewardAddress: rewardAddr,
@@ -83,14 +83,14 @@ func getRewardParamsFromEventLog(log *ethtypes.Log) (*RewardParams, error) {
 	}, nil
 }
 
-func getStakeIDAndAssetId(params *RewardParams) (stakeId string, assetId string) {
-	clientChainLzIdStr := hexutil.EncodeUint64(params.ClientChainLzId)
-	stakeId = strings.Join([]string{hexutil.Encode(params.WithdrawRewardAddress[:]), clientChainLzIdStr}, "_")
-	assetId = strings.Join([]string{hexutil.Encode(params.AssetsAddress[:]), clientChainLzIdStr}, "_")
+func getStakeIDAndAssetID(params *RewardParams) (stakeID string, assetID string) {
+	clientChainLzIDStr := hexutil.EncodeUint64(params.ClientChainLzID)
+	stakeID = strings.Join([]string{hexutil.Encode(params.WithdrawRewardAddress), clientChainLzIDStr}, "_")
+	assetID = strings.Join([]string{hexutil.Encode(params.AssetsAddress), clientChainLzIDStr}, "_")
 	return
 }
 
-func (k Keeper) PostTxProcessing(ctx sdk.Context, msg core.Message, receipt *ethtypes.Receipt) error {
+func (k Keeper) PostTxProcessing(ctx sdk.Context, _ core.Message, receipt *ethtypes.Receipt) error {
 	// TODO check if contract address is valid layerZero relayer address
 	// check if log address and topicId is valid
 	params, err := k.GetParams(ctx)
@@ -129,10 +129,10 @@ func (k Keeper) RewardForWithdraw(ctx sdk.Context, event *RewardParams) error {
 	if event.OpAmount.IsNegative() {
 		return errorsmod.Wrap(rtypes.ErrRewardAmountIsNegative, fmt.Sprintf("the amount is:%s", event.OpAmount))
 	}
-	stakeId, assetId := getStakeIDAndAssetId(event)
+	stakeID, assetID := getStakeIDAndAssetID(event)
 	// check is asset exist
-	if !k.restakingStateKeeper.IsStakingAsset(ctx, assetId) {
-		return errorsmod.Wrap(rtypes.ErrRewardAssetNotExist, fmt.Sprintf("the assetId is:%s", assetId))
+	if !k.restakingStateKeeper.IsStakingAsset(ctx, assetID) {
+		return errorsmod.Wrap(rtypes.ErrRewardAssetNotExist, fmt.Sprintf("the assetID is:%s", assetID))
 	}
 
 	// TODO
@@ -140,11 +140,11 @@ func (k Keeper) RewardForWithdraw(ctx sdk.Context, event *RewardParams) error {
 		TotalDepositAmountOrWantChangeValue: event.OpAmount,
 		CanWithdrawAmountOrWantChangeValue:  event.OpAmount,
 	}
-	err := k.restakingStateKeeper.UpdateStakerAssetState(ctx, stakeId, assetId, changeAmount)
+	err := k.restakingStateKeeper.UpdateStakerAssetState(ctx, stakeID, assetID, changeAmount)
 	if err != nil {
 		return err
 	}
-	if err = k.restakingStateKeeper.UpdateStakingAssetTotalAmount(ctx, assetId, event.OpAmount); err != nil {
+	if err = k.restakingStateKeeper.UpdateStakingAssetTotalAmount(ctx, assetID, event.OpAmount); err != nil {
 		return err
 	}
 	return nil

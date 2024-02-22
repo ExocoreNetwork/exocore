@@ -12,7 +12,7 @@ const (
 	GeneralAssetsAddrLength      = 32
 	GeneralClientChainAddrLength = 32
 
-	ClientChainLzIdIndexInTopics = 0
+	ClientChainLzIDIndexInTopics = 0
 	LzNonceIndexInTopics         = 2
 
 	ExoCoreOperatorAddrLength = 44
@@ -35,28 +35,28 @@ const (
 	Slash
 )
 
-// GetStakeIDAndAssetId stakerId = stakerAddress+'_'+clientChainLzId,assetId = assetAddress+'_'+clientChainLzId
-func GetStakeIDAndAssetId(clientChainLzId uint64, stakerAddress []byte, assetsAddress []byte) (stakeId string, assetId string) {
-	clientChainLzIdStr := hexutil.EncodeUint64(clientChainLzId)
+// GetStakeIDAndAssetID stakerID = stakerAddress+'_'+clientChainLzID,assetID = assetAddress+'_'+clientChainLzID
+func GetStakeIDAndAssetID(clientChainLzID uint64, stakerAddress []byte, assetsAddress []byte) (stakeID string, assetID string) {
+	clientChainLzIDStr := hexutil.EncodeUint64(clientChainLzID)
 	if stakerAddress != nil {
-		stakeId = strings.Join([]string{hexutil.Encode(stakerAddress), clientChainLzIdStr}, "_")
+		stakeID = strings.Join([]string{hexutil.Encode(stakerAddress), clientChainLzIDStr}, "_")
 	}
 
 	if assetsAddress != nil {
-		assetId = strings.Join([]string{hexutil.Encode(assetsAddress), clientChainLzIdStr}, "_")
+		assetID = strings.Join([]string{hexutil.Encode(assetsAddress), clientChainLzIDStr}, "_")
 	}
 	return
 }
 
-// GetStakeIDAndAssetIdFromStr stakerId = stakerAddress+'_'+clientChainLzId,assetId = assetAddress+'_'+clientChainLzId
-func GetStakeIDAndAssetIdFromStr(clientChainLzId uint64, stakerAddress string, assetsAddress string) (stakeId string, assetId string) {
-	clientChainLzIdStr := hexutil.EncodeUint64(clientChainLzId)
+// GetStakeIDAndAssetIDFromStr stakerID = stakerAddress+'_'+clientChainLzID,assetID = assetAddress+'_'+clientChainLzID
+func GetStakeIDAndAssetIDFromStr(clientChainLzID uint64, stakerAddress string, assetsAddress string) (stakeID string, assetID string) {
+	clientChainLzIDStr := hexutil.EncodeUint64(clientChainLzID)
 	if stakerAddress != "" {
-		stakeId = strings.Join([]string{strings.ToLower(stakerAddress), clientChainLzIdStr}, "_")
+		stakeID = strings.Join([]string{strings.ToLower(stakerAddress), clientChainLzIDStr}, "_")
 	}
 
 	if assetsAddress != "" {
-		assetId = strings.Join([]string{strings.ToLower(assetsAddress), clientChainLzIdStr}, "_")
+		assetID = strings.Join([]string{strings.ToLower(assetsAddress), clientChainLzIDStr}, "_")
 	}
 	return
 }
