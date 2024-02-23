@@ -777,23 +777,23 @@ func RegisterQueryHandlerClient(ctx context.Context, mux *runtime.ServeMux, clie
 }
 
 var (
-	pattern_Query_QueClientChainInfoByIndex_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"exocore", "restaking_assets_manage", "v1", "QueClientChainInfoByIndex"}, "", runtime.AssumeColonVerbOpt(false)))
+	pattern_Query_QueClientChainInfoByIndex_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"exocore", "restaking_assets_manage", "v1", "QueClientChainInfoByIndex"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_Query_QueAllClientChainInfo_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"exocore", "restaking_assets_manage", "v1", "QueAllClientChainInfo"}, "", runtime.AssumeColonVerbOpt(false)))
+	pattern_Query_QueAllClientChainInfo_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"exocore", "restaking_assets_manage", "v1", "QueAllClientChainInfo"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_Query_QueStakingAssetInfo_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"exocore", "restaking_assets_manage", "v1", "QueStakingAssetInfo"}, "", runtime.AssumeColonVerbOpt(false)))
+	pattern_Query_QueStakingAssetInfo_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"exocore", "restaking_assets_manage", "v1", "QueStakingAssetInfo"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_Query_QueAllStakingAssetsInfo_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"exocore", "restaking_assets_manage", "v1", "QueAllStakingAssetsInfo"}, "", runtime.AssumeColonVerbOpt(false)))
+	pattern_Query_QueAllStakingAssetsInfo_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"exocore", "restaking_assets_manage", "v1", "QueAllStakingAssetsInfo"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_Query_QueStakerAssetInfos_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"exocore", "restaking_assets_manage", "v1", "QueStakerAssetInfos"}, "", runtime.AssumeColonVerbOpt(false)))
+	pattern_Query_QueStakerAssetInfos_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"exocore", "restaking_assets_manage", "v1", "QueStakerAssetInfos"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_Query_QueStakerSpecifiedAssetAmount_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"exocore", "restaking_assets_manage", "v1", "QueStakerSpecifiedAssetAmount"}, "", runtime.AssumeColonVerbOpt(false)))
+	pattern_Query_QueStakerSpecifiedAssetAmount_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"exocore", "restaking_assets_manage", "v1", "QueStakerSpecifiedAssetAmount"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_Query_QueOperatorAssetInfos_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"exocore", "restaking_assets_manage", "v1", "QueOperatorAssetInfos"}, "", runtime.AssumeColonVerbOpt(false)))
+	pattern_Query_QueOperatorAssetInfos_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"exocore", "restaking_assets_manage", "v1", "QueOperatorAssetInfos"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_Query_QueOperatorSpecifiedAssetAmount_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"exocore", "restaking_assets_manage", "v1", "QueStakerSpecifiedAssetAmount"}, "", runtime.AssumeColonVerbOpt(false)))
+	pattern_Query_QueOperatorSpecifiedAssetAmount_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"exocore", "restaking_assets_manage", "v1", "QueStakerSpecifiedAssetAmount"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_Query_QueStakerExoCoreAddr_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 4}, []string{"exocore", "restaking_assets_manage", "v1", "QueStakerExoCoreAddr", "StakerID"}, "", runtime.AssumeColonVerbOpt(false)))
+	pattern_Query_QueStakerExoCoreAddr_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 4}, []string{"exocore", "restaking_assets_manage", "v1", "QueStakerExoCoreAddr", "StakerID"}, "", runtime.AssumeColonVerbOpt(true)))
 )
 
 var (

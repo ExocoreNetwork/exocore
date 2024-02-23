@@ -321,11 +321,11 @@ func RegisterQueryHandlerClient(ctx context.Context, mux *runtime.ServeMux, clie
 }
 
 var (
-	pattern_Query_QueryOperatorInfo_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"exocore", "delegation", "v1", "GetOperatorInfo"}, "", runtime.AssumeColonVerbOpt(false)))
+	pattern_Query_QueryOperatorInfo_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"exocore", "delegation", "v1", "GetOperatorInfo"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_Query_QueryDelegationInfo_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"exocore", "delegation", "v1", "GetDelegationInfo"}, "", runtime.AssumeColonVerbOpt(false)))
+	pattern_Query_QueryDelegationInfo_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"exocore", "delegation", "v1", "GetDelegationInfo"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_Query_QuerySingleDelegationInfo_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"exocore", "delegation", "v1", "QuerySingleDelegationInfo"}, "", runtime.AssumeColonVerbOpt(false)))
+	pattern_Query_QuerySingleDelegationInfo_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"exocore", "delegation", "v1", "QuerySingleDelegationInfo"}, "", runtime.AssumeColonVerbOpt(true)))
 )
 
 var (
