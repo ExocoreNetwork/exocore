@@ -1,8 +1,8 @@
 package keeper_test
 
 import (
-	operatortype "github.com/exocore/x/operator/types"
-	"github.com/exocore/x/restaking_assets_manage/types"
+	operatortype "github.com/ExocoreNetwork/exocore/x/operator/types"
+	"github.com/ExocoreNetwork/exocore/x/restaking_assets_manage/types"
 )
 
 func (suite *KeeperTestSuite) TestOperatorInfo() {

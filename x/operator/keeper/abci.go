@@ -2,11 +2,11 @@ package keeper
 
 import (
 	sdkmath "cosmossdk.io/math"
+	delegationtype "github.com/ExocoreNetwork/exocore/x/delegation/types"
+	operatortypes "github.com/ExocoreNetwork/exocore/x/operator/types"
+	"github.com/ExocoreNetwork/exocore/x/restaking_assets_manage/types"
 	abci "github.com/cometbft/cometbft/abci/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	delegationtype "github.com/exocore/x/delegation/types"
-	operatortypes "github.com/exocore/x/operator/types"
-	"github.com/exocore/x/restaking_assets_manage/types"
 )
 
 type SharedParameter struct {

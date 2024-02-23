@@ -2,6 +2,9 @@ package operator
 
 import (
 	"context"
+	"github.com/ExocoreNetwork/exocore/x/operator/client/cli"
+	"github.com/ExocoreNetwork/exocore/x/operator/keeper"
+	operatortypes "github.com/ExocoreNetwork/exocore/x/operator/types"
 	abci "github.com/cometbft/cometbft/abci/types"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -9,9 +12,6 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 	simtypes "github.com/cosmos/cosmos-sdk/types/simulation"
-	"github.com/exocore/x/operator/client/cli"
-	"github.com/exocore/x/operator/keeper"
-	operatortypes "github.com/exocore/x/operator/types"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	"github.com/spf13/cobra"
 )

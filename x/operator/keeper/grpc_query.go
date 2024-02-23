@@ -3,8 +3,8 @@ package keeper
 import (
 	"context"
 
+	operatortypes "github.com/ExocoreNetwork/exocore/x/operator/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	operatortypes "github.com/exocore/x/operator/types"
 )
 
 var _ operatortypes.QueryServer = &Keeper{}

@@ -3,7 +3,7 @@ package cli
 import (
 	"context"
 
-	operatortypes "github.com/exocore/x/operator/types"
+	operatortypes "github.com/ExocoreNetwork/exocore/x/operator/types"
 
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"

@@ -4,8 +4,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/exocore/x/operator"
-	operatorKeeper "github.com/exocore/x/operator/keeper"
+	"github.com/ExocoreNetwork/exocore/x/operator"
+	operatorKeeper "github.com/ExocoreNetwork/exocore/x/operator/keeper"
 	"io"
 	"net/http"
 	"os"
@@ -31,6 +31,7 @@ import (
 	"github.com/ExocoreNetwork/exocore/x/deposit"
 	depositKeeper "github.com/ExocoreNetwork/exocore/x/deposit/keeper"
 	depositTypes "github.com/ExocoreNetwork/exocore/x/deposit/types"
+	operatorTypes "github.com/ExocoreNetwork/exocore/x/operator/types"
 	"github.com/ExocoreNetwork/exocore/x/restaking_assets_manage"
 	stakingAssetsManageKeeper "github.com/ExocoreNetwork/exocore/x/restaking_assets_manage/keeper"
 	stakingAssetsManageTypes "github.com/ExocoreNetwork/exocore/x/restaking_assets_manage/types"
@@ -47,7 +48,6 @@ import (
 	"github.com/evmos/evmos/v14/x/recovery"
 	"github.com/evmos/evmos/v14/x/revenue/v1"
 	vestingtypes "github.com/evmos/evmos/v14/x/vesting/types"
-	operatorTypes "github.com/exocore/x/operator/types"
 
 	runtimeservices "github.com/cosmos/cosmos-sdk/runtime/services"
 

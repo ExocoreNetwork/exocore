@@ -7,7 +7,7 @@ import "cosmos/query/v1/query.proto";
 import "cosmos_proto/cosmos.proto";
 import "exocore/operator/v1/tx.proto";
 
-option go_package = "github.com/exocore/x/operator/types";
+option go_package = "github.com/ExocoreNetwork/exocore/x/operator/types";
 
 message GetOperatorInfoReq {
   string OperatorAddr = 1

@@ -6,8 +6,8 @@ import (
 	"strings"
 
 	errorsmod "cosmossdk.io/errors"
+	operatortypes "github.com/ExocoreNetwork/exocore/x/operator/types"
 	"github.com/cosmos/cosmos-sdk/client/flags"
-	operatortypes "github.com/exocore/x/operator/types"
 	"github.com/spf13/cobra"
 
 	"github.com/cosmos/cosmos-sdk/client"

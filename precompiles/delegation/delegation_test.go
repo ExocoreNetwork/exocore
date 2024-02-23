@@ -1,7 +1,7 @@
 package delegation_test
 
 import (
-	operatortypes "github.com/exocore/x/operator/types"
+	operatortypes "github.com/ExocoreNetwork/exocore/x/operator/types"
 	"math/big"
 	"strings"
 

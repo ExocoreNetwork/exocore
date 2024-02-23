@@ -4,11 +4,11 @@ import (
 	errorsmod "cosmossdk.io/errors"
 	sdkmath "cosmossdk.io/math"
 	"fmt"
+	operatortypes "github.com/ExocoreNetwork/exocore/x/operator/types"
+	restakingtype "github.com/ExocoreNetwork/exocore/x/restaking_assets_manage/types"
 	"github.com/cosmos/cosmos-sdk/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/common/hexutil"
-	operatortypes "github.com/exocore/x/operator/types"
-	restakingtype "github.com/exocore/x/restaking_assets_manage/types"
 )
 
 func (k *Keeper) UpdateOperatorSlashInfo(ctx sdk.Context, operatorAddr, avsAddr, slashId string, slashInfo operatortypes.OperatorSlashInfo) error {

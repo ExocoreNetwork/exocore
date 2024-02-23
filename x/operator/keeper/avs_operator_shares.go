@@ -4,10 +4,10 @@ import (
 	errorsmod "cosmossdk.io/errors"
 	sdkmath "cosmossdk.io/math"
 	"fmt"
+	operatortypes "github.com/ExocoreNetwork/exocore/x/operator/types"
+	restakingtype "github.com/ExocoreNetwork/exocore/x/restaking_assets_manage/types"
 	"github.com/cosmos/cosmos-sdk/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	operatortypes "github.com/exocore/x/operator/types"
-	restakingtype "github.com/exocore/x/restaking_assets_manage/types"
 )
 
 func (k *Keeper) UpdateOperatorShare(ctx sdk.Context, avsAddr, operatorAddr string, opAmount sdkmath.LegacyDec) error {

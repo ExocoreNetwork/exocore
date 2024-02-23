@@ -2,8 +2,8 @@ package types
 
 import (
 	sdkmath "cosmossdk.io/math"
+	delegationtype "github.com/ExocoreNetwork/exocore/x/delegation/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	delegationtype "github.com/exocore/x/delegation/types"
 )
 
 type ExpectDelegationInterface interface {

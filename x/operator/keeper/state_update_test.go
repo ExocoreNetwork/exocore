@@ -2,13 +2,13 @@ package keeper_test
 
 import (
 	sdkmath "cosmossdk.io/math"
+	delegationKeeper "github.com/ExocoreNetwork/exocore/x/delegation/keeper"
+	"github.com/ExocoreNetwork/exocore/x/deposit/keeper"
+	operatorKeeper "github.com/ExocoreNetwork/exocore/x/operator/keeper"
+	operatorTypes "github.com/ExocoreNetwork/exocore/x/operator/types"
+	restakingTypes "github.com/ExocoreNetwork/exocore/x/restaking_assets_manage/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/common"
-	delegationKeeper "github.com/exocore/x/delegation/keeper"
-	"github.com/exocore/x/deposit/keeper"
-	operatorKeeper "github.com/exocore/x/operator/keeper"
-	operatorTypes "github.com/exocore/x/operator/types"
-	restakingTypes "github.com/exocore/x/restaking_assets_manage/types"
 	"strings"
 )
 

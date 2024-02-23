@@ -2,7 +2,7 @@ package keeper
 
 import (
 	sdkmath "cosmossdk.io/math"
-	operatortypes "github.com/exocore/x/operator/types"
+	operatortypes "github.com/ExocoreNetwork/exocore/x/operator/types"
 )
 
 type LegacyDecMap map[string]sdkmath.LegacyDec

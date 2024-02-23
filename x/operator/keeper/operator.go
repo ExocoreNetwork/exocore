@@ -3,10 +3,10 @@ package keeper
 import (
 	errorsmod "cosmossdk.io/errors"
 	"fmt"
+	operatortypes "github.com/ExocoreNetwork/exocore/x/operator/types"
+	restakingtype "github.com/ExocoreNetwork/exocore/x/restaking_assets_manage/types"
 	"github.com/cosmos/cosmos-sdk/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	operatortypes "github.com/exocore/x/operator/types"
-	restakingtype "github.com/exocore/x/restaking_assets_manage/types"
 )
 
 // SetOperatorInfo This function is used to register to be an operator in exoCore, the provided info will be stored on the chain.

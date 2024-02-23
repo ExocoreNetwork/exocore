@@ -3,8 +3,8 @@ package keeper
 import (
 	context "context"
 
+	"github.com/ExocoreNetwork/exocore/x/operator/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/exocore/x/operator/types"
 )
 
 var _ types.MsgServer = &Keeper{}

@@ -2,9 +2,7 @@ package keeper
 
 import (
 	"context"
-	"fmt"
 
-	errorsmod "cosmossdk.io/errors"
 	delegationtype "github.com/ExocoreNetwork/exocore/x/delegation/types"
 	depositkeeper "github.com/ExocoreNetwork/exocore/x/deposit/keeper"
 	"github.com/ExocoreNetwork/exocore/x/restaking_assets_manage/keeper"
