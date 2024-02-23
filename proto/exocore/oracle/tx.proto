@@ -1,7 +1,16 @@
 syntax = "proto3";
+
 package exocore.oracle;
 
 option go_package = "github.com/ExocoreNetwork/exocore/x/oracle/types";
 
 // Msg defines the Msg service.
-service Msg {}
+service Msg {
+  rpc CreatePrice (MsgCreatePrice) returns (MsgCreatePriceResponse);
+}
+message MsgCreatePrice {
+  string creator = 1;
+}
+
+message MsgCreatePriceResponse {}
+

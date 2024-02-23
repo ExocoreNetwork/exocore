@@ -69432,6 +69432,8 @@ definitions:
     description: |-
       QueryParamsResponse is the response type for the Query/Params RPC
       method.
+  exocore.oracle.MsgCreatePriceResponse:
+    type: object
   exocore.oracle.Params:
     type: object
     description: Params defines the parameters for the module.
