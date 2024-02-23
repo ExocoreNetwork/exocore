@@ -2,15 +2,22 @@ syntax = "proto3";
 
 package exocore.oracle;
 
+import "exocore/oracle/price.proto";
+
 option go_package = "github.com/ExocoreNetwork/exocore/x/oracle/types";
 
 // Msg defines the Msg service.
 service Msg {
+//create price for a new oracle round
   rpc CreatePrice (MsgCreatePrice) returns (MsgCreatePriceResponse);
 }
 message MsgCreatePrice {
   string creator = 1;
+  //refer to id from Params.TokenList, 0 is reserved, invalid to use
+  int32 token_id = 2;
+  repeated PriceWithSource prices = 3;
+  //on which block commit does this message be built on
+  uint64 based_block = 4;
 }
 
 message MsgCreatePriceResponse {}
-
