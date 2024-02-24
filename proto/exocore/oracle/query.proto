@@ -1,26 +1,58 @@
 syntax = "proto3";
+
 package exocore.oracle;
 
 import "gogoproto/gogo.proto";
 import "google/api/annotations.proto";
 import "cosmos/base/query/v1beta1/pagination.proto";
 import "exocore/oracle/params.proto";
+import "exocore/oracle/prices.proto";
 
 option go_package = "github.com/ExocoreNetwork/exocore/x/oracle/types";
 
 // Query defines the gRPC querier service.
 service Query {
+  
   // Parameters queries the parameters of the module.
-  rpc Params(QueryParamsRequest) returns (QueryParamsResponse) {
+  rpc Params (QueryParamsRequest) returns (QueryParamsResponse) {
     option (google.api.http).get = "/ExocoreNetwork/exocore/oracle/params";
+  
+  }
+  
+  // Queries a list of Prices items.
+  rpc Prices    (QueryGetPricesRequest) returns (QueryGetPricesResponse) {
+    option (google.api.http).get = "/ExocoreNetwork/exocore/oracle/prices/{tokenId}";
+  
+  }
+  rpc PricesAll (QueryAllPricesRequest) returns (QueryAllPricesResponse) {
+    option (google.api.http).get = "/ExocoreNetwork/exocore/oracle/prices";
+  
   }
 }
-
 // QueryParamsRequest is request type for the Query/Params RPC method.
 message QueryParamsRequest {}
 
 // QueryParamsResponse is response type for the Query/Params RPC method.
 message QueryParamsResponse {
+  
   // params holds all the parameters of this module.
   Params params = 1 [(gogoproto.nullable) = false];
 }
+
+message QueryGetPricesRequest {
+  int32 tokenId = 1;
+}
+
+message QueryGetPricesResponse {
+  Prices prices = 1 [(gogoproto.nullable) = false];
+}
+
+message QueryAllPricesRequest {
+  cosmos.base.query.v1beta1.PageRequest pagination = 1;
+}
+
+message QueryAllPricesResponse {
+  repeated Prices                                 prices     = 1 [(gogoproto.nullable) = false];
+           cosmos.base.query.v1beta1.PageResponse pagination = 2;
+}
+

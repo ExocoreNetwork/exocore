@@ -175,7 +175,7 @@ const _ = grpc.SupportPackageIsVersion4
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
 type MsgClient interface {
-	//create price for a new oracle round
+	// create price for a new oracle round
 	CreatePrice(ctx context.Context, in *MsgCreatePrice, opts ...grpc.CallOption) (*MsgCreatePriceResponse, error)
 }
 
@@ -198,7 +198,7 @@ func (c *msgClient) CreatePrice(ctx context.Context, in *MsgCreatePrice, opts ..
 
 // MsgServer is the server API for Msg service.
 type MsgServer interface {
-	//create price for a new oracle round
+	// create price for a new oracle round
 	CreatePrice(context.Context, *MsgCreatePrice) (*MsgCreatePriceResponse, error)
 }
 
