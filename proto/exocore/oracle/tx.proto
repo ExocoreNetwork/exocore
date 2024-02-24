@@ -13,8 +13,8 @@ service Msg {
 }
 message MsgCreatePrice {
   string creator = 1;
-  //refer to id from Params.TokenList, 0 is reserved, invalid to use
-  int32 token_id = 2;
+  //refer to id from Params.TokenFeeders, 0 is reserved, invalid to use
+  int32 feeder_id = 2;
   repeated PriceWithSource prices = 3;
   //on which block commit does this message be built on
   uint64 based_block = 4;
