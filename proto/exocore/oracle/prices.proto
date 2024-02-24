@@ -1,0 +1,12 @@
+syntax = "proto3";
+package exocore.oracle;
+
+import "exocore/oracle/price.proto";
+
+option go_package = "github.com/ExocoreNetwork/exocore/x/oracle/types";
+
+message Prices {
+  int32 token_id = 1; 
+  map<int64,PriceWithTime> price_with_round = 2;
+}
+
