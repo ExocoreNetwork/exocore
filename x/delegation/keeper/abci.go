@@ -1,16 +1,15 @@
 package keeper
 
 import (
-	abci "github.com/cometbft/cometbft/abci/types"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	delegationtype "github.com/ExocoreNetwork/exocore/x/delegation/types"
 	"github.com/ExocoreNetwork/exocore/x/restaking_assets_manage/types"
+	abci "github.com/cometbft/cometbft/abci/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 // EndBlock : completed Undelegation events according to the canCompleted blockHeight
 // This function will be triggered at the end of every block,it will query the undelegation state to get the records that need to be handled and try to complete the undelegation task.
-func (k Keeper) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.ValidatorUpdate {
-	ctx.Logger().Info("the blockHeight is:", "height", ctx.BlockHeight())
+func (k *Keeper) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.ValidatorUpdate {
 	records, err := k.GetWaitCompleteUndelegationRecords(ctx, uint64(ctx.BlockHeight()))
 	if err != nil {
 		panic(err)
@@ -34,6 +33,27 @@ func (k Keeper) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.Validat
 				}
 				continue
 			}*/
+
+		recordId := delegationtype.GetUndelegationRecordKey(record.LzTxNonce, record.TxHash, record.OperatorAddr)
+		if k.GetUndelegationHoldCount(ctx, recordId) > 0 {
+			// store it again with the next block and move on
+			record.CompleteBlockNumber = uint64(ctx.BlockHeight()) + 1
+			// we need to store two things here: one is the updated record in itself
+			recordKey, err := k.SetSingleUndelegationRecord(ctx, record)
+			if err != nil {
+				panic(err)
+			}
+			// and the other is the fact that it matures at the next block
+			k.StoreWaitCompleteRecord(ctx, recordKey, record)
+			continue
+		}
+		// operator opt out: since operators can not immediately withdraw their funds, that is,
+		// even operator funds are not immediately available, operator opt out does not require
+		// any special handling here. if an operator undelegates before they opt out, the undelegation
+		// will be processed normally. if they undelegate after they opt out, the undelegation will
+		// be released at the same time as opt out completion, provided there are no other chains that
+		// the operator is still active on. the same applies to delegators too.
+		// TODO(mike): ensure that operator is required to perform self delegation to match above.
 
 		//calculate the actual canUndelegated asset amount
 		delegationInfo, err := k.GetSingleDelegationInfo(ctx, record.StakerId, record.AssetId, record.OperatorAddr)

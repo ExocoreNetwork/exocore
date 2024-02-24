@@ -22,4 +22,14 @@ var (
 	ErrSlashContractNotMatch = errorsmod.Register(ModuleName, 8, "the slash contract isn't the slash contract address saved in the opted-in info")
 
 	ErrSlashOccurredHeight = errorsmod.Register(ModuleName, 9, "the occurred height of slash event is error")
+
+	// add for dogfood
+	ErrConsKeyAlreadyInUse = errorsmod.Register(
+		ModuleName,
+		10,
+		"consensus key already in use by another operator",
+	)
+	ErrAlreadyOptingOut = errorsmod.Register(
+		ModuleName, 11, "operator already opting out",
+	)
 )

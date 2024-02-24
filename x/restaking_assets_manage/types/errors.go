@@ -23,5 +23,5 @@ var (
 
 	ErrOperatorAddr = errorsmod.Register(ModuleName, 8, "the operator address isn't a valid acc addr")
 
-	ErrNoKeyInTheStore = errorsmod.Register(ModuleName, 9, "there is not the key for in the store")
+	ErrNoAppChainKey = errorsmod.Register(ModuleName, 10, "there is no stored key for the input app chain id")
 )

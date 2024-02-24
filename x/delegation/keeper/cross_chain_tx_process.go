@@ -26,7 +26,7 @@ type DelegationOrUndelegationParams struct {
 // The event hook process has been deprecated, now we use precompile contract to trigger the calls.
 // solidity encode: bytes memory actionArgs = abi.encodePacked(token, operator, msg.sender, amount);
 // _sendInterchainMsg(Action.DEPOSIT, actionArgs);
-/*func (k Keeper) getParamsFromEventLog(ctx sdk.Context, log *ethtypes.Log) (*DelegationOrUndelegationParams, error) {
+/*func (k *Keeper) getParamsFromEventLog(ctx sdk.Context, log *ethtypes.Log) (*DelegationOrUndelegationParams, error) {
 	// check if Action is deposit
 	var action types.CrossChainOpType
 	var err error
@@ -109,7 +109,7 @@ type DelegationOrUndelegationParams struct {
 }*/
 
 // DelegateTo : It doesn't need to check the active status of the operator in middlewares when delegating assets to the operator. This is because it adds assets to the operator's amount. But it needs to check if operator has been slashed or frozen.
-func (k Keeper) DelegateTo(ctx sdk.Context, params *DelegationOrUndelegationParams) error {
+func (k *Keeper) DelegateTo(ctx sdk.Context, params *DelegationOrUndelegationParams) error {
 	// check if the delegatedTo address is an operator
 	if !k.expectedOperatorInterface.IsOperator(ctx, params.OperatorAddress) {
 		return errorsmod.Wrap(delegationtype.ErrOperatorNotExist, fmt.Sprintf("input opreatorAddr is:%s", params.OperatorAddress))
@@ -171,13 +171,17 @@ func (k Keeper) DelegateTo(ctx sdk.Context, params *DelegationOrUndelegationPara
 	if err != nil {
 		return err
 	}
+
+	// update the snapshot and call the hooks registered by the other modules
+	k.restakingStateKeeper.UpdateAndStoreSnapshotForDelegation(ctx, params.OperatorAddress, assetId, stakerId, params.OpAmount)
+	k.Hooks().AfterDelegation(ctx, params.OperatorAddress)
 	return nil
 }
 
 // UndelegateFrom The undelegation needs to consider whether the operator's opted-in assets can exit from the AVS.
 // Because only after the operator has served the AVS can the staking asset be undelegated.
 // So we use two steps to handle the undelegation. Fist,record the undelegation request and the corresponding exit time which needs to be obtained from the operator opt-in module. Then,we handle the record when the exit time has expired.
-func (k Keeper) UndelegateFrom(ctx sdk.Context, params *DelegationOrUndelegationParams) error {
+func (k *Keeper) UndelegateFrom(ctx sdk.Context, params *DelegationOrUndelegationParams) error {
 	// check if the UndelegatedFrom address is an operator
 	if !k.expectedOperatorInterface.IsOperator(ctx, params.OperatorAddress) {
 		return delegationtype.ErrOperatorNotExist
@@ -250,10 +254,13 @@ func (k Keeper) UndelegateFrom(ctx sdk.Context, params *DelegationOrUndelegation
 		return err
 	}
 
+	// update the snapshot and call the hooks registered by the other modules
+	k.restakingStateKeeper.UpdateAndStoreSnapshotForUndelegation(ctx, params.OperatorAddress, assetId, stakerId, params.OpAmount)
+	k.Hooks().AfterUndelegationStarted(ctx, params.OperatorAddress, delegationtype.GetUndelegationRecordKey(r.LzTxNonce, r.TxHash, r.OperatorAddr))
 	return nil
 }
 
-/*func (k Keeper) PostTxProcessing(ctx sdk.Context, msg core.Message, receipt *ethtypes.Receipt) error {
+/*func (k *Keeper) PostTxProcessing(ctx sdk.Context, msg core.Message, receipt *ethtypes.Receipt) error {
 	needLogs, err := k.depositKeeper.FilterCrossChainEventLogs(ctx, msg, receipt)
 	if err != nil {
 		return err

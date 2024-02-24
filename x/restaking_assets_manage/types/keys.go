@@ -2,6 +2,7 @@ package types
 
 import (
 	"fmt"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	"strings"
 
 	errorsmod "cosmossdk.io/errors"
@@ -31,6 +32,7 @@ func init() {
 // prefix bytes for the reStaking assets manage store
 const (
 	prefixClientChainInfo = iota + 1
+	prefixAppChainInfo
 	prefixRestakingAssetInfo
 	prefixRestakerAssetInfo
 	prefixOperatorAssetInfo
@@ -43,6 +45,10 @@ const (
 	prefixReStakingAssetList
 	prefixReStakerAssetList
 	prefixOperatorAssetList
+
+	// add for dogfood
+	prefixOperatorSnapshot
+	prefixOperatorLastSnapshotHeight
 )
 
 // KVStore key prefixes
@@ -81,6 +87,8 @@ var (
 	// KeyPrefixClientChainInfo key->value: chainIndex->ClientChainInfo
 	KeyPrefixClientChainInfo = []byte{prefixClientChainInfo}
 
+	KeyPrefixAppChainInfo = []byte{prefixAppChainInfo}
+
 	// KeyPrefixReStakingAssetInfo AssetId = AssetAddr+'_'+chainIndex
 	// KeyPrefixReStakingAssetInfo key->value: AssetId->ReStakingAssetInfo
 	KeyPrefixReStakingAssetInfo = []byte{prefixRestakingAssetInfo}
@@ -94,10 +102,18 @@ var (
 	// or operatorAddr->mapping(AssetId->OperatorSingleAssetInfo) ?
 	KeyPrefixOperatorAssetInfos = []byte{prefixOperatorAssetInfo}
 
+	// KeyPrefixOperatorOptedInMiddleWareAssetInfos key->value:
+	// operatorAddr+'_'+AssetId->mapping(middleWareAddr->struct{})
+	// or operatorAddr->mapping(AssetId->mapping(middleWareAddr->struct{})) ?
+	KeyPrefixOperatorOptedInMiddleWareAssetInfos = []byte{
+		prefixOperatorOptedInMiddlewareAssetInfo,
+	}
+
 	// KeyPrefixReStakerExoCoreAddr reStakerId = clientChainAddr+'_'+ExoCoreChainIndex
 	// KeyPrefixReStakerExoCoreAddr key-value: reStakerId->exoCoreAddr
 	KeyPrefixReStakerExoCoreAddr = []byte{prefixRestakerExocoreAddr}
-	// KeyPrefixReStakerExoCoreAddrReverse k->v: exocoreAddress -> map[clientChainIndex]clientChainAddress
+	// KeyPrefixReStakerExoCoreAddrReverse k->v: exocoreAddress ->
+	// map[clientChainIndex]clientChainAddress
 	// used to retrieve all user assets based on their exoCore address
 	KeyPrefixReStakerExoCoreAddrReverse = []byte{prefixRestakerExocoreAddrReverse}
 )
@@ -117,4 +133,18 @@ func ParseJoinedStoreKey(key []byte, number int) (keys []string, err error) {
 		return nil, errorsmod.Wrap(ErrParseAssetsStateKey, fmt.Sprintf("expected length:%d,actual length:%d,the stringList is:%v", number, len(stringList), stringList))
 	}
 	return stringList, nil
+}
+
+// add for dogfood
+func OperatorSnapshotKey(operatorAddr sdk.AccAddress, height uint64) []byte {
+	base := []byte{prefixOperatorSnapshot}
+	base = append(base, operatorAddr.Bytes()...)
+	base = append(base, sdk.Uint64ToBigEndian(height)...)
+	return base
+}
+
+func OperatorLastSnapshotHeightKey(operatorAddr sdk.AccAddress) []byte {
+	base := []byte{prefixOperatorLastSnapshotHeight}
+	base = append(base, operatorAddr.Bytes()...)
+	return base
 }

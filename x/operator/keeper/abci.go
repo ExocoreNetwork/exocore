@@ -26,11 +26,11 @@ func UpdateShareOfStakerAndOperator(sharedParam *SharedParameter, assetId, stake
 	}
 }
 
-// EndBlock : update the assets' share when their prices change
-func (k *Keeper) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.ValidatorUpdate {
+// PriceChangeHandle update the assets' share when their prices change
+func (k *Keeper) PriceChangeHandle(ctx sdk.Context) error {
 	priceChangeAssets, err := k.oracleKeeper.GetPriceChangeAssets(ctx)
 	if err != nil {
-		panic(err)
+		return err
 	}
 	if priceChangeAssets == nil || len(priceChangeAssets) == 0 {
 		return nil
@@ -42,7 +42,7 @@ func (k *Keeper) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.Valida
 		//get the decimal of asset
 		assetInfo, err := k.restakingStateKeeper.GetStakingAssetInfo(ctx, assetId)
 		if err != nil {
-			panic(err)
+			return err
 		}
 		assetsDecimal[assetId] = assetInfo.AssetBasicInfo.Decimals
 		if _, ok := assetsOperatorAVSInfo[assetId]; !ok {
@@ -63,13 +63,13 @@ func (k *Keeper) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.Valida
 		}
 		err = k.IterateUpdateAssetState(ctx, assetId, f)
 		if err != nil {
-			panic(err)
+			return err
 		}
 	}
 	//BatchUpdateShareForAVSAndOperator
 	err = k.BatchUpdateShareForAVSAndOperator(ctx, avsOperatorShareChange)
 	if err != nil {
-		panic(err)
+		return err
 	}
 
 	//update staker'suite share
@@ -85,7 +85,7 @@ func (k *Keeper) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.Valida
 	}
 	err = k.delegationKeeper.IterateDelegationState(ctx, stakerShareHandleFunc)
 	if err != nil {
-		panic(err)
+		return err
 	}
 
 	operatorShareHandleFunc := func(operatorAddr, assetId string, state *types.OperatorSingleAssetOrChangeInfo) error {
@@ -94,10 +94,40 @@ func (k *Keeper) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.Valida
 	}
 	err = k.restakingStateKeeper.IteratorOperatorAssetState(ctx, operatorShareHandleFunc)
 	if err != nil {
-		panic(err)
+		return err
 	}
 	//BatchSetStakerShare
 	err = k.BatchSetStakerShare(ctx, sharedParameter.stakerShare)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// ClearPreConsensusPK clears the previous consensus public key for all operators
+func (k *Keeper) ClearPreConsensusPK(ctx sdk.Context) error {
+	store := ctx.KVStore(k.storeKey)
+	iterator := sdk.KVStorePrefixIterator(
+		store,
+		[]byte{operatortypes.BytePrefixForOperatorAndChainIdToPrevConsKey},
+	)
+	defer iterator.Close()
+
+	for ; iterator.Valid(); iterator.Next() {
+		store.Delete(iterator.Key())
+	}
+	return nil
+}
+
+// EndBlock : update the assets' share when their prices change
+func (k *Keeper) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.ValidatorUpdate {
+	//todo: need to consider the calling order
+	err := k.PriceChangeHandle(ctx)
+	if err != nil {
+		panic(err)
+	}
+
+	err = k.ClearPreConsensusPK(ctx)
 	if err != nil {
 		panic(err)
 	}

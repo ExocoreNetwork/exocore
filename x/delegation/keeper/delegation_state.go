@@ -14,7 +14,7 @@ import (
 // UpdateStakerDelegationTotalAmount The function is used to update the delegation total amount of the specified staker and asset.
 // The input `opAmount` represents the values that you want to add or decrease,using positive or negative values for increasing and decreasing,respectively. The function will calculate and update new state after a successful check.
 // The function will be called when there is delegation or undelegation related to the specified staker and asset.
-func (k Keeper) UpdateStakerDelegationTotalAmount(ctx sdk.Context, stakerId string, assetId string, opAmount sdkmath.Int) error {
+func (k *Keeper) UpdateStakerDelegationTotalAmount(ctx sdk.Context, stakerId string, assetId string, opAmount sdkmath.Int) error {
 	if opAmount.IsNil() || opAmount.IsZero() {
 		return nil
 	}
@@ -38,7 +38,7 @@ func (k Keeper) UpdateStakerDelegationTotalAmount(ctx sdk.Context, stakerId stri
 }
 
 // GetStakerDelegationTotalAmount query the total delegation amount of the specified staker and asset.
-func (k Keeper) GetStakerDelegationTotalAmount(ctx sdk.Context, stakerId string, assetId string) (opAmount sdkmath.Int, err error) {
+func (k *Keeper) GetStakerDelegationTotalAmount(ctx sdk.Context, stakerId string, assetId string) (opAmount sdkmath.Int, err error) {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), delegationtype.KeyPrefixRestakerDelegationInfo)
 	var ret delegationtype.ValueField
 	prefixKey := stakingtypes.GetJoinedStoreKey(stakerId, assetId)
@@ -54,7 +54,7 @@ func (k Keeper) GetStakerDelegationTotalAmount(ctx sdk.Context, stakerId string,
 
 // UpdateDelegationState The function is used to update the staker's asset amount that is delegated to a specified operator.
 // Compared to `UpdateStakerDelegationTotalAmount`,they use the same kv store, but in this function the store key needs to add the operator address as a suffix.
-func (k Keeper) UpdateDelegationState(ctx sdk.Context, stakerId string, assetId string, delegationAmounts map[string]*delegationtype.DelegationAmounts) (err error) {
+func (k *Keeper) UpdateDelegationState(ctx sdk.Context, stakerId string, assetId string, delegationAmounts map[string]*delegationtype.DelegationAmounts) (err error) {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), delegationtype.KeyPrefixRestakerDelegationInfo)
 	//todo: think about the difference between init and update in future
 
@@ -105,7 +105,7 @@ func (k Keeper) UpdateDelegationState(ctx sdk.Context, stakerId string, assetId 
 }
 
 // GetSingleDelegationInfo query the staker's asset amount that has been delegated to the specified operator.
-func (k Keeper) GetSingleDelegationInfo(ctx sdk.Context, stakerId, assetId, operatorAddr string) (*delegationtype.DelegationAmounts, error) {
+func (k *Keeper) GetSingleDelegationInfo(ctx sdk.Context, stakerId, assetId, operatorAddr string) (*delegationtype.DelegationAmounts, error) {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), delegationtype.KeyPrefixRestakerDelegationInfo)
 	singleStateKey := stakingtypes.GetJoinedStoreKey(stakerId, assetId, operatorAddr)
 	isExit := store.Has(singleStateKey)
@@ -120,7 +120,7 @@ func (k Keeper) GetSingleDelegationInfo(ctx sdk.Context, stakerId, assetId, oper
 }
 
 // GetDelegationInfo query the staker's asset info that has been delegated.
-func (k Keeper) GetDelegationInfo(ctx sdk.Context, stakerId, assetId string) (*delegationtype.QueryDelegationInfoResponse, error) {
+func (k *Keeper) GetDelegationInfo(ctx sdk.Context, stakerId, assetId string) (*delegationtype.QueryDelegationInfoResponse, error) {
 	var ret delegationtype.QueryDelegationInfoResponse
 	totalAmount, err := k.GetStakerDelegationTotalAmount(ctx, stakerId, assetId)
 	if err != nil {
@@ -147,7 +147,7 @@ func (k Keeper) GetDelegationInfo(ctx sdk.Context, stakerId, assetId string) (*d
 }
 
 // DelegationStateByOperatorAssets get the specified assets state delegated to the specified operator
-func (k Keeper) DelegationStateByOperatorAssets(ctx sdk.Context, operatorAddr string, assetsFilter map[string]interface{}) (map[string]map[string]delegationtype.DelegationAmounts, error) {
+func (k *Keeper) DelegationStateByOperatorAssets(ctx sdk.Context, operatorAddr string, assetsFilter map[string]interface{}) (map[string]map[string]delegationtype.DelegationAmounts, error) {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), delegationtype.KeyPrefixRestakerDelegationInfo)
 	iterator := sdk.KVStorePrefixIterator(store, nil)
 	defer iterator.Close()
@@ -179,7 +179,7 @@ func (k Keeper) DelegationStateByOperatorAssets(ctx sdk.Context, operatorAddr st
 	return ret, nil
 }
 
-func (k Keeper) IterateDelegationState(ctx sdk.Context, f func(restakerId, assetId, operatorAddr string, state *delegationtype.DelegationAmounts) error) error {
+func (k *Keeper) IterateDelegationState(ctx sdk.Context, f func(restakerId, assetId, operatorAddr string, state *delegationtype.DelegationAmounts) error) error {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), delegationtype.KeyPrefixRestakerDelegationInfo)
 	iterator := sdk.KVStorePrefixIterator(store, nil)
 	defer iterator.Close()

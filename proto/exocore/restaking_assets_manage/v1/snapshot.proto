@@ -1,0 +1,26 @@
+syntax = "proto3";
+package exocore.restaking_assets_manage.v1;
+
+import "cosmos_proto/cosmos.proto";
+import "gogoproto/gogo.proto";
+
+option go_package = "github.com/ExocoreNetwork/exocore/x/restaking_assets_manage/types";
+
+// Snapshot stores the snapshot of an operator's delegations at a given height
+message Snapshot {
+    // this is the value and the key is combination of operator address and height
+    map<string, SnapshotPerAssetId> per_asset_id = 1 [ (gogoproto.nullable) = false ];
+}
+
+message SnapshotPerAssetId {
+    map<string, SnapshotPerAssetIdPerStaker> per_staker = 1 [ (gogoproto.nullable) = false ];
+}
+
+message SnapshotPerAssetIdPerStaker {
+    string delegated = 1
+    [
+        (cosmos_proto.scalar) = "cosmos.Int",
+        (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+        (gogoproto.nullable) = false
+    ];
+}

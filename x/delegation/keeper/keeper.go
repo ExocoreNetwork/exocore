@@ -23,6 +23,7 @@ type Keeper struct {
 	depositKeeper             depositkeeper.Keeper
 	slashKeeper               delegationtype.ISlashKeeper
 	expectedOperatorInterface delegationtype.ExpectedOperatorInterface
+	hooks                     delegationtype.DelegationHooks
 }
 
 func NewKeeper(
@@ -45,8 +46,28 @@ func NewKeeper(
 
 // GetExoCoreLzAppAddress Get exoCoreLzAppAddr from deposit keeper,it will be used when check the caller of precompile contract.
 // This function needs to be moved to `restaking_assets_manage` module,which will facilitate its use for the other modules
-func (k Keeper) GetExoCoreLzAppAddress(ctx sdk.Context) (common.Address, error) {
+func (k *Keeper) GetExoCoreLzAppAddress(ctx sdk.Context) (common.Address, error) {
 	return k.depositKeeper.GetExoCoreLzAppAddress(ctx)
+}
+
+// SetHooks stores the given hooks implementations.
+// Note that the Keeper is changed into a pointer to prevent an ineffective assignment.
+func (k *Keeper) SetHooks(hooks delegationtype.DelegationHooks) {
+	if hooks == nil {
+		panic("cannot set nil hooks")
+	}
+	if k.hooks != nil {
+		panic("cannot set hooks twice")
+	}
+	k.hooks = hooks
+}
+
+func (k *Keeper) Hooks() delegationtype.DelegationHooks {
+	if k.hooks == nil {
+		// return a no-op implementation if no hooks are set to prevent calling nil functions
+		return delegationtype.MultiDelegationHooks{}
+	}
+	return k.hooks
 }
 
 // IDelegation interface will be implemented by deposit keeper

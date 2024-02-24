@@ -1,6 +1,7 @@
 package types
 
 import (
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	"github.com/ethereum/go-ethereum/common"
 	"math"
@@ -47,6 +48,13 @@ const (
 	prefixOperatorSlashInfo
 
 	prefixSlashAssetsState
+
+	//add keys for dogfood
+	BytePrefixForOperatorAndChainIdToConsKey = iota
+	BytePrefixForOperatorAndChainIdToPrevConsKey
+	BytePrefixForChainIdAndOperatorToConsKey
+	BytePrefixForChainIdAndConsKeyToOperator
+	BytePrefixForOperatorOptOutFromChainId
 )
 
 var (
@@ -81,3 +89,68 @@ var (
 	// completeSlashHeight + '/' + assetId + '/' + operatorAddr -> SlashAmount
 	KeyPrefixSlashAssetsState = []byte{prefixSlashAssetsState}
 )
+
+func KeyPrefix(p string) []byte {
+	return []byte(p)
+}
+
+func AddrAndChainIdKey(prefix byte, addr sdk.AccAddress, chainId string) []byte {
+	partialKey := ChainIdWithLenKey(chainId)
+	return AppendMany(
+		// Append the prefix
+		[]byte{prefix},
+		// Append the addr bytes first so we can iterate over all chain ids
+		// belonging to an operator easily.
+		addr,
+		// Append the partialKey
+		partialKey,
+	)
+}
+
+func ChainIdAndAddrKey(prefix byte, chainId string, addr sdk.AccAddress) []byte {
+	partialKey := ChainIdWithLenKey(chainId)
+	return AppendMany(
+		// Append the prefix
+		[]byte{prefix},
+		// Append the partialKey so that we can look for any operator keys
+		// corresponding to this chainId easily.
+		partialKey,
+		addr,
+	)
+}
+
+func KeyForOperatorAndChainIdToConsKey(addr sdk.AccAddress, chainId string) []byte {
+	return AddrAndChainIdKey(
+		BytePrefixForOperatorAndChainIdToConsKey,
+		addr, chainId,
+	)
+}
+
+func KeyForOperatorAndChainIdToPrevConsKey(addr sdk.AccAddress, chainId string) []byte {
+	return AddrAndChainIdKey(
+		BytePrefixForOperatorAndChainIdToPrevConsKey,
+		addr, chainId,
+	)
+}
+
+func KeyForChainIdAndOperatorToConsKey(chainId string, addr sdk.AccAddress) []byte {
+	return ChainIdAndAddrKey(
+		BytePrefixForChainIdAndOperatorToConsKey,
+		chainId, addr,
+	)
+}
+
+func KeyForChainIdAndConsKeyToOperator(chainId string, addr sdk.ConsAddress) []byte {
+	return AppendMany(
+		[]byte{BytePrefixForChainIdAndConsKeyToOperator},
+		ChainIdWithLenKey(chainId),
+		addr,
+	)
+}
+
+func KeyForOperatorOptOutFromChainId(addr sdk.AccAddress, chainId string) []byte {
+	return AppendMany(
+		[]byte{BytePrefixForOperatorOptOutFromChainId}, addr,
+		ChainIdWithLenKey(chainId),
+	)
+}

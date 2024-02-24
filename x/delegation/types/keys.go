@@ -37,6 +37,9 @@ const (
 	prefixStakerUndelegationInfo
 
 	prefixWaitCompleteUndelegations
+
+	// add for dogfood
+	prefixUndelegationOnHold
 )
 
 var (
@@ -84,4 +87,9 @@ func GetStakerUndelegationRecordKey(stakerId, assetId string, lzNonce uint64) []
 
 func GetWaitCompleteRecordKey(height, lzNonce uint64) []byte {
 	return []byte(strings.Join([]string{hexutil.EncodeUint64(height), hexutil.EncodeUint64(lzNonce)}, "/"))
+}
+
+// GetUndelegationOnHoldKey add for dogfood
+func GetUndelegationOnHoldKey(recordKey []byte) []byte {
+	return append([]byte{prefixUndelegationOnHold}, recordKey...)
 }

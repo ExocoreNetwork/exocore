@@ -19,6 +19,10 @@ type Keeper struct {
 	delegationKeeper     operatortypes.ExpectDelegationInterface
 	oracleKeeper         operatortypes.ExpectOracleInterface
 	avsKeeper            operatortypes.ExpectAvsInterface
+
+	// add for dogfood
+	hooks       operatortypes.OperatorConsentHooks // set separately via call to SetHooks
+	slashKeeper operatortypes.SlashKeeper          // for jailing and unjailing check TODO(mm)
 }
 
 func NewKeeper(
@@ -27,6 +31,7 @@ func NewKeeper(
 	restakingStateKeeper keeper.Keeper,
 	oracleKeeper operatortypes.ExpectOracleInterface,
 	avsKeeper operatortypes.ExpectAvsInterface,
+	slashKeeper operatortypes.SlashKeeper,
 ) Keeper {
 	return Keeper{
 		storeKey:             storeKey,
@@ -34,6 +39,7 @@ func NewKeeper(
 		restakingStateKeeper: restakingStateKeeper,
 		oracleKeeper:         oracleKeeper,
 		avsKeeper:            avsKeeper,
+		slashKeeper:          slashKeeper,
 	}
 }
 

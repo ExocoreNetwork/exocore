@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"fmt"
+	"math"
 	"strings"
 
 	errorsmod "cosmossdk.io/errors"
@@ -22,7 +23,7 @@ const (
 
 // SetUndelegationRecords This function saves the undelegation records to be handled when the handle time expires.
 // When we save the undelegation records, we save them in three kv stores which are `KeyPrefixUndelegationInfo` `KeyPrefixStakerUndelegationInfo` and `KeyPrefixWaitCompleteUndelegations`
-func (k Keeper) SetUndelegationRecords(ctx sdk.Context, records []*types.UndelegationRecord) error {
+func (k *Keeper) SetUndelegationRecords(ctx sdk.Context, records []*types.UndelegationRecord) error {
 	singleRecordStore := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefixUndelegationInfo)
 	stakerUndelegationStore := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefixStakerUndelegationInfo)
 	waitCompleteStore := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefixWaitCompleteUndelegations)
@@ -43,7 +44,7 @@ func (k Keeper) SetUndelegationRecords(ctx sdk.Context, records []*types.Undeleg
 	return nil
 }
 
-func (k Keeper) SetSingleUndelegationRecord(ctx sdk.Context, record *types.UndelegationRecord) (recordKey []byte, err error) {
+func (k *Keeper) SetSingleUndelegationRecord(ctx sdk.Context, record *types.UndelegationRecord) (recordKey []byte, err error) {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefixUndelegationInfo)
 	bz := k.cdc.MustMarshal(record)
 	key := types.GetUndelegationRecordKey(record.LzTxNonce, record.TxHash, record.OperatorAddr)
@@ -51,7 +52,15 @@ func (k Keeper) SetSingleUndelegationRecord(ctx sdk.Context, record *types.Undel
 	return key, nil
 }
 
-func (k Keeper) GetUndelegationRecords(ctx sdk.Context, singleRecordKeys []string, getType GetUndelegationRecordType) (record []*types.UndelegationRecord, err error) {
+// StoreWaitCompleteRecord add it to handle the delay of completing undelegation caused by onHoldCount
+func (k Keeper) StoreWaitCompleteRecord(ctx sdk.Context, singleRecKey []byte, record *types.UndelegationRecord) error {
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefixWaitCompleteUndelegations)
+	waitCompleteKey := types.GetWaitCompleteRecordKey(record.CompleteBlockNumber, record.LzTxNonce)
+	store.Set(waitCompleteKey, singleRecKey)
+	return nil
+}
+
+func (k *Keeper) GetUndelegationRecords(ctx sdk.Context, singleRecordKeys []string, getType GetUndelegationRecordType) (record []*types.UndelegationRecord, err error) {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefixUndelegationInfo)
 	ret := make([]*types.UndelegationRecord, 0)
 	for _, singleRecordKey := range singleRecordKeys {
@@ -82,14 +91,14 @@ func (k Keeper) GetUndelegationRecords(ctx sdk.Context, singleRecordKeys []strin
 	return ret, nil
 }
 
-func (k Keeper) SetStakerUndelegationInfo(ctx sdk.Context, stakerId, assetId string, recordKey []byte, lzNonce uint64) error {
+func (k *Keeper) SetStakerUndelegationInfo(ctx sdk.Context, stakerId, assetId string, recordKey []byte, lzNonce uint64) error {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefixStakerUndelegationInfo)
 	key := types.GetStakerUndelegationRecordKey(stakerId, assetId, lzNonce)
 	store.Set(key, recordKey)
 	return nil
 }
 
-func (k Keeper) GetStakerUndelegationRecKeys(ctx sdk.Context, stakerId, assetId string) (recordKeyList []string, err error) {
+func (k *Keeper) GetStakerUndelegationRecKeys(ctx sdk.Context, stakerId, assetId string) (recordKeyList []string, err error) {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefixStakerUndelegationInfo)
 	iterator := sdk.KVStorePrefixIterator(store, []byte(strings.Join([]string{stakerId, assetId}, "/")))
 	defer iterator.Close()
@@ -101,7 +110,7 @@ func (k Keeper) GetStakerUndelegationRecKeys(ctx sdk.Context, stakerId, assetId 
 	return ret, nil
 }
 
-func (k Keeper) GetStakerUndelegationRecords(ctx sdk.Context, stakerId, assetId string, getType GetUndelegationRecordType) (records []*types.UndelegationRecord, err error) {
+func (k *Keeper) GetStakerUndelegationRecords(ctx sdk.Context, stakerId, assetId string, getType GetUndelegationRecordType) (records []*types.UndelegationRecord, err error) {
 	recordKeys, err := k.GetStakerUndelegationRecKeys(ctx, stakerId, assetId)
 	if err != nil {
 		return nil, err
@@ -110,14 +119,14 @@ func (k Keeper) GetStakerUndelegationRecords(ctx sdk.Context, stakerId, assetId 
 	return k.GetUndelegationRecords(ctx, recordKeys, getType)
 }
 
-func (k Keeper) SetWaitCompleteUndelegationInfo(ctx sdk.Context, height, lzNonce uint64, recordKey string) error {
+func (k *Keeper) SetWaitCompleteUndelegationInfo(ctx sdk.Context, height, lzNonce uint64, recordKey string) error {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefixWaitCompleteUndelegations)
 	key := types.GetWaitCompleteRecordKey(height, lzNonce)
 	store.Set(key, []byte(recordKey))
 	return nil
 }
 
-func (k Keeper) GetWaitCompleteUndelegationRecKeys(ctx sdk.Context, height uint64) (recordKeyList []string, err error) {
+func (k *Keeper) GetWaitCompleteUndelegationRecKeys(ctx sdk.Context, height uint64) (recordKeyList []string, err error) {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefixWaitCompleteUndelegations)
 	iterator := sdk.KVStorePrefixIterator(store, []byte(hexutil.EncodeUint64(height)))
 	defer iterator.Close()
@@ -129,7 +138,7 @@ func (k Keeper) GetWaitCompleteUndelegationRecKeys(ctx sdk.Context, height uint6
 	return ret, nil
 }
 
-func (k Keeper) GetWaitCompleteUndelegationRecords(ctx sdk.Context, height uint64) (records []*types.UndelegationRecord, err error) {
+func (k *Keeper) GetWaitCompleteUndelegationRecords(ctx sdk.Context, height uint64) (records []*types.UndelegationRecord, err error) {
 	recordKeys, err := k.GetWaitCompleteUndelegationRecKeys(ctx, height)
 	if err != nil {
 		return nil, err
@@ -139,4 +148,30 @@ func (k Keeper) GetWaitCompleteUndelegationRecords(ctx sdk.Context, height uint6
 	}
 	// The states of records stored by WaitCompleteUndelegations kvStore should always be IsPending,so using AllRecords as getType here is ok.
 	return k.GetUndelegationRecords(ctx, recordKeys, AllRecords)
+}
+
+func (k *Keeper) IncrementUndelegationHoldCount(ctx sdk.Context, recordKey []byte) {
+	prev := k.GetUndelegationHoldCount(ctx, recordKey)
+	if prev == math.MaxUint64 {
+		panic("cannot increment undelegation hold count above max uint64")
+	}
+	now := prev + 1
+	store := ctx.KVStore(k.storeKey)
+	store.Set(types.GetUndelegationOnHoldKey(recordKey), sdk.Uint64ToBigEndian(now))
+}
+
+func (k *Keeper) GetUndelegationHoldCount(ctx sdk.Context, recordKey []byte) uint64 {
+	store := ctx.KVStore(k.storeKey)
+	bz := store.Get(types.GetUndelegationOnHoldKey(recordKey))
+	return sdk.BigEndianToUint64(bz)
+}
+
+func (k *Keeper) DecrementUndelegationHoldCount(ctx sdk.Context, recordKey []byte) {
+	prev := k.GetUndelegationHoldCount(ctx, recordKey)
+	if prev == 0 {
+		panic("cannot decrement undelegation hold count below zero")
+	}
+	now := prev - 1
+	store := ctx.KVStore(k.storeKey)
+	store.Set(types.GetUndelegationOnHoldKey(recordKey), sdk.Uint64ToBigEndian(now))
 }

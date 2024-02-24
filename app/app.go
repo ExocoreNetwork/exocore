@@ -621,7 +621,7 @@ func NewExocoreApp(
 	// set exoCore staking keepers
 	app.StakingAssetsManageKeeper = stakingAssetsManageKeeper.NewKeeper(keys[stakingAssetsManageTypes.StoreKey], appCodec)
 	app.DepositKeeper = depositKeeper.NewKeeper(keys[depositTypes.StoreKey], appCodec, app.StakingAssetsManageKeeper)
-	app.OperatorKeeper = operatorKeeper.NewKeeper(keys[operatorTypes.StoreKey], appCodec, app.StakingAssetsManageKeeper, operatorTypes.MockOracle{}, operatorTypes.MockAVS{})
+	app.OperatorKeeper = operatorKeeper.NewKeeper(keys[operatorTypes.StoreKey], appCodec, app.StakingAssetsManageKeeper, operatorTypes.MockOracle{}, operatorTypes.MockAVS{}, delegationTypes.VirtualISlashKeeper{})
 	// todo: need to replace the virtual keepers with actual keepers after they have been implemented
 	app.DelegationKeeper = delegationKeeper.NewKeeper(keys[depositTypes.StoreKey], appCodec, app.StakingAssetsManageKeeper, app.DepositKeeper, delegationTypes.VirtualISlashKeeper{}, &app.OperatorKeeper)
 	app.OperatorKeeper.RegisterExpectDelegationInterface(&app.DelegationKeeper)

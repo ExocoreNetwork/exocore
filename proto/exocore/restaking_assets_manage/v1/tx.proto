@@ -28,6 +28,20 @@ message ClientChainInfo {
   uint32 AddressLength = 8;
 }
 
+// AppChainInfo is used to store information related to the subscriber app chains we validate.
+// The information stored within this module consists only of the chain's identifiers.
+// The validation-related information is stored in the coordinator module.
+message AppChainInfo {
+  // the chain name, for example "ethereum"
+  string ChainName = 1;
+  // any other meta info that is at Exocore's discretion to deter,ome
+  string ChainMetaInfo = 2;
+  // the chain id which is used as the primary key
+  string ChainId = 3;
+  // the index of the chain in exocore, so far unused
+  uint64 ExocoreChainIndex = 4;
+}
+
 message ClientChainTokenInfo {
   string Name = 1;
   string Symbol = 2;
