@@ -24,3 +24,11 @@ message PriceWithSource{
 	//used for 0-sourceID-customDefinedSource
 	string desc = 4;
 }
+
+message PriceWithTimeAndRound {
+	string price = 1;
+	int32 decimal = 2;
+	string timestamp = 3;
+	uint64 round_id = 4;
+}
+

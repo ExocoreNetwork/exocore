@@ -7,6 +7,6 @@ option go_package = "github.com/ExocoreNetwork/exocore/x/oracle/types";
 
 message Prices {
   int32 token_id = 1; 
-  map<int64,PriceWithTime> price_with_round = 2;
+  int64 next_rount_id = 2;
+  repeated PriceWithTimeAndRound price = 3;
 }
-
