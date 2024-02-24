@@ -85,15 +85,15 @@ func (m *PriceWithTime) GetTimestamp() string {
 }
 
 type PriceWithSource struct {
-	// refer to id from Params.SourceList, where this price fetched from, 0 is reserved for custom usage
+	//refer to id from Params.SourceList, where this price fetched from, 0 is reserved for custom usage
 	SourceId int32 `protobuf:"varint,1,opt,name=source_id,json=sourceId,proto3" json:"source_id,omitempty"`
-	// if source is deteministic like chainlink with roundID, set this value with which returned from source
+	//if source is deteministic like chainlink with roundID, set this value with which returned from source
 	DetId string `protobuf:"bytes,2,opt,name=det_id,json=detId,proto3" json:"det_id,omitempty"`
-	// up to 3 values in case of the async of network, to give more time for oracle nodes(validators) get into consensus
-	// eg.with deterministic source, this array will contian 3 continuous values up to latest
-	// for non-deterministic source, it's a choice by v2 rules.
+	//up to 3 values in case of the async of network, to give more time for oracle nodes(validators) get into consensus
+	//eg.with deterministic source, this array will contian 3 continuous values up to latest
+	//for non-deterministic source, it's a choice by v2 rules.
 	Prices []*PriceWithTime `protobuf:"bytes,3,rep,name=prices,proto3" json:"prices,omitempty"`
-	// used for 0-sourceID-customDefinedSource
+	//used for 0-sourceID-customDefinedSource
 	Desc string `protobuf:"bytes,4,opt,name=desc,proto3" json:"desc,omitempty"`
 }
 
