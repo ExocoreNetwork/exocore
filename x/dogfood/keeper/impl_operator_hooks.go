@@ -104,15 +104,7 @@ func (h OperatorHooksWrapper) AfterOperatorKeyReplacement(
 	chainID string,
 ) {
 	if strings.Compare(chainID, ctx.ChainID()) == 0 {
-		// res == Removed, it means operator has added their original key again
-		// res == Success, there is no additional information to store
-		// res == Exists, there is no nothing to do
-		if res := h.keeper.QueueOperation(
-			ctx, addr, newKey, types.KeyAdditionOrUpdate,
-		); res == types.QueueResultRemoved {
-			// see AfterOperatorOptIn for explanation
-			h.keeper.ClearUnbondingInformation(ctx, addr, newKey)
-		}
+		// remove the old key
 		// res == Removed, it means operator had added this key and is now removing it.
 		// no additional information to clear.
 		// res == Success, the old key should be pruned from the operator module.
@@ -122,6 +114,16 @@ func (h OperatorHooksWrapper) AfterOperatorKeyReplacement(
 		); res == types.QueueResultSuccess {
 			// the old key can be marked for pruning
 			h.keeper.SetUnbondingInformation(ctx, addr, oldKey, false)
+		}
+		// add the new key
+		// res == Removed, it means operator has added their original key again
+		// res == Success, there is no additional information to store
+		// res == Exists, there is no nothing to do
+		if res := h.keeper.QueueOperation(
+			ctx, addr, newKey, types.KeyAdditionOrUpdate,
+		); res == types.QueueResultRemoved {
+			// see AfterOperatorOptIn for explanation
+			h.keeper.ClearUnbondingInformation(ctx, addr, newKey)
 		}
 	}
 }
