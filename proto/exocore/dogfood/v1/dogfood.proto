@@ -84,10 +84,9 @@ message ConsensusAddresses {
     repeated bytes list = 1;
 }
 
-// RecordKeys is a collection of record keys. This is used to store a list of
-// undelegation records to mature in the delegation module at the end of the
-// epoch.
-message RecordKeys {
+// UndelegationRecordKeys is a collection of undelegation record keys. This is used to store a
+// list of undelegation records to mature in the delegation module at the end of the epoch.
+message UndelegationRecordKeys {
     repeated bytes list = 1;
 }
 

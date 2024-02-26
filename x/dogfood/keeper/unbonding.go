@@ -63,7 +63,7 @@ func (k Keeper) AppendUndelegationToMature(
 	ctx sdk.Context, epoch int64, recordKey []byte,
 ) {
 	prev := k.GetUndelegationsToMature(ctx, epoch)
-	next := types.RecordKeys{
+	next := types.UndelegationRecordKeys{
 		List: append(prev, recordKey),
 	}
 	k.setUndelegationsToMature(ctx, epoch, next)
@@ -80,7 +80,7 @@ func (k Keeper) GetUndelegationsToMature(
 	if bz == nil {
 		return [][]byte{}
 	}
-	var res types.RecordKeys
+	var res types.UndelegationRecordKeys
 	if err := res.Unmarshal(bz); err != nil {
 		// should never happen
 		panic(err)
@@ -101,11 +101,11 @@ func (k Keeper) ClearUndelegationsToMature(
 // setUndelegationsToMature sets all undelegation entries that should be released
 // at the end of the provided epoch.
 func (k Keeper) setUndelegationsToMature(
-	ctx sdk.Context, epoch int64, recordKeys types.RecordKeys,
+	ctx sdk.Context, epoch int64, undelegationRecords types.UndelegationRecordKeys,
 ) {
 	store := ctx.KVStore(k.storeKey)
 	key := types.UnbondingReleaseMaturityKey(epoch)
-	val, err := recordKeys.Marshal()
+	val, err := undelegationRecords.Marshal()
 	if err != nil {
 		panic(err)
 	}
