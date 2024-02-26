@@ -7,6 +7,7 @@ import "google/api/annotations.proto";
 import "cosmos/base/query/v1beta1/pagination.proto";
 import "exocore/oracle/params.proto";
 import "exocore/oracle/prices.proto";
+import "exocore/oracle/round_info.proto";
 
 option go_package = "github.com/ExocoreNetwork/exocore/x/oracle/types";
 
@@ -26,6 +27,16 @@ service Query {
   }
   rpc PricesAll (QueryAllPricesRequest) returns (QueryAllPricesResponse) {
     option (google.api.http).get = "/ExocoreNetwork/exocore/oracle/prices";
+  
+  }
+  
+  // Queries a list of RoundInfo items.
+  rpc RoundInfo    (QueryGetRoundInfoRequest) returns (QueryGetRoundInfoResponse) {
+    option (google.api.http).get = "/ExocoreNetwork/exocore/oracle/round_info/{tokenId}";
+  
+  }
+  rpc RoundInfoAll (QueryAllRoundInfoRequest) returns (QueryAllRoundInfoResponse) {
+    option (google.api.http).get = "/ExocoreNetwork/exocore/oracle/round_info";
   
   }
 }
@@ -53,6 +64,23 @@ message QueryAllPricesRequest {
 
 message QueryAllPricesResponse {
   repeated Prices                                 prices     = 1 [(gogoproto.nullable) = false];
+           cosmos.base.query.v1beta1.PageResponse pagination = 2;
+}
+
+message QueryGetRoundInfoRequest {
+  int32 tokenId = 1;
+}
+
+message QueryGetRoundInfoResponse {
+  RoundInfo roundInfo = 1 [(gogoproto.nullable) = false];
+}
+
+message QueryAllRoundInfoRequest {
+  cosmos.base.query.v1beta1.PageRequest pagination = 1;
+}
+
+message QueryAllRoundInfoResponse {
+  repeated RoundInfo                              roundInfo  = 1 [(gogoproto.nullable) = false];
            cosmos.base.query.v1beta1.PageResponse pagination = 2;
 }
 

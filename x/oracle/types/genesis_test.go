@@ -30,6 +30,14 @@ func TestGenesisState_Validate(t *testing.T) {
 						TokenId: 1,
 					},
 				},
+				RoundInfoList: []types.RoundInfo{
+					{
+						TokenId: 0,
+					},
+					{
+						TokenId: 1,
+					},
+				},
 				// this line is used by starport scaffolding # types/genesis/validField
 			},
 			valid: true,
@@ -38,6 +46,20 @@ func TestGenesisState_Validate(t *testing.T) {
 			desc: "duplicated prices",
 			genState: &types.GenesisState{
 				PricesList: []types.Prices{
+					{
+						TokenId: 0,
+					},
+					{
+						TokenId: 0,
+					},
+				},
+			},
+			valid: false,
+		},
+		{
+			desc: "duplicated roundInfo",
+			genState: &types.GenesisState{
+				RoundInfoList: []types.RoundInfo{
 					{
 						TokenId: 0,
 					},
