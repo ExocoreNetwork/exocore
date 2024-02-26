@@ -223,9 +223,9 @@ func (k Keeper) TrackHistoricalInfo(ctx sdk.Context) {
 			break
 		}
 	}
-	// contract: TrackHistoricalInfo must be called after storing the validator set
-	// for the current block.
-	currentID, _ := k.GetValidatorSetID(ctx, ctx.BlockHeight())
+	currentID, _ := k.GetValidatorSetID(
+		ctx, ctx.BlockHeight()-int64(numHistoricalEntries)+1,
+	)
 	for i := lastDeletedID; i < currentID; i++ {
 		k.DeleteValidatorSet(ctx, i)
 	}
