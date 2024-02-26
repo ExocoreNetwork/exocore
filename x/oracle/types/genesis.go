@@ -12,6 +12,7 @@ func DefaultGenesis() *GenesisState {
 	return &GenesisState{
 		PricesList:    []Prices{},
 		RoundInfoList: []RoundInfo{},
+		RoundDataList: []RoundData{},
 		// this line is used by starport scaffolding # genesis/types/default
 		Params: DefaultParams(),
 	}
@@ -39,6 +40,16 @@ func (gs GenesisState) Validate() error {
 			return fmt.Errorf("duplicated index for roundInfo")
 		}
 		roundInfoIndexMap[index] = struct{}{}
+	}
+	// Check for duplicated index in roundData
+	roundDataIndexMap := make(map[string]struct{})
+
+	for _, elem := range gs.RoundDataList {
+		index := string(RoundDataKey(elem.TokenId))
+		if _, ok := roundDataIndexMap[index]; ok {
+			return fmt.Errorf("duplicated index for roundData")
+		}
+		roundDataIndexMap[index] = struct{}{}
 	}
 	// this line is used by starport scaffolding # genesis/types/validate
 

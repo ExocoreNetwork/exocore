@@ -1,0 +1,17 @@
+syntax = "proto3";
+package exocore.oracle;
+
+import "exocore/oracle/price.proto";
+
+option go_package = "github.com/ExocoreNetwork/exocore/x/oracle/types";
+
+message RoundData {
+  int32 tokenId = 1; 
+  repeated PricesWithSource prices_source = 2; 
+}
+
+message PricesWithSource {
+  int32 source_id = 1;
+  repeated PriceWithTimeAndRound prices_time_round = 2;
+}
+
