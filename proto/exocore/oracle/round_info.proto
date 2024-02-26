@@ -1,0 +1,14 @@
+syntax = "proto3";
+package exocore.oracle;
+
+option go_package = "github.com/ExocoreNetwork/exocore/x/oracle/types";
+
+message RoundInfo {
+  int32 token_id = 1; 
+  uint64 based_block = 2; 
+  uint64 nexit_roundId = 3; 
+  int32 feeder_id = 4; 
+  int32 status = 5; 
+  
+}
+
