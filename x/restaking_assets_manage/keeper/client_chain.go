@@ -18,6 +18,12 @@ func (k Keeper) SetClientChainInfo(ctx sdk.Context, info *restakingtype.ClientCh
 	return nil
 }
 
+func (k Keeper) DeleteClientChainInfo(ctx sdk.Context, clientChainID uint64) (err error) {
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), restakingtype.KeyPrefixClientChainInfo)
+	store.Delete([]byte(hexutil.EncodeUint64(clientChainID)))
+	return nil
+}
+
 func (k Keeper) ClientChainInfoIsExist(ctx sdk.Context, index uint64) bool {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), restakingtype.KeyPrefixClientChainInfo)
 	return store.Has([]byte(hexutil.EncodeUint64(index)))

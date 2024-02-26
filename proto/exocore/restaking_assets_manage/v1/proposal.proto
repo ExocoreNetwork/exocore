@@ -1,0 +1,78 @@
+syntax = "proto3";
+package exocore.restaking_assets_manage.v1;
+
+import "gogoproto/gogo.proto";
+import "exocore/restaking_assets_manage/v1/tx.proto";
+
+option go_package = "github.com/ExocoreNetwork/exocore/x/restaking_assets_manage/types";
+
+// RegisterClientChainProposal is a gov Content type to register a client chain
+message RegisterClientChainProposal {
+  option (gogoproto.equal) = false;
+  // title of the proposal
+  string title = 1;
+  // description of the proposal
+  string description = 2;
+  // the client chain to be registered
+  ClientChainInfo clientChain = 3;
+}
+
+// todo: Consider if need to provide a proposal to update the client chain information.
+// Only when the client chain was registered incorrectly or when the client chain info, such as LayerZeroChainId, has been changed,
+// would this function be needed
+message UpdateClientChainProposal {
+  option (gogoproto.equal) = false;
+  // title of the proposal
+  string title = 1;
+  // description of the proposal
+  string description = 2;
+  // the client chain to be registered
+  ClientChainInfo clientChain = 3;
+}
+
+// DeregisterClientChainProposal is a gov Content type to deregister a client chain
+message DeregisterClientChainProposal {
+  option (gogoproto.equal) = false;
+  // title of the proposal
+  string title = 1;
+  // description of the proposal
+  string description = 2;
+  // the client chain to be deregistered
+  string clientChainID = 3;
+}
+
+
+// RegisterAssetProposal is a gov Content type to register an asset
+message RegisterAssetProposal {
+  option (gogoproto.equal) = false;
+  // title of the proposal
+  string title = 1;
+  // description of the proposal
+  string description = 2;
+  // the asset to be registered
+  ClientChainTokenInfo asset = 3;
+}
+
+// todo: Consider if need to provide a proposal to update the asset information.
+// Only when the asset was registered incorrectly or when the asset info, such as LayerZeroChainId, has been changed,
+// would this function be needed
+message UpdateAssetProposal {
+  option (gogoproto.equal) = false;
+  // title of the proposal
+  string title = 1;
+  // description of the proposal
+  string description = 2;
+  // the asset to be registered
+  ClientChainTokenInfo asset = 3;
+}
+
+// DeregisterAssetProposal is a gov Content type to deregister an asset
+message DeregisterAssetProposal {
+  option (gogoproto.equal) = false;
+  // title of the proposal
+  string title = 1;
+  // description of the proposal
+  string description = 2;
+  // the asset to be deregistered
+  string assetID = 3;
+}

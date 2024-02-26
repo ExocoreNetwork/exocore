@@ -49,6 +49,12 @@ func (k Keeper) SetStakingAssetInfo(ctx sdk.Context, info *restakingtype.Staking
 	return nil
 }
 
+func (k Keeper) DeleteStakingAssetInfo(ctx sdk.Context, assetID string) (err error) {
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), restakingtype.KeyPrefixReStakingAssetInfo)
+	store.Delete([]byte(assetID))
+	return nil
+}
+
 func (k Keeper) IsStakingAsset(ctx sdk.Context, assetId string) bool {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), restakingtype.KeyPrefixReStakingAssetInfo)
 	return store.Has([]byte(assetId))

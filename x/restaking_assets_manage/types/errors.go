@@ -23,5 +23,9 @@ var (
 
 	ErrOperatorAddr = errorsmod.Register(ModuleName, 8, "the operator address isn't a valid acc addr")
 
-	ErrNoAppChainKey = errorsmod.Register(ModuleName, 10, "there is no stored key for the input app chain id")
+	ErrNoAppChainKey = errorsmod.Register(ModuleName, 9, "there is no stored key for the input app chain id")
+
+	ErrClientChainIsExist = errorsmod.Register(ModuleName, 10, "the client chain has already been registered")
+
+	ErrAssetIsExist = errorsmod.Register(ModuleName, 11, "the asset has already been registered")
 )
