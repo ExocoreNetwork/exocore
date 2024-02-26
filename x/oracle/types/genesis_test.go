@@ -46,6 +46,14 @@ func TestGenesisState_Validate(t *testing.T) {
 						TokenId: 1,
 					},
 				},
+				ValidatorsList: []types.Validators{
+					{
+						Block: 0,
+					},
+					{
+						Block: 1,
+					},
+				},
 				// this line is used by starport scaffolding # types/genesis/validField
 			},
 			valid: true,
@@ -87,6 +95,20 @@ func TestGenesisState_Validate(t *testing.T) {
 					},
 					{
 						TokenId: 0,
+					},
+				},
+			},
+			valid: false,
+		},
+		{
+			desc: "duplicated validators",
+			genState: &types.GenesisState{
+				ValidatorsList: []types.Validators{
+					{
+						Block: 0,
+					},
+					{
+						Block: 0,
 					},
 				},
 			},

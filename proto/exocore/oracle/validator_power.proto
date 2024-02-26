@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+package exocore.oracle;
+
+option go_package= "github.com/ExocoreNetwork/exocore/x/oracle/types";
+
+message ValidatorWithPower{
+  string operator_address = 1;  
+  string tokens = 2;
+}

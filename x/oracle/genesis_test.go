@@ -38,6 +38,14 @@ func TestGenesis(t *testing.T) {
 				TokenId: 1,
 			},
 		},
+		ValidatorsList: []types.Validators{
+			{
+				Block: 0,
+			},
+			{
+				Block: 1,
+			},
+		},
 		// this line is used by starport scaffolding # genesis/test/state
 	}
 
@@ -52,5 +60,6 @@ func TestGenesis(t *testing.T) {
 	require.ElementsMatch(t, genesisState.PricesList, got.PricesList)
 	require.ElementsMatch(t, genesisState.RoundInfoList, got.RoundInfoList)
 	require.ElementsMatch(t, genesisState.RoundDataList, got.RoundDataList)
+	require.ElementsMatch(t, genesisState.ValidatorsList, got.ValidatorsList)
 	// this line is used by starport scaffolding # genesis/test/assert
 }
