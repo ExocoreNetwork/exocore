@@ -6,7 +6,13 @@ on:
   pull_request:
   push:
     branches:
+      - develop
       - main
+      - master
+
+permissions:
+  contents: read
+
 jobs:
   golangci:
     name: Run golangci-lint
@@ -14,20 +20,25 @@ jobs:
     timeout-minutes: 10
     steps:
       # Required: setup-go, for all versions v3.0.0+ of golangci-lint
-      - uses: actions/setup-go@v4
+      - uses: actions/setup-go@v5
         with:
-          go-version: '1.20'
-          check-latest: true
+          go-version: '1.21'
+          # Use pinned versions, not git versions
+          check-latest: false
+          # Match `golangci-lint-action` recommendation
+          cache: false
       - uses: actions/checkout@v4
+      # Only operate if there are any differences in go files
       - uses: technote-space/get-diff-action@v6.1.2
         with:
           PATTERNS: |
             **/**.go
             go.mod
             go.sum
-      - uses: golangci/golangci-lint-action@v3.7.0
+      # Now, the actual golangci-lint configuration
+      - uses: golangci/golangci-lint-action@v4
         with:
-          # Required: the version of golangci-lint is required and must be specified without patch version: we always use the latest patch version.
+          # Required parameter
           version: latest
           args: --timeout 10m
           github-token: ${{ secrets.github_token }}
