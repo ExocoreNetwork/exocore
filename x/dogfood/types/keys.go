@@ -16,8 +16,14 @@ const (
 	// ExocoreValidatorBytePrefix is the prefix for the validator store.
 	ExocoreValidatorBytePrefix byte = iota + 1
 
-	// HistoricalInfoBytePrefix is the prefix for the historical info store.
-	HistoricalInfoBytePrefix
+	// ValidatorSetBytePrefix is the prefix for the historical validator set store.
+	ValidatorSetBytePrefix
+
+	// ValidatorSetIDBytePrefix is the prefix for the validator set id store.
+	ValidatorSetIDBytePrefix
+
+	// HeaderBytePrefix is the prefix for the header store.
+	HeaderBytePrefix
 )
 
 // ExocoreValidatorKey returns the key for the validator store.
@@ -25,8 +31,20 @@ func ExocoreValidatorKey(address sdk.AccAddress) []byte {
 	return append([]byte{ExocoreValidatorBytePrefix}, address.Bytes()...)
 }
 
-// HistoricalInfoKey returns the key for the historical info store.
-func HistoricalInfoKey(height int64) []byte {
+// ValidatorSetKey returns the key for the historical validator set store.
+func ValidatorSetKey(id uint64) []byte {
+	bz := sdk.Uint64ToBigEndian(id)
+	return append([]byte{ValidatorSetBytePrefix}, bz...)
+}
+
+// ValidatorSetIDKey returns the key for the validator set id store.
+func ValidatorSetIDKey(height int64) []byte {
 	bz := sdk.Uint64ToBigEndian(uint64(height))
-	return append([]byte{HistoricalInfoBytePrefix}, bz...)
+	return append([]byte{ValidatorSetIDBytePrefix}, bz...)
+}
+
+// HeaderKey returns the key for the header store.
+func HeaderKey(height int64) []byte {
+	bz := sdk.Uint64ToBigEndian(uint64(height))
+	return append([]byte{HeaderBytePrefix}, bz...)
 }

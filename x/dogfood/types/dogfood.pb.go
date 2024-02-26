@@ -7,17 +7,22 @@ import (
 	fmt "fmt"
 	_ "github.com/cosmos/cosmos-proto"
 	types "github.com/cosmos/cosmos-sdk/codec/types"
+	types1 "github.com/cosmos/cosmos-sdk/x/staking/types"
 	_ "github.com/cosmos/gogoproto/gogoproto"
 	proto "github.com/cosmos/gogoproto/proto"
+	github_com_cosmos_gogoproto_types "github.com/cosmos/gogoproto/types"
+	_ "google.golang.org/protobuf/types/known/timestamppb"
 	io "io"
 	math "math"
 	math_bits "math/bits"
+	time "time"
 )
 
 // Reference imports to suppress errors if they are not otherwise used.
 var _ = proto.Marshal
 var _ = fmt.Errorf
 var _ = math.Inf
+var _ = time.Kitchen
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the proto package it is being compiled against.
@@ -91,33 +96,156 @@ func (m *ExocoreValidator) GetPubkey() *types.Any {
 	return nil
 }
 
+// Validators is a list of validators stored according to the staking module.
+type Validators struct {
+	List []types1.Validator `protobuf:"bytes,1,rep,name=list,proto3" json:"list"`
+}
+
+func (m *Validators) Reset()         { *m = Validators{} }
+func (m *Validators) String() string { return proto.CompactTextString(m) }
+func (*Validators) ProtoMessage()    {}
+func (*Validators) Descriptor() ([]byte, []int) {
+	return fileDescriptor_071b9989c501c3f2, []int{1}
+}
+func (m *Validators) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *Validators) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_Validators.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *Validators) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_Validators.Merge(m, src)
+}
+func (m *Validators) XXX_Size() int {
+	return m.Size()
+}
+func (m *Validators) XXX_DiscardUnknown() {
+	xxx_messageInfo_Validators.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_Validators proto.InternalMessageInfo
+
+func (m *Validators) GetList() []types1.Validator {
+	if m != nil {
+		return m.List
+	}
+	return nil
+}
+
+// HeaderSubset is a subset of the block header that is relevant to the IBC codebase. It is
+// stored for each height and then converted to the `tm.Header` object after queried. It is
+// pruned when the information is no longer needed according to the `HistoricalEntries` param.
+type HeaderSubset struct {
+	// timestamp of the block
+	Time time.Time `protobuf:"bytes,1,opt,name=time,proto3,stdtime" json:"time"`
+	// validators for the next block
+	NextValidatorsHash []byte `protobuf:"bytes,2,opt,name=next_validators_hash,json=nextValidatorsHash,proto3" json:"next_validators_hash,omitempty"`
+	// state after txs from the previous block
+	AppHash []byte `protobuf:"bytes,3,opt,name=app_hash,json=appHash,proto3" json:"app_hash,omitempty"`
+}
+
+func (m *HeaderSubset) Reset()         { *m = HeaderSubset{} }
+func (m *HeaderSubset) String() string { return proto.CompactTextString(m) }
+func (*HeaderSubset) ProtoMessage()    {}
+func (*HeaderSubset) Descriptor() ([]byte, []int) {
+	return fileDescriptor_071b9989c501c3f2, []int{2}
+}
+func (m *HeaderSubset) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *HeaderSubset) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_HeaderSubset.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *HeaderSubset) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_HeaderSubset.Merge(m, src)
+}
+func (m *HeaderSubset) XXX_Size() int {
+	return m.Size()
+}
+func (m *HeaderSubset) XXX_DiscardUnknown() {
+	xxx_messageInfo_HeaderSubset.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_HeaderSubset proto.InternalMessageInfo
+
+func (m *HeaderSubset) GetTime() time.Time {
+	if m != nil {
+		return m.Time
+	}
+	return time.Time{}
+}
+
+func (m *HeaderSubset) GetNextValidatorsHash() []byte {
+	if m != nil {
+		return m.NextValidatorsHash
+	}
+	return nil
+}
+
+func (m *HeaderSubset) GetAppHash() []byte {
+	if m != nil {
+		return m.AppHash
+	}
+	return nil
+}
+
 func init() {
 	proto.RegisterType((*ExocoreValidator)(nil), "exocore.dogfood.v1.ExocoreValidator")
+	proto.RegisterType((*Validators)(nil), "exocore.dogfood.v1.Validators")
+	proto.RegisterType((*HeaderSubset)(nil), "exocore.dogfood.v1.HeaderSubset")
 }
 
 func init() { proto.RegisterFile("exocore/dogfood/v1/dogfood.proto", fileDescriptor_071b9989c501c3f2) }
 
 var fileDescriptor_071b9989c501c3f2 = []byte{
-	// 302 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x3c, 0x90, 0x31, 0x4e, 0xf3, 0x30,
-	0x14, 0xc7, 0xeb, 0xaf, 0xfa, 0x8a, 0x14, 0x18, 0x50, 0x14, 0x89, 0xd0, 0xc1, 0x44, 0x9d, 0xba,
-	0x60, 0xab, 0x74, 0x63, 0xa3, 0x12, 0x53, 0x25, 0x84, 0x3a, 0x30, 0xb0, 0x54, 0x4e, 0xe2, 0x9a,
-	0xaa, 0x49, 0x5e, 0x64, 0x3b, 0x6d, 0x7d, 0x0b, 0x2e, 0xc1, 0x0d, 0x38, 0x04, 0x62, 0xea, 0xc8,
-	0x84, 0x50, 0x72, 0x03, 0x4e, 0x80, 0x88, 0x63, 0xb6, 0xf7, 0xf3, 0xff, 0x3d, 0xfb, 0xe7, 0xe7,
-	0x45, 0x7c, 0x0f, 0x09, 0x48, 0x4e, 0x53, 0x10, 0x2b, 0x80, 0x94, 0x6e, 0x27, 0xae, 0x24, 0xa5,
-	0x04, 0x0d, 0xbe, 0xdf, 0x75, 0x10, 0x77, 0xbc, 0x9d, 0x0c, 0x03, 0x01, 0x02, 0xda, 0x98, 0xfe,
-	0x56, 0xb6, 0x73, 0x78, 0x2e, 0x00, 0x44, 0xc6, 0x69, 0x4b, 0x71, 0xb5, 0xa2, 0xac, 0x30, 0x2e,
-	0x4a, 0x40, 0xe5, 0xa0, 0x96, 0x76, 0xc6, 0x82, 0x8d, 0x46, 0x2f, 0xc8, 0x3b, 0xbd, 0xb5, 0x4f,
-	0x3c, 0xb0, 0x6c, 0x9d, 0x32, 0x0d, 0xd2, 0x0f, 0xbd, 0x23, 0x96, 0xa6, 0x92, 0x2b, 0x15, 0xa2,
-	0x08, 0x8d, 0x4f, 0x16, 0x0e, 0xfd, 0xc0, 0xfb, 0x5f, 0xc2, 0x8e, 0xcb, 0xf0, 0x5f, 0x84, 0xc6,
-	0xfd, 0x85, 0x05, 0x9f, 0x79, 0x83, 0xb2, 0x8a, 0x37, 0xdc, 0x84, 0xfd, 0x08, 0x8d, 0x8f, 0xaf,
-	0x02, 0x62, 0x5d, 0x88, 0x73, 0x21, 0x37, 0x85, 0x99, 0x4d, 0xbf, 0x3f, 0x2f, 0xce, 0x0c, 0xcb,
-	0xb3, 0xeb, 0x51, 0x02, 0x85, 0xe2, 0x85, 0xaa, 0xd4, 0xd2, 0xce, 0x8d, 0xde, 0x5f, 0x2f, 0x83,
-	0xce, 0x2b, 0x91, 0xa6, 0xd4, 0x40, 0xee, 0xab, 0x78, 0xce, 0xcd, 0xa2, 0xbb, 0x78, 0x36, 0x7f,
-	0xab, 0x31, 0x3a, 0xd4, 0x18, 0x7d, 0xd5, 0x18, 0x3d, 0x37, 0xb8, 0x77, 0x68, 0x70, 0xef, 0xa3,
-	0xc1, 0xbd, 0xc7, 0x89, 0x58, 0xeb, 0xa7, 0x2a, 0x26, 0x09, 0xe4, 0xb4, 0xfb, 0xc9, 0x1d, 0xd7,
-	0x3b, 0x90, 0x1b, 0xea, 0xb6, 0xbb, 0xff, 0xdb, 0xaf, 0x36, 0x25, 0x57, 0xf1, 0xa0, 0xf5, 0x9a,
-	0xfe, 0x04, 0x00, 0x00, 0xff, 0xff, 0x39, 0xda, 0x59, 0x49, 0x7f, 0x01, 0x00, 0x00,
+	// 454 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x64, 0x92, 0x31, 0x8e, 0xd3, 0x40,
+	0x14, 0x86, 0x33, 0x24, 0x2c, 0xab, 0x49, 0x0a, 0x34, 0xb2, 0x84, 0x37, 0x85, 0x63, 0x2c, 0x8a,
+	0x34, 0xd8, 0x38, 0xdb, 0x20, 0xa8, 0x88, 0x84, 0xb4, 0x68, 0x25, 0x84, 0x0c, 0xa2, 0xa0, 0x89,
+	0xc6, 0xf6, 0xac, 0x63, 0x25, 0xf6, 0x1b, 0x79, 0xc6, 0xd9, 0xf8, 0x16, 0xdb, 0x70, 0x04, 0x6e,
+	0xc0, 0x21, 0x56, 0x54, 0x5b, 0x52, 0x05, 0x94, 0xdc, 0x80, 0x13, 0x20, 0x7b, 0x66, 0x82, 0xc4,
+	0x76, 0xf3, 0xfb, 0x7f, 0xff, 0xd3, 0xf7, 0x9e, 0x1f, 0x76, 0xd9, 0x16, 0x12, 0xa8, 0x58, 0x90,
+	0x42, 0x76, 0x05, 0x90, 0x06, 0x9b, 0xd0, 0x3c, 0x7d, 0x5e, 0x81, 0x04, 0x42, 0x74, 0x85, 0x6f,
+	0x3e, 0x6f, 0xc2, 0xb1, 0x95, 0x41, 0x06, 0x9d, 0x1d, 0xb4, 0x2f, 0x55, 0x39, 0x3e, 0xcb, 0x00,
+	0xb2, 0x35, 0x0b, 0x3a, 0x15, 0xd7, 0x57, 0x01, 0x2d, 0x1b, 0x6d, 0x4d, 0xfe, 0xb7, 0x64, 0x5e,
+	0x30, 0x21, 0x69, 0xc1, 0x4d, 0x36, 0x01, 0x51, 0x80, 0x58, 0xa8, 0xa6, 0x4a, 0x68, 0xeb, 0x99,
+	0x52, 0x81, 0x90, 0x74, 0x95, 0x97, 0x59, 0xb0, 0x09, 0x63, 0x26, 0x69, 0x68, 0xb4, 0xaa, 0xf2,
+	0xbe, 0x21, 0xfc, 0xf8, 0xad, 0x22, 0xfd, 0x4c, 0xd7, 0x79, 0x4a, 0x25, 0x54, 0xc4, 0xc6, 0x8f,
+	0x68, 0x9a, 0x56, 0x4c, 0x08, 0x1b, 0xb9, 0x68, 0x3a, 0x8a, 0x8c, 0x24, 0x16, 0x7e, 0xc8, 0xe1,
+	0x9a, 0x55, 0xf6, 0x03, 0x17, 0x4d, 0xfb, 0x91, 0x12, 0x84, 0xe2, 0x13, 0x5e, 0xc7, 0x2b, 0xd6,
+	0xd8, 0x7d, 0x17, 0x4d, 0x87, 0x33, 0xcb, 0x57, 0xdc, 0xbe, 0xe1, 0xf6, 0xdf, 0x94, 0xcd, 0xfc,
+	0xfc, 0xcf, 0x6e, 0xf2, 0xa4, 0xa1, 0xc5, 0xfa, 0x95, 0x97, 0x40, 0x29, 0x58, 0x29, 0x6a, 0xb1,
+	0x50, 0x39, 0xef, 0xc7, 0xf7, 0xe7, 0x96, 0xa6, 0x4f, 0xaa, 0x86, 0x4b, 0xf0, 0x3f, 0xd4, 0xf1,
+	0x25, 0x6b, 0x22, 0xdd, 0xd8, 0x7b, 0x87, 0xf1, 0x91, 0x4f, 0x90, 0xd7, 0x78, 0xb0, 0xce, 0x85,
+	0xb4, 0x91, 0xdb, 0x9f, 0x0e, 0x67, 0x4f, 0x7d, 0x1d, 0x35, 0xa3, 0xe9, 0x51, 0xfd, 0x63, 0x62,
+	0x3e, 0xb8, 0xdd, 0x4d, 0x7a, 0x51, 0x17, 0xf2, 0xbe, 0x22, 0x3c, 0xba, 0x60, 0x34, 0x65, 0xd5,
+	0xc7, 0x3a, 0x16, 0x4c, 0x92, 0x97, 0x78, 0xd0, 0xee, 0xb5, 0x9b, 0x75, 0x38, 0x1b, 0xdf, 0x83,
+	0xff, 0x64, 0x96, 0x3e, 0x3f, 0x6d, 0xdb, 0xdc, 0xfc, 0x9a, 0xa0, 0xa8, 0x4b, 0x90, 0x17, 0xd8,
+	0x2a, 0xd9, 0x56, 0x2e, 0x36, 0x47, 0xb4, 0xc5, 0x92, 0x8a, 0x65, 0xb7, 0x9d, 0x51, 0x44, 0x5a,
+	0xef, 0x1f, 0xf5, 0x05, 0x15, 0x4b, 0x72, 0x86, 0x4f, 0x29, 0xe7, 0xaa, 0xaa, 0xaf, 0x77, 0xcb,
+	0x79, 0x6b, 0xcd, 0x2f, 0x6f, 0xf7, 0x0e, 0xba, 0xdb, 0x3b, 0xe8, 0xf7, 0xde, 0x41, 0x37, 0x07,
+	0xa7, 0x77, 0x77, 0x70, 0x7a, 0x3f, 0x0f, 0x4e, 0xef, 0x4b, 0x98, 0xe5, 0x72, 0x59, 0xc7, 0x7e,
+	0x02, 0x45, 0xa0, 0x7f, 0xd6, 0x7b, 0x26, 0xaf, 0xa1, 0x5a, 0x05, 0xe6, 0x0e, 0xb7, 0xc7, 0x4b,
+	0x94, 0x0d, 0x67, 0x22, 0x3e, 0xe9, 0xe8, 0xcf, 0xff, 0x06, 0x00, 0x00, 0xff, 0xff, 0x07, 0xfc,
+	0xed, 0x55, 0xa9, 0x02, 0x00, 0x00,
 }
 
 func (m *ExocoreValidator) Marshal() (dAtA []byte, err error) {
@@ -167,6 +295,88 @@ func (m *ExocoreValidator) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
+func (m *Validators) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *Validators) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *Validators) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.List) > 0 {
+		for iNdEx := len(m.List) - 1; iNdEx >= 0; iNdEx-- {
+			{
+				size, err := m.List[iNdEx].MarshalToSizedBuffer(dAtA[:i])
+				if err != nil {
+					return 0, err
+				}
+				i -= size
+				i = encodeVarintDogfood(dAtA, i, uint64(size))
+			}
+			i--
+			dAtA[i] = 0xa
+		}
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *HeaderSubset) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *HeaderSubset) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *HeaderSubset) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.AppHash) > 0 {
+		i -= len(m.AppHash)
+		copy(dAtA[i:], m.AppHash)
+		i = encodeVarintDogfood(dAtA, i, uint64(len(m.AppHash)))
+		i--
+		dAtA[i] = 0x1a
+	}
+	if len(m.NextValidatorsHash) > 0 {
+		i -= len(m.NextValidatorsHash)
+		copy(dAtA[i:], m.NextValidatorsHash)
+		i = encodeVarintDogfood(dAtA, i, uint64(len(m.NextValidatorsHash)))
+		i--
+		dAtA[i] = 0x12
+	}
+	n2, err2 := github_com_cosmos_gogoproto_types.StdTimeMarshalTo(m.Time, dAtA[i-github_com_cosmos_gogoproto_types.SizeOfStdTime(m.Time):])
+	if err2 != nil {
+		return 0, err2
+	}
+	i -= n2
+	i = encodeVarintDogfood(dAtA, i, uint64(n2))
+	i--
+	dAtA[i] = 0xa
+	return len(dAtA) - i, nil
+}
+
 func encodeVarintDogfood(dAtA []byte, offset int, v uint64) int {
 	offset -= sovDogfood(v)
 	base := offset
@@ -193,6 +403,40 @@ func (m *ExocoreValidator) Size() (n int) {
 	}
 	if m.Pubkey != nil {
 		l = m.Pubkey.Size()
+		n += 1 + l + sovDogfood(uint64(l))
+	}
+	return n
+}
+
+func (m *Validators) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if len(m.List) > 0 {
+		for _, e := range m.List {
+			l = e.Size()
+			n += 1 + l + sovDogfood(uint64(l))
+		}
+	}
+	return n
+}
+
+func (m *HeaderSubset) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = github_com_cosmos_gogoproto_types.SizeOfStdTime(m.Time)
+	n += 1 + l + sovDogfood(uint64(l))
+	l = len(m.NextValidatorsHash)
+	if l > 0 {
+		n += 1 + l + sovDogfood(uint64(l))
+	}
+	l = len(m.AppHash)
+	if l > 0 {
 		n += 1 + l + sovDogfood(uint64(l))
 	}
 	return n
@@ -320,6 +564,241 @@ func (m *ExocoreValidator) Unmarshal(dAtA []byte) error {
 			}
 			if err := m.Pubkey.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipDogfood(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthDogfood
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *Validators) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowDogfood
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: Validators: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: Validators: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field List", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowDogfood
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthDogfood
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthDogfood
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.List = append(m.List, types1.Validator{})
+			if err := m.List[len(m.List)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipDogfood(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthDogfood
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *HeaderSubset) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowDogfood
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: HeaderSubset: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: HeaderSubset: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Time", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowDogfood
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthDogfood
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthDogfood
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := github_com_cosmos_gogoproto_types.StdTimeUnmarshal(&m.Time, dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field NextValidatorsHash", wireType)
+			}
+			var byteLen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowDogfood
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				byteLen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if byteLen < 0 {
+				return ErrInvalidLengthDogfood
+			}
+			postIndex := iNdEx + byteLen
+			if postIndex < 0 {
+				return ErrInvalidLengthDogfood
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.NextValidatorsHash = append(m.NextValidatorsHash[:0], dAtA[iNdEx:postIndex]...)
+			if m.NextValidatorsHash == nil {
+				m.NextValidatorsHash = []byte{}
+			}
+			iNdEx = postIndex
+		case 3:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field AppHash", wireType)
+			}
+			var byteLen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowDogfood
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				byteLen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if byteLen < 0 {
+				return ErrInvalidLengthDogfood
+			}
+			postIndex := iNdEx + byteLen
+			if postIndex < 0 {
+				return ErrInvalidLengthDogfood
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.AppHash = append(m.AppHash[:0], dAtA[iNdEx:postIndex]...)
+			if m.AppHash == nil {
+				m.AppHash = []byte{}
 			}
 			iNdEx = postIndex
 		default:

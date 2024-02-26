@@ -8,6 +8,7 @@ import (
 
 	"github.com/ExocoreNetwork/exocore/x/dogfood/types"
 	abci "github.com/cometbft/cometbft/abci/types"
+	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
 	cryptocodec "github.com/cosmos/cosmos-sdk/crypto/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
@@ -21,10 +22,8 @@ import (
 func (k Keeper) UnbondingTime(ctx sdk.Context) time.Duration {
 	count := k.GetEpochsUntilUnbonded(ctx)
 	identifier := k.GetEpochIdentifier(ctx)
-	epoch, found := k.epochsKeeper.GetEpochInfo(ctx, identifier)
-	if !found {
-		panic("epoch info not found")
-	}
+	// no need to check for found, as the epoch info is validated at genesis.
+	epoch, _ := k.epochsKeeper.GetEpochInfo(ctx, identifier)
 	durationPerEpoch := epoch.Duration
 	return time.Duration(count) * durationPerEpoch
 }
@@ -138,56 +137,97 @@ func (k Keeper) GetAllExocoreValidators(
 func (k Keeper) GetHistoricalInfo(
 	ctx sdk.Context, height int64,
 ) (stakingtypes.HistoricalInfo, bool) {
-	store := ctx.KVStore(k.storeKey)
-	key := types.HistoricalInfoKey(height)
-
-	value := store.Get(key)
-	if value == nil {
+	headerSubset, found := k.GetBlockHeader(ctx, height)
+	if !found {
+		// only panic in the case of an unmarshal error
 		return stakingtypes.HistoricalInfo{}, false
 	}
-
-	return stakingtypes.MustUnmarshalHistoricalInfo(k.cdc, value), true
+	valSetID, found := k.GetValidatorSetID(ctx, height)
+	if !found {
+		// only panic in the case of an unmarshal error
+		return stakingtypes.HistoricalInfo{}, false
+	}
+	valSet, found := k.GetValidatorSet(ctx, valSetID)
+	if !found {
+		// only panic in the case of an unmarshal error
+		return stakingtypes.HistoricalInfo{}, false
+	}
+	header := tmproto.Header{
+		Time:               headerSubset.Time,
+		NextValidatorsHash: headerSubset.NextValidatorsHash,
+		AppHash:            headerSubset.AppHash,
+	}
+	return stakingtypes.NewHistoricalInfo(
+		header, stakingtypes.Validators(valSet.GetList()), sdk.DefaultPowerReduction,
+	), true
 }
 
-// SetHistoricalInfo sets the historical info at a given height. This is
+// SetValidatorSet sets the validator set at a given id. This is
 // (intentionally) not exported in the genesis state.
-func (k Keeper) SetHistoricalInfo(
-	ctx sdk.Context, height int64, hi *stakingtypes.HistoricalInfo,
+func (k Keeper) SetValidatorSet(
+	ctx sdk.Context, id uint64, vs *types.Validators,
 ) {
 	store := ctx.KVStore(k.storeKey)
-	key := types.HistoricalInfoKey(height)
-	value := k.cdc.MustMarshal(hi)
-
+	key := types.ValidatorSetKey(id)
+	value := k.cdc.MustMarshal(vs)
 	store.Set(key, value)
 }
 
-// DeleteHistoricalInfo deletes the historical info at a given height.
-func (k Keeper) DeleteHistoricalInfo(ctx sdk.Context, height int64) {
+// GetValidatorSet gets the validator set at a given id.
+func (k Keeper) GetValidatorSet(
+	ctx sdk.Context, id uint64,
+) (*types.Validators, bool) {
 	store := ctx.KVStore(k.storeKey)
-	key := types.HistoricalInfoKey(height)
+	key := types.ValidatorSetKey(id)
+	if !store.Has(key) {
+		return nil, false
+	}
+	value := store.Get(key)
+	var hi types.Validators
+	k.cdc.MustUnmarshal(value, &hi)
+	return &hi, true
+}
 
+// DeleteValidatorSet deletes the validator set at a given id.
+func (k Keeper) DeleteValidatorSet(ctx sdk.Context, id uint64) {
+	store := ctx.KVStore(k.storeKey)
+	key := types.ValidatorSetKey(id)
 	store.Delete(key)
 }
 
-// TrackHistoricalInfo saves the latest historical-info and deletes the oldest
-// heights that are below pruning height.
+// TrackHistoricalInfo saves the latest historical info and deletes the ones eligible to be
+// pruned. The historical info is stored in two parts: one is the header and the other is the
+// validator set. Within an epoch, the validator set will only change if there is a slashing
+// event. Otherwise, it is constant. The header, however, will change at every block. Since
+// the Cosmos SDK does not allow for the retrieval of a past block header, we store the header
+// ourselves in this function. The validator set is stored when it changes at the end of an
+// epoch or at a slashing event in the corresponding functions.
 func (k Keeper) TrackHistoricalInfo(ctx sdk.Context) {
+	// Get the number of historical entries to persist, as the number of block heights.
 	numHistoricalEntries := k.GetHistoricalEntries(ctx)
 
-	// Prune store to ensure we only have parameter-defined historical entries.
-	// In most cases, this will involve removing a single historical entry.
-	// In the rare scenario when the historical entries gets reduced to a lower value k'
-	// from the original value k. k - k' entries must be deleted from the store.
-	// Since the entries to be deleted are always in a continuous range, we can iterate
-	// over the historical entries starting from the most recent version to be pruned
-	// and then return at the first empty entry.
+	// we are deleting headers, say, from, 0 to 999 at block 1999
+	// for these headers, we must find the corresponding validator set ids to delete.
+	// they must be only deleted if no other block is using them.
+	lastDeletedID := uint64(0) // contract: starts from 1.
 	for i := ctx.BlockHeight() - int64(numHistoricalEntries); i >= 0; i-- {
-		_, found := k.GetHistoricalInfo(ctx, i)
+		_, found := k.GetBlockHeader(ctx, i)
 		if found {
-			k.DeleteHistoricalInfo(ctx, i)
+			// because they are deleted together, and saved one after the other,
+			// since the block header exists, so must the validator set id.
+			lastDeletedID, _ = k.GetValidatorSetID(ctx, i+1)
+			// clear both the header and the mapping
+			k.DeleteBlockHeader(ctx, i)
+			k.DeleteValidatorSetID(ctx, i)
 		} else {
 			break
 		}
+	}
+	// contract: TrackHistoricalInfo must be called after storing the validator set
+	// for the current block.
+	currentID, _ := k.GetValidatorSetID(ctx, ctx.BlockHeight())
+	for i := lastDeletedID; i < currentID; i++ {
+		k.DeleteValidatorSet(ctx, i)
 	}
 
 	// if there is no need to persist historicalInfo, return.
@@ -195,46 +235,13 @@ func (k Keeper) TrackHistoricalInfo(ctx sdk.Context) {
 		return
 	}
 
-	// Create HistoricalInfo struct
-	lastVals := []stakingtypes.Validator{}
-	for _, v := range k.GetAllExocoreValidators(ctx) {
-		pk, err := v.ConsPubKey()
-		if err != nil {
-			// This should never happen as the pubkey is assumed
-			// to be stored correctly earlier.
-			panic(err)
-		}
-		val, err := stakingtypes.NewValidator(nil, pk, stakingtypes.Description{})
-		if err != nil {
-			// This should never happen as the pubkey is assumed
-			// to be stored correctly earlier.
-			panic(err)
-		}
+	// store the header
+	k.StoreBlockHeader(ctx)
 
-		// Set validator to bonded status.
-		val.Status = stakingtypes.Bonded
-		// Compute tokens from voting power.
-		val.Tokens = sdk.TokensFromConsensusPower(
-			v.Power,
-			// TODO(mm)
-			// note that this is not super relevant for the historical info
-			// since IBC does not seem to use the tokens field.
-			sdk.NewInt(1),
-		)
-		lastVals = append(lastVals, val)
-	}
-
-	// Create historical info entry which sorts the validator set by voting power.
-	historicalEntry := stakingtypes.NewHistoricalInfo(
-		ctx.BlockHeader(), lastVals,
-		// TODO(mm)
-		// this should match the power reduction number above
-		// and is also thus not relevant.
-		sdk.NewInt(1),
-	)
-
-	// Set latest HistoricalInfo at current height.
-	k.SetHistoricalInfo(ctx, ctx.BlockHeight(), &historicalEntry)
+	// we have stored:
+	// before TrackHistoricalInfo: ValidatorSetID for height, and the validator set.
+	// within TrackHistoricalInfo: the header.
+	// this is enough information to answer the GetHistoricalInfo query.
 }
 
 // MustGetCurrentValidatorsAsABCIUpdates gets all validators converted
@@ -258,4 +265,67 @@ func (k Keeper) MustGetCurrentValidatorsAsABCIUpdates(ctx sdk.Context) []abci.Va
 		valUpdates = append(valUpdates, abci.ValidatorUpdate{PubKey: tmPK, Power: v.Power})
 	}
 	return valUpdates
+}
+
+// GetValidatorSetID returns the identifier of the validator set at a given height.
+// It is used to "share" the validator set entries across multiple heights within an epoch.
+// Typically, the validator set should change only at the end of an epoch. However, in the
+// case of a slashing occurrence, the validator set may change within an epoch.
+func (k Keeper) GetValidatorSetID(ctx sdk.Context, height int64) (uint64, bool) {
+	store := ctx.KVStore(k.storeKey)
+	key := types.ValidatorSetIDKey(height)
+	value := store.Get(key)
+	if value == nil {
+		return 0, false
+	}
+	return sdk.BigEndianToUint64(value), true
+}
+
+// SetValidatorSetID sets the identifier of the validator set at a given height.
+func (k Keeper) SetValidatorSetID(ctx sdk.Context, height int64, id uint64) {
+	store := ctx.KVStore(k.storeKey)
+	key := types.ValidatorSetIDKey(height)
+	value := sdk.Uint64ToBigEndian(id)
+	store.Set(key, value)
+}
+
+// DeleteValidatorSetID deletes the identifier of the validator set at a given height.
+func (k Keeper) DeleteValidatorSetID(ctx sdk.Context, height int64) {
+	store := ctx.KVStore(k.storeKey)
+	key := types.ValidatorSetIDKey(height)
+	store.Delete(key)
+}
+
+// GetBlockHeader returns the block header at a given height.
+func (k Keeper) GetBlockHeader(ctx sdk.Context, height int64) (types.HeaderSubset, bool) {
+	store := ctx.KVStore(k.storeKey)
+	key := types.HeaderKey(height)
+	var header types.HeaderSubset
+	value := store.Get(key)
+	if value == nil {
+		return header, false
+	}
+	k.cdc.MustUnmarshal(value, &header)
+	return header, true
+}
+
+// SetBlockHeader sets the block header at a given height.
+func (k Keeper) DeleteBlockHeader(ctx sdk.Context, height int64) {
+	store := ctx.KVStore(k.storeKey)
+	key := types.HeaderKey(height)
+	store.Delete(key)
+}
+
+// StoreBlockHeader stores the block header subset as of the current height.
+func (k Keeper) StoreBlockHeader(ctx sdk.Context) {
+	key := types.HeaderKey(ctx.BlockHeight())
+	sdkHeader := ctx.BlockHeader()
+	header := types.HeaderSubset{
+		Time:               sdkHeader.Time,
+		NextValidatorsHash: sdkHeader.NextValidatorsHash,
+		AppHash:            sdkHeader.GetAppHash(),
+	}
+	store := ctx.KVStore(k.storeKey)
+	value := k.cdc.MustMarshal(&header)
+	store.Set(key, value)
 }
