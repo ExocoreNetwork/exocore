@@ -9,6 +9,7 @@ import "exocore/oracle/params.proto";
 import "exocore/oracle/prices.proto";
 import "exocore/oracle/round_info.proto";
 import "exocore/oracle/round_data.proto";
+import "exocore/oracle/validators.proto";
 
 option go_package = "github.com/ExocoreNetwork/exocore/x/oracle/types";
 
@@ -48,6 +49,16 @@ service Query {
   }
   rpc RoundDataAll (QueryAllRoundDataRequest) returns (QueryAllRoundDataResponse) {
     option (google.api.http).get = "/ExocoreNetwork/exocore/oracle/round_data";
+  
+  }
+  
+  // Queries a list of Validators items.
+  rpc Validators    (QueryGetValidatorsRequest) returns (QueryGetValidatorsResponse) {
+    option (google.api.http).get = "/ExocoreNetwork/exocore/oracle/validators/{block}";
+  
+  }
+  rpc ValidatorsAll (QueryAllValidatorsRequest) returns (QueryAllValidatorsResponse) {
+    option (google.api.http).get = "/ExocoreNetwork/exocore/oracle/validators";
   
   }
 }
@@ -109,6 +120,23 @@ message QueryAllRoundDataRequest {
 
 message QueryAllRoundDataResponse {
   repeated RoundData                              roundData  = 1 [(gogoproto.nullable) = false];
+           cosmos.base.query.v1beta1.PageResponse pagination = 2;
+}
+
+message QueryGetValidatorsRequest {
+  uint64 block = 1;
+}
+
+message QueryGetValidatorsResponse {
+  Validators validators = 1 [(gogoproto.nullable) = false];
+}
+
+message QueryAllValidatorsRequest {
+  cosmos.base.query.v1beta1.PageRequest pagination = 1;
+}
+
+message QueryAllValidatorsResponse {
+  repeated Validators                             validators = 1 [(gogoproto.nullable) = false];
            cosmos.base.query.v1beta1.PageResponse pagination = 2;
 }
 

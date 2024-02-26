@@ -10,9 +10,10 @@ const DefaultIndex uint64 = 1
 // DefaultGenesis returns the default genesis state
 func DefaultGenesis() *GenesisState {
 	return &GenesisState{
-		PricesList:    []Prices{},
-		RoundInfoList: []RoundInfo{},
-		RoundDataList: []RoundData{},
+		PricesList:     []Prices{},
+		RoundInfoList:  []RoundInfo{},
+		RoundDataList:  []RoundData{},
+		ValidatorsList: []Validators{},
 		// this line is used by starport scaffolding # genesis/types/default
 		Params: DefaultParams(),
 	}
@@ -50,6 +51,16 @@ func (gs GenesisState) Validate() error {
 			return fmt.Errorf("duplicated index for roundData")
 		}
 		roundDataIndexMap[index] = struct{}{}
+	}
+	// Check for duplicated index in validators
+	validatorsIndexMap := make(map[string]struct{})
+
+	for _, elem := range gs.ValidatorsList {
+		index := string(ValidatorsKey(elem.Block))
+		if _, ok := validatorsIndexMap[index]; ok {
+			return fmt.Errorf("duplicated index for validators")
+		}
+		validatorsIndexMap[index] = struct{}{}
 	}
 	// this line is used by starport scaffolding # genesis/types/validate
 
