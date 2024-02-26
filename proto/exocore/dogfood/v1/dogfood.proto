@@ -4,8 +4,11 @@ package exocore.dogfood.v1;
 
 import "gogoproto/gogo.proto";
 import "google/protobuf/any.proto";
+import "google/protobuf/timestamp.proto";
+
 import "cosmos_proto/cosmos.proto";
 import "tendermint/crypto/keys.proto";
+import "cosmos/staking/v1beta1/staking.proto";
 
 option go_package = "github.com/ExocoreNetwork/exocore/x/dogfood/types";
 
@@ -79,4 +82,21 @@ message AccountAddresses {
 // addresses (which correspond to operator public keys) to delete at the end of an epoch.
 message ConsensusAddresses {
     repeated bytes list = 1;
+}
+
+// Validators is a list of validators stored according to the staking module.
+message Validators {
+    repeated cosmos.staking.v1beta1.Validator list = 1 [(gogoproto.nullable) = false];
+}
+
+// HeaderSubset is a subset of the block header that is relevant to the IBC codebase. It is
+// stored for each height and then converted to the `tm.Header` object after queried. It is
+// pruned when the information is no longer needed according to the `HistoricalEntries` param.
+message HeaderSubset {
+    // timestamp of the block
+    google.protobuf.Timestamp time = 1 [(gogoproto.nullable) = false, (gogoproto.stdtime) = true];
+    // validators for the next block
+    bytes next_validators_hash = 2;
+    // state after txs from the previous block
+    bytes app_hash             = 3;
 }
