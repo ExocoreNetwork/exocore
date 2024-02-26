@@ -7,10 +7,6 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-var (
-	_ = sdk.NewCoin("stake", sdk.NewInt(1))
-)
-
 // EpochsHooksWrapper is the wrapper structure that implements the epochs hooks for the dogfood
 // keeper.
 type EpochsHooksWrapper struct {
@@ -48,7 +44,10 @@ func (wrapper EpochsHooksWrapper) AfterEpochEnd(
 		)
 		wrapper.keeper.ClearConsensusAddrsToPrune(ctx, epoch)
 		undelegations := wrapper.keeper.GetUndelegationsToMature(ctx, epoch)
-		wrapper.keeper.SetPendingUndelegations(ctx, types.RecordKeys{List: undelegations})
+		wrapper.keeper.SetPendingUndelegations(
+			ctx, types.UndelegationRecordKeys{
+				List: undelegations,
+			})
 		wrapper.keeper.ClearUndelegationsToMature(ctx, epoch)
 	}
 }
