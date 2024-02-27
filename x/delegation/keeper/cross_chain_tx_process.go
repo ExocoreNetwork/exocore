@@ -172,8 +172,7 @@ func (k *Keeper) DelegateTo(ctx sdk.Context, params *DelegationOrUndelegationPar
 		return err
 	}
 
-	// update the snapshot and call the hooks registered by the other modules
-	k.restakingStateKeeper.UpdateAndStoreSnapshotForDelegation(ctx, params.OperatorAddress, assetId, stakerId, params.OpAmount)
+	// call the hooks registered by the other modules
 	k.Hooks().AfterDelegation(ctx, params.OperatorAddress)
 	return nil
 }
@@ -254,8 +253,7 @@ func (k *Keeper) UndelegateFrom(ctx sdk.Context, params *DelegationOrUndelegatio
 		return err
 	}
 
-	// update the snapshot and call the hooks registered by the other modules
-	k.restakingStateKeeper.UpdateAndStoreSnapshotForUndelegation(ctx, params.OperatorAddress, assetId, stakerId, params.OpAmount)
+	// call the hooks registered by the other modules
 	k.Hooks().AfterUndelegationStarted(ctx, params.OperatorAddress, delegationtype.GetUndelegationRecordKey(r.LzTxNonce, r.TxHash, r.OperatorAddr))
 	return nil
 }
