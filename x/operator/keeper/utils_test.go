@@ -6,9 +6,11 @@ import (
 	"golang.org/x/exp/rand"
 	"time"
 
-	"github.com/exocore/testutil"
-	testutiltx "github.com/exocore/testutil/tx"
+	"github.com/ExocoreNetwork/exocore/testutil"
+	testutiltx "github.com/ExocoreNetwork/exocore/testutil/tx"
 
+	evmosapp "github.com/ExocoreNetwork/exocore/app"
+	"github.com/ExocoreNetwork/exocore/utils"
 	abci "github.com/cometbft/cometbft/abci/types"
 	"github.com/cometbft/cometbft/crypto/tmhash"
 	tmtypes "github.com/cometbft/cometbft/types"
@@ -28,8 +30,6 @@ import (
 	"github.com/evmos/evmos/v14/x/evm/statedb"
 	evmtypes "github.com/evmos/evmos/v14/x/evm/types"
 	inflationtypes "github.com/evmos/evmos/v14/x/inflation/types"
-	evmosapp "github.com/exocore/app"
-	"github.com/exocore/utils"
 )
 
 // SetupWithGenesisValSet initializes a new EvmosApp with a validator set and genesis accounts

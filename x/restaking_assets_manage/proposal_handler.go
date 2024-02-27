@@ -2,9 +2,11 @@ package restaking_assets_manage
 
 import (
 	errorsmod "cosmossdk.io/errors"
+	"fmt"
 	"github.com/ExocoreNetwork/exocore/x/restaking_assets_manage/keeper"
 	"github.com/ExocoreNetwork/exocore/x/restaking_assets_manage/types"
 	errortypes "github.com/cosmos/cosmos-sdk/types/errors"
+	"strconv"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	govv1beta1 "github.com/cosmos/cosmos-sdk/x/gov/types/v1beta1"
@@ -42,7 +44,11 @@ func handleRegisterClientChainProposal(ctx sdk.Context, k *keeper.Keeper, p *typ
 }
 
 func handleDeregisterClientChainProposal(ctx sdk.Context, k *keeper.Keeper, p *types.DeregisterClientChainProposal) error {
-	err := k.DeregisterClientChain(ctx, p.ClientChainID)
+	chainID, err := strconv.ParseUint(p.ClientChainID, 10, 64)
+	if err != nil {
+		return errorsmod.Wrap(err, fmt.Sprintf("can't convert clientChainID to uint64, clientChainID:%s", p.ClientChainID))
+	}
+	err = k.DeregisterClientChain(ctx, chainID)
 	if err != nil {
 		return err
 	}
