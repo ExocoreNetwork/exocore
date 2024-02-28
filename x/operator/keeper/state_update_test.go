@@ -216,10 +216,17 @@ func (suite *KeeperTestSuite) TestUpdateOptedInAssetsState() {
 	suite.CheckState(expectedState)
 }
 
-/*func (suite *KeeperTestSuite) TestSlash() {
+func (suite *KeeperTestSuite) TestSlash() {
 	suite.prepare()
 	err := suite.app.OperatorKeeper.OptIn(suite.ctx, suite.operatorAddr, suite.avsAddr)
 	suite.NoError(err)
 	optInHeight := suite.ctx.BlockHeight()
-	suite.NextBlock()
-}*/
+
+	// run to the block at specified height
+	runToHeight := optInHeight + 10
+	for i := optInHeight; i < runToHeight; i++ {
+		suite.NextBlock()
+	}
+	suite.Equal(runToHeight, suite.ctx.BlockHeight())
+
+}
