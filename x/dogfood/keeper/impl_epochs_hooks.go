@@ -54,7 +54,7 @@ func (wrapper EpochsHooksWrapper) AfterEpochEnd(
 
 // BeforeEpochStart is called before an epoch starts.
 func (wrapper EpochsHooksWrapper) BeforeEpochStart(
-	ctx sdk.Context, identifier string, epoch int64,
+	sdk.Context, string, int64,
 ) {
 	// nothing to do
 }

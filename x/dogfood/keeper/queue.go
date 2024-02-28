@@ -25,10 +25,10 @@ func (k Keeper) QueueOperation(
 		if operation.PubKey.Equal(key) {
 			if operation.OperationType == operationType {
 				return types.QueueResultExists
-			} else {
-				indexToDelete = i
-				break
 			}
+			// reverse operation exists, remove it
+			indexToDelete = i
+			break
 		}
 	}
 	ret := types.QueueResultSuccess

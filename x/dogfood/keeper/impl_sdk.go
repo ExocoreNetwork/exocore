@@ -12,14 +12,16 @@ import (
 )
 
 // interface guards
-var _ slashingtypes.StakingKeeper = Keeper{}
-var _ evidencetypes.StakingKeeper = Keeper{}
-var _ genutiltypes.StakingKeeper = Keeper{}
-var _ clienttypes.StakingKeeper = Keeper{} // implemented in `validators.go`
+var (
+	_ slashingtypes.StakingKeeper = Keeper{}
+	_ evidencetypes.StakingKeeper = Keeper{}
+	_ genutiltypes.StakingKeeper  = Keeper{}
+	_ clienttypes.StakingKeeper   = Keeper{} // implemented in `validators.go`
+)
 
 // GetParams is an implementation of the staking interface expected by the SDK's evidence
 // module. The module does not use it, but it is part of the interface.
-func (k Keeper) GetParams(ctx sdk.Context) stakingtypes.Params {
+func (k Keeper) GetParams(sdk.Context) stakingtypes.Params {
 	return stakingtypes.Params{}
 }
 
@@ -30,7 +32,8 @@ func (k Keeper) GetParams(ctx sdk.Context) stakingtypes.Params {
 // matches that of each validator. Ideally, this invariant should be implemented
 // by the delegation and/or deposit module(s) instead.
 func (k Keeper) IterateValidators(sdk.Context,
-	func(index int64, validator stakingtypes.ValidatorI) (stop bool)) {
+	func(index int64, validator stakingtypes.ValidatorI) (stop bool),
+) {
 	// no op
 }
 
@@ -42,7 +45,7 @@ func (k Keeper) IterateValidators(sdk.Context,
 // depending upon the finalized design. We don't need to implement this function here because
 // we are not calling the AfterValidatorCreated hook in our module, so this will never be
 // reached.
-func (k Keeper) Validator(ctx sdk.Context, addr sdk.ValAddress) stakingtypes.ValidatorI {
+func (k Keeper) Validator(sdk.Context, sdk.ValAddress) stakingtypes.ValidatorI {
 	panic("unimplemented on this keeper")
 }
 
@@ -143,7 +146,7 @@ func (k Keeper) MaxValidators(ctx sdk.Context) uint32 {
 
 // GetAllValidators is an implementation of the staking interface expected by the SDK's
 // slashing module. It is not called within the slashing module, but is part of the interface.
-func (k Keeper) GetAllValidators(ctx sdk.Context) (validators []stakingtypes.Validator) {
+func (k Keeper) GetAllValidators(sdk.Context) (validators []stakingtypes.Validator) {
 	return []stakingtypes.Validator{}
 }
 

@@ -48,7 +48,8 @@ func (k Keeper) ApplyValidatorChanges(
 		addr := pubkey.Address()
 		val, found := k.GetValidator(ctx, addr)
 
-		if found {
+		switch found {
+		case true:
 			// update or delete an existing validator
 			if change.Power < 1 {
 				k.DeleteValidator(ctx, addr)
@@ -56,28 +57,32 @@ func (k Keeper) ApplyValidatorChanges(
 				val.Power = change.Power
 				k.SetValidator(ctx, val)
 			}
-		} else if change.Power > 0 {
-			// create a new validator - the address is just derived from the public key and has
-			// no correlation with the operator address on Exocore
-			ocVal, err := types.NewExocoreValidator(addr, change.Power, pubkey)
-			if err != nil {
-				// An error here would indicate that the validator updates
-				// received are invalid.
-				panic(err)
-			}
+		case false:
+			if change.Power > 0 {
+				// create a new validator - the address is just derived from the public key and
+				// has
+				// no correlation with the operator address on Exocore
+				ocVal, err := types.NewExocoreValidator(addr, change.Power, pubkey)
+				if err != nil {
+					// An error here would indicate that the validator updates
+					// received are invalid.
+					panic(err)
+				}
 
-			k.SetValidator(ctx, ocVal)
-			err = k.Hooks().AfterValidatorBonded(ctx, sdk.ConsAddress(addr), nil)
-			if err != nil {
-				// AfterValidatorBonded is hooked by the Slashing module and should not return
-				// an error. If any other module were to hook it, they should also not.
-				panic(err)
+				k.SetValidator(ctx, ocVal)
+				err = k.Hooks().AfterValidatorBonded(ctx, sdk.ConsAddress(addr), nil)
+				if err != nil {
+					// AfterValidatorBonded is hooked by the Slashing module and should not
+					// return
+					// an error. If any other module were to hook it, they should also not.
+					panic(err)
+				}
+			} else {
+				// edge case: we received an update for 0 power
+				// but the validator is already deleted. Do not forward
+				// to tendermint.
+				continue
 			}
-		} else {
-			// edge case: we received an update for 0 power
-			// but the validator is already deleted. Do not forward
-			// to tendermint.
-			continue
 		}
 		ret = append(ret, change)
 	}
