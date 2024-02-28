@@ -1,33 +1,23 @@
 package keeper_test
 
 import (
+	"github.com/ExocoreNetwork/exocore/testutil"
 	"testing"
-
-	"github.com/ExocoreNetwork/exocore/app"
-	"github.com/cosmos/cosmos-sdk/crypto/keyring"
-	"github.com/ethereum/go-ethereum/common"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/suite"
 )
 
-type KeeperTestSuite struct {
-	suite.Suite
-
-	ctx        sdk.Context
-	app        *app.ExocoreApp
-	address    common.Address
-	signer     keyring.Signer
-	accAddress sdk.AccAddress
+type DelegationTestSuite struct {
+	testutil.BaseTestSuite
 }
 
-var s *KeeperTestSuite
+var s *DelegationTestSuite
 
 func TestKeeperTestSuite(t *testing.T) {
-	s = new(KeeperTestSuite)
+	s = new(DelegationTestSuite)
 	suite.Run(t, s)
 
 	// Run Ginkgo integration tests
@@ -35,6 +25,6 @@ func TestKeeperTestSuite(t *testing.T) {
 	RunSpecs(t, "Keeper Suite")
 }
 
-func (suite *KeeperTestSuite) SetupTest() {
-	suite.DoSetupTest(suite.T())
+func (suite *DelegationTestSuite) SetupTest() {
+	suite.DoSetupTest()
 }

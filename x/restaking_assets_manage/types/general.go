@@ -15,7 +15,7 @@ const (
 	ClientChainLzIDIndexInTopics = 0
 	LzNonceIndexInTopics         = 2
 
-	ExoCoreOperatorAddrLength = 44
+	ExoCoreOperatorAddrLength = 42
 )
 
 type GeneralAssetsAddr [32]byte

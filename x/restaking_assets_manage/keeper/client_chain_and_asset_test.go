@@ -5,29 +5,29 @@ import (
 	"github.com/ExocoreNetwork/exocore/x/restaking_assets_manage/types"
 )
 
-func (suite *KeeperTestSuite) TestGenesisClientChainAndAssetInfo() {
+func (suite *StakingAssetsTestSuite) TestGenesisClientChainAndAssetInfo() {
 	defaultGensisState := restaking_assets_manage.DefaultGenesisState()
 
 	// test the client chains getting
-	clientChains, err := suite.app.StakingAssetsManageKeeper.GetAllClientChainInfo(suite.ctx)
+	clientChains, err := suite.App.StakingAssetsManageKeeper.GetAllClientChainInfo(suite.Ctx)
 	suite.NoError(err)
-	suite.ctx.Logger().Info("the clientChains is:", "info", clientChains)
+	suite.Ctx.Logger().Info("the clientChains is:", "info", clientChains)
 	for _, clientChain := range defaultGensisState.DefaultSupportedClientChains {
 		info, ok := clientChains[clientChain.LayerZeroChainID]
 		suite.True(ok)
 		suite.Equal(info, clientChain)
 	}
 
-	chainInfo, err := suite.app.StakingAssetsManageKeeper.GetClientChainInfoByIndex(suite.ctx, 101)
+	chainInfo, err := suite.App.StakingAssetsManageKeeper.GetClientChainInfoByIndex(suite.Ctx, 101)
 	suite.NoError(err)
 	suite.Equal(clientChains[101], chainInfo)
 
 	// test the client chain assets getting
-	assets, err := suite.app.StakingAssetsManageKeeper.GetAllStakingAssetsInfo(suite.ctx)
+	assets, err := suite.App.StakingAssetsManageKeeper.GetAllStakingAssetsInfo(suite.Ctx)
 	suite.NoError(err)
 	for _, asset := range defaultGensisState.DefaultSupportedClientChainTokens {
 		_, assetID := types.GetStakeIDAndAssetIDFromStr(asset.LayerZeroChainID, "", asset.Address)
-		suite.ctx.Logger().Info("the asset id is:", "assetID", assetID)
+		suite.Ctx.Logger().Info("the asset id is:", "assetID", assetID)
 		info, ok := assets[assetID]
 		suite.True(ok)
 		suite.Equal(asset, info.AssetBasicInfo)
@@ -35,7 +35,7 @@ func (suite *KeeperTestSuite) TestGenesisClientChainAndAssetInfo() {
 
 	usdtAsset := defaultGensisState.DefaultSupportedClientChainTokens[0]
 	_, assetID := types.GetStakeIDAndAssetIDFromStr(usdtAsset.LayerZeroChainID, "", usdtAsset.Address)
-	assetInfo, err := suite.app.StakingAssetsManageKeeper.GetStakingAssetInfo(suite.ctx, assetID)
+	assetInfo, err := suite.App.StakingAssetsManageKeeper.GetStakingAssetInfo(suite.Ctx, assetID)
 	suite.NoError(err)
 	suite.Equal(usdtAsset, assetInfo.AssetBasicInfo)
 }

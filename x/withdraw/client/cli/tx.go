@@ -2,6 +2,7 @@ package cli
 
 import (
 	"fmt"
+
 	"github.com/ExocoreNetwork/exocore/x/withdraw/types"
 
 	"github.com/spf13/cobra"

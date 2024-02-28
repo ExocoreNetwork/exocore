@@ -109,7 +109,7 @@ func NewTestGenesisState(codec codec.Codec) simapp.GenesisState {
 		Coins:   sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, sdk.NewInt(100000000000000))),
 	}
 
-	genesisState := NewDefaultGenesisState()
+	genesisState := NewDefaultGenesisState(codec)
 	return genesisStateWithValSet(codec, genesisState, valSet, []authtypes.GenesisAccount{acc}, balance)
 }
 

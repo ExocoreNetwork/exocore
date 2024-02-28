@@ -23,7 +23,7 @@ import (
 
 // ContractArgs are the params used for calling a smart contract.
 type ContractArgs struct {
-	// Addr is the address of the contract to call.
+	// Addr is the Address of the contract to call.
 	Addr common.Address
 	// ABI is the ABI of the contract to call.
 	ABI abi.ABI
@@ -39,7 +39,7 @@ type ContractCallArgs struct {
 	Contract ContractArgs
 	// Nonce is the nonce to use for the transaction.
 	Nonce *big.Int
-	// Amount is the aevmos amount to send in the transaction.
+	// Amount is the aexo amount to send in the transaction.
 	Amount *big.Int
 	// GasLimit to use for the transaction
 	GasLimit uint64
@@ -51,15 +51,15 @@ type ContractCallArgs struct {
 // compiled contract data and constructor arguments
 func DeployContract(
 	ctx sdk.Context,
-	evmosApp *app.ExocoreApp,
+	exocoreApp *app.ExocoreApp,
 	priv cryptotypes.PrivKey,
 	queryClientEvm evm.QueryClient,
 	contract evm.CompiledContract,
 	constructorArgs ...interface{},
 ) (common.Address, error) {
-	chainID := evmosApp.EvmKeeper.ChainID()
+	chainID := exocoreApp.EvmKeeper.ChainID()
 	from := common.BytesToAddress(priv.PubKey().Address().Bytes())
-	nonce := evmosApp.EvmKeeper.GetNonce(ctx, from)
+	nonce := exocoreApp.EvmKeeper.GetNonce(ctx, from)
 
 	ctorArgs, err := contract.ABI.Pack("", constructorArgs...)
 	if err != nil {
@@ -76,19 +76,19 @@ func DeployContract(
 		ChainID:   chainID,
 		Nonce:     nonce,
 		GasLimit:  gas,
-		GasFeeCap: evmosApp.FeeMarketKeeper.GetBaseFee(ctx),
+		GasFeeCap: exocoreApp.FeeMarketKeeper.GetBaseFee(ctx),
 		GasTipCap: big.NewInt(1),
 		Input:     data,
 		Accesses:  &ethtypes.AccessList{},
 	})
 	msgEthereumTx.From = from.String()
 
-	res, err := DeliverEthTx(evmosApp, priv, msgEthereumTx)
+	res, err := DeliverEthTx(exocoreApp, priv, msgEthereumTx)
 	if err != nil {
 		return common.Address{}, err
 	}
 
-	if _, err := CheckEthTxResponse(res, evmosApp.AppCodec()); err != nil {
+	if _, err := CheckEthTxResponse(res, exocoreApp.AppCodec()); err != nil {
 		return common.Address{}, err
 	}
 

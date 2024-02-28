@@ -7,6 +7,7 @@ import (
 	sdkmath "cosmossdk.io/math"
 	"github.com/ExocoreNetwork/exocore/app"
 	testutiltx "github.com/ExocoreNetwork/exocore/testutil/tx"
+	"github.com/ExocoreNetwork/exocore/utils"
 	"github.com/cosmos/cosmos-sdk/crypto/keys/ed25519"
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -16,7 +17,6 @@ import (
 	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
 	teststaking "github.com/cosmos/cosmos-sdk/x/staking/testutil"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
-	"github.com/evmos/evmos/v14/utils"
 	"github.com/stretchr/testify/require"
 )
 
@@ -44,7 +44,7 @@ func CreateValidator(ctx sdk.Context, t *testing.T, pubKey cryptotypes.PubKey, s
 // such that the given amount of tokens is outstanding as a staking reward for the account.
 //
 // The setup is done in the following way:
-//   - Fund the account with the given address with the given balance.
+//   - Fund the account with the given Address with the given balance.
 //   - If the given balance is zero, the account will be created with zero balance.
 //
 // For every reward defined in the rewards argument, the following steps are executed:
@@ -54,7 +54,7 @@ func CreateValidator(ctx sdk.Context, t *testing.T, pubKey cryptotypes.PubKey, s
 // The function returns the updated context along with a potential error.
 func PrepareAccountsForDelegationRewards(t *testing.T, ctx sdk.Context, app *app.ExocoreApp, addr sdk.AccAddress, balance sdkmath.Int, rewards ...sdkmath.Int) (sdk.Context, error) {
 	// Calculate the necessary amount of tokens to fund the account in order for the desired residual balance to
-	// be left after creating validators and delegating to them.
+	// be left after creating Validators and delegating to them.
 	totalRewards := sdk.ZeroInt()
 	for _, reward := range rewards {
 		totalRewards = totalRewards.Add(reward)
@@ -112,7 +112,7 @@ func PrepareAccountsForDelegationRewards(t *testing.T, ctx sdk.Context, app *app
 		stakingHelper.Denom = utils.BaseDenom
 
 		valAddr := sdk.ValAddress(addr2.Bytes())
-		// self-delegate the same amount of tokens as the delegate address also stakes
+		// self-delegate the same amount of tokens as the delegate Address also stakes
 		// this ensures, that the delegation rewards are 50% of the total rewards
 		stakingHelper.CreateValidator(valAddr, privKey.PubKey(), reward, true)
 		stakingHelper.Delegate(addr, valAddr, reward)
@@ -131,7 +131,7 @@ func PrepareAccountsForDelegationRewards(t *testing.T, ctx sdk.Context, app *app
 }
 
 // GetTotalDelegationRewards returns the total delegation rewards that are currently
-// outstanding for the given address.
+// outstanding for the given Address.
 func GetTotalDelegationRewards(ctx sdk.Context, distributionKeeper distributionkeeper.Keeper, addr sdk.AccAddress) (sdk.DecCoins, error) {
 	querier := distributionkeeper.NewQuerier(distributionKeeper)
 	resp, err := querier.DelegationTotalRewards(
