@@ -12,5 +12,6 @@ func (k Keeper) GetParams(ctx sdk.Context) types.Params {
 
 // SetParams set the params
 func (k Keeper) SetParams(ctx sdk.Context, params types.Params) {
+	//TODO: update the aggregator's params, call k.UpdateParams
 	k.paramstore.SetParamSet(ctx, &params)
 }

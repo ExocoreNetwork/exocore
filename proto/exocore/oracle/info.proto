@@ -38,4 +38,5 @@ message Source {
   Endpoint entry = 2;
   //set false when the source is out of service or reject to accept this source for official service
   bool valid = 3;
+  bool deterministic = 4;
 }

@@ -5,6 +5,14 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
+var (
+	KeyChains       = []byte("Chains")
+	KeyTokens       = []byte("Tokens")
+	KeySources      = []byte("Sources")
+	KeyRules        = []byte("Sources")
+	KeyTokenFeeders = []byte("TokenFeeders")
+)
+
 var _ paramtypes.ParamSet = (*Params)(nil)
 
 // ParamKeyTable the param key table for launch module
