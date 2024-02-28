@@ -65,7 +65,7 @@ func (k Keeper) ValidatorByConsAddr(
 		ctx, ctx.ChainID(), addr,
 	)
 	if !found {
-		// replicate the behavior of the SDK's staking module
+		// replicate the behavior of the SDK's staking module; do not panic.
 		return nil
 	}
 	return stakingtypes.Validator{
