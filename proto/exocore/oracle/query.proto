@@ -7,9 +7,6 @@ import "google/api/annotations.proto";
 import "cosmos/base/query/v1beta1/pagination.proto";
 import "exocore/oracle/params.proto";
 import "exocore/oracle/prices.proto";
-import "exocore/oracle/round_info.proto";
-import "exocore/oracle/round_data.proto";
-import "exocore/oracle/validators.proto";
 
 option go_package = "github.com/ExocoreNetwork/exocore/x/oracle/types";
 
@@ -31,36 +28,7 @@ service Query {
     option (google.api.http).get = "/ExocoreNetwork/exocore/oracle/prices";
   
   }
-  
-  // Queries a list of RoundInfo items.
-  rpc RoundInfo    (QueryGetRoundInfoRequest) returns (QueryGetRoundInfoResponse) {
-    option (google.api.http).get = "/ExocoreNetwork/exocore/oracle/round_info/{tokenId}";
-  
-  }
-  rpc RoundInfoAll (QueryAllRoundInfoRequest) returns (QueryAllRoundInfoResponse) {
-    option (google.api.http).get = "/ExocoreNetwork/exocore/oracle/round_info";
-  
-  }
-  
-  // Queries a list of RoundData items.
-  rpc RoundData    (QueryGetRoundDataRequest) returns (QueryGetRoundDataResponse) {
-    option (google.api.http).get = "/ExocoreNetwork/exocore/oracle/round_data/{tokenId}";
-  
-  }
-  rpc RoundDataAll (QueryAllRoundDataRequest) returns (QueryAllRoundDataResponse) {
-    option (google.api.http).get = "/ExocoreNetwork/exocore/oracle/round_data";
-  
-  }
-  
-  // Queries a list of Validators items.
-  rpc Validators    (QueryGetValidatorsRequest) returns (QueryGetValidatorsResponse) {
-    option (google.api.http).get = "/ExocoreNetwork/exocore/oracle/validators/{block}";
-  
-  }
-  rpc ValidatorsAll (QueryAllValidatorsRequest) returns (QueryAllValidatorsResponse) {
-    option (google.api.http).get = "/ExocoreNetwork/exocore/oracle/validators";
-  
-  }
+
 }
 // QueryParamsRequest is request type for the Query/Params RPC method.
 message QueryParamsRequest {}
@@ -86,57 +54,6 @@ message QueryAllPricesRequest {
 
 message QueryAllPricesResponse {
   repeated Prices                                 prices     = 1 [(gogoproto.nullable) = false];
-           cosmos.base.query.v1beta1.PageResponse pagination = 2;
-}
-
-message QueryGetRoundInfoRequest {
-  int32 tokenId = 1;
-}
-
-message QueryGetRoundInfoResponse {
-  RoundInfo roundInfo = 1 [(gogoproto.nullable) = false];
-}
-
-message QueryAllRoundInfoRequest {
-  cosmos.base.query.v1beta1.PageRequest pagination = 1;
-}
-
-message QueryAllRoundInfoResponse {
-  repeated RoundInfo                              roundInfo  = 1 [(gogoproto.nullable) = false];
-           cosmos.base.query.v1beta1.PageResponse pagination = 2;
-}
-
-message QueryGetRoundDataRequest {
-  int32 tokenId = 1;
-}
-
-message QueryGetRoundDataResponse {
-  RoundData roundData = 1 [(gogoproto.nullable) = false];
-}
-
-message QueryAllRoundDataRequest {
-  cosmos.base.query.v1beta1.PageRequest pagination = 1;
-}
-
-message QueryAllRoundDataResponse {
-  repeated RoundData                              roundData  = 1 [(gogoproto.nullable) = false];
-           cosmos.base.query.v1beta1.PageResponse pagination = 2;
-}
-
-message QueryGetValidatorsRequest {
-  uint64 block = 1;
-}
-
-message QueryGetValidatorsResponse {
-  Validators validators = 1 [(gogoproto.nullable) = false];
-}
-
-message QueryAllValidatorsRequest {
-  cosmos.base.query.v1beta1.PageRequest pagination = 1;
-}
-
-message QueryAllValidatorsResponse {
-  repeated Validators                             validators = 1 [(gogoproto.nullable) = false];
            cosmos.base.query.v1beta1.PageResponse pagination = 2;
 }
 
