@@ -22,9 +22,9 @@ func (p Precompile) GetRewardParamsFromInputs(ctx sdk.Context, args []interface{
 	if !ok {
 		return nil, fmt.Errorf(ErrContractInputParaOrType, 0, reflect.TypeOf(args[0]), clientChainLzID)
 	}
-	rewardParams.ClientChainLzId = uint64(clientChainLzID)
+	rewardParams.ClientChainLzID = uint64(clientChainLzID)
 
-	info, err := p.stakingStateKeeper.GetClientChainInfoByIndex(ctx, rewardParams.ClientChainLzId)
+	info, err := p.stakingStateKeeper.GetClientChainInfoByIndex(ctx, rewardParams.ClientChainLzID)
 	if err != nil {
 		return nil, err
 	}

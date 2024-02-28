@@ -18,9 +18,9 @@ const (
 // SubmitSlash Slash assets to the staker, that will change the state in slash module.
 func (p Precompile) SubmitSlash(
 	ctx sdk.Context,
-	origin common.Address,
+	_ common.Address,
 	contract *vm.Contract,
-	stateDB vm.StateDB,
+	_ vm.StateDB,
 	method *abi.Method,
 	args []interface{},
 ) ([]byte, error) {

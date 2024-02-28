@@ -1,3 +1,4 @@
+// nolint: all // this package is not implemented yet.
 package native_token
 
 import (

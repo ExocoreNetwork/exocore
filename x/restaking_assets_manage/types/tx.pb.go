@@ -33,14 +33,14 @@ var _ = math.Inf
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
 type ClientChainInfo struct {
-	ChainName              string `protobuf:"bytes,1,opt,name=ChainName,proto3" json:"ChainName,omitempty"`
-	ChainMetaInfo          string `protobuf:"bytes,2,opt,name=ChainMetaInfo,proto3" json:"ChainMetaInfo,omitempty"`
-	OriginChainId          uint64 `protobuf:"varint,3,opt,name=OriginChainId,proto3" json:"OriginChainId,omitempty"`
-	ExoCoreChainIndex      uint64 `protobuf:"varint,4,opt,name=ExoCoreChainIndex,proto3" json:"ExoCoreChainIndex,omitempty"`
-	FinalityNeedBlockDelay uint64 `protobuf:"varint,5,opt,name=FinalityNeedBlockDelay,proto3" json:"FinalityNeedBlockDelay,omitempty"`
-	LayerZeroChainId       uint64 `protobuf:"varint,6,opt,name=LayerZeroChainId,proto3" json:"LayerZeroChainId,omitempty"`
-	SignatureType          string `protobuf:"bytes,7,opt,name=SignatureType,proto3" json:"SignatureType,omitempty"`
-	AddressLength          uint32 `protobuf:"varint,8,opt,name=AddressLength,proto3" json:"AddressLength,omitempty"`
+	Name               string `protobuf:"bytes,1,opt,name=Name,proto3" json:"Name,omitempty"`
+	MetaInfo           string `protobuf:"bytes,2,opt,name=MetaInfo,proto3" json:"MetaInfo,omitempty"`
+	ChainId            uint64 `protobuf:"varint,3,opt,name=ChainId,proto3" json:"ChainId,omitempty"`
+	ExoCoreChainIndex  uint64 `protobuf:"varint,4,opt,name=ExoCoreChainIndex,proto3" json:"ExoCoreChainIndex,omitempty"`
+	FinalizationBlocks uint64 `protobuf:"varint,5,opt,name=FinalizationBlocks,proto3" json:"FinalizationBlocks,omitempty"`
+	LayerZeroChainID   uint64 `protobuf:"varint,6,opt,name=LayerZeroChainID,proto3" json:"LayerZeroChainID,omitempty"`
+	SignatureType      string `protobuf:"bytes,7,opt,name=SignatureType,proto3" json:"SignatureType,omitempty"`
+	AddressLength      uint32 `protobuf:"varint,8,opt,name=AddressLength,proto3" json:"AddressLength,omitempty"`
 }
 
 func (m *ClientChainInfo) Reset()         { *m = ClientChainInfo{} }
@@ -76,23 +76,23 @@ func (m *ClientChainInfo) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_ClientChainInfo proto.InternalMessageInfo
 
-func (m *ClientChainInfo) GetChainName() string {
+func (m *ClientChainInfo) GetName() string {
 	if m != nil {
-		return m.ChainName
+		return m.Name
 	}
 	return ""
 }
 
-func (m *ClientChainInfo) GetChainMetaInfo() string {
+func (m *ClientChainInfo) GetMetaInfo() string {
 	if m != nil {
-		return m.ChainMetaInfo
+		return m.MetaInfo
 	}
 	return ""
 }
 
-func (m *ClientChainInfo) GetOriginChainId() uint64 {
+func (m *ClientChainInfo) GetChainId() uint64 {
 	if m != nil {
-		return m.OriginChainId
+		return m.ChainId
 	}
 	return 0
 }
@@ -104,16 +104,16 @@ func (m *ClientChainInfo) GetExoCoreChainIndex() uint64 {
 	return 0
 }
 
-func (m *ClientChainInfo) GetFinalityNeedBlockDelay() uint64 {
+func (m *ClientChainInfo) GetFinalizationBlocks() uint64 {
 	if m != nil {
-		return m.FinalityNeedBlockDelay
+		return m.FinalizationBlocks
 	}
 	return 0
 }
 
-func (m *ClientChainInfo) GetLayerZeroChainId() uint64 {
+func (m *ClientChainInfo) GetLayerZeroChainID() uint64 {
 	if m != nil {
-		return m.LayerZeroChainId
+		return m.LayerZeroChainID
 	}
 	return 0
 }
@@ -132,29 +132,29 @@ func (m *ClientChainInfo) GetAddressLength() uint32 {
 	return 0
 }
 
-type ClientChainTokenInfo struct {
+type AssetInfo struct {
 	Name              string                                 `protobuf:"bytes,1,opt,name=Name,proto3" json:"Name,omitempty"`
 	Symbol            string                                 `protobuf:"bytes,2,opt,name=Symbol,proto3" json:"Symbol,omitempty"`
 	Address           string                                 `protobuf:"bytes,3,opt,name=Address,proto3" json:"Address,omitempty"`
 	Decimals          uint32                                 `protobuf:"varint,4,opt,name=Decimals,proto3" json:"Decimals,omitempty"`
 	TotalSupply       github_com_cosmos_cosmos_sdk_types.Int `protobuf:"bytes,5,opt,name=TotalSupply,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Int" json:"TotalSupply"`
-	LayerZeroChainId  uint64                                 `protobuf:"varint,6,opt,name=LayerZeroChainId,proto3" json:"LayerZeroChainId,omitempty"`
+	LayerZeroChainID  uint64                                 `protobuf:"varint,6,opt,name=LayerZeroChainID,proto3" json:"LayerZeroChainID,omitempty"`
 	ExoCoreChainIndex uint64                                 `protobuf:"varint,7,opt,name=ExoCoreChainIndex,proto3" json:"ExoCoreChainIndex,omitempty"`
-	AssetMetaInfo     string                                 `protobuf:"bytes,8,opt,name=AssetMetaInfo,proto3" json:"AssetMetaInfo,omitempty"`
+	MetaInfo          string                                 `protobuf:"bytes,8,opt,name=MetaInfo,proto3" json:"MetaInfo,omitempty"`
 }
 
-func (m *ClientChainTokenInfo) Reset()         { *m = ClientChainTokenInfo{} }
-func (m *ClientChainTokenInfo) String() string { return proto.CompactTextString(m) }
-func (*ClientChainTokenInfo) ProtoMessage()    {}
-func (*ClientChainTokenInfo) Descriptor() ([]byte, []int) {
+func (m *AssetInfo) Reset()         { *m = AssetInfo{} }
+func (m *AssetInfo) String() string { return proto.CompactTextString(m) }
+func (*AssetInfo) ProtoMessage()    {}
+func (*AssetInfo) Descriptor() ([]byte, []int) {
 	return fileDescriptor_b24e66e530cc30d1, []int{1}
 }
-func (m *ClientChainTokenInfo) XXX_Unmarshal(b []byte) error {
+func (m *AssetInfo) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *ClientChainTokenInfo) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *AssetInfo) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_ClientChainTokenInfo.Marshal(b, m, deterministic)
+		return xxx_messageInfo_AssetInfo.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -164,69 +164,69 @@ func (m *ClientChainTokenInfo) XXX_Marshal(b []byte, deterministic bool) ([]byte
 		return b[:n], nil
 	}
 }
-func (m *ClientChainTokenInfo) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_ClientChainTokenInfo.Merge(m, src)
+func (m *AssetInfo) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_AssetInfo.Merge(m, src)
 }
-func (m *ClientChainTokenInfo) XXX_Size() int {
+func (m *AssetInfo) XXX_Size() int {
 	return m.Size()
 }
-func (m *ClientChainTokenInfo) XXX_DiscardUnknown() {
-	xxx_messageInfo_ClientChainTokenInfo.DiscardUnknown(m)
+func (m *AssetInfo) XXX_DiscardUnknown() {
+	xxx_messageInfo_AssetInfo.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_ClientChainTokenInfo proto.InternalMessageInfo
+var xxx_messageInfo_AssetInfo proto.InternalMessageInfo
 
-func (m *ClientChainTokenInfo) GetName() string {
+func (m *AssetInfo) GetName() string {
 	if m != nil {
 		return m.Name
 	}
 	return ""
 }
 
-func (m *ClientChainTokenInfo) GetSymbol() string {
+func (m *AssetInfo) GetSymbol() string {
 	if m != nil {
 		return m.Symbol
 	}
 	return ""
 }
 
-func (m *ClientChainTokenInfo) GetAddress() string {
+func (m *AssetInfo) GetAddress() string {
 	if m != nil {
 		return m.Address
 	}
 	return ""
 }
 
-func (m *ClientChainTokenInfo) GetDecimals() uint32 {
+func (m *AssetInfo) GetDecimals() uint32 {
 	if m != nil {
 		return m.Decimals
 	}
 	return 0
 }
 
-func (m *ClientChainTokenInfo) GetLayerZeroChainId() uint64 {
+func (m *AssetInfo) GetLayerZeroChainID() uint64 {
 	if m != nil {
-		return m.LayerZeroChainId
+		return m.LayerZeroChainID
 	}
 	return 0
 }
 
-func (m *ClientChainTokenInfo) GetExoCoreChainIndex() uint64 {
+func (m *AssetInfo) GetExoCoreChainIndex() uint64 {
 	if m != nil {
 		return m.ExoCoreChainIndex
 	}
 	return 0
 }
 
-func (m *ClientChainTokenInfo) GetAssetMetaInfo() string {
+func (m *AssetInfo) GetMetaInfo() string {
 	if m != nil {
-		return m.AssetMetaInfo
+		return m.MetaInfo
 	}
 	return ""
 }
 
 type StakingAssetInfo struct {
-	AssetBasicInfo     *ClientChainTokenInfo                  `protobuf:"bytes,1,opt,name=AssetBasicInfo,proto3" json:"AssetBasicInfo,omitempty"`
+	AssetBasicInfo     *AssetInfo                             `protobuf:"bytes,1,opt,name=AssetBasicInfo,proto3" json:"AssetBasicInfo,omitempty"`
 	StakingTotalAmount github_com_cosmos_cosmos_sdk_types.Int `protobuf:"bytes,2,opt,name=StakingTotalAmount,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Int" json:"StakingTotalAmount"`
 }
 
@@ -263,7 +263,7 @@ func (m *StakingAssetInfo) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_StakingAssetInfo proto.InternalMessageInfo
 
-func (m *StakingAssetInfo) GetAssetBasicInfo() *ClientChainTokenInfo {
+func (m *StakingAssetInfo) GetAssetBasicInfo() *AssetInfo {
 	if m != nil {
 		return m.AssetBasicInfo
 	}
@@ -514,9 +514,157 @@ func (m *MsgSetExoCoreAddrResponse) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_MsgSetExoCoreAddrResponse proto.InternalMessageInfo
 
+type RegisterClientChainReq struct {
+	FromAddress string           `protobuf:"bytes,1,opt,name=FromAddress,proto3" json:"FromAddress,omitempty"`
+	Info        *ClientChainInfo `protobuf:"bytes,2,opt,name=info,proto3" json:"info,omitempty"`
+}
+
+func (m *RegisterClientChainReq) Reset()         { *m = RegisterClientChainReq{} }
+func (m *RegisterClientChainReq) String() string { return proto.CompactTextString(m) }
+func (*RegisterClientChainReq) ProtoMessage()    {}
+func (*RegisterClientChainReq) Descriptor() ([]byte, []int) {
+	return fileDescriptor_b24e66e530cc30d1, []int{9}
+}
+func (m *RegisterClientChainReq) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *RegisterClientChainReq) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_RegisterClientChainReq.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *RegisterClientChainReq) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_RegisterClientChainReq.Merge(m, src)
+}
+func (m *RegisterClientChainReq) XXX_Size() int {
+	return m.Size()
+}
+func (m *RegisterClientChainReq) XXX_DiscardUnknown() {
+	xxx_messageInfo_RegisterClientChainReq.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_RegisterClientChainReq proto.InternalMessageInfo
+
+type RegisterClientChainResponse struct {
+}
+
+func (m *RegisterClientChainResponse) Reset()         { *m = RegisterClientChainResponse{} }
+func (m *RegisterClientChainResponse) String() string { return proto.CompactTextString(m) }
+func (*RegisterClientChainResponse) ProtoMessage()    {}
+func (*RegisterClientChainResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_b24e66e530cc30d1, []int{10}
+}
+func (m *RegisterClientChainResponse) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *RegisterClientChainResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_RegisterClientChainResponse.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *RegisterClientChainResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_RegisterClientChainResponse.Merge(m, src)
+}
+func (m *RegisterClientChainResponse) XXX_Size() int {
+	return m.Size()
+}
+func (m *RegisterClientChainResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_RegisterClientChainResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_RegisterClientChainResponse proto.InternalMessageInfo
+
+type RegisterAssetReq struct {
+	FromAddress string     `protobuf:"bytes,1,opt,name=FromAddress,proto3" json:"FromAddress,omitempty"`
+	Info        *AssetInfo `protobuf:"bytes,2,opt,name=info,proto3" json:"info,omitempty"`
+}
+
+func (m *RegisterAssetReq) Reset()         { *m = RegisterAssetReq{} }
+func (m *RegisterAssetReq) String() string { return proto.CompactTextString(m) }
+func (*RegisterAssetReq) ProtoMessage()    {}
+func (*RegisterAssetReq) Descriptor() ([]byte, []int) {
+	return fileDescriptor_b24e66e530cc30d1, []int{11}
+}
+func (m *RegisterAssetReq) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *RegisterAssetReq) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_RegisterAssetReq.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *RegisterAssetReq) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_RegisterAssetReq.Merge(m, src)
+}
+func (m *RegisterAssetReq) XXX_Size() int {
+	return m.Size()
+}
+func (m *RegisterAssetReq) XXX_DiscardUnknown() {
+	xxx_messageInfo_RegisterAssetReq.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_RegisterAssetReq proto.InternalMessageInfo
+
+type RegisterAssetResponse struct {
+}
+
+func (m *RegisterAssetResponse) Reset()         { *m = RegisterAssetResponse{} }
+func (m *RegisterAssetResponse) String() string { return proto.CompactTextString(m) }
+func (*RegisterAssetResponse) ProtoMessage()    {}
+func (*RegisterAssetResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_b24e66e530cc30d1, []int{12}
+}
+func (m *RegisterAssetResponse) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *RegisterAssetResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_RegisterAssetResponse.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *RegisterAssetResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_RegisterAssetResponse.Merge(m, src)
+}
+func (m *RegisterAssetResponse) XXX_Size() int {
+	return m.Size()
+}
+func (m *RegisterAssetResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_RegisterAssetResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_RegisterAssetResponse proto.InternalMessageInfo
+
 func init() {
 	proto.RegisterType((*ClientChainInfo)(nil), "exocore.restaking_assets_manage.v1.ClientChainInfo")
-	proto.RegisterType((*ClientChainTokenInfo)(nil), "exocore.restaking_assets_manage.v1.ClientChainTokenInfo")
+	proto.RegisterType((*AssetInfo)(nil), "exocore.restaking_assets_manage.v1.AssetInfo")
 	proto.RegisterType((*StakingAssetInfo)(nil), "exocore.restaking_assets_manage.v1.StakingAssetInfo")
 	proto.RegisterType((*StakerSingleAssetOrChangeInfo)(nil), "exocore.restaking_assets_manage.v1.StakerSingleAssetOrChangeInfo")
 	proto.RegisterType((*StakerAllAssetsInfo)(nil), "exocore.restaking_assets_manage.v1.StakerAllAssetsInfo")
@@ -526,6 +674,10 @@ func init() {
 	proto.RegisterMapType((map[string]*OperatorSingleAssetOrChangeInfo)(nil), "exocore.restaking_assets_manage.v1.OperatorAllAssetsInfo.AllAssetsStateEntry")
 	proto.RegisterType((*MsgSetExoCoreAddr)(nil), "exocore.restaking_assets_manage.v1.MsgSetExoCoreAddr")
 	proto.RegisterType((*MsgSetExoCoreAddrResponse)(nil), "exocore.restaking_assets_manage.v1.MsgSetExoCoreAddrResponse")
+	proto.RegisterType((*RegisterClientChainReq)(nil), "exocore.restaking_assets_manage.v1.RegisterClientChainReq")
+	proto.RegisterType((*RegisterClientChainResponse)(nil), "exocore.restaking_assets_manage.v1.RegisterClientChainResponse")
+	proto.RegisterType((*RegisterAssetReq)(nil), "exocore.restaking_assets_manage.v1.RegisterAssetReq")
+	proto.RegisterType((*RegisterAssetResponse)(nil), "exocore.restaking_assets_manage.v1.RegisterAssetResponse")
 }
 
 func init() {
@@ -533,70 +685,78 @@ func init() {
 }
 
 var fileDescriptor_b24e66e530cc30d1 = []byte{
-	// 1008 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xcc, 0x57, 0x4d, 0x6f, 0x1b, 0x45,
-	0x18, 0xf6, 0xda, 0xf9, 0x7c, 0xad, 0xb4, 0xc9, 0x34, 0x14, 0xc7, 0x14, 0x3b, 0x32, 0x08, 0xac,
-	0x40, 0x6c, 0xd5, 0x88, 0x2a, 0x8a, 0x00, 0xc9, 0x71, 0x8a, 0x14, 0x91, 0xd4, 0xd2, 0x3a, 0x10,
-	0xd1, 0x03, 0x61, 0x62, 0x4f, 0xd7, 0x23, 0xef, 0xce, 0x58, 0x3b, 0xe3, 0xd4, 0xbe, 0x55, 0x08,
-	0x21, 0x84, 0x10, 0x82, 0x0b, 0x1c, 0xb8, 0xf4, 0x27, 0xe4, 0xd0, 0x1f, 0xd1, 0x03, 0x87, 0xaa,
-	0x17, 0x02, 0x87, 0x0a, 0x25, 0x87, 0xf0, 0x33, 0xd0, 0xce, 0xec, 0x26, 0xeb, 0xd8, 0x6e, 0xb6,
-	0xb4, 0x95, 0x7a, 0x49, 0x76, 0x9e, 0x79, 0xbf, 0xe6, 0x79, 0x9f, 0x37, 0x33, 0x81, 0xf7, 0x48,
-	0x97, 0xd7, 0xb9, 0x4b, 0x8a, 0x2e, 0x11, 0x12, 0xb7, 0x28, 0xb3, 0x76, 0xb1, 0x10, 0x44, 0x8a,
-	0x5d, 0x07, 0x33, 0x6c, 0x91, 0xe2, 0xfe, 0xf5, 0xa2, 0xec, 0x16, 0xda, 0x2e, 0x97, 0x1c, 0xe5,
-	0x7c, 0xe3, 0xc2, 0x08, 0xe3, 0xc2, 0xfe, 0xf5, 0xf4, 0xeb, 0x75, 0x2e, 0x1c, 0x2e, 0x8a, 0x8e,
-	0xb0, 0x3c, 0x5f, 0x47, 0x58, 0xda, 0x39, 0xbd, 0xa0, 0x37, 0x76, 0xd5, 0xaa, 0xa8, 0x17, 0xfe,
-	0xd6, 0xbc, 0xc5, 0x2d, 0xae, 0x71, 0xef, 0xcb, 0x47, 0xe7, 0xb0, 0x43, 0x19, 0x2f, 0xaa, 0x9f,
-	0x1a, 0xca, 0xfd, 0x15, 0x87, 0xcb, 0x15, 0x9b, 0x12, 0x26, 0x2b, 0x4d, 0x4c, 0xd9, 0x06, 0xbb,
-	0xc3, 0xd1, 0x35, 0x98, 0x56, 0x8b, 0x5b, 0xd8, 0x21, 0x29, 0x63, 0xd1, 0xc8, 0x4f, 0x9b, 0x67,
-	0x00, 0x7a, 0x1b, 0x66, 0xd4, 0x62, 0x8b, 0x48, 0xec, 0x99, 0xa7, 0xe2, 0xca, 0xa2, 0x1f, 0xf4,
-	0xac, 0xaa, 0x2e, 0xb5, 0x28, 0xd3, 0x61, 0x1b, 0xa9, 0xc4, 0xa2, 0x91, 0x1f, 0x33, 0xfb, 0x41,
-	0xf4, 0x3e, 0xcc, 0xdd, 0xec, 0xf2, 0x0a, 0x77, 0x89, 0x9f, 0xbd, 0x41, 0xba, 0xa9, 0x31, 0x65,
-	0x39, 0xb8, 0x81, 0x6e, 0xc0, 0xd5, 0x4f, 0x29, 0xc3, 0x36, 0x95, 0xbd, 0x5b, 0x84, 0x34, 0xd6,
-	0x6c, 0x5e, 0x6f, 0xad, 0x13, 0x1b, 0xf7, 0x52, 0xe3, 0xca, 0x65, 0xc4, 0x2e, 0x5a, 0x82, 0xd9,
-	0x4d, 0xdc, 0x23, 0xee, 0x6d, 0xe2, 0xf2, 0xa0, 0x9c, 0x09, 0xe5, 0x31, 0x80, 0x7b, 0x75, 0xd7,
-	0xa8, 0xc5, 0xb0, 0xec, 0xb8, 0x64, 0xbb, 0xd7, 0x26, 0xa9, 0x49, 0x7d, 0xba, 0x3e, 0xd0, 0xb3,
-	0x2a, 0x37, 0x1a, 0x2e, 0x11, 0x62, 0x93, 0x30, 0x4b, 0x36, 0x53, 0x53, 0x8b, 0x46, 0x7e, 0xc6,
-	0xec, 0x07, 0x73, 0x87, 0x71, 0x98, 0x0f, 0x71, 0xbb, 0xcd, 0x5b, 0x44, 0x13, 0x8c, 0x60, 0x2c,
-	0xc4, 0xad, 0xfa, 0x46, 0x57, 0x61, 0xa2, 0xd6, 0x73, 0xf6, 0xb8, 0xed, 0xf3, 0xe9, 0xaf, 0x50,
-	0x0a, 0x26, 0xfd, 0xa8, 0x8a, 0xc2, 0x69, 0x33, 0x58, 0xa2, 0x34, 0x4c, 0xad, 0x93, 0x3a, 0x75,
-	0xb0, 0x2d, 0x14, 0x67, 0x33, 0xe6, 0xe9, 0x1a, 0x7d, 0x05, 0xc9, 0x6d, 0x2e, 0xb1, 0x5d, 0xeb,
-	0xb4, 0xdb, 0xb6, 0xe6, 0x67, 0x7a, 0xed, 0xa3, 0x87, 0x4f, 0xb2, 0xb1, 0xbf, 0x9f, 0x64, 0xdf,
-	0xb1, 0xa8, 0x6c, 0x76, 0xf6, 0x0a, 0x75, 0xee, 0xf8, 0xaa, 0xf1, 0x7f, 0x2d, 0x8b, 0x46, 0xab,
-	0x28, 0x7b, 0x6d, 0x22, 0x0a, 0x1b, 0x4c, 0x3e, 0x7e, 0xb0, 0x0c, 0xbe, 0xa8, 0x36, 0x98, 0x34,
-	0xc3, 0x01, 0x9f, 0x89, 0xd2, 0xa1, 0x4d, 0x9e, 0x1c, 0xd5, 0x64, 0x8f, 0x5a, 0x6f, 0x02, 0x4e,
-	0xe5, 0x35, 0xa5, 0x1b, 0xd0, 0x07, 0xe6, 0x8e, 0x0c, 0x98, 0xad, 0xe9, 0x81, 0x51, 0x1b, 0x8a,
-	0xd6, 0xaf, 0xe1, 0x92, 0x5a, 0xac, 0x61, 0x41, 0xeb, 0xca, 0xd7, 0x23, 0x38, 0x59, 0x5a, 0x29,
-	0x5c, 0x3c, 0x65, 0x85, 0x61, 0x8d, 0x32, 0xcf, 0xc5, 0x43, 0x36, 0x20, 0x3f, 0xab, 0x22, 0xa3,
-	0xec, 0xf0, 0x0e, 0x93, 0xba, 0x61, 0xcf, 0xc9, 0xee, 0x90, 0xb8, 0xb9, 0xc3, 0x04, 0xbc, 0xe9,
-	0xc1, 0xc4, 0xad, 0x51, 0x66, 0xd9, 0x44, 0x15, 0x53, 0x75, 0x2b, 0x4d, 0xcc, 0x2c, 0xa2, 0xea,
-	0xf9, 0xc9, 0x80, 0xb7, 0x94, 0xc7, 0x3a, 0x69, 0x73, 0x41, 0xa5, 0x76, 0xac, 0xba, 0x3b, 0x58,
-	0x1d, 0x85, 0x59, 0xe4, 0x0b, 0x6c, 0x77, 0x7c, 0xa1, 0x3d, 0x67, 0x85, 0x51, 0x12, 0xa1, 0x1f,
-	0x0d, 0xc8, 0x55, 0x30, 0xdb, 0xa1, 0xb2, 0xd9, 0x70, 0xf1, 0xdd, 0x51, 0xf5, 0xbc, 0x08, 0xc6,
-	0x22, 0xe4, 0x41, 0xbf, 0x1a, 0xf0, 0xee, 0x0e, 0xa6, 0xf2, 0x73, 0xd6, 0x20, 0x36, 0xb1, 0xb0,
-	0xa4, 0x9c, 0x8d, 0xaa, 0x29, 0xf1, 0x02, 0x6a, 0x8a, 0x9a, 0x2c, 0xf7, 0x4b, 0x1c, 0xae, 0xe8,
-	0xd6, 0x96, 0x6d, 0x5b, 0xf5, 0x55, 0xa8, 0x86, 0x0a, 0xb8, 0x84, 0x03, 0xa0, 0x26, 0xb1, 0xf4,
-	0x5a, 0x97, 0xc8, 0x27, 0x4b, 0x9f, 0x45, 0x91, 0xf0, 0x90, 0x80, 0x85, 0x72, 0x5f, 0xb4, 0x9b,
-	0x4c, 0xba, 0x3d, 0xf3, 0x5c, 0x8a, 0xf4, 0xb7, 0x06, 0x5c, 0x19, 0x62, 0x87, 0x66, 0x21, 0xd1,
-	0x22, 0x3d, 0xff, 0xaf, 0x94, 0xf7, 0x89, 0x76, 0x60, 0x7c, 0xff, 0xb4, 0x81, 0xc9, 0x52, 0x39,
-	0x7a, 0x55, 0x23, 0x14, 0x6c, 0xea, 0x78, 0xab, 0xf1, 0x15, 0x23, 0xf7, 0x47, 0x02, 0xb2, 0xd5,
-	0x36, 0x71, 0xb1, 0xe4, 0x23, 0x05, 0x7f, 0xcf, 0x80, 0x6b, 0xa1, 0x11, 0x79, 0x39, 0x4a, 0x7f,
-	0x6a, 0x06, 0x25, 0xf1, 0xa0, 0xcc, 0xea, 0x5d, 0xf6, 0x52, 0x25, 0x7e, 0x71, 0x9e, 0x57, 0x57,
-	0xe2, 0xbf, 0xc5, 0xe1, 0xb5, 0xa0, 0xfe, 0x7e, 0x91, 0x77, 0x46, 0x88, 0x7c, 0x2b, 0x8a, 0x9c,
-	0x86, 0x86, 0x8c, 0x24, 0xf3, 0xef, 0x22, 0xcb, 0xfc, 0xcb, 0x7e, 0x99, 0x57, 0x9e, 0xa5, 0xae,
-	0x08, 0x42, 0xff, 0x33, 0x0e, 0x73, 0x5b, 0xc2, 0xaa, 0x11, 0xe9, 0x5f, 0x7f, 0xde, 0x8d, 0x8e,
-	0x56, 0x21, 0x79, 0xc7, 0xe5, 0x4e, 0x70, 0xd9, 0x6b, 0x21, 0xa7, 0x1e, 0x3f, 0x58, 0x9e, 0xf7,
-	0xd9, 0xf7, 0x77, 0x6a, 0xd2, 0xa5, 0xcc, 0x32, 0xc3, 0xc6, 0x68, 0x05, 0x40, 0x10, 0x19, 0xb8,
-	0xc6, 0x2f, 0x70, 0x0d, 0xd9, 0xa2, 0x3c, 0x5c, 0xae, 0x9f, 0xdd, 0x7c, 0x1e, 0xea, 0x3f, 0x33,
-	0xce, 0xc3, 0xde, 0x95, 0x5f, 0x0f, 0x3f, 0x14, 0xcf, 0x9e, 0x6a, 0x03, 0x38, 0xfa, 0x04, 0xd2,
-	0x7a, 0xec, 0x43, 0xb7, 0xea, 0xe9, 0x0b, 0x4a, 0xbf, 0x46, 0xcc, 0xa7, 0x58, 0xac, 0xde, 0xf8,
-	0xfe, 0x7e, 0x36, 0xf6, 0xef, 0xfd, 0x6c, 0xec, 0x9b, 0x93, 0x83, 0xa5, 0xf0, 0x49, 0x7f, 0x38,
-	0x39, 0x58, 0x5a, 0x08, 0x1e, 0xd8, 0x03, 0x1c, 0xe6, 0xde, 0x80, 0x85, 0x01, 0xd0, 0x24, 0xa2,
-	0xcd, 0x99, 0x20, 0xa5, 0xdf, 0x0d, 0x48, 0x6c, 0x09, 0xcb, 0x1b, 0xe0, 0xf9, 0x1a, 0x91, 0x3a,
-	0x7d, 0xb8, 0x03, 0x1f, 0x46, 0xe9, 0xf3, 0x40, 0xfc, 0xf4, 0xc7, 0xff, 0xcb, 0x2d, 0x28, 0x2b,
-	0x3d, 0x7e, 0xef, 0xe4, 0x60, 0xc9, 0x58, 0xdb, 0x7c, 0x78, 0x94, 0x31, 0x1e, 0x1d, 0x65, 0x8c,
-	0x7f, 0x8e, 0x32, 0xc6, 0xcf, 0xc7, 0x99, 0xd8, 0xa3, 0xe3, 0x4c, 0xec, 0xf0, 0x38, 0x13, 0xbb,
-	0x5d, 0x0a, 0xcd, 0x69, 0x70, 0xf4, 0xee, 0xc8, 0xff, 0x2e, 0xd4, 0xdc, 0xee, 0x4d, 0xa8, 0xd7,
-	0xfd, 0x07, 0xff, 0x05, 0x00, 0x00, 0xff, 0xff, 0xfb, 0xd9, 0x3c, 0x38, 0x8d, 0x0c, 0x00, 0x00,
+	// 1129 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xcc, 0x57, 0x4d, 0x4f, 0x1b, 0xc7,
+	0x1b, 0xf7, 0xda, 0xbc, 0x3e, 0x16, 0x09, 0x0c, 0x24, 0x59, 0x9c, 0x7f, 0x0c, 0xda, 0x7f, 0xd5,
+	0x22, 0x5a, 0x6c, 0x85, 0x34, 0x55, 0x4a, 0xdf, 0x64, 0x0c, 0x54, 0xa8, 0x21, 0x48, 0xeb, 0xa4,
+	0xa8, 0xa9, 0x54, 0x34, 0xd8, 0x93, 0x65, 0xc5, 0xee, 0x8c, 0xbb, 0x33, 0x06, 0xdc, 0x13, 0xaa,
+	0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xed, 0xa1, 0xbd, 0xe6, 0x23, 0x50, 0x35, 0xdf, 0xa0, 0x17, 0x0e,
+	0x3d, 0x44, 0xb9, 0x24, 0xca, 0x21, 0xaa, 0xe0, 0x40, 0x3f, 0x46, 0xb5, 0xb3, 0xbb, 0xb0, 0x8b,
+	0xd7, 0xb0, 0x40, 0x22, 0xf5, 0x62, 0xef, 0x3c, 0xf3, 0xbc, 0xfe, 0x9e, 0xdf, 0xec, 0x3c, 0x0b,
+	0x6f, 0x92, 0x4d, 0x56, 0x65, 0x0e, 0x29, 0x3a, 0x84, 0x0b, 0xbc, 0x66, 0x52, 0x63, 0x19, 0x73,
+	0x4e, 0x04, 0x5f, 0xb6, 0x31, 0xc5, 0x06, 0x29, 0xae, 0x5f, 0x2f, 0x8a, 0xcd, 0x42, 0xdd, 0x61,
+	0x82, 0x21, 0xcd, 0x57, 0x2e, 0xb4, 0x51, 0x2e, 0xac, 0x5f, 0xcf, 0x5d, 0xa9, 0x32, 0x6e, 0x33,
+	0x5e, 0xb4, 0xb9, 0xe1, 0xda, 0xda, 0xdc, 0xf0, 0x8c, 0x73, 0xc3, 0xde, 0xc6, 0xb2, 0x5c, 0x15,
+	0xbd, 0x85, 0xbf, 0x35, 0x64, 0x30, 0x83, 0x79, 0x72, 0xf7, 0xc9, 0x97, 0x0e, 0x60, 0xdb, 0xa4,
+	0xac, 0x28, 0x7f, 0x3d, 0x91, 0xf6, 0x7b, 0x1a, 0x2e, 0x96, 0x2d, 0x93, 0x50, 0x51, 0x5e, 0xc5,
+	0x26, 0x9d, 0xa7, 0x0f, 0x18, 0x42, 0xd0, 0x71, 0x07, 0xdb, 0x44, 0x55, 0x46, 0x95, 0xb1, 0x5e,
+	0x5d, 0x3e, 0xa3, 0x1c, 0xf4, 0x2c, 0x10, 0x81, 0xdd, 0x7d, 0x35, 0x2d, 0xe5, 0x07, 0x6b, 0xa4,
+	0x42, 0xb7, 0x67, 0x5c, 0x53, 0x33, 0xa3, 0xca, 0x58, 0x87, 0x1e, 0x2c, 0xd1, 0x5b, 0x30, 0x30,
+	0xbb, 0xc9, 0xca, 0xcc, 0x21, 0xbe, 0xf7, 0x1a, 0xd9, 0x54, 0x3b, 0xa4, 0x4e, 0xeb, 0x06, 0x2a,
+	0x00, 0x9a, 0x33, 0x29, 0xb6, 0xcc, 0xaf, 0xb0, 0x30, 0x19, 0x9d, 0xb6, 0x58, 0x75, 0x8d, 0xab,
+	0x9d, 0x52, 0x3d, 0x66, 0x07, 0x8d, 0x43, 0xff, 0x6d, 0xdc, 0x24, 0xce, 0x7d, 0xe2, 0x30, 0xcf,
+	0xcd, 0x8c, 0xda, 0x25, 0xb5, 0x5b, 0xe4, 0xe8, 0x35, 0xe8, 0xab, 0x98, 0x06, 0xc5, 0xa2, 0xe1,
+	0x90, 0xbb, 0xcd, 0x3a, 0x51, 0xbb, 0x65, 0x11, 0x51, 0xa1, 0xab, 0x55, 0xaa, 0xd5, 0x1c, 0xc2,
+	0xf9, 0x6d, 0x42, 0x0d, 0xb1, 0xaa, 0xf6, 0x8c, 0x2a, 0x63, 0x7d, 0x7a, 0x54, 0xa8, 0xfd, 0x99,
+	0x86, 0xde, 0x92, 0xdb, 0xa5, 0xb6, 0x68, 0x5d, 0x86, 0xae, 0x4a, 0xd3, 0x5e, 0x61, 0x96, 0x8f,
+	0x95, 0xbf, 0x72, 0x91, 0xf2, 0x5d, 0x49, 0xa4, 0x7a, 0xf5, 0x60, 0xe9, 0xe2, 0x3b, 0x43, 0xaa,
+	0xa6, 0x8d, 0x2d, 0x2e, 0x01, 0xea, 0xd3, 0x0f, 0xd6, 0xe8, 0x0b, 0xc8, 0xde, 0x65, 0x02, 0x5b,
+	0x95, 0x46, 0xbd, 0x6e, 0x35, 0x25, 0x20, 0xbd, 0xd3, 0xef, 0xef, 0xbc, 0x18, 0x49, 0x3d, 0x7f,
+	0x31, 0xf2, 0xba, 0x61, 0x8a, 0xd5, 0xc6, 0x4a, 0xa1, 0xca, 0x6c, 0x9f, 0x02, 0xfe, 0xdf, 0x04,
+	0xaf, 0xad, 0x15, 0x45, 0xb3, 0x4e, 0x78, 0x61, 0x9e, 0x8a, 0x27, 0x8f, 0x26, 0xc0, 0x67, 0xc8,
+	0x3c, 0x15, 0x7a, 0xd8, 0xe1, 0xa9, 0x70, 0x8c, 0xed, 0x68, 0x77, 0xbb, 0x8e, 0x86, 0x59, 0xd3,
+	0x13, 0x65, 0x8d, 0xf6, 0x54, 0x81, 0xfe, 0x8a, 0xc7, 0xf9, 0x43, 0x30, 0xef, 0xc1, 0x05, 0xb9,
+	0x98, 0xc6, 0xdc, 0xac, 0x4a, 0x33, 0x17, 0xd6, 0xec, 0xe4, 0x44, 0xe1, 0xe4, 0x83, 0x52, 0x38,
+	0x70, 0xa3, 0x1f, 0x71, 0x82, 0x2c, 0x40, 0x7e, 0x28, 0x59, 0x77, 0xc9, 0x66, 0x0d, 0x2a, 0xbc,
+	0xde, 0x9c, 0x13, 0xc8, 0x18, 0xbf, 0xda, 0xb3, 0x0c, 0x5c, 0x73, 0xc5, 0xc4, 0xa9, 0x98, 0xd4,
+	0xb0, 0x88, 0x4c, 0x66, 0xd1, 0x29, 0xaf, 0x62, 0x6a, 0x10, 0x99, 0xcf, 0x8f, 0x0a, 0xfc, 0x5f,
+	0x5a, 0xcc, 0x90, 0x3a, 0xe3, 0xa6, 0xf0, 0x0c, 0x17, 0x9d, 0x25, 0x2c, 0xcf, 0x21, 0x35, 0xc8,
+	0xa7, 0xd8, 0x6a, 0xf8, 0x9c, 0x3a, 0x67, 0x86, 0x49, 0x02, 0xa1, 0x1f, 0x14, 0xd0, 0xca, 0x98,
+	0x2e, 0x99, 0x62, 0xb5, 0xe6, 0xe0, 0x8d, 0x76, 0xf9, 0xbc, 0x0c, 0xc4, 0x12, 0xc4, 0x41, 0xbf,
+	0x2a, 0xf0, 0xc6, 0x12, 0x36, 0xc5, 0x3d, 0x5a, 0x23, 0x16, 0x31, 0xe4, 0xa1, 0x6f, 0x97, 0x53,
+	0xe6, 0x25, 0xe4, 0x94, 0x34, 0x98, 0xf6, 0x73, 0x1a, 0x06, 0xbd, 0xd6, 0x96, 0x2c, 0x4b, 0xf6,
+	0x95, 0xcb, 0x86, 0x72, 0xb8, 0x80, 0x03, 0x41, 0x45, 0x60, 0xe1, 0xb6, 0x2e, 0x33, 0x96, 0x9d,
+	0xfc, 0x24, 0x09, 0x6f, 0x63, 0x1c, 0x16, 0x4a, 0x11, 0x6f, 0xb3, 0x54, 0x38, 0x4d, 0xfd, 0x48,
+	0x88, 0xdc, 0x37, 0x0a, 0x0c, 0xc6, 0xe8, 0xa1, 0x7e, 0xc8, 0xac, 0x91, 0xa6, 0xff, 0x42, 0x72,
+	0x1f, 0xd1, 0x12, 0x74, 0xae, 0x1f, 0x34, 0x30, 0x3b, 0x59, 0x4a, 0x9e, 0x55, 0x1b, 0x06, 0xeb,
+	0x9e, 0xbf, 0xa9, 0xf4, 0x2d, 0x45, 0xfb, 0x2b, 0x03, 0x23, 0x8b, 0x75, 0xe2, 0x60, 0xc1, 0xda,
+	0x12, 0x7e, 0x4b, 0x81, 0xff, 0x85, 0x8e, 0xc8, 0xab, 0x61, 0xfa, 0xb1, 0x11, 0x24, 0xc5, 0x83,
+	0x34, 0x17, 0x37, 0xe8, 0x2b, 0xa5, 0xf8, 0xc9, 0x71, 0xfe, 0xbb, 0x14, 0xff, 0x2d, 0x0d, 0x97,
+	0x82, 0xfc, 0xa3, 0x24, 0x6f, 0xb4, 0x21, 0xf9, 0x42, 0x12, 0x3a, 0xc5, 0xba, 0x4c, 0x44, 0xf3,
+	0x6f, 0x13, 0xd3, 0xfc, 0xb3, 0x28, 0xcd, 0xcb, 0xa7, 0xc9, 0x2b, 0x01, 0xd1, 0x9f, 0xa6, 0x61,
+	0x60, 0x81, 0x1b, 0x15, 0x22, 0xfc, 0x9b, 0xce, 0xbd, 0xbc, 0xd1, 0x14, 0x64, 0x1f, 0x38, 0xcc,
+	0x0e, 0xee, 0x75, 0x8f, 0xc8, 0xea, 0x93, 0x47, 0x13, 0x43, 0x3e, 0xfa, 0xfe, 0x4e, 0x45, 0x38,
+	0x26, 0x35, 0xf4, 0xb0, 0x32, 0xba, 0x05, 0xc0, 0x89, 0x08, 0x4c, 0xd3, 0x27, 0x98, 0x86, 0x74,
+	0xd1, 0x18, 0x5c, 0xac, 0x1e, 0x8e, 0x6d, 0xae, 0xd4, 0x9f, 0x28, 0x8e, 0x8a, 0xdd, 0xdb, 0xbd,
+	0x1a, 0x1e, 0xf0, 0x0e, 0x47, 0xb0, 0x16, 0x39, 0xfa, 0x10, 0x72, 0xde, 0xb1, 0x0f, 0x8d, 0x84,
+	0x07, 0x13, 0x92, 0x37, 0x78, 0xe8, 0xc7, 0x68, 0x4c, 0xbd, 0xf3, 0xdd, 0xc3, 0x91, 0xd4, 0x3f,
+	0x0f, 0x47, 0x52, 0x5f, 0xef, 0x6f, 0x8f, 0x87, 0x2b, 0xfd, 0x7e, 0x7f, 0x7b, 0x7c, 0x38, 0x18,
+	0x8c, 0x5b, 0x30, 0xd4, 0xae, 0xc2, 0x70, 0x8b, 0x50, 0x27, 0xbc, 0xce, 0x28, 0x27, 0xda, 0x73,
+	0x05, 0x2e, 0xeb, 0xc4, 0x30, 0xb9, 0x88, 0x44, 0xd5, 0xc9, 0x97, 0x2e, 0xf6, 0x73, 0xa7, 0xc1,
+	0x3e, 0xa4, 0x8c, 0x3e, 0x86, 0x0e, 0x33, 0x98, 0x66, 0xb3, 0x93, 0x37, 0x92, 0x70, 0xe5, 0xc8,
+	0xa0, 0xac, 0x4b, 0x07, 0x53, 0xef, 0x45, 0x8a, 0x9e, 0x8b, 0x16, 0x9d, 0x0f, 0x1d, 0xcd, 0x98,
+	0x22, 0xb4, 0x6b, 0x70, 0x35, 0xb6, 0x36, 0xbf, 0xf6, 0x1d, 0x05, 0xfa, 0x83, 0x7d, 0xc9, 0xcd,
+	0xf3, 0x56, 0x5d, 0x8a, 0x54, 0x7d, 0xca, 0xb1, 0xca, 0xab, 0xf7, 0xe6, 0x71, 0xf5, 0xaa, 0x31,
+	0xf5, 0x4a, 0x07, 0xda, 0x15, 0xb8, 0x74, 0xa4, 0x12, 0xaf, 0xc6, 0xc9, 0x3f, 0x32, 0x90, 0x59,
+	0xe0, 0x86, 0xfb, 0x82, 0x1e, 0xaa, 0x10, 0xe1, 0xd1, 0x2b, 0x7c, 0xc2, 0x6e, 0x26, 0xc9, 0xb2,
+	0x85, 0x3f, 0xb9, 0x0f, 0xce, 0x64, 0x16, 0xa4, 0x85, 0x7e, 0x51, 0x60, 0x30, 0xa6, 0x35, 0x68,
+	0x2a, 0x89, 0xdb, 0x78, 0xbe, 0xe6, 0x3e, 0x3a, 0xb3, 0xad, 0x9f, 0xd4, 0x96, 0x02, 0x7d, 0x11,
+	0x14, 0xd1, 0xdb, 0xa7, 0x71, 0x19, 0x50, 0x28, 0xf7, 0xee, 0x19, 0xac, 0xbc, 0x14, 0x72, 0x9d,
+	0x5b, 0xfb, 0xdb, 0xe3, 0xca, 0xf4, 0xe7, 0x3b, 0xbb, 0x79, 0xe5, 0xf1, 0x6e, 0x5e, 0xf9, 0x7b,
+	0x37, 0xaf, 0xfc, 0xb4, 0x97, 0x4f, 0x3d, 0xde, 0xcb, 0xa7, 0x9e, 0xed, 0xe5, 0x53, 0xf7, 0x4b,
+	0xa1, 0xfb, 0x69, 0xd6, 0x8b, 0x72, 0x87, 0x88, 0x0d, 0xe6, 0xac, 0x15, 0x83, 0x37, 0xc0, 0x66,
+	0xdb, 0x8f, 0x63, 0x79, 0x7d, 0xad, 0x74, 0xc9, 0x8f, 0xd3, 0x1b, 0xff, 0x06, 0x00, 0x00, 0xff,
+	0xff, 0x91, 0x6a, 0xc4, 0xed, 0x4c, 0x0f, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -612,6 +772,8 @@ const _ = grpc.SupportPackageIsVersion4
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
 type MsgClient interface {
 	SetStakerExoCoreAddr(ctx context.Context, in *MsgSetExoCoreAddr, opts ...grpc.CallOption) (*MsgSetExoCoreAddrResponse, error)
+	RegisterClientChain(ctx context.Context, in *RegisterClientChainReq, opts ...grpc.CallOption) (*RegisterClientChainResponse, error)
+	RegisterAsset(ctx context.Context, in *RegisterAssetReq, opts ...grpc.CallOption) (*RegisterAssetResponse, error)
 }
 
 type msgClient struct {
@@ -631,9 +793,29 @@ func (c *msgClient) SetStakerExoCoreAddr(ctx context.Context, in *MsgSetExoCoreA
 	return out, nil
 }
 
+func (c *msgClient) RegisterClientChain(ctx context.Context, in *RegisterClientChainReq, opts ...grpc.CallOption) (*RegisterClientChainResponse, error) {
+	out := new(RegisterClientChainResponse)
+	err := c.cc.Invoke(ctx, "/exocore.restaking_assets_manage.v1.Msg/RegisterClientChain", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *msgClient) RegisterAsset(ctx context.Context, in *RegisterAssetReq, opts ...grpc.CallOption) (*RegisterAssetResponse, error) {
+	out := new(RegisterAssetResponse)
+	err := c.cc.Invoke(ctx, "/exocore.restaking_assets_manage.v1.Msg/RegisterAsset", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // MsgServer is the server API for Msg service.
 type MsgServer interface {
 	SetStakerExoCoreAddr(context.Context, *MsgSetExoCoreAddr) (*MsgSetExoCoreAddrResponse, error)
+	RegisterClientChain(context.Context, *RegisterClientChainReq) (*RegisterClientChainResponse, error)
+	RegisterAsset(context.Context, *RegisterAssetReq) (*RegisterAssetResponse, error)
 }
 
 // UnimplementedMsgServer can be embedded to have forward compatible implementations.
@@ -642,6 +824,12 @@ type UnimplementedMsgServer struct {
 
 func (*UnimplementedMsgServer) SetStakerExoCoreAddr(ctx context.Context, req *MsgSetExoCoreAddr) (*MsgSetExoCoreAddrResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SetStakerExoCoreAddr not implemented")
+}
+func (*UnimplementedMsgServer) RegisterClientChain(ctx context.Context, req *RegisterClientChainReq) (*RegisterClientChainResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RegisterClientChain not implemented")
+}
+func (*UnimplementedMsgServer) RegisterAsset(ctx context.Context, req *RegisterAssetReq) (*RegisterAssetResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RegisterAsset not implemented")
 }
 
 func RegisterMsgServer(s grpc1.Server, srv MsgServer) {
@@ -666,6 +854,42 @@ func _Msg_SetStakerExoCoreAddr_Handler(srv interface{}, ctx context.Context, dec
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Msg_RegisterClientChain_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RegisterClientChainReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MsgServer).RegisterClientChain(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/exocore.restaking_assets_manage.v1.Msg/RegisterClientChain",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MsgServer).RegisterClientChain(ctx, req.(*RegisterClientChainReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Msg_RegisterAsset_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RegisterAssetReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MsgServer).RegisterAsset(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/exocore.restaking_assets_manage.v1.Msg/RegisterAsset",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MsgServer).RegisterAsset(ctx, req.(*RegisterAssetReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 var _Msg_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "exocore.restaking_assets_manage.v1.Msg",
 	HandlerType: (*MsgServer)(nil),
@@ -673,6 +897,14 @@ var _Msg_serviceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "SetStakerExoCoreAddr",
 			Handler:    _Msg_SetStakerExoCoreAddr_Handler,
+		},
+		{
+			MethodName: "RegisterClientChain",
+			Handler:    _Msg_RegisterClientChain_Handler,
+		},
+		{
+			MethodName: "RegisterAsset",
+			Handler:    _Msg_RegisterAsset_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
@@ -711,13 +943,13 @@ func (m *ClientChainInfo) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		i--
 		dAtA[i] = 0x3a
 	}
-	if m.LayerZeroChainId != 0 {
-		i = encodeVarintTx(dAtA, i, uint64(m.LayerZeroChainId))
+	if m.LayerZeroChainID != 0 {
+		i = encodeVarintTx(dAtA, i, uint64(m.LayerZeroChainID))
 		i--
 		dAtA[i] = 0x30
 	}
-	if m.FinalityNeedBlockDelay != 0 {
-		i = encodeVarintTx(dAtA, i, uint64(m.FinalityNeedBlockDelay))
+	if m.FinalizationBlocks != 0 {
+		i = encodeVarintTx(dAtA, i, uint64(m.FinalizationBlocks))
 		i--
 		dAtA[i] = 0x28
 	}
@@ -726,29 +958,29 @@ func (m *ClientChainInfo) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		i--
 		dAtA[i] = 0x20
 	}
-	if m.OriginChainId != 0 {
-		i = encodeVarintTx(dAtA, i, uint64(m.OriginChainId))
+	if m.ChainId != 0 {
+		i = encodeVarintTx(dAtA, i, uint64(m.ChainId))
 		i--
 		dAtA[i] = 0x18
 	}
-	if len(m.ChainMetaInfo) > 0 {
-		i -= len(m.ChainMetaInfo)
-		copy(dAtA[i:], m.ChainMetaInfo)
-		i = encodeVarintTx(dAtA, i, uint64(len(m.ChainMetaInfo)))
+	if len(m.MetaInfo) > 0 {
+		i -= len(m.MetaInfo)
+		copy(dAtA[i:], m.MetaInfo)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.MetaInfo)))
 		i--
 		dAtA[i] = 0x12
 	}
-	if len(m.ChainName) > 0 {
-		i -= len(m.ChainName)
-		copy(dAtA[i:], m.ChainName)
-		i = encodeVarintTx(dAtA, i, uint64(len(m.ChainName)))
+	if len(m.Name) > 0 {
+		i -= len(m.Name)
+		copy(dAtA[i:], m.Name)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.Name)))
 		i--
 		dAtA[i] = 0xa
 	}
 	return len(dAtA) - i, nil
 }
 
-func (m *ClientChainTokenInfo) Marshal() (dAtA []byte, err error) {
+func (m *AssetInfo) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -758,20 +990,20 @@ func (m *ClientChainTokenInfo) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *ClientChainTokenInfo) MarshalTo(dAtA []byte) (int, error) {
+func (m *AssetInfo) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *ClientChainTokenInfo) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *AssetInfo) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
 	_ = l
-	if len(m.AssetMetaInfo) > 0 {
-		i -= len(m.AssetMetaInfo)
-		copy(dAtA[i:], m.AssetMetaInfo)
-		i = encodeVarintTx(dAtA, i, uint64(len(m.AssetMetaInfo)))
+	if len(m.MetaInfo) > 0 {
+		i -= len(m.MetaInfo)
+		copy(dAtA[i:], m.MetaInfo)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.MetaInfo)))
 		i--
 		dAtA[i] = 0x42
 	}
@@ -780,8 +1012,8 @@ func (m *ClientChainTokenInfo) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		i--
 		dAtA[i] = 0x38
 	}
-	if m.LayerZeroChainId != 0 {
-		i = encodeVarintTx(dAtA, i, uint64(m.LayerZeroChainId))
+	if m.LayerZeroChainID != 0 {
+		i = encodeVarintTx(dAtA, i, uint64(m.LayerZeroChainID))
 		i--
 		dAtA[i] = 0x30
 	}
@@ -1152,6 +1384,136 @@ func (m *MsgSetExoCoreAddrResponse) MarshalToSizedBuffer(dAtA []byte) (int, erro
 	return len(dAtA) - i, nil
 }
 
+func (m *RegisterClientChainReq) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *RegisterClientChainReq) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *RegisterClientChainReq) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.Info != nil {
+		{
+			size, err := m.Info.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintTx(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0x12
+	}
+	if len(m.FromAddress) > 0 {
+		i -= len(m.FromAddress)
+		copy(dAtA[i:], m.FromAddress)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.FromAddress)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *RegisterClientChainResponse) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *RegisterClientChainResponse) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *RegisterClientChainResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	return len(dAtA) - i, nil
+}
+
+func (m *RegisterAssetReq) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *RegisterAssetReq) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *RegisterAssetReq) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.Info != nil {
+		{
+			size, err := m.Info.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintTx(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0x12
+	}
+	if len(m.FromAddress) > 0 {
+		i -= len(m.FromAddress)
+		copy(dAtA[i:], m.FromAddress)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.FromAddress)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *RegisterAssetResponse) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *RegisterAssetResponse) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *RegisterAssetResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	return len(dAtA) - i, nil
+}
+
 func encodeVarintTx(dAtA []byte, offset int, v uint64) int {
 	offset -= sovTx(v)
 	base := offset
@@ -1169,25 +1531,25 @@ func (m *ClientChainInfo) Size() (n int) {
 	}
 	var l int
 	_ = l
-	l = len(m.ChainName)
+	l = len(m.Name)
 	if l > 0 {
 		n += 1 + l + sovTx(uint64(l))
 	}
-	l = len(m.ChainMetaInfo)
+	l = len(m.MetaInfo)
 	if l > 0 {
 		n += 1 + l + sovTx(uint64(l))
 	}
-	if m.OriginChainId != 0 {
-		n += 1 + sovTx(uint64(m.OriginChainId))
+	if m.ChainId != 0 {
+		n += 1 + sovTx(uint64(m.ChainId))
 	}
 	if m.ExoCoreChainIndex != 0 {
 		n += 1 + sovTx(uint64(m.ExoCoreChainIndex))
 	}
-	if m.FinalityNeedBlockDelay != 0 {
-		n += 1 + sovTx(uint64(m.FinalityNeedBlockDelay))
+	if m.FinalizationBlocks != 0 {
+		n += 1 + sovTx(uint64(m.FinalizationBlocks))
 	}
-	if m.LayerZeroChainId != 0 {
-		n += 1 + sovTx(uint64(m.LayerZeroChainId))
+	if m.LayerZeroChainID != 0 {
+		n += 1 + sovTx(uint64(m.LayerZeroChainID))
 	}
 	l = len(m.SignatureType)
 	if l > 0 {
@@ -1199,7 +1561,7 @@ func (m *ClientChainInfo) Size() (n int) {
 	return n
 }
 
-func (m *ClientChainTokenInfo) Size() (n int) {
+func (m *AssetInfo) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -1222,13 +1584,13 @@ func (m *ClientChainTokenInfo) Size() (n int) {
 	}
 	l = m.TotalSupply.Size()
 	n += 1 + l + sovTx(uint64(l))
-	if m.LayerZeroChainId != 0 {
-		n += 1 + sovTx(uint64(m.LayerZeroChainId))
+	if m.LayerZeroChainID != 0 {
+		n += 1 + sovTx(uint64(m.LayerZeroChainID))
 	}
 	if m.ExoCoreChainIndex != 0 {
 		n += 1 + sovTx(uint64(m.ExoCoreChainIndex))
 	}
-	l = len(m.AssetMetaInfo)
+	l = len(m.MetaInfo)
 	if l > 0 {
 		n += 1 + l + sovTx(uint64(l))
 	}
@@ -1361,6 +1723,58 @@ func (m *MsgSetExoCoreAddrResponse) Size() (n int) {
 	return n
 }
 
+func (m *RegisterClientChainReq) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.FromAddress)
+	if l > 0 {
+		n += 1 + l + sovTx(uint64(l))
+	}
+	if m.Info != nil {
+		l = m.Info.Size()
+		n += 1 + l + sovTx(uint64(l))
+	}
+	return n
+}
+
+func (m *RegisterClientChainResponse) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	return n
+}
+
+func (m *RegisterAssetReq) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.FromAddress)
+	if l > 0 {
+		n += 1 + l + sovTx(uint64(l))
+	}
+	if m.Info != nil {
+		l = m.Info.Size()
+		n += 1 + l + sovTx(uint64(l))
+	}
+	return n
+}
+
+func (m *RegisterAssetResponse) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	return n
+}
+
 func sovTx(x uint64) (n int) {
 	return (math_bits.Len64(x|1) + 6) / 7
 }
@@ -1398,7 +1812,7 @@ func (m *ClientChainInfo) Unmarshal(dAtA []byte) error {
 		switch fieldNum {
 		case 1:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field ChainName", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field Name", wireType)
 			}
 			var stringLen uint64
 			for shift := uint(0); ; shift += 7 {
@@ -1426,11 +1840,11 @@ func (m *ClientChainInfo) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.ChainName = string(dAtA[iNdEx:postIndex])
+			m.Name = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
 		case 2:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field ChainMetaInfo", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field MetaInfo", wireType)
 			}
 			var stringLen uint64
 			for shift := uint(0); ; shift += 7 {
@@ -1458,13 +1872,13 @@ func (m *ClientChainInfo) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.ChainMetaInfo = string(dAtA[iNdEx:postIndex])
+			m.MetaInfo = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
 		case 3:
 			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field OriginChainId", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field ChainId", wireType)
 			}
-			m.OriginChainId = 0
+			m.ChainId = 0
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowTx
@@ -1474,7 +1888,7 @@ func (m *ClientChainInfo) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				m.OriginChainId |= uint64(b&0x7F) << shift
+				m.ChainId |= uint64(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
@@ -1500,9 +1914,9 @@ func (m *ClientChainInfo) Unmarshal(dAtA []byte) error {
 			}
 		case 5:
 			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field FinalityNeedBlockDelay", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field FinalizationBlocks", wireType)
 			}
-			m.FinalityNeedBlockDelay = 0
+			m.FinalizationBlocks = 0
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowTx
@@ -1512,16 +1926,16 @@ func (m *ClientChainInfo) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				m.FinalityNeedBlockDelay |= uint64(b&0x7F) << shift
+				m.FinalizationBlocks |= uint64(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
 			}
 		case 6:
 			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field LayerZeroChainId", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field LayerZeroChainID", wireType)
 			}
-			m.LayerZeroChainId = 0
+			m.LayerZeroChainID = 0
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowTx
@@ -1531,7 +1945,7 @@ func (m *ClientChainInfo) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				m.LayerZeroChainId |= uint64(b&0x7F) << shift
+				m.LayerZeroChainID |= uint64(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
@@ -1608,7 +2022,7 @@ func (m *ClientChainInfo) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *ClientChainTokenInfo) Unmarshal(dAtA []byte) error {
+func (m *AssetInfo) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -1631,10 +2045,10 @@ func (m *ClientChainTokenInfo) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: ClientChainTokenInfo: wiretype end group for non-group")
+			return fmt.Errorf("proto: AssetInfo: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: ClientChainTokenInfo: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: AssetInfo: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
@@ -1788,9 +2202,9 @@ func (m *ClientChainTokenInfo) Unmarshal(dAtA []byte) error {
 			iNdEx = postIndex
 		case 6:
 			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field LayerZeroChainId", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field LayerZeroChainID", wireType)
 			}
-			m.LayerZeroChainId = 0
+			m.LayerZeroChainID = 0
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowTx
@@ -1800,7 +2214,7 @@ func (m *ClientChainTokenInfo) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				m.LayerZeroChainId |= uint64(b&0x7F) << shift
+				m.LayerZeroChainID |= uint64(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
@@ -1826,7 +2240,7 @@ func (m *ClientChainTokenInfo) Unmarshal(dAtA []byte) error {
 			}
 		case 8:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field AssetMetaInfo", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field MetaInfo", wireType)
 			}
 			var stringLen uint64
 			for shift := uint(0); ; shift += 7 {
@@ -1854,7 +2268,7 @@ func (m *ClientChainTokenInfo) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.AssetMetaInfo = string(dAtA[iNdEx:postIndex])
+			m.MetaInfo = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
 		default:
 			iNdEx = preIndex
@@ -1936,7 +2350,7 @@ func (m *StakingAssetInfo) Unmarshal(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			if m.AssetBasicInfo == nil {
-				m.AssetBasicInfo = &ClientChainTokenInfo{}
+				m.AssetBasicInfo = &AssetInfo{}
 			}
 			if err := m.AssetBasicInfo.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
@@ -2883,6 +3297,342 @@ func (m *MsgSetExoCoreAddrResponse) Unmarshal(dAtA []byte) error {
 		}
 		if fieldNum <= 0 {
 			return fmt.Errorf("proto: MsgSetExoCoreAddrResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		default:
+			iNdEx = preIndex
+			skippy, err := skipTx(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthTx
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *RegisterClientChainReq) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowTx
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: RegisterClientChainReq: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: RegisterClientChainReq: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field FromAddress", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.FromAddress = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Info", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if m.Info == nil {
+				m.Info = &ClientChainInfo{}
+			}
+			if err := m.Info.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipTx(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthTx
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *RegisterClientChainResponse) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowTx
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: RegisterClientChainResponse: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: RegisterClientChainResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		default:
+			iNdEx = preIndex
+			skippy, err := skipTx(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthTx
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *RegisterAssetReq) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowTx
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: RegisterAssetReq: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: RegisterAssetReq: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field FromAddress", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.FromAddress = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Info", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if m.Info == nil {
+				m.Info = &AssetInfo{}
+			}
+			if err := m.Info.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipTx(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthTx
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *RegisterAssetResponse) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowTx
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: RegisterAssetResponse: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: RegisterAssetResponse: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		default:

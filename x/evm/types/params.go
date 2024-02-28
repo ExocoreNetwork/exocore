@@ -1,6 +1,7 @@
 package types
 
 import (
+	utils "github.com/ExocoreNetwork/exocore/utils"
 	evmtype "github.com/evmos/evmos/v14/x/evm/types"
 )
 
@@ -23,7 +24,7 @@ var ExocoreAvailableEVMExtensions = []string{
 // from the EVM configuration.
 func ExocoreEvmDefaultParams() evmtype.Params {
 	return evmtype.Params{
-		EvmDenom:            evmtype.DefaultEVMDenom,
+		EvmDenom:            utils.BaseDenom,
 		EnableCreate:        evmtype.DefaultEnableCreate,
 		EnableCall:          evmtype.DefaultEnableCall,
 		ChainConfig:         evmtype.DefaultChainConfig(),

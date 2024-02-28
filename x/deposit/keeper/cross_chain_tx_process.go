@@ -11,7 +11,7 @@ import (
 )
 
 type DepositParams struct {
-	ClientChainLzId uint64
+	ClientChainLzID uint64
 	// The action field might need to be removed,it will be used when called from event hook.
 	Action        types.CrossChainOpType
 	AssetsAddress []byte
@@ -36,14 +36,14 @@ type DepositParams struct {
 		return nil, nil
 	}
 
-	var clientChainLzId uint64
-	r = bytes.NewReader(log.Topics[types.ClientChainLzIdIndexInTopics][:])
-	err = binary.Read(r, binary.BigEndian, &clientChainLzId)
+	var clientChainLzID uint64
+	r = bytes.NewReader(log.Topics[types.ClientChainLzIDIndexInTopics][:])
+	err = binary.Read(r, binary.BigEndian, &clientChainLzID)
 	if err != nil {
-		return nil, errorsmod.Wrap(err, "error occurred when binary read ClientChainLzId from topic")
+		return nil, errorsmod.Wrap(err, "error occurred when binary read ClientChainLzID from topic")
 	}
 
-	clientChainInfo, err := k.restakingStateKeeper.GetClientChainInfoByIndex(ctx, clientChainLzId)
+	clientChainInfo, err := k.restakingStateKeeper.GetClientChainInfoByIndex(ctx, clientChainLzID)
 	if err != nil {
 		return nil, errorsmod.Wrap(err, "error occurred when get client chain info")
 	}
@@ -72,7 +72,7 @@ type DepositParams struct {
 	amount := sdkmath.NewIntFromBigInt(big.NewInt(0).SetBytes(log.Data[readStart:readEnd]))
 
 	return &DepositParams{
-		ClientChainLzId: clientChainLzId,
+		ClientChainLzID: clientChainLzID,
 		Action:          action,
 		AssetsAddress:   assetsAddress,
 		StakerAddress:   depositAddress,
@@ -128,23 +128,23 @@ func (k Keeper) Deposit(ctx sdk.Context, params *DepositParams) error {
 	if params.OpAmount.IsNegative() {
 		return errorsmod.Wrap(despoittypes.ErrDepositAmountIsNegative, fmt.Sprintf("the amount is:%s", params.OpAmount))
 	}
-	stakeId, assetId := types.GetStakeIDAndAssetId(params.ClientChainLzId, params.StakerAddress, params.AssetsAddress)
+	stakeID, assetID := types.GetStakeIDAndAssetID(params.ClientChainLzID, params.StakerAddress, params.AssetsAddress)
 	// check if asset exist
-	if !k.restakingStateKeeper.IsStakingAsset(ctx, assetId) {
-		return errorsmod.Wrap(despoittypes.ErrDepositAssetNotExist, fmt.Sprintf("the assetId is:%s", assetId))
+	if !k.restakingStateKeeper.IsStakingAsset(ctx, assetID) {
+		return errorsmod.Wrap(despoittypes.ErrDepositAssetNotExist, fmt.Sprintf("the assetID is:%s", assetID))
 	}
 	changeAmount := types.StakerSingleAssetOrChangeInfo{
 		TotalDepositAmountOrWantChangeValue: params.OpAmount,
 		CanWithdrawAmountOrWantChangeValue:  params.OpAmount,
 	}
 	// update asset state of the specified staker
-	err := k.restakingStateKeeper.UpdateStakerAssetState(ctx, stakeId, assetId, changeAmount)
+	err := k.restakingStateKeeper.UpdateStakerAssetState(ctx, stakeID, assetID, changeAmount)
 	if err != nil {
 		return err
 	}
 
 	// update total amount of the deposited asset
-	err = k.restakingStateKeeper.UpdateStakingAssetTotalAmount(ctx, assetId, params.OpAmount)
+	err = k.restakingStateKeeper.UpdateStakingAssetTotalAmount(ctx, assetID, params.OpAmount)
 	if err != nil {
 		return err
 	}

@@ -9,9 +9,9 @@ name: Lint Code Base
 
 on:
   push:
-    branches: ["main"]
+    branches: ["develop", "main", "master"]
   pull_request:
-    branches: ["main"]
+    branches: ["develop", "main", "master"]
 jobs:
   run-lint:
     runs-on: ubuntu-latest
@@ -34,5 +34,5 @@ jobs:
           VALIDATE_OPENAPI: false
           VALIDATE_JSCPD: false
           VALIDATE_GO: false
-          DEFAULT_BRANCH: "main"
+          DEFAULT_BRANCH: "master"
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

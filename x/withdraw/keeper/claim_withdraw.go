@@ -13,7 +13,7 @@ import (
 )
 
 type WithdrawParams struct {
-	ClientChainLzId uint64
+	ClientChainLzID uint64
 	Action          types.CrossChainOpType
 	AssetsAddress   []byte
 	WithdrawAddress []byte
@@ -59,15 +59,15 @@ type WithdrawParams struct {
 // 	readEnd += types.CrossChainOpAmountLength
 // 	amount := sdkmath.NewIntFromBigInt(big.NewInt(0).SetBytes(log.Data[readStart:readEnd]))
 
-// 	var clientChainLzId uint64
-// 	r = bytes.NewReader(log.Topics[types.ClientChainLzIdIndexInTopics][:])
-// 	err = binary.Read(r, binary.BigEndian, &clientChainLzId)
+// 	var clientChainLzID uint64
+// 	r = bytes.NewReader(log.Topics[types.ClientChainLzIDIndexInTopics][:])
+// 	err = binary.Read(r, binary.BigEndian, &clientChainLzID)
 // 	if err != nil {
-// 		return nil, errorsmod.Wrap(err, "error occurred when binary read clientChainLzId from topic")
+// 		return nil, errorsmod.Wrap(err, "error occurred when binary read clientChainLzID from topic")
 // 	}
 
 // 	return &WithdrawParams{
-// 		ClientChainLzId: clientChainLzId,
+// 		ClientChainLzID: clientChainLzID,
 // 		Action:          action,
 // 		AssetsAddress:   assetsAddress,
 // 		WithdrawAddress: withdrawAddress,
@@ -75,10 +75,10 @@ type WithdrawParams struct {
 // 	}, nil
 // }
 
-func getStakeIDAndAssetId(params *WithdrawParams) (stakeId string, assetId string) {
-	clientChainLzIdStr := hexutil.EncodeUint64(params.ClientChainLzId)
-	stakeId = strings.Join([]string{hexutil.Encode(params.WithdrawAddress[:]), clientChainLzIdStr}, "_")
-	assetId = strings.Join([]string{hexutil.Encode(params.AssetsAddress[:]), clientChainLzIdStr}, "_")
+func getStakeIDAndAssetID(params *WithdrawParams) (stakeID string, assetID string) {
+	clientChainLzIDStr := hexutil.EncodeUint64(params.ClientChainLzID)
+	stakeID = strings.Join([]string{hexutil.Encode(params.WithdrawAddress), clientChainLzIDStr}, "_")
+	assetID = strings.Join([]string{hexutil.Encode(params.AssetsAddress), clientChainLzIDStr}, "_")
 	return
 }
 
@@ -122,21 +122,21 @@ func (k Keeper) Withdraw(ctx sdk.Context, params *WithdrawParams) error {
 	if params.OpAmount.IsNegative() {
 		return errorsmod.Wrap(withdrawtype.ErrWithdrawAmountIsNegative, fmt.Sprintf("the amount is:%s", params.OpAmount))
 	}
-	stakeId, assetId := getStakeIDAndAssetId(params)
+	stakeID, assetID := getStakeIDAndAssetID(params)
 
 	// check if asset exist
-	if !k.restakingStateKeeper.IsStakingAsset(ctx, assetId) {
-		return errorsmod.Wrap(withdrawtype.ErrWithdrawAssetNotExist, fmt.Sprintf("the assetId is:%s", assetId))
+	if !k.restakingStateKeeper.IsStakingAsset(ctx, assetID) {
+		return errorsmod.Wrap(withdrawtype.ErrWithdrawAssetNotExist, fmt.Sprintf("the assetID is:%s", assetID))
 	}
 	changeAmount := types.StakerSingleAssetOrChangeInfo{
 		TotalDepositAmountOrWantChangeValue: params.OpAmount.Neg(),
 		CanWithdrawAmountOrWantChangeValue:  params.OpAmount.Neg(),
 	}
-	err := k.restakingStateKeeper.UpdateStakerAssetState(ctx, stakeId, assetId, changeAmount)
+	err := k.restakingStateKeeper.UpdateStakerAssetState(ctx, stakeID, assetID, changeAmount)
 	if err != nil {
 		return err
 	}
-	if err = k.restakingStateKeeper.UpdateStakingAssetTotalAmount(ctx, assetId, params.OpAmount.Neg()); err != nil {
+	if err = k.restakingStateKeeper.UpdateStakingAssetTotalAmount(ctx, assetID, params.OpAmount.Neg()); err != nil {
 		return err
 	}
 	return nil

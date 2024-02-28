@@ -26,7 +26,7 @@ func (k Keeper) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.Validat
 		operatorAccAddress := sdk.MustAccAddressFromBech32(record.OperatorAddr)
 		if k.slashKeeper.IsOperatorFrozen(ctx, operatorAccAddress) {
 			// reSet the completed height if the operator is frozen
-			record.CompleteBlockNumber = k.operatorOptedInKeeper.GetOperatorCanUndelegateHeight(ctx, record.AssetId, operatorAccAddress, record.BlockNumber)
+			record.CompleteBlockNumber = k.operatorOptedInKeeper.GetOperatorCanUndelegateHeight(ctx, record.AssetID, operatorAccAddress, record.BlockNumber)
 			if record.CompleteBlockNumber <= uint64(ctx.BlockHeight()) {
 				panic(fmt.Sprintf("the reset completedHeight isn't in future,setHeight:%v,curHeight:%v", record.CompleteBlockNumber, ctx.BlockHeight()))
 			}
@@ -38,7 +38,7 @@ func (k Keeper) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.Validat
 		}
 
 		// get operator slashed proportion to calculate the actual canUndelegated asset amount
-		proportion := k.slashKeeper.OperatorAssetSlashedProportion(ctx, operatorAccAddress, record.AssetId, record.BlockNumber, record.CompleteBlockNumber)
+		proportion := k.slashKeeper.OperatorAssetSlashedProportion(ctx, operatorAccAddress, record.AssetID, record.BlockNumber, record.CompleteBlockNumber)
 		if proportion.IsNil() || proportion.IsNegative() || proportion.GT(sdkmath.LegacyNewDec(1)) {
 			panic(fmt.Sprintf("the proportion is invalid,it is:%v", proportion))
 		}
@@ -52,19 +52,19 @@ func (k Keeper) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.Validat
 		delegatorAndAmount[record.OperatorAddr] = &delegationtype.DelegationAmounts{
 			WaitUndelegationAmount: recordAmountNeg,
 		}
-		err = k.UpdateDelegationState(ctx, record.StakerId, record.AssetId, delegatorAndAmount)
+		err = k.UpdateDelegationState(ctx, record.StakerID, record.AssetID, delegatorAndAmount)
 		if err != nil {
 			panic(err)
 		}
 
 		// todo: if use recordAmount as an input parameter, the delegation total amount won't need to be subtracted when the related operator is slashed.
-		err = k.UpdateStakerDelegationTotalAmount(ctx, record.StakerId, record.AssetId, recordAmountNeg)
+		err = k.UpdateStakerDelegationTotalAmount(ctx, record.StakerID, record.AssetID, recordAmountNeg)
 		if err != nil {
 			panic(err)
 		}
 
 		// update the staker state
-		err := k.restakingStateKeeper.UpdateStakerAssetState(ctx, record.StakerId, record.AssetId, types.StakerSingleAssetOrChangeInfo{
+		err := k.restakingStateKeeper.UpdateStakerAssetState(ctx, record.StakerID, record.AssetID, types.StakerSingleAssetOrChangeInfo{
 			CanWithdrawAmountOrWantChangeValue:      actualCanUndelegateAmount,
 			WaitUndelegationAmountOrWantChangeValue: recordAmountNeg,
 		})
@@ -73,7 +73,7 @@ func (k Keeper) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.Validat
 		}
 
 		// update the operator state
-		err = k.restakingStateKeeper.UpdateOperatorAssetState(ctx, operatorAccAddress, record.AssetId, types.OperatorSingleAssetOrChangeInfo{
+		err = k.restakingStateKeeper.UpdateOperatorAssetState(ctx, operatorAccAddress, record.AssetID, types.OperatorSingleAssetOrChangeInfo{
 			TotalAmountOrWantChangeValue:            actualCanUndelegateAmount.Neg(),
 			WaitUndelegationAmountOrWantChangeValue: recordAmountNeg,
 		})

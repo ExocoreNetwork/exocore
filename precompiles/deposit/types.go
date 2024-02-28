@@ -21,9 +21,9 @@ func (p Precompile) GetDepositToParamsFromInputs(ctx sdk.Context, args []interfa
 	if !ok {
 		return nil, fmt.Errorf(ErrContractInputParaOrType, 0, reflect.TypeOf(args[0]), clientChainLzID)
 	}
-	depositParams.ClientChainLzId = uint64(clientChainLzID)
+	depositParams.ClientChainLzID = uint64(clientChainLzID)
 
-	info, err := p.stakingStateKeeper.GetClientChainInfoByIndex(ctx, depositParams.ClientChainLzId)
+	info, err := p.stakingStateKeeper.GetClientChainInfoByIndex(ctx, depositParams.ClientChainLzID)
 	if err != nil {
 		return nil, err
 	}

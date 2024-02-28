@@ -9,17 +9,17 @@ import "amino/amino.proto";
 option go_package = "github.com/ExocoreNetwork/exocore/x/restaking_assets_manage/types";
 
 message ClientChainInfo {
-  string ChainName = 1;
-  string ChainMetaInfo = 2;
-  uint64 OriginChainId = 3;
+  string Name = 1;
+  string MetaInfo = 2;
+  uint64 ChainId = 3;
   uint64 ExoCoreChainIndex = 4;
-  uint64 FinalityNeedBlockDelay = 5;
-  uint64 LayerZeroChainId = 6;
+  uint64 FinalizationBlocks = 5;
+  uint64 LayerZeroChainID = 6;
   string SignatureType = 7;
   uint32 AddressLength = 8;
 }
 
-message ClientChainTokenInfo {
+message AssetInfo {
   string Name = 1;
   string Symbol = 2;
   string Address = 3;
@@ -30,13 +30,13 @@ message ClientChainTokenInfo {
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
     (gogoproto.nullable) = false
   ];
-  uint64 LayerZeroChainId = 6;
+  uint64 LayerZeroChainID = 6;
   uint64 ExoCoreChainIndex = 7;
-  string AssetMetaInfo = 8;
+  string MetaInfo = 8;
 }
 
 message StakingAssetInfo {
-  ClientChainTokenInfo AssetBasicInfo = 1;
+  AssetInfo AssetBasicInfo = 1;
   string StakingTotalAmount = 2
   [
     (cosmos_proto.scalar) = "cosmos.Int",
@@ -111,10 +111,35 @@ message MsgSetExoCoreAddr {
 }
 message MsgSetExoCoreAddrResponse {}
 
+message RegisterClientChainReq {
+  option (cosmos.msg.v1.signer) = "FromAddress";
+  option (amino.name) = "cosmos-sdk/RegisterClientChain";
+  option (gogoproto.equal) = false;
+  option (gogoproto.goproto_getters) = false;
+
+  string FromAddress = 1
+  [(cosmos_proto.scalar) = "cosmos.AddressString"];
+  ClientChainInfo info = 2;
+}
+message RegisterClientChainResponse {}
+
+message RegisterAssetReq {
+  option (cosmos.msg.v1.signer) = "FromAddress";
+  option (amino.name) = "cosmos-sdk/RegisterAsset";
+  option (gogoproto.equal) = false;
+  option (gogoproto.goproto_getters) = false;
+
+  string FromAddress = 1
+  [(cosmos_proto.scalar) = "cosmos.AddressString"];
+  AssetInfo info = 2;
+}
+message RegisterAssetResponse {}
+
 service Msg {
 
   option (cosmos.msg.v1.service) = true;
 
   rpc SetStakerExoCoreAddr(MsgSetExoCoreAddr) returns (MsgSetExoCoreAddrResponse);
-
+  rpc RegisterClientChain(RegisterClientChainReq) returns (RegisterClientChainResponse);
+  rpc RegisterAsset(RegisterAssetReq) returns (RegisterAssetResponse);
 }

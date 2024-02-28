@@ -4,10 +4,14 @@ on:
   pull_request:
   push:
     branches:
+      - develop
       - main
+      - master
 
 jobs:
   analyze:
+    # disabled for now, since we don't have any Solidity files.
+    if: ${{ false }}
     name: Run Slither
     runs-on: ubuntu-latest
     permissions:
