@@ -84,6 +84,7 @@ func (suite *KeeperTestSuite) TestUpdateStakerAssetsState() {
 	suite.Require().NoError(err)
 	suite.Require().True(getInfo.TotalDepositAmountOrWantChangeValue.Equal(math.NewInt(2000)))
 	suite.Require().True(getInfo.CanWithdrawAmountOrWantChangeValue.Equal(math.NewInt(2000)))
+
 }
 
 func (suite *KeeperTestSuite) TestGetStakerAssetInfos() {
