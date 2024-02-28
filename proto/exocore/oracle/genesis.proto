@@ -5,9 +5,6 @@ package exocore.oracle;
 import "gogoproto/gogo.proto";
 import "exocore/oracle/params.proto";
 import "exocore/oracle/prices.proto";
-import "exocore/oracle/round_info.proto";
-import "exocore/oracle/round_data.proto";
-import "exocore/oracle/validators.proto";
 
 option go_package = "github.com/ExocoreNetwork/exocore/x/oracle/types";
 
@@ -17,8 +14,5 @@ message GenesisState {
   repeated Prices pricesList = 2 [(gogoproto.nullable) = false];
   
   //TODO: userDefinedTokenFeeder
-  repeated RoundInfo  roundInfoList  = 3 [(gogoproto.nullable) = false];
-  repeated RoundData  roundDataList  = 4 [(gogoproto.nullable) = false];
-  repeated Validators validatorsList = 5 [(gogoproto.nullable) = false];
 }
 
