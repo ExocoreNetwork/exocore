@@ -1,8 +1,10 @@
 package types
 
 import (
+	"cosmossdk.io/math"
 	tmprotocrypto "github.com/cometbft/cometbft/proto/tendermint/crypto"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	epochsTypes "github.com/evmos/evmos/v14/x/epochs/types"
 )
 
@@ -46,10 +48,36 @@ type OperatorKeeper interface {
 	IsOperatorOptingOutFromChainId(
 		sdk.Context, sdk.AccAddress, string,
 	) bool
+	CompleteOperatorOptOutFromChainId(sdk.Context, sdk.AccAddress, string)
+	DeleteOperatorAddressForChainIdAndConsAddr(sdk.Context, string, sdk.ConsAddress)
+	GetOperatorAddressForChainIdAndConsAddr(
+		sdk.Context, string, sdk.ConsAddress,
+	) (bool, sdk.AccAddress)
+	IsOperatorJailedForChainId(sdk.Context, sdk.AccAddress, string) bool
+	Jail(sdk.Context, sdk.ConsAddress, string)
 }
 
 // DelegationKeeper represents the expected keeper interface for the delegation module.
 type DelegationKeeper interface {
 	IncrementUndelegationHoldCount(sdk.Context, []byte)
 	DecrementUndelegationHoldCount(sdk.Context, []byte)
+}
+
+// EpochsHooks represents the event hooks for the epochs module.
+type EpochsHooks interface {
+	AfterEpochEnd(sdk.Context, string, int64)
+	BeforeEpochStart(sdk.Context, string, int64)
+}
+
+// RestakingKeeper represents the expected keeper interface for the restaking module.
+type RestakingKeeper interface {
+	GetOperatorAssetValue(sdk.Context, sdk.AccAddress) (int64, error)
+}
+
+// SlashingKeeper represents the expected keeper interface for the (exo-)slashing module.
+type SlashingKeeper interface {
+	SlashWithInfractionReason(
+		sdk.Context, sdk.AccAddress, int64,
+		int64, sdk.Dec, stakingtypes.Infraction,
+	) math.Int
 }

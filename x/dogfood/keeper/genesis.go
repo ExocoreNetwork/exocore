@@ -20,9 +20,8 @@ func (k Keeper) InitGenesis(
 		// the panic is suitable here because it is being done at genesis, when the node
 		// is not running. it means that the genesis file is malformed.
 		panic("epoch info not found")
-
 	}
-	return k.ApplyValidatorChanges(ctx, genState.ValSet)
+	return k.ApplyValidatorChanges(ctx, genState.ValSet, types.InitialValidatorSetID, true)
 }
 
 // ExportGenesis returns the module's exported genesis
