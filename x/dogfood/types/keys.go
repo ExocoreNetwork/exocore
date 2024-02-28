@@ -12,6 +12,9 @@ const (
 	StoreKey = ModuleName
 )
 
+// InitialValidatorSetID is the initial validator set id.
+const InitialValidatorSetID = uint64(1)
+
 const (
 	// ExocoreValidatorBytePrefix is the prefix for the validator store.
 	ExocoreValidatorBytePrefix byte = iota + 1
