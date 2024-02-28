@@ -10,14 +10,17 @@ import (
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 
 	"github.com/ExocoreNetwork/exocore/x/oracle/types"
+
+	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
 )
 
 type (
 	Keeper struct {
-		cdc        codec.BinaryCodec
-		storeKey   storetypes.StoreKey
-		memKey     storetypes.StoreKey
-		paramstore paramtypes.Subspace
+		cdc           codec.BinaryCodec
+		storeKey      storetypes.StoreKey
+		memKey        storetypes.StoreKey
+		paramstore    paramtypes.Subspace
+		stakingKeeper stakingkeeper.Keeper
 	}
 )
 

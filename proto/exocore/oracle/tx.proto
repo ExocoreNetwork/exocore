@@ -18,6 +18,7 @@ message MsgCreatePrice {
   repeated PriceWithSource prices = 3;
   //on which block commit does this message be built on
   uint64 based_block = 4;
+  int32 nonce = 5;
 }
 
 message MsgCreatePriceResponse {}
