@@ -20,4 +20,4 @@ jobs:
       - uses: orijtech/consensuswarn@main
         with:
           # example.com/pkg/path.Type.Method
-          roots: 'github.com/ExocoreNetwork/exocore/app.ExocoreApp.BaseApp.DeliverTx,github.com/ExocoreNetwork/exocore/app.ExocoreApp.BaseApp.BeginBlocker,github.com/ExocoreNetwork/exocore/app.ExocoreApp.BaseApp.EndBlocker'
+          roots: 'github.com/ExocoreNetwork/exocore/app.ExocoreApp.DeliverTx,github.com/ExocoreNetwork/exocore/app.ExocoreApp.BeginBlocker,github.com/ExocoreNetwork/exocore/app.ExocoreApp.EndBlocker'
