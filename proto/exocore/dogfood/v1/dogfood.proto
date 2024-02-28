@@ -7,6 +7,7 @@ import "google/protobuf/any.proto";
 import "google/protobuf/timestamp.proto";
 
 import "cosmos_proto/cosmos.proto";
+import "tendermint/crypto/keys.proto";
 import "cosmos/staking/v1beta1/staking.proto";
 
 option go_package = "github.com/ExocoreNetwork/exocore/x/dogfood/types";
@@ -24,6 +25,69 @@ message ExocoreValidator {
         (cosmos_proto.accepts_interface) = "cosmos.crypto.PubKey",
         (gogoproto.moretags) = "yaml:\"consensus_pubkey\""
     ];
+}
+
+// OperationType is used to indicate the type of operation that is being
+// cached by the module to create the updated validator set.
+enum OperationType {
+    option (gogoproto.goproto_enum_prefix) = false;
+    // KeyOpUnspecified is used to indicate that the operation type is not specified.
+    // This should never be used.
+    OPERATION_TYPE_UNSPECIFIED = 0 [ (gogoproto.enumvalue_customname) = "KeyOpUnspecified" ];
+    // KeyAddition is used to indicate that the operation is a key addition.
+    OPERATION_TYPE_ADDITION_OR_UPDATE = 1 [ (gogoproto.enumvalue_customname) = "KeyAdditionOrUpdate" ];
+    // KeyRemoval is used to indicate that the operation is a key removal. Typically
+    // this is done due to key replacement mechanism and not directly.
+    OPERATION_TYPE_REMOVAL = 2 [ (gogoproto.enumvalue_customname) = "KeyRemoval" ];
+}
+
+// QueueResultType is used to indicate the result of the queue operation.
+enum QueueResultType {
+    option (gogoproto.goproto_enum_prefix) = false;
+    // QueueResultUnspecified is used to indicate that the queue result type is not specified.
+    QUEUE_RESULT_TYPE_UNSPECIFIED = 0 [ (gogoproto.enumvalue_customname) = "QueueResultUnspecified" ];
+    // QueueResultSuccess is used to indicate that the queue operation was successful.
+    QUEUE_RESULT_TYPE_SUCCESS = 1 [ (gogoproto.enumvalue_customname) = "QueueResultSuccess" ];
+    // QueueResultExists is used to indicate that the queue operation failed because the
+    // operation already exists in the queue.
+    QUEUE_RESULT_TYPE_EXISTS = 2 [ (gogoproto.enumvalue_customname) = "QueueResultExists" ];
+    // QueueResultRemoved is used to indicate that the queue operation resulted in an existing
+    // operation being removed from the queue.
+    QUEUE_RESULT_TYPE_REMOVED = 3 [ (gogoproto.enumvalue_customname) = "QueueResultRemoved" ];
+}
+
+// Operation is used to indicate the operation that is being cached by the module
+// to create the updated validator set.
+message Operation {
+    // OperationType is the type of the operation (addition / removal).
+    OperationType operation_type = 1;
+    // OperatorAddress is the sdk.AccAddress of the operator.
+    bytes operator_address = 2;
+    // PubKey is the public key for which the operation is being applied.
+    tendermint.crypto.PublicKey pub_key = 3 [(gogoproto.nullable) = false];
+}
+
+// Operations is a collection of Operation.
+message Operations {
+    repeated Operation list = 1 [(gogoproto.nullable) = false];
+}
+
+// AccountAddresses represents a list of account addresses. It is used to store the list of
+// operator addresses whose operations are maturing at an epoch.
+message AccountAddresses {
+    repeated bytes list = 1;
+}
+
+// ConsensusAddresses represents a list of account addresses. It is used to store the list of
+// addresses (which correspond to operator public keys) to delete at the end of an epoch.
+message ConsensusAddresses {
+    repeated bytes list = 1;
+}
+
+// UndelegationRecordKeys is a collection of undelegation record keys. This is used to store a
+// list of undelegation records to mature in the delegation module at the end of the epoch.
+message UndelegationRecordKeys {
+    repeated bytes list = 1;
 }
 
 // Validators is a list of validators stored according to the staking module.

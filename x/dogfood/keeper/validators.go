@@ -31,10 +31,10 @@ func (k Keeper) UnbondingTime(ctx sdk.Context) time.Duration {
 // ApplyValidatorChanges returns the validator set as is. However, it also
 // stores the validators that are added or those that are removed, and updates
 // the power for the existing validators. It also allows any hooks registered
-// on the keeper to be executed.
+// on the keeper to be executed. Lastly, it stores the validator set against the
+// provided validator set id.
 func (k Keeper) ApplyValidatorChanges(
-	ctx sdk.Context,
-	changes []abci.ValidatorUpdate,
+	ctx sdk.Context, changes []abci.ValidatorUpdate, valSetID uint64, genesis bool,
 ) []abci.ValidatorUpdate {
 	ret := []abci.ValidatorUpdate{}
 	for _, change := range changes {
@@ -42,7 +42,7 @@ func (k Keeper) ApplyValidatorChanges(
 		pubkey, err := cryptocodec.FromTmProtoPublicKey(change.GetPubKey())
 		if err != nil {
 			// An error here would indicate that the validator updates
-			// received from other modules are invalid.
+			// received from other modules (or genesis) are invalid.
 			panic(err)
 		}
 		addr := pubkey.Address()
@@ -79,8 +79,33 @@ func (k Keeper) ApplyValidatorChanges(
 			// to tendermint.
 			continue
 		}
-
 		ret = append(ret, change)
+	}
+
+	// store the validator set against the provided validator set id
+	lastVals := types.Validators{}
+	for _, v := range k.GetAllExocoreValidators(ctx) {
+		pubkey, err := v.ConsPubKey()
+		if err != nil {
+			panic(err)
+		}
+		val, err := stakingtypes.NewValidator(nil, pubkey, stakingtypes.Description{})
+		if err != nil {
+			panic(err)
+		}
+		// Set validator to bonded status
+		val.Status = stakingtypes.Bonded
+		// Compute tokens from voting power
+		val.Tokens = sdk.TokensFromConsensusPower(v.Power, sdk.DefaultPowerReduction)
+		lastVals.List = append(lastVals.GetList(), val)
+	}
+	k.SetValidatorSet(ctx, valSetID, &lastVals)
+	if !genesis {
+		// the val set change is effective as of the next block, so height + 1.
+		k.SetValidatorSetID(ctx, ctx.BlockHeight()+1, valSetID)
+	} else {
+		// the val set change is effective immediately.
+		k.SetValidatorSetID(ctx, ctx.BlockHeight(), valSetID)
 	}
 	return ret
 }

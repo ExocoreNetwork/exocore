@@ -18,9 +18,15 @@ type (
 		storeKey   storetypes.StoreKey
 		paramstore paramtypes.Subspace
 
+		// internal hooks to allow other modules to subscriber to our events
 		dogfoodHooks types.DogfoodHooks
 
-		epochsKeeper types.EpochsKeeper
+		// external keepers as interfaces
+		epochsKeeper     types.EpochsKeeper
+		operatorKeeper   types.OperatorKeeper
+		delegationKeeper types.DelegationKeeper
+		restakingKeeper  types.RestakingKeeper
+		slashingKeeper   types.SlashingKeeper
 	}
 )
 
@@ -30,6 +36,10 @@ func NewKeeper(
 	storeKey storetypes.StoreKey,
 	ps paramtypes.Subspace,
 	epochsKeeper types.EpochsKeeper,
+	operatorKeeper types.OperatorKeeper,
+	delegationKeeper types.DelegationKeeper,
+	restakingKeeper types.RestakingKeeper,
+	slashingKeeper types.SlashingKeeper,
 ) *Keeper {
 	// set KeyTable if it has not already been set
 	if !ps.HasKeyTable() {
@@ -37,10 +47,14 @@ func NewKeeper(
 	}
 
 	return &Keeper{
-		cdc:          cdc,
-		storeKey:     storeKey,
-		paramstore:   ps,
-		epochsKeeper: epochsKeeper,
+		cdc:              cdc,
+		storeKey:         storeKey,
+		paramstore:       ps,
+		epochsKeeper:     epochsKeeper,
+		operatorKeeper:   operatorKeeper,
+		delegationKeeper: delegationKeeper,
+		restakingKeeper:  restakingKeeper,
+		slashingKeeper:   slashingKeeper,
 	}
 }
 
@@ -65,4 +79,39 @@ func (k *Keeper) SetHooks(sh types.DogfoodHooks) *Keeper {
 // Hooks returns the hooks registered to the module.
 func (k Keeper) Hooks() types.DogfoodHooks {
 	return k.dogfoodHooks
+}
+
+// GetQueuedKeyOperations returns the list of operations that are queued for execution at the
+// end of the current epoch.
+func (k Keeper) GetQueuedOperations(
+	ctx sdk.Context,
+) []types.Operation {
+	store := ctx.KVStore(k.storeKey)
+	bz := store.Get(types.QueuedOperationsKey())
+	if bz == nil {
+		return []types.Operation{}
+	}
+	var operations types.Operations
+	if err := operations.Unmarshal(bz); err != nil {
+		// TODO(mm): any failure to unmarshal is treated as no operations or panic?
+		return []types.Operation{}
+	}
+	return operations.GetList()
+}
+
+// ClearQueuedOperations clears the operations to be executed at the end of the epoch.
+func (k Keeper) ClearQueuedOperations(ctx sdk.Context) {
+	store := ctx.KVStore(k.storeKey)
+	store.Delete(types.QueuedOperationsKey())
+}
+
+// setQueuedOperations is a private, internal function used to update the current queue of
+// operations to be executed at the end of the epoch with the supplied value.
+func (k Keeper) setQueuedOperations(ctx sdk.Context, operations types.Operations) {
+	store := ctx.KVStore(k.storeKey)
+	bz, err := operations.Marshal()
+	if err != nil {
+		panic(err)
+	}
+	store.Set(types.QueuedOperationsKey(), bz)
 }
