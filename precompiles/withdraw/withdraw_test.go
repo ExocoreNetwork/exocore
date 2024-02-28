@@ -145,12 +145,6 @@ func (s *PrecompileTestSuite) TestRunWithdrawThroughClientChain() {
 				err := s.app.DepositKeeper.SetParams(s.ctx, depositModuleParam)
 				s.Require().NoError(err)
 				depositAsset(s.address.Bytes(), sdkmath.NewIntFromBigInt(depositAmount))
-				withdrawModuleParam := &depositparams.Params{
-					ExoCoreLzAppAddress:    s.address.String(),
-					ExoCoreLzAppEventTopic: exoCoreLzAppEventTopic,
-				}
-				err = s.app.WithdrawKeeper.SetParams(s.ctx, withdrawModuleParam)
-				s.Require().NoError(err)
 				return commonMalleate()
 			},
 			returnBytes: successRet,
