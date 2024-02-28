@@ -75,7 +75,6 @@ func (p Precompile) RequiredGas(input []byte) uint64 {
 		// This should never happen since this method is going to fail during Run
 		return 0
 	}
-
 	return p.Precompile.RequiredGas(input, p.IsTransaction(method.Name))
 }
 
