@@ -18,9 +18,15 @@ type (
 		storeKey   storetypes.StoreKey
 		paramstore paramtypes.Subspace
 
+		// internal hooks to allow other modules to subscriber to our events
 		dogfoodHooks types.DogfoodHooks
 
-		epochsKeeper types.EpochsKeeper
+		// external keepers as interfaces
+		epochsKeeper     types.EpochsKeeper
+		operatorKeeper   types.OperatorKeeper
+		delegationKeeper types.DelegationKeeper
+		restakingKeeper  types.RestakingKeeper
+		slashingKeeper   types.SlashingKeeper
 	}
 )
 
@@ -30,6 +36,10 @@ func NewKeeper(
 	storeKey storetypes.StoreKey,
 	ps paramtypes.Subspace,
 	epochsKeeper types.EpochsKeeper,
+	operatorKeeper types.OperatorKeeper,
+	delegationKeeper types.DelegationKeeper,
+	restakingKeeper types.RestakingKeeper,
+	slashingKeeper types.SlashingKeeper,
 ) *Keeper {
 	// set KeyTable if it has not already been set
 	if !ps.HasKeyTable() {
@@ -37,10 +47,14 @@ func NewKeeper(
 	}
 
 	return &Keeper{
-		cdc:          cdc,
-		storeKey:     storeKey,
-		paramstore:   ps,
-		epochsKeeper: epochsKeeper,
+		cdc:              cdc,
+		storeKey:         storeKey,
+		paramstore:       ps,
+		epochsKeeper:     epochsKeeper,
+		operatorKeeper:   operatorKeeper,
+		delegationKeeper: delegationKeeper,
+		restakingKeeper:  restakingKeeper,
+		slashingKeeper:   slashingKeeper,
 	}
 }
 

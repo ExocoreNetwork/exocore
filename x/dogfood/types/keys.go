@@ -12,6 +12,9 @@ const (
 	StoreKey = ModuleName
 )
 
+// InitialValidatorSetID is the initial validator set id.
+const InitialValidatorSetID = uint64(1)
+
 const (
 	// ExocoreValidatorBytePrefix is the prefix for the validator store.
 	ExocoreValidatorBytePrefix byte = iota + 1
@@ -30,6 +33,26 @@ const (
 	// ConsensusAddrsToPruneBytePrefix is the byte prefix to store the list of consensus
 	// addresses that can be pruned from the operator module at the provided epoch.
 	ConsensusAddrsToPruneBytePrefix
+
+	// UnbondingReleaseMaturityBytePrefix is the byte prefix to store the list of undelegations
+	// that will mature at the provided epoch.
+	UnbondingReleaseMaturityBytePrefix
+
+	// PendingOperationsByte is the byte used to store the list of operations to be applied at
+	// the end of the current block.
+	PendingOperationsByte
+
+	// PendingOptOutsByte is the byte used to store the list of operator addresses whose opt
+	// outs will be made effective at the end of the current block.
+	PendingOptOutsByte
+
+	// PendingConsensusAddrsByte is the byte used to store the list of consensus addresses to be
+	// pruned at the end of the block.
+	PendingConsensusAddrsByte
+
+	// PendingUndelegationsByte is the byte used to store the list of undelegations that will
+	// mature at the end of the current block.
+	PendingUndelegationsByte
 	// ValidatorSetBytePrefix is the prefix for the historical validator set store.
 	ValidatorSetBytePrefix
 
@@ -86,4 +109,33 @@ func ConsensusAddrsToPruneKey(epoch int64) []byte {
 	return append(
 		[]byte{ConsensusAddrsToPruneBytePrefix},
 		sdk.Uint64ToBigEndian(uint64(epoch))...)
+}
+
+// UnbondingReleaseMaturityKey is the key to lookup the list of undelegations that will mature
+// at the provided epoch.
+func UnbondingReleaseMaturityKey(epoch int64) []byte {
+	return append(
+		[]byte{UnbondingReleaseMaturityBytePrefix},
+		sdk.Uint64ToBigEndian(uint64(epoch))...)
+}
+
+// PendingOperationsKey returns the key for the pending operations store.
+func PendingOperationsKey() []byte {
+	return []byte{PendingOperationsByte}
+}
+
+// PendingOptOutsKey returns the key for the pending opt-outs store.
+func PendingOptOutsKey() []byte {
+	return []byte{PendingOptOutsByte}
+}
+
+// PendingConsensusAddrsByte is the byte used to store the list of consensus addresses to be
+// pruned at the end of the block.
+func PendingConsensusAddrsKey() []byte {
+	return []byte{PendingConsensusAddrsByte}
+}
+
+// PendingUndelegationsKey returns the key for the pending undelegations store.
+func PendingUndelegationsKey() []byte {
+	return []byte{PendingUndelegationsByte}
 }
