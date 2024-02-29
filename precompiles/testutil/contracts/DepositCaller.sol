@@ -9,14 +9,14 @@ contract DepositCaller {
     event ErrorOccurred(string errorMessage);
 
     function testDepositTo(
-        uint16 clientChainLzId,
+        uint16 clientChainLzID,
         bytes memory assetsAddress,
         bytes memory stakerAddress,
         uint256 opAmount
     ) public returns (bool, uint256) {
         return
             deposit.DEPOSIT_CONTRACT.depositTo(
-            clientChainLzId,
+            clientChainLzID,
             assetsAddress,
             stakerAddress,
             opAmount
@@ -24,13 +24,13 @@ contract DepositCaller {
     }
 
     function testCallDepositToAndEmitEvent(
-        uint16 clientChainLzId,
+        uint16 clientChainLzID,
         bytes memory assetsAddress,
         bytes memory stakerAddress,
         uint256 opAmount
     ) public returns (bool, uint256) {
         (bool success,uint256 latestAssetState) = deposit.DEPOSIT_CONTRACT.depositTo(
-            clientChainLzId,
+            clientChainLzID,
             assetsAddress,
             stakerAddress,
             opAmount
@@ -41,13 +41,13 @@ contract DepositCaller {
     }
 
     function testCallDepositToWithTryCatch(
-        uint16 clientChainLzId,
+        uint16 clientChainLzID,
         bytes memory assetsAddress,
         bytes memory stakerAddress,
         uint256 opAmount
     ) public returns (bool, uint256) {
         try deposit.DEPOSIT_CONTRACT.depositTo(
-            clientChainLzId,
+            clientChainLzID,
             assetsAddress,
             stakerAddress,
             opAmount
@@ -62,7 +62,7 @@ contract DepositCaller {
         return (false,0);
     }
 /*    function testDelegateCallDepositTo(
-        uint16 clientChainLzId,
+        uint16 clientChainLzID,
         bytes memory assetsAddress,
         bytes memory stakerAddress,
         uint256 opAmount
@@ -70,7 +70,7 @@ contract DepositCaller {
         (bool success,uint256 latestAssetState) = deposit.DEPOSIT_PRECOMPILE_ADDRESS.delegatecall(
             abi.encodeWithSignature(
                 "depositTo(uint16,bytes,bytes,uint256)",
-                clientChainLzId,
+                clientChainLzID,
                 assetsAddress,
                 stakerAddress,
                 opAmount
@@ -81,7 +81,7 @@ contract DepositCaller {
     }
 
     function testStaticCallDepositTo(
-        uint16 clientChainLzId,
+        uint16 clientChainLzID,
         bytes memory assetsAddress,
         bytes memory stakerAddress,
         uint256 opAmount
@@ -91,7 +91,7 @@ contract DepositCaller {
             .staticcall(
             abi.encodeWithSignature(
                 "depositTo(uint16,bytes,bytes,uint256)",
-                clientChainLzId,
+                clientChainLzID,
                 assetsAddress,
                 stakerAddress,
                 opAmount

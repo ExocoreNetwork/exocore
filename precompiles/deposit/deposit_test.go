@@ -16,7 +16,7 @@ import (
 	evmtypes "github.com/evmos/evmos/v14/x/evm/types"
 )
 
-func (s *PrecompileTestSuite) TestIsTransaction() {
+func (s *DepositPrecompileSuite) TestIsTransaction() {
 	testCases := []struct {
 		name   string
 		method string
@@ -50,31 +50,31 @@ func paddingClientChainAddress(input []byte, outputLength int) []byte {
 }
 
 // TestRunDepositTo tests DepositTo method through calling Run function..
-func (s *PrecompileTestSuite) TestRunDepositTo() {
+func (s *DepositPrecompileSuite) TestRunDepositTo() {
 	// deposit params for test
 	exoCoreLzAppAddress := "0x3fC91A3afd70395Cd496C647d5a6CC9D4B2b7FAD"
 	exoCoreLzAppEventTopic := "0xc6a377bfc4eb120024a8ac08eef205be16b817020812c73223e81d1bdb9708ec"
 	usdtAddress := paddingClientChainAddress(common.FromHex("0xdAC17F958D2ee523a2206206994597C13D831ec7"), types.GeneralClientChainAddrLength)
 	usdcAddress := paddingClientChainAddress(common.FromHex("0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"), types.GeneralClientChainAddrLength)
-	clientChainLzId := 101
-	stakerAddr := paddingClientChainAddress(s.address.Bytes(), types.GeneralClientChainAddrLength)
+	clientChainLzID := 101
+	stakerAddr := paddingClientChainAddress(s.Address.Bytes(), types.GeneralClientChainAddrLength)
 	opAmount := big.NewInt(100)
 	assetAddr := usdtAddress
 	commonMalleate := func() (common.Address, []byte) {
-		valAddr, err := sdk.ValAddressFromBech32(s.validators[0].OperatorAddress)
+		valAddr, err := sdk.ValAddressFromBech32(s.Validators[0].OperatorAddress)
 		s.Require().NoError(err)
-		val, _ := s.app.StakingKeeper.GetValidator(s.ctx, valAddr)
+		val, _ := s.App.StakingKeeper.GetValidator(s.Ctx, valAddr)
 		coins := sdk.NewCoins(sdk.NewCoin(utils.BaseDenom, sdk.NewInt(1e18)))
-		s.app.DistrKeeper.AllocateTokensToValidator(s.ctx, val, sdk.NewDecCoinsFromCoins(coins...))
+		s.App.DistrKeeper.AllocateTokensToValidator(s.Ctx, val, sdk.NewDecCoinsFromCoins(coins...))
 		input, err := s.precompile.Pack(
 			deposit.MethodDepositTo,
-			uint16(clientChainLzId),
+			uint16(clientChainLzID),
 			assetAddr,
 			stakerAddr,
 			opAmount,
 		)
 		s.Require().NoError(err, "failed to pack input")
-		return s.address, input
+		return s.Address, input
 	}
 	successRet, err := s.precompile.Methods[deposit.MethodDepositTo].Outputs.Pack(true, opAmount)
 	s.Require().NoError(err)
@@ -103,7 +103,7 @@ func (s *PrecompileTestSuite) TestRunDepositTo() {
 					ExoCoreLzAppAddress:    exoCoreLzAppAddress,
 					ExoCoreLzAppEventTopic: exoCoreLzAppEventTopic,
 				}
-				err := s.app.DepositKeeper.SetParams(s.ctx, depositModuleParam)
+				err := s.App.DepositKeeper.SetParams(s.Ctx, depositModuleParam)
 				s.Require().NoError(err)
 				return commonMalleate()
 			},
@@ -115,10 +115,10 @@ func (s *PrecompileTestSuite) TestRunDepositTo() {
 			name: "fail - depositTo transaction will fail because the staked asset hasn't been registered",
 			malleate: func() (common.Address, []byte) {
 				depositModuleParam := &types3.Params{
-					ExoCoreLzAppAddress:    s.address.String(),
+					ExoCoreLzAppAddress:    s.Address.String(),
 					ExoCoreLzAppEventTopic: exoCoreLzAppEventTopic,
 				}
-				err := s.app.DepositKeeper.SetParams(s.ctx, depositModuleParam)
+				err := s.App.DepositKeeper.SetParams(s.Ctx, depositModuleParam)
 				s.Require().NoError(err)
 				assetAddr = usdcAddress
 				return commonMalleate()
@@ -131,11 +131,11 @@ func (s *PrecompileTestSuite) TestRunDepositTo() {
 			name: "pass - depositTo transaction",
 			malleate: func() (common.Address, []byte) {
 				depositModuleParam := &types3.Params{
-					ExoCoreLzAppAddress:    s.address.String(),
+					ExoCoreLzAppAddress:    s.Address.String(),
 					ExoCoreLzAppEventTopic: exoCoreLzAppEventTopic,
 				}
 				assetAddr = usdtAddress
-				err := s.app.DepositKeeper.SetParams(s.ctx, depositModuleParam)
+				err := s.App.DepositKeeper.SetParams(s.Ctx, depositModuleParam)
 				s.Require().NoError(err)
 				return commonMalleate()
 			},
@@ -151,7 +151,7 @@ func (s *PrecompileTestSuite) TestRunDepositTo() {
 			// setup basic test suite
 			s.SetupTest()
 
-			baseFee := s.app.FeeMarketKeeper.GetBaseFee(s.ctx)
+			baseFee := s.App.FeeMarketKeeper.GetBaseFee(s.Ctx)
 
 			// malleate testcase
 			caller, input := tc.malleate()
@@ -162,7 +162,7 @@ func (s *PrecompileTestSuite) TestRunDepositTo() {
 			contractAddr := contract.Address()
 			// Build and sign Ethereum transaction
 			txArgs := evmtypes.EvmTxArgs{
-				ChainID:   s.app.EvmKeeper.ChainID(),
+				ChainID:   s.App.EvmKeeper.ChainID(),
 				Nonce:     0,
 				To:        &contractAddr,
 				Amount:    nil,
@@ -174,26 +174,26 @@ func (s *PrecompileTestSuite) TestRunDepositTo() {
 			}
 			msgEthereumTx := evmtypes.NewTx(&txArgs)
 
-			msgEthereumTx.From = s.address.String()
-			err := msgEthereumTx.Sign(s.ethSigner, s.signer)
+			msgEthereumTx.From = s.Address.String()
+			err := msgEthereumTx.Sign(s.EthSigner, s.Signer)
 			s.Require().NoError(err, "failed to sign Ethereum message")
 
 			// Instantiate config
-			proposerAddress := s.ctx.BlockHeader().ProposerAddress
-			cfg, err := s.app.EvmKeeper.EVMConfig(s.ctx, proposerAddress, s.app.EvmKeeper.ChainID())
+			proposerAddress := s.Ctx.BlockHeader().ProposerAddress
+			cfg, err := s.App.EvmKeeper.EVMConfig(s.Ctx, proposerAddress, s.App.EvmKeeper.ChainID())
 			s.Require().NoError(err, "failed to instantiate EVM config")
 
-			msg, err := msgEthereumTx.AsMessage(s.ethSigner, baseFee)
+			msg, err := msgEthereumTx.AsMessage(s.EthSigner, baseFee)
 			s.Require().NoError(err, "failed to instantiate Ethereum message")
 
 			// Instantiate EVM
-			evm := s.app.EvmKeeper.NewEVM(
-				s.ctx, msg, cfg, nil, s.stateDB,
+			evm := s.App.EvmKeeper.NewEVM(
+				s.Ctx, msg, cfg, nil, s.StateDB,
 			)
 
-			params := s.app.EvmKeeper.GetParams(s.ctx)
+			params := s.App.EvmKeeper.GetParams(s.Ctx)
 			activePrecompiles := params.GetActivePrecompilesAddrs()
-			precompileMap := s.app.EvmKeeper.Precompiles(activePrecompiles...)
+			precompileMap := s.App.EvmKeeper.Precompiles(activePrecompiles...)
 			err = vm.ValidatePrecompiles(precompileMap, activePrecompiles)
 			s.Require().NoError(err, "invalid precompiles", activePrecompiles)
 			evm.WithPrecompiles(precompileMap, activePrecompiles)

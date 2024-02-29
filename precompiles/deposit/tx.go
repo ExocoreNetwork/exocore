@@ -48,8 +48,8 @@ func (p Precompile) DepositTo(
 	}
 
 	// get the latest asset state of staker to return.
-	stakerId, assetId := types.GetStakeIDAndAssetId(depositParams.ClientChainLzId, depositParams.StakerAddress, depositParams.AssetsAddress)
-	info, err := p.stakingStateKeeper.GetStakerSpecifiedAssetInfo(ctx, stakerId, assetId)
+	stakerID, assetID := types.GetStakeIDAndAssetID(depositParams.ClientChainLzID, depositParams.StakerAddress, depositParams.AssetsAddress)
+	info, err := p.stakingStateKeeper.GetStakerSpecifiedAssetInfo(ctx, stakerID, assetID)
 	if err != nil {
 		return nil, err
 	}

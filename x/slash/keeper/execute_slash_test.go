@@ -9,39 +9,39 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 )
 
-func (suite *KeeperTestSuite) TestSlash() {
+func (suite *SlashTestSuite) TestSlash() {
 	usdtAddress := common.HexToAddress("0xdAC17F958D2ee523a2206206994597C13D831ec7")
 	usdcAddress := common.HexToAddress("0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48")
 	event := &keeper.SlashParams{
-		ClientChainLzId: 101,
+		ClientChainLzID: 101,
 		Action:          types.Slash,
-		StakerAddress:   suite.address[:],
+		StakerAddress:   suite.Address[:],
 		OpAmount:        sdkmath.NewInt(90),
 	}
 
 	depositEvent := &depositKeeper.DepositParams{
-		ClientChainLzId: 101,
+		ClientChainLzID: 101,
 		Action:          types.Deposit,
-		StakerAddress:   suite.address[:],
+		StakerAddress:   suite.Address[:],
 		OpAmount:        sdkmath.NewInt(100),
 	}
 
 	// deposit firstly
 	depositEvent.AssetsAddress = usdtAddress[:]
-	err := suite.app.DepositKeeper.Deposit(suite.ctx, depositEvent)
+	err := suite.App.DepositKeeper.Deposit(suite.Ctx, depositEvent)
 	suite.NoError(err)
 
 	// test the case that the slash  hasn't registered
 	event.AssetsAddress = usdcAddress[:]
-	err = suite.app.ExoSlashKeeper.Slash(suite.ctx, event)
+	err = suite.App.ExoSlashKeeper.Slash(suite.Ctx, event)
 	suite.ErrorContains(err, slashtype.ErrSlashAssetNotExist.Error())
 
-	assets, err := suite.app.StakingAssetsManageKeeper.GetAllStakingAssetsInfo(suite.ctx)
+	assets, err := suite.App.StakingAssetsManageKeeper.GetAllStakingAssetsInfo(suite.Ctx)
 	suite.NoError(err)
-	suite.app.Logger().Info("the assets is:", "assets", assets)
+	suite.App.Logger().Info("the assets is:", "assets", assets)
 
-	stakerId, assetId := types.GetStakeIDAndAssetId(depositEvent.ClientChainLzId, depositEvent.StakerAddress, depositEvent.AssetsAddress)
-	info, err := suite.app.StakingAssetsManageKeeper.GetStakerSpecifiedAssetInfo(suite.ctx, stakerId, assetId)
+	stakerID, assetID := types.GetStakeIDAndAssetID(depositEvent.ClientChainLzID, depositEvent.StakerAddress, depositEvent.AssetsAddress)
+	info, err := suite.App.StakingAssetsManageKeeper.GetStakerSpecifiedAssetInfo(suite.Ctx, stakerID, assetID)
 	suite.NoError(err)
 	suite.Equal(types.StakerSingleAssetOrChangeInfo{
 		TotalDepositAmountOrWantChangeValue:  depositEvent.OpAmount,
@@ -51,12 +51,12 @@ func (suite *KeeperTestSuite) TestSlash() {
 
 	// test the normal case
 	event.AssetsAddress = usdtAddress[:]
-	err = suite.app.ExoSlashKeeper.Slash(suite.ctx, event)
+	err = suite.App.ExoSlashKeeper.Slash(suite.Ctx, event)
 	suite.NoError(err)
 
 	// check state after slash
-	stakerId, assetId = types.GetStakeIDAndAssetId(event.ClientChainLzId, event.StakerAddress, event.AssetsAddress)
-	info, err = suite.app.StakingAssetsManageKeeper.GetStakerSpecifiedAssetInfo(suite.ctx, stakerId, assetId)
+	stakerID, assetID = types.GetStakeIDAndAssetID(event.ClientChainLzID, event.StakerAddress, event.AssetsAddress)
+	info, err = suite.App.StakingAssetsManageKeeper.GetStakerSpecifiedAssetInfo(suite.Ctx, stakerID, assetID)
 	suite.NoError(err)
 	suite.Equal(types.StakerSingleAssetOrChangeInfo{
 		TotalDepositAmountOrWantChangeValue:  sdkmath.NewInt(10),
@@ -64,7 +64,7 @@ func (suite *KeeperTestSuite) TestSlash() {
 		WaitUnbondingAmountOrWantChangeValue: sdkmath.NewInt(0),
 	}, *info)
 
-	assetInfo, err := suite.app.StakingAssetsManageKeeper.GetStakingAssetInfo(suite.ctx, assetId)
+	assetInfo, err := suite.App.StakingAssetsManageKeeper.GetStakingAssetInfo(suite.Ctx, assetID)
 	suite.NoError(err)
 	suite.Equal(sdkmath.NewInt(10), assetInfo.StakingTotalAmount)
 }

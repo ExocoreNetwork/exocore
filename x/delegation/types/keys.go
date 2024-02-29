@@ -43,46 +43,46 @@ const (
 )
 
 var (
-	// KeyPrefixRestakerDelegationInfo reStakerId = clientChainAddr+'_'+ExoCoreChainIndex
+	// KeyPrefixRestakerDelegationInfo reStakerID = clientChainAddr+'_'+ExoCoreChainIndex
 	// KeyPrefixRestakerDelegationInfo
 	// key-value:
-	// reStakerId +'/'+assetId -> totalDelegationAmount
-	// reStakerId +'/'+assetId+'/'+operatorAddr -> delegationAmounts
+	// reStakerID +'/'+assetID -> totalDelegationAmount
+	// reStakerID +'/'+assetID+'/'+operatorAddr -> delegationAmounts
 	KeyPrefixRestakerDelegationInfo = []byte{prefixRestakerDelegationInfo}
 	// KeyPrefixDelegationUsedSalt key->value: operatorApproveAddr->map[salt]{}
 	KeyPrefixDelegationUsedSalt = []byte{prefixDelegationUsedSalt}
-	// KeyPrefixOperatorApprovedInfo key-value: operatorApproveAddr->map[reStakerId]{}
+	// KeyPrefixOperatorApprovedInfo key-value: operatorApproveAddr->map[reStakerID]{}
 	KeyPrefixOperatorApprovedInfo = []byte{prefixOperatorApprovedInfo}
 
 	// KeyPrefixUndelegationInfo singleRecordKey = lzNonce+'/'+txHash+'/'+operatorAddr
 	// singleRecordKey -> UndelegateReqRecord
 	KeyPrefixUndelegationInfo = []byte{prefixUndelegationInfo}
-	// KeyPrefixStakerUndelegationInfo reStakerId+'/'+assetId+'/'+lzNonce -> singleRecordKey
+	// KeyPrefixStakerUndelegationInfo reStakerID+'/'+assetID+'/'+lzNonce -> singleRecordKey
 	KeyPrefixStakerUndelegationInfo = []byte{prefixStakerUndelegationInfo}
 	// KeyPrefixWaitCompleteUndelegations completeHeight +'/'+lzNonce -> singleRecordKey
 	KeyPrefixWaitCompleteUndelegations = []byte{prefixWaitCompleteUndelegations}
 )
 
-func GetDelegationStateIteratorPrefix(stakerId, assetId string) []byte {
-	tmp := []byte(strings.Join([]string{stakerId, assetId}, "/"))
+func GetDelegationStateIteratorPrefix(stakerID, assetID string) []byte {
+	tmp := []byte(strings.Join([]string{stakerID, assetID}, "/"))
 	tmp = append(tmp, '/')
 	return tmp
 }
 
-func ParseStakerAssetIdAndOperatorAddrFromKey(key []byte) (keys *SingleDelegationInfoReq, err error) {
+func ParseStakerAssetIDAndOperatorAddrFromKey(key []byte) (keys *SingleDelegationInfoReq, err error) {
 	stringList, err := types.ParseJoinedStoreKey(key, 3)
 	if err != nil {
 		return nil, err
 	}
-	return &SingleDelegationInfoReq{StakerId: stringList[0], AssetId: stringList[1], OperatorAddr: stringList[2]}, nil
+	return &SingleDelegationInfoReq{StakerID: stringList[0], AssetID: stringList[1], OperatorAddr: stringList[2]}, nil
 }
 
 func GetUndelegationRecordKey(lzNonce uint64, txHash string, operatorAddr string) []byte {
 	return []byte(strings.Join([]string{hexutil.EncodeUint64(lzNonce), txHash, operatorAddr}, "/"))
 }
 
-func GetStakerUndelegationRecordKey(stakerId, assetId string, lzNonce uint64) []byte {
-	return []byte(strings.Join([]string{stakerId, assetId, hexutil.EncodeUint64(lzNonce)}, "/"))
+func GetStakerUndelegationRecordKey(stakerID, assetID string, lzNonce uint64) []byte {
+	return []byte(strings.Join([]string{stakerID, assetID, hexutil.EncodeUint64(lzNonce)}, "/"))
 }
 
 func GetWaitCompleteRecordKey(height, lzNonce uint64) []byte {

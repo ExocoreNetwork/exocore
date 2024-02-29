@@ -10,8 +10,8 @@ import "exocore/delegation/v1/tx.proto";
 option go_package = "github.com/ExocoreNetwork/exocore/x/delegation/types";
 
 message DelegationInfoReq {
-  string stakerId = 1;
-  string assetId = 2;
+  string stakerID = 1;
+  string assetID = 2;
 }
 
 message DelegationAmounts{
@@ -46,9 +46,9 @@ message QueryDelegationInfoResponse{
 }
 
 message SingleDelegationInfoReq {
-  string stakerId = 1;
+  string stakerID = 1;
   string operatorAddr = 2 [(cosmos_proto.scalar) = "cosmos.AddressString"];
-  string assetId = 3;
+  string assetID = 3;
 }
 
 

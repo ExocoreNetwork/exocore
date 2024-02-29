@@ -17,7 +17,7 @@ import (
 	evmtypes "github.com/evmos/evmos/v14/x/evm/types"
 )
 
-func (s *PrecompileTestSuite) TestIsTransaction() {
+func (s *SlashPrecompileTestSuite) TestIsTransaction() {
 	testCases := []struct {
 		name   string
 		method string
@@ -51,24 +51,24 @@ func paddingClientChainAddress(input []byte, outputLength int) []byte {
 }
 
 // TestRun tests the precompiles Run method submitSlash.
-func (s *PrecompileTestSuite) TestRunSlash() {
+func (s *SlashPrecompileTestSuite) TestRunSlash() {
 	// deposit params for test
 	exoCoreLzAppEventTopic := "0xc6a377bfc4eb120024a8ac08eef205be16b817020812c73223e81d1bdb9708ec"
 	usdtAddress := common.FromHex("0xdAC17F958D2ee523a2206206994597C13D831ec7")
-	clientChainLzId := 101
+	clientChainLzID := 101
 	slashAmount := big.NewInt(10)
 	depositAmount := big.NewInt(100)
 	assetAddr := paddingClientChainAddress(usdtAddress, types.GeneralClientChainAddrLength)
 	depositAsset := func(staker []byte, depositAmount sdkmath.Int) {
 		// deposit asset for slash test
 		params := &keeper.DepositParams{
-			ClientChainLzId: 101,
+			ClientChainLzID: 101,
 			Action:          types.Deposit,
 			StakerAddress:   staker,
 			AssetsAddress:   usdtAddress,
 			OpAmount:        depositAmount,
 		}
-		err := s.app.DepositKeeper.Deposit(s.ctx, params)
+		err := s.App.DepositKeeper.Deposit(s.Ctx, params)
 		s.Require().NoError(err)
 	}
 
@@ -76,9 +76,9 @@ func (s *PrecompileTestSuite) TestRunSlash() {
 		// Prepare the call input for slash test
 		input, err := s.precompile.Pack(
 			slash.MethodSlash,
-			uint16(clientChainLzId),
+			uint16(clientChainLzID),
 			assetAddr,
-			paddingClientChainAddress(s.address.Bytes(), types.GeneralClientChainAddrLength),
+			paddingClientChainAddress(s.Address.Bytes(), types.GeneralClientChainAddrLength),
 			slashAmount,
 			common.FromHex("0x2E756b8faBeA234b9900767b69D6387400CDC396"),
 			common.FromHex("0xceb69f6342ece283b2f5c9088ff249b5d0ae66ea"),
@@ -86,7 +86,7 @@ func (s *PrecompileTestSuite) TestRunSlash() {
 			"slash",
 		)
 		s.Require().NoError(err, "failed to pack input")
-		return s.address, input
+		return s.Address, input
 	}
 	successRet, err := s.precompile.Methods[slash.MethodSlash].Outputs.Pack(true)
 	s.Require().NoError(err)
@@ -102,17 +102,17 @@ func (s *PrecompileTestSuite) TestRunSlash() {
 			name: "pass - slash via pre-compiles",
 			malleate: func() (common.Address, []byte) {
 				depositModuleParam := &depositParams.Params{
-					ExoCoreLzAppAddress:    s.address.String(),
+					ExoCoreLzAppAddress:    s.Address.String(),
 					ExoCoreLzAppEventTopic: exoCoreLzAppEventTopic,
 				}
-				err := s.app.DepositKeeper.SetParams(s.ctx, depositModuleParam)
+				err := s.App.DepositKeeper.SetParams(s.Ctx, depositModuleParam)
 				s.Require().NoError(err)
-				depositAsset(s.address.Bytes(), sdkmath.NewIntFromBigInt(depositAmount))
+				depositAsset(s.Address.Bytes(), sdkmath.NewIntFromBigInt(depositAmount))
 				slashModuleParam := &slashParams.Params{
-					ExoCoreLzAppAddress:    s.address.String(),
+					ExoCoreLzAppAddress:    s.Address.String(),
 					ExoCoreLzAppEventTopic: exoCoreLzAppEventTopic,
 				}
-				err = s.app.ExoSlashKeeper.SetParams(s.ctx, slashModuleParam)
+				err = s.App.ExoSlashKeeper.SetParams(s.Ctx, slashModuleParam)
 				s.Require().NoError(err)
 				return commonMalleate()
 			},
@@ -127,7 +127,7 @@ func (s *PrecompileTestSuite) TestRunSlash() {
 			// setup basic test suite
 			s.SetupTest()
 
-			baseFee := s.app.FeeMarketKeeper.GetBaseFee(s.ctx)
+			baseFee := s.App.FeeMarketKeeper.GetBaseFee(s.Ctx)
 
 			// malleate testcase
 			caller, input := tc.malleate()
@@ -138,7 +138,7 @@ func (s *PrecompileTestSuite) TestRunSlash() {
 			contractAddr := contract.Address()
 			// Build and sign Ethereum transaction
 			txArgs := evmtypes.EvmTxArgs{
-				ChainID:   s.app.EvmKeeper.ChainID(),
+				ChainID:   s.App.EvmKeeper.ChainID(),
 				Nonce:     0,
 				To:        &contractAddr,
 				Amount:    nil,
@@ -150,27 +150,27 @@ func (s *PrecompileTestSuite) TestRunSlash() {
 			}
 			msgEthereumTx := evmtypes.NewTx(&txArgs)
 
-			msgEthereumTx.From = s.address.String()
-			err := msgEthereumTx.Sign(s.ethSigner, s.signer)
+			msgEthereumTx.From = s.Address.String()
+			err := msgEthereumTx.Sign(s.EthSigner, s.Signer)
 			s.Require().NoError(err, "failed to sign Ethereum message")
 
 			// Instantiate config
-			proposerAddress := s.ctx.BlockHeader().ProposerAddress
-			cfg, err := s.app.EvmKeeper.EVMConfig(s.ctx, proposerAddress, s.app.EvmKeeper.ChainID())
+			proposerAddress := s.Ctx.BlockHeader().ProposerAddress
+			cfg, err := s.App.EvmKeeper.EVMConfig(s.Ctx, proposerAddress, s.App.EvmKeeper.ChainID())
 			s.Require().NoError(err, "failed to instantiate EVM config")
 
-			msg, err := msgEthereumTx.AsMessage(s.ethSigner, baseFee)
+			msg, err := msgEthereumTx.AsMessage(s.EthSigner, baseFee)
 			s.Require().NoError(err, "failed to instantiate Ethereum message")
 
 			// Create StateDB
-			s.stateDB = statedb.New(s.ctx, s.app.EvmKeeper, statedb.NewEmptyTxConfig(common.BytesToHash(s.ctx.HeaderHash().Bytes())))
+			s.StateDB = statedb.New(s.Ctx, s.App.EvmKeeper, statedb.NewEmptyTxConfig(common.BytesToHash(s.Ctx.HeaderHash().Bytes())))
 			// Instantiate EVM
-			evm := s.app.EvmKeeper.NewEVM(
-				s.ctx, msg, cfg, nil, s.stateDB,
+			evm := s.App.EvmKeeper.NewEVM(
+				s.Ctx, msg, cfg, nil, s.StateDB,
 			)
-			params := s.app.EvmKeeper.GetParams(s.ctx)
+			params := s.App.EvmKeeper.GetParams(s.Ctx)
 			activePrecompiles := params.GetActivePrecompilesAddrs()
-			precompileMap := s.app.EvmKeeper.Precompiles(activePrecompiles...)
+			precompileMap := s.App.EvmKeeper.Precompiles(activePrecompiles...)
 			err = vm.ValidatePrecompiles(precompileMap, activePrecompiles)
 			s.Require().NoError(err, "invalid precompiles", activePrecompiles)
 			evm.WithPrecompiles(precompileMap, activePrecompiles)

@@ -9,12 +9,12 @@ import (
 
 // UpdateStakingAssetTotalAmount updating the total deposited amount of a specified asset in exoCore chain
 // The function will be called when stakers deposit and withdraw their assets
-func (k Keeper) UpdateStakingAssetTotalAmount(ctx sdk.Context, assetId string, changeAmount sdkmath.Int) (err error) {
+func (k Keeper) UpdateStakingAssetTotalAmount(ctx sdk.Context, assetID string, changeAmount sdkmath.Int) (err error) {
 	if changeAmount.IsNil() {
 		return nil
 	}
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), restakingtype.KeyPrefixReStakingAssetInfo)
-	key := []byte(assetId)
+	key := []byte(assetID)
 	ifExist := store.Has(key)
 	if !ifExist {
 		return restakingtype.ErrNoClientChainAssetKey
@@ -44,24 +44,24 @@ func (k Keeper) SetStakingAssetInfo(ctx sdk.Context, info *restakingtype.Staking
 	// key := common.HexToAddress(incentive.Contract)
 	bz := k.cdc.MustMarshal(info)
 
-	_, assetId := restakingtype.GetStakeIDAndAssetIdFromStr(info.AssetBasicInfo.LayerZeroChainId, "", info.AssetBasicInfo.Address)
-	store.Set([]byte(assetId), bz)
+	_, assetID := restakingtype.GetStakeIDAndAssetIDFromStr(info.AssetBasicInfo.LayerZeroChainId, "", info.AssetBasicInfo.Address)
+	store.Set([]byte(assetID), bz)
 	return nil
 }
 
-func (k Keeper) IsStakingAsset(ctx sdk.Context, assetId string) bool {
+func (k Keeper) IsStakingAsset(ctx sdk.Context, assetID string) bool {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), restakingtype.KeyPrefixReStakingAssetInfo)
-	return store.Has([]byte(assetId))
+	return store.Has([]byte(assetID))
 }
 
-func (k Keeper) GetStakingAssetInfo(ctx sdk.Context, assetId string) (info *restakingtype.StakingAssetInfo, err error) {
+func (k Keeper) GetStakingAssetInfo(ctx sdk.Context, assetID string) (info *restakingtype.StakingAssetInfo, err error) {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), restakingtype.KeyPrefixReStakingAssetInfo)
-	ifExist := store.Has([]byte(assetId))
+	ifExist := store.Has([]byte(assetID))
 	if !ifExist {
 		return nil, restakingtype.ErrNoClientChainAssetKey
 	}
 
-	value := store.Get([]byte(assetId))
+	value := store.Get([]byte(assetID))
 
 	ret := restakingtype.StakingAssetInfo{}
 	k.cdc.MustUnmarshal(value, &ret)
@@ -77,8 +77,8 @@ func (k Keeper) GetAllStakingAssetsInfo(ctx sdk.Context) (allAssets map[string]*
 	for ; iterator.Valid(); iterator.Next() {
 		var assetInfo restakingtype.StakingAssetInfo
 		k.cdc.MustUnmarshal(iterator.Value(), &assetInfo)
-		_, assetId := restakingtype.GetStakeIDAndAssetIdFromStr(assetInfo.AssetBasicInfo.LayerZeroChainId, "", assetInfo.AssetBasicInfo.Address)
-		ret[assetId] = &assetInfo
+		_, assetID := restakingtype.GetStakeIDAndAssetIDFromStr(assetInfo.AssetBasicInfo.LayerZeroChainId, "", assetInfo.AssetBasicInfo.Address)
+		ret[assetID] = &assetInfo
 	}
 	return ret, nil
 }

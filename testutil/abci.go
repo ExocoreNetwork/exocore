@@ -32,7 +32,7 @@ func Commit(ctx sdk.Context, app *app.ExocoreApp, t time.Duration, vs *tmtypes.V
 	return ctx.WithBlockHeader(header), nil
 }
 
-// CommitAndCreateNewCtx commits a block at a given time creating a ctx with the current settings
+// CommitAndCreateNewCtx commits a block at a given time creating a Ctx with the current settings
 // This is useful to keep test settings that could be affected by EndBlockers, e.g.
 // setting a baseFee == 0 and expecting this condition to continue after commit
 func CommitAndCreateNewCtx(ctx sdk.Context, app *app.ExocoreApp, t time.Duration, vs *tmtypes.ValidatorSet, isUncachedCtx bool) (sdk.Context, error) {
@@ -51,7 +51,7 @@ func CommitAndCreateNewCtx(ctx sdk.Context, app *app.ExocoreApp, t time.Duration
 		newCtx = app.BaseApp.NewContext(false, header)
 	}
 
-	// set the reseted fields to keep the current ctx settings
+	// set the reseted fields to keep the current Ctx settings
 	newCtx = newCtx.WithMinGasPrices(ctx.MinGasPrices())
 	newCtx = newCtx.WithEventManager(ctx.EventManager())
 	newCtx = newCtx.WithKVGasConfig(ctx.KVGasConfig())
@@ -63,7 +63,7 @@ func CommitAndCreateNewCtx(ctx sdk.Context, app *app.ExocoreApp, t time.Duration
 // DeliverTx delivers a cosmos tx for a given set of msgs
 func DeliverTx(
 	ctx sdk.Context,
-	appEvmos *app.ExocoreApp,
+	appExocore *app.ExocoreApp,
 	priv cryptotypes.PrivKey,
 	gasPrice *sdkmath.Int,
 	msgs ...sdk.Msg,
@@ -71,7 +71,7 @@ func DeliverTx(
 	txConfig := encoding.MakeConfig(app.ModuleBasics).TxConfig
 	tx, err := tx.PrepareCosmosTx(
 		ctx,
-		appEvmos,
+		appExocore,
 		tx.CosmosTxArgs{
 			TxCfg:    txConfig,
 			Priv:     priv,
@@ -84,7 +84,7 @@ func DeliverTx(
 	if err != nil {
 		return abci.ResponseDeliverTx{}, err
 	}
-	return BroadcastTxBytes(appEvmos, txConfig.TxEncoder(), tx)
+	return BroadcastTxBytes(appExocore, txConfig.TxEncoder(), tx)
 }
 
 // DeliverEthTx generates and broadcasts a Cosmos Tx populated with MsgEthereumTx messages.
@@ -118,18 +118,18 @@ func DeliverEthTx(
 // otherwise, it will assume the messages have already been signed. It does not check if the Eth tx is
 // successful or not.
 func DeliverEthTxWithoutCheck(
-	appEvmos *app.ExocoreApp,
+	appExocore *app.ExocoreApp,
 	priv cryptotypes.PrivKey,
 	msgs ...sdk.Msg,
 ) (abci.ResponseDeliverTx, error) {
 	txConfig := encoding.MakeConfig(app.ModuleBasics).TxConfig
 
-	tx, err := tx.PrepareEthTx(txConfig, appEvmos, priv, msgs...)
+	tx, err := tx.PrepareEthTx(txConfig, appExocore, priv, msgs...)
 	if err != nil {
 		return abci.ResponseDeliverTx{}, err
 	}
 
-	res, err := BroadcastTxBytes(appEvmos, txConfig.TxEncoder(), tx)
+	res, err := BroadcastTxBytes(appExocore, txConfig.TxEncoder(), tx)
 	if err != nil {
 		return abci.ResponseDeliverTx{}, err
 	}
@@ -140,7 +140,7 @@ func DeliverEthTxWithoutCheck(
 // CheckTx checks a cosmos tx for a given set of msgs
 func CheckTx(
 	ctx sdk.Context,
-	appEvmos *app.ExocoreApp,
+	appExocore *app.ExocoreApp,
 	priv cryptotypes.PrivKey,
 	gasPrice *sdkmath.Int,
 	msgs ...sdk.Msg,
@@ -149,7 +149,7 @@ func CheckTx(
 
 	tx, err := tx.PrepareCosmosTx(
 		ctx,
-		appEvmos,
+		appExocore,
 		tx.CosmosTxArgs{
 			TxCfg:    txConfig,
 			Priv:     priv,
@@ -162,25 +162,25 @@ func CheckTx(
 	if err != nil {
 		return abci.ResponseCheckTx{}, err
 	}
-	return checkTxBytes(appEvmos, txConfig.TxEncoder(), tx)
+	return checkTxBytes(appExocore, txConfig.TxEncoder(), tx)
 }
 
 // CheckEthTx checks a Ethereum tx for a given set of msgs
 func CheckEthTx(
-	appEvmos *app.ExocoreApp,
+	appExocore *app.ExocoreApp,
 	priv cryptotypes.PrivKey,
 	msgs ...sdk.Msg,
 ) (abci.ResponseCheckTx, error) {
 	txConfig := encoding.MakeConfig(app.ModuleBasics).TxConfig
 
-	tx, err := tx.PrepareEthTx(txConfig, appEvmos, priv, msgs...)
+	tx, err := tx.PrepareEthTx(txConfig, appExocore, priv, msgs...)
 	if err != nil {
 		return abci.ResponseCheckTx{}, err
 	}
-	return checkTxBytes(appEvmos, txConfig.TxEncoder(), tx)
+	return checkTxBytes(appExocore, txConfig.TxEncoder(), tx)
 }
 
-// BroadcastTxBytes encodes a transaction and calls DeliverTx on the app.
+// BroadcastTxBytes encodes a transaction and calls DeliverTx on the App.
 func BroadcastTxBytes(app *app.ExocoreApp, txEncoder sdk.TxEncoder, tx sdk.Tx) (abci.ResponseDeliverTx, error) {
 	// bz are bytes to be broadcasted over the network
 	bz, err := txEncoder(tx)
@@ -228,7 +228,7 @@ func commit(ctx sdk.Context, app *app.ExocoreApp, t time.Duration, vs *tmtypes.V
 	return header, nil
 }
 
-// checkTxBytes encodes a transaction and calls checkTx on the app.
+// checkTxBytes encodes a transaction and calls checkTx on the App.
 func checkTxBytes(app *app.ExocoreApp, txEncoder sdk.TxEncoder, tx sdk.Tx) (abci.ResponseCheckTx, error) {
 	bz, err := txEncoder(tx)
 	if err != nil {

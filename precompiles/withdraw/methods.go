@@ -44,8 +44,8 @@ func (p Precompile) Withdraw(
 		return nil, err
 	}
 	// get the latest asset state of staker to return.
-	stakerId, assetId := types.GetStakeIDAndAssetId(withdrawParam.ClientChainLzId, withdrawParam.WithdrawAddress, withdrawParam.AssetsAddress)
-	info, err := p.stakingStateKeeper.GetStakerSpecifiedAssetInfo(ctx, stakerId, assetId)
+	stakerID, assetID := types.GetStakeIDAndAssetID(withdrawParam.ClientChainLzID, withdrawParam.WithdrawAddress, withdrawParam.AssetsAddress)
+	info, err := p.stakingStateKeeper.GetStakerSpecifiedAssetInfo(ctx, stakerID, assetID)
 	if err != nil {
 		return nil, err
 	}

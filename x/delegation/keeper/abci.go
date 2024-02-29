@@ -56,7 +56,7 @@ func (k *Keeper) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.Valida
 		// TODO(mike): ensure that operator is required to perform self delegation to match above.
 
 		//calculate the actual canUndelegated asset amount
-		delegationInfo, err := k.GetSingleDelegationInfo(ctx, record.StakerId, record.AssetId, record.OperatorAddr)
+		delegationInfo, err := k.GetSingleDelegationInfo(ctx, record.StakerID, record.AssetID, record.OperatorAddr)
 		if err != nil {
 			panic(err)
 		}
@@ -73,13 +73,13 @@ func (k *Keeper) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.Valida
 			WaitUndelegationAmount:        recordAmountNeg,
 			UndelegatableAmountAfterSlash: record.ActualCompletedAmount.Neg(),
 		}
-		err = k.UpdateDelegationState(ctx, record.StakerId, record.AssetId, delegatorAndAmount)
+		err = k.UpdateDelegationState(ctx, record.StakerID, record.AssetID, delegatorAndAmount)
 		if err != nil {
 			panic(err)
 		}
 
 		// update the staker state
-		err = k.restakingStateKeeper.UpdateStakerAssetState(ctx, record.StakerId, record.AssetId, types.StakerSingleAssetOrChangeInfo{
+		err = k.restakingStateKeeper.UpdateStakerAssetState(ctx, record.StakerID, record.AssetID, types.StakerSingleAssetOrChangeInfo{
 			CanWithdrawAmountOrWantChangeValue:   record.ActualCompletedAmount,
 			WaitUnbondingAmountOrWantChangeValue: recordAmountNeg,
 		})
@@ -88,7 +88,7 @@ func (k *Keeper) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.Valida
 		}
 
 		// update the operator state
-		err = k.restakingStateKeeper.UpdateOperatorAssetState(ctx, operatorAccAddress, record.AssetId, types.OperatorSingleAssetOrChangeInfo{
+		err = k.restakingStateKeeper.UpdateOperatorAssetState(ctx, operatorAccAddress, record.AssetID, types.OperatorSingleAssetOrChangeInfo{
 			WaitUnbondingAmountOrWantChangeValue: recordAmountNeg,
 		})
 		if err != nil {

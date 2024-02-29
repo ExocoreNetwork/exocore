@@ -16,12 +16,12 @@ type SharedParameter struct {
 	stakerShare           map[string]sdkmath.LegacyDec
 }
 
-func UpdateShareOfStakerAndOperator(sharedParam *SharedParameter, assetId, stakerId, operatorAddr string, assetAmount sdkmath.Int) {
-	priceChange := sharedParam.priceChangeAssets[assetId]
-	assetDecimal := sharedParam.assetsDecimal[assetId]
-	if avsAddr, ok := sharedParam.assetsOperatorAVSInfo[assetId][operatorAddr]; ok {
+func UpdateShareOfStakerAndOperator(sharedParam *SharedParameter, assetID, stakerID, operatorAddr string, assetAmount sdkmath.Int) {
+	priceChange := sharedParam.priceChangeAssets[assetID]
+	assetDecimal := sharedParam.assetsDecimal[assetID]
+	if avsAddr, ok := sharedParam.assetsOperatorAVSInfo[assetID][operatorAddr]; ok {
 		newAssetUSDValue := CalculateShare(assetAmount, priceChange.NewPrice, assetDecimal, priceChange.Decimal)
-		key := string(types.GetJoinedStoreKey(avsAddr, stakerId, operatorAddr))
+		key := string(types.GetJoinedStoreKey(avsAddr, stakerID, operatorAddr))
 		AddShareInMap(sharedParam.stakerShare, key, newAssetUSDValue)
 	}
 }
@@ -38,18 +38,18 @@ func (k *Keeper) PriceChangeHandle(ctx sdk.Context) error {
 	avsOperatorShareChange := make(map[string]sdkmath.LegacyDec, 0)
 	assetsOperatorAVSInfo := make(map[string]map[string]string, 0)
 	assetsDecimal := make(map[string]uint32)
-	for assetId, priceChange := range priceChangeAssets {
+	for assetID, priceChange := range priceChangeAssets {
 		//get the decimal of asset
-		assetInfo, err := k.restakingStateKeeper.GetStakingAssetInfo(ctx, assetId)
+		assetInfo, err := k.restakingStateKeeper.GetStakingAssetInfo(ctx, assetID)
 		if err != nil {
 			return err
 		}
-		assetsDecimal[assetId] = assetInfo.AssetBasicInfo.Decimals
-		if _, ok := assetsOperatorAVSInfo[assetId]; !ok {
-			assetsOperatorAVSInfo[assetId] = make(map[string]string, 0)
+		assetsDecimal[assetID] = assetInfo.AssetBasicInfo.Decimals
+		if _, ok := assetsOperatorAVSInfo[assetID]; !ok {
+			assetsOperatorAVSInfo[assetID] = make(map[string]string, 0)
 		}
 		//UpdateStateForAsset
-		f := func(assetId string, keys []string, state *operatortypes.AssetOptedInState) error {
+		f := func(assetID string, keys []string, state *operatortypes.AssetOptedInState) error {
 			newAssetUSDValue := CalculateShare(state.Amount, priceChange.NewPrice, assetInfo.AssetBasicInfo.Decimals, priceChange.Decimal)
 			changeValue := newAssetUSDValue.Sub(state.Value)
 			state.Value = newAssetUSDValue
@@ -58,10 +58,10 @@ func (k *Keeper) PriceChangeHandle(ctx sdk.Context) error {
 			avsOperator := string(types.GetJoinedStoreKey(keys[1], keys[2]))
 			AddShareInMap(avsOperatorShareChange, avsAddr, changeValue)
 			AddShareInMap(avsOperatorShareChange, avsOperator, changeValue)
-			assetsOperatorAVSInfo[assetId][keys[2]] = avsAddr
+			assetsOperatorAVSInfo[assetID][keys[2]] = avsAddr
 			return nil
 		}
-		err = k.IterateUpdateAssetState(ctx, assetId, f)
+		err = k.IterateUpdateAssetState(ctx, assetID, f)
 		if err != nil {
 			return err
 		}
@@ -79,8 +79,8 @@ func (k *Keeper) PriceChangeHandle(ctx sdk.Context) error {
 		assetsOperatorAVSInfo: assetsOperatorAVSInfo,
 		stakerShare:           make(map[string]sdkmath.LegacyDec, 0),
 	}
-	stakerShareHandleFunc := func(stakerId, assetId, operatorAddr string, state *delegationtype.DelegationAmounts) error {
-		UpdateShareOfStakerAndOperator(sharedParameter, assetId, stakerId, operatorAddr, state.CanUndelegationAmount)
+	stakerShareHandleFunc := func(stakerID, assetID, operatorAddr string, state *delegationtype.DelegationAmounts) error {
+		UpdateShareOfStakerAndOperator(sharedParameter, assetID, stakerID, operatorAddr, state.CanUndelegationAmount)
 		return nil
 	}
 	err = k.delegationKeeper.IterateDelegationState(ctx, stakerShareHandleFunc)
@@ -88,8 +88,8 @@ func (k *Keeper) PriceChangeHandle(ctx sdk.Context) error {
 		return err
 	}
 
-	operatorShareHandleFunc := func(operatorAddr, assetId string, state *types.OperatorSingleAssetOrChangeInfo) error {
-		UpdateShareOfStakerAndOperator(sharedParameter, assetId, "", operatorAddr, state.OperatorOwnAmountOrWantChangeValue)
+	operatorShareHandleFunc := func(operatorAddr, assetID string, state *types.OperatorSingleAssetOrChangeInfo) error {
+		UpdateShareOfStakerAndOperator(sharedParameter, assetID, "", operatorAddr, state.OperatorOwnAmountOrWantChangeValue)
 		return nil
 	}
 	err = k.restakingStateKeeper.IteratorOperatorAssetState(ctx, operatorShareHandleFunc)

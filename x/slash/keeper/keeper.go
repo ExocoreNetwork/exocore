@@ -48,5 +48,5 @@ type IEXOSlash interface {
 	IsOperatorFrozen(ctx sdk.Context, event *SlashParams) (bool, error)
 	SetParams(ctx sdk.Context, params *types.Params) error
 	GetParams(ctx sdk.Context) (*types.Params, error)
-	OperatorAssetSlashedProportion(ctx sdk.Context, opAddr sdk.AccAddress, assetId string, startHeight, endHeight uint64) sdkmath.LegacyDec
+	OperatorAssetSlashedProportion(ctx sdk.Context, opAddr sdk.AccAddress, assetID string, startHeight, endHeight uint64) sdkmath.LegacyDec
 }

@@ -21,9 +21,9 @@ func (p Precompile) GetWithdrawParamsFromInputs(ctx sdk.Context, args []interfac
 	if !ok {
 		return nil, fmt.Errorf(ErrContractInputParaOrType, 0, reflect.TypeOf(args[0]), clientChainLzID)
 	}
-	withdrawParams.ClientChainLzId = uint64(clientChainLzID)
+	withdrawParams.ClientChainLzID = uint64(clientChainLzID)
 
-	info, err := p.stakingStateKeeper.GetClientChainInfoByIndex(ctx, withdrawParams.ClientChainLzId)
+	info, err := p.stakingStateKeeper.GetClientChainInfoByIndex(ctx, withdrawParams.ClientChainLzID)
 	if err != nil {
 		return nil, err
 	}

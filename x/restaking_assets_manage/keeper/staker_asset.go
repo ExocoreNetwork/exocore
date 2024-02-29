@@ -10,9 +10,9 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-func (k Keeper) GetStakerAssetInfos(ctx sdk.Context, stakerId string) (assetsInfo map[string]*restakingtype.StakerSingleAssetOrChangeInfo, err error) {
+func (k Keeper) GetStakerAssetInfos(ctx sdk.Context, stakerID string) (assetsInfo map[string]*restakingtype.StakerSingleAssetOrChangeInfo, err error) {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), restakingtype.KeyPrefixReStakerAssetInfos)
-	iterator := sdk.KVStorePrefixIterator(store, []byte(stakerId))
+	iterator := sdk.KVStorePrefixIterator(store, []byte(stakerID))
 	defer iterator.Close()
 
 	ret := make(map[string]*restakingtype.StakerSingleAssetOrChangeInfo, 0)
@@ -23,15 +23,15 @@ func (k Keeper) GetStakerAssetInfos(ctx sdk.Context, stakerId string) (assetsInf
 		if err != nil {
 			return nil, err
 		}
-		assetId := keyList[1]
-		ret[assetId] = &stateInfo
+		assetID := keyList[1]
+		ret[assetID] = &stateInfo
 	}
 	return ret, nil
 }
 
-func (k Keeper) GetStakerSpecifiedAssetInfo(ctx sdk.Context, stakerId string, assetId string) (info *restakingtype.StakerSingleAssetOrChangeInfo, err error) {
+func (k Keeper) GetStakerSpecifiedAssetInfo(ctx sdk.Context, stakerID string, assetID string) (info *restakingtype.StakerSingleAssetOrChangeInfo, err error) {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), restakingtype.KeyPrefixReStakerAssetInfos)
-	key := restakingtype.GetJoinedStoreKey(stakerId, assetId)
+	key := restakingtype.GetJoinedStoreKey(stakerID, assetID)
 	ifExist := store.Has(key)
 	if !ifExist {
 		return nil, errorsmod.Wrap(restakingtype.ErrNoStakerAssetKey, fmt.Sprintf("the key is:%s", key))
@@ -47,10 +47,10 @@ func (k Keeper) GetStakerSpecifiedAssetInfo(ctx sdk.Context, stakerId string, as
 // UpdateStakerAssetState It's used to update the staker asset state
 // The input `changeAmount` represents the values that you want to add or decrease,using positive or negative values for increasing and decreasing,respectively. The function will calculate and update new state after a successful check.
 // The function will be called when there is deposit or withdraw related to the specified staker.
-func (k Keeper) UpdateStakerAssetState(ctx sdk.Context, stakerId string, assetId string, changeAmount restakingtype.StakerSingleAssetOrChangeInfo) (err error) {
+func (k Keeper) UpdateStakerAssetState(ctx sdk.Context, stakerID string, assetID string, changeAmount restakingtype.StakerSingleAssetOrChangeInfo) (err error) {
 	//get the latest state,use the default initial state if the state hasn't been stored
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), restakingtype.KeyPrefixReStakerAssetInfos)
-	key := restakingtype.GetJoinedStoreKey(stakerId, assetId)
+	key := restakingtype.GetJoinedStoreKey(stakerID, assetID)
 	assetState := restakingtype.StakerSingleAssetOrChangeInfo{
 		TotalDepositAmountOrWantChangeValue:  math.NewInt(0),
 		CanWithdrawAmountOrWantChangeValue:   math.NewInt(0),

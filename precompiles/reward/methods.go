@@ -45,8 +45,8 @@ func (p Precompile) Reward(
 		return nil, err
 	}
 	// get the latest asset state of staker to return.
-	stakerId, assetId := types.GetStakeIDAndAssetId(rewardParam.ClientChainLzId, rewardParam.WithdrawRewardAddress, rewardParam.AssetsAddress)
-	info, err := p.stakingStateKeeper.GetStakerSpecifiedAssetInfo(ctx, stakerId, assetId)
+	stakerID, assetID := types.GetStakeIDAndAssetID(rewardParam.ClientChainLzID, rewardParam.WithdrawRewardAddress, rewardParam.AssetsAddress)
+	info, err := p.stakingStateKeeper.GetStakerSpecifiedAssetInfo(ctx, stakerID, assetID)
 	if err != nil {
 		return nil, err
 	}

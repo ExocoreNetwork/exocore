@@ -89,28 +89,28 @@ var (
 
 	KeyPrefixAppChainInfo = []byte{prefixAppChainInfo}
 
-	// KeyPrefixReStakingAssetInfo AssetId = AssetAddr+'_'+chainIndex
-	// KeyPrefixReStakingAssetInfo key->value: AssetId->ReStakingAssetInfo
+	// KeyPrefixReStakingAssetInfo AssetID = AssetAddr+'_'+chainIndex
+	// KeyPrefixReStakingAssetInfo key->value: AssetID->ReStakingAssetInfo
 	KeyPrefixReStakingAssetInfo = []byte{prefixRestakingAssetInfo}
 
-	// KeyPrefixReStakerAssetInfos reStakerId = clientChainAddr+'_'+ExoCoreChainIndex
-	// KeyPrefixReStakerAssetInfos key->value: reStakerId+'_'+AssetId->ReStakerSingleAssetInfo
-	// or reStakerId->mapping(AssetId->ReStakerSingleAssetInfo)?
+	// KeyPrefixReStakerAssetInfos reStakerID = clientChainAddr+'_'+ExoCoreChainIndex
+	// KeyPrefixReStakerAssetInfos key->value: reStakerID+'_'+AssetID->ReStakerSingleAssetInfo
+	// or reStakerID->mapping(AssetID->ReStakerSingleAssetInfo)?
 	KeyPrefixReStakerAssetInfos = []byte{prefixRestakerAssetInfo}
 
-	// KeyPrefixOperatorAssetInfos key->value: operatorAddr+'_'+AssetId->OperatorSingleAssetInfo
-	// or operatorAddr->mapping(AssetId->OperatorSingleAssetInfo) ?
+	// KeyPrefixOperatorAssetInfos key->value: operatorAddr+'_'+AssetID->OperatorSingleAssetInfo
+	// or operatorAddr->mapping(AssetID->OperatorSingleAssetInfo) ?
 	KeyPrefixOperatorAssetInfos = []byte{prefixOperatorAssetInfo}
 
 	// KeyPrefixOperatorOptedInMiddleWareAssetInfos key->value:
-	// operatorAddr+'_'+AssetId->mapping(middleWareAddr->struct{})
-	// or operatorAddr->mapping(AssetId->mapping(middleWareAddr->struct{})) ?
+	// operatorAddr+'_'+AssetID->mapping(middleWareAddr->struct{})
+	// or operatorAddr->mapping(AssetID->mapping(middleWareAddr->struct{})) ?
 	KeyPrefixOperatorOptedInMiddleWareAssetInfos = []byte{
 		prefixOperatorOptedInMiddlewareAssetInfo,
 	}
 
-	// KeyPrefixReStakerExoCoreAddr reStakerId = clientChainAddr+'_'+ExoCoreChainIndex
-	// KeyPrefixReStakerExoCoreAddr key-value: reStakerId->exoCoreAddr
+	// KeyPrefixReStakerExoCoreAddr reStakerID = clientChainAddr+'_'+ExoCoreChainIndex
+	// KeyPrefixReStakerExoCoreAddr key-value: reStakerID->exoCoreAddr
 	KeyPrefixReStakerExoCoreAddr = []byte{prefixRestakerExocoreAddr}
 	// KeyPrefixReStakerExoCoreAddrReverse k->v: exocoreAddress ->
 	// map[clientChainIndex]clientChainAddress

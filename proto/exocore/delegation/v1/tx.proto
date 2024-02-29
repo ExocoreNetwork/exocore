@@ -19,7 +19,7 @@ message ValueField {
 }
 
 message DelegatedSingleAssetInfo {
-  string AssetId = 1;
+  string AssetID = 1;
   string TotalDelegatedAmount = 2
   [
     (cosmos_proto.scalar) = "cosmos.Int",
@@ -52,8 +52,8 @@ message MsgDelegation{
 }
 
 message UndelegationRecord{
-  string stakerId = 1;
-  string assetId = 2;
+  string stakerID = 1;
+  string assetID = 2;
   string OperatorAddr = 3
   [(cosmos_proto.scalar) = "cosmos.AddressString"];
   string txHash = 4;

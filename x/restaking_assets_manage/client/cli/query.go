@@ -40,7 +40,7 @@ func GetQueryCmd() *cobra.Command {
 // QueClientChainInfoByIndex queries the client chain info by index
 func QueClientChainInfoByIndex() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "QueClientChainInfoByIndex clientChainLzId",
+		Use:   "QueClientChainInfoByIndex clientChainLzID",
 		Short: "Get client chain info by layerZero Id",
 		Long:  "Get client chain info by layerZero Id",
 		Args:  cobra.ExactArgs(1),
@@ -49,13 +49,13 @@ func QueClientChainInfoByIndex() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			clientChainLzId, err := strconv.ParseUint(args[0], 10, 64)
+			clientChainLzID, err := strconv.ParseUint(args[0], 10, 64)
 			if err != nil {
 				return errorsmod.Wrap(types.ErrCliCmdInputArg, err.Error())
 			}
 			queryClient := types.NewQueryClient(clientCtx)
 			req := &types.QueryClientChainInfo{
-				ChainIndex: clientChainLzId,
+				ChainIndex: clientChainLzID,
 			}
 			res, err := queryClient.QueClientChainInfoByIndex(context.Background(), req)
 			if err != nil {
@@ -99,7 +99,7 @@ func QueAllClientChainInfo() *cobra.Command {
 // QueStakingAssetInfo queries staking asset info
 func QueStakingAssetInfo() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "QueStakingAssetInfo assetAddr clientChainLzId",
+		Use:   "QueStakingAssetInfo assetAddr clientChainLzID",
 		Short: "Get staking asset info",
 		Long:  "Get staking asset info",
 		Args:  cobra.ExactArgs(2),
@@ -109,15 +109,15 @@ func QueStakingAssetInfo() *cobra.Command {
 				return err
 			}
 
-			clientChainLzId, err := strconv.ParseUint(args[1], 10, 64)
+			clientChainLzID, err := strconv.ParseUint(args[1], 10, 64)
 			if err != nil {
 				return errorsmod.Wrap(types.ErrCliCmdInputArg, fmt.Sprintf("error arg is:%v", args[1]))
 			}
 
-			_, assetId := types.GetStakeIDAndAssetIdFromStr(clientChainLzId, "", args[0])
+			_, assetID := types.GetStakeIDAndAssetIDFromStr(clientChainLzID, "", args[0])
 			queryClient := types.NewQueryClient(clientCtx)
 			req := &types.QueryStakingAssetInfo{
-				AssetId: assetId,
+				AssetID: assetID,
 			}
 			res, err := queryClient.QueStakingAssetInfo(context.Background(), req)
 			if err != nil {
@@ -161,7 +161,7 @@ func QueAllStakingAssetsInfo() *cobra.Command {
 // QueStakerAssetInfos queries staker asset info
 func QueStakerAssetInfos() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "QueStakerAssetInfos stakerId",
+		Use:   "QueStakerAssetInfos stakerID",
 		Short: "Get staker asset state",
 		Long:  "Get staker asset state",
 		Args:  cobra.ExactArgs(1),
@@ -173,7 +173,7 @@ func QueStakerAssetInfos() *cobra.Command {
 
 			queryClient := types.NewQueryClient(clientCtx)
 			req := &types.QueryStakerAssetInfo{
-				StakerId: args[0],
+				StakerID: args[0],
 			}
 			res, err := queryClient.QueStakerAssetInfos(context.Background(), req)
 			if err != nil {
@@ -190,7 +190,7 @@ func QueStakerAssetInfos() *cobra.Command {
 // QueStakerSpecifiedAssetAmount queries staker specified asset info
 func QueStakerSpecifiedAssetAmount() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "QueStakerSpecifiedAssetAmount clientChainId stakerAddr assetAddr",
+		Use:   "QueStakerSpecifiedAssetAmount clientChainID stakerAddr assetAddr",
 		Short: "Get staker specified asset state",
 		Long:  "Get staker specified asset state",
 		Args:  cobra.ExactArgs(3),
@@ -201,14 +201,14 @@ func QueStakerSpecifiedAssetAmount() *cobra.Command {
 			}
 
 			queryClient := types.NewQueryClient(clientCtx)
-			clientChainLzId, err := strconv.ParseUint(args[0], 10, 64)
+			clientChainLzID, err := strconv.ParseUint(args[0], 10, 64)
 			if err != nil {
 				return errorsmod.Wrap(types.ErrCliCmdInputArg, err.Error())
 			}
-			stakerId, assetId := types.GetStakeIDAndAssetIdFromStr(clientChainLzId, args[1], args[2])
+			stakerID, assetID := types.GetStakeIDAndAssetIDFromStr(clientChainLzID, args[1], args[2])
 			req := &types.QuerySpecifiedAssetAmountReq{
-				StakerId: stakerId,
-				AssetId:  assetId,
+				StakerID: stakerID,
+				AssetID:  assetID,
 			}
 			res, err := queryClient.QueStakerSpecifiedAssetAmount(context.Background(), req)
 			if err != nil {
@@ -254,7 +254,7 @@ func QueOperatorAssetInfos() *cobra.Command {
 // QueOperatorSpecifiedAssetAmount queries specified operator asset info
 func QueOperatorSpecifiedAssetAmount() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "QueOperatorSpecifiedAssetAmount operatorAddr clientChainId assetAddr",
+		Use:   "QueOperatorSpecifiedAssetAmount operatorAddr clientChainID assetAddr",
 		Short: "Get operator specified asset state",
 		Long:  "Get operator specified asset state",
 		Args:  cobra.ExactArgs(3),
@@ -264,15 +264,15 @@ func QueOperatorSpecifiedAssetAmount() *cobra.Command {
 				return err
 			}
 
-			clientChainLzId, err := strconv.ParseUint(args[1], 10, 64)
+			clientChainLzID, err := strconv.ParseUint(args[1], 10, 64)
 			if err != nil {
 				return errorsmod.Wrap(types.ErrCliCmdInputArg, err.Error())
 			}
-			_, assetId := types.GetStakeIDAndAssetIdFromStr(clientChainLzId, "", args[2])
+			_, assetID := types.GetStakeIDAndAssetIDFromStr(clientChainLzID, "", args[2])
 			queryClient := types.NewQueryClient(clientCtx)
 			req := &types.QueryOperatorSpecifiedAssetAmountReq{
 				OperatorAddr: args[0],
-				AssetId:      assetId,
+				AssetID:      assetID,
 			}
 			res, err := queryClient.QueOperatorSpecifiedAssetAmount(context.Background(), req)
 			if err != nil {
@@ -289,7 +289,7 @@ func QueOperatorSpecifiedAssetAmount() *cobra.Command {
 // QueStakerExoCoreAddr queries staker ExoCore address
 func QueStakerExoCoreAddr() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "QueStakerExoCoreAddr stakerId",
+		Use:   "QueStakerExoCoreAddr stakerID",
 		Short: "Get staker ExoCore address",
 		Long:  "Get staker ExoCore address",
 		Args:  cobra.ExactArgs(1),
@@ -301,7 +301,7 @@ func QueStakerExoCoreAddr() *cobra.Command {
 
 			queryClient := types.NewQueryClient(clientCtx)
 			req := &types.QueryStakerExCoreAddr{
-				StakerId: args[0],
+				StakerID: args[0],
 			}
 			res, err := queryClient.QueStakerExoCoreAddr(context.Background(), req)
 			if err != nil {

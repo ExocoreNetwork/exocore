@@ -71,12 +71,12 @@ var (
 	KeyPrefixAVSOperatorAssetsTotalValue = []byte{prefixAVSOperatorAssetsTotalValue}
 
 	// KeyPrefixOperatorAVSSingleAssetState key-value:
-	// assetId + '/' + AVSAddr + '/' + operatorAddr -> AssetOptedInState
+	// assetID + '/' + AVSAddr + '/' + operatorAddr -> AssetOptedInState
 	KeyPrefixOperatorAVSSingleAssetState = []byte{prefixOperatorAVSSingleAssetState}
 
 	// KeyPrefixAVSOperatorStakerShareState key-value:
 	// AVSAddr + '/' + '' + '/' +  operatorAddr -> ownAssetsOptedInValue
-	// AVSAddr + '/' + stakerId + '/' + operatorAddr -> assetsOptedInValue
+	// AVSAddr + '/' + stakerID + '/' + operatorAddr -> assetsOptedInValue
 	KeyPrefixAVSOperatorStakerShareState = []byte{prefixOperatorAVSStakerShareState}
 
 	// KeyPrefixOperatorSlashInfo key-value:
@@ -84,9 +84,9 @@ var (
 	KeyPrefixOperatorSlashInfo = []byte{prefixOperatorSlashInfo}
 
 	// KeyPrefixSlashAssetsState key-value:
-	// completeSlashHeight + '/' + assetId -> SlashAmount
-	// completeSlashHeight + '/' + assetId + '/' + stakerId -> SlashAmount
-	// completeSlashHeight + '/' + assetId + '/' + operatorAddr -> SlashAmount
+	// completeSlashHeight + '/' + assetID -> SlashAmount
+	// completeSlashHeight + '/' + assetID + '/' + stakerID -> SlashAmount
+	// completeSlashHeight + '/' + assetID + '/' + operatorAddr -> SlashAmount
 	KeyPrefixSlashAssetsState = []byte{prefixSlashAssetsState}
 )
 

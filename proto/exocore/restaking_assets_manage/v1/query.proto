@@ -19,7 +19,7 @@ message QueryAllClientChainInfoResponse{
 }
 
 message QueryStakingAssetInfo{
-  string assetId = 1;
+  string assetID = 1;
 }
 
 message QueryAllStakingAssetsInfo{}
@@ -28,15 +28,15 @@ message QueryAllStakingAssetsInfoResponse{
 }
 
 message QueryStakerAssetInfo{
-  string stakerId = 1;
+  string stakerID = 1;
 }
 message QueryAssetInfoResponse{
   map<string, StakerSingleAssetOrChangeInfo> assetInfos = 1;
 }
 
 message QuerySpecifiedAssetAmountReq{
-  string stakerId = 1;
-  string assetId = 2;
+  string stakerID = 1;
+  string assetID = 2;
 }
 
 
@@ -50,11 +50,11 @@ message QueryOperatorAssetInfosResponse{
 
 message QueryOperatorSpecifiedAssetAmountReq{
   string operatorAddr = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
-  string assetId = 2;
+  string assetID = 2;
 }
 
 message QueryStakerExCoreAddr {
-  string StakerId = 1;
+  string StakerID = 1;
 }
 
 message QueryStakerExCoreAddrResponse{
@@ -104,7 +104,7 @@ service Query {
 
   rpc QueStakerExoCoreAddr(QueryStakerExCoreAddr) returns (QueryStakerExCoreAddrResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/exocore/restaking_assets_manage/v1/QueStakerExoCoreAddr/{StakerId}";
+    option (google.api.http).get = "/exocore/restaking_assets_manage/v1/QueStakerExoCoreAddr/{StakerID}";
   }
 }
 

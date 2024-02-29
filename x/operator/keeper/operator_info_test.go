@@ -5,9 +5,9 @@ import (
 	"github.com/ExocoreNetwork/exocore/x/restaking_assets_manage/types"
 )
 
-func (suite *KeeperTestSuite) TestOperatorInfo() {
+func (suite *OperatorTestSuite) TestOperatorInfo() {
 	info := &operatortype.OperatorInfo{
-		EarningsAddr:     suite.accAddress.String(),
+		EarningsAddr:     suite.AccAddress.String(),
 		ApproveAddr:      "",
 		OperatorMetaInfo: "test operator",
 		ClientChainEarningsAddr: &operatortype.ClientChainEarningAddrList{
@@ -16,45 +16,45 @@ func (suite *KeeperTestSuite) TestOperatorInfo() {
 			},
 		},
 	}
-	err := suite.app.OperatorKeeper.SetOperatorInfo(suite.ctx, suite.accAddress.String(), info)
+	err := suite.App.OperatorKeeper.SetOperatorInfo(suite.Ctx, suite.AccAddress.String(), info)
 	suite.NoError(err)
 
-	getOperatorInfo, err := suite.app.OperatorKeeper.GetOperatorInfo(suite.ctx, &operatortype.GetOperatorInfoReq{OperatorAddr: suite.accAddress.String()})
+	getOperatorInfo, err := suite.App.OperatorKeeper.GetOperatorInfo(suite.Ctx, &operatortype.GetOperatorInfoReq{OperatorAddr: suite.AccAddress.String()})
 	suite.NoError(err)
 	suite.Equal(*info, *getOperatorInfo)
 }
 
-func (suite *KeeperTestSuite) TestHistoricalOperatorInfo() {
-	height := suite.ctx.BlockHeight()
+func (suite *OperatorTestSuite) TestHistoricalOperatorInfo() {
+	height := suite.Ctx.BlockHeight()
 	info := &operatortype.OperatorInfo{
-		EarningsAddr:     suite.accAddress.String(),
+		EarningsAddr:     suite.AccAddress.String(),
 		ApproveAddr:      "",
 		OperatorMetaInfo: "test operator",
 		ClientChainEarningsAddr: &operatortype.ClientChainEarningAddrList{
 			EarningInfoList: nil,
 		},
 	}
-	err := suite.app.OperatorKeeper.SetOperatorInfo(suite.ctx, suite.accAddress.String(), info)
+	err := suite.App.OperatorKeeper.SetOperatorInfo(suite.Ctx, suite.AccAddress.String(), info)
 	suite.NoError(err)
 	suite.NextBlock()
-	suite.Equal(height+1, suite.ctx.BlockHeight(), "nexBlock failed")
+	suite.Equal(height+1, suite.Ctx.BlockHeight(), "nexBlock failed")
 
 	newInfo := *info
 	newInfo.OperatorMetaInfo = "new operator"
-	err = suite.app.OperatorKeeper.SetOperatorInfo(suite.ctx, suite.accAddress.String(), &newInfo)
+	err = suite.App.OperatorKeeper.SetOperatorInfo(suite.Ctx, suite.AccAddress.String(), &newInfo)
 	suite.NoError(err)
 
 	//get historical operator info
-	historicalQueryCtx, err := types.ContextForHistoricalState(suite.ctx, height)
+	historicalQueryCtx, err := types.ContextForHistoricalState(suite.Ctx, height)
 	suite.NoError(err)
-	getInfo, err := suite.app.OperatorKeeper.GetOperatorInfo(historicalQueryCtx, &operatortype.GetOperatorInfoReq{
-		OperatorAddr: suite.accAddress.String(),
+	getInfo, err := suite.App.OperatorKeeper.GetOperatorInfo(historicalQueryCtx, &operatortype.GetOperatorInfoReq{
+		OperatorAddr: suite.AccAddress.String(),
 	})
 	suite.NoError(err)
 	suite.Equal(info.OperatorMetaInfo, getInfo.OperatorMetaInfo)
 
-	getInfo, err = suite.app.OperatorKeeper.GetOperatorInfo(suite.ctx, &operatortype.GetOperatorInfoReq{
-		OperatorAddr: suite.accAddress.String(),
+	getInfo, err = suite.App.OperatorKeeper.GetOperatorInfo(suite.Ctx, &operatortype.GetOperatorInfoReq{
+		OperatorAddr: suite.AccAddress.String(),
 	})
 	suite.NoError(err)
 	suite.Equal(newInfo.OperatorMetaInfo, getInfo.OperatorMetaInfo)

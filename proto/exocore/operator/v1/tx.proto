@@ -13,7 +13,7 @@ message clientChainEarningAddrList {
 }
 
 message clientChainEarningAddrInfo {
-  uint64 lzClientChainId = 1;
+  uint64 lzClientChainID = 1;
   string clientChainEarningAddr = 2;
 }
 

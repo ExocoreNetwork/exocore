@@ -25,15 +25,15 @@ func (k Keeper) GetOperatorAssetInfos(ctx sdk.Context, operatorAddr sdk.Address,
 		if err != nil {
 			return nil, err
 		}
-		assetId := keyList[1]
-		ret[assetId] = &stateInfo
+		assetID := keyList[1]
+		ret[assetID] = &stateInfo
 	}
 	return ret, nil
 }
 
-func (k Keeper) GetOperatorSpecifiedAssetInfo(ctx sdk.Context, operatorAddr sdk.Address, assetId string) (info *restakingtype.OperatorSingleAssetOrChangeInfo, err error) {
+func (k Keeper) GetOperatorSpecifiedAssetInfo(ctx sdk.Context, operatorAddr sdk.Address, assetID string) (info *restakingtype.OperatorSingleAssetOrChangeInfo, err error) {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), restakingtype.KeyPrefixOperatorAssetInfos)
-	key := restakingtype.GetJoinedStoreKey(operatorAddr.String(), assetId)
+	key := restakingtype.GetJoinedStoreKey(operatorAddr.String(), assetID)
 	ifExist := store.Has(key)
 	if !ifExist {
 		return nil, restakingtype.ErrNoOperatorAssetKey
@@ -50,10 +50,10 @@ func (k Keeper) GetOperatorSpecifiedAssetInfo(ctx sdk.Context, operatorAddr sdk.
 // The input `changeAmount` represents the values that you want to add or decrease,using positive or negative values for increasing and decreasing,respectively. The function will calculate and update new state after a successful check.
 // The function will be called when there is delegation or undelegation related to the operator. In the future,it will also be called when the operator deposit their own assets.
 
-func (k Keeper) UpdateOperatorAssetState(ctx sdk.Context, operatorAddr sdk.Address, assetId string, changeAmount restakingtype.OperatorSingleAssetOrChangeInfo) (err error) {
+func (k Keeper) UpdateOperatorAssetState(ctx sdk.Context, operatorAddr sdk.Address, assetID string, changeAmount restakingtype.OperatorSingleAssetOrChangeInfo) (err error) {
 	//get the latest state,use the default initial state if the state hasn't been stored
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), restakingtype.KeyPrefixOperatorAssetInfos)
-	key := restakingtype.GetJoinedStoreKey(operatorAddr.String(), assetId)
+	key := restakingtype.GetJoinedStoreKey(operatorAddr.String(), assetID)
 	assetState := restakingtype.OperatorSingleAssetOrChangeInfo{
 		TotalAmountOrWantChangeValue:         math.NewInt(0),
 		OperatorOwnAmountOrWantChangeValue:   math.NewInt(0),
@@ -94,7 +94,7 @@ func (k Keeper) UpdateOperatorAssetState(ctx sdk.Context, operatorAddr sdk.Addre
 	return nil
 }
 
-func (k Keeper) IteratorOperatorAssetState(ctx sdk.Context, f func(operatorAddr, assetId string, state *restakingtype.OperatorSingleAssetOrChangeInfo) error) error {
+func (k Keeper) IteratorOperatorAssetState(ctx sdk.Context, f func(operatorAddr, assetID string, state *restakingtype.OperatorSingleAssetOrChangeInfo) error) error {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), restakingtype.KeyPrefixOperatorAssetInfos)
 	iterator := sdk.KVStorePrefixIterator(store, nil)
 	defer iterator.Close()

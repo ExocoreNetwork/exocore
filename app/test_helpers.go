@@ -28,8 +28,8 @@ import (
 	"github.com/evmos/evmos/v14/encoding"
 	feemarkettypes "github.com/evmos/evmos/v14/x/feemarket/types"
 
-	"github.com/evmos/evmos/v14/cmd/config"
-	"github.com/evmos/evmos/v14/utils"
+	"github.com/ExocoreNetwork/exocore/cmd/config"
+	"github.com/ExocoreNetwork/exocore/utils"
 )
 
 func init() {
@@ -106,7 +106,7 @@ func Setup(
 	)
 	if !isCheckTx {
 		// init chain must be called to stop deliverState from being nil
-		genesisState := NewDefaultGenesisState()
+		genesisState := NewDefaultGenesisState(app.appCodec)
 		genesisState = GenesisStateWithValSet(app, genesisState, valSet, []authtypes.GenesisAccount{acc}, balance)
 
 		// Verify feeMarket genesis
@@ -223,6 +223,6 @@ func SetupTestingApp(chainID string, pruneOpts *pruningtypes.PruningOptions, isP
 			simtestutil.NewAppOptionsWithFlagHome(DefaultNodeHome),
 			baseAppOptions[:]...,
 		)
-		return app, NewDefaultGenesisState()
+		return app, NewDefaultGenesisState(app.appCodec)
 	}
 }
