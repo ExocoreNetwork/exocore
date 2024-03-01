@@ -412,7 +412,7 @@ proto-format:
 
 proto-lint:
 	@echo "Linting Protobuf files"
-	@$(protoImage) buf lint --error-format=json	
+	@$(protoImage) buf lint --error-format=json
 
 proto-check-breaking:
 	@echo "Checking Protobuf files for breaking changes"
