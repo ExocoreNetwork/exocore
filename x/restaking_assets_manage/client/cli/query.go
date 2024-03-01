@@ -301,7 +301,7 @@ func QueStakerExoCoreAddr() *cobra.Command {
 
 			queryClient := types.NewQueryClient(clientCtx)
 			req := &types.QueryStakerExCoreAddr{
-				StakerID: args[0],
+				Staker: args[0],
 			}
 			res, err := queryClient.QueStakerExoCoreAddr(context.Background(), req)
 			if err != nil {
