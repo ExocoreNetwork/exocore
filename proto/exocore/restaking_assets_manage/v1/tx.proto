@@ -143,3 +143,5 @@ service Msg {
   rpc RegisterClientChain(RegisterClientChainReq) returns (RegisterClientChainResponse);
   rpc RegisterAsset(RegisterAssetReq) returns (RegisterAssetResponse);
 }
+
+// blank comment to trigger CI
