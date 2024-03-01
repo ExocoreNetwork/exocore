@@ -5,7 +5,6 @@ package exocore.deposit.v1;
 import "cosmos/msg/v1/msg.proto";
 import "cosmos_proto/cosmos.proto";
 import "gogoproto/gogo.proto";
-import "amino/amino.proto";
 import "exocore/deposit/v1/deposit.proto";
 
 option go_package = "github.com/ExocoreNetwork/exocore/x/deposit/types";
@@ -28,9 +27,9 @@ message MsgUpdateParams {
 // Since: cosmos-sdk 0.47
 message MsgUpdateParamsResponse {}
 
+// Msg defines the deposit Msg service.
 service Msg {
-
   option (cosmos.msg.v1.service) = true;
-
+  // UpdateParams updates the parameters of the deposit module.
   rpc UpdateParams(MsgUpdateParams) returns (MsgUpdateParamsResponse);
 }

@@ -2,10 +2,7 @@
 syntax = "proto3";
 package exocore.deposit.v1;
 
-import "gogoproto/gogo.proto";
 import "google/api/annotations.proto";
-import "cosmos/query/v1/query.proto";
-import "cosmos_proto/cosmos.proto";
 import "exocore/deposit/v1/deposit.proto";
 
 option go_package = "github.com/ExocoreNetwork/exocore/x/deposit/types";

@@ -2,44 +2,50 @@
 syntax = "proto3";
 package exocore.native_token.v1;
 
-import "cosmos/msg/v1/msg.proto";
 import "cosmos_proto/cosmos.proto";
 import "gogoproto/gogo.proto";
 
 option go_package = "github.com/ExocoreNetwork/exocore/x/native_token/types";
 
 message ValidatorInfo {
+  // ValidatorStatus is the status of the validator.
   enum ValidatorStatus {
-    ACTIVE = 0;
-    INACTIVE = 1;
-    WITHDRAWN = 2;
+    // UNSPECIFIED is the default status of a validator.
+    VALIDATOR_STATUS_UNSPECIFIED = 0 [ (gogoproto.enumvalue_customname) = "ValidatorInfo_UNSPECIFIED" ];
+    // ACTIVE is the status of a validator that is currently validating.
+    VALIDATOR_STATUS_ACTIVE = 1[ (gogoproto.enumvalue_customname) = "ValidatorInfo_ACTIVE" ];
+    // INACTIVE is the status of a validator that is not currently validating.
+    VALIDATOR_STATUS_INACTIVE = 2[ (gogoproto.enumvalue_customname) = "ValidatorInfo_INACTIVE" ];
+    // WITHDRAWN is the status of a validator that has withdrawn from the network.
+    VALIDATOR_STATUS_WITHDRAWN = 3[ (gogoproto.enumvalue_customname) = "ValidatorInfo_WITHDRAWN" ];
   }
-  ValidatorStatus Status = 1;
-  uint64 ValidatorIndex = 2;
-  string StakedBalanceGwei = 3
+  ValidatorStatus status = 1;
+  uint64 validator_index = 2;
+  string staked_balance_gwei = 3
   [
     (cosmos_proto.scalar) = "cosmos.Int",
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
     (gogoproto.nullable) = false
   ];
-  uint64 MostRecentBalanceUpdateBlockNumber = 4;
+  uint64 most_recent_balance_update_block_number = 4;
 }
 
 message NativeTokenStakerInfo {
-  string TotalValidatorBalances = 1
+  string total_validator_balances = 1
   [
     (cosmos_proto.scalar) = "cosmos.Int",
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
     (gogoproto.nullable) = false
   ];
-  string UnStakedValueFromPOS = 2
+  string unstaked_value_from_pos = 2
   [
     (cosmos_proto.scalar) = "cosmos.Int",
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
-    (gogoproto.nullable) = false
+    (gogoproto.nullable) = false,
+    (gogoproto.customname) = "UnStakedValueFromPOS"
   ];
-  string PodAddress =3;
-  map<string,ValidatorInfo> ValidatorsInfo=4;
+  string pod_address = 3;
+  map<string,ValidatorInfo> validators_info = 4;
 }
 
 

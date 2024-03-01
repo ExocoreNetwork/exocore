@@ -10,18 +10,18 @@ import "exocore/delegation/v1/tx.proto";
 option go_package = "github.com/ExocoreNetwork/exocore/x/delegation/types";
 
 message DelegationInfoReq {
-  string stakerID = 1;
-  string assetID = 2;
+  string staker_id = 1 [(gogoproto.customname) = "StakerID"];
+  string asset_id = 2 [(gogoproto.customname) = "AssetID"];
 }
 
-message DelegationAmounts{
-  string CanUndelegationAmount = 1
+message DelegationAmounts {
+  string can_undelegation_amount = 1
   [
     (cosmos_proto.scalar) = "cosmos.Int",
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
     (gogoproto.nullable) = false
   ];
-  string WaitUndelegationAmount = 2
+  string wait_undelegation_amount = 2
   [
     (cosmos_proto.scalar) = "cosmos.Int",
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
@@ -29,37 +29,40 @@ message DelegationAmounts{
   ];
 }
 
-message QueryDelegationInfoResponse{
-  string TotalDelegatedAmount = 1
+message QueryDelegationInfoResponse {
+  string total_delegated_amount = 1
   [
     (cosmos_proto.scalar) = "cosmos.Int",
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
     (gogoproto.nullable) = false
   ];
-  map<string, DelegationAmounts > delegationInfos = 2;
+  map<string, DelegationAmounts > delegation_infos = 2;
 }
 
 message SingleDelegationInfoReq {
-  string stakerID = 1;
-  string operatorAddr = 2 [(cosmos_proto.scalar) = "cosmos.AddressString"];
-  string assetID = 3;
+  string staker_id = 1 [(gogoproto.customname) = "StakerID"];
+  string operator_addr = 2 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+  string asset_id = 3 [(gogoproto.customname) = "AssetID"];
 }
 
 message QueryOperatorInfoReq {
-  string OperatorAddr = 1
+  string operator_addr = 1
   [(cosmos_proto.scalar) = "cosmos.AddressString"];
 }
 
+// Query is the service API for the delegation module.
 service Query {
+  // OperatorInfo queries the operator information.
   rpc QueryOperatorInfo(QueryOperatorInfoReq) returns(OperatorInfo){
     option (google.api.http).get = "/exocore/delegation/v1/GetOperatorInfo";
   }
-  // Balance queries the balance of a single coin for a single account.
+  // DelegationInfo queries the delegation information for {stakerID, assetID}.
   rpc QueryDelegationInfo(DelegationInfoReq) returns (QueryDelegationInfoResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
     option (google.api.http).get = "/exocore/delegation/v1/GetDelegationInfo";
   }
-
+  // SingleDelegationInfo queries the single delegation information for 
+  // {chain, staker, asset, operator}.
   rpc QuerySingleDelegationInfo(SingleDelegationInfoReq) returns(DelegationAmounts){
     option (cosmos.query.v1.module_query_safe) = true;
     option (google.api.http).get = "/exocore/delegation/v1/QuerySingleDelegationInfo";

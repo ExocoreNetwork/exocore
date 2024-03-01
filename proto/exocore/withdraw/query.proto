@@ -1,9 +1,7 @@
 syntax = "proto3";
 package exocore.withdraw;
 
-import "gogoproto/gogo.proto";
 import "google/api/annotations.proto";
-import "cosmos/base/query/v1beta1/pagination.proto";
 import "exocore/deposit/v1/deposit.proto";
 
 option go_package = "github.com/ExocoreNetwork/exocore/x/withdraw/types";
