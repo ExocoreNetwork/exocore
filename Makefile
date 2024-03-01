@@ -18,9 +18,9 @@ ifdef GITHUB_TOKEN
 		DOCKER_ARGS += --secret id=GITHUB_TOKEN
 	endif
 endif
-NAMESPACE := tharsishq
+NAMESPACE := ExocoreNetwork
 PROJECT := exocore
-DOCKER_IMAGE := $(NAMESPACE)/$(PROJECT)
+DOCKER_IMAGE := $(shell echo $(NAMESPACE)/$(PROJECT) | tr '[:upper:]' '[:lower:]')
 COMMIT_HASH := $(shell git rev-parse --short=7 HEAD)
 DOCKER_TAG := $(COMMIT_HASH)
 # e2e env
