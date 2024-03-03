@@ -1,15 +1,14 @@
 package deposit
 
 import (
-	"fmt"
-	"math/big"
-	"reflect"
-
 	sdkmath "cosmossdk.io/math"
+	"fmt"
 	"github.com/ExocoreNetwork/exocore/x/deposit/keeper"
 	"github.com/ExocoreNetwork/exocore/x/restaking_assets_manage/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	cmn "github.com/evmos/evmos/v14/precompiles/common"
+	"math/big"
+	"reflect"
 )
 
 func (p Precompile) GetDepositToParamsFromInputs(ctx sdk.Context, args []interface{}) (*keeper.DepositParams, error) {

@@ -1,50 +1,26 @@
 package reward_test
 
 import (
+	"github.com/ExocoreNetwork/exocore/testutil"
 	"testing"
 
 	"github.com/ExocoreNetwork/exocore/precompiles/reward"
 
-	"github.com/evmos/evmos/v14/x/evm/statedb"
-
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
-	evmosapp "github.com/ExocoreNetwork/exocore/app"
-	tmtypes "github.com/cometbft/cometbft/types"
-	"github.com/cosmos/cosmos-sdk/crypto/keyring"
-	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
-	sdk "github.com/cosmos/cosmos-sdk/types"
-	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
-	"github.com/ethereum/go-ethereum/common"
-	ethtypes "github.com/ethereum/go-ethereum/core/types"
-	evmtypes "github.com/evmos/evmos/v14/x/evm/types"
 	"github.com/stretchr/testify/suite"
 )
 
-var s *PrecompileTestSuite
+var s *RewardPrecompileTestSuite
 
-type PrecompileTestSuite struct {
-	suite.Suite
-
-	ctx        sdk.Context
-	app        *evmosapp.ExocoreApp
-	address    common.Address
-	validators []stakingtypes.Validator
-	valSet     *tmtypes.ValidatorSet
-	ethSigner  ethtypes.Signer
-	privKey    cryptotypes.PrivKey
-	signer     keyring.Signer
-	bondDenom  string
-
+type RewardPrecompileTestSuite struct {
+	testutil.BaseTestSuite
 	precompile *reward.Precompile
-	stateDB    *statedb.StateDB
-
-	queryClientEVM evmtypes.QueryClient
 }
 
 func TestPrecompileTestSuite(t *testing.T) {
-	s = new(PrecompileTestSuite)
+	s = new(RewardPrecompileTestSuite)
 	suite.Run(t, s)
 
 	// Run Ginkgo integration tests
@@ -52,6 +28,9 @@ func TestPrecompileTestSuite(t *testing.T) {
 	RunSpecs(t, "Reward Precompile Suite")
 }
 
-func (s *PrecompileTestSuite) SetupTest() {
+func (s *RewardPrecompileTestSuite) SetupTest() {
 	s.DoSetupTest()
+	precompile, err := reward.NewPrecompile(s.App.StakingAssetsManageKeeper, s.App.RewardKeeper, s.App.AuthzKeeper)
+	s.Require().NoError(err)
+	s.precompile = precompile
 }

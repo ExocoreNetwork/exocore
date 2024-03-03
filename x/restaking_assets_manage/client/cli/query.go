@@ -190,7 +190,7 @@ func QueStakerAssetInfos() *cobra.Command {
 // QueStakerSpecifiedAssetAmount queries staker specified asset info
 func QueStakerSpecifiedAssetAmount() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "QueStakerSpecifiedAssetAmount clientChainId stakerAddr assetAddr",
+		Use:   "QueStakerSpecifiedAssetAmount clientChainID stakerAddr assetAddr",
 		Short: "Get staker specified asset state",
 		Long:  "Get staker specified asset state",
 		Args:  cobra.ExactArgs(3),
@@ -254,7 +254,7 @@ func QueOperatorAssetInfos() *cobra.Command {
 // QueOperatorSpecifiedAssetAmount queries specified operator asset info
 func QueOperatorSpecifiedAssetAmount() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "QueOperatorSpecifiedAssetAmount operatorAddr clientChainId assetAddr",
+		Use:   "QueOperatorSpecifiedAssetAmount operatorAddr clientChainID assetAddr",
 		Short: "Get operator specified asset state",
 		Long:  "Get operator specified asset state",
 		Args:  cobra.ExactArgs(3),
