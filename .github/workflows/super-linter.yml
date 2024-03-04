@@ -23,7 +23,7 @@ jobs:
           fetch-depth: 0
 
       - name: Lint Code Base
-        uses: github/super-linter@v5
+        uses: super-linter/super-linter@v6.3.0  # x-release-please-version
         env:
           LINTER_RULES_PATH: /
           YAML_CONFIG_FILE: .yamllint
