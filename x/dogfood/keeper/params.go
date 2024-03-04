@@ -3,6 +3,7 @@ package keeper
 import (
 	"github.com/ExocoreNetwork/exocore/x/dogfood/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 )
 
 // GetEpochsUntilUnbonded returns the number of epochs after which an unbonding that is made
@@ -25,7 +26,7 @@ func (k Keeper) GetEpochIdentifier(ctx sdk.Context) string {
 // the chain. It is a parameter of the dogfood module.
 func (k Keeper) GetMaxValidators(ctx sdk.Context) uint32 {
 	var maxValidators uint32
-	k.paramstore.Get(ctx, types.KeyMaxValidators, &maxValidators)
+	k.paramstore.Get(ctx, stakingtypes.KeyMaxValidators, &maxValidators)
 	return maxValidators
 }
 
@@ -33,8 +34,16 @@ func (k Keeper) GetMaxValidators(ctx sdk.Context) uint32 {
 // entries are used by the IBC module. The return value is a parameter of the dogfood module.
 func (k Keeper) GetHistoricalEntries(ctx sdk.Context) uint32 {
 	var historicalEntries uint32
-	k.paramstore.Get(ctx, types.KeyHistoricalEntries, &historicalEntries)
+	k.paramstore.Get(ctx, stakingtypes.KeyHistoricalEntries, &historicalEntries)
 	return historicalEntries
+}
+
+// GetAssetIDs returns the asset IDs that are accepted by the dogfood module. It is a parameter
+// of the dogfood module.
+func (k Keeper) GetAssetIDs(ctx sdk.Context) []string {
+	var assetIDs []string
+	k.paramstore.Get(ctx, types.KeyAssetIDs, &assetIDs)
+	return assetIDs
 }
 
 // SetParams sets the params for the dogfood module.
@@ -52,5 +61,6 @@ func (k Keeper) GetDogfoodParams(ctx sdk.Context) (params types.Params) {
 		k.GetEpochIdentifier(ctx),
 		k.GetMaxValidators(ctx),
 		k.GetHistoricalEntries(ctx),
+		k.GetAssetIDs(ctx),
 	)
 }

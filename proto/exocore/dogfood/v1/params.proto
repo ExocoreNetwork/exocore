@@ -20,4 +20,9 @@ message Params {
   uint32 max_validators = 3;
   // HistoricalEntries is the number of historical entries to persist.
   uint32 historical_entries = 4;
+  // AssetIDs is the ids of the assets which will be accepted by the module.
+  // It must be within the list of assets supported by the restaking module.
+  // The typical format of these IDs is
+  // lower(assetAddress) + _ + hex(clientChainLzID)
+  repeated string asset_ids = 5 [(gogoproto.customname) = "AssetIDs"];
 }
