@@ -33,6 +33,5 @@ jobs:
           VALIDATE_NATURAL_LANGUAGE: false
           VALIDATE_OPENAPI: false
           VALIDATE_JSCPD: false
-          VALIDATE_GO: false
-          DEFAULT_BRANCH: "master"
+          VALIDATE_GO: false # separate workflow
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
