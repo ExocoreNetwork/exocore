@@ -88,9 +88,11 @@ func (k Keeper) ApplyValidatorChanges(
 	lastVals := types.Validators{}
 	for _, v := range k.GetAllExocoreValidators(ctx) {
 		// we stored the validators above, so this will never fail.
-		pubkey, _ := v.ConsPubKey()
+		pubkey, _ := v.ConsPubKey() // #nosec G703
 		// This calls NewAnyWithValue internally, which we have already done.
-		val, _ := stakingtypes.NewValidator(nil, pubkey, stakingtypes.Description{})
+		val, _ := stakingtypes.NewValidator( // #nosec G703
+			nil, pubkey, stakingtypes.Description{},
+		)
 		// Set validator to bonded status
 		val.Status = stakingtypes.Bonded
 		// Compute tokens from voting power
@@ -229,13 +231,16 @@ func (k Keeper) deleteValidatorSet(ctx sdk.Context, id uint64) {
 // of the module, so it is kept public.
 func (k Keeper) TrackHistoricalInfo(ctx sdk.Context) {
 	// Get the number of historical entries to persist, as the number of block heights.
-	numHistoricalEntries := k.GetHistoricalEntries(ctx)
+	// #nosec G701 // uint32 fits into int64 always.
+	numHistoricalEntries := int64(
+		k.GetHistoricalEntries(ctx),
+	)
 
 	// we are deleting headers, say, from, 0 to 999 at block 1999
 	// for these headers, we must find the corresponding validator set ids to delete.
 	// they must be only deleted if no other block is using them.
 	lastDeletedID := uint64(0) // contract: starts from 1.
-	for i := ctx.BlockHeight() - int64(numHistoricalEntries); i >= 0; i-- {
+	for i := ctx.BlockHeight() - numHistoricalEntries; i >= 0; i-- {
 		_, found := k.getBlockHeader(ctx, i)
 		if found {
 			// because they are deleted together, and saved one after the other,
@@ -249,7 +254,7 @@ func (k Keeper) TrackHistoricalInfo(ctx sdk.Context) {
 		}
 	}
 	currentID, _ := k.getValidatorSetID(ctx,
-		ctx.BlockHeight()-int64(numHistoricalEntries)+1, // #nosec G701 // uint32 < int64 always
+		ctx.BlockHeight()-numHistoricalEntries+1,
 	)
 	for i := lastDeletedID; i < currentID; i++ {
 		k.deleteValidatorSet(ctx, i)
