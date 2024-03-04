@@ -1,65 +1,96 @@
 syntax = "proto3";
 package exocore.restaking_assets_manage.v1;
 
-import "google/api/annotations.proto";
 import "cosmos/query/v1/query.proto";
 import "cosmos_proto/cosmos.proto";
 import "exocore/restaking_assets_manage/v1/tx.proto";
 import "gogoproto/gogo.proto";
+import "google/api/annotations.proto";
 
 option go_package = "github.com/ExocoreNetwork/exocore/x/restaking_assets_manage/types";
 
+// QueryClientChainInfo is the query for getting the client chain info by index.
 message QueryClientChainInfo {
+  // chain_index is the index of the chain.
   uint64 chain_index = 1;
 }
 
+// QueryAllClientChainInfo is the query for all client chains info.
 message QueryAllClientChainInfo {}
-message QueryAllClientChainInfoResponse{
+
+// QueryAllClientChainInfoResponse is the response for all client chains info.
+message QueryAllClientChainInfoResponse {
+  // all_client_chain_infos is the all client chain info, indexed by the chain index.
   map<uint64, ClientChainInfo> all_client_chain_infos = 1;
 }
 
+// QueryStakingAssetInfo is the query for getting the staking asset info.
 message QueryStakingAssetInfo {
+  // asset_id is the asset for which the query is made.
   string asset_id = 1 [(gogoproto.customname) = "AssetID"];
 }
 
+// QueryAllStakingAssetsInfo is the query for getting all staking assets info.
 message QueryAllStakingAssetsInfo {}
-message QueryAllStakingAssetsInfoResponse{
+
+// QueryAllStakingAssetsInfoResponse is the response for all staking assets info,
+// indexed by the asset id.
+message QueryAllStakingAssetsInfoResponse {
+  // all_staking_assets_info is the response for all staking assets info.
   map<string, StakingAssetInfo> all_staking_assets_info = 1;
 }
 
-message QueryStakerAssetInfo{
+// QueryStakerAssetInfo is the query for getting the staker asset info.
+message QueryStakerAssetInfo {
+  // stake_id is the staker id for which the query is made.
   string staker_id = 1 [(gogoproto.customname) = "StakerID"];
 }
+
+// QueryAssetInfoResponse is the response for the staker asset info.
 message QueryAssetInfoResponse {
+  // asset_infos is the response for the staker asset info, indexed by the asset id.
   map<string, StakerSingleAssetOrChangeInfo> asset_infos = 1;
 }
 
+// QuerySpecifiedAssetAmountReq is the query for getting the staker specified asset amount.
 message QuerySpecifiedAssetAmountReq {
+  // staker_id is the staker id for which the query is made.
   string staker_id = 1 [(gogoproto.customname) = "StakerID"];
+  // asset_id is the asset for which the query is made.
   string asset_id = 2 [(gogoproto.customname) = "AssetID"];
 }
 
-
-message QueryOperatorAssetInfos{
+// QueryOperatorAssetInfos is the query for getting the operator asset info.
+message QueryOperatorAssetInfos {
+  // operator_addr is the operator address for which the query is made.
   string operator_addr = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
 }
 
-message QueryOperatorAssetInfosResponse{
+// QueryOperatorAssetInfosResponse is the response to the operator asset info query.
+message QueryOperatorAssetInfosResponse {
+  // asset_infos is the response for the operator asset info, indexed by the asset id.
   map<string, OperatorSingleAssetOrChangeInfo> asset_infos = 1;
 }
 
-message QueryOperatorSpecifiedAssetAmountReq{
+// QueryOperatorSpecifiedAssetAmountReq is the query for getting the operator 
+// specified asset amount.
+message QueryOperatorSpecifiedAssetAmountReq {
+  // operator_addr is the operator address for which the query is made.
   string operator_addr = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+  // asset_id is the asset for which the query is made.
   string asset_id = 2 [(gogoproto.customname) = "AssetID"];
 }
 
+// QueryStakerExCoreAddr is the query for getting the staker exocore address.
 message QueryStakerExCoreAddr {
   // Per https://github.com/gogo/protobuf/issues/331, grpc-gateway does not like custom names.
   // So we remove the id suffix from here as well as the query.
   string staker = 1;
 }
 
+// QueryStakerExCoreAddrResponse is the response for the staker exocore address query.
 message QueryStakerExCoreAddrResponse {
+  // exocore_addr is the exocore address of the staker.
   string exocore_addr = 1 [
     (cosmos_proto.scalar) = "cosmos.AddressString",
     (gogoproto.customname) = "ExoCoreAddr"

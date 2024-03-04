@@ -1,8 +1,8 @@
 syntax = "proto3";
 package exocore.slash;
 
-import "google/api/annotations.proto";
 import "exocore/slash/params.proto";
+import "google/api/annotations.proto";
 // this line is used by starport scaffolding # 1
 
 option go_package = "github.com/ExocoreNetwork/exocore/x/slash/types";

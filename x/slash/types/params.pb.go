@@ -24,7 +24,9 @@ const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
 // Params defines the parameters for the module.
 type Params struct {
-	ExoCoreLzAppAddress    string `protobuf:"bytes,1,opt,name=exo_core_lz_app_address,json=exoCoreLzAppAddress,proto3" json:"exo_core_lz_app_address,omitempty"`
+	// exo_core_lz_app_address defines the address of the lz app
+	ExoCoreLzAppAddress string `protobuf:"bytes,1,opt,name=exo_core_lz_app_address,json=exoCoreLzAppAddress,proto3" json:"exo_core_lz_app_address,omitempty"`
+	// exo_core_lz_app_event_topic defines the topic of the lz app
 	ExoCoreLzAppEventTopic string `protobuf:"bytes,2,opt,name=exo_core_lz_app_event_topic,json=exoCoreLzAppEventTopic,proto3" json:"exo_core_lz_app_event_topic,omitempty"`
 }
 
