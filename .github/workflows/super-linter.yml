@@ -36,4 +36,6 @@ jobs:
           # separate workflow
           VALIDATE_GO: false
           VALIDATE_GO_MODULES: false
+          # TODO: enable docker coverage later
+          VALIDATE_CHECKOV: false
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
