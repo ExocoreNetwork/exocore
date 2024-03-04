@@ -30,11 +30,11 @@ func (k Keeper) UnbondingTime(ctx sdk.Context) time.Duration {
 
 // ApplyValidatorChanges returns the validator set as is. However, it also
 // stores the validators that are added or those that are removed, and updates
-// the power for the existing validators. It also allows any hooks registered
+// the stored power for the existing validators. It also allows any hooks registered
 // on the keeper to be executed. Lastly, it stores the validator set against the
 // provided validator set id.
 func (k Keeper) ApplyValidatorChanges(
-	ctx sdk.Context, changes []abci.ValidatorUpdate, valSetID uint64, genesis bool,
+	ctx sdk.Context, changes []abci.ValidatorUpdate, valSetID uint64,
 ) []abci.ValidatorUpdate {
 	ret := []abci.ValidatorUpdate{}
 	for _, change := range changes {
@@ -42,16 +42,20 @@ func (k Keeper) ApplyValidatorChanges(
 		pubkey, err := cryptocodec.FromTmProtoPublicKey(change.GetPubKey())
 		if err != nil {
 			// An error here would indicate that this change is invalid.
+			// The change is received either from the genesis file, or from
+			// other parts of the module.
 			// In no situation it should happen, however, if it does,
 			// we do not panic. Simply skip the change.
 			continue
 		}
+		// the address is just derived from the public key and
+		// has no correlation with the operator address on Exocore.
 		addr := pubkey.Address()
 		val, found := k.GetValidator(ctx, addr)
-
 		switch found {
 		case true:
-			// update or delete an existing validator
+			// update or delete an existing validator.
+			// contract: power must not be negative.
 			if change.Power < 1 {
 				k.DeleteValidator(ctx, addr)
 			} else {
@@ -60,12 +64,12 @@ func (k Keeper) ApplyValidatorChanges(
 			}
 		case false:
 			if change.Power > 0 {
-				// create a new validator - the address is just derived from the public key and
-				// has no correlation with the operator address on Exocore
+				// create a new validator.
 				ocVal, err := types.NewExocoreValidator(addr, change.Power, pubkey)
 				if err != nil {
 					continue
 				}
+				// guard for errors within the hook.
 				cc, writeFunc := ctx.CacheContext()
 				k.SetValidator(cc, ocVal)
 				err = k.Hooks().AfterValidatorBonded(cc, sdk.ConsAddress(addr), nil)
@@ -84,7 +88,7 @@ func (k Keeper) ApplyValidatorChanges(
 		ret = append(ret, change)
 	}
 
-	// store the validator set against the provided validator set id
+	// store the updated validator set against the provided validator set id
 	lastVals := types.Validators{}
 	for _, v := range k.GetAllExocoreValidators(ctx) {
 		// we stored the validators above, so this will never fail.
@@ -97,16 +101,15 @@ func (k Keeper) ApplyValidatorChanges(
 		val.Status = stakingtypes.Bonded
 		// Compute tokens from voting power
 		val.Tokens = sdk.TokensFromConsensusPower(v.Power, sdk.DefaultPowerReduction)
-		lastVals.List = append(lastVals.GetList(), val)
+		lastVals.List = append(lastVals.List, val)
 	}
 	k.setValidatorSet(ctx, valSetID, &lastVals)
-	if !genesis {
-		// the val set change is effective as of the next block, so height + 1.
-		k.setValidatorSetID(ctx, ctx.BlockHeight()+1, valSetID)
-	} else {
-		// the val set change is effective immediately.
-		k.setValidatorSetID(ctx, ctx.BlockHeight(), valSetID)
-	}
+	// this validator set is effective as of the next block, so use height + 1.
+	// this statement is true for genesis as well, since ctx.BlockHeight() is
+	// reported as 0 during InitGenesis.
+	k.setValidatorSetID(ctx, ctx.BlockHeight()+1, valSetID)
+	// store this to compare against, in the next round.
+	k.saveKeyPowerMapping(ctx, ret)
 	return ret
 }
 
@@ -227,8 +230,8 @@ func (k Keeper) deleteValidatorSet(ctx sdk.Context, id uint64) {
 // event. Otherwise, it is constant. The header, however, will change at every block. Since
 // the Cosmos SDK does not allow for the retrieval of a past block header, we store the header
 // ourselves in this function. The validator set is stored when it changes at the end of an
-// epoch or at a slashing event in the corresponding functions. It is called within the EndBlock
-// of the module, so it is kept public.
+// epoch or at a slashing event in the corresponding functions. The function is called within
+// the EndBlock of the module, so it is kept public.
 func (k Keeper) TrackHistoricalInfo(ctx sdk.Context) {
 	// Get the number of historical entries to persist, as the number of block heights.
 	// #nosec G701 // uint32 fits into int64 always.
@@ -253,9 +256,16 @@ func (k Keeper) TrackHistoricalInfo(ctx sdk.Context) {
 			break
 		}
 	}
+	// even if numHistoricalEntries is 0, this will work because it is called after the
+	// validatorSetID for height + 1 is stored.
+	// on the opposite side of things, if numHistoricalEntries is too large, currentID
+	// will be 0, and the loop will not run.
 	currentID, _ := k.getValidatorSetID(ctx,
 		ctx.BlockHeight()-numHistoricalEntries+1,
 	)
+	// lastDeletedID will be the lowest deleted id since we are working backwards
+	// from the latest height to the oldest height. this, and upto but not including
+	// currentID, are the ids to delete.
 	for i := lastDeletedID; i < currentID; i++ {
 		k.deleteValidatorSet(ctx, i)
 	}
@@ -269,7 +279,7 @@ func (k Keeper) TrackHistoricalInfo(ctx sdk.Context) {
 	k.storeBlockHeader(ctx)
 
 	// we have stored:
-	// before TrackHistoricalInfo: ValidatorSetID for height, and the validator set.
+	// outside of TrackHistoricalInfo: ValidatorSetID for height, and the validator set.
 	// within TrackHistoricalInfo: the header.
 	// this is enough information to answer the GetHistoricalInfo query.
 }
@@ -372,4 +382,28 @@ func (k Keeper) storeBlockHeader(ctx sdk.Context) {
 	store := ctx.KVStore(k.storeKey)
 	value := k.cdc.MustMarshal(&header)
 	store.Set(key, value)
+}
+
+// saveKeyPowerMapping stores a mapping from the key string to the power.
+func (k Keeper) saveKeyPowerMapping(ctx sdk.Context, updates []abci.ValidatorUpdate) {
+	store := ctx.KVStore(k.storeKey)
+	m := make(map[string]int64, len(updates))
+	for _, update := range updates {
+		// do not use the stringer interface here so that it can be deserialized.
+		m[string(k.cdc.MustMarshal(&update.PubKey))] = update.Power
+	}
+	bz := k.cdc.MustMarshal(&types.KeyPowerMapping{List: m})
+	store.Set(types.KeyPowerMappingKey(), bz)
+}
+
+// getKeyPowerMapping gets the most recently stored mapping from the key string to the power.
+func (k Keeper) getKeyPowerMapping(ctx sdk.Context) types.KeyPowerMapping {
+	store := ctx.KVStore(k.storeKey)
+	bz := store.Get(types.KeyPowerMappingKey())
+	if bz == nil {
+		return types.KeyPowerMapping{}
+	}
+	var updates types.KeyPowerMapping
+	k.cdc.MustUnmarshal(bz, &updates)
+	return updates
 }

@@ -17,7 +17,7 @@ func (k Keeper) ClearUnbondingInformation(
 	k.RemoveOptOutToFinish(ctx, optOutEpoch, addr)
 	consAddress, err := types.TMCryptoPublicKeyToConsAddr(pubKey)
 	if err != nil {
-		panic(err)
+		return
 	}
 	k.DeleteConsensusAddrToPrune(ctx, optOutEpoch, consAddress)
 }
@@ -27,13 +27,13 @@ func (k Keeper) SetUnbondingInformation(
 	ctx sdk.Context, addr sdk.AccAddress, pubKey tmprotocrypto.PublicKey, isOptingOut bool,
 ) {
 	unbondingCompletionEpoch := k.GetUnbondingCompletionEpoch(ctx)
-	k.AppendOptOutToFinish(ctx, unbondingCompletionEpoch, addr)
 	if isOptingOut {
+		k.AppendOptOutToFinish(ctx, unbondingCompletionEpoch, addr)
 		k.SetOperatorOptOutFinishEpoch(ctx, addr, unbondingCompletionEpoch)
 	}
 	consAddress, err := types.TMCryptoPublicKeyToConsAddr(pubKey)
 	if err != nil {
-		panic(err)
+		return
 	}
 	k.AppendConsensusAddrToPrune(ctx, unbondingCompletionEpoch, consAddress)
 }
@@ -44,12 +44,9 @@ func (k Keeper) GetUnbondingCompletionEpoch(
 	ctx sdk.Context,
 ) int64 {
 	unbondingEpochs := k.GetEpochsUntilUnbonded(ctx)
-	epochInfo, found := k.epochsKeeper.GetEpochInfo(
+	epochInfo, _ := k.epochsKeeper.GetEpochInfo(
 		ctx, k.GetEpochIdentifier(ctx),
 	)
-	if !found {
-		panic("current epoch not found")
-	}
 	// if i execute the transaction at epoch 5, the vote power change
 	// goes into effect at the beginning of epoch 6. the information
 	// should be held for 7 epochs, so it should be deleted at the

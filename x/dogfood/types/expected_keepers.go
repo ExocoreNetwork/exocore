@@ -55,6 +55,12 @@ type OperatorKeeper interface {
 	) (bool, sdk.AccAddress)
 	IsOperatorJailedForChainId(sdk.Context, sdk.AccAddress, string) bool
 	Jail(sdk.Context, sdk.ConsAddress, string)
+	// GetActiveOperatorsForChainId should return a list of operators and their public keys.
+	// These operators should not be in the process of opting our, and should not be jailed
+	// whether permanently or temporarily.
+	GetActiveOperatorsForChainId(
+		sdk.Context, string,
+	) ([]sdk.AccAddress, []tmprotocrypto.PublicKey)
 }
 
 // DelegationKeeper represents the expected keeper interface for the delegation module.
@@ -72,6 +78,10 @@ type EpochsHooks interface {
 // RestakingKeeper represents the expected keeper interface for the restaking module.
 type RestakingKeeper interface {
 	GetOperatorAssetValue(sdk.Context, sdk.AccAddress) (int64, error)
+	IsStakingAsset(sdk.Context, string) bool
+	GetAvgDelegatedValue(
+		sdk.Context, []sdk.AccAddress, []string,
+	) ([]int64, error)
 }
 
 // SlashingKeeper represents the expected keeper interface for the (exo-)slashing module.

@@ -53,6 +53,7 @@ const (
 	// PendingUndelegationsByte is the byte used to store the list of undelegations that will
 	// mature at the end of the current block.
 	PendingUndelegationsByte
+
 	// ValidatorSetBytePrefix is the prefix for the historical validator set store.
 	ValidatorSetBytePrefix
 
@@ -61,6 +62,12 @@ const (
 
 	// HeaderBytePrefix is the prefix for the header store.
 	HeaderBytePrefix
+
+	// EpochEndByte is the byte key for the epoch end store.
+	EpochEndByte
+
+	// KeyPowerMappingByte is the byte key for the consensus key to vote power mapping store.
+	KeyPowerMappingByte
 )
 
 // ExocoreValidatorKey returns the key for the validator store.
@@ -167,6 +174,16 @@ func PendingConsensusAddrsKey() []byte {
 // PendingUndelegationsKey returns the key for the pending undelegations store.
 func PendingUndelegationsKey() []byte {
 	return []byte{PendingUndelegationsByte}
+}
+
+// EpochEndKey returns the key for the epoch end store.
+func EpochEndKey() []byte {
+	return []byte{EpochEndByte}
+}
+
+// KeyPowerMappingKey returns the key for the consensus key to vote power mapping store.
+func KeyPowerMappingKey() []byte {
+	return []byte{KeyPowerMappingByte}
 }
 
 // SafeInt64ToUint64 is a wrapper function to convert an int64

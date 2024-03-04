@@ -1,6 +1,8 @@
 package keeper
 
 import (
+	"fmt"
+
 	"github.com/ExocoreNetwork/exocore/x/dogfood/types"
 	abci "github.com/cometbft/cometbft/abci/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -21,13 +23,28 @@ func (k Keeper) InitGenesis(
 		// is not running. it means that the genesis file is malformed.
 		panic("epoch info not found")
 	}
-	return k.ApplyValidatorChanges(ctx, genState.ValSet, types.InitialValidatorSetID, true)
+	// apply the same logic to the staking assets.
+	for _, assetID := range genState.Params.AssetIDs {
+		if !k.restakingKeeper.IsStakingAsset(ctx, assetID) {
+			panic(fmt.Errorf("staking asset %s not found", assetID))
+		}
+	}
+	// genState must not be malformed.
+	if len(genState.ValSet) > int(k.GetMaxValidators(ctx)) {
+		panic(fmt.Errorf(
+			"cannot have more than %d validators in the genesis state",
+			k.GetMaxValidators(ctx),
+		))
+	}
+	return k.ApplyValidatorChanges(
+		ctx, genState.ValSet, types.InitialValidatorSetID,
+	)
 }
 
 // ExportGenesis returns the module's exported genesis
 func (k Keeper) ExportGenesis(ctx sdk.Context) *types.GenesisState {
 	genesis := types.DefaultGenesis()
 	genesis.Params = k.GetDogfoodParams(ctx)
-
+	// TODO(mm)
 	return genesis
 }
