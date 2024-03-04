@@ -10,7 +10,7 @@ option go_package = "github.com/ExocoreNetwork/exocore/x/slash/types";
 
 // Msg defines the Msg service.
 service Msg {
-
+  // UpdateParams updates the parameters of this module.
   rpc UpdateParams(MsgUpdateParams) returns (MsgUpdateParamsResponse);
 }
 

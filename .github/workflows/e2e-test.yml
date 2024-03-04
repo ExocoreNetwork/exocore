@@ -13,6 +13,8 @@ on:
 
 jobs:
   test-e2e:
+    # disabled for now, since we don't have any e2e tests.
+    if: ${{ false }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/setup-go@v4

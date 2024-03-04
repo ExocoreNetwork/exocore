@@ -76,7 +76,7 @@ func QueAllClientChainInfo() *cobra.Command {
 		Short: "Get all client chain info",
 		Long:  "Get all client chain info",
 		Args:  cobra.ExactArgs(0),
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(cmd *cobra.Command, _ []string) error {
 			clientCtx, err := client.GetClientQueryContext(cmd)
 			if err != nil {
 				return err
@@ -138,7 +138,7 @@ func QueAllStakingAssetsInfo() *cobra.Command {
 		Short: "Get all staking asset info",
 		Long:  "Get all staking asset info",
 		Args:  cobra.ExactArgs(0),
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(cmd *cobra.Command, _ []string) error {
 			clientCtx, err := client.GetClientQueryContext(cmd)
 			if err != nil {
 				return err
@@ -301,7 +301,7 @@ func QueStakerExoCoreAddr() *cobra.Command {
 
 			queryClient := types.NewQueryClient(clientCtx)
 			req := &types.QueryStakerExCoreAddr{
-				StakerID: args[0],
+				Staker: args[0],
 			}
 			res, err := queryClient.QueStakerExoCoreAddr(context.Background(), req)
 			if err != nil {
