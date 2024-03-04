@@ -23,9 +23,14 @@ var _ = math.Inf
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
 // GenesisState defines the restaking_assets_manage module's genesis state.
+// TODO: make this state exportable for the case of chain restarts.
 type GenesisState struct {
-	DefaultSupportedClientChains      []*ClientChainInfo `protobuf:"bytes,1,rep,name=default_supported_client_chains,json=defaultSupportedClientChains,proto3" json:"default_supported_client_chains,omitempty"`
-	DefaultSupportedClientChainTokens []*AssetInfo       `protobuf:"bytes,2,rep,name=default_supported_client_chain_tokens,json=defaultSupportedClientChainTokens,proto3" json:"default_supported_client_chain_tokens,omitempty"`
+	// default_supported_client_chains is the list of supported client chains,
+	// that are supported by default.
+	DefaultSupportedClientChains []*ClientChainInfo `protobuf:"bytes,1,rep,name=default_supported_client_chains,json=defaultSupportedClientChains,proto3" json:"default_supported_client_chains,omitempty"`
+	// default_supported_client_chain_tokens is the list of supported client chain tokens,
+	// that are supported by default.
+	DefaultSupportedClientChainTokens []*AssetInfo `protobuf:"bytes,2,rep,name=default_supported_client_chain_tokens,json=defaultSupportedClientChainTokens,proto3" json:"default_supported_client_chain_tokens,omitempty"`
 }
 
 func (m *GenesisState) Reset()         { *m = GenesisState{} }
