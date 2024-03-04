@@ -75,15 +75,27 @@ func ValidatorSetKey(id uint64) []byte {
 }
 
 // ValidatorSetIDKey returns the key for the validator set id store.
-func ValidatorSetIDKey(height int64) []byte {
-	bz := sdk.Uint64ToBigEndian(uint64(height))
-	return append([]byte{ValidatorSetIDBytePrefix}, bz...)
+func ValidatorSetIDKey(height int64) ([]byte, bool) {
+	uheight, ok := SafeInt64ToUint64(height)
+	if !ok {
+		return nil, false
+	}
+	return append(
+		[]byte{ValidatorSetIDBytePrefix},
+		sdk.Uint64ToBigEndian(uheight)...,
+	), true
 }
 
 // HeaderKey returns the key for the header store.
-func HeaderKey(height int64) []byte {
-	bz := sdk.Uint64ToBigEndian(uint64(height))
-	return append([]byte{HeaderBytePrefix}, bz...)
+func HeaderKey(height int64) ([]byte, bool) {
+	uheight, ok := SafeInt64ToUint64(height)
+	if !ok {
+		return nil, false
+	}
+	return append(
+		[]byte{HeaderBytePrefix},
+		sdk.Uint64ToBigEndian(uheight)...,
+	), true
 }
 
 // QueuedOperationsKey returns the key for the queued operations store.
@@ -93,8 +105,15 @@ func QueuedOperationsKey() []byte {
 
 // OptOutsToFinishKey returns the key for the operator opt out maturity store (epoch -> list of
 // addresses).
-func OptOutsToFinishKey(epoch int64) []byte {
-	return append([]byte{OptOutsToFinishBytePrefix}, sdk.Uint64ToBigEndian(uint64(epoch))...)
+func OptOutsToFinishKey(epoch int64) ([]byte, bool) {
+	uepoch, ok := SafeInt64ToUint64(epoch)
+	if !ok {
+		return nil, false
+	}
+	return append(
+		[]byte{OptOutsToFinishBytePrefix},
+		sdk.Uint64ToBigEndian(uepoch)...,
+	), true
 }
 
 // OperatorOptOutFinishEpochKey is the key for the operator opt out maturity store
@@ -105,18 +124,28 @@ func OperatorOptOutFinishEpochKey(address sdk.AccAddress) []byte {
 
 // ConsensusAddrsToPruneKey is the key to lookup the list of operator consensus addresses that
 // can be pruned from the operator module at the provided epoch.
-func ConsensusAddrsToPruneKey(epoch int64) []byte {
+func ConsensusAddrsToPruneKey(epoch int64) ([]byte, bool) {
+	uepoch, ok := SafeInt64ToUint64(epoch)
+	if !ok {
+		return nil, false
+	}
 	return append(
 		[]byte{ConsensusAddrsToPruneBytePrefix},
-		sdk.Uint64ToBigEndian(uint64(epoch))...)
+		sdk.Uint64ToBigEndian(uepoch)...,
+	), true
 }
 
 // UnbondingReleaseMaturityKey is the key to lookup the list of undelegations that will mature
 // at the provided epoch.
-func UnbondingReleaseMaturityKey(epoch int64) []byte {
+func UnbondingReleaseMaturityKey(epoch int64) ([]byte, bool) {
+	uepoch, ok := SafeInt64ToUint64(epoch)
+	if !ok {
+		return nil, false
+	}
 	return append(
 		[]byte{UnbondingReleaseMaturityBytePrefix},
-		sdk.Uint64ToBigEndian(uint64(epoch))...)
+		sdk.Uint64ToBigEndian(uepoch)...,
+	), true
 }
 
 // PendingOperationsKey returns the key for the pending operations store.
@@ -138,4 +167,14 @@ func PendingConsensusAddrsKey() []byte {
 // PendingUndelegationsKey returns the key for the pending undelegations store.
 func PendingUndelegationsKey() []byte {
 	return []byte{PendingUndelegationsByte}
+}
+
+// SafeInt64ToUint64 is a wrapper function to convert an int64
+// to a uint64. It returns (0, false) if the conversion is not possible.
+// This is safe as long as the int64 is non-negative.
+func SafeInt64ToUint64(id int64) (uint64, bool) {
+	if id < 0 {
+		return 0, false
+	}
+	return uint64(id), true // #nosec G701 // already checked.
 }

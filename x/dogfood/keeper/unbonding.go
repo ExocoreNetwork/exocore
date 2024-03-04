@@ -54,7 +54,7 @@ func (k Keeper) GetUnbondingCompletionEpoch(
 	// goes into effect at the beginning of epoch 6. the information
 	// should be held for 7 epochs, so it should be deleted at the
 	// beginning of epoch 13 or the end of epoch 12.
-	return epochInfo.CurrentEpoch + int64(unbondingEpochs)
+	return epochInfo.CurrentEpoch + int64(unbondingEpochs) // #nosec G701
 }
 
 // AppendUndelegationsToMature stores that the undelegation with recordKey should be
@@ -75,7 +75,7 @@ func (k Keeper) GetUndelegationsToMature(
 	ctx sdk.Context, epoch int64,
 ) [][]byte {
 	store := ctx.KVStore(k.storeKey)
-	key := types.UnbondingReleaseMaturityKey(epoch)
+	key, _ := types.UnbondingReleaseMaturityKey(epoch)
 	bz := store.Get(key)
 	if bz == nil {
 		return [][]byte{}
@@ -94,7 +94,7 @@ func (k Keeper) ClearUndelegationsToMature(
 	ctx sdk.Context, epoch int64,
 ) {
 	store := ctx.KVStore(k.storeKey)
-	key := types.UnbondingReleaseMaturityKey(epoch)
+	key, _ := types.UnbondingReleaseMaturityKey(epoch)
 	store.Delete(key)
 }
 
@@ -104,7 +104,7 @@ func (k Keeper) setUndelegationsToMature(
 	ctx sdk.Context, epoch int64, undelegationRecords types.UndelegationRecordKeys,
 ) {
 	store := ctx.KVStore(k.storeKey)
-	key := types.UnbondingReleaseMaturityKey(epoch)
+	key, _ := types.UnbondingReleaseMaturityKey(epoch)
 	val, err := undelegationRecords.Marshal()
 	if err != nil {
 		panic(err)

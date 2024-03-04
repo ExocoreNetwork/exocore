@@ -31,11 +31,11 @@ func (k Keeper) EndBlock(ctx sdk.Context) []abci.ValidatorUpdate {
 	k.ClearPendingConsensusAddrs(ctx)
 	// finally, perform the actual operations of vote power changes.
 	operations := k.GetPendingOperations(ctx)
-	id, _ := k.GetValidatorSetID(ctx, ctx.BlockHeight())
+	id, _ := k.getValidatorSetID(ctx, ctx.BlockHeight())
 	if len(operations.GetList()) == 0 {
 		// there is no validator set change, so we just increment the block height
 		// and retain the same val set id mapping.
-		k.SetValidatorSetID(ctx, ctx.BlockHeight()+1, id)
+		k.setValidatorSetID(ctx, ctx.BlockHeight()+1, id)
 		return []abci.ValidatorUpdate{}
 	}
 	res := make([]abci.ValidatorUpdate, 0, len(operations.GetList()))
@@ -46,7 +46,8 @@ func (k Keeper) EndBlock(ctx sdk.Context) []abci.ValidatorUpdate {
 				ctx, operation.OperatorAddress,
 			)
 			if err != nil {
-				panic(err)
+				// this should never happen, but if it does, we just skip the operation.
+				continue
 			}
 			res = append(res, abci.ValidatorUpdate{
 				PubKey: operation.PubKey,
@@ -58,7 +59,8 @@ func (k Keeper) EndBlock(ctx sdk.Context) []abci.ValidatorUpdate {
 				Power:  0,
 			})
 		case types.KeyOpUnspecified:
-			panic("unspecified operation type")
+			// this should never happen, but if it does, we just skip the operation.
+			continue
 		}
 	}
 	// call via wrapper function so that validator info is stored.

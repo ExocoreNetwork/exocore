@@ -24,7 +24,7 @@ func (k Keeper) GetPendingOperations(ctx sdk.Context) types.Operations {
 	}
 	var operations types.Operations
 	if err := operations.Unmarshal(bz); err != nil {
-		panic(err)
+		return types.Operations{}
 	}
 	return operations
 }
@@ -38,10 +38,7 @@ func (k Keeper) ClearPendingOperations(ctx sdk.Context) {
 // SetPendingOptOuts sets the pending opt-outs to be applied at the end of the block.
 func (k Keeper) SetPendingOptOuts(ctx sdk.Context, addrs types.AccountAddresses) {
 	store := ctx.KVStore(k.storeKey)
-	bz, err := addrs.Marshal()
-	if err != nil {
-		panic(err)
-	}
+	bz := k.cdc.MustMarshal(&addrs)
 	store.Set(types.PendingOptOutsKey(), bz)
 }
 
@@ -54,7 +51,7 @@ func (k Keeper) GetPendingOptOuts(ctx sdk.Context) types.AccountAddresses {
 	}
 	var addrs types.AccountAddresses
 	if err := addrs.Unmarshal(bz); err != nil {
-		panic(err)
+		return types.AccountAddresses{}
 	}
 	return addrs
 }
@@ -69,10 +66,7 @@ func (k Keeper) ClearPendingOptOuts(ctx sdk.Context) {
 // block.
 func (k Keeper) SetPendingConsensusAddrs(ctx sdk.Context, addrs types.ConsensusAddresses) {
 	store := ctx.KVStore(k.storeKey)
-	bz, err := addrs.Marshal()
-	if err != nil {
-		panic(err)
-	}
+	bz := k.cdc.MustMarshal(&addrs)
 	store.Set(types.PendingConsensusAddrsKey(), bz)
 }
 
@@ -86,7 +80,7 @@ func (k Keeper) GetPendingConsensusAddrs(ctx sdk.Context) types.ConsensusAddress
 	}
 	var addrs types.ConsensusAddresses
 	if err := addrs.Unmarshal(bz); err != nil {
-		panic(err)
+		return types.ConsensusAddresses{}
 	}
 	return addrs
 }
@@ -100,12 +94,12 @@ func (k Keeper) ClearPendingConsensusAddrs(ctx sdk.Context) {
 
 // SetPendingUndelegations sets the pending undelegations to be released at the end of the
 // block.
-func (k Keeper) SetPendingUndelegations(ctx sdk.Context, undelegations types.UndelegationRecordKeys) {
+func (k Keeper) SetPendingUndelegations(
+	ctx sdk.Context,
+	undelegations types.UndelegationRecordKeys,
+) {
 	store := ctx.KVStore(k.storeKey)
-	bz, err := undelegations.Marshal()
-	if err != nil {
-		panic(err)
-	}
+	bz := k.cdc.MustMarshal(&undelegations)
 	store.Set(types.PendingUndelegationsKey(), bz)
 }
 
@@ -119,7 +113,7 @@ func (k Keeper) GetPendingUndelegations(ctx sdk.Context) types.UndelegationRecor
 	}
 	var undelegations types.UndelegationRecordKeys
 	if err := undelegations.Unmarshal(bz); err != nil {
-		panic(err)
+		return types.UndelegationRecordKeys{}
 	}
 	return undelegations
 }

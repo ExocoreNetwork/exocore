@@ -123,6 +123,9 @@ func ValidatePositiveUint32(i interface{}) error {
 // String implements the Stringer interface. Ths interface is required as part of the
 // proto.Message interface, which is used in the query server.
 func (p Params) String() string {
-	out, _ := yaml.Marshal(p)
+	out, err := yaml.Marshal(p)
+	if err != nil {
+		return ""
+	}
 	return string(out)
 }
