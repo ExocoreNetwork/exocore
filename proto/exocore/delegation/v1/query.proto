@@ -9,18 +9,25 @@ import "google/api/annotations.proto";
 
 option go_package = "github.com/ExocoreNetwork/exocore/x/delegation/types";
 
+// DelegationInfoReq is the request to obtain the delegation information
+// by staker id and asset id.
 message DelegationInfoReq {
+  // staker_id is the staker id.
   string staker_id = 1 [(gogoproto.customname) = "StakerID"];
+  // asset_id is the asset id.
   string asset_id = 2 [(gogoproto.customname) = "AssetID"];
 }
 
+// DelegationAmounts is the delegation amount response for a single delegation.
 message DelegationAmounts {
+  // can_undelegation_amount is the amount that can be undelegated.
   string can_undelegation_amount = 1
   [
     (cosmos_proto.scalar) = "cosmos.Int",
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
     (gogoproto.nullable) = false
   ];
+  // wait_undelegation_amount is the amount that is waiting to be unbonded.
   string wait_undelegation_amount = 2
   [
     (cosmos_proto.scalar) = "cosmos.Int",
@@ -29,23 +36,33 @@ message DelegationAmounts {
   ];
 }
 
+// QueryDelegationInfoResponse is the response for delegations by staker id and
+// asset id.
 message QueryDelegationInfoResponse {
+  // total_delegated_amount is the total amount that is delegated.
   string total_delegated_amount = 1
   [
     (cosmos_proto.scalar) = "cosmos.Int",
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
     (gogoproto.nullable) = false
   ];
-  map<string, DelegationAmounts > delegation_infos = 2;
+  // delegation_infos is the delegation information for each operator.
+  map<string, DelegationAmounts> delegation_infos = 2;
 }
 
+// SingleDelegationInfoReq is the request to obtain the single delegation information.
 message SingleDelegationInfoReq {
+  // staker_id is the staker id.
   string staker_id = 1 [(gogoproto.customname) = "StakerID"];
+  // operator_addr is the operator address.
   string operator_addr = 2 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+  // asset_id is the asset id.
   string asset_id = 3 [(gogoproto.customname) = "AssetID"];
 }
 
+// QueryOperatorInfoReq is the request to obtain the operator information.
 message QueryOperatorInfoReq {
+  // operator_addr is the operator address.
   string operator_addr = 1
   [(cosmos_proto.scalar) = "cosmos.AddressString"];
 }
@@ -53,7 +70,7 @@ message QueryOperatorInfoReq {
 // Query is the service API for the delegation module.
 service Query {
   // OperatorInfo queries the operator information.
-  rpc QueryOperatorInfo(QueryOperatorInfoReq) returns(OperatorInfo){
+  rpc QueryOperatorInfo(QueryOperatorInfoReq) returns (OperatorInfo) {
     option (google.api.http).get = "/exocore/delegation/v1/GetOperatorInfo";
   }
   // DelegationInfo queries the delegation information for {stakerID, assetID}.
@@ -63,7 +80,7 @@ service Query {
   }
   // SingleDelegationInfo queries the single delegation information for 
   // {chain, staker, asset, operator}.
-  rpc QuerySingleDelegationInfo(SingleDelegationInfoReq) returns(DelegationAmounts){
+  rpc QuerySingleDelegationInfo(SingleDelegationInfoReq) returns (DelegationAmounts) {
     option (cosmos.query.v1.module_query_safe) = true;
     option (google.api.http).get = "/exocore/delegation/v1/QuerySingleDelegationInfo";
   }
