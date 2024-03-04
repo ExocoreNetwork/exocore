@@ -1,11 +1,11 @@
 syntax = "proto3";
 package exocore.delegation.v1;
 
-import "gogoproto/gogo.proto";
-import "google/api/annotations.proto";
 import "cosmos/query/v1/query.proto";
 import "cosmos_proto/cosmos.proto";
 import "exocore/delegation/v1/tx.proto";
+import "gogoproto/gogo.proto";
+import "google/api/annotations.proto";
 
 option go_package = "github.com/ExocoreNetwork/exocore/x/delegation/types";
 

@@ -2,10 +2,10 @@
 syntax = "proto3";
 package exocore.delegation.v1;
 
+import "amino/amino.proto";
 import "cosmos/msg/v1/msg.proto";
 import "cosmos_proto/cosmos.proto";
 import "gogoproto/gogo.proto";
-import "amino/amino.proto";
 
 option go_package = "github.com/ExocoreNetwork/exocore/x/delegation/types";
 
