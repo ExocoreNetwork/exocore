@@ -89,8 +89,8 @@ func (k Keeper) ApplyValidatorChanges(
 	for _, v := range k.GetAllExocoreValidators(ctx) {
 		// we stored the validators above, so this will never fail.
 		pubkey, _ := v.ConsPubKey() // #nosec G703
-		// This calls NewAnyWithValue internally, which we have already done.
-		val, _ := stakingtypes.NewValidator( // #nosec G703
+		// #nosec G703 // This calls NewAnyWithValue internally, which we have already done.
+		val, _ := stakingtypes.NewValidator(
 			nil, pubkey, stakingtypes.Description{},
 		)
 		// Set validator to bonded status
