@@ -1,9 +1,7 @@
 syntax = "proto3";
 package exocore.slash;
 
-import "gogoproto/gogo.proto";
 import "google/api/annotations.proto";
-import "cosmos/query/v1/query.proto";
 import "exocore/slash/params.proto";
 // this line is used by starport scaffolding # 1
 

@@ -9,35 +9,35 @@ import "amino/amino.proto";
 option go_package = "github.com/ExocoreNetwork/exocore/x/restaking_assets_manage/types";
 
 message ClientChainInfo {
-  string Name = 1;
-  string MetaInfo = 2;
-  uint64 ChainId = 3;
-  uint64 ExoCoreChainIndex = 4;
-  uint64 FinalizationBlocks = 5;
-  uint64 LayerZeroChainID = 6;
-  string SignatureType = 7;
-  uint32 AddressLength = 8;
+  string name = 1;
+  string meta_info = 2;
+  uint64 chain_id = 3;
+  uint64 exo_core_chain_index = 4;
+  uint64 finalization_blocks = 5;
+  uint64 layer_zero_chain_id = 6 [(gogoproto.customname) = "LayerZeroChainID"];
+  string signature_type = 7;
+  uint32 address_length = 8;
 }
 
 message AssetInfo {
-  string Name = 1;
-  string Symbol = 2;
-  string Address = 3;
-  uint32 Decimals = 4;
-  string TotalSupply = 5
+  string name = 1;
+  string symbol = 2;
+  string address = 3;
+  uint32 decimals = 4;
+  string total_supply = 5
   [
     (cosmos_proto.scalar) = "cosmos.Int",
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
     (gogoproto.nullable) = false
   ];
-  uint64 LayerZeroChainID = 6;
-  uint64 ExoCoreChainIndex = 7;
-  string MetaInfo = 8;
+  uint64 layer_zero_chain_id = 6 [(gogoproto.customname) = "LayerZeroChainID"];
+  uint64 exo_core_chain_index = 7;
+  string meta_info = 8;
 }
 
 message StakingAssetInfo {
-  AssetInfo AssetBasicInfo = 1;
-  string StakingTotalAmount = 2
+  AssetInfo asset_basic_info = 1;
+  string staking_total_amount = 2
   [
     (cosmos_proto.scalar) = "cosmos.Int",
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
@@ -46,19 +46,19 @@ message StakingAssetInfo {
 }
 
 message StakerSingleAssetOrChangeInfo {
-  string TotalDepositAmountOrWantChangeValue = 1
+  string total_deposit_amount_or_want_change_value = 1
   [
     (cosmos_proto.scalar) = "cosmos.Int",
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
     (gogoproto.nullable) = false
   ];
-  string CanWithdrawAmountOrWantChangeValue = 2
+  string can_withdraw_amount_or_want_change_value = 2
   [
     (cosmos_proto.scalar) = "cosmos.Int",
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
     (gogoproto.nullable) = false
   ];
-  string WaitUndelegationAmountOrWantChangeValue = 3
+  string wait_undelegation_amount_or_want_change_value = 3
   [
     (cosmos_proto.scalar) = "cosmos.Int",
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
@@ -67,24 +67,24 @@ message StakerSingleAssetOrChangeInfo {
 }
 
 message StakerAllAssetsInfo {
-  map<string, StakerSingleAssetOrChangeInfo> allAssetsState = 1;
+  map<string, StakerSingleAssetOrChangeInfo> all_assets_state = 1;
 }
 
 message OperatorSingleAssetOrChangeInfo{
-  string TotalAmountOrWantChangeValue = 1
+  string total_amount_or_want_change_value = 1
   [
     (cosmos_proto.scalar) = "cosmos.Int",
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
     (gogoproto.nullable) = false
   ];
   //todo: the field is used to mark operator's own assets and is not temporarily used now
-  string OperatorOwnAmountOrWantChangeValue = 2
+  string operator_own_amount_or_want_change_value = 2
   [
     (cosmos_proto.scalar) = "cosmos.Int",
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
     (gogoproto.nullable) = false
   ];
-  string WaitUndelegationAmountOrWantChangeValue = 3
+  string wait_undelegation_amount_or_want_change_value = 3
   [
     (cosmos_proto.scalar) = "cosmos.Int",
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
@@ -93,7 +93,7 @@ message OperatorSingleAssetOrChangeInfo{
 }
 
 message OperatorAllAssetsInfo {
-  map<string, OperatorSingleAssetOrChangeInfo> allAssetsState = 1;
+  map<string, OperatorSingleAssetOrChangeInfo> all_assets_state = 1;
 }
 
 message MsgSetExoCoreAddr {
@@ -103,11 +103,11 @@ message MsgSetExoCoreAddr {
   option (gogoproto.equal) = false;
   option (gogoproto.goproto_getters) = false;
 
-  string   fromAddress = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
-  string   setAddress = 2 [(cosmos_proto.scalar) = "cosmos.AddressString"];
-  string   clientChainAddr = 3;
-  uint64   clientChainIndex = 4;
-  string   StakerClientChainSignature = 5;
+  string   from_address = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+  string   set_address = 2 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+  string   client_chain_addr = 3;
+  uint64   client_chain_index = 4;
+  string   staker_client_chain_signature = 5;
 }
 message MsgSetExoCoreAddrResponse {}
 
@@ -117,7 +117,7 @@ message RegisterClientChainReq {
   option (gogoproto.equal) = false;
   option (gogoproto.goproto_getters) = false;
 
-  string FromAddress = 1
+  string from_address = 1
   [(cosmos_proto.scalar) = "cosmos.AddressString"];
   ClientChainInfo info = 2;
 }
@@ -129,17 +129,21 @@ message RegisterAssetReq {
   option (gogoproto.equal) = false;
   option (gogoproto.goproto_getters) = false;
 
-  string FromAddress = 1
+  string from_address = 1
   [(cosmos_proto.scalar) = "cosmos.AddressString"];
   AssetInfo info = 2;
 }
 message RegisterAssetResponse {}
 
+// Msg defines the restaking_assets_manage Msg service
 service Msg {
 
   option (cosmos.msg.v1.service) = true;
 
+  // SetStakerExoCoreAddr sets the exocore address of the staker
   rpc SetStakerExoCoreAddr(MsgSetExoCoreAddr) returns (MsgSetExoCoreAddrResponse);
+  // RegisterClientChain registers the client chain
   rpc RegisterClientChain(RegisterClientChainReq) returns (RegisterClientChainResponse);
+  // RegisterAsset registers the asset on the client chain
   rpc RegisterAsset(RegisterAssetReq) returns (RegisterAssetResponse);
 }

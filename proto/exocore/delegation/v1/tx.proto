@@ -10,7 +10,7 @@ import "amino/amino.proto";
 option go_package = "github.com/ExocoreNetwork/exocore/x/delegation/types";
 
 message ValueField {
-  string Amount = 1
+  string amount = 1
   [
     (cosmos_proto.scalar) = "cosmos.Int",
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
@@ -19,30 +19,30 @@ message ValueField {
 }
 
 message DelegatedSingleAssetInfo {
-  string AssetID = 1;
-  string TotalDelegatedAmount = 2
+  string asset_id = 1 [(gogoproto.customname) = "AssetID"];
+  string total_delegated_amount = 2
   [
     (cosmos_proto.scalar) = "cosmos.Int",
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
     (gogoproto.nullable) = false
   ];
-  map<string, ValueField> PerOperatorAmounts = 3;
+  map<string, ValueField> per_operator_amounts = 3;
 }
 
-message clientChainEarningAddrList {
-  repeated clientChainEarningAddrInfo EarningInfoList = 1;
+message ClientChainEarningAddrList {
+  repeated ClientChainEarningAddrInfo earning_info_list = 1;
 }
 
-message clientChainEarningAddrInfo {
-  uint64 lzClientChainID = 1;
-  string clientChainEarningAddr = 2;
+message ClientChainEarningAddrInfo {
+  uint64 lz_client_chain_id = 1  [(gogoproto.customname) = "LzClientChainID"];
+  string client_chain_earning_addr = 2;
 }
 
-message OperatorInfo{
-  string EarningsAddr = 1;
-  string ApproveAddr = 2;
-  string OperatorMetaInfo = 3;
-  clientChainEarningAddrList ClientChainEarningsAddr = 4;
+message OperatorInfo {
+  string earnings_addr = 1;
+  string approve_addr = 2;
+  string operator_meta_info = 3;
+  ClientChainEarningAddrList client_chain_earnings_addr = 4;
 }
 
 message RegisterOperatorReq {
@@ -51,52 +51,52 @@ message RegisterOperatorReq {
   option (gogoproto.equal) = false;
   option (gogoproto.goproto_getters) = false;
 
-  string FromAddress = 1
+  string from_address = 1
   [(cosmos_proto.scalar) = "cosmos.AddressString"];
   OperatorInfo info = 2;
 }
 
-message DelegationApproveInfo{
+message DelegationApproveInfo {
   string signature = 1;
   string salt = 2;
 }
 
 message RegisterOperatorResponse{}
 
-message DelegationIncOrDecInfo{
+message DelegationIncOrDecInfo {
   option (cosmos.msg.v1.signer) = "fromAddress";
   option (amino.name) = "cosmos-sdk/MsgAddOrDecreaseDelegation";
 
   option (gogoproto.equal) = false;
   option (gogoproto.goproto_getters) = false;
 
-  string   fromAddress = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+  string   from_address = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
 
-  map<string, ValueField> perOperatorAmounts = 2;
+  map<string, ValueField> per_operator_amounts = 2;
 }
 
-message MsgDelegation{
-  DelegationIncOrDecInfo baseInfo = 1;
-  DelegationApproveInfo approvedInfo = 2;
+message MsgDelegation {
+  DelegationIncOrDecInfo base_info = 1;
+  DelegationApproveInfo approved_info = 2;
 }
 
-message UndelegationRecord{
-  string stakerID = 1;
-  string assetID = 2;
-  string OperatorAddr = 3
+message UndelegationRecord {
+  string staker_id = 1 [(gogoproto.customname) = "StakerID"];
+  string asset_id = 2 [(gogoproto.customname) = "AssetID"];
+  string operator_addr = 3
   [(cosmos_proto.scalar) = "cosmos.AddressString"];
-  string txHash = 4;
-  bool isPending = 5;
-  uint64 BlockNumber = 6;
-  uint64 CompleteBlockNumber = 7;
-  uint64 LzTxNonce = 8;
+  string tx_hash = 4;
+  bool is_pending = 5;
+  uint64 block_number = 6;
+  uint64 complete_block_number = 7;
+  uint64 lz_tx_nonce = 8;
   string amount = 9
   [
     (cosmos_proto.scalar) = "cosmos.Int",
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
     (gogoproto.nullable) = false
   ];
-  string actualCompletedAmount =10
+  string actual_completed_amount =10
   [
     (cosmos_proto.scalar) = "cosmos.Int",
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
@@ -105,22 +105,24 @@ message UndelegationRecord{
 }
 
 message UndelegationRecordKeyList {
-  repeated string keyList = 1;
+  repeated string key_list = 1;
 }
 
-message DelegationResponse{}
+message DelegationResponse {}
 
-message MsgUndelegation{
-  DelegationIncOrDecInfo baseInfo = 1;
+message MsgUndelegation {
+  DelegationIncOrDecInfo base_info = 1;
 }
 message UndelegationResponse{}
 
 // Msg defines the delegation Msg service.
 service Msg {
   option (cosmos.msg.v1.service) = true;
-  // CreateClawbackVestingAccount creats a vesting account that is subject to clawback.
+  // RegisterOperator registers a new operator.
   rpc RegisterOperator(RegisterOperatorReq) returns (RegisterOperatorResponse);
+  // DelegateAssetToOperator delegates asset to operator.
   rpc DelegateAssetToOperator(MsgDelegation) returns (DelegationResponse);
+  // UndelegateAssetFromOperator undelegates asset from operator.
   rpc UndelegateAssetFromOperator(MsgUndelegation) returns (UndelegationResponse);
 }
 

@@ -34,7 +34,9 @@ jobs:
           make test-unit-cover
         if: env.GIT_DIFF
       - uses: codecov/codecov-action@v3
+        # disabled for now, since we don't have any codecov
+        if: ${{ false }}
         with:
           file: ./coverage.txt
           fail_ci_if_error: true
-        if: env.GIT_DIFF
+        # if: env.GIT_DIFF

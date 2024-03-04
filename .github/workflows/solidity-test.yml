@@ -9,6 +9,8 @@ on:
 
 jobs:
   test-solidity:
+    # disabled for now, since we don't have any Solidity files.
+    if: ${{ false }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/setup-go@v4

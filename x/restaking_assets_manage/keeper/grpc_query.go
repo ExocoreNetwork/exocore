@@ -85,9 +85,9 @@ func (k Keeper) QueOperatorSpecifiedAssetAmount(ctx context.Context, req *restak
 // QueStakerExoCoreAddr outdated,will be deprecated
 func (k Keeper) QueStakerExoCoreAddr(ctx context.Context, req *restakingtype.QueryStakerExCoreAddr) (*restakingtype.QueryStakerExCoreAddrResponse, error) {
 	c := sdk.UnwrapSDKContext(ctx)
-	exoCoreAddr, err := k.GetStakerExoCoreAddr(c, req.StakerID)
+	exoCoreAddr, err := k.GetStakerExoCoreAddr(c, req.Staker)
 	if err != nil {
 		return nil, err
 	}
-	return &restakingtype.QueryStakerExCoreAddrResponse{ExCoreAddr: exoCoreAddr}, nil
+	return &restakingtype.QueryStakerExCoreAddrResponse{ExoCoreAddr: exoCoreAddr}, nil
 }
