@@ -72,9 +72,8 @@ func (k Keeper) ApplyValidatorChanges(
 				if err != nil {
 					// If an error is returned, the validator is not added to the `ret` slice.
 					continue
-				} else {
-					writeFunc()
 				}
+				writeFunc()
 			} else {
 				// edge case: we received an update for 0 power
 				// but the validator is already deleted. Do not forward
