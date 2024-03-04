@@ -23,7 +23,7 @@ jobs:
           fetch-depth: 0
 
       - name: Lint Code Base
-        uses: github/super-linter@v5
+        uses: super-linter/super-linter@v6.3.0  # x-release-please-version
         env:
           LINTER_RULES_PATH: /
           YAML_CONFIG_FILE: .yamllint
@@ -33,6 +33,9 @@ jobs:
           VALIDATE_NATURAL_LANGUAGE: false
           VALIDATE_OPENAPI: false
           VALIDATE_JSCPD: false
+          # separate workflow
           VALIDATE_GO: false
-          DEFAULT_BRANCH: "master"
+          VALIDATE_GO_MODULES: false
+          # TODO: enable docker coverage later
+          VALIDATE_CHECKOV: false
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
