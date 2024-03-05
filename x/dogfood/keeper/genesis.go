@@ -30,7 +30,7 @@ func (k Keeper) InitGenesis(
 		}
 	}
 	// genState must not be malformed.
-	if len(genState.ValSet) > int(k.GetMaxValidators(ctx)) {
+	if len(genState.ValSet) > int(k.GetMaxValidators(ctx)) { // #nosec G701 // ok if 64-bit.
 		panic(fmt.Errorf(
 			"cannot have more than %d validators in the genesis state",
 			k.GetMaxValidators(ctx),

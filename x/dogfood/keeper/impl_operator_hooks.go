@@ -42,28 +42,6 @@ func (h OperatorHooksWrapper) AfterOperatorKeyReplacement(
 		h.keeper.SetUnbondingInformation(ctx, operator, oldKey, false)
 		h.keeper.ClearUnbondingInformation(ctx, operator, newKey)
 	}
-	// 	// remove the old key
-	// 	// res == Removed, it means operator had added this key and is now removing it.
-	// 	// no additional information to clear.
-	// 	// res == Success, the old key should be pruned from the operator module.
-	// 	// res == Exists, there is nothing to do.
-	// 	if res := h.keeper.QueueOperation(
-	// 		ctx, addr, oldKey, types.KeyRemoval,
-	// 	); res == types.QueueResultSuccess {
-	// 		// the old key can be marked for pruning
-	// 		h.keeper.SetUnbondingInformation(ctx, addr, oldKey, false)
-	// 	}
-	// 	// add the new key
-	// 	// res == Removed, it means operator has added their original key again
-	// 	// res == Success, there is no additional information to store
-	// 	// res == Exists, there is no nothing to do
-	// 	if res := h.keeper.QueueOperation(
-	// 		ctx, addr, newKey, types.KeyAdditionOrUpdate,
-	// 	); res == types.QueueResultRemoved {
-	// 		// see AfterOperatorOptIn for explanation
-	// 		h.keeper.ClearUnbondingInformation(ctx, addr, newKey)
-	// 	}
-	// }
 }
 
 // AfterOperatorOptOutInitiated is the implementation of the operator hooks.

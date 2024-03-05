@@ -49,15 +49,24 @@ func (k Keeper) EndBlock(ctx sdk.Context) []abci.ValidatorUpdate {
 	var res []abci.ValidatorUpdate
 	operators, keys := k.operatorKeeper.GetActiveOperatorsForChainId(ctx, ctx.ChainID())
 	powers, err := k.restakingKeeper.GetAvgDelegatedValue(
-		ctx, operators, k.GetAssetIDs(ctx),
+		ctx, operators, k.GetAssetIDs(ctx), k.GetEpochIdentifier(ctx),
 	)
 	if err != nil {
 		return []abci.ValidatorUpdate{}
 	}
 	operators, keys, powers = sortByPower(operators, keys, powers)
+	maxVals := k.GetMaxValidators(ctx)
 	for i := range operators {
+		if i >= int(maxVals) { // #nosec G701 // #nosec G701 // ok if 64-bit.
+			// we have reached the maximum number of validators.
+			break
+		}
 		key := keys[i]
 		power := powers[i]
+		if power < 1 {
+			// we have reached the bottom of the rung.
+			break
+		}
 		// find the previous power.
 		prevPower, found := prev[key.String()]
 		if found && prevPower == power {
@@ -72,7 +81,7 @@ func (k Keeper) EndBlock(ctx sdk.Context) []abci.ValidatorUpdate {
 		})
 	}
 	// the remaining keys in prev have lost their power.
-	for key, _ := range prev {
+	for key := range prev {
 		bz := []byte(key)
 		var keyObj tmprotocrypto.PublicKey
 		k.cdc.MustUnmarshal(bz, &keyObj)

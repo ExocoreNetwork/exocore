@@ -80,7 +80,7 @@ type RestakingKeeper interface {
 	GetOperatorAssetValue(sdk.Context, sdk.AccAddress) (int64, error)
 	IsStakingAsset(sdk.Context, string) bool
 	GetAvgDelegatedValue(
-		sdk.Context, []sdk.AccAddress, []string,
+		sdk.Context, []sdk.AccAddress, []string, string,
 	) ([]int64, error)
 }
 
