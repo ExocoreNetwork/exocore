@@ -26,7 +26,7 @@ var (
 	passCheck testutil.LogCheckArgs
 )
 
-func (s *PrecompileTestSuite) TestCallDepositToFromEOA() {
+func (s *DepositPrecompileSuite) TestCallDepositToFromEOA() {
 	// deposit params for test
 	exoCoreLzAppAddress := "0x3fC91A3afd70395Cd496C647d5a6CC9D4B2b7FAD"
 	exoCoreLzAppEventTopic := "0xc6a377bfc4eb120024a8ac08eef205be16b817020812c73223e81d1bdb9708ec"
@@ -36,7 +36,7 @@ func (s *PrecompileTestSuite) TestCallDepositToFromEOA() {
 	}
 	usdtAddress := paddingClientChainAddress(common.FromHex("0xdAC17F958D2ee523a2206206994597C13D831ec7"), types.GeneralClientChainAddrLength)
 	clientChainLzID := 101
-	stakerAddr := paddingClientChainAddress(s.address.Bytes(), types.GeneralClientChainAddrLength)
+	stakerAddr := paddingClientChainAddress(s.Address.Bytes(), types.GeneralClientChainAddrLength)
 	opAmount := big.NewInt(100)
 	assetAddr := usdtAddress
 	method := "depositTo"
@@ -47,7 +47,7 @@ func (s *PrecompileTestSuite) TestCallDepositToFromEOA() {
 		defaultCallArgs = contracts.CallArgs{
 			ContractAddr: s.precompile.Address(),
 			ContractABI:  s.precompile.ABI,
-			PrivKey:      s.privKey,
+			PrivKey:      s.PrivKey,
 		}
 
 		defaultLogCheck = testutil.LogCheckArgs{
@@ -57,7 +57,7 @@ func (s *PrecompileTestSuite) TestCallDepositToFromEOA() {
 	}
 
 	prepareFunc := func(params *types3.Params, method string) contracts.CallArgs {
-		err := s.app.DepositKeeper.SetParams(s.ctx, params)
+		err := s.App.DepositKeeper.SetParams(s.Ctx, params)
 		s.Require().NoError(err)
 		defaultDepositArgs := defaultCallArgs.WithMethodName(method)
 		return defaultDepositArgs.WithArgs(
@@ -70,20 +70,20 @@ func (s *PrecompileTestSuite) TestCallDepositToFromEOA() {
 	// test caller error
 	beforeEach()
 	setDepositToArgs := prepareFunc(&depositParams, method)
-	_, _, err := contracts.CallContractAndCheckLogs(s.ctx, s.app, setDepositToArgs, passCheck)
+	_, _, err := contracts.CallContractAndCheckLogs(s.Ctx, s.App, setDepositToArgs, passCheck)
 	s.Require().ErrorContains(err, strings.Split(deposit.ErrContractCaller, ",")[0])
 
 	// test success
 	beforeEach()
-	depositParams.ExoCoreLzAppAddress = s.address.String()
+	depositParams.ExoCoreLzAppAddress = s.Address.String()
 	setDepositToArgs = prepareFunc(&depositParams, method)
-	_, ethRes, err := contracts.CallContractAndCheckLogs(s.ctx, s.app, setDepositToArgs, passCheck)
+	_, ethRes, err := contracts.CallContractAndCheckLogs(s.Ctx, s.App, setDepositToArgs, passCheck)
 	successRet, err := s.precompile.Methods[deposit.MethodDepositTo].Outputs.Pack(true, opAmount)
 	s.Require().NoError(err)
 	s.Require().Equal(successRet, ethRes.Ret)
 }
 
-func (s *PrecompileTestSuite) TestCallDepositToFromContract() {
+func (s *DepositPrecompileSuite) TestCallDepositToFromContract() {
 	// deposit params for test
 	exoCoreLzAppAddress := "0x3fC91A3afd70395Cd496C647d5a6CC9D4B2b7FAD"
 	exoCoreLzAppEventTopic := "0xc6a377bfc4eb120024a8ac08eef205be16b817020812c73223e81d1bdb9708ec"
@@ -93,7 +93,7 @@ func (s *PrecompileTestSuite) TestCallDepositToFromContract() {
 	}
 	usdtAddress := paddingClientChainAddress(common.FromHex("0xdAC17F958D2ee523a2206206994597C13D831ec7"), types.GeneralClientChainAddrLength)
 	clientChainLzID := 101
-	stakerAddr := paddingClientChainAddress(s.address.Bytes(), types.GeneralClientChainAddrLength)
+	stakerAddr := paddingClientChainAddress(s.Address.Bytes(), types.GeneralClientChainAddrLength)
 	opAmount := big.NewInt(100)
 	assetAddr := usdtAddress
 
@@ -107,8 +107,9 @@ func (s *PrecompileTestSuite) TestCallDepositToFromContract() {
 	s.Require().NoError(err)
 	// NextBlock the smart contract
 	s.NextBlock()
+
 	// check contract was correctly deployed
-	cAcc := s.app.EvmKeeper.GetAccount(s.ctx, contractAddr)
+	cAcc := s.App.EvmKeeper.GetAccount(s.Ctx, contractAddr)
 	s.Require().NotNil(cAcc)
 	s.Require().True(cAcc.IsContract())
 
@@ -118,7 +119,7 @@ func (s *PrecompileTestSuite) TestCallDepositToFromContract() {
 		defaultCallArgs = contracts.CallArgs{
 			ContractAddr: contractAddr,
 			ContractABI:  contracts.DepositCallerContract.ABI,
-			PrivKey:      s.privKey,
+			PrivKey:      s.PrivKey,
 		}
 
 		// default log check arguments
@@ -127,7 +128,7 @@ func (s *PrecompileTestSuite) TestCallDepositToFromContract() {
 	}
 
 	prepareFunc := func(params *types3.Params, method string) contracts.CallArgs {
-		err := s.app.DepositKeeper.SetParams(s.ctx, params)
+		err := s.App.DepositKeeper.SetParams(s.Ctx, params)
 		s.Require().NoError(err)
 		defaultDepositArgs := defaultCallArgs.WithMethodName(method)
 		return defaultDepositArgs.WithArgs(
@@ -141,9 +142,9 @@ func (s *PrecompileTestSuite) TestCallDepositToFromContract() {
 	beforeEach()
 	depositParams.ExoCoreLzAppAddress = contractAddr.String()
 	setDepositToArgs := prepareFunc(&depositParams, "testDepositTo")
-	_, _, err = contracts.CallContractAndCheckLogs(s.ctx, s.app, setDepositToArgs, passCheck)
+	_, _, err = contracts.CallContractAndCheckLogs(s.Ctx, s.App, setDepositToArgs, passCheck)
 	s.Require().NoError(err)
-	//todo: need to find why the ethRet is nil when called by contract
+	// todo: need to find why the ethRet is nil when called by contract
 	/*	successRet, err := contracts.DepositCallerContract.ABI.Methods["testDepositTo"].Outputs.Pack(true, opAmount)
 		s.Require().NoError(err)
 		s.Require().Equal(successRet, ethRes.Ret)*/
@@ -153,7 +154,7 @@ func (s *PrecompileTestSuite) TestCallDepositToFromContract() {
 	setDepositToArgs = prepareFunc(&depositParams, "testCallDepositToAndEmitEvent")
 	// todo: need to check why can't get the ethereum log
 	// eventCheck := passCheck.WithExpEvents("callDepositToResult")
-	_, _, err = contracts.CallContractAndCheckLogs(s.ctx, s.app, setDepositToArgs, passCheck)
+	_, _, err = contracts.CallContractAndCheckLogs(s.Ctx, s.App, setDepositToArgs, passCheck)
 	s.Require().NoError(err)
 	/*	successRet, err = contracts.DepositCallerContract.ABI.Methods["testCallDepositToAndEmitEvent"].Outputs.Pack(true, opAmount)
 		s.Require().NoError(err)
@@ -165,7 +166,7 @@ func (s *PrecompileTestSuite) TestCallDepositToFromContract() {
 	setDepositToArgs = prepareFunc(&depositParams, "testCallDepositToWithTryCatch")
 	// eventCheck = passCheck.WithExpEvents("ErrorOccurred")
 	// todo: need to check the ethereum log
-	_, _, err = contracts.CallContractAndCheckLogs(s.ctx, s.app, setDepositToArgs, passCheck)
+	_, _, err = contracts.CallContractAndCheckLogs(s.Ctx, s.App, setDepositToArgs, passCheck)
 	s.Require().NoError(err)
 	/*	successRet, err = contracts.DepositCallerContract.ABI.Methods["testCallDepositToWithTryCatch"].Outputs.Pack(false, big.NewInt(0))
 		s.Require().NoError(err)

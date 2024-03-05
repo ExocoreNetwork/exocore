@@ -28,6 +28,6 @@ const (
 	prefixReStakerExocoreAddr = iota + 1
 )
 
-// KeyPrefixReStakerExoCoreAddr reStakerId = clientChainAddr+'_'+ExoCoreChainIndex
-// KeyPrefixReStakerExoCoreAddr key-value: reStakerId->exoCoreAddr
+// KeyPrefixReStakerExoCoreAddr reStakerID = clientChainAddr+'_'+ExoCoreChainIndex
+// KeyPrefixReStakerExoCoreAddr key-value: reStakerID->exoCoreAddr
 var KeyPrefixReStakerExoCoreAddr = []byte{prefixReStakerExocoreAddr}

@@ -2,9 +2,9 @@ package keeper_test
 
 import delegationtype "github.com/ExocoreNetwork/exocore/x/delegation/types"
 
-func (suite *KeeperTestSuite) TestOperatorInfo() {
+func (suite *DelegationTestSuite) TestOperatorInfo() {
 	info := &delegationtype.OperatorInfo{
-		EarningsAddr:     suite.accAddress.String(),
+		EarningsAddr:     suite.AccAddress.String(),
 		ApproveAddr:      "",
 		OperatorMetaInfo: "test operator",
 		ClientChainEarningsAddr: &delegationtype.ClientChainEarningAddrList{
@@ -13,10 +13,10 @@ func (suite *KeeperTestSuite) TestOperatorInfo() {
 			},
 		},
 	}
-	err := suite.app.DelegationKeeper.SetOperatorInfo(suite.ctx, suite.accAddress.String(), info)
+	err := suite.App.DelegationKeeper.SetOperatorInfo(suite.Ctx, suite.AccAddress.String(), info)
 	suite.NoError(err)
 
-	getOperatorInfo, err := suite.app.DelegationKeeper.GetOperatorInfo(suite.ctx, suite.accAddress.String())
+	getOperatorInfo, err := suite.App.DelegationKeeper.GetOperatorInfo(suite.Ctx, suite.AccAddress.String())
 	suite.NoError(err)
 	suite.Equal(*info, *getOperatorInfo)
 }

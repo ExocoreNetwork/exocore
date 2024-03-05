@@ -34,7 +34,7 @@ func GetQueryCmd() *cobra.Command {
 // QuerySingleDelegationInfo queries the single delegation info
 func QuerySingleDelegationInfo() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "QuerySingleDelegationInfo clientChainId stakerAddr assetAddr operatorAddr",
+		Use:   "QuerySingleDelegationInfo clientChainID stakerAddr assetAddr operatorAddr",
 		Short: "Get single delegation info",
 		Long:  "Get single delegation info",
 		Args:  cobra.ExactArgs(4),

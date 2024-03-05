@@ -4,22 +4,74 @@ import (
 	"encoding/json"
 	"fmt"
 
-	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
-
 	"cosmossdk.io/simapp"
+
+	"github.com/ExocoreNetwork/exocore/utils"
+	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
+	"github.com/cosmos/cosmos-sdk/codec"
 	servertypes "github.com/cosmos/cosmos-sdk/server/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	crisistypes "github.com/cosmos/cosmos-sdk/x/crisis/types"
+	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
+	govtypesv1 "github.com/cosmos/cosmos-sdk/x/gov/types/v1"
 	slashingtypes "github.com/cosmos/cosmos-sdk/x/slashing/types"
 	"github.com/cosmos/cosmos-sdk/x/staking"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
+	claimstypes "github.com/evmos/evmos/v14/x/claims/types"
+	evmtypes "github.com/evmos/evmos/v14/x/evm/types"
+	inflationtypes "github.com/evmos/evmos/v14/x/inflation/types"
 
 	"github.com/evmos/evmos/v14/encoding"
 )
 
 // NewDefaultGenesisState generates the default state for the application.
-func NewDefaultGenesisState() simapp.GenesisState {
+func NewDefaultGenesisState(cdc codec.Codec) simapp.GenesisState {
 	encCfg := encoding.MakeConfig(ModuleBasics)
-	return ModuleBasics.DefaultGenesis(encCfg.Codec)
+	defaultGenesis := ModuleBasics.DefaultGenesis(encCfg.Codec)
+
+	// staking module
+	stakingGenesis := stakingtypes.GenesisState{}
+	rawGenesis := defaultGenesis[stakingtypes.ModuleName]
+	cdc.MustUnmarshalJSON(rawGenesis, &stakingGenesis)
+	stakingGenesis.Params.BondDenom = utils.BaseDenom
+	defaultGenesis[stakingtypes.ModuleName] = cdc.MustMarshalJSON(&stakingGenesis)
+
+	// crisis module
+	crisisGenesis := crisistypes.GenesisState{}
+	rawGenesis = defaultGenesis[crisistypes.ModuleName]
+	cdc.MustUnmarshalJSON(rawGenesis, &crisisGenesis)
+	crisisGenesis.ConstantFee.Denom = utils.BaseDenom
+	defaultGenesis[crisistypes.ModuleName] = cdc.MustMarshalJSON(&crisisGenesis)
+
+	// gov module
+	govGenesis := govtypesv1.GenesisState{}
+	rawGenesis = defaultGenesis[govtypes.ModuleName]
+	cdc.MustUnmarshalJSON(rawGenesis, &govGenesis)
+	govGenesis.Params.MinDeposit[0].Denom = utils.BaseDenom
+	defaultGenesis[govtypes.ModuleName] = cdc.MustMarshalJSON(&govGenesis)
+
+	// evm module
+	evmGenesis := evmtypes.GenesisState{}
+	rawGenesis = defaultGenesis[evmtypes.ModuleName]
+	cdc.MustUnmarshalJSON(rawGenesis, &evmGenesis)
+	evmGenesis.Params.EvmDenom = utils.BaseDenom
+	defaultGenesis[evmtypes.ModuleName] = cdc.MustMarshalJSON(&evmGenesis)
+
+	// inflation module
+	inflationGenesis := inflationtypes.GenesisState{}
+	rawGenesis = defaultGenesis[inflationtypes.ModuleName]
+	cdc.MustUnmarshalJSON(rawGenesis, &inflationGenesis)
+	inflationGenesis.Params.MintDenom = utils.BaseDenom
+	defaultGenesis[inflationtypes.ModuleName] = cdc.MustMarshalJSON(&inflationGenesis)
+
+	// claims module
+	claimsGenesis := claimstypes.GenesisState{}
+	rawGenesis = defaultGenesis[claimstypes.ModuleName]
+	cdc.MustUnmarshalJSON(rawGenesis, &claimsGenesis)
+	claimsGenesis.Params.ClaimsDenom = utils.BaseDenom
+	defaultGenesis[claimstypes.ModuleName] = cdc.MustMarshalJSON(&claimsGenesis)
+
+	return defaultGenesis
 }
 
 // ExportAppStateAndValidators exports the state of the application for a genesis

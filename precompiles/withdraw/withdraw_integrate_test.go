@@ -26,7 +26,7 @@ var (
 	passCheck testutil.LogCheckArgs
 )
 
-func (s *PrecompileTestSuite) TestCallWithdrawFromEOA() {
+func (s *WithdrawPrecompileTestSuite) TestCallWithdrawFromEOA() {
 	// withdraw params for test
 	exoCoreLzAppAddress := "0x3fC91A3afd70395Cd496C647d5a6CC9D4B2b7FAD"
 	exoCoreLzAppEventTopic := "0xc6a377bfc4eb120024a8ac08eef205be16b817020812c73223e81d1bdb9708ec"
@@ -36,7 +36,7 @@ func (s *PrecompileTestSuite) TestCallWithdrawFromEOA() {
 	}
 	usdtAddress := paddingClientChainAddress(common.FromHex("0xdAC17F958D2ee523a2206206994597C13D831ec7"), types.GeneralClientChainAddrLength)
 	clientChainLzID := 101
-	stakerAddr := paddingClientChainAddress(s.address.Bytes(), types.GeneralClientChainAddrLength)
+	stakerAddr := paddingClientChainAddress(s.Address.Bytes(), types.GeneralClientChainAddrLength)
 	opAmount := big.NewInt(100)
 	assetAddr := usdtAddress
 	method := "withdrawPrinciple"
@@ -47,7 +47,7 @@ func (s *PrecompileTestSuite) TestCallWithdrawFromEOA() {
 		defaultCallArgs = contracts.CallArgs{
 			ContractAddr: s.precompile.Address(),
 			ContractABI:  s.precompile.ABI,
-			PrivKey:      s.privKey,
+			PrivKey:      s.PrivKey,
 		}
 
 		defaultLogCheck = testutil.LogCheckArgs{
@@ -57,7 +57,7 @@ func (s *PrecompileTestSuite) TestCallWithdrawFromEOA() {
 	}
 
 	prepareFunc := func(params *deposittype.Params, method string) contracts.CallArgs {
-		err := s.app.DepositKeeper.SetParams(s.ctx, params)
+		err := s.App.DepositKeeper.SetParams(s.Ctx, params)
 		s.Require().NoError(err)
 		defaultWithdrawArgs := defaultCallArgs.WithMethodName(method)
 		return defaultWithdrawArgs.WithArgs(
@@ -69,6 +69,6 @@ func (s *PrecompileTestSuite) TestCallWithdrawFromEOA() {
 
 	beforeEach()
 	setWithdrawArgs := prepareFunc(&params, method)
-	_, _, err := contracts.CallContractAndCheckLogs(s.ctx, s.app, setWithdrawArgs, passCheck)
+	_, _, err := contracts.CallContractAndCheckLogs(s.Ctx, s.App, setWithdrawArgs, passCheck)
 	s.Require().ErrorContains(err, strings.Split(withdraw.ErrContractCaller, ",")[0])
 }

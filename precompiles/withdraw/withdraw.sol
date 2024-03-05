@@ -16,7 +16,7 @@ interface IWithdraw {
 /// TRANSACTIONS
 /// @dev withdraw To the staker, that will change the state in withdraw module
 /// Note that this address cannot be a module account.
-/// @param clientChainLzID The lzId of client chain
+/// @param clientChainLzID The LzID of client chain
 /// @param assetsAddress The client chain asset Address
 /// @param withdrawAddress The withdraw address
 /// @param opAmount The withdraw amount

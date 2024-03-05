@@ -1,6 +1,7 @@
 package keeper_test
 
 import (
+	"github.com/ExocoreNetwork/exocore/testutil"
 	"testing"
 
 	//nolint:revive // dot imports are fine for Ginkgo
@@ -8,27 +9,17 @@ import (
 	//nolint:revive // dot imports are fine for Ginkgo
 	. "github.com/onsi/gomega"
 
-	"github.com/ExocoreNetwork/exocore/app"
-	"github.com/cosmos/cosmos-sdk/crypto/keyring"
-	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/ethereum/go-ethereum/common"
 	"github.com/stretchr/testify/suite"
 )
 
-type KeeperTestSuite struct {
-	suite.Suite
-
-	ctx     sdk.Context
-	app     *app.ExocoreApp
-	address common.Address
-
-	signer keyring.Signer
+type SlashTestSuite struct {
+	testutil.BaseTestSuite
 }
 
-var s *KeeperTestSuite
+var s *SlashTestSuite
 
 func TestKeeperTestSuite(t *testing.T) {
-	s = new(KeeperTestSuite)
+	s = new(SlashTestSuite)
 	suite.Run(t, s)
 
 	// Run Ginkgo integration tests
@@ -37,6 +28,6 @@ func TestKeeperTestSuite(t *testing.T) {
 }
 
 // SetupTest setup test environment, it uses`require.TestingT` to support both `testing.T` and `testing.B`.
-func (suite *KeeperTestSuite) SetupTest() {
-	suite.DoSetupTest(suite.T())
+func (suite *SlashTestSuite) SetupTest() {
+	suite.DoSetupTest()
 }

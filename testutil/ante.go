@@ -10,7 +10,7 @@ import (
 // the next function in the AnteHandler chain.
 //
 // It can be used in unit tests when calling a decorator's AnteHandle method, e.g.
-// `dec.AnteHandle(ctx, tx, false, NextFn)`
+// `dec.AnteHandle(Ctx, tx, false, NextFn)`
 func NextFn(ctx sdk.Context, _ sdk.Tx, _ bool) (sdk.Context, error) {
 	return ctx, nil
 }
