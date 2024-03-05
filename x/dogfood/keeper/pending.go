@@ -5,36 +5,6 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-// SetPendingOperations sets the pending operations to be applied at the end of the block.
-func (k Keeper) SetPendingOperations(ctx sdk.Context, operations types.Operations) {
-	store := ctx.KVStore(k.storeKey)
-	bz, err := operations.Marshal()
-	if err != nil {
-		panic(err)
-	}
-	store.Set(types.PendingOperationsKey(), bz)
-}
-
-// GetPendingOperations returns the pending operations to be applied at the end of the block.
-func (k Keeper) GetPendingOperations(ctx sdk.Context) types.Operations {
-	store := ctx.KVStore(k.storeKey)
-	bz := store.Get(types.PendingOperationsKey())
-	if bz == nil {
-		return types.Operations{}
-	}
-	var operations types.Operations
-	if err := operations.Unmarshal(bz); err != nil {
-		return types.Operations{}
-	}
-	return operations
-}
-
-// ClearPendingOperations clears the pending operations to be applied at the end of the block.
-func (k Keeper) ClearPendingOperations(ctx sdk.Context) {
-	store := ctx.KVStore(k.storeKey)
-	store.Delete(types.PendingOperationsKey())
-}
-
 // SetPendingOptOuts sets the pending opt-outs to be applied at the end of the block.
 func (k Keeper) SetPendingOptOuts(ctx sdk.Context, addrs types.AccountAddresses) {
 	store := ctx.KVStore(k.storeKey)
