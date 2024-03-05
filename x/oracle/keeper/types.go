@@ -98,3 +98,7 @@ func newSet[T comparable](length int) *set[T] {
 		slice: make([]T, 0, length),
 	}
 }
+
+func exceedsThreshold(power *big.Int, totalPower *big.Int) bool {
+	return new(big.Int).Mul(power, big.NewInt(threshold_b)).Cmp(new(big.Int).Mul(totalPower, big.NewInt(threshold_a))) > 0
+}

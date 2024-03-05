@@ -15,8 +15,18 @@ type reportPrice struct {
 	power  *big.Int
 }
 
+func (r *reportPrice) aggregate() *big.Int {
+	if r.price != nil {
+		return r.price
+	}
+	//TODO: Median(r.prices)
+	r.price = median(r.prices)
+	return r.price
+}
+
 type aggregator struct {
-	reports []*reportPrice
+	finalPrice *big.Int
+	reports    []*reportPrice
 	//total valiadtor power who has submitted pice
 	reportPower *big.Int
 	totalPower  *big.Int
@@ -28,7 +38,8 @@ type aggregator struct {
 }
 
 // fill price from validator submittion into aggregator, and calculation the voting power and check with the consensus status of deterministic soruce value to decide when to do the aggregation
-func (agg *aggregator) fillPrice(prices []*types.PriceWithSource, validator string, power *big.Int) {
+// TODO: currently apply mode=1 in V1, add swith modes
+func (agg *aggregator) fillPrice(pSources []*types.PriceWithSource, validator string, power *big.Int) {
 	report := agg.getReport(validator)
 	if report == nil {
 		report = &reportPrice{
@@ -40,11 +51,11 @@ func (agg *aggregator) fillPrice(prices []*types.PriceWithSource, validator stri
 		agg.reportPower = new(big.Int).Add(agg.totalPower, power)
 	}
 
-	for _, p := range prices {
-		if len(p.Prices[0].DetId) == 0 {
+	for _, pSource := range pSources {
+		if len(pSource.Prices[0].DetId) == 0 {
 			//this is an NS price report, price will just be updated instead of append
-			if pTR := report.prices[p.SourceId]; pTR == nil {
-				pTmp := p.Prices[0]
+			if pTR := report.prices[pSource.SourceId]; pTR == nil {
+				pTmp := pSource.Prices[0]
 				priceBigInt, _ := (&big.Int{}).SetString(pTmp.Price, 10)
 				pTR = &priceWithTimeAndRound{
 					price:     priceBigInt,
@@ -52,22 +63,42 @@ func (agg *aggregator) fillPrice(prices []*types.PriceWithSource, validator stri
 					timestamp: pTmp.Timestamp,
 					//			detRoundId: p.DetId,
 				}
-				report.prices[p.SourceId] = pTR
+				report.prices[pSource.SourceId] = pTR
 			} else {
-				pTR.price, _ = (&big.Int{}).SetString(p.Prices[0].Price, 10)
+				pTR.price, _ = (&big.Int{}).SetString(pSource.Prices[0].Price, 10)
 			}
 		} else {
 			//this is an DS price report
-			if pTR := report.prices[p.SourceId]; pTR == nil {
-				pTmp := p.Prices[0]
+			if pTR := report.prices[pSource.SourceId]; pTR == nil {
+				pTmp := pSource.Prices[0]
 				pTR = &priceWithTimeAndRound{
 					//price:     nil,
-					decimal:   pTmp.Decimal,
-					timestamp: "",
+					decimal: pTmp.Decimal,
+					//	timestamp: "",
 					//detRoundId: "",
 				}
-				report.prices[p.SourceId] = pTR
+				report.prices[pSource.SourceId] = pTR
 			}
+			//skip if this DS's slot exists, DS's value only updated by calculator
+		}
+	}
+}
+
+// TODO: for v1 use mode=1, which means agg.dsPrices with each key only be updated once, switch modes
+func (agg *aggregator) confirmDSPrice(confirmedRounds []*confirmedPrice) {
+	for _, priceSourceRound := range confirmedRounds {
+		//update the latest round-detId for DS, TODO: in v1 we only update this value once since calculator will just ignore any further value once a detId has reached consensus
+		agg.dsPrices[priceSourceRound.sourceId] = priceSourceRound.detId
+		for _, report := range agg.reports {
+			if report.price != nil {
+				//price of IVA has completed
+				continue
+			}
+			if price := report.prices[priceSourceRound.sourceId]; price != nil {
+				price.detRoundId = priceSourceRound.detId
+				price.timestamp = priceSourceRound.timestamp
+				price.price = priceSourceRound.price
+			} //else TODO: panice in V1
 		}
 	}
 }
@@ -81,9 +112,28 @@ func (agg *aggregator) getReport(validator string) *reportPrice {
 	return nil
 }
 
-func (agg *aggregator) aggregate() {
+func (agg *aggregator) aggregate() *big.Int {
+	if agg.finalPrice != nil {
+		return agg.finalPrice
+	}
 	//TODO: implemetn different MODE for definition of consensus,
 	//currently: use rule_1+MODE_1: {rule:specified source:`chainlink`, MODE: asap when power exceeds the threshold}
+	//1. check OVA threshold
+	//2. check IVA consensus with rule, TODO: for v1 we only implement with mode=1&rule=1
+	if exceedsThreshold(agg.reportPower, agg.totalPower) {
+		//TODO: this is kind of a mock way to suite V1, need update to check with params.rule
+		//check if IVA all reached consensus
+		if len(agg.dsPrices) > 0 {
+			validatorPrices := make([]*big.Int, 0, len(agg.reports))
+			//do the aggregation to find out the 'final price'
+			for _, validatorReport := range agg.reports {
+				validatorPrices = append(validatorPrices, validatorReport.aggregate())
+			}
+			//TODO: median(validatorPrices)
+			agg.finalPrice = median(validatorPrices)
+		}
+	}
+	return agg.finalPrice
 }
 
 func newAggregator(validatorSetLength int, totalPower *big.Int) *aggregator {
@@ -93,4 +143,8 @@ func newAggregator(validatorSetLength int, totalPower *big.Int) *aggregator {
 		dsPrices:    make(map[int32]string),
 		totalPower:  totalPower,
 	}
+}
+
+func median(mock any) *big.Int {
+	return big.NewInt(1)
 }

@@ -65,7 +65,7 @@ func (f *filter) addPSource(pSources []*types.PriceWithSource, validator string)
 			list4Aggregator = append(list4Aggregator, pSource)
 		}
 	}
-	return list4Calculator, list4Aggregator
+	return
 }
 
 // filtrate checks data from MsgCreatePrice, and will drop the conflict or duplicate data, it will then fill data into calculator(for deterministic source data to get to consensus) and aggregator (for both deterministic and non0-deterministic source data run 2-layers aggregation to get the final price)
