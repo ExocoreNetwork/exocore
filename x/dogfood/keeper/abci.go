@@ -57,7 +57,8 @@ func (k Keeper) EndBlock(ctx sdk.Context) []abci.ValidatorUpdate {
 	operators, keys, powers = sortByPower(operators, keys, powers)
 	maxVals := k.GetMaxValidators(ctx)
 	for i := range operators {
-		if i >= int(maxVals) { // #nosec G701 // #nosec G701 // ok if 64-bit.
+		// #nosec G701 // ok if 64-bit.
+		if i >= int(maxVals) {
 			// we have reached the maximum number of validators.
 			break
 		}
@@ -81,6 +82,9 @@ func (k Keeper) EndBlock(ctx sdk.Context) []abci.ValidatorUpdate {
 		})
 	}
 	// the remaining keys in prev have lost their power.
+	// gosec does not like `for key := range prev` while others do not like
+	// `for key, _ := range prev`
+	// #nosec G705
 	for key := range prev {
 		bz := []byte(key)
 		var keyObj tmprotocrypto.PublicKey
