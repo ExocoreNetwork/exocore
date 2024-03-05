@@ -62,23 +62,25 @@ func (k Keeper) EndBlock(ctx sdk.Context) []abci.ValidatorUpdate {
 			// we have reached the maximum number of validators.
 			break
 		}
-		key := keys[i]
 		power := powers[i]
 		if power < 1 {
 			// we have reached the bottom of the rung.
 			break
 		}
 		// find the previous power.
-		prevPower, found := prev[key.String()]
+		key := keys[i]
+		keyString := string(k.cdc.MustMarshal(&key))
+		prevPower, found := prev[keyString]
 		if found && prevPower == power {
-			delete(prev, key.String())
+			delete(prev, keyString)
 			continue
 		}
 		// either the key was not in the previous set,
 		// or the power has changed.
 		res = append(res, abci.ValidatorUpdate{
 			PubKey: key,
-			Power:  power,
+			// note that this is the final power and not the change in power.
+			Power: power,
 		})
 	}
 	// the remaining keys in prev have lost their power.
@@ -86,9 +88,9 @@ func (k Keeper) EndBlock(ctx sdk.Context) []abci.ValidatorUpdate {
 	// `for key, _ := range prev`
 	// #nosec G705
 	for key := range prev {
-		bz := []byte(key)
+		bz := []byte(key) // undo string operation
 		var keyObj tmprotocrypto.PublicKey
-		k.cdc.MustUnmarshal(bz, &keyObj)
+		k.cdc.MustUnmarshal(bz, &keyObj) // undo marshal operation
 		res = append(res, abci.ValidatorUpdate{
 			PubKey: keyObj,
 			Power:  0,
@@ -99,6 +101,8 @@ func (k Keeper) EndBlock(ctx sdk.Context) []abci.ValidatorUpdate {
 	return k.ApplyValidatorChanges(ctx, res, id+1)
 }
 
+// sortByPower sorts operators, their pubkeys, and their powers by the powers.
+// the sorting is descending, so the highest power is first.
 func sortByPower(
 	operatorAddrs []sdk.AccAddress,
 	pubKeys []tmprotocrypto.PublicKey,

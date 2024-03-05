@@ -44,7 +44,7 @@ func (k Keeper) ApplyValidatorChanges(
 			// An error here would indicate that this change is invalid.
 			// The change is received either from the genesis file, or from
 			// other parts of the module.
-			// In no situation it should happen, however, if it does,
+			// In no situation it should happen; however, if it does,
 			// we do not panic. Simply skip the change.
 			continue
 		}
@@ -55,7 +55,7 @@ func (k Keeper) ApplyValidatorChanges(
 		switch found {
 		case true:
 			// update or delete an existing validator.
-			// contract: power must not be negative.
+			// assumption: power can not be negative.
 			if change.Power < 1 {
 				k.DeleteValidator(ctx, addr)
 			} else {
@@ -69,7 +69,7 @@ func (k Keeper) ApplyValidatorChanges(
 				if err != nil {
 					continue
 				}
-				// guard for errors within the hook.
+				// guard for errors within the AfterValidatorBonded hook.
 				cc, writeFunc := ctx.CacheContext()
 				k.SetValidator(cc, ocVal)
 				err = k.Hooks().AfterValidatorBonded(cc, sdk.ConsAddress(addr), nil)
