@@ -16,6 +16,8 @@ const (
 	threshold_b = 3
 	//maxDetId each validator can submit, so the calculator can cache maximum of maxDetId*count(validators) values, this is for resistance of malicious validator submmiting invalid detId
 	maxDetId = 5
+	//consensus mode: v1: as soon as possbile
+	mode = 1
 )
 
 type roundInfo struct {
@@ -46,31 +48,35 @@ type aggregatorContext struct {
 	validatorsPower map[string]*big.Int
 	totalPower      *big.Int
 
+	//each active feederToken has a roundInfo
 	rounds map[int32]*roundInfo
 
+	//each roundInfo has a worker
 	aggregators map[int32]*worker
+
+	k *Keeper
 }
 
-// NewCreatePrice receives msgCreatePrice message, and goes process: filter->aggregator, filter->calculator->aggregator
-// non-deterministic data will goes directly into aggregator, and deterministic data will goes into calculator first to get consensus on the deterministic id.
-func (agc *aggregatorContext) NewCreatePrice(price types.MsgCreatePrice) (bool, error) {
+//workerInstance chan *type.MsgCreatePrice
+
+func (agc *aggregatorContext) sanityCheck(price types.MsgCreatePrice) error {
 	//sanity check
 	//TODO: check nonce [1,3] in anteHandler, related to params, may not able
 	//TODO: check the msgCreatePrice's Decimal is correct with params setting
 	//TODO: check len(price.prices)>0, len(price.prices._range_eachPriceWithSource.Prices)>0, at least has one source, and for each source has at least one price
-
 	//TODO: check for each source, at most maxDetId count price (now in filter, ->anteHandler)
 	if price.Nonce < 1 || price.Nonce > maxNonce {
-		return false, errors.New("")
+		return errors.New("")
 	}
 
 	//TODO: sanity check for price(no more than maxDetId count for each source, this should be take care in anteHandler)
 	if price.Prices == nil || len(price.Prices) == 0 {
-		return false, errors.New("")
+		return errors.New("")
 	}
+
 	for _, pSource := range price.Prices {
 		if pSource.Prices == nil || len(pSource.Prices) == 0 || len(pSource.Prices) > maxDetId || !agc.params.isValidSource(pSource.SourceId) {
-			return false, errors.New("")
+			return errors.New("")
 		}
 		//check with params is coressponding source is deteministic
 		if agc.params.isDeterministicSource(pSource.SourceId) {
@@ -79,15 +85,27 @@ func (agc *aggregatorContext) NewCreatePrice(price types.MsgCreatePrice) (bool, 
 				//just make sure the DetId won't mess up with NS's placeholder id, the limitation of maximum count one validator can submit will be check by filter
 				if len(pDetId.DetId) == 0 {
 					//deterministic must have specified deterministicId
-					return false, errors.New("")
+					return errors.New("")
 				}
+				//DS's price value will go through consensus process, so it's safe to skip the check here
 			}
 		} else {
 			//sanity check: NS submit only one price with detId==""
 			if len(pSource.Prices) > 1 || len(pSource.Prices[0].DetId) > 0 {
-				return false, errors.New("")
+				return errors.New("")
 			}
 		}
+	}
+
+	return nil
+}
+
+// NewCreatePrice receives msgCreatePrice message, and goes process: filter->aggregator, filter->calculator->aggregator
+// non-deterministic data will goes directly into aggregator, and deterministic data will goes into calculator first to get consensus on the deterministic id.
+func (agc *aggregatorContext) NewCreatePrice(price types.MsgCreatePrice) (bool, error) {
+
+	if err := agc.sanityCheck(price); err != nil {
+		return false, err
 	}
 
 	validator := price.Creator
@@ -117,9 +135,15 @@ func (agc *aggregatorContext) NewCreatePrice(price types.MsgCreatePrice) (bool, 
 		}
 
 		list4Calculator, list4Aggregator := feederWorker.f.filtrate(price)
+
 		feederWorker.a.fillPrice(list4Aggregator, validator, power)
-		feederWorker.c.fillPrice(list4Calculator, validator, power)
+		if confirmedRounds := feederWorker.c.fillPrice(list4Calculator, validator, power); confirmedRounds != nil {
+			feederWorker.a.confirmDSPrice(confirmedRounds)
+		}
+
+		agc.k.addCache(&cacheItem{list4Aggregator, validator, power})
 	}
+
 	//invalid creator, require validator to be the price reporter
 	return false, errors.New("")
 }
@@ -128,7 +152,7 @@ func (agc *aggregatorContext) NewCreatePrice(price types.MsgCreatePrice) (bool, 
 func (aggC *aggregatorContext) newWorker() *worker {
 	return &worker{
 		f: newFilter(maxNonce, maxDetId),
-		c: newCalculator(len(aggC.validatorsPower)),
+		c: newCalculator(len(aggC.validatorsPower), aggC.totalPower),
 		a: newAggregator(len(aggC.validatorsPower), aggC.totalPower),
 	}
 }
