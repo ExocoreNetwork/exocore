@@ -1,0 +1,7 @@
+syntax = "proto3";
+package exocore.avs;
+
+option go_package = "github.com/ExocoreNetwork/exocore/x/avs/types";
+
+// Msg defines the Msg service.
+service Msg {}
