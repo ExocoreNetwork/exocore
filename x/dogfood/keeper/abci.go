@@ -46,7 +46,7 @@ func (k Keeper) EndBlock(ctx sdk.Context) []abci.ValidatorUpdate {
 	//    if it hasn't, do nothing for that operator key.
 	//    if it has, queue an update.
 	prev := k.getKeyPowerMapping(ctx).List
-	var res []abci.ValidatorUpdate
+	res := make([]abci.ValidatorUpdate, 0, len(prev))
 	operators, keys := k.operatorKeeper.GetActiveOperatorsForChainId(ctx, ctx.ChainID())
 	powers, err := k.restakingKeeper.GetAvgDelegatedValue(
 		ctx, operators, k.GetAssetIDs(ctx), k.GetEpochIdentifier(ctx),

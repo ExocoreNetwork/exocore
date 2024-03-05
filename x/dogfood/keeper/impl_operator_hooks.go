@@ -29,7 +29,9 @@ func (h OperatorHooksWrapper) AfterOperatorOptIn(
 	// this information will be fetched at the end of the epoch
 	// and the operator's vote power will be calculated then.
 	// however, we will still clear the unbonding information, if it exists.
-	h.keeper.ClearUnbondingInformation(ctx, addr, key)
+	if strings.Compare(chainID, ctx.ChainID()) == 0 {
+		h.keeper.ClearUnbondingInformation(ctx, addr, key)
+	}
 }
 
 // AfterOperatorKeyReplacement is the implementation of the operator hooks.

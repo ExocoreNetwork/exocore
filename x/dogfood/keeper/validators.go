@@ -390,7 +390,8 @@ func (k Keeper) saveKeyPowerMapping(ctx sdk.Context, updates []abci.ValidatorUpd
 	m := make(map[string]int64, len(updates))
 	for _, update := range updates {
 		// do not use the stringer interface here so that it can be deserialized.
-		m[string(k.cdc.MustMarshal(&update.PubKey))] = update.Power
+		key := update.PubKey // prevent implicit memory aliasing.
+		m[string(k.cdc.MustMarshal(&key))] = update.Power
 	}
 	bz := k.cdc.MustMarshal(&types.KeyPowerMapping{List: m})
 	store.Set(types.KeyPowerMappingKey(), bz)

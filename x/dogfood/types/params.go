@@ -145,29 +145,29 @@ func (p Params) String() string {
 
 // ValidateAssetIDs checks whether the supplied value is a valid asset ID.
 func ValidateAssetIDs(i interface{}) error {
+	var val []string
 	if val, ok := i.([]string); !ok {
 		return fmt.Errorf("invalid parameter type: %T", i)
 	} else if len(val) == 0 {
 		return fmt.Errorf("invalid parameter value: %v", val)
-	} else {
-		for _, assetID := range val {
-			if !strings.Contains(assetID, "_") {
-				return fmt.Errorf("invalid parameter value (missing underscore): %v", val)
-			}
-			split := strings.Split(assetID, "_")
-			if len(split) != 2 {
-				return fmt.Errorf(
-					"invalid parameter value (unexpected number of underscores): %v", val,
-				)
-			}
-			if len(split[0]) == 0 || len(split[1]) == 0 {
-				return fmt.Errorf("invalid parameter value (empty parts): %v", val)
-			}
-			// i cannot validate the address because it may be on a client chain and i have
-			// no idea what format or length it may have. i can only validate the chain ID.
-			if _, err := hexutil.DecodeUint64(split[1]); err != nil {
-				return fmt.Errorf("invalid parameter value (not a number): %v", split[1])
-			}
+	}
+	for _, assetID := range val {
+		if !strings.Contains(assetID, "_") {
+			return fmt.Errorf("invalid parameter value (missing underscore): %v", val)
+		}
+		split := strings.Split(assetID, "_")
+		if len(split) != 2 {
+			return fmt.Errorf(
+				"invalid parameter value (unexpected number of underscores): %v", val,
+			)
+		}
+		if len(split[0]) == 0 || len(split[1]) == 0 {
+			return fmt.Errorf("invalid parameter value (empty parts): %v", val)
+		}
+		// i cannot validate the address because it may be on a client chain and i have
+		// no idea what format or length it may have. i can only validate the chain ID.
+		if _, err := hexutil.DecodeUint64(split[1]); err != nil {
+			return fmt.Errorf("invalid parameter value (not a number): %v", split[1])
 		}
 	}
 	return nil
