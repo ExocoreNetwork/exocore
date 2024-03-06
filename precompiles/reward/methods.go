@@ -19,9 +19,9 @@ const (
 // Reward assets to the staker, that will change the state in reward module.
 func (p Precompile) Reward(
 	ctx sdk.Context,
-	origin common.Address,
+	_ common.Address,
 	contract *vm.Contract,
-	stateDB vm.StateDB,
+	_ vm.StateDB,
 	method *abi.Method,
 	args []interface{},
 ) ([]byte, error) {

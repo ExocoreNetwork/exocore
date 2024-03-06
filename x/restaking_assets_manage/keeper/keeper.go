@@ -25,13 +25,13 @@ func NewKeeper(
 }
 
 // GetAllOperatorAssetOptedInMiddleWare This function should be implemented in the operator opt-in module
-func (k Keeper) GetAllOperatorAssetOptedInMiddleWare(operatorAddr sdk.Address) (optedInInfos map[string][]sdk.Address, err error) {
+func (k Keeper) GetAllOperatorAssetOptedInMiddleWare(sdk.Address) (optedInInfos map[string][]sdk.Address, err error) {
 	// TODO implement me
 	panic("implement me")
 }
 
 // SetOperatorAssetOptedInMiddleWare This function should be implemented in the operator opt-in module
-func (k Keeper) SetOperatorAssetOptedInMiddleWare(operatorAddr sdk.Address, setInfo map[string]sdk.Address) (middleWares []sdk.Address, err error) {
+func (k Keeper) SetOperatorAssetOptedInMiddleWare(sdk.Address, map[string]sdk.Address) (middleWares []sdk.Address, err error) {
 	// TODO implement me
 	panic("implement me")
 }

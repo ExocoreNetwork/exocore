@@ -17,7 +17,7 @@ func (k Keeper) ClearUnbondingInformation(
 	k.RemoveOptOutToFinish(ctx, optOutEpoch, addr)
 	consAddress, err := types.TMCryptoPublicKeyToConsAddr(pubKey)
 	if err != nil {
-		panic(err)
+		return
 	}
 	k.DeleteConsensusAddrToPrune(ctx, optOutEpoch, consAddress)
 }
@@ -27,13 +27,13 @@ func (k Keeper) SetUnbondingInformation(
 	ctx sdk.Context, addr sdk.AccAddress, pubKey tmprotocrypto.PublicKey, isOptingOut bool,
 ) {
 	unbondingCompletionEpoch := k.GetUnbondingCompletionEpoch(ctx)
-	k.AppendOptOutToFinish(ctx, unbondingCompletionEpoch, addr)
 	if isOptingOut {
+		k.AppendOptOutToFinish(ctx, unbondingCompletionEpoch, addr)
 		k.SetOperatorOptOutFinishEpoch(ctx, addr, unbondingCompletionEpoch)
 	}
 	consAddress, err := types.TMCryptoPublicKeyToConsAddr(pubKey)
 	if err != nil {
-		panic(err)
+		return
 	}
 	k.AppendConsensusAddrToPrune(ctx, unbondingCompletionEpoch, consAddress)
 }
@@ -44,17 +44,14 @@ func (k Keeper) GetUnbondingCompletionEpoch(
 	ctx sdk.Context,
 ) int64 {
 	unbondingEpochs := k.GetEpochsUntilUnbonded(ctx)
-	epochInfo, found := k.epochsKeeper.GetEpochInfo(
+	epochInfo, _ := k.epochsKeeper.GetEpochInfo(
 		ctx, k.GetEpochIdentifier(ctx),
 	)
-	if !found {
-		panic("current epoch not found")
-	}
 	// if i execute the transaction at epoch 5, the vote power change
 	// goes into effect at the beginning of epoch 6. the information
 	// should be held for 7 epochs, so it should be deleted at the
 	// beginning of epoch 13 or the end of epoch 12.
-	return epochInfo.CurrentEpoch + int64(unbondingEpochs)
+	return epochInfo.CurrentEpoch + int64(unbondingEpochs) // #nosec G701
 }
 
 // AppendUndelegationsToMature stores that the undelegation with recordKey should be
@@ -63,7 +60,7 @@ func (k Keeper) AppendUndelegationToMature(
 	ctx sdk.Context, epoch int64, recordKey []byte,
 ) {
 	prev := k.GetUndelegationsToMature(ctx, epoch)
-	next := types.RecordKeys{
+	next := types.UndelegationRecordKeys{
 		List: append(prev, recordKey),
 	}
 	k.setUndelegationsToMature(ctx, epoch, next)
@@ -75,12 +72,12 @@ func (k Keeper) GetUndelegationsToMature(
 	ctx sdk.Context, epoch int64,
 ) [][]byte {
 	store := ctx.KVStore(k.storeKey)
-	key := types.UnbondingReleaseMaturityKey(epoch)
+	key, _ := types.UnbondingReleaseMaturityKey(epoch)
 	bz := store.Get(key)
 	if bz == nil {
 		return [][]byte{}
 	}
-	var res types.RecordKeys
+	var res types.UndelegationRecordKeys
 	if err := res.Unmarshal(bz); err != nil {
 		// should never happen
 		panic(err)
@@ -94,18 +91,18 @@ func (k Keeper) ClearUndelegationsToMature(
 	ctx sdk.Context, epoch int64,
 ) {
 	store := ctx.KVStore(k.storeKey)
-	key := types.UnbondingReleaseMaturityKey(epoch)
+	key, _ := types.UnbondingReleaseMaturityKey(epoch)
 	store.Delete(key)
 }
 
 // setUndelegationsToMature sets all undelegation entries that should be released
 // at the end of the provided epoch.
 func (k Keeper) setUndelegationsToMature(
-	ctx sdk.Context, epoch int64, recordKeys types.RecordKeys,
+	ctx sdk.Context, epoch int64, undelegationRecords types.UndelegationRecordKeys,
 ) {
 	store := ctx.KVStore(k.storeKey)
-	key := types.UnbondingReleaseMaturityKey(epoch)
-	val, err := recordKeys.Marshal()
+	key, _ := types.UnbondingReleaseMaturityKey(epoch)
+	val, err := undelegationRecords.Marshal()
 	if err != nil {
 		panic(err)
 	}

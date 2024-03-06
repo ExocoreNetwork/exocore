@@ -1,16 +1,16 @@
 syntax = "proto3";
 package exocore.slash;
 
+import "cosmos/msg/v1/msg.proto";
+import "cosmos_proto/cosmos.proto";
 import "exocore/slash/params.proto";
 import "gogoproto/gogo.proto";
-import "cosmos_proto/cosmos.proto";
-import "cosmos/msg/v1/msg.proto";
 
 option go_package = "github.com/ExocoreNetwork/exocore/x/slash/types";
 
 // Msg defines the Msg service.
 service Msg {
-
+  // UpdateParams updates the parameters of this module.
   rpc UpdateParams(MsgUpdateParams) returns (MsgUpdateParamsResponse);
 }
 

@@ -16,7 +16,7 @@ interface ISlash {
 /// TRANSACTIONS
 /// @dev Slash the oprator, that will change the state in Slash module
 /// Note that this address cannot be a module account.
-/// @param clientChainLzID The LzID of client chain
+/// @param clientChainLzID The lzId of client chain
 /// @param assetsAddress The client chain asset Address
 /// @param opAmount The Slash amount
 /// @param operatorAddress The Slashed OperatorAddress

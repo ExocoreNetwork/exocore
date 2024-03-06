@@ -21,7 +21,8 @@ func (k Keeper) GetOptOutsToFinish(
 	ctx sdk.Context, epoch int64,
 ) [][]byte {
 	store := ctx.KVStore(k.storeKey)
-	key := types.OptOutsToFinishKey(epoch)
+	// the epochs module validates at genesis that epoch is non-negative.
+	key, _ := types.OptOutsToFinishKey(epoch)
 	bz := store.Get(key)
 	if bz == nil {
 		return [][]byte{}
@@ -39,7 +40,7 @@ func (k Keeper) setOptOutsToFinish(
 	ctx sdk.Context, epoch int64, addrs types.AccountAddresses,
 ) {
 	store := ctx.KVStore(k.storeKey)
-	key := types.OptOutsToFinishKey(epoch)
+	key, _ := types.OptOutsToFinishKey(epoch)
 	bz, err := addrs.Marshal()
 	if err != nil {
 		panic(err)
@@ -61,7 +62,7 @@ func (k Keeper) RemoveOptOutToFinish(ctx sdk.Context, epoch int64, addr sdk.AccA
 // finished at the end of the provided epoch.
 func (k Keeper) ClearOptOutsToFinish(ctx sdk.Context, epoch int64) {
 	store := ctx.KVStore(k.storeKey)
-	key := types.OptOutsToFinishKey(epoch)
+	key, _ := types.OptOutsToFinishKey(epoch)
 	store.Delete(key)
 }
 
@@ -71,7 +72,8 @@ func (k Keeper) SetOperatorOptOutFinishEpoch(
 ) {
 	store := ctx.KVStore(k.storeKey)
 	key := types.OperatorOptOutFinishEpochKey(operatorAddr)
-	bz := sdk.Uint64ToBigEndian(uint64(epoch))
+	uepoch, _ := types.SafeInt64ToUint64(epoch)
+	bz := sdk.Uint64ToBigEndian(uepoch)
 	store.Set(key, bz)
 }
 
@@ -86,7 +88,9 @@ func (k Keeper) GetOperatorOptOutFinishEpoch(
 	if bz == nil {
 		return -1
 	}
-	return int64(sdk.BigEndianToUint64(bz))
+	// max int64 is 9 quintillion, and max uint64 is double of that.
+	// it is too far in the future to be a concern.
+	return int64(sdk.BigEndianToUint64(bz)) // #nosec G701 // see above.
 }
 
 // DeleteOperatorOptOutFinishEpoch deletes the epoch at which an operator's opt out will be
@@ -115,7 +119,7 @@ func (k Keeper) GetConsensusAddrsToPrune(
 	ctx sdk.Context, epoch int64,
 ) [][]byte {
 	store := ctx.KVStore(k.storeKey)
-	key := types.ConsensusAddrsToPruneKey(epoch)
+	key, _ := types.ConsensusAddrsToPruneKey(epoch)
 	bz := store.Get(key)
 	if bz == nil {
 		return [][]byte{}
@@ -143,7 +147,7 @@ func (k Keeper) DeleteConsensusAddrToPrune(
 // epoch.
 func (k Keeper) ClearConsensusAddrsToPrune(ctx sdk.Context, epoch int64) {
 	store := ctx.KVStore(k.storeKey)
-	key := types.ConsensusAddrsToPruneKey(epoch)
+	key, _ := types.ConsensusAddrsToPruneKey(epoch)
 	store.Delete(key)
 }
 
@@ -153,7 +157,7 @@ func (k Keeper) setConsensusAddrsToPrune(
 	ctx sdk.Context, epoch int64, addrs types.ConsensusAddresses,
 ) {
 	store := ctx.KVStore(k.storeKey)
-	key := types.ConsensusAddrsToPruneKey(epoch)
+	key, _ := types.ConsensusAddrsToPruneKey(epoch)
 	bz, err := addrs.Marshal()
 	if err != nil {
 		panic(err)

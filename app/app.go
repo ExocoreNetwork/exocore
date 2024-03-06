@@ -1062,6 +1062,20 @@ func (app *ExocoreApp) EndBlocker(ctx sdk.Context, req abci.RequestEndBlock) abc
 	return app.mm.EndBlock(ctx, req)
 }
 
+// The DeliverTx method is intentionally decomposed to calculate the transactions per second.
+func (app *ExocoreApp) DeliverTx(req abci.RequestDeliverTx) (res abci.ResponseDeliverTx) {
+	defer func() {
+		// TODO: Record the count along with the code and or reason so as to display
+		// in the transactions per second live dashboards.
+		if res.IsErr() {
+			app.tpsCounter.incrementFailure()
+		} else {
+			app.tpsCounter.incrementSuccess()
+		}
+	}()
+	return app.BaseApp.DeliverTx(req)
+}
+
 // InitChainer updates at chain initialization
 func (app *ExocoreApp) InitChainer(ctx sdk.Context, req abci.RequestInitChain) abci.ResponseInitChain {
 	var genesisState simapp.GenesisState

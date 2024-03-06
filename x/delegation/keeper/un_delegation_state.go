@@ -74,17 +74,18 @@ func (k *Keeper) GetUndelegationRecords(ctx sdk.Context, singleRecordKeys []stri
 			return nil, errorsmod.Wrap(types.ErrNoKeyInTheStore, fmt.Sprintf("GetSingleDelegationRecord: key is %s", singleRecordKey))
 		}
 
-		if getType == PendingRecords {
+		switch getType {
+		case PendingRecords:
 			if UndelegationRecord.IsPending {
 				ret = append(ret, &UndelegationRecord)
 			}
-		} else if getType == CompletedRecords {
+		case CompletedRecords:
 			if !UndelegationRecord.IsPending {
 				ret = append(ret, &UndelegationRecord)
 			}
-		} else if getType == AllRecords {
+		case AllRecords:
 			ret = append(ret, &UndelegationRecord)
-		} else {
+		default:
 			return nil, errorsmod.Wrap(types.ErrStakerGetRecordType, fmt.Sprintf("the getType is:%v", getType))
 		}
 	}

@@ -2,11 +2,8 @@
 syntax = "proto3";
 package exocore.deposit.v1;
 
-import "gogoproto/gogo.proto";
-import "google/api/annotations.proto";
-import "cosmos/query/v1/query.proto";
-import "cosmos_proto/cosmos.proto";
 import "exocore/deposit/v1/deposit.proto";
+import "google/api/annotations.proto";
 
 option go_package = "github.com/ExocoreNetwork/exocore/x/deposit/types";
 
@@ -16,6 +13,7 @@ message QueryParamsRequest {}
 // QueryParamsResponse is the response type for the Query/Params RPC
 // method.
 message QueryParamsResponse {
+  // params defines the parameters for this module.
   Params params = 1 ;
 }
 

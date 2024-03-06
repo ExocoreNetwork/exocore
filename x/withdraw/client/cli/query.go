@@ -2,7 +2,6 @@ package cli
 
 import (
 	"fmt"
-	// "strings"
 
 	"github.com/spf13/cobra"
 
@@ -14,7 +13,7 @@ import (
 )
 
 // GetQueryCmd returns the cli query commands for this module
-func GetQueryCmd(queryRoute string) *cobra.Command {
+func GetQueryCmd(string) *cobra.Command {
 	// Group withdraw queries under a subcommand
 	cmd := &cobra.Command{
 		Use:                        types.ModuleName,

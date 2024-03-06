@@ -19,9 +19,9 @@ const (
 // DepositTo deposit the client chain assets to the staker, that will change the state in deposit module.
 func (p Precompile) DepositTo(
 	ctx sdk.Context,
-	origin common.Address,
+	_ common.Address,
 	contract *vm.Contract,
-	stateDB vm.StateDB,
+	_ vm.StateDB,
 	method *abi.Method,
 	args []interface{},
 ) ([]byte, error) {

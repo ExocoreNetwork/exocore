@@ -1,9 +1,11 @@
 package app
 
 import (
-	"cosmossdk.io/simapp"
 	"encoding/json"
 	"fmt"
+
+	"cosmossdk.io/simapp"
+
 	"github.com/ExocoreNetwork/exocore/utils"
 	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -27,42 +29,42 @@ func NewDefaultGenesisState(cdc codec.Codec) simapp.GenesisState {
 	encCfg := encoding.MakeConfig(ModuleBasics)
 	defaultGenesis := ModuleBasics.DefaultGenesis(encCfg.Codec)
 
-	//staking module
+	// staking module
 	stakingGenesis := stakingtypes.GenesisState{}
 	rawGenesis := defaultGenesis[stakingtypes.ModuleName]
 	cdc.MustUnmarshalJSON(rawGenesis, &stakingGenesis)
 	stakingGenesis.Params.BondDenom = utils.BaseDenom
 	defaultGenesis[stakingtypes.ModuleName] = cdc.MustMarshalJSON(&stakingGenesis)
 
-	//crisis module
+	// crisis module
 	crisisGenesis := crisistypes.GenesisState{}
 	rawGenesis = defaultGenesis[crisistypes.ModuleName]
 	cdc.MustUnmarshalJSON(rawGenesis, &crisisGenesis)
 	crisisGenesis.ConstantFee.Denom = utils.BaseDenom
 	defaultGenesis[crisistypes.ModuleName] = cdc.MustMarshalJSON(&crisisGenesis)
 
-	//gov module
+	// gov module
 	govGenesis := govtypesv1.GenesisState{}
 	rawGenesis = defaultGenesis[govtypes.ModuleName]
 	cdc.MustUnmarshalJSON(rawGenesis, &govGenesis)
 	govGenesis.Params.MinDeposit[0].Denom = utils.BaseDenom
 	defaultGenesis[govtypes.ModuleName] = cdc.MustMarshalJSON(&govGenesis)
 
-	//evm module
+	// evm module
 	evmGenesis := evmtypes.GenesisState{}
 	rawGenesis = defaultGenesis[evmtypes.ModuleName]
 	cdc.MustUnmarshalJSON(rawGenesis, &evmGenesis)
 	evmGenesis.Params.EvmDenom = utils.BaseDenom
 	defaultGenesis[evmtypes.ModuleName] = cdc.MustMarshalJSON(&evmGenesis)
 
-	//inflation module
+	// inflation module
 	inflationGenesis := inflationtypes.GenesisState{}
 	rawGenesis = defaultGenesis[inflationtypes.ModuleName]
 	cdc.MustUnmarshalJSON(rawGenesis, &inflationGenesis)
 	inflationGenesis.Params.MintDenom = utils.BaseDenom
 	defaultGenesis[inflationtypes.ModuleName] = cdc.MustMarshalJSON(&inflationGenesis)
 
-	//claims module
+	// claims module
 	claimsGenesis := claimstypes.GenesisState{}
 	rawGenesis = defaultGenesis[claimstypes.ModuleName]
 	cdc.MustUnmarshalJSON(rawGenesis, &claimsGenesis)

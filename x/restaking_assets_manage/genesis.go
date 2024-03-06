@@ -1,4 +1,4 @@
-package restaking_assets_manage
+package restaking_assets_manage // nolint: revive,stylecheck // Package naming to be fixed later.
 
 import (
 	"encoding/json"
@@ -11,7 +11,7 @@ import (
 )
 
 // NewGenesisState - Create a new genesis state
-func NewGenesisState(chain []*restakingtype.ClientChainInfo, token []*restakingtype.ClientChainTokenInfo) *restakingtype.GenesisState {
+func NewGenesisState(chain []*restakingtype.ClientChainInfo, token []*restakingtype.AssetInfo) *restakingtype.GenesisState {
 	return &restakingtype.GenesisState{
 		DefaultSupportedClientChains:      chain,
 		DefaultSupportedClientChainTokens: token,
@@ -22,24 +22,24 @@ func NewGenesisState(chain []*restakingtype.ClientChainInfo, token []*restakingt
 func DefaultGenesisState() *restakingtype.GenesisState {
 	// todo: set eth as client chain and usdt as asset in the genesis state
 	ethClientChain := &restakingtype.ClientChainInfo{
-		ChainName:              "ethereum",
-		ChainMetaInfo:          "ethereum blockchain",
-		OriginChainId:          1,
-		FinalityNeedBlockDelay: 10,
-		LayerZeroChainID:       101,
-		AddressLength:          20,
+		Name:               "ethereum",
+		MetaInfo:           "ethereum blockchain",
+		ChainId:            1,
+		FinalizationBlocks: 10,
+		LayerZeroChainID:   101,
+		AddressLength:      20,
 	}
-	usdtClientChainAsset := &restakingtype.ClientChainTokenInfo{
+	usdtClientChainAsset := &restakingtype.AssetInfo{
 		Name:             "Tether USD",
 		Symbol:           "USDT",
 		Address:          "0xdAC17F958D2ee523a2206206994597C13D831ec7",
 		Decimals:         6,
 		LayerZeroChainID: ethClientChain.LayerZeroChainID,
-		AssetMetaInfo:    "Tether USD token",
+		MetaInfo:         "Tether USD token",
 	}
 	totalSupply, _ := sdk.NewIntFromString("40022689732746729")
 	usdtClientChainAsset.TotalSupply = totalSupply
-	return NewGenesisState([]*restakingtype.ClientChainInfo{ethClientChain}, []*restakingtype.ClientChainTokenInfo{usdtClientChainAsset})
+	return NewGenesisState([]*restakingtype.ClientChainInfo{ethClientChain}, []*restakingtype.AssetInfo{usdtClientChainAsset})
 }
 
 // GetGenesisStateFromAppState returns x/restaking_assets_manage GenesisState given raw application
@@ -56,7 +56,7 @@ func GetGenesisStateFromAppState(cdc codec.Codec, appState map[string]json.RawMe
 
 // ValidateGenesis performs basic validation of restaking_assets_manage genesis data returning an
 // error for any failed validation criteria.
-func ValidateGenesis(data restakingtype.GenesisState) error {
+func ValidateGenesis(restakingtype.GenesisState) error {
 	// todo: check the validation of client chain and token info
 	return nil
 }
@@ -99,7 +99,7 @@ func ExportGenesis(ctx sdk.Context, k keeper.Keeper) *restakingtype.GenesisState
 		clientChainList = append(clientChainList, v)
 	}
 
-	clientChainAssetsList := make([]*restakingtype.ClientChainTokenInfo, 0)
+	clientChainAssetsList := make([]*restakingtype.AssetInfo, 0)
 	clientChainAssets, _ := k.GetAllStakingAssetsInfo(c)
 	for _, v := range clientChainAssets {
 		clientChainAssetsList = append(clientChainAssetsList, v.AssetBasicInfo)

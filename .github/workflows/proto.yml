@@ -41,4 +41,8 @@ jobs:
       - uses: bufbuild/buf-breaking-action@v1
         with:
           input: "proto"
-          against: "https://github.com/${{ github.repository }}.git#branch=${{ github.event.pull_request.base.ref }},ref=HEAD~1,subdir=proto"
+          # previously, this ran on ref=HEAD~1, which is incorrect as it can
+          # only be used to compare within a branch. it is designed to run
+          # on a PR, so it must compare the HEAD of the base branch against
+          # the PR branch.
+          against: "https://github.com/${{ github.repository }}.git#branch=${{ github.event.pull_request.base.ref }},subdir=proto"

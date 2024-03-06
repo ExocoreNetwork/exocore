@@ -31,9 +31,13 @@ type SlashParams struct {
 	OpAmount                  sdkmath.Int
 	Proof                     []byte
 }
+
+// nolint: unused // This is to be implemented.
 type OperatorFrozenStatus struct {
+	// nolint: unused // This is to be implemented.
 	operatorAddress sdk.AccAddress
-	status          bool
+	// nolint: unused // This is to be implemented.
+	status bool
 }
 
 func (k Keeper) getParamsFromEventLog(ctx sdk.Context, log *ethtypes.Log) (*SlashParams, error) {
@@ -116,7 +120,7 @@ func getStakeIDAndAssetID(params *SlashParams) (stakeID string, assetID string) 
 	return
 }
 
-func (k Keeper) FilterCrossChainEventLogs(ctx sdk.Context, msg core.Message, receipt *ethtypes.Receipt) ([]*ethtypes.Log, error) {
+func (k Keeper) FilterCrossChainEventLogs(ctx sdk.Context, _ core.Message, receipt *ethtypes.Receipt) ([]*ethtypes.Log, error) {
 	params, err := k.GetParams(ctx)
 	if err != nil {
 		return nil, err
@@ -130,7 +134,7 @@ func (k Keeper) FilterCrossChainEventLogs(ctx sdk.Context, msg core.Message, rec
 	return needLogs, nil
 }
 
-func (k Keeper) PostTxProcessing(ctx sdk.Context, msg core.Message, receipt *ethtypes.Receipt) error {
+func (k Keeper) PostTxProcessing(ctx sdk.Context, _ core.Message, receipt *ethtypes.Receipt) error {
 	params, err := k.GetParams(ctx)
 	if err != nil {
 		return err

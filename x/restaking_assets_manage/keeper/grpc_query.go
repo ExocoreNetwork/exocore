@@ -17,7 +17,7 @@ func (k Keeper) QueClientChainInfoByIndex(ctx context.Context, info *restakingty
 
 // QueAllClientChainInfo query all client chain info that have been registered in exoCore
 // the key of returned map is clientChainLzID, the value is the client chain info.
-func (k Keeper) QueAllClientChainInfo(ctx context.Context, info *restakingtype.QueryAllClientChainInfo) (*restakingtype.QueryAllClientChainInfoResponse, error) {
+func (k Keeper) QueAllClientChainInfo(ctx context.Context, _ *restakingtype.QueryAllClientChainInfo) (*restakingtype.QueryAllClientChainInfoResponse, error) {
 	c := sdk.UnwrapSDKContext(ctx)
 	allInfo, err := k.GetAllClientChainInfo(c)
 	if err != nil {
@@ -33,7 +33,7 @@ func (k Keeper) QueStakingAssetInfo(ctx context.Context, info *restakingtype.Que
 }
 
 // QueAllStakingAssetsInfo query the info about all client chain assets that have been registered
-func (k Keeper) QueAllStakingAssetsInfo(ctx context.Context, info *restakingtype.QueryAllStakingAssetsInfo) (*restakingtype.QueryAllStakingAssetsInfoResponse, error) {
+func (k Keeper) QueAllStakingAssetsInfo(ctx context.Context, _ *restakingtype.QueryAllStakingAssetsInfo) (*restakingtype.QueryAllStakingAssetsInfoResponse, error) {
 	c := sdk.UnwrapSDKContext(ctx)
 	allInfo, err := k.GetAllStakingAssetsInfo(c)
 	if err != nil {

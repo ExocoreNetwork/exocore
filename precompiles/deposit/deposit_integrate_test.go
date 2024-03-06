@@ -144,7 +144,7 @@ func (s *DepositPrecompileSuite) TestCallDepositToFromContract() {
 	setDepositToArgs := prepareFunc(&depositParams, "testDepositTo")
 	_, _, err = contracts.CallContractAndCheckLogs(s.Ctx, s.App, setDepositToArgs, passCheck)
 	s.Require().NoError(err)
-	//todo: need to find why the ethRet is nil when called by contract
+	// todo: need to find why the ethRet is nil when called by contract
 	/*	successRet, err := contracts.DepositCallerContract.ABI.Methods["testDepositTo"].Outputs.Pack(true, opAmount)
 		s.Require().NoError(err)
 		s.Require().Equal(successRet, ethRes.Ret)*/

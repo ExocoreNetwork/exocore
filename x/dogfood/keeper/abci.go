@@ -1,25 +1,36 @@
 package keeper
 
 import (
-	"github.com/ExocoreNetwork/exocore/x/dogfood/types"
+	"sort"
+
 	abci "github.com/cometbft/cometbft/abci/types"
+	tmprotocrypto "github.com/cometbft/cometbft/proto/tendermint/crypto"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 func (k Keeper) EndBlock(ctx sdk.Context) []abci.ValidatorUpdate {
-	// start with undelegations
+	id, _ := k.getValidatorSetID(ctx, ctx.BlockHeight())
+	if !k.IsEpochEnd(ctx) {
+		// save the same id for the next block height.
+		k.setValidatorSetID(ctx, ctx.BlockHeight()+1, id)
+		return []abci.ValidatorUpdate{}
+	}
+	defer k.ClearEpochEnd(ctx)
+	// start with clearing the hold on the undelegations.
 	undelegations := k.GetPendingUndelegations(ctx)
 	for _, undelegation := range undelegations.GetList() {
 		k.delegationKeeper.DecrementUndelegationHoldCount(ctx, undelegation)
 	}
 	k.ClearPendingUndelegations(ctx)
-	// then opt outs (consensus addresses should be done after opt out)
+	// then, let the operator module know that the opt out has finished.
 	optOuts := k.GetPendingOptOuts(ctx)
 	for _, addr := range optOuts.GetList() {
 		k.operatorKeeper.CompleteOperatorOptOutFromChainId(ctx, addr, ctx.ChainID())
 	}
 	k.ClearPendingOptOuts(ctx)
-	// then consensus addresses
+	// for slashing, the operator module is required to store a mapping of chain id + cons addr
+	// to operator address. this information can now be pruned, since the opt out is considered
+	// complete.
 	consensusAddrs := k.GetPendingConsensusAddrs(ctx)
 	for _, consensusAddr := range consensusAddrs.GetList() {
 		k.operatorKeeper.DeleteOperatorAddressForChainIdAndConsAddr(
@@ -27,156 +38,96 @@ func (k Keeper) EndBlock(ctx sdk.Context) []abci.ValidatorUpdate {
 		)
 	}
 	k.ClearPendingConsensusAddrs(ctx)
-	// finally, operations
-	operations := k.GetPendingOperations(ctx)
-	res := make([]abci.ValidatorUpdate, 0, len(operations.GetList()))
-	for _, operation := range operations.GetList() {
-		switch operation.OperationType {
-		case types.KeyAdditionOrUpdate:
-			power, err := k.restakingKeeper.GetOperatorAssetValue(
-				ctx, operation.OperatorAddress,
-			)
-			if err != nil {
-				panic(err)
-			}
-			res = append(res, abci.ValidatorUpdate{
-				PubKey: operation.PubKey,
-				Power:  power,
-			})
-		case types.KeyRemoval:
-			res = append(res, abci.ValidatorUpdate{
-				PubKey: operation.PubKey,
-				Power:  0,
-			})
-		case types.KeyOpUnspecified:
-			panic("unspecified operation type")
+	// finally, perform the actual operations of vote power changes.
+	// 1. find all operator keys for the chain.
+	// 2. find last stored operator keys + their powers.
+	// 3. find newest vote power for the operator keys, and sort them.
+	// 4. loop through #1 and see if anything has changed.
+	//    if it hasn't, do nothing for that operator key.
+	//    if it has, queue an update.
+	prev := k.getKeyPowerMapping(ctx).List
+	res := make([]abci.ValidatorUpdate, 0, len(prev))
+	operators, keys := k.operatorKeeper.GetActiveOperatorsForChainId(ctx, ctx.ChainID())
+	powers, err := k.restakingKeeper.GetAvgDelegatedValue(
+		ctx, operators, k.GetAssetIDs(ctx), k.GetEpochIdentifier(ctx),
+	)
+	if err != nil {
+		return []abci.ValidatorUpdate{}
+	}
+	operators, keys, powers = sortByPower(operators, keys, powers)
+	maxVals := k.GetMaxValidators(ctx)
+	for i := range operators {
+		// #nosec G701 // ok if 64-bit.
+		if i >= int(maxVals) {
+			// we have reached the maximum number of validators.
+			break
 		}
+		power := powers[i]
+		if power < 1 {
+			// we have reached the bottom of the rung.
+			break
+		}
+		// find the previous power.
+		key := keys[i]
+		keyString := string(k.cdc.MustMarshal(&key))
+		prevPower, found := prev[keyString]
+		if found && prevPower == power {
+			delete(prev, keyString)
+			continue
+		}
+		// either the key was not in the previous set,
+		// or the power has changed.
+		res = append(res, abci.ValidatorUpdate{
+			PubKey: key,
+			// note that this is the final power and not the change in power.
+			Power: power,
+		})
 	}
-	return res
+	// the remaining keys in prev have lost their power.
+	// gosec does not like `for key := range prev` while others do not like
+	// `for key, _ := range prev`
+	// #nosec G705
+	for key := range prev {
+		bz := []byte(key) // undo string operation
+		var keyObj tmprotocrypto.PublicKey
+		k.cdc.MustUnmarshal(bz, &keyObj) // undo marshal operation
+		res = append(res, abci.ValidatorUpdate{
+			PubKey: keyObj,
+			Power:  0,
+		})
+	}
+	// call via wrapper function so that validator info is stored.
+	// the id is incremented by 1 for the next block.
+	return k.ApplyValidatorChanges(ctx, res, id+1)
 }
 
-// SetPendingOperations sets the pending operations to be applied at the end of the block.
-func (k Keeper) SetPendingOperations(ctx sdk.Context, operations types.Operations) {
-	store := ctx.KVStore(k.storeKey)
-	bz, err := operations.Marshal()
-	if err != nil {
-		panic(err)
+// sortByPower sorts operators, their pubkeys, and their powers by the powers.
+// the sorting is descending, so the highest power is first.
+func sortByPower(
+	operatorAddrs []sdk.AccAddress,
+	pubKeys []tmprotocrypto.PublicKey,
+	powers []int64,
+) ([]sdk.AccAddress, []tmprotocrypto.PublicKey, []int64) {
+	// Create a slice of indices
+	indices := make([]int, len(powers))
+	for i := range indices {
+		indices[i] = i
 	}
-	store.Set(types.PendingOperationsKey(), bz)
-}
 
-// GetPendingOperations returns the pending operations to be applied at the end of the block.
-func (k Keeper) GetPendingOperations(ctx sdk.Context) types.Operations {
-	store := ctx.KVStore(k.storeKey)
-	bz := store.Get(types.PendingOperationsKey())
-	if bz == nil {
-		return types.Operations{}
-	}
-	var operations types.Operations
-	if err := operations.Unmarshal(bz); err != nil {
-		panic(err)
-	}
-	return operations
-}
+	// Sort the indices slice based on the powers slice
+	sort.SliceStable(indices, func(i, j int) bool {
+		return powers[indices[i]] > powers[indices[j]]
+	})
 
-// ClearPendingOperations clears the pending operations to be applied at the end of the block.
-func (k Keeper) ClearPendingOperations(ctx sdk.Context) {
-	store := ctx.KVStore(k.storeKey)
-	store.Delete(types.PendingOperationsKey())
-}
-
-// SetPendingOptOuts sets the pending opt-outs to be applied at the end of the block.
-func (k Keeper) SetPendingOptOuts(ctx sdk.Context, addrs types.AccountAddresses) {
-	store := ctx.KVStore(k.storeKey)
-	bz, err := addrs.Marshal()
-	if err != nil {
-		panic(err)
+	// Reorder all slices using the sorted indices
+	sortedOperatorAddrs := make([]sdk.AccAddress, len(operatorAddrs))
+	sortedPubKeys := make([]tmprotocrypto.PublicKey, len(pubKeys))
+	sortedPowers := make([]int64, len(powers))
+	for i, idx := range indices {
+		sortedOperatorAddrs[i] = operatorAddrs[idx]
+		sortedPubKeys[i] = pubKeys[idx]
+		sortedPowers[i] = powers[idx]
 	}
-	store.Set(types.PendingOptOutsKey(), bz)
-}
 
-// GetPendingOptOuts returns the pending opt-outs to be applied at the end of the block.
-func (k Keeper) GetPendingOptOuts(ctx sdk.Context) types.AccountAddresses {
-	store := ctx.KVStore(k.storeKey)
-	bz := store.Get(types.PendingOptOutsKey())
-	if bz == nil {
-		return types.AccountAddresses{}
-	}
-	var addrs types.AccountAddresses
-	if err := addrs.Unmarshal(bz); err != nil {
-		panic(err)
-	}
-	return addrs
-}
-
-// ClearPendingOptOuts clears the pending opt-outs to be applied at the end of the block.
-func (k Keeper) ClearPendingOptOuts(ctx sdk.Context) {
-	store := ctx.KVStore(k.storeKey)
-	store.Delete(types.PendingOptOutsKey())
-}
-
-// SetPendingConsensusAddrs sets the pending consensus addresses to be pruned at the end of the
-// block.
-func (k Keeper) SetPendingConsensusAddrs(ctx sdk.Context, addrs types.ConsensusAddresses) {
-	store := ctx.KVStore(k.storeKey)
-	bz, err := addrs.Marshal()
-	if err != nil {
-		panic(err)
-	}
-	store.Set(types.PendingConsensusAddrsKey(), bz)
-}
-
-// GetPendingConsensusAddrs returns the pending consensus addresses to be pruned at the end of
-// the block.
-func (k Keeper) GetPendingConsensusAddrs(ctx sdk.Context) types.ConsensusAddresses {
-	store := ctx.KVStore(k.storeKey)
-	bz := store.Get(types.PendingConsensusAddrsKey())
-	if bz == nil {
-		return types.ConsensusAddresses{}
-	}
-	var addrs types.ConsensusAddresses
-	if err := addrs.Unmarshal(bz); err != nil {
-		panic(err)
-	}
-	return addrs
-}
-
-// ClearPendingConsensusAddrs clears the pending consensus addresses to be pruned at the end of
-// the block.
-func (k Keeper) ClearPendingConsensusAddrs(ctx sdk.Context) {
-	store := ctx.KVStore(k.storeKey)
-	store.Delete(types.PendingConsensusAddrsKey())
-}
-
-// SetPendingUndelegations sets the pending undelegations to be released at the end of the
-// block.
-func (k Keeper) SetPendingUndelegations(ctx sdk.Context, undelegations types.RecordKeys) {
-	store := ctx.KVStore(k.storeKey)
-	bz, err := undelegations.Marshal()
-	if err != nil {
-		panic(err)
-	}
-	store.Set(types.PendingUndelegationsKey(), bz)
-}
-
-// GetPendingUndelegations returns the pending undelegations to be released at the end of the
-// block.
-func (k Keeper) GetPendingUndelegations(ctx sdk.Context) types.RecordKeys {
-	store := ctx.KVStore(k.storeKey)
-	bz := store.Get(types.PendingUndelegationsKey())
-	if bz == nil {
-		return types.RecordKeys{}
-	}
-	var undelegations types.RecordKeys
-	if err := undelegations.Unmarshal(bz); err != nil {
-		panic(err)
-	}
-	return undelegations
-}
-
-// ClearPendingUndelegations clears the pending undelegations to be released at the end of the
-// block.
-func (k Keeper) ClearPendingUndelegations(ctx sdk.Context) {
-	store := ctx.KVStore(k.storeKey)
-	store.Delete(types.PendingUndelegationsKey())
+	return sortedOperatorAddrs, sortedPubKeys, sortedPowers
 }

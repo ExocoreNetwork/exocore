@@ -66,9 +66,9 @@ func (p Precompile) GetDelegationParamsFromInputs(ctx sdk.Context, args []interf
 		return nil, fmt.Errorf(ErrInputOperatorAddrLength, len(operatorAddr), types.ExoCoreOperatorAddrLength)
 	}
 
-	opAccAddr, err := sdk.AccAddressFromBech32(string(operatorAddr[:]))
+	opAccAddr, err := sdk.AccAddressFromBech32(string(operatorAddr))
 	if err != nil {
-		return nil, errorsmod.Wrap(err, fmt.Sprintf("error occurred when parse acc address from Bech32,the addr is:%s", string(operatorAddr[:])))
+		return nil, errorsmod.Wrap(err, fmt.Sprintf("error occurred when parse acc address from Bech32,the addr is:%s", string(operatorAddr)))
 	}
 	delegationParams.OperatorAddress = opAccAddr
 

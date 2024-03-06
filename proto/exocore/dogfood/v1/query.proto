@@ -2,10 +2,9 @@ syntax = "proto3";
 
 package exocore.dogfood.v1;
 
+import "exocore/dogfood/v1/params.proto";
 import "gogoproto/gogo.proto";
 import "google/api/annotations.proto";
-import "cosmos/base/query/v1beta1/pagination.proto";
-import "exocore/dogfood/v1/params.proto";
 
 option go_package = "github.com/ExocoreNetwork/exocore/x/dogfood/types";
 

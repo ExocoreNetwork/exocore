@@ -42,9 +42,9 @@ const (
 
 	prefixRestakerExocoreAddrReverse
 
-	prefixReStakingAssetList
-	prefixReStakerAssetList
-	prefixOperatorAssetList
+	// prefixReStakingAssetList
+	// prefixReStakerAssetList
+	// prefixOperatorAssetList
 
 	// add for dogfood
 	prefixOperatorSnapshot

@@ -17,8 +17,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-const consensusVersion = 0
-
 // type check to ensure the interface is properly implemented
 var (
 	_ module.AppModule           = AppModule{}
@@ -59,7 +57,7 @@ type AppModule struct {
 	keeper keeper.Keeper
 }
 
-func NewAppModule(cdc codec.Codec, keeper keeper.Keeper) AppModule {
+func NewAppModule(_ codec.Codec, keeper keeper.Keeper) AppModule {
 	return AppModule{
 		AppModuleBasic: AppModuleBasic{},
 		keeper:         keeper,
@@ -78,13 +76,13 @@ func (am AppModule) RegisterServices(cfg module.Configurator) {
 	delegationtype.RegisterQueryServer(cfg.QueryServer(), &am.keeper)
 }
 
-func (am AppModule) GenerateGenesisState(input *module.SimulationState) {
+func (am AppModule) GenerateGenesisState(*module.SimulationState) {
 }
 
-func (am AppModule) RegisterStoreDecoder(registry sdk.StoreDecoderRegistry) {
+func (am AppModule) RegisterStoreDecoder(sdk.StoreDecoderRegistry) {
 }
 
-func (am AppModule) WeightedOperations(simState module.SimulationState) []simtypes.WeightedOperation {
+func (am AppModule) WeightedOperations(module.SimulationState) []simtypes.WeightedOperation {
 	return []simtypes.WeightedOperation{}
 }
 

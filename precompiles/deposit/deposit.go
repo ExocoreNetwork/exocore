@@ -89,9 +89,7 @@ func (p Precompile) Run(evm *vm.EVM, contract *vm.Contract, readOnly bool) (bz [
 	// It avoids panics and returns the out of gas error so the EVM can continue gracefully.
 	defer cmn.HandleGasError(ctx, contract, initialGas, &err)()
 
-	switch method.Name {
-	// deposit transactions
-	case MethodDepositTo:
+	if method.Name == MethodDepositTo {
 		bz, err = p.DepositTo(ctx, evm.Origin, contract, stateDB, method, args)
 	}
 

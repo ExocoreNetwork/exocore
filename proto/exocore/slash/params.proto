@@ -1,13 +1,13 @@
 syntax = "proto3";
 package exocore.slash;
 
-import "gogoproto/gogo.proto";
-
 option go_package = "github.com/ExocoreNetwork/exocore/x/slash/types";
 
 // Params defines the parameters for the module.
 message Params {
-  string   exoCoreLzAppAddress = 1;
-  string   exoCoreLzAppEventTopic =2;
+  // exo_core_lz_app_address defines the address of the lz app
+  string   exo_core_lz_app_address = 1;
+  // exo_core_lz_app_event_topic defines the topic of the lz app
+  string   exo_core_lz_app_event_topic = 2;
 
 }

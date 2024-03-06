@@ -7,10 +7,6 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-var (
-	_ = sdk.NewCoin("stake", sdk.NewInt(1))
-)
-
 // EpochsHooksWrapper is the wrapper structure that implements the epochs hooks for the dogfood
 // keeper.
 type EpochsHooksWrapper struct {
@@ -26,7 +22,7 @@ func (k *Keeper) EpochsHooks() EpochsHooksWrapper {
 	return EpochsHooksWrapper{k}
 }
 
-// AfterEpochEnd is called after an epoch ends.
+// AfterEpochEnd is called after an epoch ends. It is called during the BeginBlock function.
 func (wrapper EpochsHooksWrapper) AfterEpochEnd(
 	ctx sdk.Context, identifier string, epoch int64,
 ) {
@@ -36,26 +32,31 @@ func (wrapper EpochsHooksWrapper) AfterEpochEnd(
 		// note that this hook is called during BeginBlock, and the "pending" operations will be
 		// applied within this block. however, for clarity, it is highlighted that unbonding
 		// takes N epochs + 1 block to complete.
-		operations := wrapper.keeper.GetQueuedOperations(ctx)
-		wrapper.keeper.SetPendingOperations(ctx, types.Operations{List: operations})
-		wrapper.keeper.ClearQueuedOperations(ctx)
+		wrapper.keeper.MarkEpochEnd(ctx)
+		// find the opt outs that mature when this epoch ends, and move them to pending.
 		optOuts := wrapper.keeper.GetOptOutsToFinish(ctx, epoch)
 		wrapper.keeper.SetPendingOptOuts(ctx, types.AccountAddresses{List: optOuts})
 		wrapper.keeper.ClearOptOutsToFinish(ctx, epoch)
+		// next, find the consensus addresses that are to be pruned, and move them to pending.
 		consAddresses := wrapper.keeper.GetConsensusAddrsToPrune(ctx, epoch)
 		wrapper.keeper.SetPendingConsensusAddrs(
 			ctx, types.ConsensusAddresses{List: consAddresses},
 		)
 		wrapper.keeper.ClearConsensusAddrsToPrune(ctx, epoch)
+		// finally, find the undelegations that mature when this epoch ends, and move them to
+		// pending.
 		undelegations := wrapper.keeper.GetUndelegationsToMature(ctx, epoch)
-		wrapper.keeper.SetPendingUndelegations(ctx, types.RecordKeys{List: undelegations})
+		wrapper.keeper.SetPendingUndelegations(
+			ctx, types.UndelegationRecordKeys{
+				List: undelegations,
+			})
 		wrapper.keeper.ClearUndelegationsToMature(ctx, epoch)
 	}
 }
 
 // BeforeEpochStart is called before an epoch starts.
 func (wrapper EpochsHooksWrapper) BeforeEpochStart(
-	ctx sdk.Context, identifier string, epoch int64,
+	sdk.Context, string, int64,
 ) {
-	// nothing to do
+	// no-op
 }
