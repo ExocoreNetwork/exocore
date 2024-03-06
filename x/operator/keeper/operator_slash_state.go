@@ -1,9 +1,11 @@
 package keeper
 
 import (
+	"fmt"
+
 	errorsmod "cosmossdk.io/errors"
 	sdkmath "cosmossdk.io/math"
-	"fmt"
+
 	operatortypes "github.com/ExocoreNetwork/exocore/x/operator/types"
 	restakingtype "github.com/ExocoreNetwork/exocore/x/restaking_assets_manage/types"
 	"github.com/cosmos/cosmos-sdk/store/prefix"
@@ -11,15 +13,15 @@ import (
 	"github.com/ethereum/go-ethereum/common/hexutil"
 )
 
-func (k *Keeper) UpdateOperatorSlashInfo(ctx sdk.Context, operatorAddr, avsAddr, slashId string, slashInfo operatortypes.OperatorSlashInfo) error {
+func (k *Keeper) UpdateOperatorSlashInfo(ctx sdk.Context, operatorAddr, avsAddr, slashID string, slashInfo operatortypes.OperatorSlashInfo) error {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), operatortypes.KeyPrefixOperatorSlashInfo)
 
-	//check operator address validation
+	// check operator address validation
 	_, err := sdk.AccAddressFromBech32(operatorAddr)
 	if err != nil {
 		return restakingtype.ErrOperatorAddr
 	}
-	slashInfoKey := restakingtype.GetJoinedStoreKey(operatorAddr, avsAddr, slashId)
+	slashInfoKey := restakingtype.GetJoinedStoreKey(operatorAddr, avsAddr, slashID)
 	if store.Has(slashInfoKey) {
 		return errorsmod.Wrap(operatortypes.ErrSlashInfoExist, fmt.Sprintf("slashInfoKey:%suite", slashInfoKey))
 	}
@@ -35,15 +37,15 @@ func (k *Keeper) UpdateOperatorSlashInfo(ctx sdk.Context, operatorAddr, avsAddr,
 		return errorsmod.Wrap(operatortypes.ErrSlashInfo, fmt.Sprintf("err SlashProportion:%v", slashInfo.SlashProportion))
 	}
 
-	//save single operator delegation state
+	// save single operator delegation state
 	bz := k.cdc.MustMarshal(&slashInfo)
 	store.Set(slashInfoKey, bz)
 	return nil
 }
 
-func (k *Keeper) GetOperatorSlashInfo(ctx sdk.Context, avsAddr, operatorAddr, slashId string) (changeState *operatortypes.OperatorSlashInfo, err error) {
+func (k *Keeper) GetOperatorSlashInfo(ctx sdk.Context, avsAddr, operatorAddr, slashID string) (changeState *operatortypes.OperatorSlashInfo, err error) {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), operatortypes.KeyPrefixOperatorSlashInfo)
-	slashInfoKey := restakingtype.GetJoinedStoreKey(operatorAddr, avsAddr, slashId)
+	slashInfoKey := restakingtype.GetJoinedStoreKey(operatorAddr, avsAddr, slashID)
 	isExit := store.Has(slashInfoKey)
 	operatorSlashInfo := operatortypes.OperatorSlashInfo{}
 	if isExit {
@@ -105,9 +107,9 @@ func (k *Keeper) GetSlashAssetsState(ctx sdk.Context, assetID, stakerOrOperator 
 	isExit := store.Has(key)
 	if !isExit {
 		return sdkmath.Int{}, errorsmod.Wrap(operatortypes.ErrNoKeyInTheStore, fmt.Sprintf("GetSlashAssetsState: key is %suite", key))
-	} else {
-		value := store.Get(key)
-		k.cdc.MustUnmarshal(value, &ret)
 	}
+	value := store.Get(key)
+	k.cdc.MustUnmarshal(value, &ret)
+
 	return ret.Amount, nil
 }

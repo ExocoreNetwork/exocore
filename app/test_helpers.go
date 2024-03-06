@@ -2,9 +2,10 @@ package app
 
 import (
 	"encoding/json"
-	pruningtypes "github.com/cosmos/cosmos-sdk/store/pruning/types"
 	"os"
 	"time"
+
+	pruningtypes "github.com/cosmos/cosmos-sdk/store/pruning/types"
 
 	"cosmossdk.io/simapp"
 	dbm "github.com/cometbft/cometbft-db"
@@ -221,7 +222,7 @@ func SetupTestingApp(chainID string, pruneOpts *pruningtypes.PruningOptions, isP
 			map[int64]bool{},
 			DefaultNodeHome, 5, cfg,
 			simtestutil.NewAppOptionsWithFlagHome(DefaultNodeHome),
-			baseAppOptions[:]...,
+			baseAppOptions...,
 		)
 		return app, NewDefaultGenesisState(app.appCodec)
 	}

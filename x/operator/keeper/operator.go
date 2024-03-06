@@ -1,8 +1,10 @@
 package keeper
 
 import (
-	errorsmod "cosmossdk.io/errors"
 	"fmt"
+
+	errorsmod "cosmossdk.io/errors"
+
 	operatortypes "github.com/ExocoreNetwork/exocore/x/operator/types"
 	restakingtype "github.com/ExocoreNetwork/exocore/x/restaking_assets_manage/types"
 	"github.com/cosmos/cosmos-sdk/store/prefix"
@@ -21,7 +23,7 @@ func (k *Keeper) SetOperatorInfo(ctx sdk.Context, addr string, info *operatortyp
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), operatortypes.KeyPrefixOperatorInfo)
 	// todo: think about the difference between init and update in future
 
-	//key := common.HexToAddress(incentive.Contract)
+	// key := common.HexToAddress(incentive.Contract)
 	bz := k.cdc.MustMarshal(info)
 
 	store.Set(opAccAddr, bz)
@@ -34,7 +36,7 @@ func (k *Keeper) OperatorInfo(ctx sdk.Context, addr string) (info *operatortypes
 		return nil, errorsmod.Wrap(err, "GetOperatorInfo: error occurred when parse acc address from Bech32")
 	}
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), operatortypes.KeyPrefixOperatorInfo)
-	//key := common.HexToAddress(incentive.Contract)
+	// key := common.HexToAddress(incentive.Contract)
 	isExist := store.Has(opAccAddr)
 	if !isExist {
 		return nil, errorsmod.Wrap(operatortypes.ErrNoKeyInTheStore, fmt.Sprintf("GetOperatorInfo: key is %suite", opAccAddr))
@@ -55,7 +57,7 @@ func (k *Keeper) IsOperator(ctx sdk.Context, addr sdk.AccAddress) bool {
 func (k *Keeper) UpdateOptedInfo(ctx sdk.Context, operatorAddr, avsAddr string, info *operatortypes.OptedInfo) error {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), operatortypes.KeyPrefixOperatorOptedAVSInfo)
 
-	//check operator address validation
+	// check operator address validation
 	_, err := sdk.AccAddressFromBech32(operatorAddr)
 	if err != nil {
 		return restakingtype.ErrOperatorAddr
@@ -98,7 +100,7 @@ func (k *Keeper) IsOptedIn(ctx sdk.Context, operatorAddr, avsAddr string) bool {
 }
 
 func (k *Keeper) GetOptedInAVSForOperator(ctx sdk.Context, operatorAddr string) ([]string, error) {
-	//get all opted-in info
+	// get all opted-in info
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), operatortypes.KeyPrefixOperatorOptedAVSInfo)
 	iterator := sdk.KVStorePrefixIterator(store, []byte(operatorAddr))
 	defer iterator.Close()

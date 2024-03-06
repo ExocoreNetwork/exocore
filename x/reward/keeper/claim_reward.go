@@ -85,12 +85,12 @@ func getRewardParamsFromEventLog(log *ethtypes.Log) (*RewardParams, error) {
 
 func getStakeIDAndAssetID(params *RewardParams) (stakeID string, assetID string) {
 	clientChainLzIDStr := hexutil.EncodeUint64(params.ClientChainLzID)
-	stakeID = strings.Join([]string{hexutil.Encode(params.WithdrawRewardAddress[:]), clientChainLzIDStr}, "_")
-	assetID = strings.Join([]string{hexutil.Encode(params.AssetsAddress[:]), clientChainLzIDStr}, "_")
+	stakeID = strings.Join([]string{hexutil.Encode(params.WithdrawRewardAddress), clientChainLzIDStr}, "_")
+	assetID = strings.Join([]string{hexutil.Encode(params.AssetsAddress), clientChainLzIDStr}, "_")
 	return
 }
 
-func (k Keeper) PostTxProcessing(ctx sdk.Context, msg core.Message, receipt *ethtypes.Receipt) error {
+func (k Keeper) PostTxProcessing(ctx sdk.Context, _ core.Message, receipt *ethtypes.Receipt) error {
 	// TODO check if contract address is valid layerZero relayer address
 	// check if log address and topicId is valid
 	params, err := k.GetParams(ctx)

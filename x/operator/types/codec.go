@@ -21,11 +21,6 @@ var (
 	AminoCdc = codec.NewAminoCodec(amino)
 )
 
-const (
-	// Amino names
-	registerOperator = "exocore/RegisterOperatorReq"
-)
-
 // NOTE: This is required for the GetSignBytes function
 func init() {
 	RegisterLegacyAminoCodec(amino)
@@ -37,8 +32,8 @@ func RegisterInterfaces(registry codectypes.InterfaceRegistry) {
 	registry.RegisterImplementations(
 		(*sdk.Msg)(nil),
 		&RegisterOperatorReq{},
-		&OptInToChainIdRequest{},
-		&InitiateOptOutFromChainIdRequest{},
+		&OptInToChainIDRequest{},
+		&InitiateOptOutFromChainIDRequest{},
 	)
 	msgservice.RegisterMsgServiceDesc(registry, &_Msg_serviceDesc)
 }
@@ -46,6 +41,6 @@ func RegisterInterfaces(registry codectypes.InterfaceRegistry) {
 // RegisterLegacyAminoCodec registers the necessary x/revenue interfaces and
 // concrete types on the provided LegacyAmino codec. These types are used for
 // Amino JSON serialization and EIP-712 compatibility.
-func RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) {
-	//cdc.RegisterConcrete(&RegisterOperatorReq{}, registerOperator, nil)
+func RegisterLegacyAminoCodec(_ *codec.LegacyAmino) {
+	// cdc.RegisterConcrete(&RegisterOperatorReq{}, registerOperator, nil)
 }

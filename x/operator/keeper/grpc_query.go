@@ -15,17 +15,17 @@ func (k *Keeper) GetOperatorInfo(ctx context.Context, req *operatortypes.GetOper
 	return k.OperatorInfo(c, req.OperatorAddr)
 }
 
-// QueryOperatorConsKeyForChainId add for dogfood
-func (k *Keeper) QueryOperatorConsKeyForChainId(
+// QueryOperatorConsKeyForChainID add for dogfood
+func (k *Keeper) QueryOperatorConsKeyForChainID(
 	goCtx context.Context,
-	req *operatortypes.QueryOperatorConsKeyForChainIdRequest,
-) (*operatortypes.QueryOperatorConsKeyForChainIdResponse, error) {
+	req *operatortypes.QueryOperatorConsKeyForChainIDRequest,
+) (*operatortypes.QueryOperatorConsKeyForChainIDResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 	addr, err := sdk.AccAddressFromBech32(req.Addr)
 	if err != nil {
 		return nil, err
 	}
-	found, key, err := k.GetOperatorConsKeyForChainId(
+	found, key, err := k.GetOperatorConsKeyForChainID(
 		ctx, addr, req.ChainId,
 	)
 	if err != nil {
@@ -34,7 +34,7 @@ func (k *Keeper) QueryOperatorConsKeyForChainId(
 	if !found {
 		return nil, errors.New("no key assigned")
 	}
-	return &operatortypes.QueryOperatorConsKeyForChainIdResponse{
+	return &operatortypes.QueryOperatorConsKeyForChainIDResponse{
 		PublicKey: key,
 	}, nil
 }

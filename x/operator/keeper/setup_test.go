@@ -1,6 +1,8 @@
 package keeper_test
 
 import (
+	"testing"
+
 	sdkmath "cosmossdk.io/math"
 	"github.com/ExocoreNetwork/exocore/testutil"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -8,7 +10,6 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"github.com/stretchr/testify/suite"
-	"testing"
 )
 
 var s *OperatorTestSuite
@@ -16,7 +17,7 @@ var s *OperatorTestSuite
 type OperatorTestSuite struct {
 	testutil.BaseTestSuite
 
-	//needed by test
+	// needed by test
 	operatorAddr          sdk.AccAddress
 	avsAddr               string
 	assetID               string

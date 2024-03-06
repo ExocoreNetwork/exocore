@@ -32,14 +32,14 @@ func (k *Keeper) PriceChangeHandle(ctx sdk.Context) error {
 	if err != nil {
 		return err
 	}
-	if priceChangeAssets == nil || len(priceChangeAssets) == 0 {
+	if len(priceChangeAssets) == 0 {
 		return nil
 	}
 	avsOperatorShareChange := make(map[string]sdkmath.LegacyDec, 0)
 	assetsOperatorAVSInfo := make(map[string]map[string]string, 0)
 	assetsDecimal := make(map[string]uint32)
 	for assetID, priceChange := range priceChangeAssets {
-		//get the decimal of asset
+		// get the decimal of asset
 		assetInfo, err := k.restakingStateKeeper.GetStakingAssetInfo(ctx, assetID)
 		if err != nil {
 			return err
@@ -48,8 +48,8 @@ func (k *Keeper) PriceChangeHandle(ctx sdk.Context) error {
 		if _, ok := assetsOperatorAVSInfo[assetID]; !ok {
 			assetsOperatorAVSInfo[assetID] = make(map[string]string, 0)
 		}
-		//UpdateStateForAsset
-		f := func(assetID string, keys []string, state *operatortypes.AssetOptedInState) error {
+		// UpdateStateForAsset
+		f := func(assetID string, keys []string, state *operatortypes.OptedInAssetState) error {
 			newAssetUSDValue := CalculateShare(state.Amount, priceChange.NewPrice, assetInfo.AssetBasicInfo.Decimals, priceChange.Decimal)
 			changeValue := newAssetUSDValue.Sub(state.Value)
 			state.Value = newAssetUSDValue
@@ -66,13 +66,13 @@ func (k *Keeper) PriceChangeHandle(ctx sdk.Context) error {
 			return err
 		}
 	}
-	//BatchUpdateShareForAVSAndOperator
+	// BatchUpdateShareForAVSAndOperator
 	err = k.BatchUpdateShareForAVSAndOperator(ctx, avsOperatorShareChange)
 	if err != nil {
 		return err
 	}
 
-	//update staker'suite share
+	// update staker'suite share
 	sharedParameter := &SharedParameter{
 		priceChangeAssets:     priceChangeAssets,
 		assetsDecimal:         assetsDecimal,
@@ -80,7 +80,7 @@ func (k *Keeper) PriceChangeHandle(ctx sdk.Context) error {
 		stakerShare:           make(map[string]sdkmath.LegacyDec, 0),
 	}
 	stakerShareHandleFunc := func(stakerID, assetID, operatorAddr string, state *delegationtype.DelegationAmounts) error {
-		UpdateShareOfStakerAndOperator(sharedParameter, assetID, stakerID, operatorAddr, state.CanUndelegationAmount)
+		UpdateShareOfStakerAndOperator(sharedParameter, assetID, stakerID, operatorAddr, state.CanBeUndelegatedAmount)
 		return nil
 	}
 	err = k.delegationKeeper.IterateDelegationState(ctx, stakerShareHandleFunc)
@@ -96,7 +96,7 @@ func (k *Keeper) PriceChangeHandle(ctx sdk.Context) error {
 	if err != nil {
 		return err
 	}
-	//BatchSetStakerShare
+	// BatchSetStakerShare
 	err = k.BatchSetStakerShare(ctx, sharedParameter.stakerShare)
 	if err != nil {
 		return err
@@ -109,7 +109,7 @@ func (k *Keeper) ClearPreConsensusPK(ctx sdk.Context) error {
 	store := ctx.KVStore(k.storeKey)
 	iterator := sdk.KVStorePrefixIterator(
 		store,
-		[]byte{operatortypes.BytePrefixForOperatorAndChainIdToPrevConsKey},
+		[]byte{operatortypes.BytePrefixForOperatorAndChainIDToPrevConsKey},
 	)
 	defer iterator.Close()
 
@@ -121,7 +121,7 @@ func (k *Keeper) ClearPreConsensusPK(ctx sdk.Context) error {
 
 // EndBlock : update the assets' share when their prices change
 func (k *Keeper) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.ValidatorUpdate {
-	//todo: need to consider the calling order
+	// todo: need to consider the calling order
 	err := k.PriceChangeHandle(ctx)
 	if err != nil {
 		panic(err)

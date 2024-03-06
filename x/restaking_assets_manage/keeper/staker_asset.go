@@ -48,7 +48,7 @@ func (k Keeper) GetStakerSpecifiedAssetInfo(ctx sdk.Context, stakerID string, as
 // The input `changeAmount` represents the values that you want to add or decrease,using positive or negative values for increasing and decreasing,respectively. The function will calculate and update new state after a successful check.
 // The function will be called when there is deposit or withdraw related to the specified staker.
 func (k Keeper) UpdateStakerAssetState(ctx sdk.Context, stakerID string, assetID string, changeAmount restakingtype.StakerSingleAssetOrChangeInfo) (err error) {
-	//get the latest state,use the default initial state if the state hasn't been stored
+	// get the latest state,use the default initial state if the state hasn't been stored
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), restakingtype.KeyPrefixReStakerAssetInfos)
 	key := restakingtype.GetJoinedStoreKey(stakerID, assetID)
 	assetState := restakingtype.StakerSingleAssetOrChangeInfo{

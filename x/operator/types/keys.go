@@ -1,10 +1,11 @@
 package types
 
 import (
+	"math"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	"github.com/ethereum/go-ethereum/common"
-	"math"
 )
 
 // constants
@@ -49,12 +50,12 @@ const (
 
 	prefixSlashAssetsState
 
-	//add keys for dogfood
-	BytePrefixForOperatorAndChainIdToConsKey = iota
-	BytePrefixForOperatorAndChainIdToPrevConsKey
-	BytePrefixForChainIdAndOperatorToConsKey
-	BytePrefixForChainIdAndConsKeyToOperator
-	BytePrefixForOperatorOptOutFromChainId
+	// add keys for dogfood
+	BytePrefixForOperatorAndChainIDToConsKey = iota
+	BytePrefixForOperatorAndChainIDToPrevConsKey
+	BytePrefixForChainIDAndOperatorToConsKey
+	BytePrefixForChainIDAndConsKeyToOperator
+	BytePrefixForOperatorOptOutFromChainID
 )
 
 var (
@@ -71,7 +72,7 @@ var (
 	KeyPrefixAVSOperatorAssetsTotalValue = []byte{prefixAVSOperatorAssetsTotalValue}
 
 	// KeyPrefixOperatorAVSSingleAssetState key-value:
-	// assetID + '/' + AVSAddr + '/' + operatorAddr -> AssetOptedInState
+	// assetID + '/' + AVSAddr + '/' + operatorAddr -> OptedInAssetState
 	KeyPrefixOperatorAVSSingleAssetState = []byte{prefixOperatorAVSSingleAssetState}
 
 	// KeyPrefixAVSOperatorStakerShareState key-value:
@@ -94,8 +95,8 @@ func KeyPrefix(p string) []byte {
 	return []byte(p)
 }
 
-func AddrAndChainIdKey(prefix byte, addr sdk.AccAddress, chainId string) []byte {
-	partialKey := ChainIdWithLenKey(chainId)
+func AddrAndChainIDKey(prefix byte, addr sdk.AccAddress, chainID string) []byte {
+	partialKey := ChainIDWithLenKey(chainID)
 	return AppendMany(
 		// Append the prefix
 		[]byte{prefix},
@@ -107,50 +108,50 @@ func AddrAndChainIdKey(prefix byte, addr sdk.AccAddress, chainId string) []byte 
 	)
 }
 
-func ChainIdAndAddrKey(prefix byte, chainId string, addr sdk.AccAddress) []byte {
-	partialKey := ChainIdWithLenKey(chainId)
+func ChainIDAndAddrKey(prefix byte, chainID string, addr sdk.AccAddress) []byte {
+	partialKey := ChainIDWithLenKey(chainID)
 	return AppendMany(
 		// Append the prefix
 		[]byte{prefix},
 		// Append the partialKey so that we can look for any operator keys
-		// corresponding to this chainId easily.
+		// corresponding to this chainID easily.
 		partialKey,
 		addr,
 	)
 }
 
-func KeyForOperatorAndChainIdToConsKey(addr sdk.AccAddress, chainId string) []byte {
-	return AddrAndChainIdKey(
-		BytePrefixForOperatorAndChainIdToConsKey,
-		addr, chainId,
+func KeyForOperatorAndChainIDToConsKey(addr sdk.AccAddress, chainID string) []byte {
+	return AddrAndChainIDKey(
+		BytePrefixForOperatorAndChainIDToConsKey,
+		addr, chainID,
 	)
 }
 
-func KeyForOperatorAndChainIdToPrevConsKey(addr sdk.AccAddress, chainId string) []byte {
-	return AddrAndChainIdKey(
-		BytePrefixForOperatorAndChainIdToPrevConsKey,
-		addr, chainId,
+func KeyForOperatorAndChainIDToPrevConsKey(addr sdk.AccAddress, chainID string) []byte {
+	return AddrAndChainIDKey(
+		BytePrefixForOperatorAndChainIDToPrevConsKey,
+		addr, chainID,
 	)
 }
 
-func KeyForChainIdAndOperatorToConsKey(chainId string, addr sdk.AccAddress) []byte {
-	return ChainIdAndAddrKey(
-		BytePrefixForChainIdAndOperatorToConsKey,
-		chainId, addr,
+func KeyForChainIDAndOperatorToConsKey(chainID string, addr sdk.AccAddress) []byte {
+	return ChainIDAndAddrKey(
+		BytePrefixForChainIDAndOperatorToConsKey,
+		chainID, addr,
 	)
 }
 
-func KeyForChainIdAndConsKeyToOperator(chainId string, addr sdk.ConsAddress) []byte {
+func KeyForChainIDAndConsKeyToOperator(chainID string, addr sdk.ConsAddress) []byte {
 	return AppendMany(
-		[]byte{BytePrefixForChainIdAndConsKeyToOperator},
-		ChainIdWithLenKey(chainId),
+		[]byte{BytePrefixForChainIDAndConsKeyToOperator},
+		ChainIDWithLenKey(chainID),
 		addr,
 	)
 }
 
-func KeyForOperatorOptOutFromChainId(addr sdk.AccAddress, chainId string) []byte {
+func KeyForOperatorOptOutFromChainID(addr sdk.AccAddress, chainID string) []byte {
 	return AppendMany(
-		[]byte{BytePrefixForOperatorOptOutFromChainId}, addr,
-		ChainIdWithLenKey(chainId),
+		[]byte{BytePrefixForOperatorOptOutFromChainID}, addr,
+		ChainIDWithLenKey(chainID),
 	)
 }

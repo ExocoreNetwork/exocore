@@ -2,6 +2,7 @@ package operator
 
 import (
 	"context"
+
 	"github.com/ExocoreNetwork/exocore/x/operator/client/cli"
 	"github.com/ExocoreNetwork/exocore/x/operator/keeper"
 	operatortypes "github.com/ExocoreNetwork/exocore/x/operator/types"
@@ -15,8 +16,6 @@ import (
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	"github.com/spf13/cobra"
 )
-
-const consensusVersion = 0
 
 // type check to ensure the interface is properly implemented
 var (
@@ -58,7 +57,7 @@ type AppModule struct {
 	keeper keeper.Keeper
 }
 
-func NewAppModule(cdc codec.Codec, keeper keeper.Keeper) AppModule {
+func NewAppModule(_ codec.Codec, keeper keeper.Keeper) AppModule {
 	return AppModule{
 		AppModuleBasic: AppModuleBasic{},
 		keeper:         keeper,
@@ -77,13 +76,13 @@ func (am AppModule) RegisterServices(cfg module.Configurator) {
 	operatortypes.RegisterQueryServer(cfg.QueryServer(), &am.keeper)
 }
 
-func (am AppModule) GenerateGenesisState(input *module.SimulationState) {
+func (am AppModule) GenerateGenesisState(_ *module.SimulationState) {
 }
 
-func (am AppModule) RegisterStoreDecoder(registry sdk.StoreDecoderRegistry) {
+func (am AppModule) RegisterStoreDecoder(_ sdk.StoreDecoderRegistry) {
 }
 
-func (am AppModule) WeightedOperations(simState module.SimulationState) []simtypes.WeightedOperation {
+func (am AppModule) WeightedOperations(_ module.SimulationState) []simtypes.WeightedOperation {
 	return []simtypes.WeightedOperation{}
 }
 

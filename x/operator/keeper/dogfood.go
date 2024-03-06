@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"fmt"
+
 	"github.com/ExocoreNetwork/exocore/x/operator/types"
 
 	errorsmod "cosmossdk.io/errors"
@@ -19,14 +20,14 @@ func (k *Keeper) Logger(ctx sdk.Context) log.Logger {
 	return ctx.Logger().With("module", fmt.Sprintf("x/%s", types.ModuleName))
 }
 
-// SetOperatorConsKeyForChainId sets the (consensus) public key for the given operator address
+// SetOperatorConsKeyForChainID sets the (consensus) public key for the given operator address
 // and chain id. By doing this, an operator is consenting to be an operator on the given chain.
 // If a key already exists, it will be overwritten and the change in voting power will flow
 // through to the validator set.
-func (k *Keeper) SetOperatorConsKeyForChainId(
+func (k *Keeper) SetOperatorConsKeyForChainID(
 	ctx sdk.Context,
 	opAccAddr sdk.AccAddress,
-	chainId string,
+	chainID string,
 	// should be tm-ed25519
 	consKey tmprotocrypto.PublicKey,
 ) error {
@@ -39,11 +40,11 @@ func (k *Keeper) SetOperatorConsKeyForChainId(
 		return delegationtypes.ErrOperatorIsFrozen
 	}
 	// check if the chain id is valid
-	if !k.restakingStateKeeper.AppChainInfoIsExist(ctx, chainId) {
+	if !k.restakingStateKeeper.AppChainInfoIsExist(ctx, chainID) {
 		return restakingtypes.ErrNoAppChainKey
 	}
 	// if opting out, do not allow key replacement
-	if k.IsOperatorOptingOutFromChainId(ctx, opAccAddr, chainId) {
+	if k.IsOperatorOptingOutFromChainID(ctx, opAccAddr, chainID) {
 		return types.ErrAlreadyOptingOut
 	}
 	// convert to bytes
@@ -51,7 +52,7 @@ func (k *Keeper) SetOperatorConsKeyForChainId(
 	if err != nil {
 		return errorsmod.Wrap(
 			err,
-			"SetOperatorConsKeyForChainId: error occurred when marshal public key",
+			"SetOperatorConsKeyForChainID: error occurred when marshal public key",
 		)
 	}
 	// convert to address for reverse lookup
@@ -59,20 +60,20 @@ func (k *Keeper) SetOperatorConsKeyForChainId(
 	if err != nil {
 		return errorsmod.Wrap(
 			err,
-			"SetOperatorConsKeyForChainId: error occurred when convert public key to consensus address",
+			"SetOperatorConsKeyForChainID: error occurred when convert public key to consensus address",
 		)
 	}
 	// check if the key is already in use by another operator
 	// operators may call this function with their own key
 	// to unjail themselves, so we will allow that.
-	keyInUse, existingAddr := k.GetOperatorAddressForChainIdAndConsAddr(ctx, chainId, consAddr)
+	keyInUse, existingAddr := k.GetOperatorAddressForChainIDAndConsAddr(ctx, chainID, consAddr)
 	if keyInUse {
 		if !existingAddr.Equals(opAccAddr) {
 			return types.ErrConsKeyAlreadyInUse
 		}
 	}
 	// check that such a key is already set. if yes, we will consider it as key replacement.
-	found, prevKey, err := k.getOperatorConsKeyForChainId(ctx, opAccAddr, chainId)
+	found, prevKey, err := k.getOperatorConsKeyForChainID(ctx, opAccAddr, chainID)
 	if err != nil {
 		// this should not happen
 		panic(err)
@@ -87,28 +88,28 @@ func (k *Keeper) SetOperatorConsKeyForChainId(
 		// if this key is different, we will set the vote power of the old key to 0
 		// in the validator update. but, we must only do so once in a block, since the
 		// first existing key is the one to replace with 0 vote power and not any others.
-		alreadyRecorded, _, err = k.getOperatorPrevConsKeyForChainId(ctx, opAccAddr, chainId)
+		alreadyRecorded, _, err = k.getOperatorPrevConsKeyForChainID(ctx, opAccAddr, chainID)
 		if err != nil {
 			// this should not happen
 			panic(err)
 		}
 		if !alreadyRecorded {
-			if err := k.setOperatorPrevConsKeyForChainId(ctx, opAccAddr, chainId, prevKey); err != nil {
+			if err := k.setOperatorPrevConsKeyForChainID(ctx, opAccAddr, chainID, prevKey); err != nil {
 				// this should not happen
 				panic(err)
 			}
 		}
 	}
-	// 	k.setOperatorConsKeyForChainId(ctx, opAccAddr, chainId, bz)
+	// 	k.setOperatorConsKeyForChainID(ctx, opAccAddr, chainID, bz)
 	// 	return nil
 	// }
 
-	// // setOperatorConsKeyForChainId is the internal private version. It performs
+	// // setOperatorConsKeyForChainID is the internal private version. It performs
 	// // no error checking of the input.
-	// func (k Keeper) setOperatorConsKeyForChainId(
+	// func (k Keeper) setOperatorConsKeyForChainID(
 	// 	ctx sdk.Context,
 	// 	opAccAddr sdk.AccAddress,
-	// 	chainId string,
+	// 	chainID string,
 	// 	bz []byte,
 	// ) {
 	store := ctx.KVStore(k.storeKey)
@@ -117,12 +118,12 @@ func (k *Keeper) SetOperatorConsKeyForChainId(
 	// since it is sorted by operator address, it helps for faster indexing by operator
 	// for example, when an operator is delegated to, we can find all impacted
 	// chain ids and their respective consensus keys
-	store.Set(types.KeyForOperatorAndChainIdToConsKey(opAccAddr, chainId), bz)
+	store.Set(types.KeyForOperatorAndChainIDToConsKey(opAccAddr, chainID), bz)
 	// reverse lookups
 	// 1. given chain id and operator address, find the consensus key,
 	// at initial onboarding of an app chain, it will allow us to find all
 	// operators that have opted in and their consensus keys
-	store.Set(types.KeyForChainIdAndOperatorToConsKey(chainId, opAccAddr), bz)
+	store.Set(types.KeyForChainIDAndOperatorToConsKey(chainID, opAccAddr), bz)
 	// 2. given a chain id and a consensus addr, find the operator address,
 	// the slashing module asks for an operator to be slashed by their consensus
 	// address, so this will allow us to find the operator address to slash.
@@ -130,69 +131,69 @@ func (k *Keeper) SetOperatorConsKeyForChainId(
 	// prune it once the validator set update id matures (if key replacement).
 	// this pruning will be triggered by the app chain module and will not be
 	// recorded here.
-	store.Set(types.KeyForChainIdAndConsKeyToOperator(chainId, consAddr), opAccAddr.Bytes())
+	store.Set(types.KeyForChainIDAndConsKeyToOperator(chainID, consAddr), opAccAddr.Bytes())
 	if found {
 		if !alreadyRecorded {
-			k.Hooks().AfterOperatorKeyReplacement(ctx, opAccAddr, prevKey, consKey, chainId)
+			k.Hooks().AfterOperatorKeyReplacement(ctx, opAccAddr, prevKey, consKey, chainID)
 		}
 	} else {
-		k.Hooks().AfterOperatorOptIn(ctx, opAccAddr, chainId, consKey)
+		k.Hooks().AfterOperatorOptIn(ctx, opAccAddr, chainID, consKey)
 	}
 	return nil
 }
 
-// setOperatorPrevConsKeyForChainId sets the previous (consensus) public key for the given
+// setOperatorPrevConsKeyForChainID sets the previous (consensus) public key for the given
 // operator address and chain id. This is used to track the previous key when a key is replaced.
 // It is internal-only because such a key must only be set upon key replacement. So it does
 // not perform any meaningful error checking of the input.
-func (k *Keeper) setOperatorPrevConsKeyForChainId(
+func (k *Keeper) setOperatorPrevConsKeyForChainID(
 	ctx sdk.Context,
 	opAccAddr sdk.AccAddress,
-	chainId string,
+	chainID string,
 	prevKey tmprotocrypto.PublicKey,
 ) error {
 	bz, err := prevKey.Marshal()
 	if err != nil {
 		return errorsmod.Wrap(
 			err,
-			"SetOperatorPrevConsKeyForChainId: error occurred when marshal public key",
+			"SetOperatorPrevConsKeyForChainID: error occurred when marshal public key",
 		)
 	}
 	store := ctx.KVStore(k.storeKey)
-	store.Set(types.KeyForOperatorAndChainIdToPrevConsKey(opAccAddr, chainId), bz)
+	store.Set(types.KeyForOperatorAndChainIDToPrevConsKey(opAccAddr, chainID), bz)
 	return nil
 }
 
-// GetOperatorPrevConsKeyForChainId gets the previous (consensus) public key for the given
+// GetOperatorPrevConsKeyForChainID gets the previous (consensus) public key for the given
 // operator address and chain id. When such a key is returned, callers should set its vote power
 // to 0 in the validator update.
-func (k *Keeper) GetOperatorPrevConsKeyForChainId(
-	ctx sdk.Context, opAccAddr sdk.AccAddress, chainId string,
+func (k *Keeper) GetOperatorPrevConsKeyForChainID(
+	ctx sdk.Context, opAccAddr sdk.AccAddress, chainID string,
 ) (found bool, key tmprotocrypto.PublicKey, err error) {
 	// check if we are an operator
 	if !k.IsOperator(ctx, opAccAddr) {
 		err = delegationtypes.ErrOperatorNotExist
 		return
 	}
-	if !k.restakingStateKeeper.AppChainInfoIsExist(ctx, chainId) {
+	if !k.restakingStateKeeper.AppChainInfoIsExist(ctx, chainID) {
 		err = restakingtypes.ErrNoAppChainKey
 		return
 	}
 	// do not check for slashing here
-	found, key, err = k.getOperatorPrevConsKeyForChainId(ctx, opAccAddr, chainId)
+	found, key, err = k.getOperatorPrevConsKeyForChainID(ctx, opAccAddr, chainID)
 	return
 }
 
-// getOperatorPrevConsKeyForChainId is the internal version of
-// GetOperatorPrevConsKeyForChainId.
+// getOperatorPrevConsKeyForChainID is the internal version of
+// GetOperatorPrevConsKeyForChainID.
 // It performs no error checking of the input.
-func (k *Keeper) getOperatorPrevConsKeyForChainId(
+func (k *Keeper) getOperatorPrevConsKeyForChainID(
 	ctx sdk.Context,
 	opAccAddr sdk.AccAddress,
-	chainId string,
+	chainID string,
 ) (found bool, key tmprotocrypto.PublicKey, err error) {
 	store := ctx.KVStore(k.storeKey)
-	res := store.Get(types.KeyForOperatorAndChainIdToPrevConsKey(opAccAddr, chainId))
+	res := store.Get(types.KeyForOperatorAndChainIDToPrevConsKey(opAccAddr, chainID))
 	if res == nil {
 		return
 	}
@@ -203,37 +204,37 @@ func (k *Keeper) getOperatorPrevConsKeyForChainId(
 	return
 }
 
-// GetOperatorConsKeyForChainId gets the (consensus) public key for the given operator address
+// GetOperatorConsKeyForChainID gets the (consensus) public key for the given operator address
 // and chain id. This should be exposed via the query surface.
-func (k *Keeper) GetOperatorConsKeyForChainId(
+func (k *Keeper) GetOperatorConsKeyForChainID(
 	ctx sdk.Context,
 	opAccAddr sdk.AccAddress,
-	chainId string,
+	chainID string,
 ) (found bool, key tmprotocrypto.PublicKey, err error) {
 	// check if we are an operator
 	if !k.IsOperator(ctx, opAccAddr) {
 		err = delegationtypes.ErrOperatorNotExist
 		return
 	}
-	if !k.restakingStateKeeper.AppChainInfoIsExist(ctx, chainId) {
+	if !k.restakingStateKeeper.AppChainInfoIsExist(ctx, chainID) {
 		err = restakingtypes.ErrNoAppChainKey
 		return
 	}
 	// do not check for slashing, since this function will be used to update voting power even
 	// when slashed
-	found, key, err = k.getOperatorConsKeyForChainId(ctx, opAccAddr, chainId)
+	found, key, err = k.getOperatorConsKeyForChainID(ctx, opAccAddr, chainID)
 	return
 }
 
-// getOperatorConsKeyForChainId is the internal version of GetOperatorConsKeyForChainId. It
+// getOperatorConsKeyForChainID is the internal version of GetOperatorConsKeyForChainID. It
 // performs no error checking of the input.
-func (k *Keeper) getOperatorConsKeyForChainId(
+func (k *Keeper) getOperatorConsKeyForChainID(
 	ctx sdk.Context,
 	opAccAddr sdk.AccAddress,
-	chainId string,
+	chainID string,
 ) (found bool, key tmprotocrypto.PublicKey, err error) {
 	store := ctx.KVStore(k.storeKey)
-	res := store.Get(types.KeyForOperatorAndChainIdToConsKey(opAccAddr, chainId))
+	res := store.Get(types.KeyForOperatorAndChainIDToConsKey(opAccAddr, chainID))
 	if res == nil {
 		return
 	}
@@ -243,20 +244,20 @@ func (k *Keeper) getOperatorConsKeyForChainId(
 	return true, key, nil
 }
 
-// GetChainIdsAndKeysForOperator gets the chain ids for which the given operator address has set a
+// GetChainIDsAndKeysForOperator gets the chain ids for which the given operator address has set a
 // (consensus) public key. TODO: would it be better to make this a key per operator?
 // This is intentionally an array of strings because I don't see the utility for the vote power
 // or the public key here. If we need it, we can add it later.
-func (k *Keeper) GetChainIdsAndKeysForOperator(
+func (k *Keeper) GetChainIDsAndKeysForOperator(
 	ctx sdk.Context, opAccAddr sdk.AccAddress,
-) (chainIds []string, consKeys []tmprotocrypto.PublicKey) {
+) (chainIDs []string, consKeys []tmprotocrypto.PublicKey) {
 	// check if we are an operator
 	if !k.IsOperator(ctx, opAccAddr) {
 		return
 	}
 	// do not check for slashing here
 	prefix := types.AppendMany(
-		[]byte{types.BytePrefixForOperatorAndChainIdToConsKey},
+		[]byte{types.BytePrefixForOperatorAndChainIDToConsKey},
 		opAccAddr.Bytes(),
 	)
 	store := ctx.KVStore(k.storeKey)
@@ -266,32 +267,32 @@ func (k *Keeper) GetChainIdsAndKeysForOperator(
 	defer iterator.Close()
 	for ; iterator.Valid(); iterator.Next() {
 		// the key returned is the full key, with the prefix. drop the prefix and the length.
-		chainId := string(iterator.Key()[len(prefix)+8:])
+		chainID := string(iterator.Key()[len(prefix)+8:])
 		var key tmprotocrypto.PublicKey
 		if err := key.Unmarshal(iterator.Value()); err != nil {
 			// grave error because we are the ones who stored this information in the first
 			// place
 			panic(err)
 		}
-		chainIds = append(chainIds, chainId)
+		chainIDs = append(chainIDs, chainID)
 		consKeys = append(consKeys, key)
 	}
 	return
 }
 
-// GetOperatorsForChainId returns a list of {operatorAddr, pubKey} for the given
-// chainId. This is used to create or update the validator set. It skips
+// GetOperatorsForChainID returns a list of {operatorAddr, pubKey} for the given
+// chainID. This is used to create or update the validator set. It skips
 // jailed or frozen operators.
-func (k *Keeper) GetOperatorsForChainId(
-	ctx sdk.Context, chainId string,
+func (k *Keeper) GetOperatorsForChainID(
+	ctx sdk.Context, chainID string,
 ) (addrs []sdk.AccAddress, pubKeys []tmprotocrypto.PublicKey) {
-	if !k.restakingStateKeeper.AppChainInfoIsExist(ctx, chainId) {
-		return
+	if !k.restakingStateKeeper.AppChainInfoIsExist(ctx, chainID) {
+		return nil, nil
 	}
-	// prefix is the byte prefix and then chainId with length
-	prefix := types.ChainIdAndAddrKey(
-		types.BytePrefixForChainIdAndOperatorToConsKey,
-		chainId,
+	// prefix is the byte prefix and then chainID with length
+	prefix := types.ChainIDAndAddrKey(
+		types.BytePrefixForChainIDAndOperatorToConsKey,
+		chainID,
 		nil,
 	)
 	store := ctx.KVStore(k.storeKey)
@@ -300,8 +301,8 @@ func (k *Keeper) GetOperatorsForChainId(
 	)
 	defer iterator.Close()
 	for ; iterator.Valid(); iterator.Next() {
-		// this key is of the format prefix | len | chainId | addr
-		// and our prefix is of the format prefix | len | chainId
+		// this key is of the format prefix | len | chainID | addr
+		// and our prefix is of the format prefix | len | chainID
 		// so just drop it and convert to sdk.AccAddress
 		addr := iterator.Key()[len(prefix):]
 		res := iterator.Value()
@@ -312,33 +313,32 @@ func (k *Keeper) GetOperatorsForChainId(
 		}
 		addrs = append(addrs, addr)
 		pubKeys = append(pubKeys, ret)
-
 	}
-	return
+	return addrs, pubKeys
 }
 
-func (k *Keeper) GetOperatorAddressForChainIdAndConsAddr(
-	ctx sdk.Context, chainId string, consAddr sdk.ConsAddress,
+func (k *Keeper) GetOperatorAddressForChainIDAndConsAddr(
+	ctx sdk.Context, chainID string, consAddr sdk.ConsAddress,
 ) (found bool, addr sdk.AccAddress) {
 	store := ctx.KVStore(k.storeKey)
-	res := store.Get(types.KeyForChainIdAndConsKeyToOperator(chainId, consAddr))
+	res := store.Get(types.KeyForChainIDAndConsKeyToOperator(chainID, consAddr))
 	if res == nil {
 		return
 	}
 	found = true
 	addr = sdk.AccAddress(res)
-	return
+	return found, addr
 }
 
-// DeleteOperatorAddressForChainIdAndConsAddr is a pruning method used to delete the
+// DeleteOperatorAddressForChainIDAndConsAddr is a pruning method used to delete the
 // mapping from chain id and consensus address to operator address. This mapping is used
 // to obtain the operator address from its consensus public key, which is sent to the
 // coordinator chain by a subscriber chain for slashing.
-func (k *Keeper) DeleteOperatorAddressForChainIdAndConsAddr(
-	ctx sdk.Context, chainId string, consAddr sdk.ConsAddress,
+func (k *Keeper) DeleteOperatorAddressForChainIDAndConsAddr(
+	ctx sdk.Context, chainID string, consAddr sdk.ConsAddress,
 ) {
 	store := ctx.KVStore(k.storeKey)
-	store.Delete(types.KeyForChainIdAndConsKeyToOperator(chainId, consAddr))
+	store.Delete(types.KeyForChainIDAndConsKeyToOperator(chainID, consAddr))
 }
 
 // SetHooks stores the given hooks implementations.
@@ -361,11 +361,11 @@ func (k *Keeper) Hooks() types.OperatorConsentHooks {
 	return k.hooks
 }
 
-// InitiateOperatorOptOutFromChainId initiates an operator opting out from the given chain id.
+// InitiateOperatorOptOutFromChainID initiates an operator opting out from the given chain id.
 // It validates whether the operator is registered, and that it is not frozen, and that the
 // chain is present within the system. It also checks if the operator is already opting out.
-func (k *Keeper) InitiateOperatorOptOutFromChainId(
-	ctx sdk.Context, opAccAddr sdk.AccAddress, chainId string,
+func (k *Keeper) InitiateOperatorOptOutFromChainID(
+	ctx sdk.Context, opAccAddr sdk.AccAddress, chainID string,
 ) error {
 	// check if we are an operator
 	if !k.IsOperator(ctx, opAccAddr) {
@@ -376,52 +376,50 @@ func (k *Keeper) InitiateOperatorOptOutFromChainId(
 		return delegationtypes.ErrOperatorIsFrozen
 	}
 	// check if the chain id is valid
-	if !k.restakingStateKeeper.AppChainInfoIsExist(ctx, chainId) {
+	if !k.restakingStateKeeper.AppChainInfoIsExist(ctx, chainID) {
 		return restakingtypes.ErrNoAppChainKey
 	}
-	found, key, err := k.getOperatorConsKeyForChainId(ctx, opAccAddr, chainId)
+	found, key, err := k.getOperatorConsKeyForChainID(ctx, opAccAddr, chainID)
 	if err != nil {
 		return err
 	}
 	if !found {
 		return types.ErrNotOptedIn
 	}
-	isAlreadyOptingOut := k.IsOperatorOptingOutFromChainId(ctx, opAccAddr, chainId)
+	isAlreadyOptingOut := k.IsOperatorOptingOutFromChainID(ctx, opAccAddr, chainID)
 	if isAlreadyOptingOut {
 		return types.ErrAlreadyOptingOut
 	}
 	store := ctx.KVStore(k.storeKey)
-	store.Set(types.KeyForOperatorOptOutFromChainId(opAccAddr, chainId), []byte{})
-	k.Hooks().AfterOperatorOptOutInitiated(ctx, opAccAddr, chainId, key)
+	store.Set(types.KeyForOperatorOptOutFromChainID(opAccAddr, chainID), []byte{})
+	k.Hooks().AfterOperatorOptOutInitiated(ctx, opAccAddr, chainID, key)
 	return nil
 }
 
-// IsOperatorOptingOutFromChainId returns true if the operator is opting out from the given
+// IsOperatorOptingOutFromChainID returns true if the operator is opting out from the given
 // chain id.
-func (k *Keeper) IsOperatorOptingOutFromChainId(
-	ctx sdk.Context, opAccAddr sdk.AccAddress, chainId string,
+func (k *Keeper) IsOperatorOptingOutFromChainID(
+	ctx sdk.Context, opAccAddr sdk.AccAddress, chainID string,
 ) bool {
 	store := ctx.KVStore(k.storeKey)
-	bz := store.Get(types.KeyForOperatorOptOutFromChainId(opAccAddr, chainId))
+	bz := store.Get(types.KeyForOperatorOptOutFromChainID(opAccAddr, chainID))
 	return bz != nil
 }
 
-// CompleteOperatorOptOutFromChainId completes the operator opting out from the given chain id.
+// CompleteOperatorOptOutFromChainID completes the operator opting out from the given chain id.
 // TODO(mm): would it be better to store as 3 states? (opted in, opting out, opted out)
-func (k *Keeper) CompleteOperatorOptOutFromChainId(
-	ctx sdk.Context, opAccAddr sdk.AccAddress, chainId string,
+func (k *Keeper) CompleteOperatorOptOutFromChainID(
+	ctx sdk.Context, opAccAddr sdk.AccAddress, chainID string,
 ) {
-	if !k.IsOperatorOptingOutFromChainId(ctx, opAccAddr, chainId) {
+	if !k.IsOperatorOptingOutFromChainID(ctx, opAccAddr, chainID) {
 		panic("operator is not opting out")
 	}
 	store := ctx.KVStore(k.storeKey)
-	store.Delete(types.KeyForOperatorOptOutFromChainId(opAccAddr, chainId))
+	store.Delete(types.KeyForOperatorOptOutFromChainID(opAccAddr, chainID))
 }
 
-// IsOperatorJailedForChainId add for dogfood
-func (k *Keeper) IsOperatorJailedForChainId(sdk.Context, sdk.AccAddress, string) bool {
+// IsOperatorJailedForChainID add for dogfood
+func (k *Keeper) IsOperatorJailedForChainID(sdk.Context, sdk.AccAddress, string) bool {
 	return false
 }
-func (k *Keeper) Jail(sdk.Context, sdk.ConsAddress, string) {
-	return
-}
+func (k *Keeper) Jail(sdk.Context, sdk.ConsAddress, string) {}

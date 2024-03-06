@@ -1,9 +1,10 @@
 package delegation_test
 
 import (
-	operatortypes "github.com/ExocoreNetwork/exocore/x/operator/types"
 	"math/big"
 	"strings"
+
+	operatortypes "github.com/ExocoreNetwork/exocore/x/operator/types"
 
 	sdkmath "cosmossdk.io/math"
 

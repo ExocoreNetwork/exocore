@@ -166,8 +166,6 @@ message UndelegationResponse {}
 // Msg defines the delegation Msg service.
 service Msg {
   option (cosmos.msg.v1.service) = true;
-  // RegisterOperator registers a new operator.
-  rpc RegisterOperator(RegisterOperatorReq) returns (RegisterOperatorResponse);
   // DelegateAssetToOperator delegates asset to operator.
   rpc DelegateAssetToOperator(MsgDelegation) returns (DelegationResponse);
   // UndelegateAssetFromOperator undelegates asset from operator.

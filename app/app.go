@@ -4,13 +4,14 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/ExocoreNetwork/exocore/x/operator"
-	operatorKeeper "github.com/ExocoreNetwork/exocore/x/operator/keeper"
 	"io"
 	"net/http"
 	"os"
 	"path/filepath"
 	"sort"
+
+	"github.com/ExocoreNetwork/exocore/x/operator"
+	operatorKeeper "github.com/ExocoreNetwork/exocore/x/operator/keeper"
 
 	exoslash "github.com/ExocoreNetwork/exocore/x/slash"
 

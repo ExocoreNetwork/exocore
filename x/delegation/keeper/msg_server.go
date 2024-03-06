@@ -10,10 +10,10 @@ import (
 var _ types.MsgServer = &Keeper{}
 
 // DelegateAssetToOperator todo: Delegation and Undelegation from exoCore chain directly will be implemented in future.At the moment,they are executed from client chain
-func (k *Keeper) DelegateAssetToOperator(ctx context.Context, delegation *types.MsgDelegation) (*types.DelegationResponse, error) {
+func (k *Keeper) DelegateAssetToOperator(_ context.Context, _ *types.MsgDelegation) (*types.DelegationResponse, error) {
 	return nil, errorsmod.Wrap(types.ErrNotSupportYet, "func:DelegateAssetToOperator")
 }
 
-func (k *Keeper) UndelegateAssetFromOperator(ctx context.Context, delegation *types.MsgUndelegation) (*types.UndelegationResponse, error) {
+func (k *Keeper) UndelegateAssetFromOperator(_ context.Context, _ *types.MsgUndelegation) (*types.UndelegationResponse, error) {
 	return nil, errorsmod.Wrap(types.ErrNotSupportYet, "func:UndelegateAssetFromOperator")
 }

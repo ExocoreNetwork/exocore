@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"context"
+
 	sdkmath "cosmossdk.io/math"
 	operatortypes "github.com/ExocoreNetwork/exocore/x/operator/types"
 	"github.com/ExocoreNetwork/exocore/x/restaking_assets_manage/keeper"
@@ -14,7 +15,7 @@ type Keeper struct {
 	storeKey storetypes.StoreKey
 	cdc      codec.BinaryCodec
 
-	//other keepers
+	// other keepers
 	restakingStateKeeper keeper.Keeper
 	delegationKeeper     operatortypes.ExpectDelegationInterface
 	oracleKeeper         operatortypes.ExpectOracleInterface
@@ -51,7 +52,7 @@ func (k *Keeper) OracleInterface() operatortypes.ExpectOracleInterface {
 	return k.oracleKeeper
 }
 
-func (k *Keeper) GetUnbondingExpirationBlockNumber(ctx sdk.Context, OperatorAddress sdk.AccAddress, startHeight uint64) uint64 {
+func (k *Keeper) GetUnbondingExpirationBlockNumber(_ sdk.Context, _ sdk.AccAddress, startHeight uint64) uint64 {
 	return startHeight + operatortypes.UnbondingExpiration
 }
 
@@ -70,5 +71,5 @@ type OperatorKeeper interface {
 
 	OptOut(ctx sdk.Context, OperatorAddress sdk.AccAddress, AVSAddr string) error
 
-	Slash(ctx sdk.Context, operatorAddress sdk.AccAddress, AVSAddr, slashContract, slashId string, occurredSateHeight int64, slashProportion sdkmath.LegacyDec) error
+	Slash(ctx sdk.Context, operatorAddress sdk.AccAddress, AVSAddr, slashContract, slashID string, occurredSateHeight int64, slashProportion sdkmath.LegacyDec) error
 }

@@ -1,13 +1,15 @@
 package types
 
 import (
+	"fmt"
+	"strings"
+
 	errorsmod "cosmossdk.io/errors"
 	"cosmossdk.io/math"
-	"fmt"
+
 	"github.com/cosmos/cosmos-sdk/store/rootmulti"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
-	"strings"
 
 	"github.com/ethereum/go-ethereum/common/hexutil"
 )
@@ -131,7 +133,7 @@ func ContextForHistoricalState(ctx sdk.Context, height int64) (sdk.Context, erro
 	cacheMS, err := cms.CacheMultiStoreWithVersion(height)
 	if err != nil {
 		return sdk.Context{},
-			sdkerrors.Wrapf(
+			errorsmod.Wrapf(
 				sdkerrors.ErrInvalidRequest,
 				"failed to load state at height %d; %s (latest height: %d)", height, err, lastBlockHeight,
 			)
@@ -146,7 +148,7 @@ func ContextForHistoricalState(ctx sdk.Context, height int64) (sdk.Context, erro
 		if ok {
 			cInfo, err := rms.GetCommitInfo(height)
 			if cInfo != nil && err == nil {
-				ctx = ctx.WithBlockTime(cInfo.Timestamp)
+				historicalStateCtx = historicalStateCtx.WithBlockTime(cInfo.Timestamp)
 			}
 		}
 	}

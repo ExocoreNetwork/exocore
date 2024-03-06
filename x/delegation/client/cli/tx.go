@@ -18,7 +18,7 @@ func NewTxCmd() *cobra.Command {
 	}
 
 	txCmd.AddCommand(
-	//add tx commands
+	// add tx commands
 	)
 	return txCmd
 }

@@ -44,7 +44,7 @@ func (suite *OperatorTestSuite) TestHistoricalOperatorInfo() {
 	err = suite.App.OperatorKeeper.SetOperatorInfo(suite.Ctx, suite.AccAddress.String(), &newInfo)
 	suite.NoError(err)
 
-	//get historical operator info
+	// get historical operator info
 	historicalQueryCtx, err := types.ContextForHistoricalState(suite.Ctx, height)
 	suite.NoError(err)
 	getInfo, err := suite.App.OperatorKeeper.GetOperatorInfo(historicalQueryCtx, &operatortype.GetOperatorInfoReq{

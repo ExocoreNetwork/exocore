@@ -17,7 +17,9 @@ func AddShareInMap(shareMap map[string]sdkmath.LegacyDec, key string, addValue s
 
 // CalculateShare assetUSDValue = (assetAmount*price*10^USDValueDefaultDecimal)/(10^(asset.decimal+priceDecimal))
 func CalculateShare(assetAmount sdkmath.Int, price sdkmath.Int, assetDecimal uint32, priceDecimal uint8) sdkmath.LegacyDec {
+	// #nosec G701
 	assetValue := assetAmount.Mul(price).Mul(sdkmath.NewIntWithDecimal(1, int(operatortypes.USDValueDefaultDecimal))).Quo(sdkmath.NewIntWithDecimal(1, int(assetDecimal)+int(priceDecimal)))
+	// #nosec G701
 	assetUSDValue := sdkmath.LegacyNewDecFromBigIntWithPrec(assetValue.BigInt(), int64(operatortypes.USDValueDefaultDecimal))
 	return assetUSDValue
 }

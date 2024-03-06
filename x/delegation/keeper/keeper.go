@@ -18,7 +18,7 @@ type Keeper struct {
 	storeKey storetypes.StoreKey
 	cdc      codec.BinaryCodec
 
-	//other keepers
+	// other keepers
 	restakingStateKeeper      keeper.Keeper
 	depositKeeper             depositkeeper.Keeper
 	slashKeeper               delegationtype.ISlashKeeper

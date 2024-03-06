@@ -1,8 +1,9 @@
 package withdraw_test
 
 import (
-	"github.com/ExocoreNetwork/exocore/testutil"
 	"testing"
+
+	"github.com/ExocoreNetwork/exocore/testutil"
 
 	"github.com/ExocoreNetwork/exocore/precompiles/withdraw"
 

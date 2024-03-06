@@ -9,8 +9,8 @@ var (
 	_ sdk.Msg = &RegisterOperatorReq{}
 
 	// add for dogfood
-	_ sdk.Msg = &OptInToChainIdRequest{}
-	_ sdk.Msg = &InitiateOptOutFromChainIdRequest{}
+	_ sdk.Msg = &OptInToChainIDRequest{}
+	_ sdk.Msg = &InitiateOptOutFromChainIDRequest{}
 )
 
 // GetSigners returns the expected signers for a MsgUpdateParams message.
@@ -32,24 +32,24 @@ func (m *RegisterOperatorReq) GetSignBytes() []byte {
 	return nil
 }
 
-func (m *OptInToChainIdRequest) GetSigners() []sdk.AccAddress {
+func (m *OptInToChainIDRequest) GetSigners() []sdk.AccAddress {
 	addr := sdk.MustAccAddressFromBech32(m.Address)
 	return []sdk.AccAddress{addr}
 }
 
-func (m *OptInToChainIdRequest) ValidateBasic() error {
+func (m *OptInToChainIDRequest) ValidateBasic() error {
 	if _, err := sdk.AccAddressFromBech32(m.Address); err != nil {
 		return errorsmod.Wrap(err, "invalid from address")
 	}
 	return nil
 }
 
-func (m *InitiateOptOutFromChainIdRequest) GetSigners() []sdk.AccAddress {
+func (m *InitiateOptOutFromChainIDRequest) GetSigners() []sdk.AccAddress {
 	addr := sdk.MustAccAddressFromBech32(m.Address)
 	return []sdk.AccAddress{addr}
 }
 
-func (m *InitiateOptOutFromChainIdRequest) ValidateBasic() error {
+func (m *InitiateOptOutFromChainIDRequest) ValidateBasic() error {
 	if _, err := sdk.AccAddressFromBech32(m.Address); err != nil {
 		return errorsmod.Wrap(err, "invalid from address")
 	}

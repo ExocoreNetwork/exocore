@@ -1,9 +1,10 @@
 package delegation_test
 
 import (
+	"testing"
+
 	"github.com/ExocoreNetwork/exocore/precompiles/delegation"
 	"github.com/ExocoreNetwork/exocore/testutil"
-	"testing"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"

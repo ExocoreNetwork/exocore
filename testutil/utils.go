@@ -2,6 +2,8 @@ package testutil
 
 import (
 	"encoding/json"
+	"time"
+
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/crypto/keyring"
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
@@ -9,7 +11,6 @@ import (
 	"github.com/evmos/evmos/v14/testutil"
 	"github.com/stretchr/testify/suite"
 	"golang.org/x/exp/rand"
-	"time"
 
 	testutiltx "github.com/ExocoreNetwork/exocore/testutil/tx"
 
@@ -50,7 +51,7 @@ type BaseTestSuite struct {
 	StateDB        *statedb.StateDB
 	QueryClientEVM evmtypes.QueryClient
 
-	//needed by test
+	// needed by test
 	/*	operatorAddr          sdk.AccAddress
 		avsAddr               string
 		assetID               string
@@ -187,7 +188,8 @@ func (suite *BaseTestSuite) DoSetupTest() {
 	// create AccAddress for test
 	pubBz := make([]byte, ed25519.PubKeySize)
 	pub := &ed25519.PubKey{Key: pubBz}
-	rand.Read(pub.Key)
+	_, err = rand.Read(pub.Key)
+	suite.Require().NoError(err)
 	suite.AccAddress = sdk.AccAddress(pub.Address())
 
 	// generate genesis account

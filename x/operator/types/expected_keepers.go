@@ -21,18 +21,18 @@ type PriceChange struct {
 	Decimal       uint8
 }
 type ExpectOracleInterface interface {
-	GetSpecifiedAssetsPrice(ctx sdk.Context, assetsId string) (sdkmath.Int, uint8, error)
+	GetSpecifiedAssetsPrice(ctx sdk.Context, assetsID string) (sdkmath.Int, uint8, error)
 	GetPriceChangeAssets(ctx sdk.Context) (map[string]*PriceChange, error)
 }
 
 type MockOracle struct{}
 
-func (MockOracle) GetSpecifiedAssetsPrice(ctx sdk.Context, assetsId string) (sdkmath.Int, uint8, error) {
+func (MockOracle) GetSpecifiedAssetsPrice(_ sdk.Context, _ string) (sdkmath.Int, uint8, error) {
 	return sdkmath.NewInt(1), 0, nil
 }
 
-func (MockOracle) GetPriceChangeAssets(ctx sdk.Context) (map[string]*PriceChange, error) {
-	//use USDT as the mock asset
+func (MockOracle) GetPriceChangeAssets(_ sdk.Context) (map[string]*PriceChange, error) {
+	// use USDT as the mock asset
 	ret := make(map[string]*PriceChange, 0)
 	usdtAssetID := "0xdac17f958d2ee523a2206206994597c13d831ec7_0x65"
 	ret[usdtAssetID] = &PriceChange{
@@ -45,15 +45,15 @@ func (MockOracle) GetPriceChangeAssets(ctx sdk.Context) (map[string]*PriceChange
 
 type MockAVS struct{}
 
-func (MockAVS) GetAvsSupportedAssets(ctx sdk.Context, avsAddr string) (map[string]interface{}, error) {
-	//set USDT as the default asset supported by AVS
+func (MockAVS) GetAvsSupportedAssets(_ sdk.Context, _ string) (map[string]interface{}, error) {
+	// set USDT as the default asset supported by AVS
 	ret := make(map[string]interface{})
 	usdtAssetID := "0xdac17f958d2ee523a2206206994597c13d831ec7_0x65"
 	ret[usdtAssetID] = nil
 	return ret, nil
 }
 
-func (MockAVS) GetAvsSlashContract(ctx sdk.Context, avsAddr string) (string, error) {
+func (MockAVS) GetAvsSlashContract(_ sdk.Context, _ string) (string, error) {
 	return "", nil
 }
 
@@ -69,7 +69,7 @@ type SlashKeeper interface {
 }
 
 type RedelegationKeeper interface {
-	AppChainInfoIsExist(ctx sdk.Context, chainId string) bool
+	AppChainInfoIsExist(ctx sdk.Context, chainID string) bool
 }
 
 type OperatorConsentHooks interface {
@@ -77,7 +77,7 @@ type OperatorConsentHooks interface {
 	AfterOperatorOptIn(
 		ctx sdk.Context,
 		addr sdk.AccAddress,
-		chainId string,
+		chainID string,
 		pubKey tmprotocrypto.PublicKey,
 	)
 	// This hook is called when an operator's consensus key is replaced for
@@ -87,13 +87,13 @@ type OperatorConsentHooks interface {
 		addr sdk.AccAddress,
 		oldKey tmprotocrypto.PublicKey,
 		newKey tmprotocrypto.PublicKey,
-		chainId string,
+		chainID string,
 	)
 	// This hook is called when an operator opts out of a chain.
 	AfterOperatorOptOutInitiated(
 		ctx sdk.Context,
 		addr sdk.AccAddress,
-		chainId string,
+		chainID string,
 		key tmprotocrypto.PublicKey,
 	)
 }

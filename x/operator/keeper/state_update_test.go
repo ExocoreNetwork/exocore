@@ -1,6 +1,8 @@
 package keeper_test
 
 import (
+	"strings"
+
 	sdkmath "cosmossdk.io/math"
 	delegationKeeper "github.com/ExocoreNetwork/exocore/x/delegation/keeper"
 	"github.com/ExocoreNetwork/exocore/x/deposit/keeper"
@@ -9,14 +11,13 @@ import (
 	restakingTypes "github.com/ExocoreNetwork/exocore/x/restaking_assets_manage/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/common"
-	"strings"
 )
 
 type StateForCheck struct {
 	OptedInfo        *operatorTypes.OptedInfo
 	AVSTotalShare    sdkmath.LegacyDec
 	AVSOperatorShare sdkmath.LegacyDec
-	AssetState       *operatorTypes.AssetOptedInState
+	AssetState       *operatorTypes.OptedInAssetState
 	OperatorShare    sdkmath.LegacyDec
 	StakerShare      sdkmath.LegacyDec
 }
@@ -37,7 +38,7 @@ func (suite *OperatorTestSuite) prepare() {
 	suite.updatedAmountForOptIn = sdkmath.NewInt(20)
 	suite.stakerID, suite.assetID = restakingTypes.GetStakeIDAndAssetID(suite.clientChainLzID, suite.Address[:], suite.assetAddr[:])
 
-	//staking assets
+	// staking assets
 	depositParam := &keeper.DepositParams{
 		ClientChainLzID: suite.clientChainLzID,
 		Action:          restakingTypes.Deposit,
@@ -48,7 +49,7 @@ func (suite *OperatorTestSuite) prepare() {
 	err = suite.App.DepositKeeper.Deposit(suite.Ctx, depositParam)
 	suite.NoError(err)
 
-	//register operator
+	// register operator
 	registerReq := &operatorTypes.RegisterOperatorReq{
 		FromAddress: suite.operatorAddr.String(),
 		Info: &operatorTypes.OperatorInfo{
@@ -58,7 +59,7 @@ func (suite *OperatorTestSuite) prepare() {
 	_, err = suite.App.OperatorKeeper.RegisterOperator(suite.Ctx, registerReq)
 	suite.NoError(err)
 
-	//delegate to operator
+	// delegate to operator
 	delegationParam := &delegationKeeper.DelegationOrUndelegationParams{
 		ClientChainLzID: suite.clientChainLzID,
 		Action:          restakingTypes.DelegateTo,
@@ -74,7 +75,7 @@ func (suite *OperatorTestSuite) prepare() {
 }
 
 func (suite *OperatorTestSuite) CheckState(expectedState *StateForCheck) {
-	//check opted info
+	// check opted info
 	optInfo, err := suite.App.OperatorKeeper.GetOptedInfo(suite.Ctx, suite.operatorAddr.String(), suite.avsAddr)
 	if expectedState.OptedInfo == nil {
 		suite.True(strings.Contains(err.Error(), operatorTypes.ErrNoKeyInTheStore.Error()))
@@ -82,7 +83,7 @@ func (suite *OperatorTestSuite) CheckState(expectedState *StateForCheck) {
 		suite.NoError(err)
 		suite.Equal(*expectedState.OptedInfo, *optInfo)
 	}
-	//check total USD value for AVS and operator
+	// check total USD value for AVS and operator
 	value, err := suite.App.OperatorKeeper.GetAVSShare(suite.Ctx, suite.avsAddr)
 	if expectedState.AVSTotalShare.IsNil() {
 		suite.True(strings.Contains(err.Error(), operatorTypes.ErrNoKeyInTheStore.Error()))
@@ -99,7 +100,7 @@ func (suite *OperatorTestSuite) CheckState(expectedState *StateForCheck) {
 		suite.Equal(expectedState.AVSOperatorShare, value)
 	}
 
-	//check assets state for AVS and operator
+	// check assets state for AVS and operator
 	assetState, err := suite.App.OperatorKeeper.GetAssetState(suite.Ctx, suite.assetID, suite.avsAddr, suite.operatorAddr.String())
 	if expectedState.AssetState == nil {
 		suite.True(strings.Contains(err.Error(), operatorTypes.ErrNoKeyInTheStore.Error()))
@@ -108,7 +109,7 @@ func (suite *OperatorTestSuite) CheckState(expectedState *StateForCheck) {
 		suite.Equal(*expectedState.AssetState, *assetState)
 	}
 
-	//check asset USD share for staker and operator
+	// check asset USD share for staker and operator
 	operatorShare, err := suite.App.OperatorKeeper.GetStakerShare(suite.Ctx, suite.avsAddr, "", suite.operatorAddr.String())
 	if expectedState.OperatorShare.IsNil() {
 		suite.True(strings.Contains(err.Error(), operatorTypes.ErrNoKeyInTheStore.Error()))
@@ -129,7 +130,7 @@ func (suite *OperatorTestSuite) TestOptIn() {
 	suite.prepare()
 	err := suite.App.OperatorKeeper.OptIn(suite.Ctx, suite.operatorAddr, suite.avsAddr)
 	suite.NoError(err)
-	//check if the related state is correct
+	// check if the related state is correct
 	price, decimal, err := suite.App.OperatorKeeper.OracleInterface().GetSpecifiedAssetsPrice(suite.Ctx, suite.assetID)
 	share := operatorKeeper.CalculateShare(suite.delegationAmount, price, suite.assetDecimal, decimal)
 	expectedState := &StateForCheck{
@@ -139,7 +140,7 @@ func (suite *OperatorTestSuite) TestOptIn() {
 		},
 		AVSTotalShare:    share,
 		AVSOperatorShare: share,
-		AssetState: &operatorTypes.AssetOptedInState{
+		AssetState: &operatorTypes.OptedInAssetState{
 			Amount: suite.delegationAmount,
 			Value:  share,
 		},
@@ -206,7 +207,7 @@ func (suite *OperatorTestSuite) TestUpdateOptedInAssetsState() {
 		},
 		AVSTotalShare:    newShare,
 		AVSOperatorShare: newShare,
-		AssetState: &operatorTypes.AssetOptedInState{
+		AssetState: &operatorTypes.OptedInAssetState{
 			Amount: suite.delegationAmount.Add(suite.updatedAmountForOptIn),
 			Value:  newShare,
 		},
@@ -228,5 +229,4 @@ func (suite *OperatorTestSuite) TestSlash() {
 		suite.NextBlock()
 	}
 	suite.Equal(runToHeight, suite.Ctx.BlockHeight())
-
 }

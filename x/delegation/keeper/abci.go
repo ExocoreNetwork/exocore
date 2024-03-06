@@ -20,7 +20,7 @@ func (k *Keeper) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.Valida
 	for _, record := range records {
 		// check if the operator has been slashed or frozen
 		operatorAccAddress := sdk.MustAccAddressFromBech32(record.OperatorAddr)
-		//todo: don't think about freezing the operator in current implementation
+		// todo: don't think about freezing the operator in current implementation
 		/*		if k.slashKeeper.IsOperatorFrozen(ctx, operatorAccAddress) {
 				// reSet the completed height if the operator is frozen
 				record.CompleteBlockNumber = k.expectedOperatorInterface.GetUnbondingExpirationBlockNumber(ctx, operatorAccAddress, record.BlockNumber)
@@ -37,6 +37,7 @@ func (k *Keeper) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.Valida
 		recordID := delegationtype.GetUndelegationRecordKey(record.LzTxNonce, record.TxHash, record.OperatorAddr)
 		if k.GetUndelegationHoldCount(ctx, recordID) > 0 {
 			// store it again with the next block and move on
+			// #nosec G701
 			record.CompleteBlockNumber = uint64(ctx.BlockHeight()) + 1
 			// we need to store two things here: one is the updated record in itself
 			recordKey, err := k.SetSingleUndelegationRecord(ctx, record)
@@ -44,7 +45,10 @@ func (k *Keeper) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.Valida
 				panic(err)
 			}
 			// and the other is the fact that it matures at the next block
-			k.StoreWaitCompleteRecord(ctx, recordKey, record)
+			err = k.StoreWaitCompleteRecord(ctx, recordKey, record)
+			if err != nil {
+				panic(err)
+			}
 			continue
 		}
 		// operator opt out: since operators can not immediately withdraw their funds, that is,
@@ -55,13 +59,13 @@ func (k *Keeper) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.Valida
 		// the operator is still active on. the same applies to delegators too.
 		// TODO(mike): ensure that operator is required to perform self delegation to match above.
 
-		//calculate the actual canUndelegated asset amount
+		// calculate the actual canUndelegated asset amount
 		delegationInfo, err := k.GetSingleDelegationInfo(ctx, record.StakerID, record.AssetID, record.OperatorAddr)
 		if err != nil {
 			panic(err)
 		}
-		if record.Amount.GT(delegationInfo.UndelegatableAmountAfterSlash) {
-			record.ActualCompletedAmount = delegationInfo.UndelegatableAmountAfterSlash
+		if record.Amount.GT(delegationInfo.CanBeUndelegatedAfterSlash) {
+			record.ActualCompletedAmount = delegationInfo.CanBeUndelegatedAfterSlash
 		} else {
 			record.ActualCompletedAmount = record.Amount
 		}
@@ -70,8 +74,8 @@ func (k *Keeper) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.Valida
 		// update delegation state
 		delegatorAndAmount := make(map[string]*delegationtype.DelegationAmounts)
 		delegatorAndAmount[record.OperatorAddr] = &delegationtype.DelegationAmounts{
-			WaitUndelegationAmount:        recordAmountNeg,
-			UndelegatableAmountAfterSlash: record.ActualCompletedAmount.Neg(),
+			WaitUndelegationAmount:     recordAmountNeg,
+			CanBeUndelegatedAfterSlash: record.ActualCompletedAmount.Neg(),
 		}
 		err = k.UpdateDelegationState(ctx, record.StakerID, record.AssetID, delegatorAndAmount)
 		if err != nil {

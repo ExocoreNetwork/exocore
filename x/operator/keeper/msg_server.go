@@ -3,6 +3,7 @@ package keeper
 import (
 	context "context"
 	"encoding/base64"
+
 	tmprotocrypto "github.com/cometbft/cometbft/proto/tendermint/crypto"
 
 	"github.com/ExocoreNetwork/exocore/x/operator/types"
@@ -20,11 +21,11 @@ func (k *Keeper) RegisterOperator(ctx context.Context, req *types.RegisterOperat
 	return nil, nil
 }
 
-// OptInToChainId add for dogfood
-func (k *Keeper) OptInToChainId(
+// OptInToChainID add for dogfood
+func (k *Keeper) OptInToChainID(
 	goCtx context.Context,
-	req *types.OptInToChainIdRequest,
-) (*types.OptInToChainIdResponse, error) {
+	req *types.OptInToChainIDRequest,
+) (*types.OptInToChainIDResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 	addr, err := sdk.AccAddressFromBech32(req.Address)
 	if err != nil {
@@ -34,30 +35,30 @@ func (k *Keeper) OptInToChainId(
 	if err != nil {
 		return nil, err
 	}
-	err = k.SetOperatorConsKeyForChainId(
+	err = k.SetOperatorConsKeyForChainID(
 		ctx, addr, req.ChainId, key,
 	)
 	if err != nil {
 		return nil, err
 	}
-	return &types.OptInToChainIdResponse{}, nil
+	return &types.OptInToChainIDResponse{}, nil
 }
 
-func (k *Keeper) InitiateOptOutFromChainId(
+func (k *Keeper) InitiateOptOutFromChainID(
 	goCtx context.Context,
-	req *types.InitiateOptOutFromChainIdRequest,
-) (*types.InitiateOptOutFromChainIdResponse, error) {
+	req *types.InitiateOptOutFromChainIDRequest,
+) (*types.InitiateOptOutFromChainIDResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 	addr, err := sdk.AccAddressFromBech32(req.Address)
 	if err != nil {
 		return nil, err
 	}
-	if err := k.InitiateOperatorOptOutFromChainId(
+	if err := k.InitiateOperatorOptOutFromChainID(
 		ctx, addr, req.ChainId,
 	); err != nil {
 		return nil, err
 	}
-	return &types.InitiateOptOutFromChainIdResponse{}, nil
+	return &types.InitiateOptOutFromChainIDResponse{}, nil
 }
 
 func stringToPubKey(pubKey string) (key tmprotocrypto.PublicKey, err error) {

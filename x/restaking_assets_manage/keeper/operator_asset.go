@@ -10,7 +10,7 @@ import (
 
 // This file provides all functions about operator assets state management.
 
-func (k Keeper) GetOperatorAssetInfos(ctx sdk.Context, operatorAddr sdk.Address, assetsFilter map[string]interface{}) (assetsInfo map[string]*restakingtype.OperatorSingleAssetOrChangeInfo, err error) {
+func (k Keeper) GetOperatorAssetInfos(ctx sdk.Context, operatorAddr sdk.Address, _ map[string]interface{}) (assetsInfo map[string]*restakingtype.OperatorSingleAssetOrChangeInfo, err error) {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), restakingtype.KeyPrefixOperatorAssetInfos)
 	// the key is the operator address in the bech32 format
 	key := []byte(operatorAddr.String())
@@ -51,7 +51,7 @@ func (k Keeper) GetOperatorSpecifiedAssetInfo(ctx sdk.Context, operatorAddr sdk.
 // The function will be called when there is delegation or undelegation related to the operator. In the future,it will also be called when the operator deposit their own assets.
 
 func (k Keeper) UpdateOperatorAssetState(ctx sdk.Context, operatorAddr sdk.Address, assetID string, changeAmount restakingtype.OperatorSingleAssetOrChangeInfo) (err error) {
-	//get the latest state,use the default initial state if the state hasn't been stored
+	// get the latest state,use the default initial state if the state hasn't been stored
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), restakingtype.KeyPrefixOperatorAssetInfos)
 	key := restakingtype.GetJoinedStoreKey(operatorAddr.String(), assetID)
 	assetState := restakingtype.OperatorSingleAssetOrChangeInfo{
@@ -59,7 +59,7 @@ func (k Keeper) UpdateOperatorAssetState(ctx sdk.Context, operatorAddr sdk.Addre
 		OperatorOwnAmountOrWantChangeValue:   math.NewInt(0),
 		WaitUnbondingAmountOrWantChangeValue: math.NewInt(0),
 		OperatorOwnWaitUnbondingAmount:       math.NewInt(0),
-		OperatorUnbondableAmountAfterSlash:   math.NewInt(0),
+		OperatorCanUnbondAfterSlash:          math.NewInt(0),
 	}
 	if store.Has(key) {
 		value := store.Get(key)
@@ -83,12 +83,12 @@ func (k Keeper) UpdateOperatorAssetState(ctx sdk.Context, operatorAddr sdk.Addre
 	if err != nil {
 		return errorsmod.Wrap(err, "UpdateOperatorAssetState OperatorOwnWaitUnbondingAmount error")
 	}
-	err = restakingtype.UpdateAssetValue(&assetState.OperatorUnbondableAmountAfterSlash, &changeAmount.OperatorUnbondableAmountAfterSlash)
+	err = restakingtype.UpdateAssetValue(&assetState.OperatorCanUnbondAfterSlash, &changeAmount.OperatorCanUnbondAfterSlash)
 	if err != nil {
 		return errorsmod.Wrap(err, "UpdateOperatorAssetState OperatorOwnWaitUnbondingAmount error")
 	}
 
-	//store the updated state
+	// store the updated state
 	bz := k.cdc.MustMarshal(&assetState)
 	store.Set(key, bz)
 	return nil

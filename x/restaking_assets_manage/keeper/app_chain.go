@@ -19,22 +19,22 @@ func (k Keeper) SetAppChainInfo(
 }
 
 // AppChainInfoIsExist returns whether the app chain info for the specified chainId exists
-func (k Keeper) AppChainInfoIsExist(ctx sdk.Context, chainId string) bool {
+func (k Keeper) AppChainInfoIsExist(ctx sdk.Context, chainID string) bool {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), restakingtype.KeyPrefixAppChainInfo)
-	return store.Has([]byte(chainId))
+	return store.Has([]byte(chainID))
 }
 
-// GetAppChainInfoByChainId gets the app chain info for the specified chainId, if it exists
-func (k Keeper) GetAppChainInfoByChainId(
+// GetAppChainInfoByChainID gets the app chain info for the specified chainId, if it exists
+func (k Keeper) GetAppChainInfoByChainID(
 	ctx sdk.Context,
-	chainId string,
+	chainID string,
 ) (info restakingtype.AppChainInfo, err error) {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), restakingtype.KeyPrefixAppChainInfo)
-	ifExist := store.Has([]byte(chainId))
+	ifExist := store.Has([]byte(chainID))
 	if !ifExist {
 		return restakingtype.AppChainInfo{}, restakingtype.ErrNoAppChainKey
 	}
-	value := store.Get([]byte(chainId))
+	value := store.Get([]byte(chainID))
 	ret := restakingtype.AppChainInfo{}
 	k.cdc.MustUnmarshal(value, &ret)
 	return ret, nil

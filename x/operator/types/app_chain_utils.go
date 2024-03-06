@@ -16,16 +16,17 @@ func AppendMany(byteses ...[]byte) (out []byte) {
 	return out
 }
 
-// ChainIdWithLenKey returns the key with the following format:
+// ChainIDWithLenKey returns the key with the following format:
 // bytePrefix | len(chainId) | chainId
 // This is similar to Solidity's ABI encoding.
-func ChainIdWithLenKey(chainId string) []byte {
-	chainIdL := len(chainId)
+func ChainIDWithLenKey(chainID string) []byte {
+	chainIDL := len(chainID)
 	return AppendMany(
-		// Append the chainId length
-		sdk.Uint64ToBigEndian(uint64(chainIdL)),
-		// Append the chainId
-		[]byte(chainId),
+		// Append the chainID length
+		// #nosec G701
+		sdk.Uint64ToBigEndian(uint64(chainIDL)),
+		// Append the chainID
+		[]byte(chainID),
 	)
 }
 

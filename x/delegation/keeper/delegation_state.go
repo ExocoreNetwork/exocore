@@ -45,10 +45,10 @@ func (k *Keeper) GetStakerDelegationTotalAmount(ctx sdk.Context, stakerID string
 	isExit := store.Has(prefixKey)
 	if !isExit {
 		return sdkmath.Int{}, errorsmod.Wrap(delegationtype.ErrNoKeyInTheStore, fmt.Sprintf("GetStakerDelegationTotalAmount: key is %s", prefixKey))
-	} else {
-		value := store.Get(prefixKey)
-		k.cdc.MustUnmarshal(value, &ret)
 	}
+	value := store.Get(prefixKey)
+	k.cdc.MustUnmarshal(value, &ret)
+
 	return ret.Amount, nil
 }
 
@@ -56,25 +56,25 @@ func (k *Keeper) GetStakerDelegationTotalAmount(ctx sdk.Context, stakerID string
 // Compared to `UpdateStakerDelegationTotalAmount`,they use the same kv store, but in this function the store key needs to add the operator address as a suffix.
 func (k *Keeper) UpdateDelegationState(ctx sdk.Context, stakerID string, assetID string, delegationAmounts map[string]*delegationtype.DelegationAmounts) (err error) {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), delegationtype.KeyPrefixRestakerDelegationInfo)
-	//todo: think about the difference between init and update in future
+	// todo: think about the difference between init and update in future
 
 	for opAddr, amounts := range delegationAmounts {
 		if amounts == nil {
 			continue
 		}
-		if amounts.CanUndelegationAmount.IsNil() && amounts.WaitUndelegationAmount.IsNil() {
+		if amounts.CanBeUndelegatedAmount.IsNil() && amounts.WaitUndelegationAmount.IsNil() {
 			continue
 		}
-		//check operator address validation
+		// check operator address validation
 		_, err := sdk.AccAddressFromBech32(opAddr)
 		if err != nil {
 			return delegationtype.OperatorAddrIsNotAccAddr
 		}
 		singleStateKey := stakingtypes.GetJoinedStoreKey(stakerID, assetID, opAddr)
 		delegationState := delegationtype.DelegationAmounts{
-			CanUndelegationAmount:         sdkmath.NewInt(0),
-			WaitUndelegationAmount:        sdkmath.NewInt(0),
-			UndelegatableAmountAfterSlash: sdkmath.NewInt(0),
+			CanBeUndelegatedAmount:     sdkmath.NewInt(0),
+			WaitUndelegationAmount:     sdkmath.NewInt(0),
+			CanBeUndelegatedAfterSlash: sdkmath.NewInt(0),
 		}
 
 		if store.Has(singleStateKey) {
@@ -82,9 +82,9 @@ func (k *Keeper) UpdateDelegationState(ctx sdk.Context, stakerID string, assetID
 			k.cdc.MustUnmarshal(value, &delegationState)
 		}
 
-		err = stakingtypes.UpdateAssetValue(&delegationState.CanUndelegationAmount, &amounts.CanUndelegationAmount)
+		err = stakingtypes.UpdateAssetValue(&delegationState.CanBeUndelegatedAmount, &amounts.CanBeUndelegatedAmount)
 		if err != nil {
-			return errorsmod.Wrap(err, "UpdateDelegationState CanUndelegationAmount error")
+			return errorsmod.Wrap(err, "UpdateDelegationState CanBeUndelegatedAmount error")
 		}
 
 		err = stakingtypes.UpdateAssetValue(&delegationState.WaitUndelegationAmount, &amounts.WaitUndelegationAmount)
@@ -92,12 +92,12 @@ func (k *Keeper) UpdateDelegationState(ctx sdk.Context, stakerID string, assetID
 			return errorsmod.Wrap(err, "UpdateDelegationState WaitUndelegationAmount error")
 		}
 
-		err = stakingtypes.UpdateAssetValue(&delegationState.UndelegatableAmountAfterSlash, &amounts.UndelegatableAmountAfterSlash)
+		err = stakingtypes.UpdateAssetValue(&delegationState.CanBeUndelegatedAfterSlash, &amounts.CanBeUndelegatedAfterSlash)
 		if err != nil {
 			return errorsmod.Wrap(err, "UpdateDelegationState CanUsedToUndelegateAmount error")
 		}
 
-		//save single operator delegation state
+		// save single operator delegation state
 		bz := k.cdc.MustMarshal(&delegationState)
 		store.Set(singleStateKey, bz)
 	}

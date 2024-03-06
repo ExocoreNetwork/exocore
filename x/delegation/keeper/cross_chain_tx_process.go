@@ -20,7 +20,7 @@ type DelegationOrUndelegationParams struct {
 	OpAmount        sdkmath.Int
 	LzNonce         uint64
 	TxHash          common.Hash
-	//todo: The operator approved signature might be needed here in future
+	// todo: The operator approved signature might be needed here in future
 }
 
 // The event hook process has been deprecated, now we use precompile contract to trigger the calls.
@@ -120,16 +120,16 @@ func (k *Keeper) DelegateTo(ctx sdk.Context, params *DelegationOrUndelegationPar
 		return delegationtype.ErrOperatorIsFrozen
 	}
 
-	//todo: The operator approved signature might be needed here in future
+	// todo: The operator approved signature might be needed here in future
 
-	//update the related states
+	// update the related states
 	if params.OpAmount.IsNegative() {
 		return delegationtype.ErrOpAmountIsNegative
 	}
 
 	stakerID, assetID := types.GetStakeIDAndAssetID(params.ClientChainLzID, params.StakerAddress, params.AssetsAddress)
 
-	//check if the staker asset has been deposited and the canWithdraw amount is bigger than the delegation amount
+	// check if the staker asset has been deposited and the canWithdraw amount is bigger than the delegation amount
 	info, err := k.restakingStateKeeper.GetStakerSpecifiedAssetInfo(ctx, stakerID, assetID)
 	if err != nil {
 		return err
@@ -139,7 +139,7 @@ func (k *Keeper) DelegateTo(ctx sdk.Context, params *DelegationOrUndelegationPar
 		return errorsmod.Wrap(delegationtype.ErrDelegationAmountTooBig, fmt.Sprintf("the opAmount is:%s the canWithdraw amount is:%s", params.OpAmount, info.CanWithdrawAmountOrWantChangeValue))
 	}
 
-	//update staker asset state
+	// update staker asset state
 	err = k.restakingStateKeeper.UpdateStakerAssetState(ctx, stakerID, assetID, types.StakerSingleAssetOrChangeInfo{
 		CanWithdrawAmountOrWantChangeValue: params.OpAmount.Neg(),
 	})
@@ -156,7 +156,7 @@ func (k *Keeper) DelegateTo(ctx sdk.Context, params *DelegationOrUndelegationPar
 
 	delegatorAndAmount := make(map[string]*delegationtype.DelegationAmounts)
 	delegatorAndAmount[params.OperatorAddress.String()] = &delegationtype.DelegationAmounts{
-		CanUndelegationAmount: params.OpAmount,
+		CanBeUndelegatedAmount: params.OpAmount,
 	}
 	err = k.UpdateDelegationState(ctx, stakerID, assetID, delegatorAndAmount)
 	if err != nil {
@@ -194,11 +194,11 @@ func (k *Keeper) UndelegateFrom(ctx sdk.Context, params *DelegationOrUndelegatio
 	if err != nil {
 		return err
 	}
-	if params.OpAmount.GT(delegationState.CanUndelegationAmount) {
-		return errorsmod.Wrap(delegationtype.ErrUndelegationAmountTooBig, fmt.Sprintf("UndelegationAmount:%s,CanUndelegationAmount:%s", params.OpAmount, delegationState.CanUndelegationAmount))
+	if params.OpAmount.GT(delegationState.CanBeUndelegatedAmount) {
+		return errorsmod.Wrap(delegationtype.ErrUndelegationAmountTooBig, fmt.Sprintf("UndelegationAmount:%s,CanBeUndelegatedAmount:%s", params.OpAmount, delegationState.CanBeUndelegatedAmount))
 	}
 
-	//record Undelegation event
+	// record Undelegation event
 	r := &delegationtype.UndelegationRecord{
 		StakerID:              stakerID,
 		AssetID:               assetID,
@@ -216,12 +216,12 @@ func (k *Keeper) UndelegateFrom(ctx sdk.Context, params *DelegationOrUndelegatio
 		return err
 	}
 
-	//update delegation state
+	// update delegation state
 	delegatorAndAmount := make(map[string]*delegationtype.DelegationAmounts)
 	delegatorAndAmount[params.OperatorAddress.String()] = &delegationtype.DelegationAmounts{
-		CanUndelegationAmount:         params.OpAmount.Neg(),
-		WaitUndelegationAmount:        params.OpAmount,
-		UndelegatableAmountAfterSlash: params.OpAmount,
+		CanBeUndelegatedAmount:     params.OpAmount.Neg(),
+		WaitUndelegationAmount:     params.OpAmount,
+		CanBeUndelegatedAfterSlash: params.OpAmount,
 	}
 	err = k.UpdateDelegationState(ctx, stakerID, assetID, delegatorAndAmount)
 	if err != nil {
@@ -232,7 +232,7 @@ func (k *Keeper) UndelegateFrom(ctx sdk.Context, params *DelegationOrUndelegatio
 		return err
 	}
 
-	//update staker and operator assets state
+	// update staker and operator assets state
 	err = k.restakingStateKeeper.UpdateStakerAssetState(ctx, stakerID, assetID, types.StakerSingleAssetOrChangeInfo{
 		WaitUnbondingAmountOrWantChangeValue: params.OpAmount,
 	})

@@ -8,6 +8,17 @@ import "gogoproto/gogo.proto";
 
 option go_package = "github.com/ExocoreNetwork/exocore/x/restaking_assets_manage/types";
 
+// ValueField is a field that holds a value of sdk.Int type.
+message ValueField {
+  // amount is the amount of the asset, as an sdk.Int.
+  string amount = 1
+  [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.nullable) = false
+  ];
+}
+
 // ClientChainInfo defines the client chain information.
 message ClientChainInfo {
   // name of the client chain, like "Ethereum".
@@ -27,6 +38,20 @@ message ClientChainInfo {
   string signature_type = 7;
   // client_chain_addr is the length of addresses on the client chain.
   uint32 address_length = 8;
+}
+
+// AppChainInfo is used to store information related to the subscriber app chains we validate.
+// The information stored within this module consists only of the chain's identifiers.
+// The validation-related information is stored in the coordinator module.
+message AppChainInfo {
+  // name of the chain, for example "ethereum"
+  string name = 1;
+  // meta_info is at Exocore's discretion to deter,ome
+  string meta_info = 2;
+  // chain_id is used as the primary key
+  string chain_id = 3;
+  // exo_core_chain_index is the index of the chain in exocore, so far unused
+  uint64 exo_core_chain_index = 4;
 }
 
 // AssetInfo defines the information for an asset to be used in staking.
@@ -88,9 +113,9 @@ message StakerSingleAssetOrChangeInfo {
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
     (gogoproto.nullable) = false
   ];
-  // wait_undelegation_amount_or_want_change_value is the amount that is waiting for undelegation
+  // wait_unbonding_amount_or_want_change_value is the amount that is waiting for undelegation
   // or the amount by which it can change.
-  string wait_undelegation_amount_or_want_change_value = 3
+  string wait_unbonding_amount_or_want_change_value = 3
   [
     (cosmos_proto.scalar) = "cosmos.Int",
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
@@ -116,6 +141,7 @@ message OperatorSingleAssetOrChangeInfo {
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
     (gogoproto.nullable) = false
   ];
+
   // operator_own_amount_or_want_change_value is the amount that the operator owns
   // or the amount by which it can change.
   //todo: the field is used to mark operator's own assets and is not temporarily used now
@@ -125,9 +151,27 @@ message OperatorSingleAssetOrChangeInfo {
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
     (gogoproto.nullable) = false
   ];
-  // wait_undelegation_amount_or_want_change_value is the amount that is waiting for undelegation
+  // wait_unbonding_amount_or_want_change_value is the amount that is waiting for unbonding
   // or the amount by which it can change.
-  string wait_undelegation_amount_or_want_change_value = 3
+  string wait_unbonding_amount_or_want_change_value = 3
+  [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.nullable) = false
+  ];
+
+  // operator_own_wait_unbonding_amount is the amount that is owned by operator itself and waiting for unbonding
+  // or the amount by which it can change
+  string operator_own_wait_unbonding_amount = 4
+  [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.nullable) = false
+  ];
+
+  // operator_can_unbond_after_slash is the amount that is owned by operator itself and can be unbonded after slash
+  // or the amount by which it can change
+  string operator_can_unbond_after_slash = 5
   [
     (cosmos_proto.scalar) = "cosmos.Int",
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
