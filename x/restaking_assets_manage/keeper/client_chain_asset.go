@@ -37,14 +37,14 @@ func (k Keeper) UpdateStakingAssetTotalAmount(ctx sdk.Context, assetID string, c
 	return nil
 }
 
-// SetStakingAssetInfo todo: Temporarily use clientChainAssetAddr+'_'+layerZeroChainId as the key.
+// SetStakingAssetInfo todo: Temporarily use clientChainAssetAddr+'_'+LayerZeroChainID as the key.
 // It provides a function to register the client chain assets supported by exoCore.It's called by genesis configuration now,however it will be called by the governance in the future
 func (k Keeper) SetStakingAssetInfo(ctx sdk.Context, info *restakingtype.StakingAssetInfo) (err error) {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), restakingtype.KeyPrefixReStakingAssetInfo)
 	// key := common.HexToAddress(incentive.Contract)
 	bz := k.cdc.MustMarshal(info)
 
-	_, assetID := restakingtype.GetStakeIDAndAssetIDFromStr(info.AssetBasicInfo.LayerZeroChainId, "", info.AssetBasicInfo.Address)
+	_, assetID := restakingtype.GetStakeIDAndAssetIDFromStr(info.AssetBasicInfo.LayerZeroChainID, "", info.AssetBasicInfo.Address)
 	store.Set([]byte(assetID), bz)
 	return nil
 }
@@ -77,7 +77,7 @@ func (k Keeper) GetAllStakingAssetsInfo(ctx sdk.Context) (allAssets map[string]*
 	for ; iterator.Valid(); iterator.Next() {
 		var assetInfo restakingtype.StakingAssetInfo
 		k.cdc.MustUnmarshal(iterator.Value(), &assetInfo)
-		_, assetID := restakingtype.GetStakeIDAndAssetIDFromStr(assetInfo.AssetBasicInfo.LayerZeroChainId, "", assetInfo.AssetBasicInfo.Address)
+		_, assetID := restakingtype.GetStakeIDAndAssetIDFromStr(assetInfo.AssetBasicInfo.LayerZeroChainID, "", assetInfo.AssetBasicInfo.Address)
 		ret[assetID] = &assetInfo
 	}
 	return ret, nil
