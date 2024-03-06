@@ -34,8 +34,8 @@ func (k *Keeper) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.Valida
 				continue
 			}*/
 
-		recordId := delegationtype.GetUndelegationRecordKey(record.LzTxNonce, record.TxHash, record.OperatorAddr)
-		if k.GetUndelegationHoldCount(ctx, recordId) > 0 {
+		recordID := delegationtype.GetUndelegationRecordKey(record.LzTxNonce, record.TxHash, record.OperatorAddr)
+		if k.GetUndelegationHoldCount(ctx, recordID) > 0 {
 			// store it again with the next block and move on
 			record.CompleteBlockNumber = uint64(ctx.BlockHeight()) + 1
 			// we need to store two things here: one is the updated record in itself
