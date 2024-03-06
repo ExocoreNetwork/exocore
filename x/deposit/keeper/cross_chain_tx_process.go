@@ -128,7 +128,7 @@ func (k Keeper) Deposit(ctx sdk.Context, params *DepositParams) error {
 	if params.OpAmount.IsNegative() {
 		return errorsmod.Wrap(despoittypes.ErrDepositAmountIsNegative, fmt.Sprintf("the amount is:%s", params.OpAmount))
 	}
-	stakeId, assetID := types.GetStakeIDAndAssetID(params.ClientChainLzID, params.StakerAddress, params.AssetsAddress)
+	stakeID, assetID := types.GetStakeIDAndAssetID(params.ClientChainLzID, params.StakerAddress, params.AssetsAddress)
 	// check if asset exist
 	if !k.restakingStateKeeper.IsStakingAsset(ctx, assetID) {
 		return errorsmod.Wrap(despoittypes.ErrDepositAssetNotExist, fmt.Sprintf("the assetID is:%s", assetID))
@@ -138,7 +138,7 @@ func (k Keeper) Deposit(ctx sdk.Context, params *DepositParams) error {
 		CanWithdrawAmountOrWantChangeValue:  params.OpAmount,
 	}
 	// update asset state of the specified staker
-	err := k.restakingStateKeeper.UpdateStakerAssetState(ctx, stakeId, assetID, changeAmount)
+	err := k.restakingStateKeeper.UpdateStakerAssetState(ctx, stakeID, assetID, changeAmount)
 	if err != nil {
 		return err
 	}

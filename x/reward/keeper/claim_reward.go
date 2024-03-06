@@ -83,9 +83,9 @@ func getRewardParamsFromEventLog(log *ethtypes.Log) (*RewardParams, error) {
 	}, nil
 }
 
-func getStakeIDAndAssetID(params *RewardParams) (stakeId string, assetID string) {
+func getStakeIDAndAssetID(params *RewardParams) (stakeID string, assetID string) {
 	clientChainLzIDStr := hexutil.EncodeUint64(params.ClientChainLzID)
-	stakeId = strings.Join([]string{hexutil.Encode(params.WithdrawRewardAddress[:]), clientChainLzIDStr}, "_")
+	stakeID = strings.Join([]string{hexutil.Encode(params.WithdrawRewardAddress[:]), clientChainLzIDStr}, "_")
 	assetID = strings.Join([]string{hexutil.Encode(params.AssetsAddress[:]), clientChainLzIDStr}, "_")
 	return
 }
@@ -129,7 +129,7 @@ func (k Keeper) RewardForWithdraw(ctx sdk.Context, event *RewardParams) error {
 	if event.OpAmount.IsNegative() {
 		return errorsmod.Wrap(rtypes.ErrRewardAmountIsNegative, fmt.Sprintf("the amount is:%s", event.OpAmount))
 	}
-	stakeId, assetID := getStakeIDAndAssetID(event)
+	stakeID, assetID := getStakeIDAndAssetID(event)
 	// check is asset exist
 	if !k.restakingStateKeeper.IsStakingAsset(ctx, assetID) {
 		return errorsmod.Wrap(rtypes.ErrRewardAssetNotExist, fmt.Sprintf("the assetID is:%s", assetID))
@@ -140,7 +140,7 @@ func (k Keeper) RewardForWithdraw(ctx sdk.Context, event *RewardParams) error {
 		TotalDepositAmountOrWantChangeValue: event.OpAmount,
 		CanWithdrawAmountOrWantChangeValue:  event.OpAmount,
 	}
-	err := k.restakingStateKeeper.UpdateStakerAssetState(ctx, stakeId, assetID, changeAmount)
+	err := k.restakingStateKeeper.UpdateStakerAssetState(ctx, stakeID, assetID, changeAmount)
 	if err != nil {
 		return err
 	}

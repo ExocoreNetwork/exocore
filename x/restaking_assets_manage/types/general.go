@@ -42,10 +42,10 @@ const (
 )
 
 // GetStakeIDAndAssetID stakerID = stakerAddress+'_'+clientChainLzID,assetID = assetAddress+'_'+clientChainLzID
-func GetStakeIDAndAssetID(clientChainLzID uint64, stakerAddress []byte, assetsAddress []byte) (stakeId string, assetID string) {
+func GetStakeIDAndAssetID(clientChainLzID uint64, stakerAddress []byte, assetsAddress []byte) (stakeID string, assetID string) {
 	clientChainLzIDStr := hexutil.EncodeUint64(clientChainLzID)
 	if stakerAddress != nil {
-		stakeId = strings.Join([]string{hexutil.Encode(stakerAddress), clientChainLzIDStr}, "_")
+		stakeID = strings.Join([]string{hexutil.Encode(stakerAddress), clientChainLzIDStr}, "_")
 	}
 
 	if assetsAddress != nil {
@@ -55,10 +55,10 @@ func GetStakeIDAndAssetID(clientChainLzID uint64, stakerAddress []byte, assetsAd
 }
 
 // GetStakeIDAndAssetIDFromStr stakerID = stakerAddress+'_'+clientChainLzID,assetID = assetAddress+'_'+clientChainLzID
-func GetStakeIDAndAssetIDFromStr(clientChainLzID uint64, stakerAddress string, assetsAddress string) (stakeId string, assetID string) {
+func GetStakeIDAndAssetIDFromStr(clientChainLzID uint64, stakerAddress string, assetsAddress string) (stakeID string, assetID string) {
 	clientChainLzIDStr := hexutil.EncodeUint64(clientChainLzID)
 	if stakerAddress != "" {
-		stakeId = strings.Join([]string{strings.ToLower(stakerAddress), clientChainLzIDStr}, "_")
+		stakeID = strings.Join([]string{strings.ToLower(stakerAddress), clientChainLzIDStr}, "_")
 	}
 
 	if assetsAddress != "" {

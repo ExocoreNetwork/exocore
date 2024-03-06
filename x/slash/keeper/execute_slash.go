@@ -109,9 +109,9 @@ func (k Keeper) getParamsFromEventLog(ctx sdk.Context, log *ethtypes.Log) (*Slas
 	}, nil
 }
 
-func getStakeIDAndAssetID(params *SlashParams) (stakeId string, assetID string) {
+func getStakeIDAndAssetID(params *SlashParams) (stakeID string, assetID string) {
 	clientChainLzIDStr := hexutil.EncodeUint64(params.ClientChainLzID)
-	stakeId = strings.Join([]string{hexutil.Encode(params.StakerAddress[:]), clientChainLzIDStr}, "_")
+	stakeID = strings.Join([]string{hexutil.Encode(params.StakerAddress[:]), clientChainLzIDStr}, "_")
 	assetID = strings.Join([]string{hexutil.Encode(params.AssetsAddress[:]), clientChainLzIDStr}, "_")
 	return
 }
@@ -179,7 +179,7 @@ func (k Keeper) Slash(ctx sdk.Context, event *SlashParams) error {
 	if event.OpAmount.IsNegative() {
 		return errorsmod.Wrap(rtypes.ErrSlashAmountIsNegative, fmt.Sprintf("the amount is:%s", event.OpAmount))
 	}
-	stakeId, assetID := getStakeIDAndAssetID(event)
+	stakeID, assetID := getStakeIDAndAssetID(event)
 	// check is asset exist
 	if !k.restakingStateKeeper.IsStakingAsset(ctx, assetID) {
 		return errorsmod.Wrap(rtypes.ErrSlashAssetNotExist, fmt.Sprintf("the assetID is:%s", assetID))
@@ -189,7 +189,7 @@ func (k Keeper) Slash(ctx sdk.Context, event *SlashParams) error {
 		TotalDepositAmountOrWantChangeValue: event.OpAmount.Neg(),
 		CanWithdrawAmountOrWantChangeValue:  event.OpAmount.Neg(),
 	}
-	err := k.restakingStateKeeper.UpdateStakerAssetState(ctx, stakeId, assetID, changeAmount)
+	err := k.restakingStateKeeper.UpdateStakerAssetState(ctx, stakeID, assetID, changeAmount)
 	if err != nil {
 		return err
 	}

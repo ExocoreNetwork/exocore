@@ -75,9 +75,9 @@ type WithdrawParams struct {
 // 	}, nil
 // }
 
-func getStakeIDAndAssetID(params *WithdrawParams) (stakeId string, assetID string) {
+func getStakeIDAndAssetID(params *WithdrawParams) (stakeID string, assetID string) {
 	clientChainLzIDStr := hexutil.EncodeUint64(params.ClientChainLzID)
-	stakeId = strings.Join([]string{hexutil.Encode(params.WithdrawAddress[:]), clientChainLzIDStr}, "_")
+	stakeID = strings.Join([]string{hexutil.Encode(params.WithdrawAddress[:]), clientChainLzIDStr}, "_")
 	assetID = strings.Join([]string{hexutil.Encode(params.AssetsAddress[:]), clientChainLzIDStr}, "_")
 	return
 }
@@ -122,7 +122,7 @@ func (k Keeper) Withdraw(ctx sdk.Context, params *WithdrawParams) error {
 	if params.OpAmount.IsNegative() {
 		return errorsmod.Wrap(withdrawtype.ErrWithdrawAmountIsNegative, fmt.Sprintf("the amount is:%s", params.OpAmount))
 	}
-	stakeId, assetID := getStakeIDAndAssetID(params)
+	stakeID, assetID := getStakeIDAndAssetID(params)
 
 	// check if asset exist
 	if !k.restakingStateKeeper.IsStakingAsset(ctx, assetID) {
@@ -132,7 +132,7 @@ func (k Keeper) Withdraw(ctx sdk.Context, params *WithdrawParams) error {
 		TotalDepositAmountOrWantChangeValue: params.OpAmount.Neg(),
 		CanWithdrawAmountOrWantChangeValue:  params.OpAmount.Neg(),
 	}
-	err := k.restakingStateKeeper.UpdateStakerAssetState(ctx, stakeId, assetID, changeAmount)
+	err := k.restakingStateKeeper.UpdateStakerAssetState(ctx, stakeID, assetID, changeAmount)
 	if err != nil {
 		return err
 	}
