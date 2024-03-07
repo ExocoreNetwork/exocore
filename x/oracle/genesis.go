@@ -12,6 +12,10 @@ func InitGenesis(ctx sdk.Context, k keeper.Keeper, genState types.GenesisState) 
 	for _, elem := range genState.PricesList {
 		k.SetPrices(ctx, elem)
 	}
+	// Set if defined
+	if genState.Validators != nil {
+		k.SetValidators(ctx, *genState.Validators)
+	}
 	// this line is used by starport scaffolding # genesis/module/init
 	k.SetParams(ctx, genState.Params)
 }
@@ -22,6 +26,11 @@ func ExportGenesis(ctx sdk.Context, k keeper.Keeper) *types.GenesisState {
 	genesis.Params = k.GetParams(ctx)
 
 	genesis.PricesList = k.GetAllPrices(ctx)
+	// Get all validators
+	validators, found := k.GetValidators(ctx)
+	if found {
+		genesis.Validators = &validators
+	}
 	// this line is used by starport scaffolding # genesis/module/export
 
 	return genesis

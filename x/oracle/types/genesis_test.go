@@ -30,6 +30,9 @@ func TestGenesisState_Validate(t *testing.T) {
 						TokenId: 1,
 					},
 				},
+				Validators: &types.Validators{
+					Block: 45,
+				},
 				// this line is used by starport scaffolding # types/genesis/validField
 			},
 			valid: true,
