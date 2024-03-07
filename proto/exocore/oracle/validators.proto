@@ -1,0 +1,14 @@
+syntax = "proto3";
+package exocore.oracle;
+
+option go_package = "github.com/ExocoreNetwork/exocore/x/oracle/types";
+
+message Validators {
+  uint64 block = 1; 
+  repeated Validator validator_list = 2;  
+}
+
+message Validator{
+  string operator = 1;
+  string power = 2;
+}

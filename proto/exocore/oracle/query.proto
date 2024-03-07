@@ -7,6 +7,7 @@ import "google/api/annotations.proto";
 import "cosmos/base/query/v1beta1/pagination.proto";
 import "exocore/oracle/params.proto";
 import "exocore/oracle/prices.proto";
+import "exocore/oracle/validators.proto";
 
 option go_package = "github.com/ExocoreNetwork/exocore/x/oracle/types";
 
@@ -28,7 +29,12 @@ service Query {
     option (google.api.http).get = "/ExocoreNetwork/exocore/oracle/prices";
   
   }
-
+  
+  // Queries a Validators by index.
+  rpc Validators (QueryGetValidatorsRequest) returns (QueryGetValidatorsResponse) {
+    option (google.api.http).get = "/ExocoreNetwork/exocore/oracle/validators";
+  
+  }
 }
 // QueryParamsRequest is request type for the Query/Params RPC method.
 message QueryParamsRequest {}
@@ -55,5 +61,11 @@ message QueryAllPricesRequest {
 message QueryAllPricesResponse {
   repeated Prices                                 prices     = 1 [(gogoproto.nullable) = false];
            cosmos.base.query.v1beta1.PageResponse pagination = 2;
+}
+
+message QueryGetValidatorsRequest {}
+
+message QueryGetValidatorsResponse {
+  Validators Validators = 1 [(gogoproto.nullable) = false];
 }
 
