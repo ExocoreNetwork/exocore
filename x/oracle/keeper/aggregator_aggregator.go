@@ -19,8 +19,11 @@ func (r *reportPrice) aggregate() *big.Int {
 	if r.price != nil {
 		return r.price
 	}
-	//TODO: Median(r.prices)
-	r.price = median(r.prices)
+	tmp := make([]*big.Int, len(r.prices))
+	for _, p := range r.prices {
+		tmp = append(tmp, p.price)
+	}
+	r.price = bigIntList(tmp).median()
 	return r.price
 }
 
@@ -129,8 +132,9 @@ func (agg *aggregator) aggregate() *big.Int {
 			for _, validatorReport := range agg.reports {
 				validatorPrices = append(validatorPrices, validatorReport.aggregate())
 			}
-			//TODO: median(validatorPrices)
-			agg.finalPrice = median(validatorPrices)
+			//vTmp := bigIntList(validatorPrices)
+			agg.finalPrice = bigIntList(validatorPrices).median()
+			//clear relative aggregator for this feeder, all the aggregator,calculator, filter can be removed since this round has been sealed
 		}
 	}
 	return agg.finalPrice
@@ -143,8 +147,4 @@ func newAggregator(validatorSetLength int, totalPower *big.Int) *aggregator {
 		dsPrices:    make(map[int32]string),
 		totalPower:  totalPower,
 	}
-}
-
-func median(mock any) *big.Int {
-	return big.NewInt(1)
 }

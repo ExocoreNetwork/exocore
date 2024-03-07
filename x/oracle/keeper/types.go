@@ -3,6 +3,7 @@ package keeper
 import (
 	"errors"
 	"math/big"
+	"sort"
 
 	"github.com/ExocoreNetwork/exocore/x/oracle/types"
 )
@@ -32,6 +33,14 @@ func (p *params) getTokenFeeder(feederId int32) *types.TokenFeeder {
 	for k, v := range p.TokenFeeders {
 		if int32(k) == feederId {
 			return v
+		}
+	}
+	return nil
+}
+func (p *params) getTokenInfo(feederId int32) *types.Token {
+	for k, v := range p.TokenFeeders {
+		if int32(k) == feederId {
+			return p.Tokens[v.TokenId]
 		}
 	}
 	return nil
@@ -101,4 +110,25 @@ func newSet[T comparable](length int) *set[T] {
 
 func exceedsThreshold(power *big.Int, totalPower *big.Int) bool {
 	return new(big.Int).Mul(power, big.NewInt(threshold_b)).Cmp(new(big.Int).Mul(totalPower, big.NewInt(threshold_a))) > 0
+}
+
+type bigIntList []*big.Int
+
+func (b bigIntList) Len() int {
+	return len(b)
+}
+func (b bigIntList) Less(i, j int) bool {
+	return b[i].Cmp(b[j]) < 0
+}
+func (b bigIntList) Swap(i, j int) {
+	b[i], b[j] = b[j], b[i]
+}
+
+func (b bigIntList) median() *big.Int {
+	sort.Sort(b)
+	l := len(b)
+	if l%2 == 1 {
+		return b[l/2]
+	}
+	return new(big.Int).Div(new(big.Int).Add(b[l/2], b[l/2-1]), big.NewInt(2))
 }
