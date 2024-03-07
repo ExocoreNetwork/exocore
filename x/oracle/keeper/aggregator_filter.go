@@ -69,7 +69,7 @@ func (f *filter) addPSource(pSources []*types.PriceWithSource, validator string)
 }
 
 // filtrate checks data from MsgCreatePrice, and will drop the conflict or duplicate data, it will then fill data into calculator(for deterministic source data to get to consensus) and aggregator (for both deterministic and non0-deterministic source data run 2-layers aggregation to get the final price)
-func (f *filter) filtrate(price types.MsgCreatePrice) (list4Calculator []*types.PriceWithSource, list4Aggregator []*types.PriceWithSource) {
+func (f *filter) filtrate(price *types.MsgCreatePrice) (list4Calculator []*types.PriceWithSource, list4Aggregator []*types.PriceWithSource) {
 	validator := price.Creator
 	nonces := f.validatorNonce[validator]
 	if nonces == nil {
