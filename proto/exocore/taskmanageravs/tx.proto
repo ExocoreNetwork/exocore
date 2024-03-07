@@ -3,5 +3,29 @@ package exocore.taskmanageravs;
 
 option go_package = "github.com/ExocoreNetwork/exocore/x/taskmanageravs/types";
 
+message TaskInfo {
+    string Name = 1;
+    string MetaInfo = 2;
+    uint64 TaskId = 3;
+    uint64 quorumThresholdPercentage = 4;
+}
+
+message TaskManagerInfo {
+    map<string, TaskInfo> TaskManager = 1;
+}
+
+message RegisterAVSTaskReq {
+    string AVSAddress = 1;
+    TaskInfo task = 2;
+}
+
+message RegisterAVSTaskResponse {}
+
+
 // Msg defines the Msg service.
-service Msg {}
+service Msg {
+    rpc RegisterAVSTask(RegisterAVSTaskReq) returns (RegisterAVSTaskResponse);
+}
+
+
+
