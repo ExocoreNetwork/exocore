@@ -144,10 +144,10 @@ if [[ $overwrite == "y" || $overwrite == "Y" ]]; then
 	sed -i.bak 's/pruning-keep-recent = "0"/pruning-keep-recent = "2"/g' "$APP_TOML"
 	sed -i.bak 's/pruning-interval = "0"/pruning-interval = "10"/g' "$APP_TOML"
 
-    # make sure the localhost IP is 0.0.0.0
-    sed -i.bak 's/localhost/0.0.0.0/g' "$CONFIG"
-    sed -i.bak 's/localhost/0.0.0.0/g' "$APP_TOML"
-    sed -i.bak 's/127.0.0.1/0.0.0.0/g' "$APP_TOML"
+	# make sure the localhost IP is 0.0.0.0
+	sed -i.bak 's/localhost/0.0.0.0/g' "$CONFIG"
+	sed -i.bak 's/localhost/0.0.0.0/g' "$APP_TOML"
+	sed -i.bak 's/127.0.0.1/0.0.0.0/g' "$APP_TOML"
 
 	# Allocate genesis accounts (cosmos formatted addresses)
 	for KEY in "${KEYS[@]}"; do

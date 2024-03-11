@@ -12,8 +12,8 @@ echo "init exocore with moniker=\"${MONIKER}\" and chain-id=\"${CHAINID}\""
 ./exocored init "${MONIKER}" --chain-id "${CHAINID}" --home "${DATA_DIR}"
 echo "prepare genesis: Allocate genesis accounts"
 ./exocored add-genesis-account \
-"$(./exocored keys show "${KEY}" -a --home "${DATA_DIR}" --keyring-backend test)" 1000000000000000000aevmos,1000000000000000000stake \
---home "${DATA_DIR}" --keyring-backend test
+	"$(./exocored keys show "${KEY}" -a --home "${DATA_DIR}" --keyring-backend test)" 1000000000000000000aevmos,1000000000000000000stake \
+	--home "${DATA_DIR}" --keyring-backend test
 echo "prepare genesis: Sign genesis transaction"
 ./exocored gentx "${KEY}" 1000000000000000000stake --keyring-backend test --home "${DATA_DIR}" --keyring-backend test --chain-id "${CHAINID}"
 echo "prepare genesis: Collect genesis tx"
@@ -23,8 +23,9 @@ echo "prepare genesis: Run validate-genesis to ensure everything worked and that
 
 echo "starting exocore node in background ..."
 ./exocored start --pruning=nothing --rpc.unsafe \
---keyring-backend test --home "${DATA_DIR}" \
->"${DATA_DIR}"/node.log 2>&1 & disown
+	--keyring-backend test --home "${DATA_DIR}" \
+	>"${DATA_DIR}"/node.log 2>&1 &
+disown
 
 echo "started exocore node"
 tail -f /dev/null

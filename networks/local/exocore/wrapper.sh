@@ -1,6 +1,6 @@
 #!/usr/bin/env sh
 # shellcheck disable=SC3040
-(set -o pipefail 2> /dev/null) && set -o pipefail
+(set -o pipefail 2>/dev/null) && set -o pipefail
 set -x
 
 BINARY=/exocore/${BINARY:-exocored}
@@ -21,7 +21,7 @@ export CLIENT_TOML="$EHOME/config/client.toml"
 #sed -i.bak 's/chain-id =.*/chain-id = "evmos_9000-8808"/g'  "${CLIENT_TOML_TMP}"
 
 if [ -d "$(dirname "${EHOME}"/"${LOG}")" ]; then
-  "${BINARY}" --home "${EHOME}" "$@" | tee "${EHOME}/${LOG}"
+	"${BINARY}" --home "${EHOME}" "$@" | tee "${EHOME}/${LOG}"
 else
-  "${BINARY}" --home "${EHOME}" "$@"
+	"${BINARY}" --home "${EHOME}" "$@"
 fi
