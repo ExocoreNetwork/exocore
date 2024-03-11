@@ -8,6 +8,9 @@ on:
       - master
       - release/**
 
+permissions:
+  contents: read
+
 # Automatically cancel run if another commit to the same ref is detected.
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -33,10 +36,8 @@ jobs:
         run: |
           make test-unit-cover
         if: env.GIT_DIFF
-      - uses: codecov/codecov-action@v3
-        # disabled for now, since we don't have any codecov
-        if: ${{ false }}
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v2
         with:
-          file: ./coverage.txt
-          fail_ci_if_error: true
-        # if: env.GIT_DIFF
+          name: coverage-report
+          path: ./coverage.txt

@@ -7,9 +7,14 @@ on:
       - main
       - master
 
+permissions:
+  contents: read
+  security-events: write
+
 jobs:
   Gosec:
     permissions:
+      contents: read
       security-events: write
 
     runs-on: ubuntu-latest

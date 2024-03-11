@@ -6,6 +6,9 @@ on:
     paths:
       - "proto/**"
 
+permissions:
+  contents: read
+
 jobs:
   build:
     runs-on: ubuntu-latest

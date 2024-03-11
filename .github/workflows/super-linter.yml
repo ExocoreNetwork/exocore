@@ -7,6 +7,9 @@
 ---
 name: Lint Code Base
 
+permissions:
+  contents: read
+
 on:
   push:
     branches: ["develop", "main", "master"]
