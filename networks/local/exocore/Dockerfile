@@ -1,7 +1,7 @@
 FROM golang:1.21-alpine AS build
 RUN apk add build-base linux-headers git
 # Set working directory for the build
-WORKDIR work
+WORKDIR /go/work
 # Add source files
 COPY . ./
 # build exocore
