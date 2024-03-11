@@ -9,7 +9,8 @@ on:
       - release/**
 
 permissions:
-  contents: read
+  contents: write
+  pull-requests: write
 
 # Automatically cancel run if another commit to the same ref is detected.
 concurrency:
@@ -36,8 +37,25 @@ jobs:
         run: |
           make test-unit-cover
         if: env.GIT_DIFF
-      - name: Upload coverage report
-        uses: actions/upload-artifact@v2
+      - name: check test coverage
+        if: github.event_name == 'pull_request'
+        uses: vladopajic/go-test-coverage@v2
         with:
-          name: coverage-report
-          path: ./coverage.txt
+          profile: cover.out
+          local-prefix: github.com/ExocoreNetwork/exocore
+          threshold-total: 70
+          badge-file-name: coverage.svg
+      - name: Comment coverage on PR
+        uses: actions/github-script@v6
+        if: github.event_name == 'pull_request'
+        with:
+          script: |
+            const fs = require('fs');
+            const path = './coverage.svg';
+            const svgContent = fs.readFileSync(path, {encoding: 'utf8'});
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `## Test Coverage Badge\n\n![Coverage Badge](${svgContent})`
+            });
