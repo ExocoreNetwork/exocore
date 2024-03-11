@@ -1,3 +1,5 @@
+# This is the published docker image for exocore.
+
 FROM golang:1.21.0-alpine3.18 AS build-env
 
 WORKDIR /go/src/github.com/ExocoreNetwork/exocore
@@ -12,9 +14,7 @@ RUN --mount=type=bind,target=. --mount=type=secret,id=GITHUB_TOKEN \
 
 COPY . .
 
-RUN make build
-
-RUN go install github.com/MinseokOh/toml-cli@latest
+RUN make build && go install github.com/MinseokOh/toml-cli@latest
 
 FROM alpine:3.18
 
