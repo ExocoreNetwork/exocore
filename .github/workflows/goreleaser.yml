@@ -1,7 +1,8 @@
 name: goreleaser
 
 permissions:
-  contents: write # github releases
+  # github releases
+  contents: write
 
 on:
   push:
