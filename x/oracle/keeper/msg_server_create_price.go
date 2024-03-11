@@ -47,25 +47,10 @@ func getAggregatorContext(ctx sdk.Context, k Keeper) *aggregatorContext {
 		rounds:          make(map[int32]*roundInfo),
 		aggregators:     make(map[int32]*worker),
 	}
-	if validators := k.getCacheValidators(ctx); validators != nil {
-		agc.validatorsPower = validators
-		for _, v := range validators {
-			agc.totalPower = new(big.Int).Add(agc.totalPower, v)
-		}
-	}
 
-	p := params(k.GetParams(ctx))
-	agc.params = &p
-
-	//replay the recentMsgs to recover the cache
-	agc.prepareRound(ctx, uint64(ctx.BlockHeight())-uint64(maxNonce))
-	agc.recache(uint64(ctx.BlockHeight())-uint64(maxNonce), uint64(ctx.BlockHeight())-1, k)
-
-	//TODO: 1. prepare roundInfo with feeder and ctx, prepare response for status: 2->1
-	recentItems := k.getCaches(ctx)
-
-	for _, item := range recentItems {
-
+	if ok := k.recacheAggregatorContext(ctx, agc); !ok {
+		//this is the very first time oracle has been started, fill relalted info as initialization
+		k.initAggregatorContext(ctx, agc)
 	}
 
 	return agc
