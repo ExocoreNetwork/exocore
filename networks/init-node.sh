@@ -44,5 +44,8 @@ for node in {0..3}; do
     sed -i.bak 's/swagger = false/swagger = true/g' "$APP_TOML"
     sed -i.bak 's/enabled-unsafe-cors = false/enabled-unsafe-cors = true/g' "$APP_TOML"
 
+    # remove seeds
+    sed -i.bak 's/seeds = "[^"]*"/seeds = ""/' "$CONFIG_TOML"
+
   echo "Modified configurations for node$node"
 done
