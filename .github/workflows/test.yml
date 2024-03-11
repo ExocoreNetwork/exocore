@@ -1,6 +1,7 @@
 name: Tests
 on:
-  pull_request:
+  # for write permission, use pull_request_target and not pull_request.
+  pull_request_target:
   push:
     branches:
       - develop
@@ -59,6 +60,6 @@ jobs:
           issue-number: ${{ github.event.pull_request.number }}
           comment-id: ${{ steps.find-comment.outputs.comment-id }}
           body: |
-            Total Coverage: ${{ steps.output-coverage.outputs.total-coverage }}
-          edit-mode: replace
+            Coverage as of ${{ github.sha }}: ${{ steps.output-coverage.outputs.badge-text }}
+          edit-mode: append
         if: env.GIT_DIFF && github.event_name == 'pull_request'
