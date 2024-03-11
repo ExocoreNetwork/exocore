@@ -10,7 +10,7 @@ MONIKER="localtestnet"
 # otherwise your balance will be wiped quickly
 # The keyring test does not require private key to steal tokens from you
 KEYRING="test"
-KEYALGO="eth_secp256k1"
+ALGO="eth_secp256k1"
 LOGLEVEL="info"
 # Set dedicated home directory for the exocored instance
 HOMEDIR="$HOME/.tmp-exocored"
@@ -56,7 +56,7 @@ if [[ $overwrite == "y" || $overwrite == "Y" ]]; then
 
 	# If keys exist they should be deleted
 	for KEY in "${KEYS[@]}"; do
-		exocored keys add "$KEY" --keyring-backend $KEYRING --algo $KEYALGO --home "$HOMEDIR"
+		exocored keys add "$KEY" --keyring-backend $KEYRING --algo $ALGO --home "$HOMEDIR"
 	done
 
 	# Set moniker and chain-id for Evmos (Moniker can be anything, chain-id must be an integer)
