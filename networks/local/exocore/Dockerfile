@@ -10,7 +10,9 @@ RUN LEDGER_ENABLED=false make build
 
 #####################################
 FROM alpine:3.18 AS run
-RUN apk add --no-cache bash=5.2.15-r5 curl=8.5.0-r0 jq=1.6-r4
+RUN apk add --no-cache bash=5.2.15-r5 curl=8.5.0-r0 jq=1.6-r4 \
+    && addgroup -g 1000 exocore \
+    && adduser -S -h /home/exocore -D exocore -u 1000 -G exocore
 EXPOSE 26656 26657 1317 9090 8545 8546
 # TODO: exocore testnet chainid is still under consideration and need to be finalized later
 CMD ["start", "--log_format", "plain", "--chain-id", "exocoretestnet_233-1", "--metrics", "--json-rpc.api", "eth,txpool,personal,net,debug,web3", "--api.enable", "--json-rpc.enable", "true", "--minimum-gas-prices", "0.0001aexocore"]
@@ -21,5 +23,10 @@ WORKDIR /exocore
 
 COPY ./networks/local/exocore/wrapper.sh /usr/bin/wrapper.sh
 COPY --from=build /go/work/build/exocored /exocore
+
+# Use the created non-root user
+USER exocoreuser
+
+HEALTHCHECK --interval=30s --timeout=30s --retries=3 CMD curl -f http://localhost:26657/health || exit 1
 
 ENTRYPOINT ["/usr/bin/wrapper.sh"]

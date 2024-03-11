@@ -32,4 +32,7 @@ WORKDIR /home/exocore
 
 EXPOSE 26656 26657 1317 9090 8545 8546
 
+# Every 30s, allow 3 retries before failing, timeout after 30s.
+HEALTHCHECK --interval=30s --timeout=30s --retries=3 CMD curl -f http://localhost:26657/health || exit 1
+
 CMD ["exocored"]
