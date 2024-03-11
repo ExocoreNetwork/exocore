@@ -7,8 +7,8 @@ import (
 	"github.com/ExocoreNetwork/exocore/precompiles/testutil"
 	"github.com/ExocoreNetwork/exocore/precompiles/testutil/contracts"
 	"github.com/ExocoreNetwork/exocore/precompiles/withdraw"
+	"github.com/ExocoreNetwork/exocore/x/assets/types"
 	deposittype "github.com/ExocoreNetwork/exocore/x/deposit/types"
-	"github.com/ExocoreNetwork/exocore/x/restaking_assets_manage/types"
 	"github.com/ethereum/go-ethereum/common"
 )
 

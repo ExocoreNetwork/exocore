@@ -1,13 +1,14 @@
-package restaking_assets_manage // nolint: revive,stylecheck // Package naming to be fixed later.
+package assets
 
 import (
 	"context"
 	"encoding/json"
 	"fmt"
 
-	"github.com/ExocoreNetwork/exocore/x/restaking_assets_manage/client/cli"
-	"github.com/ExocoreNetwork/exocore/x/restaking_assets_manage/keeper"
-	restakingtype "github.com/ExocoreNetwork/exocore/x/restaking_assets_manage/types"
+	assetstype "github.com/ExocoreNetwork/exocore/x/assets/types"
+
+	"github.com/ExocoreNetwork/exocore/x/assets/client/cli"
+	"github.com/ExocoreNetwork/exocore/x/assets/keeper"
 	abci "github.com/cometbft/cometbft/abci/types"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -29,11 +30,11 @@ var (
 type AppModuleBasic struct{}
 
 func (b AppModuleBasic) Name() string {
-	return restakingtype.ModuleName
+	return assetstype.ModuleName
 }
 
 func (b AppModuleBasic) RegisterLegacyAminoCodec(amino *codec.LegacyAmino) {
-	restakingtype.RegisterLegacyAminoCodec(amino)
+	assetstype.RegisterLegacyAminoCodec(amino)
 }
 
 // DefaultGenesis returns default genesis state as raw bytes for the auth
@@ -44,20 +45,20 @@ func (AppModuleBasic) DefaultGenesis(cdc codec.JSONCodec) json.RawMessage {
 
 // ValidateGenesis performs genesis state validation for the auth module.
 func (AppModuleBasic) ValidateGenesis(cdc codec.JSONCodec, _ client.TxEncodingConfig, bz json.RawMessage) error {
-	var data restakingtype.GenesisState
+	var data assetstype.GenesisState
 	if err := cdc.UnmarshalJSON(bz, &data); err != nil {
-		return fmt.Errorf("failed to unmarshal %s genesis state: %w", restakingtype.ModuleName, err)
+		return fmt.Errorf("failed to unmarshal %s genesis state: %w", assetstype.ModuleName, err)
 	}
 
 	return ValidateGenesis(data)
 }
 
 func (b AppModuleBasic) RegisterInterfaces(registry codectypes.InterfaceRegistry) {
-	restakingtype.RegisterInterfaces(registry)
+	assetstype.RegisterInterfaces(registry)
 }
 
 func (b AppModuleBasic) RegisterGRPCGatewayRoutes(c client.Context, serveMux *runtime.ServeMux) {
-	if err := restakingtype.RegisterQueryHandlerClient(context.Background(), serveMux, restakingtype.NewQueryClient(c)); err != nil {
+	if err := assetstype.RegisterQueryHandlerClient(context.Background(), serveMux, assetstype.NewQueryClient(c)); err != nil {
 		panic(err)
 	}
 }
@@ -90,12 +91,12 @@ func (am AppModule) IsAppModule() {}
 
 // RegisterServices registers module services.
 func (am AppModule) RegisterServices(cfg module.Configurator) {
-	restakingtype.RegisterMsgServer(cfg.MsgServer(), &am.keeper)
-	restakingtype.RegisterQueryServer(cfg.QueryServer(), am.keeper)
+	assetstype.RegisterMsgServer(cfg.MsgServer(), &am.keeper)
+	assetstype.RegisterQueryServer(cfg.QueryServer(), am.keeper)
 }
 
 func (am AppModule) InitGenesis(ctx sdk.Context, cdc codec.JSONCodec, data json.RawMessage) []abci.ValidatorUpdate {
-	var genesisState restakingtype.GenesisState
+	var genesisState assetstype.GenesisState
 	cdc.MustUnmarshalJSON(data, &genesisState)
 	InitGenesis(ctx, am.keeper, genesisState)
 	return []abci.ValidatorUpdate{}

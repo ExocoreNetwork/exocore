@@ -3,7 +3,7 @@ package deposit
 import (
 	"fmt"
 
-	"github.com/ExocoreNetwork/exocore/x/restaking_assets_manage/types"
+	"github.com/ExocoreNetwork/exocore/x/assets/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
@@ -54,5 +54,5 @@ func (p Precompile) DepositTo(
 		return nil, err
 	}
 
-	return method.Outputs.Pack(true, info.TotalDepositAmountOrWantChangeValue.BigInt())
+	return method.Outputs.Pack(true, info.TotalDepositAmount.BigInt())
 }

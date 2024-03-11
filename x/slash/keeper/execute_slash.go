@@ -10,7 +10,7 @@ import (
 
 	errorsmod "cosmossdk.io/errors"
 	sdkmath "cosmossdk.io/math"
-	"github.com/ExocoreNetwork/exocore/x/restaking_assets_manage/types"
+	"github.com/ExocoreNetwork/exocore/x/assets/types"
 	rtypes "github.com/ExocoreNetwork/exocore/x/slash/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/common"
@@ -189,9 +189,9 @@ func (k Keeper) Slash(ctx sdk.Context, event *SlashParams) error {
 		return errorsmod.Wrap(rtypes.ErrSlashAssetNotExist, fmt.Sprintf("the assetID is:%s", assetID))
 	}
 
-	changeAmount := types.StakerSingleAssetOrChangeInfo{
-		TotalDepositAmountOrWantChangeValue: event.OpAmount.Neg(),
-		CanWithdrawAmountOrWantChangeValue:  event.OpAmount.Neg(),
+	changeAmount := types.StakerSingleAssetChangeInfo{
+		ChangeForTotalDeposit: event.OpAmount.Neg(),
+		ChangeForWithdrawable: event.OpAmount.Neg(),
 	}
 	err := k.restakingStateKeeper.UpdateStakerAssetState(ctx, stakeID, assetID, changeAmount)
 	if err != nil {

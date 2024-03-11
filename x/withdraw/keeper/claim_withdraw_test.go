@@ -2,8 +2,8 @@ package keeper_test
 
 import (
 	sdkmath "cosmossdk.io/math"
+	"github.com/ExocoreNetwork/exocore/x/assets/types"
 	depositKeeper "github.com/ExocoreNetwork/exocore/x/deposit/keeper"
-	"github.com/ExocoreNetwork/exocore/x/restaking_assets_manage/types"
 	"github.com/ExocoreNetwork/exocore/x/withdraw/keeper"
 	withdrawtype "github.com/ExocoreNetwork/exocore/x/withdraw/types"
 	"github.com/ethereum/go-ethereum/common"
@@ -43,10 +43,10 @@ func (suite *WithdrawTestSuite) TestClaimWithdrawRequest() {
 	stakerID, assetID := types.GetStakeIDAndAssetID(depositEvent.ClientChainLzID, depositEvent.StakerAddress, depositEvent.AssetsAddress)
 	info, err := suite.App.StakingAssetsManageKeeper.GetStakerSpecifiedAssetInfo(suite.Ctx, stakerID, assetID)
 	suite.NoError(err)
-	suite.Equal(types.StakerSingleAssetOrChangeInfo{
-		TotalDepositAmountOrWantChangeValue:  depositEvent.OpAmount,
-		CanWithdrawAmountOrWantChangeValue:   depositEvent.OpAmount,
-		WaitUnbondingAmountOrWantChangeValue: sdkmath.NewInt(0),
+	suite.Equal(types.StakerSingleAssetInfo{
+		TotalDepositAmount:  depositEvent.OpAmount,
+		WithdrawableAmount:  depositEvent.OpAmount,
+		WaitUnbondingAmount: sdkmath.NewInt(0),
 	}, *info)
 	// test the normal case
 	event.AssetsAddress = usdtAddress[:]
@@ -57,10 +57,10 @@ func (suite *WithdrawTestSuite) TestClaimWithdrawRequest() {
 	stakerID, assetID = types.GetStakeIDAndAssetID(event.ClientChainLzID, event.WithdrawAddress, event.AssetsAddress)
 	info, err = suite.App.StakingAssetsManageKeeper.GetStakerSpecifiedAssetInfo(suite.Ctx, stakerID, assetID)
 	suite.NoError(err)
-	suite.Equal(types.StakerSingleAssetOrChangeInfo{
-		TotalDepositAmountOrWantChangeValue:  sdkmath.NewInt(10),
-		CanWithdrawAmountOrWantChangeValue:   sdkmath.NewInt(10),
-		WaitUnbondingAmountOrWantChangeValue: sdkmath.NewInt(0),
+	suite.Equal(types.StakerSingleAssetInfo{
+		TotalDepositAmount:  sdkmath.NewInt(10),
+		WithdrawableAmount:  sdkmath.NewInt(10),
+		WaitUnbondingAmount: sdkmath.NewInt(0),
 	}, *info)
 
 	assetInfo, err := suite.App.StakingAssetsManageKeeper.GetStakingAssetInfo(suite.Ctx, assetID)

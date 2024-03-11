@@ -10,8 +10,8 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
+	assetstypes "github.com/ExocoreNetwork/exocore/x/assets/types"
 	delegationtypes "github.com/ExocoreNetwork/exocore/x/delegation/types"
-	restakingtypes "github.com/ExocoreNetwork/exocore/x/restaking_assets_manage/types"
 
 	tmprotocrypto "github.com/cometbft/cometbft/proto/tendermint/crypto"
 )
@@ -41,7 +41,7 @@ func (k *Keeper) SetOperatorConsKeyForChainID(
 	}
 	// check if the chain id is valid
 	if !k.restakingStateKeeper.AppChainInfoIsExist(ctx, chainID) {
-		return restakingtypes.ErrNoAppChainKey
+		return assetstypes.ErrNoAppChainKey
 	}
 	// if opting out, do not allow key replacement
 	if k.IsOperatorOptingOutFromChainID(ctx, opAccAddr, chainID) {
@@ -176,7 +176,7 @@ func (k *Keeper) GetOperatorPrevConsKeyForChainID(
 		return
 	}
 	if !k.restakingStateKeeper.AppChainInfoIsExist(ctx, chainID) {
-		err = restakingtypes.ErrNoAppChainKey
+		err = assetstypes.ErrNoAppChainKey
 		return
 	}
 	// do not check for slashing here
@@ -217,7 +217,7 @@ func (k *Keeper) GetOperatorConsKeyForChainID(
 		return
 	}
 	if !k.restakingStateKeeper.AppChainInfoIsExist(ctx, chainID) {
-		err = restakingtypes.ErrNoAppChainKey
+		err = assetstypes.ErrNoAppChainKey
 		return
 	}
 	// do not check for slashing, since this function will be used to update voting power even
@@ -377,7 +377,7 @@ func (k *Keeper) InitiateOperatorOptOutFromChainID(
 	}
 	// check if the chain id is valid
 	if !k.restakingStateKeeper.AppChainInfoIsExist(ctx, chainID) {
-		return restakingtypes.ErrNoAppChainKey
+		return assetstypes.ErrNoAppChainKey
 	}
 	found, key, err := k.getOperatorConsKeyForChainID(ctx, opAccAddr, chainID)
 	if err != nil {

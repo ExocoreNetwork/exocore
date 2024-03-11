@@ -3,9 +3,10 @@ package types
 import (
 	"math"
 
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	"github.com/ethereum/go-ethereum/common"
+
+	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 // constants
@@ -27,13 +28,6 @@ const (
 
 	UnbondingExpiration = 10
 )
-
-// ModuleAddress is the native module address for EVM
-var ModuleAddress common.Address
-
-func init() {
-	ModuleAddress = common.BytesToAddress(authtypes.NewModuleAddress(ModuleName).Bytes())
-}
 
 const (
 	prefixOperatorInfo = iota + 1
@@ -85,14 +79,17 @@ var (
 	KeyPrefixOperatorSlashInfo = []byte{prefixOperatorSlashInfo}
 
 	// KeyPrefixSlashAssetsState key-value:
-	// completeSlashHeight + '/' + assetID -> SlashAmount
-	// completeSlashHeight + '/' + assetID + '/' + stakerID -> SlashAmount
-	// completeSlashHeight + '/' + assetID + '/' + operatorAddr -> SlashAmount
+	// processedSlashHeight + '/' + assetID -> SlashAmount
+	// processedSlashHeight + '/' + assetID + '/' + stakerID -> SlashAmount
+	// processedSlashHeight + '/' + assetID + '/' + operatorAddr -> SlashAmount
 	KeyPrefixSlashAssetsState = []byte{prefixSlashAssetsState}
 )
 
-func KeyPrefix(p string) []byte {
-	return []byte(p)
+// ModuleAddress is the native module address for EVM
+var ModuleAddress common.Address
+
+func init() {
+	ModuleAddress = common.BytesToAddress(authtypes.NewModuleAddress(ModuleName).Bytes())
 }
 
 func AddrAndChainIDKey(prefix byte, addr sdk.AccAddress, chainID string) []byte {

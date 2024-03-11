@@ -1,8 +1,8 @@
 package keeper
 
 import (
+	"github.com/ExocoreNetwork/exocore/x/assets/types"
 	delegationtype "github.com/ExocoreNetwork/exocore/x/delegation/types"
-	"github.com/ExocoreNetwork/exocore/x/restaking_assets_manage/types"
 	abci "github.com/cometbft/cometbft/abci/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -64,8 +64,8 @@ func (k *Keeper) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.Valida
 		if err != nil {
 			panic(err)
 		}
-		if record.Amount.GT(delegationInfo.CanBeUndelegatedAfterSlash) {
-			record.ActualCompletedAmount = delegationInfo.CanBeUndelegatedAfterSlash
+		if record.Amount.GT(delegationInfo.UndelegatableAfterSlash) {
+			record.ActualCompletedAmount = delegationInfo.UndelegatableAfterSlash
 		} else {
 			record.ActualCompletedAmount = record.Amount
 		}
@@ -74,8 +74,8 @@ func (k *Keeper) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.Valida
 		// update delegation state
 		delegatorAndAmount := make(map[string]*delegationtype.DelegationAmounts)
 		delegatorAndAmount[record.OperatorAddr] = &delegationtype.DelegationAmounts{
-			WaitUndelegationAmount:     recordAmountNeg,
-			CanBeUndelegatedAfterSlash: record.ActualCompletedAmount.Neg(),
+			WaitUndelegationAmount:  recordAmountNeg,
+			UndelegatableAfterSlash: record.ActualCompletedAmount.Neg(),
 		}
 		err = k.UpdateDelegationState(ctx, record.StakerID, record.AssetID, delegatorAndAmount)
 		if err != nil {
@@ -83,17 +83,17 @@ func (k *Keeper) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.Valida
 		}
 
 		// update the staker state
-		err = k.restakingStateKeeper.UpdateStakerAssetState(ctx, record.StakerID, record.AssetID, types.StakerSingleAssetOrChangeInfo{
-			CanWithdrawAmountOrWantChangeValue:   record.ActualCompletedAmount,
-			WaitUnbondingAmountOrWantChangeValue: recordAmountNeg,
+		err = k.restakingStateKeeper.UpdateStakerAssetState(ctx, record.StakerID, record.AssetID, types.StakerSingleAssetChangeInfo{
+			ChangeForWithdrawable:  record.ActualCompletedAmount,
+			ChangeForWaitUnbonding: recordAmountNeg,
 		})
 		if err != nil {
 			panic(err)
 		}
 
 		// update the operator state
-		err = k.restakingStateKeeper.UpdateOperatorAssetState(ctx, operatorAccAddress, record.AssetID, types.OperatorSingleAssetOrChangeInfo{
-			WaitUnbondingAmountOrWantChangeValue: recordAmountNeg,
+		err = k.restakingStateKeeper.UpdateOperatorAssetState(ctx, operatorAccAddress, record.AssetID, types.OperatorSingleAssetChangeInfo{
+			ChangeForWaitUnbonding: recordAmountNeg,
 		})
 		if err != nil {
 			panic(err)

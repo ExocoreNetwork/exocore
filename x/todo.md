@@ -17,7 +17,7 @@
 * the operator can only be registered once
 * delegateTo might require the approval of operator to grant the operator permission for selecting a staking user
 
-## restaking_assets_manage
+## assets
 
 * implement the registration of client chain and assets through the governance proposal instead of setting in the genesis
 

@@ -3,9 +3,9 @@ package keeper
 import (
 	"context"
 
+	"github.com/ExocoreNetwork/exocore/x/assets/keeper"
 	delegationtype "github.com/ExocoreNetwork/exocore/x/delegation/types"
 	depositkeeper "github.com/ExocoreNetwork/exocore/x/deposit/keeper"
-	"github.com/ExocoreNetwork/exocore/x/restaking_assets_manage/keeper"
 	"github.com/cosmos/cosmos-sdk/codec"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -45,7 +45,7 @@ func NewKeeper(
 }
 
 // GetExoCoreLzAppAddress Get exoCoreLzAppAddr from deposit keeper,it will be used when check the caller of precompile contract.
-// This function needs to be moved to `restaking_assets_manage` module,which will facilitate its use for the other modules
+// This function needs to be moved to `assets` module,which will facilitate its use for the other modules
 func (k *Keeper) GetExoCoreLzAppAddress(ctx sdk.Context) (common.Address, error) {
 	return k.depositKeeper.GetExoCoreLzAppAddress(ctx)
 }

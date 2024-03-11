@@ -14,7 +14,7 @@ import (
 // constants
 const (
 	// ModuleName module name
-	ModuleName = "restaking_assets_manage"
+	ModuleName = "assets"
 
 	// StoreKey to be used when creating the KVStore
 	StoreKey = ModuleName
@@ -57,7 +57,7 @@ var (
 	/*
 		exoCore stored info:
 
-		//stored info in restaking_assets_manage module
+		//stored info in assets module
 		//used to record supported client chain and reStaking token info
 		chainIndex->ChainInfo
 		tokenIndex->tokenInfo

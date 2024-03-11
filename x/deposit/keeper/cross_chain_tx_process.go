@@ -5,8 +5,8 @@ import (
 
 	errorsmod "cosmossdk.io/errors"
 	sdkmath "cosmossdk.io/math"
+	"github.com/ExocoreNetwork/exocore/x/assets/types"
 	despoittypes "github.com/ExocoreNetwork/exocore/x/deposit/types"
-	"github.com/ExocoreNetwork/exocore/x/restaking_assets_manage/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
@@ -133,9 +133,9 @@ func (k Keeper) Deposit(ctx sdk.Context, params *DepositParams) error {
 	if !k.restakingStateKeeper.IsStakingAsset(ctx, assetID) {
 		return errorsmod.Wrap(despoittypes.ErrDepositAssetNotExist, fmt.Sprintf("the assetID is:%s", assetID))
 	}
-	changeAmount := types.StakerSingleAssetOrChangeInfo{
-		TotalDepositAmountOrWantChangeValue: params.OpAmount,
-		CanWithdrawAmountOrWantChangeValue:  params.OpAmount,
+	changeAmount := types.StakerSingleAssetChangeInfo{
+		ChangeForTotalDeposit: params.OpAmount,
+		ChangeForWithdrawable: params.OpAmount,
 	}
 	// update asset state of the specified staker
 	err := k.restakingStateKeeper.UpdateStakerAssetState(ctx, stakeID, assetID, changeAmount)

@@ -14,7 +14,7 @@ import (
 func GetQueryCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:                        operatortypes.ModuleName,
-		Short:                      "Querying commands for the delegation module",
+		Short:                      "Querying commands for the operator module",
 		DisableFlagParsing:         true,
 		SuggestionsMinimumDistance: 2,
 		RunE:                       client.ValidateCmd,

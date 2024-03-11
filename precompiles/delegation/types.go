@@ -9,8 +9,8 @@ import (
 	sdkmath "cosmossdk.io/math"
 
 	"github.com/ExocoreNetwork/exocore/precompiles/deposit"
+	"github.com/ExocoreNetwork/exocore/x/assets/types"
 	keeper2 "github.com/ExocoreNetwork/exocore/x/delegation/keeper"
-	"github.com/ExocoreNetwork/exocore/x/restaking_assets_manage/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	cmn "github.com/evmos/evmos/v14/precompiles/common"
 )

@@ -5,8 +5,8 @@ import (
 	"embed"
 	"fmt"
 
+	stakingStateKeeper "github.com/ExocoreNetwork/exocore/x/assets/keeper"
 	depositKeeper "github.com/ExocoreNetwork/exocore/x/deposit/keeper"
-	stakingStateKeeper "github.com/ExocoreNetwork/exocore/x/restaking_assets_manage/keeper"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	authzkeeper "github.com/cosmos/cosmos-sdk/x/authz/keeper"
 	"github.com/ethereum/go-ethereum/accounts/abi"

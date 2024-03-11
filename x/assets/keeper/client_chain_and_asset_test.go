@@ -1,12 +1,12 @@
 package keeper_test
 
 import (
-	"github.com/ExocoreNetwork/exocore/x/restaking_assets_manage"
-	"github.com/ExocoreNetwork/exocore/x/restaking_assets_manage/types"
+	"github.com/ExocoreNetwork/exocore/x/assets"
+	assetstype "github.com/ExocoreNetwork/exocore/x/assets/types"
 )
 
 func (suite *StakingAssetsTestSuite) TestGenesisClientChainAndAssetInfo() {
-	defaultGensisState := restaking_assets_manage.DefaultGenesisState()
+	defaultGensisState := assets.DefaultGenesisState()
 
 	// test the client chains getting
 	clientChains, err := suite.App.StakingAssetsManageKeeper.GetAllClientChainInfo(suite.Ctx)
@@ -26,7 +26,7 @@ func (suite *StakingAssetsTestSuite) TestGenesisClientChainAndAssetInfo() {
 	assets, err := suite.App.StakingAssetsManageKeeper.GetAllStakingAssetsInfo(suite.Ctx)
 	suite.NoError(err)
 	for _, asset := range defaultGensisState.DefaultSupportedClientChainTokens {
-		_, assetID := types.GetStakeIDAndAssetIDFromStr(asset.LayerZeroChainID, "", asset.Address)
+		_, assetID := assetstype.GetStakeIDAndAssetIDFromStr(asset.LayerZeroChainID, "", asset.Address)
 		suite.Ctx.Logger().Info("the asset id is:", "assetID", assetID)
 		info, ok := assets[assetID]
 		suite.True(ok)
@@ -34,7 +34,7 @@ func (suite *StakingAssetsTestSuite) TestGenesisClientChainAndAssetInfo() {
 	}
 
 	usdtAsset := defaultGensisState.DefaultSupportedClientChainTokens[0]
-	_, assetID := types.GetStakeIDAndAssetIDFromStr(usdtAsset.LayerZeroChainID, "", usdtAsset.Address)
+	_, assetID := assetstype.GetStakeIDAndAssetIDFromStr(usdtAsset.LayerZeroChainID, "", usdtAsset.Address)
 	assetInfo, err := suite.App.StakingAssetsManageKeeper.GetStakingAssetInfo(suite.Ctx, assetID)
 	suite.NoError(err)
 	suite.Equal(usdtAsset, assetInfo.AssetBasicInfo)

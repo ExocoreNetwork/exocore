@@ -3,25 +3,29 @@ package keeper
 import (
 	"fmt"
 
+	assetstype "github.com/ExocoreNetwork/exocore/x/assets/types"
+
 	errorsmod "cosmossdk.io/errors"
 	sdkmath "cosmossdk.io/math"
 
 	operatortypes "github.com/ExocoreNetwork/exocore/x/operator/types"
-	restakingtype "github.com/ExocoreNetwork/exocore/x/restaking_assets_manage/types"
 	"github.com/cosmos/cosmos-sdk/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 )
 
+// UpdateOperatorSlashInfo This is a function to store the slash info related to an operator
+// The stored state is: operator + '/' + AVSAddr + '/' + slashId -> OperatorSlashInfo
+// Now this function will be called by `slash` function implemented in 'state_update.go' when there is a slash event occurs.
 func (k *Keeper) UpdateOperatorSlashInfo(ctx sdk.Context, operatorAddr, avsAddr, slashID string, slashInfo operatortypes.OperatorSlashInfo) error {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), operatortypes.KeyPrefixOperatorSlashInfo)
 
 	// check operator address validation
 	_, err := sdk.AccAddressFromBech32(operatorAddr)
 	if err != nil {
-		return restakingtype.ErrOperatorAddr
+		return assetstype.ErrOperatorAddr
 	}
-	slashInfoKey := restakingtype.GetJoinedStoreKey(operatorAddr, avsAddr, slashID)
+	slashInfoKey := assetstype.GetJoinedStoreKey(operatorAddr, avsAddr, slashID)
 	if store.Has(slashInfoKey) {
 		return errorsmod.Wrap(operatortypes.ErrSlashInfoExist, fmt.Sprintf("slashInfoKey:%suite", slashInfoKey))
 	}
@@ -29,8 +33,8 @@ func (k *Keeper) UpdateOperatorSlashInfo(ctx sdk.Context, operatorAddr, avsAddr,
 	if slashInfo.SlashContract == "" {
 		return errorsmod.Wrap(operatortypes.ErrSlashInfo, fmt.Sprintf("err slashContract:%suite", slashInfo.SlashContract))
 	}
-	if slashInfo.OccurredHeight > slashInfo.SlashHeight {
-		return errorsmod.Wrap(operatortypes.ErrSlashInfo, fmt.Sprintf("err SlashHeight:%v,OccurredHeight:%v", slashInfo.SlashHeight, slashInfo.OccurredHeight))
+	if slashInfo.EventHeight > slashInfo.SubmittedHeight {
+		return errorsmod.Wrap(operatortypes.ErrSlashInfo, fmt.Sprintf("err SubmittedHeight:%v,EventHeight:%v", slashInfo.SubmittedHeight, slashInfo.EventHeight))
 	}
 
 	if slashInfo.SlashProportion.IsNil() || slashInfo.SlashProportion.IsNegative() || slashInfo.SlashProportion.GT(sdkmath.LegacyNewDec(1)) {
@@ -43,9 +47,12 @@ func (k *Keeper) UpdateOperatorSlashInfo(ctx sdk.Context, operatorAddr, avsAddr,
 	return nil
 }
 
+// GetOperatorSlashInfo This is a function to retrieve the slash info related to an operator
+// Now this function hasn't been called. In the future, it might be called by the grpc query.
+// Additionally, it might be used when implementing the veto function
 func (k *Keeper) GetOperatorSlashInfo(ctx sdk.Context, avsAddr, operatorAddr, slashID string) (changeState *operatortypes.OperatorSlashInfo, err error) {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), operatortypes.KeyPrefixOperatorSlashInfo)
-	slashInfoKey := restakingtype.GetJoinedStoreKey(operatorAddr, avsAddr, slashID)
+	slashInfoKey := assetstype.GetJoinedStoreKey(operatorAddr, avsAddr, slashID)
 	isExit := store.Has(slashInfoKey)
 	operatorSlashInfo := operatortypes.OperatorSlashInfo{}
 	if isExit {
@@ -57,7 +64,17 @@ func (k *Keeper) GetOperatorSlashInfo(ctx sdk.Context, avsAddr, operatorAddr, sl
 	return &operatorSlashInfo, nil
 }
 
-func (k *Keeper) UpdateSlashAssetsState(ctx sdk.Context, assetID, stakerOrOperator string, completeHeight uint64, opAmount sdkmath.Int) error {
+// UpdateSlashAssetsState This is a function to update the assets amount that need to be slashed
+// The stored state is:
+// KeyPrefixSlashAssetsState key-value:
+// processedSlashHeight + '/' + assetID -> SlashAmount
+// processedSlashHeight + '/' + assetID + '/' + stakerID -> SlashAmount
+// processedSlashHeight + '/' + assetID + '/' + operatorAddr -> SlashAmount
+// The slashed assets info won't be sent to the client chain immediately after the slash event being processed, env if
+// the asset amounts of related operator and staker have been decreased. This is because we need to wait a veto period.
+// The state updated by this function will be sent to the client chain once the veto period has expired.
+// This function will be called by `SlashStaker` and `SlashOperator` implemented in the 'state_update.go' file.
+func (k *Keeper) UpdateSlashAssetsState(ctx sdk.Context, assetID, stakerOrOperator string, processedHeight uint64, opAmount sdkmath.Int) error {
 	if opAmount.IsNil() || opAmount.IsZero() {
 		return nil
 	}
@@ -67,26 +84,26 @@ func (k *Keeper) UpdateSlashAssetsState(ctx sdk.Context, assetID, stakerOrOperat
 		return errorsmod.Wrap(operatortypes.ErrParameterInvalid, fmt.Sprintf("assetID:%suite,stakerOrOperator:%suite", assetID, stakerOrOperator))
 	}
 
-	key = restakingtype.GetJoinedStoreKey(hexutil.EncodeUint64(completeHeight), assetID, stakerOrOperator)
-	slashAmount := restakingtype.ValueField{Amount: sdkmath.NewInt(0)}
+	key = assetstype.GetJoinedStoreKey(hexutil.EncodeUint64(processedHeight), assetID, stakerOrOperator)
+	slashAmount := assetstype.ValueField{Amount: sdkmath.NewInt(0)}
 	if store.Has(key) {
 		value := store.Get(key)
 		k.cdc.MustUnmarshal(value, &slashAmount)
 	}
-	err := restakingtype.UpdateAssetValue(&slashAmount.Amount, &opAmount)
+	err := assetstype.UpdateAssetValue(&slashAmount.Amount, &opAmount)
 	if err != nil {
 		return err
 	}
 	bz := k.cdc.MustMarshal(&slashAmount)
 	store.Set(key, bz)
 
-	key = restakingtype.GetJoinedStoreKey(hexutil.EncodeUint64(completeHeight), assetID)
-	totalSlashAmount := restakingtype.ValueField{Amount: sdkmath.NewInt(0)}
+	key = assetstype.GetJoinedStoreKey(hexutil.EncodeUint64(processedHeight), assetID)
+	totalSlashAmount := assetstype.ValueField{Amount: sdkmath.NewInt(0)}
 	if store.Has(key) {
 		value := store.Get(key)
 		k.cdc.MustUnmarshal(value, &totalSlashAmount)
 	}
-	err = restakingtype.UpdateAssetValue(&totalSlashAmount.Amount, &opAmount)
+	err = assetstype.UpdateAssetValue(&totalSlashAmount.Amount, &opAmount)
 	if err != nil {
 		return err
 	}
@@ -95,15 +112,19 @@ func (k *Keeper) UpdateSlashAssetsState(ctx sdk.Context, assetID, stakerOrOperat
 	return nil
 }
 
-func (k *Keeper) GetSlashAssetsState(ctx sdk.Context, assetID, stakerOrOperator string, completeHeight uint64) (sdkmath.Int, error) {
+// GetSlashAssetsState This is a function to retrieve the assets awaiting transfer to the client chain for slashing.
+// Now this function hasn't been called, it might be called by the grpc query in the future.
+// Additionally, this function might be called in the schedule function `EndBlock` to send the slash info to client chain.
+// todo: It's to be determined about how to send the slash info to client chain. If we send them in `EndBlock`, then the native code needs to call the gateway contract deployed in exocore. This seems a little bit odd.
+func (k *Keeper) GetSlashAssetsState(ctx sdk.Context, assetID, stakerOrOperator string, processedHeight uint64) (sdkmath.Int, error) {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), operatortypes.KeyPrefixSlashAssetsState)
 	var key []byte
 	if stakerOrOperator == "" {
-		key = restakingtype.GetJoinedStoreKey(hexutil.EncodeUint64(completeHeight), assetID)
+		key = assetstype.GetJoinedStoreKey(hexutil.EncodeUint64(processedHeight), assetID)
 	} else {
-		key = restakingtype.GetJoinedStoreKey(hexutil.EncodeUint64(completeHeight), assetID, stakerOrOperator)
+		key = assetstype.GetJoinedStoreKey(hexutil.EncodeUint64(processedHeight), assetID, stakerOrOperator)
 	}
-	var ret restakingtype.ValueField
+	var ret assetstype.ValueField
 	isExit := store.Has(key)
 	if !isExit {
 		return sdkmath.Int{}, errorsmod.Wrap(operatortypes.ErrNoKeyInTheStore, fmt.Sprintf("GetSlashAssetsState: key is %suite", key))

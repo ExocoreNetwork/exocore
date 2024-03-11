@@ -26,6 +26,9 @@ import (
 	ethante "github.com/evmos/evmos/v14/app/ante/evm"
 	"github.com/evmos/evmos/v14/ethereum/eip712"
 
+	"github.com/ExocoreNetwork/exocore/x/assets"
+	stakingAssetsManageKeeper "github.com/ExocoreNetwork/exocore/x/assets/keeper"
+	stakingAssetsManageTypes "github.com/ExocoreNetwork/exocore/x/assets/types"
 	"github.com/ExocoreNetwork/exocore/x/delegation"
 	delegationKeeper "github.com/ExocoreNetwork/exocore/x/delegation/keeper"
 	delegationTypes "github.com/ExocoreNetwork/exocore/x/delegation/types"
@@ -33,9 +36,6 @@ import (
 	depositKeeper "github.com/ExocoreNetwork/exocore/x/deposit/keeper"
 	depositTypes "github.com/ExocoreNetwork/exocore/x/deposit/types"
 	operatorTypes "github.com/ExocoreNetwork/exocore/x/operator/types"
-	"github.com/ExocoreNetwork/exocore/x/restaking_assets_manage"
-	stakingAssetsManageKeeper "github.com/ExocoreNetwork/exocore/x/restaking_assets_manage/keeper"
-	stakingAssetsManageTypes "github.com/ExocoreNetwork/exocore/x/restaking_assets_manage/types"
 	"github.com/ExocoreNetwork/exocore/x/reward"
 	rewardKeeper "github.com/ExocoreNetwork/exocore/x/reward/keeper"
 	rewardTypes "github.com/ExocoreNetwork/exocore/x/reward/types"
@@ -260,7 +260,7 @@ var (
 		revenue.AppModuleBasic{},
 		consensus.AppModuleBasic{},
 		// Exocore modules
-		restaking_assets_manage.AppModuleBasic{},
+		assets.AppModuleBasic{},
 		deposit.AppModuleBasic{},
 		operator.AppModuleBasic{},
 		delegation.AppModuleBasic{},
@@ -797,7 +797,7 @@ func NewExocoreApp(
 		revenue.NewAppModule(app.RevenueKeeper, app.AccountKeeper,
 			app.GetSubspace(revenuetypes.ModuleName)),
 		// exoCore app modules
-		restaking_assets_manage.NewAppModule(appCodec, app.StakingAssetsManageKeeper),
+		assets.NewAppModule(appCodec, app.StakingAssetsManageKeeper),
 		deposit.NewAppModule(appCodec, app.DepositKeeper),
 		operator.NewAppModule(appCodec, app.OperatorKeeper),
 		delegation.NewAppModule(appCodec, app.DelegationKeeper),
@@ -1269,7 +1269,7 @@ func initParamsKeeper(
 	paramsKeeper.Subspace(ibcexported.ModuleName)
 	paramsKeeper.Subspace(icahosttypes.SubModuleName)
 	// ethermint subspaces
-	paramsKeeper.Subspace(evmtypes.ModuleName).WithKeyTable(evmtypes.ParamKeyTable()) //nolint:staticcheck
+	paramsKeeper.Subspace(evmtypes.ModuleName).WithKeyTable(evmtypes.ParamKeyTable()) //nolint: staticcheck
 	return paramsKeeper
 }
 

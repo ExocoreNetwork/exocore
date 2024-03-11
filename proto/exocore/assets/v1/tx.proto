@@ -1,12 +1,12 @@
 syntax = "proto3";
-package exocore.restaking_assets_manage.v1;
+package exocore.assets.v1;
 
 import "amino/amino.proto";
 import "cosmos/msg/v1/msg.proto";
 import "cosmos_proto/cosmos.proto";
 import "gogoproto/gogo.proto";
 
-option go_package = "github.com/ExocoreNetwork/exocore/x/restaking_assets_manage/types";
+option go_package = "github.com/ExocoreNetwork/exocore/x/assets/types";
 
 // ValueField is a field that holds a value of sdk.Int type.
 message ValueField {
@@ -27,8 +27,8 @@ message ClientChainInfo {
   string meta_info = 2;
   // chain_id of the client chain. Not necessarily the EVM chain id.
   uint64 chain_id = 3;
-  // exo_core_chain_index is the index of the client chain within the exosystem.
-  uint64 exo_core_chain_index = 4;
+  // exocore_chain_index is the index of the client chain within the exosystem.
+  uint64 exocore_chain_index = 4;
   // finalization_blocks is the number of blocks to wait for finalization.
   uint64 finalization_blocks = 5;
   // layer_zero_chain_id is the chain id of the client chain, according to L0.
@@ -50,8 +50,8 @@ message AppChainInfo {
   string meta_info = 2;
   // chain_id is used as the primary key
   string chain_id = 3;
-  // exo_core_chain_index is the index of the chain in exocore, so far unused
-  uint64 exo_core_chain_index = 4;
+  // exocore_chain_index is the index of the chain in exocore, so far unused
+  uint64 exocore_chain_index = 4;
 }
 
 // AssetInfo defines the information for an asset to be used in staking.
@@ -73,8 +73,8 @@ message AssetInfo {
   ];
   // layer_zero_chain_id is the chain id of the asset, according to L0.
   uint64 layer_zero_chain_id = 6 [(gogoproto.customname) = "LayerZeroChainID"];
-  // exo_core_chain_index is the index of the client chain within the exosystem.
-  uint64 exo_core_chain_index = 7;
+  // exocore_chain_index is the index of the client chain within the exosystem.
+  uint64 exocore_chain_index = 7;
   // meta_info about the asset, like "Tether USD on Ethereum blockchain".
   string meta_info = 8;
 }
@@ -92,30 +92,26 @@ message StakingAssetInfo {
   ];
 }
 
-// StakerSingleAssetOrChangeInfo defines the information for a single asset or its change.
-// The type is an overloaded type and is used in two contexts:
-// 1. A staker's deposited, withdrawable, and currently unbonding amount.
-// 2. The values by which #1 is to be changed / has been changed.
-message StakerSingleAssetOrChangeInfo {
-  // total_deposit_amount_or_want_change_value is the total amount of the asset deposited 
-  // or the amount by which it can change.
-  string total_deposit_amount_or_want_change_value = 1
+// StakerSingleAssetInfo defines the information for a single asset.
+// The type include three states:
+// staker's deposited, withdrawable, and currently unbonding amount.
+message StakerSingleAssetInfo {
+  // total_deposit_amount is the total amount of the asset deposited.
+  string total_deposit_amount = 1
   [
     (cosmos_proto.scalar) = "cosmos.Int",
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
     (gogoproto.nullable) = false
   ];
-  // can_withdraw_amount_or_want_change_value is the amount that can be withdrawn
-  // or the amount by which it can change.
-  string can_withdraw_amount_or_want_change_value = 2
+  // withdrawable_amount is the amount that can be withdrawn.
+  string withdrawable_amount = 2
   [
     (cosmos_proto.scalar) = "cosmos.Int",
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
     (gogoproto.nullable) = false
   ];
-  // wait_unbonding_amount_or_want_change_value is the amount that is waiting for undelegation
-  // or the amount by which it can change.
-  string wait_unbonding_amount_or_want_change_value = 3
+  // wait_unbonding_amount is the amount that is waiting for undelegation.
+  string wait_unbonding_amount = 3
   [
     (cosmos_proto.scalar) = "cosmos.Int",
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
@@ -127,51 +123,46 @@ message StakerSingleAssetOrChangeInfo {
 // It is indexed by the asset_id.
 message StakerAllAssetsInfo {
   // all_assets_state is the state of all assets of the staker.
-  map<string, StakerSingleAssetOrChangeInfo> all_assets_state = 1;
+  map<string, StakerSingleAssetInfo> all_assets_state = 1;
 }
 
-// OperatorSingleAssetOrChangeInfo defines the information for a single asset or its change,
-// for an operator. It is also overloaded like StakerSingleAssetOrChangeInfo.
-message OperatorSingleAssetOrChangeInfo {
-  // total_amount_or_want_change_value is the total amount of the asset deposited
-  // or the amount by which it can change.
-  string total_amount_or_want_change_value = 1
+// OperatorSingleAssetInfo defines the information for a single asset,
+// for an operator. It is also overloaded like StakerSingleAssetInfo.
+message OperatorSingleAssetInfo {
+  // total_amount is the total amount of the asset deposited.
+  string total_amount = 1
   [
     (cosmos_proto.scalar) = "cosmos.Int",
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
     (gogoproto.nullable) = false
   ];
 
-  // operator_own_amount_or_want_change_value is the amount that the operator owns
-  // or the amount by which it can change.
+  // operator_own_amount is the amount that the operator owns.
   //todo: the field is used to mark operator's own assets and is not temporarily used now
-  string operator_own_amount_or_want_change_value = 2
+  string operator_own_amount = 2
   [
     (cosmos_proto.scalar) = "cosmos.Int",
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
     (gogoproto.nullable) = false
   ];
-  // wait_unbonding_amount_or_want_change_value is the amount that is waiting for unbonding
-  // or the amount by which it can change.
-  string wait_unbonding_amount_or_want_change_value = 3
-  [
-    (cosmos_proto.scalar) = "cosmos.Int",
-    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
-    (gogoproto.nullable) = false
-  ];
-
-  // operator_own_wait_unbonding_amount is the amount that is owned by operator itself and waiting for unbonding
-  // or the amount by which it can change
-  string operator_own_wait_unbonding_amount = 4
+  // wait_unbonding_amount is the amount that is waiting for unbonding.
+  string wait_unbonding_amount = 3
   [
     (cosmos_proto.scalar) = "cosmos.Int",
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
     (gogoproto.nullable) = false
   ];
 
-  // operator_can_unbond_after_slash is the amount that is owned by operator itself and can be unbonded after slash
-  // or the amount by which it can change
-  string operator_can_unbond_after_slash = 5
+  // operator_unbonding_amount is the amount that is owned by operator itself and waiting for unbonding.
+  string operator_unbonding_amount = 4
+  [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.nullable) = false
+  ];
+
+  // operator_unbondable_amount_after_slash is the amount that is owned by operator itself and can be unbonded after slash.
+  string operator_unbondable_amount_after_slash = 5
   [
     (cosmos_proto.scalar) = "cosmos.Int",
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
@@ -183,7 +174,7 @@ message OperatorSingleAssetOrChangeInfo {
 // indexed by the asset_id.
 message OperatorAllAssetsInfo {
   // all_assets_state is the state of all assets of the operator.
-  map<string, OperatorSingleAssetOrChangeInfo> all_assets_state = 1;
+  map<string, OperatorSingleAssetInfo> all_assets_state = 1;
 }
 
 // MsgSetExoCoreAddr defines the MsgSetExoCoreAddr message used to set the
@@ -247,7 +238,7 @@ message RegisterAssetReq {
 // RegisterAssetResponse is the response to the RegisterAssetReq message.
 message RegisterAssetResponse {}
 
-// Msg defines the restaking_assets_manage Msg service
+// Msg defines the assets Msg service
 service Msg {
   option (cosmos.msg.v1.service) = true;
   // SetStakerExoCoreAddr sets the exocore address of the staker

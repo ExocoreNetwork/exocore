@@ -19,8 +19,8 @@ message DelegationInfoReq {
 
 // DelegationAmounts is the delegation amount response for a single delegation.
 message DelegationAmounts {
-  // can_be_undelegated_amount is the amount that can be undelegated.
-  string can_be_undelegated_amount = 1
+  // undelegatable_amount is the amount that can be undelegated.
+  string undelegatable_amount = 1
   [
     (cosmos_proto.scalar) = "cosmos.Int",
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
@@ -33,8 +33,8 @@ message DelegationAmounts {
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
     (gogoproto.nullable) = false
   ];
-  // can_be_undelegated_after_slash is the amount that can be undelegated after slash
-  string can_be_undelegated_after_slash = 3
+  // undelegatable_after_slash is the amount that can be undelegated after slash
+  string undelegatable_after_slash = 3
   [
     (cosmos_proto.scalar) = "cosmos.Int",
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",

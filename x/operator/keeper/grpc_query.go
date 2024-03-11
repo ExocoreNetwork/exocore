@@ -18,8 +18,8 @@ func (k *Keeper) GetOperatorInfo(ctx context.Context, req *operatortypes.GetOper
 // QueryOperatorConsKeyForChainID add for dogfood
 func (k *Keeper) QueryOperatorConsKeyForChainID(
 	goCtx context.Context,
-	req *operatortypes.QueryOperatorConsKeyForChainIDRequest,
-) (*operatortypes.QueryOperatorConsKeyForChainIDResponse, error) {
+	req *operatortypes.QueryOperatorConsKeyRequest,
+) (*operatortypes.QueryOperatorConsKeyResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 	addr, err := sdk.AccAddressFromBech32(req.Addr)
 	if err != nil {
@@ -34,7 +34,7 @@ func (k *Keeper) QueryOperatorConsKeyForChainID(
 	if !found {
 		return nil, errors.New("no key assigned")
 	}
-	return &operatortypes.QueryOperatorConsKeyForChainIDResponse{
+	return &operatortypes.QueryOperatorConsKeyResponse{
 		PublicKey: key,
 	}, nil
 }

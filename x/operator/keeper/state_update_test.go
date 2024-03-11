@@ -4,11 +4,11 @@ import (
 	"strings"
 
 	sdkmath "cosmossdk.io/math"
+	assetstypes "github.com/ExocoreNetwork/exocore/x/assets/types"
 	delegationKeeper "github.com/ExocoreNetwork/exocore/x/delegation/keeper"
 	"github.com/ExocoreNetwork/exocore/x/deposit/keeper"
 	operatorKeeper "github.com/ExocoreNetwork/exocore/x/operator/keeper"
 	operatorTypes "github.com/ExocoreNetwork/exocore/x/operator/types"
-	restakingTypes "github.com/ExocoreNetwork/exocore/x/restaking_assets_manage/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/common"
 )
@@ -36,12 +36,12 @@ func (suite *OperatorTestSuite) prepare() {
 	suite.depositAmount = sdkmath.NewInt(100)
 	suite.delegationAmount = sdkmath.NewInt(50)
 	suite.updatedAmountForOptIn = sdkmath.NewInt(20)
-	suite.stakerID, suite.assetID = restakingTypes.GetStakeIDAndAssetID(suite.clientChainLzID, suite.Address[:], suite.assetAddr[:])
+	suite.stakerID, suite.assetID = assetstypes.GetStakeIDAndAssetID(suite.clientChainLzID, suite.Address[:], suite.assetAddr[:])
 
 	// staking assets
 	depositParam := &keeper.DepositParams{
 		ClientChainLzID: suite.clientChainLzID,
-		Action:          restakingTypes.Deposit,
+		Action:          assetstypes.Deposit,
 		StakerAddress:   suite.Address[:],
 		OpAmount:        suite.depositAmount,
 	}
@@ -62,7 +62,7 @@ func (suite *OperatorTestSuite) prepare() {
 	// delegate to operator
 	delegationParam := &delegationKeeper.DelegationOrUndelegationParams{
 		ClientChainLzID: suite.clientChainLzID,
-		Action:          restakingTypes.DelegateTo,
+		Action:          assetstypes.DelegateTo,
 		AssetsAddress:   suite.assetAddr[:],
 		OperatorAddress: suite.operatorAddr,
 		StakerAddress:   suite.Address[:],

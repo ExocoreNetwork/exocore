@@ -5,7 +5,7 @@ import (
 	"embed"
 	"fmt"
 
-	stakingStateKeeper "github.com/ExocoreNetwork/exocore/x/restaking_assets_manage/keeper"
+	stakingStateKeeper "github.com/ExocoreNetwork/exocore/x/assets/keeper"
 	slashKeeper "github.com/ExocoreNetwork/exocore/x/slash/keeper"
 	"github.com/cometbft/cometbft/libs/log"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"

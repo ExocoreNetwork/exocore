@@ -3,8 +3,8 @@ package keeper
 import (
 	"fmt"
 
+	restakingkeeper "github.com/ExocoreNetwork/exocore/x/assets/keeper"
 	depositkeeper "github.com/ExocoreNetwork/exocore/x/deposit/keeper"
-	restakingkeeper "github.com/ExocoreNetwork/exocore/x/restaking_assets_manage/keeper"
 	"github.com/ExocoreNetwork/exocore/x/withdraw/types"
 	"github.com/cometbft/cometbft/libs/log"
 	"github.com/cosmos/cosmos-sdk/codec"

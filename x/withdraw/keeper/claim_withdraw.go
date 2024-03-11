@@ -6,7 +6,7 @@ import (
 
 	errorsmod "cosmossdk.io/errors"
 	sdkmath "cosmossdk.io/math"
-	"github.com/ExocoreNetwork/exocore/x/restaking_assets_manage/types"
+	"github.com/ExocoreNetwork/exocore/x/assets/types"
 	withdrawtype "github.com/ExocoreNetwork/exocore/x/withdraw/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/common/hexutil"
@@ -128,9 +128,9 @@ func (k Keeper) Withdraw(ctx sdk.Context, params *WithdrawParams) error {
 	if !k.restakingStateKeeper.IsStakingAsset(ctx, assetID) {
 		return errorsmod.Wrap(withdrawtype.ErrWithdrawAssetNotExist, fmt.Sprintf("the assetID is:%s", assetID))
 	}
-	changeAmount := types.StakerSingleAssetOrChangeInfo{
-		TotalDepositAmountOrWantChangeValue: params.OpAmount.Neg(),
-		CanWithdrawAmountOrWantChangeValue:  params.OpAmount.Neg(),
+	changeAmount := types.StakerSingleAssetChangeInfo{
+		ChangeForTotalDeposit: params.OpAmount.Neg(),
+		ChangeForWithdrawable: params.OpAmount.Neg(),
 	}
 	err := k.restakingStateKeeper.UpdateStakerAssetState(ctx, stakeID, assetID, changeAmount)
 	if err != nil {

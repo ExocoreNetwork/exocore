@@ -5,24 +5,23 @@ import (
 	"strings"
 
 	"cosmossdk.io/math"
-
-	restakingtype "github.com/ExocoreNetwork/exocore/x/restaking_assets_manage/types"
+	assetstype "github.com/ExocoreNetwork/exocore/x/assets/types"
 	"github.com/cosmos/cosmos-sdk/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 )
 
-var _ restakingtype.MsgServer = &Keeper{}
+var _ assetstype.MsgServer = &Keeper{}
 
 // SetStakerExoCoreAddr outdated, will be deprecated.
 // don't check if the staker has existed temporarily,so users can set their ExoCoreAddr multiple times.
 // It may be modified later to allow setting only once
-func (k Keeper) SetStakerExoCoreAddr(ctx context.Context, addrInfo *restakingtype.MsgSetExoCoreAddr) (*restakingtype.MsgSetExoCoreAddrResponse, error) {
+func (k Keeper) SetStakerExoCoreAddr(ctx context.Context, addrInfo *assetstype.MsgSetExoCoreAddr) (*assetstype.MsgSetExoCoreAddrResponse, error) {
 	// todo: verify client chain signature according to the client chain signature algorithm type.
 
 	c := sdk.UnwrapSDKContext(ctx)
 
-	store := prefix.NewStore(c.KVStore(k.storeKey), restakingtype.KeyPrefixReStakerExoCoreAddr)
+	store := prefix.NewStore(c.KVStore(k.storeKey), assetstype.KeyPrefixReStakerExoCoreAddr)
 
 	bz := k.cdc.MustMarshal(addrInfo)
 
@@ -31,10 +30,10 @@ func (k Keeper) SetStakerExoCoreAddr(ctx context.Context, addrInfo *restakingtyp
 
 	// todo: save to KeyPrefixReStakerExoCoreAddrReverse
 
-	return &restakingtype.MsgSetExoCoreAddrResponse{}, nil
+	return &assetstype.MsgSetExoCoreAddrResponse{}, nil
 }
 
-func (k Keeper) RegisterClientChain(ctx context.Context, req *restakingtype.RegisterClientChainReq) (*restakingtype.RegisterClientChainResponse, error) {
+func (k Keeper) RegisterClientChain(ctx context.Context, req *assetstype.RegisterClientChainReq) (*assetstype.RegisterClientChainResponse, error) {
 	c := sdk.UnwrapSDKContext(ctx)
 	err := k.SetClientChainInfo(c, req.Info)
 	if err != nil {
@@ -43,9 +42,9 @@ func (k Keeper) RegisterClientChain(ctx context.Context, req *restakingtype.Regi
 	return nil, nil
 }
 
-func (k Keeper) RegisterAsset(ctx context.Context, req *restakingtype.RegisterAssetReq) (*restakingtype.RegisterAssetResponse, error) {
+func (k Keeper) RegisterAsset(ctx context.Context, req *assetstype.RegisterAssetReq) (*assetstype.RegisterAssetResponse, error) {
 	c := sdk.UnwrapSDKContext(ctx)
-	err := k.SetStakingAssetInfo(c, &restakingtype.StakingAssetInfo{
+	err := k.SetStakingAssetInfo(c, &assetstype.StakingAssetInfo{
 		AssetBasicInfo:     req.Info,
 		StakingTotalAmount: math.NewInt(0),
 	})

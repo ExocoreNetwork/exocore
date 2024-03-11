@@ -3,10 +3,11 @@ package keeper
 import (
 	"fmt"
 
+	assetstype "github.com/ExocoreNetwork/exocore/x/assets/types"
+
 	errorsmod "cosmossdk.io/errors"
 
 	operatortypes "github.com/ExocoreNetwork/exocore/x/operator/types"
-	restakingtype "github.com/ExocoreNetwork/exocore/x/restaking_assets_manage/types"
 	"github.com/cosmos/cosmos-sdk/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -60,9 +61,9 @@ func (k *Keeper) UpdateOptedInfo(ctx sdk.Context, operatorAddr, avsAddr string, 
 	// check operator address validation
 	_, err := sdk.AccAddressFromBech32(operatorAddr)
 	if err != nil {
-		return restakingtype.ErrOperatorAddr
+		return assetstype.ErrOperatorAddr
 	}
-	infoKey := restakingtype.GetJoinedStoreKey(operatorAddr, avsAddr)
+	infoKey := assetstype.GetJoinedStoreKey(operatorAddr, avsAddr)
 
 	bz := k.cdc.MustMarshal(info)
 	store.Set(infoKey, bz)
@@ -75,7 +76,7 @@ func (k *Keeper) GetOptedInfo(ctx sdk.Context, operatorAddr, avsAddr string) (in
 		return nil, errorsmod.Wrap(err, "GetOptedInfo: error occurred when parse acc address from Bech32")
 	}
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), operatortypes.KeyPrefixOperatorOptedAVSInfo)
-	infoKey := restakingtype.GetJoinedStoreKey(operatorAddr, avsAddr)
+	infoKey := assetstype.GetJoinedStoreKey(operatorAddr, avsAddr)
 	ifExist := store.Has(infoKey)
 	if !ifExist {
 		return nil, errorsmod.Wrap(operatortypes.ErrNoKeyInTheStore, fmt.Sprintf("GetOptedInfo: key is %suite", opAccAddr))
@@ -107,7 +108,7 @@ func (k *Keeper) GetOptedInAVSForOperator(ctx sdk.Context, operatorAddr string) 
 
 	avsList := make([]string, 0)
 	for ; iterator.Valid(); iterator.Next() {
-		keys, err := restakingtype.ParseJoinedStoreKey(iterator.Key(), 2)
+		keys, err := assetstype.ParseJoinedStoreKey(iterator.Key(), 2)
 		if err != nil {
 			return nil, err
 		}

@@ -2,9 +2,9 @@ package keeper
 
 import (
 	sdkmath "cosmossdk.io/math"
+	"github.com/ExocoreNetwork/exocore/x/assets/types"
 	delegationtype "github.com/ExocoreNetwork/exocore/x/delegation/types"
 	operatortypes "github.com/ExocoreNetwork/exocore/x/operator/types"
-	"github.com/ExocoreNetwork/exocore/x/restaking_assets_manage/types"
 	abci "github.com/cometbft/cometbft/abci/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -80,7 +80,7 @@ func (k *Keeper) PriceChangeHandle(ctx sdk.Context) error {
 		stakerShare:           make(map[string]sdkmath.LegacyDec, 0),
 	}
 	stakerShareHandleFunc := func(stakerID, assetID, operatorAddr string, state *delegationtype.DelegationAmounts) error {
-		UpdateShareOfStakerAndOperator(sharedParameter, assetID, stakerID, operatorAddr, state.CanBeUndelegatedAmount)
+		UpdateShareOfStakerAndOperator(sharedParameter, assetID, stakerID, operatorAddr, state.UndelegatableAmount)
 		return nil
 	}
 	err = k.delegationKeeper.IterateDelegationState(ctx, stakerShareHandleFunc)
@@ -88,8 +88,8 @@ func (k *Keeper) PriceChangeHandle(ctx sdk.Context) error {
 		return err
 	}
 
-	operatorShareHandleFunc := func(operatorAddr, assetID string, state *types.OperatorSingleAssetOrChangeInfo) error {
-		UpdateShareOfStakerAndOperator(sharedParameter, assetID, "", operatorAddr, state.OperatorOwnAmountOrWantChangeValue)
+	operatorShareHandleFunc := func(operatorAddr, assetID string, state *types.OperatorSingleAssetInfo) error {
+		UpdateShareOfStakerAndOperator(sharedParameter, assetID, "", operatorAddr, state.OperatorOwnAmount)
 		return nil
 	}
 	err = k.restakingStateKeeper.IteratorOperatorAssetState(ctx, operatorShareHandleFunc)

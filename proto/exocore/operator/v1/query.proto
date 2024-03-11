@@ -24,7 +24,7 @@ message QueryOperatorConsKeyRequest {
   string chain_id = 2;
 }
 
-// QueryOperatorConsKeyResponse is the response for QueryOperatorConsKeyForChainID
+// QueryOperatorConsKeyResponse is the response for QueryOperatorConsKeyRequest
 message QueryOperatorConsKeyResponse {
   // public_key is the consensus public key of the operator
   tendermint.crypto.PublicKey public_key = 1 [ (gogoproto.nullable) = false ];

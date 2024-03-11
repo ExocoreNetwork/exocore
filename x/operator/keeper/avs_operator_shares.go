@@ -3,11 +3,12 @@ package keeper
 import (
 	"fmt"
 
+	assetstype "github.com/ExocoreNetwork/exocore/x/assets/types"
+
 	errorsmod "cosmossdk.io/errors"
 	sdkmath "cosmossdk.io/math"
 
 	operatortypes "github.com/ExocoreNetwork/exocore/x/operator/types"
-	restakingtype "github.com/ExocoreNetwork/exocore/x/restaking_assets_manage/types"
 	"github.com/cosmos/cosmos-sdk/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -21,14 +22,14 @@ func (k *Keeper) UpdateOperatorShare(ctx sdk.Context, avsAddr, operatorAddr stri
 	if operatorAddr == "" {
 		return errorsmod.Wrap(operatortypes.ErrParameterInvalid, "UpdateOperatorShare the operatorAddr is empty")
 	}
-	key = restakingtype.GetJoinedStoreKey(avsAddr, operatorAddr)
+	key = assetstype.GetJoinedStoreKey(avsAddr, operatorAddr)
 
 	totalValue := operatortypes.DecValueField{Amount: sdkmath.LegacyNewDec(0)}
 	if store.Has(key) {
 		value := store.Get(key)
 		k.cdc.MustUnmarshal(value, &totalValue)
 	}
-	err := restakingtype.UpdateAssetDecValue(&totalValue.Amount, &opAmount)
+	err := assetstype.UpdateAssetDecValue(&totalValue.Amount, &opAmount)
 	if err != nil {
 		return err
 	}
@@ -43,7 +44,7 @@ func (k *Keeper) DeleteOperatorShare(ctx sdk.Context, avsAddr, operatorAddr stri
 	if operatorAddr == "" {
 		return errorsmod.Wrap(operatortypes.ErrParameterInvalid, "UpdateOperatorShare the operatorAddr is empty")
 	}
-	key = restakingtype.GetJoinedStoreKey(avsAddr, operatorAddr)
+	key = assetstype.GetJoinedStoreKey(avsAddr, operatorAddr)
 
 	store.Delete(key)
 	return nil
@@ -56,7 +57,7 @@ func (k *Keeper) GetOperatorShare(ctx sdk.Context, avsAddr, operatorAddr string)
 	if operatorAddr == "" {
 		return sdkmath.LegacyDec{}, errorsmod.Wrap(operatortypes.ErrParameterInvalid, "GetOperatorShare the operatorAddr is empty")
 	}
-	key = restakingtype.GetJoinedStoreKey(avsAddr, operatorAddr)
+	key = assetstype.GetJoinedStoreKey(avsAddr, operatorAddr)
 
 	isExist := store.Has(key)
 	if !isExist {
@@ -79,7 +80,7 @@ func (k *Keeper) UpdateAVSShare(ctx sdk.Context, avsAddr string, opAmount sdkmat
 		value := store.Get(key)
 		k.cdc.MustUnmarshal(value, &totalValue)
 	}
-	err := restakingtype.UpdateAssetDecValue(&totalValue.Amount, &opAmount)
+	err := assetstype.UpdateAssetDecValue(&totalValue.Amount, &opAmount)
 	if err != nil {
 		return err
 	}
@@ -98,7 +99,7 @@ func (k *Keeper) BatchUpdateShareForAVSAndOperator(ctx sdk.Context, avsOperatorC
 			k.cdc.MustUnmarshal(value, &totalValue)
 		}
 		tmpOpAmount := opAmount
-		err := restakingtype.UpdateAssetDecValue(&totalValue.Amount, &tmpOpAmount)
+		err := assetstype.UpdateAssetDecValue(&totalValue.Amount, &tmpOpAmount)
 		if err != nil {
 			return err
 		}
@@ -122,17 +123,17 @@ func (k *Keeper) GetAVSShare(ctx sdk.Context, avsAddr string) (sdkmath.LegacyDec
 	return ret.Amount, nil
 }
 
-func (k *Keeper) UpdateStateForAsset(ctx sdk.Context, assetID, avsAddr, operatorAddr string, changeState operatortypes.OptedInAssetState) error {
+func (k *Keeper) UpdateStateForAsset(ctx sdk.Context, assetID, avsAddr, operatorAddr string, changeState operatortypes.OptedInAssetStateChange) error {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), operatortypes.KeyPrefixOperatorAVSSingleAssetState)
-	if changeState.Amount.IsNil() && changeState.Value.IsNil() {
+	if changeState.ChangeForAmount.IsNil() && changeState.ChangeForValue.IsNil() {
 		return nil
 	}
 	// check operator address validation
 	_, err := sdk.AccAddressFromBech32(operatorAddr)
 	if err != nil {
-		return restakingtype.ErrOperatorAddr
+		return assetstype.ErrOperatorAddr
 	}
-	stateKey := restakingtype.GetJoinedStoreKey(assetID, avsAddr, operatorAddr)
+	stateKey := assetstype.GetJoinedStoreKey(assetID, avsAddr, operatorAddr)
 	optedInAssetState := operatortypes.OptedInAssetState{
 		Amount: sdkmath.NewInt(0),
 		Value:  sdkmath.LegacyNewDec(0),
@@ -143,12 +144,12 @@ func (k *Keeper) UpdateStateForAsset(ctx sdk.Context, assetID, avsAddr, operator
 		k.cdc.MustUnmarshal(value, &optedInAssetState)
 	}
 
-	err = restakingtype.UpdateAssetValue(&optedInAssetState.Amount, &changeState.Amount)
+	err = assetstype.UpdateAssetValue(&optedInAssetState.Amount, &changeState.ChangeForAmount)
 	if err != nil {
 		return errorsmod.Wrap(err, "UpdateStateForAsset OptedInAssetState.Amount error")
 	}
 
-	err = restakingtype.UpdateAssetDecValue(&optedInAssetState.Value, &changeState.Value)
+	err = assetstype.UpdateAssetDecValue(&optedInAssetState.Value, &changeState.ChangeForValue)
 	if err != nil {
 		return errorsmod.Wrap(err, "UpdateStateForAsset OptedInAssetState.Value error")
 	}
@@ -164,16 +165,16 @@ func (k *Keeper) DeleteAssetState(ctx sdk.Context, assetID, avsAddr, operatorAdd
 	// check operator address validation
 	_, err := sdk.AccAddressFromBech32(operatorAddr)
 	if err != nil {
-		return restakingtype.ErrOperatorAddr
+		return assetstype.ErrOperatorAddr
 	}
-	stateKey := restakingtype.GetJoinedStoreKey(assetID, avsAddr, operatorAddr)
+	stateKey := assetstype.GetJoinedStoreKey(assetID, avsAddr, operatorAddr)
 	store.Delete(stateKey)
 	return nil
 }
 
 func (k *Keeper) GetAssetState(ctx sdk.Context, assetID, avsAddr, operatorAddr string) (changeState *operatortypes.OptedInAssetState, err error) {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), operatortypes.KeyPrefixOperatorAVSSingleAssetState)
-	stateKey := restakingtype.GetJoinedStoreKey(assetID, avsAddr, operatorAddr)
+	stateKey := assetstype.GetJoinedStoreKey(assetID, avsAddr, operatorAddr)
 	isExit := store.Has(stateKey)
 	optedInAssetState := operatortypes.OptedInAssetState{}
 	if isExit {
@@ -191,7 +192,7 @@ func (k *Keeper) IterateUpdateAssetState(ctx sdk.Context, assetID string, f func
 	defer iterator.Close()
 
 	for ; iterator.Valid(); iterator.Next() {
-		keys, err := restakingtype.ParseJoinedStoreKey(iterator.Key(), 3)
+		keys, err := assetstype.ParseJoinedStoreKey(iterator.Key(), 3)
 		if err != nil {
 			return err
 		}
@@ -212,14 +213,14 @@ func (k *Keeper) UpdateStakerShare(ctx sdk.Context, avsAddr, stakerID, operatorA
 		return nil
 	}
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), operatortypes.KeyPrefixAVSOperatorStakerShareState)
-	key := restakingtype.GetJoinedStoreKey(avsAddr, stakerID, operatorAddr)
+	key := assetstype.GetJoinedStoreKey(avsAddr, stakerID, operatorAddr)
 
 	optedInValue := operatortypes.DecValueField{Amount: sdkmath.LegacyNewDec(0)}
 	if store.Has(key) {
 		value := store.Get(key)
 		k.cdc.MustUnmarshal(value, &optedInValue)
 	}
-	err := restakingtype.UpdateAssetDecValue(&optedInValue.Amount, &opAmount)
+	err := assetstype.UpdateAssetDecValue(&optedInValue.Amount, &opAmount)
 	if err != nil {
 		return err
 	}
@@ -245,7 +246,7 @@ func (k *Keeper) BatchSetStakerShare(ctx sdk.Context, newValues map[string]sdkma
 
 func (k *Keeper) DeleteStakerShare(ctx sdk.Context, avsAddr, stakerID, operatorAddr string) error {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), operatortypes.KeyPrefixAVSOperatorStakerShareState)
-	key := restakingtype.GetJoinedStoreKey(avsAddr, stakerID, operatorAddr)
+	key := assetstype.GetJoinedStoreKey(avsAddr, stakerID, operatorAddr)
 	store.Delete(key)
 	return nil
 }
@@ -253,7 +254,7 @@ func (k *Keeper) DeleteStakerShare(ctx sdk.Context, avsAddr, stakerID, operatorA
 func (k *Keeper) GetStakerShare(ctx sdk.Context, avsAddr, stakerID, operatorAddr string) (sdkmath.LegacyDec, error) {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), operatortypes.KeyPrefixAVSOperatorStakerShareState)
 	var ret operatortypes.DecValueField
-	key := restakingtype.GetJoinedStoreKey(avsAddr, stakerID, operatorAddr)
+	key := assetstype.GetJoinedStoreKey(avsAddr, stakerID, operatorAddr)
 	isExit := store.Has(key)
 	if !isExit {
 		return sdkmath.LegacyDec{}, errorsmod.Wrap(operatortypes.ErrNoKeyInTheStore, fmt.Sprintf("GetStakerShare: key is %s", key))
@@ -270,7 +271,7 @@ func (k *Keeper) GetStakerByAVSOperator(ctx sdk.Context, _, _ string) (map[strin
 	iterator := sdk.KVStorePrefixIterator(store, nil)
 	defer iterator.Close()
 	for ; iterator.Valid(); iterator.Next() {
-		keys, err := restakingtype.ParseJoinedStoreKey(iterator.Key(), 3)
+		keys, err := assetstype.ParseJoinedStoreKey(iterator.Key(), 3)
 		if err != nil {
 			return nil, err
 		}

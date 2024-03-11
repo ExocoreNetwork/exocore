@@ -1,13 +1,13 @@
 syntax = "proto3";
-package exocore.restaking_assets_manage.v1;
+package exocore.assets.v1;
 
 import "cosmos/query/v1/query.proto";
 import "cosmos_proto/cosmos.proto";
-import "exocore/restaking_assets_manage/v1/tx.proto";
+import "exocore/assets/v1/tx.proto";
 import "gogoproto/gogo.proto";
 import "google/api/annotations.proto";
 
-option go_package = "github.com/ExocoreNetwork/exocore/x/restaking_assets_manage/types";
+option go_package = "github.com/ExocoreNetwork/exocore/x/assets/types";
 
 // QueryClientChainInfo is the query for getting the client chain info by index.
 message QueryClientChainInfo {
@@ -49,7 +49,7 @@ message QueryStakerAssetInfo {
 // QueryAssetInfoResponse is the response for the staker asset info.
 message QueryAssetInfoResponse {
   // asset_infos is the response for the staker asset info, indexed by the asset id.
-  map<string, StakerSingleAssetOrChangeInfo> asset_infos = 1;
+  map<string, StakerSingleAssetInfo> asset_infos = 1;
 }
 
 // QuerySpecifiedAssetAmountReq is the query for getting the staker specified asset amount.
@@ -69,7 +69,7 @@ message QueryOperatorAssetInfos {
 // QueryOperatorAssetInfosResponse is the response to the operator asset info query.
 message QueryOperatorAssetInfosResponse {
   // asset_infos is the response for the operator asset info, indexed by the asset id.
-  map<string, OperatorSingleAssetOrChangeInfo> asset_infos = 1;
+  map<string, OperatorSingleAssetInfo> asset_infos = 1;
 }
 
 // QueryOperatorSpecifiedAssetAmountReq is the query for getting the operator 
@@ -97,52 +97,52 @@ message QueryStakerExCoreAddrResponse {
   ];
 }
 
-// Query defines the gRPC query service for the restaking_assets_manage module.
+// Query defines the gRPC query service for the assets module.
 service Query {
   // ClientChainInfoByIndex queries the client chain info by index.
   rpc QueClientChainInfoByIndex(QueryClientChainInfo) returns (ClientChainInfo) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/exocore/restaking_assets_manage/v1/QueClientChainInfoByIndex";
+    option (google.api.http).get = "/exocore/assets/v1/QueClientChainInfoByIndex";
   }
   // AllClientChainInfo queries all client chain info.
   rpc QueAllClientChainInfo(QueryAllClientChainInfo) returns (QueryAllClientChainInfoResponse){
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/exocore/restaking_assets_manage/v1/QueAllClientChainInfo";
+    option (google.api.http).get = "/exocore/assets/v1/QueAllClientChainInfo";
   }
   // StakingAssetInfo queries the staking asset info.
   rpc QueStakingAssetInfo(QueryStakingAssetInfo)returns(StakingAssetInfo){
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/exocore/restaking_assets_manage/v1/QueStakingAssetInfo";
+    option (google.api.http).get = "/exocore/assets/v1/QueStakingAssetInfo";
   }
   // AllStakingAssetsInfo queries all staking assets info.
   rpc QueAllStakingAssetsInfo(QueryAllStakingAssetsInfo)returns(QueryAllStakingAssetsInfoResponse){
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/exocore/restaking_assets_manage/v1/QueAllStakingAssetsInfo";
+    option (google.api.http).get = "/exocore/assets/v1/QueAllStakingAssetsInfo";
   }
   // StakerAssetInfos queries the staker asset info.
   rpc QueStakerAssetInfos(QueryStakerAssetInfo)returns(QueryAssetInfoResponse){
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/exocore/restaking_assets_manage/v1/QueStakerAssetInfos";
+    option (google.api.http).get = "/exocore/assets/v1/QueStakerAssetInfos";
   }
   // StakerSpecifiedAssetAmount queries the staker specified asset amount.
-  rpc QueStakerSpecifiedAssetAmount(QuerySpecifiedAssetAmountReq)returns(StakerSingleAssetOrChangeInfo){
+  rpc QueStakerSpecifiedAssetAmount(QuerySpecifiedAssetAmountReq)returns(StakerSingleAssetInfo){
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/exocore/restaking_assets_manage/v1/QueStakerSpecifiedAssetAmount";
+    option (google.api.http).get = "/exocore/assets/v1/QueStakerSpecifiedAssetAmount";
   }
   // OperatorAssetInfos queries the operator asset info.
   rpc QueOperatorAssetInfos(QueryOperatorAssetInfos)returns(QueryOperatorAssetInfosResponse){
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/exocore/restaking_assets_manage/v1/QueOperatorAssetInfos";
+    option (google.api.http).get = "/exocore/assets/v1/QueOperatorAssetInfos";
   }
   // OperatorSpecifiedAssetAmount queries the operator specified asset amount.
-  rpc QueOperatorSpecifiedAssetAmount(QueryOperatorSpecifiedAssetAmountReq) returns(OperatorSingleAssetOrChangeInfo){
+  rpc QueOperatorSpecifiedAssetAmount(QueryOperatorSpecifiedAssetAmountReq) returns(OperatorSingleAssetInfo){
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/exocore/restaking_assets_manage/v1/QueStakerSpecifiedAssetAmount";
+    option (google.api.http).get = "/exocore/assets/v1/QueStakerSpecifiedAssetAmount";
   }
   // StakerExCoreAddr queries the staker exocore address.
   rpc QueStakerExoCoreAddr(QueryStakerExCoreAddr) returns (QueryStakerExCoreAddrResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/exocore/restaking_assets_manage/v1/QueStakerExoCoreAddr/{staker}";
+    option (google.api.http).get = "/exocore/assets/v1/QueStakerExoCoreAddr/{staker}";
   }
 }
 

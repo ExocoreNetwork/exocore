@@ -1,7 +1,7 @@
 package keeper
 
 import (
-	restakingtype "github.com/ExocoreNetwork/exocore/x/restaking_assets_manage/types"
+	assetstype "github.com/ExocoreNetwork/exocore/x/assets/types"
 	"github.com/cosmos/cosmos-sdk/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/common/hexutil"
@@ -9,8 +9,8 @@ import (
 
 // SetClientChainInfo todo: Temporarily use LayerZeroChainID as key.
 // It provides a function to register the client chains supported by exoCore.It's called by genesis configuration now,however it will be called by the governance in the future
-func (k Keeper) SetClientChainInfo(ctx sdk.Context, info *restakingtype.ClientChainInfo) (err error) {
-	store := prefix.NewStore(ctx.KVStore(k.storeKey), restakingtype.KeyPrefixClientChainInfo)
+func (k Keeper) SetClientChainInfo(ctx sdk.Context, info *assetstype.ClientChainInfo) (err error) {
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), assetstype.KeyPrefixClientChainInfo)
 
 	bz := k.cdc.MustMarshal(info)
 
@@ -19,33 +19,33 @@ func (k Keeper) SetClientChainInfo(ctx sdk.Context, info *restakingtype.ClientCh
 }
 
 func (k Keeper) IsExistedClientChain(ctx sdk.Context, index uint64) bool {
-	store := prefix.NewStore(ctx.KVStore(k.storeKey), restakingtype.KeyPrefixClientChainInfo)
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), assetstype.KeyPrefixClientChainInfo)
 	return store.Has([]byte(hexutil.EncodeUint64(index)))
 }
 
 // GetClientChainInfoByIndex using LayerZeroChainID as the query index.
-func (k Keeper) GetClientChainInfoByIndex(ctx sdk.Context, index uint64) (info *restakingtype.ClientChainInfo, err error) {
-	store := prefix.NewStore(ctx.KVStore(k.storeKey), restakingtype.KeyPrefixClientChainInfo)
+func (k Keeper) GetClientChainInfoByIndex(ctx sdk.Context, index uint64) (info *assetstype.ClientChainInfo, err error) {
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), assetstype.KeyPrefixClientChainInfo)
 	ifExist := store.Has([]byte(hexutil.EncodeUint64(index)))
 	if !ifExist {
-		return nil, restakingtype.ErrNoClientChainKey
+		return nil, assetstype.ErrNoClientChainKey
 	}
 
 	value := store.Get([]byte(hexutil.EncodeUint64(index)))
 
-	ret := restakingtype.ClientChainInfo{}
+	ret := assetstype.ClientChainInfo{}
 	k.cdc.MustUnmarshal(value, &ret)
 	return &ret, nil
 }
 
-func (k Keeper) GetAllClientChainInfo(ctx sdk.Context) (infos map[uint64]*restakingtype.ClientChainInfo, err error) {
+func (k Keeper) GetAllClientChainInfo(ctx sdk.Context) (infos map[uint64]*assetstype.ClientChainInfo, err error) {
 	store := ctx.KVStore(k.storeKey)
-	iterator := sdk.KVStorePrefixIterator(store, restakingtype.KeyPrefixClientChainInfo)
+	iterator := sdk.KVStorePrefixIterator(store, assetstype.KeyPrefixClientChainInfo)
 	defer iterator.Close()
 
-	ret := make(map[uint64]*restakingtype.ClientChainInfo, 0)
+	ret := make(map[uint64]*assetstype.ClientChainInfo, 0)
 	for ; iterator.Valid(); iterator.Next() {
-		var chainInfo restakingtype.ClientChainInfo
+		var chainInfo assetstype.ClientChainInfo
 		k.cdc.MustUnmarshal(iterator.Value(), &chainInfo)
 		ret[chainInfo.LayerZeroChainID] = &chainInfo
 	}

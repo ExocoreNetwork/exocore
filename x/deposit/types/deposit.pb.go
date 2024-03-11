@@ -23,7 +23,7 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
-// GenesisState defines the restaking_assets_manage module's genesis state.
+// GenesisState defines the deposit module's genesis state.
 type Params struct {
 	// exocore_lz_app_address is the address of the exocore lz app.
 	ExoCoreLzAppAddress string `protobuf:"bytes,1,opt,name=exocore_lz_app_address,json=exocoreLzAppAddress,proto3" json:"exocore_lz_app_address,omitempty"`

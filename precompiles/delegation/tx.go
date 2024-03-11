@@ -22,7 +22,7 @@ const (
 	CtxKeyTxHash = "TxHash"
 )
 
-// DelegateToThroughClientChain delegate the client chain assets to the operator through client chain, that will change the states in delegation and restaking_assets_manage module
+// DelegateToThroughClientChain delegate the client chain assets to the operator through client chain, that will change the states in delegation and assets module
 func (p Precompile) DelegateToThroughClientChain(
 	ctx sdk.Context,
 	_ common.Address,
@@ -52,7 +52,7 @@ func (p Precompile) DelegateToThroughClientChain(
 	return method.Outputs.Pack(true)
 }
 
-// UndelegateFromThroughClientChain Undelegation the client chain assets from the operator through client chain, that will change the states in delegation and restaking_assets_manage module
+// UndelegateFromThroughClientChain Undelegation the client chain assets from the operator through client chain, that will change the states in delegation and assets module
 func (p Precompile) UndelegateFromThroughClientChain(
 	ctx sdk.Context,
 	_ common.Address,

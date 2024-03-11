@@ -5,9 +5,10 @@ import (
 	"strconv"
 	"strings"
 
+	assetstype "github.com/ExocoreNetwork/exocore/x/assets/types"
+
 	errorsmod "cosmossdk.io/errors"
 	sdkmath "cosmossdk.io/math"
-	restakingtype "github.com/ExocoreNetwork/exocore/x/restaking_assets_manage/types"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/client/tx"
@@ -17,7 +18,7 @@ import (
 // NewTxCmd returns a root CLI command handler for deposit commands
 func NewTxCmd() *cobra.Command {
 	txCmd := &cobra.Command{
-		Use:                        restakingtype.ModuleName,
+		Use:                        assetstype.ModuleName,
 		Short:                      "restaking subcommands",
 		DisableFlagParsing:         true,
 		SuggestionsMinimumDistance: 2,
@@ -45,20 +46,20 @@ func RegisterClientChain() *cobra.Command {
 			}
 
 			sender := cliCtx.GetFromAddress()
-			msg := &restakingtype.RegisterClientChainReq{
+			msg := &assetstype.RegisterClientChainReq{
 				FromAddress: sender.String(),
-				Info: &restakingtype.ClientChainInfo{
+				Info: &assetstype.ClientChainInfo{
 					Name:     args[0],
 					MetaInfo: args[1],
 				},
 			}
 			lzChainID, err := strconv.ParseUint(args[2], 10, 64)
 			if err != nil {
-				return errorsmod.Wrap(restakingtype.ErrCliCmdInputArg, fmt.Sprintf("error arg is:%v", args[2]))
+				return errorsmod.Wrap(assetstype.ErrCliCmdInputArg, fmt.Sprintf("error arg is:%v", args[2]))
 			}
 			addressLength, err := strconv.ParseUint(args[3], 10, 64)
 			if err != nil {
-				return errorsmod.Wrap(restakingtype.ErrCliCmdInputArg, fmt.Sprintf("error arg is:%v", args[3]))
+				return errorsmod.Wrap(assetstype.ErrCliCmdInputArg, fmt.Sprintf("error arg is:%v", args[3]))
 			}
 			msg.Info.LayerZeroChainID = lzChainID
 			msg.Info.AddressLength = uint32(addressLength)
@@ -87,9 +88,9 @@ func RegisterAsset() *cobra.Command {
 			}
 
 			sender := cliCtx.GetFromAddress()
-			msg := &restakingtype.RegisterAssetReq{
+			msg := &assetstype.RegisterAssetReq{
 				FromAddress: sender.String(),
-				Info: &restakingtype.AssetInfo{
+				Info: &assetstype.AssetInfo{
 					Name:     args[0],
 					Symbol:   args[1],
 					Address:  strings.ToLower(args[2]),
@@ -98,16 +99,16 @@ func RegisterAsset() *cobra.Command {
 			}
 			totalSupply, ok := sdkmath.NewIntFromString(args[4])
 			if !ok {
-				return errorsmod.Wrap(restakingtype.ErrCliCmdInputArg, fmt.Sprintf("error arg is:%v", args[4]))
+				return errorsmod.Wrap(assetstype.ErrCliCmdInputArg, fmt.Sprintf("error arg is:%v", args[4]))
 			}
 
 			lzChainID, err := strconv.ParseUint(args[5], 10, 64)
 			if err != nil {
-				return errorsmod.Wrap(restakingtype.ErrCliCmdInputArg, fmt.Sprintf("error arg is:%v", args[5]))
+				return errorsmod.Wrap(assetstype.ErrCliCmdInputArg, fmt.Sprintf("error arg is:%v", args[5]))
 			}
 			decimal, err := strconv.ParseUint(args[6], 10, 64)
 			if err != nil {
-				return errorsmod.Wrap(restakingtype.ErrCliCmdInputArg, fmt.Sprintf("error arg is:%v", args[6]))
+				return errorsmod.Wrap(assetstype.ErrCliCmdInputArg, fmt.Sprintf("error arg is:%v", args[6]))
 			}
 
 			msg.Info.TotalSupply = totalSupply

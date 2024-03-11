@@ -20,6 +20,8 @@ message DecValueField {
 }
 
 // ClientChainEarningAddrList is the list of client chain earning addresses.
+// Because the reward token provide by the AVS might be located at different client chain, the operator need to
+// provide the different client chain address to receive the token rewards.
 message ClientChainEarningAddrList {
   // earning_info_list is the contents of ClientChainEarningAddrList.
   repeated ClientChainEarningAddrInfo earning_info_list = 1;
@@ -49,14 +51,14 @@ message OperatorInfo {
 message OptedInfo {
   // slash_contract is the slash contract address of AVS opted-in by the operator
   string slash_contract = 1;
-  // opted_in_height is the height at which the operator opted in
+  // opted_in_height is the exocore block height at which the operator opted in
   uint64 opted_in_height = 2;
-  // opted_out_height is the height at which the operator opted out
+  // opted_out_height is the exocore block height at which the operator opted out
   uint64 opted_out_height = 3;
 }
 
 // OptedInAssetState is the state of opted-in asset
-message OptedInAssetState{
+message OptedInAssetState {
   // amount of the opted-in asset
   string amount = 1
   [
@@ -77,14 +79,14 @@ message OptedInAssetState{
 message OperatorSlashInfo {
   // slash_contract is the address of slash contract
   string slash_contract = 1;
-  // slash_height is the height at which the slash event is submitted
-  int64 slash_height = 2;
-  // occurred_height is the height at which the slash event occurs
-  int64 occurred_height = 3;
-  // execute_height is the height at which the slash event is executed
-  int64 execute_height = 4;
-  // is_veto is a flag to indicate if this slash is vetoed
-  bool is_veto = 5;
+  // submitted_height is the exocore block height at which the slash event is submitted
+  int64 submitted_height = 2;
+  // event_height is the exocore block height at which the slash event occurs
+  int64 event_height = 3;
+  // processed_height is the exocore block height at which the slash event is processed
+  int64 processed_height = 4;
+  // is_vetoed is a flag to indicate if this slash is vetoed
+  bool is_vetoed = 5;
   // slash_proportion is the proportion of assets that need to be slashed
   string slash_proportion = 6
   [

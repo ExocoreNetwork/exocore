@@ -10,7 +10,7 @@ import (
 
 	errorsmod "cosmossdk.io/errors"
 	sdkmath "cosmossdk.io/math"
-	"github.com/ExocoreNetwork/exocore/x/restaking_assets_manage/types"
+	"github.com/ExocoreNetwork/exocore/x/assets/types"
 	rtypes "github.com/ExocoreNetwork/exocore/x/reward/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/common"
@@ -136,9 +136,9 @@ func (k Keeper) RewardForWithdraw(ctx sdk.Context, event *RewardParams) error {
 	}
 
 	// TODO
-	changeAmount := types.StakerSingleAssetOrChangeInfo{
-		TotalDepositAmountOrWantChangeValue: event.OpAmount,
-		CanWithdrawAmountOrWantChangeValue:  event.OpAmount,
+	changeAmount := types.StakerSingleAssetChangeInfo{
+		ChangeForTotalDeposit: event.OpAmount,
+		ChangeForWithdrawable: event.OpAmount,
 	}
 	err := k.restakingStateKeeper.UpdateStakerAssetState(ctx, stakeID, assetID, changeAmount)
 	if err != nil {

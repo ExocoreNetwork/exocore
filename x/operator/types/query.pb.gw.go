@@ -70,7 +70,7 @@ func local_request_Query_GetOperatorInfo_0(ctx context.Context, marshaler runtim
 }
 
 func request_Query_QueryOperatorConsKeyForChainID_0(ctx context.Context, marshaler runtime.Marshaler, client QueryClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq QueryOperatorConsKeyForChainIDRequest
+	var protoReq QueryOperatorConsKeyRequest
 	var metadata runtime.ServerMetadata
 
 	var (
@@ -108,7 +108,7 @@ func request_Query_QueryOperatorConsKeyForChainID_0(ctx context.Context, marshal
 }
 
 func local_request_Query_QueryOperatorConsKeyForChainID_0(ctx context.Context, marshaler runtime.Marshaler, server QueryServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq QueryOperatorConsKeyForChainIDRequest
+	var protoReq QueryOperatorConsKeyRequest
 	var metadata runtime.ServerMetadata
 
 	var (

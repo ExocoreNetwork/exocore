@@ -18,7 +18,7 @@ import (
 func NewTxCmd() *cobra.Command {
 	txCmd := &cobra.Command{
 		Use:                        operatortypes.ModuleName,
-		Short:                      "delegation subcommands",
+		Short:                      "operator subcommands",
 		DisableFlagParsing:         true,
 		SuggestionsMinimumDistance: 2,
 		RunE:                       client.ValidateCmd,

@@ -2,9 +2,9 @@ package keeper_test
 
 import (
 	sdkmath "cosmossdk.io/math"
+	"github.com/ExocoreNetwork/exocore/x/assets/types"
 	"github.com/ExocoreNetwork/exocore/x/deposit/keeper"
 	deposittype "github.com/ExocoreNetwork/exocore/x/deposit/types"
-	"github.com/ExocoreNetwork/exocore/x/restaking_assets_manage/types"
 	"github.com/ethereum/go-ethereum/common"
 )
 
@@ -36,10 +36,10 @@ func (suite *DepositTestSuite) TestDeposit() {
 	stakerID, assetID := types.GetStakeIDAndAssetID(params.ClientChainLzID, params.StakerAddress, params.AssetsAddress)
 	info, err := suite.App.StakingAssetsManageKeeper.GetStakerSpecifiedAssetInfo(suite.Ctx, stakerID, assetID)
 	suite.NoError(err)
-	suite.Equal(types.StakerSingleAssetOrChangeInfo{
-		TotalDepositAmountOrWantChangeValue:  params.OpAmount,
-		CanWithdrawAmountOrWantChangeValue:   params.OpAmount,
-		WaitUnbondingAmountOrWantChangeValue: sdkmath.NewInt(0),
+	suite.Equal(types.StakerSingleAssetInfo{
+		TotalDepositAmount:  params.OpAmount,
+		WithdrawableAmount:  params.OpAmount,
+		WaitUnbondingAmount: sdkmath.NewInt(0),
 	}, *info)
 
 	assetInfo, err := suite.App.StakingAssetsManageKeeper.GetStakingAssetInfo(suite.Ctx, assetID)

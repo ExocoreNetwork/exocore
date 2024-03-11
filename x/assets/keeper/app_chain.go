@@ -1,7 +1,7 @@
 package keeper
 
 import (
-	restakingtype "github.com/ExocoreNetwork/exocore/x/restaking_assets_manage/types"
+	assetstype "github.com/ExocoreNetwork/exocore/x/assets/types"
 	"github.com/cosmos/cosmos-sdk/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -11,16 +11,16 @@ import (
 // genesis process. In the future, it should be called by governance.
 func (k Keeper) SetAppChainInfo(
 	ctx sdk.Context,
-	info restakingtype.AppChainInfo,
+	info assetstype.AppChainInfo,
 ) {
-	store := prefix.NewStore(ctx.KVStore(k.storeKey), restakingtype.KeyPrefixAppChainInfo)
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), assetstype.KeyPrefixAppChainInfo)
 	bz := k.cdc.MustMarshal(&info)
 	store.Set([]byte(info.ChainId), bz)
 }
 
 // AppChainInfoIsExist returns whether the app chain info for the specified chainId exists
 func (k Keeper) AppChainInfoIsExist(ctx sdk.Context, chainID string) bool {
-	store := prefix.NewStore(ctx.KVStore(k.storeKey), restakingtype.KeyPrefixAppChainInfo)
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), assetstype.KeyPrefixAppChainInfo)
 	return store.Has([]byte(chainID))
 }
 
@@ -28,14 +28,14 @@ func (k Keeper) AppChainInfoIsExist(ctx sdk.Context, chainID string) bool {
 func (k Keeper) GetAppChainInfoByChainID(
 	ctx sdk.Context,
 	chainID string,
-) (info restakingtype.AppChainInfo, err error) {
-	store := prefix.NewStore(ctx.KVStore(k.storeKey), restakingtype.KeyPrefixAppChainInfo)
+) (info assetstype.AppChainInfo, err error) {
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), assetstype.KeyPrefixAppChainInfo)
 	ifExist := store.Has([]byte(chainID))
 	if !ifExist {
-		return restakingtype.AppChainInfo{}, restakingtype.ErrNoAppChainKey
+		return assetstype.AppChainInfo{}, assetstype.ErrNoAppChainKey
 	}
 	value := store.Get([]byte(chainID))
-	ret := restakingtype.AppChainInfo{}
+	ret := assetstype.AppChainInfo{}
 	k.cdc.MustUnmarshal(value, &ret)
 	return ret, nil
 }
@@ -43,14 +43,14 @@ func (k Keeper) GetAppChainInfoByChainID(
 // GetAllAppChainInfo gets all the app chain info, indexed by chainId
 func (k Keeper) GetAllAppChainInfo(
 	ctx sdk.Context,
-) (infos map[string]restakingtype.AppChainInfo) {
+) (infos map[string]assetstype.AppChainInfo) {
 	store := ctx.KVStore(k.storeKey)
-	iterator := sdk.KVStorePrefixIterator(store, restakingtype.KeyPrefixAppChainInfo)
+	iterator := sdk.KVStorePrefixIterator(store, assetstype.KeyPrefixAppChainInfo)
 	defer iterator.Close()
 
-	ret := make(map[string]restakingtype.AppChainInfo, 0)
+	ret := make(map[string]assetstype.AppChainInfo, 0)
 	for ; iterator.Valid(); iterator.Next() {
-		var chainInfo restakingtype.AppChainInfo
+		var chainInfo assetstype.AppChainInfo
 		k.cdc.MustUnmarshal(iterator.Value(), &chainInfo)
 		ret[chainInfo.ChainId] = chainInfo
 	}

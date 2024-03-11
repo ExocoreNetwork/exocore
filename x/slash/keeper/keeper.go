@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	sdkmath "cosmossdk.io/math"
-	"github.com/ExocoreNetwork/exocore/x/restaking_assets_manage/keeper"
+	"github.com/ExocoreNetwork/exocore/x/assets/keeper"
 	"github.com/cometbft/cometbft/libs/log"
 	"github.com/cosmos/cosmos-sdk/codec"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
