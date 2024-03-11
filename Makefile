@@ -297,7 +297,9 @@ test: test-unit
 test-all: test-unit test-race
 # For unit tests we don't want to execute the upgrade tests in tests/e2e but
 # we want to include all unit tests in the subfolders (tests/e2e/*)
-PACKAGES_UNIT=$(shell go list ./... | grep -v '/tests/e2e$$')
+# We also want to exclude the testutil folder because it contains only
+# helper functions for the tests.
+PACKAGES_UNIT=$(shell go list ./... | grep -v '/tests/e2e$$' | grep -v 'testutil')
 TEST_PACKAGES=./...
 TEST_TARGETS := test-unit test-unit-cover test-race
 
