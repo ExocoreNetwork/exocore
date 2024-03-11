@@ -38,6 +38,7 @@ jobs:
           make test-unit-cover
         if: env.GIT_DIFF
       - name: Check if test coverage is above threshold
+        id: output-coverage
         uses: vladopajic/go-test-coverage@v2
         with:
           profile: cover.out
@@ -45,10 +46,6 @@ jobs:
           # TODO: increase this threshold with time to 80
           threshold-total: 10
         if: env.GIT_DIFF
-      - name: Extract coverage data
-        id: extract_coverage
-        run: |
-          echo "coverage=$(head -n 1 $GITHUB_ACTION | awk -F'=' '{print $2}')" >> $GITHUB_ENV
       - name: Find comment
         id: find-comment
         uses: peter-evans/find-comment@v2
@@ -62,7 +59,6 @@ jobs:
           issue-number: ${{ github.event.pull_request.number }}
           comment-id: ${{ steps.find-comment.outputs.comment-id }}
           body: |
-            Total Coverage: ${{ env.coverage }}
+            Total Coverage: ${{ steps.output-coverage.outputs.total-coverage }}
           edit-mode: replace
         if: env.GIT_DIFF && github.event_name == 'pull_request'
-      
