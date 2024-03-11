@@ -307,11 +307,3 @@ func (agC *aggregatorContext) prepareRound(ctx sdk.Context, block uint64) {
 		}
 	}
 }
-
-func (agc *aggregatorContext) recache(from, to uint64, k Keeper) {
-	//block_from'endblocker --> from_to'endblock
-	//f.prepare->(f+1).msgs->(f+1).seal
-	//...(to-2).prepare->(to-1).msgs->(to-1).seal
-	//to.prepare-> return
-	validatorsPower := k.GetValidators
-}
