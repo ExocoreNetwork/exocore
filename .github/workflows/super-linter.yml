@@ -36,6 +36,7 @@ jobs:
           VALIDATE_NATURAL_LANGUAGE: false
           VALIDATE_OPENAPI: false
           VALIDATE_JSCPD: false
+          VALIDATE_JSON: true
           # separate workflow
           VALIDATE_GO: false
           VALIDATE_GO_MODULES: false
