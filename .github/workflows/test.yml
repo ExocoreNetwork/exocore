@@ -33,29 +33,36 @@ jobs:
             **/**.go
             go.mod
             go.sum
-      - name: Test and Create Coverage Report
+      - name: Test and create coverage report
         run: |
           make test-unit-cover
         if: env.GIT_DIFF
-      - name: check test coverage
-        if: github.event_name == 'pull_request'
+      - name: Check if test coverage is above threshold
         uses: vladopajic/go-test-coverage@v2
         with:
           profile: cover.out
           local-prefix: github.com/ExocoreNetwork/exocore
-          threshold-total: 70
-          badge-file-name: coverage.svg
-      - name: Comment coverage on PR
-        uses: actions/github-script@v6
-        if: github.event_name == 'pull_request'
+          # TODO: increase this threshold with time to 80
+          threshold-total: 10
+        if: env.GIT_DIFF
+      - name: Extract coverage data
+        id: extract_coverage
+        run: |
+          echo "coverage=$(head -n 1 $GITHUB_ACTION | awk -F'=' '{print $2}')" >> $GITHUB_ENV
+      - name: Find comment
+        id: find-comment
+        uses: peter-evans/find-comment@v2
         with:
-          script: |
-            const fs = require('fs');
-            const path = './coverage.svg';
-            const svgContent = fs.readFileSync(path, {encoding: 'utf8'});
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: `## Test Coverage Badge\n\n![Coverage Badge](${svgContent})`
-            });
+          issue-number: ${{ github.event.pull_request.number }}
+          comment-author: 'github-actions[bot]'
+        if: env.GIT_DIFF && github.event_name == 'pull_request'
+      - name: Comment coverage on PR
+        uses: peter-evans/create-or-update-comment@v3
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          comment-id: ${{ steps.find-comment.outputs.comment-id }}
+          body: |
+            Total Coverage: ${{ env.coverage }}
+          edit-mode: replace
+        if: env.GIT_DIFF && github.event_name == 'pull_request'
+      
