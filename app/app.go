@@ -645,6 +645,7 @@ func NewExocoreApp(
 			app.WithdrawKeeper,
 			app.ExoSlashKeeper,
 			app.RewardKeeper,
+			app.OperatorKeeper,
 		),
 	)
 	epochsKeeper := epochskeeper.NewKeeper(appCodec, keys[epochstypes.StoreKey])

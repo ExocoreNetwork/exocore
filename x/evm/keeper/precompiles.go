@@ -2,6 +2,8 @@ package keeper
 
 import (
 	"fmt"
+	operatorPrecompile "github.com/ExocoreNetwork/exocore/precompiles/operator"
+	operatorKeeper "github.com/ExocoreNetwork/exocore/x/operator/keeper"
 
 	stakingStateKeeper "github.com/ExocoreNetwork/exocore/x/restaking_assets_manage/keeper"
 	rewardKeeper "github.com/ExocoreNetwork/exocore/x/reward/keeper"
@@ -47,6 +49,8 @@ func AvailablePrecompiles(
 	withdrawKeeper withdrawKeeper.Keeper,
 	slashKeeper exoslashKeeper.Keeper,
 	rewardKeeper rewardKeeper.Keeper,
+	operatorKeeper operatorKeeper.Keeper,
+
 ) map[common.Address]vm.PrecompiledContract {
 	// Clone the mapping from the latest EVM fork.
 	precompiles := maps.Clone(vm.PrecompiledContractsBerlin)
@@ -92,6 +96,13 @@ func AvailablePrecompiles(
 	if err != nil {
 		panic(fmt.Errorf("failed to load  reward precompile: %w", err))
 	}
+
+	operatorPrecompile, err := operatorPrecompile.NewPrecompile(operatorKeeper)
+	if err != nil {
+		panic(fmt.Errorf("failed to load  operator precompile: %w", err))
+	}
+	precompiles[operatorPrecompile.Address()] = operatorPrecompile
+
 	precompiles[slashPrecompile.Address()] = slashPrecompile
 	precompiles[rewardPrecompile.Address()] = rewardPrecompile
 	precompiles[withdrawPrecompile.Address()] = withdrawPrecompile
