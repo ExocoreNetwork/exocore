@@ -1,0 +1,39 @@
+{
+  "inputs":  [
+    {
+      "internalType":  "uint16",
+      "name":  "clientChainLzId",
+      "type":  "uint16"
+    },
+    {
+      "internalType":  "bytes",
+      "name":  "earningsAddress",
+      "type":  "bytes"
+    },
+    {
+      "internalType":  "bytes",
+      "name":  "approveAddress",
+      "type":  "bytes"
+    },
+    {
+      "internalType":  "bytes",
+      "name":  "clientChainEarningAddr",
+      "type":  "bytes"
+    },
+    {
+      "internalType":  "string",
+      "name":  "operatorMetaInfo",
+      "type":  "string"
+    }
+  ],
+  "name":  "RegisterOperator",
+  "outputs":  [
+    {
+      "internalType":  "bool",
+      "name":  "success",
+      "type":  "bool"
+    }
+  ],
+  "stateMutability":  "nonpayable",
+  "type":  "function"
+}
