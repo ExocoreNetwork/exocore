@@ -2,13 +2,18 @@ package cli
 
 import (
 	"fmt"
+	"strconv"
 	"time"
 
 	"github.com/spf13/cobra"
 
 	"github.com/cosmos/cosmos-sdk/client"
+	"github.com/cosmos/cosmos-sdk/client/flags"
+
 	// "github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/ExocoreNetwork/exocore/x/taskmanageravs/types"
+	taskTypes "github.com/ExocoreNetwork/exocore/x/taskmanageravs/types"
+	"github.com/cosmos/cosmos-sdk/client/tx"
 )
 
 var (
@@ -31,6 +36,41 @@ func GetTxCmd() *cobra.Command {
 	}
 
 	// this line is used by starport scaffolding # 1
+	cmd.AddCommand(
+		CreateTask(),
+	)
+	return cmd
+}
 
-	return cmd 
+func CreateTask() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "Set task params to taskManager module",
+		Short: "Set task params to taskManager module",
+		Args:  cobra.ExactArgs(2),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			cliCtx, err := client.GetClientTxContext(cmd)
+			if err != nil {
+				return err
+			}
+			taskId, err := strconv.Atoi(args[2])
+			if err != nil {
+				return err
+			}
+
+			quorumThresholdPercentage, err := strconv.Atoi(args[3])
+			if err != nil {
+				return err
+			}
+			task := &taskTypes.TaskInfo{
+				Name:                      args[0],
+				MetaInfo:                  args[1],
+				TaskId:                    uint64(taskId),
+				QuorumThresholdPercentage: uint64(quorumThresholdPercentage),
+			}
+			return tx.GenerateOrBroadcastTxCLI(cliCtx, cmd.Flags(), task)
+		},
+	}
+
+	flags.AddTxFlagsToCmd(cmd)
+	return cmd
 }
