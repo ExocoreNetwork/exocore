@@ -27,8 +27,6 @@ jobs:
           go-version: '1.21'
           check-latest: true
       - uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event.pull_request.head.sha }}
       - uses: technote-space/get-diff-action@v6.1.2
         with:
           PATTERNS: |
