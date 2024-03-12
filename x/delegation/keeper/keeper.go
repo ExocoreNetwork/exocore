@@ -9,7 +9,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core"
 	ethtypes "github.com/ethereum/go-ethereum/core/types"
 )
@@ -19,7 +18,7 @@ type Keeper struct {
 	cdc      codec.BinaryCodec
 
 	// other keepers
-	restakingStateKeeper      keeper.Keeper
+	assetsKeeper              keeper.Keeper
 	depositKeeper             depositkeeper.Keeper
 	slashKeeper               delegationtype.ISlashKeeper
 	expectedOperatorInterface delegationtype.ExpectedOperatorInterface
@@ -29,7 +28,7 @@ type Keeper struct {
 func NewKeeper(
 	storeKey storetypes.StoreKey,
 	cdc codec.BinaryCodec,
-	restakingStateKeeper keeper.Keeper,
+	assetsKeeper keeper.Keeper,
 	depositKeeper depositkeeper.Keeper,
 	slashKeeper delegationtype.ISlashKeeper,
 	operatorKeeper delegationtype.ExpectedOperatorInterface,
@@ -37,17 +36,11 @@ func NewKeeper(
 	return Keeper{
 		storeKey:                  storeKey,
 		cdc:                       cdc,
-		restakingStateKeeper:      restakingStateKeeper,
+		assetsKeeper:              assetsKeeper,
 		depositKeeper:             depositKeeper,
 		slashKeeper:               slashKeeper,
 		expectedOperatorInterface: operatorKeeper,
 	}
-}
-
-// GetExoCoreLzAppAddress Get exoCoreLzAppAddr from deposit keeper,it will be used when check the caller of precompile contract.
-// This function needs to be moved to `assets` module,which will facilitate its use for the other modules
-func (k *Keeper) GetExoCoreLzAppAddress(ctx sdk.Context) (common.Address, error) {
-	return k.depositKeeper.GetExoCoreLzAppAddress(ctx)
 }
 
 // SetHooks stores the given hooks implementations.

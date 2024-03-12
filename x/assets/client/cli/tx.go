@@ -28,8 +28,41 @@ func NewTxCmd() *cobra.Command {
 	txCmd.AddCommand(
 		RegisterClientChain(),
 		RegisterAsset(),
+		UpdateParams(),
 	)
 	return txCmd
+}
+
+// UpdateParams todo: it should be a gov proposal command in future.
+func UpdateParams() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "UpdateParams ExoCoreLZAppAddr ExoCoreLzAppEventTopic",
+		Short: "Set ExoCoreLZAppAddr and ExoCoreLzAppEventTopic params to assets module",
+		Args:  cobra.ExactArgs(2),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			cliCtx, err := client.GetClientTxContext(cmd)
+			if err != nil {
+				return err
+			}
+
+			sender := cliCtx.GetFromAddress()
+			msg := &assetstype.MsgUpdateParams{
+				Authority: sender.String(),
+				Params: assetstype.Params{
+					ExocoreLzAppAddress:    args[0],
+					ExocoreLzAppEventTopic: args[1],
+				},
+			}
+
+			if err := msg.ValidateBasic(); err != nil {
+				return err
+			}
+			return tx.GenerateOrBroadcastTxCLI(cliCtx, cmd.Flags(), msg)
+		},
+	}
+
+	flags.AddTxFlagsToCmd(cmd)
+	return cmd
 }
 
 // RegisterClientChain register client chain
@@ -55,11 +88,11 @@ func RegisterClientChain() *cobra.Command {
 			}
 			lzChainID, err := strconv.ParseUint(args[2], 10, 64)
 			if err != nil {
-				return errorsmod.Wrap(assetstype.ErrCliCmdInputArg, fmt.Sprintf("error arg is:%v", args[2]))
+				return errorsmod.Wrap(assetstype.ErrInvalidCliCmdArg, fmt.Sprintf("error arg is:%v", args[2]))
 			}
 			addressLength, err := strconv.ParseUint(args[3], 10, 32)
 			if err != nil {
-				return errorsmod.Wrap(assetstype.ErrCliCmdInputArg, fmt.Sprintf("error arg is:%v", args[3]))
+				return errorsmod.Wrap(assetstype.ErrInvalidCliCmdArg, fmt.Sprintf("error arg is:%v", args[3]))
 			}
 			msg.Info.LayerZeroChainID = lzChainID
 			msg.Info.AddressLength = uint32(addressLength)
@@ -99,16 +132,16 @@ func RegisterAsset() *cobra.Command {
 			}
 			totalSupply, ok := sdkmath.NewIntFromString(args[4])
 			if !ok {
-				return errorsmod.Wrap(assetstype.ErrCliCmdInputArg, fmt.Sprintf("error arg is:%v", args[4]))
+				return errorsmod.Wrap(assetstype.ErrInvalidCliCmdArg, fmt.Sprintf("error arg is:%v", args[4]))
 			}
 
 			lzChainID, err := strconv.ParseUint(args[5], 10, 64)
 			if err != nil {
-				return errorsmod.Wrap(assetstype.ErrCliCmdInputArg, fmt.Sprintf("error arg is:%v", args[5]))
+				return errorsmod.Wrap(assetstype.ErrInvalidCliCmdArg, fmt.Sprintf("error arg is:%v", args[5]))
 			}
 			decimal, err := strconv.ParseUint(args[6], 10, 32)
 			if err != nil {
-				return errorsmod.Wrap(assetstype.ErrCliCmdInputArg, fmt.Sprintf("error arg is:%v", args[6]))
+				return errorsmod.Wrap(assetstype.ErrInvalidCliCmdArg, fmt.Sprintf("error arg is:%v", args[6]))
 			}
 
 			msg.Info.TotalSupply = totalSupply

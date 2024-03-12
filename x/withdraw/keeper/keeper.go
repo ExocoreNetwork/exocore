@@ -18,22 +18,22 @@ type (
 		storeKey storetypes.StoreKey
 
 		// restaking keepers for asset status update
-		restakingStateKeeper restakingkeeper.Keeper
-		depositKeeper        depositkeeper.Keeper
+		assetsKeeper  restakingkeeper.Keeper
+		depositKeeper depositkeeper.Keeper
 	}
 )
 
 func NewKeeper(
 	cdc codec.BinaryCodec,
 	storeKey storetypes.StoreKey,
-	restakingStateKeeper restakingkeeper.Keeper,
+	assetsKeeper restakingkeeper.Keeper,
 	depositKeeper depositkeeper.Keeper,
 ) *Keeper {
 	return &Keeper{
-		cdc:                  cdc,
-		storeKey:             storeKey,
-		restakingStateKeeper: restakingStateKeeper,
-		depositKeeper:        depositKeeper,
+		cdc:           cdc,
+		storeKey:      storeKey,
+		assetsKeeper:  assetsKeeper,
+		depositKeeper: depositKeeper,
 	}
 }
 

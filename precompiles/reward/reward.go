@@ -5,8 +5,8 @@ import (
 	"embed"
 	"fmt"
 
-	stakingStateKeeper "github.com/ExocoreNetwork/exocore/x/assets/keeper"
-	rewardKeeper "github.com/ExocoreNetwork/exocore/x/reward/keeper"
+	assetskeeper "github.com/ExocoreNetwork/exocore/x/assets/keeper"
+	rewardkeeper "github.com/ExocoreNetwork/exocore/x/reward/keeper"
 	"github.com/cometbft/cometbft/libs/log"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -27,15 +27,15 @@ var f embed.FS
 // Precompile defines the precompiled contract for reward.
 type Precompile struct {
 	cmn.Precompile
-	stakingStateKeeper stakingStateKeeper.Keeper
-	rewardKeeper       rewardKeeper.Keeper
+	assetsKeeper assetskeeper.Keeper
+	rewardKeeper rewardkeeper.Keeper
 }
 
 // NewPrecompile creates a new reward Precompile instance as a
 // PrecompiledContract interface.
 func NewPrecompile(
-	stakingStateKeeper stakingStateKeeper.Keeper,
-	rewardKeeper rewardKeeper.Keeper,
+	stakingStateKeeper assetskeeper.Keeper,
+	rewardKeeper rewardkeeper.Keeper,
 	authzKeeper authzkeeper.Keeper,
 ) (*Precompile, error) {
 	abiBz, err := f.ReadFile("abi.json")
@@ -56,8 +56,8 @@ func NewPrecompile(
 			TransientKVGasConfig: storetypes.TransientGasConfig(),
 			ApprovalExpiration:   cmn.DefaultExpirationDuration, // should be configurable in the future.
 		},
-		rewardKeeper:       rewardKeeper,
-		stakingStateKeeper: stakingStateKeeper,
+		rewardKeeper: rewardKeeper,
+		assetsKeeper: stakingStateKeeper,
 	}, nil
 }
 

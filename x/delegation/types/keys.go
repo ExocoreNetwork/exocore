@@ -44,21 +44,21 @@ const (
 )
 
 var (
-	// KeyPrefixRestakerDelegationInfo reStakerID = clientChainAddr+'_'+ExoCoreChainIndex
+	// KeyPrefixRestakerDelegationInfo restakerID = clientChainAddr+'_'+ExoCoreChainIndex
 	// KeyPrefixRestakerDelegationInfo
 	// key-value:
-	// reStakerID +'/'+assetID -> totalDelegationAmount
-	// reStakerID +'/'+assetID+'/'+operatorAddr -> delegationAmounts
+	// restakerID +'/'+assetID -> totalDelegationAmount
+	// restakerID +'/'+assetID+'/'+operatorAddr -> delegationAmounts
 	KeyPrefixRestakerDelegationInfo = []byte{prefixRestakerDelegationInfo}
 	// KeyPrefixDelegationUsedSalt key->value: operatorApproveAddr->map[salt]{}
 	KeyPrefixDelegationUsedSalt = []byte{prefixDelegationUsedSalt}
-	// KeyPrefixOperatorApprovedInfo key-value: operatorApproveAddr->map[reStakerID]{}
+	// KeyPrefixOperatorApprovedInfo key-value: operatorApproveAddr->map[restakerID]{}
 	KeyPrefixOperatorApprovedInfo = []byte{prefixOperatorApprovedInfo}
 
 	// KeyPrefixUndelegationInfo singleRecordKey = lzNonce+'/'+txHash+'/'+operatorAddr
 	// singleRecordKey -> UndelegateReqRecord
 	KeyPrefixUndelegationInfo = []byte{prefixUndelegationInfo}
-	// KeyPrefixStakerUndelegationInfo reStakerID+'/'+assetID+'/'+lzNonce -> singleRecordKey
+	// KeyPrefixStakerUndelegationInfo restakerID+'/'+assetID+'/'+lzNonce -> singleRecordKey
 	KeyPrefixStakerUndelegationInfo = []byte{prefixStakerUndelegationInfo}
 	// KeyPrefixWaitCompleteUndelegations completeHeight +'/'+lzNonce -> singleRecordKey
 	KeyPrefixWaitCompleteUndelegations = []byte{prefixWaitCompleteUndelegations}

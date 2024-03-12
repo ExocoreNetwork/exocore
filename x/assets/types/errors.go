@@ -17,11 +17,19 @@ var (
 
 	ErrParseAssetsStateKey = errorsmod.Register(ModuleName, 5, "assets state key can't be parsed")
 
-	ErrCliCmdInputArg = errorsmod.Register(ModuleName, 6, "there is an error in the input client command args")
+	ErrInvalidCliCmdArg = errorsmod.Register(ModuleName, 6, "the input client command arguments are invalid")
 
 	ErrInputPointerIsNil = errorsmod.Register(ModuleName, 7, "the input pointer is nil")
 
-	ErrOperatorAddr = errorsmod.Register(ModuleName, 8, "the operator address isn't a valid acc addr")
+	ErrInvalidOperatorAddr = errorsmod.Register(ModuleName, 8, "the operator address isn't a valid account address")
 
-	ErrNoAppChainKey = errorsmod.Register(ModuleName, 10, "there is no stored key for the input app chain id")
+	ErrUnknownAppChainID = errorsmod.Register(ModuleName, 9, "the app chain id is unknown or invalid")
+
+	ErrInvalidEvmAddressFormat = errorsmod.Register(ModuleName, 10, "the evm address format is error")
+
+	ErrInvalidLzUaTopicIDLength = errorsmod.Register(ModuleName, 11, "the LZUaTopicID length isn't equal to HashLength")
+
+	ErrNoParamsKey = errorsmod.Register(ModuleName, 12, "there is no stored key for deposit module params")
+
+	ErrNotEqualToLzAppAddr = errorsmod.Register(ModuleName, 13, "the address isn't equal to the  layerZero gateway address")
 )

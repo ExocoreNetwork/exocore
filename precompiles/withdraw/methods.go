@@ -1,8 +1,7 @@
 package withdraw
 
 import (
-	"fmt"
-
+	errorsmod "cosmossdk.io/errors"
 	"github.com/ExocoreNetwork/exocore/x/assets/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/accounts/abi"
@@ -25,13 +24,9 @@ func (p Precompile) Withdraw(
 	args []interface{},
 ) ([]byte, error) {
 	// check the invalidation of caller contract
-	withdrawModuleParam, err := p.withdrawKeeper.GetParams(ctx)
+	err := p.assetsKeeper.CheckExocoreLzAppAddr(ctx, contract.CallerAddress)
 	if err != nil {
-		return nil, err
-	}
-	exoCoreLzAppAddr := common.HexToAddress(withdrawModuleParam.ExoCoreLzAppAddress)
-	if contract.CallerAddress != exoCoreLzAppAddr {
-		return nil, fmt.Errorf(ErrContractCaller, contract.CallerAddress, exoCoreLzAppAddr)
+		return nil, errorsmod.Wrap(err, ErrContractCaller)
 	}
 
 	withdrawParam, err := p.GetWithdrawParamsFromInputs(ctx, args)
@@ -45,7 +40,7 @@ func (p Precompile) Withdraw(
 	}
 	// get the latest asset state of staker to return.
 	stakerID, assetID := types.GetStakeIDAndAssetID(withdrawParam.ClientChainLzID, withdrawParam.WithdrawAddress, withdrawParam.AssetsAddress)
-	info, err := p.stakingStateKeeper.GetStakerSpecifiedAssetInfo(ctx, stakerID, assetID)
+	info, err := p.assetsKeeper.GetStakerSpecifiedAssetInfo(ctx, stakerID, assetID)
 	if err != nil {
 		return nil, err
 	}

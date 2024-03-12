@@ -51,7 +51,7 @@ func QueClientChainInfoByIndex() *cobra.Command {
 			}
 			clientChainLzID, err := strconv.ParseUint(args[0], 10, 64)
 			if err != nil {
-				return errorsmod.Wrap(types.ErrCliCmdInputArg, err.Error())
+				return errorsmod.Wrap(types.ErrInvalidCliCmdArg, err.Error())
 			}
 			queryClient := types.NewQueryClient(clientCtx)
 			req := &types.QueryClientChainInfo{
@@ -111,7 +111,7 @@ func QueStakingAssetInfo() *cobra.Command {
 
 			clientChainLzID, err := strconv.ParseUint(args[1], 10, 64)
 			if err != nil {
-				return errorsmod.Wrap(types.ErrCliCmdInputArg, fmt.Sprintf("error arg is:%v", args[1]))
+				return errorsmod.Wrap(types.ErrInvalidCliCmdArg, fmt.Sprintf("error arg is:%v", args[1]))
 			}
 
 			_, assetID := types.GetStakeIDAndAssetIDFromStr(clientChainLzID, "", args[0])
@@ -203,7 +203,7 @@ func QueStakerSpecifiedAssetAmount() *cobra.Command {
 			queryClient := types.NewQueryClient(clientCtx)
 			clientChainLzID, err := strconv.ParseUint(args[0], 10, 64)
 			if err != nil {
-				return errorsmod.Wrap(types.ErrCliCmdInputArg, err.Error())
+				return errorsmod.Wrap(types.ErrInvalidCliCmdArg, err.Error())
 			}
 			stakerID, assetID := types.GetStakeIDAndAssetIDFromStr(clientChainLzID, args[1], args[2])
 			req := &types.QuerySpecifiedAssetAmountReq{
@@ -266,7 +266,7 @@ func QueOperatorSpecifiedAssetAmount() *cobra.Command {
 
 			clientChainLzID, err := strconv.ParseUint(args[1], 10, 64)
 			if err != nil {
-				return errorsmod.Wrap(types.ErrCliCmdInputArg, err.Error())
+				return errorsmod.Wrap(types.ErrInvalidCliCmdArg, err.Error())
 			}
 			_, assetID := types.GetStakeIDAndAssetIDFromStr(clientChainLzID, "", args[2])
 			queryClient := types.NewQueryClient(clientCtx)

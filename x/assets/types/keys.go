@@ -50,6 +50,7 @@ const (
 	// add for dogfood
 	prefixOperatorSnapshot
 	prefixOperatorLastSnapshotHeight
+	prefixParams
 )
 
 // KVStore key prefixes
@@ -94,13 +95,13 @@ var (
 	// KeyPrefixReStakingAssetInfo key->value: AssetID->ReStakingAssetInfo
 	KeyPrefixReStakingAssetInfo = []byte{prefixRestakingAssetInfo}
 
-	// KeyPrefixReStakerAssetInfos reStakerID = clientChainAddr+'_'+ExoCoreChainIndex
-	// KeyPrefixReStakerAssetInfos key->value: reStakerID+'_'+AssetID->ReStakerSingleAssetInfo
-	// or reStakerID->mapping(AssetID->ReStakerSingleAssetInfo)?
+	// KeyPrefixReStakerAssetInfos restakerID = clientChainAddr+'_'+ExoCoreChainIndex
+	// KeyPrefixReStakerAssetInfos key->value: restakerID+'_'+AssetID->ReStakerAssetInfo
+	// or restakerID->mapping(AssetID->ReStakerAssetInfo)?
 	KeyPrefixReStakerAssetInfos = []byte{prefixRestakerAssetInfo}
 
-	// KeyPrefixOperatorAssetInfos key->value: operatorAddr+'_'+AssetID->OperatorSingleAssetInfo
-	// or operatorAddr->mapping(AssetID->OperatorSingleAssetInfo) ?
+	// KeyPrefixOperatorAssetInfos key->value: operatorAddr+'_'+AssetID->OperatorAssetInfo
+	// or operatorAddr->mapping(AssetID->OperatorAssetInfo) ?
 	KeyPrefixOperatorAssetInfos = []byte{prefixOperatorAssetInfo}
 
 	// KeyPrefixOperatorOptedInMiddleWareAssetInfos key->value:
@@ -110,13 +111,17 @@ var (
 		prefixOperatorOptedInMiddlewareAssetInfo,
 	}
 
-	// KeyPrefixReStakerExoCoreAddr reStakerID = clientChainAddr+'_'+ExoCoreChainIndex
-	// KeyPrefixReStakerExoCoreAddr key-value: reStakerID->exoCoreAddr
+	// KeyPrefixReStakerExoCoreAddr restakerID = clientChainAddr+'_'+ExoCoreChainIndex
+	// KeyPrefixReStakerExoCoreAddr key-value: restakerID->exoCoreAddr
 	KeyPrefixReStakerExoCoreAddr = []byte{prefixRestakerExocoreAddr}
 	// KeyPrefixReStakerExoCoreAddrReverse k->v: exocoreAddress ->
 	// map[clientChainIndex]clientChainAddress
 	// used to retrieve all user assets based on their exoCore address
 	KeyPrefixReStakerExoCoreAddrReverse = []byte{prefixRestakerExocoreAddrReverse}
+
+	// KeyPrefixParams This is a key prefix for module parameter
+	KeyPrefixParams = []byte{prefixParams}
+	ParamsKey       = []byte("Params")
 )
 
 func GetJoinedStoreKey(keys ...string) []byte {

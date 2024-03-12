@@ -61,7 +61,7 @@ func (k *Keeper) UpdateOptedInfo(ctx sdk.Context, operatorAddr, avsAddr string, 
 	// check operator address validation
 	_, err := sdk.AccAddressFromBech32(operatorAddr)
 	if err != nil {
-		return assetstype.ErrOperatorAddr
+		return assetstype.ErrInvalidOperatorAddr
 	}
 	infoKey := assetstype.GetJoinedStoreKey(operatorAddr, avsAddr)
 

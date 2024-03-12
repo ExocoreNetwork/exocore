@@ -13,6 +13,16 @@ import (
 
 var _ assetstype.MsgServer = &Keeper{}
 
+// UpdateParams This function should be triggered by the governance in the future
+func (k Keeper) UpdateParams(ctx context.Context, params *assetstype.MsgUpdateParams) (*assetstype.MsgUpdateParamsResponse, error) {
+	c := sdk.UnwrapSDKContext(ctx)
+	err := k.SetParams(c, &params.Params)
+	if err != nil {
+		return nil, err
+	}
+	return nil, nil
+}
+
 // SetStakerExoCoreAddr outdated, will be deprecated.
 // don't check if the staker has existed temporarily,so users can set their ExoCoreAddr multiple times.
 // It may be modified later to allow setting only once

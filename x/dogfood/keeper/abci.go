@@ -25,7 +25,7 @@ func (k Keeper) EndBlock(ctx sdk.Context) []abci.ValidatorUpdate {
 	// then, let the operator module know that the opt out has finished.
 	optOuts := k.GetPendingOptOuts(ctx)
 	for _, addr := range optOuts.GetList() {
-		k.operatorKeeper.CompleteOperatorOptOutFromChainId(ctx, addr, ctx.ChainID())
+		k.operatorKeeper.CompleteOperatorOptOutFromChainID(ctx, addr, ctx.ChainID())
 	}
 	k.ClearPendingOptOuts(ctx)
 	// for slashing, the operator module is required to store a mapping of chain id + cons addr
@@ -33,7 +33,7 @@ func (k Keeper) EndBlock(ctx sdk.Context) []abci.ValidatorUpdate {
 	// complete.
 	consensusAddrs := k.GetPendingConsensusAddrs(ctx)
 	for _, consensusAddr := range consensusAddrs.GetList() {
-		k.operatorKeeper.DeleteOperatorAddressForChainIdAndConsAddr(
+		k.operatorKeeper.DeleteOperatorAddressForChainIDAndConsAddr(
 			ctx, ctx.ChainID(), consensusAddr,
 		)
 	}
@@ -47,7 +47,7 @@ func (k Keeper) EndBlock(ctx sdk.Context) []abci.ValidatorUpdate {
 	//    if it has, queue an update.
 	prev := k.getKeyPowerMapping(ctx).List
 	res := make([]abci.ValidatorUpdate, 0, len(prev))
-	operators, keys := k.operatorKeeper.GetActiveOperatorsForChainId(ctx, ctx.ChainID())
+	operators, keys := k.operatorKeeper.GetActiveOperatorsForChainID(ctx, ctx.ChainID())
 	powers, err := k.restakingKeeper.GetAvgDelegatedValue(
 		ctx, operators, k.GetAssetIDs(ctx), k.GetEpochIdentifier(ctx),
 	)

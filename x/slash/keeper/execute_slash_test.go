@@ -36,14 +36,14 @@ func (suite *SlashTestSuite) TestSlash() {
 	err = suite.App.ExoSlashKeeper.Slash(suite.Ctx, event)
 	suite.ErrorContains(err, slashtype.ErrSlashAssetNotExist.Error())
 
-	assets, err := suite.App.StakingAssetsManageKeeper.GetAllStakingAssetsInfo(suite.Ctx)
+	assets, err := suite.App.AssetsKeeper.GetAllStakingAssetsInfo(suite.Ctx)
 	suite.NoError(err)
 	suite.App.Logger().Info("the assets is:", "assets", assets)
 
 	stakerID, assetID := types.GetStakeIDAndAssetID(depositEvent.ClientChainLzID, depositEvent.StakerAddress, depositEvent.AssetsAddress)
-	info, err := suite.App.StakingAssetsManageKeeper.GetStakerSpecifiedAssetInfo(suite.Ctx, stakerID, assetID)
+	info, err := suite.App.AssetsKeeper.GetStakerSpecifiedAssetInfo(suite.Ctx, stakerID, assetID)
 	suite.NoError(err)
-	suite.Equal(types.StakerSingleAssetInfo{
+	suite.Equal(types.StakerAssetInfo{
 		TotalDepositAmount:  depositEvent.OpAmount,
 		WithdrawableAmount:  depositEvent.OpAmount,
 		WaitUnbondingAmount: sdkmath.NewInt(0),
@@ -56,15 +56,15 @@ func (suite *SlashTestSuite) TestSlash() {
 
 	// check state after slash
 	stakerID, assetID = types.GetStakeIDAndAssetID(event.ClientChainLzID, event.StakerAddress, event.AssetsAddress)
-	info, err = suite.App.StakingAssetsManageKeeper.GetStakerSpecifiedAssetInfo(suite.Ctx, stakerID, assetID)
+	info, err = suite.App.AssetsKeeper.GetStakerSpecifiedAssetInfo(suite.Ctx, stakerID, assetID)
 	suite.NoError(err)
-	suite.Equal(types.StakerSingleAssetInfo{
+	suite.Equal(types.StakerAssetInfo{
 		TotalDepositAmount:  sdkmath.NewInt(10),
 		WithdrawableAmount:  sdkmath.NewInt(10),
 		WaitUnbondingAmount: sdkmath.NewInt(0),
 	}, *info)
 
-	assetInfo, err := suite.App.StakingAssetsManageKeeper.GetStakingAssetInfo(suite.Ctx, assetID)
+	assetInfo, err := suite.App.AssetsKeeper.GetStakingAssetInfo(suite.Ctx, assetID)
 	suite.NoError(err)
 	suite.Equal(sdkmath.NewInt(10), assetInfo.StakingTotalAmount)
 }

@@ -40,8 +40,8 @@ func (k *Keeper) SetOperatorConsKeyForChainID(
 		return delegationtypes.ErrOperatorIsFrozen
 	}
 	// check if the chain id is valid
-	if !k.restakingStateKeeper.AppChainInfoIsExist(ctx, chainID) {
-		return assetstypes.ErrNoAppChainKey
+	if !k.assetsKeeper.AppChainInfoIsExist(ctx, chainID) {
+		return assetstypes.ErrUnknownAppChainID
 	}
 	// if opting out, do not allow key replacement
 	if k.IsOperatorOptingOutFromChainID(ctx, opAccAddr, chainID) {
@@ -175,8 +175,8 @@ func (k *Keeper) GetOperatorPrevConsKeyForChainID(
 		err = delegationtypes.ErrOperatorNotExist
 		return
 	}
-	if !k.restakingStateKeeper.AppChainInfoIsExist(ctx, chainID) {
-		err = assetstypes.ErrNoAppChainKey
+	if !k.assetsKeeper.AppChainInfoIsExist(ctx, chainID) {
+		err = assetstypes.ErrUnknownAppChainID
 		return
 	}
 	// do not check for slashing here
@@ -216,8 +216,8 @@ func (k *Keeper) GetOperatorConsKeyForChainID(
 		err = delegationtypes.ErrOperatorNotExist
 		return
 	}
-	if !k.restakingStateKeeper.AppChainInfoIsExist(ctx, chainID) {
-		err = assetstypes.ErrNoAppChainKey
+	if !k.assetsKeeper.AppChainInfoIsExist(ctx, chainID) {
+		err = assetstypes.ErrUnknownAppChainID
 		return
 	}
 	// do not check for slashing, since this function will be used to update voting power even
@@ -286,7 +286,7 @@ func (k *Keeper) GetChainIDsAndKeysForOperator(
 func (k *Keeper) GetOperatorsForChainID(
 	ctx sdk.Context, chainID string,
 ) (addrs []sdk.AccAddress, pubKeys []tmprotocrypto.PublicKey) {
-	if !k.restakingStateKeeper.AppChainInfoIsExist(ctx, chainID) {
+	if !k.assetsKeeper.AppChainInfoIsExist(ctx, chainID) {
 		return nil, nil
 	}
 	// prefix is the byte prefix and then chainID with length
@@ -376,8 +376,8 @@ func (k *Keeper) InitiateOperatorOptOutFromChainID(
 		return delegationtypes.ErrOperatorIsFrozen
 	}
 	// check if the chain id is valid
-	if !k.restakingStateKeeper.AppChainInfoIsExist(ctx, chainID) {
-		return assetstypes.ErrNoAppChainKey
+	if !k.assetsKeeper.AppChainInfoIsExist(ctx, chainID) {
+		return assetstypes.ErrUnknownAppChainID
 	}
 	found, key, err := k.getOperatorConsKeyForChainID(ctx, opAccAddr, chainID)
 	if err != nil {
@@ -423,3 +423,9 @@ func (k *Keeper) IsOperatorJailedForChainID(sdk.Context, sdk.AccAddress, string)
 	return false
 }
 func (k *Keeper) Jail(sdk.Context, sdk.ConsAddress, string) {}
+
+func (k *Keeper) GetActiveOperatorsForChainID(
+	sdk.Context, string,
+) ([]sdk.AccAddress, []tmprotocrypto.PublicKey) {
+	return nil, nil
+}

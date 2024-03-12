@@ -30,15 +30,15 @@ func (suite *RewardTestSuite) TestClaimWithdrawRequest() {
 
 	// check state after reward
 	stakerID, assetID := types.GetStakeIDAndAssetID(event.ClientChainLzID, event.WithdrawRewardAddress, event.AssetsAddress)
-	info, err := suite.App.StakingAssetsManageKeeper.GetStakerSpecifiedAssetInfo(suite.Ctx, stakerID, assetID)
+	info, err := suite.App.AssetsKeeper.GetStakerSpecifiedAssetInfo(suite.Ctx, stakerID, assetID)
 	suite.NoError(err)
-	suite.Equal(types.StakerSingleAssetInfo{
+	suite.Equal(types.StakerAssetInfo{
 		TotalDepositAmount:  sdkmath.NewInt(10),
 		WithdrawableAmount:  sdkmath.NewInt(10),
 		WaitUnbondingAmount: sdkmath.NewInt(0),
 	}, *info)
 
-	assetInfo, err := suite.App.StakingAssetsManageKeeper.GetStakingAssetInfo(suite.Ctx, assetID)
+	assetInfo, err := suite.App.AssetsKeeper.GetStakingAssetInfo(suite.Ctx, assetID)
 	suite.NoError(err)
 	suite.Equal(sdkmath.NewInt(10), assetInfo.StakingTotalAmount)
 }

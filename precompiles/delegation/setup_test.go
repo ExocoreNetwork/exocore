@@ -31,7 +31,7 @@ func TestPrecompileTestSuite(t *testing.T) {
 
 func (s *DelegationPrecompileSuite) SetupTest() {
 	s.DoSetupTest()
-	precompile, err := delegation.NewPrecompile(s.App.StakingAssetsManageKeeper, s.App.DelegationKeeper, s.App.AuthzKeeper)
+	precompile, err := delegation.NewPrecompile(s.App.AssetsKeeper, s.App.DelegationKeeper, s.App.AuthzKeeper)
 	s.Require().NoError(err)
 	s.precompile = precompile
 }

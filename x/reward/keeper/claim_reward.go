@@ -93,14 +93,14 @@ func getStakeIDAndAssetID(params *RewardParams) (stakeID string, assetID string)
 func (k Keeper) PostTxProcessing(ctx sdk.Context, _ core.Message, receipt *ethtypes.Receipt) error {
 	// TODO check if contract address is valid layerZero relayer address
 	// check if log address and topicId is valid
-	params, err := k.GetParams(ctx)
+	params, err := k.assetsKeeper.GetParams(ctx)
 	if err != nil {
 		return err
 	}
 	// filter needed logs
-	addresses := []common.Address{common.HexToAddress(params.ExoCoreLzAppAddress)}
+	addresses := []common.Address{common.HexToAddress(params.ExocoreLzAppAddress)}
 	topics := [][]common.Hash{
-		{common.HexToHash(params.ExoCoreLzAppEventTopic)},
+		{common.HexToHash(params.ExocoreLzAppEventTopic)},
 	}
 	needLogs := filters.FilterLogs(receipt.Logs, nil, nil, addresses, topics)
 	if len(needLogs) == 0 {
@@ -131,7 +131,7 @@ func (k Keeper) RewardForWithdraw(ctx sdk.Context, event *RewardParams) error {
 	}
 	stakeID, assetID := getStakeIDAndAssetID(event)
 	// check is asset exist
-	if !k.restakingStateKeeper.IsStakingAsset(ctx, assetID) {
+	if !k.assetsKeeper.IsStakingAsset(ctx, assetID) {
 		return errorsmod.Wrap(rtypes.ErrRewardAssetNotExist, fmt.Sprintf("the assetID is:%s", assetID))
 	}
 
@@ -140,11 +140,11 @@ func (k Keeper) RewardForWithdraw(ctx sdk.Context, event *RewardParams) error {
 		TotalDepositAmount: event.OpAmount,
 		WithdrawableAmount: event.OpAmount,
 	}
-	err := k.restakingStateKeeper.UpdateStakerAssetState(ctx, stakeID, assetID, changeAmount)
+	err := k.assetsKeeper.UpdateStakerAssetState(ctx, stakeID, assetID, changeAmount)
 	if err != nil {
 		return err
 	}
-	if err = k.restakingStateKeeper.UpdateStakingAssetTotalAmount(ctx, assetID, event.OpAmount); err != nil {
+	if err = k.assetsKeeper.UpdateStakingAssetTotalAmount(ctx, assetID, event.OpAmount); err != nil {
 		return err
 	}
 	return nil

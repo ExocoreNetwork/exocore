@@ -11,14 +11,14 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-func (k Keeper) GetStakerAssetInfos(ctx sdk.Context, stakerID string) (assetsInfo map[string]*assetstype.StakerSingleAssetInfo, err error) {
+func (k Keeper) GetStakerAssetInfos(ctx sdk.Context, stakerID string) (assetsInfo map[string]*assetstype.StakerAssetInfo, err error) {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), assetstype.KeyPrefixReStakerAssetInfos)
 	iterator := sdk.KVStorePrefixIterator(store, []byte(stakerID))
 	defer iterator.Close()
 
-	ret := make(map[string]*assetstype.StakerSingleAssetInfo, 0)
+	ret := make(map[string]*assetstype.StakerAssetInfo, 0)
 	for ; iterator.Valid(); iterator.Next() {
-		var stateInfo assetstype.StakerSingleAssetInfo
+		var stateInfo assetstype.StakerAssetInfo
 		k.cdc.MustUnmarshal(iterator.Value(), &stateInfo)
 		keyList, err := assetstype.ParseJoinedStoreKey(iterator.Key(), 2)
 		if err != nil {
@@ -30,7 +30,7 @@ func (k Keeper) GetStakerAssetInfos(ctx sdk.Context, stakerID string) (assetsInf
 	return ret, nil
 }
 
-func (k Keeper) GetStakerSpecifiedAssetInfo(ctx sdk.Context, stakerID string, assetID string) (info *assetstype.StakerSingleAssetInfo, err error) {
+func (k Keeper) GetStakerSpecifiedAssetInfo(ctx sdk.Context, stakerID string, assetID string) (info *assetstype.StakerAssetInfo, err error) {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), assetstype.KeyPrefixReStakerAssetInfos)
 	key := assetstype.GetJoinedStoreKey(stakerID, assetID)
 	ifExist := store.Has(key)
@@ -40,7 +40,7 @@ func (k Keeper) GetStakerSpecifiedAssetInfo(ctx sdk.Context, stakerID string, as
 
 	value := store.Get(key)
 
-	ret := assetstype.StakerSingleAssetInfo{}
+	ret := assetstype.StakerAssetInfo{}
 	k.cdc.MustUnmarshal(value, &ret)
 	return &ret, nil
 }
@@ -52,7 +52,7 @@ func (k Keeper) UpdateStakerAssetState(ctx sdk.Context, stakerID string, assetID
 	// get the latest state,use the default initial state if the state hasn't been stored
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), assetstype.KeyPrefixReStakerAssetInfos)
 	key := assetstype.GetJoinedStoreKey(stakerID, assetID)
-	assetState := assetstype.StakerSingleAssetInfo{
+	assetState := assetstype.StakerAssetInfo{
 		TotalDepositAmount:  math.NewInt(0),
 		WithdrawableAmount:  math.NewInt(0),
 		WaitUnbondingAmount: math.NewInt(0),

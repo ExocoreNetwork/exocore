@@ -26,7 +26,7 @@ func (p Precompile) GetDelegationParamsFromInputs(ctx sdk.Context, args []interf
 	}
 	delegationParams.ClientChainLzID = uint64(clientChainLzID)
 
-	info, err := p.stakingStateKeeper.GetClientChainInfoByIndex(ctx, delegationParams.ClientChainLzID)
+	info, err := p.assetsKeeper.GetClientChainInfoByIndex(ctx, delegationParams.ClientChainLzID)
 	if err != nil {
 		return nil, err
 	}

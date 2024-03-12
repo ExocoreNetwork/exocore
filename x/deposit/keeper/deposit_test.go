@@ -23,7 +23,7 @@ func (suite *DepositTestSuite) TestDeposit() {
 	err := suite.App.DepositKeeper.Deposit(suite.Ctx, params)
 	suite.ErrorContains(err, deposittype.ErrDepositAssetNotExist.Error())
 
-	assets, err := suite.App.StakingAssetsManageKeeper.GetAllStakingAssetsInfo(suite.Ctx)
+	assets, err := suite.App.AssetsKeeper.GetAllStakingAssetsInfo(suite.Ctx)
 	suite.NoError(err)
 	suite.App.Logger().Info("the assets is:", "assets", assets)
 
@@ -34,15 +34,15 @@ func (suite *DepositTestSuite) TestDeposit() {
 
 	// check state after deposit
 	stakerID, assetID := types.GetStakeIDAndAssetID(params.ClientChainLzID, params.StakerAddress, params.AssetsAddress)
-	info, err := suite.App.StakingAssetsManageKeeper.GetStakerSpecifiedAssetInfo(suite.Ctx, stakerID, assetID)
+	info, err := suite.App.AssetsKeeper.GetStakerSpecifiedAssetInfo(suite.Ctx, stakerID, assetID)
 	suite.NoError(err)
-	suite.Equal(types.StakerSingleAssetInfo{
+	suite.Equal(types.StakerAssetInfo{
 		TotalDepositAmount:  params.OpAmount,
 		WithdrawableAmount:  params.OpAmount,
 		WaitUnbondingAmount: sdkmath.NewInt(0),
 	}, *info)
 
-	assetInfo, err := suite.App.StakingAssetsManageKeeper.GetStakingAssetInfo(suite.Ctx, assetID)
+	assetInfo, err := suite.App.AssetsKeeper.GetStakingAssetInfo(suite.Ctx, assetID)
 	suite.NoError(err)
 	suite.Equal(params.OpAmount, assetInfo.StakingTotalAmount)
 }

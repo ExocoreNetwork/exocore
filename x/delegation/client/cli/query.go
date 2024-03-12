@@ -46,7 +46,7 @@ func QuerySingleDelegationInfo() *cobra.Command {
 			queryClient := delegationtype.NewQueryClient(clientCtx)
 			clientChainLzID, err := strconv.ParseUint(args[0], 10, 64)
 			if err != nil {
-				return errorsmod.Wrap(types.ErrCliCmdInputArg, err.Error())
+				return errorsmod.Wrap(types.ErrInvalidCliCmdArg, err.Error())
 			}
 			stakerID, assetID := types.GetStakeIDAndAssetIDFromStr(clientChainLzID, args[1], args[2])
 			req := &delegationtype.SingleDelegationInfoReq{

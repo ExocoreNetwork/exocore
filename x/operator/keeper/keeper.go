@@ -16,10 +16,10 @@ type Keeper struct {
 	cdc      codec.BinaryCodec
 
 	// other keepers
-	restakingStateKeeper keeper.Keeper
-	delegationKeeper     operatortypes.ExpectDelegationInterface
-	oracleKeeper         operatortypes.ExpectOracleInterface
-	avsKeeper            operatortypes.ExpectAvsInterface
+	assetsKeeper     keeper.Keeper
+	delegationKeeper operatortypes.ExpectDelegationInterface
+	oracleKeeper     operatortypes.ExpectOracleInterface
+	avsKeeper        operatortypes.ExpectAvsInterface
 
 	// add for dogfood
 	hooks       operatortypes.OperatorConsentHooks // set separately via call to SetHooks
@@ -29,18 +29,18 @@ type Keeper struct {
 func NewKeeper(
 	storeKey storetypes.StoreKey,
 	cdc codec.BinaryCodec,
-	restakingStateKeeper keeper.Keeper,
+	assetsKeeper keeper.Keeper,
 	oracleKeeper operatortypes.ExpectOracleInterface,
 	avsKeeper operatortypes.ExpectAvsInterface,
 	slashKeeper operatortypes.SlashKeeper,
 ) Keeper {
 	return Keeper{
-		storeKey:             storeKey,
-		cdc:                  cdc,
-		restakingStateKeeper: restakingStateKeeper,
-		oracleKeeper:         oracleKeeper,
-		avsKeeper:            avsKeeper,
-		slashKeeper:          slashKeeper,
+		storeKey:     storeKey,
+		cdc:          cdc,
+		assetsKeeper: assetsKeeper,
+		oracleKeeper: oracleKeeper,
+		avsKeeper:    avsKeeper,
+		slashKeeper:  slashKeeper,
 	}
 }
 

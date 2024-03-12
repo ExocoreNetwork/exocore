@@ -10,6 +10,17 @@ import (
 	"google.golang.org/grpc/status"
 )
 
+func (k Keeper) Params(ctx context.Context, _ *assetstype.QueryParamsRequest) (*assetstype.QueryParamsResponse, error) {
+	c := sdk.UnwrapSDKContext(ctx)
+	params, err := k.GetParams(c)
+	if err != nil {
+		return nil, err
+	}
+	return &assetstype.QueryParamsResponse{
+		Params: params,
+	}, nil
+}
+
 // QueClientChainInfoByIndex query client chain info by clientChainLzID
 func (k Keeper) QueClientChainInfoByIndex(ctx context.Context, info *assetstype.QueryClientChainInfo) (*assetstype.ClientChainInfo, error) {
 	c := sdk.UnwrapSDKContext(ctx)
@@ -54,7 +65,7 @@ func (k Keeper) QueStakerAssetInfos(ctx context.Context, info *assetstype.QueryS
 }
 
 // QueStakerSpecifiedAssetAmount query the specified asset state of a staker, using stakerID and assetID as query parameters
-func (k Keeper) QueStakerSpecifiedAssetAmount(ctx context.Context, req *assetstype.QuerySpecifiedAssetAmountReq) (*assetstype.StakerSingleAssetInfo, error) {
+func (k Keeper) QueStakerSpecifiedAssetAmount(ctx context.Context, req *assetstype.QuerySpecifiedAssetAmountReq) (*assetstype.StakerAssetInfo, error) {
 	c := sdk.UnwrapSDKContext(ctx)
 	return k.GetStakerSpecifiedAssetInfo(c, req.StakerID, req.AssetID)
 }
@@ -74,7 +85,7 @@ func (k Keeper) QueOperatorAssetInfos(ctx context.Context, infos *assetstype.Que
 }
 
 // QueOperatorSpecifiedAssetAmount query the specified asset state of an operator, using operator address and assetID as query parameters
-func (k Keeper) QueOperatorSpecifiedAssetAmount(ctx context.Context, req *assetstype.QueryOperatorSpecifiedAssetAmountReq) (*assetstype.OperatorSingleAssetInfo, error) {
+func (k Keeper) QueOperatorSpecifiedAssetAmount(ctx context.Context, req *assetstype.QueryOperatorSpecifiedAssetAmountReq) (*assetstype.OperatorAssetInfo, error) {
 	c := sdk.UnwrapSDKContext(ctx)
 	addr, err := sdk.AccAddressFromBech32(req.OperatorAddr)
 	if err != nil {

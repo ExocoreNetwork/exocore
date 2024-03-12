@@ -59,19 +59,19 @@ func (suite *DelegationTestSuite) TestDelegateTo() {
 
 	// check delegation states
 	stakerID, assetID := types.GetStakeIDAndAssetID(delegationParams.ClientChainLzID, delegationParams.StakerAddress, delegationParams.AssetsAddress)
-	restakerState, err := suite.App.StakingAssetsManageKeeper.GetStakerSpecifiedAssetInfo(suite.Ctx, stakerID, assetID)
+	restakerState, err := suite.App.AssetsKeeper.GetStakerSpecifiedAssetInfo(suite.Ctx, stakerID, assetID)
 	suite.NoError(err)
-	suite.Equal(types.StakerSingleAssetInfo{
+	suite.Equal(types.StakerAssetInfo{
 		TotalDepositAmount:  depositEvent.OpAmount,
 		WithdrawableAmount:  depositEvent.OpAmount.Sub(delegationParams.OpAmount),
 		WaitUnbondingAmount: sdkmath.NewInt(0),
 	}, *restakerState)
 
-	operatorState, err := suite.App.StakingAssetsManageKeeper.GetOperatorSpecifiedAssetInfo(suite.Ctx, opAccAddr, assetID)
+	operatorState, err := suite.App.AssetsKeeper.GetOperatorSpecifiedAssetInfo(suite.Ctx, opAccAddr, assetID)
 	suite.NoError(err)
-	suite.Equal(types.OperatorSingleAssetInfo{
+	suite.Equal(types.OperatorAssetInfo{
 		TotalAmount:                        delegationParams.OpAmount,
-		OperatorOwnAmount:                  sdkmath.NewInt(0),
+		OperatorAmount:                     sdkmath.NewInt(0),
 		WaitUnbondingAmount:                sdkmath.NewInt(0),
 		OperatorUnbondingAmount:            sdkmath.NewInt(0),
 		OperatorUnbondableAmountAfterSlash: sdkmath.NewInt(0),
@@ -135,19 +135,19 @@ func (suite *DelegationTestSuite) TestUndelegateFrom() {
 
 	// check state
 	stakerID, assetID := types.GetStakeIDAndAssetID(delegationEvent.ClientChainLzID, delegationEvent.StakerAddress, delegationEvent.AssetsAddress)
-	restakerState, err := suite.App.StakingAssetsManageKeeper.GetStakerSpecifiedAssetInfo(suite.Ctx, stakerID, assetID)
+	restakerState, err := suite.App.AssetsKeeper.GetStakerSpecifiedAssetInfo(suite.Ctx, stakerID, assetID)
 	suite.NoError(err)
-	suite.Equal(types.StakerSingleAssetInfo{
+	suite.Equal(types.StakerAssetInfo{
 		TotalDepositAmount:  depositEvent.OpAmount,
 		WithdrawableAmount:  depositEvent.OpAmount.Sub(delegationEvent.OpAmount),
 		WaitUnbondingAmount: delegationEvent.OpAmount,
 	}, *restakerState)
 
-	operatorState, err := suite.App.StakingAssetsManageKeeper.GetOperatorSpecifiedAssetInfo(suite.Ctx, opAccAddr, assetID)
+	operatorState, err := suite.App.AssetsKeeper.GetOperatorSpecifiedAssetInfo(suite.Ctx, opAccAddr, assetID)
 	suite.NoError(err)
-	suite.Equal(types.OperatorSingleAssetInfo{
+	suite.Equal(types.OperatorAssetInfo{
 		TotalAmount:                        sdkmath.NewInt(0),
-		OperatorOwnAmount:                  sdkmath.NewInt(0),
+		OperatorAmount:                     sdkmath.NewInt(0),
 		WaitUnbondingAmount:                delegationEvent.OpAmount,
 		OperatorUnbondingAmount:            sdkmath.NewInt(0),
 		OperatorUnbondableAmountAfterSlash: sdkmath.NewInt(0),
@@ -240,19 +240,19 @@ func (suite *DelegationTestSuite) TestCompleteUndelegation() {
 
 	// check state
 	stakerID, assetID := types.GetStakeIDAndAssetID(delegationEvent.ClientChainLzID, delegationEvent.StakerAddress, delegationEvent.AssetsAddress)
-	restakerState, err := suite.App.StakingAssetsManageKeeper.GetStakerSpecifiedAssetInfo(suite.Ctx, stakerID, assetID)
+	restakerState, err := suite.App.AssetsKeeper.GetStakerSpecifiedAssetInfo(suite.Ctx, stakerID, assetID)
 	suite.NoError(err)
-	suite.Equal(types.StakerSingleAssetInfo{
+	suite.Equal(types.StakerAssetInfo{
 		TotalDepositAmount:  depositEvent.OpAmount,
 		WithdrawableAmount:  depositEvent.OpAmount,
 		WaitUnbondingAmount: sdkmath.NewInt(0),
 	}, *restakerState)
 
-	operatorState, err := suite.App.StakingAssetsManageKeeper.GetOperatorSpecifiedAssetInfo(suite.Ctx, opAccAddr, assetID)
+	operatorState, err := suite.App.AssetsKeeper.GetOperatorSpecifiedAssetInfo(suite.Ctx, opAccAddr, assetID)
 	suite.NoError(err)
-	suite.Equal(types.OperatorSingleAssetInfo{
+	suite.Equal(types.OperatorAssetInfo{
 		TotalAmount:                        sdkmath.NewInt(0),
-		OperatorOwnAmount:                  sdkmath.NewInt(0),
+		OperatorAmount:                     sdkmath.NewInt(0),
 		WaitUnbondingAmount:                sdkmath.NewInt(0),
 		OperatorUnbondingAmount:            sdkmath.NewInt(0),
 		OperatorUnbondableAmountAfterSlash: sdkmath.NewInt(0),

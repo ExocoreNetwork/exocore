@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"reflect"
 
+	errorsmod "cosmossdk.io/errors"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
@@ -32,12 +34,9 @@ func (p Precompile) DelegateToThroughClientChain(
 	args []interface{},
 ) ([]byte, error) {
 	// check the invalidation of caller contract
-	exoCoreLzAppAddr, err := p.delegationKeeper.GetExoCoreLzAppAddress(ctx)
+	err := p.assetsKeeper.CheckExocoreLzAppAddr(ctx, contract.CallerAddress)
 	if err != nil {
-		return nil, err
-	}
-	if contract.CallerAddress != exoCoreLzAppAddr {
-		return nil, fmt.Errorf(ErrContractCaller, contract.CallerAddress, exoCoreLzAppAddr)
+		return nil, errorsmod.Wrap(err, ErrContractCaller)
 	}
 
 	delegationParams, err := p.GetDelegationParamsFromInputs(ctx, args)
@@ -62,12 +61,9 @@ func (p Precompile) UndelegateFromThroughClientChain(
 	args []interface{},
 ) ([]byte, error) {
 	// check the invalidation of caller contract
-	exoCoreLzAppAddr, err := p.delegationKeeper.GetExoCoreLzAppAddress(ctx)
+	err := p.assetsKeeper.CheckExocoreLzAppAddr(ctx, contract.CallerAddress)
 	if err != nil {
-		return nil, err
-	}
-	if contract.CallerAddress != exoCoreLzAppAddr {
-		return nil, fmt.Errorf(ErrContractCaller, contract.CallerAddress, exoCoreLzAppAddr)
+		return nil, errorsmod.Wrap(err, ErrContractCaller)
 	}
 
 	UndelegationParams, err := p.GetDelegationParamsFromInputs(ctx, args)

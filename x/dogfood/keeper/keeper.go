@@ -25,7 +25,7 @@ type (
 		epochsKeeper     types.EpochsKeeper
 		operatorKeeper   types.OperatorKeeper
 		delegationKeeper types.DelegationKeeper
-		restakingKeeper  types.RestakingKeeper
+		restakingKeeper  types.AssetsKeeper
 		slashingKeeper   types.SlashingKeeper
 	}
 )
@@ -38,7 +38,7 @@ func NewKeeper(
 	epochsKeeper types.EpochsKeeper,
 	operatorKeeper types.OperatorKeeper,
 	delegationKeeper types.DelegationKeeper,
-	restakingKeeper types.RestakingKeeper,
+	restakingKeeper types.AssetsKeeper,
 	slashingKeeper types.SlashingKeeper,
 ) *Keeper {
 	// set KeyTable if it has not already been set

@@ -131,7 +131,7 @@ func (k *Keeper) UpdateStateForAsset(ctx sdk.Context, assetID, avsAddr, operator
 	// check operator address validation
 	_, err := sdk.AccAddressFromBech32(operatorAddr)
 	if err != nil {
-		return assetstype.ErrOperatorAddr
+		return assetstype.ErrInvalidOperatorAddr
 	}
 	stateKey := assetstype.GetJoinedStoreKey(assetID, avsAddr, operatorAddr)
 	optedInAssetState := operatortypes.OptedInAssetState{
@@ -165,7 +165,7 @@ func (k *Keeper) DeleteAssetState(ctx sdk.Context, assetID, avsAddr, operatorAdd
 	// check operator address validation
 	_, err := sdk.AccAddressFromBech32(operatorAddr)
 	if err != nil {
-		return assetstype.ErrOperatorAddr
+		return assetstype.ErrInvalidOperatorAddr
 	}
 	stateKey := assetstype.GetJoinedStoreKey(assetID, avsAddr, operatorAddr)
 	store.Delete(stateKey)

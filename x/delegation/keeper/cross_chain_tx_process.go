@@ -48,7 +48,7 @@ type DelegationOrUndelegationParams struct {
 	if err != nil {
 		return nil, errorsmod.Wrap(err, "error occurred when binary read ClientChainLzID from topic")
 	}
-	clientChainInfo, err := k.restakingStateKeeper.GetClientChainInfoByIndex(ctx, clientChainLzID)
+	clientChainInfo, err := k.assetsKeeper.GetClientChainInfoByIndex(ctx, clientChainLzID)
 	if err != nil {
 		return nil, errorsmod.Wrap(err, "error occurred when get client chain info")
 	}
@@ -130,7 +130,7 @@ func (k *Keeper) DelegateTo(ctx sdk.Context, params *DelegationOrUndelegationPar
 	stakerID, assetID := assetstype.GetStakeIDAndAssetID(params.ClientChainLzID, params.StakerAddress, params.AssetsAddress)
 
 	// check if the staker asset has been deposited and the canWithdraw amount is bigger than the delegation amount
-	info, err := k.restakingStateKeeper.GetStakerSpecifiedAssetInfo(ctx, stakerID, assetID)
+	info, err := k.assetsKeeper.GetStakerSpecifiedAssetInfo(ctx, stakerID, assetID)
 	if err != nil {
 		return err
 	}
@@ -140,14 +140,14 @@ func (k *Keeper) DelegateTo(ctx sdk.Context, params *DelegationOrUndelegationPar
 	}
 
 	// update staker asset state
-	err = k.restakingStateKeeper.UpdateStakerAssetState(ctx, stakerID, assetID, assetstype.StakerSingleAssetChangeInfo{
+	err = k.assetsKeeper.UpdateStakerAssetState(ctx, stakerID, assetID, assetstype.StakerSingleAssetChangeInfo{
 		WithdrawableAmount: params.OpAmount.Neg(),
 	})
 	if err != nil {
 		return err
 	}
 
-	err = k.restakingStateKeeper.UpdateOperatorAssetState(ctx, params.OperatorAddress, assetID, assetstype.OperatorSingleAssetChangeInfo{
+	err = k.assetsKeeper.UpdateOperatorAssetState(ctx, params.OperatorAddress, assetID, assetstype.OperatorSingleAssetChangeInfo{
 		TotalAmount: params.OpAmount,
 	})
 	if err != nil {
@@ -233,13 +233,13 @@ func (k *Keeper) UndelegateFrom(ctx sdk.Context, params *DelegationOrUndelegatio
 	}
 
 	// update staker and operator assets state
-	err = k.restakingStateKeeper.UpdateStakerAssetState(ctx, stakerID, assetID, assetstype.StakerSingleAssetChangeInfo{
+	err = k.assetsKeeper.UpdateStakerAssetState(ctx, stakerID, assetID, assetstype.StakerSingleAssetChangeInfo{
 		WaitUnbondingAmount: params.OpAmount,
 	})
 	if err != nil {
 		return err
 	}
-	err = k.restakingStateKeeper.UpdateOperatorAssetState(ctx, params.OperatorAddress, assetID, assetstype.OperatorSingleAssetChangeInfo{
+	err = k.assetsKeeper.UpdateOperatorAssetState(ctx, params.OperatorAddress, assetID, assetstype.OperatorSingleAssetChangeInfo{
 		TotalAmount:         params.OpAmount.Neg(),
 		WaitUnbondingAmount: params.OpAmount,
 	})

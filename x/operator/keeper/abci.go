@@ -40,7 +40,7 @@ func (k *Keeper) PriceChangeHandle(ctx sdk.Context) error {
 	assetsDecimal := make(map[string]uint32)
 	for assetID, priceChange := range priceChangeAssets {
 		// get the decimal of asset
-		assetInfo, err := k.restakingStateKeeper.GetStakingAssetInfo(ctx, assetID)
+		assetInfo, err := k.assetsKeeper.GetStakingAssetInfo(ctx, assetID)
 		if err != nil {
 			return err
 		}
@@ -88,11 +88,11 @@ func (k *Keeper) PriceChangeHandle(ctx sdk.Context) error {
 		return err
 	}
 
-	operatorShareHandleFunc := func(operatorAddr, assetID string, state *types.OperatorSingleAssetInfo) error {
-		UpdateShareOfStakerAndOperator(sharedParameter, assetID, "", operatorAddr, state.OperatorOwnAmount)
+	operatorShareHandleFunc := func(operatorAddr, assetID string, state *types.OperatorAssetInfo) error {
+		UpdateShareOfStakerAndOperator(sharedParameter, assetID, "", operatorAddr, state.OperatorAmount)
 		return nil
 	}
-	err = k.restakingStateKeeper.IteratorOperatorAssetState(ctx, operatorShareHandleFunc)
+	err = k.assetsKeeper.IteratorOperatorAssetState(ctx, operatorShareHandleFunc)
 	if err != nil {
 		return err
 	}

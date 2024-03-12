@@ -40,7 +40,7 @@ func (k *Keeper) UpdateOptedInAssetsState(ctx sdk.Context, stakerID, assetID, op
 	}
 
 	// get the decimal of asset
-	assetInfo, err := k.restakingStateKeeper.GetStakingAssetInfo(ctx, assetID)
+	assetInfo, err := k.assetsKeeper.GetStakingAssetInfo(ctx, assetID)
 	if err != nil {
 		return err
 	}
@@ -98,7 +98,7 @@ func (k *Keeper) OptIn(ctx sdk.Context, operatorAddress sdk.AccAddress, avsAddr 
 	}
 
 	// get the Assets opted in the operator
-	operatorAssets, err := k.restakingStateKeeper.GetOperatorAssetInfos(ctx, operatorAddress, avsSupportedAssets)
+	operatorAssets, err := k.assetsKeeper.GetOperatorAssetInfos(ctx, operatorAddress, avsSupportedAssets)
 	if err != nil {
 		return err
 	}
@@ -116,7 +116,7 @@ func (k *Keeper) OptIn(ctx sdk.Context, operatorAddress sdk.AccAddress, avsAddr 
 		}
 
 		// get the decimal of asset
-		assetInfo, err := k.restakingStateKeeper.GetStakingAssetInfo(ctx, assetID)
+		assetInfo, err := k.assetsKeeper.GetStakingAssetInfo(ctx, assetID)
 		if err != nil {
 			return err
 		}
@@ -126,7 +126,7 @@ func (k *Keeper) OptIn(ctx sdk.Context, operatorAddress sdk.AccAddress, avsAddr 
 			Decimal:      assetInfo.AssetBasicInfo.Decimals,
 		}
 		assetUSDValue := CalculateShare(operatorAssetState.TotalAmount, price, assetInfo.AssetBasicInfo.Decimals, decimal)
-		operatorUSDValue := CalculateShare(operatorAssetState.OperatorOwnAmount, price, assetInfo.AssetBasicInfo.Decimals, decimal)
+		operatorUSDValue := CalculateShare(operatorAssetState.OperatorAmount, price, assetInfo.AssetBasicInfo.Decimals, decimal)
 		operatorOwnAssetUSDValue = operatorOwnAssetUSDValue.Add(operatorUSDValue)
 
 		// UpdateStateForAsset
@@ -209,7 +209,7 @@ func (k *Keeper) OptOut(ctx sdk.Context, operatorAddress sdk.AccAddress, avsAddr
 		return err
 	}
 	// get the Assets opted in the operator
-	operatorAssets, err := k.restakingStateKeeper.GetOperatorAssetInfos(ctx, operatorAddress, avsSupportedAssets)
+	operatorAssets, err := k.assetsKeeper.GetOperatorAssetInfos(ctx, operatorAddress, avsSupportedAssets)
 	if err != nil {
 		return err
 	}
@@ -298,7 +298,7 @@ func (k *Keeper) GetAssetsAmountToSlash(ctx sdk.Context, operatorAddress sdk.Acc
 	}
 
 	// get the Assets opted in the operator
-	historyOperatorAssetsState, err := k.restakingStateKeeper.GetOperatorAssetInfos(historicalSateCtx, operatorAddress, assetsFilter)
+	historyOperatorAssetsState, err := k.assetsKeeper.GetOperatorAssetInfos(historicalSateCtx, operatorAddress, assetsFilter)
 	if err != nil {
 		return nil, err
 	}
@@ -309,7 +309,7 @@ func (k *Keeper) GetAssetsAmountToSlash(ctx sdk.Context, operatorAddress sdk.Acc
 		return nil, err
 	}
 	// get the Assets opted in the operator
-	currentOperatorAssetsState, err := k.restakingStateKeeper.GetOperatorAssetInfos(ctx, operatorAddress, assetsFilter)
+	currentOperatorAssetsState, err := k.assetsKeeper.GetOperatorAssetInfos(ctx, operatorAddress, assetsFilter)
 	if err != nil {
 		return nil, err
 	}
@@ -342,10 +342,10 @@ func (k *Keeper) GetAssetsAmountToSlash(ctx sdk.Context, operatorAddress sdk.Acc
 	// calculate the actual slash amount for operator
 	for assetID, curAssetState := range currentOperatorAssetsState {
 		if historyAssetState, ok := historyOperatorAssetsState[assetID]; ok {
-			shouldSlashAmount := slashProportion.MulInt(historyAssetState.OperatorOwnAmount).TruncateInt()
-			if curAssetState.OperatorOwnAmount.LT(shouldSlashAmount) {
-				ret.slashOperatorInfo[assetID].AmountFromOptedIn = curAssetState.OperatorOwnAmount
-				remainShouldSlash := shouldSlashAmount.Sub(curAssetState.OperatorOwnAmount)
+			shouldSlashAmount := slashProportion.MulInt(historyAssetState.OperatorAmount).TruncateInt()
+			if curAssetState.OperatorAmount.LT(shouldSlashAmount) {
+				ret.slashOperatorInfo[assetID].AmountFromOptedIn = curAssetState.OperatorAmount
+				remainShouldSlash := shouldSlashAmount.Sub(curAssetState.OperatorAmount)
 				if curAssetState.OperatorUnbondableAmountAfterSlash.LT(remainShouldSlash) {
 					ret.slashOperatorInfo[assetID].AmountFromUnbonding = curAssetState.OperatorUnbondableAmountAfterSlash
 				} else {
@@ -380,7 +380,7 @@ func (k *Keeper) SlashStaker(ctx sdk.Context, operatorAddress sdk.AccAddress, sl
 
 			slashSumValue := slashInfo.AmountFromUnbonding.Add(slashInfo.AmountFromOptedIn)
 			// update staker and operator assets state
-			err = k.restakingStateKeeper.UpdateStakerAssetState(ctx, stakerID, assetID, types2.StakerSingleAssetChangeInfo{
+			err = k.assetsKeeper.UpdateStakerAssetState(ctx, stakerID, assetID, types2.StakerSingleAssetChangeInfo{
 				TotalDepositAmount: slashSumValue.Neg(),
 			})
 			if err != nil {
@@ -394,7 +394,7 @@ func (k *Keeper) SlashStaker(ctx sdk.Context, operatorAddress sdk.AccAddress, sl
 			}
 
 			// handle the state that needs to be updated when slashing opted-in assets
-			err = k.restakingStateKeeper.UpdateOperatorAssetState(ctx, operatorAddress, assetID, types2.OperatorSingleAssetChangeInfo{
+			err = k.assetsKeeper.UpdateOperatorAssetState(ctx, operatorAddress, assetID, types2.OperatorSingleAssetChangeInfo{
 				TotalAmount: slashInfo.AmountFromOptedIn.Neg(),
 			})
 			if err != nil {
@@ -414,9 +414,9 @@ func (k *Keeper) SlashOperator(ctx sdk.Context, operatorAddress sdk.AccAddress, 
 	for assetID, slashInfo := range slashOperatorInfo {
 		slashSumValue := slashInfo.AmountFromUnbonding.Add(slashInfo.AmountFromOptedIn)
 		// handle the state that needs to be updated when slashing both opted-in and unbonding assets
-		err := k.restakingStateKeeper.UpdateOperatorAssetState(ctx, operatorAddress, assetID, types2.OperatorSingleAssetChangeInfo{
+		err := k.assetsKeeper.UpdateOperatorAssetState(ctx, operatorAddress, assetID, types2.OperatorSingleAssetChangeInfo{
 			TotalAmount:                        slashSumValue.Neg(),
-			OperatorOwnAmount:                  slashInfo.AmountFromOptedIn.Neg(),
+			OperatorAmount:                     slashInfo.AmountFromOptedIn.Neg(),
 			OperatorUnbondableAmountAfterSlash: slashInfo.AmountFromUnbonding.Neg(),
 		})
 		if err != nil {

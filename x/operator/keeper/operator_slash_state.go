@@ -23,7 +23,7 @@ func (k *Keeper) UpdateOperatorSlashInfo(ctx sdk.Context, operatorAddr, avsAddr,
 	// check operator address validation
 	_, err := sdk.AccAddressFromBech32(operatorAddr)
 	if err != nil {
-		return assetstype.ErrOperatorAddr
+		return assetstype.ErrInvalidOperatorAddr
 	}
 	slashInfoKey := assetstype.GetJoinedStoreKey(operatorAddr, avsAddr, slashID)
 	if store.Has(slashInfoKey) {

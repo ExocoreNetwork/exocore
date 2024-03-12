@@ -9,7 +9,7 @@ func (suite *StakingAssetsTestSuite) TestGenesisClientChainAndAssetInfo() {
 	defaultGensisState := assets.DefaultGenesisState()
 
 	// test the client chains getting
-	clientChains, err := suite.App.StakingAssetsManageKeeper.GetAllClientChainInfo(suite.Ctx)
+	clientChains, err := suite.App.AssetsKeeper.GetAllClientChainInfo(suite.Ctx)
 	suite.NoError(err)
 	suite.Ctx.Logger().Info("the clientChains is:", "info", clientChains)
 	for _, clientChain := range defaultGensisState.DefaultSupportedClientChains {
@@ -18,12 +18,12 @@ func (suite *StakingAssetsTestSuite) TestGenesisClientChainAndAssetInfo() {
 		suite.Equal(info, clientChain)
 	}
 
-	chainInfo, err := suite.App.StakingAssetsManageKeeper.GetClientChainInfoByIndex(suite.Ctx, 101)
+	chainInfo, err := suite.App.AssetsKeeper.GetClientChainInfoByIndex(suite.Ctx, 101)
 	suite.NoError(err)
 	suite.Equal(clientChains[101], chainInfo)
 
 	// test the client chain assets getting
-	assets, err := suite.App.StakingAssetsManageKeeper.GetAllStakingAssetsInfo(suite.Ctx)
+	assets, err := suite.App.AssetsKeeper.GetAllStakingAssetsInfo(suite.Ctx)
 	suite.NoError(err)
 	for _, asset := range defaultGensisState.DefaultSupportedClientChainTokens {
 		_, assetID := assetstype.GetStakeIDAndAssetIDFromStr(asset.LayerZeroChainID, "", asset.Address)
@@ -35,7 +35,7 @@ func (suite *StakingAssetsTestSuite) TestGenesisClientChainAndAssetInfo() {
 
 	usdtAsset := defaultGensisState.DefaultSupportedClientChainTokens[0]
 	_, assetID := assetstype.GetStakeIDAndAssetIDFromStr(usdtAsset.LayerZeroChainID, "", usdtAsset.Address)
-	assetInfo, err := suite.App.StakingAssetsManageKeeper.GetStakingAssetInfo(suite.Ctx, assetID)
+	assetInfo, err := suite.App.AssetsKeeper.GetStakingAssetInfo(suite.Ctx, assetID)
 	suite.NoError(err)
 	suite.Equal(usdtAsset, assetInfo.AssetBasicInfo)
 }

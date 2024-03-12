@@ -32,7 +32,7 @@ func TestPrecompileTestSuite(t *testing.T) {
 
 func (s *DepositPrecompileSuite) SetupTest() {
 	s.DoSetupTest()
-	precompile, err := deposit.NewPrecompile(s.App.StakingAssetsManageKeeper, s.App.DepositKeeper, s.App.AuthzKeeper)
+	precompile, err := deposit.NewPrecompile(s.App.AssetsKeeper, s.App.DepositKeeper, s.App.AuthzKeeper)
 	s.Require().NoError(err)
 	s.precompile = precompile
 }

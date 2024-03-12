@@ -31,7 +31,7 @@ func TestPrecompileTestSuite(t *testing.T) {
 
 func (s *WithdrawPrecompileTestSuite) SetupTest() {
 	s.DoSetupTest()
-	precompile, err := withdraw.NewPrecompile(s.App.StakingAssetsManageKeeper, s.App.WithdrawKeeper, s.App.AuthzKeeper)
+	precompile, err := withdraw.NewPrecompile(s.App.AssetsKeeper, s.App.WithdrawKeeper, s.App.AuthzKeeper)
 	s.Require().NoError(err)
 	s.precompile = precompile
 }

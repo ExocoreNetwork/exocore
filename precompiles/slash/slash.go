@@ -5,7 +5,7 @@ import (
 	"embed"
 	"fmt"
 
-	stakingStateKeeper "github.com/ExocoreNetwork/exocore/x/assets/keeper"
+	assetskeeper "github.com/ExocoreNetwork/exocore/x/assets/keeper"
 	slashKeeper "github.com/ExocoreNetwork/exocore/x/slash/keeper"
 	"github.com/cometbft/cometbft/libs/log"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
@@ -26,7 +26,7 @@ var f embed.FS
 
 // Precompile defines the precompiled contract for slash.
 type Precompile struct {
-	stakingStateKeeper stakingStateKeeper.Keeper
+	assetsKeeper assetskeeper.Keeper
 	cmn.Precompile
 	slashKeeper slashKeeper.Keeper
 }
@@ -34,7 +34,7 @@ type Precompile struct {
 // NewPrecompile creates a new slash Precompile instance as a
 // PrecompiledContract interface.
 func NewPrecompile(
-	stakingStateKeeper stakingStateKeeper.Keeper,
+	stakingStateKeeper assetskeeper.Keeper,
 	slashKeeper slashKeeper.Keeper,
 	authzKeeper authzkeeper.Keeper,
 ) (*Precompile, error) {
@@ -56,8 +56,8 @@ func NewPrecompile(
 			TransientKVGasConfig: storetypes.TransientGasConfig(),
 			ApprovalExpiration:   cmn.DefaultExpirationDuration, // should be configurable in the future.
 		},
-		stakingStateKeeper: stakingStateKeeper,
-		slashKeeper:        slashKeeper,
+		assetsKeeper: stakingStateKeeper,
+		slashKeeper:  slashKeeper,
 	}, nil
 }
 

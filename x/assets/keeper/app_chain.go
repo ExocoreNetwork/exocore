@@ -32,7 +32,7 @@ func (k Keeper) GetAppChainInfoByChainID(
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), assetstype.KeyPrefixAppChainInfo)
 	ifExist := store.Has([]byte(chainID))
 	if !ifExist {
-		return assetstype.AppChainInfo{}, assetstype.ErrNoAppChainKey
+		return assetstype.AppChainInfo{}, assetstype.ErrUnknownAppChainID
 	}
 	value := store.Get([]byte(chainID))
 	ret := assetstype.AppChainInfo{}
