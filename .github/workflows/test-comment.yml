@@ -1,6 +1,14 @@
 # This workflow runs after test.yml and comments the test coverage on the pull request.
 name: Comment test coverage on the pull request
 
+permissions:
+  # for finding and downloading artifacts.
+  actions: read
+  # for commenting on pull requests.
+  pull-requests: write
+  # the content of the repo is irrelevant.
+  contents: none
+
 on:
   workflow_run:
     workflows: ["Tests"]
@@ -43,10 +51,10 @@ jobs:
       - name: Read PR Number and Coverage
         id: read_files
         run: |
-          pr_number=$(cat result/pr_number.txt)
-          coverage=$(cat result/coverage.txt)
-          echo "PR_NUMBER=${pr_number}" >> $GITHUB_ENV
-          echo "COVERAGE=${coverage}" >> $GITHUB_ENV
+            pr_number=$(cat "result/pr_number.txt")
+            coverage=$(cat "result/coverage.txt")
+            echo "PR_NUMBER=${pr_number}" >> "$GITHUB_ENV"
+            echo "COVERAGE=${coverage}" >> "$GITHUB_ENV"
       - name: Find comment
         id: find-comment
         uses: peter-evans/find-comment@v2
