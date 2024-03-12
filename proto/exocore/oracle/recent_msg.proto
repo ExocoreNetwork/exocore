@@ -1,0 +1,16 @@
+syntax = "proto3";
+package exocore.oracle;
+
+import "exocore/oracle/price.proto";
+
+option go_package = "github.com/ExocoreNetwork/exocore/x/oracle/types";
+
+message RecentMsg {
+  uint64 block = 1; 
+  int32 feeder_id = 2;
+  PriceWithSource p_sources = 3; 
+  string validator = 4;
+}
+
+
+

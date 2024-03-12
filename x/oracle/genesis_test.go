@@ -25,6 +25,25 @@ func TestGenesis(t *testing.T) {
 		Validators: &types.Validators{
 			Block: 42,
 		},
+		ValidatorUpdateBlock: &types.ValidatorUpdateBlock{},
+		IndexRecentParams:    &types.IndexRecentParams{},
+		IndexRecentMsg:       &types.IndexRecentMsg{},
+		RecentMsgList: []types.RecentMsg{
+			{
+				Block: 0,
+			},
+			{
+				Block: 1,
+			},
+		},
+		RecentParamsList: []types.RecentParams{
+			{
+				Block: 0,
+			},
+			{
+				Block: 1,
+			},
+		},
 		// this line is used by starport scaffolding # genesis/test/state
 	}
 
@@ -38,5 +57,10 @@ func TestGenesis(t *testing.T) {
 
 	require.ElementsMatch(t, genesisState.PricesList, got.PricesList)
 	require.Equal(t, genesisState.Validators, got.Validators)
+	require.Equal(t, genesisState.ValidatorUpdateBlock, got.ValidatorUpdateBlock)
+	require.Equal(t, genesisState.IndexRecentParams, got.IndexRecentParams)
+	require.Equal(t, genesisState.IndexRecentMsg, got.IndexRecentMsg)
+	require.ElementsMatch(t, genesisState.RecentMsgList, got.RecentMsgList)
+	require.ElementsMatch(t, genesisState.RecentParamsList, got.RecentParamsList)
 	// this line is used by starport scaffolding # genesis/test/assert
 }

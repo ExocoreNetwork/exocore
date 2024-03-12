@@ -33,6 +33,25 @@ func TestGenesisState_Validate(t *testing.T) {
 				Validators: &types.Validators{
 					Block: 45,
 				},
+				ValidatorUpdateBlock: &types.ValidatorUpdateBlock{},
+				IndexRecentParams:    &types.IndexRecentParams{},
+				IndexRecentMsg:       &types.IndexRecentMsg{},
+				RecentMsgList: []types.RecentMsg{
+					{
+						Block: 0,
+					},
+					{
+						Block: 1,
+					},
+				},
+				RecentParamsList: []types.RecentParams{
+					{
+						Block: 0,
+					},
+					{
+						Block: 1,
+					},
+				},
 				// this line is used by starport scaffolding # types/genesis/validField
 			},
 			valid: true,
@@ -46,6 +65,34 @@ func TestGenesisState_Validate(t *testing.T) {
 					},
 					{
 						TokenId: 0,
+					},
+				},
+			},
+			valid: false,
+		},
+		{
+			desc: "duplicated recentMsg",
+			genState: &types.GenesisState{
+				RecentMsgList: []types.RecentMsg{
+					{
+						Block: 0,
+					},
+					{
+						Block: 0,
+					},
+				},
+			},
+			valid: false,
+		},
+		{
+			desc: "duplicated recentParams",
+			genState: &types.GenesisState{
+				RecentParamsList: []types.RecentParams{
+					{
+						Block: 0,
+					},
+					{
+						Block: 0,
 					},
 				},
 			},

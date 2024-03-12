@@ -16,6 +16,26 @@ func InitGenesis(ctx sdk.Context, k keeper.Keeper, genState types.GenesisState) 
 	if genState.Validators != nil {
 		k.SetValidators(ctx, *genState.Validators)
 	}
+	// Set if defined
+	if genState.ValidatorUpdateBlock != nil {
+		k.SetValidatorUpdateBlock(ctx, *genState.ValidatorUpdateBlock)
+	}
+	// Set if defined
+	if genState.IndexRecentParams != nil {
+		k.SetIndexRecentParams(ctx, *genState.IndexRecentParams)
+	}
+	// Set if defined
+	if genState.IndexRecentMsg != nil {
+		k.SetIndexRecentMsg(ctx, *genState.IndexRecentMsg)
+	}
+	// Set all the recentMsg
+	for _, elem := range genState.RecentMsgList {
+		k.SetRecentMsg(ctx, elem)
+	}
+	// Set all the recentParams
+	for _, elem := range genState.RecentParamsList {
+		k.SetRecentParams(ctx, elem)
+	}
 	// this line is used by starport scaffolding # genesis/module/init
 	k.SetParams(ctx, genState.Params)
 }
@@ -31,6 +51,23 @@ func ExportGenesis(ctx sdk.Context, k keeper.Keeper) *types.GenesisState {
 	if found {
 		genesis.Validators = &validators
 	}
+	// Get all validatorUpdateBlock
+	validatorUpdateBlock, found := k.GetValidatorUpdateBlock(ctx)
+	if found {
+		genesis.ValidatorUpdateBlock = &validatorUpdateBlock
+	}
+	// Get all indexRecentParams
+	indexRecentParams, found := k.GetIndexRecentParams(ctx)
+	if found {
+		genesis.IndexRecentParams = &indexRecentParams
+	}
+	// Get all indexRecentMsg
+	indexRecentMsg, found := k.GetIndexRecentMsg(ctx)
+	if found {
+		genesis.IndexRecentMsg = &indexRecentMsg
+	}
+	genesis.RecentMsgList = k.GetAllRecentMsg(ctx)
+	genesis.RecentParamsList = k.GetAllRecentParams(ctx)
 	// this line is used by starport scaffolding # genesis/module/export
 
 	return genesis

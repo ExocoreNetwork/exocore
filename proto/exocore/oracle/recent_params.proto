@@ -1,0 +1,12 @@
+syntax = "proto3";
+package exocore.oracle;
+
+import "exocore/oracle/params.proto";
+
+option go_package = "github.com/ExocoreNetwork/exocore/x/oracle/types";
+
+message RecentParams {
+  uint64 block = 1; 
+  Params params = 2;  
+}
+
