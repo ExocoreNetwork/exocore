@@ -8,6 +8,11 @@ import "cosmos/base/query/v1beta1/pagination.proto";
 import "exocore/oracle/params.proto";
 import "exocore/oracle/prices.proto";
 import "exocore/oracle/validators.proto";
+import "exocore/oracle/validator_update_block.proto";
+import "exocore/oracle/index_recent_params.proto";
+import "exocore/oracle/index_recent_msg.proto";
+import "exocore/oracle/recent_msg.proto";
+import "exocore/oracle/recent_params.proto";
 
 option go_package = "github.com/ExocoreNetwork/exocore/x/oracle/types";
 
@@ -33,6 +38,44 @@ service Query {
   // Queries a Validators by index.
   rpc Validators (QueryGetValidatorsRequest) returns (QueryGetValidatorsResponse) {
     option (google.api.http).get = "/ExocoreNetwork/exocore/oracle/validators";
+  
+  }
+  
+  // Queries a ValidatorUpdateBlock by index.
+  rpc ValidatorUpdateBlock (QueryGetValidatorUpdateBlockRequest) returns (QueryGetValidatorUpdateBlockResponse) {
+    option (google.api.http).get = "/ExocoreNetwork/exocore/oracle/validator_update_block";
+  
+  }
+  
+  // Queries a IndexRecentParams by index.
+  rpc IndexRecentParams (QueryGetIndexRecentParamsRequest) returns (QueryGetIndexRecentParamsResponse) {
+    option (google.api.http).get = "/ExocoreNetwork/exocore/oracle/index_recent_params";
+  
+  }
+  
+  // Queries a IndexRecentMsg by index.
+  rpc IndexRecentMsg (QueryGetIndexRecentMsgRequest) returns (QueryGetIndexRecentMsgResponse) {
+    option (google.api.http).get = "/ExocoreNetwork/exocore/oracle/index_recent_msg";
+  
+  }
+  
+  // Queries a list of RecentMsg items.
+  rpc RecentMsg    (QueryGetRecentMsgRequest) returns (QueryGetRecentMsgResponse) {
+    option (google.api.http).get = "/ExocoreNetwork/exocore/oracle/recent_msg/{block}";
+  
+  }
+  rpc RecentMsgAll (QueryAllRecentMsgRequest) returns (QueryAllRecentMsgResponse) {
+    option (google.api.http).get = "/ExocoreNetwork/exocore/oracle/recent_msg";
+  
+  }
+  
+  // Queries a list of RecentParams items.
+  rpc RecentParams    (QueryGetRecentParamsRequest) returns (QueryGetRecentParamsResponse) {
+    option (google.api.http).get = "/ExocoreNetwork/exocore/oracle/recent_params/{block}";
+  
+  }
+  rpc RecentParamsAll (QueryAllRecentParamsRequest) returns (QueryAllRecentParamsResponse) {
+    option (google.api.http).get = "/ExocoreNetwork/exocore/oracle/recent_params";
   
   }
 }
@@ -67,5 +110,57 @@ message QueryGetValidatorsRequest {}
 
 message QueryGetValidatorsResponse {
   Validators Validators = 1 [(gogoproto.nullable) = false];
+}
+
+message QueryGetValidatorUpdateBlockRequest {}
+
+message QueryGetValidatorUpdateBlockResponse {
+  ValidatorUpdateBlock ValidatorUpdateBlock = 1 [(gogoproto.nullable) = false];
+}
+
+message QueryGetIndexRecentParamsRequest {}
+
+message QueryGetIndexRecentParamsResponse {
+  IndexRecentParams IndexRecentParams = 1 [(gogoproto.nullable) = false];
+}
+
+message QueryGetIndexRecentMsgRequest {}
+
+message QueryGetIndexRecentMsgResponse {
+  IndexRecentMsg IndexRecentMsg = 1 [(gogoproto.nullable) = false];
+}
+
+message QueryGetRecentMsgRequest {
+  uint64 block = 1;
+}
+
+message QueryGetRecentMsgResponse {
+  RecentMsg recentMsg = 1 [(gogoproto.nullable) = false];
+}
+
+message QueryAllRecentMsgRequest {
+  cosmos.base.query.v1beta1.PageRequest pagination = 1;
+}
+
+message QueryAllRecentMsgResponse {
+  repeated RecentMsg                              recentMsg  = 1 [(gogoproto.nullable) = false];
+           cosmos.base.query.v1beta1.PageResponse pagination = 2;
+}
+
+message QueryGetRecentParamsRequest {
+  uint64 block = 1;
+}
+
+message QueryGetRecentParamsResponse {
+  RecentParams recentParams = 1 [(gogoproto.nullable) = false];
+}
+
+message QueryAllRecentParamsRequest {
+  cosmos.base.query.v1beta1.PageRequest pagination = 1;
+}
+
+message QueryAllRecentParamsResponse {
+  repeated RecentParams                           recentParams = 1 [(gogoproto.nullable) = false];
+           cosmos.base.query.v1beta1.PageResponse pagination   = 2;
 }
 

@@ -21,3 +21,15 @@ func KeyPrefix(p string) []byte {
 const (
 	ValidatorsKey = "Validators/value/"
 )
+
+const (
+	ValidatorUpdateBlockKey = "ValidatorUpdateBlock/value/"
+)
+
+const (
+	IndexRecentParamsKey = "IndexRecentParams/value/"
+)
+
+const (
+	IndexRecentMsgKey = "IndexRecentMsg/value/"
+)
