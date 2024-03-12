@@ -1,25 +1,23 @@
 # Exocore Contributor Guidelines
 
-<!-- markdown-link-check-disable -->
 - [Exocore Contributor Guidelines](#exocore-contributor-guidelines)
-  - [General Procedure](#general-procedure)
-  - [Architecture Decision Records (ADR)](#architecture-decision-records-adr)
-  - [Forking](#forking)
-  - [Dependencies](#dependencies)
-  - [Protobuf](#protobuf)
-  - [Development Procedure](#development-procedure)
-  - [Testing](#testing)
-  - [Updating Documentation](#updating-documentation)
-  - [Branching Model and Release](#branching-model-and-release)
-    - [Commit messages](#commit-messages)
-    - [PR Targeting](#pr-targeting)
-    - [Pull Requests](#pull-requests)
-    - [Process for reviewing PRs](#process-for-reviewing-prs)
-    - [Pull Merge Procedure](#pull-merge-procedure)
-    - [Release Procedure](#release-procedure)
-<!-- markdown-link-check-enable -->
+    - [General Procedure](#general-procedure)
+    - [Architecture Decision Records (ADR)](#architecture-decision-records-adr)
+    - [Forking](#forking)
+    - [Dependencies](#dependencies)
+    - [Protobuf](#protobuf)
+    - [Development Procedure](#development-procedure)
+    - [Testing](#testing)
+    - [Updating Documentation](#updating-documentation)
+    - [Branching Model and Release](#branching-model-and-release)
+        - [Commit messages](#commit-messages)
+        - [PR Targeting](#pr-targeting)
+        - [Pull Requests](#pull-requests)
+        - [Process for reviewing PRs](#process-for-reviewing-prs)
+        - [Pull Merge Procedure](#pull-merge-procedure)
+        - [Release Procedure](#release-procedure)
 
-## <span id="general_procedure">General Procedure</span>
+## General Procedure
 
 Thank you for considering making contributions to Exocore and related repositories!
 
@@ -31,8 +29,8 @@ To ensure a smooth workflow for all contributors,
 the following general procedure for contributing has been established:
 
 1. Either [open](https://github.com/ExocoreNetwork/exocore/issues/new/choose)
-   or [find](https://github.com/ExocoreNetwork/exocore/issues) an issue you have identified and would like to contribute to
-   resolving.
+   or [find](https://github.com/ExocoreNetwork/exocore/issues) an issue you have identified and would like to contribute
+   to resolving.
 2. Participate in thoughtful discussion on that issue.
 3. If you would like to contribute:
     1. If the issue is a proposal, ensure that the proposal has been accepted by the Exocore team.
@@ -68,8 +66,7 @@ For more complex problems/features, if a PR is opened
 before an adequate design discussion has taken place in a GitHub issue,
 that PR runs a high likelihood of being rejected.
 
-
-## <span id="adr">Architecture Decision Records (ADR)</span>
+## Architecture Decision Records (ADR)
 
 When proposing an architecture decision for Exocore,
 please create an ADR
@@ -79,7 +76,7 @@ before any party begins coding the proposed implementation.
 If you would like to see some examples of how these are written
 refer to [Tendermint ADRs](https://github.com/tendermint/tendermint/tree/master/docs/architecture).
 
-## <span id="forking">Forking</span>
+## Forking
 
 Please note that Go requires code to live under absolute paths, which complicates forking.
 While my fork lives at `https://github.com/ExocoreNetwork/exocore`,
@@ -92,12 +89,12 @@ For instance, to create a fork and work on a branch of it, you would:
 1. Create the fork on github, using the fork button.
 2. Go to the original repo checked out locally. (i.e. `$GOPATH/src/github.com/ExocoreNetwork/exocore`)
 3. `git remote rename origin upstream`
-4. `git remote add origin git@github.com:tharsis/Exocore.git`
+4. `git remote add origin git@github.com:$USERNAME/Exocore.git`
 
 Now `origin` refers to my fork and `upstream` refers to the Exocore version.
 So I can `git push -u origin master` to update my fork,
 and make pull requests to Exocore from there.
-Of course, replace `tharsis` with your git handle.
+Of course, replace `$USERNAME` with your git handle.
 
 To pull in updates from the origin repo, run:
 
@@ -129,7 +126,7 @@ More about rebase [here](https://git-scm.com/docs/git-rebase) and
 
 Please **NO DOT** make Pull Requests from `development`.
 
-## <span id="dependencies">Dependencies</span>
+## Dependencies
 
 We use [Go Modules](https://github.com/golang/go/wiki/Modules) to manage dependency versions.
 
@@ -139,7 +136,7 @@ with their dependencies, so we can get away with telling people they can just `g
 Since some dependencies are not under our control, a third party may break our build, in which case we can fall back
 on `go mod tidy -v`.
 
-## <span id="protobuf">Protobuf</span>
+## Protobuf
 
 We use [Protocol Buffers](https://developers.google.com/protocol-buffers) along
 with [gogoproto](https://github.com/cosmos/protobuf) to generate code for use in Exocore.
@@ -172,7 +169,7 @@ For example, in vscode your `.vscode/settings.json` should look like:
 }
 ```
 
-## <span id="dev_procedure">Development Procedure</span>
+## Development Procedure
 
 1. The latest state of development is on `development`.
 2. `development` must never
@@ -182,17 +179,17 @@ For example, in vscode your `.vscode/settings.json` should look like:
    using `git remote add origin`).
 5. Before submitting a pull request, begin `git rebase` on top of `development`.
 
-## <span id="testing">Testing</span>
+## Testing
 
 Exocore uses [GitHub Actions](https://github.com/features/actions) for automated testing.
 
-## <span id="updating_doc">Updating Documentation</span>
+## Updating Documentation
 
 If you open a PR on the Exocore repo, it is mandatory to update the relevant documentation in `/docs`. Please refer to
 the docs subdirectory and make changes accordingly. Prior to approval, the Code owners/approvers may request some
 updates to specific docs.
 
-## <span id="braching_model_and_release">Branching Model and Release</span>
+## Branching Model and Release
 
 User-facing repos should adhere to the [trunk based development branching model](https://trunkbaseddevelopment.com/).
 
@@ -200,7 +197,7 @@ Libraries need not follow the model strictly, but would be wise to.
 
 Exocore utilizes [semantic versioning](https://semver.org/).
 
-### <span id="commit_messages">Commit messages</span>
+### Commit messages
 
 Commit messages should be written in a short, descriptive manner
 and be prefixed with tags for the change type and scope (if possible)
@@ -209,7 +206,7 @@ according to the [semantic commit](https://gist.github.com/joshbuchea/6f47e86d25
 For example, a new change to the `bank` module might have the following message:
 `feat(bank): add balance query cli command`
 
-### <span id="pr_targeting">PR Targeting</span>
+### PR Targeting
 
 Ensure that you base and target your PR on the `development` branch.
 
@@ -217,13 +214,13 @@ All feature additions should be targeted against `development`.
 Bug fixes for an outstanding release candidate should be
 targeted against the release candidate branch.
 
-### <span id="pull_requests">Pull Requests</span>
+### Pull Requests
 
 To accommodate the review process, we suggest that PRs are categorically broken up. Ideally each PR addresses only a
 single issue. Additionally, as much as possible code refactoring and cleanup should be submitted as separate PRs from
 bug fixes/feature-additions.
 
-### <span id="reviewing_prs">Process for reviewing PRs</span>
+### Process for reviewing PRs
 
 All PRs require two Reviews before merge. When reviewing PRs, please use the following review explanations:
 
@@ -233,21 +230,21 @@ All PRs require two Reviews before merge. When reviewing PRs, please use the fol
    documentation/spec is updated in the right places,
    you have pulled down and tested the code locally.
    In addition:
-    * You must think through whether any added code could be partially combined (DRYed) with existing code.
-    * You must think through any potential security issues or incentive-compatibility flaws introduced by the changes.
-    * Naming convention must be consistent with the rest of the codebase.
-    * Code must live in a reasonable location, considering dependency structures
+    - You must think through whether any added code could be partially combined (DRYed) with existing code.
+    - You must think through any potential security issues or incentive-compatibility flaws introduced by the changes.
+    - Naming convention must be consistent with the rest of the codebase.
+    - Code must live in a reasonable location, considering dependency structures
       (e.g. not importing testing modules in production code, or including example code modules in production code).
-    * If you approve of the PR, you are responsible for fixing any of the issues mentioned here.
+    - If you approve of the PR, you are responsible for fixing any of the issues mentioned here.
 3. If you are only making "surface level" reviews, submit any notes as `Comments` without adding a review.
 
-### <span id="pull_merge_procedure">Pull Merge Procedure</span>
+### Pull Merge Procedure
 
 1. Ensure pull branch is rebased on `development`.
 2. Run `make test` to ensure that all tests pass.
 3. Squash merge pull request.
 
-### <span id="release_procedure">Release Procedure</span>
+### Release Procedure
 
 1. Start on `development`.
 2. Create the release candidate branch `rc/v*` (going forward known as `RC`)
@@ -265,5 +262,5 @@ All PRs require two Reviews before merge. When reviewing PRs, please use the fol
 8. Tag the release (use `git tag -a`) and create a release in Github.
 9. Delete the `RC` branches.
 
-**Note**: tharsis’s Exocore team currently cuts releases on a need to have basis.
+**Note**: The Exocore team currently cuts releases on a need to have basis.
 We will announce a more standardized release schedule as we near production readiness.

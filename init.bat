@@ -13,7 +13,7 @@ set KEY="dev0"
 set CHAINID="exocoretestnet_233-1"
 set MONIKER="localtestnet"
 set KEYRING="test"
-set KEYALGO="eth_secp256k1"
+set ALGO="eth_secp256k1"
 set LOGLEVEL="info"
 # to trace evm
 #TRACE="--trace"
@@ -34,7 +34,7 @@ del /s /q %HOME%
 exocored config keyring-backend %KEYRING%
 exocored config chain-id %CHAINID%
 
-exocored keys add %KEY% --keyring-backend %KEYRING% --algo %KEYALGO%
+exocored keys add %KEY% --keyring-backend %KEYRING% --algo %ALGO%
 
 rem Set moniker and chain-id for exocore (Moniker can be anything, chain-id must be an integer)
 exocored init %MONIKER% --chain-id %CHAINID% 
