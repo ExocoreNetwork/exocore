@@ -190,8 +190,8 @@ func (k Keeper) Slash(ctx sdk.Context, event *SlashParams) error {
 	}
 
 	changeAmount := types.StakerSingleAssetChangeInfo{
-		ChangeForTotalDeposit: event.OpAmount.Neg(),
-		ChangeForWithdrawable: event.OpAmount.Neg(),
+		TotalDepositAmount: event.OpAmount.Neg(),
+		WithdrawableAmount: event.OpAmount.Neg(),
 	}
 	err := k.restakingStateKeeper.UpdateStakerAssetState(ctx, stakeID, assetID, changeAmount)
 	if err != nil {

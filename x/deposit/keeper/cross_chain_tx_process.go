@@ -134,8 +134,8 @@ func (k Keeper) Deposit(ctx sdk.Context, params *DepositParams) error {
 		return errorsmod.Wrap(despoittypes.ErrDepositAssetNotExist, fmt.Sprintf("the assetID is:%s", assetID))
 	}
 	changeAmount := types.StakerSingleAssetChangeInfo{
-		ChangeForTotalDeposit: params.OpAmount,
-		ChangeForWithdrawable: params.OpAmount,
+		TotalDepositAmount: params.OpAmount,
+		WithdrawableAmount: params.OpAmount,
 	}
 	// update asset state of the specified staker
 	err := k.restakingStateKeeper.UpdateStakerAssetState(ctx, stakeID, assetID, changeAmount)

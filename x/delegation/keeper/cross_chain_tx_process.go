@@ -141,14 +141,14 @@ func (k *Keeper) DelegateTo(ctx sdk.Context, params *DelegationOrUndelegationPar
 
 	// update staker asset state
 	err = k.restakingStateKeeper.UpdateStakerAssetState(ctx, stakerID, assetID, assetstype.StakerSingleAssetChangeInfo{
-		ChangeForWithdrawable: params.OpAmount.Neg(),
+		WithdrawableAmount: params.OpAmount.Neg(),
 	})
 	if err != nil {
 		return err
 	}
 
 	err = k.restakingStateKeeper.UpdateOperatorAssetState(ctx, params.OperatorAddress, assetID, assetstype.OperatorSingleAssetChangeInfo{
-		ChangeForTotalAmount: params.OpAmount,
+		TotalAmount: params.OpAmount,
 	})
 	if err != nil {
 		return err
@@ -234,14 +234,14 @@ func (k *Keeper) UndelegateFrom(ctx sdk.Context, params *DelegationOrUndelegatio
 
 	// update staker and operator assets state
 	err = k.restakingStateKeeper.UpdateStakerAssetState(ctx, stakerID, assetID, assetstype.StakerSingleAssetChangeInfo{
-		ChangeForWaitUnbonding: params.OpAmount,
+		WaitUnbondingAmount: params.OpAmount,
 	})
 	if err != nil {
 		return err
 	}
 	err = k.restakingStateKeeper.UpdateOperatorAssetState(ctx, params.OperatorAddress, assetID, assetstype.OperatorSingleAssetChangeInfo{
-		ChangeForTotalAmount:   params.OpAmount.Neg(),
-		ChangeForWaitUnbonding: params.OpAmount,
+		TotalAmount:         params.OpAmount.Neg(),
+		WaitUnbondingAmount: params.OpAmount,
 	})
 	if err != nil {
 		return err

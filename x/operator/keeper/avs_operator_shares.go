@@ -125,7 +125,7 @@ func (k *Keeper) GetAVSShare(ctx sdk.Context, avsAddr string) (sdkmath.LegacyDec
 
 func (k *Keeper) UpdateStateForAsset(ctx sdk.Context, assetID, avsAddr, operatorAddr string, changeState operatortypes.OptedInAssetStateChange) error {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), operatortypes.KeyPrefixOperatorAVSSingleAssetState)
-	if changeState.ChangeForAmount.IsNil() && changeState.ChangeForValue.IsNil() {
+	if changeState.Amount.IsNil() && changeState.Value.IsNil() {
 		return nil
 	}
 	// check operator address validation
@@ -144,12 +144,12 @@ func (k *Keeper) UpdateStateForAsset(ctx sdk.Context, assetID, avsAddr, operator
 		k.cdc.MustUnmarshal(value, &optedInAssetState)
 	}
 
-	err = assetstype.UpdateAssetValue(&optedInAssetState.Amount, &changeState.ChangeForAmount)
+	err = assetstype.UpdateAssetValue(&optedInAssetState.Amount, &changeState.Amount)
 	if err != nil {
 		return errorsmod.Wrap(err, "UpdateStateForAsset OptedInAssetState.Amount error")
 	}
 
-	err = assetstype.UpdateAssetDecValue(&optedInAssetState.Value, &changeState.ChangeForValue)
+	err = assetstype.UpdateAssetDecValue(&optedInAssetState.Value, &changeState.Value)
 	if err != nil {
 		return errorsmod.Wrap(err, "UpdateStateForAsset OptedInAssetState.Value error")
 	}

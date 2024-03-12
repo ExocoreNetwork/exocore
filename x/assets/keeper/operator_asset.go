@@ -67,23 +67,23 @@ func (k Keeper) UpdateOperatorAssetState(ctx sdk.Context, operatorAddr sdk.Addre
 	}
 
 	// update all states of the specified operator asset
-	err = assetstype.UpdateAssetValue(&assetState.TotalAmount, &changeAmount.ChangeForTotalAmount)
+	err = assetstype.UpdateAssetValue(&assetState.TotalAmount, &changeAmount.TotalAmount)
 	if err != nil {
 		return errorsmod.Wrap(err, "UpdateOperatorAssetState TotalAmountOrWantChangeValue error")
 	}
-	err = assetstype.UpdateAssetValue(&assetState.OperatorOwnAmount, &changeAmount.ChangeForOperatorOwn)
+	err = assetstype.UpdateAssetValue(&assetState.OperatorOwnAmount, &changeAmount.OperatorOwnAmount)
 	if err != nil {
 		return errorsmod.Wrap(err, "UpdateOperatorAssetState OperatorOwnAmountOrWantChangeValue error")
 	}
-	err = assetstype.UpdateAssetValue(&assetState.WaitUnbondingAmount, &changeAmount.ChangeForWaitUnbonding)
+	err = assetstype.UpdateAssetValue(&assetState.WaitUnbondingAmount, &changeAmount.WaitUnbondingAmount)
 	if err != nil {
 		return errorsmod.Wrap(err, "UpdateOperatorAssetState WaitUndelegationAmountOrWantChangeValue error")
 	}
-	err = assetstype.UpdateAssetValue(&assetState.OperatorUnbondingAmount, &changeAmount.ChangeForOperatorUnbonding)
+	err = assetstype.UpdateAssetValue(&assetState.OperatorUnbondingAmount, &changeAmount.OperatorUnbondingAmount)
 	if err != nil {
 		return errorsmod.Wrap(err, "UpdateOperatorAssetState OperatorUnbondingAmount error")
 	}
-	err = assetstype.UpdateAssetValue(&assetState.OperatorUnbondableAmountAfterSlash, &changeAmount.ChangeForUnbondableAfterSlash)
+	err = assetstype.UpdateAssetValue(&assetState.OperatorUnbondableAmountAfterSlash, &changeAmount.OperatorUnbondableAmountAfterSlash)
 	if err != nil {
 		return errorsmod.Wrap(err, "UpdateOperatorAssetState OperatorUnbondingAmount error")
 	}

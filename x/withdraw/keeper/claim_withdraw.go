@@ -129,8 +129,8 @@ func (k Keeper) Withdraw(ctx sdk.Context, params *WithdrawParams) error {
 		return errorsmod.Wrap(withdrawtype.ErrWithdrawAssetNotExist, fmt.Sprintf("the assetID is:%s", assetID))
 	}
 	changeAmount := types.StakerSingleAssetChangeInfo{
-		ChangeForTotalDeposit: params.OpAmount.Neg(),
-		ChangeForWithdrawable: params.OpAmount.Neg(),
+		TotalDepositAmount: params.OpAmount.Neg(),
+		WithdrawableAmount: params.OpAmount.Neg(),
 	}
 	err := k.restakingStateKeeper.UpdateStakerAssetState(ctx, stakeID, assetID, changeAmount)
 	if err != nil {

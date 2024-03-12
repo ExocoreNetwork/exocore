@@ -161,7 +161,8 @@ message OperatorSingleAssetInfo {
     (gogoproto.nullable) = false
   ];
 
-  // operator_unbondable_amount_after_slash is the amount that is owned by operator itself and can be unbonded after slash.
+  // operator_unbondable_amount_after_slash is the amount that is owned by operator itself
+  // and can be unbonded after slash.
   string operator_unbondable_amount_after_slash = 5
   [
     (cosmos_proto.scalar) = "cosmos.Int",

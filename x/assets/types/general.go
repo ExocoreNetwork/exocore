@@ -44,20 +44,10 @@ type CrossChainOpType uint8
 type WithdrawerAddress [32]byte
 
 // StakerSingleAssetChangeInfo This is a struct to describe the desired change that matches with the StakerSingleAssetInfo
-type StakerSingleAssetChangeInfo struct {
-	ChangeForTotalDeposit  math.Int
-	ChangeForWithdrawable  math.Int
-	ChangeForWaitUnbonding math.Int
-}
+type StakerSingleAssetChangeInfo StakerSingleAssetInfo
 
 // OperatorSingleAssetChangeInfo This is a struct to describe the desired change that matches with the OperatorSingleAssetInfo
-type OperatorSingleAssetChangeInfo struct {
-	ChangeForTotalAmount          math.Int
-	ChangeForOperatorOwn          math.Int
-	ChangeForWaitUnbonding        math.Int
-	ChangeForOperatorUnbonding    math.Int
-	ChangeForUnbondableAfterSlash math.Int
-}
+type OperatorSingleAssetChangeInfo OperatorSingleAssetInfo
 
 // GetStakeIDAndAssetID stakerID = stakerAddress+'_'+clientChainLzID,assetID = assetAddress+'_'+clientChainLzID
 func GetStakeIDAndAssetID(clientChainLzID uint64, stakerAddress []byte, assetsAddress []byte) (stakeID string, assetID string) {

@@ -63,15 +63,15 @@ func (k Keeper) UpdateStakerAssetState(ctx sdk.Context, stakerID string, assetID
 	}
 
 	// update all states of the specified restaker asset
-	err = assetstype.UpdateAssetValue(&assetState.TotalDepositAmount, &changeAmount.ChangeForTotalDeposit)
+	err = assetstype.UpdateAssetValue(&assetState.TotalDepositAmount, &changeAmount.TotalDepositAmount)
 	if err != nil {
 		return errorsmod.Wrap(err, "UpdateStakerAssetState TotalDepositAmountOrWantChangeValue error")
 	}
-	err = assetstype.UpdateAssetValue(&assetState.WithdrawableAmount, &changeAmount.ChangeForWithdrawable)
+	err = assetstype.UpdateAssetValue(&assetState.WithdrawableAmount, &changeAmount.WithdrawableAmount)
 	if err != nil {
 		return errorsmod.Wrap(err, "UpdateStakerAssetState CanWithdrawAmountOrWantChangeValue error")
 	}
-	err = assetstype.UpdateAssetValue(&assetState.WaitUnbondingAmount, &changeAmount.ChangeForWaitUnbonding)
+	err = assetstype.UpdateAssetValue(&assetState.WaitUnbondingAmount, &changeAmount.WaitUnbondingAmount)
 	if err != nil {
 		return errorsmod.Wrap(err, "UpdateStakerAssetState WaitUndelegationAmountOrWantChangeValue error")
 	}

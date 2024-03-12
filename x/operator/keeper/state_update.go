@@ -61,8 +61,8 @@ func (k *Keeper) UpdateOptedInAssetsState(ctx sdk.Context, stakerID, assetID, op
 
 			// UpdateStateForAsset
 			changeState := types.OptedInAssetStateChange{
-				ChangeForAmount: opAmount,
-				ChangeForValue:  opUSDValue,
+				Amount: opAmount,
+				Value:  opUSDValue,
 			}
 			err = k.UpdateStateForAsset(ctx, assetID, avs, operatorAddr, changeState)
 			if err != nil {
@@ -131,8 +131,8 @@ func (k *Keeper) OptIn(ctx sdk.Context, operatorAddress sdk.AccAddress, avsAddr 
 
 		// UpdateStateForAsset
 		changeState := types.OptedInAssetStateChange{
-			ChangeForAmount: operatorAssetState.TotalAmount,
-			ChangeForValue:  assetUSDValue,
+			Amount: operatorAssetState.TotalAmount,
+			Value:  assetUSDValue,
 		}
 		err = k.UpdateStateForAsset(ctx, assetID, avsAddr, operatorAddress.String(), changeState)
 		if err != nil {
@@ -381,7 +381,7 @@ func (k *Keeper) SlashStaker(ctx sdk.Context, operatorAddress sdk.AccAddress, sl
 			slashSumValue := slashInfo.AmountFromUnbonding.Add(slashInfo.AmountFromOptedIn)
 			// update staker and operator assets state
 			err = k.restakingStateKeeper.UpdateStakerAssetState(ctx, stakerID, assetID, types2.StakerSingleAssetChangeInfo{
-				ChangeForTotalDeposit: slashSumValue.Neg(),
+				TotalDepositAmount: slashSumValue.Neg(),
 			})
 			if err != nil {
 				return err
@@ -395,7 +395,7 @@ func (k *Keeper) SlashStaker(ctx sdk.Context, operatorAddress sdk.AccAddress, sl
 
 			// handle the state that needs to be updated when slashing opted-in assets
 			err = k.restakingStateKeeper.UpdateOperatorAssetState(ctx, operatorAddress, assetID, types2.OperatorSingleAssetChangeInfo{
-				ChangeForTotalAmount: slashInfo.AmountFromOptedIn.Neg(),
+				TotalAmount: slashInfo.AmountFromOptedIn.Neg(),
 			})
 			if err != nil {
 				return err
@@ -415,9 +415,9 @@ func (k *Keeper) SlashOperator(ctx sdk.Context, operatorAddress sdk.AccAddress, 
 		slashSumValue := slashInfo.AmountFromUnbonding.Add(slashInfo.AmountFromOptedIn)
 		// handle the state that needs to be updated when slashing both opted-in and unbonding assets
 		err := k.restakingStateKeeper.UpdateOperatorAssetState(ctx, operatorAddress, assetID, types2.OperatorSingleAssetChangeInfo{
-			ChangeForTotalAmount:          slashSumValue.Neg(),
-			ChangeForOperatorOwn:          slashInfo.AmountFromOptedIn.Neg(),
-			ChangeForUnbondableAfterSlash: slashInfo.AmountFromUnbonding.Neg(),
+			TotalAmount:                        slashSumValue.Neg(),
+			OperatorOwnAmount:                  slashInfo.AmountFromOptedIn.Neg(),
+			OperatorUnbondableAmountAfterSlash: slashInfo.AmountFromUnbonding.Neg(),
 		})
 		if err != nil {
 			return err

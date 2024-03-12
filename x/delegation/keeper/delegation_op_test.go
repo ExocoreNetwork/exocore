@@ -10,7 +10,7 @@ import (
 	keeper2 "github.com/ExocoreNetwork/exocore/x/delegation/keeper"
 	delegationtype "github.com/ExocoreNetwork/exocore/x/delegation/types"
 	"github.com/ExocoreNetwork/exocore/x/deposit/keeper"
-	types2 "github.com/ExocoreNetwork/exocore/x/operator/types"
+	operatortype "github.com/ExocoreNetwork/exocore/x/operator/types"
 	abci "github.com/cometbft/cometbft/abci/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/common"
@@ -45,9 +45,9 @@ func (suite *DelegationTestSuite) TestDelegateTo() {
 	err = suite.App.DelegationKeeper.DelegateTo(suite.Ctx, delegationParams)
 	suite.EqualError(err, errorsmod.Wrap(delegationtype.ErrOperatorNotExist, fmt.Sprintf("input opreatorAddr is:%s", delegationParams.OperatorAddress)).Error())
 
-	registerReq := &types2.RegisterOperatorReq{
+	registerReq := &operatortype.RegisterOperatorReq{
 		FromAddress: opAccAddr.String(),
-		Info: &types2.OperatorInfo{
+		Info: &operatortype.OperatorInfo{
 			EarningsAddr: opAccAddr.String(),
 		},
 	}
@@ -116,9 +116,9 @@ func (suite *DelegationTestSuite) TestUndelegateFrom() {
 		LzNonce:         0,
 		TxHash:          common.HexToHash("0x24c4a315d757249c12a7a1d7b6fb96261d49deee26f06a3e1787d008b445c3ac"),
 	}
-	registerReq := &types2.RegisterOperatorReq{
+	registerReq := &operatortype.RegisterOperatorReq{
 		FromAddress: opAccAddr.String(),
-		Info: &types2.OperatorInfo{
+		Info: &operatortype.OperatorInfo{
 			EarningsAddr: opAccAddr.String(),
 		},
 	}
@@ -215,9 +215,9 @@ func (suite *DelegationTestSuite) TestCompleteUndelegation() {
 		LzNonce:         0,
 		TxHash:          common.HexToHash("0x24c4a315d757249c12a7a1d7b6fb96261d49deee26f06a3e1787d008b445c3ac"),
 	}
-	registerReq := &types2.RegisterOperatorReq{
+	registerReq := &operatortype.RegisterOperatorReq{
 		FromAddress: opAccAddr.String(),
-		Info: &types2.OperatorInfo{
+		Info: &operatortype.OperatorInfo{
 			EarningsAddr: opAccAddr.String(),
 		},
 	}

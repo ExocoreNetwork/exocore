@@ -137,8 +137,8 @@ func (k Keeper) RewardForWithdraw(ctx sdk.Context, event *RewardParams) error {
 
 	// TODO
 	changeAmount := types.StakerSingleAssetChangeInfo{
-		ChangeForTotalDeposit: event.OpAmount,
-		ChangeForWithdrawable: event.OpAmount,
+		TotalDepositAmount: event.OpAmount,
+		WithdrawableAmount: event.OpAmount,
 	}
 	err := k.restakingStateKeeper.UpdateStakerAssetState(ctx, stakeID, assetID, changeAmount)
 	if err != nil {
