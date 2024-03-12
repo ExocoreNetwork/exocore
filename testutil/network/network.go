@@ -218,6 +218,7 @@ func New(l Logger, baseDir string, cfg Config) (*Network, error) {
 	// only one caller/test can create and use a network at a time
 	l.Log("acquiring test network lock")
 	lock.Lock()
+	defer lock.Unlock()
 
 	if !evmostypes.IsValidChainID(cfg.ChainID) {
 		return nil, fmt.Errorf("invalid chain-id: %s", cfg.ChainID)
