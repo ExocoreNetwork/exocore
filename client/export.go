@@ -2,15 +2,22 @@ package client
 
 import (
 	"bufio"
+	"encoding/json"
 	"fmt"
+	"io"
 	"strings"
 
+	"github.com/ExocoreNetwork/exocore/client/keys"
+	"github.com/cometbft/cometbft/libs/cli"
+	"github.com/cometbft/cometbft/privval"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/input"
 	"github.com/cosmos/cosmos-sdk/crypto"
+	"github.com/cosmos/cosmos-sdk/server"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	ethcrypto "github.com/ethereum/go-ethereum/crypto"
 	"github.com/spf13/cobra"
+	"gopkg.in/yaml.v2"
 
 	"github.com/cosmos/cosmos-sdk/crypto/keyring"
 	"github.com/evmos/evmos/v14/crypto/ethsecp256k1"
@@ -84,4 +91,70 @@ func UnsafeExportEthKeyCommand() *cobra.Command {
 			return nil
 		},
 	}
+}
+
+// ConsPubKeyToBytesCmd returns a command that converts a consensus public key to a byte
+// representation.
+func ConsPubKeyToBytesCmd() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "consensus-pubkey-to-bytes",
+		Short: "Convert a consensus public key to a byte32 representation",
+		Long:  `Convert a consensus public key to a byte32 representation for usage with Solidity contracts`,
+		Args:  cobra.ExactArgs(0),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			// basic stuff
+			clientCtx := client.GetClientContextFromCmd(cmd)
+			serverCtx := server.GetServerContextFromCmd(cmd)
+			config := serverCtx.Config
+			config.SetRoot(clientCtx.HomeDir)
+			// from the config, load this info
+			pvKeyFile := config.PrivValidatorKeyFile()
+			pvStateFile := config.PrivValidatorStateFile()
+			// then load the PrivValidator file
+			filePV := privval.LoadFilePV(pvKeyFile, pvStateFile)
+			tmValPubKey, err := filePV.GetPubKey()
+			if err != nil {
+				return err
+			}
+			output, _ := cmd.Flags().GetString(cli.OutputFlag)
+			outstream := cmd.OutOrStdout()
+			displayConsKeyBytes(outstream, newConsKeyBytes(tmValPubKey.Bytes()), output)
+			return nil
+		},
+	}
+
+	return cmd
+}
+
+func displayConsKeyBytes(w io.Writer, stringer fmt.Stringer, output string) {
+	var (
+		err error
+		out []byte
+	)
+
+	switch output {
+	case keys.OutputFormatText:
+		out, err = yaml.Marshal(&stringer)
+
+	case keys.OutputFormatJSON:
+		out, err = json.Marshal(&stringer)
+	}
+
+	if err != nil {
+		panic(err)
+	}
+
+	_, _ = fmt.Fprintln(w, string(out))
+}
+
+type consKeyBytes struct {
+	Bytes string `json:"bytes"`
+}
+
+func (ckb consKeyBytes) String() string {
+	return fmt.Sprintf("Bytes (hex): %s", ckb.Bytes)
+}
+
+func newConsKeyBytes(bz []byte) consKeyBytes {
+	return consKeyBytes{Bytes: fmt.Sprintf("%X", bz)}
 }
