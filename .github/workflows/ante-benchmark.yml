@@ -1,5 +1,8 @@
 name: AnteHandler Benchmark Tests
 
+permissions:
+  contents: read
+
 on:
   push:
     branches:

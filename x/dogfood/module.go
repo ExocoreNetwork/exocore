@@ -108,7 +108,7 @@ func (AppModuleBasic) GetQueryCmd() *cobra.Command {
 // modules need to implement
 type AppModule struct {
 	AppModuleBasic
-
+	// keeper of the module receives the cdc codec separately.
 	keeper keeper.Keeper
 }
 

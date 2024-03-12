@@ -1,5 +1,9 @@
 name: goreleaser
 
+permissions:
+  # github releases
+  contents: write
+
 on:
   push:
     tags:

@@ -1,0 +1,3 @@
+skip-path:
+  # auto generated
+  - client/docs

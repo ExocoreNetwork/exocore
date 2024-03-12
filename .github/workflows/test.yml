@@ -1,12 +1,17 @@
 name: Tests
 on:
-  pull_request:
+  # for write permission, use pull_request_target and not pull_request.
+  pull_request_target:
   push:
     branches:
       - develop
       - main
       - master
       - release/**
+
+permissions:
+  contents: write
+  pull-requests: write
 
 # Automatically cancel run if another commit to the same ref is detected.
 concurrency:
@@ -29,14 +34,32 @@ jobs:
             **/**.go
             go.mod
             go.sum
-      - name: Test and Create Coverage Report
+      - name: Test and create coverage report
         run: |
           make test-unit-cover
         if: env.GIT_DIFF
-      - uses: codecov/codecov-action@v3
-        # disabled for now, since we don't have any codecov
-        if: ${{ false }}
+      - name: Check if test coverage is above threshold
+        id: output-coverage
+        uses: vladopajic/go-test-coverage@v2
         with:
-          file: ./coverage.txt
-          fail_ci_if_error: true
-        # if: env.GIT_DIFF
+          profile: cover.out
+          local-prefix: github.com/ExocoreNetwork/exocore
+          # TODO: increase this threshold with time to 80
+          threshold-total: 10
+        if: env.GIT_DIFF
+      - name: Find comment
+        id: find-comment
+        uses: peter-evans/find-comment@v2
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          comment-author: 'github-actions[bot]'
+        if: env.GIT_DIFF && github.event_name == 'pull_request'
+      - name: Comment coverage on PR
+        uses: peter-evans/create-or-update-comment@v3
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          comment-id: ${{ steps.find-comment.outputs.comment-id }}
+          body: |
+            Coverage as of ${{ github.sha }}: ${{ steps.output-coverage.outputs.total-coverage }}%
+          edit-mode: append
+        if: env.GIT_DIFF && github.event_name == 'pull_request'
