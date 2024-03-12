@@ -1,0 +1,63 @@
+# This workflow runs after test.yml and comments the test coverage on the pull request.
+name: Comment test coverage on the pull request
+
+on:
+  workflow_run:
+    workflows: ["Tests"]
+    types:
+      - completed
+
+jobs:
+  upload:
+    runs-on: ubuntu-latest
+    if: >
+      github.event.workflow_run.event == 'pull_request' &&
+      github.event.workflow_run.conclusion == 'success'
+    steps:
+      - name: 'Download artifact'
+        uses: actions/github-script@v3.1.0
+        with:
+          script: |
+            var artifacts = await github.actions.listWorkflowRunArtifacts({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                run_id: ${{github.event.workflow_run.id }},
+            });
+            var matchArtifact = artifacts.data.artifacts.find((artifact) => {
+                return artifact.name == "result"
+            })[0];
+            if (!matchArtifact) {
+                var core = require('@actions/core');
+                core.setFailed('Artifact "result" not found.');
+                return;
+            }
+            var download = await github.actions.downloadArtifact({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                artifact_id: matchArtifact.id,
+                archive_format: 'zip',
+            });
+            var fs = require('fs');
+            fs.writeFileSync('${{github.workspace}}/result.zip', Buffer.from(download.data));
+      - run: unzip result.zip -d result
+      - name: Read PR Number and Coverage
+        id: read_files
+        run: |
+          pr_number=$(cat result/pr_number.txt)
+          coverage=$(cat result/coverage.txt)
+          echo "PR_NUMBER=${pr_number}" >> $GITHUB_ENV
+          echo "COVERAGE=${coverage}" >> $GITHUB_ENV
+      - name: Find comment
+        id: find-comment
+        uses: peter-evans/find-comment@v2
+        with:
+          issue-number: ${{ env.PR_NUMBER }}
+          comment-author: 'github-actions[bot]'
+      - name: Comment coverage on PR
+        uses: peter-evans/create-or-update-comment@v3
+        with:
+          issue-number: ${{ env.PR_NUMBER }}
+          comment-id: ${{ steps.find-comment.outputs.comment-id }}
+          body: |
+            Coverage as of ${{ github.sha }}: ${{ env.COVERAGE }}%
+          edit-mode: append
