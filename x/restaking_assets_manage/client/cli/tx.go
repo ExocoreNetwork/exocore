@@ -56,7 +56,7 @@ func RegisterClientChain() *cobra.Command {
 			if err != nil {
 				return errorsmod.Wrap(restakingtype.ErrCliCmdInputArg, fmt.Sprintf("error arg is:%v", args[2]))
 			}
-			addressLength, err := strconv.ParseUint(args[3], 10, 64)
+			addressLength, err := strconv.ParseUint(args[3], 10, 32)
 			if err != nil {
 				return errorsmod.Wrap(restakingtype.ErrCliCmdInputArg, fmt.Sprintf("error arg is:%v", args[3]))
 			}
@@ -105,7 +105,7 @@ func RegisterAsset() *cobra.Command {
 			if err != nil {
 				return errorsmod.Wrap(restakingtype.ErrCliCmdInputArg, fmt.Sprintf("error arg is:%v", args[5]))
 			}
-			decimal, err := strconv.ParseUint(args[6], 10, 64)
+			decimal, err := strconv.ParseUint(args[6], 10, 32)
 			if err != nil {
 				return errorsmod.Wrap(restakingtype.ErrCliCmdInputArg, fmt.Sprintf("error arg is:%v", args[6]))
 			}
