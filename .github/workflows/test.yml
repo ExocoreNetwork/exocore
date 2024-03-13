@@ -56,11 +56,11 @@ jobs:
       - name: Generate artifact for PR
         run: |
           mkdir -p ./result/
-          echo ${{ steps.output-coverage.outputs.total-coverage }} > ./result/coverage.txt
-          echo ${{ github.event.pull_request.number }} > ./result/pr_number.txt
+          echo "${{ steps.output-coverage.outputs.total-coverage }}" > ./result/coverage.txt
+          echo "${{ github.event.pull_request.number }}" > ./result/pr_number.txt
         if: env.GIT_DIFF && github.event_name == 'pull_request'
       - uses: actions/upload-artifact@v2
         with:
           name: result
-          path: result/
+          path: ./result/
         if: env.GIT_DIFF && github.event_name == 'pull_request'

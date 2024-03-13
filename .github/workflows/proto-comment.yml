@@ -1,5 +1,4 @@
-# This workflow runs after test.yml and comments the test coverage on the pull request.
-name: Comment test coverage on the pull request
+name: Comment protobuf breaking action outcome on the pull request
 
 permissions:
   # for finding and downloading artifacts.
@@ -11,7 +10,7 @@ permissions:
 
 on:
   workflow_run:
-    workflows: ["Tests"]
+    workflows: ["Protobuf"]
     types:
       - completed
 
@@ -19,10 +18,9 @@ jobs:
   download-artifact-and-comment:
     runs-on: ubuntu-latest
     if: >
-      github.event.workflow_run.event == 'pull_request' &&
       github.event.workflow_run.conclusion == 'success'
     steps:
-      - name: Download artifact
+      - name: 'Download artifact'
         uses: actions/github-script@v7.0.1
         with:
           script: |
@@ -32,7 +30,7 @@ jobs:
                 run_id: ${{github.event.workflow_run.id }},
             });
             var matchArtifact = artifacts.data.artifacts.find((artifact) => {
-                return artifact.name == "result"
+                return artifact.name == "result";
             });
             if (!matchArtifact) {
                 var core = require('@actions/core');
@@ -48,24 +46,36 @@ jobs:
             var fs = require('fs');
             fs.writeFileSync('${{github.workspace}}/result.zip', Buffer.from(download.data));
       - run: unzip result.zip -d result
-      - name: Read PR number and coverage
+      - name: Read PR number and outcome
         run: |
             pr_number=$(cat "result/pr_number.txt")
-            coverage=$(cat "result/coverage.txt")
+            outcome=$(cat "result/outcome.txt")
             echo "PR_NUMBER=${pr_number}" >> "$GITHUB_ENV"
-            echo "COVERAGE=${coverage}" >> "$GITHUB_ENV"
+            echo "OUTCOME=${outcome}" >> "$GITHUB_ENV"
       - name: Find comment
         id: find-comment
         uses: peter-evans/find-comment@v2
         with:
           issue-number: ${{ env.PR_NUMBER }}
           comment-author: 'github-actions[bot]'
-          body-includes: Coverage as of
-      - name: Comment coverage on PR
+          body-includes: buf breaking change
+      - name: Comment status of break-check in the case of failure
+        if: ${{ env.OUTCOME == 'failure' }}
         uses: peter-evans/create-or-update-comment@v3
         with:
           issue-number: ${{ env.PR_NUMBER }}
           comment-id: ${{ steps.find-comment.outputs.comment-id }}
           body: |
-            Coverage as of ${{ github.sha }}: ${{ env.COVERAGE }}%
+            ${{ github.sha }} (${{ github.event.workflow_run.updated_at }}) has a buf breaking change.
+            View the workflow run: [here](https://github.com/${{ github.repository }}/actions/runs/${{ github.event.workflow_run.id }})
+          edit-mode: append
+      - name: Comment status of break-check in the case of success
+        if: ${{ env.OUTCOME == 'success' }} && steps.find-comment.outputs.comment-id != ''
+        uses: peter-evans/create-or-update-comment@v3
+        with:
+          issue-number: ${{ env.PR_NUMBER }}
+          comment-id: ${{ steps.find-comment.outputs.comment-id }}
+          body: |
+            ${{ github.sha }} (${{ github.event.workflow_run.updated_at }}) has no buf breaking changes.
+            View the workflow run: [here](https://github.com/${{ github.repository }}/actions/runs/${{ github.event.workflow_run.id }})
           edit-mode: append
