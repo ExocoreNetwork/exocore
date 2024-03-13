@@ -1,9 +1,5 @@
-
-
 syntax = "proto3";
 package exocore.deposit.v1;
-
-import "gogoproto/gogo.proto";
 
 option go_package = "github.com/ExocoreNetwork/exocore/x/deposit/types";
 
