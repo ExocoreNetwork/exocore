@@ -62,7 +62,7 @@ message HeaderSubset {
   // validators for the next block
   bytes next_validators_hash = 2;
   // state after txs from the previous block
-  bytes an_hash             = 3;
+  bytes app_hash             = 3;
 }
 
 // KeyPowerMapping is a mapping of the consensus public key (as a string)
