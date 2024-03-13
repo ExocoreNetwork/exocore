@@ -39,6 +39,9 @@ jobs:
           input: "proto"
 
   break-check:
+    permissions:
+      contents: read
+      pull-requests: write
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -54,14 +57,16 @@ jobs:
           against: "https://github.com/${{ github.repository }}.git#branch=${{ github.event.pull_request.base.ref }},subdir=proto"
         # do not fail the build if there are breaking changes
         continue-on-error: true
+      # always find the old comment id
       - name: Find previous comment, if any
         id: find-comment
+        if: steps.break-check.outcome == 'failure'
         uses: peter-evans/find-comment@v2
         with:
           issue-number: ${{ github.event.pull_request.number }}
           comment-author: 'github-actions[bot]'
           body-includes: buf
-        if: steps.break-check.outcome == 'failure'
+      # if there is a failure, create or append it to a comment.
       - name: Comment status of break-check
         uses: peter-evans/create-or-update-comment@v3
         with:
@@ -71,4 +76,15 @@ jobs:
             ${{ github.sha }} (${{ github.event.pull_request.updated_at }}) has a buf breaking change.
             View the workflow run: [here](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
           edit-mode: append
-        if: steps.break-check.outcome == 'failure'
+      # if there is no failure and an old comment exists, append.
+      - name: Update comment if no failure
+        if: steps.break-check.outcome == 'success' && steps.find-comment.outputs.comment-id != ''
+        uses: peter-evans/create-or-update-comment@v3
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          comment-id: ${{ steps.find-comment.outputs.comment-id }}
+          body: |
+            ${{ github.sha }} (${{ github.event.pull_request.updated_at }}) has no buf breaking changes.
+            View the workflow run: [here](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
+          edit-mode: append
+
