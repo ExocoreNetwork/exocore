@@ -13,10 +13,6 @@ func InitGenesis(ctx sdk.Context, k keeper.Keeper, genState types.GenesisState) 
 		k.SetPrices(ctx, elem)
 	}
 	// Set if defined
-	if genState.Validators != nil {
-		k.SetValidators(ctx, *genState.Validators)
-	}
-	// Set if defined
 	if genState.ValidatorUpdateBlock != nil {
 		k.SetValidatorUpdateBlock(ctx, *genState.ValidatorUpdateBlock)
 	}
@@ -46,11 +42,6 @@ func ExportGenesis(ctx sdk.Context, k keeper.Keeper) *types.GenesisState {
 	genesis.Params = k.GetParams(ctx)
 
 	genesis.PricesList = k.GetAllPrices(ctx)
-	// Get all validators
-	validators, found := k.GetValidators(ctx)
-	if found {
-		genesis.Validators = &validators
-	}
 	// Get all validatorUpdateBlock
 	validatorUpdateBlock, found := k.GetValidatorUpdateBlock(ctx)
 	if found {

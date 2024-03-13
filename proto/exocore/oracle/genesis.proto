@@ -5,7 +5,6 @@ package exocore.oracle;
 import "gogoproto/gogo.proto";
 import "exocore/oracle/params.proto";
 import "exocore/oracle/prices.proto";
-import "exocore/oracle/validators.proto";
 import "exocore/oracle/validator_update_block.proto";
 import "exocore/oracle/index_recent_params.proto";
 import "exocore/oracle/index_recent_msg.proto";
@@ -20,7 +19,6 @@ message GenesisState {
   repeated Prices pricesList = 2 [(gogoproto.nullable) = false];
   
   //TODO: userDefinedTokenFeeder
-           Validators           validators           = 3;
            ValidatorUpdateBlock validatorUpdateBlock = 4;
            IndexRecentParams    indexRecentParams    = 5;
            IndexRecentMsg       indexRecentMsg       = 6;
