@@ -10,6 +10,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 
+	"github.com/ExocoreNetwork/exocore/x/oracle/keeper/common"
 	"github.com/ExocoreNetwork/exocore/x/oracle/types"
 
 	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
@@ -25,6 +26,8 @@ type (
 		stakingKeeper stakingkeeper.Keeper
 	}
 )
+
+var _ common.KeeperOracle = Keeper{}
 
 func NewKeeper(
 	cdc codec.BinaryCodec,
