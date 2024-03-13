@@ -172,7 +172,7 @@ func (agc *aggregatorContext) checkMsg(msg *types.MsgCreatePrice) error {
 	return nil
 }
 
-func (agc *aggregatorContext) fillPrice(msg *types.MsgCreatePrice) (*priceItemKV, *cacheItem, error) {
+func (agc *aggregatorContext) fillPrice(msg *types.MsgCreatePrice) (*priceItemKV, *cacheItemM, error) {
 	feederWorker := agc.aggregators[msg.FeederId]
 	//worker initialzed here reduce workload for Endblocker
 	if feederWorker == nil {
@@ -196,7 +196,7 @@ func (agc *aggregatorContext) fillPrice(msg *types.MsgCreatePrice) (*priceItemKV
 				RoundId:   agc.rounds[msg.FeederId].nextRoundId,
 			}}, nil, nil
 		}
-		return nil, &cacheItem{msg.FeederId, listFilled, msg.Creator}, nil
+		return nil, &cacheItemM{msg.FeederId, listFilled, msg.Creator}, nil
 	}
 
 	return nil, nil, errors.New("")
@@ -204,7 +204,7 @@ func (agc *aggregatorContext) fillPrice(msg *types.MsgCreatePrice) (*priceItemKV
 
 // NewCreatePrice receives msgCreatePrice message, and goes process: filter->aggregator, filter->calculator->aggregator
 // non-deterministic data will goes directly into aggregator, and deterministic data will goes into calculator first to get consensus on the deterministic id.
-func (agc *aggregatorContext) newCreatePrice(ctx sdk.Context, msg *types.MsgCreatePrice) (*priceItemKV, *cacheItem, error) {
+func (agc *aggregatorContext) newCreatePrice(ctx sdk.Context, msg *types.MsgCreatePrice) (*priceItemKV, *cacheItemM, error) {
 
 	if err := agc.checkMsg(msg); err != nil {
 		return nil, nil, err
@@ -270,7 +270,7 @@ func (agC *aggregatorContext) prepareRound(ctx sdk.Context, block uint64) {
 		block = uint64(ctx.BlockHeight())
 	}
 
-	for feederId, feeder := range agc.params.TokenFeeders {
+	for feederId, feeder := range agc.params.getTokenFeeders() {
 		if uint64(feeder.EndBlock) <= block || uint64(feeder.StartBaseBlock) > block {
 			//this feeder is inactive
 			continue

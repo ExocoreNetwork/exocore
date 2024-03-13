@@ -8,16 +8,28 @@ import (
 	stakingTypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 )
 
-type cacheItem struct {
+var zeroBig = big.NewInt(0)
+var caches *cache
+
+type cacheItemV map[string]*big.Int
+type cacheItemP *params
+type cacheItemM struct {
 	feederId  int32
 	pSources  []*types.PriceWithSource
 	validator string
-	// power     *big.Int
 }
+
+type cache struct {
+	msg        cacheMsgs
+	validators *cacheValidator
+	params     *cacheParams
+}
+
+type cacheMsgs map[int32][]*cacheItemM
 
 // used to track validator change
 type cacheValidator struct {
-	validators []*types.Validator
+	validators map[string]*big.Int
 	update     bool
 }
 
@@ -27,50 +39,139 @@ type cacheParams struct {
 	update bool
 }
 
-// memory cache
-func (k *Keeper) addCache(item *cacheItem) {
+func (c cacheMsgs) add(item *cacheItemM) {
+	c[item.feederId] = append(c[item.feederId], item)
+}
+func (c cacheMsgs) remove(item *cacheItemM) {
+	delete(c, item.feederId)
+}
 
+func (c cacheMsgs) commit(ctx sdk.Context, k *Keeper) {
+	block := uint64(ctx.BlockHeight())
+	recentMsgs := types.RecentMsg{
+		Block: block,
+		Msgs:  make([]*types.MsgItem, 0),
+	}
+	for _, msgs4Feeder := range c {
+		for _, msg := range msgs4Feeder {
+			recentMsgs.Msgs = append(recentMsgs.Msgs, &types.MsgItem{
+				FeederId:  msg.feederId,
+				PSources:  msg.pSources,
+				Validator: msg.validator,
+			})
+		}
+	}
+	index, _ := k.GetIndexRecentMsg(ctx)
+	for i, b := range index.Index {
+		if b >= block-maxNonce {
+			index.Index = index.Index[i:]
+			break
+		}
+		k.RemoveRecentMsg(ctx, b)
+	}
+	k.SetRecentMsg(ctx, recentMsgs)
+	index.Index = append(index.Index, block)
+	k.SetIndexRecentMsg(ctx, index)
+}
+
+func (c *cacheValidator) add(validators map[string]*big.Int) {
+	for operator, newPower := range validators {
+		if power, ok := c.validators[operator]; ok {
+			if newPower.Cmp(zeroBig) == 0 {
+				delete(c.validators, operator)
+				c.update = true
+			} else if power.Cmp(newPower) != 0 {
+				c.validators[operator].Set(newPower)
+				c.update = true
+			}
+		} else {
+			c.update = true
+			np := *newPower
+			c.validators[operator] = &np
+		}
+	}
+}
+
+func (c *cacheValidator) commit(ctx sdk.Context, k *Keeper) {
+	block := uint64(ctx.BlockHeight())
+	k.SetValidatorUpdateBlock(ctx, types.ValidatorUpdateBlock{Block: block})
+}
+
+func (c *cacheParams) add(p *params) {
+	//params' update is triggered when params is actually updated, so no need to do comparison here, just udpate and mark the flag
+	//TODO: add comparison check, that's something should be done for validation
+	c.params = p
+	c.update = true
+}
+
+func (c *cacheParams) commit(ctx sdk.Context, k *Keeper) {
+	block := uint64(ctx.BlockHeight())
+	index, _ := k.GetIndexRecentParams(ctx)
+	for i, b := range index.Index {
+		if b >= block-maxNonce {
+			index.Index = index.Index[i:]
+			break
+		}
+		k.RemoveRecentParams(ctx, b)
+	}
+	//remove and append for KVStore
+	k.SetIndexRecentParams(ctx, index)
+	index.Index = append(index.Index, block)
+	k.SetIndexRecentParams(ctx, index)
 }
 
 // memory cache
-func (k *Keeper) removeCache(item *cacheItem) {
-
+func (k *Keeper) addCache(i any) {
+	switch item := i.(type) {
+	case *cacheItemM:
+		caches.msg.add(item)
+		//	case *params:
+	case cacheItemP:
+		caches.params.add(item)
+	case cacheItemV:
+		caches.validators.add(item)
+	default:
+		panic("no other types are support")
+	}
+}
+func (k *Keeper) removeCache(i any) {
+	switch item := i.(type) {
+	case *cacheItemM:
+		caches.msg.remove(item)
+	default:
+	}
 }
 
-func (k *Keeper) commitCache() {
+func (k *Keeper) commitCache(ctx sdk.Context, reset bool) {
+	if len(caches.msg) > 0 {
+		caches.msg.commit(ctx, k)
+		caches.msg = make(map[int32][]*cacheItemM)
+	}
 
+	if caches.validators.update {
+		caches.validators.commit(ctx, k)
+		caches.validators.update = false
+	}
+
+	if caches.params.update {
+		caches.params.commit(ctx, k)
+		caches.params.update = false
+	}
+	if reset {
+		k.resetCaches(ctx)
+	}
 }
 
-// persist cache into KV
-func (k *Keeper) updateRecentTxs() {
-	//TODO: add
-
-	//TODO: delete, use map in the KVStore, so actually dont need to implement the exactly 'delete' at firt, just remove all blocks before maxDistance
-}
-
-func (k *Keeper) updateCacheValidators() bool {
-	return false
-}
-func (k *Keeper) updateCacheParams() bool {
-	return false
-}
-
-// from KVStore
-func (k *Keeper) getCaches(ctx sdk.Context) map[uint64][]*cacheItem {
-	return nil
-}
-
-func (k *Keeper) getParams4CacheRecover(ctx sdk.Context) map[uint64]*params {
-	return nil
-}
-
-func (k *Keeper) clearCaches(ctx sdk.Context) {
-
-}
-
-// from KVStore
-func (k *Keeper) getCacheValidators(ctx sdk.Context) map[string]*big.Int {
-	return nil
+func (k *Keeper) resetCaches(ctx sdk.Context) {
+	caches = &cache{
+		msg: make(map[int32][]*cacheItemM),
+		validators: &cacheValidator{
+			validators: make(map[string]*big.Int),
+		},
+		params: &cacheParams{
+			params: &params{},
+		},
+	}
 }
 
 func (k *Keeper) recacheAggregatorContext(ctx sdk.Context, agc *aggregatorContext) bool {
@@ -78,35 +179,48 @@ func (k *Keeper) recacheAggregatorContext(ctx sdk.Context, agc *aggregatorContex
 	from := uint64(ctx.BlockHeight()) - maxNonce
 	to := uint64(ctx.BlockHeight()) - 1
 
-	//fill validators
-	validators, ok := k.GetValidators(ctx)
-	recenetParams := k.getParams4CacheRecover(ctx)
-	if !ok || recenetParams == nil {
+	h, ok := k.GetValidatorUpdateBlock(ctx)
+	recentParamsMap := k.GetAllRecentParamsAsMap(ctx)
+	if !ok || recentParamsMap == nil {
 		//no cache, this is the very first running, so go to initial proces instead
 		return false
 	}
-	h := validators.Block
-	if h > from {
-		from = h
-	}
-	for _, v := range validators.ValidatorList {
-		agc.validatorsPower[v.Operator], _ = new(big.Int).SetString(v.Power, 10)
+
+	if h.Block > from {
+		from = h.Block
 	}
 
-	recentMsgs := k.getCaches(ctx)
+	totalPower := big.NewInt(0)
+	k.stakingKeeper.IterateBondedValidatorsByPower(ctx, func(index int64, validator stakingTypes.ValidatorI) bool {
+		power := big.NewInt(validator.GetConsensusPower(validator.GetBondedTokens()))
+		addr := string(validator.GetOperator())
+		agc.validatorsPower[addr] = power
+		totalPower = new(big.Int).Add(totalPower, power)
+		return false
+	})
+	agc.totalPower = k.stakingKeeper.GetLastTotalPower(ctx).BigInt()
+	//TODO: test only
+	if agc.totalPower.Cmp(totalPower) != 0 {
+		panic("something wrong when get validatorsPower from staking module")
+	}
+
+	//reset validators
+	k.addCache(cacheItemV(agc.validatorsPower))
+
+	recentMsgs := k.GetAllRecentMsgAsMap(ctx)
 
 	for ; from < to; from++ {
 		//fill params
-		for h, p := range recenetParams {
+		for b, recentParams := range recentParamsMap {
 			prev := uint64(0)
-			if h <= from && h > prev {
-				pTmp := params(*p)
+			if b <= from && b > prev {
+				pTmp := params(*recentParams)
 				agc.params = &pTmp
 				if prev > 0 {
 					//TODO: safe delete
-					delete(recenetParams, prev)
+					delete(recentParamsMap, prev)
 				}
-				prev = h
+				prev = b
 			}
 		}
 
@@ -116,14 +230,17 @@ func (k *Keeper) recacheAggregatorContext(ctx sdk.Context, agc *aggregatorContex
 			for _, msg := range msgs {
 				//these messages are retreived for recache, just skip the validation check and fill the memory cache
 				agc.fillPrice(&types.MsgCreatePrice{
-					Creator:  msg.validator,
-					FeederId: msg.feederId,
-					Prices:   msg.pSources,
+					Creator:  msg.Validator,
+					FeederId: msg.FeederId,
+					Prices:   msg.PSources,
 				})
 			}
 		}
 		agc.sealRound(ctx)
 	}
+
+	//fill params cache
+	k.addCache(cacheItemP(agc.params))
 
 	agc.prepareRound(ctx, to)
 
@@ -135,29 +252,25 @@ func (k *Keeper) initAggregatorContext(ctx sdk.Context, agc *aggregatorContext) 
 	p := k.GetParams(ctx)
 	m := make(map[uint64]*types.Params)
 	m[uint64(ctx.BlockHeight())] = &p
-	k.setParams4CacheRecover(m) //used to trace tokenFeeder's update during cache recover
+	//	k.setParams4CacheRecover(m) //used to trace tokenFeeder's update during cache recover
 	pTmp := params(p)
 	agc.params = &pTmp
+	//set params cache
+	k.addCache(cacheItemP(agc.params))
 
 	totalPower := big.NewInt(0)
-	vList := make([]*types.Validator, 0)
 	k.stakingKeeper.IterateBondedValidatorsByPower(ctx, func(index int64, validator stakingTypes.ValidatorI) bool {
 		power := big.NewInt(validator.GetConsensusPower(validator.GetBondedTokens()))
 		addr := string(validator.GetOperator())
 		agc.validatorsPower[addr] = power
 		totalPower = new(big.Int).Add(totalPower, power)
-		vList = append(vList, &types.Validator{Operator: addr, Power: power.String()})
 		return false
 	})
 	agc.totalPower = totalPower
-	k.SetValidators(ctx, types.Validators{
-		Block:         uint64(ctx.BlockHeight()),
-		ValidatorList: vList,
-	})
+
+	//set validatorPower cache
+	k.addCache(cacheItemV(agc.validatorsPower))
 
 	agc.prepareRound(ctx, uint64(ctx.BlockHeight())-1)
 	return nil
 }
-
-// this is a mock serves as a placeholder
-func (k *Keeper) setParams4CacheRecover(p map[uint64]*types.Params) {}
