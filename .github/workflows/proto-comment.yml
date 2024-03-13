@@ -70,7 +70,7 @@ jobs:
             View the workflow run: [here](https://github.com/${{ github.repository }}/actions/runs/${{ github.event.workflow_run.id }})
           edit-mode: append
       - name: Comment status of break-check in the case of success
-        if: ${{ env.OUTCOME == 'success' }} && steps.find-comment.outputs.comment-id != ''
+        if: env.OUTCOME == 'success' && steps.find-comment.outputs.comment-id != ''
         uses: peter-evans/create-or-update-comment@v3
         with:
           issue-number: ${{ env.PR_NUMBER }}
