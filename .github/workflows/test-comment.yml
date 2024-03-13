@@ -61,6 +61,7 @@ jobs:
         with:
           issue-number: ${{ env.PR_NUMBER }}
           comment-author: 'github-actions[bot]'
+          body-includes: Coverage
       - name: Comment coverage on PR
         uses: peter-evans/create-or-update-comment@v3
         with:
