@@ -22,9 +22,6 @@ func TestGenesis(t *testing.T) {
 				TokenId: 1,
 			},
 		},
-		Validators: &types.Validators{
-			Block: 42,
-		},
 		ValidatorUpdateBlock: &types.ValidatorUpdateBlock{},
 		IndexRecentParams:    &types.IndexRecentParams{},
 		IndexRecentMsg:       &types.IndexRecentMsg{},
@@ -56,7 +53,6 @@ func TestGenesis(t *testing.T) {
 	nullify.Fill(got)
 
 	require.ElementsMatch(t, genesisState.PricesList, got.PricesList)
-	require.Equal(t, genesisState.Validators, got.Validators)
 	require.Equal(t, genesisState.ValidatorUpdateBlock, got.ValidatorUpdateBlock)
 	require.Equal(t, genesisState.IndexRecentParams, got.IndexRecentParams)
 	require.Equal(t, genesisState.IndexRecentMsg, got.IndexRecentMsg)
