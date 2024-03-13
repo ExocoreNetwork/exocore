@@ -1,8 +1,9 @@
-package keeper
+package aggregator
 
 import (
 	"strconv"
 
+	"github.com/ExocoreNetwork/exocore/x/oracle/keeper/common"
 	"github.com/ExocoreNetwork/exocore/x/oracle/types"
 )
 
@@ -10,26 +11,26 @@ type filter struct {
 	maxNonce int
 	maxDetId int
 	//nonce start from 1
-	validatorNonce map[string]*set[int32]
+	validatorNonce map[string]*common.Set[int32]
 	//validator_sourceId -> roundID, NS use 0
-	validatorSource map[string]*set[string]
+	validatorSource map[string]*common.Set[string]
 }
 
 func newFilter(maxNonce, maxDetId int) *filter {
 	return &filter{
 		maxNonce:        maxNonce,
 		maxDetId:        maxDetId,
-		validatorNonce:  make(map[string]*set[int32]),
-		validatorSource: make(map[string]*set[string]),
+		validatorNonce:  make(map[string]*common.Set[int32]),
+		validatorSource: make(map[string]*common.Set[string]),
 	}
 }
 
-func (f *filter) newVNSet() *set[int32] {
-	return newSet[int32](f.maxNonce)
+func (f *filter) newVNSet() *common.Set[int32] {
+	return common.NewSet[int32](f.maxNonce)
 }
 
-func (f *filter) newVSSet() *set[string] {
-	return newSet[string](f.maxDetId)
+func (f *filter) newVSSet() *common.Set[string] {
+	return common.NewSet[string](f.maxDetId)
 }
 
 // add priceWithSource into calculator list and aggregator list depends on the source type(deterministic/non-deterministic)
