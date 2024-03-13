@@ -17,11 +17,15 @@ type priceWithTimeAndRound struct {
 
 type params types.Params
 
-func (p *params) isDeterministicSource(sourceId int32) bool {
+func (p params) getTokenFeeders() []*types.TokenFeeder {
+	return p.TokenFeeders
+}
+
+func (p params) isDeterministicSource(sourceId int32) bool {
 	return p.Sources[int(sourceId)].Deterministic
 }
 
-func (p *params) isValidSource(sourceId int32) bool {
+func (p params) isValidSource(sourceId int32) bool {
 	if sourceId == 0 {
 		//custom defined source
 		return true
@@ -29,7 +33,7 @@ func (p *params) isValidSource(sourceId int32) bool {
 	return p.Sources[int(sourceId)].Valid
 }
 
-func (p *params) getTokenFeeder(feederId int32) *types.TokenFeeder {
+func (p params) getTokenFeeder(feederId int32) *types.TokenFeeder {
 	for k, v := range p.TokenFeeders {
 		if int32(k) == feederId {
 			return v
@@ -37,7 +41,7 @@ func (p *params) getTokenFeeder(feederId int32) *types.TokenFeeder {
 	}
 	return nil
 }
-func (p *params) getTokenInfo(feederId int32) *types.Token {
+func (p params) getTokenInfo(feederId int32) *types.Token {
 	for k, v := range p.TokenFeeders {
 		if int32(k) == feederId {
 			return p.Tokens[v.TokenId]
@@ -46,7 +50,7 @@ func (p *params) getTokenInfo(feederId int32) *types.Token {
 	return nil
 }
 
-func (p *params) checkRules(feederId int32, prices []*types.PriceWithSource) (bool, error) {
+func (p params) checkRules(feederId int32, prices []*types.PriceWithSource) (bool, error) {
 	feeder := p.TokenFeeders[feederId]
 	rule := p.Rules[feeder.RuleId]
 	//specified sources set, v1 use this rule to set `chainlink` as official source

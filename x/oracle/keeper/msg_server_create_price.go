@@ -28,7 +28,7 @@ func (k msgServer) CreatePrice(goCtx context.Context, msg *types.MsgCreatePrice)
 	if newItem != nil {
 		k.AppendPriceTR(ctx, newItem.tokenId, newItem.priceTR)
 		//TODO: move related caches
-		k.removeCache(nil)
+		k.removeCache(caches)
 	}
 
 	return &types.MsgCreatePriceResponse{}, nil
@@ -40,7 +40,7 @@ func getAggregatorContext(ctx sdk.Context, k Keeper) *aggregatorContext {
 	}
 
 	//initialize the aggregatorContext, normally triggered when node restart
-	k.clearCaches(ctx)
+	k.resetCaches(ctx)
 	agc = &aggregatorContext{
 		validatorsPower: make(map[string]*big.Int),
 		totalPower:      big.NewInt(0),
