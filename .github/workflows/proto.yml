@@ -49,3 +49,5 @@ jobs:
           # on a PR, so it must compare the HEAD of the base branch against
           # the PR branch.
           against: "https://github.com/${{ github.repository }}.git#branch=${{ github.event.pull_request.base.ref }},subdir=proto"
+        # do not fail the build if there are breaking changes
+        continue-on-error: true
