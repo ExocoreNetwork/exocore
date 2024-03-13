@@ -1,10 +1,18 @@
-package keeper
+package aggregator
 
 import (
 	"math/big"
 
+	"github.com/ExocoreNetwork/exocore/x/oracle/keeper/common"
 	"github.com/ExocoreNetwork/exocore/x/oracle/types"
 )
+
+type priceWithTimeAndRound struct {
+	price      *big.Int
+	decimal    int32
+	timestamp  string
+	detRoundId string //roundId from source if exists
+}
 
 type reportPrice struct {
 	validator string
@@ -23,7 +31,7 @@ func (r *reportPrice) aggregate() *big.Int {
 	for _, p := range r.prices {
 		tmp = append(tmp, p.price)
 	}
-	r.price = bigIntList(tmp).median()
+	r.price = common.BigIntList(tmp).Median()
 	return r.price
 }
 
@@ -123,7 +131,7 @@ func (agg *aggregator) aggregate() *big.Int {
 	//currently: use rule_1+MODE_1: {rule:specified source:`chainlink`, MODE: asap when power exceeds the threshold}
 	//1. check OVA threshold
 	//2. check IVA consensus with rule, TODO: for v1 we only implement with mode=1&rule=1
-	if exceedsThreshold(agg.reportPower, agg.totalPower) {
+	if common.ExceedsThreshold(agg.reportPower, agg.totalPower) {
 		//TODO: this is kind of a mock way to suite V1, need update to check with params.rule
 		//check if IVA all reached consensus
 		if len(agg.dsPrices) > 0 {
@@ -133,7 +141,7 @@ func (agg *aggregator) aggregate() *big.Int {
 				validatorPrices = append(validatorPrices, validatorReport.aggregate())
 			}
 			//vTmp := bigIntList(validatorPrices)
-			agg.finalPrice = bigIntList(validatorPrices).median()
+			agg.finalPrice = common.BigIntList(validatorPrices).Median()
 			//clear relative aggregator for this feeder, all the aggregator,calculator, filter can be removed since this round has been sealed
 		}
 	}

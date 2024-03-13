@@ -1,25 +1,26 @@
-package keeper
+package cache
 
 import (
 	"math/big"
 
+	"github.com/ExocoreNetwork/exocore/x/oracle/keeper/aggregator"
+	"github.com/ExocoreNetwork/exocore/x/oracle/keeper/common"
 	"github.com/ExocoreNetwork/exocore/x/oracle/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	stakingTypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 )
 
 var zeroBig = big.NewInt(0)
-var caches *cache
 
 type cacheItemV map[string]*big.Int
-type cacheItemP *params
+type cacheItemP *common.Params
 type cacheItemM struct {
 	feederId  int32
 	pSources  []*types.PriceWithSource
 	validator string
 }
 
-type cache struct {
+type Cache struct {
 	msg        cacheMsgs
 	validators *cacheValidator
 	params     *cacheParams
@@ -35,7 +36,7 @@ type cacheValidator struct {
 
 // used to track params change
 type cacheParams struct {
-	params *params
+	params *common.Params
 	update bool
 }
 
@@ -46,7 +47,7 @@ func (c cacheMsgs) remove(item *cacheItemM) {
 	delete(c, item.feederId)
 }
 
-func (c cacheMsgs) commit(ctx sdk.Context, k *Keeper) {
+func (c cacheMsgs) commit(ctx sdk.Context, k common.KeeperOracle) {
 	block := uint64(ctx.BlockHeight())
 	recentMsgs := types.RecentMsg{
 		Block: block,
@@ -63,7 +64,7 @@ func (c cacheMsgs) commit(ctx sdk.Context, k *Keeper) {
 	}
 	index, _ := k.GetIndexRecentMsg(ctx)
 	for i, b := range index.Index {
-		if b >= block-maxNonce {
+		if b >= block-common.MaxNonce {
 			index.Index = index.Index[i:]
 			break
 		}
@@ -92,23 +93,23 @@ func (c *cacheValidator) add(validators map[string]*big.Int) {
 	}
 }
 
-func (c *cacheValidator) commit(ctx sdk.Context, k *Keeper) {
+func (c *cacheValidator) commit(ctx sdk.Context, k common.KeeperOracle) {
 	block := uint64(ctx.BlockHeight())
 	k.SetValidatorUpdateBlock(ctx, types.ValidatorUpdateBlock{Block: block})
 }
 
-func (c *cacheParams) add(p *params) {
+func (c *cacheParams) add(p *common.Params) {
 	//params' update is triggered when params is actually updated, so no need to do comparison here, just udpate and mark the flag
 	//TODO: add comparison check, that's something should be done for validation
 	c.params = p
 	c.update = true
 }
 
-func (c *cacheParams) commit(ctx sdk.Context, k *Keeper) {
+func (c *cacheParams) commit(ctx sdk.Context, k common.KeeperOracle) {
 	block := uint64(ctx.BlockHeight())
 	index, _ := k.GetIndexRecentParams(ctx)
 	for i, b := range index.Index {
-		if b >= block-maxNonce {
+		if b >= block-common.MaxNonce {
 			index.Index = index.Index[i:]
 			break
 		}
@@ -121,62 +122,66 @@ func (c *cacheParams) commit(ctx sdk.Context, k *Keeper) {
 }
 
 // memory cache
-func (k *Keeper) addCache(i any) {
+func (c *Cache) AddCache(i any, k common.KeeperOracle) {
 	switch item := i.(type) {
 	case *cacheItemM:
-		caches.msg.add(item)
+		c.msg.add(item)
 		//	case *params:
 	case cacheItemP:
-		caches.params.add(item)
+		c.params.add(item)
 	case cacheItemV:
-		caches.validators.add(item)
+		c.validators.add(item)
 	default:
 		panic("no other types are support")
 	}
 }
-func (k *Keeper) removeCache(i any) {
+func (c *Cache) RemoveCache(i any, k common.KeeperOracle) {
 	switch item := i.(type) {
 	case *cacheItemM:
-		caches.msg.remove(item)
+		c.msg.remove(item)
 	default:
 	}
 }
 
-func (k *Keeper) commitCache(ctx sdk.Context, reset bool) {
-	if len(caches.msg) > 0 {
-		caches.msg.commit(ctx, k)
-		caches.msg = make(map[int32][]*cacheItemM)
+func (c *Cache) CommitCache(ctx sdk.Context, reset bool, k common.KeeperOracle) {
+	if len(c.msg) > 0 {
+		c.msg.commit(ctx, k)
+		c.msg = make(map[int32][]*cacheItemM)
 	}
 
-	if caches.validators.update {
-		caches.validators.commit(ctx, k)
-		caches.validators.update = false
+	if c.validators.update {
+		c.validators.commit(ctx, k)
+		c.validators.update = false
 	}
 
-	if caches.params.update {
-		caches.params.commit(ctx, k)
-		caches.params.update = false
+	if c.params.update {
+		c.params.commit(ctx, k)
+		c.params.update = false
 	}
 	if reset {
-		k.resetCaches(ctx)
+		c.ResetCaches()
 	}
 }
 
-func (k *Keeper) resetCaches(ctx sdk.Context) {
-	caches = &cache{
+func (c *Cache) ResetCaches() {
+	*c = *(NewCache())
+}
+
+func NewCache() *Cache {
+	return &Cache{
 		msg: make(map[int32][]*cacheItemM),
 		validators: &cacheValidator{
 			validators: make(map[string]*big.Int),
 		},
 		params: &cacheParams{
-			params: &params{},
+			params: &common.Params{},
 		},
 	}
 }
 
-func (k *Keeper) recacheAggregatorContext(ctx sdk.Context, agc *aggregatorContext) bool {
+func (c *Cache) RecacheAggregatorContext(ctx sdk.Context, agc *aggregator.AggregatorContext, k common.KeeperOracle) bool {
 
-	from := uint64(ctx.BlockHeight()) - maxNonce
+	from := uint64(ctx.BlockHeight()) - common.MaxNonce
 	to := uint64(ctx.BlockHeight()) - 1
 
 	h, ok := k.GetValidatorUpdateBlock(ctx)
@@ -191,31 +196,33 @@ func (k *Keeper) recacheAggregatorContext(ctx sdk.Context, agc *aggregatorContex
 	}
 
 	totalPower := big.NewInt(0)
-	k.stakingKeeper.IterateBondedValidatorsByPower(ctx, func(index int64, validator stakingTypes.ValidatorI) bool {
+	validatorPowers := make(map[string]*big.Int)
+	k.IterateBondedValidatorsByPower(ctx, func(index int64, validator stakingTypes.ValidatorI) bool {
 		power := big.NewInt(validator.GetConsensusPower(validator.GetBondedTokens()))
 		addr := string(validator.GetOperator())
-		agc.validatorsPower[addr] = power
+		validatorPowers[addr] = power
 		totalPower = new(big.Int).Add(totalPower, power)
 		return false
 	})
-	agc.totalPower = k.stakingKeeper.GetLastTotalPower(ctx).BigInt()
+	agc.SetValidatorPowers(validatorPowers)
+	agc.SetTotalPower(totalPower)
 	//TODO: test only
-	if agc.totalPower.Cmp(totalPower) != 0 {
+	if k.GetLastTotalPower(ctx).Cmp(totalPower) != 0 {
 		panic("something wrong when get validatorsPower from staking module")
 	}
 
 	//reset validators
-	k.addCache(cacheItemV(agc.validatorsPower))
+	c.AddCache(cacheItemV(validatorPowers), k)
 
 	recentMsgs := k.GetAllRecentMsgAsMap(ctx)
-
+	var pTmp common.Params
 	for ; from < to; from++ {
 		//fill params
 		for b, recentParams := range recentParamsMap {
 			prev := uint64(0)
 			if b <= from && b > prev {
-				pTmp := params(*recentParams)
-				agc.params = &pTmp
+				pTmp = common.Params(*recentParams)
+				agc.SetParams(&pTmp)
 				if prev > 0 {
 					//TODO: safe delete
 					delete(recentParamsMap, prev)
@@ -224,53 +231,59 @@ func (k *Keeper) recacheAggregatorContext(ctx sdk.Context, agc *aggregatorContex
 			}
 		}
 
-		agc.prepareRound(ctx, from)
+		agc.PrepareRound(ctx, from)
 
 		if msgs := recentMsgs[from+1]; msgs != nil {
 			for _, msg := range msgs {
 				//these messages are retreived for recache, just skip the validation check and fill the memory cache
-				agc.fillPrice(&types.MsgCreatePrice{
+				agc.FillPrice(&types.MsgCreatePrice{
 					Creator:  msg.Validator,
 					FeederId: msg.FeederId,
 					Prices:   msg.PSources,
 				})
 			}
 		}
-		agc.sealRound(ctx)
+		agc.SealRound(ctx)
 	}
 
 	//fill params cache
-	k.addCache(cacheItemP(agc.params))
+	c.AddCache(cacheItemP(&pTmp), k)
 
-	agc.prepareRound(ctx, to)
+	agc.PrepareRound(ctx, to)
 
 	return true
 }
 
-func (k *Keeper) initAggregatorContext(ctx sdk.Context, agc *aggregatorContext) error {
+func (c *Cache) InitAggregatorContext(ctx sdk.Context, agc *aggregator.AggregatorContext, k common.KeeperOracle) error {
 	//set params
 	p := k.GetParams(ctx)
 	m := make(map[uint64]*types.Params)
 	m[uint64(ctx.BlockHeight())] = &p
 	//	k.setParams4CacheRecover(m) //used to trace tokenFeeder's update during cache recover
-	pTmp := params(p)
-	agc.params = &pTmp
+	pTmp := common.Params(p)
+	agc.SetParams(&pTmp)
 	//set params cache
-	k.addCache(cacheItemP(agc.params))
+	c.AddCache(cacheItemP(&pTmp), k)
 
 	totalPower := big.NewInt(0)
-	k.stakingKeeper.IterateBondedValidatorsByPower(ctx, func(index int64, validator stakingTypes.ValidatorI) bool {
+	validatorPowers := make(map[string]*big.Int)
+	k.IterateBondedValidatorsByPower(ctx, func(index int64, validator stakingTypes.ValidatorI) bool {
 		power := big.NewInt(validator.GetConsensusPower(validator.GetBondedTokens()))
 		addr := string(validator.GetOperator())
-		agc.validatorsPower[addr] = power
+		//agc.validatorsPower[addr] = power
+		validatorPowers[addr] = power
 		totalPower = new(big.Int).Add(totalPower, power)
 		return false
 	})
-	agc.totalPower = totalPower
+	agc.SetTotalPower(totalPower)
+	agc.SetValidatorPowers(validatorPowers)
+	if k.GetLastTotalPower(ctx).Cmp(totalPower) != 0 {
+		panic("-")
+	}
 
 	//set validatorPower cache
-	k.addCache(cacheItemV(agc.validatorsPower))
+	c.AddCache(cacheItemV(validatorPowers), k)
 
-	agc.prepareRound(ctx, uint64(ctx.BlockHeight())-1)
+	agc.PrepareRound(ctx, uint64(ctx.BlockHeight())-1)
 	return nil
 }

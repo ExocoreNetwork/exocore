@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"fmt"
+	"math/big"
 
 	"github.com/cometbft/cometbft/libs/log"
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -12,6 +13,7 @@ import (
 	"github.com/ExocoreNetwork/exocore/x/oracle/types"
 
 	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
+	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 )
 
 type (
@@ -46,4 +48,12 @@ func NewKeeper(
 
 func (k Keeper) Logger(ctx sdk.Context) log.Logger {
 	return ctx.Logger().With("module", fmt.Sprintf("x/%s", types.ModuleName))
+}
+
+func (k Keeper) GetLastTotalPower(ctx sdk.Context) *big.Int {
+	return k.stakingKeeper.GetLastTotalPower(ctx).BigInt()
+}
+
+func (k Keeper) IterateBondedValidatorsByPower(ctx sdk.Context, f func(index int64, validator stakingtypes.ValidatorI) bool) {
+	k.stakingKeeper.IterateBondedValidatorsByPower(ctx, f)
 }

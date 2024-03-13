@@ -1,8 +1,9 @@
-package keeper
+package aggregator
 
 import (
 	"math/big"
 
+	"github.com/ExocoreNetwork/exocore/x/oracle/keeper/common"
 	"github.com/ExocoreNetwork/exocore/x/oracle/types"
 )
 
@@ -38,7 +39,7 @@ func (r *roundPrices) updatePriceAndPower(pw *priceAndPower, totalPower *big.Int
 		if item.price.Cmp(pw.price) == 0 {
 			item.power = new(big.Int).Add(item.power, pw.power)
 			updated = true
-			if exceedsThreshold(item.power, totalPower) {
+			if common.ExceedsThreshold(item.power, totalPower) {
 				r.price = item.price
 				confirmed = true
 			}
@@ -48,7 +49,7 @@ func (r *roundPrices) updatePriceAndPower(pw *priceAndPower, totalPower *big.Int
 	if len(r.prices) < cap(r.prices) {
 		r.prices = append(r.prices, pw)
 		updated = true
-		if exceedsThreshold(pw.power, totalPower) {
+		if common.ExceedsThreshold(pw.power, totalPower) {
 			r.price = pw.price
 			confirmed = true
 		}
@@ -104,7 +105,7 @@ type calculator struct {
 
 func (c *calculator) newRoundPricesList() *roundPricesList {
 	return &roundPricesList{
-		roundPricesList: make([]*roundPrices, 0, maxDetId*c.validatorLength),
+		roundPricesList: make([]*roundPrices, 0, common.MaxDetId*c.validatorLength),
 		//for each DS-roundId, the count of prices provided is the number of validators at most
 		roundPricesCount: c.validatorLength,
 	}

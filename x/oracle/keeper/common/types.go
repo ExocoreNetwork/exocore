@@ -1,4 +1,4 @@
-package keeper
+package common
 
 import (
 	"errors"
@@ -8,24 +8,30 @@ import (
 	"github.com/ExocoreNetwork/exocore/x/oracle/types"
 )
 
-type priceWithTimeAndRound struct {
-	price      *big.Int
-	decimal    int32
-	timestamp  string
-	detRoundId string //roundId from source if exists
-}
+const (
+	//maxNonce indicates how many messages a validator can submit in a single roudn to offer price
+	//current we use this as a mock distance
+	MaxNonce = 3
+	//these two threshold value used to set the threshold to tell when the price had come to consensus and was able to get a final price of that round
+	Threshold_a = 2
+	Threshold_b = 3
+	//maxDetId each validator can submit, so the calculator can cache maximum of maxDetId*count(validators) values, this is for resistance of malicious validator submmiting invalid detId
+	MaxDetId = 5
+	//consensus mode: v1: as soon as possbile
+	Mode = 1
+)
 
-type params types.Params
+type Params types.Params
 
-func (p params) getTokenFeeders() []*types.TokenFeeder {
+func (p Params) GetTokenFeeders() []*types.TokenFeeder {
 	return p.TokenFeeders
 }
 
-func (p params) isDeterministicSource(sourceId int32) bool {
+func (p Params) IsDeterministicSource(sourceId int32) bool {
 	return p.Sources[int(sourceId)].Deterministic
 }
 
-func (p params) isValidSource(sourceId int32) bool {
+func (p Params) IsValidSource(sourceId int32) bool {
 	if sourceId == 0 {
 		//custom defined source
 		return true
@@ -33,7 +39,7 @@ func (p params) isValidSource(sourceId int32) bool {
 	return p.Sources[int(sourceId)].Valid
 }
 
-func (p params) getTokenFeeder(feederId int32) *types.TokenFeeder {
+func (p Params) GetTokenFeeder(feederId int32) *types.TokenFeeder {
 	for k, v := range p.TokenFeeders {
 		if int32(k) == feederId {
 			return v
@@ -41,7 +47,7 @@ func (p params) getTokenFeeder(feederId int32) *types.TokenFeeder {
 	}
 	return nil
 }
-func (p params) getTokenInfo(feederId int32) *types.Token {
+func (p Params) GetTokenInfo(feederId int32) *types.Token {
 	for k, v := range p.TokenFeeders {
 		if int32(k) == feederId {
 			return p.Tokens[v.TokenId]
@@ -50,7 +56,7 @@ func (p params) getTokenInfo(feederId int32) *types.Token {
 	return nil
 }
 
-func (p params) checkRules(feederId int32, prices []*types.PriceWithSource) (bool, error) {
+func (p Params) CheckRules(feederId int32, prices []*types.PriceWithSource) (bool, error) {
 	feeder := p.TokenFeeders[feederId]
 	rule := p.Rules[feeder.RuleId]
 	//specified sources set, v1 use this rule to set `chainlink` as official source
@@ -73,12 +79,12 @@ func (p params) checkRules(feederId int32, prices []*types.PriceWithSource) (boo
 	return true, nil
 }
 
-type set[T comparable] struct {
+type Set[T comparable] struct {
 	size  int
 	slice []T
 }
 
-func (s *set[T]) Add(value T) bool {
+func (s *Set[T]) Add(value T) bool {
 	if len(s.slice) == s.size {
 		return false
 	}
@@ -92,7 +98,7 @@ func (s *set[T]) Add(value T) bool {
 	return true
 }
 
-func (s *set[T]) Has(value T) bool {
+func (s *Set[T]) Has(value T) bool {
 	for _, v := range s.slice {
 		if v == value {
 			return true
@@ -101,34 +107,34 @@ func (s *set[T]) Has(value T) bool {
 	return false
 }
 
-func (s *set[T]) length() int {
+func (s *Set[T]) Length() int {
 	return s.size
 }
 
-func newSet[T comparable](length int) *set[T] {
-	return &set[T]{
+func NewSet[T comparable](length int) *Set[T] {
+	return &Set[T]{
 		size:  length,
 		slice: make([]T, 0, length),
 	}
 }
 
-func exceedsThreshold(power *big.Int, totalPower *big.Int) bool {
-	return new(big.Int).Mul(power, big.NewInt(threshold_b)).Cmp(new(big.Int).Mul(totalPower, big.NewInt(threshold_a))) > 0
+func ExceedsThreshold(power *big.Int, totalPower *big.Int) bool {
+	return new(big.Int).Mul(power, big.NewInt(Threshold_b)).Cmp(new(big.Int).Mul(totalPower, big.NewInt(Threshold_a))) > 0
 }
 
-type bigIntList []*big.Int
+type BigIntList []*big.Int
 
-func (b bigIntList) Len() int {
+func (b BigIntList) Len() int {
 	return len(b)
 }
-func (b bigIntList) Less(i, j int) bool {
+func (b BigIntList) Less(i, j int) bool {
 	return b[i].Cmp(b[j]) < 0
 }
-func (b bigIntList) Swap(i, j int) {
+func (b BigIntList) Swap(i, j int) {
 	b[i], b[j] = b[j], b[i]
 }
 
-func (b bigIntList) median() *big.Int {
+func (b BigIntList) Median() *big.Int {
 	sort.Sort(b)
 	l := len(b)
 	if l%2 == 1 {
