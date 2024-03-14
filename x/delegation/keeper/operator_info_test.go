@@ -1,4 +1,5 @@
 package keeper_test
+delegationtype "github.com/ExocoreNetwork/exocore/x/delegation/types"
 
 import delegationtype "github.com/ExocoreNetwork/exocore/x/delegation/types"
 
