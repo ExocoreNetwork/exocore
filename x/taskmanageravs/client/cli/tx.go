@@ -57,15 +57,15 @@ func CreateTask() *cobra.Command {
 				return err
 			}
 
-			quorumThresholdPercentage, err := strconv.Atoi(args[3])
+			quorumThresholdPercentage, err := strconv.ParseUint(args[3], 10, 32)
 			if err != nil {
 				return err
 			}
 			task := &taskTypes.TaskInfo{
-				Name:                      args[0],
-				MetaInfo:                  args[1],
-				TaskId:                    uint64(taskId),
-				QuorumThresholdPercentage: uint64(quorumThresholdPercentage),
+				Name:                args[0],
+				MetaInfo:            args[1],
+				TaskId:              uint64(taskId),
+				ThresholdPercentage: quorumThresholdPercentage,
 			}
 			return tx.GenerateOrBroadcastTxCLI(cliCtx, cmd.Flags(), task)
 		},

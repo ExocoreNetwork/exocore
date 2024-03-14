@@ -7,7 +7,8 @@ message TaskInfo {
     string Name = 1;
     string MetaInfo = 2;
     uint64 TaskId = 3;
-    uint64 quorumThresholdPercentage = 4;
+    // each task needs to reach at least thresholdPercentage of operator signatures.
+    uint64 thresholdPercentage = 4;
 }
 
 message TaskManagerInfo {
