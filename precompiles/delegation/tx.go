@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"reflect"
 
+	exocmn "github.com/ExocoreNetwork/exocore/precompiles/common"
+
 	errorsmod "cosmossdk.io/errors"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -36,7 +38,7 @@ func (p Precompile) DelegateToThroughClientChain(
 	// check the invalidation of caller contract
 	err := p.assetsKeeper.CheckExocoreLzAppAddr(ctx, contract.CallerAddress)
 	if err != nil {
-		return nil, errorsmod.Wrap(err, ErrContractCaller)
+		return nil, errorsmod.Wrap(err, exocmn.ErrContractCaller)
 	}
 
 	delegationParams, err := p.GetDelegationParamsFromInputs(ctx, args)
@@ -63,7 +65,7 @@ func (p Precompile) UndelegateFromThroughClientChain(
 	// check the invalidation of caller contract
 	err := p.assetsKeeper.CheckExocoreLzAppAddr(ctx, contract.CallerAddress)
 	if err != nil {
-		return nil, errorsmod.Wrap(err, ErrContractCaller)
+		return nil, errorsmod.Wrap(err, exocmn.ErrContractCaller)
 	}
 
 	UndelegationParams, err := p.GetDelegationParamsFromInputs(ctx, args)

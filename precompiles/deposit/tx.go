@@ -2,6 +2,7 @@ package deposit
 
 import (
 	errorsmod "cosmossdk.io/errors"
+	exocmn "github.com/ExocoreNetwork/exocore/precompiles/common"
 	"github.com/ExocoreNetwork/exocore/x/assets/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/accounts/abi"
@@ -27,7 +28,7 @@ func (p Precompile) DepositTo(
 	// check the invalidation of caller contract,the caller must be exoCore LzApp contract
 	err := p.assetsKeeper.CheckExocoreLzAppAddr(ctx, contract.CallerAddress)
 	if err != nil {
-		return nil, errorsmod.Wrap(err, ErrContractCaller)
+		return nil, errorsmod.Wrap(err, exocmn.ErrContractCaller)
 	}
 	// parse the depositTo input params
 	depositParams, err := p.GetDepositToParamsFromInputs(ctx, args)

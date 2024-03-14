@@ -64,8 +64,8 @@ func paddingClientChainAddress(input []byte, outputLength int) []byte {
 // TestRun tests DelegateToThroughClientChain method through calling Run function.
 func (s *DelegationPrecompileSuite) TestRunDelegateToThroughClientChain() {
 	// deposit params for test
-	ExocoreLzAppAddress := "0x3fC91A3afd70395Cd496C647d5a6CC9D4B2b7FAD"
-	ExocoreLzAppEventTopic := "0xc6a377bfc4eb120024a8ac08eef205be16b817020812c73223e81d1bdb9708ec"
+	exocoreLzAppAddress := "0x3fC91A3afd70395Cd496C647d5a6CC9D4B2b7FAD"
+	exocoreLzAppEventTopic := "0xc6a377bfc4eb120024a8ac08eef205be16b817020812c73223e81d1bdb9708ec"
 	usdtAddress := common.FromHex("0xdAC17F958D2ee523a2206206994597C13D831ec7")
 	opAccAddr := "exo13h6xg79g82e2g2vhjwg7j4r2z2hlncelwutkjr"
 	clientChainLzID := 101
@@ -127,7 +127,7 @@ func (s *DelegationPrecompileSuite) TestRunDelegateToThroughClientChain() {
 		returnBytes []byte
 	}{
 		{
-			name: "fail - delegateToThroughClientChain transaction will fail because the ExocoreLzAppAddress haven't been stored",
+			name: "fail - delegateToThroughClientChain transaction will fail because the exocoreLzAppAddress haven't been stored",
 			malleate: func() (common.Address, []byte) {
 				return commonMalleate()
 			},
@@ -139,8 +139,8 @@ func (s *DelegationPrecompileSuite) TestRunDelegateToThroughClientChain() {
 			name: "fail - delegateToThroughClientChain transaction will fail because the contract caller isn't the exoCoreLzAppAddr",
 			malleate: func() (common.Address, []byte) {
 				depositModuleParam := &assetstype.Params{
-					ExocoreLzAppAddress:    ExocoreLzAppAddress,
-					ExocoreLzAppEventTopic: ExocoreLzAppEventTopic,
+					ExocoreLzAppAddress:    exocoreLzAppAddress,
+					ExocoreLzAppEventTopic: exocoreLzAppEventTopic,
 				}
 				err := s.App.AssetsKeeper.SetParams(s.Ctx, depositModuleParam)
 				s.Require().NoError(err)
@@ -155,7 +155,7 @@ func (s *DelegationPrecompileSuite) TestRunDelegateToThroughClientChain() {
 			malleate: func() (common.Address, []byte) {
 				depositModuleParam := &assetstype.Params{
 					ExocoreLzAppAddress:    s.Address.String(),
-					ExocoreLzAppEventTopic: ExocoreLzAppEventTopic,
+					ExocoreLzAppEventTopic: exocoreLzAppEventTopic,
 				}
 				err := s.App.AssetsKeeper.SetParams(s.Ctx, depositModuleParam)
 				s.Require().NoError(err)
@@ -170,7 +170,7 @@ func (s *DelegationPrecompileSuite) TestRunDelegateToThroughClientChain() {
 			malleate: func() (common.Address, []byte) {
 				depositModuleParam := &assetstype.Params{
 					ExocoreLzAppAddress:    s.Address.String(),
-					ExocoreLzAppEventTopic: ExocoreLzAppEventTopic,
+					ExocoreLzAppEventTopic: exocoreLzAppEventTopic,
 				}
 				err := s.App.AssetsKeeper.SetParams(s.Ctx, depositModuleParam)
 				s.Require().NoError(err)
@@ -186,7 +186,7 @@ func (s *DelegationPrecompileSuite) TestRunDelegateToThroughClientChain() {
 			malleate: func() (common.Address, []byte) {
 				depositModuleParam := &assetstype.Params{
 					ExocoreLzAppAddress:    s.Address.String(),
-					ExocoreLzAppEventTopic: ExocoreLzAppEventTopic,
+					ExocoreLzAppEventTopic: exocoreLzAppEventTopic,
 				}
 				err := s.App.AssetsKeeper.SetParams(s.Ctx, depositModuleParam)
 				s.Require().NoError(err)
@@ -203,7 +203,7 @@ func (s *DelegationPrecompileSuite) TestRunDelegateToThroughClientChain() {
 			malleate: func() (common.Address, []byte) {
 				depositModuleParam := &assetstype.Params{
 					ExocoreLzAppAddress:    s.Address.String(),
-					ExocoreLzAppEventTopic: ExocoreLzAppEventTopic,
+					ExocoreLzAppEventTopic: exocoreLzAppEventTopic,
 				}
 				err := s.App.AssetsKeeper.SetParams(s.Ctx, depositModuleParam)
 				s.Require().NoError(err)
@@ -291,7 +291,7 @@ func (s *DelegationPrecompileSuite) TestRunDelegateToThroughClientChain() {
 // TestRun tests DelegateToThroughClientChain method through calling Run function.
 func (s *DelegationPrecompileSuite) TestRunUnDelegateFromThroughClientChain() {
 	// deposit params for test
-	ExocoreLzAppEventTopic := "0xc6a377bfc4eb120024a8ac08eef205be16b817020812c73223e81d1bdb9708ec"
+	exocoreLzAppEventTopic := "0xc6a377bfc4eb120024a8ac08eef205be16b817020812c73223e81d1bdb9708ec"
 	usdtAddress := common.FromHex("0xdAC17F958D2ee523a2206206994597C13D831ec7")
 	operatorAddr := "exo13h6xg79g82e2g2vhjwg7j4r2z2hlncelwutkjr"
 	clientChainLzID := 101
@@ -373,7 +373,7 @@ func (s *DelegationPrecompileSuite) TestRunUnDelegateFromThroughClientChain() {
 			malleate: func() (common.Address, []byte) {
 				depositModuleParam := &assetstype.Params{
 					ExocoreLzAppAddress:    s.Address.String(),
-					ExocoreLzAppEventTopic: ExocoreLzAppEventTopic,
+					ExocoreLzAppEventTopic: exocoreLzAppEventTopic,
 				}
 				err := s.App.AssetsKeeper.SetParams(s.Ctx, depositModuleParam)
 				s.Require().NoError(err)

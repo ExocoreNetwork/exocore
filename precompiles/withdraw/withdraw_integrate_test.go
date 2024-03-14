@@ -3,9 +3,10 @@ package withdraw_test
 import (
 	"math/big"
 
+	exocmn "github.com/ExocoreNetwork/exocore/precompiles/common"
+
 	"github.com/ExocoreNetwork/exocore/precompiles/testutil"
 	"github.com/ExocoreNetwork/exocore/precompiles/testutil/contracts"
-	"github.com/ExocoreNetwork/exocore/precompiles/withdraw"
 	assetstype "github.com/ExocoreNetwork/exocore/x/assets/types"
 	"github.com/ethereum/go-ethereum/common"
 )
@@ -68,5 +69,5 @@ func (s *WithdrawPrecompileTestSuite) TestCallWithdrawFromEOA() {
 	beforeEach()
 	setWithdrawArgs := prepareFunc(&params, method)
 	_, _, err := contracts.CallContractAndCheckLogs(s.Ctx, s.App, setWithdrawArgs, passCheck)
-	s.Require().ErrorContains(err, withdraw.ErrContractCaller)
+	s.Require().ErrorContains(err, exocmn.ErrContractCaller)
 }

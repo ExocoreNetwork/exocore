@@ -16,7 +16,7 @@ type Keeper struct {
 	cdc      codec.BinaryCodec
 
 	// other keepers
-	assetsKeeper     keeper.Keeper
+	assetsKeeper     operatortypes.ExpectAssetsInterface
 	delegationKeeper operatortypes.ExpectDelegationInterface
 	oracleKeeper     operatortypes.ExpectOracleInterface
 	avsKeeper        operatortypes.ExpectAvsInterface
