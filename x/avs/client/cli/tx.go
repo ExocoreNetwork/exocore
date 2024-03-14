@@ -7,6 +7,9 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/cosmos/cosmos-sdk/client"
+	"github.com/cosmos/cosmos-sdk/client/flags"
+	"github.com/cosmos/cosmos-sdk/client/tx"
+
 	// "github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/ExocoreNetwork/exocore/x/avs/types"
 )
@@ -32,5 +35,35 @@ func GetTxCmd() *cobra.Command {
 
 	// this line is used by starport scaffolding # 1
 
-	return cmd 
+	return cmd
+}
+
+func RegisterAVS() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "RegisterAVS: AVSName, AVSAddress, OperatorAddress",
+		Short: "register to be an avs",
+		Args:  cobra.MinimumNArgs(4),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			cliCtx, err := client.GetClientTxContext(cmd)
+			if err != nil {
+				return err
+			}
+
+			sender := cliCtx.GetFromAddress()
+			fromAddress := sender.String()
+			msg := &types.RegisterAVSReq{
+				FromAddress: fromAddress,
+				Info: &types.AVSInfo{
+					Name:            args[0],
+					AVSAddress:      args[1],
+					OperatorAddress: args[2],
+				},
+			}
+
+			return tx.GenerateOrBroadcastTxCLI(cliCtx, cmd.Flags(), msg)
+		},
+	}
+
+	flags.AddTxFlagsToCmd(cmd)
+	return cmd
 }

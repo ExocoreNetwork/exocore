@@ -11,8 +11,9 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-// UpdateStakerDelegationTotalAmount The function is used to update the delegation total amount of the specified staker and asset.
-// The input `opAmount` represents the values that you want to add or decrease,using positive or negative values for increasing and decreasing,respectively. The function will calculate and update new state after a successful check.
+// UpdateStakerDelegationTotalAmount function is used to update the delegation total amount of the specified staker and asset.
+// The input `opAmount` represents the values that you want to add or decrease, using positive or negative values for increasing and decreasing, respectively.
+// The function will calculate and update new state after a successful check.
 // The function will be called when there is delegation or undelegation related to the specified staker and asset.
 func (k *Keeper) UpdateStakerDelegationTotalAmount(ctx sdk.Context, stakerID string, assetID string, opAmount sdkmath.Int) error {
 	if opAmount.IsNil() || opAmount.IsZero() {
@@ -51,7 +52,7 @@ func (k *Keeper) GetStakerDelegationTotalAmount(ctx sdk.Context, stakerID string
 	return ret.Amount, nil
 }
 
-// UpdateDelegationState The function is used to update the staker's asset amount that is delegated to a specified operator.
+// UpdateDelegationState function is used to update the staker's asset amount that is delegated to a specified operator.
 // Compared to `UpdateStakerDelegationTotalAmount`,they use the same kv store, but in this function the store key needs to add the operator address as a suffix.
 func (k *Keeper) UpdateDelegationState(ctx sdk.Context, stakerID string, assetID string, delegationAmounts map[string]*delegationtype.DelegationAmounts) (err error) {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), delegationtype.KeyPrefixRestakerDelegationInfo)
