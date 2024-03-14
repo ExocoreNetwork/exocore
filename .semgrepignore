@@ -19,6 +19,7 @@ vendor/
 # Common test paths
 test/
 tests/
+testutil/
 *_test.go
 *.pb.gw.go
 *.pb.go

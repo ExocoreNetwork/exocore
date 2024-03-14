@@ -1,7 +1,13 @@
+# This workflow runs on every push and pull request to the repository.
+# It then calculates the unit test coverage and checks if it's above a certain threshold.
+# this information is passed on to another workflow as artifacts for commenting on the PR.
+# This is because the `pull_request` event does not have the commenting permissions.
+# We could switch to `pull_request_target` which does have them, however, it
+# opens a security hole. See:
+# https://securitylab.github.com/research/github-actions-preventing-pwn-requests/
 name: Tests
 on:
-  # for write permission, use pull_request_target and not pull_request.
-  pull_request_target:
+  pull_request:
   push:
     branches:
       - develop
@@ -10,8 +16,9 @@ on:
       - release/**
 
 permissions:
+  # for uploading artifacts
   contents: write
-  pull-requests: write
+  pull-requests: read
 
 # Automatically cancel run if another commit to the same ref is detected.
 concurrency:
@@ -30,7 +37,6 @@ jobs:
       - uses: technote-space/get-diff-action@v6.1.2
         with:
           PATTERNS: |
-            **/**.sol
             **/**.go
             go.mod
             go.sum
@@ -47,19 +53,14 @@ jobs:
           # TODO: increase this threshold with time to 80
           threshold-total: 10
         if: env.GIT_DIFF
-      - name: Find comment
-        id: find-comment
-        uses: peter-evans/find-comment@v2
-        with:
-          issue-number: ${{ github.event.pull_request.number }}
-          comment-author: 'github-actions[bot]'
+      - name: Generate artifact for PR
+        run: |
+          mkdir -p ./result/
+          echo "${{ steps.output-coverage.outputs.total-coverage }}" > ./result/coverage.txt
+          echo "${{ github.event.pull_request.number }}" > ./result/pr_number.txt
         if: env.GIT_DIFF && github.event_name == 'pull_request'
-      - name: Comment coverage on PR
-        uses: peter-evans/create-or-update-comment@v3
+      - uses: actions/upload-artifact@v2
         with:
-          issue-number: ${{ github.event.pull_request.number }}
-          comment-id: ${{ steps.find-comment.outputs.comment-id }}
-          body: |
-            Coverage as of ${{ github.sha }}: ${{ steps.output-coverage.outputs.total-coverage }}%
-          edit-mode: append
+          name: result
+          path: ./result/
         if: env.GIT_DIFF && github.event_name == 'pull_request'
