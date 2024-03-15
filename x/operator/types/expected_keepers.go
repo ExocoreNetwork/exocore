@@ -68,6 +68,9 @@ func (MockAVS) GetAvsSlashContract(_ sdk.Context, _ string) (string, error) {
 }
 
 type ExpectAvsInterface interface {
+	// GetAvsSupportedAssets The ctx can be historical or current, depending on the state you wish to retrieve.
+	// If the caller want to retrieve a historical assets info supported by Avs, it needs to generate a historical
+	// context through calling `ContextForHistoricalState` implemented in x/assets/types/general.go
 	GetAvsSupportedAssets(ctx sdk.Context, avsAddr string) (map[string]interface{}, error)
 	GetAvsSlashContract(ctx sdk.Context, avsAddr string) (string, error)
 }
