@@ -8,6 +8,10 @@ on:
       - main
       - master
 
+permissions:
+  contents: read
+  security-events: write
+
 jobs:
   analyze:
     # disabled for now, since we don't have any Solidity files.

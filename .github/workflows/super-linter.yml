@@ -7,6 +7,9 @@
 ---
 name: Lint Code Base
 
+permissions:
+  contents: read
+
 on:
   push:
     branches: ["develop", "main", "master"]
@@ -33,9 +36,10 @@ jobs:
           VALIDATE_NATURAL_LANGUAGE: false
           VALIDATE_OPENAPI: false
           VALIDATE_JSCPD: false
+          # The JSON files in the repo are generated (abis or swagger)
+          # or are linting files. So this can be safely disabled.
+          VALIDATE_JSON: false
           # separate workflow
           VALIDATE_GO: false
           VALIDATE_GO_MODULES: false
-          # TODO: enable docker coverage later
-          VALIDATE_CHECKOV: false
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

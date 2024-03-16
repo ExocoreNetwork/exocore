@@ -1,4 +1,6 @@
 name: Semgrep
+permissions:
+  contents: read
 on:
   # Scan changed files in PRs, block on new issues only (existing issues ignored)
   pull_request: {}

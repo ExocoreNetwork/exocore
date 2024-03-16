@@ -297,7 +297,9 @@ test: test-unit
 test-all: test-unit test-race
 # For unit tests we don't want to execute the upgrade tests in tests/e2e but
 # we want to include all unit tests in the subfolders (tests/e2e/*)
-PACKAGES_UNIT=$(shell go list ./... | grep -v '/tests/e2e$$')
+# We also want to exclude the testutil folder because it contains only
+# helper functions for the tests.
+PACKAGES_UNIT=$(shell go list ./... | grep -v '/tests/e2e$$' | grep -v 'testutil')
 TEST_PACKAGES=./...
 TEST_TARGETS := test-unit test-unit-cover test-race
 
@@ -311,7 +313,7 @@ test-race: ARGS=-race
 test-race: TEST_PACKAGES=$(PACKAGES_NOSIMULATION)
 $(TEST_TARGETS): run-tests
 
-test-unit-cover: ARGS=-timeout=15m -coverprofile=coverage.txt -covermode=atomic
+test-unit-cover: ARGS=-timeout=15m -coverprofile=cover.out -covermode=atomic
 test-unit-cover: TEST_PACKAGES=$(PACKAGES_UNIT)
 
 test-e2e:
@@ -479,7 +481,7 @@ localnet-build:
 # Generate multi node configuration files and initialize configurations
 # TODO: exocore testnet chainid is still under consideration and need to be finalized later
 localnet-init: localnet-stop
-	exocored testnet init-files --chain-id exocoretestnet_233-1 --v 4 -o  $(CURDIR)/build/.testnets --starting-ip-address 192.168.10.2 --keyring-backend=os  && \
+	exocored testnet init-files --chain-id exocoretestnet_233-1 --v 4 -o  $(CURDIR)/build/.testnets --starting-ip-address 192.168.10.2 --keyring-backend=test  && \
 	./networks/init-node.sh
 
 # Start a 4-node testnet locally
@@ -522,7 +524,7 @@ localnet-show-logstream:
 ###############################################################################
 
 PACKAGE_NAME:=github.com/ExocoreNetwork/exocore
-GOLANG_CROSS_VERSION  = v1.20
+GOLANG_CROSS_VERSION  = v1.21
 GOPATH ?= '$(HOME)/go'
 release-dry-run:
 	docker run \
