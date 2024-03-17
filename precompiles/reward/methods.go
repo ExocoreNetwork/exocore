@@ -1,9 +1,9 @@
 package reward
 
 import (
-	"fmt"
-
-	"github.com/ExocoreNetwork/exocore/x/restaking_assets_manage/types"
+	errorsmod "cosmossdk.io/errors"
+	exocmn "github.com/ExocoreNetwork/exocore/precompiles/common"
+	"github.com/ExocoreNetwork/exocore/x/assets/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
@@ -26,13 +26,9 @@ func (p Precompile) Reward(
 	args []interface{},
 ) ([]byte, error) {
 	// check the invalidation of caller contract
-	rewardModuleParam, err := p.rewardKeeper.GetParams(ctx)
+	err := p.assetsKeeper.CheckExocoreLzAppAddr(ctx, contract.CallerAddress)
 	if err != nil {
-		return nil, err
-	}
-	exoCoreLzAppAddr := common.HexToAddress(rewardModuleParam.ExoCoreLzAppAddress)
-	if contract.CallerAddress != exoCoreLzAppAddr {
-		return nil, fmt.Errorf(ErrContractCaller, contract.CallerAddress, exoCoreLzAppAddr)
+		return nil, errorsmod.Wrap(err, exocmn.ErrContractCaller)
 	}
 
 	rewardParam, err := p.GetRewardParamsFromInputs(ctx, args)
@@ -46,9 +42,9 @@ func (p Precompile) Reward(
 	}
 	// get the latest asset state of staker to return.
 	stakerID, assetID := types.GetStakeIDAndAssetID(rewardParam.ClientChainLzID, rewardParam.WithdrawRewardAddress, rewardParam.AssetsAddress)
-	info, err := p.stakingStateKeeper.GetStakerSpecifiedAssetInfo(ctx, stakerID, assetID)
+	info, err := p.assetsKeeper.GetStakerSpecifiedAssetInfo(ctx, stakerID, assetID)
 	if err != nil {
 		return nil, err
 	}
-	return method.Outputs.Pack(true, info.TotalDepositAmountOrWantChangeValue.BigInt())
+	return method.Outputs.Pack(true, info.TotalDepositAmount.BigInt())
 }

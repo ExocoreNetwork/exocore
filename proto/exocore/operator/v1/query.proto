@@ -1,0 +1,47 @@
+syntax = "proto3";
+package exocore.operator.v1;
+
+import "cosmos_proto/cosmos.proto";
+import "exocore/operator/v1/tx.proto";
+import "gogoproto/gogo.proto";
+import "google/api/annotations.proto";
+import "tendermint/crypto/keys.proto";
+
+option go_package = "github.com/ExocoreNetwork/exocore/x/operator/types";
+
+// QueryOperatorInfoReq is the request to obtain the operator information.
+message GetOperatorInfoReq {
+  // operator_addr is the operator address.
+  string operator_addr = 1
+  [(cosmos_proto.scalar) = "cosmos.AddressString"];
+}
+
+// QueryOperatorConsKeyRequest is the request to obtain the consensus public key of the operator
+message QueryOperatorConsKeyRequest {
+  // addr is the ACC address of operator
+  string addr = 1;
+  // chain_id is the id of the chain served by the operator
+  string chain_id = 2;
+}
+
+// QueryOperatorConsKeyResponse is the response for QueryOperatorConsKeyRequest
+message QueryOperatorConsKeyResponse {
+  // public_key is the consensus public key of the operator
+  tendermint.crypto.PublicKey public_key = 1 [ (gogoproto.nullable) = false ];
+}
+
+// Query defines the gRPC querier service.
+service Query {
+  // OperatorInfo queries the operator information.
+  rpc GetOperatorInfo(GetOperatorInfoReq) returns(OperatorInfo){
+    option (google.api.http).get = "/exocore/delegation/v1/GetOperatorInfo";
+  }
+
+  // QueryOperatorConsKeyForChainID queries the consensus public key for the operator
+  rpc QueryOperatorConsKeyForChainID(QueryOperatorConsKeyRequest) returns (QueryOperatorConsKeyResponse) {
+    option (google.api.http) = {
+      get: "/exocore/operator_consent/v1/GetOperatorConsKey/{addr}/{chain_id}"
+    };
+  }
+}
+

@@ -42,23 +42,23 @@ type DelegationHooks interface {
 
 // OperatorKeeper represents the expected keeper interface for the operator module.
 type OperatorKeeper interface {
-	GetOperatorConsKeyForChainId(
+	GetOperatorConsKeyForChainID(
 		sdk.Context, sdk.AccAddress, string,
 	) (bool, tmprotocrypto.PublicKey, error)
-	IsOperatorOptingOutFromChainId(
+	IsOperatorOptingOutFromChainID(
 		sdk.Context, sdk.AccAddress, string,
 	) bool
-	CompleteOperatorOptOutFromChainId(sdk.Context, sdk.AccAddress, string)
-	DeleteOperatorAddressForChainIdAndConsAddr(sdk.Context, string, sdk.ConsAddress)
-	GetOperatorAddressForChainIdAndConsAddr(
+	CompleteOperatorOptOutFromChainID(sdk.Context, sdk.AccAddress, string)
+	DeleteOperatorAddressForChainIDAndConsAddr(sdk.Context, string, sdk.ConsAddress)
+	GetOperatorAddressForChainIDAndConsAddr(
 		sdk.Context, string, sdk.ConsAddress,
 	) (bool, sdk.AccAddress)
-	IsOperatorJailedForChainId(sdk.Context, sdk.AccAddress, string) bool
+	IsOperatorJailedForChainID(sdk.Context, sdk.AccAddress, string) bool
 	Jail(sdk.Context, sdk.ConsAddress, string)
-	// GetActiveOperatorsForChainId should return a list of operators and their public keys.
+	// GetActiveOperatorsForChainID should return a list of operators and their public keys.
 	// These operators should not be in the process of opting our, and should not be jailed
 	// whether permanently or temporarily.
-	GetActiveOperatorsForChainId(
+	GetActiveOperatorsForChainID(
 		sdk.Context, string,
 	) ([]sdk.AccAddress, []tmprotocrypto.PublicKey)
 }
@@ -75,8 +75,8 @@ type EpochsHooks interface {
 	BeforeEpochStart(sdk.Context, string, int64)
 }
 
-// RestakingKeeper represents the expected keeper interface for the restaking module.
-type RestakingKeeper interface {
+// AssetsKeeper represents the expected keeper interface for the assets module.
+type AssetsKeeper interface {
 	GetOperatorAssetValue(sdk.Context, sdk.AccAddress) (int64, error)
 	IsStakingAsset(sdk.Context, string) bool
 	GetAvgDelegatedValue(

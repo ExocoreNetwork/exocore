@@ -2,13 +2,12 @@ package withdraw_test
 
 import (
 	"math/big"
-	"strings"
+
+	exocmn "github.com/ExocoreNetwork/exocore/precompiles/common"
 
 	"github.com/ExocoreNetwork/exocore/precompiles/testutil"
 	"github.com/ExocoreNetwork/exocore/precompiles/testutil/contracts"
-	"github.com/ExocoreNetwork/exocore/precompiles/withdraw"
-	deposittype "github.com/ExocoreNetwork/exocore/x/deposit/types"
-	"github.com/ExocoreNetwork/exocore/x/restaking_assets_manage/types"
+	assetstype "github.com/ExocoreNetwork/exocore/x/assets/types"
 	"github.com/ethereum/go-ethereum/common"
 )
 
@@ -28,15 +27,15 @@ var (
 
 func (s *WithdrawPrecompileTestSuite) TestCallWithdrawFromEOA() {
 	// withdraw params for test
-	exoCoreLzAppAddress := "0x3fC91A3afd70395Cd496C647d5a6CC9D4B2b7FAD"
-	exoCoreLzAppEventTopic := "0xc6a377bfc4eb120024a8ac08eef205be16b817020812c73223e81d1bdb9708ec"
-	params := deposittype.Params{
-		ExoCoreLzAppAddress:    exoCoreLzAppAddress,
-		ExoCoreLzAppEventTopic: exoCoreLzAppEventTopic,
+	exocoreLzAppAddress := "0x3fC91A3afd70395Cd496C647d5a6CC9D4B2b7FAD"
+	exocoreLzAppEventTopic := "0xc6a377bfc4eb120024a8ac08eef205be16b817020812c73223e81d1bdb9708ec"
+	params := assetstype.Params{
+		ExocoreLzAppAddress:    exocoreLzAppAddress,
+		ExocoreLzAppEventTopic: exocoreLzAppEventTopic,
 	}
-	usdtAddress := paddingClientChainAddress(common.FromHex("0xdAC17F958D2ee523a2206206994597C13D831ec7"), types.GeneralClientChainAddrLength)
+	usdtAddress := paddingClientChainAddress(common.FromHex("0xdAC17F958D2ee523a2206206994597C13D831ec7"), assetstype.GeneralClientChainAddrLength)
 	clientChainLzID := 101
-	stakerAddr := paddingClientChainAddress(s.Address.Bytes(), types.GeneralClientChainAddrLength)
+	stakerAddr := paddingClientChainAddress(s.Address.Bytes(), assetstype.GeneralClientChainAddrLength)
 	opAmount := big.NewInt(100)
 	assetAddr := usdtAddress
 	method := "withdrawPrinciple"
@@ -56,8 +55,8 @@ func (s *WithdrawPrecompileTestSuite) TestCallWithdrawFromEOA() {
 		passCheck = defaultLogCheck.WithExpPass(true)
 	}
 
-	prepareFunc := func(params *deposittype.Params, method string) contracts.CallArgs {
-		err := s.App.DepositKeeper.SetParams(s.Ctx, params)
+	prepareFunc := func(params *assetstype.Params, method string) contracts.CallArgs {
+		err := s.App.AssetsKeeper.SetParams(s.Ctx, params)
 		s.Require().NoError(err)
 		defaultWithdrawArgs := defaultCallArgs.WithMethodName(method)
 		return defaultWithdrawArgs.WithArgs(
@@ -70,5 +69,5 @@ func (s *WithdrawPrecompileTestSuite) TestCallWithdrawFromEOA() {
 	beforeEach()
 	setWithdrawArgs := prepareFunc(&params, method)
 	_, _, err := contracts.CallContractAndCheckLogs(s.Ctx, s.App, setWithdrawArgs, passCheck)
-	s.Require().ErrorContains(err, strings.Split(withdraw.ErrContractCaller, ",")[0])
+	s.Require().ErrorContains(err, exocmn.ErrContractCaller)
 }

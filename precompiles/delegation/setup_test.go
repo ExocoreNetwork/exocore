@@ -1,9 +1,10 @@
 package delegation_test
 
 import (
+	"testing"
+
 	"github.com/ExocoreNetwork/exocore/precompiles/delegation"
 	"github.com/ExocoreNetwork/exocore/testutil"
-	"testing"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -30,7 +31,7 @@ func TestPrecompileTestSuite(t *testing.T) {
 
 func (s *DelegationPrecompileSuite) SetupTest() {
 	s.DoSetupTest()
-	precompile, err := delegation.NewPrecompile(s.App.StakingAssetsManageKeeper, s.App.DelegationKeeper, s.App.AuthzKeeper)
+	precompile, err := delegation.NewPrecompile(s.App.AssetsKeeper, s.App.DelegationKeeper, s.App.AuthzKeeper)
 	s.Require().NoError(err)
 	s.precompile = precompile
 }

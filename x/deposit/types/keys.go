@@ -28,4 +28,7 @@ const (
 	prefixParams = iota + 1
 )
 
-var KeyPrefixParams = []byte{prefixParams}
+var (
+	KeyPrefixParams = []byte{prefixParams}
+	ParamsKey       = []byte("Params")
+)

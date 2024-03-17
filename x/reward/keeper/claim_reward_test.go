@@ -2,7 +2,7 @@ package keeper_test
 
 import (
 	sdkmath "cosmossdk.io/math"
-	"github.com/ExocoreNetwork/exocore/x/restaking_assets_manage/types"
+	"github.com/ExocoreNetwork/exocore/x/assets/types"
 	"github.com/ExocoreNetwork/exocore/x/reward/keeper"
 	rewardtype "github.com/ExocoreNetwork/exocore/x/reward/types"
 	"github.com/ethereum/go-ethereum/common"
@@ -30,15 +30,15 @@ func (suite *RewardTestSuite) TestClaimWithdrawRequest() {
 
 	// check state after reward
 	stakerID, assetID := types.GetStakeIDAndAssetID(event.ClientChainLzID, event.WithdrawRewardAddress, event.AssetsAddress)
-	info, err := suite.App.StakingAssetsManageKeeper.GetStakerSpecifiedAssetInfo(suite.Ctx, stakerID, assetID)
+	info, err := suite.App.AssetsKeeper.GetStakerSpecifiedAssetInfo(suite.Ctx, stakerID, assetID)
 	suite.NoError(err)
-	suite.Equal(types.StakerSingleAssetOrChangeInfo{
-		TotalDepositAmountOrWantChangeValue:     sdkmath.NewInt(10),
-		CanWithdrawAmountOrWantChangeValue:      sdkmath.NewInt(10),
-		WaitUndelegationAmountOrWantChangeValue: sdkmath.NewInt(0),
+	suite.Equal(types.StakerAssetInfo{
+		TotalDepositAmount:  sdkmath.NewInt(10),
+		WithdrawableAmount:  sdkmath.NewInt(10),
+		WaitUnbondingAmount: sdkmath.NewInt(0),
 	}, *info)
 
-	assetInfo, err := suite.App.StakingAssetsManageKeeper.GetStakingAssetInfo(suite.Ctx, assetID)
+	assetInfo, err := suite.App.AssetsKeeper.GetStakingAssetInfo(suite.Ctx, assetID)
 	suite.NoError(err)
 	suite.Equal(sdkmath.NewInt(10), assetInfo.StakingTotalAmount)
 }

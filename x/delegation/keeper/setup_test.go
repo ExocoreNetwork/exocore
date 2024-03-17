@@ -1,8 +1,9 @@
 package keeper_test
 
 import (
-	"github.com/ExocoreNetwork/exocore/testutil"
 	"testing"
+
+	"github.com/ExocoreNetwork/exocore/testutil"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"

@@ -1,8 +1,9 @@
 package slash_test
 
 import (
-	"github.com/ExocoreNetwork/exocore/testutil"
 	"testing"
+
+	"github.com/ExocoreNetwork/exocore/testutil"
 
 	"github.com/ExocoreNetwork/exocore/precompiles/slash"
 
@@ -30,7 +31,7 @@ func TestPrecompileTestSuite(t *testing.T) {
 
 func (s *SlashPrecompileTestSuite) SetupTest() {
 	s.DoSetupTest()
-	precompile, err := slash.NewPrecompile(s.App.StakingAssetsManageKeeper, s.App.ExoSlashKeeper, s.App.AuthzKeeper)
+	precompile, err := slash.NewPrecompile(s.App.AssetsKeeper, s.App.ExoSlashKeeper, s.App.AuthzKeeper)
 	s.Require().NoError(err)
 	s.precompile = precompile
 }

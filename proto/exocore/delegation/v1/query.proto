@@ -3,7 +3,6 @@ package exocore.delegation.v1;
 
 import "cosmos/query/v1/query.proto";
 import "cosmos_proto/cosmos.proto";
-import "exocore/delegation/v1/tx.proto";
 import "gogoproto/gogo.proto";
 import "google/api/annotations.proto";
 
@@ -20,8 +19,8 @@ message DelegationInfoReq {
 
 // DelegationAmounts is the delegation amount response for a single delegation.
 message DelegationAmounts {
-  // can_undelegation_amount is the amount that can be undelegated.
-  string can_undelegation_amount = 1
+  // undelegatable_amount is the amount that can be undelegated.
+  string undelegatable_amount = 1
   [
     (cosmos_proto.scalar) = "cosmos.Int",
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
@@ -29,6 +28,13 @@ message DelegationAmounts {
   ];
   // wait_undelegation_amount is the amount that is waiting to be unbonded.
   string wait_undelegation_amount = 2
+  [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.nullable) = false
+  ];
+  // undelegatable_after_slash is the amount that can be undelegated after slash
+  string undelegatable_after_slash = 3
   [
     (cosmos_proto.scalar) = "cosmos.Int",
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
@@ -69,10 +75,6 @@ message QueryOperatorInfoReq {
 
 // Query is the service API for the delegation module.
 service Query {
-  // OperatorInfo queries the operator information.
-  rpc QueryOperatorInfo(QueryOperatorInfoReq) returns (OperatorInfo) {
-    option (google.api.http).get = "/exocore/delegation/v1/GetOperatorInfo";
-  }
   // DelegationInfo queries the delegation information for {stakerID, assetID}.
   rpc QueryDelegationInfo(DelegationInfoReq) returns (QueryDelegationInfoResponse) {
     option (cosmos.query.v1.module_query_safe) = true;

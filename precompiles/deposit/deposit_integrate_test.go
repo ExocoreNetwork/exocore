@@ -2,13 +2,11 @@ package deposit_test
 
 import (
 	"math/big"
-	"strings"
 
 	"github.com/ExocoreNetwork/exocore/precompiles/deposit"
 	"github.com/ExocoreNetwork/exocore/precompiles/testutil"
 	"github.com/ExocoreNetwork/exocore/precompiles/testutil/contracts"
-	types3 "github.com/ExocoreNetwork/exocore/x/deposit/types"
-	"github.com/ExocoreNetwork/exocore/x/restaking_assets_manage/types"
+	assetstype "github.com/ExocoreNetwork/exocore/x/assets/types"
 	"github.com/ethereum/go-ethereum/common"
 )
 
@@ -28,15 +26,15 @@ var (
 
 func (s *DepositPrecompileSuite) TestCallDepositToFromEOA() {
 	// deposit params for test
-	exoCoreLzAppAddress := "0x3fC91A3afd70395Cd496C647d5a6CC9D4B2b7FAD"
-	exoCoreLzAppEventTopic := "0xc6a377bfc4eb120024a8ac08eef205be16b817020812c73223e81d1bdb9708ec"
-	depositParams := types3.Params{
-		ExoCoreLzAppAddress:    exoCoreLzAppAddress,
-		ExoCoreLzAppEventTopic: exoCoreLzAppEventTopic,
+	exocoreLzAppAddress := "0x3fC91A3afd70395Cd496C647d5a6CC9D4B2b7FAD"
+	exocoreLzAppEventTopic := "0xc6a377bfc4eb120024a8ac08eef205be16b817020812c73223e81d1bdb9708ec"
+	depositParams := assetstype.Params{
+		ExocoreLzAppAddress:    exocoreLzAppAddress,
+		ExocoreLzAppEventTopic: exocoreLzAppEventTopic,
 	}
-	usdtAddress := paddingClientChainAddress(common.FromHex("0xdAC17F958D2ee523a2206206994597C13D831ec7"), types.GeneralClientChainAddrLength)
+	usdtAddress := paddingClientChainAddress(common.FromHex("0xdAC17F958D2ee523a2206206994597C13D831ec7"), assetstype.GeneralClientChainAddrLength)
 	clientChainLzID := 101
-	stakerAddr := paddingClientChainAddress(s.Address.Bytes(), types.GeneralClientChainAddrLength)
+	stakerAddr := paddingClientChainAddress(s.Address.Bytes(), assetstype.GeneralClientChainAddrLength)
 	opAmount := big.NewInt(100)
 	assetAddr := usdtAddress
 	method := "depositTo"
@@ -56,8 +54,8 @@ func (s *DepositPrecompileSuite) TestCallDepositToFromEOA() {
 		passCheck = defaultLogCheck.WithExpPass(true)
 	}
 
-	prepareFunc := func(params *types3.Params, method string) contracts.CallArgs {
-		err := s.App.DepositKeeper.SetParams(s.Ctx, params)
+	prepareFunc := func(params *assetstype.Params, method string) contracts.CallArgs {
+		err := s.App.AssetsKeeper.SetParams(s.Ctx, params)
 		s.Require().NoError(err)
 		defaultDepositArgs := defaultCallArgs.WithMethodName(method)
 		return defaultDepositArgs.WithArgs(
@@ -71,11 +69,11 @@ func (s *DepositPrecompileSuite) TestCallDepositToFromEOA() {
 	beforeEach()
 	setDepositToArgs := prepareFunc(&depositParams, method)
 	_, _, err := contracts.CallContractAndCheckLogs(s.Ctx, s.App, setDepositToArgs, passCheck)
-	s.Require().ErrorContains(err, strings.Split(deposit.ErrContractCaller, ",")[0])
+	s.Require().ErrorContains(err, assetstype.ErrNotEqualToLzAppAddr.Error())
 
 	// test success
 	beforeEach()
-	depositParams.ExoCoreLzAppAddress = s.Address.String()
+	depositParams.ExocoreLzAppAddress = s.Address.String()
 	setDepositToArgs = prepareFunc(&depositParams, method)
 	_, ethRes, err := contracts.CallContractAndCheckLogs(s.Ctx, s.App, setDepositToArgs, passCheck)
 	successRet, err := s.precompile.Methods[deposit.MethodDepositTo].Outputs.Pack(true, opAmount)
@@ -87,13 +85,13 @@ func (s *DepositPrecompileSuite) TestCallDepositToFromContract() {
 	// deposit params for test
 	exoCoreLzAppAddress := "0x3fC91A3afd70395Cd496C647d5a6CC9D4B2b7FAD"
 	exoCoreLzAppEventTopic := "0xc6a377bfc4eb120024a8ac08eef205be16b817020812c73223e81d1bdb9708ec"
-	depositParams := types3.Params{
-		ExoCoreLzAppAddress:    exoCoreLzAppAddress,
-		ExoCoreLzAppEventTopic: exoCoreLzAppEventTopic,
+	depositParams := assetstype.Params{
+		ExocoreLzAppAddress:    exoCoreLzAppAddress,
+		ExocoreLzAppEventTopic: exoCoreLzAppEventTopic,
 	}
-	usdtAddress := paddingClientChainAddress(common.FromHex("0xdAC17F958D2ee523a2206206994597C13D831ec7"), types.GeneralClientChainAddrLength)
+	usdtAddress := paddingClientChainAddress(common.FromHex("0xdAC17F958D2ee523a2206206994597C13D831ec7"), assetstype.GeneralClientChainAddrLength)
 	clientChainLzID := 101
-	stakerAddr := paddingClientChainAddress(s.Address.Bytes(), types.GeneralClientChainAddrLength)
+	stakerAddr := paddingClientChainAddress(s.Address.Bytes(), assetstype.GeneralClientChainAddrLength)
 	opAmount := big.NewInt(100)
 	assetAddr := usdtAddress
 
@@ -127,8 +125,8 @@ func (s *DepositPrecompileSuite) TestCallDepositToFromContract() {
 		passCheck = defaultLogCheck.WithExpPass(true)
 	}
 
-	prepareFunc := func(params *types3.Params, method string) contracts.CallArgs {
-		err := s.App.DepositKeeper.SetParams(s.Ctx, params)
+	prepareFunc := func(params *assetstype.Params, method string) contracts.CallArgs {
+		err := s.App.AssetsKeeper.SetParams(s.Ctx, params)
 		s.Require().NoError(err)
 		defaultDepositArgs := defaultCallArgs.WithMethodName(method)
 		return defaultDepositArgs.WithArgs(
@@ -140,7 +138,7 @@ func (s *DepositPrecompileSuite) TestCallDepositToFromContract() {
 
 	// testDepositTo
 	beforeEach()
-	depositParams.ExoCoreLzAppAddress = contractAddr.String()
+	depositParams.ExocoreLzAppAddress = contractAddr.String()
 	setDepositToArgs := prepareFunc(&depositParams, "testDepositTo")
 	_, _, err = contracts.CallContractAndCheckLogs(s.Ctx, s.App, setDepositToArgs, passCheck)
 	s.Require().NoError(err)
@@ -162,7 +160,7 @@ func (s *DepositPrecompileSuite) TestCallDepositToFromContract() {
 
 	// testCallDepositToWithTryCatch
 	beforeEach()
-	depositParams.ExoCoreLzAppAddress = exoCoreLzAppAddress
+	depositParams.ExocoreLzAppAddress = exoCoreLzAppAddress
 	setDepositToArgs = prepareFunc(&depositParams, "testCallDepositToWithTryCatch")
 	// eventCheck = passCheck.WithExpEvents("ErrorOccurred")
 	// todo: need to check the ethereum log

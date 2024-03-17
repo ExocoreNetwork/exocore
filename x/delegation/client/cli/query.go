@@ -5,8 +5,8 @@ import (
 	"strconv"
 
 	errorsmod "cosmossdk.io/errors"
+	"github.com/ExocoreNetwork/exocore/x/assets/types"
 	delegationtype "github.com/ExocoreNetwork/exocore/x/delegation/types"
-	"github.com/ExocoreNetwork/exocore/x/restaking_assets_manage/types"
 
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
@@ -26,7 +26,6 @@ func GetQueryCmd() *cobra.Command {
 	cmd.AddCommand(
 		QuerySingleDelegationInfo(),
 		QueryDelegationInfo(),
-		QueryOperatorInfo(),
 	)
 	return cmd
 }
@@ -47,7 +46,7 @@ func QuerySingleDelegationInfo() *cobra.Command {
 			queryClient := delegationtype.NewQueryClient(clientCtx)
 			clientChainLzID, err := strconv.ParseUint(args[0], 10, 64)
 			if err != nil {
-				return errorsmod.Wrap(types.ErrCliCmdInputArg, err.Error())
+				return errorsmod.Wrap(types.ErrInvalidCliCmdArg, err.Error())
 			}
 			stakerID, assetID := types.GetStakeIDAndAssetIDFromStr(clientChainLzID, args[1], args[2])
 			req := &delegationtype.SingleDelegationInfoReq{
@@ -86,35 +85,6 @@ func QueryDelegationInfo() *cobra.Command {
 				AssetID:  args[1],
 			}
 			res, err := queryClient.QueryDelegationInfo(context.Background(), req)
-			if err != nil {
-				return err
-			}
-			return clientCtx.PrintProto(res)
-		},
-	}
-
-	flags.AddQueryFlagsToCmd(cmd)
-	return cmd
-}
-
-// QueryOperatorInfo queries operator info
-func QueryOperatorInfo() *cobra.Command {
-	cmd := &cobra.Command{
-		Use:   "QueryOperatorInfo operatorAddr",
-		Short: "Get operator info",
-		Long:  "Get operator info",
-		Args:  cobra.ExactArgs(1),
-		RunE: func(cmd *cobra.Command, args []string) error {
-			clientCtx, err := client.GetClientQueryContext(cmd)
-			if err != nil {
-				return err
-			}
-
-			queryClient := delegationtype.NewQueryClient(clientCtx)
-			req := &delegationtype.QueryOperatorInfoReq{
-				OperatorAddr: args[0],
-			}
-			res, err := queryClient.QueryOperatorInfo(context.Background(), req)
 			if err != nil {
 				return err
 			}

@@ -6,9 +6,8 @@ import (
 	sdkmath "cosmossdk.io/math"
 	"github.com/ExocoreNetwork/exocore/app"
 	"github.com/ExocoreNetwork/exocore/precompiles/withdraw"
+	assetstype "github.com/ExocoreNetwork/exocore/x/assets/types"
 	"github.com/ExocoreNetwork/exocore/x/deposit/keeper"
-	depositparams "github.com/ExocoreNetwork/exocore/x/deposit/types"
-	"github.com/ExocoreNetwork/exocore/x/restaking_assets_manage/types"
 	"github.com/ethereum/go-ethereum/common"
 	ethtypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/core/vm"
@@ -51,8 +50,8 @@ func paddingClientChainAddress(input []byte, outputLength int) []byte {
 
 func (s *WithdrawPrecompileTestSuite) TestRequiredGas() {
 	clientChainLzID := 101
-	usdtAddress := paddingClientChainAddress(common.FromHex("0xdAC17F958D2ee523a2206206994597C13D831ec7"), types.GeneralClientChainAddrLength)
-	withdrawAddr := paddingClientChainAddress(s.Address.Bytes(), types.GeneralClientChainAddrLength)
+	usdtAddress := paddingClientChainAddress(common.FromHex("0xdAC17F958D2ee523a2206206994597C13D831ec7"), assetstype.GeneralClientChainAddrLength)
+	withdrawAddr := paddingClientChainAddress(s.Address.Bytes(), assetstype.GeneralClientChainAddrLength)
 	opAmount := big.NewInt(100)
 	assetAddr := usdtAddress
 
@@ -94,17 +93,17 @@ func (s *WithdrawPrecompileTestSuite) TestRequiredGas() {
 // TestRun tests the precompiled Run method withdraw.
 func (s *WithdrawPrecompileTestSuite) TestRunWithdrawThroughClientChain() {
 	// deposit params for test
-	exoCoreLzAppEventTopic := "0xc6a377bfc4eb120024a8ac08eef205be16b817020812c73223e81d1bdb9708ec"
+	exocoreLzAppEventTopic := "0xc6a377bfc4eb120024a8ac08eef205be16b817020812c73223e81d1bdb9708ec"
 	usdtAddress := common.FromHex("0xdAC17F958D2ee523a2206206994597C13D831ec7")
 	clientChainLzID := 101
 	withdrawAmount := big.NewInt(10)
 	depositAmount := big.NewInt(100)
-	assetAddr := paddingClientChainAddress(usdtAddress, types.GeneralClientChainAddrLength)
+	assetAddr := paddingClientChainAddress(usdtAddress, assetstype.GeneralClientChainAddrLength)
 	depositAsset := func(staker []byte, depositAmount sdkmath.Int) {
 		// deposit asset for withdraw test
 		params := &keeper.DepositParams{
 			ClientChainLzID: 101,
-			Action:          types.Deposit,
+			Action:          assetstype.Deposit,
 			StakerAddress:   staker,
 			AssetsAddress:   usdtAddress,
 			OpAmount:        depositAmount,
@@ -119,7 +118,7 @@ func (s *WithdrawPrecompileTestSuite) TestRunWithdrawThroughClientChain() {
 			withdraw.MethodWithdraw,
 			uint16(clientChainLzID),
 			assetAddr,
-			paddingClientChainAddress(s.Address.Bytes(), types.GeneralClientChainAddrLength),
+			paddingClientChainAddress(s.Address.Bytes(), assetstype.GeneralClientChainAddrLength),
 			withdrawAmount,
 		)
 		s.Require().NoError(err, "failed to pack input")
@@ -138,11 +137,11 @@ func (s *WithdrawPrecompileTestSuite) TestRunWithdrawThroughClientChain() {
 		{
 			name: "pass - withdraw via pre-compiles",
 			malleate: func() (common.Address, []byte) {
-				depositModuleParam := &depositparams.Params{
-					ExoCoreLzAppAddress:    s.Address.String(),
-					ExoCoreLzAppEventTopic: exoCoreLzAppEventTopic,
+				depositModuleParam := &assetstype.Params{
+					ExocoreLzAppAddress:    s.Address.String(),
+					ExocoreLzAppEventTopic: exocoreLzAppEventTopic,
 				}
-				err := s.App.DepositKeeper.SetParams(s.Ctx, depositModuleParam)
+				err := s.App.AssetsKeeper.SetParams(s.Ctx, depositModuleParam)
 				s.Require().NoError(err)
 				depositAsset(s.Address.Bytes(), sdkmath.NewIntFromBigInt(depositAmount))
 				return commonMalleate()

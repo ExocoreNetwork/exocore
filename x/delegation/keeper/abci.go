@@ -1,19 +1,15 @@
 package keeper
 
 import (
-	"fmt"
-
-	sdkmath "cosmossdk.io/math"
+	"github.com/ExocoreNetwork/exocore/x/assets/types"
 	delegationtype "github.com/ExocoreNetwork/exocore/x/delegation/types"
-	"github.com/ExocoreNetwork/exocore/x/restaking_assets_manage/types"
 	abci "github.com/cometbft/cometbft/abci/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 // EndBlock : completed Undelegation events according to the canCompleted blockHeight
 // This function will be triggered at the end of every block,it will query the undelegation state to get the records that need to be handled and try to complete the undelegation task.
-func (k Keeper) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.ValidatorUpdate {
-	ctx.Logger().Info("the blockHeight is:", "height", ctx.BlockHeight())
+func (k *Keeper) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.ValidatorUpdate {
 	records, err := k.GetWaitCompleteUndelegationRecords(ctx, uint64(ctx.BlockHeight()))
 	if err != nil {
 		panic(err)
@@ -24,58 +20,80 @@ func (k Keeper) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.Validat
 	for _, record := range records {
 		// check if the operator has been slashed or frozen
 		operatorAccAddress := sdk.MustAccAddressFromBech32(record.OperatorAddr)
-		if k.slashKeeper.IsOperatorFrozen(ctx, operatorAccAddress) {
-			// reSet the completed height if the operator is frozen
-			record.CompleteBlockNumber = k.operatorOptedInKeeper.GetOperatorCanUndelegateHeight(ctx, record.AssetID, operatorAccAddress, record.BlockNumber)
-			if record.CompleteBlockNumber <= uint64(ctx.BlockHeight()) {
-				panic(fmt.Sprintf("the reset completedHeight isn't in future,setHeight:%v,curHeight:%v", record.CompleteBlockNumber, ctx.BlockHeight()))
+		// todo: don't think about freezing the operator in current implementation
+		/*		if k.slashKeeper.IsOperatorFrozen(ctx, operatorAccAddress) {
+				// reSet the completed height if the operator is frozen
+				record.CompleteBlockNumber = k.expectedOperatorInterface.GetUnbondingExpirationBlockNumber(ctx, operatorAccAddress, record.BlockNumber)
+				if record.CompleteBlockNumber <= uint64(ctx.BlockHeight()) {
+					panic(fmt.Sprintf("the reset completedHeight isn't in future,setHeight:%v,curHeight:%v", record.CompleteBlockNumber, ctx.BlockHeight()))
+				}
+				_, err = k.SetSingleUndelegationRecord(ctx, record)
+				if err != nil {
+					panic(err)
+				}
+				continue
+			}*/
+
+		recordID := delegationtype.GetUndelegationRecordKey(record.LzTxNonce, record.TxHash, record.OperatorAddr)
+		if k.GetUndelegationHoldCount(ctx, recordID) > 0 {
+			// store it again with the next block and move on
+			// #nosec G701
+			record.CompleteBlockNumber = uint64(ctx.BlockHeight()) + 1
+			// we need to store two things here: one is the updated record in itself
+			recordKey, err := k.SetSingleUndelegationRecord(ctx, record)
+			if err != nil {
+				panic(err)
 			}
-			_, err = k.SetSingleUndelegationRecord(ctx, record)
+			// and the other is the fact that it matures at the next block
+			err = k.StoreWaitCompleteRecord(ctx, recordKey, record)
 			if err != nil {
 				panic(err)
 			}
 			continue
 		}
+		// operator opt out: since operators can not immediately withdraw their funds, that is,
+		// even operator funds are not immediately available, operator opt out does not require
+		// any special handling here. if an operator undelegates before they opt out, the undelegation
+		// will be processed normally. if they undelegate after they opt out, the undelegation will
+		// be released at the same time as opt out completion, provided there are no other chains that
+		// the operator is still active on. the same applies to delegators too.
+		// TODO(mike): ensure that operator is required to perform self delegation to match above.
 
-		// get operator slashed proportion to calculate the actual canUndelegated asset amount
-		proportion := k.slashKeeper.OperatorAssetSlashedProportion(ctx, operatorAccAddress, record.AssetID, record.BlockNumber, record.CompleteBlockNumber)
-		if proportion.IsNil() || proportion.IsNegative() || proportion.GT(sdkmath.LegacyNewDec(1)) {
-			panic(fmt.Sprintf("the proportion is invalid,it is:%v", proportion))
+		// calculate the actual canUndelegated asset amount
+		delegationInfo, err := k.GetSingleDelegationInfo(ctx, record.StakerID, record.AssetID, record.OperatorAddr)
+		if err != nil {
+			panic(err)
 		}
-		canUndelegateProportion := sdkmath.LegacyNewDec(1).Sub(proportion)
-		actualCanUndelegateAmount := canUndelegateProportion.MulInt(record.Amount).TruncateInt()
-		record.ActualCompletedAmount = actualCanUndelegateAmount
+		if record.Amount.GT(delegationInfo.UndelegatableAfterSlash) {
+			record.ActualCompletedAmount = delegationInfo.UndelegatableAfterSlash
+		} else {
+			record.ActualCompletedAmount = record.Amount
+		}
 		recordAmountNeg := record.Amount.Neg()
 
 		// update delegation state
 		delegatorAndAmount := make(map[string]*delegationtype.DelegationAmounts)
 		delegatorAndAmount[record.OperatorAddr] = &delegationtype.DelegationAmounts{
-			WaitUndelegationAmount: recordAmountNeg,
+			WaitUndelegationAmount:  recordAmountNeg,
+			UndelegatableAfterSlash: record.ActualCompletedAmount.Neg(),
 		}
 		err = k.UpdateDelegationState(ctx, record.StakerID, record.AssetID, delegatorAndAmount)
 		if err != nil {
 			panic(err)
 		}
 
-		// todo: if use recordAmount as an input parameter, the delegation total amount won't need to be subtracted when the related operator is slashed.
-		err = k.UpdateStakerDelegationTotalAmount(ctx, record.StakerID, record.AssetID, recordAmountNeg)
-		if err != nil {
-			panic(err)
-		}
-
 		// update the staker state
-		err := k.restakingStateKeeper.UpdateStakerAssetState(ctx, record.StakerID, record.AssetID, types.StakerSingleAssetOrChangeInfo{
-			CanWithdrawAmountOrWantChangeValue:      actualCanUndelegateAmount,
-			WaitUndelegationAmountOrWantChangeValue: recordAmountNeg,
+		err = k.assetsKeeper.UpdateStakerAssetState(ctx, record.StakerID, record.AssetID, types.StakerSingleAssetChangeInfo{
+			WithdrawableAmount:  record.ActualCompletedAmount,
+			WaitUnbondingAmount: recordAmountNeg,
 		})
 		if err != nil {
 			panic(err)
 		}
 
 		// update the operator state
-		err = k.restakingStateKeeper.UpdateOperatorAssetState(ctx, operatorAccAddress, record.AssetID, types.OperatorSingleAssetOrChangeInfo{
-			TotalAmountOrWantChangeValue:            actualCanUndelegateAmount.Neg(),
-			WaitUndelegationAmountOrWantChangeValue: recordAmountNeg,
+		err = k.assetsKeeper.UpdateOperatorAssetState(ctx, operatorAccAddress, record.AssetID, types.OperatorSingleAssetChangeInfo{
+			WaitUnbondingAmount: recordAmountNeg,
 		})
 		if err != nil {
 			panic(err)

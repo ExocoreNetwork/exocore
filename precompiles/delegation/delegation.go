@@ -5,8 +5,8 @@ import (
 	"embed"
 	"fmt"
 
+	assetskeeper "github.com/ExocoreNetwork/exocore/x/assets/keeper"
 	delegationKeeper "github.com/ExocoreNetwork/exocore/x/delegation/keeper"
-	stakingStateKeeper "github.com/ExocoreNetwork/exocore/x/restaking_assets_manage/keeper"
 
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	authzkeeper "github.com/cosmos/cosmos-sdk/x/authz/keeper"
@@ -26,14 +26,14 @@ var f embed.FS
 // Precompile defines the precompiled contract for deposit.
 type Precompile struct {
 	cmn.Precompile
-	stakingStateKeeper stakingStateKeeper.Keeper
-	delegationKeeper   delegationKeeper.Keeper
+	assetsKeeper     assetskeeper.Keeper
+	delegationKeeper delegationKeeper.Keeper
 }
 
 // NewPrecompile creates a new deposit Precompile instance as a
 // PrecompiledContract interface.
 func NewPrecompile(
-	stakingStateKeeper stakingStateKeeper.Keeper,
+	stakingStateKeeper assetskeeper.Keeper,
 	delegationKeeper delegationKeeper.Keeper,
 	authzKeeper authzkeeper.Keeper,
 ) (*Precompile, error) {
@@ -55,8 +55,8 @@ func NewPrecompile(
 			TransientKVGasConfig: storetypes.TransientGasConfig(),
 			ApprovalExpiration:   cmn.DefaultExpirationDuration, // should be configurable in the future.
 		},
-		delegationKeeper:   delegationKeeper,
-		stakingStateKeeper: stakingStateKeeper,
+		delegationKeeper: delegationKeeper,
+		assetsKeeper:     stakingStateKeeper,
 	}, nil
 }
 
