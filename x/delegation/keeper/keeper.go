@@ -3,9 +3,7 @@ package keeper
 import (
 	"context"
 
-	"github.com/ExocoreNetwork/exocore/x/assets/keeper"
 	delegationtype "github.com/ExocoreNetwork/exocore/x/delegation/types"
-	depositkeeper "github.com/ExocoreNetwork/exocore/x/deposit/keeper"
 	"github.com/cosmos/cosmos-sdk/codec"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -18,28 +16,25 @@ type Keeper struct {
 	cdc      codec.BinaryCodec
 
 	// other keepers
-	assetsKeeper              keeper.Keeper
-	depositKeeper             depositkeeper.Keeper
-	slashKeeper               delegationtype.ISlashKeeper
-	expectedOperatorInterface delegationtype.ExpectedOperatorInterface
-	hooks                     delegationtype.DelegationHooks
+	assetsKeeper   delegationtype.AssetsKeeper
+	slashKeeper    delegationtype.SlashKeeper
+	operatorKeeper delegationtype.OperatorKeeper
+	hooks          delegationtype.DelegationHooks
 }
 
 func NewKeeper(
 	storeKey storetypes.StoreKey,
 	cdc codec.BinaryCodec,
-	assetsKeeper keeper.Keeper,
-	depositKeeper depositkeeper.Keeper,
-	slashKeeper delegationtype.ISlashKeeper,
-	operatorKeeper delegationtype.ExpectedOperatorInterface,
+	assetsKeeper delegationtype.AssetsKeeper,
+	slashKeeper delegationtype.SlashKeeper,
+	operatorKeeper delegationtype.OperatorKeeper,
 ) Keeper {
 	return Keeper{
-		storeKey:                  storeKey,
-		cdc:                       cdc,
-		assetsKeeper:              assetsKeeper,
-		depositKeeper:             depositKeeper,
-		slashKeeper:               slashKeeper,
-		expectedOperatorInterface: operatorKeeper,
+		storeKey:       storeKey,
+		cdc:            cdc,
+		assetsKeeper:   assetsKeeper,
+		slashKeeper:    slashKeeper,
+		operatorKeeper: operatorKeeper,
 	}
 }
 

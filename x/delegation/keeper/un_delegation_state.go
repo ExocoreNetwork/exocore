@@ -53,7 +53,8 @@ func (k *Keeper) SetSingleUndelegationRecord(ctx sdk.Context, record *types.Unde
 }
 
 // StoreWaitCompleteRecord add it to handle the delay of completing undelegation caused by onHoldCount
-func (k Keeper) StoreWaitCompleteRecord(ctx sdk.Context, singleRecKey []byte, record *types.UndelegationRecord) error {
+// In the event that the undelegation is held by another module, this function is used within the EndBlocker to increment the scheduled completion block number by 1. Then the completion time of the undelegation will be delayed to the next block.
+func (k *Keeper) StoreWaitCompleteRecord(ctx sdk.Context, singleRecKey []byte, record *types.UndelegationRecord) error {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefixWaitCompleteUndelegations)
 	waitCompleteKey := types.GetWaitCompleteRecordKey(record.CompleteBlockNumber, record.LzTxNonce)
 	store.Set(waitCompleteKey, singleRecKey)
@@ -151,14 +152,15 @@ func (k *Keeper) GetWaitCompleteUndelegationRecords(ctx sdk.Context, height uint
 	return k.GetUndelegationRecords(ctx, recordKeys, AllRecords)
 }
 
-func (k *Keeper) IncrementUndelegationHoldCount(ctx sdk.Context, recordKey []byte) {
+func (k *Keeper) IncrementUndelegationHoldCount(ctx sdk.Context, recordKey []byte) error {
 	prev := k.GetUndelegationHoldCount(ctx, recordKey)
 	if prev == math.MaxUint64 {
-		panic("cannot increment undelegation hold count above max uint64")
+		return types.ErrCannotIncHoldCount
 	}
 	now := prev + 1
 	store := ctx.KVStore(k.storeKey)
 	store.Set(types.GetUndelegationOnHoldKey(recordKey), sdk.Uint64ToBigEndian(now))
+	return nil
 }
 
 func (k *Keeper) GetUndelegationHoldCount(ctx sdk.Context, recordKey []byte) uint64 {
@@ -167,12 +169,13 @@ func (k *Keeper) GetUndelegationHoldCount(ctx sdk.Context, recordKey []byte) uin
 	return sdk.BigEndianToUint64(bz)
 }
 
-func (k *Keeper) DecrementUndelegationHoldCount(ctx sdk.Context, recordKey []byte) {
+func (k *Keeper) DecrementUndelegationHoldCount(ctx sdk.Context, recordKey []byte) error {
 	prev := k.GetUndelegationHoldCount(ctx, recordKey)
 	if prev == 0 {
-		panic("cannot decrement undelegation hold count below zero")
+		return types.ErrCannotDecHoldCount
 	}
 	now := prev - 1
 	store := ctx.KVStore(k.storeKey)
 	store.Set(types.GetUndelegationOnHoldKey(recordKey), sdk.Uint64ToBigEndian(now))
+	return nil
 }

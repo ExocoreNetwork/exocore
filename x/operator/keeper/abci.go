@@ -9,17 +9,31 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
+// SharedParameter is a shared parameter used to record and update the related
+// USD share of staker and operators when the prices of assets change
 type SharedParameter struct {
-	priceChangeAssets     map[string]*operatortypes.PriceChange
-	assetsDecimal         map[string]uint32
-	assetsOperatorAVSInfo map[string]map[string]string
-	stakerShare           map[string]sdkmath.LegacyDec
+	// priceChangeAssets is the price change information of assets,
+	// which is gotten by the expected Oracle interface.
+	priceChangeAssets map[string]*operatortypes.PriceChange
+	// assetsDecimal is a map to record the decimals of the related assets
+	// It will be used when calculate the USD share of the assets.
+	assetsDecimal map[string]uint32
+	// optedInAssetsInfo : assetID->operator->Avs
+	// For staker and operator, only the USD share of opted-in assets needs to be updated
+	// when the prices of assets change. But in the delegation and assets module, the opted-in
+	// information of assets haven't been stored, so we need this map as a filter when iterate
+	// the assets state of delegation and operator
+	// It will be set when calling `IterateUpdateAssetState`, because the information of opted-in assets
+	// has been stored in types.KeyPrefixOperatorAVSSingleAssetState
+	optedInAssetsInfo map[string]map[string]string
+	// stakerShare records the latest share for staker and operator after updating
+	stakerShare map[string]sdkmath.LegacyDec
 }
 
 func UpdateShareOfStakerAndOperator(sharedParam *SharedParameter, assetID, stakerID, operatorAddr string, assetAmount sdkmath.Int) {
 	priceChange := sharedParam.priceChangeAssets[assetID]
 	assetDecimal := sharedParam.assetsDecimal[assetID]
-	if avsAddr, ok := sharedParam.assetsOperatorAVSInfo[assetID][operatorAddr]; ok {
+	if avsAddr, ok := sharedParam.optedInAssetsInfo[assetID][operatorAddr]; ok {
 		newAssetUSDValue := CalculateShare(assetAmount, priceChange.NewPrice, assetDecimal, priceChange.Decimal)
 		key := string(types.GetJoinedStoreKey(avsAddr, stakerID, operatorAddr))
 		AddShareInMap(sharedParam.stakerShare, key, newAssetUSDValue)
@@ -35,8 +49,8 @@ func (k *Keeper) PriceChangeHandle(ctx sdk.Context) error {
 	if len(priceChangeAssets) == 0 {
 		return nil
 	}
-	avsOperatorShareChange := make(map[string]sdkmath.LegacyDec, 0)
-	assetsOperatorAVSInfo := make(map[string]map[string]string, 0)
+	shareChangeForAvsOperator := make(map[string]sdkmath.LegacyDec, 0)
+	optedInAssetsInfo := make(map[string]map[string]string, 0)
 	assetsDecimal := make(map[string]uint32)
 	for assetID, priceChange := range priceChangeAssets {
 		// get the decimal of asset
@@ -45,8 +59,8 @@ func (k *Keeper) PriceChangeHandle(ctx sdk.Context) error {
 			return err
 		}
 		assetsDecimal[assetID] = assetInfo.AssetBasicInfo.Decimals
-		if _, ok := assetsOperatorAVSInfo[assetID]; !ok {
-			assetsOperatorAVSInfo[assetID] = make(map[string]string, 0)
+		if _, ok := optedInAssetsInfo[assetID]; !ok {
+			optedInAssetsInfo[assetID] = make(map[string]string, 0)
 		}
 		// UpdateStateForAsset
 		f := func(assetID string, keys []string, state *operatortypes.OptedInAssetState) error {
@@ -56,9 +70,9 @@ func (k *Keeper) PriceChangeHandle(ctx sdk.Context) error {
 
 			avsAddr := keys[1]
 			avsOperator := string(types.GetJoinedStoreKey(keys[1], keys[2]))
-			AddShareInMap(avsOperatorShareChange, avsAddr, changeValue)
-			AddShareInMap(avsOperatorShareChange, avsOperator, changeValue)
-			assetsOperatorAVSInfo[assetID][keys[2]] = avsAddr
+			AddShareInMap(shareChangeForAvsOperator, avsAddr, changeValue)
+			AddShareInMap(shareChangeForAvsOperator, avsOperator, changeValue)
+			optedInAssetsInfo[assetID][keys[2]] = avsAddr
 			return nil
 		}
 		err = k.IterateUpdateAssetState(ctx, assetID, f)
@@ -67,17 +81,17 @@ func (k *Keeper) PriceChangeHandle(ctx sdk.Context) error {
 		}
 	}
 	// BatchUpdateShareForAVSAndOperator
-	err = k.BatchUpdateShareForAVSAndOperator(ctx, avsOperatorShareChange)
+	err = k.BatchUpdateShareForAVSAndOperator(ctx, shareChangeForAvsOperator)
 	if err != nil {
 		return err
 	}
 
-	// update staker'suite share
+	// update the USD share for staker and operator
 	sharedParameter := &SharedParameter{
-		priceChangeAssets:     priceChangeAssets,
-		assetsDecimal:         assetsDecimal,
-		assetsOperatorAVSInfo: assetsOperatorAVSInfo,
-		stakerShare:           make(map[string]sdkmath.LegacyDec, 0),
+		priceChangeAssets: priceChangeAssets,
+		assetsDecimal:     assetsDecimal,
+		optedInAssetsInfo: optedInAssetsInfo,
+		stakerShare:       make(map[string]sdkmath.LegacyDec, 0),
 	}
 	stakerShareHandleFunc := func(stakerID, assetID, operatorAddr string, state *delegationtype.DelegationAmounts) error {
 		UpdateShareOfStakerAndOperator(sharedParameter, assetID, stakerID, operatorAddr, state.UndelegatableAmount)

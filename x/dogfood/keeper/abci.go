@@ -19,7 +19,10 @@ func (k Keeper) EndBlock(ctx sdk.Context) []abci.ValidatorUpdate {
 	// start with clearing the hold on the undelegations.
 	undelegations := k.GetPendingUndelegations(ctx)
 	for _, undelegation := range undelegations.GetList() {
-		k.delegationKeeper.DecrementUndelegationHoldCount(ctx, undelegation)
+		err := k.delegationKeeper.DecrementUndelegationHoldCount(ctx, undelegation)
+		if err != nil {
+			panic(err)
+		}
 	}
 	k.ClearPendingUndelegations(ctx)
 	// then, let the operator module know that the opt out has finished.

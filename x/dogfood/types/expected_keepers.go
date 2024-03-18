@@ -36,7 +36,7 @@ type OperatorHooks interface {
 // DelegationHooks represent the event hooks for delegation module.
 type DelegationHooks interface {
 	AfterDelegation(sdk.Context, sdk.AccAddress)
-	AfterUndelegationStarted(sdk.Context, sdk.AccAddress, []byte)
+	AfterUndelegationStarted(sdk.Context, sdk.AccAddress, []byte) error
 	AfterUndelegationCompleted(sdk.Context, sdk.AccAddress, []byte)
 }
 
@@ -65,8 +65,8 @@ type OperatorKeeper interface {
 
 // DelegationKeeper represents the expected keeper interface for the delegation module.
 type DelegationKeeper interface {
-	IncrementUndelegationHoldCount(sdk.Context, []byte)
-	DecrementUndelegationHoldCount(sdk.Context, []byte)
+	IncrementUndelegationHoldCount(sdk.Context, []byte) error
+	DecrementUndelegationHoldCount(sdk.Context, []byte) error
 }
 
 // EpochsHooks represents the event hooks for the epochs module.

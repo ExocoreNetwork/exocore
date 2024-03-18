@@ -113,8 +113,8 @@ message RegisterOperatorReq {
 // RegisterOperatorResponse is the response to a register operator request.
 message RegisterOperatorResponse{}
 
-// OptInToChainIDRequest defines the OptInToChainID request.
-message OptInToChainIDRequest {
+// OptInToCosmosChainRequest defines the OptInToCosmosChain request.
+message OptInToCosmosChainRequest {
   option (cosmos.msg.v1.signer) = "address";
   // address is the operator address
   string address = 1;
@@ -127,12 +127,12 @@ message OptInToChainIDRequest {
   string public_key = 3;
 }
 
-// OptInToChainIDResponse defines the OptInToChainID response.
-message OptInToChainIDResponse {
+// OptInToCosmosChainResponse defines the OptInToCosmosChain response.
+message OptInToCosmosChainResponse {
 }
 
-// InitiateOptOutFromChainIDRequest defines the InitiateOptOutFromChainID request.
-message InitiateOptOutFromChainIDRequest {
+// InitiateOptOutFromCosmosChainRequest defines the InitiateOptOutFromCosmosChain request.
+message InitiateOptOutFromCosmosChainRequest {
   option (cosmos.msg.v1.signer) = "address";
   // address is the operator address
   string address = 1;
@@ -140,8 +140,8 @@ message InitiateOptOutFromChainIDRequest {
   string chain_id = 2;
 }
 
-// InitiateOptOutFromChainIDResponse defines the InitiateOptOutFromChainID response.
-message InitiateOptOutFromChainIDResponse {
+// InitiateOptOutFromCosmosChainResponse defines the InitiateOptOutFromCosmosChain response.
+message InitiateOptOutFromCosmosChainResponse {
 }
 
 // Msg defines the operator Msg service.
@@ -151,18 +151,14 @@ service Msg {
   rpc RegisterOperator(RegisterOperatorReq) returns (RegisterOperatorResponse);
 
   // add services for dogfood
-  // OptInToChainID acts as opt in method for an operator to
+  // OptInToCosmosChain acts as opt in method for an operator to
   // start validatring on a chain. The operator must sign the request with
   // the key with which they registered in the system.
-  rpc OptInToChainID(OptInToChainIDRequest) returns (OptInToChainIDResponse) {};
-  // InitiateOptOutFromChainID is a method with which an operator can initiate
+  rpc OptInToCosmosChain(OptInToCosmosChainRequest) returns (OptInToCosmosChainResponse) {};
+  // InitiateOptOutFromCosmosChain is a method with which an operator can initiate
   // the opt out process from a chain. The operator must sign the request with
   // the key with which they registered in the system. The opt-out process takes
   // as long as the chain's unbonding period to complete, plus some loose change
   // for message relaying across chains.
-  rpc InitiateOptOutFromChainID(InitiateOptOutFromChainIDRequest) returns (InitiateOptOutFromChainIDResponse) {};
+  rpc InitiateOptOutFromCosmosChain(InitiateOptOutFromCosmosChainRequest) returns (InitiateOptOutFromCosmosChainResponse) {};
 }
-
-
-
-

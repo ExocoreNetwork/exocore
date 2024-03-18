@@ -14,7 +14,6 @@ import (
 
 // SetOperatorInfo This function is used to register to be an operator in exoCore, the provided info will be stored on the chain.
 // Once an address has become an operator,the operator can't return to a normal address.But the operator can update the info through this function
-// As for the operator opt-in function,it needs to be implemented in operator opt-in or AVS module
 func (k *Keeper) SetOperatorInfo(ctx sdk.Context, addr string, info *operatortypes.OperatorInfo) (err error) {
 	opAccAddr, err := sdk.AccAddressFromBech32(addr)
 	if err != nil {

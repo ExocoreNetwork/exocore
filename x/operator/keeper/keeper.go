@@ -4,7 +4,6 @@ import (
 	"context"
 
 	sdkmath "cosmossdk.io/math"
-	"github.com/ExocoreNetwork/exocore/x/assets/keeper"
 	operatortypes "github.com/ExocoreNetwork/exocore/x/operator/types"
 	"github.com/cosmos/cosmos-sdk/codec"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
@@ -16,10 +15,10 @@ type Keeper struct {
 	cdc      codec.BinaryCodec
 
 	// other keepers
-	assetsKeeper     operatortypes.ExpectAssetsInterface
-	delegationKeeper operatortypes.ExpectDelegationInterface
-	oracleKeeper     operatortypes.ExpectOracleInterface
-	avsKeeper        operatortypes.ExpectAvsInterface
+	assetsKeeper     operatortypes.AssetsKeeper
+	delegationKeeper operatortypes.DelegationKeeper
+	oracleKeeper     operatortypes.OracleKeeper
+	avsKeeper        operatortypes.AvsKeeper
 
 	// add for dogfood
 	hooks       operatortypes.OperatorConsentHooks // set separately via call to SetHooks
@@ -29,9 +28,9 @@ type Keeper struct {
 func NewKeeper(
 	storeKey storetypes.StoreKey,
 	cdc codec.BinaryCodec,
-	assetsKeeper keeper.Keeper,
-	oracleKeeper operatortypes.ExpectOracleInterface,
-	avsKeeper operatortypes.ExpectAvsInterface,
+	assetsKeeper operatortypes.AssetsKeeper,
+	oracleKeeper operatortypes.OracleKeeper,
+	avsKeeper operatortypes.AvsKeeper,
 	slashKeeper operatortypes.SlashKeeper,
 ) Keeper {
 	return Keeper{
@@ -44,11 +43,11 @@ func NewKeeper(
 	}
 }
 
-func (k *Keeper) RegisterExpectDelegationInterface(delegationKeeper operatortypes.ExpectDelegationInterface) {
+func (k *Keeper) RegisterExpectDelegationInterface(delegationKeeper operatortypes.DelegationKeeper) {
 	k.delegationKeeper = delegationKeeper
 }
 
-func (k *Keeper) OracleInterface() operatortypes.ExpectOracleInterface {
+func (k *Keeper) OracleInterface() operatortypes.OracleKeeper {
 	return k.oracleKeeper
 }
 

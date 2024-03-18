@@ -32,7 +32,7 @@ func (wrapper DelegationHooksWrapper) AfterDelegation(
 // AfterUndelegationStarted is called after an undelegation is started.
 func (wrapper DelegationHooksWrapper) AfterUndelegationStarted(
 	ctx sdk.Context, operator sdk.AccAddress, recordKey []byte,
-) {
+) error {
 	var unbondingCompletionEpoch int64
 	if wrapper.keeper.operatorKeeper.IsOperatorOptingOutFromChainID(
 		ctx, operator, ctx.ChainID(),
@@ -49,7 +49,7 @@ func (wrapper DelegationHooksWrapper) AfterUndelegationStarted(
 		// so this is not a concern.
 	}
 	wrapper.keeper.AppendUndelegationToMature(ctx, unbondingCompletionEpoch, recordKey)
-	wrapper.keeper.delegationKeeper.IncrementUndelegationHoldCount(ctx, recordKey)
+	return wrapper.keeper.delegationKeeper.IncrementUndelegationHoldCount(ctx, recordKey)
 }
 
 // AfterUndelegationCompleted is called after an undelegation is completed.

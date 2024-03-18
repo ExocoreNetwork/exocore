@@ -21,11 +21,14 @@ func (k *Keeper) RegisterOperator(ctx context.Context, req *types.RegisterOperat
 	return nil, nil
 }
 
-// OptInToChainID add for dogfood
-func (k *Keeper) OptInToChainID(
+// OptInToCosmosChain this is an RPC for the operators
+// that want to service as a validator for the app chain Avs
+// The operator can opt in the cosmos app chain through this RPC
+// In this function, the basic function `OptIn` need to be called
+func (k *Keeper) OptInToCosmosChain(
 	goCtx context.Context,
-	req *types.OptInToChainIDRequest,
-) (*types.OptInToChainIDResponse, error) {
+	req *types.OptInToCosmosChainRequest,
+) (*types.OptInToCosmosChainResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 	addr, err := sdk.AccAddressFromBech32(req.Address)
 	if err != nil {
@@ -41,13 +44,15 @@ func (k *Keeper) OptInToChainID(
 	if err != nil {
 		return nil, err
 	}
-	return &types.OptInToChainIDResponse{}, nil
+	return &types.OptInToCosmosChainResponse{}, nil
 }
 
-func (k *Keeper) InitiateOptOutFromChainID(
+// InitiateOptOutFromCosmosChain is a method corresponding to OptInToCosmosChain
+// It provides a function to opt out from the app chain Avs for the operators.
+func (k *Keeper) InitiateOptOutFromCosmosChain(
 	goCtx context.Context,
-	req *types.InitiateOptOutFromChainIDRequest,
-) (*types.InitiateOptOutFromChainIDResponse, error) {
+	req *types.InitiateOptOutFromCosmosChainRequest,
+) (*types.InitiateOptOutFromCosmosChainResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 	addr, err := sdk.AccAddressFromBech32(req.Address)
 	if err != nil {
@@ -58,7 +63,7 @@ func (k *Keeper) InitiateOptOutFromChainID(
 	); err != nil {
 		return nil, err
 	}
-	return &types.InitiateOptOutFromChainIDResponse{}, nil
+	return &types.InitiateOptOutFromCosmosChainResponse{}, nil
 }
 
 func stringToPubKey(pubKey string) (key tmprotocrypto.PublicKey, err error) {

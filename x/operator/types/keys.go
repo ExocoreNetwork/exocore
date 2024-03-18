@@ -53,7 +53,7 @@ const (
 )
 
 var (
-	// KeyPrefixOperatorInfo key-value: operatorAddr->operatorInfo
+	// KeyPrefixOperatorInfo key-value: operatorAddr->types.OperatorInfo
 	KeyPrefixOperatorInfo = []byte{prefixOperatorInfo}
 
 	// KeyPrefixOperatorOptedAVSInfo key-value:
@@ -61,8 +61,8 @@ var (
 	KeyPrefixOperatorOptedAVSInfo = []byte{prefixOperatorOptedAVSInfo}
 
 	// KeyPrefixAVSOperatorAssetsTotalValue key-value:
-	// AVSAddr -> AVSTotalValue
-	// AVSAddr + '/' + operatorAddr -> AVSOperatorTotalValue
+	// AVSAddr -> types.DecValueField（the total USD share of specified Avs）
+	// AVSAddr + '/' + operatorAddr -> types.DecValueField (the total USD share of specified operator and Avs)
 	KeyPrefixAVSOperatorAssetsTotalValue = []byte{prefixAVSOperatorAssetsTotalValue}
 
 	// KeyPrefixOperatorAVSSingleAssetState key-value:
@@ -70,8 +70,8 @@ var (
 	KeyPrefixOperatorAVSSingleAssetState = []byte{prefixOperatorAVSSingleAssetState}
 
 	// KeyPrefixAVSOperatorStakerShareState key-value:
-	// AVSAddr + '/' + '' + '/' +  operatorAddr -> ownAssetsOptedInValue
-	// AVSAddr + '/' + stakerID + '/' + operatorAddr -> assetsOptedInValue
+	// AVSAddr + '/' + '' + '/' +  operatorAddr -> types.DecValueField（the opted-in USD share owned by the operator itself）
+	// AVSAddr + '/' + stakerID + '/' + operatorAddr -> types.DecValueField (the opted-in USD share of the staker)
 	KeyPrefixAVSOperatorStakerShareState = []byte{prefixOperatorAVSStakerShareState}
 
 	// KeyPrefixOperatorSlashInfo key-value:

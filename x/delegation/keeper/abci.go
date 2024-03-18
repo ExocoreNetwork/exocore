@@ -23,7 +23,7 @@ func (k *Keeper) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.Valida
 		// todo: don't think about freezing the operator in current implementation
 		/*		if k.slashKeeper.IsOperatorFrozen(ctx, operatorAccAddress) {
 				// reSet the completed height if the operator is frozen
-				record.CompleteBlockNumber = k.expectedOperatorInterface.GetUnbondingExpirationBlockNumber(ctx, operatorAccAddress, record.BlockNumber)
+				record.CompleteBlockNumber = k.operatorKeeper.GetUnbondingExpirationBlockNumber(ctx, operatorAccAddress, record.BlockNumber)
 				if record.CompleteBlockNumber <= uint64(ctx.BlockHeight()) {
 					panic(fmt.Sprintf("the reset completedHeight isn't in future,setHeight:%v,curHeight:%v", record.CompleteBlockNumber, ctx.BlockHeight()))
 				}
@@ -51,12 +51,6 @@ func (k *Keeper) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.Valida
 			}
 			continue
 		}
-		// operator opt out: since operators can not immediately withdraw their funds, that is,
-		// even operator funds are not immediately available, operator opt out does not require
-		// any special handling here. if an operator undelegates before they opt out, the undelegation
-		// will be processed normally. if they undelegate after they opt out, the undelegation will
-		// be released at the same time as opt out completion, provided there are no other chains that
-		// the operator is still active on. the same applies to delegators too.
 		// TODO(mike): ensure that operator is required to perform self delegation to match above.
 
 		// calculate the actual canUndelegated asset amount

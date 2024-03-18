@@ -42,8 +42,7 @@ func (k *Keeper) GetStakerDelegationTotalAmount(ctx sdk.Context, stakerID string
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), delegationtype.KeyPrefixRestakerDelegationInfo)
 	var ret delegationtype.ValueField
 	prefixKey := assetstype.GetJoinedStoreKey(stakerID, assetID)
-	isExit := store.Has(prefixKey)
-	if !isExit {
+	if !store.Has(prefixKey) {
 		return sdkmath.Int{}, errorsmod.Wrap(delegationtype.ErrNoKeyInTheStore, fmt.Sprintf("GetStakerDelegationTotalAmount: key is %s", prefixKey))
 	}
 	value := store.Get(prefixKey)
@@ -147,6 +146,9 @@ func (k *Keeper) GetDelegationInfo(ctx sdk.Context, stakerID, assetID string) (*
 }
 
 // DelegationStateByOperatorAssets get the specified assets state delegated to the specified operator
+// assetsFilter: assetID->nil, it's used to filter the specified assets
+// the first return value is a nested map, its type is: stakerID->assetID->DelegationAmounts
+// It means all delegation information related to the specified operator and filtered by the specified asset IDs
 func (k *Keeper) DelegationStateByOperatorAssets(ctx sdk.Context, operatorAddr string, assetsFilter map[string]interface{}) (map[string]map[string]delegationtype.DelegationAmounts, error) {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), delegationtype.KeyPrefixRestakerDelegationInfo)
 	iterator := sdk.KVStorePrefixIterator(store, nil)
