@@ -47,12 +47,12 @@ func (k *Keeper) OptInToCosmosChain(
 	return &types.OptInToCosmosChainResponse{}, nil
 }
 
-// InitiateOptOutFromCosmosChain is a method corresponding to OptInToCosmosChain
+// InitOptOutFromCosmosChain is a method corresponding to OptInToCosmosChain
 // It provides a function to opt out from the app chain Avs for the operators.
-func (k *Keeper) InitiateOptOutFromCosmosChain(
+func (k *Keeper) InitOptOutFromCosmosChain(
 	goCtx context.Context,
-	req *types.InitiateOptOutFromCosmosChainRequest,
-) (*types.InitiateOptOutFromCosmosChainResponse, error) {
+	req *types.InitOptOutFromCosmosChainRequest,
+) (*types.InitOptOutFromCosmosChainResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 	addr, err := sdk.AccAddressFromBech32(req.Address)
 	if err != nil {
@@ -63,7 +63,7 @@ func (k *Keeper) InitiateOptOutFromCosmosChain(
 	); err != nil {
 		return nil, err
 	}
-	return &types.InitiateOptOutFromCosmosChainResponse{}, nil
+	return &types.InitOptOutFromCosmosChainResponse{}, nil
 }
 
 func stringToPubKey(pubKey string) (key tmprotocrypto.PublicKey, err error) {

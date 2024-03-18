@@ -131,8 +131,8 @@ message OptInToCosmosChainRequest {
 message OptInToCosmosChainResponse {
 }
 
-// InitiateOptOutFromCosmosChainRequest defines the InitiateOptOutFromCosmosChain request.
-message InitiateOptOutFromCosmosChainRequest {
+// InitOptOutFromCosmosChainRequest defines the InitOptOutFromCosmosChain request.
+message InitOptOutFromCosmosChainRequest {
   option (cosmos.msg.v1.signer) = "address";
   // address is the operator address
   string address = 1;
@@ -140,8 +140,8 @@ message InitiateOptOutFromCosmosChainRequest {
   string chain_id = 2;
 }
 
-// InitiateOptOutFromCosmosChainResponse defines the InitiateOptOutFromCosmosChain response.
-message InitiateOptOutFromCosmosChainResponse {
+// InitOptOutFromCosmosChainResponse defines the InitOptOutFromCosmosChain response.
+message InitOptOutFromCosmosChainResponse {
 }
 
 // Msg defines the operator Msg service.
@@ -155,10 +155,10 @@ service Msg {
   // start validatring on a chain. The operator must sign the request with
   // the key with which they registered in the system.
   rpc OptInToCosmosChain(OptInToCosmosChainRequest) returns (OptInToCosmosChainResponse) {};
-  // InitiateOptOutFromCosmosChain is a method with which an operator can initiate
+  // InitOptOutFromCosmosChain is a method with which an operator can initiate
   // the opt out process from a chain. The operator must sign the request with
   // the key with which they registered in the system. The opt-out process takes
   // as long as the chain's unbonding period to complete, plus some loose change
   // for message relaying across chains.
-  rpc InitiateOptOutFromCosmosChain(InitiateOptOutFromCosmosChainRequest) returns (InitiateOptOutFromCosmosChainResponse) {};
+  rpc InitOptOutFromCosmosChain(InitOptOutFromCosmosChainRequest) returns (InitOptOutFromCosmosChainResponse) {};
 }

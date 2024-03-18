@@ -10,7 +10,7 @@ var (
 
 	// add for dogfood
 	_ sdk.Msg = &OptInToCosmosChainRequest{}
-	_ sdk.Msg = &InitiateOptOutFromCosmosChainRequest{}
+	_ sdk.Msg = &InitOptOutFromCosmosChainRequest{}
 )
 
 // GetSigners returns the expected signers for a MsgUpdateParams message.
@@ -44,12 +44,12 @@ func (m *OptInToCosmosChainRequest) ValidateBasic() error {
 	return nil
 }
 
-func (m *InitiateOptOutFromCosmosChainRequest) GetSigners() []sdk.AccAddress {
+func (m *InitOptOutFromCosmosChainRequest) GetSigners() []sdk.AccAddress {
 	addr := sdk.MustAccAddressFromBech32(m.Address)
 	return []sdk.AccAddress{addr}
 }
 
-func (m *InitiateOptOutFromCosmosChainRequest) ValidateBasic() error {
+func (m *InitOptOutFromCosmosChainRequest) ValidateBasic() error {
 	if _, err := sdk.AccAddressFromBech32(m.Address); err != nil {
 		return errorsmod.Wrap(err, "invalid from address")
 	}
