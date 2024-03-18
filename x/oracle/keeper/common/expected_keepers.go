@@ -3,7 +3,9 @@ package common
 import (
 	"math/big"
 
+	//	"cosmossdk.io/api/tendermint/abci"
 	"github.com/ExocoreNetwork/exocore/x/oracle/types"
+	abci "github.com/cometbft/cometbft/abci/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	stakingTypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 )
@@ -13,6 +15,8 @@ type KeeperOracle interface {
 
 	IterateBondedValidatorsByPower(sdk.Context, func(index int64, validator stakingTypes.ValidatorI) bool)
 	GetLastTotalPower(sdk.Context) *big.Int
+	GetValidatorUpdates(sdk.Context) []abci.ValidatorUpdate
+	GetValidatorByConsAddr(sdk.Context, sdk.ConsAddress) (stakingTypes.Validator, bool)
 
 	GetIndexRecentMsg(sdk.Context) (types.IndexRecentMsg, bool)
 	GetAllRecentMsgAsMap(sdk.Context) map[uint64][]*types.MsgItem

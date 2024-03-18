@@ -4,20 +4,22 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"math/big"
 
 	// this line is used by starport scaffolding # 1
 
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	"github.com/spf13/cobra"
 
-	abci "github.com/cometbft/cometbft/abci/types"
-
 	"github.com/ExocoreNetwork/exocore/x/oracle/client/cli"
 	"github.com/ExocoreNetwork/exocore/x/oracle/keeper"
+	"github.com/ExocoreNetwork/exocore/x/oracle/keeper/cache"
 	"github.com/ExocoreNetwork/exocore/x/oracle/types"
+	abci "github.com/cometbft/cometbft/abci/types"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/codec"
 	cdctypes "github.com/cosmos/cosmos-sdk/codec/types"
+	cryptocodec "github.com/cosmos/cosmos-sdk/crypto/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 )
@@ -144,12 +146,56 @@ func (AppModule) ConsensusVersion() uint64 { return 1 }
 func (am AppModule) BeginBlock(_ sdk.Context, _ abci.RequestBeginBlock) {}
 
 // EndBlock contains the logic that is automatically triggered at the end of each block
-func (am AppModule) EndBlock(_ sdk.Context, _ abci.RequestEndBlock) []abci.ValidatorUpdate {
+func (am AppModule) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.ValidatorUpdate {
 	//TODO:
 	//1. check validator update
 	//if {validatorSetUpdate} -> update roundInfo(seal all active)
 	//check roundInfo -> seal {success, fail}
 	//{params} -> prepareRoundInfo
 	//sealRounds() -> prepareRounds()
+	//	am.keeper.GetCaches().CommitCache(ctx, true, am.keeper)
+	//TODO: udpate the validatorset first
+	cs := keeper.GetCaches()
+	validatorUpdates := am.keeper.GetValidatorUpdates(ctx)
+	forceSeal := false
+	agc := keeper.GetAggregatorContext(ctx, am.keeper)
+
+	if len(validatorUpdates) > 0 {
+		//validatorUpdates := am.keeper.GetValidatorUpdates(ctx)
+		validatorList := make(map[string]*big.Int)
+		for _, vu := range validatorUpdates {
+			pubKey, _ := cryptocodec.FromTmProtoPublicKey(vu.PubKey)
+			validator, _ := am.keeper.GetValidatorByConsAddr(ctx, sdk.GetConsAddress(pubKey))
+			validatorList[validator.OperatorAddress] = big.NewInt(vu.Power)
+		}
+		//	cs.AddCache(validatorList, am.keeper)
+		validatorPowers := make(map[string]*big.Int)
+		cs.GetCache(cache.CacheItemV(validatorPowers))
+		//update validatorPowerList in aggregatorContext
+		//		keeper.GetAggregatorContext(ctx, am.keeper).SetValidatorPowers(validatorPowers)
+		//	agc := keeper.GetAggregatorContext(ctx, am.keeper)
+		agc.SetValidatorPowers(validatorPowers)
+		//TODO: seal all alive round since validatorSet changed here
+		forceSeal = true
+	}
+
+	//TODO: for v1 use mode==1, just check the failed feeders
+	_, failed := agc.SealRound(ctx, forceSeal)
+	//append new round with previous price for fail-seal token
+	for _, tokenId := range failed {
+		if pTR, ok := am.keeper.GetPriceTRLatest(ctx, tokenId); ok {
+			pTR.RoundId++
+			am.keeper.AppendPriceTR(ctx, tokenId, pTR)
+		} else {
+			nextRoundId := am.keeper.GetNextRoundId(ctx, tokenId)
+			am.keeper.AppendPriceTR(ctx, tokenId, types.PriceWithTimeAndRound{
+				RoundId: nextRoundId,
+			})
+		}
+	}
+
+	agc.PrepareRound(ctx, 0)
+
+	cs.CommitCache(ctx, true, am.keeper)
 	return []abci.ValidatorUpdate{}
 }

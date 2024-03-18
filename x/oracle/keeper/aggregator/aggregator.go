@@ -5,6 +5,7 @@ import (
 	"math/big"
 	"time"
 
+	"github.com/ExocoreNetwork/exocore/x/oracle/keeper/cache"
 	"github.com/ExocoreNetwork/exocore/x/oracle/keeper/common"
 	"github.com/ExocoreNetwork/exocore/x/oracle/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -113,7 +114,7 @@ func (agc *AggregatorContext) checkMsg(msg *types.MsgCreatePrice) error {
 	return nil
 }
 
-func (agc *AggregatorContext) FillPrice(msg *types.MsgCreatePrice) (*priceItemKV, *cacheItemM, error) {
+func (agc *AggregatorContext) FillPrice(msg *types.MsgCreatePrice) (*priceItemKV, *cache.CacheItemM, error) {
 	feederWorker := agc.aggregators[msg.FeederId]
 	//worker initialzed here reduce workload for Endblocker
 	if feederWorker == nil {
@@ -135,9 +136,9 @@ func (agc *AggregatorContext) FillPrice(msg *types.MsgCreatePrice) (*priceItemKV
 				//TODO: check the format
 				Timestamp: time.Now().String(),
 				RoundId:   agc.rounds[msg.FeederId].nextRoundId,
-			}}, &cacheItemM{feederId: msg.FeederId}, nil
+			}}, &cache.CacheItemM{FeederId: msg.FeederId}, nil
 		}
-		return nil, &cacheItemM{msg.FeederId, listFilled, msg.Creator}, nil
+		return nil, &cache.CacheItemM{msg.FeederId, listFilled, msg.Creator}, nil
 	}
 
 	return nil, nil, errors.New("")
@@ -145,7 +146,7 @@ func (agc *AggregatorContext) FillPrice(msg *types.MsgCreatePrice) (*priceItemKV
 
 // NewCreatePrice receives msgCreatePrice message, and goes process: filter->aggregator, filter->calculator->aggregator
 // non-deterministic data will goes directly into aggregator, and deterministic data will goes into calculator first to get consensus on the deterministic id.
-func (agc *AggregatorContext) NewCreatePrice(ctx sdk.Context, msg *types.MsgCreatePrice) (*priceItemKV, *cacheItemM, error) {
+func (agc *AggregatorContext) NewCreatePrice(ctx sdk.Context, msg *types.MsgCreatePrice) (*priceItemKV, *cache.CacheItemM, error) {
 
 	if err := agc.checkMsg(msg); err != nil {
 		return nil, nil, err
@@ -157,8 +158,9 @@ func (agc *AggregatorContext) NewCreatePrice(ctx sdk.Context, msg *types.MsgCrea
 // prepare for new roundInfo, just update the status kept in memory
 // executed at EndBlock stage, seall all success or expired roundInfo
 // including possible aggregation and state update
+// when validatorSet update, set force to true, to seal all alive round
 // returns: 1st successful sealed, need to be written to KVStore, 2nd: failed sealed tokenId, use previous price to write to KVStore
-func (agc *AggregatorContext) SealRound(ctx sdk.Context) (success []*priceItemKV, failed []int32) {
+func (agc *AggregatorContext) SealRound(ctx sdk.Context, force bool) (success []*priceItemKV, failed []int32) {
 	//1. check validatorSet udpate
 	//TODO: if validatoSet has been updated in current block, just seal all active rounds and return
 	//1. for sealed worker, the KVStore has been updated
@@ -171,7 +173,7 @@ func (agc *AggregatorContext) SealRound(ctx sdk.Context) (success []*priceItemKV
 			case 1:
 				expired := ctx.BlockHeight() >= feeder.EndBlock
 				outOfWindow := uint64(ctx.BlockHeight())-round.basedBlock >= uint64(common.MaxNonce)
-				if expired || outOfWindow {
+				if expired || outOfWindow || force {
 					//TODO: WRITE TO KVSTORE with previous round data for this round
 					failed = append(failed, feeder.TokenId)
 					if expired {
@@ -180,8 +182,6 @@ func (agc *AggregatorContext) SealRound(ctx sdk.Context) (success []*priceItemKV
 					} else {
 						round.status = 2
 						agc.aggregators[feederId] = nil
-						//TODO: WRITE TO KVSTORE with previous round data for this round
-						failed = append(failed, feeder.TokenId)
 					}
 				}
 			}
@@ -193,6 +193,10 @@ func (agc *AggregatorContext) SealRound(ctx sdk.Context) (success []*priceItemKV
 	}
 	return
 }
+
+//func (agc *AggregatorContext) ForceSeal(ctx sdk.Context) (success []*priceItemKV, failed []int32) {
+//
+//}
 
 func (agc *AggregatorContext) PrepareRound(ctx sdk.Context, block uint64) {
 	//block>0 means recache initialization, all roundInfo is empty

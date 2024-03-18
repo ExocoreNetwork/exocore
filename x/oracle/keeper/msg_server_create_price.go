@@ -15,7 +15,8 @@ func (k msgServer) CreatePrice(goCtx context.Context, msg *types.MsgCreatePrice)
 		3. check the rule fulfilled(sources check), check the decimal of the 1st mathc the params' definition(among prices the decimal had been checked in ante stage), timestamp:later than previous block's timestamp, [not future than now(+1s), this is checked in anteHandler], timestamp verification is not necessary
 	**/
 
-	newItem, caches, _ := GetAggregatorContext(ctx, k.Keeper).NewCreatePrice(ctx, msg)
+	//newItem, caches, _ := k.GetAggregatorContext(ctx, k.Keeper).NewCreatePrice(ctx, msg)
+	newItem, caches, _ := GetAggregatorContext(ctx, &k.Keeper).NewCreatePrice(ctx, msg)
 
 	if caches != nil {
 		if newItem != nil {
