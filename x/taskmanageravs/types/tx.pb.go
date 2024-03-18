@@ -27,26 +27,27 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
-type TaskInfo struct {
-	Name     string `protobuf:"bytes,1,opt,name=Name,proto3" json:"Name,omitempty"`
-	MetaInfo string `protobuf:"bytes,2,opt,name=MetaInfo,proto3" json:"MetaInfo,omitempty"`
-	TaskId   uint64 `protobuf:"varint,3,opt,name=TaskId,proto3" json:"TaskId,omitempty"`
-	// each task needs to reach at least thresholdPercentage of operator signatures.
-	ThresholdPercentage uint64 `protobuf:"varint,4,opt,name=thresholdPercentage,proto3" json:"thresholdPercentage,omitempty"`
+type TaskContractInfo struct {
+	TaskContractId      uint64 `protobuf:"varint,1,opt,name=TaskContractId,proto3" json:"TaskContractId,omitempty"`
+	Name                string `protobuf:"bytes,2,opt,name=Name,proto3" json:"Name,omitempty"`
+	MetaInfo            string `protobuf:"bytes,3,opt,name=MetaInfo,proto3" json:"MetaInfo,omitempty"`
+	TaskContractAddress string `protobuf:"bytes,4,opt,name=TaskContractAddress,proto3" json:"TaskContractAddress,omitempty"`
+	Status              string `protobuf:"bytes,5,opt,name=Status,proto3" json:"Status,omitempty"`
+	SourceCode          string `protobuf:"bytes,6,opt,name=sourceCode,proto3" json:"sourceCode,omitempty"`
 }
 
-func (m *TaskInfo) Reset()         { *m = TaskInfo{} }
-func (m *TaskInfo) String() string { return proto.CompactTextString(m) }
-func (*TaskInfo) ProtoMessage()    {}
-func (*TaskInfo) Descriptor() ([]byte, []int) {
+func (m *TaskContractInfo) Reset()         { *m = TaskContractInfo{} }
+func (m *TaskContractInfo) String() string { return proto.CompactTextString(m) }
+func (*TaskContractInfo) ProtoMessage()    {}
+func (*TaskContractInfo) Descriptor() ([]byte, []int) {
 	return fileDescriptor_c8692217960aa4f9, []int{0}
 }
-func (m *TaskInfo) XXX_Unmarshal(b []byte) error {
+func (m *TaskContractInfo) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *TaskInfo) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *TaskContractInfo) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_TaskInfo.Marshal(b, m, deterministic)
+		return xxx_messageInfo_TaskContractInfo.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -56,55 +57,154 @@ func (m *TaskInfo) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 		return b[:n], nil
 	}
 }
-func (m *TaskInfo) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_TaskInfo.Merge(m, src)
+func (m *TaskContractInfo) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_TaskContractInfo.Merge(m, src)
 }
-func (m *TaskInfo) XXX_Size() int {
+func (m *TaskContractInfo) XXX_Size() int {
 	return m.Size()
 }
-func (m *TaskInfo) XXX_DiscardUnknown() {
-	xxx_messageInfo_TaskInfo.DiscardUnknown(m)
+func (m *TaskContractInfo) XXX_DiscardUnknown() {
+	xxx_messageInfo_TaskContractInfo.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_TaskInfo proto.InternalMessageInfo
+var xxx_messageInfo_TaskContractInfo proto.InternalMessageInfo
 
-func (m *TaskInfo) GetName() string {
+func (m *TaskContractInfo) GetTaskContractId() uint64 {
+	if m != nil {
+		return m.TaskContractId
+	}
+	return 0
+}
+
+func (m *TaskContractInfo) GetName() string {
 	if m != nil {
 		return m.Name
 	}
 	return ""
 }
 
-func (m *TaskInfo) GetMetaInfo() string {
+func (m *TaskContractInfo) GetMetaInfo() string {
 	if m != nil {
 		return m.MetaInfo
 	}
 	return ""
 }
 
-func (m *TaskInfo) GetTaskId() uint64 {
+func (m *TaskContractInfo) GetTaskContractAddress() string {
+	if m != nil {
+		return m.TaskContractAddress
+	}
+	return ""
+}
+
+func (m *TaskContractInfo) GetStatus() string {
+	if m != nil {
+		return m.Status
+	}
+	return ""
+}
+
+func (m *TaskContractInfo) GetSourceCode() string {
+	if m != nil {
+		return m.SourceCode
+	}
+	return ""
+}
+
+type TaskInstance struct {
+	TaskId            string `protobuf:"bytes,1,opt,name=TaskId,proto3" json:"TaskId,omitempty"`
+	NumberToBeSquared uint64 `protobuf:"varint,2,opt,name=numberToBeSquared,proto3" json:"numberToBeSquared,omitempty"`
+	TaskCreatedBlock  uint64 `protobuf:"varint,3,opt,name=taskCreatedBlock,proto3" json:"taskCreatedBlock,omitempty"`
+	QuorumNumbers     string `protobuf:"bytes,4,opt,name=quorumNumbers,proto3" json:"quorumNumbers,omitempty"`
+	// each task needs to reach at least thresholdPercentage of operator signatures.
+	QuorumThresholdPercentage uint64 `protobuf:"varint,5,opt,name=quorumThresholdPercentage,proto3" json:"quorumThresholdPercentage,omitempty"`
+	ContractAddr              string `protobuf:"bytes,6,opt,name=ContractAddr,proto3" json:"ContractAddr,omitempty"`
+}
+
+func (m *TaskInstance) Reset()         { *m = TaskInstance{} }
+func (m *TaskInstance) String() string { return proto.CompactTextString(m) }
+func (*TaskInstance) ProtoMessage()    {}
+func (*TaskInstance) Descriptor() ([]byte, []int) {
+	return fileDescriptor_c8692217960aa4f9, []int{1}
+}
+func (m *TaskInstance) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *TaskInstance) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_TaskInstance.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *TaskInstance) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_TaskInstance.Merge(m, src)
+}
+func (m *TaskInstance) XXX_Size() int {
+	return m.Size()
+}
+func (m *TaskInstance) XXX_DiscardUnknown() {
+	xxx_messageInfo_TaskInstance.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_TaskInstance proto.InternalMessageInfo
+
+func (m *TaskInstance) GetTaskId() string {
 	if m != nil {
 		return m.TaskId
 	}
-	return 0
+	return ""
 }
 
-func (m *TaskInfo) GetThresholdPercentage() uint64 {
+func (m *TaskInstance) GetNumberToBeSquared() uint64 {
 	if m != nil {
-		return m.ThresholdPercentage
+		return m.NumberToBeSquared
 	}
 	return 0
 }
 
+func (m *TaskInstance) GetTaskCreatedBlock() uint64 {
+	if m != nil {
+		return m.TaskCreatedBlock
+	}
+	return 0
+}
+
+func (m *TaskInstance) GetQuorumNumbers() string {
+	if m != nil {
+		return m.QuorumNumbers
+	}
+	return ""
+}
+
+func (m *TaskInstance) GetQuorumThresholdPercentage() uint64 {
+	if m != nil {
+		return m.QuorumThresholdPercentage
+	}
+	return 0
+}
+
+func (m *TaskInstance) GetContractAddr() string {
+	if m != nil {
+		return m.ContractAddr
+	}
+	return ""
+}
+
 type TaskManagerInfo struct {
-	TaskManager map[string]*TaskInfo `protobuf:"bytes,1,rep,name=TaskManager,proto3" json:"TaskManager,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
+	TaskManager map[string]*TaskContractInfo `protobuf:"bytes,1,rep,name=TaskManager,proto3" json:"TaskManager,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
 }
 
 func (m *TaskManagerInfo) Reset()         { *m = TaskManagerInfo{} }
 func (m *TaskManagerInfo) String() string { return proto.CompactTextString(m) }
 func (*TaskManagerInfo) ProtoMessage()    {}
 func (*TaskManagerInfo) Descriptor() ([]byte, []int) {
-	return fileDescriptor_c8692217960aa4f9, []int{1}
+	return fileDescriptor_c8692217960aa4f9, []int{2}
 }
 func (m *TaskManagerInfo) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -133,7 +233,7 @@ func (m *TaskManagerInfo) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_TaskManagerInfo proto.InternalMessageInfo
 
-func (m *TaskManagerInfo) GetTaskManager() map[string]*TaskInfo {
+func (m *TaskManagerInfo) GetTaskManager() map[string]*TaskContractInfo {
 	if m != nil {
 		return m.TaskManager
 	}
@@ -141,15 +241,15 @@ func (m *TaskManagerInfo) GetTaskManager() map[string]*TaskInfo {
 }
 
 type RegisterAVSTaskReq struct {
-	AVSAddress string    `protobuf:"bytes,1,opt,name=AVSAddress,proto3" json:"AVSAddress,omitempty"`
-	Task       *TaskInfo `protobuf:"bytes,2,opt,name=task,proto3" json:"task,omitempty"`
+	AVSAddress string            `protobuf:"bytes,1,opt,name=AVSAddress,proto3" json:"AVSAddress,omitempty"`
+	Task       *TaskContractInfo `protobuf:"bytes,2,opt,name=task,proto3" json:"task,omitempty"`
 }
 
 func (m *RegisterAVSTaskReq) Reset()         { *m = RegisterAVSTaskReq{} }
 func (m *RegisterAVSTaskReq) String() string { return proto.CompactTextString(m) }
 func (*RegisterAVSTaskReq) ProtoMessage()    {}
 func (*RegisterAVSTaskReq) Descriptor() ([]byte, []int) {
-	return fileDescriptor_c8692217960aa4f9, []int{2}
+	return fileDescriptor_c8692217960aa4f9, []int{3}
 }
 func (m *RegisterAVSTaskReq) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -185,7 +285,7 @@ func (m *RegisterAVSTaskReq) GetAVSAddress() string {
 	return ""
 }
 
-func (m *RegisterAVSTaskReq) GetTask() *TaskInfo {
+func (m *RegisterAVSTaskReq) GetTask() *TaskContractInfo {
 	if m != nil {
 		return m.Task
 	}
@@ -199,7 +299,7 @@ func (m *RegisterAVSTaskResponse) Reset()         { *m = RegisterAVSTaskResponse
 func (m *RegisterAVSTaskResponse) String() string { return proto.CompactTextString(m) }
 func (*RegisterAVSTaskResponse) ProtoMessage()    {}
 func (*RegisterAVSTaskResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_c8692217960aa4f9, []int{3}
+	return fileDescriptor_c8692217960aa4f9, []int{4}
 }
 func (m *RegisterAVSTaskResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -229,9 +329,10 @@ func (m *RegisterAVSTaskResponse) XXX_DiscardUnknown() {
 var xxx_messageInfo_RegisterAVSTaskResponse proto.InternalMessageInfo
 
 func init() {
-	proto.RegisterType((*TaskInfo)(nil), "exocore.taskmanageravs.TaskInfo")
+	proto.RegisterType((*TaskContractInfo)(nil), "exocore.taskmanageravs.TaskContractInfo")
+	proto.RegisterType((*TaskInstance)(nil), "exocore.taskmanageravs.TaskInstance")
 	proto.RegisterType((*TaskManagerInfo)(nil), "exocore.taskmanageravs.TaskManagerInfo")
-	proto.RegisterMapType((map[string]*TaskInfo)(nil), "exocore.taskmanageravs.TaskManagerInfo.TaskManagerEntry")
+	proto.RegisterMapType((map[string]*TaskContractInfo)(nil), "exocore.taskmanageravs.TaskManagerInfo.TaskManagerEntry")
 	proto.RegisterType((*RegisterAVSTaskReq)(nil), "exocore.taskmanageravs.RegisterAVSTaskReq")
 	proto.RegisterType((*RegisterAVSTaskResponse)(nil), "exocore.taskmanageravs.RegisterAVSTaskResponse")
 }
@@ -239,31 +340,40 @@ func init() {
 func init() { proto.RegisterFile("exocore/taskmanageravs/tx.proto", fileDescriptor_c8692217960aa4f9) }
 
 var fileDescriptor_c8692217960aa4f9 = []byte{
-	// 382 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x8c, 0x92, 0x4f, 0xcf, 0xd2, 0x40,
-	0x10, 0xc6, 0x59, 0x5a, 0x09, 0x0e, 0x07, 0xc8, 0x9a, 0x60, 0xe5, 0x50, 0x9b, 0x9e, 0x88, 0x87,
-	0xd6, 0xa0, 0x31, 0xc4, 0x1b, 0x26, 0x1c, 0x3c, 0x40, 0x4c, 0x31, 0x1c, 0x38, 0xb9, 0xd0, 0xb1,
-	0x60, 0xa1, 0x8b, 0xbb, 0x0b, 0xc2, 0xdd, 0x0f, 0xe0, 0xc7, 0xf2, 0x26, 0x47, 0x8f, 0x06, 0xbe,
-	0x88, 0xe9, 0xb6, 0x9a, 0xbe, 0xc0, 0xfb, 0x86, 0xdb, 0xfc, 0xf9, 0xcd, 0xf3, 0xcc, 0x24, 0x03,
-	0xcf, 0x71, 0xc7, 0x67, 0x5c, 0xa0, 0xaf, 0x98, 0x8c, 0x57, 0x2c, 0x61, 0x11, 0x0a, 0xb6, 0x95,
-	0xbe, 0xda, 0x79, 0x6b, 0xc1, 0x15, 0xa7, 0xcd, 0x1c, 0xf0, 0xee, 0x02, 0xee, 0x77, 0x02, 0xd5,
-	0x8f, 0x4c, 0xc6, 0xef, 0x93, 0xcf, 0x9c, 0x52, 0x30, 0x87, 0x6c, 0x85, 0x16, 0x71, 0x48, 0xfb,
-	0x71, 0xa0, 0x63, 0xda, 0x82, 0xea, 0x00, 0x15, 0x4b, 0xfb, 0x56, 0x59, 0xd7, 0xff, 0xe7, 0xb4,
-	0x09, 0x15, 0x3d, 0x1b, 0x5a, 0x86, 0x43, 0xda, 0x66, 0x90, 0x67, 0xf4, 0x25, 0x3c, 0x51, 0x73,
-	0x81, 0x72, 0xce, 0x97, 0xe1, 0x07, 0x14, 0x33, 0x4c, 0x14, 0x8b, 0xd0, 0x32, 0x35, 0x74, 0xad,
-	0xe5, 0xfe, 0x22, 0x50, 0x4f, 0x87, 0x07, 0xd9, 0x66, 0x5a, 0x7d, 0x02, 0xb5, 0x42, 0xc9, 0x22,
-	0x8e, 0xd1, 0xae, 0x75, 0xba, 0xde, 0xf5, 0x43, 0xbc, 0xb3, 0xe9, 0x62, 0xde, 0x4f, 0x94, 0xd8,
-	0x07, 0x45, 0xb1, 0xd6, 0x27, 0x68, 0x9c, 0x03, 0xb4, 0x01, 0x46, 0x8c, 0xfb, 0xfc, 0xf8, 0x34,
-	0xa4, 0x6f, 0xe0, 0xd1, 0x96, 0x2d, 0x37, 0xa8, 0x0f, 0xaf, 0x75, 0x9c, 0x87, 0xbc, 0x53, 0xd3,
-	0x20, 0xc3, 0xdf, 0x96, 0xbb, 0xc4, 0xfd, 0x02, 0x34, 0xc0, 0x68, 0x21, 0x15, 0x8a, 0xde, 0x78,
-	0x94, 0x12, 0x01, 0x7e, 0xa5, 0x36, 0x40, 0x6f, 0x3c, 0xea, 0x85, 0xa1, 0x40, 0x29, 0x73, 0xab,
-	0x42, 0x85, 0xbe, 0x06, 0x33, 0xd5, 0xbe, 0xd9, 0x50, 0xd3, 0xee, 0x33, 0x78, 0x7a, 0xe1, 0x25,
-	0xd7, 0x3c, 0x91, 0xd8, 0xd9, 0x80, 0x31, 0x90, 0x11, 0x4d, 0xa0, 0x7e, 0x46, 0xd0, 0x17, 0xf7,
-	0x89, 0x5f, 0xae, 0xdd, 0xf2, 0x6f, 0x66, 0x33, 0xdb, 0x77, 0xc1, 0xcf, 0xa3, 0x4d, 0x0e, 0x47,
-	0x9b, 0xfc, 0x39, 0xda, 0xe4, 0xc7, 0xc9, 0x2e, 0x1d, 0x4e, 0x76, 0xe9, 0xf7, 0xc9, 0x2e, 0x4d,
-	0xba, 0xd1, 0x42, 0xcd, 0x37, 0x53, 0x6f, 0xc6, 0x57, 0x7e, 0x3f, 0x13, 0x1d, 0xa2, 0xfa, 0xc6,
-	0x45, 0xec, 0xff, 0xfb, 0xe1, 0xdd, 0xc5, 0x17, 0xef, 0xd7, 0x28, 0xa7, 0x15, 0xfd, 0xc9, 0xaf,
-	0xfe, 0x06, 0x00, 0x00, 0xff, 0xff, 0x4d, 0xf7, 0xa6, 0x31, 0xec, 0x02, 0x00, 0x00,
+	// 524 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x94, 0x54, 0x41, 0x6f, 0x12, 0x41,
+	0x14, 0x66, 0x61, 0x4b, 0xec, 0xa3, 0x5a, 0x1c, 0x93, 0xba, 0xe5, 0xb0, 0x92, 0x8d, 0x31, 0xa4,
+	0x31, 0x60, 0xf0, 0x42, 0x4c, 0x63, 0x02, 0xa4, 0x87, 0x1e, 0x20, 0x66, 0x20, 0x3d, 0xf4, 0x36,
+	0xec, 0x3e, 0xa1, 0x01, 0x66, 0x60, 0x66, 0xb6, 0xc2, 0x3f, 0xf0, 0xe8, 0xcf, 0xf2, 0xd8, 0x83,
+	0x89, 0x1e, 0x0d, 0xfc, 0x11, 0xb3, 0xb3, 0x60, 0x16, 0xb6, 0x35, 0xf6, 0xb6, 0xef, 0x9b, 0x6f,
+	0xbe, 0x6f, 0xdf, 0x9b, 0x2f, 0x0f, 0x5e, 0xe1, 0x42, 0xf8, 0x42, 0x62, 0x4d, 0x33, 0x35, 0x9e,
+	0x32, 0xce, 0x86, 0x28, 0xd9, 0xad, 0xaa, 0xe9, 0x45, 0x75, 0x26, 0x85, 0x16, 0xe4, 0x64, 0x43,
+	0xa8, 0xee, 0x12, 0xbc, 0x1f, 0x16, 0x14, 0xfb, 0x4c, 0x8d, 0xdb, 0x82, 0x6b, 0xc9, 0x7c, 0x7d,
+	0xc9, 0x3f, 0x0b, 0xf2, 0x06, 0x9e, 0xed, 0x60, 0x81, 0x63, 0x95, 0xad, 0x8a, 0x4d, 0xf7, 0x50,
+	0x42, 0xc0, 0xee, 0xb2, 0x29, 0x3a, 0xd9, 0xb2, 0x55, 0x39, 0xa4, 0xe6, 0x9b, 0x94, 0xe0, 0x49,
+	0x07, 0x35, 0x8b, 0x74, 0x9c, 0x9c, 0xc1, 0xff, 0xd6, 0xe4, 0x1d, 0xbc, 0x48, 0x2a, 0x34, 0x83,
+	0x40, 0xa2, 0x52, 0x8e, 0x6d, 0x68, 0xf7, 0x1d, 0x91, 0x13, 0xc8, 0xf7, 0x34, 0xd3, 0xa1, 0x72,
+	0x0e, 0x0c, 0x69, 0x53, 0x11, 0x17, 0x40, 0x89, 0x50, 0xfa, 0xd8, 0x16, 0x01, 0x3a, 0x79, 0x73,
+	0x96, 0x40, 0xbc, 0xaf, 0x59, 0x38, 0x8a, 0xf4, 0x2e, 0xb9, 0xd2, 0x8c, 0xfb, 0x18, 0x09, 0x99,
+	0x3a, 0x6e, 0xe5, 0x90, 0x6e, 0x2a, 0xf2, 0x16, 0x9e, 0xf3, 0x70, 0x3a, 0x40, 0xd9, 0x17, 0x2d,
+	0xec, 0xcd, 0x43, 0x26, 0x31, 0x30, 0xfd, 0xd8, 0x34, 0x7d, 0x40, 0xce, 0xa0, 0x18, 0xcd, 0xaf,
+	0x2d, 0x91, 0x69, 0x0c, 0x5a, 0x13, 0xe1, 0x8f, 0x4d, 0x93, 0x36, 0x4d, 0xe1, 0xe4, 0x35, 0x3c,
+	0x9d, 0x87, 0x42, 0x86, 0xd3, 0xae, 0x91, 0xd9, 0xb6, 0xb9, 0x0b, 0x92, 0x73, 0x38, 0x8d, 0x81,
+	0xfe, 0x48, 0xa2, 0x1a, 0x89, 0x49, 0xf0, 0x09, 0xa5, 0x8f, 0x5c, 0xb3, 0x21, 0x9a, 0x9e, 0x6d,
+	0xfa, 0x30, 0x81, 0x78, 0x70, 0x94, 0x9c, 0xd8, 0x66, 0x10, 0x3b, 0x98, 0xf7, 0xd3, 0x82, 0xe3,
+	0xa8, 0xd9, 0x4e, 0xfc, 0xe8, 0xe6, 0x21, 0xae, 0xa1, 0x90, 0x80, 0x1c, 0xab, 0x9c, 0xab, 0x14,
+	0xea, 0x8d, 0xea, 0xfd, 0x19, 0xa9, 0xee, 0xdd, 0x4e, 0xd6, 0x17, 0x5c, 0xcb, 0x25, 0x4d, 0x8a,
+	0x95, 0x46, 0x71, 0xa0, 0x92, 0x04, 0x52, 0x84, 0xdc, 0x18, 0x97, 0x9b, 0xd1, 0x47, 0x9f, 0xe4,
+	0x23, 0x1c, 0xdc, 0xb2, 0x49, 0x18, 0x67, 0xa7, 0x50, 0xaf, 0xfc, 0xcb, 0x3b, 0x99, 0x4d, 0x1a,
+	0x5f, 0xfb, 0x90, 0x6d, 0x58, 0x9e, 0x04, 0x42, 0x71, 0x78, 0xa3, 0x34, 0xca, 0xe6, 0x55, 0x2f,
+	0x62, 0x52, 0x9c, 0x47, 0xd1, 0x68, 0x5e, 0xf5, 0xb6, 0xd9, 0x8a, 0x2d, 0x13, 0x08, 0x39, 0x07,
+	0x3b, 0xf2, 0x78, 0xb4, 0xb1, 0xb9, 0xe5, 0x9d, 0xc2, 0xcb, 0x94, 0xa7, 0x9a, 0x09, 0xae, 0xb0,
+	0x1e, 0x42, 0xae, 0xa3, 0x86, 0x84, 0xc3, 0xf1, 0x1e, 0x83, 0x9c, 0x3d, 0x64, 0x92, 0xfe, 0xfd,
+	0x52, 0xed, 0xbf, 0xb9, 0xb1, 0x6d, 0x8b, 0x7e, 0x5f, 0xb9, 0xd6, 0xdd, 0xca, 0xb5, 0x7e, 0xaf,
+	0x5c, 0xeb, 0xdb, 0xda, 0xcd, 0xdc, 0xad, 0xdd, 0xcc, 0xaf, 0xb5, 0x9b, 0xb9, 0x6e, 0x0c, 0x6f,
+	0xf4, 0x28, 0x1c, 0x54, 0x7d, 0x31, 0xad, 0x5d, 0xc4, 0xa2, 0x5d, 0xd4, 0x5f, 0x84, 0x1c, 0xd7,
+	0xb6, 0xeb, 0x62, 0x91, 0x5a, 0x18, 0xcb, 0x19, 0xaa, 0x41, 0xde, 0x2c, 0x8d, 0xf7, 0x7f, 0x02,
+	0x00, 0x00, 0xff, 0xff, 0xe9, 0xc5, 0x19, 0x8e, 0x57, 0x04, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -346,7 +456,7 @@ var _Msg_serviceDesc = grpc.ServiceDesc{
 	Metadata: "exocore/taskmanageravs/tx.proto",
 }
 
-func (m *TaskInfo) Marshal() (dAtA []byte, err error) {
+func (m *TaskContractInfo) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -356,37 +466,112 @@ func (m *TaskInfo) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *TaskInfo) MarshalTo(dAtA []byte) (int, error) {
+func (m *TaskContractInfo) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *TaskInfo) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *TaskContractInfo) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
 	_ = l
-	if m.ThresholdPercentage != 0 {
-		i = encodeVarintTx(dAtA, i, uint64(m.ThresholdPercentage))
+	if len(m.SourceCode) > 0 {
+		i -= len(m.SourceCode)
+		copy(dAtA[i:], m.SourceCode)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.SourceCode)))
 		i--
-		dAtA[i] = 0x20
+		dAtA[i] = 0x32
 	}
-	if m.TaskId != 0 {
-		i = encodeVarintTx(dAtA, i, uint64(m.TaskId))
+	if len(m.Status) > 0 {
+		i -= len(m.Status)
+		copy(dAtA[i:], m.Status)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.Status)))
 		i--
-		dAtA[i] = 0x18
+		dAtA[i] = 0x2a
+	}
+	if len(m.TaskContractAddress) > 0 {
+		i -= len(m.TaskContractAddress)
+		copy(dAtA[i:], m.TaskContractAddress)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.TaskContractAddress)))
+		i--
+		dAtA[i] = 0x22
 	}
 	if len(m.MetaInfo) > 0 {
 		i -= len(m.MetaInfo)
 		copy(dAtA[i:], m.MetaInfo)
 		i = encodeVarintTx(dAtA, i, uint64(len(m.MetaInfo)))
 		i--
-		dAtA[i] = 0x12
+		dAtA[i] = 0x1a
 	}
 	if len(m.Name) > 0 {
 		i -= len(m.Name)
 		copy(dAtA[i:], m.Name)
 		i = encodeVarintTx(dAtA, i, uint64(len(m.Name)))
+		i--
+		dAtA[i] = 0x12
+	}
+	if m.TaskContractId != 0 {
+		i = encodeVarintTx(dAtA, i, uint64(m.TaskContractId))
+		i--
+		dAtA[i] = 0x8
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *TaskInstance) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *TaskInstance) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *TaskInstance) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.ContractAddr) > 0 {
+		i -= len(m.ContractAddr)
+		copy(dAtA[i:], m.ContractAddr)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.ContractAddr)))
+		i--
+		dAtA[i] = 0x32
+	}
+	if m.QuorumThresholdPercentage != 0 {
+		i = encodeVarintTx(dAtA, i, uint64(m.QuorumThresholdPercentage))
+		i--
+		dAtA[i] = 0x28
+	}
+	if len(m.QuorumNumbers) > 0 {
+		i -= len(m.QuorumNumbers)
+		copy(dAtA[i:], m.QuorumNumbers)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.QuorumNumbers)))
+		i--
+		dAtA[i] = 0x22
+	}
+	if m.TaskCreatedBlock != 0 {
+		i = encodeVarintTx(dAtA, i, uint64(m.TaskCreatedBlock))
+		i--
+		dAtA[i] = 0x18
+	}
+	if m.NumberToBeSquared != 0 {
+		i = encodeVarintTx(dAtA, i, uint64(m.NumberToBeSquared))
+		i--
+		dAtA[i] = 0x10
+	}
+	if len(m.TaskId) > 0 {
+		i -= len(m.TaskId)
+		copy(dAtA[i:], m.TaskId)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.TaskId)))
 		i--
 		dAtA[i] = 0xa
 	}
@@ -518,12 +703,15 @@ func encodeVarintTx(dAtA []byte, offset int, v uint64) int {
 	dAtA[offset] = uint8(v)
 	return base
 }
-func (m *TaskInfo) Size() (n int) {
+func (m *TaskContractInfo) Size() (n int) {
 	if m == nil {
 		return 0
 	}
 	var l int
 	_ = l
+	if m.TaskContractId != 0 {
+		n += 1 + sovTx(uint64(m.TaskContractId))
+	}
 	l = len(m.Name)
 	if l > 0 {
 		n += 1 + l + sovTx(uint64(l))
@@ -532,11 +720,47 @@ func (m *TaskInfo) Size() (n int) {
 	if l > 0 {
 		n += 1 + l + sovTx(uint64(l))
 	}
-	if m.TaskId != 0 {
-		n += 1 + sovTx(uint64(m.TaskId))
+	l = len(m.TaskContractAddress)
+	if l > 0 {
+		n += 1 + l + sovTx(uint64(l))
 	}
-	if m.ThresholdPercentage != 0 {
-		n += 1 + sovTx(uint64(m.ThresholdPercentage))
+	l = len(m.Status)
+	if l > 0 {
+		n += 1 + l + sovTx(uint64(l))
+	}
+	l = len(m.SourceCode)
+	if l > 0 {
+		n += 1 + l + sovTx(uint64(l))
+	}
+	return n
+}
+
+func (m *TaskInstance) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.TaskId)
+	if l > 0 {
+		n += 1 + l + sovTx(uint64(l))
+	}
+	if m.NumberToBeSquared != 0 {
+		n += 1 + sovTx(uint64(m.NumberToBeSquared))
+	}
+	if m.TaskCreatedBlock != 0 {
+		n += 1 + sovTx(uint64(m.TaskCreatedBlock))
+	}
+	l = len(m.QuorumNumbers)
+	if l > 0 {
+		n += 1 + l + sovTx(uint64(l))
+	}
+	if m.QuorumThresholdPercentage != 0 {
+		n += 1 + sovTx(uint64(m.QuorumThresholdPercentage))
+	}
+	l = len(m.ContractAddr)
+	if l > 0 {
+		n += 1 + l + sovTx(uint64(l))
 	}
 	return n
 }
@@ -595,7 +819,7 @@ func sovTx(x uint64) (n int) {
 func sozTx(x uint64) (n int) {
 	return sovTx(uint64((x << 1) ^ uint64((int64(x) >> 63))))
 }
-func (m *TaskInfo) Unmarshal(dAtA []byte) error {
+func (m *TaskContractInfo) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -618,13 +842,32 @@ func (m *TaskInfo) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: TaskInfo: wiretype end group for non-group")
+			return fmt.Errorf("proto: TaskContractInfo: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: TaskInfo: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: TaskContractInfo: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field TaskContractId", wireType)
+			}
+			m.TaskContractId = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.TaskContractId |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 2:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field Name", wireType)
 			}
@@ -656,7 +899,7 @@ func (m *TaskInfo) Unmarshal(dAtA []byte) error {
 			}
 			m.Name = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
-		case 2:
+		case 3:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field MetaInfo", wireType)
 			}
@@ -688,11 +931,11 @@ func (m *TaskInfo) Unmarshal(dAtA []byte) error {
 			}
 			m.MetaInfo = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
-		case 3:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field TaskId", wireType)
+		case 4:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field TaskContractAddress", wireType)
 			}
-			m.TaskId = 0
+			var stringLen uint64
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowTx
@@ -702,16 +945,213 @@ func (m *TaskInfo) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				m.TaskId |= uint64(b&0x7F) << shift
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.TaskContractAddress = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 5:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Status", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Status = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 6:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field SourceCode", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.SourceCode = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipTx(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthTx
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *TaskInstance) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowTx
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: TaskInstance: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: TaskInstance: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field TaskId", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.TaskId = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 2:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field NumberToBeSquared", wireType)
+			}
+			m.NumberToBeSquared = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.NumberToBeSquared |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 3:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field TaskCreatedBlock", wireType)
+			}
+			m.TaskCreatedBlock = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.TaskCreatedBlock |= uint64(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
 			}
 		case 4:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field ThresholdPercentage", wireType)
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field QuorumNumbers", wireType)
 			}
-			m.ThresholdPercentage = 0
+			var stringLen uint64
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowTx
@@ -721,11 +1161,75 @@ func (m *TaskInfo) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				m.ThresholdPercentage |= uint64(b&0x7F) << shift
+				stringLen |= uint64(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
 			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.QuorumNumbers = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 5:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field QuorumThresholdPercentage", wireType)
+			}
+			m.QuorumThresholdPercentage = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.QuorumThresholdPercentage |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 6:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field ContractAddr", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.ContractAddr = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
 		default:
 			iNdEx = preIndex
 			skippy, err := skipTx(dAtA[iNdEx:])
@@ -806,10 +1310,10 @@ func (m *TaskManagerInfo) Unmarshal(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			if m.TaskManager == nil {
-				m.TaskManager = make(map[string]*TaskInfo)
+				m.TaskManager = make(map[string]*TaskContractInfo)
 			}
 			var mapkey string
-			var mapvalue *TaskInfo
+			var mapvalue *TaskContractInfo
 			for iNdEx < postIndex {
 				entryPreIndex := iNdEx
 				var wire uint64
@@ -883,7 +1387,7 @@ func (m *TaskManagerInfo) Unmarshal(dAtA []byte) error {
 					if postmsgIndex > l {
 						return io.ErrUnexpectedEOF
 					}
-					mapvalue = &TaskInfo{}
+					mapvalue = &TaskContractInfo{}
 					if err := mapvalue.Unmarshal(dAtA[iNdEx:postmsgIndex]); err != nil {
 						return err
 					}
@@ -1017,7 +1521,7 @@ func (m *RegisterAVSTaskReq) Unmarshal(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			if m.Task == nil {
-				m.Task = &TaskInfo{}
+				m.Task = &TaskContractInfo{}
 			}
 			if err := m.Task.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err

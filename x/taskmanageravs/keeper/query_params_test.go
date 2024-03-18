@@ -3,10 +3,10 @@ package keeper_test
 import (
 	"testing"
 
+	testkeeper "github.com/ExocoreNetwork/exocore/testutil/keeper"
+	"github.com/ExocoreNetwork/exocore/x/taskmanageravs/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/require"
-	testkeeper 	"github.com/ExocoreNetwork/exocore/testutil/keeper"
-	"github.com/ExocoreNetwork/exocore/x/taskmanageravs/types"
 )
 
 func TestParamsQuery(t *testing.T) {

@@ -3,9 +3,9 @@ package keeper_test
 import (
 	"testing"
 
-	"github.com/stretchr/testify/require"
 	testkeeper "github.com/ExocoreNetwork/exocore/testutil/keeper"
 	"github.com/ExocoreNetwork/exocore/x/taskmanageravs/types"
+	"github.com/stretchr/testify/require"
 )
 
 func TestGetParams(t *testing.T) {

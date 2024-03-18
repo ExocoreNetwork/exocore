@@ -2,22 +2,49 @@ package types
 
 import (
 	"github.com/cosmos/cosmos-sdk/codec"
-    cdctypes "github.com/cosmos/cosmos-sdk/codec/types"
-	// this line is used by starport scaffolding # 1
+	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/msgservice"
 )
 
-func RegisterCodec(cdc *codec.LegacyAmino) {
-	// this line is used by starport scaffolding # 2
-} 
+var (
+	amino = codec.NewLegacyAmino()
 
-func RegisterInterfaces(registry cdctypes.InterfaceRegistry) {
-	// this line is used by starport scaffolding # 3
+	// ModuleCdc references the global erc20 module codec. Note, the codec should
+	// ONLY be used in certain instances of tests and for JSON encoding.
+	//
+	// The actual codec used for serialization should be provided to modules/erc20 and
+	// defined at the application level.
+	ModuleCdc = codec.NewProtoCodec(codectypes.NewInterfaceRegistry())
+
+	// AminoCdc is a amino codec created to support amino JSON compatible msgs.
+	AminoCdc = codec.NewAminoCodec(amino)
+)
+
+const (
+	// Amino names
+	RegisterAVSTask = "exocore/RegisterAVSTask"
+)
+
+// NOTE: This is required for the GetSignBytes function
+func init() {
+	RegisterLegacyAminoCodec(amino)
+	amino.Seal()
+}
+
+// RegisterInterfaces register implementations
+func RegisterInterfaces(registry codectypes.InterfaceRegistry) {
+	registry.RegisterImplementations(
+		(*sdk.Msg)(nil),
+		&RegisterAVSTaskReq{},
+	)
 
 	msgservice.RegisterMsgServiceDesc(registry, &_Msg_serviceDesc)
 }
 
-var (
-	Amino = codec.NewLegacyAmino()
-	ModuleCdc = codec.NewProtoCodec(cdctypes.NewInterfaceRegistry())
-)
+// RegisterLegacyAminoCodec registers the necessary x/restaking_assets_manage interfaces and
+// concrete types on the provided LegacyAmino codec. These types are used for
+// Amino JSON serialization and EIP-712 compatibility.
+func RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) {
+	cdc.RegisterConcrete(&RegisterAVSTaskReq{}, RegisterAVSTask, nil)
+}

@@ -37,12 +37,12 @@ func GetTxCmd() *cobra.Command {
 
 	// this line is used by starport scaffolding # 1
 	cmd.AddCommand(
-		CreateTask(),
+		RegisterAVSTask(),
 	)
 	return cmd
 }
 
-func CreateTask() *cobra.Command {
+func RegisterAVSTask() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "Set task params to taskManager module",
 		Short: "Set task params to taskManager module",
@@ -57,17 +57,23 @@ func CreateTask() *cobra.Command {
 				return err
 			}
 
-			quorumThresholdPercentage, err := strconv.Atoi(args[3])
 			if err != nil {
 				return err
 			}
-			task := &taskTypes.TaskInfo{
-				Name:                      args[0],
-				MetaInfo:                  args[1],
-				TaskId:                    uint64(taskId),
-				QuorumThresholdPercentage: uint64(quorumThresholdPercentage),
+			sender := cliCtx.GetFromAddress().String()
+
+			msg := &taskTypes.RegisterAVSTaskReq{
+				AVSAddress: sender,
+				Task: &taskTypes.TaskContractInfo{
+					Name:                args[0],
+					MetaInfo:            args[1],
+					TaskContractId:      uint64(taskId),
+					TaskContractAddress: args[3]},
 			}
-			return tx.GenerateOrBroadcastTxCLI(cliCtx, cmd.Flags(), task)
+			if err := msg.ValidateBasic(); err != nil {
+				return err
+			}
+			return tx.GenerateOrBroadcastTxCLI(cliCtx, cmd.Flags(), msg)
 		},
 	}
 
