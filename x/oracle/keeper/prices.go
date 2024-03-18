@@ -5,7 +5,6 @@ import (
 
 	"github.com/ExocoreNetwork/exocore/x/oracle/types"
 	"github.com/cosmos/cosmos-sdk/store/prefix"
-	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
@@ -26,9 +25,9 @@ func (k Keeper) GetPrices(
 	tokenId int32,
 
 ) (val types.Prices, found bool) {
-	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefix(types.PricesKeyPrefix))
-	store = prefix.NewStore(store, types.PricesKey(tokenId))
-
+	//	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefix(types.PricesKeyPrefix))
+	//	store = prefix.NewStore(store, types.PricesKey(tokenId))
+	store := k.getPriceTRStore(ctx, tokenId)
 	nextRoundIdB := store.Get(types.PricesNextRountIdKey)
 	if nextRoundIdB == nil {
 		return val, false
@@ -59,8 +58,9 @@ func (k Keeper) RemovePrices(
 	tokenId int32,
 
 ) {
-	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefix(types.PricesKeyPrefix))
-	store = prefix.NewStore(store, types.PricesKey(tokenId))
+	//	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefix(types.PricesKeyPrefix))
+	//	store = prefix.NewStore(store, types.PricesKey(tokenId))
+	store := k.getPriceTRStore(ctx, tokenId)
 	//	iterator := sdk.KVStorePrefixIterator(store, []byte{})
 	iterator := store.Iterator(nil, nil)
 	defer iterator.Close()
@@ -90,7 +90,7 @@ func (k Keeper) AppendPriceTR(ctx sdk.Context, tokenId int32, priceTR types.Pric
 	if nextRoundId != priceTR.RoundId {
 		return
 	}
-	store := getPriceTRStore(ctx, k.storeKey, tokenId)
+	store := k.getPriceTRStore(ctx, tokenId)
 	b := k.cdc.MustMarshal(&priceTR)
 	store.Set(types.PricesRoundKey(nextRoundId), b)
 }
@@ -112,9 +112,9 @@ func (k Keeper) GetPriceTRRoundId(ctx sdk.Context, tokenId int32, roundId uint64
 }
 
 func (k Keeper) GetPriceTRLatest(ctx sdk.Context, tokenId int32) (price types.PriceWithTimeAndRound, found bool) {
-	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefix(types.PricesKeyPrefix))
-	store = prefix.NewStore(store, types.PricesKey(tokenId))
-
+	//	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefix(types.PricesKeyPrefix))
+	//	store = prefix.NewStore(store, types.PricesKey(tokenId))
+	store := k.getPriceTRStore(ctx, tokenId)
 	nextRoundIdB := store.Get(types.PricesNextRountIdKey)
 	if nextRoundIdB == nil {
 		return
@@ -131,7 +131,8 @@ func (k Keeper) GetPriceTRLatest(ctx sdk.Context, tokenId int32) (price types.Pr
 
 func (k Keeper) GetNextRoundId(ctx sdk.Context, tokenId int32) (nextRoundId uint64) {
 	nextRoundId = 1
-	store := getPriceTRStore(ctx, k.storeKey, tokenId)
+	//store := getPriceTRStore(ctx, k.storeKey, tokenId)
+	store := k.getPriceTRStore(ctx, tokenId)
 	nextRoundIdB := store.Get(types.PricesNextRountIdKey)
 	if nextRoundIdB != nil {
 		nextRoundId = binary.BigEndian.Uint64(nextRoundIdB)
@@ -139,9 +140,12 @@ func (k Keeper) GetNextRoundId(ctx sdk.Context, tokenId int32) (nextRoundId uint
 	return
 }
 
-func getPriceTRStore(ctx sdk.Context, storeKey storetypes.StoreKey, tokenId int32) prefix.Store {
-	store := prefix.NewStore(ctx.KVStore(storeKey), types.KeyPrefix(types.PricesKeyPrefix))
+//func getPriceTRStore(ctx sdk.Context, storeKey storetypes.StoreKey, tokenId int32) prefix.Store {
+//	store := prefix.NewStore(ctx.KVStore(storeKey), types.KeyPrefix(types.PricesKeyPrefix))
+//	return prefix.NewStore(store, types.PricesKey(tokenId))
+//}
+
+func (k Keeper) getPriceTRStore(ctx sdk.Context, tokenId int32) prefix.Store {
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefix(types.PricesKeyPrefix))
 	return prefix.NewStore(store, types.PricesKey(tokenId))
 }
-
-//TODO: Get(tokenId, roundId), GetLatestRound(tokenId), remove is not cared for now

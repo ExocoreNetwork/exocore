@@ -3,21 +3,19 @@ package cache
 import (
 	"math/big"
 
-	"github.com/ExocoreNetwork/exocore/x/oracle/keeper/aggregator"
 	"github.com/ExocoreNetwork/exocore/x/oracle/keeper/common"
 	"github.com/ExocoreNetwork/exocore/x/oracle/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	stakingTypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 )
 
 var zeroBig = big.NewInt(0)
 
-type cacheItemV map[string]*big.Int
-type cacheItemP *common.Params
-type cacheItemM struct {
-	feederId  int32
-	pSources  []*types.PriceWithSource
-	validator string
+type CacheItemV map[string]*big.Int
+type CacheItemP *common.Params
+type CacheItemM struct {
+	FeederId  int32
+	PSources  []*types.PriceWithSource
+	Validator string
 }
 
 type Cache struct {
@@ -26,7 +24,7 @@ type Cache struct {
 	params     *cacheParams
 }
 
-type cacheMsgs map[int32][]*cacheItemM
+type cacheMsgs map[int32][]*CacheItemM
 
 // used to track validator change
 type cacheValidator struct {
@@ -40,11 +38,11 @@ type cacheParams struct {
 	update bool
 }
 
-func (c cacheMsgs) add(item *cacheItemM) {
-	c[item.feederId] = append(c[item.feederId], item)
+func (c cacheMsgs) add(item *CacheItemM) {
+	c[item.FeederId] = append(c[item.FeederId], item)
 }
-func (c cacheMsgs) remove(item *cacheItemM) {
-	delete(c, item.feederId)
+func (c cacheMsgs) remove(item *CacheItemM) {
+	delete(c, item.FeederId)
 }
 
 func (c cacheMsgs) commit(ctx sdk.Context, k common.KeeperOracle) {
@@ -56,9 +54,9 @@ func (c cacheMsgs) commit(ctx sdk.Context, k common.KeeperOracle) {
 	for _, msgs4Feeder := range c {
 		for _, msg := range msgs4Feeder {
 			recentMsgs.Msgs = append(recentMsgs.Msgs, &types.MsgItem{
-				FeederId:  msg.feederId,
-				PSources:  msg.pSources,
-				Validator: msg.validator,
+				FeederId:  msg.FeederId,
+				PSources:  msg.PSources,
+				Validator: msg.Validator,
 			})
 		}
 	}
@@ -124,12 +122,12 @@ func (c *cacheParams) commit(ctx sdk.Context, k common.KeeperOracle) {
 // memory cache
 func (c *Cache) AddCache(i any, k common.KeeperOracle) {
 	switch item := i.(type) {
-	case *cacheItemM:
+	case *CacheItemM:
 		c.msg.add(item)
 		//	case *params:
-	case cacheItemP:
+	case CacheItemP:
 		c.params.add(item)
-	case cacheItemV:
+	case CacheItemV:
 		c.validators.add(item)
 	default:
 		panic("no other types are support")
@@ -137,16 +135,45 @@ func (c *Cache) AddCache(i any, k common.KeeperOracle) {
 }
 func (c *Cache) RemoveCache(i any, k common.KeeperOracle) {
 	switch item := i.(type) {
-	case *cacheItemM:
+	case *CacheItemM:
 		c.msg.remove(item)
 	default:
 	}
 }
 
+func (c *Cache) GetCache(i any) bool {
+	switch item := i.(type) {
+	case CacheItemV:
+		if item == nil {
+			return false
+		}
+		for addr, power := range c.validators.validators {
+			item[addr] = power
+		}
+	case CacheItemP:
+		if item == nil {
+			return false
+		}
+		*item = *(c.params.params)
+	case *[]*CacheItemM:
+		if item == nil {
+			return false
+		}
+		tmp := make([]*CacheItemM, 0, len(c.msg))
+		for _, msgs := range c.msg {
+			tmp = append(tmp, msgs...)
+		}
+		*item = tmp
+	default:
+		return false
+	}
+	return true
+}
+
 func (c *Cache) CommitCache(ctx sdk.Context, reset bool, k common.KeeperOracle) {
 	if len(c.msg) > 0 {
 		c.msg.commit(ctx, k)
-		c.msg = make(map[int32][]*cacheItemM)
+		c.msg = make(map[int32][]*CacheItemM)
 	}
 
 	if c.validators.update {
@@ -169,7 +196,7 @@ func (c *Cache) ResetCaches() {
 
 func NewCache() *Cache {
 	return &Cache{
-		msg: make(map[int32][]*cacheItemM),
+		msg: make(map[int32][]*CacheItemM),
 		validators: &cacheValidator{
 			validators: make(map[string]*big.Int),
 		},
@@ -177,113 +204,4 @@ func NewCache() *Cache {
 			params: &common.Params{},
 		},
 	}
-}
-
-func (c *Cache) RecacheAggregatorContext(ctx sdk.Context, agc *aggregator.AggregatorContext, k common.KeeperOracle) bool {
-
-	from := uint64(ctx.BlockHeight()) - common.MaxNonce
-	to := uint64(ctx.BlockHeight()) - 1
-
-	h, ok := k.GetValidatorUpdateBlock(ctx)
-	recentParamsMap := k.GetAllRecentParamsAsMap(ctx)
-	if !ok || recentParamsMap == nil {
-		//no cache, this is the very first running, so go to initial proces instead
-		return false
-	}
-
-	if h.Block > from {
-		from = h.Block
-	}
-
-	totalPower := big.NewInt(0)
-	validatorPowers := make(map[string]*big.Int)
-	k.IterateBondedValidatorsByPower(ctx, func(index int64, validator stakingTypes.ValidatorI) bool {
-		power := big.NewInt(validator.GetConsensusPower(validator.GetBondedTokens()))
-		addr := string(validator.GetOperator())
-		validatorPowers[addr] = power
-		totalPower = new(big.Int).Add(totalPower, power)
-		return false
-	})
-	agc.SetValidatorPowers(validatorPowers)
-	agc.SetTotalPower(totalPower)
-	//TODO: test only
-	if k.GetLastTotalPower(ctx).Cmp(totalPower) != 0 {
-		panic("something wrong when get validatorsPower from staking module")
-	}
-
-	//reset validators
-	c.AddCache(cacheItemV(validatorPowers), k)
-
-	recentMsgs := k.GetAllRecentMsgAsMap(ctx)
-	var pTmp common.Params
-	for ; from < to; from++ {
-		//fill params
-		for b, recentParams := range recentParamsMap {
-			prev := uint64(0)
-			if b <= from && b > prev {
-				pTmp = common.Params(*recentParams)
-				agc.SetParams(&pTmp)
-				if prev > 0 {
-					//TODO: safe delete
-					delete(recentParamsMap, prev)
-				}
-				prev = b
-			}
-		}
-
-		agc.PrepareRound(ctx, from)
-
-		if msgs := recentMsgs[from+1]; msgs != nil {
-			for _, msg := range msgs {
-				//these messages are retreived for recache, just skip the validation check and fill the memory cache
-				agc.FillPrice(&types.MsgCreatePrice{
-					Creator:  msg.Validator,
-					FeederId: msg.FeederId,
-					Prices:   msg.PSources,
-				})
-			}
-		}
-		agc.SealRound(ctx)
-	}
-
-	//fill params cache
-	c.AddCache(cacheItemP(&pTmp), k)
-
-	agc.PrepareRound(ctx, to)
-
-	return true
-}
-
-func (c *Cache) InitAggregatorContext(ctx sdk.Context, agc *aggregator.AggregatorContext, k common.KeeperOracle) error {
-	//set params
-	p := k.GetParams(ctx)
-	m := make(map[uint64]*types.Params)
-	m[uint64(ctx.BlockHeight())] = &p
-	//	k.setParams4CacheRecover(m) //used to trace tokenFeeder's update during cache recover
-	pTmp := common.Params(p)
-	agc.SetParams(&pTmp)
-	//set params cache
-	c.AddCache(cacheItemP(&pTmp), k)
-
-	totalPower := big.NewInt(0)
-	validatorPowers := make(map[string]*big.Int)
-	k.IterateBondedValidatorsByPower(ctx, func(index int64, validator stakingTypes.ValidatorI) bool {
-		power := big.NewInt(validator.GetConsensusPower(validator.GetBondedTokens()))
-		addr := string(validator.GetOperator())
-		//agc.validatorsPower[addr] = power
-		validatorPowers[addr] = power
-		totalPower = new(big.Int).Add(totalPower, power)
-		return false
-	})
-	agc.SetTotalPower(totalPower)
-	agc.SetValidatorPowers(validatorPowers)
-	if k.GetLastTotalPower(ctx).Cmp(totalPower) != 0 {
-		panic("-")
-	}
-
-	//set validatorPower cache
-	c.AddCache(cacheItemV(validatorPowers), k)
-
-	agc.PrepareRound(ctx, uint64(ctx.BlockHeight())-1)
-	return nil
 }

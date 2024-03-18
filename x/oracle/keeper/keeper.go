@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"math/big"
 
+	//	"cosmossdk.io/api/tendermint/abci"
+	abci "github.com/cometbft/cometbft/abci/types"
 	"github.com/cometbft/cometbft/libs/log"
 	"github.com/cosmos/cosmos-sdk/codec"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
@@ -59,4 +61,12 @@ func (k Keeper) GetLastTotalPower(ctx sdk.Context) *big.Int {
 
 func (k Keeper) IterateBondedValidatorsByPower(ctx sdk.Context, f func(index int64, validator stakingtypes.ValidatorI) bool) {
 	k.stakingKeeper.IterateBondedValidatorsByPower(ctx, f)
+}
+
+func (k Keeper) GetValidatorUpdates(ctx sdk.Context) []abci.ValidatorUpdate {
+	return k.stakingKeeper.GetValidatorUpdates(ctx)
+}
+
+func (k Keeper) GetValidatorByConsAddr(ctx sdk.Context, addr sdk.ConsAddress) (stakingtypes.Validator, bool) {
+	return k.stakingKeeper.GetValidatorByConsAddr(ctx, addr)
 }
