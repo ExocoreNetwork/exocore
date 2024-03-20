@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"strings"
 
-	sdk "github.com/cosmos/cosmos-sdk/types"
-
 	errorsmod "cosmossdk.io/errors"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	"github.com/ethereum/go-ethereum/common"
@@ -139,18 +137,4 @@ func ParseJoinedStoreKey(key []byte, number int) (keys []string, err error) {
 		return nil, errorsmod.Wrap(ErrParseAssetsStateKey, fmt.Sprintf("expected length:%d,actual length:%d,the stringList is:%v", number, len(stringList), stringList))
 	}
 	return stringList, nil
-}
-
-// add for dogfood
-func OperatorSnapshotKey(operatorAddr sdk.AccAddress, height uint64) []byte {
-	base := []byte{prefixOperatorSnapshot}
-	base = append(base, operatorAddr.Bytes()...)
-	base = append(base, sdk.Uint64ToBigEndian(height)...)
-	return base
-}
-
-func OperatorLastSnapshotHeightKey(operatorAddr sdk.AccAddress) []byte {
-	base := []byte{prefixOperatorLastSnapshotHeight}
-	base = append(base, operatorAddr.Bytes()...)
-	return base
 }

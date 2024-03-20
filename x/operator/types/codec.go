@@ -32,8 +32,8 @@ func RegisterInterfaces(registry codectypes.InterfaceRegistry) {
 	registry.RegisterImplementations(
 		(*sdk.Msg)(nil),
 		&RegisterOperatorReq{},
-		&OptInToChainIDRequest{},
-		&InitiateOptOutFromChainIDRequest{},
+		&OptInToCosmosChainRequest{},
+		&InitOptOutFromCosmosChainRequest{},
 	)
 	msgservice.RegisterMsgServiceDesc(registry, &_Msg_serviceDesc)
 }

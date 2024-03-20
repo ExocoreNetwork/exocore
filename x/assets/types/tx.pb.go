@@ -840,11 +840,10 @@ func (m *RegisterAssetResponse) XXX_DiscardUnknown() {
 var xxx_messageInfo_RegisterAssetResponse proto.InternalMessageInfo
 
 // MsgUpdateParams is the Msg/UpdateParams request type for Erc20 parameters.
-// Since: cosmos-sdk 0.47
 type MsgUpdateParams struct {
 	// authority is the address of the governance account.
 	Authority string `protobuf:"bytes,1,opt,name=authority,proto3" json:"authority,omitempty"`
-	// params defines the x/evm parameters to update.
+	// params defines the x/assets parameters to update.
 	// NOTE: All parameters must be supplied.
 	Params Params `protobuf:"bytes,2,opt,name=params,proto3" json:"params"`
 }
@@ -898,7 +897,6 @@ func (m *MsgUpdateParams) GetParams() Params {
 
 // MsgUpdateParamsResponse defines the response structure for executing a
 // MsgUpdateParams message.
-// Since: cosmos-sdk 0.47
 type MsgUpdateParamsResponse struct {
 }
 

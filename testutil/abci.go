@@ -32,10 +32,10 @@ func Commit(ctx sdk.Context, app *app.ExocoreApp, t time.Duration, vs *tmtypes.V
 	return ctx.WithBlockHeader(header), nil
 }
 
-// CommitAndCreateNewCtx commits a block at a given time creating a Ctx with the current settings
+// CommitAndCreateNewCtx commits a block at a given time creating a ctx with the current settings
 // This is useful to keep test settings that could be affected by EndBlockers, e.g.
 // setting a baseFee == 0 and expecting this condition to continue after commit
-func CommitAndCreateNewCtx(ctx sdk.Context, app *app.ExocoreApp, t time.Duration, vs *tmtypes.ValidatorSet, isUncachedCtx bool) (sdk.Context, error) {
+func CommitAndCreateNewCtx(ctx sdk.Context, app *app.ExocoreApp, t time.Duration, vs *tmtypes.ValidatorSet, useUncachedCtx bool) (sdk.Context, error) {
 	header, err := commit(ctx, app, t, vs)
 	if err != nil {
 		return ctx, err
@@ -45,7 +45,7 @@ func CommitAndCreateNewCtx(ctx sdk.Context, app *app.ExocoreApp, t time.Duration
 	// but resets other context fields
 	// GasMeter is set as InfiniteGasMeter
 	var newCtx sdk.Context
-	if isUncachedCtx {
+	if useUncachedCtx {
 		newCtx = app.BaseApp.NewUncachedContext(false, header)
 	} else {
 		newCtx = app.BaseApp.NewContext(false, header)
@@ -228,7 +228,7 @@ func commit(ctx sdk.Context, app *app.ExocoreApp, t time.Duration, vs *tmtypes.V
 	return header, nil
 }
 
-// checkTxBytes encodes a transaction and calls checkTx on the App.
+// checkTxBytes encodes a transaction and calls checkTx on the app.
 func checkTxBytes(app *app.ExocoreApp, txEncoder sdk.TxEncoder, tx sdk.Tx) (abci.ResponseCheckTx, error) {
 	bz, err := txEncoder(tx)
 	if err != nil {

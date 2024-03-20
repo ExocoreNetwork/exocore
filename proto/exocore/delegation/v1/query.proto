@@ -66,13 +66,6 @@ message SingleDelegationInfoReq {
   string asset_id = 3 [(gogoproto.customname) = "AssetID"];
 }
 
-// QueryOperatorInfoReq is the request to obtain the operator information.
-message QueryOperatorInfoReq {
-  // operator_addr is the operator address.
-  string operator_addr = 1
-  [(cosmos_proto.scalar) = "cosmos.AddressString"];
-}
-
 // Query is the service API for the delegation module.
 service Query {
   // DelegationInfo queries the delegation information for {stakerID, assetID}.

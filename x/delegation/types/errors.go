@@ -23,4 +23,8 @@ var (
 	ErrNotSupportYet = errorsmod.Register(ModuleName, 9, "don't have supported it yet")
 
 	ErrDelegationAmountTooBig = errorsmod.Register(ModuleName, 10, "the delegation amount is bigger than the canWithdraw amount")
+
+	ErrCannotIncHoldCount = errorsmod.Register(ModuleName, 11, "cannot increment undelegation hold count above max uint64")
+
+	ErrCannotDecHoldCount = errorsmod.Register(ModuleName, 12, "cannot decrement undelegation hold count below zero")
 )

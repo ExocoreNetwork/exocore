@@ -43,7 +43,7 @@ func (suite *DelegationTestSuite) TestDelegateTo() {
 		TxHash:          common.HexToHash("0x24c4a315d757249c12a7a1d7b6fb96261d49deee26f06a3e1787d008b445c3ac"),
 	}
 	err = suite.App.DelegationKeeper.DelegateTo(suite.Ctx, delegationParams)
-	suite.EqualError(err, errorsmod.Wrap(delegationtype.ErrOperatorNotExist, fmt.Sprintf("input opreatorAddr is:%s", delegationParams.OperatorAddress)).Error())
+	suite.EqualError(err, errorsmod.Wrap(delegationtype.ErrOperatorNotExist, fmt.Sprintf("input operatorAddr is:%s", delegationParams.OperatorAddress)).Error())
 
 	registerReq := &operatortype.RegisterOperatorReq{
 		FromAddress: opAccAddr.String(),

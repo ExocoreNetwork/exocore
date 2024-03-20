@@ -11,7 +11,7 @@ option go_package = "github.com/ExocoreNetwork/exocore/x/operator/types";
 
 // QueryOperatorInfoReq is the request to obtain the operator information.
 message GetOperatorInfoReq {
-  // operator_addr is the operator address.
+  // operator_addr is the operator address,its type should be a sdk.AccAddress
   string operator_addr = 1
   [(cosmos_proto.scalar) = "cosmos.AddressString"];
 }

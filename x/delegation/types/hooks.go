@@ -20,10 +20,14 @@ func (hooks MultiDelegationHooks) AfterUndelegationStarted(
 	ctx sdk.Context,
 	addr sdk.AccAddress,
 	recordKey []byte,
-) {
+) error {
 	for _, hook := range hooks {
-		hook.AfterUndelegationStarted(ctx, addr, recordKey)
+		err := hook.AfterUndelegationStarted(ctx, addr, recordKey)
+		if err != nil {
+			return err
+		}
 	}
+	return nil
 }
 
 func (hooks MultiDelegationHooks) AfterUndelegationCompleted(ctx sdk.Context, addr sdk.AccAddress) {
