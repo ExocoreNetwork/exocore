@@ -5,9 +5,6 @@ import (
 
 	"github.com/ExocoreNetwork/exocore/testutil"
 
-	. "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
-
 	"github.com/stretchr/testify/suite"
 )
 
@@ -21,9 +18,6 @@ func TestKeeperTestSuite(t *testing.T) {
 	s = new(StakingAssetsTestSuite)
 	suite.Run(t, s)
 
-	// Run Ginkgo integration tests
-	RegisterFailHandler(Fail)
-	RunSpecs(t, "Keeper Suite")
 }
 
 func (suite *StakingAssetsTestSuite) SetupTest() {
