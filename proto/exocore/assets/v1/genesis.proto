@@ -1,17 +1,71 @@
 syntax = "proto3";
 package exocore.assets.v1;
 
+import "gogoproto/gogo.proto";
+
+import "exocore/assets/v1/params.proto";
 import "exocore/assets/v1/tx.proto";
 
 option go_package = "github.com/ExocoreNetwork/exocore/x/assets/types";
 
-// GenesisState defines the assets module's genesis state.
+// GenesisState defines the assets module's state. It needs to encompass
+// all of the state that is required to start the chain from the genesis
+// or in the event of a restart. At this point, it is only built with
+// the former in mind.
 // TODO: make this state exportable for the case of chain restarts.
 message GenesisState {
-  // default_supported_client_chains is the list of supported client chains,
-  // that are supported by default.
-  repeated ClientChainInfo default_supported_client_chains = 1;
-  // default_supported_client_chain_tokens is the list of supported client chain tokens,
-  // that are supported by default.
-  repeated AssetInfo default_supported_client_chain_tokens = 2;
+  // params defines all the parameters of the module.
+  Params params = 1 [(gogoproto.nullable) = false];
+  // client_chains is the list of supported client chains,
+  // that are supported at chain genesis (or restart).
+  repeated ClientChainInfo client_chains = 2 [(gogoproto.nullable) = false];
+  // tokens is the list of supported client chain tokens and total staked amount
+  // that are supported at chain genesis (or restart).
+  repeated StakingAssetInfo tokens = 3 [(gogoproto.nullable) = false];
+  // operator_asset_infos is the list of deposits, indexed by operator
+  // address and then the asset id. The struct is the `OperatorAssetInfo`
+  // which contains deposits, unbonding, operator own amount, etc.
+  repeated OpAssetIDAndInfos operator_asset_infos = 4 [(gogoproto.nullable) = false];
+  // staker_asset_infos is the list of deposits, indexed by staker
+  // address and then the asset id. The struct is the `StakerAssetInfo`
+  // which contains deposits, withdrawable and unbonding amount.
+  repeated StAssetIDAndInfos staker_asset_infos = 5 [(gogoproto.nullable) = false];
+}
+
+// OpAssetIDAndInfo is a helper struct to be used in the genesis state.
+// It is used to store the asset id and its info for an operator.
+message OpAssetIDAndInfo {
+  // asset_id is the id of the asset.
+  string asset_id = 1 [ (gogoproto.customname) = "AssetID" ];
+  // info is the asset info.
+  OperatorAssetInfo info = 2;
+}
+
+// OpAssetIDAndInfos is a helper struct to be used in the genesis state.
+// It is used to store the operator address and its asset id and info.
+message OpAssetIDAndInfos {
+  // operator_address is the address of the operator.
+  string operator_address = 1;
+  // asset_id_and_infos is the list of asset id and infos that exist
+  // for the operator.
+  repeated OpAssetIDAndInfo asset_id_and_infos = 2;
+}
+
+// StAssetIDAndInfo is a helper struct to be used in the genesis state.
+// It is used to store the asset id and its info for an staker.
+message StAssetIDAndInfo {
+  // asset_id is the id of the asset.
+  string asset_id = 1 [ (gogoproto.customname) = "AssetID" ];
+  // info is the asset info.
+  StakerAssetInfo info = 2;
+}
+
+// OperatorAssetIDAndInfos is a helper struct to be used in the genesis state.
+// It is used to store the operator address and its asset id and info.
+message StAssetIDAndInfos {
+  // staker_id is the address of the operator.
+  string staker_id = 1 [ (gogoproto.customname) = "StakerID" ];
+  // asset_id_and_infos is the list of asset id and infos that exist
+  // for the staker.
+  repeated StAssetIDAndInfo asset_id_and_infos = 2;
 }

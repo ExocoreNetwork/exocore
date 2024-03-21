@@ -25,7 +25,7 @@ const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
 // GenesisState defines the deposit module's genesis state.
 type Params struct {
-	// exocore_lz_app_address is the address of the exocore lz app.
+	// exocore_lz_app_address is the address of ExocoreGateway.sol.
 	ExocoreLzAppAddress string `protobuf:"bytes,1,opt,name=exocore_lz_app_address,json=exocoreLzAppAddress,proto3" json:"exocore_lz_app_address,omitempty"`
 	// exocore_lz_app_event_topic is the topic of the exocore lz app event.
 	ExocoreLzAppEventTopic string `protobuf:"bytes,2,opt,name=exocore_lz_app_event_topic,json=exocoreLzAppEventTopic,proto3" json:"exocore_lz_app_event_topic,omitempty"`

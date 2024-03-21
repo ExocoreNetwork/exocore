@@ -11,7 +11,10 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-func (k Keeper) GetStakerAssetInfos(ctx sdk.Context, stakerID string) (assetsInfo map[string]*assetstype.StakerAssetInfo, err error) {
+func (k Keeper) GetStakerAssetInfos(
+	ctx sdk.Context,
+	stakerID string,
+) (assetsInfo map[string]*assetstype.StakerAssetInfo, err error) {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), assetstype.KeyPrefixReStakerAssetInfos)
 	iterator := sdk.KVStorePrefixIterator(store, []byte(stakerID))
 	defer iterator.Close()
@@ -30,12 +33,19 @@ func (k Keeper) GetStakerAssetInfos(ctx sdk.Context, stakerID string) (assetsInf
 	return ret, nil
 }
 
-func (k Keeper) GetStakerSpecifiedAssetInfo(ctx sdk.Context, stakerID string, assetID string) (info *assetstype.StakerAssetInfo, err error) {
+func (k Keeper) GetStakerSpecifiedAssetInfo(
+	ctx sdk.Context,
+	stakerID string,
+	assetID string,
+) (info *assetstype.StakerAssetInfo, err error) {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), assetstype.KeyPrefixReStakerAssetInfos)
 	key := assetstype.GetJoinedStoreKey(stakerID, assetID)
 	ifExist := store.Has(key)
 	if !ifExist {
-		return nil, errorsmod.Wrap(assetstype.ErrNoStakerAssetKey, fmt.Sprintf("the key is:%s", key))
+		return nil, errorsmod.Wrap(
+			assetstype.ErrNoStakerAssetKey,
+			fmt.Sprintf("the key is:%s", key),
+		)
 	}
 
 	value := store.Get(key)
@@ -46,9 +56,16 @@ func (k Keeper) GetStakerSpecifiedAssetInfo(ctx sdk.Context, stakerID string, as
 }
 
 // UpdateStakerAssetState It's used to update the staker asset state
-// The input `changeAmount` represents the values that you want to add or decrease,using positive or negative values for increasing and decreasing,respectively. The function will calculate and update new state after a successful check.
-// The function will be called when there is deposit or withdraw related to the specified staker.
-func (k Keeper) UpdateStakerAssetState(ctx sdk.Context, stakerID string, assetID string, changeAmount assetstype.StakerSingleAssetChangeInfo) (err error) {
+// The input `changeAmount` represents the values that you want to add or decrease,using
+// positive or negative values for increasing and decreasing,respectively. The function will
+// calculate and update new state after a successful check. The function will be called when
+// there is deposit or withdraw related to the specified staker.
+func (k Keeper) UpdateStakerAssetState(
+	ctx sdk.Context,
+	stakerID string,
+	assetID string,
+	changeAmount assetstype.StakerSingleAssetChangeInfo,
+) (err error) {
 	// get the latest state,use the default initial state if the state hasn't been stored
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), assetstype.KeyPrefixReStakerAssetInfos)
 	key := assetstype.GetJoinedStoreKey(stakerID, assetID)
@@ -63,17 +80,35 @@ func (k Keeper) UpdateStakerAssetState(ctx sdk.Context, stakerID string, assetID
 	}
 
 	// update all states of the specified restaker asset
-	err = assetstype.UpdateAssetValue(&assetState.TotalDepositAmount, &changeAmount.TotalDepositAmount)
+	err = assetstype.UpdateAssetValue(
+		&assetState.TotalDepositAmount,
+		&changeAmount.TotalDepositAmount,
+	)
 	if err != nil {
-		return errorsmod.Wrap(err, "UpdateStakerAssetState TotalDepositAmountOrWantChangeValue error")
+		return errorsmod.Wrap(
+			err,
+			"UpdateStakerAssetState TotalDepositAmountOrWantChangeValue error",
+		)
 	}
-	err = assetstype.UpdateAssetValue(&assetState.WithdrawableAmount, &changeAmount.WithdrawableAmount)
+	err = assetstype.UpdateAssetValue(
+		&assetState.WithdrawableAmount,
+		&changeAmount.WithdrawableAmount,
+	)
 	if err != nil {
-		return errorsmod.Wrap(err, "UpdateStakerAssetState CanWithdrawAmountOrWantChangeValue error")
+		return errorsmod.Wrap(
+			err,
+			"UpdateStakerAssetState CanWithdrawAmountOrWantChangeValue error",
+		)
 	}
-	err = assetstype.UpdateAssetValue(&assetState.WaitUnbondingAmount, &changeAmount.WaitUnbondingAmount)
+	err = assetstype.UpdateAssetValue(
+		&assetState.WaitUnbondingAmount,
+		&changeAmount.WaitUnbondingAmount,
+	)
 	if err != nil {
-		return errorsmod.Wrap(err, "UpdateStakerAssetState WaitUndelegationAmountOrWantChangeValue error")
+		return errorsmod.Wrap(
+			err,
+			"UpdateStakerAssetState WaitUndelegationAmountOrWantChangeValue error",
+		)
 	}
 
 	// store the updated state
@@ -81,4 +116,16 @@ func (k Keeper) UpdateStakerAssetState(ctx sdk.Context, stakerID string, assetID
 	store.Set(key, bz)
 
 	return nil
+}
+
+// SetStakerAssetState is used to store the state corresponding to each stakerID
+// and assetID. This function is only used in the genesis configuration.
+func (k Keeper) SetStakerAssetState(
+	ctx sdk.Context, stakerID string, assetID string,
+	info *assetstype.StakerAssetInfo,
+) {
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), assetstype.KeyPrefixReStakerAssetInfos)
+	key := assetstype.GetJoinedStoreKey(stakerID, assetID)
+	bz := k.cdc.MustMarshal(info)
+	store.Set(key, bz)
 }
