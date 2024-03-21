@@ -73,7 +73,7 @@ func (am AppModule) IsAppModule() {}
 // RegisterServices registers module services.
 func (am AppModule) RegisterServices(cfg module.Configurator) {
 	delegationtype.RegisterMsgServer(cfg.MsgServer(), &am.keeper)
-	delegationtype.RegisterQueryServer(cfg.QueryServer(), am.keeper)
+	delegationtype.RegisterQueryServer(cfg.QueryServer(), &am.keeper)
 }
 
 func (am AppModule) GenerateGenesisState(*module.SimulationState) {

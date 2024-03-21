@@ -16,8 +16,8 @@ interface IDeposit {
 /// TRANSACTIONS
 /// @dev deposit the client chain assets to the staker, that will change the state in deposit module
 /// Note that this address cannot be a module account.
-/// @param clientChainLzID The lzId of client chain
-/// @param assetsAddress The client chain asset Address
+/// @param clientChainLzID The LzID of client chain
+/// @param assetsAddress The client chain asset address
 /// @param stakerAddress The staker address
 /// @param opAmount The deposit amount
     function depositTo(

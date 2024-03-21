@@ -6,10 +6,8 @@ import (
 	sdkmath "cosmossdk.io/math"
 	"github.com/ExocoreNetwork/exocore/app"
 	"github.com/ExocoreNetwork/exocore/precompiles/reward"
+	assetstype "github.com/ExocoreNetwork/exocore/x/assets/types"
 	"github.com/ExocoreNetwork/exocore/x/deposit/keeper"
-	depositParams "github.com/ExocoreNetwork/exocore/x/deposit/types"
-	"github.com/ExocoreNetwork/exocore/x/restaking_assets_manage/types"
-	rewardParams "github.com/ExocoreNetwork/exocore/x/reward/types"
 	"github.com/ethereum/go-ethereum/common"
 	ethtypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/core/vm"
@@ -53,17 +51,17 @@ func paddingClientChainAddress(input []byte, outputLength int) []byte {
 // TestRun tests the precompiled Run method reward.
 func (s *RewardPrecompileTestSuite) TestRunRewardThroughClientChain() {
 	// deposit params for test
-	exoCoreLzAppEventTopic := "0xc6a377bfc4eb120024a8ac08eef205be16b817020812c73223e81d1bdb9708ec"
+	exocoreLzAppEventTopic := "0xc6a377bfc4eb120024a8ac08eef205be16b817020812c73223e81d1bdb9708ec"
 	usdtAddress := common.FromHex("0xdAC17F958D2ee523a2206206994597C13D831ec7")
 	clientChainLzID := 101
 	withdrawAmount := big.NewInt(10)
 	depositAmount := big.NewInt(100)
-	assetAddr := paddingClientChainAddress(usdtAddress, types.GeneralClientChainAddrLength)
+	assetAddr := paddingClientChainAddress(usdtAddress, assetstype.GeneralClientChainAddrLength)
 	depositAsset := func(staker []byte, depositAmount sdkmath.Int) {
 		// deposit asset for reward test
 		params := &keeper.DepositParams{
 			ClientChainLzID: 101,
-			Action:          types.Deposit,
+			Action:          assetstype.Deposit,
 			StakerAddress:   staker,
 			AssetsAddress:   usdtAddress,
 			OpAmount:        depositAmount,
@@ -78,7 +76,7 @@ func (s *RewardPrecompileTestSuite) TestRunRewardThroughClientChain() {
 			reward.MethodReward,
 			uint16(clientChainLzID),
 			assetAddr,
-			paddingClientChainAddress(s.Address.Bytes(), types.GeneralClientChainAddrLength),
+			paddingClientChainAddress(s.Address.Bytes(), assetstype.GeneralClientChainAddrLength),
 			withdrawAmount,
 		)
 		s.Require().NoError(err, "failed to pack input")
@@ -97,19 +95,13 @@ func (s *RewardPrecompileTestSuite) TestRunRewardThroughClientChain() {
 		{
 			name: "pass - reward via pre-compiles",
 			malleate: func() (common.Address, []byte) {
-				depositModuleParam := &depositParams.Params{
-					ExoCoreLzAppAddress:    s.Address.String(),
-					ExoCoreLzAppEventTopic: exoCoreLzAppEventTopic,
+				depositModuleParam := &assetstype.Params{
+					ExocoreLzAppAddress:    s.Address.String(),
+					ExocoreLzAppEventTopic: exocoreLzAppEventTopic,
 				}
-				err := s.App.DepositKeeper.SetParams(s.Ctx, depositModuleParam)
+				err := s.App.AssetsKeeper.SetParams(s.Ctx, depositModuleParam)
 				s.Require().NoError(err)
 				depositAsset(s.Address.Bytes(), sdkmath.NewIntFromBigInt(depositAmount))
-				rewardModuleParam := &rewardParams.Params{
-					ExoCoreLzAppAddress:    s.Address.String(),
-					ExoCoreLzAppEventTopic: exoCoreLzAppEventTopic,
-				}
-				err = s.App.RewardKeeper.SetParams(s.Ctx, rewardModuleParam)
-				s.Require().NoError(err)
 				return commonMalleate()
 			},
 			returnBytes: successRet,

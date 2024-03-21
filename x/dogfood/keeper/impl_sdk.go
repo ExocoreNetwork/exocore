@@ -61,7 +61,7 @@ func (k Keeper) ValidatorByConsAddr(
 	ctx sdk.Context,
 	addr sdk.ConsAddress,
 ) stakingtypes.ValidatorI {
-	found, accAddr := k.operatorKeeper.GetOperatorAddressForChainIdAndConsAddr(
+	found, accAddr := k.operatorKeeper.GetOperatorAddressForChainIDAndConsAddr(
 		ctx, ctx.ChainID(), addr,
 	)
 	if !found {
@@ -69,7 +69,7 @@ func (k Keeper) ValidatorByConsAddr(
 		return nil
 	}
 	return stakingtypes.Validator{
-		Jailed: k.operatorKeeper.IsOperatorJailedForChainId(ctx, accAddr, ctx.ChainID()),
+		Jailed: k.operatorKeeper.IsOperatorJailedForChainID(ctx, accAddr, ctx.ChainID()),
 	}
 }
 
@@ -94,7 +94,7 @@ func (k Keeper) SlashWithInfractionReason(
 	ctx sdk.Context, addr sdk.ConsAddress, infractionHeight, power int64,
 	slashFactor sdk.Dec, infraction stakingtypes.Infraction,
 ) math.Int {
-	found, accAddress := k.operatorKeeper.GetOperatorAddressForChainIdAndConsAddr(
+	found, accAddress := k.operatorKeeper.GetOperatorAddressForChainIDAndConsAddr(
 		ctx, ctx.ChainID(), addr,
 	)
 	if !found {
@@ -154,14 +154,14 @@ func (k Keeper) GetAllValidators(sdk.Context) (validators []stakingtypes.Validat
 // slashing module. It is called by the slashing module to record validator signatures
 // for downtime tracking. We delegate the call to the operator keeper.
 func (k Keeper) IsValidatorJailed(ctx sdk.Context, addr sdk.ConsAddress) bool {
-	found, accAddr := k.operatorKeeper.GetOperatorAddressForChainIdAndConsAddr(
+	found, accAddr := k.operatorKeeper.GetOperatorAddressForChainIDAndConsAddr(
 		ctx, ctx.ChainID(), addr,
 	)
 	if !found {
 		// replicate the behavior of the SDK's staking module
 		return false
 	}
-	return k.operatorKeeper.IsOperatorJailedForChainId(ctx, accAddr, ctx.ChainID())
+	return k.operatorKeeper.IsOperatorJailedForChainID(ctx, accAddr, ctx.ChainID())
 }
 
 // ApplyAndReturnValidatorSetUpdates is an implementation of the staking interface expected

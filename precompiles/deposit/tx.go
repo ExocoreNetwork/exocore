@@ -1,9 +1,9 @@
 package deposit
 
 import (
-	"fmt"
-
-	"github.com/ExocoreNetwork/exocore/x/restaking_assets_manage/types"
+	errorsmod "cosmossdk.io/errors"
+	exocmn "github.com/ExocoreNetwork/exocore/precompiles/common"
+	"github.com/ExocoreNetwork/exocore/x/assets/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
@@ -26,15 +26,10 @@ func (p Precompile) DepositTo(
 	args []interface{},
 ) ([]byte, error) {
 	// check the invalidation of caller contract,the caller must be exoCore LzApp contract
-	depositModuleParam, err := p.depositKeeper.GetParams(ctx)
+	err := p.assetsKeeper.CheckExocoreLzAppAddr(ctx, contract.CallerAddress)
 	if err != nil {
-		return nil, err
+		return nil, errorsmod.Wrap(err, exocmn.ErrContractCaller)
 	}
-	exoCoreLzAppAddr := common.HexToAddress(depositModuleParam.ExoCoreLzAppAddress)
-	if contract.CallerAddress != exoCoreLzAppAddr {
-		return nil, fmt.Errorf(ErrContractCaller, contract.CallerAddress, exoCoreLzAppAddr)
-	}
-
 	// parse the depositTo input params
 	depositParams, err := p.GetDepositToParamsFromInputs(ctx, args)
 	if err != nil {
@@ -49,10 +44,10 @@ func (p Precompile) DepositTo(
 
 	// get the latest asset state of staker to return.
 	stakerID, assetID := types.GetStakeIDAndAssetID(depositParams.ClientChainLzID, depositParams.StakerAddress, depositParams.AssetsAddress)
-	info, err := p.stakingStateKeeper.GetStakerSpecifiedAssetInfo(ctx, stakerID, assetID)
+	info, err := p.assetsKeeper.GetStakerSpecifiedAssetInfo(ctx, stakerID, assetID)
 	if err != nil {
 		return nil, err
 	}
 
-	return method.Outputs.Pack(true, info.TotalDepositAmountOrWantChangeValue.BigInt())
+	return method.Outputs.Pack(true, info.TotalDepositAmount.BigInt())
 }

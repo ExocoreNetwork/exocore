@@ -1,18 +1,7 @@
-
-
 syntax = "proto3";
 package exocore.deposit.v1;
 
-import "gogoproto/gogo.proto";
-
 option go_package = "github.com/ExocoreNetwork/exocore/x/deposit/types";
 
-// GenesisState defines the restaking_assets_manage module's genesis state.
-message Params {
-  // exocore_lz_app_address is the address of the exocore lz app.
-  string exocore_lz_app_address = 1
-    [(gogoproto.customname) = "ExoCoreLzAppAddress"];
-  // exocore_lz_app_event_topic is the topic of the exocore lz app event.
-  string exocore_lz_app_event_topic = 2
-    [(gogoproto.customname) = "ExoCoreLzAppEventTopic"];
-}
+// GenesisState defines the deposit module's genesis state.
+message Params {}

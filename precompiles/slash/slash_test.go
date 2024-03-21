@@ -6,10 +6,8 @@ import (
 	sdkmath "cosmossdk.io/math"
 	"github.com/ExocoreNetwork/exocore/app"
 	"github.com/ExocoreNetwork/exocore/precompiles/slash"
+	assetstype "github.com/ExocoreNetwork/exocore/x/assets/types"
 	"github.com/ExocoreNetwork/exocore/x/deposit/keeper"
-	depositParams "github.com/ExocoreNetwork/exocore/x/deposit/types"
-	"github.com/ExocoreNetwork/exocore/x/restaking_assets_manage/types"
-	slashParams "github.com/ExocoreNetwork/exocore/x/slash/types"
 	"github.com/ethereum/go-ethereum/common"
 	ethtypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/core/vm"
@@ -53,17 +51,17 @@ func paddingClientChainAddress(input []byte, outputLength int) []byte {
 // TestRun tests the precompiles Run method submitSlash.
 func (s *SlashPrecompileTestSuite) TestRunSlash() {
 	// deposit params for test
-	exoCoreLzAppEventTopic := "0xc6a377bfc4eb120024a8ac08eef205be16b817020812c73223e81d1bdb9708ec"
+	exocoreLzAppEventTopic := "0xc6a377bfc4eb120024a8ac08eef205be16b817020812c73223e81d1bdb9708ec"
 	usdtAddress := common.FromHex("0xdAC17F958D2ee523a2206206994597C13D831ec7")
 	clientChainLzID := 101
 	slashAmount := big.NewInt(10)
 	depositAmount := big.NewInt(100)
-	assetAddr := paddingClientChainAddress(usdtAddress, types.GeneralClientChainAddrLength)
+	assetAddr := paddingClientChainAddress(usdtAddress, assetstype.GeneralClientChainAddrLength)
 	depositAsset := func(staker []byte, depositAmount sdkmath.Int) {
 		// deposit asset for slash test
 		params := &keeper.DepositParams{
 			ClientChainLzID: 101,
-			Action:          types.Deposit,
+			Action:          assetstype.Deposit,
 			StakerAddress:   staker,
 			AssetsAddress:   usdtAddress,
 			OpAmount:        depositAmount,
@@ -78,7 +76,7 @@ func (s *SlashPrecompileTestSuite) TestRunSlash() {
 			slash.MethodSlash,
 			uint16(clientChainLzID),
 			assetAddr,
-			paddingClientChainAddress(s.Address.Bytes(), types.GeneralClientChainAddrLength),
+			paddingClientChainAddress(s.Address.Bytes(), assetstype.GeneralClientChainAddrLength),
 			slashAmount,
 			common.FromHex("0x2E756b8faBeA234b9900767b69D6387400CDC396"),
 			common.FromHex("0xceb69f6342ece283b2f5c9088ff249b5d0ae66ea"),
@@ -101,19 +99,13 @@ func (s *SlashPrecompileTestSuite) TestRunSlash() {
 		{
 			name: "pass - slash via pre-compiles",
 			malleate: func() (common.Address, []byte) {
-				depositModuleParam := &depositParams.Params{
-					ExoCoreLzAppAddress:    s.Address.String(),
-					ExoCoreLzAppEventTopic: exoCoreLzAppEventTopic,
+				depositModuleParam := &assetstype.Params{
+					ExocoreLzAppAddress:    s.Address.String(),
+					ExocoreLzAppEventTopic: exocoreLzAppEventTopic,
 				}
-				err := s.App.DepositKeeper.SetParams(s.Ctx, depositModuleParam)
+				err := s.App.AssetsKeeper.SetParams(s.Ctx, depositModuleParam)
 				s.Require().NoError(err)
 				depositAsset(s.Address.Bytes(), sdkmath.NewIntFromBigInt(depositAmount))
-				slashModuleParam := &slashParams.Params{
-					ExoCoreLzAppAddress:    s.Address.String(),
-					ExoCoreLzAppEventTopic: exoCoreLzAppEventTopic,
-				}
-				err = s.App.ExoSlashKeeper.SetParams(s.Ctx, slashModuleParam)
-				s.Require().NoError(err)
 				return commonMalleate()
 			},
 			returnBytes: successRet,

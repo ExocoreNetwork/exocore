@@ -14,9 +14,9 @@ IDelegation constant DELEGATION_CONTRACT = IDelegation(
 /// @custom:address 0x0000000000000000000000000000000000000805
 interface IDelegation {
 /// TRANSACTIONS
-/// @dev delegate the client chain assets to the operator through client chain, that will change the states in delegation and restaking_assets_manage module
+/// @dev delegate the client chain assets to the operator through client chain, that will change the states in delegation and assets module
 /// Note that this address cannot be a module account.
-/// @param clientChainLzID The lzId of client chain
+/// @param clientChainLzID The LzID of client chain
 /// @param lzNonce The cross chain tx layerZero nonce
 /// @param assetsAddress The client chain asset Address
 /// @param stakerAddress The staker address
@@ -32,9 +32,9 @@ interface IDelegation {
     ) external returns (bool success);
 
 /// TRANSACTIONS
-/// @dev undelegate the client chain assets from the operator through client chain, that will change the states in delegation and restaking_assets_manage module
+/// @dev undelegate the client chain assets from the operator through client chain, that will change the states in delegation and assets module
 /// Note that this address cannot be a module account.
-/// @param clientChainLzID The lzId of client chain
+/// @param clientChainLzID The LzID of client chain
 /// @param lzNonce The cross chain tx layerZero nonce
 /// @param assetsAddress The client chain asset Address
 /// @param stakerAddress The staker address

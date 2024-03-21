@@ -1,8 +1,8 @@
 package keeper
 
 import (
+	"github.com/ExocoreNetwork/exocore/x/assets/keeper"
 	deposittype "github.com/ExocoreNetwork/exocore/x/deposit/types"
-	"github.com/ExocoreNetwork/exocore/x/restaking_assets_manage/keeper"
 	"github.com/cosmos/cosmos-sdk/codec"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -13,18 +13,18 @@ type Keeper struct {
 	cdc      codec.BinaryCodec
 
 	// other keepers
-	restakingStateKeeper keeper.Keeper
+	assetsKeeper keeper.Keeper
 }
 
 func NewKeeper(
 	storeKey storetypes.StoreKey,
 	cdc codec.BinaryCodec,
-	restakingStateKeeper keeper.Keeper,
+	assetsKeeper keeper.Keeper,
 ) Keeper {
 	return Keeper{
-		storeKey:             storeKey,
-		cdc:                  cdc,
-		restakingStateKeeper: restakingStateKeeper,
+		storeKey:     storeKey,
+		cdc:          cdc,
+		assetsKeeper: assetsKeeper,
 	}
 }
 

@@ -2,12 +2,11 @@ package deposit_test
 
 import (
 	"math/big"
-	"strings"
 
 	"github.com/ExocoreNetwork/exocore/app"
 	"github.com/ExocoreNetwork/exocore/precompiles/deposit"
-	types3 "github.com/ExocoreNetwork/exocore/x/deposit/types"
-	"github.com/ExocoreNetwork/exocore/x/restaking_assets_manage/types"
+	assetstype "github.com/ExocoreNetwork/exocore/x/assets/types"
+	deposittype "github.com/ExocoreNetwork/exocore/x/deposit/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/common"
 	ethtypes "github.com/ethereum/go-ethereum/core/types"
@@ -52,12 +51,12 @@ func paddingClientChainAddress(input []byte, outputLength int) []byte {
 // TestRunDepositTo tests DepositTo method through calling Run function..
 func (s *DepositPrecompileSuite) TestRunDepositTo() {
 	// deposit params for test
-	exoCoreLzAppAddress := "0x3fC91A3afd70395Cd496C647d5a6CC9D4B2b7FAD"
-	exoCoreLzAppEventTopic := "0xc6a377bfc4eb120024a8ac08eef205be16b817020812c73223e81d1bdb9708ec"
-	usdtAddress := paddingClientChainAddress(common.FromHex("0xdAC17F958D2ee523a2206206994597C13D831ec7"), types.GeneralClientChainAddrLength)
-	usdcAddress := paddingClientChainAddress(common.FromHex("0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"), types.GeneralClientChainAddrLength)
+	exocoreLzAppAddress := "0x3fC91A3afd70395Cd496C647d5a6CC9D4B2b7FAD"
+	exocoreLzAppEventTopic := "0xc6a377bfc4eb120024a8ac08eef205be16b817020812c73223e81d1bdb9708ec"
+	usdtAddress := paddingClientChainAddress(common.FromHex("0xdAC17F958D2ee523a2206206994597C13D831ec7"), assetstype.GeneralClientChainAddrLength)
+	usdcAddress := paddingClientChainAddress(common.FromHex("0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"), assetstype.GeneralClientChainAddrLength)
 	clientChainLzID := 101
-	stakerAddr := paddingClientChainAddress(s.Address.Bytes(), types.GeneralClientChainAddrLength)
+	stakerAddr := paddingClientChainAddress(s.Address.Bytes(), assetstype.GeneralClientChainAddrLength)
 	opAmount := big.NewInt(100)
 	assetAddr := usdtAddress
 	commonMalleate := func() (common.Address, []byte) {
@@ -88,54 +87,54 @@ func (s *DepositPrecompileSuite) TestRunDepositTo() {
 		returnBytes []byte
 	}{
 		{
-			name: "fail - depositTo transaction will fail because the exoCoreLzAppAddress haven't been stored",
+			name: "fail - depositTo transaction will fail because the exocoreLzAppAddress haven't been stored",
 			malleate: func() (common.Address, []byte) {
 				return commonMalleate()
 			},
 			readOnly:    false,
 			expPass:     false,
-			errContains: types3.ErrNoParamsKey.Error(),
+			errContains: assetstype.ErrNoParamsKey.Error(),
 		},
 		{
 			name: "fail - depositTo transaction will fail because the contract caller isn't the exoCoreLzAppAddr",
 			malleate: func() (common.Address, []byte) {
-				depositModuleParam := &types3.Params{
-					ExoCoreLzAppAddress:    exoCoreLzAppAddress,
-					ExoCoreLzAppEventTopic: exoCoreLzAppEventTopic,
+				depositModuleParam := &assetstype.Params{
+					ExocoreLzAppAddress:    exocoreLzAppAddress,
+					ExocoreLzAppEventTopic: exocoreLzAppEventTopic,
 				}
-				err := s.App.DepositKeeper.SetParams(s.Ctx, depositModuleParam)
+				err := s.App.AssetsKeeper.SetParams(s.Ctx, depositModuleParam)
 				s.Require().NoError(err)
 				return commonMalleate()
 			},
 			readOnly:    false,
 			expPass:     false,
-			errContains: strings.Split(deposit.ErrContractCaller, ",")[0],
+			errContains: assetstype.ErrNotEqualToLzAppAddr.Error(),
 		},
 		{
 			name: "fail - depositTo transaction will fail because the staked asset hasn't been registered",
 			malleate: func() (common.Address, []byte) {
-				depositModuleParam := &types3.Params{
-					ExoCoreLzAppAddress:    s.Address.String(),
-					ExoCoreLzAppEventTopic: exoCoreLzAppEventTopic,
+				depositModuleParam := &assetstype.Params{
+					ExocoreLzAppAddress:    s.Address.String(),
+					ExocoreLzAppEventTopic: exocoreLzAppEventTopic,
 				}
-				err := s.App.DepositKeeper.SetParams(s.Ctx, depositModuleParam)
+				err := s.App.AssetsKeeper.SetParams(s.Ctx, depositModuleParam)
 				s.Require().NoError(err)
 				assetAddr = usdcAddress
 				return commonMalleate()
 			},
 			readOnly:    false,
 			expPass:     false,
-			errContains: types3.ErrDepositAssetNotExist.Error(),
+			errContains: deposittype.ErrDepositAssetNotExist.Error(),
 		},
 		{
 			name: "pass - depositTo transaction",
 			malleate: func() (common.Address, []byte) {
-				depositModuleParam := &types3.Params{
-					ExoCoreLzAppAddress:    s.Address.String(),
-					ExoCoreLzAppEventTopic: exoCoreLzAppEventTopic,
+				depositModuleParam := &assetstype.Params{
+					ExocoreLzAppAddress:    s.Address.String(),
+					ExocoreLzAppEventTopic: exocoreLzAppEventTopic,
 				}
 				assetAddr = usdtAddress
-				err := s.App.DepositKeeper.SetParams(s.Ctx, depositModuleParam)
+				err := s.App.AssetsKeeper.SetParams(s.Ctx, depositModuleParam)
 				s.Require().NoError(err)
 				return commonMalleate()
 			},

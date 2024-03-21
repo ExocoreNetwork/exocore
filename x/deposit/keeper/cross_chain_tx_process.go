@@ -5,8 +5,8 @@ import (
 
 	errorsmod "cosmossdk.io/errors"
 	sdkmath "cosmossdk.io/math"
+	"github.com/ExocoreNetwork/exocore/x/assets/types"
 	despoittypes "github.com/ExocoreNetwork/exocore/x/deposit/types"
-	"github.com/ExocoreNetwork/exocore/x/restaking_assets_manage/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
@@ -43,7 +43,7 @@ type DepositParams struct {
 		return nil, errorsmod.Wrap(err, "error occurred when binary read ClientChainLzID from topic")
 	}
 
-	clientChainInfo, err := k.restakingStateKeeper.GetClientChainInfoByIndex(ctx, clientChainLzID)
+	clientChainInfo, err := k.assetsKeeper.GetClientChainInfoByIndex(ctx, clientChainLzID)
 	if err != nil {
 		return nil, errorsmod.Wrap(err, "error occurred when get client chain info")
 	}
@@ -130,21 +130,21 @@ func (k Keeper) Deposit(ctx sdk.Context, params *DepositParams) error {
 	}
 	stakeID, assetID := types.GetStakeIDAndAssetID(params.ClientChainLzID, params.StakerAddress, params.AssetsAddress)
 	// check if asset exist
-	if !k.restakingStateKeeper.IsStakingAsset(ctx, assetID) {
+	if !k.assetsKeeper.IsStakingAsset(ctx, assetID) {
 		return errorsmod.Wrap(despoittypes.ErrDepositAssetNotExist, fmt.Sprintf("the assetID is:%s", assetID))
 	}
-	changeAmount := types.StakerSingleAssetOrChangeInfo{
-		TotalDepositAmountOrWantChangeValue: params.OpAmount,
-		CanWithdrawAmountOrWantChangeValue:  params.OpAmount,
+	changeAmount := types.StakerSingleAssetChangeInfo{
+		TotalDepositAmount: params.OpAmount,
+		WithdrawableAmount: params.OpAmount,
 	}
 	// update asset state of the specified staker
-	err := k.restakingStateKeeper.UpdateStakerAssetState(ctx, stakeID, assetID, changeAmount)
+	err := k.assetsKeeper.UpdateStakerAssetState(ctx, stakeID, assetID, changeAmount)
 	if err != nil {
 		return err
 	}
 
 	// update total amount of the deposited asset
-	err = k.restakingStateKeeper.UpdateStakingAssetTotalAmount(ctx, assetID, params.OpAmount)
+	err = k.assetsKeeper.UpdateStakingAssetTotalAmount(ctx, assetID, params.OpAmount)
 	if err != nil {
 		return err
 	}

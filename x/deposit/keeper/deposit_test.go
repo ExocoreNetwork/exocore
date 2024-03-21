@@ -2,9 +2,9 @@ package keeper_test
 
 import (
 	sdkmath "cosmossdk.io/math"
+	"github.com/ExocoreNetwork/exocore/x/assets/types"
 	"github.com/ExocoreNetwork/exocore/x/deposit/keeper"
 	deposittype "github.com/ExocoreNetwork/exocore/x/deposit/types"
-	"github.com/ExocoreNetwork/exocore/x/restaking_assets_manage/types"
 	"github.com/ethereum/go-ethereum/common"
 )
 
@@ -23,7 +23,7 @@ func (suite *DepositTestSuite) TestDeposit() {
 	err := suite.App.DepositKeeper.Deposit(suite.Ctx, params)
 	suite.ErrorContains(err, deposittype.ErrDepositAssetNotExist.Error())
 
-	assets, err := suite.App.StakingAssetsManageKeeper.GetAllStakingAssetsInfo(suite.Ctx)
+	assets, err := suite.App.AssetsKeeper.GetAllStakingAssetsInfo(suite.Ctx)
 	suite.NoError(err)
 	suite.App.Logger().Info("the assets is:", "assets", assets)
 
@@ -34,15 +34,15 @@ func (suite *DepositTestSuite) TestDeposit() {
 
 	// check state after deposit
 	stakerID, assetID := types.GetStakeIDAndAssetID(params.ClientChainLzID, params.StakerAddress, params.AssetsAddress)
-	info, err := suite.App.StakingAssetsManageKeeper.GetStakerSpecifiedAssetInfo(suite.Ctx, stakerID, assetID)
+	info, err := suite.App.AssetsKeeper.GetStakerSpecifiedAssetInfo(suite.Ctx, stakerID, assetID)
 	suite.NoError(err)
-	suite.Equal(types.StakerSingleAssetOrChangeInfo{
-		TotalDepositAmountOrWantChangeValue:     params.OpAmount,
-		CanWithdrawAmountOrWantChangeValue:      params.OpAmount,
-		WaitUndelegationAmountOrWantChangeValue: sdkmath.NewInt(0),
+	suite.Equal(types.StakerAssetInfo{
+		TotalDepositAmount:  params.OpAmount,
+		WithdrawableAmount:  params.OpAmount,
+		WaitUnbondingAmount: sdkmath.NewInt(0),
 	}, *info)
 
-	assetInfo, err := suite.App.StakingAssetsManageKeeper.GetStakingAssetInfo(suite.Ctx, assetID)
+	assetInfo, err := suite.App.AssetsKeeper.GetStakingAssetInfo(suite.Ctx, assetID)
 	suite.NoError(err)
 	suite.Equal(params.OpAmount, assetInfo.StakingTotalAmount)
 }

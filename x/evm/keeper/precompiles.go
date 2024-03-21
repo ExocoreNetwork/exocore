@@ -3,7 +3,7 @@ package keeper
 import (
 	"fmt"
 
-	stakingStateKeeper "github.com/ExocoreNetwork/exocore/x/restaking_assets_manage/keeper"
+	stakingStateKeeper "github.com/ExocoreNetwork/exocore/x/assets/keeper"
 	rewardKeeper "github.com/ExocoreNetwork/exocore/x/reward/keeper"
 	withdrawKeeper "github.com/ExocoreNetwork/exocore/x/withdraw/keeper"
 

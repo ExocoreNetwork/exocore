@@ -1,8 +1,9 @@
 package reward_test
 
 import (
-	"github.com/ExocoreNetwork/exocore/testutil"
 	"testing"
+
+	"github.com/ExocoreNetwork/exocore/testutil"
 
 	"github.com/ExocoreNetwork/exocore/precompiles/reward"
 
@@ -30,7 +31,7 @@ func TestPrecompileTestSuite(t *testing.T) {
 
 func (s *RewardPrecompileTestSuite) SetupTest() {
 	s.DoSetupTest()
-	precompile, err := reward.NewPrecompile(s.App.StakingAssetsManageKeeper, s.App.RewardKeeper, s.App.AuthzKeeper)
+	precompile, err := reward.NewPrecompile(s.App.AssetsKeeper, s.App.RewardKeeper, s.App.AuthzKeeper)
 	s.Require().NoError(err)
 	s.precompile = precompile
 }

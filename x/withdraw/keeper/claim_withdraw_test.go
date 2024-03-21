@@ -2,8 +2,8 @@ package keeper_test
 
 import (
 	sdkmath "cosmossdk.io/math"
+	"github.com/ExocoreNetwork/exocore/x/assets/types"
 	depositKeeper "github.com/ExocoreNetwork/exocore/x/deposit/keeper"
-	"github.com/ExocoreNetwork/exocore/x/restaking_assets_manage/types"
 	"github.com/ExocoreNetwork/exocore/x/withdraw/keeper"
 	withdrawtype "github.com/ExocoreNetwork/exocore/x/withdraw/types"
 	"github.com/ethereum/go-ethereum/common"
@@ -36,17 +36,17 @@ func (suite *WithdrawTestSuite) TestClaimWithdrawRequest() {
 	err = suite.App.WithdrawKeeper.Withdraw(suite.Ctx, event)
 	suite.ErrorContains(err, withdrawtype.ErrWithdrawAssetNotExist.Error())
 
-	assets, err := suite.App.StakingAssetsManageKeeper.GetAllStakingAssetsInfo(suite.Ctx)
+	assets, err := suite.App.AssetsKeeper.GetAllStakingAssetsInfo(suite.Ctx)
 	suite.NoError(err)
 	suite.App.Logger().Info("the assets is:", "assets", assets)
 
 	stakerID, assetID := types.GetStakeIDAndAssetID(depositEvent.ClientChainLzID, depositEvent.StakerAddress, depositEvent.AssetsAddress)
-	info, err := suite.App.StakingAssetsManageKeeper.GetStakerSpecifiedAssetInfo(suite.Ctx, stakerID, assetID)
+	info, err := suite.App.AssetsKeeper.GetStakerSpecifiedAssetInfo(suite.Ctx, stakerID, assetID)
 	suite.NoError(err)
-	suite.Equal(types.StakerSingleAssetOrChangeInfo{
-		TotalDepositAmountOrWantChangeValue:     depositEvent.OpAmount,
-		CanWithdrawAmountOrWantChangeValue:      depositEvent.OpAmount,
-		WaitUndelegationAmountOrWantChangeValue: sdkmath.NewInt(0),
+	suite.Equal(types.StakerAssetInfo{
+		TotalDepositAmount:  depositEvent.OpAmount,
+		WithdrawableAmount:  depositEvent.OpAmount,
+		WaitUnbondingAmount: sdkmath.NewInt(0),
 	}, *info)
 	// test the normal case
 	event.AssetsAddress = usdtAddress[:]
@@ -55,15 +55,15 @@ func (suite *WithdrawTestSuite) TestClaimWithdrawRequest() {
 
 	// check state after withdraw
 	stakerID, assetID = types.GetStakeIDAndAssetID(event.ClientChainLzID, event.WithdrawAddress, event.AssetsAddress)
-	info, err = suite.App.StakingAssetsManageKeeper.GetStakerSpecifiedAssetInfo(suite.Ctx, stakerID, assetID)
+	info, err = suite.App.AssetsKeeper.GetStakerSpecifiedAssetInfo(suite.Ctx, stakerID, assetID)
 	suite.NoError(err)
-	suite.Equal(types.StakerSingleAssetOrChangeInfo{
-		TotalDepositAmountOrWantChangeValue:     sdkmath.NewInt(10),
-		CanWithdrawAmountOrWantChangeValue:      sdkmath.NewInt(10),
-		WaitUndelegationAmountOrWantChangeValue: sdkmath.NewInt(0),
+	suite.Equal(types.StakerAssetInfo{
+		TotalDepositAmount:  sdkmath.NewInt(10),
+		WithdrawableAmount:  sdkmath.NewInt(10),
+		WaitUnbondingAmount: sdkmath.NewInt(0),
 	}, *info)
 
-	assetInfo, err := suite.App.StakingAssetsManageKeeper.GetStakingAssetInfo(suite.Ctx, assetID)
+	assetInfo, err := suite.App.AssetsKeeper.GetStakingAssetInfo(suite.Ctx, assetID)
 	suite.NoError(err)
 	suite.Equal(sdkmath.NewInt(10), assetInfo.StakingTotalAmount)
 }

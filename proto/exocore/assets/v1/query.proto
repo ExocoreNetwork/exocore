@@ -1,0 +1,164 @@
+syntax = "proto3";
+package exocore.assets.v1;
+
+import "cosmos/query/v1/query.proto";
+import "cosmos_proto/cosmos.proto";
+import "exocore/assets/v1/params.proto";
+import "exocore/assets/v1/tx.proto";
+import "gogoproto/gogo.proto";
+import "google/api/annotations.proto";
+
+option go_package = "github.com/ExocoreNetwork/exocore/x/assets/types";
+
+// QueryClientChainInfo is the query for getting the client chain info by index.
+message QueryClientChainInfo {
+  // chain_index is the index of the chain.
+  uint64 chain_index = 1;
+}
+
+// QueryAllClientChainInfo is the query for all client chains info.
+message QueryAllClientChainInfo {}
+
+// QueryAllClientChainInfoResponse is the response for all client chains info.
+message QueryAllClientChainInfoResponse {
+  // all_client_chain_infos is the all client chain info, indexed by the chain index.
+  map<uint64, ClientChainInfo> all_client_chain_infos = 1;
+}
+
+// QueryStakingAssetInfo is the query for getting the staking asset info.
+message QueryStakingAssetInfo {
+  // asset_id is the asset for which the query is made.
+  string asset_id = 1 [(gogoproto.customname) = "AssetID"];
+}
+
+// QueryAllStakingAssetsInfo is the query for getting all staking assets info.
+message QueryAllStakingAssetsInfo {}
+
+// QueryAllStakingAssetsInfoResponse is the response for all staking assets info,
+// indexed by the asset id.
+message QueryAllStakingAssetsInfoResponse {
+  // all_staking_assets_info is the response for all staking assets info.
+  map<string, StakingAssetInfo> all_staking_assets_info = 1;
+}
+
+// QueryStakerAssetInfo is the query for getting the staker asset info.
+message QueryStakerAssetInfo {
+  // stake_id is the staker id for which the query is made.
+  string staker_id = 1 [(gogoproto.customname) = "StakerID"];
+}
+
+// QueryAssetInfoResponse is the response for the staker asset info.
+message QueryAssetInfoResponse {
+  // asset_infos is the response for the staker asset info, indexed by the asset id.
+  map<string, StakerAssetInfo> asset_infos = 1;
+}
+
+// QuerySpecifiedAssetAmountReq is the query for getting the staker specified asset amount.
+message QuerySpecifiedAssetAmountReq {
+  // staker_id is the staker id for which the query is made.
+  string staker_id = 1 [(gogoproto.customname) = "StakerID"];
+  // asset_id is the asset for which the query is made.
+  string asset_id = 2 [(gogoproto.customname) = "AssetID"];
+}
+
+// QueryOperatorAssetInfos is the query for getting the operator asset info.
+message QueryOperatorAssetInfos {
+  // operator_addr is the operator address for which the query is made.
+  string operator_addr = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+}
+
+// QueryOperatorAssetInfosResponse is the response to the operator asset info query.
+message QueryOperatorAssetInfosResponse {
+  // asset_infos is the response for the operator asset info, indexed by the asset id.
+  map<string, OperatorAssetInfo> asset_infos = 1;
+}
+
+// QueryOperatorSpecifiedAssetAmountReq is the query for getting the operator 
+// specified asset amount.
+message QueryOperatorSpecifiedAssetAmountReq {
+  // operator_addr is the operator address for which the query is made.
+  string operator_addr = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+  // asset_id is the asset for which the query is made.
+  string asset_id = 2 [(gogoproto.customname) = "AssetID"];
+}
+
+// QueryStakerExCoreAddr is the query for getting the staker exocore address.
+message QueryStakerExCoreAddr {
+  // Per https://github.com/gogo/protobuf/issues/331, grpc-gateway does not like custom names.
+  // So we remove the id suffix from here as well as the query.
+  string staker = 1;
+}
+
+// QueryStakerExCoreAddrResponse is the response for the staker exocore address query.
+message QueryStakerExCoreAddrResponse {
+  // exocore_addr is the exocore address of the staker.
+  string exocore_addr = 1 [
+    (cosmos_proto.scalar) = "cosmos.AddressString",
+    (gogoproto.customname) = "ExoCoreAddr"
+  ];
+}
+
+// QueryParamsRequest is the request type for the Query/Params RPC method.
+message QueryParamsRequest {}
+
+// QueryParamsResponse is the response type for the Query/Params RPC
+// method.
+message QueryParamsResponse {
+  // params defines the parameters for this module.
+  Params params = 1 ;
+}
+
+// Query defines the gRPC query service for the assets module.
+service Query {
+  // Params retrieves the assets module params
+  rpc Params(QueryParamsRequest) returns (QueryParamsResponse) {
+    option (google.api.http).get = "/exocore/assets/v1/Params";
+  }
+
+  // ClientChainInfoByIndex queries the client chain info by index.
+  rpc QueClientChainInfoByIndex(QueryClientChainInfo) returns (ClientChainInfo) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/exocore/assets/v1/QueClientChainInfoByIndex";
+  }
+  // AllClientChainInfo queries all client chain info.
+  rpc QueAllClientChainInfo(QueryAllClientChainInfo) returns (QueryAllClientChainInfoResponse){
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/exocore/assets/v1/QueAllClientChainInfo";
+  }
+  // StakingAssetInfo queries the staking asset info.
+  rpc QueStakingAssetInfo(QueryStakingAssetInfo)returns(StakingAssetInfo){
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/exocore/assets/v1/QueStakingAssetInfo";
+  }
+  // AllStakingAssetsInfo queries all staking assets info.
+  rpc QueAllStakingAssetsInfo(QueryAllStakingAssetsInfo)returns(QueryAllStakingAssetsInfoResponse){
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/exocore/assets/v1/QueAllStakingAssetsInfo";
+  }
+  // StakerAssetInfos queries the staker asset info.
+  rpc QueStakerAssetInfos(QueryStakerAssetInfo)returns(QueryAssetInfoResponse){
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/exocore/assets/v1/QueStakerAssetInfos";
+  }
+  // StakerSpecifiedAssetAmount queries the staker specified asset amount.
+  rpc QueStakerSpecifiedAssetAmount(QuerySpecifiedAssetAmountReq)returns(StakerAssetInfo){
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/exocore/assets/v1/QueStakerSpecifiedAssetAmount";
+  }
+  // OperatorAssetInfos queries the operator asset info.
+  rpc QueOperatorAssetInfos(QueryOperatorAssetInfos)returns(QueryOperatorAssetInfosResponse){
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/exocore/assets/v1/QueOperatorAssetInfos";
+  }
+  // OperatorSpecifiedAssetAmount queries the operator specified asset amount.
+  rpc QueOperatorSpecifiedAssetAmount(QueryOperatorSpecifiedAssetAmountReq) returns(OperatorAssetInfo){
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/exocore/assets/v1/QueStakerSpecifiedAssetAmount";
+  }
+  // StakerExCoreAddr queries the staker exocore address.
+  rpc QueStakerExoCoreAddr(QueryStakerExCoreAddr) returns (QueryStakerExCoreAddrResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/exocore/assets/v1/QueStakerExoCoreAddr/{staker}";
+  }
+}
+

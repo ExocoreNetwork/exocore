@@ -7,6 +7,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/crypto/keyring"
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
+	pruningtypes "github.com/cosmos/cosmos-sdk/store/pruning/types"
 	"github.com/evmos/evmos/v14/testutil"
 	"github.com/stretchr/testify/suite"
 	"golang.org/x/exp/rand"
@@ -72,7 +73,8 @@ func (suite *BaseTestSuite) SetupTest() {
 // of one consensus engine unit (10^6) in the default token of the simapp from first genesis
 // account. A Nop logger is set in SimApp.
 func (suite *BaseTestSuite) SetupWithGenesisValSet(valSet *tmtypes.ValidatorSet, genAccs []authtypes.GenesisAccount, balances ...banktypes.Balance) {
-	appI, genesisState := exocoreapp.SetupTestingApp(utils.DefaultChainID, false)()
+	pruneOpts := pruningtypes.NewPruningOptionsFromString(pruningtypes.PruningOptionDefault)
+	appI, genesisState := exocoreapp.SetupTestingApp(utils.DefaultChainID, &pruneOpts, false)()
 	app, ok := appI.(*exocoreapp.ExocoreApp)
 	suite.Require().True(ok)
 
@@ -253,6 +255,6 @@ func (suite *BaseTestSuite) DeployContract(contract evmtypes.CompiledContract) (
 // NextBlock commits the current block and sets up the next block.
 func (suite *BaseTestSuite) NextBlock() {
 	var err error
-	suite.Ctx, err = CommitAndCreateNewCtx(suite.Ctx, suite.App, time.Second, suite.ValSet)
+	suite.Ctx, err = CommitAndCreateNewCtx(suite.Ctx, suite.App, time.Second, suite.ValSet, true)
 	suite.Require().NoError(err)
 }
