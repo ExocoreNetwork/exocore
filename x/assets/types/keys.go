@@ -7,6 +7,7 @@ import (
 	errorsmod "cosmossdk.io/errors"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/common/hexutil"
 )
 
 // constants
@@ -134,7 +135,27 @@ func ParseJoinedKey(key []byte) (keys []string, err error) {
 func ParseJoinedStoreKey(key []byte, number int) (keys []string, err error) {
 	stringList := strings.Split(string(key), "/")
 	if len(stringList) != number {
-		return nil, errorsmod.Wrap(ErrParseAssetsStateKey, fmt.Sprintf("expected length:%d,actual length:%d,the stringList is:%v", number, len(stringList), stringList))
+		return nil, errorsmod.Wrap(
+			ErrParseAssetsStateKey,
+			fmt.Sprintf(
+				"expected length:%d,actual length:%d,the stringList is:%v",
+				number,
+				len(stringList),
+				stringList,
+			),
+		)
 	}
 	return stringList, nil
+}
+
+func ParseID(key string) (string, uint64, error) {
+	keys := strings.Split(key, "_")
+	if len(keys) != 2 {
+		return "", 0, errorsmod.Wrap(ErrParseAssetsStateKey, fmt.Sprintf("invalid key:%s", key))
+	}
+	if id, err := hexutil.DecodeUint64(keys[1]); err != nil {
+		return "", 0, errorsmod.Wrap(ErrParseAssetsStateKey, fmt.Sprintf("invalid key:%s", key))
+	} else {
+		return keys[0], id, nil
+	}
 }

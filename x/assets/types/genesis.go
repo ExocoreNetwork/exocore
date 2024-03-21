@@ -1,12 +1,9 @@
 package types
 
 import (
-	"strings"
-
 	errorsmod "cosmossdk.io/errors"
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/ethereum/go-ethereum/common/hexutil"
 )
 
 // NewGenesis returns a new genesis state with the given inputs.
@@ -174,25 +171,18 @@ func (gs GenesisState) Validate() error {
 				"empty staker ID",
 			)
 		}
-		if keys := strings.Split(staker, "_"); len(keys) != 2 {
+		if _, id, err := ParseID(staker); err != nil {
 			return errorsmod.Wrapf(
 				ErrInvalidGenesisData,
-				"invalid staker ID %s", staker,
+				"invalid staker ID %s: %s", staker, err,
 			)
 		} else {
-			if id, err := hexutil.DecodeUint64(string(keys[1])); err != nil {
+			if _, ok := lzIDs[id]; !ok {
 				return errorsmod.Wrapf(
 					ErrInvalidGenesisData,
-					"invalid staker ID %s: %s", staker, err,
+					"unknown LayerZeroChainID for staker %s: %d",
+					staker, id,
 				)
-			} else {
-				if _, ok := lzIDs[id]; !ok {
-					return errorsmod.Wrapf(
-						ErrInvalidGenesisData,
-						"unknown LayerZeroChainID for staker %s: %d",
-						staker, id,
-					)
-				}
 			}
 		}
 		if _, ok := delegationsByStaker[staker]; ok {
