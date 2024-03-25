@@ -29,7 +29,7 @@ func (k *Keeper) SetOperatorConsKeyForChainID(
 	opAccAddr sdk.AccAddress,
 	chainID string,
 	// should be tm-ed25519
-	consKey tmprotocrypto.PublicKey,
+	consKey *tmprotocrypto.PublicKey,
 ) error {
 	// check if we are an operator
 	if !k.IsOperator(ctx, opAccAddr) {
@@ -51,16 +51,14 @@ func (k *Keeper) SetOperatorConsKeyForChainID(
 	bz, err := consKey.Marshal()
 	if err != nil {
 		return errorsmod.Wrap(
-			err,
-			"SetOperatorConsKeyForChainID: error occurred when marshal public key",
+			err, "SetOperatorConsKeyForChainID: cannot marshal public key",
 		)
 	}
 	// convert to address for reverse lookup
 	consAddr, err := types.TMCryptoPublicKeyToConsAddr(consKey)
 	if err != nil {
 		return errorsmod.Wrap(
-			err,
-			"SetOperatorConsKeyForChainID: error occurred when convert public key to consensus address",
+			err, "SetOperatorConsKeyForChainID: cannot convert pub key to consensus address",
 		)
 	}
 	// check if the key is already in use by another operator
@@ -94,24 +92,32 @@ func (k *Keeper) SetOperatorConsKeyForChainID(
 			panic(err)
 		}
 		if !alreadyRecorded {
-			if err := k.setOperatorPrevConsKeyForChainID(ctx, opAccAddr, chainID, prevKey); err != nil {
+			if err := k.setOperatorPrevConsKeyForChainID(
+				ctx, opAccAddr, chainID, prevKey,
+			); err != nil {
 				// this should not happen
 				panic(err)
 			}
 		}
 	}
-	// 	k.setOperatorConsKeyForChainID(ctx, opAccAddr, chainID, bz)
-	// 	return nil
-	// }
+	k.setOperatorConsKeyForChainID(ctx, opAccAddr, consAddr, chainID, bz)
+	if found {
+		if !alreadyRecorded {
+			k.Hooks().AfterOperatorKeyReplacement(ctx, opAccAddr, prevKey, consKey, chainID)
+		}
+	} else {
+		k.Hooks().AfterOperatorOptIn(ctx, opAccAddr, chainID, consKey)
+	}
+	return nil
+}
 
-	// // setOperatorConsKeyForChainID is the internal private version. It performs
-	// // no error checking of the input.
-	// func (k Keeper) setOperatorConsKeyForChainID(
-	// 	ctx sdk.Context,
-	// 	opAccAddr sdk.AccAddress,
-	// 	chainID string,
-	// 	bz []byte,
-	// ) {
+// setOperatorConsKeyForChainID is the internal private version. It performs
+// no error checking of the input. The caller must do the error checking
+// and then call this function.
+func (k Keeper) setOperatorConsKeyForChainID(
+	ctx sdk.Context, opAccAddr sdk.AccAddress, consAddr sdk.ConsAddress,
+	chainID string, bz []byte,
+) {
 	store := ctx.KVStore(k.storeKey)
 	// forward lookup
 	// given operator address and chain id, find the consensus key,
@@ -132,14 +138,6 @@ func (k *Keeper) SetOperatorConsKeyForChainID(
 	// this pruning will be triggered by the app chain module and will not be
 	// recorded here.
 	store.Set(types.KeyForChainIDAndConsKeyToOperator(chainID, consAddr), opAccAddr.Bytes())
-	if found {
-		if !alreadyRecorded {
-			k.Hooks().AfterOperatorKeyReplacement(ctx, opAccAddr, prevKey, consKey, chainID)
-		}
-	} else {
-		k.Hooks().AfterOperatorOptIn(ctx, opAccAddr, chainID, consKey)
-	}
-	return nil
 }
 
 // setOperatorPrevConsKeyForChainID sets the previous (consensus) public key for the given
@@ -150,7 +148,7 @@ func (k *Keeper) setOperatorPrevConsKeyForChainID(
 	ctx sdk.Context,
 	opAccAddr sdk.AccAddress,
 	chainID string,
-	prevKey tmprotocrypto.PublicKey,
+	prevKey *tmprotocrypto.PublicKey,
 ) error {
 	bz, err := prevKey.Marshal()
 	if err != nil {
@@ -169,7 +167,7 @@ func (k *Keeper) setOperatorPrevConsKeyForChainID(
 // to 0 in the validator update.
 func (k *Keeper) GetOperatorPrevConsKeyForChainID(
 	ctx sdk.Context, opAccAddr sdk.AccAddress, chainID string,
-) (found bool, key tmprotocrypto.PublicKey, err error) {
+) (found bool, key *tmprotocrypto.PublicKey, err error) {
 	// check if we are an operator
 	if !k.IsOperator(ctx, opAccAddr) {
 		err = delegationtypes.ErrOperatorNotExist
@@ -184,14 +182,13 @@ func (k *Keeper) GetOperatorPrevConsKeyForChainID(
 	return
 }
 
-// getOperatorPrevConsKeyForChainID is the internal version of
-// GetOperatorPrevConsKeyForChainID.
+// getOperatorPrevConsKeyForChainID is the internal version of GetOperatorPrevConsKeyForChainID.
 // It performs no error checking of the input.
 func (k *Keeper) getOperatorPrevConsKeyForChainID(
 	ctx sdk.Context,
 	opAccAddr sdk.AccAddress,
 	chainID string,
-) (found bool, key tmprotocrypto.PublicKey, err error) {
+) (found bool, key *tmprotocrypto.PublicKey, err error) {
 	store := ctx.KVStore(k.storeKey)
 	res := store.Get(types.KeyForOperatorAndChainIDToPrevConsKey(opAccAddr, chainID))
 	if res == nil {
@@ -210,7 +207,7 @@ func (k *Keeper) GetOperatorConsKeyForChainID(
 	ctx sdk.Context,
 	opAccAddr sdk.AccAddress,
 	chainID string,
-) (found bool, key tmprotocrypto.PublicKey, err error) {
+) (found bool, key *tmprotocrypto.PublicKey, err error) {
 	// check if we are an operator
 	if !k.IsOperator(ctx, opAccAddr) {
 		err = delegationtypes.ErrOperatorNotExist
@@ -232,7 +229,7 @@ func (k *Keeper) getOperatorConsKeyForChainID(
 	ctx sdk.Context,
 	opAccAddr sdk.AccAddress,
 	chainID string,
-) (found bool, key tmprotocrypto.PublicKey, err error) {
+) (found bool, key *tmprotocrypto.PublicKey, err error) {
 	store := ctx.KVStore(k.storeKey)
 	res := store.Get(types.KeyForOperatorAndChainIDToConsKey(opAccAddr, chainID))
 	if res == nil {
@@ -244,13 +241,14 @@ func (k *Keeper) getOperatorConsKeyForChainID(
 	return true, key, nil
 }
 
-// GetChainIDsAndKeysForOperator gets the chain ids for which the given operator address has set a
+// GetChainIDsAndKeysForOperator gets the chain ids for which the given operator address has set
+// a
 // (consensus) public key. TODO: would it be better to make this a key per operator?
 // This is intentionally an array of strings because I don't see the utility for the vote power
 // or the public key here. If we need it, we can add it later.
 func (k *Keeper) GetChainIDsAndKeysForOperator(
 	ctx sdk.Context, opAccAddr sdk.AccAddress,
-) (chainIDs []string, consKeys []tmprotocrypto.PublicKey) {
+) (chainIDs []string, consKeys []*tmprotocrypto.PublicKey) {
 	// check if we are an operator
 	if !k.IsOperator(ctx, opAccAddr) {
 		return
@@ -268,7 +266,7 @@ func (k *Keeper) GetChainIDsAndKeysForOperator(
 	for ; iterator.Valid(); iterator.Next() {
 		// the key returned is the full key, with the prefix. drop the prefix and the length.
 		chainID := string(iterator.Key()[len(prefix)+8:])
-		var key tmprotocrypto.PublicKey
+		var key *tmprotocrypto.PublicKey
 		if err := key.Unmarshal(iterator.Value()); err != nil {
 			// grave error because we are the ones who stored this information in the first
 			// place
@@ -285,7 +283,7 @@ func (k *Keeper) GetChainIDsAndKeysForOperator(
 // jailed or frozen operators.
 func (k *Keeper) GetOperatorsForChainID(
 	ctx sdk.Context, chainID string,
-) (addrs []sdk.AccAddress, pubKeys []tmprotocrypto.PublicKey) {
+) (addrs []sdk.AccAddress, pubKeys []*tmprotocrypto.PublicKey) {
 	if !k.assetsKeeper.AppChainInfoIsExist(ctx, chainID) {
 		return nil, nil
 	}
@@ -306,7 +304,7 @@ func (k *Keeper) GetOperatorsForChainID(
 		// so just drop it and convert to sdk.AccAddress
 		addr := iterator.Key()[len(prefix):]
 		res := iterator.Value()
-		var ret tmprotocrypto.PublicKey
+		var ret *tmprotocrypto.PublicKey
 		if err := ret.Unmarshal(res); err != nil {
 			// grave error
 			panic(err)

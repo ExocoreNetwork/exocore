@@ -17,7 +17,7 @@ func (hooks MultiOperatorConsentHooks) AfterOperatorOptIn(
 	ctx sdk.Context,
 	addr sdk.AccAddress,
 	chainID string,
-	pubKey tmprotocrypto.PublicKey,
+	pubKey *tmprotocrypto.PublicKey,
 ) {
 	for _, hook := range hooks {
 		hook.AfterOperatorOptIn(ctx, addr, chainID, pubKey)
@@ -27,8 +27,8 @@ func (hooks MultiOperatorConsentHooks) AfterOperatorOptIn(
 func (hooks MultiOperatorConsentHooks) AfterOperatorKeyReplacement(
 	ctx sdk.Context,
 	addr sdk.AccAddress,
-	oldKey tmprotocrypto.PublicKey,
-	newAddr tmprotocrypto.PublicKey,
+	oldKey *tmprotocrypto.PublicKey,
+	newAddr *tmprotocrypto.PublicKey,
 	chainID string,
 ) {
 	for _, hook := range hooks {
@@ -37,7 +37,7 @@ func (hooks MultiOperatorConsentHooks) AfterOperatorKeyReplacement(
 }
 
 func (hooks MultiOperatorConsentHooks) AfterOperatorOptOutInitiated(
-	ctx sdk.Context, addr sdk.AccAddress, chainID string, key tmprotocrypto.PublicKey,
+	ctx sdk.Context, addr sdk.AccAddress, chainID string, key *tmprotocrypto.PublicKey,
 ) {
 	for _, hook := range hooks {
 		hook.AfterOperatorOptOutInitiated(ctx, addr, chainID, key)

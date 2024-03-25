@@ -42,18 +42,14 @@ func (gs GenesisState) Validate() error {
 					return errorsmod.Wrapf(
 						ErrInvalidGenesisData,
 						"amount is nil for %s: %s: %s",
-						stakerID,
-						assetID,
-						operatorAddress,
+						stakerID, assetID, operatorAddress,
 					)
 				}
 				if amount.IsNegative() {
 					return errorsmod.Wrapf(
 						ErrInvalidGenesisData,
 						"amount is negative for %s: %s: %s",
-						stakerID,
-						assetID,
-						operatorAddress,
+						stakerID, assetID, operatorAddress,
 					)
 				}
 			}
