@@ -1,8 +1,10 @@
 package keeper_test
 
 import (
+	"cosmossdk.io/math"
 	"github.com/ExocoreNetwork/exocore/x/assets/types"
 	operatortype "github.com/ExocoreNetwork/exocore/x/operator/types"
+	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 )
 
 func (suite *OperatorTestSuite) TestOperatorInfo() {
@@ -15,6 +17,8 @@ func (suite *OperatorTestSuite) TestOperatorInfo() {
 				{101, "0x1f9840a85d5af5bf1d1762f925bdaddc4201f984"},
 			},
 		},
+		Commission:        stakingtypes.NewCommission(math.LegacyZeroDec(), math.LegacyZeroDec(), math.LegacyZeroDec()),
+		MinSelfDelegation: math.NewInt(0),
 	}
 	err := suite.App.OperatorKeeper.SetOperatorInfo(suite.Ctx, suite.AccAddress.String(), info)
 	suite.NoError(err)

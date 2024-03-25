@@ -61,15 +61,8 @@ func (k Keeper) ValidatorByConsAddr(
 	ctx sdk.Context,
 	addr sdk.ConsAddress,
 ) stakingtypes.ValidatorI {
-	found, accAddr := k.operatorKeeper.GetOperatorAddressForChainIDAndConsAddr(
-		ctx, ctx.ChainID(), addr,
-	)
-	if !found {
-		// replicate the behavior of the SDK's staking module; do not panic.
-		return nil
-	}
 	return stakingtypes.Validator{
-		Jailed: k.operatorKeeper.IsOperatorJailedForChainID(ctx, accAddr, ctx.ChainID()),
+		Jailed: k.operatorKeeper.IsOperatorJailedForChainID(ctx, addr, ctx.ChainID()),
 	}
 }
 
@@ -123,8 +116,8 @@ func (k Keeper) Jail(ctx sdk.Context, addr sdk.ConsAddress) {
 // The function is called by the slashing module only when it receives a request from the
 // operator to do so. TODO(mm): We need to use the SDK's slashing module to allow for downtime
 // slashing but somehow we need to prevent its Unjail function from being called by anyone.
-func (k Keeper) Unjail(sdk.Context, sdk.ConsAddress) {
-	panic("unimplemented on this keeper")
+func (k Keeper) Unjail(ctx sdk.Context, addr sdk.ConsAddress) {
+	k.operatorKeeper.Unjail(ctx, addr, ctx.ChainID())
 }
 
 // Delegation is an implementation of the staking interface expected by the SDK's slashing
@@ -154,14 +147,7 @@ func (k Keeper) GetAllValidators(sdk.Context) (validators []stakingtypes.Validat
 // slashing module. It is called by the slashing module to record validator signatures
 // for downtime tracking. We delegate the call to the operator keeper.
 func (k Keeper) IsValidatorJailed(ctx sdk.Context, addr sdk.ConsAddress) bool {
-	found, accAddr := k.operatorKeeper.GetOperatorAddressForChainIDAndConsAddr(
-		ctx, ctx.ChainID(), addr,
-	)
-	if !found {
-		// replicate the behavior of the SDK's staking module
-		return false
-	}
-	return k.operatorKeeper.IsOperatorJailedForChainID(ctx, accAddr, ctx.ChainID())
+	return k.operatorKeeper.IsOperatorJailedForChainID(ctx, addr, ctx.ChainID())
 }
 
 // ApplyAndReturnValidatorSetUpdates is an implementation of the staking interface expected

@@ -53,10 +53,11 @@ type OperatorKeeper interface {
 	GetOperatorAddressForChainIDAndConsAddr(
 		sdk.Context, string, sdk.ConsAddress,
 	) (bool, sdk.AccAddress)
-	IsOperatorJailedForChainID(sdk.Context, sdk.AccAddress, string) bool
+	IsOperatorJailedForChainID(sdk.Context, sdk.ConsAddress, string) bool
 	Jail(sdk.Context, sdk.ConsAddress, string)
+	Unjail(sdk.Context, sdk.ConsAddress, string)
 	// GetActiveOperatorsForChainID should return a list of operators and their public keys.
-	// These operators should not be in the process of opting our, and should not be jailed
+	// These operators should not be in the process of opting out, and should not be jailed
 	// whether permanently or temporarily.
 	GetActiveOperatorsForChainID(
 		sdk.Context, string,
