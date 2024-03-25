@@ -39,6 +39,12 @@ IAVSTask constant AVSTASK_CONTRACT = IAVSTask(
         uint32 taskResponsedBlock;
         bytes32 hashOfNonSigners;
     }
+/// @dev Represents a operator in the avs module.
+    struct Operator {
+        string earningsAddr;
+        string approveAddr;
+        string operatorMetaInfo;
+    }
 interface IAVSTask {
 /// TRANSACTIONS
 /// @dev IAVSTask the oprator, that will change the state in AVSTask module
@@ -68,7 +74,17 @@ interface IAVSTask {
 /// @dev Get the task window block for the current response
     function getTaskResponseWindowBlock() external view returns (uint32);
 
+    /// TRANSACTIONS
+/// @dev Get the task window block for the current response
+    function queryOptinOperatorList(address avsAddress) external view returns (bool success,Operator[] calldata operators);
     /// @dev This event is emitted when a task created.
+
+    /// TRANSACTIONS
+/// @dev Get the task window block for the current response
+    function queryOperatorInfoByAddr(address operatorAddress) external view returns (bool success,Operator calldata operator);
+
+    function isOperatorOptin(address operatorAddress) external view returns (bool success);
+
     event NewTaskCreated(uint32 indexed taskIndex, Task task);
 
 }

@@ -11,7 +11,8 @@ import (
 const (
 	// MethodCreateNewTask defines the ABI method name for the task
 	//  transaction.
-	MethodCreateNewTask = "createNewTask"
+	MethodCreateNewTask   = "createNewTask"
+	MethodIsOperatorOptin = "isOperatorOptin"
 )
 
 // CreateNewTask Middleware uses exocore's default task template to create tasks in task module.
@@ -49,5 +50,22 @@ func (p Precompile) CreateNewTask(
 	); err != nil {
 		return nil, err
 	}
+	return method.Outputs.Pack(true)
+}
+
+// IsOperatorOptin Middleware uses exocore's default task template to create tasks in task module.
+func (p Precompile) IsOperatorOptin(
+	ctx sdk.Context,
+	contract *vm.Contract,
+	_ *vm.Contract,
+	method *abi.Method,
+	args []interface{},
+) ([]byte, error) {
+	// check the invalidation of caller contract
+	flag := p.avsKeeper.IsAVS(ctx, sdk.AccAddress(contract.CallerAddress.String()))
+	if !flag {
+		return nil, fmt.Errorf(ErrNotYetRegistered, contract.CallerAddress)
+	}
+
 	return method.Outputs.Pack(true)
 }

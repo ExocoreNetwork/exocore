@@ -4,9 +4,8 @@ import (
 	"bytes"
 	"embed"
 	"fmt"
-	tasktype "github.com/ExocoreNetwork/exocore/x/taskmanageravs/types"
-
 	taskKeeper "github.com/ExocoreNetwork/exocore/x/taskmanageravs/keeper"
+	tasktype "github.com/ExocoreNetwork/exocore/x/taskmanageravs/types"
 	"github.com/cometbft/cometbft/libs/log"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -91,8 +90,11 @@ func (p Precompile) Run(evm *vm.EVM, contract *vm.Contract, readOnly bool) (bz [
 	// It avoids panics and returns the out of gas error so the EVM can continue gracefully.
 	defer cmn.HandleGasError(ctx, contract, initialGas, &err)()
 
-	if method.Name == MethodCreateNewTask {
+	switch method.Name {
+	case MethodCreateNewTask:
 		bz, err = p.CreateNewTask(ctx, evm.Origin, contract, stateDB, method, args)
+	case MethodIsOperatorOptin:
+		bz, err = p.IsOperatorOptin(ctx, contract, method, args)
 	}
 
 	if err != nil {
