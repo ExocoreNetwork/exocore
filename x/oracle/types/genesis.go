@@ -11,7 +11,6 @@ const DefaultIndex uint64 = 1
 func DefaultGenesis() *GenesisState {
 	return &GenesisState{
 		PricesList:           []Prices{},
-		Validators:           nil,
 		ValidatorUpdateBlock: nil,
 		IndexRecentParams:    nil,
 		IndexRecentMsg:       nil,

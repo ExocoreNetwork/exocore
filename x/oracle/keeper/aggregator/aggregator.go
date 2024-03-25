@@ -171,7 +171,7 @@ func (agc *AggregatorContext) SealRound(ctx sdk.Context, force bool) (success []
 			//but it's not always the same for other modes, switch modes
 			switch common.Mode {
 			case 1:
-				expired := ctx.BlockHeight() >= feeder.EndBlock
+				expired := feeder.EndBlock > 0 && ctx.BlockHeight() >= feeder.EndBlock
 				outOfWindow := uint64(ctx.BlockHeight())-round.basedBlock >= uint64(common.MaxNonce)
 				if expired || outOfWindow || force {
 					//TODO: WRITE TO KVSTORE with previous round data for this round
@@ -205,7 +205,10 @@ func (agc *AggregatorContext) PrepareRound(ctx sdk.Context, block uint64) {
 	}
 
 	for feederId, feeder := range agc.params.GetTokenFeeders() {
-		if uint64(feeder.EndBlock) <= block || uint64(feeder.StartBaseBlock) > block {
+		if feederId == 0 {
+			continue
+		}
+		if (feeder.EndBlock > 0 && uint64(feeder.EndBlock) <= block) || uint64(feeder.StartBaseBlock) > block {
 			//this feeder is inactive
 			continue
 		}
@@ -237,6 +240,10 @@ func (agc *AggregatorContext) PrepareRound(ctx sdk.Context, block uint64) {
 				round.status = 1
 				//drop previous worker
 				agc.aggregators[feederIdInt32] = nil
+			} else if round.status == 1 && left >= common.MaxNonce {
+				//this shouldn't happend, if do sealround properly before prepareRound, basically for test only
+				round.status = 2
+				//TODO: just modify the status here, since sealRound should do all the related seal actios already when parepare invoked
 			}
 		}
 	}
@@ -247,14 +254,18 @@ func (agc *AggregatorContext) SetParams(p *common.Params) {
 }
 
 func (agc *AggregatorContext) SetValidatorPowers(vp map[string]*big.Int) {
+	//	t := big.NewInt(0)
+	agc.totalPower = big.NewInt(0)
+	agc.validatorsPower = make(map[string]*big.Int)
 	for addr, power := range vp {
 		agc.validatorsPower[addr] = power
+		agc.totalPower = new(big.Int).Add(agc.totalPower, power)
 	}
 }
 
-func (agc *AggregatorContext) SetTotalPower(power *big.Int) {
-	agc.totalPower = power
-}
+//func (agc *AggregatorContext) SetTotalPower(power *big.Int) {
+//	agc.totalPower = power
+//}
 
 func NewAggregatorContext() *AggregatorContext {
 	return &AggregatorContext{

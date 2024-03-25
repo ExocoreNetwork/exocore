@@ -39,8 +39,25 @@ type cacheParams struct {
 }
 
 func (c cacheMsgs) add(item *CacheItemM) {
+	if ims, ok := c[item.FeederId]; ok {
+		for _, im := range ims {
+			if im.Validator == item.Validator {
+				for _, p := range im.PSources {
+					for _, pInput := range item.PSources {
+						if p.SourceId == pInput.SourceId {
+							p.Prices = append(p.Prices, pInput.Prices...)
+							return
+						}
+					}
+				}
+				im.PSources = append(im.PSources, item.PSources...)
+				return
+			}
+		}
+	}
 	c[item.FeederId] = append(c[item.FeederId], item)
 }
+
 func (c cacheMsgs) remove(item *CacheItemM) {
 	delete(c, item.FeederId)
 }
@@ -120,7 +137,8 @@ func (c *cacheParams) commit(ctx sdk.Context, k common.KeeperOracle) {
 }
 
 // memory cache
-func (c *Cache) AddCache(i any, k common.KeeperOracle) {
+// func (c *Cache) AddCache(i any, k common.KeeperOracle) {
+func (c *Cache) AddCache(i any) {
 	switch item := i.(type) {
 	case *CacheItemM:
 		c.msg.add(item)
@@ -133,7 +151,9 @@ func (c *Cache) AddCache(i any, k common.KeeperOracle) {
 		panic("no other types are support")
 	}
 }
-func (c *Cache) RemoveCache(i any, k common.KeeperOracle) {
+
+// func (c *Cache) RemoveCache(i any, k common.KeeperOracle) {
+func (c *Cache) RemoveCache(i any) {
 	switch item := i.(type) {
 	case *CacheItemM:
 		c.msg.remove(item)

@@ -94,7 +94,6 @@ func (s *Set[T]) Add(value T) bool {
 		}
 	}
 	s.slice = append(s.slice, value)
-	s.size++
 	return true
 }
 

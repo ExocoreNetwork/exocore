@@ -16,15 +16,15 @@ func (k msgServer) CreatePrice(goCtx context.Context, msg *types.MsgCreatePrice)
 	**/
 
 	//newItem, caches, _ := k.GetAggregatorContext(ctx, k.Keeper).NewCreatePrice(ctx, msg)
-	newItem, caches, _ := GetAggregatorContext(ctx, &k.Keeper).NewCreatePrice(ctx, msg)
+	newItem, caches, _ := GetAggregatorContext(ctx, k.Keeper).NewCreatePrice(ctx, msg)
 
 	if caches != nil {
 		if newItem != nil {
 			k.AppendPriceTR(ctx, newItem.TokenId, newItem.PriceTR)
 			//TODO: move related caches
-			cs.RemoveCache(caches, k)
+			cs.RemoveCache(caches)
 		} else {
-			cs.AddCache(caches, k)
+			cs.AddCache(caches)
 		}
 	}
 
