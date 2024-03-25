@@ -26,6 +26,7 @@ type roundPrices struct { //0 means NS
 	prices    []*priceAndPower
 	price     *big.Int
 	timestamp string
+	// confirmed bool
 }
 
 // udpate priceAndPower for a specific DSRoundID, if the price exists, increase its power with provided data
@@ -51,6 +52,7 @@ func (r *roundPrices) updatePriceAndPower(pw *priceAndPower, totalPower *big.Int
 		updated = true
 		if common.ExceedsThreshold(pw.power, totalPower) {
 			r.price = pw.price
+			//			r.confirmed = true
 			confirmed = true
 		}
 	}
@@ -79,6 +81,9 @@ func (r *roundPricesList) hasConfirmedDetId() bool {
 func (r *roundPricesList) getOrNewRound(detId string, timestamp string) (round *roundPrices) {
 	for _, round = range r.roundPricesList {
 		if round.detId == detId {
+			if round.price != nil {
+				round = nil
+			}
 			return
 		}
 	}
@@ -86,7 +91,7 @@ func (r *roundPricesList) getOrNewRound(detId string, timestamp string) (round *
 	if len(r.roundPricesList) < cap(r.roundPricesList) {
 		round = &roundPrices{
 			detId:     detId,
-			prices:    make([]*priceAndPower, r.roundPricesCount),
+			prices:    make([]*priceAndPower, 0, r.roundPricesCount),
 			timestamp: timestamp,
 		}
 		r.roundPricesList = append(r.roundPricesList, round)

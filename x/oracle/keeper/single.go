@@ -65,14 +65,14 @@ func recacheAggregatorContext(ctx sdk.Context, agc *aggregator.AggregatorContext
 		return false
 	})
 	agc.SetValidatorPowers(validatorPowers)
-	agc.SetTotalPower(totalPower)
+	//	agc.SetTotalPower(totalPower)
 	//TODO: test only
 	if k.GetLastTotalPower(ctx).Cmp(totalPower) != 0 {
 		panic("something wrong when get validatorsPower from staking module")
 	}
 
 	//reset validators
-	c.AddCache(cache.CacheItemV(validatorPowers), k)
+	c.AddCache(cache.CacheItemV(validatorPowers))
 
 	recentMsgs := k.GetAllRecentMsgAsMap(ctx)
 	var pTmp common.Params
@@ -107,7 +107,7 @@ func recacheAggregatorContext(ctx sdk.Context, agc *aggregator.AggregatorContext
 	}
 
 	//fill params cache
-	c.AddCache(cache.CacheItemP(&pTmp), k)
+	c.AddCache(cache.CacheItemP(&pTmp))
 
 	agc.PrepareRound(ctx, to)
 
@@ -123,7 +123,7 @@ func initAggregatorContext(ctx sdk.Context, agc *aggregator.AggregatorContext, k
 	pTmp := common.Params(p)
 	agc.SetParams(&pTmp)
 	//set params cache
-	c.AddCache(cache.CacheItemP(&pTmp), k)
+	c.AddCache(cache.CacheItemP(&pTmp))
 
 	totalPower := big.NewInt(0)
 	validatorPowers := make(map[string]*big.Int)
@@ -135,14 +135,14 @@ func initAggregatorContext(ctx sdk.Context, agc *aggregator.AggregatorContext, k
 		totalPower = new(big.Int).Add(totalPower, power)
 		return false
 	})
-	agc.SetTotalPower(totalPower)
+	//	agc.SetTotalPower(totalPower)
 	agc.SetValidatorPowers(validatorPowers)
 	if k.GetLastTotalPower(ctx).Cmp(totalPower) != 0 {
 		panic("-")
 	}
 
 	//set validatorPower cache
-	c.AddCache(cache.CacheItemV(validatorPowers), k)
+	c.AddCache(cache.CacheItemV(validatorPowers))
 
 	agc.PrepareRound(ctx, uint64(ctx.BlockHeight())-1)
 	return nil
