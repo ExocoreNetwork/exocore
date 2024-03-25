@@ -1,0 +1,42 @@
+syntax = "proto3";
+package exocore.taskmanageravs;
+
+option go_package = "github.com/ExocoreNetwork/exocore/x/taskmanageravs/types";
+
+message TaskContractInfo {
+    uint64 TaskContractId = 1;
+    string Name = 2;
+    string MetaInfo = 3;
+    string TaskContractAddress = 4;
+    string Status = 5;
+    string sourceCode = 6;
+}
+message TaskInstance {
+    string TaskId = 1;
+    uint64 numberToBeSquared = 2;
+    uint64 taskCreatedBlock = 3;
+    string quorumNumbers = 4;
+    // each task needs to reach at least thresholdPercentage of operator signatures.
+    uint64 quorumThresholdPercentage = 5;
+    string ContractAddr =6;
+}
+
+message TaskManagerInfo {
+    map<string, TaskContractInfo> TaskManager = 1;
+}
+
+message RegisterAVSTaskReq {
+    string AVSAddress = 1;
+    TaskContractInfo task = 2;
+}
+
+message RegisterAVSTaskResponse {}
+
+
+// Msg defines the Msg service.
+service Msg {
+    rpc RegisterAVSTask(RegisterAVSTaskReq) returns (RegisterAVSTaskResponse);
+}
+
+
+

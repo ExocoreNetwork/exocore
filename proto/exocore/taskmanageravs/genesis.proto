@@ -1,0 +1,12 @@
+syntax = "proto3";
+package exocore.taskmanageravs;
+
+import "gogoproto/gogo.proto";
+import "exocore/taskmanageravs/params.proto";
+
+option go_package = "github.com/ExocoreNetwork/exocore/x/taskmanageravs/types";
+
+// GenesisState defines the taskmanageravs module's genesis state.
+message GenesisState {
+  Params params = 1 [(gogoproto.nullable) = false];
+}
