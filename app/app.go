@@ -50,11 +50,8 @@ import (
 
 	// increases or decreases block gas limit based on usage
 	"github.com/evmos/evmos/v14/x/feemarket"
+	feemarketkeeper "github.com/evmos/evmos/v14/x/feemarket/keeper"
 	feemarkettypes "github.com/evmos/evmos/v14/x/feemarket/types"
-	"github.com/evmos/evmos/v14/x/inflation"
-	"github.com/evmos/evmos/v14/x/recovery"
-	"github.com/evmos/evmos/v14/x/revenue/v1"
-	vestingtypes "github.com/evmos/evmos/v14/x/vesting/types"
 
 	runtimeservices "github.com/cosmos/cosmos-sdk/runtime/services"
 
@@ -77,14 +74,14 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec/types"
 	"github.com/cosmos/cosmos-sdk/server/api"
 	"github.com/cosmos/cosmos-sdk/server/config"
-	authkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
+
 	ica "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts"
 	icahost "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/host"
+	icahostkeeper "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/host/keeper"
 	icahosttypes "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/host/types"
 	icatypes "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/types"
 	ibctestingtypes "github.com/cosmos/ibc-go/v7/testing/types"
 
-	// NOTE: override ICS20 keeper to support IBC transfers of ERC20 tokens
 	ibctransfer "github.com/cosmos/ibc-go/v7/modules/apps/transfer"
 	ibctransfertypes "github.com/cosmos/ibc-go/v7/modules/apps/transfer/types"
 	ibc "github.com/cosmos/ibc-go/v7/modules/core"
@@ -95,11 +92,12 @@ import (
 	ibcexported "github.com/cosmos/ibc-go/v7/modules/core/exported"
 	ibckeeper "github.com/cosmos/ibc-go/v7/modules/core/keeper"
 	ibctm "github.com/cosmos/ibc-go/v7/modules/light-clients/07-tendermint"
-	srvflags "github.com/evmos/evmos/v14/server/flags"
+
+	// this module allows the transfer of ERC20 tokens over IBC. for such transfers to occur,
+	// they must be enabled in the ERC20 keeper.
 	transfer "github.com/evmos/evmos/v14/x/ibc/transfer"
 	transferkeeper "github.com/evmos/evmos/v14/x/ibc/transfer/keeper"
 
-	// NOTE: override ICS20 keeper to support IBC transfers of ERC20 tokens
 	"cosmossdk.io/simapp"
 	simappparams "cosmossdk.io/simapp/params"
 	servertypes "github.com/cosmos/cosmos-sdk/server/types"
@@ -109,84 +107,102 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/mempool"
 	"github.com/cosmos/cosmos-sdk/types/module"
 	"github.com/cosmos/cosmos-sdk/version"
+	srvflags "github.com/evmos/evmos/v14/server/flags"
+
 	"github.com/cosmos/cosmos-sdk/x/auth"
+	authkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
 	"github.com/cosmos/cosmos-sdk/x/auth/posthandler"
 	authsims "github.com/cosmos/cosmos-sdk/x/auth/simulation"
 	authtx "github.com/cosmos/cosmos-sdk/x/auth/tx"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
+
 	"github.com/cosmos/cosmos-sdk/x/authz"
 	authzmodule "github.com/cosmos/cosmos-sdk/x/authz/module"
+
 	"github.com/cosmos/cosmos-sdk/x/bank"
+	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
+
 	"github.com/cosmos/cosmos-sdk/x/capability"
 	capabilitykeeper "github.com/cosmos/cosmos-sdk/x/capability/keeper"
 	capabilitytypes "github.com/cosmos/cosmos-sdk/x/capability/types"
+
 	"github.com/cosmos/cosmos-sdk/x/consensus"
+	consensusparamkeeper "github.com/cosmos/cosmos-sdk/x/consensus/keeper"
+	consensusparamtypes "github.com/cosmos/cosmos-sdk/x/consensus/types"
+
 	"github.com/cosmos/cosmos-sdk/x/crisis"
 	crisiskeeper "github.com/cosmos/cosmos-sdk/x/crisis/keeper"
 	crisistypes "github.com/cosmos/cosmos-sdk/x/crisis/types"
+
 	distr "github.com/cosmos/cosmos-sdk/x/distribution"
 	distrkeeper "github.com/cosmos/cosmos-sdk/x/distribution/keeper"
 	distrtypes "github.com/cosmos/cosmos-sdk/x/distribution/types"
+
 	"github.com/cosmos/cosmos-sdk/x/evidence"
 	evidencekeeper "github.com/cosmos/cosmos-sdk/x/evidence/keeper"
 	evidencetypes "github.com/cosmos/cosmos-sdk/x/evidence/types"
+
 	"github.com/cosmos/cosmos-sdk/x/feegrant"
 	feegrantkeeper "github.com/cosmos/cosmos-sdk/x/feegrant/keeper"
 	feegrantmodule "github.com/cosmos/cosmos-sdk/x/feegrant/module"
+
 	"github.com/cosmos/cosmos-sdk/x/genutil"
 	genutiltypes "github.com/cosmos/cosmos-sdk/x/genutil/types"
+
 	"github.com/cosmos/cosmos-sdk/x/gov"
 	govclient "github.com/cosmos/cosmos-sdk/x/gov/client"
 	govkeeper "github.com/cosmos/cosmos-sdk/x/gov/keeper"
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 	govv1 "github.com/cosmos/cosmos-sdk/x/gov/types/v1"
 	govv1beta1 "github.com/cosmos/cosmos-sdk/x/gov/types/v1beta1"
+
 	"github.com/cosmos/cosmos-sdk/x/params"
 	paramsclient "github.com/cosmos/cosmos-sdk/x/params/client"
 	paramskeeper "github.com/cosmos/cosmos-sdk/x/params/keeper"
 	paramstypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	paramproposal "github.com/cosmos/cosmos-sdk/x/params/types/proposal"
+
 	"github.com/cosmos/cosmos-sdk/x/slashing"
 	slashingkeeper "github.com/cosmos/cosmos-sdk/x/slashing/keeper"
 	slashingtypes "github.com/cosmos/cosmos-sdk/x/slashing/types"
+
 	"github.com/cosmos/cosmos-sdk/x/staking"
 	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
+
 	"github.com/cosmos/cosmos-sdk/x/upgrade"
 	upgradeclient "github.com/cosmos/cosmos-sdk/x/upgrade/client"
 	upgradekeeper "github.com/cosmos/cosmos-sdk/x/upgrade/keeper"
 	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
 
 	"github.com/ExocoreNetwork/exocore/x/evm"
-	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
-	"github.com/evmos/evmos/v14/encoding"
-	evmostypes "github.com/evmos/evmos/v14/types"
+	evmkeeper "github.com/ExocoreNetwork/exocore/x/evm/keeper"
 	evmtypes "github.com/evmos/evmos/v14/x/evm/types"
 
-	evmkeeper "github.com/ExocoreNetwork/exocore/x/evm/keeper"
+	"github.com/evmos/evmos/v14/encoding"
+	evmostypes "github.com/evmos/evmos/v14/types"
 
-	consensusparamkeeper "github.com/cosmos/cosmos-sdk/x/consensus/keeper"
-	consensusparamtypes "github.com/cosmos/cosmos-sdk/x/consensus/types"
-	feemarketkeeper "github.com/evmos/evmos/v14/x/feemarket/keeper"
-
-	icahostkeeper "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/host/keeper"
-
-	inflationkeeper "github.com/evmos/evmos/v14/x/inflation/keeper"
-	inflationtypes "github.com/evmos/evmos/v14/x/inflation/types"
+	"github.com/evmos/evmos/v14/x/recovery"
 	recoverykeeper "github.com/evmos/evmos/v14/x/recovery/keeper"
 	recoverytypes "github.com/evmos/evmos/v14/x/recovery/types"
+
+	"github.com/evmos/evmos/v14/x/revenue/v1"
 	revenuekeeper "github.com/evmos/evmos/v14/x/revenue/v1/keeper"
 	revenuetypes "github.com/evmos/evmos/v14/x/revenue/v1/types"
+
 	"github.com/evmos/evmos/v14/x/vesting"
 	vestingkeeper "github.com/evmos/evmos/v14/x/vesting/keeper"
+	vestingtypes "github.com/evmos/evmos/v14/x/vesting/types"
 
 	"github.com/evmos/evmos/v14/x/claims"
 	claimskeeper "github.com/evmos/evmos/v14/x/claims/keeper"
 	claimstypes "github.com/evmos/evmos/v14/x/claims/types"
+
 	"github.com/evmos/evmos/v14/x/epochs"
 	epochskeeper "github.com/evmos/evmos/v14/x/epochs/keeper"
 	epochstypes "github.com/evmos/evmos/v14/x/epochs/types"
+
 	"github.com/evmos/evmos/v14/x/erc20"
 	erc20keeper "github.com/evmos/evmos/v14/x/erc20/keeper"
 	erc20types "github.com/evmos/evmos/v14/x/erc20/types"
@@ -255,7 +271,6 @@ var (
 		evm.AppModuleBasic{},
 		feemarket.AppModuleBasic{},
 		// evmos modules
-		inflation.AppModuleBasic{},
 		erc20.AppModuleBasic{},
 		epochs.AppModuleBasic{},
 		claims.AppModuleBasic{},
@@ -285,9 +300,8 @@ var (
 			authtypes.Minter,
 			authtypes.Burner,
 		}, // used for secure addition and subtraction of balance using module account
-		inflationtypes.ModuleName: {authtypes.Minter},
-		erc20types.ModuleName:     {authtypes.Minter, authtypes.Burner},
-		claimstypes.ModuleName:    nil,
+		erc20types.ModuleName:  {authtypes.Minter, authtypes.Burner},
+		claimstypes.ModuleName: nil,
 	}
 
 	// module accounts that are allowed to receive tokens
@@ -345,13 +359,12 @@ type ExocoreApp struct {
 	FeeMarketKeeper feemarketkeeper.Keeper
 
 	// Evmos keepers
-	InflationKeeper inflationkeeper.Keeper
-	ClaimsKeeper    *claimskeeper.Keeper
-	Erc20Keeper     erc20keeper.Keeper
-	EpochsKeeper    epochskeeper.Keeper
-	VestingKeeper   vestingkeeper.Keeper
-	RecoveryKeeper  *recoverykeeper.Keeper
-	RevenueKeeper   revenuekeeper.Keeper
+	ClaimsKeeper   *claimskeeper.Keeper
+	Erc20Keeper    erc20keeper.Keeper
+	EpochsKeeper   epochskeeper.Keeper
+	VestingKeeper  vestingkeeper.Keeper
+	RecoveryKeeper *recoverykeeper.Keeper
+	RevenueKeeper  revenuekeeper.Keeper
 
 	// exocore assets module keepers
 	AssetsKeeper     assetsKeeper.Keeper
@@ -433,7 +446,7 @@ func NewExocoreApp(
 		// ethermint keys
 		evmtypes.StoreKey, feemarkettypes.StoreKey,
 		// evmos keys
-		inflationtypes.StoreKey, erc20types.StoreKey,
+		erc20types.StoreKey,
 		epochstypes.StoreKey, claimstypes.StoreKey, vestingtypes.StoreKey,
 		revenuetypes.StoreKey, recoverytypes.StoreKey,
 		// exoCore module keys
@@ -602,18 +615,6 @@ func NewExocoreApp(
 	// Set legacy router for backwards compatibility with gov v1beta1
 	govKeeper.SetLegacyRouter(govRouter)
 
-	// Evmos Keeper
-	app.InflationKeeper = inflationkeeper.NewKeeper(
-		keys[inflationtypes.StoreKey],
-		appCodec,
-		authtypes.NewModuleAddress(govtypes.ModuleName),
-		app.AccountKeeper,
-		app.BankKeeper,
-		app.DistrKeeper,
-		stakingKeeper,
-		authtypes.FeeCollectorName,
-	)
-
 	app.ClaimsKeeper = claimskeeper.NewKeeper(
 		appCodec,
 		keys[claimstypes.StoreKey],
@@ -716,8 +717,7 @@ func NewExocoreApp(
 	epochsKeeper := epochskeeper.NewKeeper(appCodec, keys[epochstypes.StoreKey])
 	app.EpochsKeeper = *epochsKeeper.SetHooks(
 		epochskeeper.NewMultiEpochHooks(
-			// insert epoch hooks receivers here
-			app.InflationKeeper.Hooks(),
+		// insert epoch hooks receivers here
 		),
 	)
 
@@ -897,8 +897,6 @@ func NewExocoreApp(
 		),
 		feemarket.NewAppModule(app.FeeMarketKeeper, app.GetSubspace(feemarkettypes.ModuleName)),
 		// Evmos app modules
-		inflation.NewAppModule(app.InflationKeeper, app.AccountKeeper, app.StakingKeeper,
-			app.GetSubspace(inflationtypes.ModuleName)),
 		erc20.NewAppModule(app.Erc20Keeper, app.AccountKeeper,
 			app.GetSubspace(erc20types.ModuleName)),
 		epochs.NewAppModule(appCodec, app.EpochsKeeper),
@@ -956,7 +954,6 @@ func NewExocoreApp(
 		feegrant.ModuleName,
 		paramstypes.ModuleName,
 		vestingtypes.ModuleName,
-		inflationtypes.ModuleName,
 		erc20types.ModuleName,
 		claimstypes.ModuleName,
 		recoverytypes.ModuleName,
@@ -1000,7 +997,6 @@ func NewExocoreApp(
 		upgradetypes.ModuleName,
 		// Evmos modules
 		vestingtypes.ModuleName,
-		inflationtypes.ModuleName,
 		erc20types.ModuleName,
 		recoverytypes.ModuleName,
 		revenuetypes.ModuleName,
@@ -1056,7 +1052,6 @@ func NewExocoreApp(
 		exoslashTypes.ModuleName,
 		// Evmos modules
 		vestingtypes.ModuleName,
-		inflationtypes.ModuleName,
 		erc20types.ModuleName,
 		epochstypes.ModuleName,
 		recoverytypes.ModuleName,
