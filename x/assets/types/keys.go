@@ -153,6 +153,9 @@ func ParseID(key string) (string, uint64, error) {
 	if len(keys) != 2 {
 		return "", 0, errorsmod.Wrap(ErrParseAssetsStateKey, fmt.Sprintf("invalid key:%s", key))
 	}
+	if len(keys[0]) == 0 {
+		return "", 0, errorsmod.Wrap(ErrParseAssetsStateKey, fmt.Sprintf("invalid key:%s", key))
+	}
 	if id, err := hexutil.DecodeUint64(keys[1]); err != nil {
 		return "", 0, errorsmod.Wrap(ErrParseAssetsStateKey, fmt.Sprintf("invalid key:%s", key))
 	} else {
