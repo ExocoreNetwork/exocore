@@ -1375,16 +1375,16 @@ func initParamsKeeper(
 	paramsKeeper.Subspace(distrtypes.ModuleName)
 	paramsKeeper.Subspace(slashingtypes.ModuleName)
 	paramsKeeper.Subspace(govtypes.ModuleName).
+		// nolint: staticcheck
 		WithKeyTable(govv1.ParamKeyTable())
-		//nolint: staticcheck
 	paramsKeeper.Subspace(crisistypes.ModuleName)
 	paramsKeeper.Subspace(ibctransfertypes.ModuleName)
 	paramsKeeper.Subspace(ibcexported.ModuleName)
 	paramsKeeper.Subspace(icahosttypes.SubModuleName)
 	// ethermint subspaces
 	paramsKeeper.Subspace(evmtypes.ModuleName).
+		// nolint: staticcheck
 		WithKeyTable(evmtypes.ParamKeyTable())
-		//nolint: staticcheck
 	return paramsKeeper
 }
 
