@@ -4,6 +4,7 @@
 package keeper
 
 import (
+	"sort"
 	"time"
 
 	"github.com/ExocoreNetwork/exocore/x/dogfood/types"
@@ -110,6 +111,13 @@ func (k Keeper) ApplyValidatorChanges(
 	k.setValidatorSetID(ctx, ctx.BlockHeight()+1, valSetID)
 	// store this to compare against, in the next round.
 	k.saveKeyPowerMapping(ctx, ret)
+	// sort for determinism
+	sort.Slice(ret, func(i, j int) bool {
+		if ret[i].Power != ret[j].Power {
+			return ret[i].Power > ret[j].Power
+		}
+		return ret[i].PubKey.String() > ret[j].PubKey.String()
+	})
 	return ret
 }
 

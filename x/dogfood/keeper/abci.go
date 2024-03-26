@@ -60,7 +60,7 @@ func (k Keeper) EndBlock(ctx sdk.Context) []abci.ValidatorUpdate {
 	operators, keys, powers = sortByPower(operators, keys, powers)
 	maxVals := k.GetMaxValidators(ctx)
 	for i := range operators {
-		// #nosec G701 // ok if 64-bit.
+		// #nosec G701 // ok on 64-bit systems.
 		if i >= int(maxVals) {
 			// we have reached the maximum number of validators.
 			break
@@ -68,13 +68,14 @@ func (k Keeper) EndBlock(ctx sdk.Context) []abci.ValidatorUpdate {
 		power := powers[i]
 		if power < 1 {
 			// we have reached the bottom of the rung.
+			// assumption is that negative vote power iosn't provided by the module.
+			// the consensus engine will reject it anyway and panic.
 			break
 		}
 		// find the previous power.
 		key := keys[i]
 		keyString := string(k.cdc.MustMarshal(&key))
-		prevPower, found := prev[keyString]
-		if found && prevPower == power {
+		if prevPower, found := prev[keyString]; found && prevPower == power {
 			delete(prev, keyString)
 			continue
 		}
@@ -87,9 +88,7 @@ func (k Keeper) EndBlock(ctx sdk.Context) []abci.ValidatorUpdate {
 		})
 	}
 	// the remaining keys in prev have lost their power.
-	// gosec does not like `for key := range prev` while others do not like
-	// `for key, _ := range prev`
-	// #nosec G705
+	// even though this is a map, the order is guaranteed because it is proto deserialized.
 	for key := range prev {
 		bz := []byte(key) // undo string operation
 		var keyObj tmprotocrypto.PublicKey
