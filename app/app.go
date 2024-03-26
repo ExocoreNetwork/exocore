@@ -638,9 +638,19 @@ func NewExocoreApp(
 
 	app.StakingKeeper = *stakingKeeper
 
+	app.RecoveryKeeper = recoverykeeper.NewKeeper(
+		keys[recoverytypes.StoreKey],
+		appCodec,
+		authtypes.NewModuleAddress(govtypes.ModuleName),
+		app.AccountKeeper,
+		app.BankKeeper,
+		app.IBCKeeper.ChannelKeeper,
+		&app.TransferKeeper,
+	)
+
 	app.Erc20Keeper = erc20keeper.NewKeeper(
 		keys[erc20types.StoreKey], appCodec, authtypes.NewModuleAddress(govtypes.ModuleName),
-		app.AccountKeeper, app.BankKeeper, app.EvmKeeper, app.StakingKeeper, app.ClaimsKeeper,
+		app.AccountKeeper, app.BankKeeper, app.EvmKeeper, app.StakingKeeper, app.RecoveryKeeper,
 	)
 
 	app.TransferKeeper = transferkeeper.NewKeeper(
@@ -718,17 +728,6 @@ func NewExocoreApp(
 			app.Erc20Keeper.Hooks(),
 			app.ClaimsKeeper.Hooks(),
 		),
-	)
-
-	app.RecoveryKeeper = recoverykeeper.NewKeeper(
-		keys[recoverytypes.StoreKey],
-		appCodec,
-		authtypes.NewModuleAddress(govtypes.ModuleName),
-		app.AccountKeeper,
-		app.BankKeeper,
-		app.IBCKeeper.ChannelKeeper,
-		app.TransferKeeper,
-		app.ClaimsKeeper,
 	)
 
 	// NOTE: app.Erc20Keeper is already initialized elsewhere

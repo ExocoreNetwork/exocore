@@ -545,10 +545,10 @@ github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03
 github.com/ChainSafe/go-schnorrkel v0.0.0-20200405005733-88cbf1b4c40d h1:nalkkPQcITbvhmL4+C4cKA87NW0tfm3Kl9VXRoPywFg=
 github.com/ChainSafe/go-schnorrkel v0.0.0-20200405005733-88cbf1b4c40d/go.mod h1:URdX5+vg25ts3aCh8H5IFZybJYKWhJHYMTnf+ULtoC4=
 github.com/DataDog/datadog-go v3.2.0+incompatible/go.mod h1:LButxg5PwREeZtORoXG3tL4fMGNddJ+vMq1mwgfaqoQ=
-github.com/ExocoreNetwork/evmos/v14 v14.1.1-0.20240205024453-5e8090e42ef4 h1:55qBGHyCOvxxu4kxh+IY6T1pElfyQey5vRKTs25Gc6s=
-github.com/ExocoreNetwork/evmos/v14 v14.1.1-0.20240205024453-5e8090e42ef4/go.mod h1:Hi3CAMxAE+H7Fs7sSHsHKb4DZIURk+trop+mMrjlZqw=
 github.com/JohnCGriffin/overflow v0.0.0-20211019200055-46fa312c352c/go.mod h1:X0CRv0ky0k6m906ixxpzmDRLvX58TFUKS2eePweuyxk=
 github.com/Knetic/govaluate v3.0.1-0.20171022003610-9aa49832a739+incompatible/go.mod h1:r7JcOSlj0wfOMncg0iLm8Leh48TZaKVeNIfJntJ2wa0=
+github.com/MaxMustermann2/evmos/v14 v14.0.0-20240326155756-4f464426e972 h1:6oBb1Zhtar2hzju1Fv7cZ8mZVJoJ+K5DvbHt/nW0fyU=
+github.com/MaxMustermann2/evmos/v14 v14.0.0-20240326155756-4f464426e972/go.mod h1:Hi3CAMxAE+H7Fs7sSHsHKb4DZIURk+trop+mMrjlZqw=
 github.com/Microsoft/go-winio v0.6.0 h1:slsWYD/zyx7lCXoZVlvQrj0hPTM1HI4+v1sIda2yDvg=
 github.com/Microsoft/go-winio v0.6.0/go.mod h1:cTAf44im0RAYeL23bpB+fzCyDH2MJiz2BO69KH/soAE=
 github.com/Nvveen/Gotty v0.0.0-20120604004816-cd527374f1e5 h1:TngWCqHvy9oXAN6lEVMRuU21PR1EtLVZJmdB18Gu3Rw=
