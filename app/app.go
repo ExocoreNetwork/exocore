@@ -191,10 +191,6 @@ import (
 	recoverykeeper "github.com/evmos/evmos/v14/x/recovery/keeper"
 	recoverytypes "github.com/evmos/evmos/v14/x/recovery/types"
 
-	"github.com/evmos/evmos/v14/x/revenue/v1"
-	revenuekeeper "github.com/evmos/evmos/v14/x/revenue/v1/keeper"
-	revenuetypes "github.com/evmos/evmos/v14/x/revenue/v1/types"
-
 	"github.com/evmos/evmos/v14/x/vesting"
 	vestingkeeper "github.com/evmos/evmos/v14/x/vesting/keeper"
 	vestingtypes "github.com/evmos/evmos/v14/x/vesting/types"
@@ -287,7 +283,6 @@ var (
 		epochs.AppModuleBasic{},
 		claims.AppModuleBasic{},
 		recovery.AppModuleBasic{},
-		revenue.AppModuleBasic{},
 		consensus.AppModuleBasic{},
 		// Exocore modules
 		assets.AppModuleBasic{},
@@ -376,7 +371,6 @@ type ExocoreApp struct {
 	EpochsKeeper   epochskeeper.Keeper
 	VestingKeeper  vestingkeeper.Keeper
 	RecoveryKeeper *recoverykeeper.Keeper
-	RevenueKeeper  revenuekeeper.Keeper
 
 	// exocore assets module keepers
 	AssetsKeeper     assetsKeeper.Keeper
@@ -460,7 +454,7 @@ func NewExocoreApp(
 		// evmos keys
 		erc20types.StoreKey,
 		epochstypes.StoreKey, claimstypes.StoreKey, vestingtypes.StoreKey,
-		revenuetypes.StoreKey, recoverytypes.StoreKey,
+		recoverytypes.StoreKey,
 		// exoCore module keys
 		assetsTypes.StoreKey,
 		delegationTypes.StoreKey,
@@ -662,12 +656,6 @@ func NewExocoreApp(
 		app.AccountKeeper, app.BankKeeper, app.EvmKeeper, app.StakingKeeper, app.ClaimsKeeper,
 	)
 
-	app.RevenueKeeper = revenuekeeper.NewKeeper(
-		keys[revenuetypes.StoreKey], appCodec, authtypes.NewModuleAddress(govtypes.ModuleName),
-		app.BankKeeper, app.DistrKeeper, app.AccountKeeper, app.EvmKeeper,
-		authtypes.FeeCollectorName,
-	)
-
 	app.TransferKeeper = transferkeeper.NewKeeper(
 		appCodec, keys[ibctransfertypes.StoreKey], app.GetSubspace(ibctransfertypes.ModuleName),
 		app.ClaimsKeeper, // ICS4 Wrapper: claims IBC middleware
@@ -742,7 +730,6 @@ func NewExocoreApp(
 	app.EvmKeeper = app.EvmKeeper.SetHooks(
 		evmkeeper.NewMultiEvmHooks(
 			app.Erc20Keeper.Hooks(),
-			app.RevenueKeeper.Hooks(),
 			app.ClaimsKeeper.Hooks(),
 		),
 	)
@@ -922,8 +909,6 @@ func NewExocoreApp(
 		),
 		recovery.NewAppModule(*app.RecoveryKeeper,
 			app.GetSubspace(recoverytypes.ModuleName)),
-		revenue.NewAppModule(app.RevenueKeeper, app.AccountKeeper,
-			app.GetSubspace(revenuetypes.ModuleName)),
 		// exoCore app modules
 		assets.NewAppModule(appCodec, app.AssetsKeeper),
 		deposit.NewAppModule(appCodec, app.DepositKeeper),
@@ -969,7 +954,6 @@ func NewExocoreApp(
 		erc20types.ModuleName,
 		claimstypes.ModuleName,
 		recoverytypes.ModuleName,
-		revenuetypes.ModuleName,
 		consensusparamtypes.ModuleName,
 		// ExoCore modules
 		assetsTypes.ModuleName,
@@ -1011,7 +995,6 @@ func NewExocoreApp(
 		vestingtypes.ModuleName,
 		erc20types.ModuleName,
 		recoverytypes.ModuleName,
-		revenuetypes.ModuleName,
 		consensusparamtypes.ModuleName,
 		// ExoCore modules
 		assetsTypes.ModuleName,
@@ -1041,7 +1024,6 @@ func NewExocoreApp(
 		govtypes.ModuleName,
 		ibcexported.ModuleName,
 		// Ethermint modules
-		// evm module denomination is used by the revenue module, in AnteHandle
 		evmtypes.ModuleName,
 		// NOTE: feemarket module needs to be initialized before genutil module:
 		// gentx transactions use MinGasPriceDecorator.AnteHandle
@@ -1067,7 +1049,6 @@ func NewExocoreApp(
 		erc20types.ModuleName,
 		epochstypes.ModuleName,
 		recoverytypes.ModuleName,
-		revenuetypes.ModuleName,
 		// NOTE: crisis module must go at the end to check for invariants on each module
 		crisistypes.ModuleName,
 		consensusparamtypes.ModuleName,
