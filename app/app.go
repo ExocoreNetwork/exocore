@@ -191,10 +191,6 @@ import (
 	recoverykeeper "github.com/evmos/evmos/v14/x/recovery/keeper"
 	recoverytypes "github.com/evmos/evmos/v14/x/recovery/types"
 
-	"github.com/evmos/evmos/v14/x/vesting"
-	vestingkeeper "github.com/evmos/evmos/v14/x/vesting/keeper"
-	vestingtypes "github.com/evmos/evmos/v14/x/vesting/types"
-
 	// The claims module is responsible for handling airdrops. We are explicitly disabling it by
 	// setting enable_claims to false. It is only imported because it is required by the
 	// recovery module.
@@ -275,7 +271,6 @@ var (
 		upgrade.AppModuleBasic{},
 		evidence.AppModuleBasic{},
 		transfer.AppModuleBasic{AppModuleBasic: &ibctransfer.AppModuleBasic{}},
-		vesting.AppModuleBasic{},
 		evm.AppModuleBasic{},
 		feemarket.AppModuleBasic{},
 		// evmos modules
@@ -369,7 +364,6 @@ type ExocoreApp struct {
 	ClaimsKeeper   *claimskeeper.Keeper
 	Erc20Keeper    erc20keeper.Keeper
 	EpochsKeeper   epochskeeper.Keeper
-	VestingKeeper  vestingkeeper.Keeper
 	RecoveryKeeper *recoverykeeper.Keeper
 
 	// exocore assets module keepers
@@ -453,7 +447,7 @@ func NewExocoreApp(
 		evmtypes.StoreKey, feemarkettypes.StoreKey,
 		// evmos keys
 		erc20types.StoreKey,
-		epochstypes.StoreKey, claimstypes.StoreKey, vestingtypes.StoreKey,
+		epochstypes.StoreKey, claimstypes.StoreKey,
 		recoverytypes.StoreKey,
 		// exoCore module keys
 		assetsTypes.StoreKey,
@@ -605,9 +599,7 @@ func NewExocoreApp(
 		AddRoute(paramproposal.RouterKey, params.NewParamChangeProposalHandler(app.ParamsKeeper)).
 		AddRoute(upgradetypes.RouterKey, upgrade.NewSoftwareUpgradeProposalHandler(&app.UpgradeKeeper)).
 		AddRoute(ibcclienttypes.RouterKey, ibcclient.NewClientProposalHandler(app.IBCKeeper.ClientKeeper)).
-		AddRoute(erc20types.RouterKey, erc20.NewErc20ProposalHandler(&app.Erc20Keeper)).
-		AddRoute(vestingtypes.RouterKey, vesting.NewVestingProposalHandler(&app.VestingKeeper))
-
+		AddRoute(erc20types.RouterKey, erc20.NewErc20ProposalHandler(&app.Erc20Keeper))
 	govConfig := govtypes.DefaultConfig()
 	/*
 		Example of setting gov params:
@@ -645,11 +637,6 @@ func NewExocoreApp(
 	)
 
 	app.StakingKeeper = *stakingKeeper
-
-	app.VestingKeeper = vestingkeeper.NewKeeper(
-		keys[vestingtypes.StoreKey], authtypes.NewModuleAddress(govtypes.ModuleName), appCodec,
-		app.AccountKeeper, app.BankKeeper, app.DistrKeeper, app.StakingKeeper, app.GovKeeper,
-	)
 
 	app.Erc20Keeper = erc20keeper.NewKeeper(
 		keys[erc20types.StoreKey], appCodec, authtypes.NewModuleAddress(govtypes.ModuleName),
@@ -702,7 +689,6 @@ func NewExocoreApp(
 		evmkeeper.AvailablePrecompiles(
 			*stakingKeeper,
 			app.DistrKeeper,
-			app.VestingKeeper,
 			app.AuthzKeeper,
 			app.TransferKeeper,
 			app.IBCKeeper.ChannelKeeper,
@@ -901,12 +887,6 @@ func NewExocoreApp(
 		epochs.NewAppModule(appCodec, app.EpochsKeeper),
 		claims.NewAppModule(appCodec, *app.ClaimsKeeper,
 			app.GetSubspace(claimstypes.ModuleName)),
-		vesting.NewAppModule(
-			app.VestingKeeper,
-			app.AccountKeeper,
-			app.BankKeeper,
-			app.StakingKeeper,
-		),
 		recovery.NewAppModule(*app.RecoveryKeeper,
 			app.GetSubspace(recoverytypes.ModuleName)),
 		// exoCore app modules
@@ -950,7 +930,6 @@ func NewExocoreApp(
 		authz.ModuleName,
 		feegrant.ModuleName,
 		paramstypes.ModuleName,
-		vestingtypes.ModuleName,
 		erc20types.ModuleName,
 		claimstypes.ModuleName,
 		recoverytypes.ModuleName,
@@ -992,7 +971,6 @@ func NewExocoreApp(
 		paramstypes.ModuleName,
 		upgradetypes.ModuleName,
 		// Evmos modules
-		vestingtypes.ModuleName,
 		erc20types.ModuleName,
 		recoverytypes.ModuleName,
 		consensusparamtypes.ModuleName,
@@ -1045,7 +1023,6 @@ func NewExocoreApp(
 		rewardTypes.ModuleName,
 		exoslashTypes.ModuleName,
 		// Evmos modules
-		vestingtypes.ModuleName,
 		erc20types.ModuleName,
 		epochstypes.ModuleName,
 		recoverytypes.ModuleName,
