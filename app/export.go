@@ -19,7 +19,6 @@ import (
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	claimstypes "github.com/evmos/evmos/v14/x/claims/types"
 	evmtypes "github.com/evmos/evmos/v14/x/evm/types"
-	inflationtypes "github.com/evmos/evmos/v14/x/inflation/types"
 
 	"github.com/evmos/evmos/v14/encoding"
 )
@@ -57,13 +56,6 @@ func NewDefaultGenesisState(cdc codec.Codec) simapp.GenesisState {
 	evmGenesis.Params.EvmDenom = utils.BaseDenom
 	defaultGenesis[evmtypes.ModuleName] = cdc.MustMarshalJSON(&evmGenesis)
 
-	// inflation module
-	inflationGenesis := inflationtypes.GenesisState{}
-	rawGenesis = defaultGenesis[inflationtypes.ModuleName]
-	cdc.MustUnmarshalJSON(rawGenesis, &inflationGenesis)
-	inflationGenesis.Params.MintDenom = utils.BaseDenom
-	defaultGenesis[inflationtypes.ModuleName] = cdc.MustMarshalJSON(&inflationGenesis)
-
 	// claims module
 	claimsGenesis := claimstypes.GenesisState{}
 	rawGenesis = defaultGenesis[claimstypes.ModuleName]
@@ -79,7 +71,8 @@ func NewDefaultGenesisState(cdc codec.Codec) simapp.GenesisState {
 func (app *ExocoreApp) ExportAppStateAndValidators(
 	forZeroHeight bool, jailAllowedAddrs []string, modulesToExport []string,
 ) (servertypes.ExportedApp, error) {
-	// Creates context with current height and checks txs for ctx to be usable by start of next block
+	// Creates context with current height and checks txs for ctx to be usable by start of next
+	// block
 	ctx := app.NewContext(true, tmproto.Header{Height: app.LastBlockHeight()})
 
 	// We export at last height + 1, because that's the height at which
@@ -116,7 +109,10 @@ func (app *ExocoreApp) ExportAppStateAndValidators(
 // NOTE zero height genesis is a temporary feature which will be deprecated
 //
 //	in favor of export at a block height
-func (app *ExocoreApp) prepForZeroHeightGenesis(ctx sdk.Context, jailAllowedAddrs []string) error {
+func (app *ExocoreApp) prepForZeroHeightGenesis(
+	ctx sdk.Context,
+	jailAllowedAddrs []string,
+) error {
 	applyAllowedAddrs := false
 
 	// check if there is a allowed address list
@@ -140,10 +136,13 @@ func (app *ExocoreApp) prepForZeroHeightGenesis(ctx sdk.Context, jailAllowedAddr
 	/* Handle fee distribution state. */
 
 	// withdraw all validator commission
-	app.StakingKeeper.IterateValidators(ctx, func(_ int64, val stakingtypes.ValidatorI) (stop bool) {
-		_, _ = app.DistrKeeper.WithdrawValidatorCommission(ctx, val.GetOperator())
-		return false
-	})
+	app.StakingKeeper.IterateValidators(
+		ctx,
+		func(_ int64, val stakingtypes.ValidatorI) (stop bool) {
+			_, _ = app.DistrKeeper.WithdrawValidatorCommission(ctx, val.GetOperator())
+			return false
+		},
+	)
 
 	// withdraw all delegator rewards
 	dels := app.StakingKeeper.GetAllDelegations(ctx)
@@ -171,17 +170,23 @@ func (app *ExocoreApp) prepForZeroHeightGenesis(ctx sdk.Context, jailAllowedAddr
 	ctx = ctx.WithBlockHeight(0)
 
 	// reinitialize all validators
-	app.StakingKeeper.IterateValidators(ctx, func(_ int64, val stakingtypes.ValidatorI) (stop bool) {
-		// donate any unwithdrawn outstanding reward fraction tokens to the community pool
-		scraps := app.DistrKeeper.GetValidatorOutstandingRewardsCoins(ctx, val.GetOperator())
-		feePool := app.DistrKeeper.GetFeePool(ctx)
-		feePool.CommunityPool = feePool.CommunityPool.Add(scraps...)
-		app.DistrKeeper.SetFeePool(ctx, feePool)
+	app.StakingKeeper.IterateValidators(
+		ctx,
+		func(_ int64, val stakingtypes.ValidatorI) (stop bool) {
+			// donate any unwithdrawn outstanding reward fraction tokens to the community pool
+			scraps := app.DistrKeeper.GetValidatorOutstandingRewardsCoins(
+				ctx,
+				val.GetOperator(),
+			)
+			feePool := app.DistrKeeper.GetFeePool(ctx)
+			feePool.CommunityPool = feePool.CommunityPool.Add(scraps...)
+			app.DistrKeeper.SetFeePool(ctx, feePool)
 
-		err := app.DistrKeeper.Hooks().AfterValidatorCreated(ctx, val.GetOperator())
-		// this lets us stop in case there's an error
-		return err != nil
-	})
+			err := app.DistrKeeper.Hooks().AfterValidatorCreated(ctx, val.GetOperator())
+			// this lets us stop in case there's an error
+			return err != nil
+		},
+	)
 
 	// reinitialize all delegations
 	for _, del := range dels {
@@ -209,22 +214,28 @@ func (app *ExocoreApp) prepForZeroHeightGenesis(ctx sdk.Context, jailAllowedAddr
 	/* Handle staking state. */
 
 	// iterate through redelegations, reset creation height
-	app.StakingKeeper.IterateRedelegations(ctx, func(_ int64, red stakingtypes.Redelegation) (stop bool) {
-		for i := range red.Entries {
-			red.Entries[i].CreationHeight = 0
-		}
-		app.StakingKeeper.SetRedelegation(ctx, red)
-		return false
-	})
+	app.StakingKeeper.IterateRedelegations(
+		ctx,
+		func(_ int64, red stakingtypes.Redelegation) (stop bool) {
+			for i := range red.Entries {
+				red.Entries[i].CreationHeight = 0
+			}
+			app.StakingKeeper.SetRedelegation(ctx, red)
+			return false
+		},
+	)
 
 	// iterate through unbonding delegations, reset creation height
-	app.StakingKeeper.IterateUnbondingDelegations(ctx, func(_ int64, ubd stakingtypes.UnbondingDelegation) (stop bool) {
-		for i := range ubd.Entries {
-			ubd.Entries[i].CreationHeight = 0
-		}
-		app.StakingKeeper.SetUnbondingDelegation(ctx, ubd)
-		return false
-	})
+	app.StakingKeeper.IterateUnbondingDelegations(
+		ctx,
+		func(_ int64, ubd stakingtypes.UnbondingDelegation) (stop bool) {
+			for i := range ubd.Entries {
+				ubd.Entries[i].CreationHeight = 0
+			}
+			app.StakingKeeper.SetUnbondingDelegation(ctx, ubd)
+			return false
+		},
+	)
 
 	// Iterate through validators by power descending, reset bond heights, and
 	// update bond intra-tx counters.
