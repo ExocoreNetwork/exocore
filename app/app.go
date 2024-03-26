@@ -183,6 +183,10 @@ import (
 	"github.com/evmos/evmos/v14/encoding"
 	evmostypes "github.com/evmos/evmos/v14/types"
 
+	// The recovery module is an IBC middleware for helping users recover funds that they sent
+	// to the Cosmos secp256k1 address instead of the Ethereum ethsecp256k1 address. It only
+	// works for authorized chains. To check this, it depends on the claims module, which must
+	// be enabled.
 	"github.com/evmos/evmos/v14/x/recovery"
 	recoverykeeper "github.com/evmos/evmos/v14/x/recovery/keeper"
 	recoverytypes "github.com/evmos/evmos/v14/x/recovery/types"
@@ -195,6 +199,9 @@ import (
 	vestingkeeper "github.com/evmos/evmos/v14/x/vesting/keeper"
 	vestingtypes "github.com/evmos/evmos/v14/x/vesting/types"
 
+	// The claims module is responsible for handling airdrops. We are explicitly disabling it by
+	// setting enable_claims to false. It is only imported because it is required by the
+	// recovery module.
 	"github.com/evmos/evmos/v14/x/claims"
 	claimskeeper "github.com/evmos/evmos/v14/x/claims/keeper"
 	claimstypes "github.com/evmos/evmos/v14/x/claims/types"
@@ -233,6 +240,11 @@ func init() {
 	feemarkettypes.DefaultMinGasMultiplier = MainnetMinGasMultiplier
 	// modify default min commission to 5%
 	stakingtypes.DefaultMinCommissionRate = sdk.NewDecWithPrec(5, 2)
+	// explicitly disable airdrops, only token recovery over authorized channels.
+	claimstypes.DefaultEnableClaims = false
+	// disable any recovery unless explicitly enabled via governance
+	claimstypes.DefaultAuthorizedChannels = []string{}
+	claimstypes.DefaultEVMChannels = []string{}
 }
 
 var (
