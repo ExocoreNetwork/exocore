@@ -185,18 +185,10 @@ import (
 
 	// The recovery module is an IBC middleware for helping users recover funds that they sent
 	// to the Cosmos secp256k1 address instead of the Ethereum ethsecp256k1 address. It only
-	// works for authorized chains. To check this, it depends on the claims module, which must
-	// be enabled.
+	// works for authorized chains.
 	"github.com/evmos/evmos/v14/x/recovery"
 	recoverykeeper "github.com/evmos/evmos/v14/x/recovery/keeper"
 	recoverytypes "github.com/evmos/evmos/v14/x/recovery/types"
-
-	// The claims module is responsible for handling airdrops. We are explicitly disabling it by
-	// setting enable_claims to false. It is only imported because it is required by the
-	// recovery module.
-	"github.com/evmos/evmos/v14/x/claims"
-	claimskeeper "github.com/evmos/evmos/v14/x/claims/keeper"
-	claimstypes "github.com/evmos/evmos/v14/x/claims/types"
 
 	"github.com/evmos/evmos/v14/x/epochs"
 	epochskeeper "github.com/evmos/evmos/v14/x/epochs/keeper"
@@ -232,11 +224,6 @@ func init() {
 	feemarkettypes.DefaultMinGasMultiplier = MainnetMinGasMultiplier
 	// modify default min commission to 5%
 	stakingtypes.DefaultMinCommissionRate = sdk.NewDecWithPrec(5, 2)
-	// explicitly disable airdrops, only token recovery over authorized channels.
-	claimstypes.DefaultEnableClaims = false
-	// disable any recovery unless explicitly enabled via governance
-	claimstypes.DefaultAuthorizedChannels = []string{}
-	claimstypes.DefaultEVMChannels = []string{}
 }
 
 var (
@@ -276,7 +263,6 @@ var (
 		// evmos modules
 		erc20.AppModuleBasic{},
 		epochs.AppModuleBasic{},
-		claims.AppModuleBasic{},
 		recovery.AppModuleBasic{},
 		consensus.AppModuleBasic{},
 		// Exocore modules
@@ -302,8 +288,7 @@ var (
 			authtypes.Minter,
 			authtypes.Burner,
 		}, // used for secure addition and subtraction of balance using module account
-		erc20types.ModuleName:  {authtypes.Minter, authtypes.Burner},
-		claimstypes.ModuleName: nil,
+		erc20types.ModuleName: {authtypes.Minter, authtypes.Burner},
 	}
 
 	// module accounts that are allowed to receive tokens
@@ -361,7 +346,6 @@ type ExocoreApp struct {
 	FeeMarketKeeper feemarketkeeper.Keeper
 
 	// Evmos keepers
-	ClaimsKeeper   *claimskeeper.Keeper
 	Erc20Keeper    erc20keeper.Keeper
 	EpochsKeeper   epochskeeper.Keeper
 	RecoveryKeeper *recoverykeeper.Keeper
@@ -447,7 +431,7 @@ func NewExocoreApp(
 		evmtypes.StoreKey, feemarkettypes.StoreKey,
 		// evmos keys
 		erc20types.StoreKey,
-		epochstypes.StoreKey, claimstypes.StoreKey,
+		epochstypes.StoreKey,
 		recoverytypes.StoreKey,
 		// exoCore module keys
 		assetsTypes.StoreKey,
@@ -613,26 +597,14 @@ func NewExocoreApp(
 	// Set legacy router for backwards compatibility with gov v1beta1
 	govKeeper.SetLegacyRouter(govRouter)
 
-	app.ClaimsKeeper = claimskeeper.NewKeeper(
-		appCodec,
-		keys[claimstypes.StoreKey],
-		authtypes.NewModuleAddress(govtypes.ModuleName),
-		app.AccountKeeper,
-		app.BankKeeper,
-		stakingKeeper,
-		app.DistrKeeper,
-		app.IBCKeeper.ChannelKeeper,
-	)
-
 	// register the staking hooks
 	// NOTE: stakingKeeper above is passed by reference, so that it will contain these hooks
-	// NOTE: Distr, Slashing and Claim must be created before calling the Hooks method to avoid
+	// NOTE: Distr and Slashing must be created before calling the Hooks method to avoid
 	// returning a Keeper without its table generated
 	stakingKeeper.SetHooks(
 		stakingtypes.NewMultiStakingHooks(
 			app.DistrKeeper.Hooks(),
 			app.SlashingKeeper.Hooks(),
-			app.ClaimsKeeper.Hooks(),
 		),
 	)
 
@@ -655,7 +627,7 @@ func NewExocoreApp(
 
 	app.TransferKeeper = transferkeeper.NewKeeper(
 		appCodec, keys[ibctransfertypes.StoreKey], app.GetSubspace(ibctransfertypes.ModuleName),
-		app.ClaimsKeeper, // ICS4 Wrapper: claims IBC middleware
+		app.RecoveryKeeper, // ICS4 Wrapper: recovery IBC middleware
 		app.IBCKeeper.ChannelKeeper, &app.IBCKeeper.PortKeeper,
 		app.AccountKeeper, app.BankKeeper, scopedTransferKeeper,
 		app.Erc20Keeper, // Add ERC20 Keeper for ERC20 transfers
@@ -718,15 +690,12 @@ func NewExocoreApp(
 	)
 
 	app.GovKeeper = *govKeeper.SetHooks(
-		govtypes.NewMultiGovHooks(
-			app.ClaimsKeeper.Hooks(),
-		),
+		govtypes.NewMultiGovHooks(),
 	)
 
 	app.EvmKeeper = app.EvmKeeper.SetHooks(
 		evmkeeper.NewMultiEvmHooks(
 			app.Erc20Keeper.Hooks(),
-			app.ClaimsKeeper.Hooks(),
 		),
 	)
 
@@ -734,7 +703,6 @@ func NewExocoreApp(
 
 	// Set the ICS4 wrappers for custom module middlewares
 	app.RecoveryKeeper.SetICS4Wrapper(app.IBCKeeper.ChannelKeeper)
-	app.ClaimsKeeper.SetICS4Wrapper(app.RecoveryKeeper)
 
 	// Override the ICS20 app module
 	transferModule := transfer.NewAppModule(app.TransferKeeper)
@@ -743,7 +711,7 @@ func NewExocoreApp(
 	app.ICAHostKeeper = icahostkeeper.NewKeeper(
 		appCodec, app.keys[icahosttypes.StoreKey],
 		app.GetSubspace(icahosttypes.SubModuleName),
-		app.ClaimsKeeper,
+		app.RecoveryKeeper,
 		app.IBCKeeper.ChannelKeeper,
 		&app.IBCKeeper.PortKeeper,
 		app.AccountKeeper,
@@ -760,21 +728,19 @@ func NewExocoreApp(
 		transfer stack contains (from bottom to top):
 			- ERC-20 Middleware
 		 	- Recovery Middleware
-		 	- Airdrop Claims Middleware
 			- IBC Transfer
 
 		SendPacket, since it is originating from the application to core IBC:
-		 	transferKeeper.SendPacket -> claim.SendPacket -> recovery.SendPacket -> erc20.SendPacket -> channel.SendPacket
+		 	transferKeeper.SendPacket -> recovery.SendPacket -> erc20.SendPacket -> channel.SendPacket
 
 		RecvPacket, message that originates from core IBC and goes down to app, the flow is the other way
-			channel.RecvPacket -> erc20.OnRecvPacket -> recovery.OnRecvPacket -> claim.OnRecvPacket -> transfer.OnRecvPacket
+			channel.RecvPacket -> erc20.OnRecvPacket -> recovery.OnRecvPacket -> transfer.OnRecvPacket
 	*/
 
 	// create IBC module from top to bottom of stack
 	var transferStack porttypes.IBCModule
 
 	transferStack = transfer.NewIBCModule(app.TransferKeeper)
-	transferStack = claims.NewIBCMiddleware(*app.ClaimsKeeper, transferStack)
 	transferStack = recovery.NewIBCMiddleware(*app.RecoveryKeeper, transferStack)
 	transferStack = erc20.NewIBCMiddleware(app.Erc20Keeper, transferStack)
 
@@ -884,8 +850,6 @@ func NewExocoreApp(
 		erc20.NewAppModule(app.Erc20Keeper, app.AccountKeeper,
 			app.GetSubspace(erc20types.ModuleName)),
 		epochs.NewAppModule(appCodec, app.EpochsKeeper),
-		claims.NewAppModule(appCodec, *app.ClaimsKeeper,
-			app.GetSubspace(claimstypes.ModuleName)),
 		recovery.NewAppModule(*app.RecoveryKeeper,
 			app.GetSubspace(recoverytypes.ModuleName)),
 		// exoCore app modules
@@ -930,7 +894,6 @@ func NewExocoreApp(
 		feegrant.ModuleName,
 		paramstypes.ModuleName,
 		erc20types.ModuleName,
-		claimstypes.ModuleName,
 		recoverytypes.ModuleName,
 		consensusparamtypes.ModuleName,
 		// ExoCore modules
@@ -953,7 +916,6 @@ func NewExocoreApp(
 		// Note: epochs' endblock should be "real" end of epochs, we keep epochs endblock at the
 		// end
 		epochstypes.ModuleName,
-		claimstypes.ModuleName,
 		// no-op modules
 		ibcexported.ModuleName,
 		ibctransfertypes.ModuleName,
@@ -994,8 +956,6 @@ func NewExocoreApp(
 		authtypes.ModuleName,
 		banktypes.ModuleName,
 		distrtypes.ModuleName,
-		// NOTE: staking requires the claiming hook
-		claimstypes.ModuleName,
 		stakingtypes.ModuleName,
 		slashingtypes.ModuleName,
 		govtypes.ModuleName,
