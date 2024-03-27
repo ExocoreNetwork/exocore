@@ -3,6 +3,9 @@ package keeper
 import (
 	"fmt"
 
+	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
+	"github.com/ethereum/go-ethereum/common/hexutil"
+
 	errorsmod "cosmossdk.io/errors"
 	sdkmath "cosmossdk.io/math"
 
@@ -11,6 +14,12 @@ import (
 	"github.com/ExocoreNetwork/exocore/x/operator/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
+
+// GetSlashIDForDogfood It use infractionType+'/'+'infractionHeight' as the slashID, because the slash event occurs in dogfood doesn't have a TxID. It isn't submitted through an external transaction.
+func GetSlashIDForDogfood(infraction stakingtypes.Infraction, infractionHeight int64) string {
+	// #nosec G701
+	return string(assetstype.GetJoinedStoreKey(hexutil.EncodeUint64(uint64(infraction)), hexutil.EncodeUint64(uint64(infractionHeight))))
+}
 
 // GetAssetsAmountToSlash It will slash the assets that are opting into AVS first, and if there isn't enough to slash, then it will slash the assets that have requested to undelegate but still locked.
 func (k *Keeper) GetAssetsAmountToSlash(ctx sdk.Context, operatorAddress sdk.AccAddress, avsAddr string, slashEventHeight int64, slashProportion sdkmath.LegacyDec) (*SlashAssets, error) {
@@ -228,6 +237,33 @@ func (k *Keeper) Slash(ctx sdk.Context, operatorAddress sdk.AccAddress, avsAddr,
 		return err
 	}
 	return nil
+}
+
+// SlashWithInfractionReason is an expected slash interface for the dogfood module.
+func (k *Keeper) SlashWithInfractionReason(
+	ctx sdk.Context, addr sdk.AccAddress, infractionHeight, _ int64,
+	slashFactor sdk.Dec, infraction stakingtypes.Infraction,
+) sdkmath.Int {
+	chainID := ctx.ChainID()
+	avsAddr, err := k.avsKeeper.GetAvsAddrByChainID(ctx, chainID)
+	if err != nil {
+		k.Logger(ctx).Error(err.Error(), chainID)
+		return sdkmath.NewInt(0)
+	}
+	slashContract, err := k.avsKeeper.GetAvsSlashContract(ctx, avsAddr)
+	if err != nil {
+		k.Logger(ctx).Error(err.Error(), avsAddr)
+		return sdkmath.NewInt(0)
+	}
+	slashID := GetSlashIDForDogfood(infraction, infractionHeight)
+	err = k.Slash(ctx, addr, avsAddr, slashContract, slashID, infractionHeight, slashFactor)
+	if err != nil {
+		k.Logger(ctx).Error(err.Error(), avsAddr)
+		return sdkmath.NewInt(0)
+	}
+	// todo: The returned value should be the amount of burned Exo if we considering a slash from the reward
+	// Now it doesn't slash from the reward, so just return 0
+	return sdkmath.NewInt(0)
 }
 
 // IsOperatorJailedForChainID add for dogfood

@@ -96,7 +96,7 @@ func (k Keeper) SlashWithInfractionReason(
 	}
 	// TODO(mm): add list of assets to be slashed (and not just all of them).
 	// based on yet to be finalized slashing design.
-	return k.slashingKeeper.SlashWithInfractionReason(
+	return k.operatorKeeper.SlashWithInfractionReason(
 		ctx, accAddress, infractionHeight,
 		power, slashFactor, infraction,
 	)

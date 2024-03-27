@@ -44,6 +44,15 @@ func (k *Keeper) OptInToCosmosChain(
 	if err != nil {
 		return nil, err
 	}
+	// call the basic OptIn
+	avsAddr, err := k.avsKeeper.GetAvsAddrByChainID(ctx, req.ChainId)
+	if err != nil {
+		return nil, err
+	}
+	err = k.OptIn(ctx, addr, avsAddr)
+	if err != nil {
+		return nil, err
+	}
 	return &types.OptInToCosmosChainResponse{}, nil
 }
 

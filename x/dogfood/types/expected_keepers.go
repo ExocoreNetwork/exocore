@@ -62,6 +62,13 @@ type OperatorKeeper interface {
 	GetActiveOperatorsForChainID(
 		sdk.Context, string,
 	) ([]sdk.AccAddress, []tmprotocrypto.PublicKey)
+	GetAvgDelegatedValue(
+		sdk.Context, []sdk.AccAddress, string, string,
+	) ([]int64, error)
+	SlashWithInfractionReason(
+		sdk.Context, sdk.AccAddress, int64,
+		int64, sdk.Dec, stakingtypes.Infraction,
+	) math.Int
 }
 
 // DelegationKeeper represents the expected keeper interface for the delegation module.
@@ -78,17 +85,8 @@ type EpochsHooks interface {
 
 // AssetsKeeper represents the expected keeper interface for the assets module.
 type AssetsKeeper interface {
-	GetOperatorAssetValue(sdk.Context, sdk.AccAddress) (int64, error)
 	IsStakingAsset(sdk.Context, string) bool
-	GetAvgDelegatedValue(
-		sdk.Context, []sdk.AccAddress, []string, string,
-	) ([]int64, error)
 }
 
 // SlashingKeeper represents the expected keeper interface for the (exo-)slashing module.
-type SlashingKeeper interface {
-	SlashWithInfractionReason(
-		sdk.Context, sdk.AccAddress, int64,
-		int64, sdk.Dec, stakingtypes.Infraction,
-	) math.Int
-}
+type SlashingKeeper interface{}
