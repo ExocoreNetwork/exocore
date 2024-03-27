@@ -1,0 +1,36 @@
+[
+	{
+		"inputs": [
+			{
+				"internalType": "string",
+				"name": "avsName",
+				"type": "string"
+			},
+			{
+				"internalType": "bytes",
+				"name": "avsAddress",
+				"type": "bytes"
+			},
+			{
+				"internalType": "bytes",
+				"name": "operatorAddress",
+				"type": "bytes"
+			},
+			{
+				"internalType": "uint64",
+				"name": "action",
+				"type": "uint64"
+			}
+		],
+		"name": "AVSInfoRegisterOrDeregister",
+		"outputs": [
+			{
+				"internalType": "bool",
+				"name": "success",
+				"type": "bool"
+			}
+		],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	}
+]

@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	errorsmod "cosmossdk.io/errors"
+	delegationtypes "github.com/ExocoreNetwork/exocore/x/delegation/types"
 	"github.com/cometbft/cometbft/libs/log"
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/store/prefix"
@@ -16,10 +17,11 @@ import (
 
 type (
 	Keeper struct {
-		cdc        codec.BinaryCodec
-		storeKey   storetypes.StoreKey
-		memKey     storetypes.StoreKey
-		paramstore paramtypes.Subspace
+		cdc            codec.BinaryCodec
+		storeKey       storetypes.StoreKey
+		memKey         storetypes.StoreKey
+		paramstore     paramtypes.Subspace
+		operatorKeeper delegationtypes.OperatorKeeper
 	}
 )
 
@@ -47,15 +49,42 @@ func (k Keeper) Logger(ctx sdk.Context) log.Logger {
 	return ctx.Logger().With("module", fmt.Sprintf("x/%s", types.ModuleName))
 }
 
-func (k Keeper) SetAVSInfo(ctx sdk.Context, info *types.AVSInfo) (err error) {
-	avsAddr, err := sdk.AccAddressFromBech32(info.AVSAddress)
+func (k Keeper) AVSInfoUpdate(ctx sdk.Context, params *AVSParams) error {
+	operatorAddress := params.OperatorAddress
+	opAccAddr, err := sdk.AccAddressFromBech32(string(operatorAddress))
+	if err != nil {
+		return errorsmod.Wrap(err, fmt.Sprintf("error occurred when parse acc address from Bech32,the addr is:%s", operatorAddress))
+	}
+	if !k.operatorKeeper.IsOperator(ctx, opAccAddr) {
+		return errorsmod.Wrap(delegationtypes.ErrOperatorNotExist, "AVSInfoUpdate: invalid operator address")
+	}
+	action := params.Action
+
+	if action == RegisterAction {
+		return k.SetAVSInfo(ctx, params.AVSName, string(params.AVSAddress), string(operatorAddress))
+	} else {
+		return k.DeleteAVSInfo(ctx, string(params.AVSAddress))
+	}
+}
+
+func (k Keeper) SetAVSInfo(ctx sdk.Context, AVSName string, AVSAddress string, OperatorAddress string) (err error) {
+	avsAddr, err := sdk.AccAddressFromBech32(AVSAddress)
 	if err != nil {
 		return errorsmod.Wrap(err, "GetAVSInfo: error occurred when parse acc address from Bech32")
 	}
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefixAVSInfo)
-	bz := k.cdc.MustMarshal(info)
-	store.Set(avsAddr, bz)
-	return nil
+	if !store.Has(avsAddr) {
+		AVSInfo := &types.AVSInfo{Name: AVSName, AVSAddress: AVSAddress, OperatorAddress: []string{OperatorAddress}}
+		bz := k.cdc.MustMarshal(AVSInfo)
+		store.Set(avsAddr, bz)
+		return nil
+	} else {
+		value := store.Get(avsAddr)
+		ret := &types.AVSInfo{}
+		k.cdc.MustUnmarshal(value, ret)
+		ret.OperatorAddress = append(ret.OperatorAddress, OperatorAddress)
+		return nil
+	}
 }
 
 func (k Keeper) GetAVSInfo(ctx sdk.Context, addr string) (*types.AVSInfo, error) {
@@ -74,8 +103,8 @@ func (k Keeper) GetAVSInfo(ctx sdk.Context, addr string) (*types.AVSInfo, error)
 	return &ret, nil
 }
 
-func (k Keeper) DeleteAVSInfo(ctx sdk.Context, info *types.AVSInfo) error {
-	avsAddr, err := sdk.AccAddressFromBech32(info.AVSAddress)
+func (k Keeper) DeleteAVSInfo(ctx sdk.Context, addr string) error {
+	avsAddr, err := sdk.AccAddressFromBech32(addr)
 	if err != nil {
 		return errorsmod.Wrap(err, "AVSInfo: error occurred when parse acc address from Bech32")
 	}
