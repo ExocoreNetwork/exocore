@@ -54,7 +54,30 @@ func (k *Keeper) IsOperator(ctx sdk.Context, addr sdk.AccAddress) bool {
 	return store.Has(addr)
 }
 
-func (k *Keeper) UpdateOptedInfo(ctx sdk.Context, operatorAddr, avsAddr string, info *operatortypes.OptedInfo) error {
+func (k *Keeper) HandleOptedInfo(ctx sdk.Context, operatorAddr, avsAddr string, handleFunc func(info *operatortypes.OptedInfo)) error {
+	opAccAddr, err := sdk.AccAddressFromBech32(operatorAddr)
+	if err != nil {
+		return errorsmod.Wrap(err, "HandleOptedInfo: error occurred when parse acc address from Bech32")
+	}
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), operatortypes.KeyPrefixOperatorOptedAVSInfo)
+	infoKey := assetstype.GetJoinedStoreKey(operatorAddr, avsAddr)
+	ifExist := store.Has(infoKey)
+	if !ifExist {
+		return errorsmod.Wrap(operatortypes.ErrNoKeyInTheStore, fmt.Sprintf("HandleOptedInfo: key is %suite", opAccAddr))
+	}
+	// get info from the store
+	value := store.Get(infoKey)
+	info := &operatortypes.OptedInfo{}
+	k.cdc.MustUnmarshal(value, info)
+	// call the handleFunc
+	handleFunc(info)
+	// restore the info after handling
+	bz := k.cdc.MustMarshal(info)
+	store.Set(infoKey, bz)
+	return nil
+}
+
+func (k *Keeper) SetOptedInfo(ctx sdk.Context, operatorAddr, avsAddr string, info *operatortypes.OptedInfo) error {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), operatortypes.KeyPrefixOperatorOptedAVSInfo)
 
 	// check operator address validation
@@ -94,6 +117,20 @@ func (k *Keeper) IsOptedIn(ctx sdk.Context, operatorAddr, avsAddr string) bool {
 		return false
 	}
 	if optedInfo.OptedOutHeight != operatortypes.DefaultOptedOutHeight {
+		return false
+	}
+	return true
+}
+
+func (k *Keeper) IsActive(ctx sdk.Context, operatorAddr, avsAddr string) bool {
+	optedInfo, err := k.GetOptedInfo(ctx, operatorAddr, avsAddr)
+	if err != nil {
+		return false
+	}
+	if optedInfo.OptedOutHeight != operatortypes.DefaultOptedOutHeight {
+		return false
+	}
+	if optedInfo.Jailed {
 		return false
 	}
 	return true

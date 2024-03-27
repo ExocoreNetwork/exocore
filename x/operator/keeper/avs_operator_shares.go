@@ -335,3 +335,35 @@ func (k *Keeper) GetStakerShare(ctx sdk.Context, avsAddr, stakerID, operatorAddr
 
 	return ret.Amount, nil
 }
+
+func (k *Keeper) GetAvgDelegatedValue(
+	ctx sdk.Context, operators []sdk.AccAddress, chainID, _ string,
+) ([]int64, error) {
+	avsAddr, err := k.avsKeeper.GetAvsAddrByChainID(ctx, chainID)
+	if err != nil {
+		return nil, err
+	}
+	ret := make([]int64, 0)
+	for _, operator := range operators {
+		share, err := k.GetOperatorShare(ctx, operator.String(), avsAddr)
+		if err != nil {
+			return nil, err
+		}
+		// truncate the USD value to int64
+		ret = append(ret, share.TruncateInt64())
+	}
+	return ret, nil
+}
+
+func (k *Keeper) GetOperatorAssetValue(ctx sdk.Context, operator sdk.AccAddress, chainID string) (int64, error) {
+	avsAddr, err := k.avsKeeper.GetAvsAddrByChainID(ctx, chainID)
+	if err != nil {
+		return 0, err
+	}
+	share, err := k.GetOperatorShare(ctx, operator.String(), avsAddr)
+	if err != nil {
+		return 0, err
+	}
+	// truncate the USD value to int64
+	return share.TruncateInt64(), nil
+}
