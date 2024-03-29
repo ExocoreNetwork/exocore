@@ -16,12 +16,12 @@ type BankKeeper interface {
 	SpendableCoins(ctx sdk.Context, addr sdk.AccAddress) sdk.Coins
 	// Methods imported from bank should be defined here
 }
-type AvshKeeper struct{}
+type AvsKeeper struct{}
 
-func (k AvshKeeper) IsAVS(sdk.Context, sdk.AccAddress) bool {
+func (k AvsKeeper) IsAVS(sdk.Context, sdk.AccAddress) bool {
 	return true
 }
 
-func (k AvshKeeper) getAvsAddress(sdk.Context, sdk.AccAddress) string {
+func (k AvsKeeper) getAvsAddress(sdk.Context, sdk.AccAddress) string {
 	return "0x00000000000000000000000000000000000009999"
 }

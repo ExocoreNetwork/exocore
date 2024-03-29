@@ -15,7 +15,7 @@ type (
 	Keeper struct {
 		cdc       codec.BinaryCodec
 		storeKey  storetypes.StoreKey
-		avsKeeper tasktype.AvshKeeper
+		avsKeeper tasktype.AvsKeeper
 	}
 )
 
@@ -27,7 +27,7 @@ func (k Keeper) RegisterAVSTask(ctx context.Context, req *types.RegisterAVSTaskR
 func NewKeeper(
 	cdc codec.BinaryCodec,
 	storeKey storetypes.StoreKey,
-	avsKeeper tasktype.AvshKeeper,
+	avsKeeper tasktype.AvsKeeper,
 ) Keeper {
 	return Keeper{
 		cdc:       cdc,
@@ -40,6 +40,6 @@ func (k Keeper) Logger(ctx sdk.Context) log.Logger {
 	return ctx.Logger().With("module", fmt.Sprintf("x/%s", types.ModuleName))
 }
 
-type TaskKeeper interface {
+type ITask interface {
 	RegisterAVSTask(ctx context.Context, req *types.RegisterAVSTaskReq) (*types.RegisterAVSTaskResponse, error)
 }

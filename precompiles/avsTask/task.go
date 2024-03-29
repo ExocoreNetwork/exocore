@@ -27,7 +27,7 @@ var f embed.FS
 type Precompile struct {
 	cmn.Precompile
 	taskKeeper taskKeeper.Keeper
-	avsKeeper  tasktype.AvshKeeper
+	avsKeeper  tasktype.AvsKeeper
 }
 
 // NewPrecompile creates a new task Precompile instance as a
@@ -35,7 +35,7 @@ type Precompile struct {
 func NewPrecompile(
 	authzKeeper authzkeeper.Keeper,
 	taskKeeper taskKeeper.Keeper,
-	avsKeeper tasktype.AvshKeeper,
+	avsKeeper tasktype.AvsKeeper,
 ) (*Precompile, error) {
 	abiBz, err := f.ReadFile("abi.json")
 	if err != nil {

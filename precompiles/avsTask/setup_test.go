@@ -2,9 +2,10 @@ package task_test
 
 import (
 	"github.com/ExocoreNetwork/exocore/testutil"
+	tasktype "github.com/ExocoreNetwork/exocore/x/taskmanageravs/types"
 	"testing"
 
-	"github.com/ExocoreNetwork/exocore/precompiles/slash"
+	"github.com/ExocoreNetwork/exocore/precompiles/avsTask"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -16,7 +17,7 @@ var s *TaskPrecompileTestSuite
 
 type TaskPrecompileTestSuite struct {
 	testutil.BaseTestSuite
-	precompile *slash.Precompile
+	precompile *task.Precompile
 }
 
 func TestPrecompileTestSuite(t *testing.T) {
@@ -25,12 +26,12 @@ func TestPrecompileTestSuite(t *testing.T) {
 
 	// Run Ginkgo integration tests
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Slash Precompile Suite")
+	RunSpecs(t, "Task Precompile Suite")
 }
 
 func (s *TaskPrecompileTestSuite) SetupTest() {
 	s.DoSetupTest()
-	precompile, err := slash.NewPrecompile(s.App.StakingAssetsManageKeeper, s.App.ExoSlashKeeper, s.App.AuthzKeeper)
+	precompile, err := task.NewPrecompile(s.App.AuthzKeeper, s.App.TaskKeeper, tasktype.AvsKeeper{})
 	s.Require().NoError(err)
 	s.precompile = precompile
 }

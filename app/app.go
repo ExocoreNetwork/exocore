@@ -39,6 +39,8 @@ import (
 	"github.com/ExocoreNetwork/exocore/x/reward"
 	rewardKeeper "github.com/ExocoreNetwork/exocore/x/reward/keeper"
 	rewardTypes "github.com/ExocoreNetwork/exocore/x/reward/types"
+	taskKeeper "github.com/ExocoreNetwork/exocore/x/taskmanageravs/keeper"
+	tasktype "github.com/ExocoreNetwork/exocore/x/taskmanageravs/types"
 	"github.com/ExocoreNetwork/exocore/x/withdraw"
 	withdrawKeeper "github.com/ExocoreNetwork/exocore/x/withdraw/keeper"
 	withdrawTypes "github.com/ExocoreNetwork/exocore/x/withdraw/types"
@@ -358,6 +360,7 @@ type ExocoreApp struct {
 	WithdrawKeeper   withdrawKeeper.Keeper
 	RewardKeeper     rewardKeeper.Keeper
 	OperatorKeeper   operatorKeeper.Keeper
+	TaskKeeper       taskKeeper.Keeper
 
 	ExoSlashKeeper slashKeeper.Keeper
 	// the module manager
@@ -630,6 +633,8 @@ func NewExocoreApp(
 	app.WithdrawKeeper = *withdrawKeeper.NewKeeper(appCodec, keys[withdrawTypes.StoreKey], app.AssetsKeeper, app.DepositKeeper)
 	app.RewardKeeper = *rewardKeeper.NewKeeper(appCodec, keys[rewardTypes.StoreKey], app.AssetsKeeper)
 	app.ExoSlashKeeper = slashKeeper.NewKeeper(appCodec, keys[exoslashTypes.StoreKey], app.AssetsKeeper)
+	app.TaskKeeper = taskKeeper.NewKeeper(appCodec, keys[tasktype.StoreKey], tasktype.AvsKeeper{})
+
 	// We call this after setting the hooks to ensure that the hooks are set on the keeper
 	evmKeeper.WithPrecompiles(
 		evmkeeper.AvailablePrecompiles(
@@ -645,6 +650,7 @@ func NewExocoreApp(
 			app.WithdrawKeeper,
 			app.ExoSlashKeeper,
 			app.RewardKeeper,
+			app.TaskKeeper,
 		),
 	)
 	epochsKeeper := epochskeeper.NewKeeper(appCodec, keys[epochstypes.StoreKey])

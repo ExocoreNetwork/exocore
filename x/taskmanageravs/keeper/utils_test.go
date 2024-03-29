@@ -202,6 +202,6 @@ func (suite *KeeperTestSuite) DoSetupTest() {
 // NextBlock commits the current block and sets up the next block.
 func (suite *KeeperTestSuite) NextBlock() {
 	var err error
-	suite.ctx, err = testutil.CommitAndCreateNewCtx(suite.ctx, suite.app, time.Second, suite.valSet, false)
+	suite.ctx, err = testutil.CommitAndCreateNewCtx(suite.ctx, suite.app, time.Second, suite.valSet)
 	suite.Require().NoError(err)
 }

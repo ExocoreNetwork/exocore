@@ -13,10 +13,10 @@ func (suite *KeeperTestSuite) TestTaskInfo() {
 			Status:              "active",
 		},
 	}
-	index, err := suite.app.AvsTaskKeeper.SetAvsTaskInfo(suite.ctx, info)
+	index, err := suite.app.TaskKeeper.SetAvsTaskInfo(suite.ctx, info)
 	suite.NoError(err)
 
-	getOperatorInfo, err := suite.app.AvsTaskKeeper.GetAvsTaskInfo(suite.ctx, index)
+	getOperatorInfo, err := suite.app.TaskKeeper.GetAvsTaskInfo(suite.ctx, index)
 	suite.NoError(err)
 	suite.Equal(*info.Task, *getOperatorInfo)
 }

@@ -5,16 +5,16 @@ import (
 
 	"github.com/ExocoreNetwork/exocore/x/taskmanageravs/keeper"
 	"github.com/ExocoreNetwork/exocore/x/taskmanageravs/types"
+	tasktype "github.com/ExocoreNetwork/exocore/x/taskmanageravs/types"
+	tmdb "github.com/cometbft/cometbft-db"
+	"github.com/cometbft/cometbft/libs/log"
+	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
 	"github.com/cosmos/cosmos-sdk/codec"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	"github.com/cosmos/cosmos-sdk/store"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	typesparams "github.com/cosmos/cosmos-sdk/x/params/types"
 	"github.com/stretchr/testify/require"
-	"github.com/cometbft/cometbft/libs/log"
-	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
-	tmdb "github.com/cometbft/cometbft-db"
 )
 
 func TaskmanageravsKeeper(t testing.TB) (*keeper.Keeper, sdk.Context) {
@@ -30,17 +30,10 @@ func TaskmanageravsKeeper(t testing.TB) (*keeper.Keeper, sdk.Context) {
 	registry := codectypes.NewInterfaceRegistry()
 	cdc := codec.NewProtoCodec(registry)
 
-	paramsSubspace := typesparams.NewSubspace(cdc,
-		types.Amino,
-		storeKey,
-		memStoreKey,
-		"TaskmanageravsParams",
-	)
 	k := keeper.NewKeeper(
-	    cdc,
-	    storeKey,
-	    memStoreKey,
-	    paramsSubspace, 
+		cdc,
+		storeKey,
+		tasktype.AvsKeeper{},
 	)
 
 	ctx := sdk.NewContext(stateStore, tmproto.Header{}, false, log.NewNopLogger())
@@ -48,5 +41,5 @@ func TaskmanageravsKeeper(t testing.TB) (*keeper.Keeper, sdk.Context) {
 	// Initialize params
 	k.SetParams(ctx, types.DefaultParams())
 
-	return k, ctx
+	return &k, ctx
 }

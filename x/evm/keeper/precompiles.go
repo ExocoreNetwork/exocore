@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"fmt"
+	taskKeeper "github.com/ExocoreNetwork/exocore/x/taskmanageravs/keeper"
 
 	stakingStateKeeper "github.com/ExocoreNetwork/exocore/x/assets/keeper"
 	rewardKeeper "github.com/ExocoreNetwork/exocore/x/reward/keeper"
@@ -12,12 +13,14 @@ import (
 
 	"golang.org/x/exp/maps"
 
+	taskPrecompile "github.com/ExocoreNetwork/exocore/precompiles/avsTask"
 	delegationprecompile "github.com/ExocoreNetwork/exocore/precompiles/delegation"
 	depositprecompile "github.com/ExocoreNetwork/exocore/precompiles/deposit"
 	rewardPrecompile "github.com/ExocoreNetwork/exocore/precompiles/reward"
 	slashPrecompile "github.com/ExocoreNetwork/exocore/precompiles/slash"
 	withdrawPrecompile "github.com/ExocoreNetwork/exocore/precompiles/withdraw"
 	exoslashKeeper "github.com/ExocoreNetwork/exocore/x/slash/keeper"
+	tasktype "github.com/ExocoreNetwork/exocore/x/taskmanageravs/types"
 	authzkeeper "github.com/cosmos/cosmos-sdk/x/authz/keeper"
 	distributionkeeper "github.com/cosmos/cosmos-sdk/x/distribution/keeper"
 	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
@@ -47,6 +50,7 @@ func AvailablePrecompiles(
 	withdrawKeeper withdrawKeeper.Keeper,
 	slashKeeper exoslashKeeper.Keeper,
 	rewardKeeper rewardKeeper.Keeper,
+	taskKeeper taskKeeper.Keeper,
 ) map[common.Address]vm.PrecompiledContract {
 	// Clone the mapping from the latest EVM fork.
 	precompiles := maps.Clone(vm.PrecompiledContractsBerlin)
@@ -92,11 +96,16 @@ func AvailablePrecompiles(
 	if err != nil {
 		panic(fmt.Errorf("failed to load  reward precompile: %w", err))
 	}
+	taskPrecompile, err := taskPrecompile.NewPrecompile(authzKeeper, taskKeeper, tasktype.AvsKeeper{})
+	if err != nil {
+		panic(fmt.Errorf("failed to load  reward precompile: %w", err))
+	}
 	precompiles[slashPrecompile.Address()] = slashPrecompile
 	precompiles[rewardPrecompile.Address()] = rewardPrecompile
 	precompiles[withdrawPrecompile.Address()] = withdrawPrecompile
 	precompiles[depositPrecompile.Address()] = depositPrecompile
 	precompiles[delegationPrecompile.Address()] = delegationPrecompile
+	precompiles[taskPrecompile.Address()] = taskPrecompile
 
 	precompiles[stakingPrecompile.Address()] = stakingPrecompile
 	precompiles[distributionPrecompile.Address()] = distributionPrecompile

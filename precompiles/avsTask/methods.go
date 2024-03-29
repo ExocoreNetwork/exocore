@@ -57,7 +57,6 @@ func (p Precompile) CreateNewTask(
 func (p Precompile) IsOperatorOptin(
 	ctx sdk.Context,
 	contract *vm.Contract,
-	_ *vm.Contract,
 	method *abi.Method,
 	args []interface{},
 ) ([]byte, error) {
