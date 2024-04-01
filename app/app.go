@@ -135,10 +135,6 @@ import (
 	crisiskeeper "github.com/cosmos/cosmos-sdk/x/crisis/keeper"
 	crisistypes "github.com/cosmos/cosmos-sdk/x/crisis/types"
 
-	distr "github.com/cosmos/cosmos-sdk/x/distribution"
-	distrkeeper "github.com/cosmos/cosmos-sdk/x/distribution/keeper"
-	distrtypes "github.com/cosmos/cosmos-sdk/x/distribution/types"
-
 	"github.com/cosmos/cosmos-sdk/x/evidence"
 	evidencekeeper "github.com/cosmos/cosmos-sdk/x/evidence/keeper"
 	evidencetypes "github.com/cosmos/cosmos-sdk/x/evidence/types"
@@ -239,7 +235,6 @@ var (
 		bank.AppModuleBasic{},
 		capability.AppModuleBasic{},
 		staking.AppModuleBasic{},
-		distr.AppModuleBasic{},
 		gov.NewAppModuleBasic(
 			[]govclient.ProposalHandler{
 				paramsclient.ProposalHandler, upgradeclient.LegacyProposalHandler, upgradeclient.LegacyCancelProposalHandler,
@@ -278,7 +273,6 @@ var (
 	// module account permissions
 	maccPerms = map[string][]string{
 		authtypes.FeeCollectorName:     nil,
-		distrtypes.ModuleName:          nil,
 		stakingtypes.BondedPoolName:    {authtypes.Burner, authtypes.Staking},
 		stakingtypes.NotBondedPoolName: {authtypes.Burner, authtypes.Staking},
 		govtypes.ModuleName:            {authtypes.Burner},
@@ -324,7 +318,6 @@ type ExocoreApp struct {
 	CapabilityKeeper      *capabilitykeeper.Keeper
 	StakingKeeper         stakingkeeper.Keeper
 	SlashingKeeper        slashingkeeper.Keeper
-	DistrKeeper           distrkeeper.Keeper
 	GovKeeper             govkeeper.Keeper
 	CrisisKeeper          crisiskeeper.Keeper
 	UpgradeKeeper         upgradekeeper.Keeper
@@ -419,7 +412,7 @@ func NewExocoreApp(
 	keys := sdk.NewKVStoreKeys(
 		// SDK keys
 		authtypes.StoreKey, banktypes.StoreKey, stakingtypes.StoreKey,
-		distrtypes.StoreKey, slashingtypes.StoreKey,
+		slashingtypes.StoreKey,
 		govtypes.StoreKey, paramstypes.StoreKey, upgradetypes.StoreKey,
 		evidencetypes.StoreKey, capabilitytypes.StoreKey, consensusparamtypes.StoreKey,
 		feegrant.StoreKey, authzkeeper.StoreKey, crisistypes.StoreKey,
@@ -522,10 +515,6 @@ func NewExocoreApp(
 		appCodec, keys[stakingtypes.StoreKey], accountK, bankK, authAddr,
 	)
 	app.StakingKeeper = *stakingKeeper
-	app.DistrKeeper = distrkeeper.NewKeeper(
-		appCodec, keys[distrtypes.StoreKey], accountK, bankK,
-		stakingKeeper, authtypes.FeeCollectorName, authAddr,
-	)
 	app.SlashingKeeper = slashingkeeper.NewKeeper(
 		appCodec, app.LegacyAmino(), keys[slashingtypes.StoreKey], stakingKeeper, authAddr,
 	)
@@ -599,11 +588,10 @@ func NewExocoreApp(
 
 	// register the staking hooks
 	// NOTE: stakingKeeper above is passed by reference, so that it will contain these hooks
-	// NOTE: Distr and Slashing must be created before calling the Hooks method to avoid
+	// NOTE: Slashing must be created before calling the Hooks method to avoid
 	// returning a Keeper without its table generated
 	stakingKeeper.SetHooks(
 		stakingtypes.NewMultiStakingHooks(
-			app.DistrKeeper.Hooks(),
 			app.SlashingKeeper.Hooks(),
 		),
 	)
@@ -670,7 +658,6 @@ func NewExocoreApp(
 	evmKeeper.WithPrecompiles(
 		evmkeeper.AvailablePrecompiles(
 			*stakingKeeper,
-			app.DistrKeeper,
 			app.AuthzKeeper,
 			app.TransferKeeper,
 			app.IBCKeeper.ChannelKeeper,
@@ -801,14 +788,6 @@ func NewExocoreApp(
 			app.StakingKeeper,
 			app.GetSubspace(slashingtypes.ModuleName),
 		),
-		distr.NewAppModule(
-			appCodec,
-			app.DistrKeeper,
-			accountK,
-			bankK,
-			app.StakingKeeper,
-			app.GetSubspace(distrtypes.ModuleName),
-		),
 		staking.NewAppModule(
 			appCodec,
 			&app.StakingKeeper,
@@ -862,7 +841,7 @@ func NewExocoreApp(
 		exoslash.NewAppModule(appCodec, app.ExoSlashKeeper),
 	)
 
-	// During begin block slashing happens after distr.BeginBlocker so that
+	// During begin block slashing happens after reward.BeginBlocker so that
 	// there is nothing left over in the validator fee pool, to keep the
 	// CanWithdrawInvariant invariant.
 	// NOTE: upgrade module must go first to handle software upgrades.
@@ -877,7 +856,6 @@ func NewExocoreApp(
 		epochstypes.ModuleName,
 		feemarkettypes.ModuleName,
 		evmtypes.ModuleName,
-		distrtypes.ModuleName,
 		slashingtypes.ModuleName,
 		evidencetypes.ModuleName,
 		stakingtypes.ModuleName,
@@ -923,7 +901,6 @@ func NewExocoreApp(
 		capabilitytypes.ModuleName,
 		authtypes.ModuleName,
 		banktypes.ModuleName,
-		distrtypes.ModuleName,
 		slashingtypes.ModuleName,
 		genutiltypes.ModuleName,
 		evidencetypes.ModuleName,
@@ -955,7 +932,6 @@ func NewExocoreApp(
 		capabilitytypes.ModuleName,
 		authtypes.ModuleName,
 		banktypes.ModuleName,
-		distrtypes.ModuleName,
 		stakingtypes.ModuleName,
 		slashingtypes.ModuleName,
 		govtypes.ModuleName,
@@ -1076,7 +1052,7 @@ func (app *ExocoreApp) setAnteHandler(txConfig client.TxConfig, maxGasWanted uin
 		ExtensionOptionChecker: evmostypes.HasDynamicFeeExtensionOption,
 		StakingKeeper:          app.StakingKeeper,
 		FeegrantKeeper:         app.FeeGrantKeeper,
-		DistributionKeeper:     app.DistrKeeper,
+		DistributionKeeper:     app.RewardKeeper,
 		IBCKeeper:              app.IBCKeeper,
 		SignModeHandler:        txConfig.SignModeHandler(),
 		SigGasConsumer:         ante.SigVerificationGasConsumer,
@@ -1331,7 +1307,6 @@ func initParamsKeeper(
 	paramsKeeper.Subspace(authtypes.ModuleName)
 	paramsKeeper.Subspace(banktypes.ModuleName)
 	paramsKeeper.Subspace(stakingtypes.ModuleName)
-	paramsKeeper.Subspace(distrtypes.ModuleName)
 	paramsKeeper.Subspace(slashingtypes.ModuleName)
 	paramsKeeper.Subspace(govtypes.ModuleName).
 		// nolint: staticcheck

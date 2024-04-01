@@ -18,7 +18,6 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	ethtypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/core/vm"
-	"github.com/evmos/evmos/v14/utils"
 	"github.com/evmos/evmos/v14/x/evm/statedb"
 	evmtypes "github.com/evmos/evmos/v14/x/evm/types"
 )
@@ -98,11 +97,11 @@ func (s *DelegationPrecompileSuite) TestRunDelegateToThroughClientChain() {
 	}
 	commonMalleate := func() (common.Address, []byte) {
 		// prepare the call input for delegation test
-		valAddr, err := sdk.ValAddressFromBech32(s.Validators[0].OperatorAddress)
-		s.Require().NoError(err)
-		val, _ := s.App.StakingKeeper.GetValidator(s.Ctx, valAddr)
-		coins := sdk.NewCoins(sdk.NewCoin(utils.BaseDenom, sdk.NewInt(1e18)))
-		s.App.DistrKeeper.AllocateTokensToValidator(s.Ctx, val, sdk.NewDecCoinsFromCoins(coins...))
+		// valAddr, err := sdk.ValAddressFromBech32(s.Validators[0].OperatorAddress)
+		// s.Require().NoError(err)
+		// val, _ := s.App.StakingKeeper.GetValidator(s.Ctx, valAddr)
+		// coins := sdk.NewCoins(sdk.NewCoin(utils.BaseDenom, sdk.NewInt(1e18)))
+		// s.App.DistrKeeper.AllocateTokensToValidator(s.Ctx, val, sdk.NewDecCoinsFromCoins(coins...))
 		input, err := s.precompile.Pack(
 			delegation.MethodDelegateToThroughClientChain,
 			uint16(clientChainLzID),
@@ -340,11 +339,11 @@ func (s *DelegationPrecompileSuite) TestRunUnDelegateFromThroughClientChain() {
 	}
 	commonMalleate := func() (common.Address, []byte) {
 		// prepare the call input for delegation test
-		valAddr, err := sdk.ValAddressFromBech32(s.Validators[0].OperatorAddress)
-		s.Require().NoError(err)
-		val, _ := s.App.StakingKeeper.GetValidator(s.Ctx, valAddr)
-		coins := sdk.NewCoins(sdk.NewCoin(utils.BaseDenom, sdk.NewInt(1e18)))
-		s.App.DistrKeeper.AllocateTokensToValidator(s.Ctx, val, sdk.NewDecCoinsFromCoins(coins...))
+		// valAddr, err := sdk.ValAddressFromBech32(s.Validators[0].OperatorAddress)
+		// s.Require().NoError(err)
+		// val, _ := s.App.StakingKeeper.GetValidator(s.Ctx, valAddr)
+		// coins := sdk.NewCoins(sdk.NewCoin(utils.BaseDenom, sdk.NewInt(1e18)))
+		// s.App.DistrKeeper.AllocateTokensToValidator(s.Ctx, val, sdk.NewDecCoinsFromCoins(coins...))
 		input, err := s.precompile.Pack(
 			delegation.MethodUndelegateFromThroughClientChain,
 			uint16(clientChainLzID),
