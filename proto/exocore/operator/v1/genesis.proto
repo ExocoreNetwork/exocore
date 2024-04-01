@@ -10,43 +10,43 @@ option go_package = "github.com/ExocoreNetwork/exocore/x/operator/types";
 
 // GenesisState defines the operator module's genesis state.
 message GenesisState {
-    // there are no params for this module.
-    // operators is a list of the registered operators.
-    repeated OperatorInfo operators = 1 [(gogoproto.nullable) = false];
-    // operator_records refers to a list of operator records. each record
-    // contains an operator address and a list of chain id +
-    // cons key combination.
-    repeated OperatorConsKeyRecord operator_records = 2
-        [(gogoproto.nullable) = false];
-    // staker_records refers to a list of staker records. each record
-    // contains a staker address and a list of asset IDs with their
-    // operator + amount combination.
-    repeated StakerRecord staker_records = 3
-        [(gogoproto.nullable) = false];
-    // TODO: add other AVS opt-in information for exporting / importing.
-    // Although it is not necessary for the genesis, it is necessary for
-    // chain restarts.
+  // there are no params for this module.
+  // operators is a list of the registered operators.
+  repeated OperatorInfo operators = 1 [(gogoproto.nullable) = false];
+  // operator_records refers to a list of operator records. each record
+  // contains an operator address and a list of chain id +
+  // cons key combination.
+  repeated OperatorConsKeyRecord operator_records = 2
+    [(gogoproto.nullable) = false];
+  // staker_records refers to a list of staker records. each record
+  // contains a staker address and a list of asset IDs with their
+  // operator + amount combination.
+  repeated StakerRecord staker_records = 3
+    [(gogoproto.nullable) = false];
+  // TODO: add other AVS opt-in information for exporting / importing.
+  // Although it is not necessary for the genesis, it is necessary for
+  // chain restarts.
 }
 
 // OperatorConsKeyRecord is a helper structure for the genesis state. Each record
 // contains an operator address and a list of chain id + cons key combination.
 message OperatorConsKeyRecord {
-    // operator_address is the address of the operator as the bech32
-    // encoded version of sdk.AccAddress.
-    string operator_address = 1;
-    // chains is a list of chain id + consensus key combination.
-    repeated ChainDetails chains = 2 [(gogoproto.nullable) = false];
+  // operator_address is the address of the operator as the bech32
+  // encoded version of sdk.AccAddress.
+  string operator_address = 1;
+  // chains is a list of chain id + consensus key combination.
+  repeated ChainDetails chains = 2 [(gogoproto.nullable) = false];
 }
 
 // ChainDetails is a helper structure for the genesis state. Each record
 // contains a chain id and a consensus key.
 message ChainDetails {
-    // chain_id is the unique identifier of the chain.
-    string chain_id = 1 [(gogoproto.customname) = "ChainID"];
-    // consensus_key is the consensus key of the operator on the chain.
-    // the length of this key should be exactly 32 bytes, and must be enforced
-    // outside of protobuf.
-    string consensus_key = 2;
+  // chain_id is the unique identifier of the chain.
+  string chain_id = 1 [(gogoproto.customname) = "ChainID"];
+  // consensus_key is the consensus key of the operator on the chain.
+  // the length of this key should be exactly 32 bytes, and must be enforced
+  // outside of protobuf.
+  string consensus_key = 2;
 }
 
 // all operators in the genesis (during bootstrap) are assumed to have
@@ -65,32 +65,32 @@ message ChainDetails {
 // contains a staker address and a list of asset IDs with their operator +
 // amount combination.
 message StakerRecord {
-    // staker_id denotes the address + l0id of the staker.
-    string staker_id = 1 [(gogoproto.customname) = "StakerID"];
-    // staker_details is a list of asset ID + operator + amount combination.
-    repeated StakerDetails staker_details = 2 [(gogoproto.nullable) = false];
+  // staker_id denotes the address + l0id of the staker.
+  string staker_id = 1 [(gogoproto.customname) = "StakerID"];
+  // staker_details is a list of asset ID + operator + amount combination.
+  repeated StakerDetails staker_details = 2 [(gogoproto.nullable) = false];
 }
 
 // StakerDetails is a helper structure for the genesis state. Each record
 // contains an asset ID and a list of operator + amount combination.
 message StakerDetails {
-    // asset_id is the unique identifier of the asset.
-    string asset_id = 1 [(gogoproto.customname) = "AssetID"];
-    // details is a list of operator + amount combination.
-    repeated AssetDetails details = 2 [(gogoproto.nullable) = false];
+  // asset_id is the unique identifier of the asset.
+  string asset_id = 1 [(gogoproto.customname) = "AssetID"];
+  // details is a list of operator + amount combination.
+  repeated AssetDetails details = 2 [(gogoproto.nullable) = false];
 }
 
 // AssetDetails is a helper structure for the genesis state. Each record
 // contains an operator and an amount.
 message AssetDetails {
-    // operator_address is the address of the operator as the bech32
-    // version of sdk.AccAddress.
-    string operator_address = 1;
-    // amount is the amount of the asset staked by the staker for this
-    // asset and operator.
-    string amount = 2 [
-        (cosmos_proto.scalar) = "cosmos.Int",
-        (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
-        (gogoproto.nullable) = false
-    ];
+  // operator_address is the address of the operator as the bech32
+  // version of sdk.AccAddress.
+  string operator_address = 1;
+  // amount is the amount of the asset staked by the staker for this
+  // asset and operator.
+  string amount = 2 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.nullable) = false
+  ];
 }

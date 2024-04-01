@@ -13,44 +13,44 @@ option go_package = "github.com/ExocoreNetwork/exocore/x/delegation/types";
 // or in the event of a restart. At this point, it is only built with
 // the former in mind.
 message GenesisState {
-    // there are no parameters in this module.
-    // delegations_by_staker_asset_operator is a list of all delegations by staker,
-    // asset and operator
-    repeated DelegationByStakerAssetOperator
-        delegations_by_staker_asset_operator = 1 [(gogoproto.nullable) = false];
+  // there are no parameters in this module.
+  // delegations_by_staker_asset_operator is a list of all delegations by staker,
+  // asset and operator
+  repeated DelegationByStakerAssetOperator
+    delegations_by_staker_asset_operator = 1 [(gogoproto.nullable) = false];
 }
 
 // DelegationByStakerAssetOperator stores the staker_id and all delegations
 // made by that staker, indexed by asset_id and then the operator address.
 message DelegationByStakerAssetOperator {
-    // staker_id is the staker's address + hex encoded l0 chain id
-    string staker_id = 1 [(gogoproto.customname) = "StakerID"];
-    // delegations_by_asset_operator is a list of all delegations made by the staker
-    // for a specific asset and operator
-    repeated DelegationByAssetOperator delegations_by_asset_operator = 2
-        [(gogoproto.nullable) = false];
+  // staker_id is the staker's address + hex encoded l0 chain id
+  string staker_id = 1 [(gogoproto.customname) = "StakerID"];
+  // delegations_by_asset_operator is a list of all delegations made by the staker
+  // for a specific asset and operator
+  repeated DelegationByAssetOperator delegations_by_asset_operator = 2
+    [(gogoproto.nullable) = false];
 }
 
 // DelegationByAssetOperator stores the asset_id and all delegations
 // denominated in that asset, indexed by operator address.
 message DelegationByAssetOperator {
-    // asset_id is the asset's identifier
-    string asset_id = 1 [(gogoproto.customname) = "AssetID"];
-    // delegations_by_operator is a list of all delegations denominated
-    // in that asset, indexed by the operator address.
-    repeated DelegationByOperator delegations_by_operator = 2
-        [(gogoproto.nullable) = false];
+  // asset_id is the asset's identifier
+  string asset_id = 1 [(gogoproto.customname) = "AssetID"];
+  // delegations_by_operator is a list of all delegations denominated
+  // in that asset, indexed by the operator address.
+  repeated DelegationByOperator delegations_by_operator = 2
+    [(gogoproto.nullable) = false];
 }
 
 // DelegationByOperator stores the operator address and the delegated amount.
 message DelegationByOperator {
-    // operator_address is the operator's address
-    string operator_address = 1;// sdk.AccAddress encoded as bech32
-    // amount is the amount of the asset delegated to the operator.
-    string amount = 2
-    [
-        (cosmos_proto.scalar) = "cosmos.Int",
-        (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
-        (gogoproto.nullable) = false
-    ];
+  // operator_address is the operator's address
+  string operator_address = 1;// sdk.AccAddress encoded as bech32
+  // amount is the amount of the asset delegated to the operator.
+  string amount = 2
+  [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.nullable) = false
+  ];
 }
