@@ -1,7 +1,6 @@
 package types_test
 
 import (
-	fmt "fmt"
 	"testing"
 
 	"github.com/ExocoreNetwork/exocore/x/dogfood/types"
@@ -107,7 +106,6 @@ func (suite *GenesisTestSuite) TestValidateGenesis() {
 			malleate: func(gs *types.GenesisState) {
 				for i := 0; i < int(gs.Params.MaxValidators)+1; i++ {
 					key := hexutil.Encode(ed25519.GenPrivKey().PubKey().Bytes())
-					fmt.Println(key)
 					gs.InitialValSet = append(gs.InitialValSet, types.GenesisValidator{
 						PublicKey: key,
 						Power:     5,
