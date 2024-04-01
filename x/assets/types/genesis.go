@@ -33,11 +33,6 @@ func DefaultGenesis() *GenesisState {
 // Validate performs basic genesis state validation returning an error
 // upon any failure.
 func (gs GenesisState) Validate() error {
-	// TODO: validate the other items as well.
-	// such validations could potentially include that the sum
-	// of all balances for an asset equals the deposits, etc.
-	// operator_asset.go
-
 	// client_chain.go -> check no repeat chain
 	lzIDs := make(map[uint64]struct{}, len(gs.ClientChains))
 	for _, info := range gs.ClientChains {
@@ -165,12 +160,7 @@ func (gs GenesisState) Validate() error {
 	depositsByAssetByStaker := make(map[string]math.Int, len(deposits))
 	for _, level1 := range gs.StakerAssetInfos {
 		staker := level1.StakerID
-		if staker == "" {
-			return errorsmod.Wrapf(
-				ErrInvalidGenesisData,
-				"empty staker ID",
-			)
-		}
+		// no need to check for empty stakerID, since the ParseID does so.
 		var id uint64
 		var err error
 		if _, id, err = ParseID(staker); err != nil {
