@@ -282,7 +282,7 @@ func areMapsIdentical(m1, m2 map[string]math.Int) bool {
 
 	// this code is not consensus critical, so we can loop.
 	// the codeQL warning can be ignored.
-	// nolint:gosec
+	
 	for k1, v1 := range m1 {
 		v2, ok := m2[k1]
 		if !ok || !v1.Equal(v2) {
