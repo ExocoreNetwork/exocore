@@ -25,7 +25,10 @@ func (gs GenesisState) Validate() error {
 		)
 	}
 	for _, val := range gs.InitialValSet {
-		if _, err := operatortypes.Bytes32ToPubKey(val.PublicKey); err != nil {
+		// HexStringToPubKey checks the size and returns a tmprotocrypto type.
+		// and since its specific type (ed25519) is already set, it converts easily to
+		// sdk Key format as well.
+		if _, err := operatortypes.HexStringToPubKey(val.PublicKey); err != nil {
 			return errorsmod.Wrapf(
 				ErrInvalidGenesisData,
 				"invalid public key %x: %s",

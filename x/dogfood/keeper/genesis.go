@@ -33,7 +33,7 @@ func (k Keeper) InitGenesis(
 	out := make([]abci.ValidatorUpdate, len(genState.InitialValSet))
 	for _, val := range genState.InitialValSet {
 		// already validated
-		consKey, _ := operatortypes.Bytes32ToPubKey(val.PublicKey)
+		consKey, _ := operatortypes.HexStringToPubKey(val.PublicKey)
 		out = append(out, abci.ValidatorUpdate{
 			PubKey: *consKey,
 			Power:  val.Power,

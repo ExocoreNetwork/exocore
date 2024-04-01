@@ -40,7 +40,7 @@ func (k Keeper) ApplyValidatorChanges(
 ) []abci.ValidatorUpdate {
 	ret := []abci.ValidatorUpdate{}
 	for _, change := range changes {
-		// convert TM pubkey to SDK pubkey
+		// convert TM pubkey to SDK pubkey for storage within the validator object.
 		pubkey, err := cryptocodec.FromTmProtoPublicKey(change.GetPubKey())
 		if err != nil {
 			// An error here would indicate that this change is invalid.

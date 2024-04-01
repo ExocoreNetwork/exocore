@@ -62,9 +62,9 @@ var (
 		ModuleName, 11, "operator already opting out",
 	)
 
-	ErrInvalidPubKeyBytes = errorsmod.Register(
+	ErrInvalidPubKey = errorsmod.Register(
 		ModuleName, 12,
-		"invalid public key bytes",
+		"invalid public key",
 	)
 
 	ErrInvalidGenesisData = errorsmod.Register(

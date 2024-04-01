@@ -27,7 +27,7 @@ func (k Keeper) InitGenesis(ctx sdk.Context, state types.GenesisState) []abci.Va
 		for _, subRecord := range record.Chains {
 			consKeyBytes32 := subRecord.ConsensusKey
 			// already validated
-			consKey, _ := types.Bytes32ToPubKey(consKeyBytes32)
+			consKey, _ := types.HexStringToPubKey(consKeyBytes32)
 			if err := k.SetOperatorConsKeyForChainID(
 				ctx, operatorAccAddress, subRecord.ChainID, consKey,
 			); err != nil {

@@ -44,9 +44,9 @@ message ChainDetails {
     // chain_id is the unique identifier of the chain.
     string chain_id = 1 [(gogoproto.customname) = "ChainID"];
     // consensus_key is the consensus key of the operator on the chain.
-    // the length of this key should be exactly 32, and must be enforced
+    // the length of this key should be exactly 32 bytes, and must be enforced
     // outside of protobuf.
-    bytes consensus_key = 2;
+    string consensus_key = 2;
 }
 
 // all operators in the genesis (during bootstrap) are assumed to have

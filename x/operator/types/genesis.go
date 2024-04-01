@@ -64,10 +64,10 @@ func (gs GenesisState) Validate() error {
 		}
 		operatorsByKeys[operatorAddress] = struct{}{}
 		for _, subRecord := range record.Chains {
-			consKeyBytes32 := subRecord.ConsensusKey
-			_, err := Bytes32ToPubKey(consKeyBytes32)
-			return errorsmod.Wrapf(
-				ErrInvalidGenesisData,
+			consKeyString := subRecord.ConsensusKey
+			if _, err := HexStringToPubKey(consKeyString); err != nil {
+				return errorsmod.Wrapf(
+					ErrInvalidGenesisData,
 				"consensus key %x is invalid: %s",
 				consKeyBytes32, err,
 			)

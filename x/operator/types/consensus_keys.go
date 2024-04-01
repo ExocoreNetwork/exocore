@@ -8,24 +8,34 @@ import (
 
 	tmprotocrypto "github.com/cometbft/cometbft/proto/tendermint/crypto"
 	cryptocodec "github.com/cosmos/cosmos-sdk/crypto/codec"
+	"github.com/ethereum/go-ethereum/common/hexutil"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-// Bytes32ToPubKey converts a 32-byte public key (from the Ethereum side of things)
+// HexStringToPubKey converts a 32-byte public key (from the Ethereum side of things),
+// which is represented as a 66-byte string (with the 0x prefix) within Golang,
 // to a tendermint public key. It is, in effect, a reverse of the command
 // `exocored keys consensus-pubkey-to-bytes`
-func Bytes32ToPubKey(pubKeyBytes []byte) (*tmprotocrypto.PublicKey, error) {
-	if len(pubKeyBytes) != 32 {
+func HexStringToPubKey(key string) (*tmprotocrypto.PublicKey, error) {
+	if len(key) != 66 {
 		return nil, errorsmod.Wrapf(
-			ErrInvalidPubKeyBytes,
-			"expected 32 bytes, got %d",
-			len(pubKeyBytes),
+			ErrInvalidPubKey,
+			"expected 66 length string, got %d",
+			len(key),
+		)
+	}
+	keyBytes, err := hexutil.Decode(key)
+	if err != nil {
+		return nil, errorsmod.Wrapf(
+			ErrInvalidPubKey,
+			"failed to decode hex string: %s",
+			err,
 		)
 	}
 	return &tmprotocrypto.PublicKey{
 		Sum: &tmprotocrypto.PublicKey_Ed25519{
-			Ed25519: pubKeyBytes,
+			Ed25519: keyBytes,
 		},
 	}, nil
 }

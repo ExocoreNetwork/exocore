@@ -23,7 +23,7 @@ message GenesisState {
 message GenesisValidator {
   // public_key is the consensus public key of the validator. It should
   // be exactly 32 bytes, but this is not enforced in protobuf.
-  bytes public_key = 1;
+  string public_key = 1;
   // power is the voting power of the validator.
   int64 power = 2;
 }
