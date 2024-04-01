@@ -8,12 +8,13 @@ import (
 
 func (k Keeper) InitGenesis(ctx sdk.Context, state types.GenesisState) []abci.ValidatorUpdate {
 	// operators.go
-	for _, info := range state.Operators {
+	for _, infoCopy := range state.Operators {
+		info := infoCopy // prevent implicit memory aliasing
 		if err := k.SetOperatorInfo(ctx, info.EarningsAddr, &info); err != nil {
 			panic(err)
 		}
 		operatorAddress := info.EarningsAddr
-		// already validated during state.Validate()
+		// #nosec G703 // already validated
 		operatorAccAddress, _ := sdk.AccAddressFromBech32(operatorAddress)
 		if err := k.OptIn(ctx, operatorAccAddress, ctx.ChainID()); err != nil {
 			panic(err)
@@ -22,11 +23,11 @@ func (k Keeper) InitGenesis(ctx sdk.Context, state types.GenesisState) []abci.Va
 	// consensus_keys.go
 	for _, record := range state.OperatorRecords {
 		operatorAddress := record.OperatorAddress
-		// already validated during state.Validate()
+		// #nosec G703 // already validated
 		operatorAccAddress, _ := sdk.AccAddressFromBech32(operatorAddress)
 		for _, subRecord := range record.Chains {
 			consKeyBytes32 := subRecord.ConsensusKey
-			// already validated
+			// #nosec G703 // already validated
 			consKey, _ := types.HexStringToPubKey(consKeyBytes32)
 			if err := k.SetOperatorConsKeyForChainID(
 				ctx, operatorAccAddress, subRecord.ChainID, consKey,

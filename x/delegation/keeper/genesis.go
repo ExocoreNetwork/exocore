@@ -20,7 +20,7 @@ func (k Keeper) InitGenesis(
 			assetID := b.AssetID
 			for _, c := range b.DelegationsByOperator {
 				operatorAddress := c.OperatorAddress
-				// already validated in genState.Validate()
+				// #nosec G703 // already validated
 				accAddress, _ := sdk.AccAddressFromBech32(operatorAddress)
 				amount := c.Amount
 				if !k.operatorKeeper.IsOperator(ctx, accAddress) {

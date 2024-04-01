@@ -7,14 +7,22 @@ import (
 
 // InitGenesis initializes the module's state from a provided genesis state.
 func (k Keeper) InitGenesis(ctx sdk.Context, data *types.GenesisState) {
-	k.SetParams(ctx, &data.Params)
+	if err := k.SetParams(ctx, &data.Params); err != nil {
+		panic(err)
+	}
 	// client_chain.go
-	for _, info := range data.ClientChains {
-		k.SetClientChainInfo(ctx, &info)
+	for _, infoCopy := range data.ClientChains {
+		info := infoCopy // prevent implicit memory aliasing
+		if err := k.SetClientChainInfo(ctx, &info); err != nil {
+			panic(err)
+		}
 	}
 	// client_chain_asset.go
-	for _, info := range data.Tokens {
-		k.SetStakingAssetInfo(ctx, &info)
+	for _, infoCopy := range data.Tokens {
+		info := infoCopy // prevent implicit memory aliasing
+		if err := k.SetStakingAssetInfo(ctx, &info); err != nil {
+			panic(err)
+		}
 	}
 	// operator_asset.go
 	for _, level1 := range data.OperatorAssetInfos {
@@ -22,9 +30,11 @@ func (k Keeper) InitGenesis(ctx sdk.Context, data *types.GenesisState) {
 		// the bech32 encoded address of sdk.AccAddress
 		addr := level1.OperatorAddress
 		for _, info := range level1.AssetIdAndInfos {
-			k.SetOperatorAssetInfo(
+			if err := k.SetOperatorAssetInfo(
 				ctx, addr, info.AssetID, info.Info,
-			)
+			); err != nil {
+				panic(err)
+			}
 		}
 	}
 	// staker_asset.go
