@@ -30,7 +30,7 @@ func (gs GenesisState) Validate() error {
 		if _, ok := operators[operatorAddress]; ok {
 			return errorsmod.Wrapf(
 				ErrInvalidGenesisData,
-				"duplicate operator address %s",
+				"duplicate operator address: %s",
 				operatorAddress,
 			)
 		}
@@ -58,7 +58,7 @@ func (gs GenesisState) Validate() error {
 		if _, ok := operatorsByKeys[operatorAddress]; ok {
 			return errorsmod.Wrapf(
 				ErrInvalidGenesisData,
-				"duplicate operator address %s",
+				"duplicate operator address: %s",
 				operatorAddress,
 			)
 		}
@@ -68,9 +68,10 @@ func (gs GenesisState) Validate() error {
 			if _, err := HexStringToPubKey(consKeyString); err != nil {
 				return errorsmod.Wrapf(
 					ErrInvalidGenesisData,
-				"consensus key %x is invalid: %s",
-				consKeyBytes32, err,
-			)
+					"consensus key %s is invalid: %s",
+					consKeyString, err,
+				)
+			}
 		}
 	}
 	if len(operators) != len(operatorsByKeys) {
@@ -83,16 +84,33 @@ func (gs GenesisState) Validate() error {
 	// we do not know the length of this map, so we use an approximation.
 	// it will auto expand anyway.
 	operatorsByStakers := make(map[string]struct{}, len(operators))
+	assetsByStakers := make(map[string](map[string]struct{}), len(gs.StakerRecords))
 	for _, level1 := range gs.StakerRecords {
 		stakerID := level1.StakerID
 		if _, _, err := assetstypes.ParseID(stakerID); err != nil {
 			return errorsmod.Wrapf(ErrInvalidGenesisData, "stakerID invalid: %s", err)
 		}
+		if _, ok := assetsByStakers[stakerID]; ok {
+			return errorsmod.Wrapf(
+				ErrInvalidGenesisData,
+				"duplicate stakerID: %s",
+				stakerID,
+			)
+		}
+		assetsByStakers[stakerID] = make(map[string]struct{}, len(level1.StakerDetails))
 		for _, level2 := range level1.StakerDetails {
 			assetID := level2.AssetID
 			if _, _, err := assetstypes.ParseID(assetID); err != nil {
 				return errorsmod.Wrapf(ErrInvalidGenesisData, "assetID invalid: %s", err)
 			}
+			if _, ok := assetsByStakers[stakerID][assetID]; ok {
+				return errorsmod.Wrapf(
+					ErrInvalidGenesisData,
+					"duplicate assetID: %s",
+					assetID,
+				)
+			}
+			assetsByStakers[stakerID][assetID] = struct{}{}
 			for _, level3 := range level2.Details {
 				operatorAddress := level3.OperatorAddress
 				_, err := sdk.AccAddressFromBech32(operatorAddress)
@@ -110,13 +128,8 @@ func (gs GenesisState) Validate() error {
 						operatorAddress,
 					)
 				}
-				if _, ok := operatorsByStakers[operatorAddress]; ok {
-					return errorsmod.Wrapf(
-						ErrInvalidGenesisData,
-						"duplicate operator address %s",
-						operatorAddress,
-					)
-				}
+				// a staker may delegate different assets to multiple
+				// operators, so we do not check for duplicates here.
 				operatorsByStakers[operatorAddress] = struct{}{}
 				amount := level3.Amount
 				if amount.IsNil() {
