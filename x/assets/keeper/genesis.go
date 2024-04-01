@@ -47,7 +47,7 @@ func (k Keeper) InitGenesis(ctx sdk.Context, data *types.GenesisState) {
 }
 
 // ExportGenesis returns the module's exported genesis.
-func (k Keeper) ExportGenesis(ctx sdk.Context) *types.GenesisState {
+func (Keeper) ExportGenesis(sdk.Context) *types.GenesisState {
 	res := types.GenesisState{}
 	// TODO
 	return &res

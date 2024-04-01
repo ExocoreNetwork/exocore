@@ -67,8 +67,8 @@ func (k Keeper) InitGenesis(
 }
 
 // ExportGenesis returns the module's exported genesis
-func (k Keeper) ExportGenesis(ctx sdk.Context) *delegationtype.GenesisState {
+func (Keeper) ExportGenesis(sdk.Context) *delegationtype.GenesisState {
 	genesis := delegationtype.DefaultGenesis()
-	// TODO(mm)
+	// TODO
 	return genesis
 }

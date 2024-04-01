@@ -171,19 +171,20 @@ func (gs GenesisState) Validate() error {
 				"empty staker ID",
 			)
 		}
-		if _, id, err := ParseID(staker); err != nil {
+		var id uint64
+		var err error
+		if _, id, err = ParseID(staker); err != nil {
 			return errorsmod.Wrapf(
 				ErrInvalidGenesisData,
 				"invalid staker ID %s: %s", staker, err,
 			)
-		} else {
-			if _, ok := lzIDs[id]; !ok {
-				return errorsmod.Wrapf(
-					ErrInvalidGenesisData,
-					"unknown LayerZeroChainID for staker %s: %d",
-					staker, id,
-				)
-			}
+		}
+		if _, ok := lzIDs[id]; !ok {
+			return errorsmod.Wrapf(
+				ErrInvalidGenesisData,
+				"unknown LayerZeroChainID for staker %s: %d",
+				staker, id,
+			)
 		}
 		if _, ok := delegationsByStaker[staker]; ok {
 			return errorsmod.Wrapf(
@@ -282,7 +283,7 @@ func areMapsIdentical(m1, m2 map[string]math.Int) bool {
 
 	// this code is not consensus critical, so we can loop.
 	// the codeQL warning can be ignored.
-	
+
 	for k1, v1 := range m1 {
 		v2, ok := m2[k1]
 		if !ok || !v1.Equal(v2) {

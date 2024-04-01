@@ -194,6 +194,7 @@ func (k *Keeper) getOperatorPrevConsKeyForChainID(
 	if res == nil {
 		return
 	}
+	key = &tmprotocrypto.PublicKey{}
 	if err = key.Unmarshal(res); err != nil {
 		return
 	}
@@ -235,6 +236,7 @@ func (k *Keeper) getOperatorConsKeyForChainID(
 	if res == nil {
 		return
 	}
+	key = &tmprotocrypto.PublicKey{}
 	if err = key.Unmarshal(res); err != nil {
 		return
 	}

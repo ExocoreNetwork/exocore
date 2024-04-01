@@ -56,6 +56,6 @@ func (k Keeper) InitGenesis(ctx sdk.Context, state types.GenesisState) []abci.Va
 	return []abci.ValidatorUpdate{}
 }
 
-func (k Keeper) ExportGenesis(ctx sdk.Context) *types.GenesisState {
+func (Keeper) ExportGenesis(sdk.Context) *types.GenesisState {
 	return types.DefaultGenesis()
 }
