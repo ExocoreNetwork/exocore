@@ -3,7 +3,7 @@ package keeper
 import (
 	"sort"
 
-	"github.com/ExocoreNetwork/exocore/x/dogfood/types"
+	operatortypes "github.com/ExocoreNetwork/exocore/x/operator/types"
 	abci "github.com/cometbft/cometbft/abci/types"
 	tmprotocrypto "github.com/cometbft/cometbft/proto/tendermint/crypto"
 	cryptocodec "github.com/cosmos/cosmos-sdk/crypto/codec"
@@ -94,7 +94,7 @@ func (k Keeper) EndBlock(ctx sdk.Context) []abci.ValidatorUpdate {
 		}
 		// find the previous power.
 		key := keys[i]
-		address, err := types.TMCryptoPublicKeyToConsAddr(key)
+		address, err := operatortypes.TMCryptoPublicKeyToConsAddr(&key)
 		if err != nil {
 			// indicates an error in deserialization, and should never happen.
 			continue

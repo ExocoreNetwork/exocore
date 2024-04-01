@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"github.com/ExocoreNetwork/exocore/x/dogfood/types"
+	operatortypes "github.com/ExocoreNetwork/exocore/x/operator/types"
 	tmprotocrypto "github.com/cometbft/cometbft/proto/tendermint/crypto"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -15,7 +16,7 @@ func (k Keeper) ClearUnbondingInformation(
 	optOutEpoch := k.GetOperatorOptOutFinishEpoch(ctx, addr)
 	k.DeleteOperatorOptOutFinishEpoch(ctx, addr)
 	k.RemoveOptOutToFinish(ctx, optOutEpoch, addr)
-	consAddress, err := types.TMCryptoPublicKeyToConsAddr(pubKey)
+	consAddress, err := operatortypes.TMCryptoPublicKeyToConsAddr(&pubKey)
 	if err != nil {
 		return
 	}
@@ -31,7 +32,7 @@ func (k Keeper) SetUnbondingInformation(
 		k.AppendOptOutToFinish(ctx, unbondingCompletionEpoch, addr)
 		k.SetOperatorOptOutFinishEpoch(ctx, addr, unbondingCompletionEpoch)
 	}
-	consAddress, err := types.TMCryptoPublicKeyToConsAddr(pubKey)
+	consAddress, err := operatortypes.TMCryptoPublicKeyToConsAddr(&pubKey)
 	if err != nil {
 		return
 	}
