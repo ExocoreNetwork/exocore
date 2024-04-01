@@ -12,7 +12,7 @@ import "cosmos_proto/cosmos.proto";
 option go_package = "github.com/ExocoreNetwork/exocore/x/dogfood/types";
 
 // ExocoreValidator is a validator that is part of the Exocore network. It is
-// used to validate and sign blocks and transactions.
+// used to validate and sign blocks.
 message ExocoreValidator {
   // The address, as derived from the consensus key. It has no relation
   // with the operator's account address.
@@ -20,6 +20,7 @@ message ExocoreValidator {
   // Last known power
   int64 power = 2;
   // pubkey is the consensus public key of the validator, as a Protobuf Any.
+  // this type is mirrored from the SDK's validator type in x/staking.
   google.protobuf.Any pubkey = 3 [
         (cosmos_proto.accepts_interface) = "cosmos.crypto.PubKey",
         (gogoproto.moretags) = "yaml:\"consensus_pubkey\""

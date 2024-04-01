@@ -31,7 +31,7 @@ var _ = time.Kitchen
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
 // ExocoreValidator is a validator that is part of the Exocore network. It is
-// used to validate and sign blocks and transactions.
+// used to validate and sign blocks.
 type ExocoreValidator struct {
 	// The address, as derived from the consensus key. It has no relation
 	// with the operator's account address.
@@ -39,6 +39,7 @@ type ExocoreValidator struct {
 	// Last known power
 	Power int64 `protobuf:"varint,2,opt,name=power,proto3" json:"power,omitempty"`
 	// pubkey is the consensus public key of the validator, as a Protobuf Any.
+	// this type is mirrored from the SDK's validator type in x/staking.
 	Pubkey *types.Any `protobuf:"bytes,3,opt,name=pubkey,proto3" json:"pubkey,omitempty" yaml:"consensus_pubkey"`
 }
 
