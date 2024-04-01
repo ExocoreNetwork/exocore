@@ -156,5 +156,6 @@ func (ckb consKeyBytes) String() string {
 }
 
 func newConsKeyBytes(bz []byte) consKeyBytes {
-	return consKeyBytes{Bytes: fmt.Sprintf("%X", bz)}
+	// prefer hexutil over %X for consistency with encoding and decoding.
+	return consKeyBytes{Bytes: hexutil.Encode(bz)}
 }
