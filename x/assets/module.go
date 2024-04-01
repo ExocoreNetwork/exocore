@@ -111,9 +111,9 @@ func (am AppModule) InitGenesis(
 	cdc codec.JSONCodec,
 	data json.RawMessage,
 ) []abci.ValidatorUpdate {
-	var genesisState *assetstype.GenesisState
-	cdc.MustUnmarshalJSON(data, genesisState)
-	am.keeper.InitGenesis(ctx, genesisState)
+	var genesisState assetstype.GenesisState
+	cdc.MustUnmarshalJSON(data, &genesisState)
+	am.keeper.InitGenesis(ctx, &genesisState)
 	return []abci.ValidatorUpdate{}
 }
 
@@ -122,15 +122,14 @@ func (am AppModule) ExportGenesis(ctx sdk.Context, cdc codec.JSONCodec) json.Raw
 	return cdc.MustMarshalJSON(gs)
 }
 
-// GenerateGenesisState creates a randomized GenState of the inflation module.
-func (am AppModule) GenerateGenesisState(_ *module.SimulationState) {
-}
+// GenerateGenesisState creates a randomized GenState of the module.
+func (am AppModule) GenerateGenesisState(_ *module.SimulationState) {}
 
-// RegisterStoreDecoder registers a decoder for inflation module's types.
+// RegisterStoreDecoder registers a decoder for module's types.
 func (am AppModule) RegisterStoreDecoder(_ sdk.StoreDecoderRegistry) {
 }
 
-// WeightedOperations doesn't return any inflation module operation.
+// WeightedOperations doesn't return any module operation.
 func (am AppModule) WeightedOperations(_ module.SimulationState) []simtypes.WeightedOperation {
 	return []simtypes.WeightedOperation{}
 }
