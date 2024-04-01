@@ -78,14 +78,17 @@ func (k Keeper) EndBlock(ctx sdk.Context) []abci.ValidatorUpdate {
 	res := make([]abci.ValidatorUpdate, 0, maxVals*2)
 	for i := range operators {
 		// #nosec G701 // ok on 64-bit systems.
-		if i >= int(maxVals) {
-			// we have reached the maximum number of validators.
+		if i > int(maxVals) {
+			// we have reached the maximum number of validators, amongst all the validators.
+			// even if there are intersections with the previous validator set, this will
+			// only be reached if we exceed the threshold.
+			// if there are no intersections, this case is glaringly obvious.
 			break
 		}
 		power := powers[i]
 		if power < 1 {
 			// we have reached the bottom of the rung.
-			// assumption is that negative vote power iosn't provided by the module.
+			// assumption is that negative vote power isn't provided by the module.
 			// the consensus engine will reject it anyway and panic.
 			break
 		}

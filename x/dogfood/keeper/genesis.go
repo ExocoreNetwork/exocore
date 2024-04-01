@@ -30,14 +30,6 @@ func (k Keeper) InitGenesis(
 			panic(fmt.Errorf("staking asset %s not found", assetID))
 		}
 	}
-	// genState must not be malformed.
-	// #nosec G701 // ok on 64-bit systems.
-	if len(genState.InitialValSet) > int(k.GetMaxValidators(ctx)) {
-		panic(fmt.Errorf(
-			"cannot have more than %d validators in the genesis state",
-			k.GetMaxValidators(ctx),
-		))
-	}
 	out := make([]abci.ValidatorUpdate, len(genState.InitialValSet))
 	for _, val := range genState.InitialValSet {
 		// already validated
