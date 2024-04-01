@@ -36,7 +36,7 @@ func (k *Keeper) OptInToCosmosChain(
 		return nil, err
 	}
 	err = k.SetOperatorConsKeyForChainID(
-		ctx, addr, req.ChainId, key,
+		ctx, addr, req.ChainId, &key,
 	)
 	if err != nil {
 		return nil, err

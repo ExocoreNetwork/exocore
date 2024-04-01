@@ -35,6 +35,6 @@ func (k *Keeper) QueryOperatorConsKeyForChainID(
 		return nil, errors.New("no key assigned")
 	}
 	return &operatortypes.QueryOperatorConsKeyResponse{
-		PublicKey: key,
+		PublicKey: *key,
 	}, nil
 }

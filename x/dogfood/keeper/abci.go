@@ -3,8 +3,10 @@ package keeper
 import (
 	"sort"
 
+	"github.com/ExocoreNetwork/exocore/x/dogfood/types"
 	abci "github.com/cometbft/cometbft/abci/types"
 	tmprotocrypto "github.com/cometbft/cometbft/proto/tendermint/crypto"
+	cryptocodec "github.com/cosmos/cosmos-sdk/crypto/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
@@ -48,8 +50,19 @@ func (k Keeper) EndBlock(ctx sdk.Context) []abci.ValidatorUpdate {
 	// 4. loop through #1 and see if anything has changed.
 	//    if it hasn't, do nothing for that operator key.
 	//    if it has, queue an update.
-	prev := k.getKeyPowerMapping(ctx).List
-	res := make([]abci.ValidatorUpdate, 0, len(prev))
+	prevList := k.GetAllExocoreValidators(ctx)
+	// prevMap is a map of the previous validators, indexed by the consensus address
+	// and the value being the vote power.
+	prevMap := make(map[string]int64, len(prevList))
+	for _, validator := range prevList {
+		pubKey, err := validator.ConsPubKey()
+		if err != nil {
+			// indicates an error in deserialization, and should never happen.
+			continue
+		}
+		addressString := sdk.GetConsAddress(pubKey).String()
+		prevMap[addressString] = validator.Power
+	}
 	operators, keys := k.operatorKeeper.GetActiveOperatorsForChainID(ctx, ctx.ChainID())
 	powers, err := k.restakingKeeper.GetAvgDelegatedValue(
 		ctx, operators, k.GetAssetIDs(ctx), k.GetEpochIdentifier(ctx),
@@ -59,6 +72,10 @@ func (k Keeper) EndBlock(ctx sdk.Context) []abci.ValidatorUpdate {
 	}
 	operators, keys, powers = sortByPower(operators, keys, powers)
 	maxVals := k.GetMaxValidators(ctx)
+	// the capacity of this list is twice the maximum number of validators.
+	// this is because we can have a maximum of maxVals validators, and we can also have
+	// a maximum of maxVals validators that are removed.
+	res := make([]abci.ValidatorUpdate, 0, maxVals*2)
 	for i := range operators {
 		// #nosec G701 // ok on 64-bit systems.
 		if i >= int(maxVals) {
@@ -74,9 +91,14 @@ func (k Keeper) EndBlock(ctx sdk.Context) []abci.ValidatorUpdate {
 		}
 		// find the previous power.
 		key := keys[i]
-		keyString := string(k.cdc.MustMarshal(&key))
-		if prevPower, found := prev[keyString]; found && prevPower == power {
-			delete(prev, keyString)
+		address, err := types.TMCryptoPublicKeyToConsAddr(key)
+		if err != nil {
+			// indicates an error in deserialization, and should never happen.
+			continue
+		}
+		addressString := address.String()
+		if prevPower, found := prevMap[addressString]; found && prevPower == power {
+			delete(prevMap, addressString)
 			continue
 		}
 		// either the key was not in the previous set,
@@ -87,16 +109,23 @@ func (k Keeper) EndBlock(ctx sdk.Context) []abci.ValidatorUpdate {
 			Power: power,
 		})
 	}
-	// the remaining keys in prev have lost their power.
-	// even though this is a map, the order is guaranteed because it is proto deserialized.
-	for key := range prev {
-		bz := []byte(key) // undo string operation
-		var keyObj tmprotocrypto.PublicKey
-		k.cdc.MustUnmarshal(bz, &keyObj) // undo marshal operation
-		res = append(res, abci.ValidatorUpdate{
-			PubKey: keyObj,
-			Power:  0,
-		})
+	// the remaining validators in prevMap have been removed.
+	// we need to queue a change in power to 0 for them.
+	for _, validator := range prevList { // O(N)
+		// #nosec G703 // already checked in the previous iteration over prevList.
+		pubKey, _ := validator.ConsPubKey()
+		addressString := sdk.GetConsAddress(pubKey).String()
+		// Check if this validator is still in prevMap (i.e., hasn't been deleted)
+		if _, exists := prevMap[addressString]; exists { // O(1) since hash map
+			tmprotoKey, err := cryptocodec.ToTmProtoPublicKey(pubKey)
+			if err != nil {
+				continue
+			}
+			res = append(res, abci.ValidatorUpdate{
+				PubKey: tmprotoKey,
+				Power:  0,
+			})
+		}
 	}
 	// call via wrapper function so that validator info is stored.
 	// the id is incremented by 1 for the next block.

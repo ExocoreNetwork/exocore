@@ -1,5 +1,6 @@
 // This file is a duplicate of the subscriber module's validators file with minor changes.
-// The function ApplyValidatorChanges can likely be carved out into a shared package.
+// The function ApplyValidatorChanges can likely be carved out into a shared package with
+// the appchain module.
 
 package keeper
 
@@ -109,8 +110,6 @@ func (k Keeper) ApplyValidatorChanges(
 	// this statement is true for genesis as well, since ctx.BlockHeight() is
 	// reported as 0 during InitGenesis.
 	k.setValidatorSetID(ctx, ctx.BlockHeight()+1, valSetID)
-	// store this to compare against, in the next round.
-	k.saveKeyPowerMapping(ctx, ret)
 	// sort for determinism
 	sort.Slice(ret, func(i, j int) bool {
 		if ret[i].Power != ret[j].Power {
@@ -118,6 +117,7 @@ func (k Keeper) ApplyValidatorChanges(
 		}
 		return ret[i].PubKey.String() > ret[j].PubKey.String()
 	})
+
 	return ret
 }
 
@@ -130,7 +130,7 @@ func (k Keeper) SetValidator(ctx sdk.Context, validator types.ExocoreValidator) 
 	store.Set(types.ExocoreValidatorKey(validator.Address), bz)
 }
 
-// GetValidator gets a validator based on the pub key derived address.
+// GetValidator gets a validator based on the pub key derived (consensus) address.
 func (k Keeper) GetValidator(
 	ctx sdk.Context, addr []byte,
 ) (validator types.ExocoreValidator, found bool) {
@@ -390,29 +390,4 @@ func (k Keeper) storeBlockHeader(ctx sdk.Context) {
 	store := ctx.KVStore(k.storeKey)
 	value := k.cdc.MustMarshal(&header)
 	store.Set(key, value)
-}
-
-// saveKeyPowerMapping stores a mapping from the key string to the power.
-func (k Keeper) saveKeyPowerMapping(ctx sdk.Context, updates []abci.ValidatorUpdate) {
-	store := ctx.KVStore(k.storeKey)
-	m := make(map[string]int64, len(updates))
-	for _, update := range updates {
-		// do not use the stringer interface here so that it can be deserialized.
-		key := update.PubKey // prevent implicit memory aliasing.
-		m[string(k.cdc.MustMarshal(&key))] = update.Power
-	}
-	bz := k.cdc.MustMarshal(&types.KeyPowerMapping{List: m})
-	store.Set(types.KeyPowerMappingKey(), bz)
-}
-
-// getKeyPowerMapping gets the most recently stored mapping from the key string to the power.
-func (k Keeper) getKeyPowerMapping(ctx sdk.Context) types.KeyPowerMapping {
-	store := ctx.KVStore(k.storeKey)
-	bz := store.Get(types.KeyPowerMappingKey())
-	if bz == nil {
-		return types.KeyPowerMapping{}
-	}
-	var updates types.KeyPowerMapping
-	k.cdc.MustUnmarshal(bz, &updates)
-	return updates
 }

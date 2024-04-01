@@ -64,10 +64,3 @@ message HeaderSubset {
   // state after txs from the previous block
   bytes app_hash             = 3;
 }
-
-// KeyPowerMapping is a mapping of the consensus public key (as a string)
-// to the power of the key.
-message KeyPowerMapping {
-  // list is the actual mapping of the consensus public key to the power.
-  map<string, int64> list = 1;
-}
