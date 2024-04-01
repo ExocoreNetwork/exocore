@@ -14,6 +14,7 @@ import (
 )
 
 // GetQueryCmd returns the cli query commands for this module
+
 func GetQueryCmd() *cobra.Command {
 	// Group taskmanageravs queries under a subcommand
 	cmd := &cobra.Command{
@@ -26,6 +27,5 @@ func GetQueryCmd() *cobra.Command {
 
 	cmd.AddCommand(CmdQueryParams())
 	// this line is used by starport scaffolding # 1
-
 	return cmd
 }

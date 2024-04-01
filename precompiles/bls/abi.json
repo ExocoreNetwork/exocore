@@ -1,0 +1,163 @@
+[
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "operator",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "bytes",
+        "name": "pubkeyG1",
+        "type": "bytes"
+      },
+      {
+        "indexed": false,
+        "internalType": "bytes",
+        "name": "pubkeyG2",
+        "type": "bytes"
+      }
+    ],
+    "name": "NewPubkeyRegistration",
+    "type": "event"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "msgHash",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "bytes",
+        "name": "quorumNumbers",
+        "type": "bytes"
+      },
+      {
+        "internalType": "uint32",
+        "name": "referenceBlockNumber",
+        "type": "uint32"
+      },
+      {
+        "internalType": "bytes",
+        "name": "params",
+        "type": "bytes"
+      }
+    ],
+    "name": "checkSignatures",
+    "outputs": [
+      {
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "operator",
+        "type": "address"
+      }
+    ],
+    "name": "getRegisteredPubkey",
+    "outputs": [
+      {
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "operator",
+        "type": "address"
+      },
+      {
+        "internalType": "bytes",
+        "name": "pubKeyRegistrationParams",
+        "type": "bytes"
+      },
+      {
+        "internalType": "bytes",
+        "name": "pubKeyRegistrationMessageHash",
+        "type": "bytes"
+      }
+    ],
+    "name": "registerBLSPublicKey",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "success",
+        "type": "bool"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "operatorId",
+        "type": "bytes32"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "msgHash",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "bytes",
+        "name": "apk",
+        "type": "bytes"
+      },
+      {
+        "internalType": "bytes",
+        "name": "apkG2",
+        "type": "bytes"
+      },
+      {
+        "internalType": "bytes",
+        "name": "sigma",
+        "type": "bytes"
+      }
+    ],
+    "name": "trySignatureAndApkVerification",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      },
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  }
+]

@@ -177,9 +177,10 @@ func (k *Keeper) DelegateTo(ctx sdk.Context, params *DelegationOrUndelegationPar
 	return nil
 }
 
-// UndelegateFrom The undelegation needs to consider whether the operator's opted-in assets can exit from the AVS.
+// UndelegateFrom: The undelegation needs to consider whether the operator's opted-in assets can exit from the AVS.
 // Because only after the operator has served the AVS can the staking asset be undelegated.
-// So we use two steps to handle the undelegation. Fist,record the undelegation request and the corresponding exit time which needs to be obtained from the operator opt-in module. Then,we handle the record when the exit time has expired.
+// So we use two steps to handle the undelegation. Fist, record the undelegation request and the corresponding exit time which needs to be obtained from the operator opt-in module.
+// Then we handle the record when the exit time has expired.
 func (k *Keeper) UndelegateFrom(ctx sdk.Context, params *DelegationOrUndelegationParams) error {
 	// check if the UndelegatedFrom address is an operator
 	if !k.operatorKeeper.IsOperator(ctx, params.OperatorAddress) {

@@ -22,7 +22,7 @@ var (
 )
 
 const (
-	// RegisterAVSTask Amino names
+	// Amino names
 	RegisterAVSTask = "exocore/RegisterAVSTask"
 )
 

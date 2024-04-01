@@ -75,7 +75,7 @@ func GetStakeIDAndAssetIDFromStr(clientChainLzID uint64, stakerAddress string, a
 	return
 }
 
-// UpdateAssetValue It's used to update asset state,negative or positive `changeValue` represents a decrease or increase in the asset state
+// UpdateAssetValue is used to update asset state,negative or positive `changeValue` represents a decrease or increase in the asset state
 // newValue = valueToUpdate + changeVale
 func UpdateAssetValue(valueToUpdate *math.Int, changeValue *math.Int) error {
 	if valueToUpdate == nil || changeValue == nil {

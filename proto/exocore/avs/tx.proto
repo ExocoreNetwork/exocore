@@ -1,0 +1,57 @@
+syntax = "proto3";
+package exocore.avs;
+import "amino/amino.proto";
+import "cosmos/msg/v1/msg.proto";
+import "cosmos_proto/cosmos.proto";
+import "exocore/delegation/v1/tx.proto";
+
+option go_package = "github.com/ExocoreNetwork/exocore/x/avs/types";
+
+message AVSInfo {
+    string name = 1;
+    string AVSAddress = 2;
+    repeated string operatorAddress = 3;
+    
+}
+
+message AVSManager {
+    map <string, string> AVSOperatorRelation = 1;
+}
+
+message RegisterAVSReq {
+    option (cosmos.msg.v1.signer) = "FromAddress";
+    string FromAddress = 1
+    [(cosmos_proto.scalar) = "cosmos.AddressString"];
+    AVSInfo info = 2;
+}
+
+message RegisterAVSResponse {
+    option (cosmos.msg.v1.signer) = "FromAddress";
+    string FromAddress = 1
+    [(cosmos_proto.scalar) = "cosmos.AddressString"];
+    AVSInfo info = 2;
+}
+
+message DeRegisterAVSReq {
+    option (cosmos.msg.v1.signer) = "FromAddress";
+    string FromAddress = 1
+    [(cosmos_proto.scalar) = "cosmos.AddressString"];
+    AVSInfo info = 2;
+}
+
+message DeRegisterAVSResponse {
+    option (cosmos.msg.v1.signer) = "FromAddress";
+    string FromAddress = 1
+    [(cosmos_proto.scalar) = "cosmos.AddressString"];
+    AVSInfo info = 2;
+}
+
+// Msg defines the AVS related Msg service.
+service Msg {
+    option (cosmos.msg.v1.service) = true;
+    // RegisterAVS registers a new AVS with corresponding operator.
+    rpc RegisterAVS (RegisterAVSReq) returns (RegisterAVSResponse);
+    // DelegateAssetToOperator delegates asset to operator.
+    rpc DeRegisterAVS (DeRegisterAVSReq) returns (DeRegisterAVSResponse);
+}
+  

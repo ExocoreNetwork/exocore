@@ -37,6 +37,3 @@ message RegisterAVSTaskResponse {}
 service Msg {
     rpc RegisterAVSTask(RegisterAVSTaskReq) returns (RegisterAVSTaskResponse);
 }
-
-
-
