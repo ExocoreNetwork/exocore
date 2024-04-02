@@ -21,6 +21,7 @@ func TestGenesisTestSuite(t *testing.T) {
 }
 
 func (suite *GenesisTestSuite) TestValidateGenesis() {
+	sharedKey := hexutil.Encode(ed25519.GenPrivKey().PubKey().Bytes())
 	params := types.DefaultParams()
 	newGen := &types.GenesisState{
 		Params: params,
@@ -48,7 +49,7 @@ func (suite *GenesisTestSuite) TestValidateGenesis() {
 				Params: params,
 				InitialValSet: []types.GenesisValidator{
 					{
-						PublicKey: "F0F6919E522C5B97DB2C8255BFF743F9DFDDD7AD9FC37CB0C1670B480D0F9914",
+						PublicKey: sharedKey,
 						Power:     5,
 					},
 				},
@@ -61,7 +62,7 @@ func (suite *GenesisTestSuite) TestValidateGenesis() {
 				Params: params,
 				InitialValSet: []types.GenesisValidator{
 					{
-						PublicKey: "0xaF0F6919E522C5B97DB2C8255BFF743F9DFDDD7AD9FC37CB0C1670B480D0F9914",
+						PublicKey: sharedKey,
 						Power:     5,
 					},
 				},
@@ -74,7 +75,7 @@ func (suite *GenesisTestSuite) TestValidateGenesis() {
 				Params: params,
 				InitialValSet: []types.GenesisValidator{
 					{
-						PublicKey: "0xF0F6919E522C5B97DB2C8255BFF743F9DFDDD7AD9FC37CB0C1670B480D0F9914",
+						PublicKey: sharedKey,
 						Power:     5,
 					},
 				},
@@ -87,11 +88,11 @@ func (suite *GenesisTestSuite) TestValidateGenesis() {
 				Params: params,
 				InitialValSet: []types.GenesisValidator{
 					{
-						PublicKey: "0xF0F6919E522C5B97DB2C8255BFF743F9DFDDD7AD9FC37CB0C1670B480D0F9914",
+						PublicKey: sharedKey,
 						Power:     5,
 					},
 					{
-						PublicKey: "0xF0F6919E522C5B97DB2C8255BFF743F9DFDDD7AD9FC37CB0C1670B480D0F9914",
+						PublicKey: sharedKey,
 						Power:     10,
 					},
 				},
