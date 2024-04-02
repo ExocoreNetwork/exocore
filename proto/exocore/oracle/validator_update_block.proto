@@ -1,0 +1,8 @@
+syntax = "proto3";
+package exocore.oracle;
+
+option go_package = "github.com/ExocoreNetwork/exocore/x/oracle/types";
+
+message ValidatorUpdateBlock {
+  uint64 block = 1;  
+}
