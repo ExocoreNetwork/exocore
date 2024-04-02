@@ -1,6 +1,10 @@
 package keeper
 
 import (
+	"fmt"
+
+	"cosmossdk.io/math"
+	delegationtypes "github.com/ExocoreNetwork/exocore/x/delegation/types"
 	"github.com/ExocoreNetwork/exocore/x/operator/types"
 	abci "github.com/cometbft/cometbft/abci/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -37,10 +41,17 @@ func (k Keeper) InitGenesis(ctx sdk.Context, state types.GenesisState) []abci.Va
 		}
 	}
 	// state_update.go
+	stakerAssetOperatorMap := make(map[string]map[string]map[string]math.Int)
 	for _, level1 := range state.StakerRecords {
 		stakerID := level1.StakerID
+		if _, ok := stakerAssetOperatorMap[stakerID]; !ok {
+			stakerAssetOperatorMap[stakerID] = make(map[string]map[string]math.Int)
+		}
 		for _, level2 := range level1.StakerDetails {
 			assetID := level2.AssetID
+			if _, ok := stakerAssetOperatorMap[stakerID][assetID]; !ok {
+				stakerAssetOperatorMap[stakerID][assetID] = make(map[string]math.Int)
+			}
 			for _, level3 := range level2.Details {
 				operatorAddress := level3.OperatorAddress
 				amount := level3.Amount
@@ -49,10 +60,27 @@ func (k Keeper) InitGenesis(ctx sdk.Context, state types.GenesisState) []abci.Va
 				); err != nil {
 					panic(err)
 				}
-
+				if _, ok := stakerAssetOperatorMap[stakerID][assetID][operatorAddress]; !ok {
+					stakerAssetOperatorMap[stakerID][assetID][operatorAddress] = math.ZeroInt()
+				}
+				stakerAssetOperatorMap[stakerID][assetID][operatorAddress].Add(amount)
 			}
 		}
 	}
+	// validate the information in the delegation keeper,
+	// which has validated it in the assets keeper.
+	checkFunc := func(
+		stakerID, assetID, operatorAddress string, state *delegationtypes.DelegationAmounts,
+	) error {
+		valueHere := stakerAssetOperatorMap[stakerID][assetID][operatorAddress]
+		if !valueHere.Equal(state.UndelegatableAmount) {
+			panic(fmt.Sprintf("undelegatable amount mismatch: %s", operatorAddress))
+		}
+		return nil
+	}
+	// since this module only knows the delegated value (and not the deposit value),
+	// it cannot do any further validation with the data in the assets keeper.
+	k.delegationKeeper.IterateDelegationState(ctx, checkFunc)
 	return []abci.ValidatorUpdate{}
 }
 

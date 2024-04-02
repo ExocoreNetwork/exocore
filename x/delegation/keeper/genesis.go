@@ -3,6 +3,7 @@ package keeper
 import (
 	"fmt"
 
+	assetstype "github.com/ExocoreNetwork/exocore/x/assets/types"
 	delegationtype "github.com/ExocoreNetwork/exocore/x/delegation/types"
 	abci "github.com/cometbft/cometbft/abci/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -22,7 +23,7 @@ func (k Keeper) InitGenesis(
 				operatorAddress := c.OperatorAddress
 				// #nosec G703 // already validated
 				accAddress, _ := sdk.AccAddressFromBech32(operatorAddress)
-				amount := c.Amount
+				amount := c.Amount // delegation amount
 				if !k.operatorKeeper.IsOperator(ctx, accAddress) {
 					// the operator must be registered first, so the
 					// genesis of the operator module comes before this module
@@ -33,7 +34,8 @@ func (k Keeper) InitGenesis(
 						),
 					)
 				}
-				// at genesis, the operator cannot be frozen so skip that.
+				// at genesis, the operator cannot be frozen so skip that check.
+				// validate that enough deposits exist before delegation.
 				info, err := k.assetsKeeper.GetStakerSpecifiedAssetInfo(ctx, stakerID, assetID)
 				if err != nil {
 					panic(err)
@@ -60,6 +62,16 @@ func (k Keeper) InitGenesis(
 				); err != nil {
 					panic(err)
 				}
+				// also tell the assetsKeeper to mark this as a delegation.
+				if err := k.assetsKeeper.UpdateStakerAssetState(
+					ctx, stakerID, assetID, assetstype.StakerSingleAssetChangeInfo{
+						WithdrawableAmount: amount.Neg(),
+					}); err != nil {
+					panic(err)
+				}
+				// we have checked that delegation amount > deposit amount for each asset.
+				// we don't need to check for the total amount, since this genesis only handles
+				// delegation amounts (others are implicitly zero).
 			}
 		}
 	}
