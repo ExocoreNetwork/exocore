@@ -49,7 +49,7 @@ func (suite *GenesisTestSuite) TestValidateGenesis() {
 				Params: params,
 				InitialValSet: []types.GenesisValidator{
 					{
-						PublicKey: sharedKey,
+						PublicKey: sharedKey[2:],
 						Power:     5,
 					},
 				},
@@ -62,7 +62,7 @@ func (suite *GenesisTestSuite) TestValidateGenesis() {
 				Params: params,
 				InitialValSet: []types.GenesisValidator{
 					{
-						PublicKey: sharedKey,
+						PublicKey: sharedKey + "ab",
 						Power:     5,
 					},
 				},
