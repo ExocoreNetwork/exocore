@@ -1,8 +1,6 @@
 package keeper
 
 import (
-	"fmt"
-
 	"cosmossdk.io/math"
 	delegationtypes "github.com/ExocoreNetwork/exocore/x/delegation/types"
 	"github.com/ExocoreNetwork/exocore/x/operator/types"
@@ -74,13 +72,15 @@ func (k Keeper) InitGenesis(ctx sdk.Context, state types.GenesisState) []abci.Va
 	) error {
 		valueHere := stakerAssetOperatorMap[stakerID][assetID][operatorAddress]
 		if !valueHere.Equal(state.UndelegatableAmount) {
-			panic(fmt.Sprintf("undelegatable amount mismatch: %s", operatorAddress))
+			return types.ErrInvalidGenesisData
 		}
 		return nil
 	}
 	// since this module only knows the delegated value (and not the deposit value),
 	// it cannot do any further validation with the data in the assets keeper.
-	k.delegationKeeper.IterateDelegationState(ctx, checkFunc)
+	if err := k.delegationKeeper.IterateDelegationState(ctx, checkFunc); err != nil {
+		panic(err)
+	}
 	return []abci.ValidatorUpdate{}
 }
 
