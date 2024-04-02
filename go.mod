@@ -3,6 +3,7 @@ module github.com/ExocoreNetwork/exocore
 go 1.21
 
 require (
+	bou.ke/monkey v1.0.2
 	cosmossdk.io/errors v1.0.0
 	cosmossdk.io/math v1.0.1
 	cosmossdk.io/simapp v0.0.0-20230608160436-666c345ad23d
@@ -20,15 +21,18 @@ require (
 	github.com/golang/protobuf v1.5.4
 	github.com/gorilla/mux v1.8.0
 	github.com/grpc-ecosystem/grpc-gateway v1.16.0
+	github.com/grpc-ecosystem/grpc-gateway/v2 v2.11.3
 	github.com/onsi/ginkgo/v2 v2.15.0
 	github.com/onsi/gomega v1.31.1
 	github.com/pkg/errors v0.9.1
 	github.com/rakyll/statik v0.1.7
+	github.com/smartystreets/goconvey v1.6.4
 	github.com/spf13/cast v1.5.1
 	github.com/spf13/cobra v1.7.0
 	github.com/spf13/viper v1.16.0
 	github.com/stretchr/testify v1.8.4
 	go.opencensus.io v0.24.0
+	go.uber.org/mock v0.4.0
 	golang.org/x/crypto v0.21.0
 	golang.org/x/exp v0.0.0-20230811145659-89c5cff77bcb
 	golang.org/x/xerrors v0.0.0-20220907171357-04be3eba64a2
@@ -105,6 +109,7 @@ require (
 	github.com/felixge/httpsnoop v1.0.2 // indirect
 	github.com/fsnotify/fsnotify v1.6.0 // indirect
 	github.com/gballet/go-libpcsclite v0.0.0-20190607065134-2772fd86a8ff // indirect
+	github.com/ghodss/yaml v1.0.0 // indirect
 	github.com/go-kit/kit v0.12.0 // indirect
 	github.com/go-kit/log v0.2.1 // indirect
 	github.com/go-logfmt/logfmt v0.6.0 // indirect
@@ -126,6 +131,7 @@ require (
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/googleapis/enterprise-certificate-proxy v0.2.3 // indirect
 	github.com/googleapis/gax-go/v2 v2.11.0 // indirect
+	github.com/gopherjs/gopherjs v0.0.0-20181017120253-0766667cb4d1 // indirect
 	github.com/gorilla/handlers v1.5.1 // indirect
 	github.com/grpc-ecosystem/go-grpc-middleware v1.4.0 // indirect
 	github.com/gsterjov/go-libsecret v0.0.0-20161001094733-a6f4afe4910c // indirect
@@ -146,6 +152,7 @@ require (
 	github.com/jackpal/go-nat-pmp v1.0.2 // indirect
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
 	github.com/jmhodges/levigo v1.0.0 // indirect
+	github.com/jtolds/gls v4.20.0+incompatible // indirect
 	github.com/klauspost/compress v1.16.7 // indirect
 	github.com/lib/pq v1.10.9 // indirect
 	github.com/libp2p/go-buffer-pool v0.1.0 // indirect
@@ -176,6 +183,7 @@ require (
 	github.com/rs/zerolog v1.29.1 // indirect
 	github.com/sasha-s/go-deadlock v0.3.1 // indirect
 	github.com/shirou/gopsutil v3.21.4-0.20210419000835-c7a38de76ee5+incompatible // indirect
+	github.com/smartystreets/assertions v0.0.0-20180927180507-b2de0cb4f26d // indirect
 	github.com/spf13/afero v1.9.5 // indirect
 	github.com/spf13/jwalterweatherman v1.1.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect

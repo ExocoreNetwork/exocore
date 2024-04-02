@@ -1,0 +1,18 @@
+syntax = "proto3";
+package exocore.oracle;
+
+import "gogoproto/gogo.proto";
+import "exocore/oracle/info.proto";
+import "exocore/oracle/token_feeder.proto";
+
+option go_package = "github.com/ExocoreNetwork/exocore/x/oracle/types";
+
+// Params defines the parameters for the module.
+message Params {
+  option (gogoproto.goproto_stringer) = false;
+  repeated Chain chains = 1;
+  repeated Token tokens = 2;
+  repeated Source sources = 3;
+  repeated RuleWithSource rules = 4;
+  repeated TokenFeeder TokenFeeders = 5;
+}

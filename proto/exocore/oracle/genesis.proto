@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+package exocore.oracle;
+
+import "gogoproto/gogo.proto";
+import "exocore/oracle/params.proto";
+import "exocore/oracle/prices.proto";
+import "exocore/oracle/validator_update_block.proto";
+import "exocore/oracle/index_recent_params.proto";
+import "exocore/oracle/index_recent_msg.proto";
+import "exocore/oracle/recent_msg.proto";
+import "exocore/oracle/recent_params.proto";
+
+option go_package = "github.com/ExocoreNetwork/exocore/x/oracle/types";
+
+// GenesisState defines the oracle module's genesis state.
+message GenesisState {
+           Params params     = 1 [(gogoproto.nullable) = false];
+  repeated Prices pricesList = 2 [(gogoproto.nullable) = false];
+  
+  //TODO: userDefinedTokenFeeder
+           ValidatorUpdateBlock validatorUpdateBlock = 4;
+           IndexRecentParams    indexRecentParams    = 5;
+           IndexRecentMsg       indexRecentMsg       = 6;
+  repeated RecentMsg            recentMsgList        = 7 [(gogoproto.nullable) = false];
+  repeated RecentParams         recentParamsList     = 8 [(gogoproto.nullable) = false];
+}
+
