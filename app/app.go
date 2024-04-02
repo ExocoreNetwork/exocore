@@ -36,6 +36,11 @@ import (
 	depositKeeper "github.com/ExocoreNetwork/exocore/x/deposit/keeper"
 	depositTypes "github.com/ExocoreNetwork/exocore/x/deposit/types"
 	operatorTypes "github.com/ExocoreNetwork/exocore/x/operator/types"
+
+	"github.com/ExocoreNetwork/exocore/x/oracle"
+	oracleKeeper "github.com/ExocoreNetwork/exocore/x/oracle/keeper"
+	oracleTypes "github.com/ExocoreNetwork/exocore/x/oracle/types"
+
 	"github.com/ExocoreNetwork/exocore/x/reward"
 	rewardKeeper "github.com/ExocoreNetwork/exocore/x/reward/keeper"
 	rewardTypes "github.com/ExocoreNetwork/exocore/x/reward/types"
@@ -267,6 +272,7 @@ var (
 		withdraw.AppModuleBasic{},
 		reward.AppModuleBasic{},
 		exoslash.AppModuleBasic{},
+		oracle.AppModuleBasic{},
 	)
 
 	// module account permissions
@@ -358,6 +364,7 @@ type ExocoreApp struct {
 	WithdrawKeeper   withdrawKeeper.Keeper
 	RewardKeeper     rewardKeeper.Keeper
 	OperatorKeeper   operatorKeeper.Keeper
+	OracleKeeper     oracleKeeper.Keeper
 
 	ExoSlashKeeper slashKeeper.Keeper
 	// the module manager
@@ -441,11 +448,12 @@ func NewExocoreApp(
 		rewardTypes.StoreKey,
 		exoslashTypes.StoreKey,
 		operatorTypes.StoreKey,
+		oracleTypes.StoreKey,
 	)
 
 	// Add the EVM transient store key
 	tkeys := sdk.NewTransientStoreKeys(paramstypes.TStoreKey, evmtypes.TransientKey, feemarkettypes.TransientKey)
-	memKeys := sdk.NewMemoryStoreKeys(capabilitytypes.MemStoreKey)
+	memKeys := sdk.NewMemoryStoreKeys(capabilitytypes.MemStoreKey, oracleTypes.MemStoreKey)
 
 	// load state streaming if enabled
 	if _, _, err := streaming.LoadStreamingServices(bApp, appOpts, appCodec, logger, keys); err != nil {
@@ -630,6 +638,7 @@ func NewExocoreApp(
 	app.WithdrawKeeper = *withdrawKeeper.NewKeeper(appCodec, keys[withdrawTypes.StoreKey], app.AssetsKeeper, app.DepositKeeper)
 	app.RewardKeeper = *rewardKeeper.NewKeeper(appCodec, keys[rewardTypes.StoreKey], app.AssetsKeeper)
 	app.ExoSlashKeeper = slashKeeper.NewKeeper(appCodec, keys[exoslashTypes.StoreKey], app.AssetsKeeper)
+	app.OracleKeeper = oracleKeeper.NewKeeper(appCodec, keys[oracleTypes.StoreKey], memKeys[oracleTypes.MemStoreKey], app.GetSubspace(oracleTypes.ModuleName), app.StakingKeeper)
 	// We call this after setting the hooks to ensure that the hooks are set on the keeper
 	evmKeeper.WithPrecompiles(
 		evmkeeper.AvailablePrecompiles(
@@ -804,6 +813,7 @@ func NewExocoreApp(
 		withdraw.NewAppModule(appCodec, app.WithdrawKeeper),
 		reward.NewAppModule(appCodec, app.RewardKeeper),
 		exoslash.NewAppModule(appCodec, app.ExoSlashKeeper),
+		oracle.NewAppModule(appCodec, app.OracleKeeper, app.AccountKeeper, app.BankKeeper),
 	)
 
 	// During begin block slashing happens after distr.BeginBlocker so that
@@ -851,6 +861,7 @@ func NewExocoreApp(
 		withdrawTypes.ModuleName,
 		rewardTypes.ModuleName,
 		exoslashTypes.ModuleName,
+		oracleTypes.ModuleName,
 	)
 
 	// NOTE: fee market module must go last in order to retrieve the block gas used.
@@ -894,6 +905,7 @@ func NewExocoreApp(
 		withdrawTypes.ModuleName,
 		rewardTypes.ModuleName,
 		exoslashTypes.ModuleName,
+		oracleTypes.ModuleName,
 	)
 
 	// NOTE: The genutils module must occur after staking so that pools are
@@ -935,6 +947,7 @@ func NewExocoreApp(
 		withdrawTypes.ModuleName,
 		rewardTypes.ModuleName,
 		exoslashTypes.ModuleName,
+		oracleTypes.ModuleName,
 		// Evmos modules
 		vestingtypes.ModuleName,
 		inflationtypes.ModuleName,
@@ -1269,7 +1282,8 @@ func initParamsKeeper(
 	paramsKeeper.Subspace(ibcexported.ModuleName)
 	paramsKeeper.Subspace(icahosttypes.SubModuleName)
 	// ethermint subspaces
-	paramsKeeper.Subspace(evmtypes.ModuleName).WithKeyTable(evmtypes.ParamKeyTable()) //nolint: staticcheck
+	paramsKeeper.Subspace(evmtypes.ModuleName).WithKeyTable(evmtypes.ParamKeyTable())       //nolint:staticcheck
+	paramsKeeper.Subspace(oracleTypes.ModuleName).WithKeyTable(oracleTypes.ParamKeyTable()) //nolint:staticcheck
 	return paramsKeeper
 }
 
