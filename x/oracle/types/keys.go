@@ -14,6 +14,10 @@ const (
 	MemStoreKey = "mem_oracle"
 )
 
+var (
+	ParamsKey = []byte{0x11}
+)
+
 func KeyPrefix(p string) []byte {
 	return []byte(p)
 }

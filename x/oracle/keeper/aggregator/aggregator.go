@@ -54,21 +54,21 @@ func (agc *AggregatorContext) sanityCheck(msg *types.MsgCreatePrice) error {
 	//TODO: check len(price.prices)>0, len(price.prices._range_eachPriceWithSource.Prices)>0, at least has one source, and for each source has at least one price
 	//TODO: check for each source, at most maxDetId count price (now in filter, ->anteHandler)
 	if agc.validatorsPower[msg.Creator] == nil {
-		return errors.New("")
+		return errors.New("signer is not validator")
 	}
 
 	if msg.Nonce < 1 || msg.Nonce > common.MaxNonce {
-		return errors.New("")
+		return errors.New("nonce invalid")
 	}
 
 	//TODO: sanity check for price(no more than maxDetId count for each source, this should be take care in anteHandler)
 	if msg.Prices == nil || len(msg.Prices) == 0 {
-		return errors.New("")
+		return errors.New("msg should provide at least one price")
 	}
 
 	for _, pSource := range msg.Prices {
 		if pSource.Prices == nil || len(pSource.Prices) == 0 || len(pSource.Prices) > common.MaxDetId || !agc.params.IsValidSource(pSource.SourceId) {
-			return errors.New("")
+			return errors.New("source should be valid and provide at least one price")
 		}
 		//check with params is coressponding source is deteministic
 		if agc.params.IsDeterministicSource(pSource.SourceId) {
@@ -77,14 +77,14 @@ func (agc *AggregatorContext) sanityCheck(msg *types.MsgCreatePrice) error {
 				//just make sure the DetId won't mess up with NS's placeholder id, the limitation of maximum count one validator can submit will be check by filter
 				if len(pDetId.DetId) == 0 {
 					//deterministic must have specified deterministicId
-					return errors.New("")
+					return errors.New("ds should have roundid")
 				}
 				//DS's price value will go through consensus process, so it's safe to skip the check here
 			}
 		} else {
 			//sanity check: NS submit only one price with detId==""
 			if len(pSource.Prices) > 1 || len(pSource.Prices[0].DetId) > 0 {
-				return errors.New("")
+				return errors.New("ns should not have roundid")
 			}
 		}
 	}
@@ -100,11 +100,11 @@ func (agc *AggregatorContext) checkMsg(msg *types.MsgCreatePrice) error {
 	feederContext := agc.rounds[msg.FeederId]
 	if feederContext == nil || feederContext.status != 1 {
 		//feederId does not exist or not alive
-		return errors.New("")
+		return errors.New("context not exist or not available")
 	}
 	//senity check on basedBlock
 	if msg.BasedBlock != feederContext.basedBlock {
-		return errors.New("")
+		return errors.New("baseblock not match")
 	}
 
 	//check sources rule matches
@@ -115,6 +115,7 @@ func (agc *AggregatorContext) checkMsg(msg *types.MsgCreatePrice) error {
 }
 
 func (agc *AggregatorContext) FillPrice(msg *types.MsgCreatePrice) (*priceItemKV, *cache.CacheItemM, error) {
+	//	fmt.Println("debug agc fillprice")
 	feederWorker := agc.aggregators[msg.FeederId]
 	//worker initialzed here reduce workload for Endblocker
 	if feederWorker == nil {
@@ -147,11 +148,12 @@ func (agc *AggregatorContext) FillPrice(msg *types.MsgCreatePrice) (*priceItemKV
 // NewCreatePrice receives msgCreatePrice message, and goes process: filter->aggregator, filter->calculator->aggregator
 // non-deterministic data will goes directly into aggregator, and deterministic data will goes into calculator first to get consensus on the deterministic id.
 func (agc *AggregatorContext) NewCreatePrice(ctx sdk.Context, msg *types.MsgCreatePrice) (*priceItemKV, *cache.CacheItemM, error) {
-
+	//	fmt.Println("debug agc.newcreateprice")
 	if err := agc.checkMsg(msg); err != nil {
+		//		fmt.Println("debug agc.newcreateprice.error", err)
 		return nil, nil, err
 	}
-
+	//	fmt.Println("debug before agc.fillprice")
 	return agc.FillPrice(msg)
 }
 
@@ -204,14 +206,20 @@ func (agc *AggregatorContext) PrepareRound(ctx sdk.Context, block uint64) {
 		block = uint64(ctx.BlockHeight())
 	}
 
+	//	fmt.Println("debug agc.prepareround, height:", block)
 	for feederId, feeder := range agc.params.GetTokenFeeders() {
 		if feederId == 0 {
 			continue
 		}
+		//		fmt.Println("debug agc.prepareround, feederId:", feederId)
 		if (feeder.EndBlock > 0 && uint64(feeder.EndBlock) <= block) || uint64(feeder.StartBaseBlock) > block {
+
+			//			fmt.Println("debug agc.prepareround 2, feederId:", feederId, feeder.StartBaseBlock, block)
 			//this feeder is inactive
 			continue
 		}
+
+		//		fmt.Println("debug agc.prepareround 3, feederId:", feederId)
 
 		delta := (block - uint64(feeder.StartBaseBlock))
 		left := delta % uint64(feeder.Interval)
@@ -261,6 +269,9 @@ func (agc *AggregatorContext) SetValidatorPowers(vp map[string]*big.Int) {
 		agc.validatorsPower[addr] = power
 		agc.totalPower = new(big.Int).Add(agc.totalPower, power)
 	}
+}
+func (agc *AggregatorContext) GetValidatorPowers() (vp map[string]*big.Int) {
+	return agc.validatorsPower
 }
 
 //func (agc *AggregatorContext) SetTotalPower(power *big.Int) {

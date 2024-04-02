@@ -31,4 +31,3 @@ message PriceWithTimeAndRound {
 	string timestamp = 3;
 	uint64 round_id = 4;
 }
-

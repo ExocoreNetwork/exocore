@@ -62,15 +62,45 @@ func (p Params) CheckRules(feederId int32, prices []*types.PriceWithSource) (boo
 	//specified sources set, v1 use this rule to set `chainlink` as official source
 	if rule.SourceIds != nil && len(rule.SourceIds) > 0 {
 		if len(rule.SourceIds) != len(prices) {
-			return false, errors.New("")
+			return false, errors.New("count prices should match rule")
 		}
-		for _, source := range rule.SourceIds {
-			for _, p := range prices {
-				if p.SourceId == source {
+		notFound := false
+		if rule.SourceIds[0] == 0 {
+			//match all sources listed
+			for sId, source := range p.Sources {
+				if sId == 0 {
 					continue
 				}
+				if source.Valid {
+					notFound = true
+					for _, p := range prices {
+						//						fmt.Println("debug rules check _0, p.sourceid", p.SourceId)
+						if p.SourceId == int32(sId) {
+							notFound = false
+							//							fmt.Println("debug rules match _0")
+							break
+						}
+					}
+
+				}
 			}
-			return false, errors.New("")
+		} else {
+			for _, source := range rule.SourceIds {
+				notFound = true
+				for _, p := range prices {
+					//					fmt.Println("debug rules check, p.sourceid", p.SourceId)
+					if p.SourceId == source {
+						notFound = false
+						//						fmt.Println("debug rules match")
+						break
+					}
+				}
+				//return false, errors.New("price source not match with rule")
+			}
+		}
+		if notFound {
+			//			fmt.Println("debug rules check, rule.sources", rule.SourceIds)
+			return false, errors.New("price source not match with rule")
 		}
 	}
 

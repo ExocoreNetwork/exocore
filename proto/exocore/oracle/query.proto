@@ -29,10 +29,10 @@ service Query {
     option (google.api.http).get = "/ExocoreNetwork/exocore/oracle/prices/{tokenId}";
   
   }
-  rpc PricesAll (QueryAllPricesRequest) returns (QueryAllPricesResponse) {
-    option (google.api.http).get = "/ExocoreNetwork/exocore/oracle/prices";
-  
-  }
+//  rpc PricesAll (QueryAllPricesRequest) returns (QueryAllPricesResponse) {
+//    option (google.api.http).get = "/ExocoreNetwork/exocore/oracle/prices";
+//  
+//  }
   
   // Queries a ValidatorUpdateBlock by index.
   rpc ValidatorUpdateBlock (QueryGetValidatorUpdateBlockRequest) returns (QueryGetValidatorUpdateBlockResponse) {

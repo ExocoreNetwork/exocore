@@ -10,13 +10,12 @@ import (
 
 // SetPrices set a specific prices in the store from its index
 func (k Keeper) SetPrices(ctx sdk.Context, prices types.Prices) {
-	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefix(types.PricesKeyPrefix))
-	store = prefix.NewStore(store, types.PricesKey(prices.TokenId))
+	store := k.getPriceTRStore(ctx, prices.TokenId)
 	for _, v := range prices.PriceList {
 		b := k.cdc.MustMarshal(v)
 		store.Set(types.PricesRoundKey(v.RoundId), b)
 	}
-	store.Set(types.PricesNextRountIdKey, types.Uint64Bytes(uint64(prices.NextRountId)))
+	store.Set(types.PricesNextRountIdKey, types.Uint64Bytes(prices.NextRountId))
 }
 
 // GetPrices returns a prices from its index
@@ -25,20 +24,19 @@ func (k Keeper) GetPrices(
 	tokenId int32,
 
 ) (val types.Prices, found bool) {
-	//	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefix(types.PricesKeyPrefix))
-	//	store = prefix.NewStore(store, types.PricesKey(tokenId))
 	store := k.getPriceTRStore(ctx, tokenId)
-	nextRoundIdB := store.Get(types.PricesNextRountIdKey)
-	if nextRoundIdB == nil {
-		return val, false
-	}
+	//	nextRoundIdB := store.Get(types.PricesNextRountIdKey)
+	//	if nextRoundIdB == nil {
+	//		return val, false
+	//	}
 
-	nextRoundId := binary.BigEndian.Uint64(nextRoundIdB)
+	//	nextRoundId := binary.BigEndian.Uint64(nextRoundIdB)
+	nextRoundId := k.GetNextRoundId(ctx, tokenId)
 
 	val.TokenId = tokenId
 	val.NextRountId = nextRoundId
 	val.PriceList = make([]*types.PriceWithTimeAndRound, nextRoundId)
-	//0 roundId is reserved
+	//0 roundId is reserved, expect the roundid corresponds to the slice index
 	val.PriceList[0] = &types.PriceWithTimeAndRound{}
 	for i := uint64(1); i < nextRoundId; i++ {
 		b := store.Get(types.PricesRoundKey(i))
@@ -46,10 +44,11 @@ func (k Keeper) GetPrices(
 		if b != nil {
 			//should alwyas be true since we don't delete prices from history round
 			k.cdc.MustUnmarshal(b, val.PriceList[i])
+			found = true
 		}
 	}
 
-	return val, true
+	return
 }
 
 // RemovePrices removes a prices from the store
@@ -58,8 +57,6 @@ func (k Keeper) RemovePrices(
 	tokenId int32,
 
 ) {
-	//	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefix(types.PricesKeyPrefix))
-	//	store = prefix.NewStore(store, types.PricesKey(tokenId))
 	store := k.getPriceTRStore(ctx, tokenId)
 	//	iterator := sdk.KVStorePrefixIterator(store, []byte{})
 	iterator := store.Iterator(nil, nil)
@@ -76,12 +73,31 @@ func (k Keeper) GetAllPrices(ctx sdk.Context) (list []types.Prices) {
 
 	defer iterator.Close()
 
+	//	prevTokenId := uint32(0)
+	//	var val types.PriceWithTimeAndRound
+	var price types.Prices
+	prevTokenId := int32(0)
 	for ; iterator.Valid(); iterator.Next() {
-		var val types.Prices
-		k.cdc.MustUnmarshal(iterator.Value(), &val)
-		list = append(list, val)
+		tokenId, _, nextRoundId := parseKey(iterator.Key())
+		if prevTokenId == 0 {
+			prevTokenId = tokenId
+			price.TokenId = tokenId
+		} else if prevTokenId != tokenId && price.TokenId > 0 {
+			list = append(list, price)
+			prevTokenId = tokenId
+			price = types.Prices{TokenId: tokenId}
+		}
+		if nextRoundId {
+			price.NextRountId = binary.BigEndian.Uint64(iterator.Value())
+		} else {
+			var val types.PriceWithTimeAndRound
+			k.cdc.Unmarshal(iterator.Value(), &val)
+			price.PriceList = append(price.PriceList, &val)
+		}
 	}
-
+	if price.TokenId > 0 {
+		list = append(list, price)
+	}
 	return
 }
 
@@ -93,13 +109,13 @@ func (k Keeper) AppendPriceTR(ctx sdk.Context, tokenId int32, priceTR types.Pric
 	store := k.getPriceTRStore(ctx, tokenId)
 	b := k.cdc.MustMarshal(&priceTR)
 	store.Set(types.PricesRoundKey(nextRoundId), b)
+	k.IncreaseNextRoundId(ctx, tokenId)
 }
 
 //func(k Keeper) SetPriceTR(ctx sdk.Context, tokenId int32, priceTR){}
 
 func (k Keeper) GetPriceTRRoundId(ctx sdk.Context, tokenId int32, roundId uint64) (price types.PriceWithTimeAndRound, found bool) {
-	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefix(types.PricesKeyPrefix))
-	store = prefix.NewStore(store, types.PricesKey(tokenId))
+	store := k.getPriceTRStore(ctx, tokenId)
 
 	b := store.Get(types.PricesRoundKey(roundId))
 	if b == nil {
@@ -135,9 +151,21 @@ func (k Keeper) GetNextRoundId(ctx sdk.Context, tokenId int32) (nextRoundId uint
 	store := k.getPriceTRStore(ctx, tokenId)
 	nextRoundIdB := store.Get(types.PricesNextRountIdKey)
 	if nextRoundIdB != nil {
-		nextRoundId = binary.BigEndian.Uint64(nextRoundIdB)
+		if nextRoundId = binary.BigEndian.Uint64(nextRoundIdB); nextRoundId == 0 {
+			nextRoundId = 1
+		}
 	}
 	return
+}
+
+func (k Keeper) IncreaseNextRoundId(ctx sdk.Context, tokenId int32) error {
+	//store := getPriceTRStore(ctx, k.storeKey, tokenId)
+	store := k.getPriceTRStore(ctx, tokenId)
+	nextRoundId := k.GetNextRoundId(ctx, tokenId)
+	b := make([]byte, 8)
+	binary.BigEndian.PutUint64(b, nextRoundId+1)
+	store.Set(types.PricesNextRountIdKey, b)
+	return nil
 }
 
 //func getPriceTRStore(ctx sdk.Context, storeKey storetypes.StoreKey, tokenId int32) prefix.Store {
@@ -148,4 +176,14 @@ func (k Keeper) GetNextRoundId(ctx sdk.Context, tokenId int32) (nextRoundId uint
 func (k Keeper) getPriceTRStore(ctx sdk.Context, tokenId int32) prefix.Store {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefix(types.PricesKeyPrefix))
 	return prefix.NewStore(store, types.PricesKey(tokenId))
+}
+
+func parseKey(key []byte) (tokenId int32, roundId uint64, nextRoundId bool) {
+	tokenId = int32(binary.BigEndian.Uint32(key[:4]))
+	if len(key) == 17 {
+		nextRoundId = true
+		return
+	}
+	roundId = binary.BigEndian.Uint64(key[5:13])
+	return
 }
