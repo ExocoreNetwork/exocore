@@ -34,6 +34,14 @@ func (k Keeper) InitGenesis(
 	for _, val := range genState.InitialValSet {
 		// #nosec G703 // already validated
 		consKey, _ := operatortypes.HexStringToPubKey(val.PublicKey)
+		// #nosec G601 // this only fails if the key is of a type not already defined.
+		consAddr, _ := operatortypes.TMCryptoPublicKeyToConsAddr(consKey)
+		found, _ := k.operatorKeeper.GetOperatorAddressForChainIDAndConsAddr(
+			ctx, ctx.ChainID(), consAddr,
+		)
+		if !found {
+			panic(fmt.Sprintf("operator not found: %s", consAddr))
+		}
 		out = append(out, abci.ValidatorUpdate{
 			PubKey: *consKey,
 			Power:  val.Power,
