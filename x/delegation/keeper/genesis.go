@@ -19,21 +19,27 @@ func (k Keeper) InitGenesis(
 		stakerID := a.StakerID
 		for _, b := range a.DelegationsByAssetOperator {
 			assetID := b.AssetID
+			// check that the asset is registered
+			if !k.assetsKeeper.IsStakingAsset(ctx, assetID) {
+				panic(
+					fmt.Sprintf(
+						"%s: %s", assetstype.ErrNoClientChainAssetKey,
+						fmt.Sprintf("input assetID is:%s", assetID),
+					),
+				)
+			}
 			for _, c := range b.DelegationsByOperator {
 				operatorAddress := c.OperatorAddress
-				// #nosec G703 // already validated
-				accAddress, _ := sdk.AccAddressFromBech32(operatorAddress)
 				amount := c.Amount // delegation amount
-				if !k.operatorKeeper.IsOperator(ctx, accAddress) {
-					// the operator must be registered first, so the
-					// genesis of the operator module comes before this module
-					panic(
-						fmt.Sprintf(
-							"%s: %s", delegationtype.ErrOperatorNotExist,
-							fmt.Sprintf("input operatorAddr is:%s", operatorAddress),
-						),
-					)
-				}
+
+				// the check that the operator is registered cannot be made here, since
+				// the genesis of the operator module runs after the delegation genesis,
+				// although this order can be changed.
+				// if there is an operator within this genesis that is not in the
+				// operator module genesis, the operator module will reject that genesis.
+				// this is because the operator module checks for consistency between
+				// itself and this module at the time of its genesis.
+
 				// at genesis, the operator cannot be frozen so skip that check.
 				// validate that enough deposits exist before delegation.
 				// note that these deposits are by stakerID for assetID, and not per operator.
