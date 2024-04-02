@@ -38,9 +38,9 @@ func (gs GenesisState) Validate() error {
 	}
 	// consensus_keys.go
 	operatorsByKeys := make(map[string]struct{}, len(gs.OperatorRecords))
-	// keysByChainId stores chain id -> cons keys list. ensure that within a chain id, cons key
+	// keysByChainID stores chain id -> cons keys list. ensure that within a chain id, cons key
 	// isn't repeated.
-	keysByChainId := make(map[string](map[string]struct{}))
+	keysByChainID := make(map[string](map[string]struct{}))
 	for _, record := range gs.OperatorRecords {
 		operatorAddress := record.OperatorAddress
 		_, err := sdk.AccAddressFromBech32(operatorAddress)
@@ -76,17 +76,18 @@ func (gs GenesisState) Validate() error {
 				)
 			}
 			// validate chain id is not done, since it is not strictly enforced within Cosmos.
-			if _, ok := keysByChainId[subRecord.ChainID]; !ok {
-				keysByChainId[subRecord.ChainID] = make(map[string]struct{})
+			// technically, it is possible to do so via ibcclienttypes.ParseChainID != 0.
+			if _, ok := keysByChainID[subRecord.ChainID]; !ok {
+				keysByChainID[subRecord.ChainID] = make(map[string]struct{})
 			}
-			if _, ok := keysByChainId[subRecord.ChainID][consKeyString]; ok {
+			if _, ok := keysByChainID[subRecord.ChainID][consKeyString]; ok {
 				return errorsmod.Wrapf(
 					ErrInvalidGenesisData,
 					"duplicate consensus key %s for chain %s",
 					consKeyString, subRecord.ChainID,
 				)
 			}
-			keysByChainId[subRecord.ChainID][consKeyString] = struct{}{}
+			keysByChainID[subRecord.ChainID][consKeyString] = struct{}{}
 		}
 	}
 	// it may be possible for an operator to opt into an AVS which does not have a consensus
