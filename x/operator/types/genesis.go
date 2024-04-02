@@ -38,6 +38,9 @@ func (gs GenesisState) Validate() error {
 	}
 	// consensus_keys.go
 	operatorsByKeys := make(map[string]struct{}, len(gs.OperatorRecords))
+	// keysByChainId stores chain id -> cons keys list. ensure that within a chain id, cons key
+	// isn't repeated.
+	keysByChainId := make(map[string](map[string]struct{}))
 	for _, record := range gs.OperatorRecords {
 		operatorAddress := record.OperatorAddress
 		_, err := sdk.AccAddressFromBech32(operatorAddress)
@@ -72,8 +75,23 @@ func (gs GenesisState) Validate() error {
 					consKeyString, err,
 				)
 			}
+			// validate chain id is not done, since it is not strictly enforced within Cosmos.
+			if _, ok := keysByChainId[subRecord.ChainID]; !ok {
+				keysByChainId[subRecord.ChainID] = make(map[string]struct{})
+			}
+			if _, ok := keysByChainId[subRecord.ChainID][consKeyString]; ok {
+				return errorsmod.Wrapf(
+					ErrInvalidGenesisData,
+					"duplicate consensus key %s for chain %s",
+					consKeyString, subRecord.ChainID,
+				)
+			}
+			keysByChainId[subRecord.ChainID][consKeyString] = struct{}{}
 		}
 	}
+	// it may be possible for an operator to opt into an AVS which does not have a consensus
+	// key requirement, so this check could be removed if we set up the Export case. but i
+	// think it is better to keep it for now.
 	if len(operators) != len(operatorsByKeys) {
 		return errorsmod.Wrapf(
 			ErrInvalidGenesisData,
@@ -150,12 +168,10 @@ func (gs GenesisState) Validate() error {
 			}
 		}
 	}
-	if len(operators) != len(operatorsByStakers) {
-		return errorsmod.Wrapf(
-			ErrInvalidGenesisData,
-			"operator addresses in operators and staker records do not match",
-		)
-	}
+	// it is possible that a few operators do not get delegations from stakers. that means
+	// operatorsByStakers may be smaller than operators.
+	// operatorsByStakers can never be larger than operators anyway, since we have checked
+	// that operators are already registered.
 	// it may also be prudent to validate the sorted (or not) nature of these items
 	// but it is not critical for the functioning. it is only used for comparison
 	// of the genesis state stored across all of the validators.
