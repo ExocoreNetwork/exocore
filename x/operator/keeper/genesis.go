@@ -67,6 +67,11 @@ func (k Keeper) InitGenesis(ctx sdk.Context, state types.GenesisState) []abci.Va
 	}
 	// validate the information in the delegation keeper,
 	// which has validated it in the assets keeper.
+	// the validation in the delegation keeper is that
+	// the delegated amount is less than the deposited amount (before the delegation).
+	// so, in summary, our checks are that
+	// deposit[staker][asset] >= sum_over_operators(delegated[staker][asset][operator]), and
+	// x_delegation[staker][asset][operator] == x_operator[staker][asset][operator].
 	checkFunc := func(
 		stakerID, assetID, operatorAddress string, state *delegationtypes.DelegationAmounts,
 	) error {
@@ -76,11 +81,11 @@ func (k Keeper) InitGenesis(ctx sdk.Context, state types.GenesisState) []abci.Va
 		}
 		return nil
 	}
-	// since this module only knows the delegated value (and not the deposit value),
-	// it cannot do any further validation with the data in the assets keeper.
 	if err := k.delegationKeeper.IterateDelegationState(ctx, checkFunc); err != nil {
 		panic(err)
 	}
+	// we have checked that the results in operator, delegation and assets are consistent.
+	// there is no need to check again for assets again here.
 	return []abci.ValidatorUpdate{}
 }
 

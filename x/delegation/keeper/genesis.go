@@ -36,6 +36,7 @@ func (k Keeper) InitGenesis(
 				}
 				// at genesis, the operator cannot be frozen so skip that check.
 				// validate that enough deposits exist before delegation.
+				// note that these deposits are by stakerID for assetID, and not per operator.
 				info, err := k.assetsKeeper.GetStakerSpecifiedAssetInfo(ctx, stakerID, assetID)
 				if err != nil {
 					panic(err)
@@ -62,7 +63,7 @@ func (k Keeper) InitGenesis(
 				); err != nil {
 					panic(err)
 				}
-				// also tell the assetsKeeper to mark this as a delegation.
+				// reduce the amount of available deposit for the next operator iteration.
 				if err := k.assetsKeeper.UpdateStakerAssetState(
 					ctx, stakerID, assetID, assetstype.StakerSingleAssetChangeInfo{
 						WithdrawableAmount: amount.Neg(),
