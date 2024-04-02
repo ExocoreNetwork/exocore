@@ -148,7 +148,7 @@ func isEqual(map1, map2 map[string]map[string]map[string]math.Int) bool {
 		if _, ok := map1[stakerID]; !ok {
 			return false // Extra StakerID in map2
 		}
-		for assetID, _ := range assetMap {
+		for assetID := range assetMap {
 			if _, ok := map1[stakerID][assetID]; !ok {
 				return false // Extra AssetID in map2
 			}
