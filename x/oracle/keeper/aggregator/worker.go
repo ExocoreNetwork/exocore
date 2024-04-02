@@ -1,0 +1,71 @@
+package aggregator
+
+import (
+	"math/big"
+
+	"github.com/ExocoreNetwork/exocore/x/oracle/keeper/common"
+	"github.com/ExocoreNetwork/exocore/x/oracle/types"
+)
+
+// worker is the actual instance used to calculate final price for each tokenFeeder's round. Which means, every tokenFeeder corresponds to a specified token, and for that tokenFeeder, each round we use a worker instance to calculate the final price
+type worker struct {
+	sealed  bool
+	price   string
+	decimal int32
+	//mainly used for deterministic source data to check conflics and validation
+	f *filter
+	//used to get to consensus on deterministic source's data
+	c *calculator
+	//when enough data(exceeds threshold) collected, aggregate to conduct the final price
+	a   *aggregator
+	ctx *AggregatorContext
+}
+
+func (w *worker) do(msg *types.MsgCreatePrice) []*types.PriceWithSource {
+	validator := msg.Creator
+	power := w.ctx.validatorsPower[validator]
+	list4Calculator, list4Aggregator := w.f.filtrate(msg)
+	if list4Aggregator != nil {
+		w.a.fillPrice(list4Aggregator, validator, power)
+		//	fmt.Printf("debug worker.do after fill aggregator\n")
+		if confirmedRounds := w.c.fillPrice(list4Calculator, validator, power); confirmedRounds != nil {
+			//		fmt.Printf("debug worker.do after fill calculator and have confirmedRounds\n")
+			w.a.confirmDSPrice(confirmedRounds)
+		}
+	}
+	return list4Aggregator
+}
+
+func (w *worker) aggregate() *big.Int {
+	return w.a.aggregate()
+}
+
+// not concurrency safe
+func (w *worker) seal() {
+	if w.sealed {
+		return
+	}
+	w.sealed = true
+	w.price = w.a.aggregate().String()
+	w.f = nil
+	w.c = nil
+	w.a = nil
+}
+
+func (w *worker) getPrice() (string, int32) {
+	if w.sealed {
+		return w.price, w.decimal
+	}
+	return "", 0
+}
+
+// newWorker new a instance for a tokenFeeder's specific round
+func newWorker(feederId int32, agc *AggregatorContext) *worker {
+	return &worker{
+		f:       newFilter(common.MaxNonce, common.MaxDetId),
+		c:       newCalculator(len(agc.validatorsPower), agc.totalPower),
+		a:       newAggregator(len(agc.validatorsPower), agc.totalPower),
+		decimal: agc.params.GetTokenInfo(feederId).Decimal,
+		ctx:     agc,
+	}
+}
