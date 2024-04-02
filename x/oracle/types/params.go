@@ -9,7 +9,7 @@ var (
 	KeyChains       = []byte("Chains")
 	KeyTokens       = []byte("Tokens")
 	KeySources      = []byte("Sources")
-	KeyRules        = []byte("Sources")
+	KeyRules        = []byte("Rules")
 	KeyTokenFeeders = []byte("TokenFeeders")
 )
 
@@ -94,11 +94,11 @@ func DefaultParams() Params {
 // ParamSetPairs get the params.ParamSet
 func (p *Params) ParamSetPairs() paramtypes.ParamSetPairs {
 	return paramtypes.ParamSetPairs{
-		paramtypes.NewParamSetPair([]byte("chains"), &p.Chains, func(_ interface{}) error { return nil }),
-		paramtypes.NewParamSetPair([]byte("tokens"), &p.Tokens, func(_ interface{}) error { return nil }),
-		paramtypes.NewParamSetPair([]byte("sources"), &p.Sources, func(_ interface{}) error { return nil }),
-		paramtypes.NewParamSetPair([]byte("rules"), &p.Rules, func(_ interface{}) error { return nil }),
-		paramtypes.NewParamSetPair([]byte("tokenfeeders"), &p.TokenFeeders, func(_ interface{}) error { return nil }),
+		paramtypes.NewParamSetPair(KeyChains, &p.Chains, func(_ interface{}) error { return nil }),
+		paramtypes.NewParamSetPair(KeyTokens, &p.Tokens, func(_ interface{}) error { return nil }),
+		paramtypes.NewParamSetPair(KeySources, &p.Sources, func(_ interface{}) error { return nil }),
+		paramtypes.NewParamSetPair(KeyRules, &p.Rules, func(_ interface{}) error { return nil }),
+		paramtypes.NewParamSetPair(KeyTokenFeeders, &p.TokenFeeders, func(_ interface{}) error { return nil }),
 	}
 }
 

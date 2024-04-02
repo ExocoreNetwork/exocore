@@ -3,6 +3,7 @@ module github.com/ExocoreNetwork/exocore
 go 1.21
 
 require (
+	bou.ke/monkey v1.0.2
 	cosmossdk.io/errors v1.0.0
 	cosmossdk.io/math v1.0.1
 	cosmossdk.io/simapp v0.0.0-20230608160436-666c345ad23d
@@ -31,6 +32,7 @@ require (
 	github.com/spf13/viper v1.16.0
 	github.com/stretchr/testify v1.8.4
 	go.opencensus.io v0.24.0
+	go.uber.org/mock v0.4.0
 	golang.org/x/crypto v0.21.0
 	golang.org/x/exp v0.0.0-20230811145659-89c5cff77bcb
 	golang.org/x/xerrors v0.0.0-20220907171357-04be3eba64a2
@@ -58,7 +60,6 @@ require (
 )
 
 require (
-	bou.ke/monkey v1.0.2 // indirect
 	cloud.google.com/go v0.110.6 // indirect
 	cloud.google.com/go/compute v1.23.0 // indirect
 	cloud.google.com/go/compute/metadata v0.2.3 // indirect
@@ -200,7 +201,6 @@ require (
 	github.com/ulikunitz/xz v0.5.11 // indirect
 	github.com/zondax/ledger-go v0.14.1 // indirect
 	go.etcd.io/bbolt v1.3.7 // indirect
-	go.uber.org/mock v0.4.0 // indirect
 	golang.org/x/oauth2 v0.8.0 // indirect
 	golang.org/x/sync v0.6.0 // indirect
 	golang.org/x/sys v0.18.0 // indirect

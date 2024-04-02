@@ -30,9 +30,6 @@ func TestGenesisState_Validate(t *testing.T) {
 						TokenId: 1,
 					},
 				},
-				Validators: &types.Validators{
-					Block: 45,
-				},
 				ValidatorUpdateBlock: &types.ValidatorUpdateBlock{},
 				IndexRecentParams:    &types.IndexRecentParams{},
 				IndexRecentMsg:       &types.IndexRecentMsg{},
