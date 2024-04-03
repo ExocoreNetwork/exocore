@@ -1,7 +1,6 @@
 package types_test
 
 import (
-	"fmt"
 	"strings"
 	"testing"
 
@@ -309,6 +308,52 @@ func (suite *GenesisTestSuite) TestValidateGenesis() {
 			},
 		},
 		{
+			name: "invalid genesis due to different chain ids for asset and staker",
+			genState: &types.GenesisState{
+				Params: types.DefaultParams(),
+				ClientChains: []types.ClientChainInfo{
+					ethClientChain, ethClientChain,
+				},
+				Tokens: []types.StakingAssetInfo{
+					stakingInfo, stakingInfo,
+				},
+				Deposits: []types.DepositsByStaker{genesisDeposit, genesisDeposit},
+			},
+			expPass: false,
+			malleate: func(gs *types.GenesisState) {
+				// new chain with different layer zero chain id
+				gs.ClientChains[1].LayerZeroChainID += 1
+				// new asset (old asset is a pointer so can't alter that)
+				tokenAddress := utiltx.GenerateAddress().String()
+				usdcClientChainAsset := types.AssetInfo{
+					Name:             "Circle USD",
+					Symbol:           "USDC",
+					Address:          tokenAddress,
+					Decimals:         18,
+					LayerZeroChainID: ethClientChain.LayerZeroChainID + 1,
+					MetaInfo:         "Circle USD token",
+					TotalSupply:      math.NewInt(500000000),
+				}
+				stakingInfo := types.StakingAssetInfo{
+					AssetBasicInfo:     &usdcClientChainAsset,
+					StakingTotalAmount: math.NewInt(0),
+				}
+				gs.Tokens[1] = stakingInfo
+				stakerID, _ := types.GetStakeIDAndAssetIDFromStr(
+					usdtClientChainAsset.LayerZeroChainID+1,
+					ethAddress.String(), usdtClientChainAsset.Address,
+				)
+				// change stakerID to be that of the second chain
+				gs.Deposits[1].StakerID = stakerID
+				// but keep the assetID the same
+			},
+			unmalleate: func(gs *types.GenesisState) {
+				gs.ClientChains[1].LayerZeroChainID -= 1
+				gs.Tokens[1].AssetBasicInfo.LayerZeroChainID -= 1
+				gs.Deposits[1].StakerID = stakerID
+			},
+		},
+		{
 			name: "invalid genesis due to duplicate asset id for staker",
 			genState: &types.GenesisState{
 				Params: types.DefaultParams(),
@@ -485,6 +530,6 @@ func (suite *GenesisTestSuite) TestValidateGenesis() {
 		if tc.unmalleate != nil {
 			tc.unmalleate(tc.genState)
 		}
-		fmt.Println(tc.name, ",", err)
+		// fmt.Println(tc.name, ",", err)
 	}
 }
