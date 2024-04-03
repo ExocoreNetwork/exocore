@@ -2,9 +2,6 @@ package keeper
 
 import (
 	context "context"
-	"encoding/base64"
-
-	tmprotocrypto "github.com/cometbft/cometbft/proto/tendermint/crypto"
 
 	"github.com/ExocoreNetwork/exocore/x/operator/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -34,7 +31,7 @@ func (k *Keeper) OptInToCosmosChain(
 	if err != nil {
 		return nil, err
 	}
-	key, err := stringToPubKey(req.PublicKey)
+	key, err := types.StringToPubKey(req.PublicKey)
 	if err != nil {
 		return nil, err
 	}
@@ -64,17 +61,4 @@ func (k *Keeper) InitOptOutFromCosmosChain(
 		return nil, err
 	}
 	return &types.InitOptOutFromCosmosChainResponse{}, nil
-}
-
-func stringToPubKey(pubKey string) (key tmprotocrypto.PublicKey, err error) {
-	pubKeyBytes, err := base64.StdEncoding.DecodeString(pubKey)
-	if err != nil {
-		return
-	}
-	subscriberTMConsKey := tmprotocrypto.PublicKey{
-		Sum: &tmprotocrypto.PublicKey_Ed25519{
-			Ed25519: pubKeyBytes,
-		},
-	}
-	return subscriberTMConsKey, nil
 }

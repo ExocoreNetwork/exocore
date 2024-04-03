@@ -41,13 +41,13 @@ func HexStringToPubKey(key string) (*tmprotocrypto.PublicKey, error) {
 }
 
 // StringToPubKey converts a base64-encoded public key to a tendermint public key.
-// Typically, this function is fed an input from ParseConsumerKeyFromJson.
-func StringToPubKey(pubKey string) (key tmprotocrypto.PublicKey, err error) {
+// Typically, this function is fed an input from ParseConsumerKeyFromJSON.
+func StringToPubKey(pubKey string) (key *tmprotocrypto.PublicKey, err error) {
 	pubKeyBytes, err := base64.StdEncoding.DecodeString(pubKey)
 	if err != nil {
 		return
 	}
-	subscriberTMConsKey := tmprotocrypto.PublicKey{
+	subscriberTMConsKey := &tmprotocrypto.PublicKey{
 		Sum: &tmprotocrypto.PublicKey_Ed25519{
 			Ed25519: pubKeyBytes,
 		},
