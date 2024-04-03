@@ -1,8 +1,6 @@
 package types
 
 import (
-	"strings"
-
 	errorsmod "cosmossdk.io/errors"
 	"cosmossdk.io/math"
 	"github.com/ethereum/go-ethereum/common"
@@ -115,38 +113,11 @@ func (gs GenesisState) Validate() error {
 	for _, depositByStaker := range gs.Deposits {
 		stakerID := depositByStaker.StakerID
 		// validate the stakerID
-		if stakerID != strings.ToLower(stakerID) {
-			return errorsmod.Wrapf(
-				ErrInvalidGenesisData,
-				"stakerID not lowercase: %s",
-				stakerID,
-			)
-		}
-		var stakerClientAddress string
-		var lzID uint64
-		var err error
-		if stakerClientAddress, lzID, err = ParseID(stakerID); err != nil {
+		if _, _, err := ValidateID(stakerID, true); err != nil {
 			return errorsmod.Wrapf(
 				ErrInvalidGenesisData,
 				"invalid stakerID: %s",
 				stakerID,
-			)
-		}
-		// check that the chain is registered
-		if _, ok := lzIDs[lzID]; !ok {
-			return errorsmod.Wrapf(
-				ErrInvalidGenesisData,
-				"unknown LayerZeroChainID for staker %s: %d",
-				stakerID, lzID,
-			)
-		}
-		// build for 0x addresses only.
-		// TODO: consider removing this check for non-EVM client chains.
-		if !common.IsHexAddress(stakerClientAddress) {
-			return errorsmod.Wrapf(
-				ErrInvalidGenesisData,
-				"not hex staker address for staker %s: %s",
-				stakerID, stakerClientAddress,
 			)
 		}
 		// check that it is not a duplicate

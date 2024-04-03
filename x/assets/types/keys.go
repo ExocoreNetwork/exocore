@@ -163,3 +163,27 @@ func ParseID(key string) (string, uint64, error) {
 	}
 	return keys[0], id, nil
 }
+
+func ValidateID(key string, validateEth bool) (string, uint64, error) {
+	// check lowercase
+	if key != strings.ToLower(key) {
+		return "", 0, errorsmod.Wrapf(ErrParseAssetsStateKey, "ID not lowercase: %s", key)
+	}
+	// parse it
+	var clientAddress string
+	var lzID uint64
+	var err error
+	if clientAddress, lzID, err = ParseID(key); err != nil {
+		return "", 0, errorsmod.Wrapf(
+			ErrParseAssetsStateKey, "invalid key: %s", key,
+		)
+	}
+	// check hex address
+	if validateEth && !common.IsHexAddress(clientAddress) {
+		return "", 0, errorsmod.Wrapf(
+			ErrParseAssetsStateKey, "not hex address %s: %s",
+			key, clientAddress,
+		)
+	}
+	return clientAddress, lzID, nil
+}
