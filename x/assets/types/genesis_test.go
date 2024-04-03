@@ -1,6 +1,7 @@
 package types_test
 
 import (
+	"fmt"
 	"strings"
 	"testing"
 
@@ -243,7 +244,11 @@ func (suite *GenesisTestSuite) TestValidateGenesis() {
 			},
 			expPass: false,
 			malleate: func(gs *types.GenesisState) {
-				gs.Deposits[0].StakerID = "fakeStaker_0x63"
+				stakerID, _ := types.GetStakeIDAndAssetIDFromStr(
+					usdtClientChainAsset.LayerZeroChainID+1,
+					ethAddress.String(), usdtClientChainAsset.Address,
+				)
+				gs.Deposits[0].StakerID = stakerID
 			},
 			unmalleate: func(gs *types.GenesisState) {
 				gs.Deposits[0].StakerID = stakerID
@@ -480,5 +485,6 @@ func (suite *GenesisTestSuite) TestValidateGenesis() {
 		if tc.unmalleate != nil {
 			tc.unmalleate(tc.genState)
 		}
+		fmt.Println(tc.name, ",", err)
 	}
 }

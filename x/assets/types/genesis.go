@@ -113,11 +113,21 @@ func (gs GenesisState) Validate() error {
 	for _, depositByStaker := range gs.Deposits {
 		stakerID := depositByStaker.StakerID
 		// validate the stakerID
-		if _, _, err := ValidateID(stakerID, true); err != nil {
+		var id uint64
+		var err error
+		if _, id, err = ValidateID(stakerID, true); err != nil {
 			return errorsmod.Wrapf(
 				ErrInvalidGenesisData,
 				"invalid stakerID: %s",
 				stakerID,
+			)
+		}
+		// check that the chain is registered
+		if _, ok := lzIDs[id]; !ok {
+			return errorsmod.Wrapf(
+				ErrInvalidGenesisData,
+				"unknown LayerZeroChainID for staker %s: %d",
+				stakerID, id,
 			)
 		}
 		// check that it is not a duplicate
