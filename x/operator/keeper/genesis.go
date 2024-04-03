@@ -26,8 +26,8 @@ func (k Keeper) InitGenesis(ctx sdk.Context, state types.GenesisState) []abci.Va
 			// #nosec G703 // already validated
 			key, _ := types.HexStringToPubKey(detail.ConsensusKey)
 			// then set pub key
-			if err := k.SetOperatorConsKeyForChainID(
-				ctx, operatorAddr, detail.ChainID, key,
+			if err := k.setOperatorConsKeyForChainID(
+				ctx, operatorAddr, detail.ChainID, key, true,
 			); err != nil {
 				panic(err)
 			}

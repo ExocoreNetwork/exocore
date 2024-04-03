@@ -32,12 +32,25 @@ func (k *Keeper) SetOperatorConsKeyForChainID(
 	// should be tm-ed25519
 	consKey *tmprotocrypto.PublicKey,
 ) error {
+	return k.setOperatorConsKeyForChainID(ctx, opAccAddr, chainID, consKey, false)
+}
+
+// setOperatorConsKeyForChainID is the private version of SetOperatorConsKeyForChainID.
+// it is used with a boolean flag to indicate that the call is from genesis.
+// if so, operator freeze status is not checked and hooks are not called.
+func (k *Keeper) setOperatorConsKeyForChainID(
+	ctx sdk.Context,
+	opAccAddr sdk.AccAddress,
+	chainID string,
+	consKey *tmprotocrypto.PublicKey,
+	genesis bool,
+) error {
 	// check if we are an operator
 	if !k.IsOperator(ctx, opAccAddr) {
 		return delegationtypes.ErrOperatorNotExist
 	}
 	// check for slashing
-	if k.slashKeeper.IsOperatorFrozen(ctx, opAccAddr) {
+	if !genesis && k.slashKeeper.IsOperatorFrozen(ctx, opAccAddr) {
 		return delegationtypes.ErrOperatorIsFrozen
 	}
 	// check if the chain id is valid
@@ -102,21 +115,23 @@ func (k *Keeper) SetOperatorConsKeyForChainID(
 			}
 		}
 	}
-	k.setOperatorConsKeyForChainID(ctx, opAccAddr, consAddr, chainID, bz)
-	if found {
-		if !alreadyRecorded {
-			k.Hooks().AfterOperatorKeyReplacement(ctx, opAccAddr, prevKey, consKey, chainID)
+	k.setOperatorConsKeyForChainIDUnchecked(ctx, opAccAddr, consAddr, chainID, bz)
+	if !genesis {
+		if found {
+			if !alreadyRecorded {
+				k.Hooks().AfterOperatorKeyReplacement(ctx, opAccAddr, prevKey, consKey, chainID)
+			}
+		} else {
+			k.Hooks().AfterOperatorOptIn(ctx, opAccAddr, chainID, consKey)
 		}
-	} else {
-		k.Hooks().AfterOperatorOptIn(ctx, opAccAddr, chainID, consKey)
 	}
 	return nil
 }
 
-// setOperatorConsKeyForChainID is the internal private version. It performs
+// setOperatorConsKeyForChainIDUnchecked is the internal private version. It performs
 // no error checking of the input. The caller must do the error checking
 // and then call this function.
-func (k Keeper) setOperatorConsKeyForChainID(
+func (k Keeper) setOperatorConsKeyForChainIDUnchecked(
 	ctx sdk.Context, opAccAddr sdk.AccAddress, consAddr sdk.ConsAddress,
 	chainID string, bz []byte,
 ) {
