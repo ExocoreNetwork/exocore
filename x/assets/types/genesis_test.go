@@ -167,6 +167,25 @@ func (suite *GenesisTestSuite) TestValidateGenesis() {
 			},
 		},
 		{
+			name: "invalid genesis due to negative supply amount for token",
+			genState: &types.GenesisState{
+				Params: types.DefaultParams(),
+				ClientChains: []types.ClientChainInfo{
+					ethClientChain,
+				},
+				Tokens: []types.StakingAssetInfo{
+					stakingInfo,
+				},
+			},
+			expPass: false,
+			malleate: func(gs *types.GenesisState) {
+				gs.Tokens[0].AssetBasicInfo.TotalSupply = math.NewInt(-1)
+			},
+			unmalleate: func(gs *types.GenesisState) {
+				gs.Tokens[0].AssetBasicInfo.TotalSupply = totalSupply
+			},
+		},
+		{
 			name: "invalid genesis due to upper case staker id",
 			genState: &types.GenesisState{
 				Params: types.DefaultParams(),

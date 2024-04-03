@@ -99,6 +99,15 @@ func (gs GenesisState) Validate() error {
 				assetID,
 			)
 		}
+		// validate the amount of supply
+		if info.AssetBasicInfo.TotalSupply.IsNil() ||
+			!info.AssetBasicInfo.TotalSupply.IsPositive() {
+			return errorsmod.Wrapf(
+				ErrInvalidGenesisData,
+				"nil total supply for token %s",
+				info.AssetBasicInfo.MetaInfo,
+			)
+		}
 		tokenSupplies[assetID] = info.AssetBasicInfo.TotalSupply
 	}
 	// staker_asset.go -> check deposits and withdrawals and that there is no unbonding.
