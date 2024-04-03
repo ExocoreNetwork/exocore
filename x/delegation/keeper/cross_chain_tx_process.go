@@ -8,20 +8,7 @@ import (
 	assetstype "github.com/ExocoreNetwork/exocore/x/assets/types"
 	delegationtype "github.com/ExocoreNetwork/exocore/x/delegation/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/ethereum/go-ethereum/common"
 )
-
-type DelegationOrUndelegationParams struct {
-	ClientChainLzID uint64
-	Action          assetstype.CrossChainOpType
-	AssetsAddress   []byte
-	OperatorAddress sdk.AccAddress
-	StakerAddress   []byte
-	OpAmount        sdkmath.Int
-	LzNonce         uint64
-	TxHash          common.Hash
-	// todo: The operator approved signature might be needed here in future
-}
 
 // The event hook process has been deprecated, now we use precompile contract to trigger the calls.
 // solidity encode: bytes memory actionArgs = abi.encodePacked(token, operator, msg.sender, amount);
@@ -109,7 +96,7 @@ type DelegationOrUndelegationParams struct {
 }*/
 
 // DelegateTo : It doesn't need to check the active status of the operator in middlewares when delegating assets to the operator. This is because it adds assets to the operator's amount. But it needs to check if operator has been slashed or frozen.
-func (k *Keeper) DelegateTo(ctx sdk.Context, params *DelegationOrUndelegationParams) error {
+func (k *Keeper) DelegateTo(ctx sdk.Context, params *delegationtype.DelegationOrUndelegationParams) error {
 	// check if the delegatedTo address is an operator
 	if !k.operatorKeeper.IsOperator(ctx, params.OperatorAddress) {
 		return errorsmod.Wrap(delegationtype.ErrOperatorNotExist, fmt.Sprintf("input operatorAddr is:%s", params.OperatorAddress))
@@ -180,7 +167,7 @@ func (k *Keeper) DelegateTo(ctx sdk.Context, params *DelegationOrUndelegationPar
 // UndelegateFrom The undelegation needs to consider whether the operator's opted-in assets can exit from the AVS.
 // Because only after the operator has served the AVS can the staking asset be undelegated.
 // So we use two steps to handle the undelegation. Fist,record the undelegation request and the corresponding exit time which needs to be obtained from the operator opt-in module. Then,we handle the record when the exit time has expired.
-func (k *Keeper) UndelegateFrom(ctx sdk.Context, params *DelegationOrUndelegationParams) error {
+func (k *Keeper) UndelegateFrom(ctx sdk.Context, params *delegationtype.DelegationOrUndelegationParams) error {
 	// check if the UndelegatedFrom address is an operator
 	if !k.operatorKeeper.IsOperator(ctx, params.OperatorAddress) {
 		return delegationtype.ErrOperatorNotExist

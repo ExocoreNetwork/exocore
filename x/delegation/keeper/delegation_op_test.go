@@ -32,7 +32,7 @@ func (suite *DelegationTestSuite) TestDelegateTo() {
 
 	opAccAddr, err := sdk.AccAddressFromBech32("exo13h6xg79g82e2g2vhjwg7j4r2z2hlncelwutkjr")
 	suite.NoError(err)
-	delegationParams := &keeper2.DelegationOrUndelegationParams{
+	delegationParams := &delegationtype.DelegationOrUndelegationParams{
 		ClientChainLzID: clientChainLzID,
 		Action:          types.DelegateTo,
 		AssetsAddress:   usdtAddress[:],
@@ -106,7 +106,7 @@ func (suite *DelegationTestSuite) TestUndelegateFrom() {
 
 	opAccAddr, err := sdk.AccAddressFromBech32("exo13h6xg79g82e2g2vhjwg7j4r2z2hlncelwutkjr")
 	suite.NoError(err)
-	delegationEvent := &keeper2.DelegationOrUndelegationParams{
+	delegationEvent := &delegationtype.DelegationOrUndelegationParams{
 		ClientChainLzID: clientChainLzID,
 		Action:          types.DelegateTo,
 		AssetsAddress:   usdtAddress[:],
@@ -205,7 +205,7 @@ func (suite *DelegationTestSuite) TestCompleteUndelegation() {
 
 	opAccAddr, err := sdk.AccAddressFromBech32("exo13h6xg79g82e2g2vhjwg7j4r2z2hlncelwutkjr")
 	suite.NoError(err)
-	delegationEvent := &keeper2.DelegationOrUndelegationParams{
+	delegationEvent := &delegationtype.DelegationOrUndelegationParams{
 		ClientChainLzID: clientChainLzID,
 		Action:          types.DelegateTo,
 		AssetsAddress:   usdtAddress[:],
