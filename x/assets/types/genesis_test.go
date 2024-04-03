@@ -1,7 +1,6 @@
 package types_test
 
 import (
-	"fmt"
 	"strings"
 	"testing"
 
@@ -390,6 +389,41 @@ func (suite *GenesisTestSuite) TestValidateGenesis() {
 				gs.Deposits[0].Deposits[0].Info = genesisDeposit.Deposits[0].Info
 			},
 		},
+		{
+			name: "invalid genesis due to excess deposited amount for staker",
+			genState: &types.GenesisState{
+				Params: types.DefaultParams(),
+				ClientChains: []types.ClientChainInfo{
+					ethClientChain,
+				},
+				Tokens: []types.StakingAssetInfo{
+					stakingInfo,
+				},
+				Deposits: []types.DepositsByStaker{genesisDeposit},
+			},
+			expPass: false,
+			malleate: func(gs *types.GenesisState) {
+				gs.Deposits[0].Deposits[0].Info.TotalDepositAmount =
+					stakingInfo.AssetBasicInfo.TotalSupply.Add(math.NewInt(1))
+			},
+			unmalleate: func(gs *types.GenesisState) {
+				gs.Deposits[0].Deposits[0].Info.TotalDepositAmount = math.NewInt(100)
+			},
+		},
+		{
+			name: "valid genesis",
+			genState: &types.GenesisState{
+				Params: types.DefaultParams(),
+				ClientChains: []types.ClientChainInfo{
+					ethClientChain,
+				},
+				Tokens: []types.StakingAssetInfo{
+					stakingInfo,
+				},
+				Deposits: []types.DepositsByStaker{genesisDeposit},
+			},
+			expPass: true,
+		},
 	}
 
 	for _, tc := range testCases {
@@ -398,7 +432,6 @@ func (suite *GenesisTestSuite) TestValidateGenesis() {
 			tc.malleate(tc.genState)
 		}
 		err := tc.genState.Validate()
-		fmt.Println(tc.name, ":", err)
 		if tc.expPass {
 			suite.Require().NoError(err, tc.name)
 		} else {

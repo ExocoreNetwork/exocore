@@ -4,6 +4,7 @@ import (
 	"strings"
 
 	errorsmod "cosmossdk.io/errors"
+	"cosmossdk.io/math"
 	"github.com/ethereum/go-ethereum/common"
 )
 
@@ -47,8 +48,15 @@ func (gs GenesisState) Validate() error {
 	}
 	// client_chain_asset.go -> check presence of client chain
 	// for all assets and no duplicates
-	tokens := make(map[string]struct{}, len(gs.Tokens))
+	tokenSupplies := make(map[string]math.Int, len(gs.Tokens))
 	for _, info := range gs.Tokens {
+		if info.AssetBasicInfo == nil {
+			return errorsmod.Wrapf(
+				ErrInvalidGenesisData,
+				"nil AssetBasicInfo for token %s",
+				info.AssetBasicInfo.MetaInfo,
+			)
+		}
 		id := info.AssetBasicInfo.LayerZeroChainID
 		// check that the chain is registered
 		if _, ok := lzIDs[id]; !ok {
@@ -73,14 +81,6 @@ func (gs GenesisState) Validate() error {
 			info.AssetBasicInfo.LayerZeroChainID,
 			"", address,
 		)
-		// check that it is not a duplicate.
-		if _, ok := tokens[assetID]; ok {
-			return errorsmod.Wrapf(
-				ErrInvalidGenesisData,
-				"duplicate assetID: %s",
-				assetID,
-			)
-		}
 		// ensure there are no deposits for this asset already (since they are handled in the
 		// genesis exec). while it is possible to remove this field entirely (and assume 0),
 		// i did not do so in order to make the genesis state more explicit.
@@ -91,7 +91,15 @@ func (gs GenesisState) Validate() error {
 				assetID,
 			)
 		}
-		tokens[assetID] = struct{}{}
+		// check that it is not a duplicate.
+		if _, ok := tokenSupplies[assetID]; ok {
+			return errorsmod.Wrapf(
+				ErrInvalidGenesisData,
+				"duplicate assetID: %s",
+				assetID,
+			)
+		}
+		tokenSupplies[assetID] = info.AssetBasicInfo.TotalSupply
 	}
 	// staker_asset.go -> check deposits and withdrawals and that there is no unbonding.
 	stakers := make(map[string]struct{}, len(gs.Deposits))
@@ -148,7 +156,7 @@ func (gs GenesisState) Validate() error {
 			// check that the asset is registered
 			// no need to check for the validity of the assetID, since
 			// an invalid assetID cannot be in the tokens map.
-			if _, ok := tokens[assetID]; !ok {
+			if _, ok := tokenSupplies[assetID]; !ok {
 				return errorsmod.Wrapf(
 					ErrInvalidGenesisData,
 					"unknown assetID for deposit %s: %s",
@@ -196,6 +204,14 @@ func (gs GenesisState) Validate() error {
 				return errorsmod.Wrapf(
 					ErrInvalidGenesisData,
 					"withdrawable amount exceeds total deposit amount for %s: %+v",
+					assetID, info,
+				)
+			}
+			// check that deposit amount does not exceed supply.
+			if info.TotalDepositAmount.GT(tokenSupplies[assetID]) {
+				return errorsmod.Wrapf(
+					ErrInvalidGenesisData,
+					"deposit amount exceeds max supply for %s: %+v",
 					assetID, info,
 				)
 			}
