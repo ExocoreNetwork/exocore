@@ -165,6 +165,9 @@ func (suite *GenesisTestSuite) TestValidateGenesis() {
 			malleate: func(gs *types.GenesisState) {
 				gs.Tokens[0].StakingTotalAmount = math.NewInt(1)
 			},
+			unmalleate: func(gs *types.GenesisState) {
+				gs.Tokens[0].StakingTotalAmount = math.NewInt(0)
+			},
 		},
 		{
 			name: "invalid genesis due to negative supply amount for token",
@@ -201,6 +204,9 @@ func (suite *GenesisTestSuite) TestValidateGenesis() {
 			malleate: func(gs *types.GenesisState) {
 				gs.Deposits[0].StakerID = strings.ToUpper(gs.Deposits[0].StakerID)
 			},
+			unmalleate: func(gs *types.GenesisState) {
+				gs.Deposits[0].StakerID = strings.ToLower(gs.Deposits[0].StakerID)
+			},
 		},
 		{
 			name: "invalid genesis due to invalid staker id",
@@ -217,6 +223,9 @@ func (suite *GenesisTestSuite) TestValidateGenesis() {
 			expPass: false,
 			malleate: func(gs *types.GenesisState) {
 				gs.Deposits[0].StakerID = "fakeStaker"
+			},
+			unmalleate: func(gs *types.GenesisState) {
+				gs.Deposits[0].StakerID = stakerID
 			},
 		},
 		{
@@ -235,6 +244,9 @@ func (suite *GenesisTestSuite) TestValidateGenesis() {
 			malleate: func(gs *types.GenesisState) {
 				gs.Deposits[0].StakerID = "fakeStaker_0x63"
 			},
+			unmalleate: func(gs *types.GenesisState) {
+				gs.Deposits[0].StakerID = stakerID
+			},
 		},
 		{
 			name: "invalid genesis due to non hex staker id",
@@ -251,6 +263,9 @@ func (suite *GenesisTestSuite) TestValidateGenesis() {
 			expPass: false,
 			malleate: func(gs *types.GenesisState) {
 				gs.Deposits[0].StakerID = "fakeNonHexStaker_0x65"
+			},
+			unmalleate: func(gs *types.GenesisState) {
+				gs.Deposits[0].StakerID = stakerID
 			},
 		},
 		{
@@ -305,6 +320,9 @@ func (suite *GenesisTestSuite) TestValidateGenesis() {
 					gs.Deposits[0].Deposits,
 					genesisDeposit.Deposits[0],
 				)
+			},
+			unmalleate: func(gs *types.GenesisState) {
+				gs.Deposits[0].Deposits = gs.Deposits[0].Deposits[:1]
 			},
 		},
 		{
@@ -449,6 +467,8 @@ func (suite *GenesisTestSuite) TestValidateGenesis() {
 		tc := tc
 		if tc.malleate != nil {
 			tc.malleate(tc.genState)
+			// check that unmalleate is not nil
+			suite.Require().NotNil(tc.unmalleate, tc.name)
 		}
 		err := tc.genState.Validate()
 		if tc.expPass {
