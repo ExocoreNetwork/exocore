@@ -1,5 +1,11 @@
 package types
 
+import (
+	errorsmod "cosmossdk.io/errors"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/ethereum/go-ethereum/common"
+)
+
 func NewGenesisState(
 	operators []OperatorInfo,
 	records []OperatorConsKeyRecord,
@@ -18,6 +24,103 @@ func DefaultGenesis() *GenesisState {
 // Validate performs basic genesis state validation returning an error upon any
 // failure.
 func (gs GenesisState) Validate() error {
-	// TODO
+	operators := make(map[string]struct{}, len(gs.Operators))
+	for _, op := range gs.Operators {
+		address := op.EarningsAddr
+		if _, found := operators[address]; found {
+			return errorsmod.Wrapf(
+				ErrInvalidGenesisData,
+				"duplicate operator address %s", address,
+			)
+		}
+		_, err := sdk.AccAddressFromBech32(address)
+		if err != nil {
+			return errorsmod.Wrapf(
+				ErrInvalidGenesisData,
+				"invalid operator address %s: %s", address, err,
+			)
+		}
+		operators[address] = struct{}{}
+		if op.ClientChainEarningsAddr != nil {
+			lzIDs := make(map[uint64]struct{}, len(op.ClientChainEarningsAddr.EarningInfoList))
+			for _, info := range op.ClientChainEarningsAddr.EarningInfoList {
+				lzID := info.LzClientChainID
+				if _, found := lzIDs[lzID]; found {
+					return errorsmod.Wrapf(
+						ErrInvalidGenesisData,
+						"duplicate lz client chain id %d", lzID,
+					)
+				}
+				lzIDs[lzID] = struct{}{}
+				// TODO: consider removing this check for non-EVM chains
+				if !common.IsHexAddress(info.ClientChainEarningAddr) {
+					return errorsmod.Wrapf(
+						ErrInvalidGenesisData,
+						"invalid client chain earning address %s", info.ClientChainEarningAddr,
+					)
+				}
+			}
+		}
+	}
+	operatorRecords := make(map[string]struct{}, len(gs.OperatorRecords))
+	keysByChainID := make(map[string]map[string]struct{})
+	for _, record := range gs.OperatorRecords {
+		addr := record.OperatorAddress
+		if _, err := sdk.AccAddressFromBech32(addr); err != nil {
+			return errorsmod.Wrapf(
+				ErrInvalidGenesisData,
+				"invalid operator address %s: %s", record.OperatorAddress, err,
+			)
+		}
+		if _, found := operatorRecords[addr]; found {
+			return errorsmod.Wrapf(
+				ErrInvalidGenesisData,
+				"duplicate operator record for operator %s", addr,
+			)
+		}
+		operatorRecords[addr] = struct{}{}
+		if _, opFound := operators[addr]; !opFound {
+			return errorsmod.Wrapf(
+				ErrInvalidGenesisData,
+				"operator record for un-registered operator %s", addr,
+			)
+		}
+		for _, chain := range record.Chains {
+			consensusKeyString := chain.ConsensusKey
+			if _, found := keysByChainID[chain.ChainID]; !found {
+				keysByChainID[chain.ChainID] = make(map[string]struct{})
+			}
+			if _, err := HexStringToPubKey(consensusKeyString); err != nil {
+				return errorsmod.Wrapf(
+					ErrInvalidGenesisData,
+					"invalid consensus key for operator %s: %s", addr, err,
+				)
+			}
+			// within a chain id, there should not be duplicate consensus keys
+			if _, found := keysByChainID[chain.ChainID][consensusKeyString]; found {
+				return errorsmod.Wrapf(
+					ErrInvalidGenesisData,
+					"duplicate consensus key for operator %s on chain %s", addr, chain.ChainID,
+				)
+			}
+			keysByChainID[chain.ChainID][consensusKeyString] = struct{}{}
+		}
+	}
+	// i do not know that chain id here, so i cannot check whether
+	// each registered operator has a key defined for the chain id. but i can:
+	// ensure that there is a consensus key record (of any chain id) for each operator.
+	// for bootstrapping, this is bound to happen since the operator registration is contingent
+	// on the operator having a consensus key for the chain id. however, in the future,
+	// it may be possible for an operator to opt into an AVS which does not have a consensus
+	// key requirement, so this check could be removed if we set up the Export case. but i
+	// think it is better to keep it for now.
+	if len(operators) != len(operatorRecords) {
+		// operatorRecords is always a subset of operators, since we do not add any operator
+		// to operatorRecords unless it is in operators.
+		return errorsmod.Wrapf(
+			ErrInvalidGenesisData,
+			"operator addresses in operators and operator records do not match",
+		)
+	}
 	return nil
 }
