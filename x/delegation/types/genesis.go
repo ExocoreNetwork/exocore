@@ -27,8 +27,12 @@ func (gs GenesisState) Validate() error {
 	for _, level1 := range gs.Delegations {
 		stakerID := level1.StakerID
 		// validate staker ID
-		if _, _, err := assetstypes.ValidateID(stakerID, true); err != nil {
-			return errorsmod.Wrapf(err, "invalid staker ID %s", stakerID)
+		var stakerClientChainID uint64
+		var err error
+		if _, stakerClientChainID, err = assetstypes.ValidateID(stakerID, true); err != nil {
+			return errorsmod.Wrapf(
+				ErrInvalidGenesisData, "invalid staker ID %s: %s", stakerID, err,
+			)
 		}
 		// check for duplicate stakers
 		if _, ok := stakers[stakerID]; ok {
@@ -38,23 +42,35 @@ func (gs GenesisState) Validate() error {
 		assets := make(map[string]struct{}, len(level1.Delegations))
 		for _, level2 := range level1.Delegations {
 			assetID := level2.AssetID
-			// validate asset ID
-			if _, _, err := assetstypes.ValidateID(assetID, true); err != nil {
-				return errorsmod.Wrapf(err, "invalid asset ID %s", assetID)
-			}
 			// check for duplicate assets
 			if _, ok := assets[assetID]; ok {
 				return errorsmod.Wrapf(ErrInvalidGenesisData, "duplicate asset ID %s", assetID)
 			}
 			assets[assetID] = struct{}{}
-			givenTotal := level2.TotalDelegatedAmount
-			if givenTotal.IsNegative() || givenTotal.IsNil() {
+			// validate asset ID
+			var assetClientChainID uint64
+			if _, assetClientChainID, err = assetstypes.ValidateID(assetID, true); err != nil {
 				return errorsmod.Wrapf(
-					ErrInvalidGenesisData, "invalid total delegated amount %d", givenTotal,
+					ErrInvalidGenesisData, "invalid asset ID %s: %s", assetID, err,
+				)
+			}
+			if assetClientChainID != stakerClientChainID {
+				// a staker from chain A is delegating an asset on chain B, which is not
+				// something we support right now.
+				return errorsmod.Wrapf(
+					ErrInvalidGenesisData,
+					"asset %s client chain ID %d does not match staker %s client chain ID %d",
+					assetID, assetClientChainID, stakerID, stakerClientChainID,
+				)
+			}
+			givenTotal := level2.TotalDelegatedAmount
+			// in this if condition, check nil first to avoid panic
+			if givenTotal.IsNil() || givenTotal.IsNegative() {
+				return errorsmod.Wrapf(
+					ErrInvalidGenesisData, "invalid total delegated amount %s", givenTotal,
 				)
 			}
 			calculatedTotal := sdk.ZeroInt()
-			operators := make(map[string]struct{}, len(level2.PerOperatorAmounts))
 			for operator, wrappedAmount := range level2.PerOperatorAmounts {
 				// check supplied amount
 				if wrappedAmount == nil {
@@ -63,10 +79,10 @@ func (gs GenesisState) Validate() error {
 					)
 				}
 				amount := wrappedAmount.Amount
-				if amount.IsNegative() || amount.IsNil() {
+				if amount.IsNil() || amount.IsNegative() {
 					return errorsmod.Wrapf(
 						ErrInvalidGenesisData,
-						"invalid operator amount %d for operator %s", amount, operator,
+						"invalid operator amount %s for operator %s", amount, operator,
 					)
 				}
 				// check operator address
@@ -76,20 +92,13 @@ func (gs GenesisState) Validate() error {
 						"invalid operator address for operator %s", operator,
 					)
 				}
-				// check for duplicate operators
-				if _, ok := operators[operator]; ok {
-					return errorsmod.Wrapf(
-						ErrInvalidGenesisData,
-						"duplicate operator %s for asset %s", operator, assetID,
-					)
-				}
-				operators[operator] = struct{}{}
+				// no need to check for duplicate operators, since it is already a map.
 				calculatedTotal = calculatedTotal.Add(amount)
 			}
 			if !givenTotal.Equal(calculatedTotal) {
 				return errorsmod.Wrapf(
 					ErrInvalidGenesisData,
-					"total delegated amount %d does not match calculated total %d for asset %s",
+					"total delegated amount %s does not match calculated total %s for asset %s",
 					givenTotal, calculatedTotal, assetID,
 				)
 			}

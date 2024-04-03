@@ -95,15 +95,28 @@ import (
 	}, nil
 }*/
 
-// DelegateTo : It doesn't need to check the active status of the operator in middlewares when delegating assets to the operator. This is because it adds assets to the operator's amount. But it needs to check if operator has been slashed or frozen.
-func (k *Keeper) DelegateTo(ctx sdk.Context, params *delegationtype.DelegationOrUndelegationParams) error {
+// DelegateTo : It doesn't need to check the active status of the operator in middlewares when
+// delegating assets to the operator. This is because it adds assets to the operator's amount.
+// But it needs to check if operator has been slashed or frozen.
+func (k Keeper) DelegateTo(ctx sdk.Context, params *delegationtype.DelegationOrUndelegationParams) error {
+	return k.delegateTo(ctx, params, true)
+}
+
+// delegateTo is the internal private version of DelegateTo. if the notGenesis parameter is
+// false, the operator keeper and the delegation hooks are not called.
+func (k *Keeper) delegateTo(
+	ctx sdk.Context,
+	params *delegationtype.DelegationOrUndelegationParams,
+	notGenesis bool,
+) error {
 	// check if the delegatedTo address is an operator
 	if !k.operatorKeeper.IsOperator(ctx, params.OperatorAddress) {
 		return errorsmod.Wrap(delegationtype.ErrOperatorNotExist, fmt.Sprintf("input operatorAddr is:%s", params.OperatorAddress))
 	}
 
 	// check if the operator has been slashed or frozen
-	if k.slashKeeper.IsOperatorFrozen(ctx, params.OperatorAddress) {
+	// skip the check if not genesis (or chain restart)
+	if notGenesis && k.slashKeeper.IsOperatorFrozen(ctx, params.OperatorAddress) {
 		return delegationtype.ErrOperatorIsFrozen
 	}
 
@@ -153,14 +166,16 @@ func (k *Keeper) DelegateTo(ctx sdk.Context, params *delegationtype.DelegationOr
 	if err != nil {
 		return err
 	}
-	// call operator module to bond the increased assets to the opted-in AVS
-	err = k.operatorKeeper.UpdateOptedInAssetsState(ctx, stakerID, assetID, params.OperatorAddress.String(), params.OpAmount)
-	if err != nil {
-		return err
-	}
 
-	// call the hooks registered by the other modules
-	k.Hooks().AfterDelegation(ctx, params.OperatorAddress)
+	if notGenesis {
+		// call operator module to bond the increased assets to the opted-in AVS
+		err = k.operatorKeeper.UpdateOptedInAssetsState(ctx, stakerID, assetID, params.OperatorAddress.String(), params.OpAmount)
+		if err != nil {
+			return err
+		}
+		// call the hooks registered by the other modules
+		k.Hooks().AfterDelegation(ctx, params.OperatorAddress)
+	}
 	return nil
 }
 
