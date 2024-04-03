@@ -127,13 +127,13 @@ func (s *DelegationPrecompileSuite) TestRunDelegateToThroughClientChain() {
 		returnBytes []byte
 	}{
 		{
-			name: "fail - delegateToThroughClientChain transaction will fail because the exocoreLzAppAddress haven't been stored",
+			name: "fail - delegateToThroughClientChain transaction will fail because the exocoreLzAppAddress is mismatched",
 			malleate: func() (common.Address, []byte) {
 				return commonMalleate()
 			},
 			readOnly:    false,
 			expPass:     false,
-			errContains: assetstype.ErrNoParamsKey.Error(),
+			errContains: assetstype.ErrNotEqualToLzAppAddr.Error(),
 		},
 		{
 			name: "fail - delegateToThroughClientChain transaction will fail because the contract caller isn't the exoCoreLzAppAddr",
