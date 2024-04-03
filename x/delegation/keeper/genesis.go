@@ -37,6 +37,8 @@ func (k Keeper) InitGenesis(
 					OperatorAddress: accAddress,
 					StakerAddress:   stakerAddressBytes.Bytes(),
 					OpAmount:        amount,
+					// the uninitialized members are not used in this context
+					// they are the LzNonce and TxHash
 				}
 				if err := k.delegateTo(ctx, delegationParams, false); err != nil {
 					panic(err)
