@@ -26,7 +26,9 @@ func (k Keeper) InitGenesis(
 			assetAddress, _, _ := assetstype.ParseID(assetID)
 			// we have checked IsHexAddress already
 			assetAddressBytes := common.HexToAddress(assetAddress)
-			for operator, wrappedAmount := range level2.PerOperatorAmounts {
+			for _, level3 := range level2.PerOperatorAmounts {
+				operator := level3.Key
+				wrappedAmount := level3.Value
 				amount := wrappedAmount.Amount
 				// #nosec G703 // already validated
 				accAddress, _ := sdk.AccAddressFromBech32(operator)

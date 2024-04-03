@@ -37,8 +37,13 @@ func (suite *GenesisTestSuite) TestValidateGenesis() {
 				{
 					AssetID:              assetID,
 					TotalDelegatedAmount: math.NewInt(1000),
-					PerOperatorAmounts: map[string]*types.ValueField{
-						operatorAddress.String(): {Amount: math.NewInt(1000)},
+					PerOperatorAmounts: []types.KeyValue{
+						{
+							Key: operatorAddress.String(),
+							Value: &types.ValueField{
+								Amount: math.NewInt(1000),
+							},
+						},
 					},
 				},
 			},
@@ -154,11 +159,10 @@ func (suite *GenesisTestSuite) TestValidateGenesis() {
 			genState: types.NewGenesis(delegations),
 			expPass:  false,
 			malleate: func(gs *types.GenesisState) {
-				gs.Delegations[0].Delegations[0].PerOperatorAmounts[operatorAddress.String()] =
-					nil
+				gs.Delegations[0].Delegations[0].PerOperatorAmounts[0].Value = nil
 			},
 			unmalleate: func(gs *types.GenesisState) {
-				gs.Delegations[0].Delegations[0].PerOperatorAmounts[operatorAddress.String()] =
+				gs.Delegations[0].Delegations[0].PerOperatorAmounts[0].Value =
 					&types.ValueField{Amount: math.NewInt(1000)}
 			},
 		},
@@ -167,11 +171,11 @@ func (suite *GenesisTestSuite) TestValidateGenesis() {
 			genState: types.NewGenesis(delegations),
 			expPass:  false,
 			malleate: func(gs *types.GenesisState) {
-				gs.Delegations[0].Delegations[0].PerOperatorAmounts[operatorAddress.String()] =
+				gs.Delegations[0].Delegations[0].PerOperatorAmounts[0].Value =
 					&types.ValueField{}
 			},
 			unmalleate: func(gs *types.GenesisState) {
-				gs.Delegations[0].Delegations[0].PerOperatorAmounts[operatorAddress.String()] =
+				gs.Delegations[0].Delegations[0].PerOperatorAmounts[0].Value =
 					&types.ValueField{Amount: math.NewInt(1000)}
 			},
 		},
@@ -180,11 +184,11 @@ func (suite *GenesisTestSuite) TestValidateGenesis() {
 			genState: types.NewGenesis(delegations),
 			expPass:  false,
 			malleate: func(gs *types.GenesisState) {
-				gs.Delegations[0].Delegations[0].PerOperatorAmounts[operatorAddress.String()] =
+				gs.Delegations[0].Delegations[0].PerOperatorAmounts[0].Value =
 					&types.ValueField{Amount: math.NewInt(-1)}
 			},
 			unmalleate: func(gs *types.GenesisState) {
-				gs.Delegations[0].Delegations[0].PerOperatorAmounts[operatorAddress.String()] =
+				gs.Delegations[0].Delegations[0].PerOperatorAmounts[0].Value =
 					&types.ValueField{Amount: math.NewInt(1000)}
 			},
 		},
@@ -193,11 +197,11 @@ func (suite *GenesisTestSuite) TestValidateGenesis() {
 			genState: types.NewGenesis(delegations),
 			expPass:  false,
 			malleate: func(gs *types.GenesisState) {
-				gs.Delegations[0].Delegations[0].PerOperatorAmounts["invalid"] =
-					&types.ValueField{Amount: math.NewInt(1000)}
+				gs.Delegations[0].Delegations[0].PerOperatorAmounts[0].Key = "invalid"
 			},
 			unmalleate: func(gs *types.GenesisState) {
-				delete(gs.Delegations[0].Delegations[0].PerOperatorAmounts, "invalid")
+				gs.Delegations[0].Delegations[0].PerOperatorAmounts[0].Key =
+					operatorAddress.String()
 			},
 		},
 		{
@@ -205,11 +209,11 @@ func (suite *GenesisTestSuite) TestValidateGenesis() {
 			genState: types.NewGenesis(delegations),
 			expPass:  false,
 			malleate: func(gs *types.GenesisState) {
-				gs.Delegations[0].Delegations[0].PerOperatorAmounts[operatorAddress.String()] =
+				gs.Delegations[0].Delegations[0].PerOperatorAmounts[0].Value =
 					&types.ValueField{Amount: math.NewInt(2000)}
 			},
 			unmalleate: func(gs *types.GenesisState) {
-				gs.Delegations[0].Delegations[0].PerOperatorAmounts[operatorAddress.String()] =
+				gs.Delegations[0].Delegations[0].PerOperatorAmounts[0].Value =
 					&types.ValueField{Amount: math.NewInt(1000)}
 			},
 		},

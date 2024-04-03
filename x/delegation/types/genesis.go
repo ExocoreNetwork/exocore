@@ -71,7 +71,10 @@ func (gs GenesisState) Validate() error {
 				)
 			}
 			calculatedTotal := sdk.ZeroInt()
-			for operator, wrappedAmount := range level2.PerOperatorAmounts {
+			operators := make(map[string]struct{}, len(level2.PerOperatorAmounts))
+			for _, level3 := range level2.PerOperatorAmounts {
+				operator := level3.Key
+				wrappedAmount := level3.Value
 				// check supplied amount
 				if wrappedAmount == nil {
 					return errorsmod.Wrapf(
@@ -92,7 +95,14 @@ func (gs GenesisState) Validate() error {
 						"invalid operator address for operator %s", operator,
 					)
 				}
-				// no need to check for duplicate operators, since it is already a map.
+				// check for duplicate operators
+				if _, ok := operators[operator]; ok {
+					return errorsmod.Wrapf(
+						ErrInvalidGenesisData,
+						"duplicate operator %s for asset %s", operator, assetID,
+					)
+				}
+				operators[operator] = struct{}{}
 				calculatedTotal = calculatedTotal.Add(amount)
 			}
 			if !givenTotal.Equal(calculatedTotal) {
