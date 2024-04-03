@@ -1,8 +1,6 @@
 package types
 
 import (
-	"strings"
-
 	errorsmod "cosmossdk.io/errors"
 	"cosmossdk.io/math"
 	"github.com/ethereum/go-ethereum/common"
@@ -115,17 +113,9 @@ func (gs GenesisState) Validate() error {
 	for _, depositByStaker := range gs.Deposits {
 		stakerID := depositByStaker.StakerID
 		// validate the stakerID
-		if stakerID != strings.ToLower(stakerID) {
-			return errorsmod.Wrapf(
-				ErrInvalidGenesisData,
-				"stakerID not lowercase: %s",
-				stakerID,
-			)
-		}
-		var stakerClientAddress string
-		var lzID uint64
+		var stakerClientChainID uint64
 		var err error
-		if stakerClientAddress, lzID, err = ParseID(stakerID); err != nil {
+		if _, stakerClientChainID, err = ValidateID(stakerID, true); err != nil {
 			return errorsmod.Wrapf(
 				ErrInvalidGenesisData,
 				"invalid stakerID: %s",
@@ -133,20 +123,11 @@ func (gs GenesisState) Validate() error {
 			)
 		}
 		// check that the chain is registered
-		if _, ok := lzIDs[lzID]; !ok {
+		if _, ok := lzIDs[stakerClientChainID]; !ok {
 			return errorsmod.Wrapf(
 				ErrInvalidGenesisData,
 				"unknown LayerZeroChainID for staker %s: %d",
-				stakerID, lzID,
-			)
-		}
-		// build for 0x addresses only.
-		// TODO: consider removing this check for non-EVM client chains.
-		if !common.IsHexAddress(stakerClientAddress) {
-			return errorsmod.Wrapf(
-				ErrInvalidGenesisData,
-				"not hex staker address for staker %s: %s",
-				stakerID, stakerClientAddress,
+				stakerID, stakerClientChainID,
 			)
 		}
 		// check that it is not a duplicate
@@ -169,6 +150,18 @@ func (gs GenesisState) Validate() error {
 				return errorsmod.Wrapf(
 					ErrInvalidGenesisData,
 					"unknown assetID for deposit %s: %s",
+					stakerID, assetID,
+				)
+			}
+			// #nosec G703 // if it's invalid, we will not reach here.
+			_, assetClientChainID, _ := ParseID(assetID)
+			if assetClientChainID != stakerClientChainID {
+				// we can reach here if there are multiple chains
+				// and it tries to deposit assets from one chain
+				// under a staker from another chain.
+				return errorsmod.Wrapf(
+					ErrInvalidGenesisData,
+					"mismatched client chain IDs for staker %s and asset %s",
 					stakerID, assetID,
 				)
 			}
