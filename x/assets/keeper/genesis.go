@@ -25,7 +25,7 @@ func (k Keeper) InitGenesis(ctx sdk.Context, data *types.GenesisState) {
 		}
 	}
 	// staker_asset.go (deposits)
-	// we simulate the behaviour of the depositKeeper.Deposit call
+	// we simulate the behavior of the depositKeeper.Deposit call
 	// it constructs the stakerID and the assetID, which we have validated previously.
 	// it checks that the deposited amount is not negative, which we have already done.
 	// and that the asset is registered, which we have also already done.

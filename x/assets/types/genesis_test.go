@@ -38,7 +38,8 @@ func (suite *GenesisTestSuite) TestValidateGenesis() {
 		LayerZeroChainID:   101,
 		AddressLength:      20,
 	}
-	tokenAddress := "0xdAC17F958D2ee523a2206206994597C13D831ec7"
+	// do not hardcode the address to avoid gitleaks complaining.
+	tokenAddress := utiltx.GenerateAddress().String()
 	usdtClientChainAsset := types.AssetInfo{
 		Name:             "Tether USD",
 		Symbol:           "USDT",
