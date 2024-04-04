@@ -1,8 +1,13 @@
 package keeper
 
 import (
+	"sort"
+
 	"cosmossdk.io/math"
+	operatortypes "github.com/ExocoreNetwork/exocore/x/operator/types"
 	abci "github.com/cometbft/cometbft/abci/types"
+	tmtypes "github.com/cometbft/cometbft/types"
+	cryptocodec "github.com/cosmos/cosmos-sdk/crypto/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	evidencetypes "github.com/cosmos/cosmos-sdk/x/evidence/types"
 	genutiltypes "github.com/cosmos/cosmos-sdk/x/genutil/types"
@@ -175,7 +180,7 @@ func (k Keeper) IterateBondedValidatorsByPower(
 	// sort.SliceStable(validators, func(i, j int) bool {
 	// 	return validators[i].Power > validators[j].Power
 	// })
-	// for i, v := range k.GetAllExocoreValidators(ctx) {
+	// for i, v := range validators {
 	// 	pk, err := v.ConsPubKey()
 	// 	if err != nil {
 	// 		// since we stored the validator in the first place, something like this
@@ -214,4 +219,40 @@ func (k Keeper) IterateDelegations(
 	func(int64, stakingtypes.DelegationI) bool,
 ) {
 	panic("unimplemented on this keeper")
+}
+
+func (k Keeper) WriteValidators(ctx sdk.Context) ([]tmtypes.GenesisValidator, error) {
+	validators := k.GetAllExocoreValidators(ctx)
+	sort.SliceStable(validators, func(i, j int) bool {
+		return validators[i].Power > validators[j].Power
+	})
+	vals := make([]tmtypes.GenesisValidator, len(validators))
+	var retErr error
+	for i, val := range validators {
+		pk, err := val.ConsPubKey()
+		if err != nil {
+			retErr = err
+			break
+		}
+		tmPk, err := cryptocodec.ToTmPubKeyInterface(pk)
+		if err != nil {
+			retErr = err
+			break
+		}
+		consAddress := sdk.GetConsAddress(pk)
+		found, addr := k.operatorKeeper.GetOperatorAddressForChainIDAndConsAddr(
+			ctx, ctx.ChainID(), consAddress,
+		)
+		if !found {
+			retErr = operatortypes.ErrNoKeyInTheStore
+			break
+		}
+		vals[i] = tmtypes.GenesisValidator{
+			Address: consAddress.Bytes(),
+			PubKey:  tmPk,
+			Power:   val.Power,
+			Name:    addr.String(), // TODO
+		}
+	}
+	return vals, retErr
 }
