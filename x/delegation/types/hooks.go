@@ -29,9 +29,3 @@ func (hooks MultiDelegationHooks) AfterUndelegationStarted(
 	}
 	return nil
 }
-
-func (hooks MultiDelegationHooks) AfterUndelegationCompleted(ctx sdk.Context, addr sdk.AccAddress) {
-	for _, hook := range hooks {
-		hook.AfterUndelegationCompleted(ctx, addr)
-	}
-}

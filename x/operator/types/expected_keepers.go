@@ -123,7 +123,7 @@ type SlashKeeper interface {
 	IsOperatorFrozen(ctx sdk.Context, addr sdk.AccAddress) bool
 }
 
-type OperatorConsentHooks interface {
+type OperatorHooks interface {
 	// This hook is called when an operator opts in to a chain.
 	AfterOperatorOptIn(
 		ctx sdk.Context, addr sdk.AccAddress, chainID string,

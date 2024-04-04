@@ -20,9 +20,8 @@ type Keeper struct {
 	oracleKeeper     operatortypes.OracleKeeper
 	avsKeeper        operatortypes.AvsKeeper
 
-	// add for dogfood
-	hooks       operatortypes.OperatorConsentHooks // set separately via call to SetHooks
-	slashKeeper operatortypes.SlashKeeper          // for jailing and unjailing check TODO(mm)
+	hooks       operatortypes.OperatorHooks // set separately via call to SetHooks
+	slashKeeper operatortypes.SlashKeeper   // for jailing and unjailing check TODO(mm)
 }
 
 func NewKeeper(

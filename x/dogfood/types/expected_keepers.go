@@ -22,24 +22,6 @@ type DogfoodHooks interface {
 	) error
 }
 
-// OperatorHooks is the interface for the operator module's hooks. The functions are called
-// whenever an operator opts in to a Cosmos chain, opts out of a Cosmos chain, or replaces their
-// public key with another one.
-type OperatorHooks interface {
-	AfterOperatorOptIn(sdk.Context, sdk.AccAddress, string, tmprotocrypto.PublicKey)
-	AfterOperatorKeyReplacement(
-		sdk.Context, sdk.AccAddress, tmprotocrypto.PublicKey, tmprotocrypto.PublicKey, string,
-	)
-	AfterOperatorOptOutInitiated(sdk.Context, sdk.AccAddress, string, tmprotocrypto.PublicKey)
-}
-
-// DelegationHooks represent the event hooks for delegation module.
-type DelegationHooks interface {
-	AfterDelegation(sdk.Context, sdk.AccAddress)
-	AfterUndelegationStarted(sdk.Context, sdk.AccAddress, []byte) error
-	AfterUndelegationCompleted(sdk.Context, sdk.AccAddress, []byte)
-}
-
 // OperatorKeeper represents the expected keeper interface for the operator module.
 type OperatorKeeper interface {
 	GetOperatorConsKeyForChainID(

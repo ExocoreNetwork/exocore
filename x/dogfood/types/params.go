@@ -9,7 +9,7 @@ import (
 	"gopkg.in/yaml.v2"
 
 	assetstypes "github.com/ExocoreNetwork/exocore/x/assets/types"
-	epochtypes "github.com/evmos/evmos/v14/x/epochs/types"
+	epochstypes "github.com/evmos/evmos/v14/x/epochs/types"
 )
 
 var _ paramtypes.ParamSet = (*Params)(nil)
@@ -22,7 +22,7 @@ const (
 	DefaultEpochsUntilUnbonded = 7
 	// DefaultEpochIdentifier is the epoch identifier which is used, by default, to identify the
 	// epoch. Note that the options include week, day or hour.
-	DefaultEpochIdentifier = epochtypes.HourEpochID
+	DefaultEpochIdentifier = epochstypes.HourEpochID
 	// DefaultMaxValidators is the default maximum number of bonded validators. It is defined as
 	// a copy here so that we can use a value other than that in x/staking, if necessary.
 	DefaultMaxValidators = stakingtypes.DefaultMaxValidators
@@ -86,7 +86,7 @@ func (p *Params) ParamSetPairs() paramtypes.ParamSetPairs {
 		paramtypes.NewParamSetPair(
 			KeyEpochIdentifier,
 			&p.EpochIdentifier,
-			epochtypes.ValidateEpochIdentifierInterface,
+			epochstypes.ValidateEpochIdentifierInterface,
 		),
 		paramtypes.NewParamSetPair(
 			stakingtypes.KeyMaxValidators,
@@ -111,7 +111,7 @@ func (p Params) Validate() error {
 	if err := ValidatePositiveUint32(p.EpochsUntilUnbonded); err != nil {
 		return fmt.Errorf("epochs until unbonded: %w", err)
 	}
-	if err := epochtypes.ValidateEpochIdentifierInterface(p.EpochIdentifier); err != nil {
+	if err := epochstypes.ValidateEpochIdentifierInterface(p.EpochIdentifier); err != nil {
 		return fmt.Errorf("epoch identifier: %w", err)
 	}
 	if err := ValidatePositiveUint32(p.MaxValidators); err != nil {

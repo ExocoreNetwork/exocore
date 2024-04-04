@@ -1,7 +1,7 @@
 package keeper
 
 import (
-	"github.com/ExocoreNetwork/exocore/x/dogfood/types"
+	delegationtypes "github.com/ExocoreNetwork/exocore/x/delegation/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
@@ -12,7 +12,7 @@ type DelegationHooksWrapper struct {
 }
 
 // Interface guard
-var _ types.DelegationHooks = DelegationHooksWrapper{}
+var _ delegationtypes.DelegationHooks = DelegationHooksWrapper{}
 
 // DelegationHooks returns the delegation hooks wrapper. It follows the "accept interfaces,
 // return concretes" pattern.
@@ -50,11 +50,4 @@ func (wrapper DelegationHooksWrapper) AfterUndelegationStarted(
 	}
 	wrapper.keeper.AppendUndelegationToMature(ctx, unbondingCompletionEpoch, recordKey)
 	return wrapper.keeper.delegationKeeper.IncrementUndelegationHoldCount(ctx, recordKey)
-}
-
-// AfterUndelegationCompleted is called after an undelegation is completed.
-func (DelegationHooksWrapper) AfterUndelegationCompleted(
-	sdk.Context, sdk.AccAddress, []byte,
-) {
-	// no-op
 }
