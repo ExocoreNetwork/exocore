@@ -26,7 +26,7 @@ type DogfoodHooks interface {
 type OperatorKeeper interface {
 	GetOperatorConsKeyForChainID(
 		sdk.Context, sdk.AccAddress, string,
-	) (bool, tmprotocrypto.PublicKey, error)
+	) (bool, *tmprotocrypto.PublicKey, error)
 	IsOperatorOptingOutFromChainID(
 		sdk.Context, sdk.AccAddress, string,
 	) bool
@@ -42,7 +42,7 @@ type OperatorKeeper interface {
 	// whether permanently or temporarily.
 	GetActiveOperatorsForChainID(
 		sdk.Context, string,
-	) ([]sdk.AccAddress, []tmprotocrypto.PublicKey)
+	) ([]sdk.AccAddress, []*tmprotocrypto.PublicKey)
 }
 
 // DelegationKeeper represents the expected keeper interface for the delegation module.

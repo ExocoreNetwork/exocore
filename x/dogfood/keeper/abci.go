@@ -94,7 +94,7 @@ func (k Keeper) EndBlock(ctx sdk.Context) []abci.ValidatorUpdate {
 		}
 		// find the previous power.
 		key := keys[i]
-		address, err := operatortypes.TMCryptoPublicKeyToConsAddr(&key)
+		address, err := operatortypes.TMCryptoPublicKeyToConsAddr(key)
 		if err != nil {
 			// indicates an error in deserialization, and should never happen.
 			continue
@@ -107,7 +107,7 @@ func (k Keeper) EndBlock(ctx sdk.Context) []abci.ValidatorUpdate {
 		// either the key was not in the previous set,
 		// or the power has changed.
 		res = append(res, abci.ValidatorUpdate{
-			PubKey: key,
+			PubKey: *key,
 			// note that this is the final power and not the change in power.
 			Power: power,
 		})
@@ -139,9 +139,9 @@ func (k Keeper) EndBlock(ctx sdk.Context) []abci.ValidatorUpdate {
 // the sorting is descending, so the highest power is first.
 func sortByPower(
 	operatorAddrs []sdk.AccAddress,
-	pubKeys []tmprotocrypto.PublicKey,
+	pubKeys []*tmprotocrypto.PublicKey,
 	powers []int64,
-) ([]sdk.AccAddress, []tmprotocrypto.PublicKey, []int64) {
+) ([]sdk.AccAddress, []*tmprotocrypto.PublicKey, []int64) {
 	// Create a slice of indices
 	indices := make([]int, len(powers))
 	for i := range indices {
@@ -155,7 +155,7 @@ func sortByPower(
 
 	// Reorder all slices using the sorted indices
 	sortedOperatorAddrs := make([]sdk.AccAddress, len(operatorAddrs))
-	sortedPubKeys := make([]tmprotocrypto.PublicKey, len(pubKeys))
+	sortedPubKeys := make([]*tmprotocrypto.PublicKey, len(pubKeys))
 	sortedPowers := make([]int64, len(powers))
 	for i, idx := range indices {
 		sortedOperatorAddrs[i] = operatorAddrs[idx]
