@@ -6,9 +6,9 @@ import (
 
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
-	"github.com/ethereum/go-ethereum/common/hexutil"
 	"gopkg.in/yaml.v2"
 
+	assetstypes "github.com/ExocoreNetwork/exocore/x/assets/types"
 	epochtypes "github.com/evmos/evmos/v14/x/epochs/types"
 )
 
@@ -120,6 +120,9 @@ func (p Params) Validate() error {
 	if err := ValidatePositiveUint32(p.HistoricalEntries); err != nil {
 		return fmt.Errorf("historical entries: %w", err)
 	}
+	if err := ValidateAssetIDs(p.AssetIDs); err != nil {
+		return fmt.Errorf("asset IDs: %w", err)
+	}
 	return nil
 }
 
@@ -146,28 +149,15 @@ func (p Params) String() string {
 // ValidateAssetIDs checks whether the supplied value is a valid asset ID.
 func ValidateAssetIDs(i interface{}) error {
 	var val []string
-	if val, ok := i.([]string); !ok {
+	var ok bool
+	if val, ok = i.([]string); !ok {
 		return fmt.Errorf("invalid parameter type: %T", i)
 	} else if len(val) == 0 {
 		return fmt.Errorf("invalid parameter value: %v", val)
 	}
 	for _, assetID := range val {
-		if !strings.Contains(assetID, "_") {
-			return fmt.Errorf("invalid parameter value (missing underscore): %v", val)
-		}
-		split := strings.Split(assetID, "_")
-		if len(split) != 2 {
-			return fmt.Errorf(
-				"invalid parameter value (unexpected number of underscores): %v", val,
-			)
-		}
-		if len(split[0]) == 0 || len(split[1]) == 0 {
-			return fmt.Errorf("invalid parameter value (empty parts): %v", val)
-		}
-		// i cannot validate the address because it may be on a client chain and i have
-		// no idea what format or length it may have. i can only validate the chain ID.
-		if _, err := hexutil.DecodeUint64(split[1]); err != nil {
-			return fmt.Errorf("invalid parameter value (not a number): %v", split[1])
+		if _, _, err := assetstypes.ParseID(assetID); err != nil {
+			return fmt.Errorf("invalid parameter value: %v", val)
 		}
 	}
 	return nil
