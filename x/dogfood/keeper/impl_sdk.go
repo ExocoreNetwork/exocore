@@ -6,6 +6,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	evidencetypes "github.com/cosmos/cosmos-sdk/x/evidence/types"
 	genutiltypes "github.com/cosmos/cosmos-sdk/x/genutil/types"
+	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 	slashingtypes "github.com/cosmos/cosmos-sdk/x/slashing/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	clienttypes "github.com/cosmos/ibc-go/v7/modules/core/02-client/types"
@@ -21,6 +22,7 @@ var (
 	_ evidencetypes.StakingKeeper = Keeper{}
 	_ genutiltypes.StakingKeeper  = Keeper{}
 	_ clienttypes.StakingKeeper   = Keeper{} // implemented in `validators.go`
+	_ govtypes.StakingKeeper      = Keeper{}
 )
 
 // GetParams is an implementation of the staking interface expected by the SDK's evidence
@@ -156,4 +158,60 @@ func (k Keeper) ApplyAndReturnValidatorSetUpdates(
 	sdk.Context,
 ) (updates []abci.ValidatorUpdate, err error) {
 	return
+}
+
+// IterateBondedValidatorsByPower is an implementation of the staking interface expected by
+// the SDK's gov module. It is used to iterate through the validators by power. We do not
+// implement this function intentionally, since our model of governance is not designed yet.
+// Instead of staked tokens representing vote power for governance, the balance (or locked)
+// balance of the native token (by operator or delegator) should be used.
+// See interchain-security as a reference (although I did not understand some of it),
+func (k Keeper) IterateBondedValidatorsByPower(
+	ctx sdk.Context, f func(int64, stakingtypes.ValidatorI) bool,
+) {
+	// // we will have at most a 100 validators bonded.
+	// // so it is safe to load all of them up and then call.
+	// validators := k.GetAllExocoreValidators(ctx)
+	// sort.SliceStable(validators, func(i, j int) bool {
+	// 	return validators[i].Power > validators[j].Power
+	// })
+	// for i, v := range k.GetAllExocoreValidators(ctx) {
+	// 	pk, err := v.ConsPubKey()
+	// 	if err != nil {
+	// 		// since we stored the validator in the first place, something like this
+	// 		// should never happen, but if it does it is an extremely grave error
+	// 		// that will result in a block mismatch and hence that node will halt.
+	// 		continue
+	// 	}
+	// 	val, err := stakingtypes.NewValidator(nil, pk, stakingtypes.Description{})
+	// 	if err != nil {
+	// 		// same as above.
+	// 		continue
+	// 	}
+
+	// 	// Set validator to bonded status
+	// 	val.Status = stakingtypes.Bonded
+	// 	// Compute tokens from voting power
+	// 	val.Tokens = sdk.TokensFromConsensusPower(v.Power, sdk.DefaultPowerReduction)
+	// 	// #nosec G701 // ok on 64-bit systems.
+	// 	if f(int64(i), val) {
+	// 		break
+	// 	}
+	// }
+	panic("unimplemented on this keeper")
+}
+
+// TotalBondedTokens is an implementation of the staking interface expected by the SDK's
+// gov module. See note above to understand why this is not implemented.
+func (k Keeper) TotalBondedTokens(sdk.Context) math.Int {
+	panic("unimplemented on this keeper")
+}
+
+// IterateDelegations is an implementation of the staking interface expected by the SDK's
+// gov module. See note above to understand why this is not implemented.
+func (k Keeper) IterateDelegations(
+	sdk.Context, sdk.AccAddress,
+	func(int64, stakingtypes.DelegationI) bool,
+) {
+	panic("unimplemented on this keeper")
 }
