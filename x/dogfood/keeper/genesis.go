@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/ExocoreNetwork/exocore/x/dogfood/types"
+	operatortypes "github.com/ExocoreNetwork/exocore/x/operator/types"
 	abci "github.com/cometbft/cometbft/abci/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -29,16 +30,26 @@ func (k Keeper) InitGenesis(
 			panic(fmt.Errorf("staking asset %s not found", assetID))
 		}
 	}
-	// genState must not be malformed.
-	// #nosec G701 // ok if 64-bit.
-	if len(genState.ValSet) > int(k.GetMaxValidators(ctx)) {
-		panic(fmt.Errorf(
-			"cannot have more than %d validators in the genesis state",
-			k.GetMaxValidators(ctx),
-		))
+	out := make([]abci.ValidatorUpdate, len(genState.InitialValSet))
+	for _, val := range genState.InitialValSet {
+		// #nosec G703 // already validated
+		consKey, _ := operatortypes.HexStringToPubKey(val.PublicKey)
+		// #nosec G601 // this only fails if the key is of a type not already defined.
+		consAddr, _ := operatortypes.TMCryptoPublicKeyToConsAddr(consKey)
+		found, _ := k.operatorKeeper.GetOperatorAddressForChainIDAndConsAddr(
+			ctx, ctx.ChainID(), consAddr,
+		)
+		if !found {
+			panic(fmt.Sprintf("operator not found: %s", consAddr))
+		}
+		out = append(out, abci.ValidatorUpdate{
+			PubKey: *consKey,
+			Power:  val.Power,
+		})
 	}
+	// ApplyValidatorChanges will sort it internally
 	return k.ApplyValidatorChanges(
-		ctx, genState.ValSet, types.InitialValidatorSetID,
+		ctx, out, types.InitialValidatorSetID,
 	)
 }
 
