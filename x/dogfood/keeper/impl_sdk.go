@@ -62,9 +62,7 @@ func (k Keeper) ValidatorByConsAddr(
 	ctx sdk.Context,
 	addr sdk.ConsAddress,
 ) stakingtypes.ValidatorI {
-	return stakingtypes.Validator{
-		Jailed: k.operatorKeeper.IsOperatorJailedForChainID(ctx, addr, ctx.ChainID()),
-	}
+	return k.operatorKeeper.ValidatorByConsAddrForChainID(ctx, addr, ctx.ChainID())
 }
 
 // Slash is an implementation of the staking interface expected by the SDK's slashing module.
