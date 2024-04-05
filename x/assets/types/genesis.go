@@ -200,12 +200,13 @@ func (gs GenesisState) Validate() error {
 					assetID, info,
 				)
 			}
-			// check that the withdrawable amount is not greater than the total deposit amount.
-			// since withdrawable amount should be less than or equal to the amount deposited.
-			if info.WithdrawableAmount.GT(info.TotalDepositAmount) {
+			// check that the withdrawable amount and the deposited amount are equal.
+			// this is because this module's genesis only sets up free deposits.
+			// the delegation module bonds them, thereby altering the withdrawable amount.
+			if !info.WithdrawableAmount.Equal(info.TotalDepositAmount) {
 				return errorsmod.Wrapf(
 					ErrInvalidGenesisData,
-					"withdrawable amount exceeds total deposit amount for %s: %+v",
+					"withdrawable amount is not equal to total deposit amount for %s: %+v",
 					assetID, info,
 				)
 			}
