@@ -171,7 +171,7 @@ func (k Keeper) ApplyAndReturnValidatorSetUpdates(
 // balance of the native token (by operator or delegator) should be used.
 // See interchain-security as a reference (although I did not understand some of it),
 func (k Keeper) IterateBondedValidatorsByPower(
-	ctx sdk.Context, f func(int64, stakingtypes.ValidatorI) bool,
+	sdk.Context, func(int64, stakingtypes.ValidatorI) bool,
 ) {
 	// // we will have at most a 100 validators bonded.
 	// // so it is safe to load all of them up and then call.

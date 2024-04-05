@@ -34,7 +34,7 @@ func (k Keeper) GetValidatorByConsAddr(
 // ERC20 module. It returns the bond denom for the module. The ERC20 module uses
 // this function to determine whether a token sent (or received) over IBC is the
 // staking (==native) token. If it is, then the module lets the token through.
-// That is the behaviour we wish to retain with our chain as well.
-func (k Keeper) BondDenom(ctx sdk.Context) string {
+// That is the behavior we wish to retain with our chain as well.
+func (k Keeper) BondDenom(sdk.Context) string {
 	return utils.BaseDenom
 }
