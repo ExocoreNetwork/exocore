@@ -30,21 +30,23 @@ func (suite *GenesisTestSuite) TestValidateGenesis() {
 		malleate func(*types.GenesisState)
 	}{
 		{
-			name:     "constructor",
-			genState: &types.GenesisState{},
-			expPass:  false, // no validators
+			name: "constructor",
+			genState: &types.GenesisState{
+				Params: params,
+			},
+			expPass: true,
 		},
 		{
 			name:     "default",
 			genState: types.DefaultGenesis(),
-			expPass:  false, // no validators
+			expPass:  true,
 		},
 		{
 			name: "NewGenesis call",
 			genState: types.NewGenesis(
 				params, []types.GenesisValidator{},
 			),
-			expPass: false, // no validators
+			expPass: true,
 		},
 		{
 			name: "too many validators",
@@ -54,7 +56,7 @@ func (suite *GenesisTestSuite) TestValidateGenesis() {
 			malleate: func(gs *types.GenesisState) {
 				// note the plus 1
 				for i := 0; i < int(gs.Params.MaxValidators)+1; i++ {
-					// generatea  new key each time
+					// generate a  new key each time
 					key := hexutil.Encode(
 						ed25519.GenPrivKey().PubKey().Bytes(),
 					)
