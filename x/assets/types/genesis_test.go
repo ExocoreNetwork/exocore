@@ -67,7 +67,7 @@ func (suite *GenesisTestSuite) TestValidateGenesis() {
 				AssetID: assetID,
 				Info: types.StakerAssetInfo{
 					TotalDepositAmount:  math.NewInt(100),
-					WithdrawableAmount:  math.NewInt(0),
+					WithdrawableAmount:  math.NewInt(100),
 					WaitUnbondingAmount: math.NewInt(0),
 				},
 			},
@@ -493,9 +493,12 @@ func (suite *GenesisTestSuite) TestValidateGenesis() {
 			malleate: func(gs *types.GenesisState) {
 				gs.Deposits[0].Deposits[0].Info.TotalDepositAmount =
 					stakingInfo.AssetBasicInfo.TotalSupply.Add(math.NewInt(1))
+				gs.Deposits[0].Deposits[0].Info.WithdrawableAmount =
+					stakingInfo.AssetBasicInfo.TotalSupply.Add(math.NewInt(1))
 			},
 			unmalleate: func(gs *types.GenesisState) {
 				gs.Deposits[0].Deposits[0].Info.TotalDepositAmount = math.NewInt(100)
+				gs.Deposits[0].Deposits[0].Info.WithdrawableAmount = math.NewInt(100)
 			},
 		},
 		{
