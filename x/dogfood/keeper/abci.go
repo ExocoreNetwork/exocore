@@ -64,8 +64,8 @@ func (k Keeper) EndBlock(ctx sdk.Context) []abci.ValidatorUpdate {
 		prevMap[addressString] = validator.Power
 	}
 	operators, keys := k.operatorKeeper.GetActiveOperatorsForChainID(ctx, ctx.ChainID())
-	powers, err := k.restakingKeeper.GetAvgDelegatedValue(
-		ctx, operators, k.GetAssetIDs(ctx), k.GetEpochIdentifier(ctx),
+	powers, err := k.operatorKeeper.GetAvgDelegatedValue(
+		ctx, operators, ctx.ChainID(), k.GetEpochIdentifier(ctx),
 	)
 	if err != nil {
 		return []abci.ValidatorUpdate{}
