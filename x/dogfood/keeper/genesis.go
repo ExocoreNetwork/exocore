@@ -35,7 +35,7 @@ func (k Keeper) InitGenesis(
 	for _, val := range genState.InitialValSet {
 		// #nosec G703 // already validated
 		consKey, _ := operatortypes.HexStringToPubKey(val.PublicKey)
-		// #nosec G601 // this only fails if the key is of a type not already defined.
+		// #nosec G703 // this only fails if the key is of a type not already defined.
 		consAddr, _ := operatortypes.TMCryptoPublicKeyToConsAddr(consKey)
 		found, _ := k.operatorKeeper.GetOperatorAddressForChainIDAndConsAddr(
 			ctx, ctx.ChainID(), consAddr,
