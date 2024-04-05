@@ -63,14 +63,6 @@ func (gs GenesisState) Validate() error {
 					assetID, assetClientChainID, stakerID, stakerClientChainID,
 				)
 			}
-			givenTotal := level2.TotalDelegatedAmount
-			// in this if condition, check nil first to avoid panic
-			if givenTotal.IsNil() || givenTotal.IsNegative() {
-				return errorsmod.Wrapf(
-					ErrInvalidGenesisData, "invalid total delegated amount %s", givenTotal,
-				)
-			}
-			calculatedTotal := sdk.ZeroInt()
 			operators := make(map[string]struct{}, len(level2.PerOperatorAmounts))
 			for _, level3 := range level2.PerOperatorAmounts {
 				operator := level3.Key
@@ -103,14 +95,6 @@ func (gs GenesisState) Validate() error {
 					)
 				}
 				operators[operator] = struct{}{}
-				calculatedTotal = calculatedTotal.Add(amount)
-			}
-			if !givenTotal.Equal(calculatedTotal) {
-				return errorsmod.Wrapf(
-					ErrInvalidGenesisData,
-					"total delegated amount %s does not match calculated total %s for asset %s",
-					givenTotal, calculatedTotal, assetID,
-				)
 			}
 		}
 	}
