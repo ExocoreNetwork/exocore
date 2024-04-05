@@ -25,13 +25,14 @@ func DefaultGenesis() *GenesisState {
 func (gs GenesisState) Validate() error {
 	// #nosec G701 // ok on 64-bit systems.
 	maxValidators := int(gs.Params.MaxValidators)
-	if len(gs.InitialValSet) == 0 || len(gs.InitialValSet) > maxValidators {
+	if len(gs.InitialValSet) > maxValidators {
 		return errorsmod.Wrapf(
 			ErrInvalidGenesisData,
-			"invalid number of validators %d",
+			"too many validators %d",
 			len(gs.InitialValSet),
 		)
 	}
+	// do not complain about 0 validators, let Tendermint do that.
 	vals := make(map[string]struct{}, len(gs.InitialValSet))
 	for _, val := range gs.InitialValSet {
 		// check for duplicates
@@ -63,5 +64,6 @@ func (gs GenesisState) Validate() error {
 			)
 		}
 	}
+
 	return gs.Params.Validate()
 }
