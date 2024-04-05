@@ -35,8 +35,7 @@ func (suite *GenesisTestSuite) TestValidateGenesis() {
 			StakerID: stakerID,
 			Delegations: []types.DelegatedSingleAssetInfo{
 				{
-					AssetID:              assetID,
-					TotalDelegatedAmount: math.NewInt(1000),
+					AssetID: assetID,
 					PerOperatorAmounts: []types.KeyValue{
 						{
 							Key: operatorAddress.String(),
@@ -133,28 +132,6 @@ func (suite *GenesisTestSuite) TestValidateGenesis() {
 			},
 		},
 		{
-			name:     "invalid total amount",
-			genState: types.NewGenesis(delegations),
-			expPass:  false,
-			malleate: func(gs *types.GenesisState) {
-				gs.Delegations[0].Delegations[0].TotalDelegatedAmount = math.NewInt(-1)
-			},
-			unmalleate: func(gs *types.GenesisState) {
-				gs.Delegations[0].Delegations[0].TotalDelegatedAmount = math.NewInt(1000)
-			},
-		},
-		{
-			name:     "nil total amount",
-			genState: types.NewGenesis(delegations),
-			expPass:  false,
-			malleate: func(gs *types.GenesisState) {
-				gs.Delegations[0].Delegations[0].TotalDelegatedAmount = math.Int{}
-			},
-			unmalleate: func(gs *types.GenesisState) {
-				gs.Delegations[0].Delegations[0].TotalDelegatedAmount = math.NewInt(1000)
-			},
-		},
-		{
 			name:     "nil wrapped amount",
 			genState: types.NewGenesis(delegations),
 			expPass:  false,
@@ -202,19 +179,6 @@ func (suite *GenesisTestSuite) TestValidateGenesis() {
 			unmalleate: func(gs *types.GenesisState) {
 				gs.Delegations[0].Delegations[0].PerOperatorAmounts[0].Key =
 					operatorAddress.String()
-			},
-		},
-		{
-			name:     "total amount mismatch",
-			genState: types.NewGenesis(delegations),
-			expPass:  false,
-			malleate: func(gs *types.GenesisState) {
-				gs.Delegations[0].Delegations[0].PerOperatorAmounts[0].Value =
-					&types.ValueField{Amount: math.NewInt(2000)}
-			},
-			unmalleate: func(gs *types.GenesisState) {
-				gs.Delegations[0].Delegations[0].PerOperatorAmounts[0].Value =
-					&types.ValueField{Amount: math.NewInt(1000)}
 			},
 		},
 	}
