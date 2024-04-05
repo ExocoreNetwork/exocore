@@ -7,11 +7,13 @@ import (
 	rewardKeeper "github.com/ExocoreNetwork/exocore/x/reward/keeper"
 	withdrawKeeper "github.com/ExocoreNetwork/exocore/x/withdraw/keeper"
 
+	avsManagerKeeper "github.com/ExocoreNetwork/exocore/x/avs/keeper"
 	delegationKeeper "github.com/ExocoreNetwork/exocore/x/delegation/keeper"
 	depositKeeper "github.com/ExocoreNetwork/exocore/x/deposit/keeper"
 
 	"golang.org/x/exp/maps"
 
+	avsManagerPrecompile "github.com/ExocoreNetwork/exocore/precompiles/avs"
 	delegationprecompile "github.com/ExocoreNetwork/exocore/precompiles/delegation"
 	depositprecompile "github.com/ExocoreNetwork/exocore/precompiles/deposit"
 	rewardPrecompile "github.com/ExocoreNetwork/exocore/precompiles/reward"
@@ -41,6 +43,7 @@ func AvailablePrecompiles(
 	withdrawKeeper withdrawKeeper.Keeper,
 	slashKeeper exoslashKeeper.Keeper,
 	rewardKeeper rewardKeeper.Keeper,
+	avsManagerKeeper avsManagerKeeper.Keeper,
 ) map[common.Address]vm.PrecompiledContract {
 	// Clone the mapping from the latest EVM fork.
 	precompiles := maps.Clone(vm.PrecompiledContractsBerlin)
@@ -82,7 +85,7 @@ func AvailablePrecompiles(
 		authzKeeper,
 	)
 	if err != nil {
-		panic(fmt.Errorf("failed to load  withdraw precompile: %w", err))
+		panic(fmt.Errorf("failed to load withdraw precompile: %w", err))
 	}
 	slashPrecompile, err := slashPrecompile.NewPrecompile(
 		stakingStateKeeper,
@@ -90,7 +93,7 @@ func AvailablePrecompiles(
 		authzKeeper,
 	)
 	if err != nil {
-		panic(fmt.Errorf("failed to load  slash precompile: %w", err))
+		panic(fmt.Errorf("failed to load slash precompile: %w", err))
 	}
 	rewardPrecompile, err := rewardPrecompile.NewPrecompile(
 		stakingStateKeeper,
@@ -98,13 +101,18 @@ func AvailablePrecompiles(
 		authzKeeper,
 	)
 	if err != nil {
-		panic(fmt.Errorf("failed to load  reward precompile: %w", err))
+		panic(fmt.Errorf("failed to load reward precompile: %w", err))
+	}
+	avsManagerPrecompile, err := avsManagerPrecompile.NewPrecompile(avsManagerKeeper, authzKeeper)
+	if err != nil {
+		panic(fmt.Errorf("failed to load avsManager precompile: %w", err))
 	}
 	precompiles[slashPrecompile.Address()] = slashPrecompile
 	precompiles[rewardPrecompile.Address()] = rewardPrecompile
 	precompiles[withdrawPrecompile.Address()] = withdrawPrecompile
 	precompiles[depositPrecompile.Address()] = depositPrecompile
 	precompiles[delegationPrecompile.Address()] = delegationPrecompile
+	precompiles[avsManagerPrecompile.Address()] = avsManagerPrecompile
 
 	precompiles[stakingPrecompile.Address()] = stakingPrecompile
 	precompiles[ibcTransferPrecompile.Address()] = ibcTransferPrecompile

@@ -10,6 +10,17 @@ import (
 	"path/filepath"
 	"sort"
 
+	"github.com/ExocoreNetwork/exocore/x/avs"
+	"github.com/ExocoreNetwork/exocore/x/operator"
+	operatorKeeper "github.com/ExocoreNetwork/exocore/x/operator/keeper"
+
+	exoslash "github.com/ExocoreNetwork/exocore/x/slash"
+
+	avsManagerKeeper "github.com/ExocoreNetwork/exocore/x/avs/keeper"
+	avsManagerTypes "github.com/ExocoreNetwork/exocore/x/avs/types"
+	slashKeeper "github.com/ExocoreNetwork/exocore/x/slash/keeper"
+	exoslashTypes "github.com/ExocoreNetwork/exocore/x/slash/types"
+
 	autocliv1 "cosmossdk.io/api/cosmos/autocli/v1"
 	reflectionv1 "cosmossdk.io/api/cosmos/reflection/v1"
 	authzkeeper "github.com/cosmos/cosmos-sdk/x/authz/keeper"
@@ -268,6 +279,7 @@ var (
 		withdraw.AppModuleBasic{},
 		reward.AppModuleBasic{},
 		exoslash.AppModuleBasic{},
+		avs.AppModuleBasic{},
 	)
 
 	// module account permissions
@@ -350,8 +362,8 @@ type ExocoreApp struct {
 	WithdrawKeeper   withdrawKeeper.Keeper
 	RewardKeeper     rewardKeeper.Keeper
 	OperatorKeeper   operatorKeeper.Keeper
-
-	ExoSlashKeeper slashKeeper.Keeper
+	ExoSlashKeeper   slashKeeper.Keeper
+	AVSManagerKeeper avsManagerKeeper.Keeper
 	// the module manager
 	mm *module.Manager
 
@@ -434,6 +446,7 @@ func NewExocoreApp(
 		rewardTypes.StoreKey,
 		exoslashTypes.StoreKey,
 		operatorTypes.StoreKey,
+		avsManagerTypes.StoreKey,
 	)
 
 	// Add the EVM transient store key
@@ -649,11 +662,8 @@ func NewExocoreApp(
 
 	app.WithdrawKeeper = *withdrawKeeper.NewKeeper(appCodec, keys[withdrawTypes.StoreKey], app.AssetsKeeper, app.DepositKeeper)
 	app.RewardKeeper = *rewardKeeper.NewKeeper(appCodec, keys[rewardTypes.StoreKey], app.AssetsKeeper)
-	app.ExoSlashKeeper = slashKeeper.NewKeeper(
-		appCodec,
-		keys[exoslashTypes.StoreKey],
-		app.AssetsKeeper,
-	)
+	app.ExoSlashKeeper = slashKeeper.NewKeeper(appCodec, keys[exoslashTypes.StoreKey], app.AssetsKeeper)
+	app.AVSManagerKeeper = *avsManagerKeeper.NewKeeper(appCodec, keys[avsManagerTypes.StoreKey], &app.OperatorKeeper)
 	// We call this after setting the hooks to ensure that the hooks are set on the keeper
 	evmKeeper.WithPrecompiles(
 		evmkeeper.AvailablePrecompiles(
@@ -667,6 +677,7 @@ func NewExocoreApp(
 			app.WithdrawKeeper,
 			app.ExoSlashKeeper,
 			app.RewardKeeper,
+			app.AVSManagerKeeper,
 		),
 	)
 	epochsKeeper := epochskeeper.NewKeeper(appCodec, keys[epochstypes.StoreKey])
@@ -839,6 +850,7 @@ func NewExocoreApp(
 		withdraw.NewAppModule(appCodec, app.WithdrawKeeper),
 		reward.NewAppModule(appCodec, app.RewardKeeper),
 		exoslash.NewAppModule(appCodec, app.ExoSlashKeeper),
+		avs.NewAppModule(appCodec, app.AVSManagerKeeper),
 	)
 
 	// During begin block slashing happens after reward.BeginBlocker so that
@@ -882,6 +894,7 @@ func NewExocoreApp(
 		withdrawTypes.ModuleName,
 		rewardTypes.ModuleName,
 		exoslashTypes.ModuleName,
+		avsManagerTypes.ModuleName,
 	)
 
 	// NOTE: fee market module must go last in order to retrieve the block gas used.
@@ -920,6 +933,7 @@ func NewExocoreApp(
 		withdrawTypes.ModuleName,
 		rewardTypes.ModuleName,
 		exoslashTypes.ModuleName,
+		avsManagerTypes.ModuleName,
 	)
 
 	// NOTE: The genutils module must occur after staking so that pools are
@@ -964,6 +978,7 @@ func NewExocoreApp(
 		// NOTE: crisis module must go at the end to check for invariants on each module
 		crisistypes.ModuleName,
 		consensusparamtypes.ModuleName,
+		avsManagerTypes.ModuleName,
 	)
 
 	app.mm.RegisterInvariants(&app.CrisisKeeper)

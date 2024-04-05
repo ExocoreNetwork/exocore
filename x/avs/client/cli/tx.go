@@ -56,7 +56,7 @@ func RegisterAVS() *cobra.Command {
 				Info: &types.AVSInfo{
 					Name:            args[0],
 					AVSAddress:      args[1],
-					OperatorAddress: args[2],
+					OperatorAddress: []string{args[2]},
 				},
 			}
 

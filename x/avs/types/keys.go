@@ -20,6 +20,7 @@ const (
 	MemStoreKey   = "mem_avs"
 	prefixAVSInfo = iota + 1
 	prefixAVSOperatorInfo
+	prefixParams
 )
 
 // ModuleAddress is the native module address for EVM
@@ -27,6 +28,8 @@ var (
 	ModuleAddress            common.Address
 	KeyPrefixAVSInfo         = []byte{prefixAVSInfo}
 	KeyPrefixAVSOperatorInfo = []byte{prefixAVSOperatorInfo}
+	KeyPrefixParams          = []byte{prefixParams}
+	ParamsKey                = []byte("Params")
 )
 
 func init() {
