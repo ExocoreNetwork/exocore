@@ -149,3 +149,13 @@ func (k Keeper) RewardForWithdraw(ctx sdk.Context, event *RewardParams) error {
 	}
 	return nil
 }
+
+// WithdrawDelegationRewards is an implementation of a function in the distribution interface.
+// Since this module acts as the distribution module for our network, this function is here.
+// When implemented, this function should find the pending (native token) rewards for the
+// specified delegator and validator address combination and send them to the delegator address.
+func (Keeper) WithdrawDelegationRewards(
+	sdk.Context, sdk.AccAddress, sdk.ValAddress,
+) (sdk.Coins, error) {
+	return nil, rtypes.ErrNotSupportYet
+}

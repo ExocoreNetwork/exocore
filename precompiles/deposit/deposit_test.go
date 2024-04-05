@@ -7,11 +7,9 @@ import (
 	"github.com/ExocoreNetwork/exocore/precompiles/deposit"
 	assetstype "github.com/ExocoreNetwork/exocore/x/assets/types"
 	deposittype "github.com/ExocoreNetwork/exocore/x/deposit/types"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/common"
 	ethtypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/core/vm"
-	"github.com/evmos/evmos/v14/utils"
 	evmtypes "github.com/evmos/evmos/v14/x/evm/types"
 )
 
@@ -60,11 +58,11 @@ func (s *DepositPrecompileSuite) TestRunDepositTo() {
 	opAmount := big.NewInt(100)
 	assetAddr := usdtAddress
 	commonMalleate := func() (common.Address, []byte) {
-		valAddr, err := sdk.ValAddressFromBech32(s.Validators[0].OperatorAddress)
-		s.Require().NoError(err)
-		val, _ := s.App.StakingKeeper.GetValidator(s.Ctx, valAddr)
-		coins := sdk.NewCoins(sdk.NewCoin(utils.BaseDenom, sdk.NewInt(1e18)))
-		s.App.DistrKeeper.AllocateTokensToValidator(s.Ctx, val, sdk.NewDecCoinsFromCoins(coins...))
+		// valAddr, err := sdk.ValAddressFromBech32(s.Validators[0].OperatorAddress)
+		// s.Require().NoError(err)
+		// val, _ := s.App.StakingKeeper.GetValidator(s.Ctx, valAddr)
+		// coins := sdk.NewCoins(sdk.NewCoin(utils.BaseDenom, sdk.NewInt(1e18)))
+		// s.App.DistrKeeper.AllocateTokensToValidator(s.Ctx, val, sdk.NewDecCoinsFromCoins(coins...))
 		input, err := s.precompile.Pack(
 			deposit.MethodDepositTo,
 			uint16(clientChainLzID),
