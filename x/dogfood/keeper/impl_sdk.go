@@ -13,7 +13,11 @@ import (
 
 // interface guards
 var (
+	// the slashing module is responsible for downtime slashing. it tracks signing info and then
+	// asks the staking module (dogfood in our case) to slash the operator.
 	_ slashingtypes.StakingKeeper = Keeper{}
+	// the evidence module is responsible for handling equivocation evidence. it validates the
+	// evidence and then asks the staking module (dogfood in our case) to slash the operator.
 	_ evidencetypes.StakingKeeper = Keeper{}
 	_ genutiltypes.StakingKeeper  = Keeper{}
 	_ clienttypes.StakingKeeper   = Keeper{} // implemented in `validators.go`
@@ -26,11 +30,8 @@ func (k Keeper) GetParams(sdk.Context) stakingtypes.Params {
 }
 
 // IterateValidators is an implementation of the staking interface expected by the SDK's
-// slashing module. The slashing module uses it for two purposes: once at genesis to
-// store a mapping of pub key to cons address (which is done by our operator module),
-// and then during the invariants check to ensure that the total delegated amount
-// matches that of each validator. Ideally, this invariant should be implemented
-// by the delegation and/or deposit module(s) instead.
+// slashing module. The slashing module uses it at genesis to store a mapping of pub key
+// to cons address (which is done by our operator module),
 func (k Keeper) IterateValidators(sdk.Context,
 	func(index int64, validator stakingtypes.ValidatorI) (stop bool),
 ) {

@@ -14,4 +14,5 @@ var (
 	ErrNoParamsKey              = errorsmod.Register(ModuleName, 2, "there is no stored key for params")
 	ErrRewardAmountIsNegative   = errorsmod.Register(ModuleName, 3, "the reward amount is negative")
 	ErrRewardAssetNotExist      = errorsmod.Register(ModuleName, 4, "the reward asset doesn't exist")
+	ErrNotSupportYet            = errorsmod.Register(ModuleName, 5, "don't have supported it yet")
 )
