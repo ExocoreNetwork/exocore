@@ -5,7 +5,7 @@ import errorsmod "cosmossdk.io/errors"
 var (
 	ErrNoKeyInTheStore = errorsmod.Register(
 		ModuleName, 0,
-		"there is not the key for in the store",
+		"there is no such key in the store",
 	)
 
 	ErrCliCmdInputArg = errorsmod.Register(
