@@ -52,7 +52,7 @@ require (
 	github.com/rs/cors v1.9.0 // indirect
 	github.com/tyler-smith/go-bip39 v1.1.0 // indirect
 	github.com/zondax/hid v0.9.1 // indirect
-	golang.org/x/net v0.22.0 // indirect
+	golang.org/x/net v0.23.0 // indirect
 )
 
 require (
@@ -215,14 +215,12 @@ replace (
 	github.com/99designs/keyring => github.com/cosmos/keyring v1.2.0
 	// use Cosmos-SDK fork to enable Ledger functionality
 	github.com/cosmos/cosmos-sdk => github.com/evmos/cosmos-sdk v0.47.4-evmos.2
-	//github.com/cosmos/cosmos-sdk => ../cosmos-sdk
 	//fix cosmos-sdk error
 	github.com/cosmos/gogoproto => github.com/cosmos/gogoproto v1.4.10
 	// use Evmos geth fork
 	github.com/ethereum/go-ethereum => github.com/evmos/go-ethereum v1.10.26-evmos-rc2
-	// use exocore fork of evmos
-	github.com/evmos/evmos/v14 => github.com/ExocoreNetwork/evmos/v14 v14.1.1-0.20240205024453-5e8090e42ef4
-	//github.com/evmos/evmos/v14 => ../ExocoreNetwork/evmos
+	// use exocore fork of evmos TODO
+	github.com/evmos/evmos/v14 => github.com/ExocoreNetwork/evmos/v14 v14.1.1-0.20240408040728-a6f685cfebb9
 	// Security Advisory https://github.com/advisories/GHSA-h395-qcrw-5vmq
 	github.com/gin-gonic/gin => github.com/gin-gonic/gin v1.9.1
 	// replace broken goleveldb
