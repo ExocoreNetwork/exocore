@@ -220,7 +220,7 @@ replace (
 	// use Evmos geth fork
 	github.com/ethereum/go-ethereum => github.com/evmos/go-ethereum v1.10.26-evmos-rc2
 	// use exocore fork of evmos TODO
-	github.com/evmos/evmos/v14 => github.com/MaxMustermann2/evmos/v14 v14.0.0-20240326155756-4f464426e972
+	github.com/evmos/evmos/v14 => github.com/ExocoreNetwork/evmos/v14 v14.1.1-0.20240408040728-a6f685cfebb9
 	// Security Advisory https://github.com/advisories/GHSA-h395-qcrw-5vmq
 	github.com/gin-gonic/gin => github.com/gin-gonic/gin v1.9.1
 	// replace broken goleveldb
