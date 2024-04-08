@@ -2,7 +2,6 @@ package cli
 
 import (
 	"fmt"
-	"time"
 
 	"github.com/spf13/cobra"
 
@@ -12,15 +11,6 @@ import (
 
 	// "github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/ExocoreNetwork/exocore/x/avs/types"
-)
-
-var (
-	DefaultRelativePacketTimeoutTimestamp = uint64((time.Duration(10) * time.Minute).Nanoseconds())
-)
-
-const (
-	flagPacketTimeoutTimestamp = "packet-timeout-timestamp"
-	listSeparator              = ","
 )
 
 // GetTxCmd returns the transaction commands for this module
@@ -33,16 +23,14 @@ func GetTxCmd() *cobra.Command {
 		RunE:                       client.ValidateCmd,
 	}
 
-	// this line is used by starport scaffolding # 1
-
 	return cmd
 }
 
 func RegisterAVS() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "RegisterAVS: AVSName, AVSAddress, OperatorAddress",
+		Use:   "RegisterAVS: AvsName, AvsAddress, OperatorAddress, AvsOwnerAddress, AssetId",
 		Short: "register to be an avs",
-		Args:  cobra.MinimumNArgs(4),
+		Args:  cobra.MinimumNArgs(5),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cliCtx, err := client.GetClientTxContext(cmd)
 			if err != nil {
@@ -55,8 +43,10 @@ func RegisterAVS() *cobra.Command {
 				FromAddress: fromAddress,
 				Info: &types.AVSInfo{
 					Name:            args[0],
-					AVSAddress:      args[1],
+					AvsAddress:      args[1],
 					OperatorAddress: []string{args[2]},
+					AvsOwnerAddress: args[3],
+					AssetId:         []string{args[4]},
 				},
 			}
 

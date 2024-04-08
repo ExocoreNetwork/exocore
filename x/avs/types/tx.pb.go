@@ -6,10 +6,8 @@ package types
 import (
 	context "context"
 	fmt "fmt"
-	_ "github.com/ExocoreNetwork/exocore/x/delegation/types"
 	_ "github.com/cosmos/cosmos-proto"
 	_ "github.com/cosmos/cosmos-sdk/types/msgservice"
-	_ "github.com/cosmos/cosmos-sdk/types/tx/amino"
 	grpc1 "github.com/cosmos/gogoproto/grpc"
 	proto "github.com/cosmos/gogoproto/proto"
 	grpc "google.golang.org/grpc"
@@ -33,8 +31,11 @@ const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
 type AVSInfo struct {
 	Name            string   `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
-	AVSAddress      string   `protobuf:"bytes,2,opt,name=AVSAddress,proto3" json:"AVSAddress,omitempty"`
-	OperatorAddress []string `protobuf:"bytes,3,rep,name=operatorAddress,proto3" json:"operatorAddress,omitempty"`
+	AvsAddress      string   `protobuf:"bytes,2,opt,name=avs_address,json=avsAddress,proto3" json:"avs_address,omitempty"`
+	OperatorAddress []string `protobuf:"bytes,3,rep,name=operator_address,json=operatorAddress,proto3" json:"operator_address,omitempty"`
+	AvsOwnerAddress string   `protobuf:"bytes,4,opt,name=avs_owner_address,json=avsOwnerAddress,proto3" json:"avs_owner_address,omitempty"`
+	// asset_basic_info is all the basic asset information of the avs.
+	AssetId []string `protobuf:"bytes,5,rep,name=asset_id,json=assetId,proto3" json:"asset_id,omitempty"`
 }
 
 func (m *AVSInfo) Reset()         { *m = AVSInfo{} }
@@ -77,9 +78,9 @@ func (m *AVSInfo) GetName() string {
 	return ""
 }
 
-func (m *AVSInfo) GetAVSAddress() string {
+func (m *AVSInfo) GetAvsAddress() string {
 	if m != nil {
-		return m.AVSAddress
+		return m.AvsAddress
 	}
 	return ""
 }
@@ -91,52 +92,22 @@ func (m *AVSInfo) GetOperatorAddress() []string {
 	return nil
 }
 
-type AVSManager struct {
-	AVSOperatorRelation map[string]string `protobuf:"bytes,1,rep,name=AVSOperatorRelation,proto3" json:"AVSOperatorRelation,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
-}
-
-func (m *AVSManager) Reset()         { *m = AVSManager{} }
-func (m *AVSManager) String() string { return proto.CompactTextString(m) }
-func (*AVSManager) ProtoMessage()    {}
-func (*AVSManager) Descriptor() ([]byte, []int) {
-	return fileDescriptor_c92b5dfe90086a66, []int{1}
-}
-func (m *AVSManager) XXX_Unmarshal(b []byte) error {
-	return m.Unmarshal(b)
-}
-func (m *AVSManager) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	if deterministic {
-		return xxx_messageInfo_AVSManager.Marshal(b, m, deterministic)
-	} else {
-		b = b[:cap(b)]
-		n, err := m.MarshalToSizedBuffer(b)
-		if err != nil {
-			return nil, err
-		}
-		return b[:n], nil
-	}
-}
-func (m *AVSManager) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_AVSManager.Merge(m, src)
-}
-func (m *AVSManager) XXX_Size() int {
-	return m.Size()
-}
-func (m *AVSManager) XXX_DiscardUnknown() {
-	xxx_messageInfo_AVSManager.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_AVSManager proto.InternalMessageInfo
-
-func (m *AVSManager) GetAVSOperatorRelation() map[string]string {
+func (m *AVSInfo) GetAvsOwnerAddress() string {
 	if m != nil {
-		return m.AVSOperatorRelation
+		return m.AvsOwnerAddress
+	}
+	return ""
+}
+
+func (m *AVSInfo) GetAssetId() []string {
+	if m != nil {
+		return m.AssetId
 	}
 	return nil
 }
 
 type RegisterAVSReq struct {
-	FromAddress string   `protobuf:"bytes,1,opt,name=FromAddress,proto3" json:"FromAddress,omitempty"`
+	FromAddress string   `protobuf:"bytes,1,opt,name=from_address,json=fromAddress,proto3" json:"from_address,omitempty"`
 	Info        *AVSInfo `protobuf:"bytes,2,opt,name=info,proto3" json:"info,omitempty"`
 }
 
@@ -144,7 +115,7 @@ func (m *RegisterAVSReq) Reset()         { *m = RegisterAVSReq{} }
 func (m *RegisterAVSReq) String() string { return proto.CompactTextString(m) }
 func (*RegisterAVSReq) ProtoMessage()    {}
 func (*RegisterAVSReq) Descriptor() ([]byte, []int) {
-	return fileDescriptor_c92b5dfe90086a66, []int{2}
+	return fileDescriptor_c92b5dfe90086a66, []int{1}
 }
 func (m *RegisterAVSReq) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -188,7 +159,7 @@ func (m *RegisterAVSReq) GetInfo() *AVSInfo {
 }
 
 type RegisterAVSResponse struct {
-	FromAddress string   `protobuf:"bytes,1,opt,name=FromAddress,proto3" json:"FromAddress,omitempty"`
+	FromAddress string   `protobuf:"bytes,1,opt,name=from_address,json=fromAddress,proto3" json:"from_address,omitempty"`
 	Info        *AVSInfo `protobuf:"bytes,2,opt,name=info,proto3" json:"info,omitempty"`
 }
 
@@ -196,7 +167,7 @@ func (m *RegisterAVSResponse) Reset()         { *m = RegisterAVSResponse{} }
 func (m *RegisterAVSResponse) String() string { return proto.CompactTextString(m) }
 func (*RegisterAVSResponse) ProtoMessage()    {}
 func (*RegisterAVSResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_c92b5dfe90086a66, []int{3}
+	return fileDescriptor_c92b5dfe90086a66, []int{2}
 }
 func (m *RegisterAVSResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -240,7 +211,7 @@ func (m *RegisterAVSResponse) GetInfo() *AVSInfo {
 }
 
 type DeRegisterAVSReq struct {
-	FromAddress string   `protobuf:"bytes,1,opt,name=FromAddress,proto3" json:"FromAddress,omitempty"`
+	FromAddress string   `protobuf:"bytes,1,opt,name=from_address,json=fromAddress,proto3" json:"from_address,omitempty"`
 	Info        *AVSInfo `protobuf:"bytes,2,opt,name=info,proto3" json:"info,omitempty"`
 }
 
@@ -248,7 +219,7 @@ func (m *DeRegisterAVSReq) Reset()         { *m = DeRegisterAVSReq{} }
 func (m *DeRegisterAVSReq) String() string { return proto.CompactTextString(m) }
 func (*DeRegisterAVSReq) ProtoMessage()    {}
 func (*DeRegisterAVSReq) Descriptor() ([]byte, []int) {
-	return fileDescriptor_c92b5dfe90086a66, []int{4}
+	return fileDescriptor_c92b5dfe90086a66, []int{3}
 }
 func (m *DeRegisterAVSReq) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -292,7 +263,7 @@ func (m *DeRegisterAVSReq) GetInfo() *AVSInfo {
 }
 
 type DeRegisterAVSResponse struct {
-	FromAddress string   `protobuf:"bytes,1,opt,name=FromAddress,proto3" json:"FromAddress,omitempty"`
+	FromAddress string   `protobuf:"bytes,1,opt,name=from_address,json=fromAddress,proto3" json:"from_address,omitempty"`
 	Info        *AVSInfo `protobuf:"bytes,2,opt,name=info,proto3" json:"info,omitempty"`
 }
 
@@ -300,7 +271,7 @@ func (m *DeRegisterAVSResponse) Reset()         { *m = DeRegisterAVSResponse{} }
 func (m *DeRegisterAVSResponse) String() string { return proto.CompactTextString(m) }
 func (*DeRegisterAVSResponse) ProtoMessage()    {}
 func (*DeRegisterAVSResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_c92b5dfe90086a66, []int{5}
+	return fileDescriptor_c92b5dfe90086a66, []int{4}
 }
 func (m *DeRegisterAVSResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -343,152 +314,46 @@ func (m *DeRegisterAVSResponse) GetInfo() *AVSInfo {
 	return nil
 }
 
-// MsgUpdateParams is the Msg/UpdateParams request type for Erc20 parameters.
-type MsgUpdateParams struct {
-	// authority is the address of the governance account.
-	Authority string `protobuf:"bytes,1,opt,name=authority,proto3" json:"authority,omitempty"`
-	// params defines the x/evm parameters to update.
-	// NOTE: All parameters must be supplied.
-	Params *Params `protobuf:"bytes,2,opt,name=params,proto3" json:"params,omitempty"`
-}
-
-func (m *MsgUpdateParams) Reset()         { *m = MsgUpdateParams{} }
-func (m *MsgUpdateParams) String() string { return proto.CompactTextString(m) }
-func (*MsgUpdateParams) ProtoMessage()    {}
-func (*MsgUpdateParams) Descriptor() ([]byte, []int) {
-	return fileDescriptor_c92b5dfe90086a66, []int{6}
-}
-func (m *MsgUpdateParams) XXX_Unmarshal(b []byte) error {
-	return m.Unmarshal(b)
-}
-func (m *MsgUpdateParams) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	if deterministic {
-		return xxx_messageInfo_MsgUpdateParams.Marshal(b, m, deterministic)
-	} else {
-		b = b[:cap(b)]
-		n, err := m.MarshalToSizedBuffer(b)
-		if err != nil {
-			return nil, err
-		}
-		return b[:n], nil
-	}
-}
-func (m *MsgUpdateParams) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_MsgUpdateParams.Merge(m, src)
-}
-func (m *MsgUpdateParams) XXX_Size() int {
-	return m.Size()
-}
-func (m *MsgUpdateParams) XXX_DiscardUnknown() {
-	xxx_messageInfo_MsgUpdateParams.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_MsgUpdateParams proto.InternalMessageInfo
-
-func (m *MsgUpdateParams) GetAuthority() string {
-	if m != nil {
-		return m.Authority
-	}
-	return ""
-}
-
-func (m *MsgUpdateParams) GetParams() *Params {
-	if m != nil {
-		return m.Params
-	}
-	return nil
-}
-
-// MsgUpdateParamsResponse defines the response structure for executing a
-// MsgUpdateParams message.
-type MsgUpdateParamsResponse struct {
-}
-
-func (m *MsgUpdateParamsResponse) Reset()         { *m = MsgUpdateParamsResponse{} }
-func (m *MsgUpdateParamsResponse) String() string { return proto.CompactTextString(m) }
-func (*MsgUpdateParamsResponse) ProtoMessage()    {}
-func (*MsgUpdateParamsResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_c92b5dfe90086a66, []int{7}
-}
-func (m *MsgUpdateParamsResponse) XXX_Unmarshal(b []byte) error {
-	return m.Unmarshal(b)
-}
-func (m *MsgUpdateParamsResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	if deterministic {
-		return xxx_messageInfo_MsgUpdateParamsResponse.Marshal(b, m, deterministic)
-	} else {
-		b = b[:cap(b)]
-		n, err := m.MarshalToSizedBuffer(b)
-		if err != nil {
-			return nil, err
-		}
-		return b[:n], nil
-	}
-}
-func (m *MsgUpdateParamsResponse) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_MsgUpdateParamsResponse.Merge(m, src)
-}
-func (m *MsgUpdateParamsResponse) XXX_Size() int {
-	return m.Size()
-}
-func (m *MsgUpdateParamsResponse) XXX_DiscardUnknown() {
-	xxx_messageInfo_MsgUpdateParamsResponse.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_MsgUpdateParamsResponse proto.InternalMessageInfo
-
 func init() {
 	proto.RegisterType((*AVSInfo)(nil), "exocore.avs.AVSInfo")
-	proto.RegisterType((*AVSManager)(nil), "exocore.avs.AVSManager")
-	proto.RegisterMapType((map[string]string)(nil), "exocore.avs.AVSManager.AVSOperatorRelationEntry")
 	proto.RegisterType((*RegisterAVSReq)(nil), "exocore.avs.RegisterAVSReq")
 	proto.RegisterType((*RegisterAVSResponse)(nil), "exocore.avs.RegisterAVSResponse")
 	proto.RegisterType((*DeRegisterAVSReq)(nil), "exocore.avs.DeRegisterAVSReq")
 	proto.RegisterType((*DeRegisterAVSResponse)(nil), "exocore.avs.DeRegisterAVSResponse")
-	proto.RegisterType((*MsgUpdateParams)(nil), "exocore.avs.MsgUpdateParams")
-	proto.RegisterType((*MsgUpdateParamsResponse)(nil), "exocore.avs.MsgUpdateParamsResponse")
 }
 
 func init() { proto.RegisterFile("exocore/avs/tx.proto", fileDescriptor_c92b5dfe90086a66) }
 
 var fileDescriptor_c92b5dfe90086a66 = []byte{
-	// 564 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xcc, 0x54, 0x41, 0x6b, 0x13, 0x41,
-	0x14, 0xce, 0x34, 0x6d, 0x25, 0x2f, 0xd8, 0xc6, 0x49, 0xa4, 0xdb, 0x15, 0x97, 0xb0, 0xa7, 0x50,
-	0xe9, 0xae, 0x46, 0x10, 0xc9, 0x2d, 0xc5, 0x56, 0x04, 0xa3, 0xb2, 0xc1, 0x1c, 0xbc, 0xc8, 0x24,
-	0x99, 0x6e, 0x97, 0x66, 0x77, 0xd6, 0x99, 0x49, 0x4c, 0x6e, 0xe2, 0x41, 0x44, 0x10, 0xfd, 0x25,
-	0xd2, 0x83, 0x07, 0x7f, 0x82, 0xc7, 0xe2, 0xc9, 0xa3, 0x24, 0x87, 0xfe, 0x0d, 0xc9, 0xee, 0x2c,
-	0xd9, 0x0d, 0xad, 0x1e, 0xdb, 0x4b, 0x32, 0x33, 0xdf, 0xfb, 0xbe, 0xf9, 0xde, 0x7b, 0x3b, 0x0f,
-	0x2a, 0x74, 0xcc, 0x7a, 0x8c, 0x53, 0x9b, 0x8c, 0x84, 0x2d, 0xc7, 0x56, 0xc8, 0x99, 0x64, 0xb8,
-	0xa8, 0x4e, 0x2d, 0x32, 0x12, 0xfa, 0x0d, 0xe2, 0x7b, 0x01, 0xb3, 0xa3, 0xdf, 0x18, 0xd7, 0xb7,
-	0x7a, 0x4c, 0xf8, 0x4c, 0xd8, 0xbe, 0x70, 0xed, 0xd1, 0xbd, 0xf9, 0x9f, 0x02, 0xb6, 0x63, 0xe0,
-	0x75, 0xb4, 0xb3, 0xe3, 0x8d, 0x82, 0x8c, 0xe4, 0xa6, 0x3e, 0x1d, 0x50, 0x97, 0x48, 0x8f, 0x05,
-	0x73, 0x6e, 0x72, 0xa7, 0xae, 0xa5, 0x9d, 0x84, 0x84, 0x13, 0x5f, 0x31, 0x4d, 0x17, 0xae, 0x35,
-	0x3b, 0xed, 0x27, 0xc1, 0x21, 0xc3, 0x18, 0x56, 0x03, 0xe2, 0x53, 0x0d, 0x55, 0x51, 0xad, 0xe0,
-	0x44, 0x6b, 0x6c, 0x00, 0x34, 0x3b, 0xed, 0x66, 0xbf, 0xcf, 0xa9, 0x10, 0xda, 0x4a, 0x84, 0xa4,
-	0x4e, 0x70, 0x0d, 0x36, 0x59, 0x48, 0x39, 0x91, 0x8c, 0x27, 0x41, 0xf9, 0x6a, 0xbe, 0x56, 0x70,
-	0x96, 0x8f, 0xcd, 0x1f, 0x28, 0x92, 0x6a, 0x91, 0x80, 0xb8, 0x94, 0xe3, 0x2e, 0x94, 0x9b, 0x9d,
-	0xf6, 0x73, 0x15, 0xe4, 0xd0, 0x41, 0x64, 0x5a, 0x43, 0xd5, 0x7c, 0xad, 0x58, 0xbf, 0x6b, 0xa5,
-	0x6a, 0x64, 0x2d, 0x58, 0xd6, 0x39, 0x94, 0xfd, 0x40, 0xf2, 0x89, 0x73, 0x9e, 0x98, 0x7e, 0x00,
-	0xda, 0x45, 0x04, 0x5c, 0x82, 0xfc, 0x31, 0x9d, 0xa8, 0x5c, 0xe7, 0x4b, 0x5c, 0x81, 0xb5, 0x11,
-	0x19, 0x0c, 0xa9, 0xca, 0x32, 0xde, 0x34, 0x56, 0x1e, 0x22, 0xf3, 0x23, 0x82, 0x0d, 0x87, 0xba,
-	0x9e, 0x90, 0x94, 0x37, 0x3b, 0x6d, 0x87, 0xbe, 0xc1, 0x0d, 0x28, 0x1e, 0x70, 0xe6, 0x27, 0x39,
-	0x47, 0x32, 0x7b, 0xda, 0xaf, 0xef, 0xbb, 0x15, 0xd5, 0x17, 0x85, 0xb4, 0x25, 0xf7, 0x02, 0xd7,
-	0x49, 0x07, 0xe3, 0x1a, 0xac, 0x7a, 0xc1, 0x21, 0x8b, 0xee, 0x29, 0xd6, 0x2b, 0xcb, 0xb9, 0xce,
-	0x7b, 0xe1, 0x44, 0x11, 0x8d, 0xd2, 0xfb, 0xb3, 0x93, 0x9d, 0x34, 0xd7, 0xfc, 0x8c, 0xa0, 0x9c,
-	0xb1, 0x22, 0x42, 0x16, 0x08, 0x7a, 0x69, 0x7e, 0x3e, 0x21, 0x28, 0x3d, 0xa2, 0x57, 0xa4, 0x38,
-	0x5f, 0x10, 0xdc, 0x5c, 0x32, 0x73, 0xc9, 0xe5, 0xf9, 0x80, 0x60, 0xb3, 0x25, 0xdc, 0x97, 0x61,
-	0x9f, 0x48, 0xfa, 0x22, 0x7a, 0x77, 0xf8, 0x01, 0x14, 0xc8, 0x50, 0x1e, 0x31, 0xee, 0xc9, 0xc9,
-	0x7f, 0x9d, 0x2c, 0x42, 0xf1, 0x1d, 0x58, 0x8f, 0x5f, 0xae, 0x72, 0x52, 0xce, 0x38, 0x89, 0xc5,
-	0x1d, 0x15, 0xd2, 0xd8, 0x98, 0x5b, 0x59, 0x90, 0xcd, 0x6d, 0xd8, 0x5a, 0xf2, 0x91, 0xd4, 0xa6,
-	0xfe, 0x0d, 0x41, 0xbe, 0x25, 0x5c, 0xfc, 0x14, 0x8a, 0xa9, 0xd2, 0xe1, 0x5b, 0x19, 0xf9, 0x6c,
-	0x87, 0xf5, 0xea, 0xc5, 0xa0, 0xaa, 0xb8, 0x03, 0xd7, 0x33, 0xad, 0xc0, 0xb7, 0x33, 0x94, 0xe5,
-	0x6f, 0x46, 0x37, 0xff, 0x05, 0xc7, 0x9a, 0xfa, 0xda, 0xbb, 0xb3, 0x93, 0x1d, 0xb4, 0xf7, 0xf8,
-	0xe7, 0xd4, 0x40, 0xa7, 0x53, 0x03, 0xfd, 0x99, 0x1a, 0xe8, 0xeb, 0xcc, 0xc8, 0x9d, 0xce, 0x8c,
-	0xdc, 0xef, 0x99, 0x91, 0x7b, 0xb5, 0xeb, 0x7a, 0xf2, 0x68, 0xd8, 0xb5, 0x7a, 0xcc, 0xb7, 0xf7,
-	0x63, 0xb9, 0x67, 0x54, 0xbe, 0x65, 0xfc, 0xd8, 0x4e, 0x06, 0xe0, 0x38, 0x1e, 0xc6, 0x93, 0x90,
-	0x8a, 0xee, 0x7a, 0x34, 0x02, 0xef, 0xff, 0x0d, 0x00, 0x00, 0xff, 0xff, 0x2e, 0xf9, 0x90, 0x0d,
-	0xa8, 0x05, 0x00, 0x00,
+	// 448 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xcc, 0x54, 0x4d, 0x6f, 0xd3, 0x40,
+	0x10, 0xcd, 0x92, 0x94, 0xd2, 0x31, 0xd0, 0xb0, 0x04, 0x91, 0x1a, 0x61, 0x22, 0x9f, 0x42, 0xa4,
+	0xda, 0xa2, 0xdc, 0xe0, 0x94, 0x8a, 0x0f, 0x55, 0xe2, 0x43, 0x72, 0xa4, 0x1e, 0xb8, 0x44, 0xdb,
+	0x78, 0x63, 0x2c, 0x64, 0xaf, 0xd9, 0x59, 0xdc, 0x70, 0x43, 0xdc, 0x10, 0x12, 0xea, 0x2f, 0x41,
+	0x39, 0xf0, 0x23, 0x38, 0x56, 0x9c, 0x38, 0xa2, 0xe4, 0xd0, 0xbf, 0x81, 0xbc, 0x6b, 0xb7, 0x75,
+	0x25, 0xb8, 0xb6, 0x27, 0x7b, 0xe6, 0xbd, 0x7d, 0x9e, 0xf7, 0xac, 0x1d, 0xe8, 0xf0, 0x99, 0x98,
+	0x08, 0xc9, 0x7d, 0x96, 0xa3, 0xaf, 0x66, 0x5e, 0x26, 0x85, 0x12, 0xd4, 0x2a, 0xbb, 0x1e, 0xcb,
+	0xd1, 0xbe, 0x3d, 0x11, 0x98, 0x08, 0xf4, 0x13, 0x8c, 0xfc, 0xfc, 0x41, 0xf1, 0x30, 0x2c, 0x7b,
+	0xc3, 0x00, 0x63, 0x5d, 0xf9, 0xa6, 0x30, 0x90, 0x3b, 0x27, 0xb0, 0x3a, 0xdc, 0x1d, 0xed, 0xa4,
+	0x53, 0x41, 0x29, 0xb4, 0x52, 0x96, 0xf0, 0x2e, 0xe9, 0x91, 0xfe, 0x5a, 0xa0, 0xdf, 0xe9, 0x3d,
+	0xb0, 0x58, 0x8e, 0x63, 0x16, 0x86, 0x92, 0x23, 0x76, 0x2f, 0x69, 0x08, 0x58, 0x8e, 0x43, 0xd3,
+	0xa1, 0xf7, 0xa1, 0x2d, 0x32, 0x2e, 0x99, 0x12, 0xf2, 0x98, 0xd5, 0xec, 0x35, 0xfb, 0x6b, 0xc1,
+	0x7a, 0xd5, 0xaf, 0xa8, 0x03, 0xb8, 0x51, 0x68, 0x89, 0xfd, 0x94, 0x9f, 0x70, 0x5b, 0x5a, 0x71,
+	0x9d, 0xe5, 0xf8, 0xba, 0xe8, 0x57, 0xdc, 0x0d, 0xb8, 0xc2, 0x10, 0xb9, 0x1a, 0xc7, 0x61, 0x77,
+	0x45, 0xcb, 0xad, 0xea, 0x7a, 0x27, 0x74, 0xbf, 0x10, 0xb8, 0x1e, 0xf0, 0x28, 0x46, 0xc5, 0xe5,
+	0x70, 0x77, 0x14, 0xf0, 0xf7, 0xf4, 0x31, 0x5c, 0x9d, 0x4a, 0x91, 0x1c, 0x8b, 0x6a, 0x07, 0xdb,
+	0xdd, 0x5f, 0x3f, 0x36, 0x3b, 0xa5, 0xdb, 0x52, 0x77, 0xa4, 0x64, 0x9c, 0x46, 0x81, 0x55, 0xb0,
+	0xab, 0x4f, 0xf5, 0xa1, 0x15, 0xa7, 0x53, 0xa1, 0xbd, 0x59, 0x5b, 0x1d, 0xef, 0x54, 0xa4, 0x5e,
+	0x19, 0x4d, 0xa0, 0x19, 0x8f, 0xda, 0x9f, 0x8f, 0xe6, 0x03, 0xeb, 0xd9, 0xc9, 0x59, 0xf7, 0x1b,
+	0x81, 0x9b, 0xb5, 0x59, 0x30, 0x13, 0x29, 0xf2, 0xf3, 0x1b, 0xe8, 0x2b, 0x81, 0xf6, 0x13, 0x7e,
+	0x51, 0xe2, 0x39, 0x20, 0x70, 0xeb, 0xcc, 0x34, 0xe7, 0x1c, 0xd0, 0xd6, 0x77, 0x02, 0xcd, 0x97,
+	0x18, 0xd1, 0x17, 0x60, 0x9d, 0x9a, 0x8b, 0xde, 0xa9, 0x89, 0xd4, 0xf3, 0xb3, 0x7b, 0xff, 0x06,
+	0x4b, 0x3b, 0x01, 0x5c, 0xab, 0xf9, 0xa4, 0x77, 0x6b, 0x47, 0xce, 0xfe, 0x11, 0xdb, 0xfd, 0x1f,
+	0x6c, 0x34, 0xed, 0x95, 0x4f, 0x47, 0xf3, 0x01, 0xd9, 0x7e, 0xfe, 0x73, 0xe1, 0x90, 0xc3, 0x85,
+	0x43, 0xfe, 0x2c, 0x1c, 0x72, 0xb0, 0x74, 0x1a, 0x87, 0x4b, 0xa7, 0xf1, 0x7b, 0xe9, 0x34, 0xde,
+	0x6c, 0x46, 0xb1, 0x7a, 0xfb, 0x61, 0xcf, 0x9b, 0x88, 0xc4, 0x7f, 0x6a, 0xe4, 0x5e, 0x71, 0xb5,
+	0x2f, 0xe4, 0x3b, 0xbf, 0x5a, 0x16, 0x33, 0xb3, 0x2e, 0x3e, 0x66, 0x1c, 0xf7, 0x2e, 0xeb, 0x1b,
+	0xff, 0xf0, 0x6f, 0x00, 0x00, 0x00, 0xff, 0xff, 0x3a, 0x5f, 0x36, 0xdd, 0x4a, 0x04, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -631,6 +496,22 @@ func (m *AVSInfo) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	_ = i
 	var l int
 	_ = l
+	if len(m.AssetId) > 0 {
+		for iNdEx := len(m.AssetId) - 1; iNdEx >= 0; iNdEx-- {
+			i -= len(m.AssetId[iNdEx])
+			copy(dAtA[i:], m.AssetId[iNdEx])
+			i = encodeVarintTx(dAtA, i, uint64(len(m.AssetId[iNdEx])))
+			i--
+			dAtA[i] = 0x2a
+		}
+	}
+	if len(m.AvsOwnerAddress) > 0 {
+		i -= len(m.AvsOwnerAddress)
+		copy(dAtA[i:], m.AvsOwnerAddress)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.AvsOwnerAddress)))
+		i--
+		dAtA[i] = 0x22
+	}
 	if len(m.OperatorAddress) > 0 {
 		for iNdEx := len(m.OperatorAddress) - 1; iNdEx >= 0; iNdEx-- {
 			i -= len(m.OperatorAddress[iNdEx])
@@ -640,10 +521,10 @@ func (m *AVSInfo) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 			dAtA[i] = 0x1a
 		}
 	}
-	if len(m.AVSAddress) > 0 {
-		i -= len(m.AVSAddress)
-		copy(dAtA[i:], m.AVSAddress)
-		i = encodeVarintTx(dAtA, i, uint64(len(m.AVSAddress)))
+	if len(m.AvsAddress) > 0 {
+		i -= len(m.AvsAddress)
+		copy(dAtA[i:], m.AvsAddress)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.AvsAddress)))
 		i--
 		dAtA[i] = 0x12
 	}
@@ -653,48 +534,6 @@ func (m *AVSInfo) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		i = encodeVarintTx(dAtA, i, uint64(len(m.Name)))
 		i--
 		dAtA[i] = 0xa
-	}
-	return len(dAtA) - i, nil
-}
-
-func (m *AVSManager) Marshal() (dAtA []byte, err error) {
-	size := m.Size()
-	dAtA = make([]byte, size)
-	n, err := m.MarshalToSizedBuffer(dAtA[:size])
-	if err != nil {
-		return nil, err
-	}
-	return dAtA[:n], nil
-}
-
-func (m *AVSManager) MarshalTo(dAtA []byte) (int, error) {
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
-}
-
-func (m *AVSManager) MarshalToSizedBuffer(dAtA []byte) (int, error) {
-	i := len(dAtA)
-	_ = i
-	var l int
-	_ = l
-	if len(m.AVSOperatorRelation) > 0 {
-		for k := range m.AVSOperatorRelation {
-			v := m.AVSOperatorRelation[k]
-			baseI := i
-			i -= len(v)
-			copy(dAtA[i:], v)
-			i = encodeVarintTx(dAtA, i, uint64(len(v)))
-			i--
-			dAtA[i] = 0x12
-			i -= len(k)
-			copy(dAtA[i:], k)
-			i = encodeVarintTx(dAtA, i, uint64(len(k)))
-			i--
-			dAtA[i] = 0xa
-			i = encodeVarintTx(dAtA, i, uint64(baseI-i))
-			i--
-			dAtA[i] = 0xa
-		}
 	}
 	return len(dAtA) - i, nil
 }
@@ -867,71 +706,6 @@ func (m *DeRegisterAVSResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
-func (m *MsgUpdateParams) Marshal() (dAtA []byte, err error) {
-	size := m.Size()
-	dAtA = make([]byte, size)
-	n, err := m.MarshalToSizedBuffer(dAtA[:size])
-	if err != nil {
-		return nil, err
-	}
-	return dAtA[:n], nil
-}
-
-func (m *MsgUpdateParams) MarshalTo(dAtA []byte) (int, error) {
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
-}
-
-func (m *MsgUpdateParams) MarshalToSizedBuffer(dAtA []byte) (int, error) {
-	i := len(dAtA)
-	_ = i
-	var l int
-	_ = l
-	if m.Params != nil {
-		{
-			size, err := m.Params.MarshalToSizedBuffer(dAtA[:i])
-			if err != nil {
-				return 0, err
-			}
-			i -= size
-			i = encodeVarintTx(dAtA, i, uint64(size))
-		}
-		i--
-		dAtA[i] = 0x12
-	}
-	if len(m.Authority) > 0 {
-		i -= len(m.Authority)
-		copy(dAtA[i:], m.Authority)
-		i = encodeVarintTx(dAtA, i, uint64(len(m.Authority)))
-		i--
-		dAtA[i] = 0xa
-	}
-	return len(dAtA) - i, nil
-}
-
-func (m *MsgUpdateParamsResponse) Marshal() (dAtA []byte, err error) {
-	size := m.Size()
-	dAtA = make([]byte, size)
-	n, err := m.MarshalToSizedBuffer(dAtA[:size])
-	if err != nil {
-		return nil, err
-	}
-	return dAtA[:n], nil
-}
-
-func (m *MsgUpdateParamsResponse) MarshalTo(dAtA []byte) (int, error) {
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
-}
-
-func (m *MsgUpdateParamsResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
-	i := len(dAtA)
-	_ = i
-	var l int
-	_ = l
-	return len(dAtA) - i, nil
-}
-
 func encodeVarintTx(dAtA []byte, offset int, v uint64) int {
 	offset -= sovTx(v)
 	base := offset
@@ -953,7 +727,7 @@ func (m *AVSInfo) Size() (n int) {
 	if l > 0 {
 		n += 1 + l + sovTx(uint64(l))
 	}
-	l = len(m.AVSAddress)
+	l = len(m.AvsAddress)
 	if l > 0 {
 		n += 1 + l + sovTx(uint64(l))
 	}
@@ -963,21 +737,14 @@ func (m *AVSInfo) Size() (n int) {
 			n += 1 + l + sovTx(uint64(l))
 		}
 	}
-	return n
-}
-
-func (m *AVSManager) Size() (n int) {
-	if m == nil {
-		return 0
+	l = len(m.AvsOwnerAddress)
+	if l > 0 {
+		n += 1 + l + sovTx(uint64(l))
 	}
-	var l int
-	_ = l
-	if len(m.AVSOperatorRelation) > 0 {
-		for k, v := range m.AVSOperatorRelation {
-			_ = k
-			_ = v
-			mapEntrySize := 1 + len(k) + sovTx(uint64(len(k))) + 1 + len(v) + sovTx(uint64(len(v)))
-			n += mapEntrySize + 1 + sovTx(uint64(mapEntrySize))
+	if len(m.AssetId) > 0 {
+		for _, s := range m.AssetId {
+			l = len(s)
+			n += 1 + l + sovTx(uint64(l))
 		}
 	}
 	return n
@@ -1051,32 +818,6 @@ func (m *DeRegisterAVSResponse) Size() (n int) {
 	return n
 }
 
-func (m *MsgUpdateParams) Size() (n int) {
-	if m == nil {
-		return 0
-	}
-	var l int
-	_ = l
-	l = len(m.Authority)
-	if l > 0 {
-		n += 1 + l + sovTx(uint64(l))
-	}
-	if m.Params != nil {
-		l = m.Params.Size()
-		n += 1 + l + sovTx(uint64(l))
-	}
-	return n
-}
-
-func (m *MsgUpdateParamsResponse) Size() (n int) {
-	if m == nil {
-		return 0
-	}
-	var l int
-	_ = l
-	return n
-}
-
 func sovTx(x uint64) (n int) {
 	return (math_bits.Len64(x|1) + 6) / 7
 }
@@ -1146,7 +887,7 @@ func (m *AVSInfo) Unmarshal(dAtA []byte) error {
 			iNdEx = postIndex
 		case 2:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field AVSAddress", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field AvsAddress", wireType)
 			}
 			var stringLen uint64
 			for shift := uint(0); ; shift += 7 {
@@ -1174,7 +915,7 @@ func (m *AVSInfo) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.AVSAddress = string(dAtA[iNdEx:postIndex])
+			m.AvsAddress = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
 		case 3:
 			if wireType != 2 {
@@ -1208,61 +949,11 @@ func (m *AVSInfo) Unmarshal(dAtA []byte) error {
 			}
 			m.OperatorAddress = append(m.OperatorAddress, string(dAtA[iNdEx:postIndex]))
 			iNdEx = postIndex
-		default:
-			iNdEx = preIndex
-			skippy, err := skipTx(dAtA[iNdEx:])
-			if err != nil {
-				return err
-			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
-				return ErrInvalidLengthTx
-			}
-			if (iNdEx + skippy) > l {
-				return io.ErrUnexpectedEOF
-			}
-			iNdEx += skippy
-		}
-	}
-
-	if iNdEx > l {
-		return io.ErrUnexpectedEOF
-	}
-	return nil
-}
-func (m *AVSManager) Unmarshal(dAtA []byte) error {
-	l := len(dAtA)
-	iNdEx := 0
-	for iNdEx < l {
-		preIndex := iNdEx
-		var wire uint64
-		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
-				return ErrIntOverflowTx
-			}
-			if iNdEx >= l {
-				return io.ErrUnexpectedEOF
-			}
-			b := dAtA[iNdEx]
-			iNdEx++
-			wire |= uint64(b&0x7F) << shift
-			if b < 0x80 {
-				break
-			}
-		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
-		if wireType == 4 {
-			return fmt.Errorf("proto: AVSManager: wiretype end group for non-group")
-		}
-		if fieldNum <= 0 {
-			return fmt.Errorf("proto: AVSManager: illegal tag %d (wire type %d)", fieldNum, wire)
-		}
-		switch fieldNum {
-		case 1:
+		case 4:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field AVSOperatorRelation", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field AvsOwnerAddress", wireType)
 			}
-			var msglen int
+			var stringLen uint64
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowTx
@@ -1272,118 +963,55 @@ func (m *AVSManager) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				msglen |= int(b&0x7F) << shift
+				stringLen |= uint64(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
 			}
-			if msglen < 0 {
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
 				return ErrInvalidLengthTx
 			}
-			postIndex := iNdEx + msglen
+			postIndex := iNdEx + intStringLen
 			if postIndex < 0 {
 				return ErrInvalidLengthTx
 			}
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			if m.AVSOperatorRelation == nil {
-				m.AVSOperatorRelation = make(map[string]string)
+			m.AvsOwnerAddress = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 5:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field AssetId", wireType)
 			}
-			var mapkey string
-			var mapvalue string
-			for iNdEx < postIndex {
-				entryPreIndex := iNdEx
-				var wire uint64
-				for shift := uint(0); ; shift += 7 {
-					if shift >= 64 {
-						return ErrIntOverflowTx
-					}
-					if iNdEx >= l {
-						return io.ErrUnexpectedEOF
-					}
-					b := dAtA[iNdEx]
-					iNdEx++
-					wire |= uint64(b&0x7F) << shift
-					if b < 0x80 {
-						break
-					}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
 				}
-				fieldNum := int32(wire >> 3)
-				if fieldNum == 1 {
-					var stringLenmapkey uint64
-					for shift := uint(0); ; shift += 7 {
-						if shift >= 64 {
-							return ErrIntOverflowTx
-						}
-						if iNdEx >= l {
-							return io.ErrUnexpectedEOF
-						}
-						b := dAtA[iNdEx]
-						iNdEx++
-						stringLenmapkey |= uint64(b&0x7F) << shift
-						if b < 0x80 {
-							break
-						}
-					}
-					intStringLenmapkey := int(stringLenmapkey)
-					if intStringLenmapkey < 0 {
-						return ErrInvalidLengthTx
-					}
-					postStringIndexmapkey := iNdEx + intStringLenmapkey
-					if postStringIndexmapkey < 0 {
-						return ErrInvalidLengthTx
-					}
-					if postStringIndexmapkey > l {
-						return io.ErrUnexpectedEOF
-					}
-					mapkey = string(dAtA[iNdEx:postStringIndexmapkey])
-					iNdEx = postStringIndexmapkey
-				} else if fieldNum == 2 {
-					var stringLenmapvalue uint64
-					for shift := uint(0); ; shift += 7 {
-						if shift >= 64 {
-							return ErrIntOverflowTx
-						}
-						if iNdEx >= l {
-							return io.ErrUnexpectedEOF
-						}
-						b := dAtA[iNdEx]
-						iNdEx++
-						stringLenmapvalue |= uint64(b&0x7F) << shift
-						if b < 0x80 {
-							break
-						}
-					}
-					intStringLenmapvalue := int(stringLenmapvalue)
-					if intStringLenmapvalue < 0 {
-						return ErrInvalidLengthTx
-					}
-					postStringIndexmapvalue := iNdEx + intStringLenmapvalue
-					if postStringIndexmapvalue < 0 {
-						return ErrInvalidLengthTx
-					}
-					if postStringIndexmapvalue > l {
-						return io.ErrUnexpectedEOF
-					}
-					mapvalue = string(dAtA[iNdEx:postStringIndexmapvalue])
-					iNdEx = postStringIndexmapvalue
-				} else {
-					iNdEx = entryPreIndex
-					skippy, err := skipTx(dAtA[iNdEx:])
-					if err != nil {
-						return err
-					}
-					if (skippy < 0) || (iNdEx+skippy) < 0 {
-						return ErrInvalidLengthTx
-					}
-					if (iNdEx + skippy) > postIndex {
-						return io.ErrUnexpectedEOF
-					}
-					iNdEx += skippy
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
 				}
 			}
-			m.AVSOperatorRelation[mapkey] = mapvalue
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.AssetId = append(m.AssetId, string(dAtA[iNdEx:postIndex]))
 			iNdEx = postIndex
 		default:
 			iNdEx = preIndex
@@ -1857,174 +1485,6 @@ func (m *DeRegisterAVSResponse) Unmarshal(dAtA []byte) error {
 				return err
 			}
 			iNdEx = postIndex
-		default:
-			iNdEx = preIndex
-			skippy, err := skipTx(dAtA[iNdEx:])
-			if err != nil {
-				return err
-			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
-				return ErrInvalidLengthTx
-			}
-			if (iNdEx + skippy) > l {
-				return io.ErrUnexpectedEOF
-			}
-			iNdEx += skippy
-		}
-	}
-
-	if iNdEx > l {
-		return io.ErrUnexpectedEOF
-	}
-	return nil
-}
-func (m *MsgUpdateParams) Unmarshal(dAtA []byte) error {
-	l := len(dAtA)
-	iNdEx := 0
-	for iNdEx < l {
-		preIndex := iNdEx
-		var wire uint64
-		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
-				return ErrIntOverflowTx
-			}
-			if iNdEx >= l {
-				return io.ErrUnexpectedEOF
-			}
-			b := dAtA[iNdEx]
-			iNdEx++
-			wire |= uint64(b&0x7F) << shift
-			if b < 0x80 {
-				break
-			}
-		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
-		if wireType == 4 {
-			return fmt.Errorf("proto: MsgUpdateParams: wiretype end group for non-group")
-		}
-		if fieldNum <= 0 {
-			return fmt.Errorf("proto: MsgUpdateParams: illegal tag %d (wire type %d)", fieldNum, wire)
-		}
-		switch fieldNum {
-		case 1:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Authority", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowTx
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthTx
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLengthTx
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.Authority = string(dAtA[iNdEx:postIndex])
-			iNdEx = postIndex
-		case 2:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Params", wireType)
-			}
-			var msglen int
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowTx
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				msglen |= int(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			if msglen < 0 {
-				return ErrInvalidLengthTx
-			}
-			postIndex := iNdEx + msglen
-			if postIndex < 0 {
-				return ErrInvalidLengthTx
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			if m.Params == nil {
-				m.Params = &Params{}
-			}
-			if err := m.Params.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
-				return err
-			}
-			iNdEx = postIndex
-		default:
-			iNdEx = preIndex
-			skippy, err := skipTx(dAtA[iNdEx:])
-			if err != nil {
-				return err
-			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
-				return ErrInvalidLengthTx
-			}
-			if (iNdEx + skippy) > l {
-				return io.ErrUnexpectedEOF
-			}
-			iNdEx += skippy
-		}
-	}
-
-	if iNdEx > l {
-		return io.ErrUnexpectedEOF
-	}
-	return nil
-}
-func (m *MsgUpdateParamsResponse) Unmarshal(dAtA []byte) error {
-	l := len(dAtA)
-	iNdEx := 0
-	for iNdEx < l {
-		preIndex := iNdEx
-		var wire uint64
-		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
-				return ErrIntOverflowTx
-			}
-			if iNdEx >= l {
-				return io.ErrUnexpectedEOF
-			}
-			b := dAtA[iNdEx]
-			iNdEx++
-			wire |= uint64(b&0x7F) << shift
-			if b < 0x80 {
-				break
-			}
-		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
-		if wireType == 4 {
-			return fmt.Errorf("proto: MsgUpdateParamsResponse: wiretype end group for non-group")
-		}
-		if fieldNum <= 0 {
-			return fmt.Errorf("proto: MsgUpdateParamsResponse: illegal tag %d (wire type %d)", fieldNum, wire)
-		}
-		switch fieldNum {
 		default:
 			iNdEx = preIndex
 			skippy, err := skipTx(dAtA[iNdEx:])

@@ -43,17 +43,11 @@ import (
 	depositKeeper "github.com/ExocoreNetwork/exocore/x/deposit/keeper"
 	depositTypes "github.com/ExocoreNetwork/exocore/x/deposit/types"
 
-	"github.com/ExocoreNetwork/exocore/x/operator"
-	operatorKeeper "github.com/ExocoreNetwork/exocore/x/operator/keeper"
 	operatorTypes "github.com/ExocoreNetwork/exocore/x/operator/types"
 
 	"github.com/ExocoreNetwork/exocore/x/reward"
 	rewardKeeper "github.com/ExocoreNetwork/exocore/x/reward/keeper"
 	rewardTypes "github.com/ExocoreNetwork/exocore/x/reward/types"
-
-	exoslash "github.com/ExocoreNetwork/exocore/x/slash"
-	slashKeeper "github.com/ExocoreNetwork/exocore/x/slash/keeper"
-	exoslashTypes "github.com/ExocoreNetwork/exocore/x/slash/types"
 
 	"github.com/ExocoreNetwork/exocore/x/withdraw"
 	withdrawKeeper "github.com/ExocoreNetwork/exocore/x/withdraw/keeper"
@@ -663,7 +657,7 @@ func NewExocoreApp(
 	app.WithdrawKeeper = *withdrawKeeper.NewKeeper(appCodec, keys[withdrawTypes.StoreKey], app.AssetsKeeper, app.DepositKeeper)
 	app.RewardKeeper = *rewardKeeper.NewKeeper(appCodec, keys[rewardTypes.StoreKey], app.AssetsKeeper)
 	app.ExoSlashKeeper = slashKeeper.NewKeeper(appCodec, keys[exoslashTypes.StoreKey], app.AssetsKeeper)
-	app.AVSManagerKeeper = *avsManagerKeeper.NewKeeper(appCodec, keys[avsManagerTypes.StoreKey], &app.OperatorKeeper)
+	app.AVSManagerKeeper = *avsManagerKeeper.NewKeeper(appCodec, keys[avsManagerTypes.StoreKey], &app.OperatorKeeper, app.AssetsKeeper)
 	// We call this after setting the hooks to ensure that the hooks are set on the keeper
 	evmKeeper.WithPrecompiles(
 		evmkeeper.AvailablePrecompiles(

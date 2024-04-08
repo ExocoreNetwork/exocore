@@ -1,73 +1,72 @@
 syntax = "proto3";
 package exocore.avs;
-import "amino/amino.proto";
 import "cosmos/msg/v1/msg.proto";
 import "cosmos_proto/cosmos.proto";
-import "exocore/delegation/v1/tx.proto";
-import "exocore/avs/params.proto";
 
 option go_package = "github.com/ExocoreNetwork/exocore/x/avs/types";
 
+// AVSinfo represent the information of avs
 message AVSInfo {
-    string name = 1;
-    string AVSAddress = 2;
-    repeated string operatorAddress = 3;
-    
+  // name of avs
+  string name = 1;
+  // address of avs
+  string avs_address = 2;
+  // registered operator of avs
+  repeated string operator_address = 3;
+  // the owner who has permission for avs
+  string avs_owner_address = 4;
+  // asset_basic_info is all the basic asset information of the avs.
+  repeated string asset_id = 5;
 }
 
-message AVSManager {
-    map <string, string> AVSOperatorRelation = 1;
-}
-
+// RegisterAVSReq is requst to register avs
 message RegisterAVSReq {
-    option (cosmos.msg.v1.signer) = "FromAddress";
-    string FromAddress = 1
-    [(cosmos_proto.scalar) = "cosmos.AddressString"];
-    AVSInfo info = 2;
+  // from_address is the source
+  option (cosmos.msg.v1.signer) = "FromAddress";
+  // from_address is the source
+  string from_address = 1
+  [(cosmos_proto.scalar) = "cosmos.AddressString"];
+  // avs information
+  AVSInfo info = 2;
 }
 
+// RegisterAVSResponse is the response for register avs
 message RegisterAVSResponse {
-    option (cosmos.msg.v1.signer) = "FromAddress";
-    string FromAddress = 1
-    [(cosmos_proto.scalar) = "cosmos.AddressString"];
-    AVSInfo info = 2;
+  // from_address is the source
+  option (cosmos.msg.v1.signer) = "FromAddress";
+  // from_address is the source
+  string from_address = 1
+  [(cosmos_proto.scalar) = "cosmos.AddressString"];
+  // avs information
+  AVSInfo info = 2;
 }
 
+// DeRegisterAVSReq is requst to deregister avs
 message DeRegisterAVSReq {
-    option (cosmos.msg.v1.signer) = "FromAddress";
-    string FromAddress = 1
-    [(cosmos_proto.scalar) = "cosmos.AddressString"];
-    AVSInfo info = 2;
+  option (cosmos.msg.v1.signer) = "FromAddress";
+  // from_address is the source address
+  string from_address = 1
+  [(cosmos_proto.scalar) = "cosmos.AddressString"];
+  // avs information
+  AVSInfo info = 2;
 }
 
+// DeRegisterAVSResponse is requst to register avs
 message DeRegisterAVSResponse {
-    option (cosmos.msg.v1.signer) = "FromAddress";
-    string FromAddress = 1
-    [(cosmos_proto.scalar) = "cosmos.AddressString"];
-    AVSInfo info = 2;
+  // from_address is the source address
+  option (cosmos.msg.v1.signer) = "FromAddress";
+  // from_address is the source address
+  string from_address = 1
+  [(cosmos_proto.scalar) = "cosmos.AddressString"];
+  // avs information
+  AVSInfo info = 2;
 }
 
 // Msg defines the AVS related Msg service.
 service Msg {
-    option (cosmos.msg.v1.service) = true;
-    // RegisterAVS registers a new AVS with corresponding operator.
-    rpc RegisterAVS (RegisterAVSReq) returns (RegisterAVSResponse);
-    // DelegateAssetToOperator delegates asset to operator.
-    rpc DeRegisterAVS (DeRegisterAVSReq) returns (DeRegisterAVSResponse);
+  option (cosmos.msg.v1.service) = true;
+  // RegisterAVS registers a new AVS with corresponding operator.
+  rpc RegisterAVS (RegisterAVSReq) returns (RegisterAVSResponse);
+  // DelegateAssetToOperator delegates asset to operator.
+  rpc DeRegisterAVS (DeRegisterAVSReq) returns (DeRegisterAVSResponse);
 }
-
-// MsgUpdateParams is the Msg/UpdateParams request type for Erc20 parameters.
-message MsgUpdateParams {
-    // todo: temporarily not update configuration through gov module
-    option (cosmos.msg.v1.signer) = "authority";
-    // authority is the address of the governance account.
-    string authority = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
-  
-    // params defines the x/evm parameters to update.
-    // NOTE: All parameters must be supplied.
-    Params params = 2;
-  }
-  
-// MsgUpdateParamsResponse defines the response structure for executing a
-// MsgUpdateParams message.
-message MsgUpdateParamsResponse {}

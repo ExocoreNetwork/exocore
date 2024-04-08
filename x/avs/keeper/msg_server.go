@@ -8,7 +8,7 @@ import (
 
 var _ types.MsgServer = &Keeper{}
 
-func (k Keeper) RegisterAVS(ctx context.Context, req *types.RegisterAVSReq) (*types.RegisterAVSResponse, error) {
+func (k Keeper) RegisterAVS(_ context.Context, _ *types.RegisterAVSReq) (*types.RegisterAVSResponse, error) {
 	// Disable cosmos transaction temporarily
 	// c := sdk.UnwrapSDKContext(ctx)
 	// fromAddress := req.FromAddress
@@ -24,7 +24,7 @@ func (k Keeper) RegisterAVS(ctx context.Context, req *types.RegisterAVSReq) (*ty
 	return nil, nil
 }
 
-func (k Keeper) DeRegisterAVS(ctx context.Context, req *types.DeRegisterAVSReq) (*types.DeRegisterAVSResponse, error) {
+func (k Keeper) DeRegisterAVS(_ context.Context, _ *types.DeRegisterAVSReq) (*types.DeRegisterAVSResponse, error) {
 	// Disable cosmos transaction temporarily
 	// c := sdk.UnwrapSDKContext(ctx)
 	// if err := k.DeleteAVSInfo(c, req.Info); err != nil {

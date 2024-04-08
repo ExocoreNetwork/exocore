@@ -13,12 +13,12 @@ IAVSManager constant AVSMANAGER_CONTRACT = IAVSManager(
 /// @dev The interface through which solidity contracts will interact with AVS-Manager
 /// @custom:address 0x0000000000000000000000000000000000000902
 interface IAVSManager {
-    function AVSInfoRegisterOrDeregister(
+    function AVSAction(
         string memory avsName,
-        bytes memory avsAddress,
-        bytes memory operatorAddress,
-        uint64 action
-        
+        string memory avsAddress,
+        string memory operatorAddress,
+        uint64 action,
+        string memory avsOwnerAddress,
+        string memory assetID
     ) external returns (bool success);
-    
 }

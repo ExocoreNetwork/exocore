@@ -7,22 +7,32 @@
 				"type": "string"
 			},
 			{
-				"internalType": "bytes",
+				"internalType": "string",
 				"name": "avsAddress",
-				"type": "bytes"
+				"type": "string"
 			},
 			{
-				"internalType": "bytes",
+				"internalType": "string",
 				"name": "operatorAddress",
-				"type": "bytes"
+				"type": "string"
 			},
 			{
 				"internalType": "uint64",
 				"name": "action",
 				"type": "uint64"
+			},
+			{
+				"internalType": "string",
+				"name": "avsOwnerAddress",
+				"type": "string"
+			},
+			{
+				"internalType": "string",
+				"name": "assetID",
+				"type": "string"
 			}
 		],
-		"name": "AVSInfoRegisterOrDeregister",
+		"name": "AVSAction",
 		"outputs": [
 			{
 				"internalType": "bool",

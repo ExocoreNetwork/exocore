@@ -1,26 +1,30 @@
 syntax = "proto3";
 package exocore.avs;
 
+import "exocore/avs/tx.proto";
 import "gogoproto/gogo.proto";
 import "google/api/annotations.proto";
-import "cosmos/base/query/v1beta1/pagination.proto";
-import "exocore/avs/params.proto";
+
 
 option go_package = "github.com/ExocoreNetwork/exocore/x/avs/types";
+
+// QueryAVSInfoReq is the request to query avs related information
+message QueryAVSInfoReq {
+  // avs_address is the address of avs
+  string avs_address = 1 [(gogoproto.customname) = "AVSAddres"];
+}
+
+// QueryAVSInfoResponse is the response of avs related information
+message QueryAVSInfoResponse {
+  // basic information of avs
+  AVSInfo info = 1;
+}
+
 
 // Query defines the gRPC querier service.
 service Query {
   // Parameters queries the parameters of the module.
-  rpc Params(QueryParamsRequest) returns (QueryParamsResponse) {
-    option (google.api.http).get = "/ExocoreNetwork/exocore/avs/params";
+  rpc QueryAVSInfo(QueryAVSInfoReq) returns (QueryAVSInfoResponse) {
+    option (google.api.http).get = "/ExocoreNetwork/exocore/avs/QueryAVSInfo";
   }
-}
-
-// QueryParamsRequest is request type for the Query/Params RPC method.
-message QueryParamsRequest {}
-
-// QueryParamsResponse is response type for the Query/Params RPC method.
-message QueryParamsResponse {
-  // params holds all the parameters of this module.
-  Params params = 1 [(gogoproto.nullable) = false];
 }
