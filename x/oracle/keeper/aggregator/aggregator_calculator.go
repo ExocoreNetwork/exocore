@@ -128,7 +128,6 @@ func (c *calculator) getOrNewSourceId(sourceId int32) *roundPricesList {
 // fillPrice called upon new MsgCreatPrice arrived, to trigger the calculation to get to consensus on the same roundID_of_deterministic_source
 // v1 use mode1, TODO: switch modes
 func (c *calculator) fillPrice(pSources []*types.PriceWithSource, validator string, power *big.Int) (confirmedRounds []*confirmedPrice) {
-	//	fmt.Println("debug calculator.fillPrice, calculator.ds[1]", c.deterministicSource[1], pSources)
 	for _, pSource := range pSources {
 		rounds := c.getOrNewSourceId(pSource.SourceId)
 		if rounds.hasConfirmedDetId() {
@@ -145,7 +144,6 @@ func (c *calculator) fillPrice(pSources []*types.PriceWithSource, validator stri
 
 			roundPrice, _ := new(big.Int).SetString(pDetId.Price, 10)
 
-			//			fmt.Printf("debug calculator.fillPrice before updatePriceAndPower. power%s, price%s\n", power.String(), roundPrice.String())
 			updated, confirmed := round.updatePriceAndPower(&priceAndPower{roundPrice, power}, c.totalPower)
 			if updated && confirmed {
 				//sourceId, detId, price
@@ -155,7 +153,6 @@ func (c *calculator) fillPrice(pSources []*types.PriceWithSource, validator stri
 			}
 		}
 	}
-	//	fmt.Println("debug calculator.fillPrice, after calculator.ds[1]", c.deterministicSource[1])
 	return
 }
 

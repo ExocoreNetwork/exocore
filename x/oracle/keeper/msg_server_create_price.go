@@ -2,26 +2,46 @@ package keeper
 
 import (
 	"context"
+	"strconv"
 
 	"github.com/ExocoreNetwork/exocore/x/oracle/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
+// CreatePrice proposes price for new round of specific tokenFeeder
 func (k msgServer) CreatePrice(goCtx context.Context, msg *types.MsgCreatePrice) (*types.MsgCreatePriceResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
-	/**
-		1. aggregator.rInfo.Tokenid->status == 0(1 ignore and return)
-		2. basedBlock is valid [roundInfo.basedBlock, *+5], each base only allow for one submit each validator, window for submition is 5 blocks while every validator only allowed to submit at most 3 transactions each round
-		3. check the rule fulfilled(sources check), check the decimal of the 1st mathc the params' definition(among prices the decimal had been checked in ante stage), timestamp:later than previous block's timestamp, [not future than now(+1s), this is checked in anteHandler], timestamp verification is not necessary
-	**/
 
-	//newItem, caches, _ := k.GetAggregatorContext(ctx, k.Keeper).NewCreatePrice(ctx, msg)
-	newItem, caches, _ := GetAggregatorContext(ctx, k.Keeper).NewCreatePrice(ctx, msg)
-	//	fmt.Println("debug after NewCreatePrice", newItem, caches)
+	newItem, caches, err := GetAggregatorContext(ctx, k.Keeper).NewCreatePrice(ctx, msg)
+	if err != nil {
+		return nil, err
+	}
+
+	logger := k.Keeper.Logger(ctx)
+	logger.Info("add price proposal for aggregation", "feederID", msg.FeederId, "basedBlock", msg.BasedBlock, "proposer", msg.Creator)
+
+	ctx.EventManager().EmitEvent(sdk.NewEvent(
+		types.EventTypeCreatePrice,
+		sdk.NewAttribute(types.AttributeKeyFeederID, strconv.Itoa(int(msg.FeederId))),
+		sdk.NewAttribute(types.AttributeKeyBasedBlock, strconv.FormatInt(int64(msg.BasedBlock), 10)),
+		sdk.NewAttribute(types.AttributeKeyProposer, msg.Creator),
+	),
+	)
+
 	if caches != nil {
 		if newItem != nil {
 			k.AppendPriceTR(ctx, newItem.TokenId, newItem.PriceTR)
-			//TODO: move related caches
+
+			logger.Info("final price aggregation done", "feederID", msg.FeederId, "roundID", newItem.PriceTR.RoundId, "price", newItem.PriceTR.Price)
+
+			ctx.EventManager().EmitEvent(sdk.NewEvent(
+				types.EventTypeCreatePrice,
+				sdk.NewAttribute(types.AttributeKeyFeederID, strconv.Itoa(int(msg.FeederId))),
+				sdk.NewAttribute(types.AttributeKeyRoundID, strconv.FormatInt(int64(newItem.PriceTR.RoundId), 10)),
+				sdk.NewAttribute(types.AttributeKeyFinalPrice, newItem.PriceTR.Price),
+				sdk.NewAttribute(types.AttributeKeyPriceUpdated, types.AttributeValuePriceUpdatedSuccess),
+			),
+			)
 			cs.RemoveCache(caches)
 		} else {
 			cs.AddCache(caches)

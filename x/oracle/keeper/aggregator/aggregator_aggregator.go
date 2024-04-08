@@ -140,7 +140,6 @@ func (agg *aggregator) aggregate() *big.Int {
 	if agg.finalPrice != nil {
 		return agg.finalPrice
 	}
-	//	fmt.Printf("debug aggregator.aggregate(), reportPower:%s, totalPower:%s\n", agg.reportPower.String(), agg.totalPower.String())
 	//TODO: implemetn different MODE for definition of consensus,
 	//currently: use rule_1+MODE_1: {rule:specified source:`chainlink`, MODE: asap when power exceeds the threshold}
 	//1. check OVA threshold
@@ -148,7 +147,6 @@ func (agg *aggregator) aggregate() *big.Int {
 	if common.ExceedsThreshold(agg.reportPower, agg.totalPower) {
 		//TODO: this is kind of a mock way to suite V1, need update to check with params.rule
 		//check if IVA all reached consensus
-		//		fmt.Printf("debug aggregator.aggregate() len(dsPrice):%d\n", len(agg.dsPrices))
 		if len(agg.dsPrices) > 0 {
 			validatorPrices := make([]*big.Int, 0, len(agg.reports))
 			//do the aggregation to find out the 'final price'

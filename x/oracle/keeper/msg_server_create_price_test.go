@@ -113,7 +113,6 @@ var _ = Describe("MsgCreatePrice", func() {
 			c.GetCache(&iRes)
 			Expect(len(iRes)).Should(Equal(0))
 			prices := ks.k.GetAllPrices(sdk.UnwrapSDKContext(ks.ctx))
-			//fmt.Println("GetAllPrices", prices[0])
 			Expect(prices[0]).Should(BeEquivalentTo(types.Prices{
 				TokenId:     1,
 				NextRountId: 2,

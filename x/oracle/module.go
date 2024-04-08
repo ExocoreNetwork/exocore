@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"math/big"
+	"strconv"
 
 	// this line is used by starport scaffolding # 1
 
@@ -160,40 +161,59 @@ func (am AppModule) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.Val
 	forceSeal := false
 	agc := keeper.GetAggregatorContext(ctx, am.keeper)
 
+	logger := am.keeper.Logger(ctx)
 	if len(validatorUpdates) > 0 {
-		//validatorUpdates := am.keeper.GetValidatorUpdates(ctx)
 		validatorList := make(map[string]*big.Int)
 		for _, vu := range validatorUpdates {
 			pubKey, _ := cryptocodec.FromTmProtoPublicKey(vu.PubKey)
 			validator, _ := am.keeper.GetValidatorByConsAddr(ctx, sdk.GetConsAddress(pubKey))
 			validatorList[validator.OperatorAddress] = big.NewInt(vu.Power)
 		}
-		//	cs.AddCache(validatorList, am.keeper)
 		validatorPowers := make(map[string]*big.Int)
 		cs.GetCache(cache.CacheItemV(validatorPowers))
 		//update validatorPowerList in aggregatorContext
-		//		keeper.GetAggregatorContext(ctx, am.keeper).SetValidatorPowers(validatorPowers)
-		//	agc := keeper.GetAggregatorContext(ctx, am.keeper)
 		agc.SetValidatorPowers(validatorPowers)
 		//TODO: seal all alive round since validatorSet changed here
 		forceSeal = true
+		logger.Info("validator set changed, force seal all active rounds")
 	}
 
 	//TODO: for v1 use mode==1, just check the failed feeders
 	_, failed := agc.SealRound(ctx, forceSeal)
 	//append new round with previous price for fail-seal token
 	for _, tokenId := range failed {
+		event := sdk.NewEvent(
+			types.EventTypeCreatePrice,
+			sdk.NewAttribute(types.AttributeKeyTokenID, strconv.Itoa(int(tokenId))),
+			sdk.NewAttribute(types.AttributeKeyPriceUpdated, types.AttributeValuePriceUpdatedFail),
+		)
+		logInfo := fmt.Sprintf("add new round with previous price under fail aggregation, tokenID:%d", tokenId)
 		if pTR, ok := am.keeper.GetPriceTRLatest(ctx, tokenId); ok {
 			pTR.RoundId++
 			am.keeper.AppendPriceTR(ctx, tokenId, pTR)
+			logger.Info("add new round with previous price under fail aggregation", "tokenID", tokenId, "roundID", pTR.RoundId)
+			logInfo += fmt.Sprintf(", roundID:%d, price:%s", pTR.RoundId, pTR.Price)
+			event.AppendAttributes(
+				sdk.NewAttribute(types.AttributeKeyRoundID, strconv.Itoa(int(pTR.RoundId))),
+				sdk.NewAttribute(types.AttributeKeyFinalPrice, pTR.Price),
+			)
 		} else {
 			nextRoundId := am.keeper.GetNextRoundId(ctx, tokenId)
 			am.keeper.AppendPriceTR(ctx, tokenId, types.PriceWithTimeAndRound{
 				RoundId: nextRoundId,
 			})
+			logInfo += fmt.Sprintf(", roundID:%d, price:-", nextRoundId)
+			event.AppendAttributes(
+				sdk.NewAttribute(types.AttributeKeyRoundID, strconv.Itoa(int(nextRoundId))),
+				sdk.NewAttribute(types.AttributeKeyFinalPrice, "-"),
+			)
 		}
+		logger.Info(logInfo)
+		ctx.EventManager().EmitEvent(event)
 	}
+	//TODO: emit events for success sealed rounds(could ignore for v1)
 
+	logger.Info("prepare for next oracle round of each tokenFeeder")
 	agc.PrepareRound(ctx, 0)
 
 	cs.CommitCache(ctx, true, am.keeper)

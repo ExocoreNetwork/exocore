@@ -74,10 +74,8 @@ func (p Params) CheckRules(feederId int32, prices []*types.PriceWithSource) (boo
 				if source.Valid {
 					notFound = true
 					for _, p := range prices {
-						//						fmt.Println("debug rules check _0, p.sourceid", p.SourceId)
 						if p.SourceId == int32(sId) {
 							notFound = false
-							//							fmt.Println("debug rules match _0")
 							break
 						}
 					}
@@ -88,10 +86,8 @@ func (p Params) CheckRules(feederId int32, prices []*types.PriceWithSource) (boo
 			for _, source := range rule.SourceIds {
 				notFound = true
 				for _, p := range prices {
-					//					fmt.Println("debug rules check, p.sourceid", p.SourceId)
 					if p.SourceId == source {
 						notFound = false
-						//						fmt.Println("debug rules match")
 						break
 					}
 				}
@@ -99,7 +95,6 @@ func (p Params) CheckRules(feederId int32, prices []*types.PriceWithSource) (boo
 			}
 		}
 		if notFound {
-			//			fmt.Println("debug rules check, rule.sources", rule.SourceIds)
 			return false, errors.New("price source not match with rule")
 		}
 	}
