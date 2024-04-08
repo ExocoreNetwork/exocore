@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"time"
 
+	"cosmossdk.io/math"
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/crypto/keyring"
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
@@ -16,6 +17,7 @@ import (
 
 	exocoreapp "github.com/ExocoreNetwork/exocore/app"
 	"github.com/ExocoreNetwork/exocore/utils"
+	assetstypes "github.com/ExocoreNetwork/exocore/x/assets/types"
 	abci "github.com/cometbft/cometbft/abci/types"
 	"github.com/cometbft/cometbft/crypto/tmhash"
 	tmtypes "github.com/cometbft/cometbft/types"
@@ -81,6 +83,39 @@ func (suite *BaseTestSuite) SetupWithGenesisValSet(valSet *tmtypes.ValidatorSet,
 	// set genesis accounts
 	authGenesis := authtypes.NewGenesisState(authtypes.DefaultParams(), genAccs)
 	genesisState[authtypes.ModuleName] = app.AppCodec().MustMarshalJSON(authGenesis)
+
+	// set genesis staking assets
+	ethClientChain := assetstypes.ClientChainInfo{
+		Name:               "ethereum",
+		MetaInfo:           "ethereum blockchain",
+		ChainId:            1,
+		FinalizationBlocks: 10,
+		LayerZeroChainID:   101,
+		AddressLength:      20,
+	}
+	usdtClientChainAsset := assetstypes.AssetInfo{
+		Name:             "Tether USD",
+		Symbol:           "USDT",
+		Address:          "0xdAC17F958D2ee523a2206206994597C13D831ec7",
+		Decimals:         6,
+		LayerZeroChainID: ethClientChain.LayerZeroChainID,
+		MetaInfo:         "Tether USD token",
+	}
+	{
+		totalSupply, _ := sdk.NewIntFromString("40022689732746729")
+		usdtClientChainAsset.TotalSupply = totalSupply
+	}
+	stakingInfo := assetstypes.StakingAssetInfo{
+		AssetBasicInfo:     &usdtClientChainAsset,
+		StakingTotalAmount: math.NewInt(0),
+	}
+	assetsGenesis := assetstypes.NewGenesis(
+		assetstypes.DefaultParams(),
+		[]assetstypes.ClientChainInfo{ethClientChain},
+		[]assetstypes.StakingAssetInfo{stakingInfo},
+		[]assetstypes.DepositsByStaker{},
+	)
+	genesisState[assetstypes.ModuleName] = app.AppCodec().MustMarshalJSON(assetsGenesis)
 
 	validators := make([]stakingtypes.Validator, 0, len(valSet.Validators))
 	delegations := make([]stakingtypes.Delegation, 0, len(valSet.Validators))
