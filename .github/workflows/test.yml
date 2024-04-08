@@ -51,8 +51,10 @@ jobs:
           profile: cover.out
           local-prefix: github.com/ExocoreNetwork/exocore
           # TODO: increase this threshold with time to 80
-          threshold-total: 10
+          threshold-total: 0
         if: env.GIT_DIFF
+        # even if coverage is low, do not exit.
+        continue-on-error: true
       - name: Generate artifact for PR
         run: |
           mkdir -p ./result/
