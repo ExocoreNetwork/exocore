@@ -3,6 +3,7 @@ syntax = "proto3";
 package exocore.oracle;
 
 import "exocore/oracle/price.proto";
+import "cosmos_proto/cosmos.proto";
 
 option go_package = "github.com/ExocoreNetwork/exocore/x/oracle/types";
 
@@ -12,7 +13,7 @@ service Msg {
   rpc CreatePrice (MsgCreatePrice) returns (MsgCreatePriceResponse);
 }
 message MsgCreatePrice {
-  string creator = 1;
+  string creator = 1 [(cosmos_proto.scalar) = "cosmos.ValidatorAddressString"];
   //refer to id from Params.TokenFeeders, 0 is reserved, invalid to use
   int32 feeder_id = 2;
   repeated PriceWithSource prices = 3;

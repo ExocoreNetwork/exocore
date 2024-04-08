@@ -27,9 +27,7 @@ func (w *worker) do(msg *types.MsgCreatePrice) []*types.PriceWithSource {
 	list4Calculator, list4Aggregator := w.f.filtrate(msg)
 	if list4Aggregator != nil {
 		w.a.fillPrice(list4Aggregator, validator, power)
-		//	fmt.Printf("debug worker.do after fill aggregator\n")
 		if confirmedRounds := w.c.fillPrice(list4Calculator, validator, power); confirmedRounds != nil {
-			//		fmt.Printf("debug worker.do after fill calculator and have confirmedRounds\n")
 			w.a.confirmDSPrice(confirmedRounds)
 		}
 	}
