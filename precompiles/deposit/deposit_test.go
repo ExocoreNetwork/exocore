@@ -58,11 +58,6 @@ func (s *DepositPrecompileSuite) TestRunDepositTo() {
 	opAmount := big.NewInt(100)
 	assetAddr := usdtAddress
 	commonMalleate := func() (common.Address, []byte) {
-		// valAddr, err := sdk.ValAddressFromBech32(s.Validators[0].OperatorAddress)
-		// s.Require().NoError(err)
-		// val, _ := s.App.StakingKeeper.GetValidator(s.Ctx, valAddr)
-		// coins := sdk.NewCoins(sdk.NewCoin(utils.BaseDenom, sdk.NewInt(1e18)))
-		// s.App.DistrKeeper.AllocateTokensToValidator(s.Ctx, val, sdk.NewDecCoinsFromCoins(coins...))
 		input, err := s.precompile.Pack(
 			deposit.MethodDepositTo,
 			uint16(clientChainLzID),

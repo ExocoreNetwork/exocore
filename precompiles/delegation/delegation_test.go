@@ -97,11 +97,6 @@ func (s *DelegationPrecompileSuite) TestRunDelegateToThroughClientChain() {
 	}
 	commonMalleate := func() (common.Address, []byte) {
 		// prepare the call input for delegation test
-		// valAddr, err := sdk.ValAddressFromBech32(s.Validators[0].OperatorAddress)
-		// s.Require().NoError(err)
-		// val, _ := s.App.StakingKeeper.GetValidator(s.Ctx, valAddr)
-		// coins := sdk.NewCoins(sdk.NewCoin(utils.BaseDenom, sdk.NewInt(1e18)))
-		// s.App.DistrKeeper.AllocateTokensToValidator(s.Ctx, val, sdk.NewDecCoinsFromCoins(coins...))
 		input, err := s.precompile.Pack(
 			delegation.MethodDelegateToThroughClientChain,
 			uint16(clientChainLzID),
@@ -339,11 +334,6 @@ func (s *DelegationPrecompileSuite) TestRunUnDelegateFromThroughClientChain() {
 	}
 	commonMalleate := func() (common.Address, []byte) {
 		// prepare the call input for delegation test
-		// valAddr, err := sdk.ValAddressFromBech32(s.Validators[0].OperatorAddress)
-		// s.Require().NoError(err)
-		// val, _ := s.App.StakingKeeper.GetValidator(s.Ctx, valAddr)
-		// coins := sdk.NewCoins(sdk.NewCoin(utils.BaseDenom, sdk.NewInt(1e18)))
-		// s.App.DistrKeeper.AllocateTokensToValidator(s.Ctx, val, sdk.NewDecCoinsFromCoins(coins...))
 		input, err := s.precompile.Pack(
 			delegation.MethodUndelegateFromThroughClientChain,
 			uint16(clientChainLzID),

@@ -54,13 +54,6 @@ func NewDefaultGenesisState(cdc codec.Codec) simapp.GenesisState {
 	evmGenesis.Params.EvmDenom = utils.BaseDenom
 	defaultGenesis[evmtypes.ModuleName] = cdc.MustMarshalJSON(&evmGenesis)
 
-	// claims module
-	// claimsGenesis := claimstypes.GenesisState{}
-	// rawGenesis = defaultGenesis[claimstypes.ModuleName]
-	// cdc.MustUnmarshalJSON(rawGenesis, &claimsGenesis)
-	// claimsGenesis.Params.ClaimsDenom = utils.BaseDenom
-	// defaultGenesis[claimstypes.ModuleName] = cdc.MustMarshalJSON(&claimsGenesis)
-
 	return defaultGenesis
 }
 
@@ -111,15 +104,7 @@ func (app *ExocoreApp) prepForZeroHeightGenesis(
 	ctx sdk.Context,
 	_ []string,
 ) error {
-	// allowedAddrsMap := make(map[string]bool)
-
-	// for _, addr := range jailAllowedAddrs {
-	// 	_, err := sdk.ValAddressFromBech32(addr)
-	// 	if err != nil {
-	// 		return err
-	// 	}
-	// 	allowedAddrsMap[addr] = true
-	// }
+	// TODO: use the []string to mark validators as jailed.
 
 	/* Just to be safe, assert the invariants on current state. */
 	app.CrisisKeeper.AssertInvariants(ctx)
