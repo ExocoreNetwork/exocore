@@ -19,13 +19,11 @@ func (k *Keeper) SetOperatorInfo(ctx sdk.Context, addr string, info *operatortyp
 	if err != nil {
 		return errorsmod.Wrap(err, "SetOperatorInfo: error occurred when parse acc address from Bech32")
 	}
-	// todo: to check the validation of input info
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), operatortypes.KeyPrefixOperatorInfo)
 	// todo: think about the difference between init and update in future
 
 	// key := common.HexToAddress(incentive.Contract)
 	bz := k.cdc.MustMarshal(info)
-
 	store.Set(opAccAddr, bz)
 	return nil
 }
@@ -47,6 +45,20 @@ func (k *Keeper) OperatorInfo(ctx sdk.Context, addr string) (info *operatortypes
 	ret := operatortypes.OperatorInfo{}
 	k.cdc.MustUnmarshal(value, &ret)
 	return &ret, nil
+}
+
+// AllOperators return the address list of all operators
+func (k *Keeper) AllOperators(ctx sdk.Context) []string {
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), operatortypes.KeyPrefixOperatorInfo)
+	iterator := sdk.KVStorePrefixIterator(store, nil)
+	defer iterator.Close()
+
+	ret := make([]string, 0)
+	for ; iterator.Valid(); iterator.Next() {
+		accAddr := sdk.AccAddress(iterator.Key())
+		ret = append(ret, accAddr.String())
+	}
+	return ret
 }
 
 func (k *Keeper) IsOperator(ctx sdk.Context, addr sdk.AccAddress) bool {

@@ -3,6 +3,8 @@ package keeper
 import (
 	"fmt"
 
+	"github.com/ethereum/go-ethereum/common"
+
 	errorsmod "cosmossdk.io/errors"
 	sdkmath "cosmossdk.io/math"
 
@@ -87,6 +89,10 @@ func (k *Keeper) UpdateOptedInAssetsState(ctx sdk.Context, stakerID, assetID, op
 
 // OptIn call this function to opt in AVS
 func (k *Keeper) OptIn(ctx sdk.Context, operatorAddress sdk.AccAddress, avsAddr string) error {
+	// avsAddr should be an evm contract address
+	if common.IsHexAddress(avsAddr) {
+		return types.ErrInvalidAvsAddr
+	}
 	// check optedIn info
 	if k.IsOptedIn(ctx, operatorAddress.String(), avsAddr) {
 		return types.ErrAlreadyOptedIn

@@ -32,4 +32,8 @@ var (
 	ErrAlreadyOptingOut = errorsmod.Register(
 		ModuleName, 11, "operator already opting out",
 	)
+
+	ErrInvalidAvsAddr = errorsmod.Register(
+		ModuleName, 12, "avs address should be a hex evm contract address",
+	)
 )
