@@ -23,6 +23,7 @@ func GetCaches() *cache.Cache {
 	return cs
 }
 
+// GetAggregatorContext returns singleton aggregatorContext used to calculate final price for each round of each tokenFeeder
 func GetAggregatorContext(ctx sdk.Context, k Keeper) *aggregator.AggregatorContext {
 	if agc != nil {
 		return agc
@@ -38,7 +39,6 @@ func GetAggregatorContext(ctx sdk.Context, k Keeper) *aggregator.AggregatorConte
 	return agc
 }
 
-// func recacheAggregatorContext(ctx sdk.Context, agc *aggregator.AggregatorContext, k common.KeeperOracle, c *cache.Cache) bool {
 func recacheAggregatorContext(ctx sdk.Context, agc *aggregator.AggregatorContext, k Keeper, c *cache.Cache) bool {
 
 	from := uint64(ctx.BlockHeight()) - common.MaxNonce
@@ -57,7 +57,7 @@ func recacheAggregatorContext(ctx sdk.Context, agc *aggregator.AggregatorContext
 
 	totalPower := big.NewInt(0)
 	validatorPowers := make(map[string]*big.Int)
-	k.IterateBondedValidatorsByPower(ctx, func(index int64, validator stakingtypes.ValidatorI) bool {
+	k.IterateBondedValidatorsByPower(ctx, func(_ int64, validator stakingtypes.ValidatorI) bool {
 		power := big.NewInt(validator.GetConsensusPower(validator.GetBondedTokens()))
 		addr := string(validator.GetOperator())
 		validatorPowers[addr] = power
@@ -65,7 +65,6 @@ func recacheAggregatorContext(ctx sdk.Context, agc *aggregator.AggregatorContext
 		return false
 	})
 	agc.SetValidatorPowers(validatorPowers)
-	//	agc.SetTotalPower(totalPower)
 	//TODO: test only
 	if k.GetLastTotalPower(ctx).Cmp(totalPower) != 0 {
 		panic("something wrong when get validatorsPower from staking module")
@@ -78,15 +77,11 @@ func recacheAggregatorContext(ctx sdk.Context, agc *aggregator.AggregatorContext
 	var pTmp common.Params
 	for ; from < to; from++ {
 		//fill params
+		prev := uint64(0)
 		for b, recentParams := range recentParamsMap {
-			prev := uint64(0)
 			if b <= from && b > prev {
 				pTmp = common.Params(*recentParams)
 				agc.SetParams(&pTmp)
-				if prev > 0 {
-					//TODO: safe delete
-					delete(recentParamsMap, prev)
-				}
 				prev = b
 			}
 		}
@@ -147,4 +142,12 @@ func initAggregatorContext(ctx sdk.Context, agc *aggregator.AggregatorContext, k
 
 	agc.PrepareRound(ctx, uint64(ctx.BlockHeight())-1)
 	return nil
+}
+
+func ResetAggregatorContext() {
+	agc = nil
+}
+
+func ResetCache() {
+	cs = nil
 }

@@ -171,7 +171,6 @@ func (c *Cache) GetCache(i any) bool {
 			item[addr] = power
 		}
 	case CacheItemP:
-		//fmt.Println("debug ", c.params.params)
 		if item == nil {
 			return false
 		}
@@ -180,7 +179,6 @@ func (c *Cache) GetCache(i any) bool {
 		if item == nil {
 			return false
 		}
-		//		fmt.Println("debug getCacheM", c.msg)
 		tmp := make([]*CacheItemM, 0, len(c.msg))
 		for _, msgs := range c.msg {
 			tmp = append(tmp, msgs...)

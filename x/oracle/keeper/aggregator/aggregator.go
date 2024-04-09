@@ -11,12 +11,6 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-type cacheItemM struct {
-	feederId  int32
-	pSources  []*types.PriceWithSource
-	validator string
-}
-
 type priceItemKV struct {
 	TokenId int32
 	PriceTR types.PriceWithTimeAndRound
@@ -53,6 +47,7 @@ func (agc *AggregatorContext) sanityCheck(msg *types.MsgCreatePrice) error {
 	//TODO: check the msgCreatePrice's Decimal is correct with params setting
 	//TODO: check len(price.prices)>0, len(price.prices._range_eachPriceWithSource.Prices)>0, at least has one source, and for each source has at least one price
 	//TODO: check for each source, at most maxDetId count price (now in filter, ->anteHandler)
+
 	if agc.validatorsPower[msg.Creator] == nil {
 		return errors.New("signer is not validator")
 	}
@@ -72,20 +67,18 @@ func (agc *AggregatorContext) sanityCheck(msg *types.MsgCreatePrice) error {
 		}
 		//check with params is coressponding source is deteministic
 		if agc.params.IsDeterministicSource(pSource.SourceId) {
-			for _, pDetId := range pSource.Prices {
+			for _, pDetID := range pSource.Prices {
 				//TODO: verify the format of DetId is correct, since this is string, and we will make consensus with validator's power, so it's ok not to verify the format
 				//just make sure the DetId won't mess up with NS's placeholder id, the limitation of maximum count one validator can submit will be check by filter
-				if len(pDetId.DetId) == 0 {
+				if len(pDetID.DetId) == 0 {
 					//deterministic must have specified deterministicId
 					return errors.New("ds should have roundid")
 				}
 				//DS's price value will go through consensus process, so it's safe to skip the check here
 			}
-		} else {
 			//sanity check: NS submit only one price with detId==""
-			if len(pSource.Prices) > 1 || len(pSource.Prices[0].DetId) > 0 {
-				return errors.New("ns should not have roundid")
-			}
+		} else if len(pSource.Prices) > 1 || len(pSource.Prices[0].DetId) > 0 {
+			return errors.New("ns should not have roundid")
 		}
 	}
 	return nil
@@ -115,7 +108,6 @@ func (agc *AggregatorContext) checkMsg(msg *types.MsgCreatePrice) error {
 }
 
 func (agc *AggregatorContext) FillPrice(msg *types.MsgCreatePrice) (*priceItemKV, *cache.CacheItemM, error) {
-	//	fmt.Println("debug agc fillprice")
 	feederWorker := agc.aggregators[msg.FeederId]
 	//worker initialzed here reduce workload for Endblocker
 	if feederWorker == nil {
@@ -124,7 +116,7 @@ func (agc *AggregatorContext) FillPrice(msg *types.MsgCreatePrice) (*priceItemKV
 	}
 
 	if feederWorker.sealed {
-		return nil, nil, errors.New("")
+		return nil, nil, types.ErrPriceProposalIgnored.Wrap("price aggregation for this round has sealed")
 	}
 
 	if listFilled := feederWorker.do(msg); listFilled != nil {
@@ -142,18 +134,16 @@ func (agc *AggregatorContext) FillPrice(msg *types.MsgCreatePrice) (*priceItemKV
 		return nil, &cache.CacheItemM{msg.FeederId, listFilled, msg.Creator}, nil
 	}
 
-	return nil, nil, errors.New("")
+	//return nil, nil, errors.New("no valid price proposal to add for aggregation")
+	return nil, nil, types.ErrPriceProposalIgnored
 }
 
 // NewCreatePrice receives msgCreatePrice message, and goes process: filter->aggregator, filter->calculator->aggregator
 // non-deterministic data will goes directly into aggregator, and deterministic data will goes into calculator first to get consensus on the deterministic id.
 func (agc *AggregatorContext) NewCreatePrice(ctx sdk.Context, msg *types.MsgCreatePrice) (*priceItemKV, *cache.CacheItemM, error) {
-	//	fmt.Println("debug agc.newcreateprice")
 	if err := agc.checkMsg(msg); err != nil {
-		//		fmt.Println("debug agc.newcreateprice.error", err)
-		return nil, nil, err
+		return nil, nil, types.ErrInvalidMsg.Wrap(err.Error())
 	}
-	//	fmt.Println("debug before agc.fillprice")
 	return agc.FillPrice(msg)
 }
 
@@ -176,7 +166,6 @@ func (agc *AggregatorContext) SealRound(ctx sdk.Context, force bool) (success []
 				expired := feeder.EndBlock > 0 && ctx.BlockHeight() >= feeder.EndBlock
 				outOfWindow := uint64(ctx.BlockHeight())-round.basedBlock >= uint64(common.MaxNonce)
 				if expired || outOfWindow || force {
-					//TODO: WRITE TO KVSTORE with previous round data for this round
 					failed = append(failed, feeder.TokenId)
 					if expired {
 						delete(agc.rounds, feederId)
@@ -206,20 +195,15 @@ func (agc *AggregatorContext) PrepareRound(ctx sdk.Context, block uint64) {
 		block = uint64(ctx.BlockHeight())
 	}
 
-	//	fmt.Println("debug agc.prepareround, height:", block)
 	for feederId, feeder := range agc.params.GetTokenFeeders() {
 		if feederId == 0 {
 			continue
 		}
-		//		fmt.Println("debug agc.prepareround, feederId:", feederId)
 		if (feeder.EndBlock > 0 && uint64(feeder.EndBlock) <= block) || uint64(feeder.StartBaseBlock) > block {
 
-			//			fmt.Println("debug agc.prepareround 2, feederId:", feederId, feeder.StartBaseBlock, block)
 			//this feeder is inactive
 			continue
 		}
-
-		//		fmt.Println("debug agc.prepareround 3, feederId:", feederId)
 
 		delta := (block - uint64(feeder.StartBaseBlock))
 		left := delta % uint64(feeder.Interval)
