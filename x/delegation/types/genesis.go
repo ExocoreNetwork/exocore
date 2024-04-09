@@ -23,6 +23,10 @@ func DefaultGenesis() *GenesisState {
 // Validate performs basic genesis state validation returning an error upon any
 // failure.
 func (gs GenesisState) Validate() error {
+	// TODO(mm): this can be a very big hash table and impact system performance.
+	// This is likely to be the biggest one amongst the three, and the others
+	// are garbage collected within the loop anyway. Maybe reordering the genesis
+	// structure could potentially help with this.
 	stakers := make(map[string]struct{}, len(gs.Delegations))
 	for _, level1 := range gs.Delegations {
 		stakerID := level1.StakerID
