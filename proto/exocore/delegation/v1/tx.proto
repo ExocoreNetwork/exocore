@@ -24,15 +24,19 @@ message ValueField {
 message DelegatedSingleAssetInfo {
   // asset_id is the asset id.
   string asset_id = 1 [(gogoproto.customname) = "AssetID"];
-  // total_delegated_amount is the total amount of the asset delegated.
-  string total_delegated_amount = 2
-  [
-    (cosmos_proto.scalar) = "cosmos.Int",
-    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
-    (gogoproto.nullable) = false
-  ];
-  // per_operator_amounts is the amount of the asset delegated to each operator.
-  map<string, ValueField> per_operator_amounts = 3;
+  // since Cosmos uses an IAVL+ tree where the order of insertion affects the state root (even
+  // if the items are unrelated), and deserializing a protobuf map into Golang does not
+  // guarantee order, we cannot use a map here. Instead, we use a repeated field of key-value
+  // pairs.
+  repeated KeyValue per_operator_amounts = 3 [(gogoproto.nullable) = false];
+}
+
+// KeyValue is a key-value pair. It is a helper struct to represent a map in Protobuf.
+message KeyValue {
+  // key is the key of the key-value pair.
+  string key = 1;
+  // value is the value of the key-value pair.
+  ValueField value = 2;
 }
 
 // DelegationApproveInfo is the delegation approve info.

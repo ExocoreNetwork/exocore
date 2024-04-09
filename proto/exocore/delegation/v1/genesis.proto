@@ -1,0 +1,27 @@
+syntax = "proto3";
+
+package exocore.delegation.v1;
+
+import "gogoproto/gogo.proto";
+
+import "exocore/delegation/v1/tx.proto";
+
+option go_package = "github.com/ExocoreNetwork/exocore/x/delegation/types";
+
+// GenesisState defines the delegation module's state. It needs to encompass
+// all of the state that is required to start the chain from the genesis
+// or in the event of a restart. At this point, it is only built with
+// the former in mind. There are no params in this module.
+message GenesisState {
+  // delegations is a list of all delegations in the system.
+  repeated DelegationsByStaker delegations = 1 [(gogoproto.nullable) = false];
+}
+
+// DelegationsByStaker is a list of delegations for a single staker.
+message DelegationsByStaker {
+  // staker_id is the staker's account address + _ + l0 chain id (hex).``
+  string staker_id = 1 [(gogoproto.customname) = "StakerID"];
+  // delegations is the list of delegations for the staker, indexed by the
+  // asset_id. 
+  repeated DelegatedSingleAssetInfo delegations = 2 [(gogoproto.nullable) = false];
+}

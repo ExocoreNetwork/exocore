@@ -5,7 +5,7 @@ import (
 
 	sdkmath "cosmossdk.io/math"
 	assetstypes "github.com/ExocoreNetwork/exocore/x/assets/types"
-	delegationKeeper "github.com/ExocoreNetwork/exocore/x/delegation/keeper"
+	delegationtype "github.com/ExocoreNetwork/exocore/x/delegation/types"
 	"github.com/ExocoreNetwork/exocore/x/deposit/keeper"
 	operatorKeeper "github.com/ExocoreNetwork/exocore/x/operator/keeper"
 	operatorTypes "github.com/ExocoreNetwork/exocore/x/operator/types"
@@ -60,7 +60,7 @@ func (suite *OperatorTestSuite) prepare() {
 	suite.NoError(err)
 
 	// delegate to operator
-	delegationParam := &delegationKeeper.DelegationOrUndelegationParams{
+	delegationParam := &delegationtype.DelegationOrUndelegationParams{
 		ClientChainLzID: suite.clientChainLzID,
 		Action:          assetstypes.DelegateTo,
 		AssetsAddress:   suite.assetAddr[:],

@@ -50,7 +50,7 @@ message AppChainInfo {
   // meta_info is at Exocore's discretion to deter,ome
   string meta_info = 2;
   // chain_id is used as the primary key
-  string chain_id = 3;
+  string chain_id = 3 [(gogoproto.customname) = "ChainID"];
   // exocore_chain_index is the index of the chain in exocore, so far unused
   uint64 exocore_chain_index = 4;
 }
@@ -172,12 +172,12 @@ message OperatorAssetInfo {
   ];
 }
 
-// OperatorAllAssetsInfo defines the information for all assets of an operator,
-// indexed by the asset_id.
-message OperatorAllAssetsInfo {
-  // all_assets_state is the state of all assets of the operator.
-  map<string, OperatorAssetInfo> all_assets_state = 1;
-}
+// // OperatorAllAssetsInfo defines the information for all assets of an operator,
+// // indexed by the asset_id.
+// message OperatorAllAssetsInfo {
+//   // all_assets_state is the state of all assets of the operator.
+//   map<string, OperatorAssetInfo> all_assets_state = 1;
+// }
 
 // MsgSetExoCoreAddr defines the MsgSetExoCoreAddr message used to set the
 // exocore address of the staker.

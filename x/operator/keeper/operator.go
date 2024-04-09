@@ -24,6 +24,7 @@ func (k *Keeper) SetOperatorInfo(ctx sdk.Context, addr string, info *operatortyp
 
 	// key := common.HexToAddress(incentive.Contract)
 	bz := k.cdc.MustMarshal(info)
+	// TODO: check about client chain registration for earnings addresses provided?
 	store.Set(opAccAddr, bz)
 	return nil
 }

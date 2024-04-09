@@ -11,14 +11,12 @@ import (
 	"github.com/ExocoreNetwork/exocore/precompiles/delegation"
 	"github.com/ExocoreNetwork/exocore/x/assets/types"
 	assetstype "github.com/ExocoreNetwork/exocore/x/assets/types"
-	keeper2 "github.com/ExocoreNetwork/exocore/x/delegation/keeper"
 	delegationtype "github.com/ExocoreNetwork/exocore/x/delegation/types"
 	"github.com/ExocoreNetwork/exocore/x/deposit/keeper"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/common"
 	ethtypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/core/vm"
-	"github.com/evmos/evmos/v14/utils"
 	"github.com/evmos/evmos/v14/x/evm/statedb"
 	evmtypes "github.com/evmos/evmos/v14/x/evm/types"
 )
@@ -98,11 +96,6 @@ func (s *DelegationPrecompileSuite) TestRunDelegateToThroughClientChain() {
 	}
 	commonMalleate := func() (common.Address, []byte) {
 		// prepare the call input for delegation test
-		valAddr, err := sdk.ValAddressFromBech32(s.Validators[0].OperatorAddress)
-		s.Require().NoError(err)
-		val, _ := s.App.StakingKeeper.GetValidator(s.Ctx, valAddr)
-		coins := sdk.NewCoins(sdk.NewCoin(utils.BaseDenom, sdk.NewInt(1e18)))
-		s.App.DistrKeeper.AllocateTokensToValidator(s.Ctx, val, sdk.NewDecCoinsFromCoins(coins...))
 		input, err := s.precompile.Pack(
 			delegation.MethodDelegateToThroughClientChain,
 			uint16(clientChainLzID),
@@ -127,13 +120,13 @@ func (s *DelegationPrecompileSuite) TestRunDelegateToThroughClientChain() {
 		returnBytes []byte
 	}{
 		{
-			name: "fail - delegateToThroughClientChain transaction will fail because the exocoreLzAppAddress haven't been stored",
+			name: "fail - delegateToThroughClientChain transaction will fail because the exocoreLzAppAddress is mismatched",
 			malleate: func() (common.Address, []byte) {
 				return commonMalleate()
 			},
 			readOnly:    false,
 			expPass:     false,
-			errContains: assetstype.ErrNoParamsKey.Error(),
+			errContains: assetstype.ErrNotEqualToLzAppAddr.Error(),
 		},
 		{
 			name: "fail - delegateToThroughClientChain transaction will fail because the contract caller isn't the exoCoreLzAppAddr",
@@ -314,7 +307,7 @@ func (s *DelegationPrecompileSuite) TestRunUnDelegateFromThroughClientChain() {
 
 	delegateAsset := func(staker []byte, delegateAmount sdkmath.Int) {
 		// deposit asset for delegation test
-		delegateToParams := &keeper2.DelegationOrUndelegationParams{
+		delegateToParams := &delegationtype.DelegationOrUndelegationParams{
 			ClientChainLzID: 101,
 			Action:          types.DelegateTo,
 			StakerAddress:   staker,
@@ -340,11 +333,6 @@ func (s *DelegationPrecompileSuite) TestRunUnDelegateFromThroughClientChain() {
 	}
 	commonMalleate := func() (common.Address, []byte) {
 		// prepare the call input for delegation test
-		valAddr, err := sdk.ValAddressFromBech32(s.Validators[0].OperatorAddress)
-		s.Require().NoError(err)
-		val, _ := s.App.StakingKeeper.GetValidator(s.Ctx, valAddr)
-		coins := sdk.NewCoins(sdk.NewCoin(utils.BaseDenom, sdk.NewInt(1e18)))
-		s.App.DistrKeeper.AllocateTokensToValidator(s.Ctx, val, sdk.NewDecCoinsFromCoins(coins...))
 		input, err := s.precompile.Pack(
 			delegation.MethodUndelegateFromThroughClientChain,
 			uint16(clientChainLzID),

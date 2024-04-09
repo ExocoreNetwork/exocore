@@ -2,6 +2,8 @@ package delegation
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
 
 	"github.com/ExocoreNetwork/exocore/x/delegation/client/cli"
 	"github.com/ExocoreNetwork/exocore/x/delegation/keeper"
@@ -38,7 +40,10 @@ func (b AppModuleBasic) RegisterInterfaces(registry codectypes.InterfaceRegistry
 	delegationtype.RegisterInterfaces(registry)
 }
 
-func (b AppModuleBasic) RegisterGRPCGatewayRoutes(c client.Context, serveMux *runtime.ServeMux) {
+func (b AppModuleBasic) RegisterGRPCGatewayRoutes(
+	c client.Context,
+	serveMux *runtime.ServeMux,
+) {
 	if err := delegationtype.RegisterQueryHandlerClient(context.Background(), serveMux, delegationtype.NewQueryClient(c)); err != nil {
 		panic(err)
 	}
@@ -91,4 +96,47 @@ func (am AppModule) WeightedOperations(module.SimulationState) []simtypes.Weight
 func (am AppModule) EndBlock(ctx sdk.Context, req abci.RequestEndBlock) []abci.ValidatorUpdate {
 	am.keeper.EndBlock(ctx, req)
 	return []abci.ValidatorUpdate{}
+}
+
+// DefaultGenesis returns a default GenesisState for the module, marshaled to json.RawMessage.
+// The default GenesisState need to be defined by the module developer and is primarily used for
+// testing
+func (AppModuleBasic) DefaultGenesis(cdc codec.JSONCodec) json.RawMessage {
+	return cdc.MustMarshalJSON(delegationtype.DefaultGenesis())
+}
+
+// ValidateGenesis used to validate the GenesisState, given in its json.RawMessage form
+func (AppModuleBasic) ValidateGenesis(
+	cdc codec.JSONCodec,
+	_ client.TxEncodingConfig,
+	bz json.RawMessage,
+) error {
+	var genState delegationtype.GenesisState
+	if err := cdc.UnmarshalJSON(bz, &genState); err != nil {
+		return fmt.Errorf(
+			"failed to unmarshal %s genesis state: %w",
+			delegationtype.ModuleName,
+			err,
+		)
+	}
+	return genState.Validate()
+}
+
+// InitGenesis performs the module's genesis initialization. It returns no validator updates.
+func (am AppModule) InitGenesis(
+	ctx sdk.Context,
+	cdc codec.JSONCodec,
+	gs json.RawMessage,
+) []abci.ValidatorUpdate {
+	var genState delegationtype.GenesisState
+	// Initialize global index to index in genesis state
+	cdc.MustUnmarshalJSON(gs, &genState)
+
+	return am.keeper.InitGenesis(ctx, genState)
+}
+
+// ExportGenesis returns the module's exported genesis state as raw JSON bytes.
+func (am AppModule) ExportGenesis(ctx sdk.Context, cdc codec.JSONCodec) json.RawMessage {
+	genState := am.keeper.ExportGenesis(ctx)
+	return cdc.MustMarshalJSON(genState)
 }

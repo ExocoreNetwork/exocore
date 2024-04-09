@@ -43,14 +43,21 @@ type CrossChainOpType uint8
 
 type WithdrawerAddress [32]byte
 
-// StakerSingleAssetChangeInfo This is a struct to describe the desired change that matches with the StakerAssetInfo
+// StakerSingleAssetChangeInfo This is a struct to describe the desired change that matches with
+// the StakerAssetInfo
 type StakerSingleAssetChangeInfo StakerAssetInfo
 
-// OperatorSingleAssetChangeInfo This is a struct to describe the desired change that matches with the OperatorAssetInfo
+// OperatorSingleAssetChangeInfo This is a struct to describe the desired change that matches
+// with the OperatorAssetInfo
 type OperatorSingleAssetChangeInfo OperatorAssetInfo
 
-// GetStakeIDAndAssetID stakerID = stakerAddress+'_'+clientChainLzID,assetID = assetAddress+'_'+clientChainLzID
-func GetStakeIDAndAssetID(clientChainLzID uint64, stakerAddress []byte, assetsAddress []byte) (stakeID string, assetID string) {
+// GetStakeIDAndAssetID stakerID = stakerAddress+'_'+clientChainLzID,assetID =
+// assetAddress+'_'+clientChainLzID
+func GetStakeIDAndAssetID(
+	clientChainLzID uint64,
+	stakerAddress []byte,
+	assetsAddress []byte,
+) (stakeID string, assetID string) {
 	clientChainLzIDStr := hexutil.EncodeUint64(clientChainLzID)
 	if stakerAddress != nil {
 		stakeID = strings.Join([]string{hexutil.Encode(stakerAddress), clientChainLzIDStr}, "_")
@@ -62,30 +69,53 @@ func GetStakeIDAndAssetID(clientChainLzID uint64, stakerAddress []byte, assetsAd
 	return
 }
 
-// GetStakeIDAndAssetIDFromStr stakerID = stakerAddress+'_'+clientChainLzID,assetID = assetAddress+'_'+clientChainLzID
-func GetStakeIDAndAssetIDFromStr(clientChainLzID uint64, stakerAddress string, assetsAddress string) (stakeID string, assetID string) {
+// GetStakeIDAndAssetIDFromStr stakerID = stakerAddress+'_'+clientChainLzID,assetID =
+// assetAddress+'_'+clientChainLzID
+func GetStakeIDAndAssetIDFromStr(
+	clientChainLzID uint64,
+	stakerAddress string,
+	assetsAddress string,
+) (stakeID string, assetID string) {
+	// hexutil always returns lowercase values
 	clientChainLzIDStr := hexutil.EncodeUint64(clientChainLzID)
 	if stakerAddress != "" {
-		stakeID = strings.Join([]string{strings.ToLower(stakerAddress), clientChainLzIDStr}, "_")
+		stakeID = strings.Join(
+			[]string{strings.ToLower(stakerAddress), clientChainLzIDStr},
+			"_",
+		)
 	}
 
 	if assetsAddress != "" {
-		assetID = strings.Join([]string{strings.ToLower(assetsAddress), clientChainLzIDStr}, "_")
+		assetID = strings.Join(
+			[]string{strings.ToLower(assetsAddress), clientChainLzIDStr},
+			"_",
+		)
 	}
 	return
 }
 
-// UpdateAssetValue It's used to update asset state,negative or positive `changeValue` represents a decrease or increase in the asset state
+// UpdateAssetValue It's used to update asset state,negative or positive `changeValue`
+// represents a decrease or increase in the asset state
 // newValue = valueToUpdate + changeVale
 func UpdateAssetValue(valueToUpdate *math.Int, changeValue *math.Int) error {
 	if valueToUpdate == nil || changeValue == nil {
-		return errorsmod.Wrap(ErrInputPointerIsNil, fmt.Sprintf("valueToUpdate:%v,changeValue:%v", valueToUpdate, changeValue))
+		return errorsmod.Wrap(
+			ErrInputPointerIsNil,
+			fmt.Sprintf("valueToUpdate:%v,changeValue:%v", valueToUpdate, changeValue),
+		)
 	}
 
 	if !changeValue.IsNil() {
 		if changeValue.IsNegative() {
 			if valueToUpdate.LT(changeValue.Neg()) {
-				return errorsmod.Wrap(ErrSubAmountIsMoreThanOrigin, fmt.Sprintf("valueToUpdate:%s,changeValue:%s", *valueToUpdate, *changeValue))
+				return errorsmod.Wrap(
+					ErrSubAmountIsMoreThanOrigin,
+					fmt.Sprintf(
+						"valueToUpdate:%s,changeValue:%s",
+						*valueToUpdate,
+						*changeValue,
+					),
+				)
 			}
 		}
 		if !changeValue.IsZero() {
@@ -95,17 +125,28 @@ func UpdateAssetValue(valueToUpdate *math.Int, changeValue *math.Int) error {
 	return nil
 }
 
-// UpdateAssetDecValue It's used to update asset state,negative or positive `changeValue` represents a decrease or increase in the asset state
+// UpdateAssetDecValue It's used to update asset state,negative or positive `changeValue`
+// represents a decrease or increase in the asset state
 // newValue = valueToUpdate + changeVale
 func UpdateAssetDecValue(valueToUpdate *math.LegacyDec, changeValue *math.LegacyDec) error {
 	if valueToUpdate == nil || changeValue == nil {
-		return errorsmod.Wrap(ErrInputPointerIsNil, fmt.Sprintf("valueToUpdate:%v,changeValue:%v", valueToUpdate, changeValue))
+		return errorsmod.Wrap(
+			ErrInputPointerIsNil,
+			fmt.Sprintf("valueToUpdate:%v,changeValue:%v", valueToUpdate, changeValue),
+		)
 	}
 
 	if !changeValue.IsNil() {
 		if changeValue.IsNegative() {
 			if valueToUpdate.LT(changeValue.Neg()) {
-				return errorsmod.Wrap(ErrSubAmountIsMoreThanOrigin, fmt.Sprintf("valueToUpdate:%s,changeValue:%s", *valueToUpdate, *changeValue))
+				return errorsmod.Wrap(
+					ErrSubAmountIsMoreThanOrigin,
+					fmt.Sprintf(
+						"valueToUpdate:%s,changeValue:%s",
+						*valueToUpdate,
+						*changeValue,
+					),
+				)
 			}
 		}
 		if !changeValue.IsZero() {
@@ -117,12 +158,18 @@ func UpdateAssetDecValue(valueToUpdate *math.LegacyDec, changeValue *math.Legacy
 
 func ContextForHistoricalState(ctx sdk.Context, height int64) (sdk.Context, error) {
 	if height < 0 {
-		return sdk.Context{}, errorsmod.Wrap(sdkerrors.ErrInvalidHeight, fmt.Sprintf("height:%v", height))
+		return sdk.Context{}, errorsmod.Wrap(
+			sdkerrors.ErrInvalidHeight,
+			fmt.Sprintf("height:%v", height),
+		)
 	}
 	cms := ctx.MultiStore()
 	lastBlockHeight := cms.LatestVersion()
 	if lastBlockHeight == 0 {
-		return sdk.Context{}, errorsmod.Wrap(sdkerrors.ErrInvalidHeight, "app is not ready; please wait for first block")
+		return sdk.Context{}, errorsmod.Wrap(
+			sdkerrors.ErrInvalidHeight,
+			"app is not ready; please wait for first block",
+		)
 	}
 	if height > lastBlockHeight {
 		return sdk.Context{},
@@ -141,7 +188,10 @@ func ContextForHistoricalState(ctx sdk.Context, height int64) (sdk.Context, erro
 		return sdk.Context{},
 			errorsmod.Wrapf(
 				sdkerrors.ErrInvalidRequest,
-				"failed to load state at height %d; %s (latest height: %d)", height, err, lastBlockHeight,
+				"failed to load state at height %d; %s (latest height: %d)",
+				height,
+				err,
+				lastBlockHeight,
 			)
 	}
 

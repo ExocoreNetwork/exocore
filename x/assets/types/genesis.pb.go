@@ -5,6 +5,7 @@ package types
 
 import (
 	fmt "fmt"
+	_ "github.com/cosmos/gogoproto/gogoproto"
 	proto "github.com/cosmos/gogoproto/proto"
 	io "io"
 	math "math"
@@ -22,15 +23,25 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
-// GenesisState defines the assets module's genesis state.
+// GenesisState defines the assets module's state. It needs to encompass
+// all of the state that is required to start the chain from the genesis
+// or in the event of a restart. At this point, it is only built with
+// the former in mind.
 // TODO: make this state exportable for the case of chain restarts.
 type GenesisState struct {
-	// default_supported_client_chains is the list of supported client chains,
-	// that are supported by default.
-	DefaultSupportedClientChains []*ClientChainInfo `protobuf:"bytes,1,rep,name=default_supported_client_chains,json=defaultSupportedClientChains,proto3" json:"default_supported_client_chains,omitempty"`
-	// default_supported_client_chain_tokens is the list of supported client chain tokens,
-	// that are supported by default.
-	DefaultSupportedClientChainTokens []*AssetInfo `protobuf:"bytes,2,rep,name=default_supported_client_chain_tokens,json=defaultSupportedClientChainTokens,proto3" json:"default_supported_client_chain_tokens,omitempty"`
+	// params defines all the parameters of the module.
+	Params Params `protobuf:"bytes,1,opt,name=params,proto3" json:"params"`
+	// client_chains is the list of supported client chains,
+	// that are supported at chain genesis (or restart).
+	ClientChains []ClientChainInfo `protobuf:"bytes,2,rep,name=client_chains,json=clientChains,proto3" json:"client_chains"`
+	// tokens is the list of supported client chain tokens and total staked amount
+	// that are supported at chain genesis (or restart).
+	Tokens []StakingAssetInfo `protobuf:"bytes,3,rep,name=tokens,proto3" json:"tokens"`
+	// deposits is the list of deposits, indexed by staker address and
+	// then the asset id. The struct is the `StakerAssetInfo`
+	// which contains deposits, withdrawable and unbonding amount.
+	// at genesis (not chain restart), the unbonding amount must be 0.
+	Deposits []DepositsByStaker `protobuf:"bytes,4,rep,name=deposits,proto3" json:"deposits"`
 }
 
 func (m *GenesisState) Reset()         { *m = GenesisState{} }
@@ -66,44 +77,188 @@ func (m *GenesisState) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_GenesisState proto.InternalMessageInfo
 
-func (m *GenesisState) GetDefaultSupportedClientChains() []*ClientChainInfo {
+func (m *GenesisState) GetParams() Params {
 	if m != nil {
-		return m.DefaultSupportedClientChains
+		return m.Params
+	}
+	return Params{}
+}
+
+func (m *GenesisState) GetClientChains() []ClientChainInfo {
+	if m != nil {
+		return m.ClientChains
 	}
 	return nil
 }
 
-func (m *GenesisState) GetDefaultSupportedClientChainTokens() []*AssetInfo {
+func (m *GenesisState) GetTokens() []StakingAssetInfo {
 	if m != nil {
-		return m.DefaultSupportedClientChainTokens
+		return m.Tokens
 	}
 	return nil
+}
+
+func (m *GenesisState) GetDeposits() []DepositsByStaker {
+	if m != nil {
+		return m.Deposits
+	}
+	return nil
+}
+
+// DepositByStaker is a helper struct to be used in the genesis state.
+// It is used to store the staker address and its deposits for each asset ID.
+type DepositsByStaker struct {
+	// staker is the address of the staker.
+	StakerID string `protobuf:"bytes,1,opt,name=staker,proto3" json:"staker,omitempty"`
+	// deposits is the list of deposits, indexed by the asset id.
+	// The struct is the `StakerAssetInfo` which contains deposits,
+	// withdrawable and unbonding amount.
+	Deposits []DepositByAsset `protobuf:"bytes,2,rep,name=deposits,proto3" json:"deposits"`
+}
+
+func (m *DepositsByStaker) Reset()         { *m = DepositsByStaker{} }
+func (m *DepositsByStaker) String() string { return proto.CompactTextString(m) }
+func (*DepositsByStaker) ProtoMessage()    {}
+func (*DepositsByStaker) Descriptor() ([]byte, []int) {
+	return fileDescriptor_caf4f124d39d82ce, []int{1}
+}
+func (m *DepositsByStaker) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *DepositsByStaker) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_DepositsByStaker.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *DepositsByStaker) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_DepositsByStaker.Merge(m, src)
+}
+func (m *DepositsByStaker) XXX_Size() int {
+	return m.Size()
+}
+func (m *DepositsByStaker) XXX_DiscardUnknown() {
+	xxx_messageInfo_DepositsByStaker.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_DepositsByStaker proto.InternalMessageInfo
+
+func (m *DepositsByStaker) GetStakerID() string {
+	if m != nil {
+		return m.StakerID
+	}
+	return ""
+}
+
+func (m *DepositsByStaker) GetDeposits() []DepositByAsset {
+	if m != nil {
+		return m.Deposits
+	}
+	return nil
+}
+
+// DepositByAsset is a helper struct to be used in the genesis state.
+// It is used to store the asset id and its info for an staker.
+// The info contains the deposit amount, the withdrawable amount
+// and the amount currently unbonding.
+// It is named DepositByAsset (since it is indexed by the assetID)
+// and not Deposit to prevent conflict with CrossChainOpType.
+type DepositByAsset struct {
+	// asset_id is the id of the asset.
+	AssetID string `protobuf:"bytes,1,opt,name=asset_id,json=assetId,proto3" json:"asset_id,omitempty"`
+	// info is the asset info.
+	Info StakerAssetInfo `protobuf:"bytes,2,opt,name=info,proto3" json:"info"`
+}
+
+func (m *DepositByAsset) Reset()         { *m = DepositByAsset{} }
+func (m *DepositByAsset) String() string { return proto.CompactTextString(m) }
+func (*DepositByAsset) ProtoMessage()    {}
+func (*DepositByAsset) Descriptor() ([]byte, []int) {
+	return fileDescriptor_caf4f124d39d82ce, []int{2}
+}
+func (m *DepositByAsset) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *DepositByAsset) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_DepositByAsset.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *DepositByAsset) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_DepositByAsset.Merge(m, src)
+}
+func (m *DepositByAsset) XXX_Size() int {
+	return m.Size()
+}
+func (m *DepositByAsset) XXX_DiscardUnknown() {
+	xxx_messageInfo_DepositByAsset.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_DepositByAsset proto.InternalMessageInfo
+
+func (m *DepositByAsset) GetAssetID() string {
+	if m != nil {
+		return m.AssetID
+	}
+	return ""
+}
+
+func (m *DepositByAsset) GetInfo() StakerAssetInfo {
+	if m != nil {
+		return m.Info
+	}
+	return StakerAssetInfo{}
 }
 
 func init() {
 	proto.RegisterType((*GenesisState)(nil), "exocore.assets.v1.GenesisState")
+	proto.RegisterType((*DepositsByStaker)(nil), "exocore.assets.v1.DepositsByStaker")
+	proto.RegisterType((*DepositByAsset)(nil), "exocore.assets.v1.DepositByAsset")
 }
 
 func init() { proto.RegisterFile("exocore/assets/v1/genesis.proto", fileDescriptor_caf4f124d39d82ce) }
 
 var fileDescriptor_caf4f124d39d82ce = []byte{
-	// 256 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xe2, 0x92, 0x4f, 0xad, 0xc8, 0x4f,
-	0xce, 0x2f, 0x4a, 0xd5, 0x4f, 0x2c, 0x2e, 0x4e, 0x2d, 0x29, 0xd6, 0x2f, 0x33, 0xd4, 0x4f, 0x4f,
-	0xcd, 0x4b, 0x2d, 0xce, 0x2c, 0xd6, 0x2b, 0x28, 0xca, 0x2f, 0xc9, 0x17, 0x12, 0x84, 0x2a, 0xd0,
-	0x83, 0x28, 0xd0, 0x2b, 0x33, 0x94, 0x92, 0xc2, 0xd4, 0x53, 0x52, 0x01, 0x51, 0xae, 0xf4, 0x92,
-	0x91, 0x8b, 0xc7, 0x1d, 0x62, 0x40, 0x70, 0x49, 0x62, 0x49, 0xaa, 0x50, 0x26, 0x97, 0x7c, 0x4a,
-	0x6a, 0x5a, 0x62, 0x69, 0x4e, 0x49, 0x7c, 0x71, 0x69, 0x41, 0x41, 0x7e, 0x51, 0x49, 0x6a, 0x4a,
-	0x7c, 0x72, 0x4e, 0x66, 0x6a, 0x5e, 0x49, 0x7c, 0x72, 0x46, 0x62, 0x66, 0x5e, 0xb1, 0x04, 0xa3,
-	0x02, 0xb3, 0x06, 0xb7, 0x91, 0x92, 0x1e, 0x86, 0x4d, 0x7a, 0xce, 0x60, 0x75, 0xce, 0x20, 0x65,
-	0x9e, 0x79, 0x69, 0xf9, 0x41, 0x32, 0x50, 0xa3, 0x82, 0x61, 0x26, 0x21, 0x29, 0x28, 0x16, 0xca,
-	0xe3, 0x52, 0xc5, 0x6f, 0x55, 0x7c, 0x49, 0x7e, 0x76, 0x6a, 0x5e, 0xb1, 0x04, 0x13, 0xd8, 0x42,
-	0x19, 0x2c, 0x16, 0x3a, 0x82, 0x58, 0x60, 0xab, 0x14, 0xf1, 0x58, 0x15, 0x02, 0x36, 0xc6, 0xc9,
-	0xeb, 0xc4, 0x23, 0x39, 0xc6, 0x0b, 0x8f, 0xe4, 0x18, 0x1f, 0x3c, 0x92, 0x63, 0x9c, 0xf0, 0x58,
-	0x8e, 0xe1, 0xc2, 0x63, 0x39, 0x86, 0x1b, 0x8f, 0xe5, 0x18, 0xa2, 0x0c, 0xd2, 0x33, 0x4b, 0x32,
-	0x4a, 0x93, 0xf4, 0x92, 0xf3, 0x73, 0xf5, 0x5d, 0x21, 0x96, 0xf8, 0xa5, 0x96, 0x94, 0xe7, 0x17,
-	0x65, 0xeb, 0xc3, 0xc2, 0xae, 0x02, 0x16, 0x7a, 0x25, 0x95, 0x05, 0xa9, 0xc5, 0x49, 0x6c, 0xe0,
-	0xe0, 0x33, 0x06, 0x04, 0x00, 0x00, 0xff, 0xff, 0x57, 0xfb, 0x5e, 0x22, 0x90, 0x01, 0x00, 0x00,
+	// 407 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x74, 0x92, 0xb1, 0x8e, 0xda, 0x30,
+	0x1c, 0xc6, 0x13, 0x40, 0x81, 0x1a, 0x5a, 0xb5, 0x56, 0x87, 0x34, 0x43, 0x42, 0xd3, 0xaa, 0x62,
+	0x4a, 0x0a, 0x1d, 0xba, 0x74, 0x21, 0x80, 0x2a, 0x2a, 0xb5, 0xaa, 0x60, 0xeb, 0x82, 0x42, 0x30,
+	0xc1, 0xa2, 0xc4, 0x51, 0xec, 0xe3, 0x60, 0xb8, 0x77, 0xb8, 0x47, 0xb8, 0xc7, 0x61, 0x64, 0xbc,
+	0x09, 0x9d, 0xc2, 0x8b, 0x9c, 0x62, 0x9b, 0x3b, 0x8e, 0xc0, 0x66, 0xf9, 0xfb, 0xbe, 0x9f, 0xff,
+	0xf9, 0xf2, 0x07, 0x16, 0x5a, 0x91, 0x80, 0x24, 0xc8, 0xf5, 0x29, 0x45, 0x8c, 0xba, 0xcb, 0xa6,
+	0x1b, 0xa2, 0x08, 0x51, 0x4c, 0x9d, 0x38, 0x21, 0x8c, 0xc0, 0x77, 0xd2, 0xe0, 0x08, 0x83, 0xb3,
+	0x6c, 0x1a, 0xef, 0x43, 0x12, 0x12, 0xae, 0xba, 0xd9, 0x49, 0x18, 0x0d, 0x33, 0x4f, 0x8a, 0xfd,
+	0xc4, 0x5f, 0x48, 0x90, 0x61, 0xe4, 0x75, 0xb6, 0x12, 0x9a, 0x7d, 0x57, 0x00, 0xb5, 0x9f, 0xe2,
+	0xd9, 0x21, 0xf3, 0x19, 0x82, 0xdf, 0x81, 0x26, 0xc2, 0xba, 0x5a, 0x57, 0x1b, 0xd5, 0xd6, 0x07,
+	0x27, 0x37, 0x86, 0xf3, 0x97, 0x1b, 0xbc, 0xd2, 0x66, 0x67, 0x29, 0x03, 0x69, 0x87, 0xbf, 0xc1,
+	0xeb, 0xe0, 0x3f, 0x46, 0x11, 0x1b, 0x05, 0x33, 0x1f, 0x47, 0x54, 0x2f, 0xd4, 0x8b, 0x8d, 0x6a,
+	0xcb, 0x3e, 0x93, 0xef, 0x70, 0x5f, 0x27, 0xb3, 0xf5, 0xa3, 0x29, 0x91, 0xa0, 0x5a, 0xf0, 0x7c,
+	0x4d, 0x61, 0x1b, 0x68, 0x8c, 0xcc, 0x51, 0x44, 0xf5, 0x22, 0xe7, 0x7c, 0x3a, 0xc3, 0x19, 0x32,
+	0x7f, 0x8e, 0xa3, 0xb0, 0x9d, 0x5d, 0x1c, 0x81, 0x64, 0x10, 0xf6, 0x40, 0x65, 0x82, 0x62, 0x42,
+	0x31, 0xa3, 0x7a, 0xe9, 0x22, 0xa4, 0x2b, 0x2d, 0xde, 0x3a, 0xc3, 0xa1, 0x44, 0x42, 0x9e, 0xa2,
+	0xf6, 0x0d, 0x78, 0x7b, 0xea, 0x81, 0x9f, 0x81, 0x46, 0xf9, 0x89, 0xb7, 0xf4, 0xca, 0xab, 0xa5,
+	0x3b, 0xab, 0x22, 0xb4, 0x7e, 0x77, 0x20, 0x35, 0xd8, 0x39, 0x1a, 0x40, 0xb4, 0xf1, 0xf1, 0xf2,
+	0x00, 0xde, 0x9a, 0x7f, 0x47, 0xee, 0xf9, 0x25, 0x78, 0xf3, 0xd2, 0x01, 0xbf, 0x80, 0x0a, 0x4f,
+	0x8f, 0xf0, 0x44, 0x3e, 0x5f, 0x4d, 0x77, 0x56, 0x59, 0xd4, 0xd0, 0x1d, 0x94, 0xb9, 0xd8, 0x9f,
+	0xc0, 0x1f, 0xa0, 0x84, 0xa3, 0x29, 0xd1, 0x0b, 0xfc, 0x47, 0xda, 0x17, 0x0a, 0x44, 0xc9, 0x69,
+	0x7f, 0x3c, 0xe5, 0xfd, 0xda, 0xa4, 0xa6, 0xba, 0x4d, 0x4d, 0xf5, 0x21, 0x35, 0xd5, 0xdb, 0xbd,
+	0xa9, 0x6c, 0xf7, 0xa6, 0x72, 0xbf, 0x37, 0x95, 0x7f, 0x5f, 0x43, 0xcc, 0x66, 0x57, 0x63, 0x27,
+	0x20, 0x0b, 0xb7, 0x27, 0x98, 0x7f, 0x10, 0xbb, 0x26, 0xc9, 0xdc, 0x3d, 0x6c, 0xda, 0xea, 0xb0,
+	0x6b, 0x6c, 0x1d, 0x23, 0x3a, 0xd6, 0xf8, 0xb2, 0x7d, 0x7b, 0x0c, 0x00, 0x00, 0xff, 0xff, 0xf2,
+	0x41, 0x0b, 0xdb, 0xf4, 0x02, 0x00, 0x00,
 }
 
 func (m *GenesisState) Marshal() (dAtA []byte, err error) {
@@ -126,10 +281,38 @@ func (m *GenesisState) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	_ = i
 	var l int
 	_ = l
-	if len(m.DefaultSupportedClientChainTokens) > 0 {
-		for iNdEx := len(m.DefaultSupportedClientChainTokens) - 1; iNdEx >= 0; iNdEx-- {
+	if len(m.Deposits) > 0 {
+		for iNdEx := len(m.Deposits) - 1; iNdEx >= 0; iNdEx-- {
 			{
-				size, err := m.DefaultSupportedClientChainTokens[iNdEx].MarshalToSizedBuffer(dAtA[:i])
+				size, err := m.Deposits[iNdEx].MarshalToSizedBuffer(dAtA[:i])
+				if err != nil {
+					return 0, err
+				}
+				i -= size
+				i = encodeVarintGenesis(dAtA, i, uint64(size))
+			}
+			i--
+			dAtA[i] = 0x22
+		}
+	}
+	if len(m.Tokens) > 0 {
+		for iNdEx := len(m.Tokens) - 1; iNdEx >= 0; iNdEx-- {
+			{
+				size, err := m.Tokens[iNdEx].MarshalToSizedBuffer(dAtA[:i])
+				if err != nil {
+					return 0, err
+				}
+				i -= size
+				i = encodeVarintGenesis(dAtA, i, uint64(size))
+			}
+			i--
+			dAtA[i] = 0x1a
+		}
+	}
+	if len(m.ClientChains) > 0 {
+		for iNdEx := len(m.ClientChains) - 1; iNdEx >= 0; iNdEx-- {
+			{
+				size, err := m.ClientChains[iNdEx].MarshalToSizedBuffer(dAtA[:i])
 				if err != nil {
 					return 0, err
 				}
@@ -140,10 +323,43 @@ func (m *GenesisState) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 			dAtA[i] = 0x12
 		}
 	}
-	if len(m.DefaultSupportedClientChains) > 0 {
-		for iNdEx := len(m.DefaultSupportedClientChains) - 1; iNdEx >= 0; iNdEx-- {
+	{
+		size, err := m.Params.MarshalToSizedBuffer(dAtA[:i])
+		if err != nil {
+			return 0, err
+		}
+		i -= size
+		i = encodeVarintGenesis(dAtA, i, uint64(size))
+	}
+	i--
+	dAtA[i] = 0xa
+	return len(dAtA) - i, nil
+}
+
+func (m *DepositsByStaker) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *DepositsByStaker) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *DepositsByStaker) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.Deposits) > 0 {
+		for iNdEx := len(m.Deposits) - 1; iNdEx >= 0; iNdEx-- {
 			{
-				size, err := m.DefaultSupportedClientChains[iNdEx].MarshalToSizedBuffer(dAtA[:i])
+				size, err := m.Deposits[iNdEx].MarshalToSizedBuffer(dAtA[:i])
 				if err != nil {
 					return 0, err
 				}
@@ -151,8 +367,55 @@ func (m *GenesisState) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 				i = encodeVarintGenesis(dAtA, i, uint64(size))
 			}
 			i--
-			dAtA[i] = 0xa
+			dAtA[i] = 0x12
 		}
+	}
+	if len(m.StakerID) > 0 {
+		i -= len(m.StakerID)
+		copy(dAtA[i:], m.StakerID)
+		i = encodeVarintGenesis(dAtA, i, uint64(len(m.StakerID)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *DepositByAsset) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *DepositByAsset) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *DepositByAsset) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	{
+		size, err := m.Info.MarshalToSizedBuffer(dAtA[:i])
+		if err != nil {
+			return 0, err
+		}
+		i -= size
+		i = encodeVarintGenesis(dAtA, i, uint64(size))
+	}
+	i--
+	dAtA[i] = 0x12
+	if len(m.AssetID) > 0 {
+		i -= len(m.AssetID)
+		copy(dAtA[i:], m.AssetID)
+		i = encodeVarintGenesis(dAtA, i, uint64(len(m.AssetID)))
+		i--
+		dAtA[i] = 0xa
 	}
 	return len(dAtA) - i, nil
 }
@@ -174,18 +437,60 @@ func (m *GenesisState) Size() (n int) {
 	}
 	var l int
 	_ = l
-	if len(m.DefaultSupportedClientChains) > 0 {
-		for _, e := range m.DefaultSupportedClientChains {
+	l = m.Params.Size()
+	n += 1 + l + sovGenesis(uint64(l))
+	if len(m.ClientChains) > 0 {
+		for _, e := range m.ClientChains {
 			l = e.Size()
 			n += 1 + l + sovGenesis(uint64(l))
 		}
 	}
-	if len(m.DefaultSupportedClientChainTokens) > 0 {
-		for _, e := range m.DefaultSupportedClientChainTokens {
+	if len(m.Tokens) > 0 {
+		for _, e := range m.Tokens {
 			l = e.Size()
 			n += 1 + l + sovGenesis(uint64(l))
 		}
 	}
+	if len(m.Deposits) > 0 {
+		for _, e := range m.Deposits {
+			l = e.Size()
+			n += 1 + l + sovGenesis(uint64(l))
+		}
+	}
+	return n
+}
+
+func (m *DepositsByStaker) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.StakerID)
+	if l > 0 {
+		n += 1 + l + sovGenesis(uint64(l))
+	}
+	if len(m.Deposits) > 0 {
+		for _, e := range m.Deposits {
+			l = e.Size()
+			n += 1 + l + sovGenesis(uint64(l))
+		}
+	}
+	return n
+}
+
+func (m *DepositByAsset) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.AssetID)
+	if l > 0 {
+		n += 1 + l + sovGenesis(uint64(l))
+	}
+	l = m.Info.Size()
+	n += 1 + l + sovGenesis(uint64(l))
 	return n
 }
 
@@ -226,7 +531,7 @@ func (m *GenesisState) Unmarshal(dAtA []byte) error {
 		switch fieldNum {
 		case 1:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field DefaultSupportedClientChains", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field Params", wireType)
 			}
 			var msglen int
 			for shift := uint(0); ; shift += 7 {
@@ -253,14 +558,13 @@ func (m *GenesisState) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.DefaultSupportedClientChains = append(m.DefaultSupportedClientChains, &ClientChainInfo{})
-			if err := m.DefaultSupportedClientChains[len(m.DefaultSupportedClientChains)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+			if err := m.Params.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
 		case 2:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field DefaultSupportedClientChainTokens", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field ClientChains", wireType)
 			}
 			var msglen int
 			for shift := uint(0); ; shift += 7 {
@@ -287,8 +591,307 @@ func (m *GenesisState) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.DefaultSupportedClientChainTokens = append(m.DefaultSupportedClientChainTokens, &AssetInfo{})
-			if err := m.DefaultSupportedClientChainTokens[len(m.DefaultSupportedClientChainTokens)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+			m.ClientChains = append(m.ClientChains, ClientChainInfo{})
+			if err := m.ClientChains[len(m.ClientChains)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 3:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Tokens", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowGenesis
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthGenesis
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthGenesis
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Tokens = append(m.Tokens, StakingAssetInfo{})
+			if err := m.Tokens[len(m.Tokens)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 4:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Deposits", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowGenesis
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthGenesis
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthGenesis
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Deposits = append(m.Deposits, DepositsByStaker{})
+			if err := m.Deposits[len(m.Deposits)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipGenesis(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthGenesis
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *DepositsByStaker) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowGenesis
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: DepositsByStaker: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: DepositsByStaker: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field StakerID", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowGenesis
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthGenesis
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthGenesis
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.StakerID = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Deposits", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowGenesis
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthGenesis
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthGenesis
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Deposits = append(m.Deposits, DepositByAsset{})
+			if err := m.Deposits[len(m.Deposits)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipGenesis(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthGenesis
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *DepositByAsset) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowGenesis
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: DepositByAsset: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: DepositByAsset: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field AssetID", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowGenesis
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthGenesis
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthGenesis
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.AssetID = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Info", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowGenesis
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthGenesis
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthGenesis
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.Info.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
