@@ -37,6 +37,9 @@ func (k Keeper) InitGenesis(
 		consKey, _ := operatortypes.HexStringToPubKey(val.PublicKey)
 		// #nosec G703 // this only fails if the key is of a type not already defined.
 		consAddr, _ := operatortypes.TMCryptoPublicKeyToConsAddr(consKey)
+		// if GetOperatorAddressForChainIDAndConsAddr returns found, it means
+		// that the operator is registered and also (TODO) that it has opted into
+		// the dogfood AVS.
 		found, _ := k.operatorKeeper.GetOperatorAddressForChainIDAndConsAddr(
 			ctx, ctx.ChainID(), consAddr,
 		)
@@ -48,6 +51,10 @@ func (k Keeper) InitGenesis(
 			Power:  val.Power,
 		})
 	}
+	// at genesis, not chain restarts, check that each operator has a key defined.
+	// TODO(mm): add a flag to disable this check later when genesis is exported.
+	// TODO: implement.
+
 	// ApplyValidatorChanges will sort it internally
 	return k.ApplyValidatorChanges(
 		ctx, out, types.InitialValidatorSetID,
