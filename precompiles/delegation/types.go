@@ -10,16 +10,16 @@ import (
 
 	exocmn "github.com/ExocoreNetwork/exocore/precompiles/common"
 	"github.com/ExocoreNetwork/exocore/x/assets/types"
-	keeper2 "github.com/ExocoreNetwork/exocore/x/delegation/keeper"
+	delegationtypes "github.com/ExocoreNetwork/exocore/x/delegation/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	cmn "github.com/evmos/evmos/v14/precompiles/common"
 )
 
-func (p Precompile) GetDelegationParamsFromInputs(ctx sdk.Context, args []interface{}) (*keeper2.DelegationOrUndelegationParams, error) {
+func (p Precompile) GetDelegationParamsFromInputs(ctx sdk.Context, args []interface{}) (*delegationtypes.DelegationOrUndelegationParams, error) {
 	if len(args) != 6 {
 		return nil, fmt.Errorf(cmn.ErrInvalidNumberOfArgs, 6, len(args))
 	}
-	delegationParams := &keeper2.DelegationOrUndelegationParams{}
+	delegationParams := &delegationtypes.DelegationOrUndelegationParams{}
 	clientChainLzID, ok := args[0].(uint16)
 	if !ok {
 		return nil, fmt.Errorf(exocmn.ErrContractInputParaOrType, 0, reflect.TypeOf(args[0]), clientChainLzID)

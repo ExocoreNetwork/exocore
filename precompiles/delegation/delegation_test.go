@@ -11,7 +11,6 @@ import (
 	"github.com/ExocoreNetwork/exocore/precompiles/delegation"
 	"github.com/ExocoreNetwork/exocore/x/assets/types"
 	assetstype "github.com/ExocoreNetwork/exocore/x/assets/types"
-	keeper2 "github.com/ExocoreNetwork/exocore/x/delegation/keeper"
 	delegationtype "github.com/ExocoreNetwork/exocore/x/delegation/types"
 	"github.com/ExocoreNetwork/exocore/x/deposit/keeper"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -308,7 +307,7 @@ func (s *DelegationPrecompileSuite) TestRunUnDelegateFromThroughClientChain() {
 
 	delegateAsset := func(staker []byte, delegateAmount sdkmath.Int) {
 		// deposit asset for delegation test
-		delegateToParams := &keeper2.DelegationOrUndelegationParams{
+		delegateToParams := &delegationtype.DelegationOrUndelegationParams{
 			ClientChainLzID: 101,
 			Action:          types.DelegateTo,
 			StakerAddress:   staker,
