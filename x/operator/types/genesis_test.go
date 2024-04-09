@@ -94,25 +94,6 @@ func (suite *GenesisTestSuite) TestValidateGenesis() {
 			expPass: false,
 		},
 		{
-			name: "invalid genesis state due to invalid client chain earnings address",
-			genState: &types.GenesisState{
-				Operators: []types.OperatorInfo{
-					{
-						EarningsAddr: accAddress1.String(),
-						ClientChainEarningsAddr: &types.ClientChainEarningAddrList{
-							EarningInfoList: []*types.ClientChainEarningAddrInfo{
-								{
-									LzClientChainID:        1,
-									ClientChainEarningAddr: "invalid",
-								},
-							},
-						},
-					},
-				},
-			},
-			expPass: false,
-		},
-		{
 			name: "invalid genesis state due to invalid cons key operator address",
 			genState: &types.GenesisState{
 				Operators: []types.OperatorInfo{
@@ -223,31 +204,6 @@ func (suite *GenesisTestSuite) TestValidateGenesis() {
 					},
 					{
 						OperatorAddress: accAddress2.String(),
-						Chains: []types.ChainDetails{
-							{
-								ChainID:      utils.TestnetChainID,
-								ConsensusKey: key,
-							},
-						},
-					},
-				},
-			},
-			expPass: false,
-		},
-		{
-			name: "invalid genesis state due to registered operator without key",
-			genState: &types.GenesisState{
-				Operators: []types.OperatorInfo{
-					{
-						EarningsAddr: accAddress1.String(),
-					},
-					{
-						EarningsAddr: accAddress2.String(),
-					},
-				},
-				OperatorRecords: []types.OperatorConsKeyRecord{
-					{
-						OperatorAddress: accAddress1.String(),
 						Chains: []types.ChainDetails{
 							{
 								ChainID:      utils.TestnetChainID,

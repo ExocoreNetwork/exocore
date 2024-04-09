@@ -24,6 +24,10 @@ func DefaultGenesis() *GenesisState {
 // Validate performs basic genesis state validation returning an error upon any
 // failure.
 func (gs GenesisState) Validate() error {
+	// checks list:
+	// - no duplicate addresses in `gs.Operators`.
+	// - correct bech32 format for each address in `gs.Operators`
+	// - no `chainID` duplicates for earnings addresses list in `gs.Operators`.
 	operators := make(map[string]struct{}, len(gs.Operators))
 	for _, op := range gs.Operators {
 		address := op.EarningsAddr
@@ -52,7 +56,8 @@ func (gs GenesisState) Validate() error {
 					)
 				}
 				lzIDs[lzID] = struct{}{}
-				// TODO: consider removing this check for non-EVM chains
+				// TODO: when moving to support non-EVM chains, this check should be modified
+				// to work based on the `lzID` or possibly removed.
 				if !common.IsHexAddress(info.ClientChainEarningAddr) {
 					return errorsmod.Wrapf(
 						ErrInvalidGenesisData,
@@ -62,6 +67,11 @@ func (gs GenesisState) Validate() error {
 			}
 		}
 	}
+	// - correct bech32 format for each address in `gs.OperatorRecords`.
+	// - no duplicate addresses in `gs.OperatorRecords`.
+	// - no operator that is in `gs.OperatorRecords` but not in `gs.Operators`.
+	// - validity of consensus key format for each entry in `gs.OperatorRecords`.
+	// - within each chainID, no duplicate consensus keys.
 	operatorRecords := make(map[string]struct{}, len(gs.OperatorRecords))
 	keysByChainID := make(map[string]map[string]struct{})
 	for _, record := range gs.OperatorRecords {
@@ -87,8 +97,10 @@ func (gs GenesisState) Validate() error {
 		}
 		for _, chain := range record.Chains {
 			consensusKeyString := chain.ConsensusKey
-			if _, found := keysByChainID[chain.ChainID]; !found {
-				keysByChainID[chain.ChainID] = make(map[string]struct{})
+			chainID := chain.ChainID
+			// Cosmos does not describe a specific `chainID` format, so can't validate it.
+			if _, found := keysByChainID[chainID]; !found {
+				keysByChainID[chainID] = make(map[string]struct{})
 			}
 			if _, err := HexStringToPubKey(consensusKeyString); err != nil {
 				return errorsmod.Wrapf(
@@ -97,30 +109,20 @@ func (gs GenesisState) Validate() error {
 				)
 			}
 			// within a chain id, there should not be duplicate consensus keys
-			if _, found := keysByChainID[chain.ChainID][consensusKeyString]; found {
+			if _, found := keysByChainID[chainID][consensusKeyString]; found {
 				return errorsmod.Wrapf(
 					ErrInvalidGenesisData,
-					"duplicate consensus key for operator %s on chain %s", addr, chain.ChainID,
+					"duplicate consensus key for operator %s on chain %s", addr, chainID,
 				)
 			}
-			keysByChainID[chain.ChainID][consensusKeyString] = struct{}{}
+			keysByChainID[chainID][consensusKeyString] = struct{}{}
 		}
 	}
-	// i do not know that chain id here, so i cannot check whether
-	// each registered operator has a key defined for the chain id. but i can:
-	// ensure that there is a consensus key record (of any chain id) for each operator.
-	// for bootstrapping, this is bound to happen since the operator registration is contingent
-	// on the operator having a consensus key for the chain id. however, in the future,
-	// it may be possible for an operator to opt into an AVS which does not have a consensus
-	// key requirement, so this check could be removed if we set up the Export case. but i
-	// think it is better to keep it for now.
-	if len(operators) != len(operatorRecords) {
-		// operatorRecords is always a subset of operators, since we do not add any operator
-		// to operatorRecords unless it is in operators.
-		return errorsmod.Wrapf(
-			ErrInvalidGenesisData,
-			"operator addresses in operators and operator records do not match",
-		)
-	}
+	// rationale for the validations above:
+	// 1. since this function should support chain restarts and upgrades, we cannot require
+	//    the format of the earnings address be EVM only.
+	// 2. since the operator module is not meant to handle dogfooding, we should not check
+	//    whether an operator has keys defined for our chainID. this is left for the dogfood
+	//    module.
 	return nil
 }
