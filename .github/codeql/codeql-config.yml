@@ -1,11 +1,6 @@
 name: "CodeQL Analysis"
 queries:
   - uses: crypto-com/cosmos-sdk-codeql@main
+    exclude:
+      - crypto-com/cosmos-sdk-codeql/map-iteration
   - uses: security-and-quality
-  # This rule is ignored because it is too noisy. Although it is valid in
-  # many contexts, it is not valid in the most common usage of
-  # `store = ctx.KVStore; store.Set(key, value)` since KVStore uses
-  # a parent in-memory cached multistore obtained from `baseapp.go`.
-  # The in-memory caching, before being written to the IAVL+ tree,
-  # sorts the keys internally and hence the order does not impact consistency.
-  - exclude: crypto-com/cosmos-sdk-codeql/map-iteration
