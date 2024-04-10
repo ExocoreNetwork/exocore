@@ -1,0 +1,72 @@
+syntax = "proto3";
+package exocore.avs;
+import "cosmos/msg/v1/msg.proto";
+import "cosmos_proto/cosmos.proto";
+
+option go_package = "github.com/ExocoreNetwork/exocore/x/avs/types";
+
+// AVSinfo represent the information of avs
+message AVSInfo {
+  // name of avs
+  string name = 1;
+  // address of avs
+  string avs_address = 2;
+  // registered operator of avs
+  repeated string operator_address = 3;
+  // the owner who has permission for avs
+  string avs_owner_address = 4;
+  // asset_basic_info is all the basic asset information of the avs.
+  repeated string asset_id = 5;
+}
+
+// RegisterAVSReq is requst to register avs
+message RegisterAVSReq {
+  // from_address is the source
+  option (cosmos.msg.v1.signer) = "FromAddress";
+  // from_address is the source
+  string from_address = 1
+  [(cosmos_proto.scalar) = "cosmos.AddressString"];
+  // avs information
+  AVSInfo info = 2;
+}
+
+// RegisterAVSResponse is the response for register avs
+message RegisterAVSResponse {
+  // from_address is the source
+  option (cosmos.msg.v1.signer) = "FromAddress";
+  // from_address is the source
+  string from_address = 1
+  [(cosmos_proto.scalar) = "cosmos.AddressString"];
+  // avs information
+  AVSInfo info = 2;
+}
+
+// DeRegisterAVSReq is requst to deregister avs
+message DeRegisterAVSReq {
+  option (cosmos.msg.v1.signer) = "FromAddress";
+  // from_address is the source address
+  string from_address = 1
+  [(cosmos_proto.scalar) = "cosmos.AddressString"];
+  // avs information
+  AVSInfo info = 2;
+}
+
+// DeRegisterAVSResponse is requst to register avs
+message DeRegisterAVSResponse {
+  // from_address is the source address
+  option (cosmos.msg.v1.signer) = "FromAddress";
+  // from_address is the source address
+  string from_address = 1
+  [(cosmos_proto.scalar) = "cosmos.AddressString"];
+  // avs information
+  AVSInfo info = 2;
+}
+
+// Msg defines the AVS related Msg service.
+service Msg {
+  option (cosmos.msg.v1.service) = true;
+  // RegisterAVS registers a new AVS with corresponding operator.
+  rpc RegisterAVS (RegisterAVSReq) returns (RegisterAVSResponse);
+  // DelegateAssetToOperator delegates asset to operator.
+  rpc DeRegisterAVS (DeRegisterAVSReq) returns (DeRegisterAVSResponse);
+}
