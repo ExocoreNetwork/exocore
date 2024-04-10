@@ -5,29 +5,19 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-// calculate the token worth of provided shares, truncated
-func (k Keeper) TokensFromSharesTruncated(shares sdkmath.LegacyDec) sdkmath.Int {
-	return (shares.MulInt(v.Tokens)).QuoTruncate(v.DelegatorShares)
+// TokensFromShares calculate the token amount of provided shares, truncated to Int
+func (k Keeper) TokensFromShares(stakerShare, totalShare sdkmath.LegacyDec, operatorAmount sdkmath.Int) sdkmath.Int {
+	return (stakerShare.MulInt(operatorAmount)).Quo(totalShare).TruncateInt()
 }
 
 // SharesFromTokens returns the shares of a delegation given a bond amount. It
 // returns an error if the validator has no tokens.
-func (k Keeper) SharesFromTokens(amt math.Int) (sdk.Dec, error) {
+func (k Keeper) SharesFromTokens(totalShare sdkmath.LegacyDec, stakerAmount, operatorAmount sdkmath.Int) (sdkmath.LegacyDec, error) {
 	if v.Tokens.IsZero() {
 		return math.LegacyZeroDec(), ErrInsufficientShares
 	}
 
 	return v.GetDelegatorShares().MulInt(amt).QuoInt(v.GetTokens()), nil
-}
-
-// SharesFromTokensTruncated returns the truncated shares of a delegation given
-// a bond amount. It returns an error if the validator has no tokens.
-func (k Keeper) SharesFromTokensTruncated(amt math.Int) (sdk.Dec, error) {
-	if v.Tokens.IsZero() {
-		return math.LegacyZeroDec(), ErrInsufficientShares
-	}
-
-	return v.GetDelegatorShares().MulInt(amt).QuoTruncate(sdk.NewDecFromInt(v.GetTokens())), nil
 }
 
 // CalculateShare calculates the S_j
