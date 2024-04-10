@@ -5,6 +5,7 @@ import (
 
 	"github.com/ExocoreNetwork/exocore/x/dogfood/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	epochstypes "github.com/evmos/evmos/v14/x/epochs/types"
 )
 
 // EpochsHooksWrapper is the wrapper structure that implements the epochs hooks for the dogfood
@@ -14,7 +15,7 @@ type EpochsHooksWrapper struct {
 }
 
 // Interface guard
-var _ types.EpochsHooks = EpochsHooksWrapper{}
+var _ epochstypes.EpochHooks = EpochsHooksWrapper{}
 
 // EpochsHooks returns the epochs hooks wrapper. It follows the "accept interfaces, return
 // concretes" pattern.

@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"github.com/ExocoreNetwork/exocore/x/dogfood/types"
+	operatortypes "github.com/ExocoreNetwork/exocore/x/operator/types"
 	tmprotocrypto "github.com/cometbft/cometbft/proto/tendermint/crypto"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -10,12 +11,12 @@ import (
 // or key replacement. This is done because the operator has opted back in or has
 // replaced their key (again) with the original one.
 func (k Keeper) ClearUnbondingInformation(
-	ctx sdk.Context, addr sdk.AccAddress, pubKey tmprotocrypto.PublicKey,
+	ctx sdk.Context, addr sdk.AccAddress, pubKey *tmprotocrypto.PublicKey,
 ) {
 	optOutEpoch := k.GetOperatorOptOutFinishEpoch(ctx, addr)
 	k.DeleteOperatorOptOutFinishEpoch(ctx, addr)
 	k.RemoveOptOutToFinish(ctx, optOutEpoch, addr)
-	consAddress, err := types.TMCryptoPublicKeyToConsAddr(pubKey)
+	consAddress, err := operatortypes.TMCryptoPublicKeyToConsAddr(pubKey)
 	if err != nil {
 		return
 	}
@@ -24,14 +25,14 @@ func (k Keeper) ClearUnbondingInformation(
 
 // SetUnbondingInformation sets information related to an operator's opt out or key replacement.
 func (k Keeper) SetUnbondingInformation(
-	ctx sdk.Context, addr sdk.AccAddress, pubKey tmprotocrypto.PublicKey, isOptingOut bool,
+	ctx sdk.Context, addr sdk.AccAddress, pubKey *tmprotocrypto.PublicKey, isOptingOut bool,
 ) {
 	unbondingCompletionEpoch := k.GetUnbondingCompletionEpoch(ctx)
 	if isOptingOut {
 		k.AppendOptOutToFinish(ctx, unbondingCompletionEpoch, addr)
 		k.SetOperatorOptOutFinishEpoch(ctx, addr, unbondingCompletionEpoch)
 	}
-	consAddress, err := types.TMCryptoPublicKeyToConsAddr(pubKey)
+	consAddress, err := operatortypes.TMCryptoPublicKeyToConsAddr(pubKey)
 	if err != nil {
 		return
 	}

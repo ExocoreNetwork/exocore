@@ -360,7 +360,7 @@ func (k *Keeper) DeleteOperatorAddressForChainIDAndConsAddr(
 
 // SetHooks stores the given hooks implementations.
 // Note that the Keeper is changed into a pointer to prevent an ineffective assignment.
-func (k *Keeper) SetHooks(hooks types.OperatorConsentHooks) {
+func (k *Keeper) SetHooks(hooks types.OperatorHooks) {
 	if hooks == nil {
 		panic("cannot set nil hooks")
 	}
@@ -370,10 +370,10 @@ func (k *Keeper) SetHooks(hooks types.OperatorConsentHooks) {
 	k.hooks = hooks
 }
 
-func (k *Keeper) Hooks() types.OperatorConsentHooks {
+func (k *Keeper) Hooks() types.OperatorHooks {
 	if k.hooks == nil {
 		// return a no-op implementation if no hooks are set to prevent calling nil functions
-		return types.MultiOperatorConsentHooks{}
+		return types.MultiOperatorHooks{}
 	}
 	return k.hooks
 }
@@ -436,7 +436,23 @@ func (k *Keeper) CompleteOperatorOptOutFromChainID(
 }
 
 func (k *Keeper) GetActiveOperatorsForChainID(
-	sdk.Context, string,
+	ctx sdk.Context, chainID string,
 ) ([]sdk.AccAddress, []*tmprotocrypto.PublicKey) {
-	return nil, nil
+	operatorsAddr, pks := k.GetOperatorsForChainID(ctx, chainID)
+	avsAddr, err := k.avsKeeper.GetAvsAddrByChainID(ctx, chainID)
+	if err != nil {
+		k.Logger(ctx).Error(err.Error(), chainID)
+		return nil, nil
+	}
+
+	activeOperator := make([]sdk.AccAddress, 0)
+	activePks := make([]*tmprotocrypto.PublicKey, 0)
+	// check if the operator is active
+	for i, operator := range operatorsAddr {
+		if k.IsActive(ctx, operator.String(), avsAddr) {
+			activeOperator = append(activeOperator, operator)
+			activePks = append(activePks, pks[i])
+		}
+	}
+	return activeOperator, activePks
 }

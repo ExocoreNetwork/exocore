@@ -5,15 +5,15 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-var _ OperatorConsentHooks = &MultiOperatorConsentHooks{}
+var _ OperatorHooks = &MultiOperatorHooks{}
 
-type MultiOperatorConsentHooks []OperatorConsentHooks
+type MultiOperatorHooks []OperatorHooks
 
-func NewMultiOperatorConsentHooks(hooks ...OperatorConsentHooks) MultiOperatorConsentHooks {
+func NewMultiOperatorHooks(hooks ...OperatorHooks) MultiOperatorHooks {
 	return hooks
 }
 
-func (hooks MultiOperatorConsentHooks) AfterOperatorOptIn(
+func (hooks MultiOperatorHooks) AfterOperatorOptIn(
 	ctx sdk.Context,
 	addr sdk.AccAddress,
 	chainID string,
@@ -24,7 +24,7 @@ func (hooks MultiOperatorConsentHooks) AfterOperatorOptIn(
 	}
 }
 
-func (hooks MultiOperatorConsentHooks) AfterOperatorKeyReplacement(
+func (hooks MultiOperatorHooks) AfterOperatorKeyReplacement(
 	ctx sdk.Context,
 	addr sdk.AccAddress,
 	oldKey *tmprotocrypto.PublicKey,
@@ -36,7 +36,7 @@ func (hooks MultiOperatorConsentHooks) AfterOperatorKeyReplacement(
 	}
 }
 
-func (hooks MultiOperatorConsentHooks) AfterOperatorOptOutInitiated(
+func (hooks MultiOperatorHooks) AfterOperatorOptOutInitiated(
 	ctx sdk.Context, addr sdk.AccAddress, chainID string, key *tmprotocrypto.PublicKey,
 ) {
 	for _, hook := range hooks {

@@ -3,7 +3,7 @@ package keeper
 import (
 	"strings"
 
-	"github.com/ExocoreNetwork/exocore/x/dogfood/types"
+	operatortypes "github.com/ExocoreNetwork/exocore/x/operator/types"
 	tmprotocrypto "github.com/cometbft/cometbft/proto/tendermint/crypto"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -15,7 +15,7 @@ type OperatorHooksWrapper struct {
 }
 
 // Interface guards
-var _ types.OperatorHooks = OperatorHooksWrapper{}
+var _ operatortypes.OperatorHooks = OperatorHooksWrapper{}
 
 func (k *Keeper) OperatorHooks() OperatorHooksWrapper {
 	return OperatorHooksWrapper{k}
@@ -23,7 +23,7 @@ func (k *Keeper) OperatorHooks() OperatorHooksWrapper {
 
 // AfterOperatorOptIn is the implementation of the operator hooks.
 func (h OperatorHooksWrapper) AfterOperatorOptIn(
-	ctx sdk.Context, addr sdk.AccAddress, chainID string, key tmprotocrypto.PublicKey,
+	ctx sdk.Context, addr sdk.AccAddress, chainID string, key *tmprotocrypto.PublicKey,
 ) {
 	// an operator opting in does not meaningfully affect this module, since
 	// this information will be fetched at the end of the epoch
@@ -36,8 +36,8 @@ func (h OperatorHooksWrapper) AfterOperatorOptIn(
 
 // AfterOperatorKeyReplacement is the implementation of the operator hooks.
 func (h OperatorHooksWrapper) AfterOperatorKeyReplacement(
-	ctx sdk.Context, operator sdk.AccAddress, oldKey tmprotocrypto.PublicKey,
-	newKey tmprotocrypto.PublicKey, chainID string,
+	ctx sdk.Context, operator sdk.AccAddress, oldKey *tmprotocrypto.PublicKey,
+	newKey *tmprotocrypto.PublicKey, chainID string,
 ) {
 	if strings.Compare(chainID, ctx.ChainID()) == 0 {
 		// a key replacement means that the old key needs to be pruned upon maturity.
@@ -48,7 +48,7 @@ func (h OperatorHooksWrapper) AfterOperatorKeyReplacement(
 
 // AfterOperatorOptOutInitiated is the implementation of the operator hooks.
 func (h OperatorHooksWrapper) AfterOperatorOptOutInitiated(
-	ctx sdk.Context, operator sdk.AccAddress, chainID string, key tmprotocrypto.PublicKey,
+	ctx sdk.Context, operator sdk.AccAddress, chainID string, key *tmprotocrypto.PublicKey,
 ) {
 	if strings.Compare(chainID, ctx.ChainID()) == 0 {
 		h.keeper.SetUnbondingInformation(ctx, operator, key, true)
