@@ -74,6 +74,7 @@ func (k *Keeper) UpdateDelegationState(ctx sdk.Context, stakerID string, assetID
 			UndelegatableAmount:     sdkmath.NewInt(0),
 			WaitUndelegationAmount:  sdkmath.NewInt(0),
 			UndelegatableAfterSlash: sdkmath.NewInt(0),
+			UndelegatableShare:      sdkmath.LegacyNewDec(0),
 		}
 
 		if store.Has(singleStateKey) {
@@ -94,6 +95,11 @@ func (k *Keeper) UpdateDelegationState(ctx sdk.Context, stakerID string, assetID
 		err = assetstype.UpdateAssetValue(&delegationState.UndelegatableAfterSlash, &amounts.UndelegatableAfterSlash)
 		if err != nil {
 			return errorsmod.Wrap(err, "UpdateDelegationState UndelegatableAfterSlash error")
+		}
+
+		err = assetstype.UpdateAssetDecValue(&delegationState.UndelegatableShare, &amounts.UndelegatableShare)
+		if err != nil {
+			return errorsmod.Wrap(err, "UpdateDelegationState UndelegatableShare error")
 		}
 
 		// save single operator delegation state

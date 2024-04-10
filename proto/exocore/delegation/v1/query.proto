@@ -40,6 +40,22 @@ message DelegationAmounts {
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
     (gogoproto.nullable) = false
   ];
+
+  // undelegatable_share is the share that can be undelegated.
+  // It's to reduce the state updating when slash occurs.
+  // S_j = S * T_j / T, `S` and `T` is the current asset share and amount of operator,
+  // and the T_j represents the change in staker's asset amount when some external
+  // operations occur, such as: delegation, undelegation and non-instantaneous slashing.
+  // S_j represents the change in the staker's asset share,
+  // so the updated share should be added by it.
+  // A special case is the initial delegation, when T = 0 and S = 0, so T_j / T is undefined.
+  // For the initial delegation, delegator j who delegates T_j tokens receive S_j = T_j shares.
+  string undelegatable_share = 4
+  [
+    (cosmos_proto.scalar) = "cosmos.Dec",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+    (gogoproto.nullable) = false
+  ];
 }
 
 // QueryDelegationInfoResponse is the response for delegations by staker id and

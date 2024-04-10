@@ -126,7 +126,7 @@ func (k *Keeper) SlashStaker(ctx sdk.Context, operatorAddress sdk.AccAddress, sl
 
 			slashSumValue := slashInfo.AmountFromUnbonding.Add(slashInfo.AmountFromOptedIn)
 			// update staker and operator assets state
-			err = k.assetsKeeper.UpdateStakerAssetState(ctx, stakerID, assetID, assetstype.StakerSingleAssetChangeInfo{
+			err = k.assetsKeeper.UpdateStakerAssetState(ctx, stakerID, assetID, assetstype.DeltaStakerSingleAsset{
 				TotalDepositAmount: slashSumValue.Neg(),
 			})
 			if err != nil {
@@ -140,7 +140,7 @@ func (k *Keeper) SlashStaker(ctx sdk.Context, operatorAddress sdk.AccAddress, sl
 			}
 
 			// handle the state that needs to be updated when slashing opted-in assets
-			err = k.assetsKeeper.UpdateOperatorAssetState(ctx, operatorAddress, assetID, assetstype.OperatorSingleAssetChangeInfo{
+			err = k.assetsKeeper.UpdateOperatorAssetState(ctx, operatorAddress, assetID, assetstype.DeltaOperatorSingleAsset{
 				TotalAmount: slashInfo.AmountFromOptedIn.Neg(),
 			})
 			if err != nil {
@@ -160,7 +160,7 @@ func (k *Keeper) SlashOperator(ctx sdk.Context, operatorAddress sdk.AccAddress, 
 	for assetID, slashInfo := range slashOperatorInfo {
 		slashSumValue := slashInfo.AmountFromUnbonding.Add(slashInfo.AmountFromOptedIn)
 		// handle the state that needs to be updated when slashing both opted-in and unbonding assets
-		err := k.assetsKeeper.UpdateOperatorAssetState(ctx, operatorAddress, assetID, assetstype.OperatorSingleAssetChangeInfo{
+		err := k.assetsKeeper.UpdateOperatorAssetState(ctx, operatorAddress, assetID, assetstype.DeltaOperatorSingleAsset{
 			TotalAmount:                        slashSumValue.Neg(),
 			OperatorAmount:                     slashInfo.AmountFromOptedIn.Neg(),
 			OperatorUnbondableAmountAfterSlash: slashInfo.AmountFromUnbonding.Neg(),

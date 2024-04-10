@@ -10,7 +10,7 @@ import (
 
 // This file provides all functions about operator assets state management.
 
-func (k Keeper) GetOperatorAssetInfos(ctx sdk.Context, operatorAddr sdk.Address, _ map[string]interface{}) (assetsInfo map[string]*assetstype.OperatorAssetInfo, err error) {
+func (k Keeper) GetOperatorAssetInfos(ctx sdk.Context, operatorAddr sdk.Address, assetsFilter map[string]interface{}) (assetsInfo map[string]*assetstype.OperatorAssetInfo, err error) {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), assetstype.KeyPrefixOperatorAssetInfos)
 	// the key is the operator address in the bech32 format
 	key := []byte(operatorAddr.String())
@@ -26,7 +26,9 @@ func (k Keeper) GetOperatorAssetInfos(ctx sdk.Context, operatorAddr sdk.Address,
 			return nil, err
 		}
 		assetID := keyList[1]
-		ret[assetID] = &stateInfo
+		if _, ok := assetsFilter[assetID]; ok {
+			ret[assetID] = &stateInfo
+		}
 	}
 	return ret, nil
 }
@@ -50,7 +52,7 @@ func (k Keeper) GetOperatorSpecifiedAssetInfo(ctx sdk.Context, operatorAddr sdk.
 // The input `changeAmount` represents the values that you want to add or decrease,using positive or negative values for increasing and decreasing,respectively. The function will calculate and update new state after a successful check.
 // The function will be called when there is delegation or undelegation related to the operator. In the future,it will also be called when the operator deposit their own assets.
 
-func (k Keeper) UpdateOperatorAssetState(ctx sdk.Context, operatorAddr sdk.Address, assetID string, changeAmount assetstype.OperatorSingleAssetChangeInfo) (err error) {
+func (k Keeper) UpdateOperatorAssetState(ctx sdk.Context, operatorAddr sdk.Address, assetID string, changeAmount assetstype.DeltaOperatorSingleAsset) (err error) {
 	// get the latest state,use the default initial state if the state hasn't been stored
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), assetstype.KeyPrefixOperatorAssetInfos)
 	key := assetstype.GetJoinedStoreKey(operatorAddr.String(), assetID)
@@ -60,6 +62,8 @@ func (k Keeper) UpdateOperatorAssetState(ctx sdk.Context, operatorAddr sdk.Addre
 		WaitUnbondingAmount:                math.NewInt(0),
 		OperatorUnbondingAmount:            math.NewInt(0),
 		OperatorUnbondableAmountAfterSlash: math.NewInt(0),
+		TotalShare:                         math.LegacyNewDec(0),
+		OperatorShare:                      math.LegacyNewDec(0),
 	}
 	if store.Has(key) {
 		value := store.Get(key)
@@ -86,6 +90,14 @@ func (k Keeper) UpdateOperatorAssetState(ctx sdk.Context, operatorAddr sdk.Addre
 	err = assetstype.UpdateAssetValue(&assetState.OperatorUnbondableAmountAfterSlash, &changeAmount.OperatorUnbondableAmountAfterSlash)
 	if err != nil {
 		return errorsmod.Wrap(err, "UpdateOperatorAssetState OperatorUnbondingAmount error")
+	}
+	err = assetstype.UpdateAssetDecValue(&assetState.TotalShare, &changeAmount.TotalShare)
+	if err != nil {
+		return errorsmod.Wrap(err, "UpdateOperatorAssetState TotalShare error")
+	}
+	err = assetstype.UpdateAssetDecValue(&assetState.OperatorShare, &changeAmount.OperatorShare)
+	if err != nil {
+		return errorsmod.Wrap(err, "UpdateOperatorAssetState OperatorShare error")
 	}
 
 	// store the updated state

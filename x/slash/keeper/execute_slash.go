@@ -189,7 +189,7 @@ func (k Keeper) Slash(ctx sdk.Context, event *SlashParams) error {
 		return errorsmod.Wrap(rtypes.ErrSlashAssetNotExist, fmt.Sprintf("the assetID is:%s", assetID))
 	}
 
-	changeAmount := types.StakerSingleAssetChangeInfo{
+	changeAmount := types.DeltaStakerSingleAsset{
 		TotalDepositAmount: event.OpAmount.Neg(),
 		WithdrawableAmount: event.OpAmount.Neg(),
 	}

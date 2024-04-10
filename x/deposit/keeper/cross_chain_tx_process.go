@@ -133,7 +133,7 @@ func (k Keeper) Deposit(ctx sdk.Context, params *DepositParams) error {
 	if !k.assetsKeeper.IsStakingAsset(ctx, assetID) {
 		return errorsmod.Wrap(despoittypes.ErrDepositAssetNotExist, fmt.Sprintf("the assetID is:%s", assetID))
 	}
-	changeAmount := types.StakerSingleAssetChangeInfo{
+	changeAmount := types.DeltaStakerSingleAsset{
 		TotalDepositAmount: params.OpAmount,
 		WithdrawableAmount: params.OpAmount,
 	}

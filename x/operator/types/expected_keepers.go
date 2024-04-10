@@ -27,11 +27,11 @@ type AssetsKeeper interface {
 	) (assetsInfo map[string]*assetstype.OperatorAssetInfo, err error)
 	UpdateStakerAssetState(
 		ctx sdk.Context, stakerID string, assetID string,
-		changeAmount assetstype.StakerSingleAssetChangeInfo,
+		changeAmount assetstype.DeltaStakerSingleAsset,
 	) (err error)
 	UpdateOperatorAssetState(
 		ctx sdk.Context, operatorAddr sdk.Address, assetID string,
-		changeAmount assetstype.OperatorSingleAssetChangeInfo,
+		changeAmount assetstype.DeltaOperatorSingleAsset,
 	) (err error)
 }
 

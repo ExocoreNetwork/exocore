@@ -35,7 +35,7 @@ func (k Keeper) InitGenesis(ctx sdk.Context, data *types.GenesisState) {
 		for _, depositsByStaker := range deposit.Deposits {
 			assetID := depositsByStaker.AssetID
 			info := depositsByStaker.Info
-			infoAsChange := types.StakerSingleAssetChangeInfo(info)
+			infoAsChange := types.DeltaStakerSingleAsset(info)
 			// set the deposited and free values for the staker
 			if err := k.UpdateStakerAssetState(
 				ctx, stakerID, assetID, infoAsChange,

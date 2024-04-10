@@ -62,7 +62,7 @@ func (k *Keeper) UpdateOptedInAssetsState(ctx sdk.Context, stakerID, assetID, op
 			}
 
 			// UpdateStateForAsset
-			changeState := types.OptedInAssetStateChange{
+			changeState := types.DeltaOptedInAssetState{
 				Amount: opAmount,
 				Value:  opUSDValue,
 			}
@@ -136,7 +136,7 @@ func (k *Keeper) OptIn(ctx sdk.Context, operatorAddress sdk.AccAddress, avsAddr 
 		operatorOwnAssetUSDValue = operatorOwnAssetUSDValue.Add(operatorUSDValue)
 
 		// UpdateStateForAsset
-		changeState := types.OptedInAssetStateChange{
+		changeState := types.DeltaOptedInAssetState{
 			Amount: operatorAssetState.TotalAmount,
 			Value:  assetUSDValue,
 		}

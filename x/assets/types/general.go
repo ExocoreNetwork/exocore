@@ -43,13 +43,13 @@ type CrossChainOpType uint8
 
 type WithdrawerAddress [32]byte
 
-// StakerSingleAssetChangeInfo This is a struct to describe the desired change that matches with
+// DeltaStakerSingleAsset This is a struct to describe the desired change that matches with
 // the StakerAssetInfo
-type StakerSingleAssetChangeInfo StakerAssetInfo
+type DeltaStakerSingleAsset StakerAssetInfo
 
-// OperatorSingleAssetChangeInfo This is a struct to describe the desired change that matches
+// DeltaOperatorSingleAsset This is a struct to describe the desired change that matches
 // with the OperatorAssetInfo
-type OperatorSingleAssetChangeInfo OperatorAssetInfo
+type DeltaOperatorSingleAsset OperatorAssetInfo
 
 // GetStakeIDAndAssetID stakerID = stakerAddress+'_'+clientChainLzID,assetID =
 // assetAddress+'_'+clientChainLzID

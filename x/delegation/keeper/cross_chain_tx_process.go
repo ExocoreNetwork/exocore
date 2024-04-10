@@ -140,14 +140,14 @@ func (k *Keeper) delegateTo(
 	}
 
 	// update staker asset state
-	err = k.assetsKeeper.UpdateStakerAssetState(ctx, stakerID, assetID, assetstype.StakerSingleAssetChangeInfo{
+	err = k.assetsKeeper.UpdateStakerAssetState(ctx, stakerID, assetID, assetstype.DeltaStakerSingleAsset{
 		WithdrawableAmount: params.OpAmount.Neg(),
 	})
 	if err != nil {
 		return err
 	}
 
-	err = k.assetsKeeper.UpdateOperatorAssetState(ctx, params.OperatorAddress, assetID, assetstype.OperatorSingleAssetChangeInfo{
+	err = k.assetsKeeper.UpdateOperatorAssetState(ctx, params.OperatorAddress, assetID, assetstype.DeltaOperatorSingleAsset{
 		TotalAmount: params.OpAmount,
 	})
 	if err != nil {
@@ -235,13 +235,13 @@ func (k *Keeper) UndelegateFrom(ctx sdk.Context, params *delegationtype.Delegati
 	}
 
 	// update staker and operator assets state
-	err = k.assetsKeeper.UpdateStakerAssetState(ctx, stakerID, assetID, assetstype.StakerSingleAssetChangeInfo{
+	err = k.assetsKeeper.UpdateStakerAssetState(ctx, stakerID, assetID, assetstype.DeltaStakerSingleAsset{
 		WaitUnbondingAmount: params.OpAmount,
 	})
 	if err != nil {
 		return err
 	}
-	err = k.assetsKeeper.UpdateOperatorAssetState(ctx, params.OperatorAddress, assetID, assetstype.OperatorSingleAssetChangeInfo{
+	err = k.assetsKeeper.UpdateOperatorAssetState(ctx, params.OperatorAddress, assetID, assetstype.DeltaOperatorSingleAsset{
 		TotalAmount:         params.OpAmount.Neg(),
 		WaitUnbondingAmount: params.OpAmount,
 	})

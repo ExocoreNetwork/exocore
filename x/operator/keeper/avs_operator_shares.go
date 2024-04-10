@@ -159,7 +159,7 @@ func (k *Keeper) GetAVSShare(ctx sdk.Context, avsAddr string) (sdkmath.LegacyDec
 // assetID + '/' + AVSAddr + '/' + operatorAddr -> types.OptedInAssetState
 // This function will be called when the amount of a specified asset opted-in by the operator
 // changes, such as: opt-in, delegation, undelegation and slash.
-func (k *Keeper) UpdateStateForAsset(ctx sdk.Context, assetID, avsAddr, operatorAddr string, changeState operatortypes.OptedInAssetStateChange) error {
+func (k *Keeper) UpdateStateForAsset(ctx sdk.Context, assetID, avsAddr, operatorAddr string, changeState operatortypes.DeltaOptedInAssetState) error {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), operatortypes.KeyPrefixOperatorAVSSingleAssetState)
 	if changeState.Amount.IsNil() && changeState.Value.IsNil() {
 		return nil
