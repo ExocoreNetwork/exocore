@@ -14,6 +14,7 @@ func (k Keeper) InitGenesis(
 	ctx sdk.Context,
 	gs delegationtype.GenesisState,
 ) []abci.ValidatorUpdate {
+	// TODO(mm): is it possible to parallelize these without using goroutines?
 	for _, level1 := range gs.Delegations {
 		stakerID := level1.StakerID
 		// #nosec G703 // already validated

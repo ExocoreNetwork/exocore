@@ -5,7 +5,7 @@ import errorsmod "cosmossdk.io/errors"
 var (
 	ErrNoKeyInTheStore = errorsmod.Register(
 		ModuleName, 0,
-		"there is not the key for in the store",
+		"there is no such key in the store",
 	)
 
 	ErrCliCmdInputArg = errorsmod.Register(
@@ -70,5 +70,10 @@ var (
 	ErrInvalidGenesisData = errorsmod.Register(
 		ModuleName, 13,
 		"the genesis data supplied is invalid",
+	)
+
+	ErrInvalidAvsAddr = errorsmod.Register(
+		ModuleName, 14,
+		"avs address should be a hex evm contract address",
 	)
 )

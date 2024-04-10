@@ -31,12 +31,19 @@ func (k Keeper) InitGenesis(
 			panic(fmt.Errorf("staking asset %s not found", assetID))
 		}
 	}
+	// at genesis, not chain restarts, each operator may not necessarily be an initial
+	// validator. this is because the operator may not have enough minimum self delegation
+	// to be considered, or may not be in the top N operators. so checking that count here
+	// is meaningless as well.
 	out := make([]abci.ValidatorUpdate, len(genState.InitialValSet))
 	for _, val := range genState.InitialValSet {
 		// #nosec G703 // already validated
 		consKey, _ := operatortypes.HexStringToPubKey(val.PublicKey)
 		// #nosec G703 // this only fails if the key is of a type not already defined.
 		consAddr, _ := operatortypes.TMCryptoPublicKeyToConsAddr(consKey)
+		// if GetOperatorAddressForChainIDAndConsAddr returns found, it means
+		// that the operator is registered and also (TODO) that it has opted into
+		// the dogfood AVS.
 		found, _ := k.operatorKeeper.GetOperatorAddressForChainIDAndConsAddr(
 			ctx, ctx.ChainID(), consAddr,
 		)
@@ -48,6 +55,7 @@ func (k Keeper) InitGenesis(
 			Power:  val.Power,
 		})
 	}
+
 	// ApplyValidatorChanges will sort it internally
 	return k.ApplyValidatorChanges(
 		ctx, out,

@@ -10,16 +10,17 @@ func (k Keeper) InitGenesis(ctx sdk.Context, data *types.GenesisState) {
 	if err := k.SetParams(ctx, &data.Params); err != nil {
 		panic(err)
 	}
+	// TODO(mm): is it possible to optimize / speed up this process?
 	// client_chain.go
-	for _, infoCopy := range data.ClientChains {
-		info := infoCopy // prevent implicit memory aliasing
+	for i := range data.ClientChains {
+		info := data.ClientChains[i]
 		if err := k.SetClientChainInfo(ctx, &info); err != nil {
 			panic(err)
 		}
 	}
 	// client_chain_asset.go
-	for _, infoCopy := range data.Tokens {
-		info := infoCopy // prevent implicit memory aliasing
+	for i := range data.Tokens {
+		info := data.Tokens[i]
 		if err := k.SetStakingAssetInfo(ctx, &info); err != nil {
 			panic(err)
 		}

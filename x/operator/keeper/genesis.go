@@ -7,8 +7,8 @@ import (
 )
 
 func (k Keeper) InitGenesis(ctx sdk.Context, state types.GenesisState) []abci.ValidatorUpdate {
-	for _, op := range state.Operators {
-		op := op
+	for i := range state.Operators {
+		op := state.Operators[i] // avoid implicit memory aliasing
 		if err := k.SetOperatorInfo(ctx, op.EarningsAddr, &op); err != nil {
 			panic(err)
 		}
@@ -17,25 +17,25 @@ func (k Keeper) InitGenesis(ctx sdk.Context, state types.GenesisState) []abci.Va
 		addr := record.OperatorAddress
 		// #nosec G703 // already validated
 		operatorAddr, _ := sdk.AccAddressFromBech32(addr)
-		bootstrapping := false
 		for _, detail := range record.Chains {
+			chainID := detail.ChainID
+			// validate that the chain exists
+			// TODO: move this to the avs keeper when it is merged.
+			if !k.assetsKeeper.AppChainInfoIsExist(ctx, chainID) {
+				panic("chain info not found")
+			}
 			// opt into the specified chain (TODO: avs address format)
-			if err := k.OptIn(ctx, operatorAddr, detail.ChainID); err != nil {
+			if err := k.OptIn(ctx, operatorAddr, chainID); err != nil {
 				panic(err)
 			}
 			// #nosec G703 // already validated
 			key, _ := types.HexStringToPubKey(detail.ConsensusKey)
 			// then set pub key
 			if err := k.setOperatorConsKeyForChainID(
-				ctx, operatorAddr, detail.ChainID, key, true,
+				ctx, operatorAddr, chainID, key, true,
 			); err != nil {
 				panic(err)
 			}
-			bootstrapping = bootstrapping || ctx.ChainID() == detail.ChainID
-		}
-		if !bootstrapping {
-			// TODO: consider removing this check
-			panic("registered an operator but they aren't bootstrapping the current chain")
 		}
 	}
 	return []abci.ValidatorUpdate{}
