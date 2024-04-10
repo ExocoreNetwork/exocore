@@ -71,4 +71,9 @@ var (
 		ModuleName, 13,
 		"the genesis data supplied is invalid",
 	)
+
+	ErrInvalidAvsAddr = errorsmod.Register(
+		ModuleName, 14,
+		"avs address should be a hex evm contract address",
+	)
 )

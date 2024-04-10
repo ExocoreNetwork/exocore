@@ -3,6 +3,7 @@ package exocore.operator.v1;
 
 import "amino/amino.proto";
 import "cosmos/msg/v1/msg.proto";
+import "cosmos/staking/v1beta1/staking.proto";
 import "cosmos_proto/cosmos.proto";
 import "gogoproto/gogo.proto";
 
@@ -45,6 +46,8 @@ message OperatorInfo {
   string operator_meta_info = 3;
   // client_chain_earning_addr_list is the client chain earning address list.
   ClientChainEarningAddrList client_chain_earnings_addr = 4;
+  // commission defines the commission parameters.
+  cosmos.staking.v1beta1.Commission commission = 5 [(gogoproto.nullable) = false, (amino.dont_omitempty) = true];
 }
 
 // OptedInfo is the opted information about operator
@@ -55,6 +58,8 @@ message OptedInfo {
   uint64 opted_in_height = 2;
   // opted_out_height is the exocore block height at which the operator opted out
   uint64 opted_out_height = 3;
+  // jailed defined whether the operator has been jailed from bonded status or not.
+  bool jailed = 4;
 }
 
 // OptedInAssetState is the state of opted-in asset

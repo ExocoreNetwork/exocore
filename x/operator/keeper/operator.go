@@ -19,7 +19,6 @@ func (k *Keeper) SetOperatorInfo(ctx sdk.Context, addr string, info *operatortyp
 	if err != nil {
 		return errorsmod.Wrap(err, "SetOperatorInfo: error occurred when parse acc address from Bech32")
 	}
-	// todo: to check the validation of input info
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), operatortypes.KeyPrefixOperatorInfo)
 	// todo: think about the difference between init and update in future
 
@@ -49,12 +48,49 @@ func (k *Keeper) OperatorInfo(ctx sdk.Context, addr string) (info *operatortypes
 	return &ret, nil
 }
 
+// AllOperators return the address list of all operators
+func (k *Keeper) AllOperators(ctx sdk.Context) []string {
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), operatortypes.KeyPrefixOperatorInfo)
+	iterator := sdk.KVStorePrefixIterator(store, nil)
+	defer iterator.Close()
+
+	ret := make([]string, 0)
+	for ; iterator.Valid(); iterator.Next() {
+		accAddr := sdk.AccAddress(iterator.Key())
+		ret = append(ret, accAddr.String())
+	}
+	return ret
+}
+
 func (k *Keeper) IsOperator(ctx sdk.Context, addr sdk.AccAddress) bool {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), operatortypes.KeyPrefixOperatorInfo)
 	return store.Has(addr)
 }
 
-func (k *Keeper) UpdateOptedInfo(ctx sdk.Context, operatorAddr, avsAddr string, info *operatortypes.OptedInfo) error {
+func (k *Keeper) HandleOptedInfo(ctx sdk.Context, operatorAddr, avsAddr string, handleFunc func(info *operatortypes.OptedInfo)) error {
+	opAccAddr, err := sdk.AccAddressFromBech32(operatorAddr)
+	if err != nil {
+		return errorsmod.Wrap(err, "HandleOptedInfo: error occurred when parse acc address from Bech32")
+	}
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), operatortypes.KeyPrefixOperatorOptedAVSInfo)
+	infoKey := assetstype.GetJoinedStoreKey(operatorAddr, avsAddr)
+	ifExist := store.Has(infoKey)
+	if !ifExist {
+		return errorsmod.Wrap(operatortypes.ErrNoKeyInTheStore, fmt.Sprintf("HandleOptedInfo: key is %suite", opAccAddr))
+	}
+	// get info from the store
+	value := store.Get(infoKey)
+	info := &operatortypes.OptedInfo{}
+	k.cdc.MustUnmarshal(value, info)
+	// call the handleFunc
+	handleFunc(info)
+	// restore the info after handling
+	bz := k.cdc.MustMarshal(info)
+	store.Set(infoKey, bz)
+	return nil
+}
+
+func (k *Keeper) SetOptedInfo(ctx sdk.Context, operatorAddr, avsAddr string, info *operatortypes.OptedInfo) error {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), operatortypes.KeyPrefixOperatorOptedAVSInfo)
 
 	// check operator address validation
@@ -94,6 +130,20 @@ func (k *Keeper) IsOptedIn(ctx sdk.Context, operatorAddr, avsAddr string) bool {
 		return false
 	}
 	if optedInfo.OptedOutHeight != operatortypes.DefaultOptedOutHeight {
+		return false
+	}
+	return true
+}
+
+func (k *Keeper) IsActive(ctx sdk.Context, operatorAddr, avsAddr string) bool {
+	optedInfo, err := k.GetOptedInfo(ctx, operatorAddr, avsAddr)
+	if err != nil {
+		return false
+	}
+	if optedInfo.OptedOutHeight != operatortypes.DefaultOptedOutHeight {
+		return false
+	}
+	if optedInfo.Jailed {
 		return false
 	}
 	return true

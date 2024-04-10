@@ -1,8 +1,10 @@
 package keeper_test
 
 import (
+	"cosmossdk.io/math"
 	"github.com/ExocoreNetwork/exocore/x/assets/types"
 	operatortype "github.com/ExocoreNetwork/exocore/x/operator/types"
+	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 )
 
 func (suite *OperatorTestSuite) TestOperatorInfo() {
@@ -15,6 +17,7 @@ func (suite *OperatorTestSuite) TestOperatorInfo() {
 				{101, "0x1f9840a85d5af5bf1d1762f925bdaddc4201f984"},
 			},
 		},
+		Commission: stakingtypes.NewCommission(math.LegacyZeroDec(), math.LegacyZeroDec(), math.LegacyZeroDec()),
 	}
 	err := suite.App.OperatorKeeper.SetOperatorInfo(suite.Ctx, suite.AccAddress.String(), info)
 	suite.NoError(err)
@@ -22,6 +25,17 @@ func (suite *OperatorTestSuite) TestOperatorInfo() {
 	getOperatorInfo, err := suite.App.OperatorKeeper.GetOperatorInfo(suite.Ctx, &operatortype.GetOperatorInfoReq{OperatorAddr: suite.AccAddress.String()})
 	suite.NoError(err)
 	suite.Equal(*info, *getOperatorInfo)
+}
+
+func (suite *OperatorTestSuite) TestAllOperators() {
+	suite.prepare()
+	operators := []string{suite.operatorAddr.String(), suite.AccAddress.String()}
+	info := &operatortype.OperatorInfo{}
+	err := suite.App.OperatorKeeper.SetOperatorInfo(suite.Ctx, suite.AccAddress.String(), info)
+	suite.NoError(err)
+
+	getOperators := suite.App.OperatorKeeper.AllOperators(suite.Ctx)
+	suite.Equal(operators, getOperators)
 }
 
 func (suite *OperatorTestSuite) TestHistoricalOperatorInfo() {

@@ -108,6 +108,14 @@ func (MockAvs) GetAvsSlashContract(_ sdk.Context, _ string) (string, error) {
 	return "", nil
 }
 
+func (MockAvs) GetAvsAddrByChainID(_ sdk.Context, chainID string) (string, error) {
+	return chainID, nil
+}
+
+func (MockAvs) GetOperatorsByAvs(_ sdk.Context, _ string) ([]string, error) {
+	return nil, nil
+}
+
 type AvsKeeper interface {
 	// GetAvsSupportedAssets The ctx can be historical or current, depending on the state you
 	// wish to retrieve. If the caller want to retrieve a historical assets info supported by
@@ -115,6 +123,10 @@ type AvsKeeper interface {
 	// `ContextForHistoricalState` implemented in x/assets/types/general.go
 	GetAvsSupportedAssets(ctx sdk.Context, avsAddr string) (map[string]interface{}, error)
 	GetAvsSlashContract(ctx sdk.Context, avsAddr string) (string, error)
+	// GetAvsAddrByChainID get the general Avs address for dogfood module.
+	GetAvsAddrByChainID(ctx sdk.Context, chainID string) (string, error)
+	// GetOperatorsByAvs get all opted-in operators by the avs address
+	GetOperatorsByAvs(ctx sdk.Context, avsAddr string) ([]string, error)
 }
 
 // add for dogfood

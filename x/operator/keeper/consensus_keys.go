@@ -435,12 +435,6 @@ func (k *Keeper) CompleteOperatorOptOutFromChainID(
 	store.Delete(types.KeyForOperatorOptOutFromChainID(opAccAddr, chainID))
 }
 
-// IsOperatorJailedForChainID add for dogfood
-func (k *Keeper) IsOperatorJailedForChainID(sdk.Context, sdk.AccAddress, string) bool {
-	return false
-}
-func (k *Keeper) Jail(sdk.Context, sdk.ConsAddress, string) {}
-
 func (k *Keeper) GetActiveOperatorsForChainID(
 	sdk.Context, string,
 ) ([]sdk.AccAddress, []*tmprotocrypto.PublicKey) {
