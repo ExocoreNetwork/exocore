@@ -436,7 +436,23 @@ func (k *Keeper) CompleteOperatorOptOutFromChainID(
 }
 
 func (k *Keeper) GetActiveOperatorsForChainID(
-	sdk.Context, string,
+	ctx sdk.Context, chainID string,
 ) ([]sdk.AccAddress, []*tmprotocrypto.PublicKey) {
-	return nil, nil
+	operatorsAddr, pks := k.GetOperatorsForChainID(ctx, chainID)
+	avsAddr, err := k.avsKeeper.GetAvsAddrByChainID(ctx, chainID)
+	if err != nil {
+		k.Logger(ctx).Error(err.Error(), chainID)
+		return nil, nil
+	}
+
+	activeOperator := make([]sdk.AccAddress, 0)
+	activePks := make([]*tmprotocrypto.PublicKey, 0)
+	// check if the operator is active
+	for i, operator := range operatorsAddr {
+		if k.IsActive(ctx, operator.String(), avsAddr) {
+			activeOperator = append(activeOperator, operator)
+			activePks = append(activePks, pks[i])
+		}
+	}
+	return activeOperator, activePks
 }
