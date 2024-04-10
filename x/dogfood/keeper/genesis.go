@@ -31,6 +31,10 @@ func (k Keeper) InitGenesis(
 			panic(fmt.Errorf("staking asset %s not found", assetID))
 		}
 	}
+	// at genesis, not chain restarts, each operator may not necessarily be an initial
+	// validator. this is because the operator may not have enough minimum self delegation
+	// to be considered, or may not be in the top N operators. so checking that count here
+	// is meaningless as well.
 	out := make([]abci.ValidatorUpdate, len(genState.InitialValSet))
 	for _, val := range genState.InitialValSet {
 		// #nosec G703 // already validated
@@ -51,9 +55,6 @@ func (k Keeper) InitGenesis(
 			Power:  val.Power,
 		})
 	}
-	// at genesis, not chain restarts, check that each operator has a key defined.
-	// TODO(mm): add a flag to disable this check later when genesis is exported.
-	// TODO: implement.
 
 	// ApplyValidatorChanges will sort it internally
 	return k.ApplyValidatorChanges(
