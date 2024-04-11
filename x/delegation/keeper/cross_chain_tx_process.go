@@ -155,7 +155,7 @@ func (k *Keeper) delegateTo(
 
 	err = k.assetsKeeper.UpdateOperatorAssetState(ctx, params.OperatorAddress, assetID, assetstype.DeltaOperatorSingleAsset{
 		TotalAmount: params.OpAmount,
-		TotalShare:  *share,
+		TotalShare:  share,
 	})
 	if err != nil {
 		return err
@@ -164,7 +164,7 @@ func (k *Keeper) delegateTo(
 	delegatorAndAmount := make(map[string]*delegationtype.DelegationAmounts)
 	delegatorAndAmount[params.OperatorAddress.String()] = &delegationtype.DelegationAmounts{
 		UndelegatableAmount: params.OpAmount,
-		UndelegatableShare:  *share,
+		UndelegatableShare:  share,
 	}
 	err = k.UpdateDelegationState(ctx, stakerID, assetID, delegatorAndAmount)
 	if err != nil {
@@ -191,12 +191,17 @@ func (k *Keeper) UndelegateFrom(ctx sdk.Context, params *delegationtype.Delegati
 	}
 	// get staker delegation state, then check the validation of Undelegation amount
 	stakerID, assetID := assetstype.GetStakeIDAndAssetID(params.ClientChainLzID, params.StakerAddress, params.AssetsAddress)
-	delegationState, err := k.GetSingleDelegationInfo(ctx, stakerID, assetID, params.OperatorAddress.String())
+
+	// verify the undelegation amount
+	share, err := k.ValidateUndeleagtionAmount(ctx, params.OperatorAddress, stakerID, assetID, params.OpAmount)
 	if err != nil {
 		return err
 	}
-	if params.OpAmount.GT(delegationState.UndelegatableAmount) {
-		return errorsmod.Wrap(delegationtype.ErrUndelegationAmountTooBig, fmt.Sprintf("UndelegationAmount:%s,UndelegatableAmount:%s", params.OpAmount, delegationState.UndelegatableAmount))
+
+	// remove share from operator
+	removeToken, err := k.RemoveShareFromOperator(ctx, params.OperatorAddress, assetID, share)
+	if err != nil {
+		return err
 	}
 
 	// record Undelegation event
@@ -208,7 +213,7 @@ func (k *Keeper) UndelegateFrom(ctx sdk.Context, params *delegationtype.Delegati
 		IsPending:             true,
 		LzTxNonce:             params.LzNonce,
 		BlockNumber:           uint64(ctx.BlockHeight()),
-		Amount:                params.OpAmount,
+		Amount:                removeToken,
 		ActualCompletedAmount: sdkmath.NewInt(0),
 	}
 	r.CompleteBlockNumber = k.operatorKeeper.GetUnbondingExpirationBlockNumber(ctx, params.OperatorAddress, r.BlockNumber)
@@ -220,9 +225,10 @@ func (k *Keeper) UndelegateFrom(ctx sdk.Context, params *delegationtype.Delegati
 	// update delegation state
 	delegatorAndAmount := make(map[string]*delegationtype.DelegationAmounts)
 	delegatorAndAmount[params.OperatorAddress.String()] = &delegationtype.DelegationAmounts{
-		UndelegatableAmount:     params.OpAmount.Neg(),
-		WaitUndelegationAmount:  params.OpAmount,
-		UndelegatableAfterSlash: params.OpAmount,
+		UndelegatableAmount:     removeToken.Neg(),
+		WaitUndelegationAmount:  removeToken,
+		UndelegatableAfterSlash: removeToken,
+		UndelegatableShare:      share.Neg(),
 	}
 	err = k.UpdateDelegationState(ctx, stakerID, assetID, delegatorAndAmount)
 	if err != nil {
@@ -230,15 +236,10 @@ func (k *Keeper) UndelegateFrom(ctx sdk.Context, params *delegationtype.Delegati
 	}
 
 	// update staker and operator assets state
+	// todo: TotalDepositAmount might be influenced by slash and precision loss,
+	// consider removing it, it can be recalculated from the share for RPC query.
 	err = k.assetsKeeper.UpdateStakerAssetState(ctx, stakerID, assetID, assetstype.DeltaStakerSingleAsset{
-		WaitUnbondingAmount: params.OpAmount,
-	})
-	if err != nil {
-		return err
-	}
-	err = k.assetsKeeper.UpdateOperatorAssetState(ctx, params.OperatorAddress, assetID, assetstype.DeltaOperatorSingleAsset{
-		TotalAmount:         params.OpAmount.Neg(),
-		WaitUnbondingAmount: params.OpAmount,
+		WaitUnbondingAmount: removeToken,
 	})
 	if err != nil {
 		return err
@@ -247,36 +248,3 @@ func (k *Keeper) UndelegateFrom(ctx sdk.Context, params *delegationtype.Delegati
 	// call the hooks registered by the other modules
 	return k.Hooks().AfterUndelegationStarted(ctx, params.OperatorAddress, delegationtype.GetUndelegationRecordKey(r.LzTxNonce, r.TxHash, r.OperatorAddr))
 }
-
-/*func (k *Keeper) PostTxProcessing(ctx sdk.Context, msg core.Message, receipt *ethtypes.Receipt) error {
-	needLogs, err := k.depositKeeper.FilterCrossChainEventLogs(ctx, msg, receipt)
-	if err != nil {
-		return err
-	}
-
-	if len(needLogs) == 0 {
-		log.Println("the hook message doesn't have any event needed to handle")
-		return nil
-	}
-
-	for _, log := range needLogs {
-		delegationParams, err := k.getParamsFromEventLog(ctx, log)
-		if err != nil {
-			return err
-		}
-		if delegationParams != nil {
-			if delegationParams.Action == types.DelegateTo {
-				err = k.DelegateTo(ctx, delegationParams)
-			} else if delegationParams.Action == types.UndelegateFrom {
-				err = k.UndelegateFrom(ctx, delegationParams)
-			}
-			if err != nil {
-				// todo: need to test if the changed storage state will be reverted when there is an error occurred
-
-				return err
-			}
-		}
-	}
-	return nil
-}
-*/
