@@ -10,6 +10,10 @@ import (
 	"path/filepath"
 	"sort"
 
+	"github.com/ExocoreNetwork/exocore/x/avstask"
+	avsTaskKeeper "github.com/ExocoreNetwork/exocore/x/avstask/keeper"
+	avsTaskTypes "github.com/ExocoreNetwork/exocore/x/avstask/types"
+
 	"github.com/ExocoreNetwork/exocore/x/avs"
 	"github.com/ExocoreNetwork/exocore/x/operator"
 	operatorKeeper "github.com/ExocoreNetwork/exocore/x/operator/keeper"
@@ -274,6 +278,7 @@ var (
 		reward.AppModuleBasic{},
 		exoslash.AppModuleBasic{},
 		avs.AppModuleBasic{},
+		avstask.AppModuleBasic{},
 	)
 
 	// module account permissions
@@ -358,6 +363,7 @@ type ExocoreApp struct {
 	OperatorKeeper   operatorKeeper.Keeper
 	ExoSlashKeeper   slashKeeper.Keeper
 	AVSManagerKeeper avsManagerKeeper.Keeper
+	TaskKeeper       avsTaskKeeper.Keeper
 	// the module manager
 	mm *module.Manager
 
@@ -441,6 +447,7 @@ func NewExocoreApp(
 		exoslashTypes.StoreKey,
 		operatorTypes.StoreKey,
 		avsManagerTypes.StoreKey,
+		avsTaskTypes.StoreKey,
 	)
 
 	// Add the EVM transient store key
@@ -658,6 +665,7 @@ func NewExocoreApp(
 	app.RewardKeeper = *rewardKeeper.NewKeeper(appCodec, keys[rewardTypes.StoreKey], app.AssetsKeeper)
 	app.ExoSlashKeeper = slashKeeper.NewKeeper(appCodec, keys[exoslashTypes.StoreKey], app.AssetsKeeper)
 	app.AVSManagerKeeper = *avsManagerKeeper.NewKeeper(appCodec, keys[avsManagerTypes.StoreKey], &app.OperatorKeeper, app.AssetsKeeper)
+	app.TaskKeeper = avsTaskKeeper.NewKeeper(appCodec, keys[avsTaskTypes.StoreKey], app.AVSManagerKeeper)
 	// We call this after setting the hooks to ensure that the hooks are set on the keeper
 	evmKeeper.WithPrecompiles(
 		evmkeeper.AvailablePrecompiles(
@@ -672,6 +680,7 @@ func NewExocoreApp(
 			app.ExoSlashKeeper,
 			app.RewardKeeper,
 			app.AVSManagerKeeper,
+			app.TaskKeeper,
 		),
 	)
 	epochsKeeper := epochskeeper.NewKeeper(appCodec, keys[epochstypes.StoreKey])
@@ -845,6 +854,7 @@ func NewExocoreApp(
 		reward.NewAppModule(appCodec, app.RewardKeeper),
 		exoslash.NewAppModule(appCodec, app.ExoSlashKeeper),
 		avs.NewAppModule(appCodec, app.AVSManagerKeeper),
+		avstask.NewAppModule(appCodec, app.TaskKeeper),
 	)
 
 	// During begin block slashing happens after reward.BeginBlocker so that
@@ -889,6 +899,7 @@ func NewExocoreApp(
 		rewardTypes.ModuleName,
 		exoslashTypes.ModuleName,
 		avsManagerTypes.ModuleName,
+		avsTaskTypes.ModuleName,
 	)
 
 	// NOTE: fee market module must go last in order to retrieve the block gas used.
@@ -928,6 +939,7 @@ func NewExocoreApp(
 		rewardTypes.ModuleName,
 		exoslashTypes.ModuleName,
 		avsManagerTypes.ModuleName,
+		avsTaskTypes.ModuleName,
 	)
 
 	// NOTE: The genutils module must occur after staking so that pools are
@@ -973,6 +985,7 @@ func NewExocoreApp(
 		crisistypes.ModuleName,
 		consensusparamtypes.ModuleName,
 		avsManagerTypes.ModuleName,
+		avsTaskTypes.ModuleName,
 	)
 
 	app.mm.RegisterInvariants(&app.CrisisKeeper)
