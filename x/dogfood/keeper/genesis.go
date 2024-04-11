@@ -58,7 +58,7 @@ func (k Keeper) InitGenesis(
 
 	// ApplyValidatorChanges will sort it internally
 	return k.ApplyValidatorChanges(
-		ctx, out, types.InitialValidatorSetID,
+		ctx, out,
 	)
 }
 

@@ -1,21 +1,20 @@
-package keeper
+package types
 
 import (
-	"github.com/ExocoreNetwork/exocore/x/dogfood/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 // interface guard
-var _ types.DogfoodHooks = &MultiDogfoodHooks{}
+var _ DogfoodHooks = &MultiDogfoodHooks{}
 
 // MultiDogfoodHooks is a collection of DogfoodHooks. It calls the hook for each element in the
 // collection one-by-one. The hook is called in the order in which the collection is created.
-type MultiDogfoodHooks []types.DogfoodHooks
+type MultiDogfoodHooks []DogfoodHooks
 
 // NewMultiDogfoodHooks is used to create a collective object of dogfood hooks from a list of
 // the hooks. It follows the "accept interface, return concrete types" philosophy. Other modules
 // may set the hooks by calling k := (*k).SetHooks(NewMultiDogfoodHooks(hookI))
-func NewMultiDogfoodHooks(hooks ...types.DogfoodHooks) MultiDogfoodHooks {
+func NewMultiDogfoodHooks(hooks ...DogfoodHooks) MultiDogfoodHooks {
 	return hooks
 }
 

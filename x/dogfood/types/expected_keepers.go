@@ -51,6 +51,9 @@ type OperatorKeeper interface {
 		sdk.Context, sdk.AccAddress, int64,
 		int64, sdk.Dec, stakingtypes.Infraction,
 	) math.Int
+	ValidatorByConsAddrForChainID(
+		ctx sdk.Context, consAddr sdk.ConsAddress, chainID string,
+	) stakingtypes.ValidatorI
 }
 
 // DelegationKeeper represents the expected keeper interface for the delegation module.

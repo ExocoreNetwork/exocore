@@ -11,10 +11,7 @@ import (
 )
 
 func (k Keeper) EndBlock(ctx sdk.Context) []abci.ValidatorUpdate {
-	id, _ := k.getValidatorSetID(ctx, ctx.BlockHeight())
 	if !k.IsEpochEnd(ctx) {
-		// save the same id for the next block height.
-		k.setValidatorSetID(ctx, ctx.BlockHeight()+1, id)
 		return []abci.ValidatorUpdate{}
 	}
 	defer k.ClearEpochEnd(ctx)
@@ -114,6 +111,7 @@ func (k Keeper) EndBlock(ctx sdk.Context) []abci.ValidatorUpdate {
 	}
 	// the remaining validators in prevMap have been removed.
 	// we need to queue a change in power to 0 for them.
+	// we cannot iterate over the map to retain determinism, so we iterate over the list.
 	for _, validator := range prevList { // O(N)
 		// #nosec G703 // already checked in the previous iteration over prevList.
 		pubKey, _ := validator.ConsPubKey()
@@ -130,9 +128,9 @@ func (k Keeper) EndBlock(ctx sdk.Context) []abci.ValidatorUpdate {
 			})
 		}
 	}
+
 	// call via wrapper function so that validator info is stored.
-	// the id is incremented by 1 for the next block.
-	return k.ApplyValidatorChanges(ctx, res, id+1)
+	return k.ApplyValidatorChanges(ctx, res)
 }
 
 // sortByPower sorts operators, their pubkeys, and their powers by the powers.
