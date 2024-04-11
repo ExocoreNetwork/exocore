@@ -71,4 +71,12 @@ var (
 		ModuleName, 13,
 		"the genesis data supplied is invalid",
 	)
+
+	ErrDivisorIsZero = errorsmod.Register(
+		ModuleName, 14,
+		"the divisor is zero")
+
+	ErrInsufficientShares = errorsmod.Register(
+		ModuleName, 15,
+		"insufficient delegation shares")
 )

@@ -48,7 +48,7 @@ var (
 	// KeyPrefixRestakerDelegationInfo
 	// key-value:
 	// restakerID +'/'+assetID -> totalDelegationAmount
-	// restakerID +'/'+assetID+'/'+operatorAddr -> delegationAmounts
+	// restakerID +'/'+assetID+'/'+operatorAddr -> DelegationAmounts
 	KeyPrefixRestakerDelegationInfo = []byte{prefixRestakerDelegationInfo}
 	// KeyPrefixDelegationUsedSalt key->value: operatorApproveAddr->map[salt]{}
 	KeyPrefixDelegationUsedSalt = []byte{prefixDelegationUsedSalt}

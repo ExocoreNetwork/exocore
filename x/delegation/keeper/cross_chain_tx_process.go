@@ -147,8 +147,15 @@ func (k *Keeper) delegateTo(
 		return err
 	}
 
+	// calculate the share from the delegation amount
+	share, err := k.CalculateShare(ctx, params.OperatorAddress, assetID, params.OpAmount)
+	if err != nil {
+		return err
+	}
+
 	err = k.assetsKeeper.UpdateOperatorAssetState(ctx, params.OperatorAddress, assetID, assetstype.DeltaOperatorSingleAsset{
 		TotalAmount: params.OpAmount,
+		TotalShare:  *share,
 	})
 	if err != nil {
 		return err
@@ -157,22 +164,14 @@ func (k *Keeper) delegateTo(
 	delegatorAndAmount := make(map[string]*delegationtype.DelegationAmounts)
 	delegatorAndAmount[params.OperatorAddress.String()] = &delegationtype.DelegationAmounts{
 		UndelegatableAmount: params.OpAmount,
+		UndelegatableShare:  *share,
 	}
 	err = k.UpdateDelegationState(ctx, stakerID, assetID, delegatorAndAmount)
 	if err != nil {
 		return err
 	}
-	err = k.UpdateStakerDelegationTotalAmount(ctx, stakerID, assetID, params.OpAmount)
-	if err != nil {
-		return err
-	}
 
 	if notGenesis {
-		// call operator module to bond the increased assets to the opted-in AVS
-		err = k.operatorKeeper.UpdateOptedInAssetsState(ctx, stakerID, assetID, params.OperatorAddress.String(), params.OpAmount)
-		if err != nil {
-			return err
-		}
 		// call the hooks registered by the other modules
 		k.Hooks().AfterDelegation(ctx, params.OperatorAddress)
 	}
@@ -229,10 +228,6 @@ func (k *Keeper) UndelegateFrom(ctx sdk.Context, params *delegationtype.Delegati
 	if err != nil {
 		return err
 	}
-	err = k.UpdateStakerDelegationTotalAmount(ctx, stakerID, assetID, params.OpAmount.Neg())
-	if err != nil {
-		return err
-	}
 
 	// update staker and operator assets state
 	err = k.assetsKeeper.UpdateStakerAssetState(ctx, stakerID, assetID, assetstype.DeltaStakerSingleAsset{
@@ -245,12 +240,6 @@ func (k *Keeper) UndelegateFrom(ctx sdk.Context, params *delegationtype.Delegati
 		TotalAmount:         params.OpAmount.Neg(),
 		WaitUnbondingAmount: params.OpAmount,
 	})
-	if err != nil {
-		return err
-	}
-
-	// call operator module to decrease the state of opted-in assets
-	err = k.operatorKeeper.UpdateOptedInAssetsState(ctx, stakerID, assetID, params.OperatorAddress.String(), params.OpAmount.Neg())
 	if err != nil {
 		return err
 	}
