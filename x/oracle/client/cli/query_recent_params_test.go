@@ -35,7 +35,9 @@ func networkWithRecentParamsObjects(t *testing.T, n int) (*network.Network, []ty
 	buf, err := cfg.Codec.MarshalJSON(&state)
 	require.NoError(t, err)
 	cfg.GenesisState[types.ModuleName] = buf
-	return network.New(t, cfg), state.RecentParamsList
+	network, err := network.New(t, t.TempDir(), cfg)
+	require.NoError(t, err)
+	return network, state.RecentParamsList
 }
 
 func TestShowRecentParams(t *testing.T) {

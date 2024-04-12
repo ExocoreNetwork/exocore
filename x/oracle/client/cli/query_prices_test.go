@@ -34,7 +34,9 @@ func networkWithPricesObjects(t *testing.T, n int) (*network.Network, []types.Pr
 	buf, err := cfg.Codec.MarshalJSON(&state)
 	require.NoError(t, err)
 	cfg.GenesisState[types.ModuleName] = buf
-	return network.New(t, cfg), state.PricesList
+	network, err := network.New(t, t.TempDir(), cfg)
+	require.NoError(t, err)
+	return network, state.PricesList
 }
 
 func TestShowPrices(t *testing.T) {

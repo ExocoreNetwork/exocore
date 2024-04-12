@@ -14,5 +14,5 @@ message Params {
   repeated Token tokens = 2;
   repeated Source sources = 3;
   repeated RuleWithSource rules = 4;
-  repeated TokenFeeder TokenFeeders = 5;
+  repeated TokenFeeder token_feeders = 5;
 }

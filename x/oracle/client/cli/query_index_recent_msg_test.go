@@ -25,7 +25,9 @@ func networkWithIndexRecentMsgObjects(t *testing.T) (*network.Network, types.Ind
 	buf, err := cfg.Codec.MarshalJSON(&state)
 	require.NoError(t, err)
 	cfg.GenesisState[types.ModuleName] = buf
-	return network.New(t, cfg), *state.IndexRecentMsg
+	network, err := network.New(t, t.TempDir(), cfg)
+	require.NoError(t, err)
+	return network, *state.IndexRecentMsg
 }
 
 func TestShowIndexRecentMsg(t *testing.T) {

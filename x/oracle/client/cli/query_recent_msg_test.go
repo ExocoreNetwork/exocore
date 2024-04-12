@@ -35,7 +35,9 @@ func networkWithRecentMsgObjects(t *testing.T, n int) (*network.Network, []types
 	buf, err := cfg.Codec.MarshalJSON(&state)
 	require.NoError(t, err)
 	cfg.GenesisState[types.ModuleName] = buf
-	return network.New(t, cfg), state.RecentMsgList
+	network, err := network.New(t, t.TempDir(), cfg)
+	require.NoError(t, err)
+	return network, state.RecentMsgList
 }
 
 func TestShowRecentMsg(t *testing.T) {

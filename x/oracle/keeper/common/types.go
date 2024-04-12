@@ -9,15 +9,18 @@ import (
 )
 
 const (
-	//maxNonce indicates how many messages a validator can submit in a single roudn to offer price
-	//current we use this as a mock distance
+	// maxNonce indicates how many messages a validator can submit in a single roudn to offer price
+	// current we use this as a mock distance
 	MaxNonce = 3
-	//these two threshold value used to set the threshold to tell when the price had come to consensus and was able to get a final price of that round
-	Threshold_a = 2
-	Threshold_b = 3
-	//maxDetId each validator can submit, so the calculator can cache maximum of maxDetId*count(validators) values, this is for resistance of malicious validator submmiting invalid detId
+
+	// these two threshold value used to set the threshold to tell when the price had come to consensus and was able to get a final price of that round
+	ThresholdA = 2
+	ThresholdB = 3
+
+	// maxDetId each validator can submit, so the calculator can cache maximum of maxDetId*count(validators) values, this is for resistance of malicious validator submmiting invalid detId
 	MaxDetId = 5
-	//consensus mode: v1: as soon as possbile
+
+	// consensus mode: v1: as soon as possbile
 	Mode = 1
 )
 
@@ -143,7 +146,7 @@ func NewSet[T comparable](length int) *Set[T] {
 }
 
 func ExceedsThreshold(power *big.Int, totalPower *big.Int) bool {
-	return new(big.Int).Mul(power, big.NewInt(Threshold_b)).Cmp(new(big.Int).Mul(totalPower, big.NewInt(Threshold_a))) > 0
+	return new(big.Int).Mul(power, big.NewInt(ThresholdB)).Cmp(new(big.Int).Mul(totalPower, big.NewInt(ThresholdA))) > 0
 }
 
 type BigIntList []*big.Int

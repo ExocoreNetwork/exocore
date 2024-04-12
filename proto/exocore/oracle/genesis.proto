@@ -16,13 +16,13 @@ option go_package = "github.com/ExocoreNetwork/exocore/x/oracle/types";
 // GenesisState defines the oracle module's genesis state.
 message GenesisState {
            Params params     = 1 [(gogoproto.nullable) = false];
-  repeated Prices pricesList = 2 [(gogoproto.nullable) = false];
+  repeated Prices prices_list = 2 [(gogoproto.nullable) = false];
   
   //TODO: userDefinedTokenFeeder
-           ValidatorUpdateBlock validatorUpdateBlock = 4;
-           IndexRecentParams    indexRecentParams    = 5;
-           IndexRecentMsg       indexRecentMsg       = 6;
-  repeated RecentMsg            recentMsgList        = 7 [(gogoproto.nullable) = false];
-  repeated RecentParams         recentParamsList     = 8 [(gogoproto.nullable) = false];
+           ValidatorUpdateBlock validator_update_block = 4;
+           IndexRecentParams    index_recent_params    = 5;
+           IndexRecentMsg       index_recent_msg       = 6;
+  repeated RecentMsg            recent_msg_list        = 7 [(gogoproto.nullable) = false];
+  repeated RecentParams         recent_params_list     = 8 [(gogoproto.nullable) = false];
 }
 
