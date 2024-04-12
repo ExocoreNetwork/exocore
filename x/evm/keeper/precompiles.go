@@ -3,23 +3,22 @@ package keeper
 import (
 	"fmt"
 
-	stakingStateKeeper "github.com/ExocoreNetwork/exocore/x/assets/keeper"
-	rewardKeeper "github.com/ExocoreNetwork/exocore/x/reward/keeper"
-	withdrawKeeper "github.com/ExocoreNetwork/exocore/x/withdraw/keeper"
-
-	avsManagerKeeper "github.com/ExocoreNetwork/exocore/x/avs/keeper"
-	delegationKeeper "github.com/ExocoreNetwork/exocore/x/delegation/keeper"
-	depositKeeper "github.com/ExocoreNetwork/exocore/x/deposit/keeper"
-
-	"golang.org/x/exp/maps"
-
 	avsManagerPrecompile "github.com/ExocoreNetwork/exocore/precompiles/avs"
+	taskPrecompile "github.com/ExocoreNetwork/exocore/precompiles/avsTask"
+	blsPrecompile "github.com/ExocoreNetwork/exocore/precompiles/bls"
 	delegationprecompile "github.com/ExocoreNetwork/exocore/precompiles/delegation"
 	depositprecompile "github.com/ExocoreNetwork/exocore/precompiles/deposit"
 	rewardPrecompile "github.com/ExocoreNetwork/exocore/precompiles/reward"
 	slashPrecompile "github.com/ExocoreNetwork/exocore/precompiles/slash"
 	withdrawPrecompile "github.com/ExocoreNetwork/exocore/precompiles/withdraw"
+	stakingStateKeeper "github.com/ExocoreNetwork/exocore/x/assets/keeper"
+	avsManagerKeeper "github.com/ExocoreNetwork/exocore/x/avs/keeper"
+	taskKeeper "github.com/ExocoreNetwork/exocore/x/avstask/keeper"
+	delegationKeeper "github.com/ExocoreNetwork/exocore/x/delegation/keeper"
+	depositKeeper "github.com/ExocoreNetwork/exocore/x/deposit/keeper"
+	rewardKeeper "github.com/ExocoreNetwork/exocore/x/reward/keeper"
 	exoslashKeeper "github.com/ExocoreNetwork/exocore/x/slash/keeper"
+	withdrawKeeper "github.com/ExocoreNetwork/exocore/x/withdraw/keeper"
 	authzkeeper "github.com/cosmos/cosmos-sdk/x/authz/keeper"
 	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
 	channelkeeper "github.com/cosmos/ibc-go/v7/modules/core/04-channel/keeper"
@@ -28,6 +27,11 @@ import (
 	ics20precompile "github.com/evmos/evmos/v14/precompiles/ics20"
 	stakingprecompile "github.com/evmos/evmos/v14/precompiles/staking"
 	transferkeeper "github.com/evmos/evmos/v14/x/ibc/transfer/keeper"
+	"golang.org/x/exp/maps"
+)
+
+const (
+	BaseGas uint64 = 6000
 )
 
 // AvailablePrecompiles returns the list of all available precompiled contracts.
@@ -44,6 +48,7 @@ func AvailablePrecompiles(
 	slashKeeper exoslashKeeper.Keeper,
 	rewardKeeper rewardKeeper.Keeper,
 	avsManagerKeeper avsManagerKeeper.Keeper,
+	taskKeeper taskKeeper.Keeper,
 ) map[common.Address]vm.PrecompiledContract {
 	// Clone the mapping from the latest EVM fork.
 	precompiles := maps.Clone(vm.PrecompiledContractsBerlin)
@@ -107,15 +112,24 @@ func AvailablePrecompiles(
 	if err != nil {
 		panic(fmt.Errorf("failed to load avsManager precompile: %w", err))
 	}
+	taskPrecompile, err := taskPrecompile.NewPrecompile(authzKeeper, taskKeeper, avsManagerKeeper)
+	if err != nil {
+		panic(fmt.Errorf("failed to load  reward precompile: %w", err))
+	}
+	blsPrecompile, err := blsPrecompile.NewPrecompile(BaseGas)
+	if err != nil {
+		panic(fmt.Errorf("failed to load bls precompile: %v", err))
+	}
 	precompiles[slashPrecompile.Address()] = slashPrecompile
 	precompiles[rewardPrecompile.Address()] = rewardPrecompile
 	precompiles[withdrawPrecompile.Address()] = withdrawPrecompile
 	precompiles[depositPrecompile.Address()] = depositPrecompile
 	precompiles[delegationPrecompile.Address()] = delegationPrecompile
 	precompiles[avsManagerPrecompile.Address()] = avsManagerPrecompile
-
+	precompiles[taskPrecompile.Address()] = taskPrecompile
 	precompiles[stakingPrecompile.Address()] = stakingPrecompile
 	precompiles[ibcTransferPrecompile.Address()] = ibcTransferPrecompile
+	precompiles[blsPrecompile.Address()] = blsPrecompile
 	return precompiles
 }
 
