@@ -5,6 +5,9 @@ import (
 	"embed"
 	"fmt"
 
+	"github.com/cometbft/cometbft/libs/log"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/vm"
@@ -99,7 +102,30 @@ func (p Precompile) Run(_ *vm.EVM, contract *vm.Contract, _ bool) (bz []byte, er
 		return nil, err
 	}
 
-	// fmt.Printf("calling method: %s\n", method.Name)
-	// fmt.Printf("precompile result: %x\n", bz)
 	return bz, nil
+}
+
+// IsTransaction checks if the given methodID corresponds to a transaction or query.
+//
+// Available bls transactions are:
+//   - MethodVerify
+func (Precompile) IsTransaction(methodID string) bool {
+	switch methodID {
+	case MethodVerify,
+		MethodFastAggregateVerify,
+		MethodGeneratePrivateKey,
+		MethodPublicKey,
+		MethodSign,
+		MethodAggregatePubkeys,
+		MethodAggregateSignatures,
+		MethodAddTwoPubkeys:
+		return true
+	default:
+		return false
+	}
+}
+
+// Logger returns a precompile-specific logger.
+func (p Precompile) Logger(ctx sdk.Context) log.Logger {
+	return ctx.Logger().With("ExoCore module", "bls")
 }

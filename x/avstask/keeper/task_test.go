@@ -12,10 +12,10 @@ func (suite *AvsTaskTestSuite) TestTaskInfo() {
 			Status:              "active",
 		},
 	}
-	err := suite.App.TaskKeeper.SetAvsTaskInfo(suite.Ctx, info)
+	err := suite.App.TaskKeeper.SetAVSTaskInfo(suite.Ctx, info)
 	suite.NoError(err)
 
-	getTaskInfo, err := suite.App.TaskKeeper.GetAvsTaskInfo(suite.Ctx, "exo1j9ly7f0jynscjgvct0enevaa659te58k3xztc8")
+	getTaskInfo, err := suite.App.TaskKeeper.GetAVSTaskInfo(suite.Ctx, "exo1j9ly7f0jynscjgvct0enevaa659te58k3xztc8")
 	suite.NoError(err)
 	suite.Equal(*info.Task, *getTaskInfo)
 }

@@ -16,7 +16,7 @@ message GetAVSTaskInfoReq {
 // Query defines the gRPC querier service.
 service Query {
   // TaskInfo queries the task information.
-  rpc GetAVSTaskInfo(GetAVSTaskInfoReq) returns (TaskContractInfo) {
+  rpc QueryAVSTaskInfo(GetAVSTaskInfoReq) returns (TaskContractInfo) {
     option (google.api.http).get = "/exocore/avstask/v1/GetAVSTaskInfoReq";
   }
 }

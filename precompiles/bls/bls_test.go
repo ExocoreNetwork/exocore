@@ -135,7 +135,7 @@ func (s *PrecompileTestSuite) TestRun() {
 
 			// Run precompiled contract
 
-			// NOTE: we can ignore the EVM and readonly args since it's a stateless
+			// NOTE: we can ignore the EVM and readonly args since it's a stateless-
 			// precompiled contract
 			bz, err := s.precompile.Run(nil, contract, true)
 

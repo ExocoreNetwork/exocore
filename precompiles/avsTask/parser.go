@@ -18,13 +18,13 @@ func (p Precompile) GetTaskParamsFromInputs(_ sdk.Context, args []interface{}) (
 	taskinfo := &types.TaskContractInfo{}
 
 	taskaddr, ok := args[0].(string)
-	if !ok {
+	if !ok || taskaddr == "" {
 		return nil, xerrors.Errorf(exocmn.ErrContractInputParaOrType, 0, "string", taskaddr)
 	}
 	taskinfo.TaskContractAddress = taskaddr
 
 	taskName, ok := args[1].(string)
-	if !ok {
+	if !ok || taskName == "" {
 		return nil, xerrors.Errorf(exocmn.ErrContractInputParaOrType, 1, "string", taskName)
 	}
 	taskinfo.Name = taskName

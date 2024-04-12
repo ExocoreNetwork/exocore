@@ -119,7 +119,9 @@ func (p Precompile) Run(evm *vm.EVM, contract *vm.Contract, readOnly bool) (bz [
 //   - RegisterAVSTask
 func (Precompile) IsTransaction(methodID string) bool {
 	switch methodID {
-	case MethodRegisterAVSTask:
+	case MethodRegisterAVSTask,
+		MethodRegisterBLSPublicKey,
+		MethodGetRegisteredPubkey:
 		return true
 	default:
 		return false

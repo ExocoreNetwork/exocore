@@ -42,7 +42,7 @@ func GetTaskInfo() *cobra.Command {
 			req := &avstasktypes.GetAVSTaskInfoReq{
 				TaskAddr: args[0],
 			}
-			res, err := queryClient.GetAVSTaskInfo(context.Background(), req)
+			res, err := queryClient.QueryAVSTaskInfo(context.Background(), req)
 			if err != nil {
 				return err
 			}

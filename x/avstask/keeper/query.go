@@ -9,7 +9,7 @@ import (
 
 var _ avstasktypes.QueryServer = &Keeper{}
 
-func (k *Keeper) GetAVSTaskInfo(ctx context.Context, req *avstasktypes.GetAVSTaskInfoReq) (*avstasktypes.TaskContractInfo, error) {
+func (k *Keeper) QueryAVSTaskInfo(ctx context.Context, req *avstasktypes.GetAVSTaskInfoReq) (*avstasktypes.TaskContractInfo, error) {
 	c := sdk.UnwrapSDKContext(ctx)
-	return k.GetAvsTaskInfo(c, req.TaskAddr)
+	return k.GetAVSTaskInfo(c, req.TaskAddr)
 }
