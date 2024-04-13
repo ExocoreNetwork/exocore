@@ -115,7 +115,7 @@ var _ = Describe("MsgCreatePrice", func() {
 			prices := ks.k.GetAllPrices(sdk.UnwrapSDKContext(ks.ctx))
 			Expect(prices[0]).Should(BeEquivalentTo(types.Prices{
 				TokenId:     1,
-				NextRountId: 2,
+				NextRoundId: 2,
 				PriceList: []*types.PriceWithTimeAndRound{
 					{
 						Price:     testdata.PTD2.Price,

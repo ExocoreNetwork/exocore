@@ -22,7 +22,7 @@ func createNPrices(keeper *keeper.Keeper, ctx sdk.Context, n int) []types.Prices
 		items[i].TokenId = int32(i + 1)
 		items[i] = types.Prices{
 			TokenId:     int32(i + 1),
-			NextRountId: 2,
+			NextRoundId: 2,
 			PriceList: []*types.PriceWithTimeAndRound{
 				testdata.PTR1,
 				testdata.PTR2,

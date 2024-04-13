@@ -10,7 +10,7 @@ const (
 )
 
 // PricesNextRoundIdKey is the key set for each tokenId storeKV to store the next round id
-var PricesNextRountIdKey = []byte("nextRoundId/")
+var PricesNextRoundIdKey = []byte("nextRoundId/")
 
 // PricesKey returns the store key to retrieve a Prices from the index fields
 // this key is actually used as the prefix for kvsotre, TODO: refactor to PriceTokenPrefix

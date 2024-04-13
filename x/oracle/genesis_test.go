@@ -25,7 +25,7 @@ func TestGenesis(t *testing.T) {
 						RoundId:   1,
 					},
 				},
-				NextRountId: 2,
+				NextRoundId: 2,
 			},
 			{
 				TokenId: 2,
@@ -43,7 +43,7 @@ func TestGenesis(t *testing.T) {
 						RoundId:   2,
 					},
 				},
-				NextRountId: 3,
+				NextRoundId: 3,
 			},
 		},
 		ValidatorUpdateBlock: &types.ValidatorUpdateBlock{},

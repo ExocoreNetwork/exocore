@@ -1018,9 +1018,11 @@ type QueryClient interface {
 	IndexRecentMsg(ctx context.Context, in *QueryGetIndexRecentMsgRequest, opts ...grpc.CallOption) (*QueryGetIndexRecentMsgResponse, error)
 	// Queries a list of RecentMsg items.
 	RecentMsg(ctx context.Context, in *QueryGetRecentMsgRequest, opts ...grpc.CallOption) (*QueryGetRecentMsgResponse, error)
+	// RecentMsgAll all RecentMsg items.
 	RecentMsgAll(ctx context.Context, in *QueryAllRecentMsgRequest, opts ...grpc.CallOption) (*QueryAllRecentMsgResponse, error)
 	// Queries a list of RecentParams items.
 	RecentParams(ctx context.Context, in *QueryGetRecentParamsRequest, opts ...grpc.CallOption) (*QueryGetRecentParamsResponse, error)
+	// RecentParamsAll query all RecentParams.
 	RecentParamsAll(ctx context.Context, in *QueryAllRecentParamsRequest, opts ...grpc.CallOption) (*QueryAllRecentParamsResponse, error)
 }
 
@@ -1127,9 +1129,11 @@ type QueryServer interface {
 	IndexRecentMsg(context.Context, *QueryGetIndexRecentMsgRequest) (*QueryGetIndexRecentMsgResponse, error)
 	// Queries a list of RecentMsg items.
 	RecentMsg(context.Context, *QueryGetRecentMsgRequest) (*QueryGetRecentMsgResponse, error)
+	// RecentMsgAll all RecentMsg items.
 	RecentMsgAll(context.Context, *QueryAllRecentMsgRequest) (*QueryAllRecentMsgResponse, error)
 	// Queries a list of RecentParams items.
 	RecentParams(context.Context, *QueryGetRecentParamsRequest) (*QueryGetRecentParamsResponse, error)
+	// RecentParamsAll query all RecentParams.
 	RecentParamsAll(context.Context, *QueryAllRecentParamsRequest) (*QueryAllRecentParamsResponse, error)
 }
 

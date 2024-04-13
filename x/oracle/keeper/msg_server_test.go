@@ -53,7 +53,7 @@ func (suite *KeeperSuite) TestCreatePriceSingleBlock() {
 		suite.Equal(2, len(prices.PriceList), "length of price list should be 2 including the 0 index with an empty element as placeholder")
 		suite.Exactly(types.Prices{
 			TokenId:     1,
-			NextRountId: 2,
+			NextRoundId: 2,
 			PriceList: []*types.PriceWithTimeAndRound{
 				{},
 				{
@@ -112,7 +112,7 @@ func (suite *KeeperSuite) TestCreatePriceTwoBlock() {
 		if suite.Equal(true, found) {
 			suite.Exactly(types.Prices{
 				TokenId:     1,
-				NextRountId: 2,
+				NextRoundId: 2,
 				PriceList: []*types.PriceWithTimeAndRound{
 					{},
 					{

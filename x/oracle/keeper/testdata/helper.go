@@ -30,7 +30,7 @@ func newPTR(price string, roundId uint64) *types.PriceWithTimeAndRound {
 func newPrices(tokenId int32, nextRoundId uint64, pList ...*types.PriceWithTimeAndRound) types.Prices {
 	return types.Prices{
 		TokenId:     tokenId,
-		NextRountId: nextRoundId,
+		NextRoundId: nextRoundId,
 		PriceList:   pList,
 	}
 }
