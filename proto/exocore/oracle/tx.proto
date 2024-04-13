@@ -3,14 +3,19 @@ syntax = "proto3";
 package exocore.oracle;
 
 import "exocore/oracle/price.proto";
+import "exocore/oracle/params.proto";
+import "gogoproto/gogo.proto";
 import "cosmos_proto/cosmos.proto";
-
+import "amino/amino.proto";
+import "cosmos/msg/v1/msg.proto";
 option go_package = "github.com/ExocoreNetwork/exocore/x/oracle/types";
 
 // Msg defines the Msg service.
 service Msg {
 //create price for a new oracle round
   rpc CreatePrice (MsgCreatePrice) returns (MsgCreatePriceResponse);
+
+  rpc UpdateParams(MsgUpdateParams) returns (MsgUpdateParamsResponse);
 }
 message MsgCreatePrice {
   string creator = 1 [(cosmos_proto.scalar) = "cosmos.ValidatorAddressString"];
@@ -23,3 +28,17 @@ message MsgCreatePrice {
 }
 
 message MsgCreatePriceResponse {}
+
+message MsgUpdateParams {
+  option (cosmos.msg.v1.signer) = "authority";
+  option (amino.name)           = "cosmos-sdk/x/oracle/MsgUpdateParams";
+
+  // authority is the address that controls the module (defaults to x/gov unless overwritten).
+  string authority = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+  // params defines the x/staking parameters to update.
+  //
+  // NOTE: All parameters must be supplied.
+  Params params = 2 [(gogoproto.nullable) = false, (amino.dont_omitempty) = true];
+};
+
+message MsgUpdateParamsResponse {};

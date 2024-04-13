@@ -19,6 +19,7 @@ type (
 		storeKey   storetypes.StoreKey
 		memKey     storetypes.StoreKey
 		paramstore paramtypes.Subspace
+		authority  string
 		common.KeeperStaking
 	}
 )
