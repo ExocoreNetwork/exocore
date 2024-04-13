@@ -66,7 +66,7 @@ func recacheAggregatorContext(ctx sdk.Context, agc *aggregator.AggregatorContext
 	})
 	agc.SetValidatorPowers(validatorPowers)
 	//TODO: test only
-	if k.GetLastTotalPower(ctx).Cmp(totalPower) != 0 {
+	if k.GetLastTotalPower(ctx).BigInt().Cmp(totalPower) != 0 {
 		panic("something wrong when get validatorsPower from staking module")
 	}
 
@@ -133,7 +133,7 @@ func initAggregatorContext(ctx sdk.Context, agc *aggregator.AggregatorContext, k
 	})
 	//	agc.SetTotalPower(totalPower)
 	agc.SetValidatorPowers(validatorPowers)
-	if k.GetLastTotalPower(ctx).Cmp(totalPower) != 0 {
+	if k.GetLastTotalPower(ctx).BigInt().Cmp(totalPower) != 0 {
 		panic("-")
 	}
 

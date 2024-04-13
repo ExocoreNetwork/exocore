@@ -1,22 +1,18 @@
 package common
 
 import (
-	"math/big"
-
-	//	"cosmossdk.io/api/tendermint/abci"
+	"cosmossdk.io/math"
 	"github.com/ExocoreNetwork/exocore/x/oracle/types"
 	abci "github.com/cometbft/cometbft/abci/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
 	stakingTypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 )
 
 type KeeperOracle interface {
-	GetParams(sdk.Context) types.Params
+	KeeperStaking
 
-	IterateBondedValidatorsByPower(sdk.Context, func(index int64, validator stakingTypes.ValidatorI) bool)
-	GetLastTotalPower(sdk.Context) *big.Int
-	GetValidatorUpdates(sdk.Context) []abci.ValidatorUpdate
-	GetValidatorByConsAddr(sdk.Context, sdk.ConsAddress) (stakingTypes.Validator, bool)
+	GetParams(sdk.Context) types.Params
 
 	GetIndexRecentMsg(sdk.Context) (types.IndexRecentMsg, bool)
 	GetAllRecentMsgAsMap(sdk.Context) map[uint64][]*types.MsgItem
@@ -36,4 +32,13 @@ type KeeperOracle interface {
 
 	RemoveRecentParams(sdk.Context, uint64)
 	RemoveRecentMsg(sdk.Context, uint64)
+}
+
+var _ KeeperStaking = stakingkeeper.Keeper{}
+
+type KeeperStaking interface {
+	GetLastTotalPower(ctx sdk.Context) math.Int
+	IterateBondedValidatorsByPower(ctx sdk.Context, fn func(index int64, validator stakingTypes.ValidatorI) (stop bool))
+	GetValidatorUpdates(ctx sdk.Context) []abci.ValidatorUpdate
+	GetValidatorByConsAddr(ctx sdk.Context, consAddr sdk.ConsAddress) (validator stakingTypes.Validator, found bool)
 }
