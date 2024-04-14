@@ -12,9 +12,9 @@ option go_package = "github.com/ExocoreNetwork/exocore/x/oracle/types";
 
 // Msg defines the Msg service.
 service Msg {
-//create price for a new oracle round
+// CreatePrice creates price for a new oracle round
   rpc CreatePrice (MsgCreatePrice) returns (MsgCreatePriceResponse);
-
+// UpdateParams update params value
   rpc UpdateParams(MsgUpdateParams) returns (MsgUpdateParamsResponse);
 }
 message MsgCreatePrice {

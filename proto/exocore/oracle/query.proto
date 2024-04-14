@@ -87,7 +87,7 @@ message QueryParamsResponse {
 }
 
 message QueryGetPricesRequest {
-  int32 tokenId = 1;
+  int32 token_id = 1;
 }
 
 message QueryGetPricesResponse {
@@ -106,19 +106,19 @@ message QueryAllPricesResponse {
 message QueryGetValidatorUpdateBlockRequest {}
 
 message QueryGetValidatorUpdateBlockResponse {
-  ValidatorUpdateBlock ValidatorUpdateBlock = 1 [(gogoproto.nullable) = false];
+  ValidatorUpdateBlock validator_update_block = 1 [(gogoproto.nullable) = false];
 }
 
 message QueryGetIndexRecentParamsRequest {}
 
 message QueryGetIndexRecentParamsResponse {
-  IndexRecentParams IndexRecentParams = 1 [(gogoproto.nullable) = false];
+  IndexRecentParams index_recent_params = 1 [(gogoproto.nullable) = false];
 }
 
 message QueryGetIndexRecentMsgRequest {}
 
 message QueryGetIndexRecentMsgResponse {
-  IndexRecentMsg IndexRecentMsg = 1 [(gogoproto.nullable) = false];
+  IndexRecentMsg index_recent_msg = 1 [(gogoproto.nullable) = false];
 }
 
 message QueryGetRecentMsgRequest {
@@ -126,7 +126,7 @@ message QueryGetRecentMsgRequest {
 }
 
 message QueryGetRecentMsgResponse {
-  RecentMsg recentMsg = 1 [(gogoproto.nullable) = false];
+  RecentMsg recent_msg = 1 [(gogoproto.nullable) = false];
 }
 
 message QueryAllRecentMsgRequest {
@@ -134,7 +134,7 @@ message QueryAllRecentMsgRequest {
 }
 
 message QueryAllRecentMsgResponse {
-  repeated RecentMsg                              recentMsg  = 1 [(gogoproto.nullable) = false];
+  repeated RecentMsg                              recent_msg  = 1 [(gogoproto.nullable) = false];
            cosmos.base.query.v1beta1.PageResponse pagination = 2;
 }
 
@@ -143,7 +143,7 @@ message QueryGetRecentParamsRequest {
 }
 
 message QueryGetRecentParamsResponse {
-  RecentParams recentParams = 1 [(gogoproto.nullable) = false];
+  RecentParams recent_params = 1 [(gogoproto.nullable) = false];
 }
 
 message QueryAllRecentParamsRequest {
@@ -151,7 +151,7 @@ message QueryAllRecentParamsRequest {
 }
 
 message QueryAllRecentParamsResponse {
-  repeated RecentParams                           recentParams = 1 [(gogoproto.nullable) = false];
+  repeated RecentParams                           recent_params = 1 [(gogoproto.nullable) = false];
            cosmos.base.query.v1beta1.PageResponse pagination   = 2;
 }
 

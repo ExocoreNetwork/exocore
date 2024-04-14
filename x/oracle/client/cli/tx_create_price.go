@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"errors"
 	"strconv"
 
 	"github.com/ExocoreNetwork/exocore/x/oracle/types"
@@ -14,18 +15,70 @@ var _ = strconv.Itoa(0)
 
 func CmdCreatePrice() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "create-price",
+		//TODO: support v1 single sourceID for temporary
+		Use:   "create-price feederid basedblock nonce sourceid decimal price timestamp detid optinoal(price timestamp detid) optional(desc)",
 		Short: "Broadcast message create-price",
-		Args:  cobra.ExactArgs(0),
-		RunE: func(cmd *cobra.Command, _ []string) (err error) {
+		//Args:  cobra.ExactArgs(0),
+		Args: cobra.MinimumNArgs(8),
+		RunE: func(cmd *cobra.Command, args []string) (err error) {
 
 			clientCtx, err := client.GetClientTxContext(cmd)
 			if err != nil {
 				return err
 			}
+			feederID, err := strconv.ParseInt(args[0], 10, 32)
+			if err != nil || feederID < 1 {
+				return errors.New("feederID invalid")
+			}
+			basedBlock, err := strconv.ParseInt(args[1], 10, 64)
+			if err != nil || basedBlock < 1 {
+				return errors.New("basedBlock invalid")
+			}
+			nonce, err := strconv.ParseInt(args[2], 10, 32)
+			if err != nil || nonce < 1 || nonce > 3 {
+				return errors.New("nonce invalid")
+			}
+			sourceID, err := strconv.ParseInt(args[3], 10, 32)
+			if err != nil || sourceID < 1 {
+				return errors.New("sourceID invalid")
+			}
+			decimal, err := strconv.ParseInt(args[4], 10, 32)
+			if err != nil || decimal < 0 {
+				return errors.New("decimal invalid")
+			}
+			//prices := make([]*types.PriceWithSource, 0, 1)
+			prices := []*types.PriceWithSource{
+				{
+					SourceId: int32(sourceID),
+					Prices:   make([]*types.PriceWithTimeAndDetId, 0, 1),
+					Desc:     "",
+				},
+			}
+			argLength := len(args) - 5
+			i := 5
+			for argLength > 2 {
+				price := args[i]
+				timestamp := args[i+1]
+				detID := args[i+2]
+				argLength -= 3
+				i += 3
+				prices[0].Prices = append(prices[0].Prices, &types.PriceWithTimeAndDetId{
+					Price:     price,
+					Decimal:   int32(decimal),
+					Timestamp: timestamp,
+					DetId:     detID,
+				})
+			}
+			if argLength == 1 {
+				prices[0].Desc = args[i+1]
+			}
 
 			msg := types.NewMsgCreatePrice(
 				clientCtx.GetFromAddress().String(),
+				int32(feederID),
+				prices,
+				uint64(basedBlock),
+				int32(basedBlock),
 			)
 			if err := msg.ValidateBasic(); err != nil {
 				return err
