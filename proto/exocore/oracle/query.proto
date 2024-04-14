@@ -26,7 +26,7 @@ service Query {
   
   // Queries a list of Prices items.
   rpc Prices    (QueryGetPricesRequest) returns (QueryGetPricesResponse) {
-    option (google.api.http).get = "/ExocoreNetwork/exocore/oracle/prices/{tokenId}";
+    option (google.api.http).get = "/ExocoreNetwork/exocore/oracle/prices/{token_id}";
   
   }
 //  rpc PricesAll (QueryAllPricesRequest) returns (QueryAllPricesResponse) {
