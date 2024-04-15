@@ -1,7 +1,6 @@
 package keeper_test
 
 import (
-	"math/big"
 	reflect "reflect"
 
 	"bou.ke/monkey"
@@ -13,6 +12,7 @@ import (
 	"github.com/ExocoreNetwork/exocore/x/oracle/types"
 	"github.com/cosmos/cosmos-sdk/testutil/mock"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	stakingKeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	gomock "go.uber.org/mock/gomock"
 
@@ -54,12 +54,12 @@ var _ = Describe("MsgCreatePrice", func() {
 		validatorC.EXPECT().GetOperator().Return(operator2)
 		validatorC.EXPECT().GetOperator().Return(operator3)
 
-		monkey.PatchInstanceMethod(reflect.TypeOf(keeper.Keeper{}), "IterateBondedValidatorsByPower", func(k keeper.Keeper, ctx sdk.Context, f func(index int64, validator stakingtypes.ValidatorI) bool) {
+		monkey.PatchInstanceMethod(reflect.TypeOf(stakingKeeper.Keeper{}), "IterateBondedValidatorsByPower", func(k stakingKeeper.Keeper, ctx sdk.Context, f func(index int64, validator stakingtypes.ValidatorI) bool) {
 			f(0, validatorC)
 			f(0, validatorC)
 			f(0, validatorC)
 		})
-		monkey.PatchInstanceMethod(reflect.TypeOf(keeper.Keeper{}), "GetLastTotalPower", func(k keeper.Keeper, ctx sdk.Context) *big.Int { return big.NewInt(3) })
+		monkey.PatchInstanceMethod(reflect.TypeOf(stakingKeeper.Keeper{}), "GetLastTotalPower", func(k stakingKeeper.Keeper, ctx sdk.Context) math.Int { return math.NewInt(3) })
 
 		Expect(ks.ctx.BlockHeight()).To(Equal(int64(2)))
 	})
