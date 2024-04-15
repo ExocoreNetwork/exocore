@@ -25,7 +25,9 @@ func networkWithValidatorUpdateBlockObjects(t *testing.T) (*network.Network, typ
 	buf, err := cfg.Codec.MarshalJSON(&state)
 	require.NoError(t, err)
 	cfg.GenesisState[types.ModuleName] = buf
-	return network.New(t, cfg), *state.ValidatorUpdateBlock
+	network, err := network.New(t, t.TempDir(), cfg)
+	require.NoError(t, err)
+	return network, *state.ValidatorUpdateBlock
 }
 
 func TestShowValidatorUpdateBlock(t *testing.T) {
