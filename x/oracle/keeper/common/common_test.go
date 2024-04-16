@@ -1,9 +1,9 @@
 package common
 
 import (
-	"math/big"
 	"testing"
 
+	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	. "github.com/smartystreets/goconvey/convey"
 	"go.uber.org/mock/gomock"
@@ -18,12 +18,12 @@ func TestMock(t *testing.T) {
 	defer ctrl.Finish()
 	ko := NewMockKeeperOracle(ctrl)
 
-	ko.EXPECT().GetLastTotalPower(gomock.Any()).Return(big.NewInt(99))
+	ko.EXPECT().GetLastTotalPower(gomock.Any()).Return(math.NewInt(99))
 
 	x := ko.GetLastTotalPower(sdk.Context{})
 	_ = x
 
 	Convey("mock oracle keeper", t, func() {
-		Convey("GetLastTotalPower", func() { So(x, ShouldResemble, big.NewInt(99)) })
+		Convey("GetLastTotalPower", func() { So(x, ShouldResemble, math.NewInt(99)) })
 	})
 }

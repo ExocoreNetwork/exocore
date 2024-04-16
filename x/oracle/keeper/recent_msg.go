@@ -62,7 +62,7 @@ func (k Keeper) GetAllRecentMsg(ctx sdk.Context) (list []types.RecentMsg) {
 	return
 }
 
-func (k Keeper) GetAllRecentMsgAsMap(ctx sdk.Context) (result map[uint64][]*types.MsgItem) {
+func (k Keeper) GetAllRecentMsgAsMap(ctx sdk.Context) (result map[int64][]*types.MsgItem) {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefix(types.RecentMsgKeyPrefix))
 	iterator := sdk.KVStorePrefixIterator(store, []byte{})
 
@@ -72,7 +72,7 @@ func (k Keeper) GetAllRecentMsgAsMap(ctx sdk.Context) (result map[uint64][]*type
 		var val types.RecentMsg
 		k.cdc.MustUnmarshal(iterator.Value(), &val)
 		//		list = append(list, val)
-		result[val.Block] = val.Msgs
+		result[int64(val.Block)] = val.Msgs
 	}
 
 	return

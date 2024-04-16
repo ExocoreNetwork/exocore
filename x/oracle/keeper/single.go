@@ -41,8 +41,8 @@ func GetAggregatorContext(ctx sdk.Context, k Keeper) *aggregator.AggregatorConte
 
 func recacheAggregatorContext(ctx sdk.Context, agc *aggregator.AggregatorContext, k Keeper, c *cache.Cache) bool {
 
-	from := uint64(ctx.BlockHeight()) - common.MaxNonce
-	to := uint64(ctx.BlockHeight()) - 1
+	from := ctx.BlockHeight() - common.MaxNonce
+	to := ctx.BlockHeight() - 1
 
 	h, ok := k.GetValidatorUpdateBlock(ctx)
 	recentParamsMap := k.GetAllRecentParamsAsMap(ctx)
@@ -51,8 +51,8 @@ func recacheAggregatorContext(ctx sdk.Context, agc *aggregator.AggregatorContext
 		return false
 	}
 
-	if h.Block > from {
-		from = h.Block
+	if int64(h.Block) > from {
+		from = int64(h.Block)
 	}
 
 	totalPower := big.NewInt(0)
@@ -77,7 +77,7 @@ func recacheAggregatorContext(ctx sdk.Context, agc *aggregator.AggregatorContext
 	var pTmp common.Params
 	for ; from < to; from++ {
 		//fill params
-		prev := uint64(0)
+		prev := int64(0)
 		for b, recentParams := range recentParamsMap {
 			if b <= from && b > prev {
 				pTmp = common.Params(*recentParams)
@@ -109,12 +109,9 @@ func recacheAggregatorContext(ctx sdk.Context, agc *aggregator.AggregatorContext
 	return true
 }
 
-func initAggregatorContext(ctx sdk.Context, agc *aggregator.AggregatorContext, k common.KeeperOracle, c *cache.Cache) error {
+func initAggregatorContext(ctx sdk.Context, agc *aggregator.AggregatorContext, k common.KeeperOracle, c *cache.Cache) {
 	//set params
 	p := k.GetParams(ctx)
-	m := make(map[uint64]*types.Params)
-	m[uint64(ctx.BlockHeight())] = &p
-	//	k.setParams4CacheRecover(m) //used to trace tokenFeeder's update during cache recover
 	pTmp := common.Params(p)
 	agc.SetParams(&pTmp)
 	//set params cache
@@ -122,7 +119,7 @@ func initAggregatorContext(ctx sdk.Context, agc *aggregator.AggregatorContext, k
 
 	totalPower := big.NewInt(0)
 	validatorPowers := make(map[string]*big.Int)
-	k.IterateBondedValidatorsByPower(ctx, func(index int64, validator stakingtypes.ValidatorI) bool {
+	k.IterateBondedValidatorsByPower(ctx, func(_ int64, validator stakingtypes.ValidatorI) bool {
 		power := big.NewInt(validator.GetConsensusPower(validator.GetBondedTokens()))
 		//addr := string(validator.GetOperator())
 		addr := validator.GetOperator().String()
@@ -133,15 +130,11 @@ func initAggregatorContext(ctx sdk.Context, agc *aggregator.AggregatorContext, k
 	})
 	//	agc.SetTotalPower(totalPower)
 	agc.SetValidatorPowers(validatorPowers)
-	if k.GetLastTotalPower(ctx).BigInt().Cmp(totalPower) != 0 {
-		panic("-")
-	}
 
 	//set validatorPower cache
 	c.AddCache(cache.CacheItemV(validatorPowers))
 
-	agc.PrepareRound(ctx, uint64(ctx.BlockHeight())-1)
-	return nil
+	agc.PrepareRound(ctx, ctx.BlockHeight()-1)
 }
 
 func ResetAggregatorContext() {

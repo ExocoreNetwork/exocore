@@ -8,10 +8,10 @@ import (
 	"github.com/ExocoreNetwork/exocore/x/oracle/keeper"
 	"github.com/ExocoreNetwork/exocore/x/oracle/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/stretchr/testify/suite"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
-	"github.com/stretchr/testify/suite"
 	gomock "go.uber.org/mock/gomock"
 )
 

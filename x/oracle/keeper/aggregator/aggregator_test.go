@@ -13,13 +13,10 @@ import (
 
 func TestAggregatorContext(t *testing.T) {
 	Convey("init aggregatorContext with default params", t, func() {
-		agc := initAggregatorContext()
+		agc := initAggregatorContext4Test()
 		var p *monkey.PatchGuard
 		var ctx sdk.Context
 		Convey("prepare round to gengerate round info of feeders for next block", func() {
-			//			var ctx sdk.Context
-			//	var p *monkey.PatchGuard
-			//	agc := initAggregatorContext()
 			Convey("pepare within the window", func() {
 				p = patchBlockHeight(12)
 				agc.PrepareRound(ctx, 0)
@@ -64,7 +61,7 @@ func TestAggregatorContext(t *testing.T) {
 	})
 }
 
-func initAggregatorContext() *AggregatorContext {
+func initAggregatorContext4Test() *AggregatorContext {
 	agc := NewAggregatorContext()
 
 	validatorPowers := map[string]*big.Int{

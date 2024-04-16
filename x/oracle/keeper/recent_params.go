@@ -62,7 +62,7 @@ func (k Keeper) GetAllRecentParams(ctx sdk.Context) (list []types.RecentParams) 
 	return
 }
 
-func (k Keeper) GetAllRecentParamsAsMap(ctx sdk.Context) (result map[uint64]*types.Params) {
+func (k Keeper) GetAllRecentParamsAsMap(ctx sdk.Context) (result map[int64]*types.Params) {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefix(types.RecentParamsKeyPrefix))
 	iterator := sdk.KVStorePrefixIterator(store, []byte{})
 
@@ -71,7 +71,7 @@ func (k Keeper) GetAllRecentParamsAsMap(ctx sdk.Context) (result map[uint64]*typ
 	for ; iterator.Valid(); iterator.Next() {
 		var val types.RecentParams
 		k.cdc.MustUnmarshal(iterator.Value(), &val)
-		result[val.Block] = val.Params
+		result[int64(val.Block)] = val.Params
 	}
 
 	return

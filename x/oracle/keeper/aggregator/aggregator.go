@@ -189,34 +189,34 @@ func (agc *AggregatorContext) SealRound(ctx sdk.Context, force bool) (success []
 //
 //}
 
-func (agc *AggregatorContext) PrepareRound(ctx sdk.Context, block uint64) {
+func (agc *AggregatorContext) PrepareRound(ctx sdk.Context, block int64) {
 	//block>0 means recache initialization, all roundInfo is empty
 	if block == 0 {
-		block = uint64(ctx.BlockHeight())
+		block = ctx.BlockHeight()
 	}
 
 	for feederId, feeder := range agc.params.GetTokenFeeders() {
 		if feederId == 0 {
 			continue
 		}
-		if (feeder.EndBlock > 0 && uint64(feeder.EndBlock) <= block) || uint64(feeder.StartBaseBlock) > block {
+		if (feeder.EndBlock > 0 && feeder.EndBlock <= block) || feeder.StartBaseBlock > block {
 
 			//this feeder is inactive
 			continue
 		}
 
-		delta := (block - uint64(feeder.StartBaseBlock))
-		left := delta % uint64(feeder.Interval)
-		count := delta / uint64(feeder.Interval)
+		delta := block - feeder.StartBaseBlock
+		left := delta % feeder.Interval
+		count := delta / feeder.Interval
 		latestBasedblock := block - left
-		latestNextRoundId := uint64(feeder.StartRoundId) + count
+		latestNextRoundId := feeder.StartRoundId + count
 
 		feederIdInt32 := int32(feederId)
 		round := agc.rounds[feederIdInt32]
 		if round == nil {
 			round = &roundInfo{
-				basedBlock:  latestBasedblock,
-				nextRoundId: latestNextRoundId,
+				basedBlock:  uint64(latestBasedblock),
+				nextRoundId: uint64(latestNextRoundId),
 			}
 			if left >= common.MaxNonce {
 				round.status = 2
@@ -227,13 +227,13 @@ func (agc *AggregatorContext) PrepareRound(ctx sdk.Context, block uint64) {
 		} else {
 			//prepare a new round for exist roundInfo
 			if left == 0 {
-				round.basedBlock = latestBasedblock
-				round.nextRoundId = latestNextRoundId
+				round.basedBlock = uint64(latestBasedblock)
+				round.nextRoundId = uint64(latestNextRoundId)
 				round.status = 1
 				//drop previous worker
 				agc.aggregators[feederIdInt32] = nil
 			} else if round.status == 1 && left >= common.MaxNonce {
-				//this shouldn't happend, if do sealround properly before prepareRound, basically for test only
+				//this shouldn't happen, if do sealround properly before prepareRound, basically for test only
 				round.status = 2
 				//TODO: just modify the status here, since sealRound should do all the related seal actios already when parepare invoked
 			}

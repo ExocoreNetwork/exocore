@@ -15,10 +15,10 @@ type KeeperOracle interface {
 	GetParams(sdk.Context) types.Params
 
 	GetIndexRecentMsg(sdk.Context) (types.IndexRecentMsg, bool)
-	GetAllRecentMsgAsMap(sdk.Context) map[uint64][]*types.MsgItem
+	GetAllRecentMsgAsMap(sdk.Context) map[int64][]*types.MsgItem
 
 	GetIndexRecentParams(sdk.Context) (types.IndexRecentParams, bool)
-	GetAllRecentParamsAsMap(sdk.Context) map[uint64]*types.Params
+	GetAllRecentParamsAsMap(sdk.Context) map[int64]*types.Params
 
 	GetValidatorUpdateBlock(sdk.Context) (types.ValidatorUpdateBlock, bool)
 

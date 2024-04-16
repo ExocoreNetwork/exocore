@@ -10,9 +10,9 @@
 package common
 
 import (
-	big "math/big"
 	reflect "reflect"
 
+	math "cosmossdk.io/math"
 	types "github.com/ExocoreNetwork/exocore/x/oracle/types"
 	types0 "github.com/cometbft/cometbft/abci/types"
 	types1 "github.com/cosmos/cosmos-sdk/types"
@@ -44,10 +44,10 @@ func (m *MockKeeperOracle) EXPECT() *MockKeeperOracleMockRecorder {
 }
 
 // GetAllRecentMsgAsMap mocks base method.
-func (m *MockKeeperOracle) GetAllRecentMsgAsMap(arg0 types1.Context) map[uint64][]*types.MsgItem {
+func (m *MockKeeperOracle) GetAllRecentMsgAsMap(arg0 types1.Context) map[int64][]*types.MsgItem {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetAllRecentMsgAsMap", arg0)
-	ret0, _ := ret[0].(map[uint64][]*types.MsgItem)
+	ret0, _ := ret[0].(map[int64][]*types.MsgItem)
 	return ret0
 }
 
@@ -102,10 +102,10 @@ func (mr *MockKeeperOracleMockRecorder) GetIndexRecentParams(arg0 any) *gomock.C
 }
 
 // GetLastTotalPower mocks base method.
-func (m *MockKeeperOracle) GetLastTotalPower(arg0 types1.Context) *big.Int {
+func (m *MockKeeperOracle) GetLastTotalPower(arg0 types1.Context) math.Int {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetLastTotalPower", arg0)
-	ret0, _ := ret[0].(*big.Int)
+	ret0, _ := ret[0].(math.Int)
 	return ret0
 }
 
