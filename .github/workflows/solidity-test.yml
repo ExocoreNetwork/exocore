@@ -1,6 +1,7 @@
 name: Solidity Test
 on:
   pull_request:
+  push:
     branches:
       - develop
       - main

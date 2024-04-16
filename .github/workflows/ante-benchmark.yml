@@ -9,14 +9,14 @@ on:
       - develop
       - main
       - master
-    paths: 
+    paths:
       - 'app/ante/**'
   pull_request:
     branches:
       - develop
       - main
       - master
-    paths: 
+    paths:
       - 'app/ante/**'
 
 jobs:
