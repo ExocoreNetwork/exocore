@@ -4,12 +4,12 @@ import (
 	"context"
 	"testing"
 
+	sdkerrors "cosmossdk.io/errors"
 	keepertest "github.com/ExocoreNetwork/exocore/testutil/keeper"
 	"github.com/ExocoreNetwork/exocore/x/oracle/keeper"
 	"github.com/ExocoreNetwork/exocore/x/oracle/keeper/testdata"
 	"github.com/ExocoreNetwork/exocore/x/oracle/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 
 	// "github.com/cosmos/ibc-go/testing/mock"
 

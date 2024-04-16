@@ -156,10 +156,8 @@ func (c *Cache) AddCache(i any) {
 
 // func (c *Cache) RemoveCache(i any, k common.KeeperOracle) {
 func (c *Cache) RemoveCache(i any) {
-	switch item := i.(type) {
-	case *CacheItemM:
+	if item, isItemM := i.(*CacheItemM); isItemM {
 		c.msg.remove(item)
-	default:
 	}
 }
 

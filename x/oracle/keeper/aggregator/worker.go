@@ -50,12 +50,12 @@ func (w *worker) seal() {
 	w.a = nil
 }
 
-func (w *worker) getPrice() (string, int32) {
-	if w.sealed {
-		return w.price, w.decimal
-	}
-	return "", 0
-}
+//func (w *worker) getPrice() (string, int32) {
+//	if w.sealed {
+//		return w.price, w.decimal
+//	}
+//	return "", 0
+//}
 
 // newWorker new a instance for a tokenFeeder's specific round
 func newWorker(feederId uint64, agc *AggregatorContext) *worker {

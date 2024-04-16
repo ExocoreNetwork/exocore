@@ -90,6 +90,7 @@ func recacheAggregatorContext(ctx sdk.Context, agc *aggregator.AggregatorContext
 		if msgs := recentMsgs[from+1]; msgs != nil {
 			for _, msg := range msgs {
 				// these messages are retreived for recache, just skip the validation check and fill the memory cache
+				//nolint
 				agc.FillPrice(&types.MsgCreatePrice{
 					Creator:  msg.Validator,
 					FeederId: msg.FeederId,

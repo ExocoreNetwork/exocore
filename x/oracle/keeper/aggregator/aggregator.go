@@ -182,7 +182,7 @@ func (agc *AggregatorContext) SealRound(ctx sdk.Context, force bool) (success []
 			agc.aggregators[feederId] = nil
 		}
 	}
-	return
+	return success, failed
 }
 
 //func (agc *AggregatorContext) ForceSeal(ctx sdk.Context) (success []*priceItemKV, failed []int32) {
@@ -208,29 +208,29 @@ func (agc *AggregatorContext) PrepareRound(ctx sdk.Context, block uint64) {
 		left := delta % feeder.Interval
 		count := delta / feeder.Interval
 		latestBasedblock := block - left
-		latestNextRoundId := feeder.StartRoundId + count
+		latestNextRoundID := feeder.StartRoundId + count
 
-		feederIdUint64 := uint64(feederId)
-		round := agc.rounds[feederIdUint64]
+		feederIDUint64 := uint64(feederId)
+		round := agc.rounds[feederIDUint64]
 		if round == nil {
 			round = &roundInfo{
-				basedBlock:  uint64(latestBasedblock),
-				nextRoundId: uint64(latestNextRoundId),
+				basedBlock:  latestBasedblock,
+				nextRoundId: latestNextRoundID,
 			}
 			if left >= common.MaxNonce {
 				round.status = 2
 			} else {
 				round.status = 1
 			}
-			agc.rounds[feederIdUint64] = round
+			agc.rounds[feederIDUint64] = round
 		} else {
 			// prepare a new round for exist roundInfo
 			if left == 0 {
-				round.basedBlock = uint64(latestBasedblock)
-				round.nextRoundId = uint64(latestNextRoundId)
+				round.basedBlock = latestBasedblock
+				round.nextRoundId = latestNextRoundID
 				round.status = 1
 				// drop previous worker
-				agc.aggregators[feederIdUint64] = nil
+				agc.aggregators[feederIDUint64] = nil
 			} else if round.status == 1 && left >= common.MaxNonce {
 				// this shouldn't happen, if do sealround properly before prepareRound, basically for test only
 				round.status = 2

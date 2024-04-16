@@ -90,7 +90,7 @@ func (k Keeper) GetAllPrices(ctx sdk.Context) (list []types.Prices) {
 	if price.TokenId > 0 {
 		list = append(list, price)
 	}
-	return
+	return list
 }
 
 func (k Keeper) AppendPriceTR(ctx sdk.Context, tokenId uint64, priceTR types.PriceWithTimeAndRound) {

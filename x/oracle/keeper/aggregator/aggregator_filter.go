@@ -16,10 +16,10 @@ type filter struct {
 	validatorSource map[string]*common.Set[string]
 }
 
-func newFilter(maxNonce, maxDetId int) *filter {
+func newFilter(maxNonce, maxDetID int) *filter {
 	return &filter{
 		maxNonce:        maxNonce,
-		maxDetId:        maxDetId,
+		maxDetId:        maxDetID,
 		validatorNonce:  make(map[string]*common.Set[int32]),
 		validatorSource: make(map[string]*common.Set[string]),
 	}
@@ -39,10 +39,10 @@ func (f *filter) addPSource(pSources []*types.PriceWithSource, validator string)
 		// check conflicts or duplicate data for the same roundId within the same source
 		if len(pSource.Prices[0].DetId) > 0 {
 			k := validator + strconv.Itoa(int(pSource.SourceId))
-			detIds := f.validatorSource[k]
-			if detIds == nil {
-				detIds = f.newVSSet()
-				f.validatorSource[k] = detIds
+			detIDs := f.validatorSource[k]
+			if detIDs == nil {
+				detIDs = f.newVSSet()
+				f.validatorSource[k] = detIDs
 			}
 
 			pSourceTmp := &types.PriceWithSource{
@@ -51,10 +51,10 @@ func (f *filter) addPSource(pSources []*types.PriceWithSource, validator string)
 				Desc:     pSource.Desc,
 			}
 
-			for _, pDetId := range pSource.Prices {
-				if ok := detIds.Add(pDetId.DetId); ok {
+			for _, pDetID := range pSource.Prices {
+				if ok := detIDs.Add(pDetID.DetId); ok {
 					// deterministic id has not seen in filter and limitation of ids this souce has not reached
-					pSourceTmp.Prices = append(pSourceTmp.Prices, pDetId)
+					pSourceTmp.Prices = append(pSourceTmp.Prices, pDetID)
 				}
 			}
 			if len(pSourceTmp.Prices) > 0 {
@@ -66,7 +66,7 @@ func (f *filter) addPSource(pSources []*types.PriceWithSource, validator string)
 			list4Aggregator = append(list4Aggregator, pSource)
 		}
 	}
-	return
+	return list4Calculator, list4Aggregator
 }
 
 // filtrate checks data from MsgCreatePrice, and will drop the conflict or duplicate data, it will then fill data into calculator(for deterministic source data to get to consensus) and aggregator (for both deterministic and non0-deterministic source data run 2-layers aggregation to get the final price)
