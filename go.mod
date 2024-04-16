@@ -230,7 +230,6 @@ require (
 )
 
 replace (
-	bou.ke/monkey => /Users/linqing/workplace/github.com/leonz/monkey
 	// use cosmos fork of keyring
 	github.com/99designs/keyring => github.com/cosmos/keyring v1.2.0
 	// use Cosmos-SDK fork to enable Ledger functionality

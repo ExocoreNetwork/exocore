@@ -26,7 +26,7 @@ type roundInfo struct {
 	status int32
 }
 
-// AggregatorContext keeps memory cache for state params, validatorset, and updatedthese values as they udpated on chain. And it keeps the infomation to track all tokenFeeders' status and data collection
+// AggregatorContext keeps memory cache for state params, validatorset, and updatedthese values as they updated on chain. And it keeps the infomation to track all tokenFeeders' status and data collection
 type AggregatorContext struct {
 	params *common.Params
 
