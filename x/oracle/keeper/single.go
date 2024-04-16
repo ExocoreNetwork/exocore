@@ -86,7 +86,7 @@ func recacheAggregatorContext(ctx sdk.Context, agc *aggregator.AggregatorContext
 			}
 		}
 
-		agc.PrepareRound(ctx, from)
+		agc.PrepareRound(ctx, uint64(from))
 
 		if msgs := recentMsgs[from+1]; msgs != nil {
 			for _, msg := range msgs {
@@ -104,7 +104,7 @@ func recacheAggregatorContext(ctx sdk.Context, agc *aggregator.AggregatorContext
 	//fill params cache
 	c.AddCache(cache.CacheItemP(&pTmp))
 
-	agc.PrepareRound(ctx, to)
+	agc.PrepareRound(ctx, uint64(to))
 
 	return true
 }
@@ -134,7 +134,7 @@ func initAggregatorContext(ctx sdk.Context, agc *aggregator.AggregatorContext, k
 	//set validatorPower cache
 	c.AddCache(cache.CacheItemV(validatorPowers))
 
-	agc.PrepareRound(ctx, ctx.BlockHeight()-1)
+	agc.PrepareRound(ctx, uint64(ctx.BlockHeight()-1))
 }
 
 func ResetAggregatorContext() {

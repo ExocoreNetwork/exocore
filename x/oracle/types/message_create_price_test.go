@@ -23,7 +23,7 @@ func TestMsgCreatePrice_ValidateBasic(t *testing.T) {
 		}, {
 			name: "valid address",
 			msg: MsgCreatePrice{
-				Creator: sample.AccAddress(),
+				Creator: sample.ValAddress(),
 			},
 		},
 	}

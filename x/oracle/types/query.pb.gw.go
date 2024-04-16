@@ -62,15 +62,15 @@ func request_Query_Prices_0(ctx context.Context, marshaler runtime.Marshaler, cl
 		_   = err
 	)
 
-	val, ok = pathParams["tokenId"]
+	val, ok = pathParams["token_id"]
 	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "tokenId")
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "token_id")
 	}
 
-	protoReq.TokenId, err = runtime.Int32(val)
+	protoReq.TokenId, err = runtime.Uint64(val)
 
 	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "tokenId", err)
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "token_id", err)
 	}
 
 	msg, err := client.Prices(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
@@ -89,15 +89,15 @@ func local_request_Query_Prices_0(ctx context.Context, marshaler runtime.Marshal
 		_   = err
 	)
 
-	val, ok = pathParams["tokenId"]
+	val, ok = pathParams["token_id"]
 	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "tokenId")
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "token_id")
 	}
 
-	protoReq.TokenId, err = runtime.Int32(val)
+	protoReq.TokenId, err = runtime.Uint64(val)
 
 	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "tokenId", err)
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "token_id", err)
 	}
 
 	msg, err := server.Prices(ctx, &protoReq)
@@ -777,23 +777,23 @@ func RegisterQueryHandlerClient(ctx context.Context, mux *runtime.ServeMux, clie
 }
 
 var (
-	pattern_Query_Params_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"ExocoreNetwork", "exocore", "oracle", "params"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_Query_Params_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"ExocoreNetwork", "exocore", "oracle", "params"}, "", runtime.AssumeColonVerbOpt(false)))
 
-	pattern_Query_Prices_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 4}, []string{"ExocoreNetwork", "exocore", "oracle", "prices", "tokenId"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_Query_Prices_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 4}, []string{"ExocoreNetwork", "exocore", "oracle", "prices", "token_id"}, "", runtime.AssumeColonVerbOpt(false)))
 
-	pattern_Query_ValidatorUpdateBlock_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"ExocoreNetwork", "exocore", "oracle", "validator_update_block"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_Query_ValidatorUpdateBlock_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"ExocoreNetwork", "exocore", "oracle", "validator_update_block"}, "", runtime.AssumeColonVerbOpt(false)))
 
-	pattern_Query_IndexRecentParams_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"ExocoreNetwork", "exocore", "oracle", "index_recent_params"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_Query_IndexRecentParams_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"ExocoreNetwork", "exocore", "oracle", "index_recent_params"}, "", runtime.AssumeColonVerbOpt(false)))
 
-	pattern_Query_IndexRecentMsg_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"ExocoreNetwork", "exocore", "oracle", "index_recent_msg"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_Query_IndexRecentMsg_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"ExocoreNetwork", "exocore", "oracle", "index_recent_msg"}, "", runtime.AssumeColonVerbOpt(false)))
 
-	pattern_Query_RecentMsg_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 4}, []string{"ExocoreNetwork", "exocore", "oracle", "recent_msg", "block"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_Query_RecentMsg_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 4}, []string{"ExocoreNetwork", "exocore", "oracle", "recent_msg", "block"}, "", runtime.AssumeColonVerbOpt(false)))
 
-	pattern_Query_RecentMsgAll_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"ExocoreNetwork", "exocore", "oracle", "recent_msg"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_Query_RecentMsgAll_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"ExocoreNetwork", "exocore", "oracle", "recent_msg"}, "", runtime.AssumeColonVerbOpt(false)))
 
-	pattern_Query_RecentParams_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 4}, []string{"ExocoreNetwork", "exocore", "oracle", "recent_params", "block"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_Query_RecentParams_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 4}, []string{"ExocoreNetwork", "exocore", "oracle", "recent_params", "block"}, "", runtime.AssumeColonVerbOpt(false)))
 
-	pattern_Query_RecentParamsAll_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"ExocoreNetwork", "exocore", "oracle", "recent_params"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_Query_RecentParamsAll_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"ExocoreNetwork", "exocore", "oracle", "recent_params"}, "", runtime.AssumeColonVerbOpt(false)))
 )
 
 var (

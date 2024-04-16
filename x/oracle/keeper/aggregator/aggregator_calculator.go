@@ -8,7 +8,7 @@ import (
 )
 
 type confirmedPrice struct {
-	sourceId  int32
+	sourceId  uint64
 	detId     string
 	price     *big.Int
 	timestamp string
@@ -103,7 +103,7 @@ func (r *roundPricesList) getOrNewRound(detId string, timestamp string) (round *
 // calculator used to get consensus on deterministic source based data from validator set reports of price
 type calculator struct {
 	//sourceId->{[]{roundId, []{price,power}, confirmed}}, confirmed value will be set in [0]
-	deterministicSource map[int32]*roundPricesList
+	deterministicSource map[uint64]*roundPricesList
 	validatorLength     int
 	totalPower          *big.Int
 }
@@ -116,7 +116,7 @@ func (c *calculator) newRoundPricesList() *roundPricesList {
 	}
 }
 
-func (c *calculator) getOrNewSourceId(sourceId int32) *roundPricesList {
+func (c *calculator) getOrNewSourceId(sourceId uint64) *roundPricesList {
 	rounds := c.deterministicSource[sourceId]
 	if rounds == nil {
 		rounds = c.newRoundPricesList()
@@ -158,7 +158,7 @@ func (c *calculator) fillPrice(pSources []*types.PriceWithSource, validator stri
 
 func newCalculator(validatorSetLength int, totalPower *big.Int) *calculator {
 	return &calculator{
-		deterministicSource: make(map[int32]*roundPricesList),
+		deterministicSource: make(map[uint64]*roundPricesList),
 		validatorLength:     validatorSetLength,
 		totalPower:          totalPower,
 	}

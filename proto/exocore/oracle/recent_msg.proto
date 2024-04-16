@@ -14,7 +14,7 @@ message RecentMsg {
 }
 
 message MsgItem{
-  int32 feeder_id = 2;
+  uint64 feeder_id = 2;
   repeated PriceWithSource p_sources = 3; 
   string validator = 4;
 }

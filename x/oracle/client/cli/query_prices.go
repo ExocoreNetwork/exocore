@@ -58,7 +58,7 @@ func CmdShowPrices() *cobra.Command {
 
 			queryClient := types.NewQueryClient(clientCtx)
 
-			argTokenID, err := cast.ToInt32E(args[0])
+			argTokenID, err := cast.ToUint64E(args[0])
 			if err != nil {
 				return err
 			}

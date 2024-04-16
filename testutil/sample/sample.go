@@ -11,3 +11,8 @@ func AccAddress() string {
 	addr := pk.Address()
 	return sdk.AccAddress(addr).String()
 }
+
+func ValAddress() string {
+	address, _ := sdk.AccAddressFromBech32(AccAddress())
+	return sdk.ValAddress(address).String()
+}

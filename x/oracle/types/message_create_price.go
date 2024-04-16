@@ -9,7 +9,7 @@ const TypeMsgCreatePrice = "create_price"
 
 var _ sdk.Msg = &MsgCreatePrice{}
 
-func NewMsgCreatePrice(creator string, feederID int32, prices []*PriceWithSource, basedBlock uint64, nonce int32) *MsgCreatePrice {
+func NewMsgCreatePrice(creator string, feederID uint64, prices []*PriceWithSource, basedBlock uint64, nonce int32) *MsgCreatePrice {
 	return &MsgCreatePrice{
 		Creator:    creator,
 		FeederId:   feederID,

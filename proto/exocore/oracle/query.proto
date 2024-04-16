@@ -87,7 +87,7 @@ message QueryParamsResponse {
 }
 
 message QueryGetPricesRequest {
-  int32 token_id = 1;
+  uint64 token_id = 1;
 }
 
 message QueryGetPricesResponse {

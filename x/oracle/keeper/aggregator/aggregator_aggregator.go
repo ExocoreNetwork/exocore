@@ -19,7 +19,7 @@ type reportPrice struct {
 	//final price, set to -1 as initial
 	price *big.Int
 	//sourceId->priceWithTimeAndRound
-	prices map[int32]*priceWithTimeAndRound
+	prices map[uint64]*priceWithTimeAndRound
 	power  *big.Int
 }
 
@@ -45,7 +45,7 @@ type aggregator struct {
 	//	totalPower string
 	//sourceId->roundId used to track the confirmed DS roundId
 	//updated by calculator, detId use string
-	dsPrices map[int32]string
+	dsPrices map[uint64]string
 }
 
 // fill price from validator submittion into aggregator, and calculation the voting power and check with the consensus status of deterministic soruce value to decide when to do the aggregation
@@ -55,7 +55,7 @@ func (agg *aggregator) fillPrice(pSources []*types.PriceWithSource, validator st
 	if report == nil {
 		report = &reportPrice{
 			validator: validator,
-			prices:    make(map[int32]*priceWithTimeAndRound),
+			prices:    make(map[uint64]*priceWithTimeAndRound),
 			power:     power,
 		}
 		agg.reports = append(agg.reports, report)
@@ -165,7 +165,7 @@ func newAggregator(validatorSetLength int, totalPower *big.Int) *aggregator {
 	return &aggregator{
 		reports:     make([]*reportPrice, 0, validatorSetLength),
 		reportPower: big.NewInt(0),
-		dsPrices:    make(map[int32]string),
+		dsPrices:    make(map[uint64]string),
 		totalPower:  totalPower,
 	}
 }

@@ -19,9 +19,9 @@ var _ = strconv.IntSize
 func createNPrices(keeper *keeper.Keeper, ctx sdk.Context, n int) []types.Prices {
 	items := make([]types.Prices, n)
 	for i := range items {
-		items[i].TokenId = int32(i + 1)
+		items[i].TokenId = uint64(i + 1)
 		items[i] = types.Prices{
-			TokenId:     int32(i + 1),
+			TokenId:     uint64(i + 1),
 			NextRoundId: 2,
 			PriceList: []*types.PriceWithTimeAndRound{
 				testdata.PTR1,

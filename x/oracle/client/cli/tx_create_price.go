@@ -26,11 +26,11 @@ func CmdCreatePrice() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			feederID, err := strconv.ParseInt(args[0], 10, 32)
+			feederID, err := strconv.ParseUint(args[0], 10, 64)
 			if err != nil || feederID < 1 {
 				return errors.New("feederID invalid")
 			}
-			basedBlock, err := strconv.ParseInt(args[1], 10, 64)
+			basedBlock, err := strconv.ParseUint(args[1], 10, 64)
 			if err != nil || basedBlock < 1 {
 				return errors.New("basedBlock invalid")
 			}
@@ -38,7 +38,7 @@ func CmdCreatePrice() *cobra.Command {
 			if err != nil || nonce < 1 || nonce > 3 {
 				return errors.New("nonce invalid")
 			}
-			sourceID, err := strconv.ParseInt(args[3], 10, 32)
+			sourceID, err := strconv.ParseUint(args[3], 10, 64)
 			if err != nil || sourceID < 1 {
 				return errors.New("sourceID invalid")
 			}
@@ -49,7 +49,7 @@ func CmdCreatePrice() *cobra.Command {
 			//prices := make([]*types.PriceWithSource, 0, 1)
 			prices := []*types.PriceWithSource{
 				{
-					SourceId: int32(sourceID),
+					SourceId: sourceID,
 					Prices:   make([]*types.PriceWithTimeAndDetId, 0, 1),
 					Desc:     "",
 				},
@@ -75,9 +75,9 @@ func CmdCreatePrice() *cobra.Command {
 
 			msg := types.NewMsgCreatePrice(
 				clientCtx.GetFromAddress().String(),
-				int32(feederID),
+				feederID,
 				prices,
-				uint64(basedBlock),
+				basedBlock,
 				int32(nonce),
 			)
 			if err := msg.ValidateBasic(); err != nil {

@@ -58,7 +58,7 @@ func (w *worker) getPrice() (string, int32) {
 }
 
 // newWorker new a instance for a tokenFeeder's specific round
-func newWorker(feederId int32, agc *AggregatorContext) *worker {
+func newWorker(feederId uint64, agc *AggregatorContext) *worker {
 	return &worker{
 		f:       newFilter(common.MaxNonce, common.MaxDetId),
 		c:       newCalculator(len(agc.validatorsPower), agc.totalPower),

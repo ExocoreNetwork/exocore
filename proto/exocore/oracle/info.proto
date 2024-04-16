@@ -13,7 +13,7 @@ message Chain{
 message Token{
   string name = 1;
   //id refer to chainList's index
-  int32 chain_id = 2;
+  uint64 chain_id = 2;
   //if any, like erc20 tokens
   string contract_address = 3;
   int32 decimal = 4;
@@ -24,10 +24,10 @@ message Token{
 message Endpoint{
  //url int refer to TokenList.ID, 0 reprents default for all (as fall back)
  //key refer to tokenID, 1->"https://chainlink.../eth"
- map<int32,string> offchain = 1; 
+ map<uint64,string> offchain = 1; 
  //url  int refer to TokenList.ID, 0 reprents default for all (as fall back)
  //key refer to tokenID, 1->"eth://0xabc...def"
- map<int32,string> onchain = 2; 
+ map<uint64,string> onchain = 2; 
 
 }
 

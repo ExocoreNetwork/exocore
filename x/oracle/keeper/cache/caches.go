@@ -13,7 +13,7 @@ var zeroBig = big.NewInt(0)
 type CacheItemV map[string]*big.Int
 type CacheItemP *common.Params
 type CacheItemM struct {
-	FeederId  int32
+	FeederId  uint64
 	PSources  []*types.PriceWithSource
 	Validator string
 }
@@ -24,7 +24,7 @@ type Cache struct {
 	params     *cacheParams
 }
 
-type cacheMsgs map[int32][]*CacheItemM
+type cacheMsgs map[uint64][]*CacheItemM
 
 // used to track validator change
 type cacheValidator struct {
@@ -193,7 +193,7 @@ func (c *Cache) GetCache(i any) bool {
 func (c *Cache) CommitCache(ctx sdk.Context, reset bool, k common.KeeperOracle) {
 	if len(c.msg) > 0 {
 		c.msg.commit(ctx, k)
-		c.msg = make(map[int32][]*CacheItemM)
+		c.msg = make(map[uint64][]*CacheItemM)
 	}
 
 	if c.validators.update {
@@ -216,7 +216,7 @@ func (c *Cache) ResetCaches() {
 
 func NewCache() *Cache {
 	return &Cache{
-		msg: make(map[int32][]*CacheItemM),
+		msg: make(map[uint64][]*CacheItemM),
 		validators: &cacheValidator{
 			validators: make(map[string]*big.Int),
 		},

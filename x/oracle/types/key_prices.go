@@ -15,12 +15,11 @@ var PricesNextRoundIdKey = []byte("nextRoundId/")
 // PricesKey returns the store key to retrieve a Prices from the index fields
 // this key is actually used as the prefix for kvsotre, TODO: refactor to PriceTokenPrefix
 func PricesKey(
-	tokenId int32,
+	tokenId uint64,
 ) []byte {
 	var key []byte
 
-	tokenIdBytes := make([]byte, 4)
-	binary.BigEndian.PutUint32(tokenIdBytes, uint32(tokenId))
+	tokenIdBytes := Uint64Bytes(tokenId)
 	key = append(key, tokenIdBytes...)
 	key = append(key, []byte("/")...)
 

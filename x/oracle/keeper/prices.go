@@ -21,7 +21,7 @@ func (k Keeper) SetPrices(ctx sdk.Context, prices types.Prices) {
 // GetPrices returns a prices from its index
 func (k Keeper) GetPrices(
 	ctx sdk.Context,
-	tokenId int32,
+	tokenId uint64,
 
 ) (val types.Prices, found bool) {
 	store := k.getPriceTRStore(ctx, tokenId)
@@ -48,7 +48,7 @@ func (k Keeper) GetPrices(
 // RemovePrices removes a prices from the store
 func (k Keeper) RemovePrices(
 	ctx sdk.Context,
-	tokenId int32,
+	tokenId uint64,
 
 ) {
 	store := k.getPriceTRStore(ctx, tokenId)
@@ -70,7 +70,7 @@ func (k Keeper) GetAllPrices(ctx sdk.Context) (list []types.Prices) {
 	//	prevTokenId := uint32(0)
 	//	var val types.PriceWithTimeAndRound
 	var price types.Prices
-	prevTokenId := int32(0)
+	prevTokenId := uint64(0)
 	for ; iterator.Valid(); iterator.Next() {
 		tokenId, _, nextRoundId := parseKey(iterator.Key())
 		if prevTokenId == 0 {
@@ -95,7 +95,7 @@ func (k Keeper) GetAllPrices(ctx sdk.Context) (list []types.Prices) {
 	return
 }
 
-func (k Keeper) AppendPriceTR(ctx sdk.Context, tokenId int32, priceTR types.PriceWithTimeAndRound) {
+func (k Keeper) AppendPriceTR(ctx sdk.Context, tokenId uint64, priceTR types.PriceWithTimeAndRound) {
 	nextRoundId := k.GetNextRoundId(ctx, tokenId)
 	if nextRoundId != priceTR.RoundId {
 		return
@@ -108,7 +108,7 @@ func (k Keeper) AppendPriceTR(ctx sdk.Context, tokenId int32, priceTR types.Pric
 
 //func(k Keeper) SetPriceTR(ctx sdk.Context, tokenId int32, priceTR){}
 
-func (k Keeper) GetPriceTRRoundId(ctx sdk.Context, tokenId int32, roundId uint64) (price types.PriceWithTimeAndRound, found bool) {
+func (k Keeper) GetPriceTRRoundId(ctx sdk.Context, tokenId uint64, roundId uint64) (price types.PriceWithTimeAndRound, found bool) {
 	store := k.getPriceTRStore(ctx, tokenId)
 
 	b := store.Get(types.PricesRoundKey(roundId))
@@ -121,7 +121,7 @@ func (k Keeper) GetPriceTRRoundId(ctx sdk.Context, tokenId int32, roundId uint64
 	return
 }
 
-func (k Keeper) GetPriceTRLatest(ctx sdk.Context, tokenId int32) (price types.PriceWithTimeAndRound, found bool) {
+func (k Keeper) GetPriceTRLatest(ctx sdk.Context, tokenId uint64) (price types.PriceWithTimeAndRound, found bool) {
 	//	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefix(types.PricesKeyPrefix))
 	//	store = prefix.NewStore(store, types.PricesKey(tokenId))
 	store := k.getPriceTRStore(ctx, tokenId)
@@ -139,7 +139,7 @@ func (k Keeper) GetPriceTRLatest(ctx sdk.Context, tokenId int32) (price types.Pr
 	return
 }
 
-func (k Keeper) GetNextRoundId(ctx sdk.Context, tokenId int32) (nextRoundId uint64) {
+func (k Keeper) GetNextRoundId(ctx sdk.Context, tokenId uint64) (nextRoundId uint64) {
 	nextRoundId = 1
 	//store := getPriceTRStore(ctx, k.storeKey, tokenId)
 	store := k.getPriceTRStore(ctx, tokenId)
@@ -152,7 +152,7 @@ func (k Keeper) GetNextRoundId(ctx sdk.Context, tokenId int32) (nextRoundId uint
 	return
 }
 
-func (k Keeper) IncreaseNextRoundId(ctx sdk.Context, tokenId int32) {
+func (k Keeper) IncreaseNextRoundId(ctx sdk.Context, tokenId uint64) {
 	//store := getPriceTRStore(ctx, k.storeKey, tokenId)
 	store := k.getPriceTRStore(ctx, tokenId)
 	nextRoundId := k.GetNextRoundId(ctx, tokenId)
@@ -166,17 +166,17 @@ func (k Keeper) IncreaseNextRoundId(ctx sdk.Context, tokenId int32) {
 //	return prefix.NewStore(store, types.PricesKey(tokenId))
 //}
 
-func (k Keeper) getPriceTRStore(ctx sdk.Context, tokenId int32) prefix.Store {
+func (k Keeper) getPriceTRStore(ctx sdk.Context, tokenId uint64) prefix.Store {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefix(types.PricesKeyPrefix))
 	return prefix.NewStore(store, types.PricesKey(tokenId))
 }
 
-func parseKey(key []byte) (tokenId int32, roundId uint64, nextRoundId bool) {
-	tokenId = int32(binary.BigEndian.Uint32(key[:4]))
-	if len(key) == 17 {
+func parseKey(key []byte) (tokenId uint64, roundId uint64, nextRoundId bool) {
+	tokenId = binary.BigEndian.Uint64(key[:8])
+	if len(key) == 21 {
 		nextRoundId = true
 		return
 	}
-	roundId = binary.BigEndian.Uint64(key[5:13])
+	roundId = binary.BigEndian.Uint64(key[9:17])
 	return
 }

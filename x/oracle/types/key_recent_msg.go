@@ -15,8 +15,7 @@ func RecentMsgKey(
 ) []byte {
 	var key []byte
 
-	blockBytes := make([]byte, 8)
-	binary.BigEndian.PutUint64(blockBytes, block)
+	blockBytes := Uint64Bytes(block)
 	key = append(key, blockBytes...)
 	key = append(key, []byte("/")...)
 

@@ -12,7 +12,7 @@ import (
 )
 
 type priceItemKV struct {
-	TokenId int32
+	TokenId uint64
 	PriceTR types.PriceWithTimeAndRound
 }
 
@@ -35,10 +35,10 @@ type AggregatorContext struct {
 	totalPower      *big.Int
 
 	//each active feederToken has a roundInfo
-	rounds map[int32]*roundInfo
+	rounds map[uint64]*roundInfo
 
 	//each roundInfo has a worker
-	aggregators map[int32]*worker
+	aggregators map[uint64]*worker
 }
 
 func (agc *AggregatorContext) sanityCheck(msg *types.MsgCreatePrice) error {
@@ -152,7 +152,7 @@ func (agc *AggregatorContext) NewCreatePrice(ctx sdk.Context, msg *types.MsgCrea
 // including possible aggregation and state update
 // when validatorSet update, set force to true, to seal all alive round
 // returns: 1st successful sealed, need to be written to KVStore, 2nd: failed sealed tokenId, use previous price to write to KVStore
-func (agc *AggregatorContext) SealRound(ctx sdk.Context, force bool) (success []*priceItemKV, failed []int32) {
+func (agc *AggregatorContext) SealRound(ctx sdk.Context, force bool) (success []*priceItemKV, failed []uint64) {
 	//1. check validatorSet udpate
 	//TODO: if validatoSet has been updated in current block, just seal all active rounds and return
 	//1. for sealed worker, the KVStore has been updated
@@ -163,7 +163,7 @@ func (agc *AggregatorContext) SealRound(ctx sdk.Context, force bool) (success []
 			//but it's not always the same for other modes, switch modes
 			switch common.Mode {
 			case 1:
-				expired := feeder.EndBlock > 0 && ctx.BlockHeight() >= feeder.EndBlock
+				expired := feeder.EndBlock > 0 && uint64(ctx.BlockHeight()) >= feeder.EndBlock
 				outOfWindow := uint64(ctx.BlockHeight())-round.basedBlock >= uint64(common.MaxNonce)
 				if expired || outOfWindow || force {
 					failed = append(failed, feeder.TokenId)
@@ -189,10 +189,10 @@ func (agc *AggregatorContext) SealRound(ctx sdk.Context, force bool) (success []
 //
 //}
 
-func (agc *AggregatorContext) PrepareRound(ctx sdk.Context, block int64) {
+func (agc *AggregatorContext) PrepareRound(ctx sdk.Context, block uint64) {
 	//block>0 means recache initialization, all roundInfo is empty
 	if block == 0 {
-		block = ctx.BlockHeight()
+		block = uint64(ctx.BlockHeight())
 	}
 
 	for feederId, feeder := range agc.params.GetTokenFeeders() {
@@ -211,8 +211,8 @@ func (agc *AggregatorContext) PrepareRound(ctx sdk.Context, block int64) {
 		latestBasedblock := block - left
 		latestNextRoundId := feeder.StartRoundId + count
 
-		feederIdInt32 := int32(feederId)
-		round := agc.rounds[feederIdInt32]
+		feederIdUint64 := uint64(feederId)
+		round := agc.rounds[feederIdUint64]
 		if round == nil {
 			round = &roundInfo{
 				basedBlock:  uint64(latestBasedblock),
@@ -223,7 +223,7 @@ func (agc *AggregatorContext) PrepareRound(ctx sdk.Context, block int64) {
 			} else {
 				round.status = 1
 			}
-			agc.rounds[feederIdInt32] = round
+			agc.rounds[feederIdUint64] = round
 		} else {
 			//prepare a new round for exist roundInfo
 			if left == 0 {
@@ -231,7 +231,7 @@ func (agc *AggregatorContext) PrepareRound(ctx sdk.Context, block int64) {
 				round.nextRoundId = uint64(latestNextRoundId)
 				round.status = 1
 				//drop previous worker
-				agc.aggregators[feederIdInt32] = nil
+				agc.aggregators[feederIdUint64] = nil
 			} else if round.status == 1 && left >= common.MaxNonce {
 				//this shouldn't happen, if do sealround properly before prepareRound, basically for test only
 				round.status = 2
@@ -266,7 +266,7 @@ func NewAggregatorContext() *AggregatorContext {
 	return &AggregatorContext{
 		validatorsPower: make(map[string]*big.Int),
 		totalPower:      big.NewInt(0),
-		rounds:          make(map[int32]*roundInfo),
-		aggregators:     make(map[int32]*worker),
+		rounds:          make(map[uint64]*roundInfo),
+		aggregators:     make(map[uint64]*worker),
 	}
 }

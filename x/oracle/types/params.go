@@ -33,6 +33,7 @@ func DefaultParams() Params {
 			{Name: "Ethereum", Desc: "-"},
 		},
 		Tokens: []*Token{
+			{},
 			{
 				Name:            "ETH",
 				ChainId:         1,
@@ -55,7 +56,7 @@ func DefaultParams() Params {
 			{
 				Name: "Chainlink",
 				Entry: &Endpoint{
-					Offchain: map[int32]string{0: ""},
+					Offchain: map[uint64]string{0: ""},
 				},
 				Valid:         true,
 				Deterministic: true,
@@ -63,12 +64,10 @@ func DefaultParams() Params {
 		},
 		Rules: []*RuleWithSource{
 			//0 is reserved
-			{
-				SourceIds: []int32{-1},
-			},
+			{},
 			{
 				//all sources math
-				SourceIds: []int32{0},
+				SourceIds: []uint64{0},
 			},
 		},
 		TokenFeeders: []*TokenFeeder{
