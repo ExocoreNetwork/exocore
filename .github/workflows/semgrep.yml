@@ -10,6 +10,7 @@ on:
       - main
       - master
     paths:
+      # existing issues to be ignored unless this file changes
       - .github/workflows/semgrep.yml
   schedule:
     - cron: '0 0 * * 0'
