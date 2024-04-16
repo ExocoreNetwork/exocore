@@ -85,7 +85,6 @@ var _ = Describe("MsgCreatePrice", func() {
 		})
 
 		It("success on 3rd message", func() {
-
 			iRes := make([]*cache.CacheItemM, 0)
 			c.GetCache(&iRes)
 			Expect(iRes[0].Validator).Should(Equal(operator1.String()))

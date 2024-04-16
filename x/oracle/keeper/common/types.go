@@ -36,7 +36,7 @@ func (p Params) IsDeterministicSource(sourceId uint64) bool {
 
 func (p Params) IsValidSource(sourceId uint64) bool {
 	if sourceId == 0 {
-		//custom defined source
+		// custom defined source
 		return true
 	}
 	return p.Sources[sourceId].Valid
@@ -50,6 +50,7 @@ func (p Params) GetTokenFeeder(feederId uint64) *types.TokenFeeder {
 	}
 	return nil
 }
+
 func (p Params) GetTokenInfo(feederId uint64) *types.Token {
 	for k, v := range p.TokenFeeders {
 		if uint64(k) == feederId {
@@ -62,14 +63,14 @@ func (p Params) GetTokenInfo(feederId uint64) *types.Token {
 func (p Params) CheckRules(feederId uint64, prices []*types.PriceWithSource) (bool, error) {
 	feeder := p.TokenFeeders[feederId]
 	rule := p.Rules[feeder.RuleId]
-	//specified sources set, v1 use this rule to set `chainlink` as official source
+	// specified sources set, v1 use this rule to set `chainlink` as official source
 	if rule.SourceIds != nil && len(rule.SourceIds) > 0 {
 		if len(rule.SourceIds) != len(prices) {
 			return false, errors.New("count prices should match rule")
 		}
 		notFound := false
 		if rule.SourceIds[0] == 0 {
-			//match all sources listed
+			// match all sources listed
 			for sId, source := range p.Sources {
 				if sId == 0 {
 					continue
@@ -94,7 +95,7 @@ func (p Params) CheckRules(feederId uint64, prices []*types.PriceWithSource) (bo
 						break
 					}
 				}
-				//return false, errors.New("price source not match with rule")
+				// return false, errors.New("price source not match with rule")
 			}
 		}
 		if notFound {
@@ -102,8 +103,8 @@ func (p Params) CheckRules(feederId uint64, prices []*types.PriceWithSource) (bo
 		}
 	}
 
-	//TODO: check NOM
-	//return true if no rule set, we will accept any source
+	// TODO: check NOM
+	// return true if no rule set, we will accept any source
 	return true, nil
 }
 
@@ -154,9 +155,11 @@ type BigIntList []*big.Int
 func (b BigIntList) Len() int {
 	return len(b)
 }
+
 func (b BigIntList) Less(i, j int) bool {
 	return b[i].Cmp(b[j]) < 0
 }
+
 func (b BigIntList) Swap(i, j int) {
 	b[i], b[j] = b[j], b[i]
 }

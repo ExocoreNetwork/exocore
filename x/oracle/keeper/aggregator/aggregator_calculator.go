@@ -21,7 +21,7 @@ type priceAndPower struct {
 }
 
 // for a specific DS round, it could have multiple values provided by different validators(should not be true if there's no malicious validator)
-type roundPrices struct { //0 means NS
+type roundPrices struct { // 0 means NS
 	detId     string
 	prices    []*priceAndPower
 	price     *big.Int
@@ -62,7 +62,7 @@ func (r *roundPrices) updatePriceAndPower(pw *priceAndPower, totalPower *big.Int
 // each DS corresponding a roundPriceList to represent its multiple rounds(DS round) in one oracle-round
 type roundPricesList struct {
 	roundPricesList []*roundPrices
-	//each round can have at most roundPricesCount priceAndPower
+	// each round can have at most roundPricesCount priceAndPower
 	roundPricesCount int
 }
 
@@ -102,7 +102,7 @@ func (r *roundPricesList) getOrNewRound(detId string, timestamp string) (round *
 
 // calculator used to get consensus on deterministic source based data from validator set reports of price
 type calculator struct {
-	//sourceId->{[]{roundId, []{price,power}, confirmed}}, confirmed value will be set in [0]
+	// sourceId->{[]{roundId, []{price,power}, confirmed}}, confirmed value will be set in [0]
 	deterministicSource map[uint64]*roundPricesList
 	validatorLength     int
 	totalPower          *big.Int
@@ -111,7 +111,7 @@ type calculator struct {
 func (c *calculator) newRoundPricesList() *roundPricesList {
 	return &roundPricesList{
 		roundPricesList: make([]*roundPrices, 0, common.MaxDetId*c.validatorLength),
-		//for each DS-roundId, the count of prices provided is the number of validators at most
+		// for each DS-roundId, the count of prices provided is the number of validators at most
 		roundPricesCount: c.validatorLength,
 	}
 }
@@ -131,14 +131,14 @@ func (c *calculator) fillPrice(pSources []*types.PriceWithSource, validator stri
 	for _, pSource := range pSources {
 		rounds := c.getOrNewSourceId(pSource.SourceId)
 		if rounds.hasConfirmedDetId() {
-			//TODO: this skip is just for V1 to do fast calculation and release EndBlocker pressure, may lead to 'not latest detId' be chosen
+			// TODO: this skip is just for V1 to do fast calculation and release EndBlocker pressure, may lead to 'not latest detId' be chosen
 			break
 		}
 		for _, pDetId := range pSource.Prices {
 
 			round := rounds.getOrNewRound(pDetId.DetId, pDetId.Timestamp)
 			if round == nil {
-				//this sourceId has reach the limitation of different detId, or has confirmed
+				// this sourceId has reach the limitation of different detId, or has confirmed
 				continue
 			}
 
@@ -146,9 +146,9 @@ func (c *calculator) fillPrice(pSources []*types.PriceWithSource, validator stri
 
 			updated, confirmed := round.updatePriceAndPower(&priceAndPower{roundPrice, power}, c.totalPower)
 			if updated && confirmed {
-				//sourceId, detId, price
-				confirmedRounds = append(confirmedRounds, &confirmedPrice{pSource.SourceId, round.detId, round.price, round.timestamp}) //TODO: just in v1 with mode==1, we use asap, so we just ignore any further data from this DS, even higher detId may get to consensus, in this way, in most case, we can complete the calculation in the transaction execution process. Release the pressure in EndBlocker
-				//TODO: this may delay to current block finish
+				// sourceId, detId, price
+				confirmedRounds = append(confirmedRounds, &confirmedPrice{pSource.SourceId, round.detId, round.price, round.timestamp}) // TODO: just in v1 with mode==1, we use asap, so we just ignore any further data from this DS, even higher detId may get to consensus, in this way, in most case, we can complete the calculation in the transaction execution process. Release the pressure in EndBlocker
+				// TODO: this may delay to current block finish
 				break
 			}
 		}

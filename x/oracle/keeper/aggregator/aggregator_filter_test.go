@@ -88,7 +88,6 @@ func TestFilter(t *testing.T) {
 			ps1.Prices[0] = ptd5
 			l4c, _ = f.filtrate(msg)
 			So(l4c, ShouldBeNil)
-
 		})
 
 		Convey("add too many DetIds", func() {

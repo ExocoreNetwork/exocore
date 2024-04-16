@@ -63,10 +63,10 @@ func DefaultParams() Params {
 			},
 		},
 		Rules: []*RuleWithSource{
-			//0 is reserved
+			// 0 is reserved
 			{},
 			{
-				//all sources math
+				// all sources math
 				SourceIds: []uint64{0},
 			},
 		},

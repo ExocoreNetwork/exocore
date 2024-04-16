@@ -17,8 +17,8 @@ func TestCache(t *testing.T) {
 
 	//	ctrl := gomock.NewController(t)
 	//	defer ctrl.Finish()
-	//ko := common.NewMockKeeperOracle(ctrl)
-	//c.AddCache(CacheItemP(&pWrapped), ko)
+	// ko := common.NewMockKeeperOracle(ctrl)
+	// c.AddCache(CacheItemP(&pWrapped), ko)
 
 	Convey("test cache", t, func() {
 		Convey("add pramams item", func() {
@@ -42,11 +42,11 @@ func TestCache(t *testing.T) {
 			})
 			Convey("then update validatorPower item for this cache", func() {
 				validaotrPowers := map[string]*big.Int{
-					//add v5
+					// add v5
 					"v5": big.NewInt(123),
-					//remove v1
+					// remove v1
 					"v1": big.NewInt(0),
-					//update v2
+					// update v2
 					"v2": big.NewInt(199),
 				}
 				c.AddCache(CacheItemV(validaotrPowers))
@@ -74,7 +74,8 @@ func TestCache(t *testing.T) {
 				{
 					FeederId: 1,
 					PSources: []*types.PriceWithSource{
-						{SourceId: 1, Prices: []*types.PriceWithTimeAndDetId{{Price: "600000", Decimal: 1, Timestamp: "-", DetId: "4"}, {Price: "620000", Decimal: 1, Timestamp: "-", DetId: "3"}}}},
+						{SourceId: 1, Prices: []*types.PriceWithTimeAndDetId{{Price: "600000", Decimal: 1, Timestamp: "-", DetId: "4"}, {Price: "620000", Decimal: 1, Timestamp: "-", DetId: "3"}}},
+					},
 					Validator: "v1",
 				},
 				{

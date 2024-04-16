@@ -31,7 +31,6 @@ func (k Keeper) RecentMsgAll(goCtx context.Context, req *types.QueryAllRecentMsg
 		recentMsgs = append(recentMsgs, recentMsg)
 		return nil
 	})
-
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}

@@ -10,9 +10,9 @@ import (
 type filter struct {
 	maxNonce int
 	maxDetId int
-	//nonce start from 1
+	// nonce start from 1
 	validatorNonce map[string]*common.Set[int32]
-	//validator_sourceId -> roundID, NS use 0
+	// validator_sourceId -> roundID, NS use 0
 	validatorSource map[string]*common.Set[string]
 }
 
@@ -36,7 +36,7 @@ func (f *filter) newVSSet() *common.Set[string] {
 // add priceWithSource into calculator list and aggregator list depends on the source type(deterministic/non-deterministic)
 func (f *filter) addPSource(pSources []*types.PriceWithSource, validator string) (list4Calculator []*types.PriceWithSource, list4Aggregator []*types.PriceWithSource) {
 	for _, pSource := range pSources {
-		//check conflicts or duplicate data for the same roundId within the same source
+		// check conflicts or duplicate data for the same roundId within the same source
 		if len(pSource.Prices[0].DetId) > 0 {
 			k := validator + strconv.Itoa(int(pSource.SourceId))
 			detIds := f.validatorSource[k]
@@ -53,7 +53,7 @@ func (f *filter) addPSource(pSources []*types.PriceWithSource, validator string)
 
 			for _, pDetId := range pSource.Prices {
 				if ok := detIds.Add(pDetId.DetId); ok {
-					//deterministic id has not seen in filter and limitation of ids this souce has not reached
+					// deterministic id has not seen in filter and limitation of ids this souce has not reached
 					pSourceTmp.Prices = append(pSourceTmp.Prices, pDetId)
 				}
 			}
@@ -62,7 +62,7 @@ func (f *filter) addPSource(pSources []*types.PriceWithSource, validator string)
 				list4Aggregator = append(list4Aggregator, pSourceTmp)
 			}
 		} else {
-			//add non-deterministic pSource value into aggregator list
+			// add non-deterministic pSource value into aggregator list
 			list4Aggregator = append(list4Aggregator, pSource)
 		}
 	}

@@ -12,11 +12,11 @@ type worker struct {
 	sealed  bool
 	price   string
 	decimal int32
-	//mainly used for deterministic source data to check conflics and validation
+	// mainly used for deterministic source data to check conflics and validation
 	f *filter
-	//used to get to consensus on deterministic source's data
+	// used to get to consensus on deterministic source's data
 	c *calculator
-	//when enough data(exceeds threshold) collected, aggregate to conduct the final price
+	// when enough data(exceeds threshold) collected, aggregate to conduct the final price
 	a   *aggregator
 	ctx *AggregatorContext
 }

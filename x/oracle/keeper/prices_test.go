@@ -57,6 +57,7 @@ func TestPricesGet(t *testing.T) {
 	//		)
 	//	}
 }
+
 func TestPricesRemove(t *testing.T) {
 	keeper, ctx := keepertest.OracleKeeper(t)
 	items := createNPrices(keeper, ctx, 10)

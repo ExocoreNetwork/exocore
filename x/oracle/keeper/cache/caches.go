@@ -10,13 +10,15 @@ import (
 
 var zeroBig = big.NewInt(0)
 
-type CacheItemV map[string]*big.Int
-type CacheItemP *common.Params
-type CacheItemM struct {
-	FeederId  uint64
-	PSources  []*types.PriceWithSource
-	Validator string
-}
+type (
+	CacheItemV map[string]*big.Int
+	CacheItemP *common.Params
+	CacheItemM struct {
+		FeederId  uint64
+		PSources  []*types.PriceWithSource
+		Validator string
+	}
+)
 
 type Cache struct {
 	msg        cacheMsgs
@@ -114,8 +116,8 @@ func (c *cacheValidator) commit(ctx sdk.Context, k common.KeeperOracle) {
 }
 
 func (c *cacheParams) add(p *common.Params) {
-	//params' update is triggered when params is actually updated, so no need to do comparison here, just udpate and mark the flag
-	//TODO: add comparison check, that's something should be done for validation
+	// params' update is triggered when params is actually updated, so no need to do comparison here, just udpate and mark the flag
+	// TODO: add comparison check, that's something should be done for validation
 	c.params = p
 	c.update = true
 }
@@ -130,7 +132,7 @@ func (c *cacheParams) commit(ctx sdk.Context, k common.KeeperOracle) {
 		}
 		k.RemoveRecentParams(ctx, b)
 	}
-	//remove and append for KVStore
+	// remove and append for KVStore
 	k.SetIndexRecentParams(ctx, index)
 	index.Index = append(index.Index, block)
 	k.SetIndexRecentParams(ctx, index)

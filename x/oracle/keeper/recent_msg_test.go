@@ -39,6 +39,7 @@ func TestRecentMsgGet(t *testing.T) {
 		)
 	}
 }
+
 func TestRecentMsgRemove(t *testing.T) {
 	keeper, ctx := keepertest.OracleKeeper(t)
 	items := createNRecentMsg(keeper, ctx, 10)

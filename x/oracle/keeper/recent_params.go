@@ -19,7 +19,6 @@ func (k Keeper) SetRecentParams(ctx sdk.Context, recentParams types.RecentParams
 func (k Keeper) GetRecentParams(
 	ctx sdk.Context,
 	block uint64,
-
 ) (val types.RecentParams, found bool) {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefix(types.RecentParamsKeyPrefix))
 
@@ -38,7 +37,6 @@ func (k Keeper) GetRecentParams(
 func (k Keeper) RemoveRecentParams(
 	ctx sdk.Context,
 	block uint64,
-
 ) {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefix(types.RecentParamsKeyPrefix))
 	store.Delete(types.RecentParamsKey(

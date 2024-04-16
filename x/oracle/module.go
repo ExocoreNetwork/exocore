@@ -175,16 +175,16 @@ func (am AppModule) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.Val
 		}
 		validatorPowers := make(map[string]*big.Int)
 		cs.GetCache(cache.CacheItemV(validatorPowers))
-		//update validatorPowerList in aggregatorContext
+		// update validatorPowerList in aggregatorContext
 		agc.SetValidatorPowers(validatorPowers)
-		//TODO: seal all alive round since validatorSet changed here
+		// TODO: seal all alive round since validatorSet changed here
 		forceSeal = true
 		logger.Info("validator set changed, force seal all active rounds")
 	}
 
-	//TODO: for v1 use mode==1, just check the failed feeders
+	// TODO: for v1 use mode==1, just check the failed feeders
 	_, failed := agc.SealRound(ctx, forceSeal)
-	//append new round with previous price for fail-seal token
+	// append new round with previous price for fail-seal token
 	for _, tokenId := range failed {
 		event := sdk.NewEvent(
 			types.EventTypeCreatePrice,
@@ -215,7 +215,7 @@ func (am AppModule) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.Val
 		logger.Info(logInfo)
 		ctx.EventManager().EmitEvent(event)
 	}
-	//TODO: emit events for success sealed rounds(could ignore for v1)
+	// TODO: emit events for success sealed rounds(could ignore for v1)
 
 	logger.Info("prepare for next oracle round of each tokenFeeder")
 	agc.PrepareRound(ctx, 0)

@@ -59,7 +59,7 @@ func (suite *KeeperSuite) TestCreatePriceSingleBlock() {
 				{
 					Price:   testdata.PTD2.Price,
 					Decimal: 18,
-					//since timestamp is filled with realtime, so we use the value from result to fill the expected value here
+					// since timestamp is filled with realtime, so we use the value from result to fill the expected value here
 					Timestamp: prices.PriceList[1].Timestamp,
 					RoundId:   1,
 				},
@@ -67,7 +67,7 @@ func (suite *KeeperSuite) TestCreatePriceSingleBlock() {
 		}, prices)
 	}
 
-	//run the endblock to seal and prepare for next block
+	// run the endblock to seal and prepare for next block
 	suite.NextBlock()
 	require.EqualValues(suite.T(), 3, suite.Ctx.BlockHeight())
 	_, err := oServer(suite.Ctx, &types.MsgCreatePrice{
@@ -99,7 +99,7 @@ func (suite *KeeperSuite) TestCreatePriceTwoBlock() {
 	_, found := suite.App.OracleKeeper.GetPrices(suite.Ctx, 1)
 	require.Equal(suite.T(), false, found)
 	if suite.Equal(false, found) {
-		//run the endblock to seal and prepare for next block
+		// run the endblock to seal and prepare for next block
 		suite.NextBlock()
 		oServer(suite.Ctx, &types.MsgCreatePrice{
 			Creator:    suite.valAddr2.String(),
@@ -118,7 +118,7 @@ func (suite *KeeperSuite) TestCreatePriceTwoBlock() {
 					{
 						Price:   testdata.PTD1.Price,
 						Decimal: 18,
-						//since timestamp is filled with realtime, so we use the value from result to fill the expected value here
+						// since timestamp is filled with realtime, so we use the value from result to fill the expected value here
 						Timestamp: prices.PriceList[1].Timestamp,
 						RoundId:   1,
 					},

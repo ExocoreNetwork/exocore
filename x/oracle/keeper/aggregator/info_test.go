@@ -21,28 +21,28 @@ var (
 	pTD3  = newPTD("3", "15")
 	pTD2M = newPTD("2", "11")
 	pTD3M = newPTD("3", "19")
-	//1-10, 2-12
+	// 1-10, 2-12
 	pS1 = []*types.PriceWithSource{newPS(1, pTD1, pTD2)}
-	//2-12, 3-1
+	// 2-12, 3-1
 	pS2 = []*types.PriceWithSource{newPS(1, pTD3, pTD2)}
-	//1-10, 2-11(m)
+	// 1-10, 2-11(m)
 	pS3 = []*types.PriceWithSource{newPS(1, pTD1, pTD2M)}
-	//2-12, 3-19(m)
+	// 2-12, 3-19(m)
 	pS4 = []*types.PriceWithSource{newPS(1, pTD2, pTD3M)}
-	//1-10, 3-19(m)
+	// 1-10, 3-19(m)
 	pS5 = []*types.PriceWithSource{newPS(1, pTD1, pTD3M)}
 
 	pS6 = []*types.PriceWithSource{newPS(2, pTD1)}
 
-	//1-10, 2-12
+	// 1-10, 2-12
 	pS21 = []*types.PriceWithSource{newPS(1, pTD1, pTD2), newPS(2, pTD1, pTD3)}
-	//2-12, 3-15
+	// 2-12, 3-15
 	pS22 = []*types.PriceWithSource{newPS(1, pTD3, pTD2), newPS(2, pTD2, pTD3)}
-	//1-10, 2-11(m)
+	// 1-10, 2-11(m)
 	pS23 = []*types.PriceWithSource{newPS(1, pTD1, pTD2M), newPS(2, pTD2M, pTD1)}
-	//2-12, 3-19(m)
+	// 2-12, 3-19(m)
 	pS24 = []*types.PriceWithSource{newPS(1, pTD2, pTD3M), newPS(2, pTD3, pTD2M)}
-	//1-10, 3-19(m)
+	// 1-10, 3-19(m)
 	pS25 = []*types.PriceWithSource{newPS(1, pTD1, pTD3M), newPS(2, pTD2M, pTD3M)}
 )
 

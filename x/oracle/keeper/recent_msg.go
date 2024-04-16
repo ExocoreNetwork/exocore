@@ -19,7 +19,6 @@ func (k Keeper) SetRecentMsg(ctx sdk.Context, recentMsg types.RecentMsg) {
 func (k Keeper) GetRecentMsg(
 	ctx sdk.Context,
 	block uint64,
-
 ) (val types.RecentMsg, found bool) {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefix(types.RecentMsgKeyPrefix))
 
@@ -38,7 +37,6 @@ func (k Keeper) GetRecentMsg(
 func (k Keeper) RemoveRecentMsg(
 	ctx sdk.Context,
 	block uint64,
-
 ) {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefix(types.RecentMsgKeyPrefix))
 	store.Delete(types.RecentMsgKey(

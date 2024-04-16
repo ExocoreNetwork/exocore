@@ -31,7 +31,6 @@ func (k Keeper) RecentParamsAll(goCtx context.Context, req *types.QueryAllRecent
 		recentParamss = append(recentParamss, recentParams)
 		return nil
 	})
-
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}

@@ -39,6 +39,7 @@ func TestRecentParamsGet(t *testing.T) {
 		)
 	}
 }
+
 func TestRecentParamsRemove(t *testing.T) {
 	keeper, ctx := keepertest.OracleKeeper(t)
 	items := createNRecentParams(keeper, ctx, 10)
