@@ -78,7 +78,7 @@ func CmdCreatePrice() *cobra.Command {
 				int32(feederID),
 				prices,
 				uint64(basedBlock),
-				int32(basedBlock),
+				int32(nonce),
 			)
 			if err := msg.ValidateBasic(); err != nil {
 				return err
