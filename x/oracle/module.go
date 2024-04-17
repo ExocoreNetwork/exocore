@@ -182,7 +182,7 @@ func (am AppModule) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.Val
 	for _, tokenID := range failed {
 		event := sdk.NewEvent(
 			types.EventTypeCreatePrice,
-			sdk.NewAttribute(types.AttributeKeyTokenID, strconv.Itoa(int(tokenID))),
+			sdk.NewAttribute(types.AttributeKeyTokenID, strconv.FormatUint(tokenID, 10)),
 			sdk.NewAttribute(types.AttributeKeyPriceUpdated, types.AttributeValuePriceUpdatedFail),
 		)
 		logInfo := fmt.Sprintf("add new round with previous price under fail aggregation, tokenID:%d", tokenID)
@@ -192,7 +192,7 @@ func (am AppModule) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.Val
 			logger.Info("add new round with previous price under fail aggregation", "tokenID", tokenID, "roundID", pTR.RoundID)
 			logInfo += fmt.Sprintf(", roundID:%d, price:%s", pTR.RoundID, pTR.Price)
 			event.AppendAttributes(
-				sdk.NewAttribute(types.AttributeKeyRoundID, strconv.Itoa(int(pTR.RoundID))),
+				sdk.NewAttribute(types.AttributeKeyRoundID, strconv.FormatUint(pTR.RoundID, 10)),
 				sdk.NewAttribute(types.AttributeKeyFinalPrice, pTR.Price),
 			)
 		} else {
@@ -202,7 +202,7 @@ func (am AppModule) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.Val
 			})
 			logInfo += fmt.Sprintf(", roundID:%d, price:-", nextRoundID)
 			event.AppendAttributes(
-				sdk.NewAttribute(types.AttributeKeyRoundID, strconv.Itoa(int(nextRoundID))),
+				sdk.NewAttribute(types.AttributeKeyRoundID, strconv.FormatUint(nextRoundID, 10)),
 				sdk.NewAttribute(types.AttributeKeyFinalPrice, "-"),
 			)
 		}

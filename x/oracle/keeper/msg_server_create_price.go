@@ -22,8 +22,8 @@ func (ms msgServer) CreatePrice(goCtx context.Context, msg *types.MsgCreatePrice
 
 	ctx.EventManager().EmitEvent(sdk.NewEvent(
 		types.EventTypeCreatePrice,
-		sdk.NewAttribute(types.AttributeKeyFeederID, strconv.Itoa(int(msg.FeederID))),
-		sdk.NewAttribute(types.AttributeKeyBasedBlock, strconv.FormatInt(int64(msg.BasedBlock), 10)),
+		sdk.NewAttribute(types.AttributeKeyFeederID, strconv.FormatUint(msg.FeederID, 10)),
+		sdk.NewAttribute(types.AttributeKeyBasedBlock, strconv.FormatUint(msg.BasedBlock, 10)),
 		sdk.NewAttribute(types.AttributeKeyProposer, msg.Creator),
 	),
 	)
@@ -36,8 +36,8 @@ func (ms msgServer) CreatePrice(goCtx context.Context, msg *types.MsgCreatePrice
 
 			ctx.EventManager().EmitEvent(sdk.NewEvent(
 				types.EventTypeCreatePrice,
-				sdk.NewAttribute(types.AttributeKeyFeederID, strconv.Itoa(int(msg.FeederID))),
-				sdk.NewAttribute(types.AttributeKeyRoundID, strconv.FormatInt(int64(newItem.PriceTR.RoundID), 10)),
+				sdk.NewAttribute(types.AttributeKeyFeederID, strconv.FormatUint(msg.FeederID, 10)),
+				sdk.NewAttribute(types.AttributeKeyRoundID, strconv.FormatUint(newItem.PriceTR.RoundID, 10)),
 				sdk.NewAttribute(types.AttributeKeyFinalPrice, newItem.PriceTR.Price),
 				sdk.NewAttribute(types.AttributeKeyPriceUpdated, types.AttributeValuePriceUpdatedSuccess),
 			),
