@@ -62,7 +62,7 @@ func DefaultParams() Params {
 				Deterministic: true,
 			},
 		},
-		Rules: []*RuleWithSource{
+		Rules: []*RuleSource{
 			// 0 is reserved
 			{},
 			{

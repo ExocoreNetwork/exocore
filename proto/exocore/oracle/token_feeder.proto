@@ -16,7 +16,7 @@ message NOMSource{
 //specify data from which source is needed
 //rule_1: specified sources
 //rule_2: n out of total sources are required
-message RuleWithSource{
+message RuleSource{
   //refer to params.sourceList.ID, when length>0, ignore the other field, when 1st set to 0, means all valid sources, 
   // length==0->check next field:minimum
   repeated uint64 source_ids = 1 [(gogoproto.customname) = "SourceIDs"];  

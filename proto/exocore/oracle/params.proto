@@ -17,7 +17,7 @@ message Params {
   // sources info from where the price data would be fetched
   repeated Source sources = 3;
   // rules specified on how to decide the provided price source to be accept
-  repeated RuleWithSource rules = 4;
+  repeated RuleSource rules = 4;
   // each tokenFeeder represents an active token whose price being updated
   repeated TokenFeeder token_feeders = 5;
 }
