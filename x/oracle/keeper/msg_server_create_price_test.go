@@ -80,12 +80,12 @@ var _ = Describe("MsgCreatePrice", func() {
 
 			c = keeper.GetCaches()
 			pRes := &common.Params{}
-			c.GetCache(cache.CacheItemP(pRes))
+			c.GetCache(cache.ItemP(pRes))
 			Expect(*pRes).Should(BeEquivalentTo(types.DefaultParams()))
 		})
 
 		It("success on 3rd message", func() {
-			iRes := make([]*cache.CacheItemM, 0)
+			iRes := make([]*cache.ItemM, 0)
 			c.GetCache(&iRes)
 			Expect(iRes[0].Validator).Should(Equal(operator1.String()))
 

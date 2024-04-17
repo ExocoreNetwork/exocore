@@ -11,9 +11,9 @@ import (
 var zeroBig = big.NewInt(0)
 
 type (
-	CacheItemV map[string]*big.Int
-	CacheItemP *common.Params
-	CacheItemM struct {
+	ItemV map[string]*big.Int
+	ItemP *common.Params
+	ItemM struct {
 		FeederID  uint64
 		PSources  []*types.PriceWithSource
 		Validator string
@@ -26,7 +26,7 @@ type Cache struct {
 	params     *cacheParams
 }
 
-type cacheMsgs map[uint64][]*CacheItemM
+type cacheMsgs map[uint64][]*ItemM
 
 // used to track validator change
 type cacheValidator struct {
@@ -40,7 +40,7 @@ type cacheParams struct {
 	update bool
 }
 
-func (c cacheMsgs) add(item *CacheItemM) {
+func (c cacheMsgs) add(item *ItemM) {
 	if ims, ok := c[item.FeederID]; ok {
 		for _, im := range ims {
 			if im.Validator == item.Validator {
@@ -60,7 +60,7 @@ func (c cacheMsgs) add(item *CacheItemM) {
 	c[item.FeederID] = append(c[item.FeederID], item)
 }
 
-func (c cacheMsgs) remove(item *CacheItemM) {
+func (c cacheMsgs) remove(item *ItemM) {
 	delete(c, item.FeederID)
 }
 
@@ -142,12 +142,12 @@ func (c *cacheParams) commit(ctx sdk.Context, k common.KeeperOracle) {
 // func (c *Cache) AddCache(i any, k common.KeeperOracle) {
 func (c *Cache) AddCache(i any) {
 	switch item := i.(type) {
-	case *CacheItemM:
+	case *ItemM:
 		c.msg.add(item)
 		//	case *params:
-	case CacheItemP:
+	case ItemP:
 		c.params.add(item)
-	case CacheItemV:
+	case ItemV:
 		c.validators.add(item)
 	default:
 		panic("no other types are support")
@@ -156,30 +156,30 @@ func (c *Cache) AddCache(i any) {
 
 // func (c *Cache) RemoveCache(i any, k common.KeeperOracle) {
 func (c *Cache) RemoveCache(i any) {
-	if item, isItemM := i.(*CacheItemM); isItemM {
+	if item, isItemM := i.(*ItemM); isItemM {
 		c.msg.remove(item)
 	}
 }
 
 func (c *Cache) GetCache(i any) bool {
 	switch item := i.(type) {
-	case CacheItemV:
+	case ItemV:
 		if item == nil {
 			return false
 		}
 		for addr, power := range c.validators.validators {
 			item[addr] = power
 		}
-	case CacheItemP:
+	case ItemP:
 		if item == nil {
 			return false
 		}
 		*item = *(c.params.params)
-	case *[]*CacheItemM:
+	case *[]*ItemM:
 		if item == nil {
 			return false
 		}
-		tmp := make([]*CacheItemM, 0, len(c.msg))
+		tmp := make([]*ItemM, 0, len(c.msg))
 		for _, msgs := range c.msg {
 			tmp = append(tmp, msgs...)
 		}
@@ -193,7 +193,7 @@ func (c *Cache) GetCache(i any) bool {
 func (c *Cache) CommitCache(ctx sdk.Context, reset bool, k common.KeeperOracle) {
 	if len(c.msg) > 0 {
 		c.msg.commit(ctx, k)
-		c.msg = make(map[uint64][]*CacheItemM)
+		c.msg = make(map[uint64][]*ItemM)
 	}
 
 	if c.validators.update {
@@ -216,7 +216,7 @@ func (c *Cache) ResetCaches() {
 
 func NewCache() *Cache {
 	return &Cache{
-		msg: make(map[uint64][]*CacheItemM),
+		msg: make(map[uint64][]*ItemM),
 		validators: &cacheValidator{
 			validators: make(map[string]*big.Int),
 		},

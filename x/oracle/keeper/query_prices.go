@@ -9,7 +9,7 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-//func (k Keeper) PricesAll(goCtx context.Context, req *types.QueryAllPricesRequest) (*types.QueryAllPricesResponse, error) {
+// func (k Keeper) PricesAll(goCtx context.Context, req *types.QueryAllPricesRequest) (*types.QueryAllPricesResponse, error) {
 //	if req == nil {
 //		return nil, status.Error(codes.InvalidArgument, "invalid request")
 //	}

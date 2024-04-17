@@ -70,7 +70,7 @@ func recacheAggregatorContext(ctx sdk.Context, agc *aggregator.AggregatorContext
 	}
 
 	// reset validators
-	c.AddCache(cache.CacheItemV(validatorPowers))
+	c.AddCache(cache.ItemV(validatorPowers))
 
 	recentMsgs := k.GetAllRecentMsgAsMap(ctx)
 	var pTmp common.Params
@@ -102,7 +102,7 @@ func recacheAggregatorContext(ctx sdk.Context, agc *aggregator.AggregatorContext
 	}
 
 	// fill params cache
-	c.AddCache(cache.CacheItemP(&pTmp))
+	c.AddCache(cache.ItemP(&pTmp))
 
 	agc.PrepareRound(ctx, uint64(to))
 
@@ -115,7 +115,7 @@ func initAggregatorContext(ctx sdk.Context, agc *aggregator.AggregatorContext, k
 	pTmp := common.Params(p)
 	agc.SetParams(&pTmp)
 	// set params cache
-	c.AddCache(cache.CacheItemP(&pTmp))
+	c.AddCache(cache.ItemP(&pTmp))
 
 	totalPower := big.NewInt(0)
 	validatorPowers := make(map[string]*big.Int)
@@ -132,7 +132,7 @@ func initAggregatorContext(ctx sdk.Context, agc *aggregator.AggregatorContext, k
 	agc.SetValidatorPowers(validatorPowers)
 
 	// set validatorPower cache
-	c.AddCache(cache.CacheItemV(validatorPowers))
+	c.AddCache(cache.ItemV(validatorPowers))
 
 	agc.PrepareRound(ctx, uint64(ctx.BlockHeight()-1))
 }

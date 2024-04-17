@@ -67,7 +67,7 @@ type roundPricesList struct {
 }
 
 // to tell if any round of this DS has reached consensus/confirmed
-func (r *roundPricesList) hasConfirmedDetId() bool {
+func (r *roundPricesList) hasConfirmedDetID() bool {
 	for _, round := range r.roundPricesList {
 		if round.price != nil {
 			return true
@@ -127,10 +127,10 @@ func (c *calculator) getOrNewSourceID(sourceID uint64) *roundPricesList {
 
 // fillPrice called upon new MsgCreatPrice arrived, to trigger the calculation to get to consensus on the same roundID_of_deterministic_source
 // v1 use mode1, TODO: switch modes
-func (c *calculator) fillPrice(pSources []*types.PriceWithSource, validator string, power *big.Int) (confirmedRounds []*confirmedPrice) {
+func (c *calculator) fillPrice(pSources []*types.PriceWithSource, _ string, power *big.Int) (confirmedRounds []*confirmedPrice) {
 	for _, pSource := range pSources {
 		rounds := c.getOrNewSourceID(pSource.SourceID)
-		if rounds.hasConfirmedDetId() {
+		if rounds.hasConfirmedDetID() {
 			// TODO: this skip is just for V1 to do fast calculation and release EndBlocker pressure, may lead to 'not latest detId' be chosen
 			break
 		}

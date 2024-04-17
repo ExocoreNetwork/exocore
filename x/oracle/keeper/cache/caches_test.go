@@ -22,9 +22,9 @@ func TestCache(t *testing.T) {
 
 	Convey("test cache", t, func() {
 		Convey("add pramams item", func() {
-			c.AddCache(CacheItemP(&pWrapped))
+			c.AddCache(ItemP(&pWrapped))
 			pReturn := &common.Params{}
-			c.GetCache(CacheItemP(pReturn))
+			c.GetCache(ItemP(pReturn))
 			So(*pReturn, ShouldResemble, pWrapped)
 		})
 
@@ -34,10 +34,10 @@ func TestCache(t *testing.T) {
 				"v2": big.NewInt(109),
 				"v3": big.NewInt(119),
 			}
-			c.AddCache(CacheItemV(validatorPowers))
+			c.AddCache(ItemV(validatorPowers))
 			vpReturn := make(map[string]*big.Int)
 			Convey("for empty cache", func() {
-				c.GetCache(CacheItemV(vpReturn))
+				c.GetCache(ItemV(vpReturn))
 				So(vpReturn, ShouldResemble, validatorPowers)
 			})
 			Convey("then update validatorPower item for this cache", func() {
@@ -49,8 +49,8 @@ func TestCache(t *testing.T) {
 					// update v2
 					"v2": big.NewInt(199),
 				}
-				c.AddCache(CacheItemV(validaotrPowers))
-				c.GetCache(CacheItemV(vpReturn))
+				c.AddCache(ItemV(validaotrPowers))
+				c.GetCache(ItemV(vpReturn))
 				So(vpReturn, ShouldNotContainKey, "v1")
 				So(vpReturn, ShouldContainKey, "v5")
 				So(vpReturn["v2"], ShouldResemble, big.NewInt(199))
@@ -58,7 +58,7 @@ func TestCache(t *testing.T) {
 		})
 
 		Convey("add msg item", func() {
-			msgItems := []*CacheItemM{
+			msgItems := []*ItemM{
 				{
 					FeederID: 1,
 					PSources: []*types.PriceWithSource{
@@ -85,7 +85,7 @@ func TestCache(t *testing.T) {
 				},
 			}
 			c.AddCache(msgItems[0])
-			msgItemsReturn := make([]*CacheItemM, 0, 3)
+			msgItemsReturn := make([]*ItemM, 0, 3)
 			Convey("add single item", func() {
 				c.GetCache(&msgItemsReturn)
 				So(msgItemsReturn, ShouldContain, msgItems[0])

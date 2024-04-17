@@ -9,7 +9,7 @@ const (
 	PricesKeyPrefix = "Prices/value/"
 )
 
-// PricesNextRoundIdKey is the key set for each tokenId storeKV to store the next round id
+// PricesNextRoundIDKey is the key set for each tokenId storeKV to store the next round id
 var PricesNextRoundIDKey = []byte("nextRoundID/")
 
 // PricesKey returns the store key to retrieve a Prices from the index fields

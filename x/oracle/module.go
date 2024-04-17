@@ -154,14 +154,6 @@ func (am AppModule) BeginBlock(_ sdk.Context, _ abci.RequestBeginBlock) {}
 
 // EndBlock contains the logic that is automatically triggered at the end of each block
 func (am AppModule) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.ValidatorUpdate {
-	//TODO:
-	//1. check validator update
-	//if {validatorSetUpdate} -> update roundInfo(seal all active)
-	//check roundInfo -> seal {success, fail}
-	//{params} -> prepareRoundInfo
-	//sealRounds() -> prepareRounds()
-	//	am.keeper.GetCaches().CommitCache(ctx, true, am.keeper)
-	//TODO: udpate the validatorset first
 	cs := keeper.GetCaches()
 	validatorUpdates := am.keeper.GetValidatorUpdates(ctx)
 	forceSeal := false
@@ -176,7 +168,7 @@ func (am AppModule) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.Val
 			validatorList[validator.OperatorAddress] = big.NewInt(vu.Power)
 		}
 		validatorPowers := make(map[string]*big.Int)
-		cs.GetCache(cache.CacheItemV(validatorPowers))
+		cs.GetCache(cache.ItemV(validatorPowers))
 		// update validatorPowerList in aggregatorContext
 		agc.SetValidatorPowers(validatorPowers)
 		// TODO: seal all alive round since validatorSet changed here

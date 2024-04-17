@@ -107,7 +107,7 @@ func (agc *AggregatorContext) checkMsg(msg *types.MsgCreatePrice) error {
 	return nil
 }
 
-func (agc *AggregatorContext) FillPrice(msg *types.MsgCreatePrice) (*priceItemKV, *cache.CacheItemM, error) {
+func (agc *AggregatorContext) FillPrice(msg *types.MsgCreatePrice) (*priceItemKV, *cache.ItemM, error) {
 	feederWorker := agc.aggregators[msg.FeederID]
 	// worker initialzed here reduce workload for Endblocker
 	if feederWorker == nil {
@@ -129,9 +129,9 @@ func (agc *AggregatorContext) FillPrice(msg *types.MsgCreatePrice) (*priceItemKV
 				// TODO: check the format
 				Timestamp: time.Now().String(),
 				RoundID:   agc.rounds[msg.FeederID].nextRoundID,
-			}}, &cache.CacheItemM{FeederID: msg.FeederID}, nil
+			}}, &cache.ItemM{FeederID: msg.FeederID}, nil
 		}
-		return nil, &cache.CacheItemM{FeederID: msg.FeederID, PSources: listFilled, Validator: msg.Creator}, nil
+		return nil, &cache.ItemM{FeederID: msg.FeederID, PSources: listFilled, Validator: msg.Creator}, nil
 	}
 
 	// return nil, nil, errors.New("no valid price proposal to add for aggregation")
@@ -140,7 +140,7 @@ func (agc *AggregatorContext) FillPrice(msg *types.MsgCreatePrice) (*priceItemKV
 
 // NewCreatePrice receives msgCreatePrice message, and goes process: filter->aggregator, filter->calculator->aggregator
 // non-deterministic data will goes directly into aggregator, and deterministic data will goes into calculator first to get consensus on the deterministic id.
-func (agc *AggregatorContext) NewCreatePrice(ctx sdk.Context, msg *types.MsgCreatePrice) (*priceItemKV, *cache.CacheItemM, error) {
+func (agc *AggregatorContext) NewCreatePrice(ctx sdk.Context, msg *types.MsgCreatePrice) (*priceItemKV, *cache.ItemM, error) {
 	if err := agc.checkMsg(msg); err != nil {
 		return nil, nil, types.ErrInvalidMsg.Wrap(err.Error())
 	}
@@ -175,6 +175,8 @@ func (agc *AggregatorContext) SealRound(ctx sdk.Context, force bool) (success []
 						agc.aggregators[feederID] = nil
 					}
 				}
+			default:
+				ctx.Logger().Info("mode other than 1 is not support now")
 			}
 		}
 		// all status: 1->2, remove its aggregator
