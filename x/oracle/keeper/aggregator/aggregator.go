@@ -11,7 +11,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-type priceItemKV struct {
+type PriceItemKV struct {
 	TokenID uint64
 	PriceTR types.PriceWithTimeAndRound
 }
@@ -27,6 +27,7 @@ type roundInfo struct {
 }
 
 // AggregatorContext keeps memory cache for state params, validatorset, and updatedthese values as they updated on chain. And it keeps the information to track all tokenFeeders' status and data collection
+// nolint
 type AggregatorContext struct {
 	params *common.Params
 
@@ -107,7 +108,7 @@ func (agc *AggregatorContext) checkMsg(msg *types.MsgCreatePrice) error {
 	return nil
 }
 
-func (agc *AggregatorContext) FillPrice(msg *types.MsgCreatePrice) (*priceItemKV, *cache.ItemM, error) {
+func (agc *AggregatorContext) FillPrice(msg *types.MsgCreatePrice) (*PriceItemKV, *cache.ItemM, error) {
 	feederWorker := agc.aggregators[msg.FeederID]
 	// worker initialzed here reduce workload for Endblocker
 	if feederWorker == nil {
@@ -123,7 +124,7 @@ func (agc *AggregatorContext) FillPrice(msg *types.MsgCreatePrice) (*priceItemKV
 		if finalPrice := feederWorker.aggregate(); finalPrice != nil {
 			agc.rounds[msg.FeederID].status = 2
 			feederWorker.seal()
-			return &priceItemKV{agc.params.GetTokenFeeder(msg.FeederID).TokenID, types.PriceWithTimeAndRound{
+			return &PriceItemKV{agc.params.GetTokenFeeder(msg.FeederID).TokenID, types.PriceWithTimeAndRound{
 				Price:   finalPrice.String(),
 				Decimal: agc.params.GetTokenInfo(msg.FeederID).Decimal,
 				// TODO: check the format
@@ -140,7 +141,7 @@ func (agc *AggregatorContext) FillPrice(msg *types.MsgCreatePrice) (*priceItemKV
 
 // NewCreatePrice receives msgCreatePrice message, and goes process: filter->aggregator, filter->calculator->aggregator
 // non-deterministic data will goes directly into aggregator, and deterministic data will goes into calculator first to get consensus on the deterministic id.
-func (agc *AggregatorContext) NewCreatePrice(_ sdk.Context, msg *types.MsgCreatePrice) (*priceItemKV, *cache.ItemM, error) {
+func (agc *AggregatorContext) NewCreatePrice(_ sdk.Context, msg *types.MsgCreatePrice) (*PriceItemKV, *cache.ItemM, error) {
 	if err := agc.checkMsg(msg); err != nil {
 		return nil, nil, types.ErrInvalidMsg.Wrap(err.Error())
 	}
@@ -152,7 +153,7 @@ func (agc *AggregatorContext) NewCreatePrice(_ sdk.Context, msg *types.MsgCreate
 // including possible aggregation and state update
 // when validatorSet update, set force to true, to seal all alive round
 // returns: 1st successful sealed, need to be written to KVStore, 2nd: failed sealed tokenID, use previous price to write to KVStore
-func (agc *AggregatorContext) SealRound(ctx sdk.Context, force bool) (success []*priceItemKV, failed []uint64) {
+func (agc *AggregatorContext) SealRound(ctx sdk.Context, force bool) (success []*PriceItemKV, failed []uint64) {
 	// 1. check validatorSet udpate
 	// TODO: if validatoSet has been updated in current block, just seal all active rounds and return
 	// 1. for sealed worker, the KVStore has been updated
