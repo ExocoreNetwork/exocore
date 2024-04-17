@@ -32,8 +32,8 @@ func (p Precompile) GetClientChains(
 			)
 		}
 		// #nosec G701 // already checked
-		convId := uint16(id)
-		ids = append(ids, convId)
+		convID := uint16(id)
+		ids = append(ids, convID)
 	}
 	return method.Outputs.Pack(true, ids)
 }
