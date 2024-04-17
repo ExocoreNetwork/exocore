@@ -2,27 +2,34 @@ syntax = "proto3";
 
 package exocore.oracle;
 
-import "gogoproto/gogo.proto";
+import "exocore/oracle/index_recent_msg.proto";
+import "exocore/oracle/index_recent_params.proto";
 import "exocore/oracle/params.proto";
 import "exocore/oracle/prices.proto";
-import "exocore/oracle/validator_update_block.proto";
-import "exocore/oracle/index_recent_params.proto";
-import "exocore/oracle/index_recent_msg.proto";
 import "exocore/oracle/recent_msg.proto";
 import "exocore/oracle/recent_params.proto";
+import "exocore/oracle/validator_update_block.proto";
+import "gogoproto/gogo.proto";
 
 option go_package = "github.com/ExocoreNetwork/exocore/x/oracle/types";
 
 // GenesisState defines the oracle module's genesis state.
 message GenesisState {
-           Params params     = 1 [(gogoproto.nullable) = false];
+  // module params
+  Params params     = 1 [(gogoproto.nullable) = false];
+  // prices of all tokens
   repeated Prices prices_list = 2 [(gogoproto.nullable) = false];
   
   //TODO: userDefinedTokenFeeder
-           ValidatorUpdateBlock validator_update_block = 4;
-           IndexRecentParams    index_recent_params    = 5;
-           IndexRecentMsg       index_recent_msg       = 6;
+  // latest block on which the validator set be updated
+  ValidatorUpdateBlock validator_update_block = 4;
+  // index for the cached recent params
+  IndexRecentParams    index_recent_params    = 5;
+  // index for the cached recent messages
+  IndexRecentMsg       index_recent_msg       = 6;
+  // cached recent messages
   repeated RecentMsg            recent_msg_list        = 7 [(gogoproto.nullable) = false];
+  // cached recent params
   repeated RecentParams         recent_params_list     = 8 [(gogoproto.nullable) = false];
 }
 

@@ -3,6 +3,8 @@ package exocore.oracle;
 
 option go_package = "github.com/ExocoreNetwork/exocore/x/oracle/types";
 
+// index for the cached recent params
 message IndexRecentParams {
-	repeated uint64 index = 1;  
+  // index list
+  repeated uint64 index = 1;  
 }

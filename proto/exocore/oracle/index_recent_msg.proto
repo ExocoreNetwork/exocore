@@ -3,6 +3,8 @@ package exocore.oracle;
 
 option go_package = "github.com/ExocoreNetwork/exocore/x/oracle/types";
 
+// index for the cached recent messages
 message IndexRecentMsg {
+  // index list
   repeated uint64 index = 1;
 }
