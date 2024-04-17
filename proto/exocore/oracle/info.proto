@@ -1,6 +1,8 @@
 syntax = "proto3";
 package exocore.oracle;
 
+import "gogoproto/gogo.proto";
+
 option go_package = "github.com/ExocoreNetwork/exocore/x/oracle/types";
 
 message Chain{
@@ -13,7 +15,7 @@ message Chain{
 message Token{
   string name = 1;
   //id refer to chainList's index
-  uint64 chain_id = 2;
+  uint64 chain_id = 2 [(gogoproto.customname) = "ChainID"];
   //if any, like erc20 tokens
   string contract_address = 3;
   int32 decimal = 4;

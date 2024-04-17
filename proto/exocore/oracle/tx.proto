@@ -20,7 +20,7 @@ service Msg {
 message MsgCreatePrice {
   string creator = 1 [(cosmos_proto.scalar) = "cosmos.ValidatorAddressString"];
   //refer to id from Params.TokenFeeders, 0 is reserved, invalid to use
-  uint64 feeder_id = 2;
+  uint64 feeder_id = 2 [(gogoproto.customname) = "FeederID"];
   repeated PriceWithSource prices = 3;
   //on which block commit does this message be built on
   uint64 based_block = 4;

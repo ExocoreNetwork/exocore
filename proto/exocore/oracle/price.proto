@@ -2,6 +2,8 @@ syntax = "proto3";
 
 package exocore.oracle;
 
+import "gogoproto/gogo.proto";
+
 option go_package = "github.com/ExocoreNetwork/exocore/x/oracle/types";
 
 //token price with timestamp fetched from source
@@ -10,12 +12,12 @@ message PriceWithTimeAndDetId {
 	string price = 1;
 	int32 decimal = 2;
 	string timestamp = 3;
-	string det_id = 4;
+	string det_id = 4 [(gogoproto.customname) = "DetID"];
 }
 
 message PriceWithSource{
 	//refer to id from Params.SourceList, where this price fetched from, 0 is reserved for custom usage
-	uint64 source_id = 1;
+	uint64 source_id = 1 [(gogoproto.customname) = "SourceID"];
 	//if source is deteministic like chainlink with roundID, set this value with which returned from source
 	//up to 3 values in case of the async of network, to give more time for oracle nodes(validators) get into consensus
 	//eg.with deterministic source, this array will contian 3 continuous values up to latest
@@ -29,5 +31,5 @@ message PriceWithTimeAndRound {
 	string price = 1;
 	int32 decimal = 2;
 	string timestamp = 3;
-	uint64 round_id = 4;
+	uint64 round_id = 4 [(gogoproto.customname) = "RoundID"];
 }
