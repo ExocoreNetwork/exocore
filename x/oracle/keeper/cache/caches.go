@@ -14,7 +14,7 @@ type (
 	CacheItemV map[string]*big.Int
 	CacheItemP *common.Params
 	CacheItemM struct {
-		FeederId  uint64
+		FeederID  uint64
 		PSources  []*types.PriceWithSource
 		Validator string
 	}
@@ -41,12 +41,12 @@ type cacheParams struct {
 }
 
 func (c cacheMsgs) add(item *CacheItemM) {
-	if ims, ok := c[item.FeederId]; ok {
+	if ims, ok := c[item.FeederID]; ok {
 		for _, im := range ims {
 			if im.Validator == item.Validator {
 				for _, p := range im.PSources {
 					for _, pInput := range item.PSources {
-						if p.SourceId == pInput.SourceId {
+						if p.SourceID == pInput.SourceID {
 							p.Prices = append(p.Prices, pInput.Prices...)
 							return
 						}
@@ -57,11 +57,11 @@ func (c cacheMsgs) add(item *CacheItemM) {
 			}
 		}
 	}
-	c[item.FeederId] = append(c[item.FeederId], item)
+	c[item.FeederID] = append(c[item.FeederID], item)
 }
 
 func (c cacheMsgs) remove(item *CacheItemM) {
-	delete(c, item.FeederId)
+	delete(c, item.FeederID)
 }
 
 func (c cacheMsgs) commit(ctx sdk.Context, k common.KeeperOracle) {
@@ -73,7 +73,7 @@ func (c cacheMsgs) commit(ctx sdk.Context, k common.KeeperOracle) {
 	for _, msgs4Feeder := range c {
 		for _, msg := range msgs4Feeder {
 			recentMsgs.Msgs = append(recentMsgs.Msgs, &types.MsgItem{
-				FeederId:  msg.FeederId,
+				FeederID:  msg.FeederID,
 				PSources:  msg.PSources,
 				Validator: msg.Validator,
 			})

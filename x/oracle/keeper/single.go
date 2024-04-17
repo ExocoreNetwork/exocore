@@ -93,7 +93,7 @@ func recacheAggregatorContext(ctx sdk.Context, agc *aggregator.AggregatorContext
 				//nolint
 				agc.FillPrice(&types.MsgCreatePrice{
 					Creator:  msg.Validator,
-					FeederId: msg.FeederId,
+					FeederID: msg.FeederID,
 					Prices:   msg.PSources,
 				})
 			}

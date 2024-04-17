@@ -18,7 +18,7 @@ func TestFilter(t *testing.T) {
 		ptd6 := newPTD("6", "603000")
 
 		ps1 := &types.PriceWithSource{
-			SourceId: 1,
+			SourceID: 1,
 			Prices: []*types.PriceWithTimeAndDetId{
 				ptd1,
 				ptd2,
@@ -28,7 +28,7 @@ func TestFilter(t *testing.T) {
 		ps := []*types.PriceWithSource{ps1}
 		msg := &types.MsgCreatePrice{
 			Creator:    "v1",
-			FeederId:   1,
+			FeederID:   1,
 			Prices:     ps,
 			BasedBlock: 10,
 			Nonce:      1,

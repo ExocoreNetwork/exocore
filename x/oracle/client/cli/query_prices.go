@@ -64,7 +64,7 @@ func CmdShowPrices() *cobra.Command {
 			}
 
 			params := &types.QueryGetPricesRequest{
-				TokenId: argTokenID,
+				TokenID: argTokenID,
 			}
 
 			res, err := queryClient.Prices(cmd.Context(), params)

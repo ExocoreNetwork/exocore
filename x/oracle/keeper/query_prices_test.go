@@ -30,21 +30,21 @@ func TestPricesQuerySingle(t *testing.T) {
 		{
 			desc: "First",
 			request: &types.QueryGetPricesRequest{
-				TokenId: msgs[0].TokenId,
+				TokenID: msgs[0].TokenID,
 			},
 			response: &types.QueryGetPricesResponse{Prices: msgs[0]},
 		},
 		{
 			desc: "Second",
 			request: &types.QueryGetPricesRequest{
-				TokenId: msgs[1].TokenId,
+				TokenID: msgs[1].TokenID,
 			},
 			response: &types.QueryGetPricesResponse{Prices: msgs[1]},
 		},
 		{
 			desc: "KeyNotFound",
 			request: &types.QueryGetPricesRequest{
-				TokenId: 100000,
+				TokenID: 100000,
 			},
 			err: status.Error(codes.NotFound, "not found"),
 		},

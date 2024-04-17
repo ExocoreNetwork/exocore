@@ -60,27 +60,27 @@ func TestCache(t *testing.T) {
 		Convey("add msg item", func() {
 			msgItems := []*CacheItemM{
 				{
-					FeederId: 1,
+					FeederID: 1,
 					PSources: []*types.PriceWithSource{
 						{
-							SourceId: 1,
+							SourceID: 1,
 							Prices: []*types.PriceWithTimeAndDetId{
-								{Price: "600000", Decimal: 1, Timestamp: "-", DetId: "1"}, {Price: "620000", Decimal: 1, Timestamp: "-", DetId: "2"},
+								{Price: "600000", Decimal: 1, Timestamp: "-", DetID: "1"}, {Price: "620000", Decimal: 1, Timestamp: "-", DetID: "2"},
 							},
 						},
 					},
 					Validator: "v1",
 				},
 				{
-					FeederId: 1,
+					FeederID: 1,
 					PSources: []*types.PriceWithSource{
-						{SourceId: 1, Prices: []*types.PriceWithTimeAndDetId{{Price: "600000", Decimal: 1, Timestamp: "-", DetId: "4"}, {Price: "620000", Decimal: 1, Timestamp: "-", DetId: "3"}}},
+						{SourceID: 1, Prices: []*types.PriceWithTimeAndDetId{{Price: "600000", Decimal: 1, Timestamp: "-", DetID: "4"}, {Price: "620000", Decimal: 1, Timestamp: "-", DetID: "3"}}},
 					},
 					Validator: "v1",
 				},
 				{
-					FeederId:  2,
-					PSources:  []*types.PriceWithSource{{SourceId: 1, Prices: []*types.PriceWithTimeAndDetId{{Price: "30000", Decimal: 1, Timestamp: "-", DetId: "4"}, {Price: "32000", Decimal: 1, Timestamp: "-", DetId: "3"}}}},
+					FeederID:  2,
+					PSources:  []*types.PriceWithSource{{SourceID: 1, Prices: []*types.PriceWithTimeAndDetId{{Price: "30000", Decimal: 1, Timestamp: "-", DetID: "4"}, {Price: "32000", Decimal: 1, Timestamp: "-", DetID: "3"}}}},
 					Validator: "v2",
 				},
 			}

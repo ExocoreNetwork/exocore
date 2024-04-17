@@ -16,34 +16,34 @@ func TestGenesis(t *testing.T) {
 
 		PricesList: []types.Prices{
 			{
-				TokenId: 1,
+				TokenID: 1,
 				PriceList: []*types.PriceWithTimeAndRound{
 					{
 						Price:     "100",
 						Decimal:   1,
 						Timestamp: "-",
-						RoundId:   1,
+						RoundID:   1,
 					},
 				},
-				NextRoundId: 2,
+				NextRoundID: 2,
 			},
 			{
-				TokenId: 2,
+				TokenID: 2,
 				PriceList: []*types.PriceWithTimeAndRound{
 					{
 						Price:     "109",
 						Decimal:   1,
 						Timestamp: "-",
-						RoundId:   1,
+						RoundID:   1,
 					},
 					{
 						Price:     "119",
 						Decimal:   1,
 						Timestamp: "-",
-						RoundId:   2,
+						RoundID:   2,
 					},
 				},
-				NextRoundId: 3,
+				NextRoundID: 3,
 			},
 		},
 		ValidatorUpdateBlock: &types.ValidatorUpdateBlock{},

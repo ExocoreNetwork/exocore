@@ -72,7 +72,7 @@ var _ = Describe("MsgCreatePrice", func() {
 		BeforeEach(func() {
 			ks.ms.CreatePrice(ks.ctx, &types.MsgCreatePrice{
 				Creator:    operator1.String(),
-				FeederId:   1,
+				FeederID:   1,
 				Prices:     testdata.PS1,
 				BasedBlock: 1,
 				Nonce:      1,
@@ -91,7 +91,7 @@ var _ = Describe("MsgCreatePrice", func() {
 
 			ks.ms.CreatePrice(ks.ctx, &types.MsgCreatePrice{
 				Creator:    operator2.String(),
-				FeederId:   1,
+				FeederID:   1,
 				Prices:     testdata.PS2,
 				BasedBlock: 1,
 				Nonce:      1,
@@ -103,7 +103,7 @@ var _ = Describe("MsgCreatePrice", func() {
 
 			ks.ms.CreatePrice(ks.ctx, &types.MsgCreatePrice{
 				Creator:    operator3.String(),
-				FeederId:   1,
+				FeederID:   1,
 				Prices:     testdata.PS4,
 				BasedBlock: 1,
 				Nonce:      1,
@@ -113,14 +113,14 @@ var _ = Describe("MsgCreatePrice", func() {
 			Expect(len(iRes)).Should(Equal(0))
 			prices := ks.k.GetAllPrices(sdk.UnwrapSDKContext(ks.ctx))
 			Expect(prices[0]).Should(BeEquivalentTo(types.Prices{
-				TokenId:     1,
-				NextRoundId: 2,
+				TokenID:     1,
+				NextRoundID: 2,
 				PriceList: []*types.PriceWithTimeAndRound{
 					{
 						Price:     testdata.PTD2.Price,
 						Decimal:   testdata.PTD2.Decimal,
 						Timestamp: prices[0].PriceList[0].Timestamp,
-						RoundId:   1,
+						RoundID:   1,
 					},
 				},
 			}))

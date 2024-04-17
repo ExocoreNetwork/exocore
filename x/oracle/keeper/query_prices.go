@@ -19,7 +19,7 @@ import (
 //
 //	store := ctx.KVStore(k.storeKey)
 //	pricesStore := prefix.NewStore(store, types.KeyPrefix(types.PricesKeyPrefix))
-//	pricesTokenStore := prefix.NewStore(pricesStore, types.PricesKey(tokenId))
+//	pricesTokenStore := prefix.NewStore(pricesStore, types.PricesKey(tokenID))
 //
 //	pageRes, err := query.Paginate(pricesTokenStore, req.Pagination, func(key []byte, value []byte) error {
 //		var prices types.Prices
@@ -46,7 +46,7 @@ func (k Keeper) Prices(goCtx context.Context, req *types.QueryGetPricesRequest) 
 
 	val, found := k.GetPrices(
 		ctx,
-		req.TokenId,
+		req.TokenID,
 	)
 	if !found {
 		return nil, status.Error(codes.NotFound, "not found")

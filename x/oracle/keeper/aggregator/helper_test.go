@@ -2,18 +2,18 @@ package aggregator
 
 import "github.com/ExocoreNetwork/exocore/x/oracle/types"
 
-func newPTD(detId, price string) *types.PriceWithTimeAndDetId {
+func newPTD(detID, price string) *types.PriceWithTimeAndDetId {
 	return &types.PriceWithTimeAndDetId{
 		Price:     price,
 		Decimal:   1,
 		Timestamp: "-",
-		DetId:     detId,
+		DetID:     detID,
 	}
 }
 
-func newPS(sourceId uint64, prices ...*types.PriceWithTimeAndDetId) *types.PriceWithSource {
+func newPS(sourceID uint64, prices ...*types.PriceWithTimeAndDetId) *types.PriceWithSource {
 	return &types.PriceWithSource{
-		SourceId: sourceId,
+		SourceID: sourceID,
 		Prices:   prices,
 	}
 }

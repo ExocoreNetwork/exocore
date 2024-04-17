@@ -12,7 +12,7 @@ import (
 )
 
 type priceItemKV struct {
-	TokenId uint64
+	TokenID uint64
 	PriceTR types.PriceWithTimeAndRound
 }
 
@@ -20,7 +20,7 @@ type roundInfo struct {
 	// this round of price will start from block basedBlock+1, the basedBlock served as a trigger to notify validators to submit prices
 	basedBlock uint64
 	// next round id of the price oracle service, price with thie id will be record on block basedBlock+1 if all prices submitted by validators(for v1, validators serve as oracle nodes) get to consensus immedately
-	nextRoundId uint64
+	nextRoundID uint64
 	// indicate if this round is open for collecting prices or closed in either condition that success with a consensused price or not
 	// 1: open, 2: closed
 	status int32
@@ -62,22 +62,22 @@ func (agc *AggregatorContext) sanityCheck(msg *types.MsgCreatePrice) error {
 	}
 
 	for _, pSource := range msg.Prices {
-		if pSource.Prices == nil || len(pSource.Prices) == 0 || len(pSource.Prices) > common.MaxDetId || !agc.params.IsValidSource(pSource.SourceId) {
+		if pSource.Prices == nil || len(pSource.Prices) == 0 || len(pSource.Prices) > common.MaxDetID || !agc.params.IsValidSource(pSource.SourceID) {
 			return errors.New("source should be valid and provide at least one price")
 		}
 		// check with params is coressponding source is deteministic
-		if agc.params.IsDeterministicSource(pSource.SourceId) {
+		if agc.params.IsDeterministicSource(pSource.SourceID) {
 			for _, pDetID := range pSource.Prices {
 				// TODO: verify the format of DetId is correct, since this is string, and we will make consensus with validator's power, so it's ok not to verify the format
 				// just make sure the DetId won't mess up with NS's placeholder id, the limitation of maximum count one validator can submit will be check by filter
-				if len(pDetID.DetId) == 0 {
+				if len(pDetID.DetID) == 0 {
 					// deterministic must have specified deterministicId
 					return errors.New("ds should have roundid")
 				}
 				// DS's price value will go through consensus process, so it's safe to skip the check here
 			}
 			// sanity check: NS submit only one price with detId==""
-		} else if len(pSource.Prices) > 1 || len(pSource.Prices[0].DetId) > 0 {
+		} else if len(pSource.Prices) > 1 || len(pSource.Prices[0].DetID) > 0 {
 			return errors.New("ns should not have roundid")
 		}
 	}
@@ -90,7 +90,7 @@ func (agc *AggregatorContext) checkMsg(msg *types.MsgCreatePrice) error {
 	}
 
 	// check feeder is active
-	feederContext := agc.rounds[msg.FeederId]
+	feederContext := agc.rounds[msg.FeederID]
 	if feederContext == nil || feederContext.status != 1 {
 		// feederId does not exist or not alive
 		return errors.New("context not exist or not available")
@@ -101,18 +101,18 @@ func (agc *AggregatorContext) checkMsg(msg *types.MsgCreatePrice) error {
 	}
 
 	// check sources rule matches
-	if ok, err := agc.params.CheckRules(msg.FeederId, msg.Prices); !ok {
+	if ok, err := agc.params.CheckRules(msg.FeederID, msg.Prices); !ok {
 		return err
 	}
 	return nil
 }
 
 func (agc *AggregatorContext) FillPrice(msg *types.MsgCreatePrice) (*priceItemKV, *cache.CacheItemM, error) {
-	feederWorker := agc.aggregators[msg.FeederId]
+	feederWorker := agc.aggregators[msg.FeederID]
 	// worker initialzed here reduce workload for Endblocker
 	if feederWorker == nil {
-		feederWorker = newWorker(msg.FeederId, agc)
-		agc.aggregators[msg.FeederId] = feederWorker
+		feederWorker = newWorker(msg.FeederID, agc)
+		agc.aggregators[msg.FeederID] = feederWorker
 	}
 
 	if feederWorker.sealed {
@@ -121,17 +121,17 @@ func (agc *AggregatorContext) FillPrice(msg *types.MsgCreatePrice) (*priceItemKV
 
 	if listFilled := feederWorker.do(msg); listFilled != nil {
 		if finalPrice := feederWorker.aggregate(); finalPrice != nil {
-			agc.rounds[msg.FeederId].status = 2
+			agc.rounds[msg.FeederID].status = 2
 			feederWorker.seal()
-			return &priceItemKV{agc.params.GetTokenFeeder(msg.FeederId).TokenId, types.PriceWithTimeAndRound{
+			return &priceItemKV{agc.params.GetTokenFeeder(msg.FeederID).TokenID, types.PriceWithTimeAndRound{
 				Price:   finalPrice.String(),
-				Decimal: agc.params.GetTokenInfo(msg.FeederId).Decimal,
+				Decimal: agc.params.GetTokenInfo(msg.FeederID).Decimal,
 				// TODO: check the format
 				Timestamp: time.Now().String(),
-				RoundId:   agc.rounds[msg.FeederId].nextRoundId,
-			}}, &cache.CacheItemM{FeederId: msg.FeederId}, nil
+				RoundID:   agc.rounds[msg.FeederID].nextRoundID,
+			}}, &cache.CacheItemM{FeederID: msg.FeederID}, nil
 		}
-		return nil, &cache.CacheItemM{FeederId: msg.FeederId, PSources: listFilled, Validator: msg.Creator}, nil
+		return nil, &cache.CacheItemM{FeederID: msg.FeederID, PSources: listFilled, Validator: msg.Creator}, nil
 	}
 
 	// return nil, nil, errors.New("no valid price proposal to add for aggregation")
@@ -151,14 +151,14 @@ func (agc *AggregatorContext) NewCreatePrice(ctx sdk.Context, msg *types.MsgCrea
 // executed at EndBlock stage, seall all success or expired roundInfo
 // including possible aggregation and state update
 // when validatorSet update, set force to true, to seal all alive round
-// returns: 1st successful sealed, need to be written to KVStore, 2nd: failed sealed tokenId, use previous price to write to KVStore
+// returns: 1st successful sealed, need to be written to KVStore, 2nd: failed sealed tokenID, use previous price to write to KVStore
 func (agc *AggregatorContext) SealRound(ctx sdk.Context, force bool) (success []*priceItemKV, failed []uint64) {
 	// 1. check validatorSet udpate
 	// TODO: if validatoSet has been updated in current block, just seal all active rounds and return
 	// 1. for sealed worker, the KVStore has been updated
-	for feederId, round := range agc.rounds {
+	for feederID, round := range agc.rounds {
 		if round.status == 1 {
-			feeder := agc.params.GetTokenFeeder(feederId)
+			feeder := agc.params.GetTokenFeeder(feederID)
 			// TODO: for mode=1, we don't do aggregate() here, since if it donesn't success in the transaction execution stage, it won't success here
 			// but it's not always the same for other modes, switch modes
 			switch common.Mode {
@@ -166,20 +166,20 @@ func (agc *AggregatorContext) SealRound(ctx sdk.Context, force bool) (success []
 				expired := feeder.EndBlock > 0 && uint64(ctx.BlockHeight()) >= feeder.EndBlock
 				outOfWindow := uint64(ctx.BlockHeight())-round.basedBlock >= uint64(common.MaxNonce)
 				if expired || outOfWindow || force {
-					failed = append(failed, feeder.TokenId)
+					failed = append(failed, feeder.TokenID)
 					if expired {
-						delete(agc.rounds, feederId)
-						delete(agc.aggregators, feederId)
+						delete(agc.rounds, feederID)
+						delete(agc.aggregators, feederID)
 					} else {
 						round.status = 2
-						agc.aggregators[feederId] = nil
+						agc.aggregators[feederID] = nil
 					}
 				}
 			}
 		}
 		// all status: 1->2, remove its aggregator
-		if agc.aggregators[feederId] != nil && agc.aggregators[feederId].sealed {
-			agc.aggregators[feederId] = nil
+		if agc.aggregators[feederID] != nil && agc.aggregators[feederID].sealed {
+			agc.aggregators[feederID] = nil
 		}
 	}
 	return success, failed
@@ -191,8 +191,8 @@ func (agc *AggregatorContext) PrepareRound(ctx sdk.Context, block uint64) {
 		block = uint64(ctx.BlockHeight())
 	}
 
-	for feederId, feeder := range agc.params.GetTokenFeeders() {
-		if feederId == 0 {
+	for feederID, feeder := range agc.params.GetTokenFeeders() {
+		if feederID == 0 {
 			continue
 		}
 		if (feeder.EndBlock > 0 && feeder.EndBlock <= block) || feeder.StartBaseBlock > block {
@@ -204,14 +204,14 @@ func (agc *AggregatorContext) PrepareRound(ctx sdk.Context, block uint64) {
 		left := delta % feeder.Interval
 		count := delta / feeder.Interval
 		latestBasedblock := block - left
-		latestNextRoundID := feeder.StartRoundId + count
+		latestNextRoundID := feeder.StartRoundID + count
 
-		feederIDUint64 := uint64(feederId)
+		feederIDUint64 := uint64(feederID)
 		round := agc.rounds[feederIDUint64]
 		if round == nil {
 			round = &roundInfo{
 				basedBlock:  latestBasedblock,
-				nextRoundId: latestNextRoundID,
+				nextRoundID: latestNextRoundID,
 			}
 			if left >= common.MaxNonce {
 				round.status = 2
@@ -223,7 +223,7 @@ func (agc *AggregatorContext) PrepareRound(ctx sdk.Context, block uint64) {
 			// prepare a new round for exist roundInfo
 			if left == 0 {
 				round.basedBlock = latestBasedblock
-				round.nextRoundId = latestNextRoundID
+				round.nextRoundID = latestNextRoundID
 				round.status = 1
 				// drop previous worker
 				agc.aggregators[feederIDUint64] = nil

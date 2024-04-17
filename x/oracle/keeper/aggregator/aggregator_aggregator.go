@@ -11,7 +11,7 @@ type priceWithTimeAndRound struct {
 	price      *big.Int
 	decimal    int32
 	timestamp  string
-	detRoundId string // roundId from source if exists
+	detRoundID string // roundId from source if exists
 }
 
 type reportPrice struct {
@@ -63,9 +63,9 @@ func (agg *aggregator) fillPrice(pSources []*types.PriceWithSource, validator st
 	}
 
 	for _, pSource := range pSources {
-		if len(pSource.Prices[0].DetId) == 0 {
+		if len(pSource.Prices[0].DetID) == 0 {
 			// this is an NS price report, price will just be updated instead of append
-			if pTR := report.prices[pSource.SourceId]; pTR == nil {
+			if pTR := report.prices[pSource.SourceID]; pTR == nil {
 				pTmp := pSource.Prices[0]
 				priceBigInt, _ := (&big.Int{}).SetString(pTmp.Price, 10)
 				pTR = &priceWithTimeAndRound{
@@ -74,13 +74,13 @@ func (agg *aggregator) fillPrice(pSources []*types.PriceWithSource, validator st
 					timestamp: pTmp.Timestamp,
 					//			detRoundId: p.DetId,
 				}
-				report.prices[pSource.SourceId] = pTR
+				report.prices[pSource.SourceID] = pTR
 			} else {
 				pTR.price, _ = (&big.Int{}).SetString(pSource.Prices[0].Price, 10)
 			}
 		} else {
 			// this is an DS price report
-			if pTR := report.prices[pSource.SourceId]; pTR == nil {
+			if pTR := report.prices[pSource.SourceID]; pTR == nil {
 				pTmp := pSource.Prices[0]
 				pTR = &priceWithTimeAndRound{
 					// price:     nil,
@@ -88,16 +88,16 @@ func (agg *aggregator) fillPrice(pSources []*types.PriceWithSource, validator st
 					//	timestamp: "",
 					// detRoundId: "",
 				}
-				if len(agg.dsPrices[pSource.SourceId]) > 0 {
+				if len(agg.dsPrices[pSource.SourceID]) > 0 {
 					for _, reportTmp := range agg.reports {
-						if priceTmp := reportTmp.prices[pSource.SourceId]; priceTmp != nil && priceTmp.price != nil {
+						if priceTmp := reportTmp.prices[pSource.SourceID]; priceTmp != nil && priceTmp.price != nil {
 							pTR.price = new(big.Int).Set(priceTmp.price)
-							pTR.detRoundId = priceTmp.detRoundId
+							pTR.detRoundID = priceTmp.detRoundID
 							pTR.timestamp = priceTmp.timestamp
 						}
 					}
 				}
-				report.prices[pSource.SourceId] = pTR
+				report.prices[pSource.SourceID] = pTR
 			}
 			// skip if this DS's slot exists, DS's value only updated by calculator
 		}
@@ -110,15 +110,15 @@ func (agg *aggregator) confirmDSPrice(confirmedRounds []*confirmedPrice) {
 		// update the latest round-detId for DS, TODO: in v1 we only update this value once since calculator will just ignore any further value once a detId has reached consensus
 		//		agg.dsPrices[priceSourceRound.sourceId] = priceSourceRound.detId
 		// this id's comparison need to format id to make sure them be the same length
-		if id := agg.dsPrices[priceSourceRound.sourceId]; len(id) == 0 || (len(id) > 0 && id < priceSourceRound.detId) {
-			agg.dsPrices[priceSourceRound.sourceId] = priceSourceRound.detId
+		if id := agg.dsPrices[priceSourceRound.sourceID]; len(id) == 0 || (len(id) > 0 && id < priceSourceRound.detID) {
+			agg.dsPrices[priceSourceRound.sourceID] = priceSourceRound.detID
 			for _, report := range agg.reports {
 				if report.price != nil {
 					// price of IVA has completed
 					continue
 				}
-				if price := report.prices[priceSourceRound.sourceId]; price != nil {
-					price.detRoundId = priceSourceRound.detId
+				if price := report.prices[priceSourceRound.sourceID]; price != nil {
+					price.detRoundID = priceSourceRound.detID
 					price.timestamp = priceSourceRound.timestamp
 					price.price = priceSourceRound.price
 				} // else TODO: panice in V1

@@ -36,14 +36,14 @@ func DefaultParams() Params {
 			{},
 			{
 				Name:            "ETH",
-				ChainId:         1,
+				ChainID:         1,
 				ContractAddress: "0x",
 				Decimal:         18,
 				Active:          true,
 			},
 			{
 				Name:            "SHIBA INU",
-				ChainId:         1,
+				ChainID:         1,
 				ContractAddress: "0x95aD61b0a150d79219dCF64E1E6Cc01f0B64C4cE",
 				Decimal:         18,
 				Active:          true,
@@ -67,22 +67,22 @@ func DefaultParams() Params {
 			{},
 			{
 				// all sources math
-				SourceIds: []uint64{0},
+				SourceIDs: []uint64{0},
 			},
 		},
 		TokenFeeders: []*TokenFeeder{
 			{},
 			{
-				TokenId:        1,
-				RuleId:         1,
-				StartRoundId:   1,
+				TokenID:        1,
+				RuleID:         1,
+				StartRoundID:   1,
 				StartBaseBlock: 1,
 				Interval:       10,
 			},
 			{
-				TokenId:        2,
-				RuleId:         1,
-				StartRoundId:   1,
+				TokenID:        2,
+				RuleID:         1,
+				StartRoundID:   1,
 				StartBaseBlock: 5,
 				Interval:       10,
 			},

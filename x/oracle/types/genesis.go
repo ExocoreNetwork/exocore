@@ -28,7 +28,7 @@ func (gs GenesisState) Validate() error {
 	pricesIndexMap := make(map[string]struct{})
 
 	for _, elem := range gs.PricesList {
-		index := string(PricesKey(elem.TokenId))
+		index := string(PricesKey(elem.TokenID))
 		if _, ok := pricesIndexMap[index]; ok {
 			return fmt.Errorf("duplicated index for prices")
 		}

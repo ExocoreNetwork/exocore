@@ -23,10 +23,10 @@ func TestGenesisState_Validate(t *testing.T) {
 			genState: &types.GenesisState{
 				PricesList: []types.Prices{
 					{
-						TokenId: 0,
+						TokenID: 0,
 					},
 					{
-						TokenId: 1,
+						TokenID: 1,
 					},
 				},
 				ValidatorUpdateBlock: &types.ValidatorUpdateBlock{},
@@ -57,10 +57,10 @@ func TestGenesisState_Validate(t *testing.T) {
 			genState: &types.GenesisState{
 				PricesList: []types.Prices{
 					{
-						TokenId: 0,
+						TokenID: 0,
 					},
 					{
-						TokenId: 0,
+						TokenID: 0,
 					},
 				},
 			},

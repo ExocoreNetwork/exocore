@@ -9,7 +9,7 @@ import (
 
 type filter struct {
 	maxNonce int
-	maxDetId int
+	maxDetID int
 	// nonce start from 1
 	validatorNonce map[string]*common.Set[int32]
 	// validator_sourceId -> roundID, NS use 0
@@ -19,7 +19,7 @@ type filter struct {
 func newFilter(maxNonce, maxDetID int) *filter {
 	return &filter{
 		maxNonce:        maxNonce,
-		maxDetId:        maxDetID,
+		maxDetID:        maxDetID,
 		validatorNonce:  make(map[string]*common.Set[int32]),
 		validatorSource: make(map[string]*common.Set[string]),
 	}
@@ -30,15 +30,15 @@ func (f *filter) newVNSet() *common.Set[int32] {
 }
 
 func (f *filter) newVSSet() *common.Set[string] {
-	return common.NewSet[string](f.maxDetId)
+	return common.NewSet[string](f.maxDetID)
 }
 
 // add priceWithSource into calculator list and aggregator list depends on the source type(deterministic/non-deterministic)
 func (f *filter) addPSource(pSources []*types.PriceWithSource, validator string) (list4Calculator []*types.PriceWithSource, list4Aggregator []*types.PriceWithSource) {
 	for _, pSource := range pSources {
-		// check conflicts or duplicate data for the same roundId within the same source
-		if len(pSource.Prices[0].DetId) > 0 {
-			k := validator + strconv.Itoa(int(pSource.SourceId))
+		// check conflicts or duplicate data for the same roundID within the same source
+		if len(pSource.Prices[0].DetID) > 0 {
+			k := validator + strconv.Itoa(int(pSource.SourceID))
 			detIDs := f.validatorSource[k]
 			if detIDs == nil {
 				detIDs = f.newVSSet()
@@ -46,13 +46,13 @@ func (f *filter) addPSource(pSources []*types.PriceWithSource, validator string)
 			}
 
 			pSourceTmp := &types.PriceWithSource{
-				SourceId: pSource.SourceId,
+				SourceID: pSource.SourceID,
 				Prices:   make([]*types.PriceWithTimeAndDetId, 0, len(pSource.Prices)),
 				Desc:     pSource.Desc,
 			}
 
 			for _, pDetID := range pSource.Prices {
-				if ok := detIDs.Add(pDetID.DetId); ok {
+				if ok := detIDs.Add(pDetID.DetID); ok {
 					// deterministic id has not seen in filter and limitation of ids this souce has not reached
 					pSourceTmp.Prices = append(pSourceTmp.Prices, pDetID)
 				}

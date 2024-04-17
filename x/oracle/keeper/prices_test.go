@@ -19,10 +19,10 @@ var _ = strconv.IntSize
 func createNPrices(keeper *keeper.Keeper, ctx sdk.Context, n int) []types.Prices {
 	items := make([]types.Prices, n)
 	for i := range items {
-		items[i].TokenId = uint64(i + 1)
+		items[i].TokenID = uint64(i + 1)
 		items[i] = types.Prices{
-			TokenId:     uint64(i + 1),
-			NextRoundId: 2,
+			TokenID:     uint64(i + 1),
+			NextRoundID: 2,
 			PriceList: []*types.PriceWithTimeAndRound{
 				testdata.PTR1,
 				testdata.PTR2,
@@ -63,10 +63,10 @@ func TestPricesRemove(t *testing.T) {
 	items := createNPrices(keeper, ctx, 10)
 	for _, item := range items {
 		keeper.RemovePrices(ctx,
-			item.TokenId,
+			item.TokenID,
 		)
 		_, found := keeper.GetPrices(ctx,
-			item.TokenId,
+			item.TokenID,
 		)
 		require.False(t, found)
 	}

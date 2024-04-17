@@ -187,30 +187,30 @@ func (am AppModule) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.Val
 	// TODO: for v1 use mode==1, just check the failed feeders
 	_, failed := agc.SealRound(ctx, forceSeal)
 	// append new round with previous price for fail-seal token
-	for _, tokenId := range failed {
+	for _, tokenID := range failed {
 		event := sdk.NewEvent(
 			types.EventTypeCreatePrice,
-			sdk.NewAttribute(types.AttributeKeyTokenID, strconv.Itoa(int(tokenId))),
+			sdk.NewAttribute(types.AttributeKeyTokenID, strconv.Itoa(int(tokenID))),
 			sdk.NewAttribute(types.AttributeKeyPriceUpdated, types.AttributeValuePriceUpdatedFail),
 		)
-		logInfo := fmt.Sprintf("add new round with previous price under fail aggregation, tokenID:%d", tokenId)
-		if pTR, ok := am.keeper.GetPriceTRLatest(ctx, tokenId); ok {
-			pTR.RoundId++
-			am.keeper.AppendPriceTR(ctx, tokenId, pTR)
-			logger.Info("add new round with previous price under fail aggregation", "tokenID", tokenId, "roundID", pTR.RoundId)
-			logInfo += fmt.Sprintf(", roundID:%d, price:%s", pTR.RoundId, pTR.Price)
+		logInfo := fmt.Sprintf("add new round with previous price under fail aggregation, tokenID:%d", tokenID)
+		if pTR, ok := am.keeper.GetPriceTRLatest(ctx, tokenID); ok {
+			pTR.RoundID++
+			am.keeper.AppendPriceTR(ctx, tokenID, pTR)
+			logger.Info("add new round with previous price under fail aggregation", "tokenID", tokenID, "roundID", pTR.RoundID)
+			logInfo += fmt.Sprintf(", roundID:%d, price:%s", pTR.RoundID, pTR.Price)
 			event.AppendAttributes(
-				sdk.NewAttribute(types.AttributeKeyRoundID, strconv.Itoa(int(pTR.RoundId))),
+				sdk.NewAttribute(types.AttributeKeyRoundID, strconv.Itoa(int(pTR.RoundID))),
 				sdk.NewAttribute(types.AttributeKeyFinalPrice, pTR.Price),
 			)
 		} else {
-			nextRoundId := am.keeper.GetNextRoundId(ctx, tokenId)
-			am.keeper.AppendPriceTR(ctx, tokenId, types.PriceWithTimeAndRound{
-				RoundId: nextRoundId,
+			nextRoundID := am.keeper.GetNextRoundID(ctx, tokenID)
+			am.keeper.AppendPriceTR(ctx, tokenID, types.PriceWithTimeAndRound{
+				RoundID: nextRoundID,
 			})
-			logInfo += fmt.Sprintf(", roundID:%d, price:-", nextRoundId)
+			logInfo += fmt.Sprintf(", roundID:%d, price:-", nextRoundID)
 			event.AppendAttributes(
-				sdk.NewAttribute(types.AttributeKeyRoundID, strconv.Itoa(int(nextRoundId))),
+				sdk.NewAttribute(types.AttributeKeyRoundID, strconv.Itoa(int(nextRoundID))),
 				sdk.NewAttribute(types.AttributeKeyFinalPrice, "-"),
 			)
 		}

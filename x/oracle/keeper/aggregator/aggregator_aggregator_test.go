@@ -28,14 +28,14 @@ func TestAggregator(t *testing.T) {
 					Convey("confirm deterministic source_1 and source 2", func() {
 						a.confirmDSPrice([]*confirmedPrice{
 							{
-								sourceId:  1,
-								detId:     "9",
+								sourceID:  1,
+								detID:     "9",
 								price:     ten,
 								timestamp: "-",
 							},
 							{
-								sourceId:  2,
-								detId:     "3",
+								sourceID:  2,
+								detID:     "3",
 								price:     twenty,
 								timestamp: "-",
 							},
@@ -43,13 +43,13 @@ func TestAggregator(t *testing.T) {
 						reportV1 := a.getReport("v1")
 						reportV2 := a.getReport("v2")
 						So(reportV1.prices[1].price, ShouldResemble, ten)
-						So(reportV1.prices[1].detRoundId, ShouldEqual, "9")
+						So(reportV1.prices[1].detRoundID, ShouldEqual, "9")
 
 						So(reportV2.prices[1].price, ShouldResemble, ten)
-						So(reportV2.prices[1].detRoundId, ShouldEqual, "9")
+						So(reportV2.prices[1].detRoundID, ShouldEqual, "9")
 
 						So(reportV1.prices[2].price, ShouldResemble, twenty)
-						So(reportV1.prices[2].detRoundId, ShouldEqual, "3")
+						So(reportV1.prices[2].detRoundID, ShouldEqual, "3")
 
 						// current implementation only support v1's single source
 						Convey("aggregate after all source confirmed", func() {

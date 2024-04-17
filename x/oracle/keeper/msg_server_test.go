@@ -7,13 +7,11 @@ import (
 	sdkerrors "cosmossdk.io/errors"
 	keepertest "github.com/ExocoreNetwork/exocore/testutil/keeper"
 	"github.com/ExocoreNetwork/exocore/x/oracle/keeper"
+
 	"github.com/ExocoreNetwork/exocore/x/oracle/keeper/testdata"
 	"github.com/ExocoreNetwork/exocore/x/oracle/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	// "github.com/cosmos/ibc-go/testing/mock"
-
-	//	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -36,24 +34,24 @@ func (suite *KeeperSuite) TestCreatePriceSingleBlock() {
 	oServer(suite.Ctx, &types.MsgCreatePrice{
 		Creator:    suite.valAddr1.String(),
 		Nonce:      1,
-		FeederId:   1,
+		FeederID:   1,
 		Prices:     testdata.PS1,
 		BasedBlock: 1,
 	})
 	oServer(suite.Ctx, &types.MsgCreatePrice{
 		Creator:    suite.valAddr2.String(),
 		Nonce:      1,
-		FeederId:   1,
+		FeederID:   1,
 		Prices:     testdata.PS2,
 		BasedBlock: 1,
 	})
 	prices, found := suite.App.OracleKeeper.GetPrices(suite.Ctx, 1)
 	if suite.Equal(true, found, "final price should be returned") {
-		suite.EqualValues(prices.TokenId, 1, "final price has tokenId equals to 1")
+		suite.EqualValues(prices.TokenID, 1, "final price has tokenID equals to 1")
 		suite.Equal(2, len(prices.PriceList), "length of price list should be 2 including the 0 index with an empty element as placeholder")
 		suite.Exactly(types.Prices{
-			TokenId:     1,
-			NextRoundId: 2,
+			TokenID:     1,
+			NextRoundID: 2,
 			PriceList: []*types.PriceWithTimeAndRound{
 				{},
 				{
@@ -61,7 +59,7 @@ func (suite *KeeperSuite) TestCreatePriceSingleBlock() {
 					Decimal: 18,
 					// since timestamp is filled with realtime, so we use the value from result to fill the expected value here
 					Timestamp: prices.PriceList[1].Timestamp,
-					RoundId:   1,
+					RoundID:   1,
 				},
 			},
 		}, prices)
@@ -73,7 +71,7 @@ func (suite *KeeperSuite) TestCreatePriceSingleBlock() {
 	_, err := oServer(suite.Ctx, &types.MsgCreatePrice{
 		Creator:    suite.valAddr1.String(),
 		Nonce:      1,
-		FeederId:   1,
+		FeederID:   1,
 		Prices:     testdata.PS1,
 		BasedBlock: 1,
 	})
@@ -89,7 +87,7 @@ func (suite *KeeperSuite) TestCreatePriceTwoBlock() {
 	res, _ := oServer(suite.Ctx, &types.MsgCreatePrice{
 		Creator:    suite.valAddr1.String(),
 		Nonce:      1,
-		FeederId:   1,
+		FeederID:   1,
 		Prices:     testdata.PS1,
 		BasedBlock: 1,
 	})
@@ -104,15 +102,15 @@ func (suite *KeeperSuite) TestCreatePriceTwoBlock() {
 		oServer(suite.Ctx, &types.MsgCreatePrice{
 			Creator:    suite.valAddr2.String(),
 			Nonce:      1,
-			FeederId:   1,
+			FeederID:   1,
 			Prices:     testdata.PS3,
 			BasedBlock: 1,
 		})
 		prices, found := suite.App.OracleKeeper.GetPrices(suite.Ctx, 1)
 		if suite.Equal(true, found) {
 			suite.Exactly(types.Prices{
-				TokenId:     1,
-				NextRoundId: 2,
+				TokenID:     1,
+				NextRoundID: 2,
 				PriceList: []*types.PriceWithTimeAndRound{
 					{},
 					{
@@ -120,7 +118,7 @@ func (suite *KeeperSuite) TestCreatePriceTwoBlock() {
 						Decimal: 18,
 						// since timestamp is filled with realtime, so we use the value from result to fill the expected value here
 						Timestamp: prices.PriceList[1].Timestamp,
-						RoundId:   1,
+						RoundID:   1,
 					},
 				},
 			}, prices)

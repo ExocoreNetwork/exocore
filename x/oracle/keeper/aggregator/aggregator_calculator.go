@@ -8,8 +8,8 @@ import (
 )
 
 type confirmedPrice struct {
-	sourceId  uint64
-	detId     string
+	sourceID  uint64
+	detID     string
 	price     *big.Int
 	timestamp string
 }
@@ -22,7 +22,7 @@ type priceAndPower struct {
 
 // for a specific DS round, it could have multiple values provided by different validators(should not be true if there's no malicious validator)
 type roundPrices struct { // 0 means NS
-	detId     string
+	detID     string
 	prices    []*priceAndPower
 	price     *big.Int
 	timestamp string
@@ -78,9 +78,9 @@ func (r *roundPricesList) hasConfirmedDetId() bool {
 
 // get the roundPriceList correspond to specifid detID of a DS
 // if no required data and the pricesList has not reach its limitation, we will add a new slot for this detId
-func (r *roundPricesList) getOrNewRound(detId string, timestamp string) (round *roundPrices) {
+func (r *roundPricesList) getOrNewRound(detID string, timestamp string) (round *roundPrices) {
 	for _, round = range r.roundPricesList {
-		if round.detId == detId {
+		if round.detID == detID {
 			if round.price != nil {
 				round = nil
 			}
@@ -90,7 +90,7 @@ func (r *roundPricesList) getOrNewRound(detId string, timestamp string) (round *
 
 	if len(r.roundPricesList) < cap(r.roundPricesList) {
 		round = &roundPrices{
-			detId:     detId,
+			detID:     detID,
 			prices:    make([]*priceAndPower, 0, r.roundPricesCount),
 			timestamp: timestamp,
 		}
@@ -110,17 +110,17 @@ type calculator struct {
 
 func (c *calculator) newRoundPricesList() *roundPricesList {
 	return &roundPricesList{
-		roundPricesList: make([]*roundPrices, 0, common.MaxDetId*c.validatorLength),
+		roundPricesList: make([]*roundPrices, 0, common.MaxDetID*c.validatorLength),
 		// for each DS-roundId, the count of prices provided is the number of validators at most
 		roundPricesCount: c.validatorLength,
 	}
 }
 
-func (c *calculator) getOrNewSourceId(sourceId uint64) *roundPricesList {
-	rounds := c.deterministicSource[sourceId]
+func (c *calculator) getOrNewSourceID(sourceID uint64) *roundPricesList {
+	rounds := c.deterministicSource[sourceID]
 	if rounds == nil {
 		rounds = c.newRoundPricesList()
-		c.deterministicSource[sourceId] = rounds
+		c.deterministicSource[sourceID] = rounds
 	}
 	return rounds
 }
@@ -129,25 +129,25 @@ func (c *calculator) getOrNewSourceId(sourceId uint64) *roundPricesList {
 // v1 use mode1, TODO: switch modes
 func (c *calculator) fillPrice(pSources []*types.PriceWithSource, validator string, power *big.Int) (confirmedRounds []*confirmedPrice) {
 	for _, pSource := range pSources {
-		rounds := c.getOrNewSourceId(pSource.SourceId)
+		rounds := c.getOrNewSourceID(pSource.SourceID)
 		if rounds.hasConfirmedDetId() {
 			// TODO: this skip is just for V1 to do fast calculation and release EndBlocker pressure, may lead to 'not latest detId' be chosen
 			break
 		}
-		for _, pDetId := range pSource.Prices {
+		for _, pDetID := range pSource.Prices {
 
-			round := rounds.getOrNewRound(pDetId.DetId, pDetId.Timestamp)
+			round := rounds.getOrNewRound(pDetID.DetID, pDetID.Timestamp)
 			if round == nil {
 				// this sourceId has reach the limitation of different detId, or has confirmed
 				continue
 			}
 
-			roundPrice, _ := new(big.Int).SetString(pDetId.Price, 10)
+			roundPrice, _ := new(big.Int).SetString(pDetID.Price, 10)
 
 			updated, confirmed := round.updatePriceAndPower(&priceAndPower{roundPrice, power}, c.totalPower)
 			if updated && confirmed {
 				// sourceId, detId, price
-				confirmedRounds = append(confirmedRounds, &confirmedPrice{pSource.SourceId, round.detId, round.price, round.timestamp}) // TODO: just in v1 with mode==1, we use asap, so we just ignore any further data from this DS, even higher detId may get to consensus, in this way, in most case, we can complete the calculation in the transaction execution process. Release the pressure in EndBlocker
+				confirmedRounds = append(confirmedRounds, &confirmedPrice{pSource.SourceID, round.detID, round.price, round.timestamp}) // TODO: just in v1 with mode==1, we use asap, so we just ignore any further data from this DS, even higher detId may get to consensus, in this way, in most case, we can complete the calculation in the transaction execution process. Release the pressure in EndBlocker
 				// TODO: this may delay to current block finish
 				break
 			}

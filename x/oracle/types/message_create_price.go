@@ -13,7 +13,7 @@ var _ sdk.Msg = &MsgCreatePrice{}
 func NewMsgCreatePrice(creator string, feederID uint64, prices []*PriceWithSource, basedBlock uint64, nonce int32) *MsgCreatePrice {
 	return &MsgCreatePrice{
 		Creator:    creator,
-		FeederId:   feederID,
+		FeederID:   feederID,
 		Prices:     prices,
 		BasedBlock: basedBlock,
 		Nonce:      nonce,

@@ -2,35 +2,35 @@ package testdata
 
 import "github.com/ExocoreNetwork/exocore/x/oracle/types"
 
-func newPTD(detId, price string) *types.PriceWithTimeAndDetId {
+func newPTD(detID, price string) *types.PriceWithTimeAndDetId {
 	return &types.PriceWithTimeAndDetId{
 		Price:     price,
 		Decimal:   18,
 		Timestamp: "-",
-		DetId:     detId,
+		DetID:     detID,
 	}
 }
 
-func newPS(sourceId uint64, prices ...*types.PriceWithTimeAndDetId) *types.PriceWithSource {
+func newPS(sourceID uint64, prices ...*types.PriceWithTimeAndDetId) *types.PriceWithSource {
 	return &types.PriceWithSource{
-		SourceId: sourceId,
+		SourceID: sourceID,
 		Prices:   prices,
 	}
 }
 
-func newPTR(price string, roundId uint64) *types.PriceWithTimeAndRound {
+func newPTR(price string, roundID uint64) *types.PriceWithTimeAndRound {
 	return &types.PriceWithTimeAndRound{
 		Price:     price,
 		Decimal:   18,
 		Timestamp: "",
-		RoundId:   roundId,
+		RoundID:   roundID,
 	}
 }
 
-func newPrices(tokenId uint64, nextRoundId uint64, pList ...*types.PriceWithTimeAndRound) types.Prices {
+func newPrices(tokenID uint64, nextRoundID uint64, pList ...*types.PriceWithTimeAndRound) types.Prices {
 	return types.Prices{
-		TokenId:     tokenId,
-		NextRoundId: nextRoundId,
+		TokenID:     tokenID,
+		NextRoundID: nextRoundID,
 		PriceList:   pList,
 	}
 }

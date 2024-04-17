@@ -57,12 +57,12 @@ func TestCalculator(t *testing.T) {
 			c.fillPrice(pS3, "v3", one) // 1-10, 2-11
 			Convey("consensus on detid=2 and price=12", func() {
 				confirmed := c.fillPrice(pS4, "v4", one) // 2-12, 3-19
-				So(confirmed[0].detId, ShouldEqual, "2")
+				So(confirmed[0].detID, ShouldEqual, "2")
 				So(confirmed[0].price, ShouldResemble, big.NewInt(12))
 			})
 			Convey("consensus on detid=1 and price=10", func() {
 				confirmed := c.fillPrice(pS5, "v5", one) // 1-10, 3-19
-				So(confirmed[0].detId, ShouldEqual, "1")
+				So(confirmed[0].detID, ShouldEqual, "1")
 				So(confirmed[0].price, ShouldResemble, big.NewInt(10))
 
 				confirmed = c.fillPrice(pS4, "v4", one)
@@ -77,19 +77,19 @@ func TestCalculator(t *testing.T) {
 				confirmed := c.fillPrice(pS24, "v4", one)
 				So(len(confirmed), ShouldEqual, 2)
 				i := 0
-				if confirmed[0].sourceId == 2 {
+				if confirmed[0].sourceID == 2 {
 					i = 1
 				}
-				So(confirmed[i].detId, ShouldEqual, "2")
+				So(confirmed[i].detID, ShouldEqual, "2")
 				So(confirmed[i].price, ShouldResemble, big.NewInt(12))
 
-				So(confirmed[1-i].detId, ShouldEqual, "3")
+				So(confirmed[1-i].detID, ShouldEqual, "3")
 				So(confirmed[1-i].price, ShouldResemble, big.NewInt(15))
 			})
 			Convey("consenus on source 1 only", func() {
 				confirmed := c.fillPrice(pS25, "v5", one)
 				So(len(confirmed), ShouldEqual, 1)
-				So(confirmed[0].detId, ShouldEqual, "1")
+				So(confirmed[0].detID, ShouldEqual, "1")
 				So(confirmed[0].price, ShouldResemble, big.NewInt(10))
 			})
 		})
