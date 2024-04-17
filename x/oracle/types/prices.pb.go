@@ -23,10 +23,14 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
+// prices of all rounds of a specific token
 type Prices struct {
-	TokenID     uint64                   `protobuf:"varint,1,opt,name=token_id,json=tokenId,proto3" json:"token_id,omitempty"`
-	NextRoundID uint64                   `protobuf:"varint,2,opt,name=next_round_id,json=nextRoundId,proto3" json:"next_round_id,omitempty"`
-	PriceList   []*PriceWithTimeAndRound `protobuf:"bytes,3,rep,name=price_list,json=priceList,proto3" json:"price_list,omitempty"`
+	// for which token these prices are
+	TokenID uint64 `protobuf:"varint,1,opt,name=token_id,json=tokenId,proto3" json:"token_id,omitempty"`
+	// next round id of the price to be updated
+	NextRoundID uint64 `protobuf:"varint,2,opt,name=next_round_id,json=nextRoundId,proto3" json:"next_round_id,omitempty"`
+	// price list of all history round prices for the token
+	PriceList []*PriceWithTimeAndRound `protobuf:"bytes,3,rep,name=price_list,json=priceList,proto3" json:"price_list,omitempty"`
 }
 
 func (m *Prices) Reset()         { *m = Prices{} }

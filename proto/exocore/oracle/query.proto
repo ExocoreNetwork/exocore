@@ -89,7 +89,7 @@ message QueryParamsResponse {
 // QueryGetPricesRequest is request type for all prices of a specific token
 message QueryGetPricesRequest {
   // token_id represents which token's price will be retrieved
-  uint64 token_id = 1 [(gogoproto.customname) = "TokenID"];
+  uint64 token_id = 1; //[(gogoproto.customname) = "TokenID"];
 }
 
 // QueryGetPricesResponse

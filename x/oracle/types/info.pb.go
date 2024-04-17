@@ -23,6 +23,7 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
+// Chain represents for the Chain on which token contracts deployed
 type Chain struct {
 	// eg."bitcoin"
 	Name string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
@@ -77,13 +78,16 @@ func (m *Chain) GetDesc() string {
 	return ""
 }
 
+// Token represents the token info
 type Token struct {
+	// token name
 	Name string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
 	// id refer to chainList's index
 	ChainID uint64 `protobuf:"varint,2,opt,name=chain_id,json=chainId,proto3" json:"chain_id,omitempty"`
 	// if any, like erc20 tokens
 	ContractAddress string `protobuf:"bytes,3,opt,name=contract_address,json=contractAddress,proto3" json:"contract_address,omitempty"`
-	Decimal         int32  `protobuf:"varint,4,opt,name=decimal,proto3" json:"decimal,omitempty"`
+	// decimal of token price
+	Decimal int32 `protobuf:"varint,4,opt,name=decimal,proto3" json:"decimal,omitempty"`
 	// set false when we stop official price oracle service for a specified token
 	Active bool `protobuf:"varint,5,opt,name=active,proto3" json:"active,omitempty"`
 }
@@ -156,6 +160,7 @@ func (m *Token) GetActive() bool {
 	return false
 }
 
+// Endpoint tells where to fetch the price info
 type Endpoint struct {
 	// url int refer to TokenList.ID, 0 reprents default for all (as fall back)
 	// key refer to tokenID, 1->"https://chainlink.../eth"
@@ -212,11 +217,15 @@ func (m *Endpoint) GetOnchain() map[uint64]string {
 	return nil
 }
 
+// Source represents price data source
 type Source struct {
-	Name  string    `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+	// name of price source, like 'chainlink'
+	Name string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+	// endpoint of corresponding source to fetch price data from
 	Entry *Endpoint `protobuf:"bytes,2,opt,name=entry,proto3" json:"entry,omitempty"`
 	// set false when the source is out of service or reject to accept this source for official service
-	Valid         bool `protobuf:"varint,3,opt,name=valid,proto3" json:"valid,omitempty"`
+	Valid bool `protobuf:"varint,3,opt,name=valid,proto3" json:"valid,omitempty"`
+	// if this source is deteministic or not
 	Deterministic bool `protobuf:"varint,4,opt,name=deterministic,proto3" json:"deterministic,omitempty"`
 }
 

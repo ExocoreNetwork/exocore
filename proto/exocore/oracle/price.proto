@@ -8,7 +8,7 @@ option go_package = "github.com/ExocoreNetwork/exocore/x/oracle/types";
 
 // token price with timestamp fetched from source
 // {price:"12345",decimal:"2"}->price: 123.45 usdt
-message PriceWithTimeAndDetId {
+message PriceTimeDetID {
   // price at a specific point(timestamp of non-deterministic source, roundId of deteministic source)
   string price = 1;
   // decimal of the corresponding price 
@@ -27,7 +27,7 @@ message PriceWithSource{
   //up to 3 values in case of the async of network, to give more time for oracle nodes(validators) get into consensus
   //eg.with deterministic source, this array will contian 3 continuous values up to latest
   //for non-deterministic source, it's a choice by v2 rules.
-  repeated PriceWithTimeAndDetId prices = 2;
+  repeated PriceTimeDetID prices = 2;
   //used for 0-sourceID-customDefinedSource
   string desc = 3;
 }

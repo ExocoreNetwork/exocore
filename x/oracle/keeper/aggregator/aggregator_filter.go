@@ -47,7 +47,7 @@ func (f *filter) addPSource(pSources []*types.PriceWithSource, validator string)
 
 			pSourceTmp := &types.PriceWithSource{
 				SourceID: pSource.SourceID,
-				Prices:   make([]*types.PriceWithTimeAndDetId, 0, len(pSource.Prices)),
+				Prices:   make([]*types.PriceTimeDetID, 0, len(pSource.Prices)),
 				Desc:     pSource.Desc,
 			}
 

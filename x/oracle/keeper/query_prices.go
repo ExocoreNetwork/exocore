@@ -46,7 +46,7 @@ func (k Keeper) Prices(goCtx context.Context, req *types.QueryGetPricesRequest) 
 
 	val, found := k.GetPrices(
 		ctx,
-		req.TokenID,
+		req.TokenId,
 	)
 	if !found {
 		return nil, status.Error(codes.NotFound, "not found")

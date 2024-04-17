@@ -23,9 +23,12 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
+// RecentMsg represent the messages to be cached for recent blocks
 type RecentMsg struct {
-	Block uint64     `protobuf:"varint,1,opt,name=block,proto3" json:"block,omitempty"`
-	Msgs  []*MsgItem `protobuf:"bytes,2,rep,name=msgs,proto3" json:"msgs,omitempty"`
+	// block height these messages from
+	Block uint64 `protobuf:"varint,1,opt,name=block,proto3" json:"block,omitempty"`
+	// cached messages
+	Msgs []*MsgItem `protobuf:"bytes,2,rep,name=msgs,proto3" json:"msgs,omitempty"`
 }
 
 func (m *RecentMsg) Reset()         { *m = RecentMsg{} }
@@ -75,10 +78,14 @@ func (m *RecentMsg) GetMsgs() []*MsgItem {
 	return nil
 }
 
+// MsgItem represents the message info of createPrice
 type MsgItem struct {
-	FeederID  uint64             `protobuf:"varint,2,opt,name=feeder_id,json=feederId,proto3" json:"feeder_id,omitempty"`
-	PSources  []*PriceWithSource `protobuf:"bytes,3,rep,name=p_sources,json=pSources,proto3" json:"p_sources,omitempty"`
-	Validator string             `protobuf:"bytes,4,opt,name=validator,proto3" json:"validator,omitempty"`
+	// feeder_id tells of wich feeder this price if corresponding to
+	FeederID uint64 `protobuf:"varint,2,opt,name=feeder_id,json=feederId,proto3" json:"feeder_id,omitempty"`
+	// p_source price with its source info
+	PSources []*PriceWithSource `protobuf:"bytes,3,rep,name=p_sources,json=pSources,proto3" json:"p_sources,omitempty"`
+	// validator tells which validator create this price
+	Validator string `protobuf:"bytes,4,opt,name=validator,proto3" json:"validator,omitempty"`
 }
 
 func (m *MsgItem) Reset()         { *m = MsgItem{} }

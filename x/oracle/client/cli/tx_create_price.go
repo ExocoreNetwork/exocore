@@ -49,7 +49,7 @@ func CmdCreatePrice() *cobra.Command {
 			prices := []*types.PriceWithSource{
 				{
 					SourceID: sourceID,
-					Prices:   make([]*types.PriceWithTimeAndDetId, 0, 1),
+					Prices:   make([]*types.PriceTimeDetID, 0, 1),
 					Desc:     "",
 				},
 			}
@@ -61,7 +61,7 @@ func CmdCreatePrice() *cobra.Command {
 				detID := args[i+2]
 				argLength -= 3
 				i += 3
-				prices[0].Prices = append(prices[0].Prices, &types.PriceWithTimeAndDetId{
+				prices[0].Prices = append(prices[0].Prices, &types.PriceTimeDetID{
 					Price:     price,
 					Decimal:   int32(decimal),
 					Timestamp: timestamp,

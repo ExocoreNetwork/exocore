@@ -64,7 +64,7 @@ func TestCache(t *testing.T) {
 					PSources: []*types.PriceWithSource{
 						{
 							SourceID: 1,
-							Prices: []*types.PriceWithTimeAndDetId{
+							Prices: []*types.PriceTimeDetID{
 								{Price: "600000", Decimal: 1, Timestamp: "-", DetID: "1"}, {Price: "620000", Decimal: 1, Timestamp: "-", DetID: "2"},
 							},
 						},
@@ -74,13 +74,13 @@ func TestCache(t *testing.T) {
 				{
 					FeederID: 1,
 					PSources: []*types.PriceWithSource{
-						{SourceID: 1, Prices: []*types.PriceWithTimeAndDetId{{Price: "600000", Decimal: 1, Timestamp: "-", DetID: "4"}, {Price: "620000", Decimal: 1, Timestamp: "-", DetID: "3"}}},
+						{SourceID: 1, Prices: []*types.PriceTimeDetID{{Price: "600000", Decimal: 1, Timestamp: "-", DetID: "4"}, {Price: "620000", Decimal: 1, Timestamp: "-", DetID: "3"}}},
 					},
 					Validator: "v1",
 				},
 				{
 					FeederID:  2,
-					PSources:  []*types.PriceWithSource{{SourceID: 1, Prices: []*types.PriceWithTimeAndDetId{{Price: "30000", Decimal: 1, Timestamp: "-", DetID: "4"}, {Price: "32000", Decimal: 1, Timestamp: "-", DetID: "3"}}}},
+					PSources:  []*types.PriceWithSource{{SourceID: 1, Prices: []*types.PriceTimeDetID{{Price: "30000", Decimal: 1, Timestamp: "-", DetID: "4"}, {Price: "32000", Decimal: 1, Timestamp: "-", DetID: "3"}}}},
 					Validator: "v2",
 				},
 			}

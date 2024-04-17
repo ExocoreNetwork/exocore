@@ -22,7 +22,9 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
+// ValidatorUpdateBlock
 type ValidatorUpdateBlock struct {
+	// block height on which the validator set changed
 	Block uint64 `protobuf:"varint,1,opt,name=block,proto3" json:"block,omitempty"`
 }
 

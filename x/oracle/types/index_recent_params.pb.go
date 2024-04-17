@@ -22,7 +22,9 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
+// index for the cached recent params
 type IndexRecentParams struct {
+	// index list
 	Index []uint64 `protobuf:"varint,1,rep,packed,name=index,proto3" json:"index,omitempty"`
 }
 

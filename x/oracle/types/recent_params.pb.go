@@ -22,8 +22,11 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
+// RecentParams represents the params cached for recent blocks
 type RecentParams struct {
-	Block  uint64  `protobuf:"varint,1,opt,name=block,proto3" json:"block,omitempty"`
+	// block height of which the params from
+	Block uint64 `protobuf:"varint,1,opt,name=block,proto3" json:"block,omitempty"`
+	// params the module params
 	Params *Params `protobuf:"bytes,2,opt,name=params,proto3" json:"params,omitempty"`
 }
 

@@ -19,7 +19,7 @@ func TestFilter(t *testing.T) {
 
 		ps1 := &types.PriceWithSource{
 			SourceID: 1,
-			Prices: []*types.PriceWithTimeAndDetId{
+			Prices: []*types.PriceTimeDetID{
 				ptd1,
 				ptd2,
 			},
@@ -92,7 +92,7 @@ func TestFilter(t *testing.T) {
 
 		Convey("add too many DetIds", func() {
 			msg.Nonce = 2
-			ps1.Prices = []*types.PriceWithTimeAndDetId{ptd3, ptd4, ptd5, ptd6}
+			ps1.Prices = []*types.PriceTimeDetID{ptd3, ptd4, ptd5, ptd6}
 			l4c, l4a = f.filtrate(msg)
 			So(l4c, ShouldResemble, l4a)
 			So(l4c[0].Prices, ShouldContain, ptd3)
