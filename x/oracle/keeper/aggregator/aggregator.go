@@ -13,7 +13,7 @@ import (
 
 type PriceItemKV struct {
 	TokenID uint64
-	PriceTR types.PriceWithTimeAndRound
+	PriceTR types.PriceTimeRound
 }
 
 type roundInfo struct {
@@ -124,7 +124,7 @@ func (agc *AggregatorContext) FillPrice(msg *types.MsgCreatePrice) (*PriceItemKV
 		if finalPrice := feederWorker.aggregate(); finalPrice != nil {
 			agc.rounds[msg.FeederID].status = 2
 			feederWorker.seal()
-			return &PriceItemKV{agc.params.GetTokenFeeder(msg.FeederID).TokenID, types.PriceWithTimeAndRound{
+			return &PriceItemKV{agc.params.GetTokenFeeder(msg.FeederID).TokenID, types.PriceTimeRound{
 				Price:   finalPrice.String(),
 				Decimal: agc.params.GetTokenInfo(msg.FeederID).Decimal,
 				// TODO: check the format

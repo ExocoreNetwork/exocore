@@ -28,12 +28,12 @@ func (k Keeper) GetPrices(
 
 	val.TokenID = tokenID
 	val.NextRoundID = nextRoundID
-	val.PriceList = make([]*types.PriceWithTimeAndRound, nextRoundID)
+	val.PriceList = make([]*types.PriceTimeRound, nextRoundID)
 	// 0 roundId is reserved, expect the roundid corresponds to the slice index
-	val.PriceList[0] = &types.PriceWithTimeAndRound{}
+	val.PriceList[0] = &types.PriceTimeRound{}
 	for i := uint64(1); i < nextRoundID; i++ {
 		b := store.Get(types.PricesRoundKey(i))
-		val.PriceList[i] = &types.PriceWithTimeAndRound{}
+		val.PriceList[i] = &types.PriceTimeRound{}
 		if b != nil {
 			// should always be true since we don't delete prices from history round
 			k.cdc.MustUnmarshal(b, val.PriceList[i])
@@ -80,7 +80,7 @@ func (k Keeper) GetAllPrices(ctx sdk.Context) (list []types.Prices) {
 		if nextRoundID {
 			price.NextRoundID = binary.BigEndian.Uint64(iterator.Value())
 		} else {
-			var val types.PriceWithTimeAndRound
+			var val types.PriceTimeRound
 			k.cdc.MustUnmarshal(iterator.Value(), &val)
 			price.PriceList = append(price.PriceList, &val)
 		}
@@ -91,7 +91,7 @@ func (k Keeper) GetAllPrices(ctx sdk.Context) (list []types.Prices) {
 	return list
 }
 
-func (k Keeper) AppendPriceTR(ctx sdk.Context, tokenID uint64, priceTR types.PriceWithTimeAndRound) {
+func (k Keeper) AppendPriceTR(ctx sdk.Context, tokenID uint64, priceTR types.PriceTimeRound) {
 	nextRoundID := k.GetNextRoundID(ctx, tokenID)
 	if nextRoundID != priceTR.RoundID {
 		return
@@ -103,7 +103,7 @@ func (k Keeper) AppendPriceTR(ctx sdk.Context, tokenID uint64, priceTR types.Pri
 }
 
 // func(k Keeper) SetPriceTR(ctx sdk.Context, tokenID int32, priceTR){}
-func (k Keeper) GetPriceTRRoundID(ctx sdk.Context, tokenID uint64, roundID uint64) (price types.PriceWithTimeAndRound, found bool) {
+func (k Keeper) GetPriceTRRoundID(ctx sdk.Context, tokenID uint64, roundID uint64) (price types.PriceTimeRound, found bool) {
 	store := k.getPriceTRStore(ctx, tokenID)
 
 	b := store.Get(types.PricesRoundKey(roundID))
@@ -116,7 +116,7 @@ func (k Keeper) GetPriceTRRoundID(ctx sdk.Context, tokenID uint64, roundID uint6
 	return
 }
 
-func (k Keeper) GetPriceTRLatest(ctx sdk.Context, tokenID uint64) (price types.PriceWithTimeAndRound, found bool) {
+func (k Keeper) GetPriceTRLatest(ctx sdk.Context, tokenID uint64) (price types.PriceTimeRound, found bool) {
 	//	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefix(types.PricesKeyPrefix))
 	//	store = prefix.NewStore(store, types.PricesKey(tokenID))
 	store := k.getPriceTRStore(ctx, tokenID)

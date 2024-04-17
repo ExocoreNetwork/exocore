@@ -197,7 +197,7 @@ func (am AppModule) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.Val
 			)
 		} else {
 			nextRoundID := am.keeper.GetNextRoundID(ctx, tokenID)
-			am.keeper.AppendPriceTR(ctx, tokenID, types.PriceWithTimeAndRound{
+			am.keeper.AppendPriceTR(ctx, tokenID, types.PriceTimeRound{
 				RoundID: nextRoundID,
 			})
 			logInfo += fmt.Sprintf(", roundID:%d, price:-", nextRoundID)

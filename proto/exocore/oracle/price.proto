@@ -33,7 +33,7 @@ message PriceSource{
 }
 
 // price with its specified timestamp and roundid(if from deteministic source)
-message PriceWithTimeAndRound {
+message PriceTimeRound {
   // price
   string price = 1;
   // decimal of the corresponding price

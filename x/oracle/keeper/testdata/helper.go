@@ -18,8 +18,8 @@ func newPS(sourceID uint64, prices ...*types.PriceTimeDetID) *types.PriceSource 
 	}
 }
 
-func newPTR(price string, roundID uint64) *types.PriceWithTimeAndRound {
-	return &types.PriceWithTimeAndRound{
+func newPTR(price string, roundID uint64) *types.PriceTimeRound {
+	return &types.PriceTimeRound{
 		Price:     price,
 		Decimal:   18,
 		Timestamp: "",
@@ -27,7 +27,7 @@ func newPTR(price string, roundID uint64) *types.PriceWithTimeAndRound {
 	}
 }
 
-func newPrices(tokenID uint64, nextRoundID uint64, pList ...*types.PriceWithTimeAndRound) types.Prices {
+func newPrices(tokenID uint64, nextRoundID uint64, pList ...*types.PriceTimeRound) types.Prices {
 	return types.Prices{
 		TokenID:     tokenID,
 		NextRoundID: nextRoundID,

@@ -17,7 +17,7 @@ func TestGenesis(t *testing.T) {
 		PricesList: []types.Prices{
 			{
 				TokenID: 1,
-				PriceList: []*types.PriceWithTimeAndRound{
+				PriceList: []*types.PriceTimeRound{
 					{
 						Price:     "100",
 						Decimal:   1,
@@ -29,7 +29,7 @@ func TestGenesis(t *testing.T) {
 			},
 			{
 				TokenID: 2,
-				PriceList: []*types.PriceWithTimeAndRound{
+				PriceList: []*types.PriceTimeRound{
 					{
 						Price:     "109",
 						Decimal:   1,

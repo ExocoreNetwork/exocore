@@ -13,5 +13,5 @@ message Prices {
   // next round id of the price to be updated
   uint64 next_round_id = 2 [(gogoproto.customname) = "NextRoundID"];
   // price list of all history round prices for the token
-  repeated PriceWithTimeAndRound price_list = 3;
+  repeated PriceTimeRound price_list = 3;
 }

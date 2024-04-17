@@ -23,7 +23,7 @@ func createNPrices(keeper *keeper.Keeper, ctx sdk.Context, n int) []types.Prices
 		items[i] = types.Prices{
 			TokenID:     uint64(i + 1),
 			NextRoundID: 2,
-			PriceList: []*types.PriceWithTimeAndRound{
+			PriceList: []*types.PriceTimeRound{
 				testdata.PTR1,
 				testdata.PTR2,
 				testdata.PTR3,
@@ -42,7 +42,7 @@ func TestPricesGet(t *testing.T) {
 	rst, found := keeper.GetPrices(ctx, 1)
 	require.True(t, found)
 	pRes := testdata.P1
-	pRes.PriceList = append([]*types.PriceWithTimeAndRound{{}}, testdata.P1.PriceList...)
+	pRes.PriceList = append([]*types.PriceTimeRound{{}}, testdata.P1.PriceList...)
 	require.Equal(t, pRes, rst)
 	// items := createNPrices(keeper, ctx, 10)
 	//

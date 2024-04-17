@@ -26,7 +26,7 @@ func PricesKey(
 	return key
 }
 
-// PricesRoundKey returns the store key to retrieve a PriceWithTimeAndRound from the index fields
+// PricesRoundKey returns the store key to retrieve a PriceTimeRound from the index fields
 func PricesRoundKey(
 	roundID uint64,
 ) []byte {

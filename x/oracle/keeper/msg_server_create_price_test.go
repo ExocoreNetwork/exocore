@@ -115,7 +115,7 @@ var _ = Describe("MsgCreatePrice", func() {
 			Expect(prices[0]).Should(BeEquivalentTo(types.Prices{
 				TokenID:     1,
 				NextRoundID: 2,
-				PriceList: []*types.PriceWithTimeAndRound{
+				PriceList: []*types.PriceTimeRound{
 					{
 						Price:     testdata.PTD2.Price,
 						Decimal:   testdata.PTD2.Decimal,
