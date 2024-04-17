@@ -46,7 +46,7 @@ func recacheAggregatorContext(ctx sdk.Context, agc *aggregator.AggregatorContext
 	h, ok := k.GetValidatorUpdateBlock(ctx)
 	recentParamsMap := k.GetAllRecentParamsAsMap(ctx)
 	if !ok || recentParamsMap == nil {
-		// no cache, this is the very first running, so go to initial proces instead
+		// no cache, this is the very first running, so go to initial process instead
 		return false
 	}
 

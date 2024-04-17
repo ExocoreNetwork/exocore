@@ -9,15 +9,15 @@ import (
 )
 
 // CreatePrice proposes price for new round of specific tokenFeeder
-func (k msgServer) CreatePrice(goCtx context.Context, msg *types.MsgCreatePrice) (*types.MsgCreatePriceResponse, error) {
+func (ms msgServer) CreatePrice(goCtx context.Context, msg *types.MsgCreatePrice) (*types.MsgCreatePriceResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
-	newItem, caches, err := GetAggregatorContext(ctx, k.Keeper).NewCreatePrice(ctx, msg)
+	newItem, caches, err := GetAggregatorContext(ctx, ms.Keeper).NewCreatePrice(ctx, msg)
 	if err != nil {
 		return nil, err
 	}
 
-	logger := k.Keeper.Logger(ctx)
+	logger := ms.Keeper.Logger(ctx)
 	logger.Info("add price proposal for aggregation", "feederID", msg.FeederId, "basedBlock", msg.BasedBlock, "proposer", msg.Creator)
 
 	ctx.EventManager().EmitEvent(sdk.NewEvent(
@@ -30,7 +30,7 @@ func (k msgServer) CreatePrice(goCtx context.Context, msg *types.MsgCreatePrice)
 
 	if caches != nil {
 		if newItem != nil {
-			k.AppendPriceTR(ctx, newItem.TokenId, newItem.PriceTR)
+			ms.AppendPriceTR(ctx, newItem.TokenId, newItem.PriceTR)
 
 			logger.Info("final price aggregation done", "feederID", msg.FeederId, "roundID", newItem.PriceTR.RoundId, "price", newItem.PriceTR.Price)
 

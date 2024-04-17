@@ -9,7 +9,7 @@ import (
 	"github.com/spf13/cast"
 )
 
-//func CmdListPrices() *cobra.Command {
+// func CmdListPrices() *cobra.Command {
 //	cmd := &cobra.Command{
 //		Use:   "list-prices",
 //		Short: "list all prices",

@@ -26,7 +26,7 @@ type roundInfo struct {
 	status int32
 }
 
-// AggregatorContext keeps memory cache for state params, validatorset, and updatedthese values as they updated on chain. And it keeps the infomation to track all tokenFeeders' status and data collection
+// AggregatorContext keeps memory cache for state params, validatorset, and updatedthese values as they updated on chain. And it keeps the information to track all tokenFeeders' status and data collection
 type AggregatorContext struct {
 	params *common.Params
 
@@ -131,7 +131,7 @@ func (agc *AggregatorContext) FillPrice(msg *types.MsgCreatePrice) (*priceItemKV
 				RoundId:   agc.rounds[msg.FeederId].nextRoundId,
 			}}, &cache.CacheItemM{FeederId: msg.FeederId}, nil
 		}
-		return nil, &cache.CacheItemM{msg.FeederId, listFilled, msg.Creator}, nil
+		return nil, &cache.CacheItemM{FeederId: msg.FeederId, PSources: listFilled, Validator: msg.Creator}, nil
 	}
 
 	// return nil, nil, errors.New("no valid price proposal to add for aggregation")
@@ -184,10 +184,6 @@ func (agc *AggregatorContext) SealRound(ctx sdk.Context, force bool) (success []
 	}
 	return success, failed
 }
-
-//func (agc *AggregatorContext) ForceSeal(ctx sdk.Context) (success []*priceItemKV, failed []int32) {
-//
-//}
 
 func (agc *AggregatorContext) PrepareRound(ctx sdk.Context, block uint64) {
 	// block>0 means recache initialization, all roundInfo is empty
@@ -257,10 +253,6 @@ func (agc *AggregatorContext) SetValidatorPowers(vp map[string]*big.Int) {
 func (agc *AggregatorContext) GetValidatorPowers() (vp map[string]*big.Int) {
 	return agc.validatorsPower
 }
-
-//func (agc *AggregatorContext) SetTotalPower(power *big.Int) {
-//	agc.totalPower = power
-//}
 
 func NewAggregatorContext() *AggregatorContext {
 	return &AggregatorContext{

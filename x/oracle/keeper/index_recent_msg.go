@@ -1,4 +1,4 @@
-// nolint
+//nolint:dupl
 package keeper
 
 import (

@@ -35,7 +35,7 @@ func (k Keeper) GetPrices(
 		b := store.Get(types.PricesRoundKey(i))
 		val.PriceList[i] = &types.PriceWithTimeAndRound{}
 		if b != nil {
-			// should alwyas be true since we don't delete prices from history round
+			// should always be true since we don't delete prices from history round
 			k.cdc.MustUnmarshal(b, val.PriceList[i])
 			found = true
 		}

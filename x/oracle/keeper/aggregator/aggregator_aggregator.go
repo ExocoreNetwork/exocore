@@ -48,7 +48,7 @@ type aggregator struct {
 	dsPrices map[uint64]string
 }
 
-// fill price from validator submitting into aggregator, and calculation the voting power and check with the consensus status of deterministic soruce value to decide when to do the aggregation
+// fill price from validator submitting into aggregator, and calculation the voting power and check with the consensus status of deterministic source value to decide when to do the aggregation
 // TODO: currently apply mode=1 in V1, add swith modes
 func (agg *aggregator) fillPrice(pSources []*types.PriceWithSource, validator string, power *big.Int) {
 	report := agg.getReport(validator)
@@ -109,7 +109,7 @@ func (agg *aggregator) confirmDSPrice(confirmedRounds []*confirmedPrice) {
 	for _, priceSourceRound := range confirmedRounds {
 		// update the latest round-detId for DS, TODO: in v1 we only update this value once since calculator will just ignore any further value once a detId has reached consensus
 		//		agg.dsPrices[priceSourceRound.sourceId] = priceSourceRound.detId
-		// this id's comparision need to format id to make sure them be the same length
+		// this id's comparison need to format id to make sure them be the same length
 		if id := agg.dsPrices[priceSourceRound.sourceId]; len(id) == 0 || (len(id) > 0 && id < priceSourceRound.detId) {
 			agg.dsPrices[priceSourceRound.sourceId] = priceSourceRound.detId
 			for _, report := range agg.reports {

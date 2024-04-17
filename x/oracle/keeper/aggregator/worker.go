@@ -12,7 +12,7 @@ type worker struct {
 	sealed  bool
 	price   string
 	decimal int32
-	// mainly used for deterministic source data to check conflics and validation
+	// mainly used for deterministic source data to check conflicts and validation
 	f *filter
 	// used to get to consensus on deterministic source's data
 	c *calculator
@@ -50,20 +50,13 @@ func (w *worker) seal() {
 	w.a = nil
 }
 
-//func (w *worker) getPrice() (string, int32) {
-//	if w.sealed {
-//		return w.price, w.decimal
-//	}
-//	return "", 0
-//}
-
 // newWorker new a instance for a tokenFeeder's specific round
-func newWorker(feederId uint64, agc *AggregatorContext) *worker {
+func newWorker(feederID uint64, agc *AggregatorContext) *worker {
 	return &worker{
 		f:       newFilter(common.MaxNonce, common.MaxDetId),
 		c:       newCalculator(len(agc.validatorsPower), agc.totalPower),
 		a:       newAggregator(len(agc.validatorsPower), agc.totalPower),
-		decimal: agc.params.GetTokenInfo(feederId).Decimal,
+		decimal: agc.params.GetTokenInfo(feederID).Decimal,
 		ctx:     agc,
 	}
 }

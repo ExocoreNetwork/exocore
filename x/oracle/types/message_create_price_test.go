@@ -6,7 +6,7 @@ import (
 	"github.com/ExocoreNetwork/exocore/testutil/sample"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 
-	//sdkerrors "cosmossdk.io/errors""
+	// sdkerrors "cosmossdk.io/errors""
 	"github.com/stretchr/testify/require"
 )
 
