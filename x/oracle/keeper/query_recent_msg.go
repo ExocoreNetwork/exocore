@@ -23,7 +23,7 @@ func (k Keeper) RecentMsgAll(goCtx context.Context, req *types.QueryAllRecentMsg
 	store := ctx.KVStore(k.storeKey)
 	recentMsgStore := prefix.NewStore(store, types.KeyPrefix(types.RecentMsgKeyPrefix))
 
-	pageRes, err := query.Paginate(recentMsgStore, req.Pagination, func(key []byte, value []byte) error {
+	pageRes, err := query.Paginate(recentMsgStore, req.Pagination, func(_ []byte, value []byte) error {
 		var recentMsg types.RecentMsg
 		if err := k.cdc.Unmarshal(value, &recentMsg); err != nil {
 			return err

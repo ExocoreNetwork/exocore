@@ -23,7 +23,7 @@ func (k Keeper) RecentParamsAll(goCtx context.Context, req *types.QueryAllRecent
 	store := ctx.KVStore(k.storeKey)
 	recentParamsStore := prefix.NewStore(store, types.KeyPrefix(types.RecentParamsKeyPrefix))
 
-	pageRes, err := query.Paginate(recentParamsStore, req.Pagination, func(key []byte, value []byte) error {
+	pageRes, err := query.Paginate(recentParamsStore, req.Pagination, func(_ []byte, value []byte) error {
 		var recentParams types.RecentParams
 		if err := k.cdc.Unmarshal(value, &recentParams); err != nil {
 			return err

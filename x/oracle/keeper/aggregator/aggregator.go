@@ -140,7 +140,7 @@ func (agc *AggregatorContext) FillPrice(msg *types.MsgCreatePrice) (*priceItemKV
 
 // NewCreatePrice receives msgCreatePrice message, and goes process: filter->aggregator, filter->calculator->aggregator
 // non-deterministic data will goes directly into aggregator, and deterministic data will goes into calculator first to get consensus on the deterministic id.
-func (agc *AggregatorContext) NewCreatePrice(ctx sdk.Context, msg *types.MsgCreatePrice) (*priceItemKV, *cache.ItemM, error) {
+func (agc *AggregatorContext) NewCreatePrice(_ sdk.Context, msg *types.MsgCreatePrice) (*priceItemKV, *cache.ItemM, error) {
 	if err := agc.checkMsg(msg); err != nil {
 		return nil, nil, types.ErrInvalidMsg.Wrap(err.Error())
 	}

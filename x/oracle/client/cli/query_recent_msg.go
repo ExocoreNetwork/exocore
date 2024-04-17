@@ -14,7 +14,7 @@ func CmdListRecentMsg() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "list-recent-msg",
 		Short: "list all recentMsg",
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(cmd *cobra.Command, _ []string) error {
 			clientCtx, err := client.GetClientQueryContext(cmd)
 			if err != nil {
 				return err
