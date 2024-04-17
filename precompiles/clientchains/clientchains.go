@@ -93,7 +93,6 @@ func (p Precompile) Run(
 	defer cmn.HandleGasError(ctx, contract, initialGas, &err)()
 
 	bz, err = p.GetClientChains(ctx, method, args)
-
 	if err != nil {
 		ctx.Logger().Error(
 			"call client chains precompile error",
