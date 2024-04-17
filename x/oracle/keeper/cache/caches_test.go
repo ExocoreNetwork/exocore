@@ -61,7 +61,7 @@ func TestCache(t *testing.T) {
 			msgItems := []*ItemM{
 				{
 					FeederID: 1,
-					PSources: []*types.PriceWithSource{
+					PSources: []*types.PriceSource{
 						{
 							SourceID: 1,
 							Prices: []*types.PriceTimeDetID{
@@ -73,14 +73,14 @@ func TestCache(t *testing.T) {
 				},
 				{
 					FeederID: 1,
-					PSources: []*types.PriceWithSource{
+					PSources: []*types.PriceSource{
 						{SourceID: 1, Prices: []*types.PriceTimeDetID{{Price: "600000", Decimal: 1, Timestamp: "-", DetID: "4"}, {Price: "620000", Decimal: 1, Timestamp: "-", DetID: "3"}}},
 					},
 					Validator: "v1",
 				},
 				{
 					FeederID:  2,
-					PSources:  []*types.PriceWithSource{{SourceID: 1, Prices: []*types.PriceTimeDetID{{Price: "30000", Decimal: 1, Timestamp: "-", DetID: "4"}, {Price: "32000", Decimal: 1, Timestamp: "-", DetID: "3"}}}},
+					PSources:  []*types.PriceSource{{SourceID: 1, Prices: []*types.PriceTimeDetID{{Price: "30000", Decimal: 1, Timestamp: "-", DetID: "4"}, {Price: "32000", Decimal: 1, Timestamp: "-", DetID: "3"}}}},
 					Validator: "v2",
 				},
 			}

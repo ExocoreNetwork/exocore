@@ -11,8 +11,8 @@ func newPTD(detID, price string) *types.PriceTimeDetID {
 	}
 }
 
-func newPS(sourceID uint64, prices ...*types.PriceTimeDetID) *types.PriceWithSource {
-	return &types.PriceWithSource{
+func newPS(sourceID uint64, prices ...*types.PriceTimeDetID) *types.PriceSource {
+	return &types.PriceSource{
 		SourceID: sourceID,
 		Prices:   prices,
 	}

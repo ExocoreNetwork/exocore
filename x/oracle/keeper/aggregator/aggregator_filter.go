@@ -34,7 +34,7 @@ func (f *filter) newVSSet() *common.Set[string] {
 }
 
 // add priceWithSource into calculator list and aggregator list depends on the source type(deterministic/non-deterministic)
-func (f *filter) addPSource(pSources []*types.PriceWithSource, validator string) (list4Calculator []*types.PriceWithSource, list4Aggregator []*types.PriceWithSource) {
+func (f *filter) addPSource(pSources []*types.PriceSource, validator string) (list4Calculator []*types.PriceSource, list4Aggregator []*types.PriceSource) {
 	for _, pSource := range pSources {
 		// check conflicts or duplicate data for the same roundID within the same source
 		if len(pSource.Prices[0].DetID) > 0 {
@@ -45,7 +45,7 @@ func (f *filter) addPSource(pSources []*types.PriceWithSource, validator string)
 				f.validatorSource[k] = detIDs
 			}
 
-			pSourceTmp := &types.PriceWithSource{
+			pSourceTmp := &types.PriceSource{
 				SourceID: pSource.SourceID,
 				Prices:   make([]*types.PriceTimeDetID, 0, len(pSource.Prices)),
 				Desc:     pSource.Desc,
@@ -70,7 +70,7 @@ func (f *filter) addPSource(pSources []*types.PriceWithSource, validator string)
 }
 
 // filtrate checks data from MsgCreatePrice, and will drop the conflict or duplicate data, it will then fill data into calculator(for deterministic source data to get to consensus) and aggregator (for both deterministic and non0-deterministic source data run 2-layers aggregation to get the final price)
-func (f *filter) filtrate(price *types.MsgCreatePrice) (list4Calculator []*types.PriceWithSource, list4Aggregator []*types.PriceWithSource) {
+func (f *filter) filtrate(price *types.MsgCreatePrice) (list4Calculator []*types.PriceSource, list4Aggregator []*types.PriceSource) {
 	validator := price.Creator
 	nonces := f.validatorNonce[validator]
 	if nonces == nil {

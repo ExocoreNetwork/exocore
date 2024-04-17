@@ -15,7 +15,7 @@ type (
 	ItemP *common.Params
 	ItemM struct {
 		FeederID  uint64
-		PSources  []*types.PriceWithSource
+		PSources  []*types.PriceSource
 		Validator string
 	}
 )

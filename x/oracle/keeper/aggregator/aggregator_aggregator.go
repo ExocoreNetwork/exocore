@@ -50,7 +50,7 @@ type aggregator struct {
 
 // fill price from validator submitting into aggregator, and calculation the voting power and check with the consensus status of deterministic source value to decide when to do the aggregation
 // TODO: currently apply mode=1 in V1, add swith modes
-func (agg *aggregator) fillPrice(pSources []*types.PriceWithSource, validator string, power *big.Int) {
+func (agg *aggregator) fillPrice(pSources []*types.PriceSource, validator string, power *big.Int) {
 	report := agg.getReport(validator)
 	if report == nil {
 		report = &reportPrice{

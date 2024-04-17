@@ -20,7 +20,7 @@ message PriceTimeDetID {
 }
 
 // price with its corresponding source
-message PriceWithSource{
+message PriceSource{
   // source_id refers to id from Params.SourceList, where this price fetched from, 0 is reserved for custom usage
   uint64 source_id = 1 [(gogoproto.customname) = "SourceID"];
   //if source is deteministic like chainlink with roundID, set this value with which returned from source

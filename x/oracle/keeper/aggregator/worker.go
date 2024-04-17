@@ -21,7 +21,7 @@ type worker struct {
 	ctx *AggregatorContext
 }
 
-func (w *worker) do(msg *types.MsgCreatePrice) []*types.PriceWithSource {
+func (w *worker) do(msg *types.MsgCreatePrice) []*types.PriceSource {
 	validator := msg.Creator
 	power := w.ctx.validatorsPower[validator]
 	list4Calculator, list4Aggregator := w.f.filtrate(msg)

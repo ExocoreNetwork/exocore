@@ -45,8 +45,7 @@ func CmdCreatePrice() *cobra.Command {
 			if err != nil || decimal < 0 {
 				return errors.New("decimal invalid")
 			}
-			// prices := make([]*types.PriceWithSource, 0, 1)
-			prices := []*types.PriceWithSource{
+			prices := []*types.PriceSource{
 				{
 					SourceID: sourceID,
 					Prices:   make([]*types.PriceTimeDetID, 0, 1),

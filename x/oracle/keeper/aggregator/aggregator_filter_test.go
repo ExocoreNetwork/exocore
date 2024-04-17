@@ -17,7 +17,7 @@ func TestFilter(t *testing.T) {
 		ptd5 := newPTD("5", "602000")
 		ptd6 := newPTD("6", "603000")
 
-		ps1 := &types.PriceWithSource{
+		ps1 := &types.PriceSource{
 			SourceID: 1,
 			Prices: []*types.PriceTimeDetID{
 				ptd1,
@@ -25,7 +25,7 @@ func TestFilter(t *testing.T) {
 			},
 		}
 
-		ps := []*types.PriceWithSource{ps1}
+		ps := []*types.PriceSource{ps1}
 		msg := &types.MsgCreatePrice{
 			Creator:    "v1",
 			FeederID:   1,
@@ -69,7 +69,7 @@ func TestFilter(t *testing.T) {
 			l4c, l4a = f.filtrate(msg)
 			ps1.Prices = ps1.Prices[:1]
 			ps1.Prices[0] = ptd3
-			psReturn := []*types.PriceWithSource{ps1}
+			psReturn := []*types.PriceSource{ps1}
 			So(l4c, ShouldResemble, psReturn)
 			So(l4a, ShouldResemble, psReturn)
 		})

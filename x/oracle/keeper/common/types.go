@@ -60,7 +60,7 @@ func (p Params) GetTokenInfo(feederID uint64) *types.Token {
 	return nil
 }
 
-func (p Params) CheckRules(feederID uint64, prices []*types.PriceWithSource) (bool, error) {
+func (p Params) CheckRules(feederID uint64, prices []*types.PriceSource) (bool, error) {
 	feeder := p.TokenFeeders[feederID]
 	rule := p.Rules[feeder.RuleID]
 	// specified sources set, v1 use this rule to set `chainlink` as official source

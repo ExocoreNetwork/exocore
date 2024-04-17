@@ -46,7 +46,7 @@ func (agc *AggregatorContext) sanityCheck(msg *types.MsgCreatePrice) error {
 	// sanity check
 	// TODO: check nonce [1,3] in anteHandler, related to params, may not able
 	// TODO: check the msgCreatePrice's Decimal is correct with params setting
-	// TODO: check len(price.prices)>0, len(price.prices._range_eachPriceWithSource.Prices)>0, at least has one source, and for each source has at least one price
+	// TODO: check len(price.prices)>0, len(price.prices._range_eachPriceSource.Prices)>0, at least has one source, and for each source has at least one price
 	// TODO: check for each source, at most maxDetId count price (now in filter, ->anteHandler)
 
 	if agc.validatorsPower[msg.Creator] == nil {

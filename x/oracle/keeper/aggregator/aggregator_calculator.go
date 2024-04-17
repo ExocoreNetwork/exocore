@@ -127,7 +127,7 @@ func (c *calculator) getOrNewSourceID(sourceID uint64) *roundPricesList {
 
 // fillPrice called upon new MsgCreatPrice arrived, to trigger the calculation to get to consensus on the same roundID_of_deterministic_source
 // v1 use mode1, TODO: switch modes
-func (c *calculator) fillPrice(pSources []*types.PriceWithSource, _ string, power *big.Int) (confirmedRounds []*confirmedPrice) {
+func (c *calculator) fillPrice(pSources []*types.PriceSource, _ string, power *big.Int) (confirmedRounds []*confirmedPrice) {
 	for _, pSource := range pSources {
 		rounds := c.getOrNewSourceID(pSource.SourceID)
 		if rounds.hasConfirmedDetID() {

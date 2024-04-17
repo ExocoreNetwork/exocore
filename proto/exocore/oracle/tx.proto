@@ -26,7 +26,7 @@ message MsgCreatePrice {
   uint64 feeder_id = 2 [(gogoproto.customname) = "FeederID"];
 
   // prices price with its corresponding source
-  repeated PriceWithSource prices = 3;
+  repeated PriceSource prices = 3;
   //on which block commit does this message be built on
   uint64 based_block = 4;
   // nonce represents the unique number to disginguish duplicated messages
