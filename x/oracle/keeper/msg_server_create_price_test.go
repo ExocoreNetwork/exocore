@@ -3,13 +3,13 @@ package keeper_test
 import (
 	reflect "reflect"
 
-	"bou.ke/monkey"
 	math "cosmossdk.io/math"
 	"github.com/ExocoreNetwork/exocore/x/oracle/keeper"
 	"github.com/ExocoreNetwork/exocore/x/oracle/keeper/cache"
 	"github.com/ExocoreNetwork/exocore/x/oracle/keeper/common"
 	"github.com/ExocoreNetwork/exocore/x/oracle/keeper/testdata"
 	"github.com/ExocoreNetwork/exocore/x/oracle/types"
+	. "github.com/agiledragon/gomonkey/v2"
 	"github.com/cosmos/cosmos-sdk/testutil/mock"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	stakingKeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
@@ -25,6 +25,7 @@ import (
 var _ = Describe("MsgCreatePrice", func() {
 	var operator1, operator2, operator3 sdk.ValAddress
 	var c *cache.Cache
+	var p *Patches
 	BeforeEach(func() {
 		ks.Reset()
 		Expect(ks.ms).ToNot(BeNil())
@@ -55,18 +56,21 @@ var _ = Describe("MsgCreatePrice", func() {
 		validatorC.EXPECT().GetOperator().Return(operator3)
 
 		//TODO: remove monkey patch for test
-		monkey.PatchInstanceMethod(reflect.TypeOf(stakingKeeper.Keeper{}), "IterateBondedValidatorsByPower", func(k stakingKeeper.Keeper, ctx sdk.Context, f func(index int64, validator stakingtypes.ValidatorI) bool) {
+		p = ApplyMethod(reflect.TypeOf(stakingKeeper.Keeper{}), "IterateBondedValidatorsByPower", func(k stakingKeeper.Keeper, ctx sdk.Context, f func(index int64, validator stakingtypes.ValidatorI) bool) {
 			f(0, validatorC)
 			f(0, validatorC)
 			f(0, validatorC)
 		})
-		monkey.PatchInstanceMethod(reflect.TypeOf(stakingKeeper.Keeper{}), "GetLastTotalPower", func(k stakingKeeper.Keeper, ctx sdk.Context) math.Int { return math.NewInt(3) })
+		p.ApplyMethod(reflect.TypeOf(stakingKeeper.Keeper{}), "GetLastTotalPower", func(k stakingKeeper.Keeper, ctx sdk.Context) math.Int { return math.NewInt(3) })
 
 		Expect(ks.ctx.BlockHeight()).To(Equal(int64(2)))
 	})
 
 	AfterEach(func() {
 		ks.ctrl.Finish()
+		if p != nil {
+			p.Reset()
+		}
 	})
 
 	Context("3 validators with 1 voting power each", func() {

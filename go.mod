@@ -3,11 +3,11 @@ module github.com/ExocoreNetwork/exocore
 go 1.21
 
 require (
-	bou.ke/monkey v1.0.2
 	cosmossdk.io/errors v1.0.0
 	cosmossdk.io/math v1.0.1
 	cosmossdk.io/simapp v0.0.0-20230608160436-666c345ad23d
 	cosmossdk.io/tools/rosetta v0.2.1
+	github.com/agiledragon/gomonkey/v2 v2.11.0
 	github.com/armon/go-metrics v0.4.1
 	github.com/cometbft/cometbft v0.37.2
 	github.com/cometbft/cometbft-db v0.8.0
