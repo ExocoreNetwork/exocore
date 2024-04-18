@@ -6,6 +6,7 @@ import (
 	avsManagerPrecompile "github.com/ExocoreNetwork/exocore/precompiles/avs"
 	taskPrecompile "github.com/ExocoreNetwork/exocore/precompiles/avsTask"
 	blsPrecompile "github.com/ExocoreNetwork/exocore/precompiles/bls"
+	clientchainsprecompile "github.com/ExocoreNetwork/exocore/precompiles/clientchains"
 	delegationprecompile "github.com/ExocoreNetwork/exocore/precompiles/delegation"
 	depositprecompile "github.com/ExocoreNetwork/exocore/precompiles/deposit"
 	rewardPrecompile "github.com/ExocoreNetwork/exocore/precompiles/reward"
@@ -68,6 +69,14 @@ func AvailablePrecompiles(
 	}
 
 	// add exoCore chain preCompiles
+	clientChainsPrecompile, err := clientchainsprecompile.NewPrecompile(
+		stakingStateKeeper,
+		authzKeeper,
+	)
+	if err != nil {
+		panic(fmt.Errorf("failed to load client chains precompile: %w", err))
+	}
+
 	depositPrecompile, err := depositprecompile.NewPrecompile(
 		stakingStateKeeper,
 		depositKeeper,
@@ -123,6 +132,7 @@ func AvailablePrecompiles(
 	precompiles[slashPrecompile.Address()] = slashPrecompile
 	precompiles[rewardPrecompile.Address()] = rewardPrecompile
 	precompiles[withdrawPrecompile.Address()] = withdrawPrecompile
+	precompiles[clientChainsPrecompile.Address()] = clientChainsPrecompile
 	precompiles[depositPrecompile.Address()] = depositPrecompile
 	precompiles[delegationPrecompile.Address()] = delegationPrecompile
 	precompiles[avsManagerPrecompile.Address()] = avsManagerPrecompile

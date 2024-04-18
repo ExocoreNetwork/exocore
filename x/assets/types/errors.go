@@ -10,6 +10,7 @@ var (
 		ModuleName, 0,
 		"there is no stored key for the input chain index",
 	)
+
 	ErrNoClientChainAssetKey = errorsmod.Register(
 		ModuleName, 1,
 		"there is no stored key for the input assetID",
@@ -79,5 +80,10 @@ var (
 	ErrInvalidGenesisData = errorsmod.Register(
 		ModuleName, 14,
 		"the genesis data supplied is invalid",
+	)
+
+	ErrInvalidInput = errorsmod.Register(
+		ModuleName, 15,
+		"the input is invalid",
 	)
 )
