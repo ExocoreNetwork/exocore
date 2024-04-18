@@ -78,6 +78,7 @@ func initAggregatorContext4Test() *AggregatorContext {
 	return agc
 }
 
+// TODO: remove monkey patch for test
 func patchBlockHeight(h int64) *monkey.PatchGuard {
 	return monkey.PatchInstanceMethod(reflect.TypeOf(sdk.Context{}), "BlockHeight", func(sdk.Context) int64 {
 		return h

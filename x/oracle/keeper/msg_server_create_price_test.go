@@ -54,6 +54,7 @@ var _ = Describe("MsgCreatePrice", func() {
 		validatorC.EXPECT().GetOperator().Return(operator2)
 		validatorC.EXPECT().GetOperator().Return(operator3)
 
+		//TODO: remove monkey patch for test
 		monkey.PatchInstanceMethod(reflect.TypeOf(stakingKeeper.Keeper{}), "IterateBondedValidatorsByPower", func(k stakingKeeper.Keeper, ctx sdk.Context, f func(index int64, validator stakingtypes.ValidatorI) bool) {
 			f(0, validatorC)
 			f(0, validatorC)
