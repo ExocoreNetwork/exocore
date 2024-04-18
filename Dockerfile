@@ -23,7 +23,7 @@ WORKDIR /root
 COPY --from=build-env /go/src/github.com/ExocoreNetwork/exocore/build/exocored /usr/bin/exocored
 COPY --from=build-env /go/bin/toml-cli /usr/bin/toml-cli
 
-RUN apk add --no-cache ca-certificates=20230506-r0 jq=1.6-r4 curl=8.5.0-r0 bash=5.2.15-r5 vim=9.0.2073-r0 lz4=1.9.4-r4 rclone=1.62.2-r6 \
+RUN apk add --no-cache ca-certificates=20230506-r0 libstdc++=12.2.1_git20220924-r10 jq=1.6-r4 curl=8.5.0-r0 bash=5.2.15-r5 vim=9.0.2073-r0 lz4=1.9.4-r4 rclone=1.62.2-r6 \
     && addgroup -g 1000 exocore \
     && adduser -S -h /home/exocore -D exocore -u 1000 -G exocore
 
