@@ -17,30 +17,15 @@ message DelegationInfoReq {
   string asset_id = 2 [(gogoproto.customname) = "AssetID"];
 }
 
+// StakerMap is a map to save a batch of stakers
+message StakerMap {
+  // stakers is a map, the bool value is useless, just because the protobuf
+  // doesn't support the nil value. The key is stakerID
+  map<string,bool> stakers = 1;
+}
+
 // DelegationAmounts is the delegation amount response for a single delegation.
 message DelegationAmounts {
-  // undelegatable_amount is the amount that can be undelegated.
-  string undelegatable_amount = 1
-  [
-    (cosmos_proto.scalar) = "cosmos.Int",
-    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
-    (gogoproto.nullable) = false
-  ];
-  // wait_undelegation_amount is the amount that is waiting to be unbonded.
-  string wait_undelegation_amount = 2
-  [
-    (cosmos_proto.scalar) = "cosmos.Int",
-    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
-    (gogoproto.nullable) = false
-  ];
-  // undelegatable_after_slash is the amount that can be undelegated after slash
-  string undelegatable_after_slash = 3
-  [
-    (cosmos_proto.scalar) = "cosmos.Int",
-    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
-    (gogoproto.nullable) = false
-  ];
-
   // undelegatable_share is the share that can be undelegated.
   // It's to reduce the state updating when slash occurs.
   // S_j = S * T_j / T, `S` and `T` is the current asset share and amount of operator,
@@ -50,10 +35,18 @@ message DelegationAmounts {
   // so the updated share should be added by it.
   // A special case is the initial delegation, when T = 0 and S = 0, so T_j / T is undefined.
   // For the initial delegation, delegator j who delegates T_j tokens receive S_j = T_j shares.
-  string undelegatable_share = 4
+  string undelegatable_share = 1
   [
     (cosmos_proto.scalar) = "cosmos.Dec",
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+    (gogoproto.nullable) = false
+  ];
+
+  // wait_undelegation_amount is the amount that is waiting to be unbonded.
+  string wait_undelegation_amount = 2
+  [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
     (gogoproto.nullable) = false
   ];
 }
@@ -61,15 +54,8 @@ message DelegationAmounts {
 // QueryDelegationInfoResponse is the response for delegations by staker id and
 // asset id.
 message QueryDelegationInfoResponse {
-  // total_delegated_amount is the total amount that is delegated.
-  string total_delegated_amount = 1
-  [
-    (cosmos_proto.scalar) = "cosmos.Int",
-    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
-    (gogoproto.nullable) = false
-  ];
   // delegation_infos is the delegation information for each operator.
-  map<string, DelegationAmounts> delegation_infos = 2;
+  map<string, DelegationAmounts> delegation_infos = 1;
 }
 
 // SingleDelegationInfoReq is the request to obtain the single delegation information.

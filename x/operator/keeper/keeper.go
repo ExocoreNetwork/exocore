@@ -64,11 +64,11 @@ type OperatorKeeper interface {
 
 	GetUnbondingExpirationBlockNumber(ctx sdk.Context, OperatorAddress sdk.AccAddress, startHeight uint64) uint64
 
-	UpdateOptedInAssetsState(ctx sdk.Context, stakerID, assetID, operatorAddr string, opAmount sdkmath.Int) error
+	//UpdateOptedInAssetsState(ctx sdk.Context, assetID, operatorAddr string, opAmount sdkmath.Int) error
 
 	OptIn(ctx sdk.Context, operatorAddress sdk.AccAddress, AVSAddr string) error
 
 	OptOut(ctx sdk.Context, OperatorAddress sdk.AccAddress, AVSAddr string) error
 
-	Slash(ctx sdk.Context, operatorAddress sdk.AccAddress, AVSAddr, slashContract, slashID string, occurredSateHeight int64, slashProportion sdkmath.LegacyDec) error
+	NoInstantaneousSlash(ctx sdk.Context, operatorAddress sdk.AccAddress, AVSAddr, slashContract, slashID string, occurredSateHeight int64, slashProportion sdkmath.LegacyDec) error
 }

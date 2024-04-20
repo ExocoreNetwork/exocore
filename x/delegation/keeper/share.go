@@ -7,7 +7,14 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-// TokensFromShares calculate the token amount of provided shares, truncated to Int
+// TokensFromShares calculate the token amount of provided shares, then truncated to Int
+// It uses `LegacyDec.Quo` to calculate the quotient, `LegacyDec.Quo` perform a bankers
+// rounding quotient, so the calculated token amount may be either larger or smaller
+// due to precision rounding issues. But it's acceptable, because bankers rounding balances the
+// deviation caused by precision, especially when a large number of restakers undertake
+// undelegation. Additionally, the last undelegation from an operator will undelegate all
+// remaining token to avoid the calculated token amount is bigger than the remaining token
+// caused by the bankers rounding.
 func TokensFromShares(stakerShare, totalShare sdkmath.LegacyDec, operatorAmount sdkmath.Int) (sdkmath.Int, error) {
 	if totalShare.IsZero() {
 		return sdkmath.NewInt(0), delegationtypes.ErrDivisorIsZero
@@ -15,8 +22,12 @@ func TokensFromShares(stakerShare, totalShare sdkmath.LegacyDec, operatorAmount 
 	return (stakerShare.MulInt(operatorAmount)).Quo(totalShare).TruncateInt(), nil
 }
 
-// SharesFromTokens returns the shares of a delegation given a bond amount. It
+// SharesFromTokens returns the shares of a delegation given a delegated amount. It
 // returns an error if the validator has no tokens.
+// It uses `LegacyDec.QuoInt` to calculate the quotient, the calculated result will
+// be truncated through the truncation implemented by golang's standard big.Int.
+// So the calculated share might tend to be smaller, but it seems acceptable, because
+// we need to make sure the staker can't get a bigger share than they should get.
 func SharesFromTokens(totalShare sdkmath.LegacyDec, stakerAmount, operatorAmount sdkmath.Int) (sdkmath.LegacyDec, error) {
 	if operatorAmount.IsZero() {
 		return sdkmath.LegacyZeroDec(), delegationtypes.ErrDivisorIsZero
@@ -89,14 +100,39 @@ func (k Keeper) ValidateUndeleagtionAmount(
 	return share, nil
 }
 
+// CalculateSlashShare calculates the actual slash share according to the slash amount,
+// it will be used when the slash needs to be executed from the share of the staker.
+func (k Keeper) CalculateSlashShare(
+	ctx sdk.Context, operator sdk.AccAddress, stakerID, assetID string, slashAmount sdkmath.Int,
+) (share sdkmath.LegacyDec, err error) {
+	delegationInfo, err := k.GetSingleDelegationInfo(ctx, stakerID, assetID, operator.String())
+	if err != nil {
+		return share, err
+	}
+	info, err := k.assetsKeeper.GetOperatorSpecifiedAssetInfo(ctx, operator, assetID)
+	if err != nil {
+		return share, err
+	}
+	shouldSlashShare, err := SharesFromTokens(info.TotalShare, slashAmount, info.TotalAmount)
+	if err != nil {
+		return share, err
+	}
+	if shouldSlashShare.GT(delegationInfo.UndelegatableShare) {
+		shouldSlashShare = delegationInfo.UndelegatableShare
+	}
+	return shouldSlashShare, nil
+}
+
+// RemoveShareFromOperator is used to remove the share from an operator when an undelegation
+// is submitted, it will return the token amount that should be removed.
 func (k Keeper) RemoveShareFromOperator(
-	ctx sdk.Context, operator sdk.AccAddress, assetID string, share sdkmath.LegacyDec,
+	ctx sdk.Context, isUndelegation bool, operator sdk.AccAddress, assetID string, share sdkmath.LegacyDec,
 ) (token sdkmath.Int, err error) {
 	operatorAssetState, err := k.assetsKeeper.GetOperatorSpecifiedAssetInfo(ctx, operator, assetID)
 	if err != nil {
 		return token, err
 	}
-	if share.LT(operatorAssetState.TotalShare) {
+	if share.GT(operatorAssetState.TotalShare) {
 		return token, delegationtypes.ErrInsufficientShares
 	}
 
@@ -114,13 +150,58 @@ func (k Keeper) RemoveShareFromOperator(
 	}
 
 	delta := assetstype.DeltaOperatorSingleAsset{
-		TotalAmount:         removedToken.Neg(),
-		WaitUnbondingAmount: removedToken,
-		TotalShare:          share.Neg(),
+		TotalAmount: removedToken.Neg(),
+		TotalShare:  share.Neg(),
+	}
+	if isUndelegation {
+		delta.WaitUnbondingAmount = removedToken
 	}
 	err = k.assetsKeeper.UpdateOperatorAssetState(ctx, operator, assetID, delta)
 	if err != nil {
 		return token, err
 	}
 	return token, nil
+}
+
+// RemoveShare updates all states regarding staker and operator when removing share.
+// It might be used for undelegation, slash and native token. For the native token,
+// it will be considered a slash operation in exocore when the asset amount is reduced
+// by the client chain slash.
+func (k Keeper) RemoveShare(
+	ctx sdk.Context, isUndelegation bool, operator sdk.AccAddress, stakerID, assetID string, share sdkmath.LegacyDec,
+) (removeToken sdkmath.Int, err error) {
+	// remove share from operator
+	removeToken, err = k.RemoveShareFromOperator(ctx, isUndelegation, operator, assetID, share)
+	if err != nil {
+		return removeToken, err
+	}
+
+	// update delegation state
+	deltaAmount := &delegationtypes.DeltaDelegationAmounts{
+		UndelegatableShare: share.Neg(),
+	}
+	if isUndelegation {
+		deltaAmount.WaitUndelegationAmount = removeToken
+		// todo: TotalDepositAmount might be influenced by slash and precision loss,
+		// consider removing it, it can be recalculated from the share for RPC query.
+		err = k.assetsKeeper.UpdateStakerAssetState(ctx, stakerID, assetID, assetstype.DeltaStakerSingleAsset{
+			WaitUnbondingAmount: removeToken,
+		})
+		if err != nil {
+			return removeToken, err
+		}
+	}
+	shareIsZero, err := k.UpdateDelegationState(ctx, stakerID, assetID, operator.String(), deltaAmount)
+	if err != nil {
+		return removeToken, err
+	}
+	// if the share is zero, delete the staker from the map to ensure the stakers stored in the map
+	// always own assets from the operator.
+	if shareIsZero {
+		err = k.DeleteStakerForOperator(ctx, operator.String(), assetID, stakerID)
+		if err != nil {
+			return removeToken, err
+		}
+	}
+	return removeToken, nil
 }

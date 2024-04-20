@@ -26,7 +26,7 @@ func TestPrecompileTestSuite(t *testing.T) {
 
 	// Run Ginkgo integration tests
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Distribution Precompile Suite")
+	RunSpecs(t, "delegation Precompile Suite")
 }
 
 func (s *DelegationPrecompileSuite) SetupTest() {

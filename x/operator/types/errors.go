@@ -76,4 +76,9 @@ var (
 		ModuleName, 14,
 		"avs address should be a hex evm contract address",
 	)
+
+	ErrInvalidSlashType = errorsmod.Register(
+		ModuleName, 15,
+		"the slash type is invalid",
+	)
 )

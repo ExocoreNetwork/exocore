@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	errorsmod "cosmossdk.io/errors"
 	sdkmath "cosmossdk.io/math"
 	assetstype "github.com/ExocoreNetwork/exocore/x/assets/types"
 	"github.com/cosmos/cosmos-sdk/store/prefix"
@@ -66,6 +67,27 @@ func (k Keeper) GetStakingAssetInfo(ctx sdk.Context, assetID string) (info *asse
 	ret := assetstype.StakingAssetInfo{}
 	k.cdc.MustUnmarshal(value, &ret)
 	return &ret, nil
+}
+
+func (k Keeper) GetAssetsDecimal(ctx sdk.Context, assets map[string]interface{}) (decimals map[string]uint32, err error) {
+	if assets == nil {
+		return nil, errorsmod.Wrap(assetstype.ErrInputPointerIsNil, "assets is nil")
+	}
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), assetstype.KeyPrefixReStakingAssetInfo)
+	for assetID := range assets {
+		ifExist := store.Has([]byte(assetID))
+		if !ifExist {
+			return nil, assetstype.ErrNoClientChainAssetKey
+		}
+
+		value := store.Get([]byte(assetID))
+
+		ret := assetstype.StakingAssetInfo{}
+		k.cdc.MustUnmarshal(value, &ret)
+		decimals[assetID] = ret.AssetBasicInfo.Decimals
+	}
+
+	return decimals, nil
 }
 
 func (k Keeper) GetAllStakingAssetsInfo(ctx sdk.Context) (allAssets map[string]*assetstype.StakingAssetInfo, err error) {

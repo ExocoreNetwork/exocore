@@ -11,24 +11,16 @@ import (
 // This file provides all functions about operator assets state management.
 
 func (k Keeper) GetOperatorAssetInfos(ctx sdk.Context, operatorAddr sdk.Address, assetsFilter map[string]interface{}) (assetsInfo map[string]*assetstype.OperatorAssetInfo, err error) {
-	store := prefix.NewStore(ctx.KVStore(k.storeKey), assetstype.KeyPrefixOperatorAssetInfos)
-	// the key is the operator address in the bech32 format
-	key := []byte(operatorAddr.String())
-	iterator := sdk.KVStorePrefixIterator(store, key)
-	defer iterator.Close()
-
 	ret := make(map[string]*assetstype.OperatorAssetInfo, 0)
-	for ; iterator.Valid(); iterator.Next() {
-		var stateInfo assetstype.OperatorAssetInfo
-		k.cdc.MustUnmarshal(iterator.Value(), &stateInfo)
-		keyList, err := assetstype.ParseJoinedStoreKey(iterator.Key(), 2)
-		if err != nil {
-			return nil, err
-		}
-		assetID := keyList[1]
+	opFunc := func(assetID string, state *assetstype.OperatorAssetInfo) error {
 		if _, ok := assetsFilter[assetID]; ok {
-			ret[assetID] = &stateInfo
+			ret[assetID] = state
 		}
+		return nil
+	}
+	err = k.IteratorAssetsForOperator(ctx, operatorAddr.String(), assetsFilter, opFunc)
+	if err != nil {
+		return nil, err
 	}
 	return ret, nil
 }
@@ -106,9 +98,12 @@ func (k Keeper) UpdateOperatorAssetState(ctx sdk.Context, operatorAddr sdk.Addre
 	return nil
 }
 
-func (k Keeper) IteratorOperatorAssetState(ctx sdk.Context, f func(operatorAddr, assetID string, state *assetstype.OperatorAssetInfo) error) error {
+// IteratorAssetsForOperator iterates all assets for the specified operator
+// if `assetsFilter` is nil, the `opFunc` will handle all assets, it equals to an iterator without filter
+// if `assetsFilter` isn't nil, the `opFunc` will only handle the assets that is in the filter map.
+func (k Keeper) IteratorAssetsForOperator(ctx sdk.Context, operator string, assetsFilter map[string]interface{}, opFunc func(assetID string, state *assetstype.OperatorAssetInfo) error) error {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), assetstype.KeyPrefixOperatorAssetInfos)
-	iterator := sdk.KVStorePrefixIterator(store, nil)
+	iterator := sdk.KVStorePrefixIterator(store, []byte(operator))
 	defer iterator.Close()
 
 	for ; iterator.Valid(); iterator.Next() {
@@ -118,11 +113,14 @@ func (k Keeper) IteratorOperatorAssetState(ctx sdk.Context, f func(operatorAddr,
 		if err != nil {
 			return err
 		}
-		if len(keys) == 3 {
-			err = f(keys[0], keys[1], &amounts)
-			if err != nil {
-				return err
+		if assetsFilter != nil {
+			if _, ok := assetsFilter[keys[0]]; !ok {
+				continue
 			}
+		}
+		err = opFunc(keys[1], &amounts)
+		if err != nil {
+			return err
 		}
 	}
 	return nil

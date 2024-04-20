@@ -34,7 +34,7 @@ func (k *Keeper) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.Valida
 				continue
 			}*/
 
-		recordID := delegationtype.GetUndelegationRecordKey(record.LzTxNonce, record.TxHash, record.OperatorAddr)
+		recordID := delegationtype.GetUndelegationRecordKey(record.BlockNumber, record.LzTxNonce, record.TxHash, record.OperatorAddr)
 		if k.GetUndelegationHoldCount(ctx, recordID) > 0 {
 			// store it again with the next block and move on
 			// #nosec G701
@@ -53,25 +53,12 @@ func (k *Keeper) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.Valida
 		}
 		// TODO(mike): ensure that operator is required to perform self delegation to match above.
 
-		// calculate the actual canUndelegated asset amount
-		delegationInfo, err := k.GetSingleDelegationInfo(ctx, record.StakerID, record.AssetID, record.OperatorAddr)
-		if err != nil {
-			panic(err)
-		}
-		if record.Amount.GT(delegationInfo.UndelegatableAfterSlash) {
-			record.ActualCompletedAmount = delegationInfo.UndelegatableAfterSlash
-		} else {
-			record.ActualCompletedAmount = record.Amount
-		}
 		recordAmountNeg := record.Amount.Neg()
-
 		// update delegation state
-		delegatorAndAmount := make(map[string]*delegationtype.DelegationAmounts)
-		delegatorAndAmount[record.OperatorAddr] = &delegationtype.DelegationAmounts{
-			WaitUndelegationAmount:  recordAmountNeg,
-			UndelegatableAfterSlash: record.ActualCompletedAmount.Neg(),
+		deltaAmount := &delegationtype.DeltaDelegationAmounts{
+			WaitUndelegationAmount: recordAmountNeg,
 		}
-		err = k.UpdateDelegationState(ctx, record.StakerID, record.AssetID, delegatorAndAmount)
+		_, err = k.UpdateDelegationState(ctx, record.StakerID, record.AssetID, record.OperatorAddr, deltaAmount)
 		if err != nil {
 			panic(err)
 		}
@@ -93,9 +80,8 @@ func (k *Keeper) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.Valida
 			panic(err)
 		}
 
-		// update Undelegation record
-		record.IsPending = false
-		_, err = k.SetSingleUndelegationRecord(ctx, record)
+		// delete the Undelegation records that have been complemented
+		err = k.DeleteUndelegationRecord(ctx, record)
 		if err != nil {
 			panic(err)
 		}

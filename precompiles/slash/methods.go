@@ -15,7 +15,7 @@ const (
 	MethodSlash = "submitSlash"
 )
 
-// SubmitSlash Slash assets to the staker, that will change the state in slash module.
+// SubmitSlash NoInstantaneousSlash assets to the staker, that will change the state in slash module.
 func (p Precompile) SubmitSlash(
 	ctx sdk.Context,
 	_ common.Address,

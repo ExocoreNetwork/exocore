@@ -44,7 +44,7 @@ type OperatorKeeper interface {
 	IsOperator(ctx sdk.Context, addr sdk.AccAddress) bool
 	GetUnbondingExpirationBlockNumber(ctx sdk.Context, OperatorAddress sdk.AccAddress, startHeight uint64) uint64
 
-	UpdateOptedInAssetsState(ctx sdk.Context, stakerID, assetID, operatorAddr string, opAmount sdkmath.Int) error
+	//UpdateOptedInAssetsState(ctx sdk.Context, assetID, operatorAddr string, opAmount sdkmath.Int) error
 }
 
 type AssetsKeeper interface {

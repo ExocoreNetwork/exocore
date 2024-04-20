@@ -4,96 +4,10 @@ import (
 	"fmt"
 
 	errorsmod "cosmossdk.io/errors"
-	sdkmath "cosmossdk.io/math"
 	assetstype "github.com/ExocoreNetwork/exocore/x/assets/types"
 	delegationtype "github.com/ExocoreNetwork/exocore/x/delegation/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
-
-// The event hook process has been deprecated, now we use precompile contract to trigger the calls.
-// solidity encode: bytes memory actionArgs = abi.encodePacked(token, operator, msg.sender, amount);
-// _sendInterchainMsg(Action.DEPOSIT, actionArgs);
-/*func (k *Keeper) getParamsFromEventLog(ctx sdk.Context, log *ethtypes.Log) (*DelegationOrUndelegationParams, error) {
-	// check if Action is deposit
-	var action types.CrossChainOpType
-	var err error
-	readStart := uint32(0)
-	readEnd := uint32(types.CrossChainActionLength)
-	r := bytes.NewReader(log.Data[readStart:readEnd])
-	err = binary.Read(r, binary.BigEndian, &action)
-	if err != nil {
-		return nil, errorsmod.Wrap(err, "error occurred when binary read Action")
-	}
-	if action != types.DelegateTo && action != types.UndelegateFrom {
-		// not handle the actions that isn't deposit
-		return nil, nil
-	}
-
-	var clientChainLzID uint64
-	r = bytes.NewReader(log.Topics[types.ClientChainLzIDIndexInTopics][:])
-	err = binary.Read(r, binary.BigEndian, &clientChainLzID)
-	if err != nil {
-		return nil, errorsmod.Wrap(err, "error occurred when binary read ClientChainLzID from topic")
-	}
-	clientChainInfo, err := k.assetsKeeper.GetClientChainInfoByIndex(ctx, clientChainLzID)
-	if err != nil {
-		return nil, errorsmod.Wrap(err, "error occurred when get client chain info")
-	}
-
-	var lzNonce uint64
-	r = bytes.NewReader(log.Topics[types.LzNonceIndexInTopics][:])
-	err = binary.Read(r, binary.BigEndian, &lzNonce)
-	if err != nil {
-		return nil, errorsmod.Wrap(err, "error occurred when binary read LzNonce from topic")
-	}
-
-	//decode the Action parameters
-	readStart = readEnd
-	readEnd += clientChainInfo.AddressLength
-	r = bytes.NewReader(log.Data[readStart:readEnd])
-	assetsAddress := make([]byte, clientChainInfo.AddressLength)
-	err = binary.Read(r, binary.BigEndian, assetsAddress)
-	if err != nil {
-		return nil, errorsmod.Wrap(err, "error occurred when binary read assets address")
-	}
-
-	readStart = readEnd
-	readEnd += types.ExoCoreOperatorAddrLength
-	r = bytes.NewReader(log.Data[readStart:readEnd])
-	operatorAddress := [types.ExoCoreOperatorAddrLength]byte{}
-	err = binary.Read(r, binary.BigEndian, operatorAddress[:])
-	if err != nil {
-		return nil, errorsmod.Wrap(err, "error occurred when binary read operator address")
-	}
-	opAccAddr, err := sdk.AccAddressFromBech32(string(operatorAddress[:]))
-	if err != nil {
-		return nil, errorsmod.Wrap(err, "error occurred when parse acc address from Bech32")
-	}
-
-	readStart = readEnd
-	readEnd += clientChainInfo.AddressLength
-	r = bytes.NewReader(log.Data[readStart:readEnd])
-	stakerAddress := make([]byte, clientChainInfo.AddressLength)
-	err = binary.Read(r, binary.BigEndian, stakerAddress)
-	if err != nil {
-		return nil, errorsmod.Wrap(err, "error occurred when binary read staker address")
-	}
-
-	readStart = readEnd
-	readEnd += types.CrossChainOpAmountLength
-	amount := sdkmath.NewIntFromBigInt(big.NewInt(0).SetBytes(log.Data[readStart:readEnd]))
-
-	return &DelegationOrUndelegationParams{
-		ClientChainLzID: clientChainLzID,
-		Action:          action,
-		AssetsAddress:   assetsAddress,
-		StakerAddress:   stakerAddress,
-		OperatorAddress: opAccAddr,
-		OpAmount:        amount,
-		LzNonce:         lzNonce,
-		TxHash:          log.TxHash,
-	}, nil
-}*/
 
 // DelegateTo : It doesn't need to check the active status of the operator in middlewares when
 // delegating assets to the operator. This is because it adds assets to the operator's amount.
@@ -161,12 +75,14 @@ func (k *Keeper) delegateTo(
 		return err
 	}
 
-	delegatorAndAmount := make(map[string]*delegationtype.DelegationAmounts)
-	delegatorAndAmount[params.OperatorAddress.String()] = &delegationtype.DelegationAmounts{
-		UndelegatableAmount: params.OpAmount,
-		UndelegatableShare:  share,
+	deltaAmount := &delegationtype.DeltaDelegationAmounts{
+		UndelegatableShare: share,
 	}
-	err = k.UpdateDelegationState(ctx, stakerID, assetID, delegatorAndAmount)
+	_, err = k.UpdateDelegationState(ctx, stakerID, assetID, params.OperatorAddress.String(), deltaAmount)
+	if err != nil {
+		return err
+	}
+	err = k.SetStakersForOperator(ctx, params.OperatorAddress.String(), assetID, stakerID)
 	if err != nil {
 		return err
 	}
@@ -198,8 +114,8 @@ func (k *Keeper) UndelegateFrom(ctx sdk.Context, params *delegationtype.Delegati
 		return err
 	}
 
-	// remove share from operator
-	removeToken, err := k.RemoveShareFromOperator(ctx, params.OperatorAddress, assetID, share)
+	// remove share
+	removeToken, err := k.RemoveShare(ctx, true, params.OperatorAddress, stakerID, assetID, share)
 	if err != nil {
 		return err
 	}
@@ -214,7 +130,7 @@ func (k *Keeper) UndelegateFrom(ctx sdk.Context, params *delegationtype.Delegati
 		LzTxNonce:             params.LzNonce,
 		BlockNumber:           uint64(ctx.BlockHeight()),
 		Amount:                removeToken,
-		ActualCompletedAmount: sdkmath.NewInt(0),
+		ActualCompletedAmount: removeToken,
 	}
 	r.CompleteBlockNumber = k.operatorKeeper.GetUnbondingExpirationBlockNumber(ctx, params.OperatorAddress, r.BlockNumber)
 	err = k.SetUndelegationRecords(ctx, []*delegationtype.UndelegationRecord{r})
@@ -222,29 +138,6 @@ func (k *Keeper) UndelegateFrom(ctx sdk.Context, params *delegationtype.Delegati
 		return err
 	}
 
-	// update delegation state
-	delegatorAndAmount := make(map[string]*delegationtype.DelegationAmounts)
-	delegatorAndAmount[params.OperatorAddress.String()] = &delegationtype.DelegationAmounts{
-		UndelegatableAmount:     removeToken.Neg(),
-		WaitUndelegationAmount:  removeToken,
-		UndelegatableAfterSlash: removeToken,
-		UndelegatableShare:      share.Neg(),
-	}
-	err = k.UpdateDelegationState(ctx, stakerID, assetID, delegatorAndAmount)
-	if err != nil {
-		return err
-	}
-
-	// update staker and operator assets state
-	// todo: TotalDepositAmount might be influenced by slash and precision loss,
-	// consider removing it, it can be recalculated from the share for RPC query.
-	err = k.assetsKeeper.UpdateStakerAssetState(ctx, stakerID, assetID, assetstype.DeltaStakerSingleAsset{
-		WaitUnbondingAmount: removeToken,
-	})
-	if err != nil {
-		return err
-	}
-
 	// call the hooks registered by the other modules
-	return k.Hooks().AfterUndelegationStarted(ctx, params.OperatorAddress, delegationtype.GetUndelegationRecordKey(r.LzTxNonce, r.TxHash, r.OperatorAddr))
+	return k.Hooks().AfterUndelegationStarted(ctx, params.OperatorAddress, delegationtype.GetUndelegationRecordKey(r.BlockNumber, r.LzTxNonce, r.TxHash, r.OperatorAddr))
 }

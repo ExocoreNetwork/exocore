@@ -1,10 +1,9 @@
 package types
 
 import (
-	"math"
-
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	"github.com/ethereum/go-ethereum/common"
+	"math"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -34,11 +33,7 @@ const (
 
 	prefixOperatorOptedAVSInfo
 
-	prefixAVSOperatorAssetsTotalValue
-
-	prefixOperatorAVSSingleAssetState
-
-	prefixOperatorAVSStakerShareState
+	prefixVotingPowerForAVSOperator
 
 	prefixOperatorSlashInfo
 
@@ -60,19 +55,10 @@ var (
 	// operatorAddr + '/' + AVSAddr -> OptedInfo
 	KeyPrefixOperatorOptedAVSInfo = []byte{prefixOperatorOptedAVSInfo}
 
-	// KeyPrefixAVSOperatorAssetsTotalValue key-value:
-	// AVSAddr -> types.DecValueField（the total USD share of specified Avs）
-	// AVSAddr + '/' + operatorAddr -> types.DecValueField (the total USD share of specified operator and Avs)
-	KeyPrefixAVSOperatorAssetsTotalValue = []byte{prefixAVSOperatorAssetsTotalValue}
-
-	// KeyPrefixOperatorAVSSingleAssetState key-value:
-	// assetID + '/' + AVSAddr + '/' + operatorAddr -> OptedInAssetState
-	KeyPrefixOperatorAVSSingleAssetState = []byte{prefixOperatorAVSSingleAssetState}
-
-	// KeyPrefixAVSOperatorStakerShareState key-value:
-	// AVSAddr + '/' + '' + '/' +  operatorAddr -> types.DecValueField（the opted-in USD share owned by the operator itself）
-	// AVSAddr + '/' + stakerID + '/' + operatorAddr -> types.DecValueField (the opted-in USD share of the staker)
-	KeyPrefixAVSOperatorStakerShareState = []byte{prefixOperatorAVSStakerShareState}
+	// KeyPrefixVotingPowerForAVSOperator key-value:
+	// AVSAddr -> types.DecValueField（the voting power of specified Avs）
+	// AVSAddr + '/' + operatorAddr -> types.DecValueField (the voting power of specified operator and Avs)
+	KeyPrefixVotingPowerForAVSOperator = []byte{prefixVotingPowerForAVSOperator}
 
 	// KeyPrefixOperatorSlashInfo key-value:
 	// operator + '/' + AVSAddr + '/' + slashId -> OperatorSlashInfo
@@ -151,4 +137,9 @@ func KeyForOperatorOptOutFromChainID(addr sdk.AccAddress, chainID string) []byte
 		[]byte{BytePrefixForOperatorOptOutFromChainID}, addr,
 		ChainIDWithLenKey(chainID),
 	)
+}
+
+func IterateOperatorsForAVSPrefix(avsAddr string) []byte {
+	tmp := append([]byte(avsAddr), '/')
+	return tmp
 }

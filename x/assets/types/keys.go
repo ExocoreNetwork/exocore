@@ -95,11 +95,11 @@ var (
 	KeyPrefixReStakingAssetInfo = []byte{prefixRestakingAssetInfo}
 
 	// KeyPrefixReStakerAssetInfos restakerID = clientChainAddr+'_'+ExoCoreChainIndex
-	// KeyPrefixReStakerAssetInfos key->value: restakerID+'_'+AssetID->ReStakerAssetInfo
+	// KeyPrefixReStakerAssetInfos key->value: restakerID+'/'+AssetID->ReStakerAssetInfo
 	// or restakerID->mapping(AssetID->ReStakerAssetInfo)?
 	KeyPrefixReStakerAssetInfos = []byte{prefixRestakerAssetInfo}
 
-	// KeyPrefixOperatorAssetInfos key->value: operatorAddr+'_'+AssetID->OperatorAssetInfo
+	// KeyPrefixOperatorAssetInfos key->value: operatorAddr+'/'+AssetID->OperatorAssetInfo
 	// or operatorAddr->mapping(AssetID->OperatorAssetInfo) ?
 	KeyPrefixOperatorAssetInfos = []byte{prefixOperatorAssetInfo}
 
