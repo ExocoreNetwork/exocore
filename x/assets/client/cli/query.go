@@ -24,6 +24,7 @@ func GetQueryCmd() *cobra.Command {
 	}
 
 	cmd.AddCommand(
+		GetParamsCmd(),
 		QueClientChainInfoByIndex(),
 		QueAllClientChainInfo(),
 		QueStakingAssetInfo(),
@@ -34,6 +35,36 @@ func GetQueryCmd() *cobra.Command {
 		QueOperatorSpecifiedAssetAmount(),
 		// QueStakerExoCoreAddr(),
 	)
+	return cmd
+}
+
+// GetParamsCmd queries the module parameters
+func GetParamsCmd() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "Params",
+		Short: "Gets assets module params",
+		Long:  "Gets assets module params",
+		Args:  cobra.NoArgs,
+		RunE: func(cmd *cobra.Command, _ []string) error {
+			clientCtx, err := client.GetClientQueryContext(cmd)
+			if err != nil {
+				return err
+			}
+
+			queryClient := types.NewQueryClient(clientCtx)
+
+			req := &types.QueryParamsRequest{}
+
+			res, err := queryClient.Params(context.Background(), req)
+			if err != nil {
+				return err
+			}
+
+			return clientCtx.PrintProto(res)
+		},
+	}
+
+	flags.AddQueryFlagsToCmd(cmd)
 	return cmd
 }
 

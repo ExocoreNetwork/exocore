@@ -99,7 +99,7 @@ var (
 	// or restakerID->mapping(AssetID->ReStakerAssetInfo)?
 	KeyPrefixReStakerAssetInfos = []byte{prefixRestakerAssetInfo}
 
-	// KeyPrefixOperatorAssetInfos key->value: operatorAddr+'/'+AssetID->OperatorAssetInfo
+	// KeyPrefixOperatorAssetInfos key->value: operatorAddr+'/'+AssetID-> OperatorAssetInfo
 	// or operatorAddr->mapping(AssetID->OperatorAssetInfo) ?
 	KeyPrefixOperatorAssetInfos = []byte{prefixOperatorAssetInfo}
 

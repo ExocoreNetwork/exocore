@@ -1,9 +1,10 @@
 package types
 
 import (
+	"math"
+
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	"github.com/ethereum/go-ethereum/common"
-	"math"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )

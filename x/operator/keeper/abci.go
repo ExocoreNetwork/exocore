@@ -16,7 +16,8 @@ func (k *Keeper) CalculateUSDValueForOperator(
 	operator string,
 	assetsFilter map[string]interface{},
 	decimals map[string]uint32,
-	prices map[string]operatortypes.Price) (sdkmath.LegacyDec, sdkmath.LegacyDec, error) {
+	prices map[string]operatortypes.Price,
+) (sdkmath.LegacyDec, sdkmath.LegacyDec, error) {
 	usdValue := sdkmath.LegacyNewDec(0)
 	selfUSDValue := sdkmath.LegacyNewDec(0)
 	// iterate all assets owned by the operator to calculate its voting power

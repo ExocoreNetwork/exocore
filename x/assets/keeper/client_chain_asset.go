@@ -74,6 +74,7 @@ func (k Keeper) GetAssetsDecimal(ctx sdk.Context, assets map[string]interface{})
 		return nil, errorsmod.Wrap(assetstype.ErrInputPointerIsNil, "assets is nil")
 	}
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), assetstype.KeyPrefixReStakingAssetInfo)
+	decimals = make(map[string]uint32, 0)
 	for assetID := range assets {
 		ifExist := store.Has([]byte(assetID))
 		if !ifExist {
@@ -81,7 +82,6 @@ func (k Keeper) GetAssetsDecimal(ctx sdk.Context, assets map[string]interface{})
 		}
 
 		value := store.Get([]byte(assetID))
-
 		ret := assetstype.StakingAssetInfo{}
 		k.cdc.MustUnmarshal(value, &ret)
 		decimals[assetID] = ret.AssetBasicInfo.Decimals

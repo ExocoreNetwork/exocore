@@ -38,6 +38,7 @@ type AssetsKeeper interface {
 		ctx sdk.Context, operatorAddr sdk.Address, assetID string,
 		changeAmount assetstype.DeltaOperatorSingleAsset,
 	) (err error)
+	GetAllStakingAssetsInfo(ctx sdk.Context) (allAssets map[string]*assetstype.StakingAssetInfo, err error)
 }
 
 var _ DelegationKeeper = &keeper.Keeper{}
@@ -128,7 +129,7 @@ func (MockOracle) GetPriceChangeAssets(_ sdk.Context) (map[string]*PriceChange, 
 	return nil, nil
 }
 
-func (MockOracle) GetMultipleAssetsPrices(ctx sdk.Context, assets map[string]interface{}) (map[string]Price, error) {
+func (MockOracle) GetMultipleAssetsPrices(_ sdk.Context, assets map[string]interface{}) (map[string]Price, error) {
 	ret := make(map[string]Price, 0)
 	for assetID := range assets {
 		ret[assetID] = Price{
@@ -139,35 +140,42 @@ func (MockOracle) GetMultipleAssetsPrices(ctx sdk.Context, assets map[string]int
 	return ret, nil
 }
 
-type MockAvs struct{}
+type MockAvs struct {
+	AssetsKeeper AssetsKeeper
+}
 
-func (MockAvs) GetAvsSupportedAssets(_ sdk.Context, _ string) (map[string]interface{}, error) {
-	// set USDT as the default asset supported by AVS
+func (a MockAvs) GetAvsSupportedAssets(ctx sdk.Context, _ string) (map[string]interface{}, error) {
+	// set all registered assets as the default asset supported by mock AVS
 	ret := make(map[string]interface{})
-	usdtAssetID := "0xdac17f958d2ee523a2206206994597c13d831ec7_0x65"
-	ret[usdtAssetID] = nil
+	allAssets, err := a.AssetsKeeper.GetAllStakingAssetsInfo(ctx)
+	if err != nil {
+		return nil, err
+	}
+	for assetID := range allAssets {
+		ret[assetID] = nil
+	}
 	return ret, nil
 }
 
-func (MockAvs) GetAvsSlashContract(_ sdk.Context, _ string) (string, error) {
+func (a MockAvs) GetAvsSlashContract(_ sdk.Context, _ string) (string, error) {
 	return "", nil
 }
 
-func (MockAvs) GetAvsAddrByChainID(_ sdk.Context, chainID string) (string, error) {
+func (a MockAvs) GetAvsAddrByChainID(_ sdk.Context, chainID string) (string, error) {
 	return chainID, nil
 }
 
-func (MockAvs) GetAVSMinimumSelfDelegation(_ sdk.Context, _ string) (sdkmath.LegacyDec, error) {
+func (a MockAvs) GetAVSMinimumSelfDelegation(_ sdk.Context, _ string) (sdkmath.LegacyDec, error) {
 	return sdkmath.LegacyNewDec(0), nil
 }
 
-func (MockAvs) GetEpochEndAVSs(ctx sdk.Context) ([]string, error) {
+func (a MockAvs) GetEpochEndAVSs(ctx sdk.Context) ([]string, error) {
 	avsList := make([]string, 0)
 	avsList = append(avsList, ctx.ChainID())
 	return avsList, nil
 }
 
-func (MockAvs) GetHeightForVotingPower(ctx sdk.Context, avsAddr string, height int64) (int64, error) {
+func (a MockAvs) GetHeightForVotingPower(_ sdk.Context, _ string, height int64) (int64, error) {
 	return height, nil
 }
 

@@ -25,6 +25,12 @@ func (k Keeper) GetOperatorAssetInfos(ctx sdk.Context, operatorAddr sdk.Address,
 	return ret, nil
 }
 
+func (k Keeper) IsOperatorAssetExist(ctx sdk.Context, operatorAddr sdk.Address, assetID string) bool {
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), assetstype.KeyPrefixOperatorAssetInfos)
+	key := assetstype.GetJoinedStoreKey(operatorAddr.String(), assetID)
+	return store.Has(key)
+}
+
 func (k Keeper) GetOperatorSpecifiedAssetInfo(ctx sdk.Context, operatorAddr sdk.Address, assetID string) (info *assetstype.OperatorAssetInfo, err error) {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), assetstype.KeyPrefixOperatorAssetInfos)
 	key := assetstype.GetJoinedStoreKey(operatorAddr.String(), assetID)
@@ -49,13 +55,12 @@ func (k Keeper) UpdateOperatorAssetState(ctx sdk.Context, operatorAddr sdk.Addre
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), assetstype.KeyPrefixOperatorAssetInfos)
 	key := assetstype.GetJoinedStoreKey(operatorAddr.String(), assetID)
 	assetState := assetstype.OperatorAssetInfo{
-		TotalAmount:                        math.NewInt(0),
-		OperatorAmount:                     math.NewInt(0),
-		WaitUnbondingAmount:                math.NewInt(0),
-		OperatorUnbondingAmount:            math.NewInt(0),
-		OperatorUnbondableAmountAfterSlash: math.NewInt(0),
-		TotalShare:                         math.LegacyNewDec(0),
-		OperatorShare:                      math.LegacyNewDec(0),
+		TotalAmount:             math.NewInt(0),
+		OperatorAmount:          math.NewInt(0),
+		WaitUnbondingAmount:     math.NewInt(0),
+		OperatorUnbondingAmount: math.NewInt(0),
+		TotalShare:              math.LegacyNewDec(0),
+		OperatorShare:           math.LegacyNewDec(0),
 	}
 	if store.Has(key) {
 		value := store.Get(key)
@@ -76,10 +81,6 @@ func (k Keeper) UpdateOperatorAssetState(ctx sdk.Context, operatorAddr sdk.Addre
 		return errorsmod.Wrap(err, "UpdateOperatorAssetState WaitUndelegationAmountOrWantChangeValue error")
 	}
 	err = assetstype.UpdateAssetValue(&assetState.OperatorUnbondingAmount, &changeAmount.OperatorUnbondingAmount)
-	if err != nil {
-		return errorsmod.Wrap(err, "UpdateOperatorAssetState OperatorUnbondingAmount error")
-	}
-	err = assetstype.UpdateAssetValue(&assetState.OperatorUnbondableAmountAfterSlash, &changeAmount.OperatorUnbondableAmountAfterSlash)
 	if err != nil {
 		return errorsmod.Wrap(err, "UpdateOperatorAssetState OperatorUnbondingAmount error")
 	}
@@ -105,7 +106,6 @@ func (k Keeper) IteratorAssetsForOperator(ctx sdk.Context, operator string, asse
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), assetstype.KeyPrefixOperatorAssetInfos)
 	iterator := sdk.KVStorePrefixIterator(store, []byte(operator))
 	defer iterator.Close()
-
 	for ; iterator.Valid(); iterator.Next() {
 		var amounts assetstype.OperatorAssetInfo
 		k.cdc.MustUnmarshal(iterator.Value(), &amounts)
@@ -114,7 +114,7 @@ func (k Keeper) IteratorAssetsForOperator(ctx sdk.Context, operator string, asse
 			return err
 		}
 		if assetsFilter != nil {
-			if _, ok := assetsFilter[keys[0]]; !ok {
+			if _, ok := assetsFilter[keys[1]]; !ok {
 				continue
 			}
 		}

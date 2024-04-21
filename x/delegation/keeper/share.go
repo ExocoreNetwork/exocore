@@ -43,12 +43,15 @@ func SharesFromTokens(totalShare sdkmath.LegacyDec, stakerAmount, operatorAmount
 // For the initial delegation, delegator j who delegates T_j tokens receive S_j = T_j shares.
 func (k Keeper) CalculateShare(ctx sdk.Context, operator sdk.AccAddress, assetID string, amount sdkmath.Int) (share sdkmath.LegacyDec, err error) {
 	// get the total share of operator
-	info, err := k.assetsKeeper.GetOperatorSpecifiedAssetInfo(ctx, operator, assetID)
-	if err != nil {
-		return share, err
+	isExist := k.assetsKeeper.IsOperatorAssetExist(ctx, operator, assetID)
+	var info *assetstype.OperatorAssetInfo
+	if isExist {
+		info, err = k.assetsKeeper.GetOperatorSpecifiedAssetInfo(ctx, operator, assetID)
+		if err != nil {
+			return share, err
+		}
 	}
-
-	if info.TotalShare.IsZero() {
+	if !isExist || info.TotalShare.IsZero() {
 		// the first delegation to a validator sets the exchange rate to one
 		share = sdk.NewDecFromInt(amount)
 	} else {
@@ -160,7 +163,7 @@ func (k Keeper) RemoveShareFromOperator(
 	if err != nil {
 		return token, err
 	}
-	return token, nil
+	return removedToken, nil
 }
 
 // RemoveShare updates all states regarding staker and operator when removing share.

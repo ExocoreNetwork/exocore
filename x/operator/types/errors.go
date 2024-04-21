@@ -81,4 +81,19 @@ var (
 		ModuleName, 15,
 		"the slash type is invalid",
 	)
+
+	ErrKeyAlreadyExist = errorsmod.Register(
+		ModuleName, 16,
+		"the key already exists",
+	)
+
+	ErrValueIsNilOrZero = errorsmod.Register(
+		ModuleName, 17,
+		"the value is nil or zero",
+	)
+
+	ErrInputPointerIsNil = errorsmod.Register(
+		ModuleName, 18,
+		"the input pointer is nil",
+	)
 )

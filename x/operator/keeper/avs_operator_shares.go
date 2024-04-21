@@ -19,7 +19,7 @@ import (
 // This function will be called when some assets supported by Avs are delegated/undelegated or slashed.
 func (k *Keeper) UpdateOperatorUSDValue(ctx sdk.Context, avsAddr, operatorAddr string, opAmount sdkmath.LegacyDec) error {
 	if opAmount.IsNil() || opAmount.IsZero() {
-		return nil
+		return errorsmod.Wrap(operatortypes.ErrValueIsNilOrZero, fmt.Sprintf("UpdateOperatorUSDValue the opAmount is:%v", opAmount))
 	}
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), operatortypes.KeyPrefixVotingPowerForAVSOperator)
 	var key []byte
@@ -38,6 +38,22 @@ func (k *Keeper) UpdateOperatorUSDValue(ctx sdk.Context, avsAddr, operatorAddr s
 		return err
 	}
 	bz := k.cdc.MustMarshal(&totalValue)
+	store.Set(key, bz)
+	return nil
+}
+
+func (k *Keeper) InitOperatorUSDValue(ctx sdk.Context, avsAddr, operatorAddr string) error {
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), operatortypes.KeyPrefixVotingPowerForAVSOperator)
+	var key []byte
+	if operatorAddr == "" {
+		return errorsmod.Wrap(operatortypes.ErrParameterInvalid, "UpdateOperatorUSDValue the operatorAddr is empty")
+	}
+	key = assetstype.GetJoinedStoreKey(avsAddr, operatorAddr)
+	if store.Has(key) {
+		return errorsmod.Wrap(operatortypes.ErrKeyAlreadyExist, fmt.Sprintf("avsAddr operatorAddr is: %s, %s", avsAddr, operatorAddr))
+	}
+	initValue := operatortypes.DecValueField{Amount: sdkmath.LegacyNewDec(0)}
+	bz := k.cdc.MustMarshal(&initValue)
 	store.Set(key, bz)
 	return nil
 }
@@ -76,7 +92,7 @@ func (k *Keeper) GetOperatorUSDValue(ctx sdk.Context, avsAddr, operatorAddr stri
 
 	isExist := store.Has(key)
 	if !isExist {
-		return sdkmath.LegacyDec{}, errorsmod.Wrap(operatortypes.ErrNoKeyInTheStore, fmt.Sprintf("GetOperatorUSDValue: key is %suite", key))
+		return sdkmath.LegacyDec{}, errorsmod.Wrap(operatortypes.ErrNoKeyInTheStore, fmt.Sprintf("GetOperatorUSDValue: key is %s", key))
 	}
 	value := store.Get(key)
 	k.cdc.MustUnmarshal(value, &ret)
@@ -92,7 +108,7 @@ func (k *Keeper) GetOperatorUSDValue(ctx sdk.Context, avsAddr, operatorAddr stri
 // the Avs, this function also will be called.
 func (k *Keeper) UpdateAVSUSDValue(ctx sdk.Context, avsAddr string, opAmount sdkmath.LegacyDec) error {
 	if opAmount.IsNil() || opAmount.IsZero() {
-		return nil
+		return errorsmod.Wrap(operatortypes.ErrValueIsNilOrZero, fmt.Sprintf("UpdateAVSUSDValue the opAmount is:%v", opAmount))
 	}
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), operatortypes.KeyPrefixVotingPowerForAVSOperator)
 	key := []byte(avsAddr)
@@ -112,8 +128,8 @@ func (k *Keeper) UpdateAVSUSDValue(ctx sdk.Context, avsAddr string, opAmount sdk
 
 // SetAVSUSDValue is a function to set the total USD share of an Avs,
 func (k *Keeper) SetAVSUSDValue(ctx sdk.Context, avsAddr string, amount sdkmath.LegacyDec) error {
-	if amount.IsNil() || amount.IsZero() {
-		return nil
+	if amount.IsNil() {
+		return errorsmod.Wrap(operatortypes.ErrInputPointerIsNil, fmt.Sprintf("SetAVSUSDValue the amount is:%v", amount))
 	}
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), operatortypes.KeyPrefixVotingPowerForAVSOperator)
 	key := []byte(avsAddr)
@@ -158,7 +174,7 @@ func (k *Keeper) GetAVSUSDValue(ctx sdk.Context, avsAddr string) (sdkmath.Legacy
 	key := []byte(avsAddr)
 	isExit := store.Has(key)
 	if !isExit {
-		return sdkmath.LegacyDec{}, errorsmod.Wrap(operatortypes.ErrNoKeyInTheStore, fmt.Sprintf("GetAVSUSDValue: key is %suite", key))
+		return sdkmath.LegacyDec{}, errorsmod.Wrap(operatortypes.ErrNoKeyInTheStore, fmt.Sprintf("GetAVSUSDValue: key is %s", key))
 	}
 	value := store.Get(key)
 	k.cdc.MustUnmarshal(value, &ret)

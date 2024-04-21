@@ -38,7 +38,7 @@ func (k *Keeper) delegateTo(
 
 	// update the related states
 	if params.OpAmount.IsNegative() {
-		return delegationtype.ErrOpAmountIsNegative
+		return delegationtype.ErrOpAmountIsNotPositive
 	}
 
 	stakerID, assetID := assetstype.GetStakeIDAndAssetID(params.ClientChainLzID, params.StakerAddress, params.AssetsAddress)
@@ -102,8 +102,8 @@ func (k *Keeper) UndelegateFrom(ctx sdk.Context, params *delegationtype.Delegati
 	if !k.operatorKeeper.IsOperator(ctx, params.OperatorAddress) {
 		return delegationtype.ErrOperatorNotExist
 	}
-	if params.OpAmount.IsNegative() {
-		return delegationtype.ErrOpAmountIsNegative
+	if !params.OpAmount.IsPositive() {
+		return delegationtype.ErrOpAmountIsNotPositive
 	}
 	// get staker delegation state, then check the validation of Undelegation amount
 	stakerID, assetID := assetstype.GetStakeIDAndAssetID(params.ClientChainLzID, params.StakerAddress, params.AssetsAddress)
@@ -119,7 +119,6 @@ func (k *Keeper) UndelegateFrom(ctx sdk.Context, params *delegationtype.Delegati
 	if err != nil {
 		return err
 	}
-
 	// record Undelegation event
 	r := &delegationtype.UndelegationRecord{
 		StakerID:              stakerID,

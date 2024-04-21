@@ -491,10 +491,8 @@ func (suite *GenesisTestSuite) TestValidateGenesis() {
 			},
 			expPass: false,
 			malleate: func(gs *types.GenesisState) {
-				gs.Deposits[0].Deposits[0].Info.TotalDepositAmount =
-					stakingInfo.AssetBasicInfo.TotalSupply.Add(math.NewInt(1))
-				gs.Deposits[0].Deposits[0].Info.WithdrawableAmount =
-					stakingInfo.AssetBasicInfo.TotalSupply.Add(math.NewInt(1))
+				gs.Deposits[0].Deposits[0].Info.TotalDepositAmount = stakingInfo.AssetBasicInfo.TotalSupply.Add(math.NewInt(1))
+				gs.Deposits[0].Deposits[0].Info.WithdrawableAmount = stakingInfo.AssetBasicInfo.TotalSupply.Add(math.NewInt(1))
 			},
 			unmalleate: func(gs *types.GenesisState) {
 				gs.Deposits[0].Deposits[0].Info.TotalDepositAmount = math.NewInt(100)
@@ -533,6 +531,5 @@ func (suite *GenesisTestSuite) TestValidateGenesis() {
 		if tc.unmalleate != nil {
 			tc.unmalleate(tc.genState)
 		}
-		// fmt.Println(tc.name, ",", err)
 	}
 }

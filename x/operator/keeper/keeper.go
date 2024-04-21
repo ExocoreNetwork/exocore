@@ -64,7 +64,7 @@ type OperatorKeeper interface {
 
 	GetUnbondingExpirationBlockNumber(ctx sdk.Context, OperatorAddress sdk.AccAddress, startHeight uint64) uint64
 
-	//UpdateOptedInAssetsState(ctx sdk.Context, assetID, operatorAddr string, opAmount sdkmath.Int) error
+	// UpdateOptedInAssetsState(ctx sdk.Context, assetID, operatorAddr string, opAmount sdkmath.Int) error
 
 	OptIn(ctx sdk.Context, operatorAddress sdk.AccAddress, AVSAddr string) error
 

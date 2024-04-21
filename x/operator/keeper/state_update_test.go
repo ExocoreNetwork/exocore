@@ -3,6 +3,8 @@ package keeper_test
 import (
 	"strings"
 
+	abci "github.com/cometbft/cometbft/abci/types"
+
 	sdkmath "cosmossdk.io/math"
 	assetstypes "github.com/ExocoreNetwork/exocore/x/assets/types"
 	delegationtype "github.com/ExocoreNetwork/exocore/x/delegation/types"
@@ -28,7 +30,8 @@ func (suite *OperatorTestSuite) prepare() {
 	usdtAddress := common.HexToAddress("0xdAC17F958D2ee523a2206206994597C13D831ec7")
 	clientChainLzID := uint64(101)
 
-	suite.avsAddr = "avsTestAddr"
+	// suite.avsAddr = "avsTestAddr"
+	suite.avsAddr = suite.Ctx.ChainID()
 	suite.operatorAddr = opAccAddr
 	suite.assetAddr = usdtAddress
 	suite.assetDecimal = 6
@@ -107,21 +110,22 @@ func (suite *OperatorTestSuite) TestOptIn() {
 	suite.NoError(err)
 	// check if the related state is correct
 	price, err := suite.App.OperatorKeeper.OracleInterface().GetSpecifiedAssetsPrice(suite.Ctx, suite.assetID)
-	share := operatorKeeper.CalculateUSDValue(suite.delegationAmount, price.Value, suite.assetDecimal, price.Decimal)
+	usdValue := operatorKeeper.CalculateUSDValue(suite.delegationAmount, price.Value, suite.assetDecimal, price.Decimal)
 	expectedState := &StateForCheck{
 		OptedInfo: &operatorTypes.OptedInfo{
 			OptedInHeight:  uint64(suite.Ctx.BlockHeight()),
 			OptedOutHeight: operatorTypes.DefaultOptedOutHeight,
 		},
-		AVSTotalShare:    share,
-		AVSOperatorShare: share,
+		AVSTotalShare:    usdValue,
+		AVSOperatorShare: usdValue,
 		AssetState: &operatorTypes.OptedInAssetState{
 			Amount: suite.delegationAmount,
-			Value:  share,
+			Value:  usdValue,
 		},
 		OperatorShare: sdkmath.LegacyDec{},
-		StakerShare:   share,
+		StakerShare:   usdValue,
 	}
+	suite.App.OperatorKeeper.EndBlock(suite.Ctx, abci.RequestEndBlock{})
 	suite.CheckState(expectedState)
 }
 
@@ -149,6 +153,7 @@ func (suite *OperatorTestSuite) TestOptOut() {
 		OperatorShare:    sdkmath.LegacyDec{},
 		StakerShare:      sdkmath.LegacyDec{},
 	}
+	suite.App.OperatorKeeper.EndBlock(suite.Ctx, abci.RequestEndBlock{})
 	suite.CheckState(expectedState)
 }
 

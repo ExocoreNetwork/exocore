@@ -17,9 +17,9 @@ var (
 		"the operator has not been registered",
 	)
 
-	ErrOpAmountIsNegative = errorsmod.Register(
+	ErrOpAmountIsNotPositive = errorsmod.Register(
 		ModuleName, 3,
-		"the delegation or Undelegation amount is negative",
+		"the delegation or Undelegation amount isn't positive",
 	)
 
 	OperatorAddrIsNotAccAddr = errorsmod.Register(

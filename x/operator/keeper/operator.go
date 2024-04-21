@@ -38,7 +38,7 @@ func (k *Keeper) OperatorInfo(ctx sdk.Context, addr string) (info *operatortypes
 	// key := common.HexToAddress(incentive.Contract)
 	isExist := store.Has(opAccAddr)
 	if !isExist {
-		return nil, errorsmod.Wrap(operatortypes.ErrNoKeyInTheStore, fmt.Sprintf("GetOperatorInfo: key is %suite", opAccAddr))
+		return nil, errorsmod.Wrap(operatortypes.ErrNoKeyInTheStore, fmt.Sprintf("GetOperatorInfo: key is %s", opAccAddr))
 	}
 
 	value := store.Get(opAccAddr)
@@ -76,7 +76,7 @@ func (k *Keeper) HandleOptedInfo(ctx sdk.Context, operatorAddr, avsAddr string, 
 	infoKey := assetstype.GetJoinedStoreKey(operatorAddr, avsAddr)
 	ifExist := store.Has(infoKey)
 	if !ifExist {
-		return errorsmod.Wrap(operatortypes.ErrNoKeyInTheStore, fmt.Sprintf("HandleOptedInfo: key is %suite", opAccAddr))
+		return errorsmod.Wrap(operatortypes.ErrNoKeyInTheStore, fmt.Sprintf("HandleOptedInfo: key is %s", opAccAddr))
 	}
 	// get info from the store
 	value := store.Get(infoKey)
@@ -114,7 +114,7 @@ func (k *Keeper) GetOptedInfo(ctx sdk.Context, operatorAddr, avsAddr string) (in
 	infoKey := assetstype.GetJoinedStoreKey(operatorAddr, avsAddr)
 	ifExist := store.Has(infoKey)
 	if !ifExist {
-		return nil, errorsmod.Wrap(operatortypes.ErrNoKeyInTheStore, fmt.Sprintf("GetOptedInfo: key is %suite", opAccAddr))
+		return nil, errorsmod.Wrap(operatortypes.ErrNoKeyInTheStore, fmt.Sprintf("GetOptedInfo: key is %s", opAccAddr))
 	}
 
 	value := store.Get(infoKey)

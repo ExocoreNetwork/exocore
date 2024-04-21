@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"fmt"
+
 	delegationkeeper "github.com/ExocoreNetwork/exocore/x/delegation/keeper"
 
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
@@ -74,7 +75,7 @@ func (k *Keeper) VerifySlashEvent(ctx sdk.Context, parameter *SlashInputInfo) (s
 		return ctx, err
 	}
 	if optedInfo.SlashContract != parameter.SlashContract {
-		return ctx, errorsmod.Wrap(types.ErrSlashContractNotMatch, fmt.Sprintf("input slashContract:%suite, opted-in slash contract:%suite", parameter.SlashContract, optedInfo.SlashContract))
+		return ctx, errorsmod.Wrap(types.ErrSlashContractNotMatch, fmt.Sprintf("input slashContract:%s, opted-in slash contract:%suite", parameter.SlashContract, optedInfo.SlashContract))
 	}
 
 	return historicalStateCtx, nil
@@ -270,12 +271,12 @@ func (k *Keeper) Slash(ctx sdk.Context, parameter *SlashInputInfo) error {
 	if err != nil {
 		return err
 	}
-
-	if parameter.SlashType == types.SlashType_InstantSlash {
+	switch parameter.SlashType {
+	case types.SlashType_SLASH_TYPE_INSTANT_SLASH:
 		err = k.InstantSlash(ctx, historicalStateCtx, parameter)
-	} else if parameter.SlashType == types.SlashType_NoInstantaneousSlash {
+	case types.SlashType_SLASH_TYPE_NO_INSTANTANEOUS_SLASH:
 		err = k.NoInstantaneousSlash(ctx, historicalStateCtx, parameter)
-	} else {
+	default:
 		return errorsmod.Wrap(types.ErrInvalidSlashType, fmt.Sprintf("the slash type is:%v", parameter.SlashType))
 	}
 	if err != nil {
@@ -317,7 +318,7 @@ func (k *Keeper) SlashWithInfractionReason(
 	}
 	slashID := GetSlashIDForDogfood(infraction, infractionHeight)
 	slashParam := &SlashInputInfo{
-		SlashType:        types.SlashType_InstantSlash,
+		SlashType:        types.SlashType_SLASH_TYPE_INSTANT_SLASH,
 		Operator:         addr,
 		AVSAddr:          avsAddr,
 		SlashContract:    slashContract,

@@ -40,6 +40,9 @@ func (k *Keeper) IterateDelegationsForStakerAndAsset(ctx sdk.Context, stakerID s
 func (k *Keeper) StakerDelegatedTotalAmount(ctx sdk.Context, stakerID string, assetID string) (amount sdkmath.Int, err error) {
 	amount = sdkmath.NewInt(0)
 	opFunc := func(keys *delegationtype.SingleDelegationInfoReq, amounts *delegationtype.DelegationAmounts) error {
+		if amounts.UndelegatableShare.IsZero() {
+			return nil
+		}
 		opAccAddr := sdk.MustAccAddressFromBech32(keys.GetOperatorAddr())
 		// get the asset state of operator
 		operatorAsset, err := k.assetsKeeper.GetOperatorSpecifiedAssetInfo(ctx, opAccAddr, assetID)
@@ -199,6 +202,7 @@ func (k *Keeper) DeleteStakerForOperator(ctx sdk.Context, operator, assetID, sta
 	store.Set(Key, bz)
 	return nil
 }
+
 func (k *Keeper) DeleteStakerMapForOperator(ctx sdk.Context, operator, assetID string) error {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), delegationtype.KeyPrefixStakersByOperator)
 	Key := assetstype.GetJoinedStoreKey(operator, assetID)

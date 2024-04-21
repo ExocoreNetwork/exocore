@@ -194,11 +194,11 @@ func (s *DelegationPrecompileSuite) TestRunDelegateToThroughClientChain() {
 		{
 			name: "pass - delegateToThroughClientChain transaction",
 			malleate: func() (common.Address, []byte) {
-				depositModuleParam := &assetstype.Params{
+				assetsModuleParam := &assetstype.Params{
 					ExocoreLzAppAddress:    s.Address.String(),
 					ExocoreLzAppEventTopic: exocoreLzAppEventTopic,
 				}
-				err := s.App.AssetsKeeper.SetParams(s.Ctx, depositModuleParam)
+				err := s.App.AssetsKeeper.SetParams(s.Ctx, assetsModuleParam)
 				s.Require().NoError(err)
 				registerOperator()
 				depositAsset(s.Address.Bytes(), sdkmath.NewIntFromBigInt(depositAmount))

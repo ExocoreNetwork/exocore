@@ -92,7 +92,8 @@ func (k *Keeper) GetUndelegationRecords(ctx sdk.Context, singleRecordKeys []stri
 // created height is greater than or equal to the filter height.
 func (k *Keeper) IterateUndelegationsByOperator(
 	ctx sdk.Context, operator string, heightFilter *uint64, isUpdate bool,
-	opFunc func(undelegation *types.UndelegationRecord) error) error {
+	opFunc func(undelegation *types.UndelegationRecord) error,
+) error {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefixUndelegationInfo)
 	iterator := sdk.KVStorePrefixIterator(store, []byte(operator))
 	defer iterator.Close()
@@ -175,7 +176,8 @@ func (k *Keeper) GetWaitCompleteUndelegationRecords(ctx sdk.Context, height uint
 		return nil, err
 	}
 	if len(recordKeys) == 0 {
-		return nil, nil
+		records = make([]*types.UndelegationRecord, 0)
+		return records, nil
 	}
 	// The states of records stored by WaitCompleteUndelegations kvStore should always be IsPending,so using AllRecords as getType here is ok.
 	return k.GetUndelegationRecords(ctx, recordKeys)

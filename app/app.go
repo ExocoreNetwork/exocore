@@ -633,7 +633,7 @@ func NewExocoreApp(
 		appCodec,
 		app.AssetsKeeper,
 		operatorTypes.MockOracle{},
-		operatorTypes.MockAvs{},
+		operatorTypes.MockAvs{AssetsKeeper: app.AssetsKeeper},
 		delegationTypes.VirtualSlashKeeper{},
 	)
 	// todo: need to replace the virtual keepers with actual keepers after they have been

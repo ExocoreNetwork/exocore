@@ -15,14 +15,6 @@ type AssetPriceAndDecimal struct {
 	Decimal      uint32
 }
 
-type slashAmounts struct {
-	AmountFromUnbonding sdkmath.Int
-	AmountFromOptedIn   sdkmath.Int
-}
-type SlashAssets struct {
-	slashStakerInfo map[string]map[string]sdkmath.Int
-}
-
 // OptIn call this function to opt in AVS
 func (k *Keeper) OptIn(ctx sdk.Context, operatorAddress sdk.AccAddress, avsAddr string) error {
 	// avsAddr should be an evm contract address
@@ -34,11 +26,11 @@ func (k *Keeper) OptIn(ctx sdk.Context, operatorAddress sdk.AccAddress, avsAddr 
 		return types.ErrAlreadyOptedIn
 	}
 
-	// call UpdateOperatorUSDValue to mark the operator has been opted into the AVS
+	// call InitOperatorUSDValue to mark the operator has been opted into the AVS
 	// but the actual voting power calculation and update will be performed at the
 	// end of epoch of the AVS. So there isn't any reward in the opted-in epoch for the
 	// operator
-	err := k.UpdateOperatorUSDValue(ctx, avsAddr, operatorAddress.String(), sdkmath.LegacyNewDec(0))
+	err := k.InitOperatorUSDValue(ctx, avsAddr, operatorAddress.String())
 	if err != nil {
 		return err
 	}
