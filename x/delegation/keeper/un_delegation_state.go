@@ -13,7 +13,7 @@ import (
 	"github.com/ethereum/go-ethereum/common/hexutil"
 )
 
-// SetUndelegationRecords This function saves the undelegation records to be handled when the handle time expires.
+// SetUndelegationRecords function saves the undelegation records to be handled when the handle time expires.
 // When we save the undelegation records, we save them in three kv stores which are `KeyPrefixUndelegationInfo` `KeyPrefixStakerUndelegationInfo` and `KeyPrefixWaitCompleteUndelegations`
 func (k *Keeper) SetUndelegationRecords(ctx sdk.Context, records []*types.UndelegationRecord) error {
 	singleRecordStore := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefixUndelegationInfo)
@@ -61,7 +61,8 @@ func (k *Keeper) SetSingleUndelegationRecord(ctx sdk.Context, record *types.Unde
 }
 
 // StoreWaitCompleteRecord add it to handle the delay of completing undelegation caused by onHoldCount
-// In the event that the undelegation is held by another module, this function is used within the EndBlocker to increment the scheduled completion block number by 1. Then the completion time of the undelegation will be delayed to the next block.
+// In the event that the undelegation is held by another module, this function is used within the EndBlocker to increment the scheduled completion block number by 1.
+// Then the completion time of the undelegation will be delayed to the next block.
 func (k *Keeper) StoreWaitCompleteRecord(ctx sdk.Context, singleRecKey []byte, record *types.UndelegationRecord) error {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefixWaitCompleteUndelegations)
 	waitCompleteKey := types.GetWaitCompleteRecordKey(record.CompleteBlockNumber, record.LzTxNonce)

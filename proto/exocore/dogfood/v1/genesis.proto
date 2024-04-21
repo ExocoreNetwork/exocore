@@ -4,18 +4,26 @@ package exocore.dogfood.v1;
 
 import "gogoproto/gogo.proto";
 
-import "tendermint/abci/types.proto";
-
 import "exocore/dogfood/v1/params.proto";
 
 option go_package = "github.com/ExocoreNetwork/exocore/x/dogfood/types";
 
 // GenesisState defines the dogfood module's genesis state.
 message GenesisState {
-  // Parameters of the module.
+  // params refers to the parameters of the module.
   Params params = 1 [(gogoproto.nullable) = false];
 
-  // Validator set, stored by ExocoreValidatorKey.
-  repeated .tendermint.abci.ValidatorUpdate val_set = 2
+  // initial_val_set is the initial validator set.
+  repeated GenesisValidator initial_val_set = 2
   [ (gogoproto.nullable) = false ];
+}
+
+// GenesisValidator defines a genesis validator. It is a helper struct
+// used for serializing the genesis state.
+message GenesisValidator {
+  // public_key is the consensus public key of the validator. It should
+  // be exactly 32 bytes, but this is not enforced in protobuf.
+  string public_key = 1;
+  // power is the voting power of the validator.
+  int64 power = 2;
 }

@@ -1,0 +1,6 @@
+name: "CodeQL Analysis"
+queries:
+  - uses: crypto-com/cosmos-sdk-codeql@main
+    exclude:
+      - crypto-com/cosmos-sdk-codeql/map-iteration
+  - uses: security-and-quality

@@ -6,7 +6,7 @@ import (
 	errorsmod "cosmossdk.io/errors"
 	sdkmath "cosmossdk.io/math"
 	"github.com/ExocoreNetwork/exocore/x/assets/types"
-	despoittypes "github.com/ExocoreNetwork/exocore/x/deposit/types"
+	deposittypes "github.com/ExocoreNetwork/exocore/x/deposit/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
@@ -126,12 +126,12 @@ func (k Keeper) PostTxProcessing(ctx sdk.Context, msg core.Message, receipt *eth
 func (k Keeper) Deposit(ctx sdk.Context, params *DepositParams) error {
 	// check params parameter before executing deposit operation
 	if params.OpAmount.IsNegative() {
-		return errorsmod.Wrap(despoittypes.ErrDepositAmountIsNegative, fmt.Sprintf("the amount is:%s", params.OpAmount))
+		return errorsmod.Wrap(deposittypes.ErrDepositAmountIsNegative, fmt.Sprintf("the amount is:%s", params.OpAmount))
 	}
 	stakeID, assetID := types.GetStakeIDAndAssetID(params.ClientChainLzID, params.StakerAddress, params.AssetsAddress)
 	// check if asset exist
 	if !k.assetsKeeper.IsStakingAsset(ctx, assetID) {
-		return errorsmod.Wrap(despoittypes.ErrDepositAssetNotExist, fmt.Sprintf("the assetID is:%s", assetID))
+		return errorsmod.Wrap(deposittypes.ErrDepositAssetNotExist, fmt.Sprintf("the assetID is:%s", assetID))
 	}
 	changeAmount := types.DeltaStakerSingleAsset{
 		TotalDepositAmount: params.OpAmount,

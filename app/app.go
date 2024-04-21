@@ -10,6 +10,21 @@ import (
 	"path/filepath"
 	"sort"
 
+	"github.com/ExocoreNetwork/exocore/x/avstask"
+	avsTaskKeeper "github.com/ExocoreNetwork/exocore/x/avstask/keeper"
+	avsTaskTypes "github.com/ExocoreNetwork/exocore/x/avstask/types"
+
+	"github.com/ExocoreNetwork/exocore/x/avs"
+	"github.com/ExocoreNetwork/exocore/x/operator"
+	operatorKeeper "github.com/ExocoreNetwork/exocore/x/operator/keeper"
+
+	exoslash "github.com/ExocoreNetwork/exocore/x/slash"
+
+	avsManagerKeeper "github.com/ExocoreNetwork/exocore/x/avs/keeper"
+	avsManagerTypes "github.com/ExocoreNetwork/exocore/x/avs/types"
+	slashKeeper "github.com/ExocoreNetwork/exocore/x/slash/keeper"
+	exoslashTypes "github.com/ExocoreNetwork/exocore/x/slash/types"
+
 	autocliv1 "cosmossdk.io/api/cosmos/autocli/v1"
 	reflectionv1 "cosmossdk.io/api/cosmos/reflection/v1"
 	authzkeeper "github.com/cosmos/cosmos-sdk/x/authz/keeper"
@@ -32,17 +47,11 @@ import (
 	depositKeeper "github.com/ExocoreNetwork/exocore/x/deposit/keeper"
 	depositTypes "github.com/ExocoreNetwork/exocore/x/deposit/types"
 
-	"github.com/ExocoreNetwork/exocore/x/operator"
-	operatorKeeper "github.com/ExocoreNetwork/exocore/x/operator/keeper"
 	operatorTypes "github.com/ExocoreNetwork/exocore/x/operator/types"
 
 	"github.com/ExocoreNetwork/exocore/x/reward"
 	rewardKeeper "github.com/ExocoreNetwork/exocore/x/reward/keeper"
 	rewardTypes "github.com/ExocoreNetwork/exocore/x/reward/types"
-
-	exoslash "github.com/ExocoreNetwork/exocore/x/slash"
-	slashKeeper "github.com/ExocoreNetwork/exocore/x/slash/keeper"
-	exoslashTypes "github.com/ExocoreNetwork/exocore/x/slash/types"
 
 	"github.com/ExocoreNetwork/exocore/x/withdraw"
 	withdrawKeeper "github.com/ExocoreNetwork/exocore/x/withdraw/keeper"
@@ -268,6 +277,8 @@ var (
 		withdraw.AppModuleBasic{},
 		reward.AppModuleBasic{},
 		exoslash.AppModuleBasic{},
+		avs.AppModuleBasic{},
+		avstask.AppModuleBasic{},
 	)
 
 	// module account permissions
@@ -350,8 +361,9 @@ type ExocoreApp struct {
 	WithdrawKeeper   withdrawKeeper.Keeper
 	RewardKeeper     rewardKeeper.Keeper
 	OperatorKeeper   operatorKeeper.Keeper
-
-	ExoSlashKeeper slashKeeper.Keeper
+	ExoSlashKeeper   slashKeeper.Keeper
+	AVSManagerKeeper avsManagerKeeper.Keeper
+	TaskKeeper       avsTaskKeeper.Keeper
 	// the module manager
 	mm *module.Manager
 
@@ -434,6 +446,8 @@ func NewExocoreApp(
 		rewardTypes.StoreKey,
 		exoslashTypes.StoreKey,
 		operatorTypes.StoreKey,
+		avsManagerTypes.StoreKey,
+		avsTaskTypes.StoreKey,
 	)
 
 	// Add the EVM transient store key
@@ -649,11 +663,9 @@ func NewExocoreApp(
 
 	app.WithdrawKeeper = *withdrawKeeper.NewKeeper(appCodec, keys[withdrawTypes.StoreKey], app.AssetsKeeper, app.DepositKeeper)
 	app.RewardKeeper = *rewardKeeper.NewKeeper(appCodec, keys[rewardTypes.StoreKey], app.AssetsKeeper)
-	app.ExoSlashKeeper = slashKeeper.NewKeeper(
-		appCodec,
-		keys[exoslashTypes.StoreKey],
-		app.AssetsKeeper,
-	)
+	app.ExoSlashKeeper = slashKeeper.NewKeeper(appCodec, keys[exoslashTypes.StoreKey], app.AssetsKeeper)
+	app.AVSManagerKeeper = *avsManagerKeeper.NewKeeper(appCodec, keys[avsManagerTypes.StoreKey], &app.OperatorKeeper, app.AssetsKeeper)
+	app.TaskKeeper = avsTaskKeeper.NewKeeper(appCodec, keys[avsTaskTypes.StoreKey], app.AVSManagerKeeper)
 	// We call this after setting the hooks to ensure that the hooks are set on the keeper
 	evmKeeper.WithPrecompiles(
 		evmkeeper.AvailablePrecompiles(
@@ -667,6 +679,8 @@ func NewExocoreApp(
 			app.WithdrawKeeper,
 			app.ExoSlashKeeper,
 			app.RewardKeeper,
+			app.AVSManagerKeeper,
+			app.TaskKeeper,
 		),
 	)
 	epochsKeeper := epochskeeper.NewKeeper(appCodec, keys[epochstypes.StoreKey])
@@ -839,6 +853,8 @@ func NewExocoreApp(
 		withdraw.NewAppModule(appCodec, app.WithdrawKeeper),
 		reward.NewAppModule(appCodec, app.RewardKeeper),
 		exoslash.NewAppModule(appCodec, app.ExoSlashKeeper),
+		avs.NewAppModule(appCodec, app.AVSManagerKeeper),
+		avstask.NewAppModule(appCodec, app.TaskKeeper),
 	)
 
 	// During begin block slashing happens after reward.BeginBlocker so that
@@ -882,6 +898,8 @@ func NewExocoreApp(
 		withdrawTypes.ModuleName,
 		rewardTypes.ModuleName,
 		exoslashTypes.ModuleName,
+		avsManagerTypes.ModuleName,
+		avsTaskTypes.ModuleName,
 	)
 
 	// NOTE: fee market module must go last in order to retrieve the block gas used.
@@ -920,6 +938,8 @@ func NewExocoreApp(
 		withdrawTypes.ModuleName,
 		rewardTypes.ModuleName,
 		exoslashTypes.ModuleName,
+		avsManagerTypes.ModuleName,
+		avsTaskTypes.ModuleName,
 	)
 
 	// NOTE: The genutils module must occur after staking so that pools are
@@ -964,6 +984,8 @@ func NewExocoreApp(
 		// NOTE: crisis module must go at the end to check for invariants on each module
 		crisistypes.ModuleName,
 		consensusparamtypes.ModuleName,
+		avsManagerTypes.ModuleName,
+		avsTaskTypes.ModuleName,
 	)
 
 	app.mm.RegisterInvariants(&app.CrisisKeeper)

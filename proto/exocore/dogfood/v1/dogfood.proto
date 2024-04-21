@@ -4,7 +4,6 @@ package exocore.dogfood.v1;
 
 import "gogoproto/gogo.proto";
 import "google/protobuf/any.proto";
-import "google/protobuf/timestamp.proto";
 
 import "cosmos/staking/v1beta1/staking.proto";
 import "cosmos_proto/cosmos.proto";
@@ -12,7 +11,7 @@ import "cosmos_proto/cosmos.proto";
 option go_package = "github.com/ExocoreNetwork/exocore/x/dogfood/types";
 
 // ExocoreValidator is a validator that is part of the Exocore network. It is
-// used to validate and sign blocks and transactions.
+// used to validate and sign blocks.
 message ExocoreValidator {
   // The address, as derived from the consensus key. It has no relation
   // with the operator's account address.
@@ -20,6 +19,7 @@ message ExocoreValidator {
   // Last known power
   int64 power = 2;
   // pubkey is the consensus public key of the validator, as a Protobuf Any.
+  // this type is mirrored from the SDK's validator type in x/staking.
   google.protobuf.Any pubkey = 3 [
         (cosmos_proto.accepts_interface) = "cosmos.crypto.PubKey",
         (gogoproto.moretags) = "yaml:\"consensus_pubkey\""
@@ -51,23 +51,4 @@ message UndelegationRecordKeys {
 message Validators {
   // list is the list of validators.
   repeated cosmos.staking.v1beta1.Validator list = 1 [(gogoproto.nullable) = false];
-}
-
-// HeaderSubset is a subset of the block header that is relevant to the IBC codebase. It is
-// stored for each height and then converted to the `tm.Header` object after queried. It is
-// pruned when the information is no longer needed according to the `HistoricalEntries` param.
-message HeaderSubset {
-  // timestamp of the block
-  google.protobuf.Timestamp time = 1 [(gogoproto.nullable) = false, (gogoproto.stdtime) = true];
-  // validators for the next block
-  bytes next_validators_hash = 2;
-  // state after txs from the previous block
-  bytes app_hash             = 3;
-}
-
-// KeyPowerMapping is a mapping of the consensus public key (as a string)
-// to the power of the key.
-message KeyPowerMapping {
-  // list is the actual mapping of the consensus public key to the power.
-  map<string, int64> list = 1;
 }

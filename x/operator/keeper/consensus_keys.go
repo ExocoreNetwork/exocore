@@ -3,15 +3,15 @@ package keeper
 import (
 	"fmt"
 
-	"github.com/ExocoreNetwork/exocore/x/operator/types"
-
 	errorsmod "cosmossdk.io/errors"
 	"github.com/cometbft/cometbft/libs/log"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 
 	assetstypes "github.com/ExocoreNetwork/exocore/x/assets/types"
 	delegationtypes "github.com/ExocoreNetwork/exocore/x/delegation/types"
+	"github.com/ExocoreNetwork/exocore/x/operator/types"
 
 	tmprotocrypto "github.com/cometbft/cometbft/proto/tendermint/crypto"
 )
@@ -360,7 +360,7 @@ func (k *Keeper) DeleteOperatorAddressForChainIDAndConsAddr(
 
 // SetHooks stores the given hooks implementations.
 // Note that the Keeper is changed into a pointer to prevent an ineffective assignment.
-func (k *Keeper) SetHooks(hooks types.OperatorConsentHooks) {
+func (k *Keeper) SetHooks(hooks types.OperatorHooks) {
 	if hooks == nil {
 		panic("cannot set nil hooks")
 	}
@@ -370,10 +370,10 @@ func (k *Keeper) SetHooks(hooks types.OperatorConsentHooks) {
 	k.hooks = hooks
 }
 
-func (k *Keeper) Hooks() types.OperatorConsentHooks {
+func (k *Keeper) Hooks() types.OperatorHooks {
 	if k.hooks == nil {
 		// return a no-op implementation if no hooks are set to prevent calling nil functions
-		return types.MultiOperatorConsentHooks{}
+		return types.MultiOperatorHooks{}
 	}
 	return k.hooks
 }
@@ -455,4 +455,20 @@ func (k *Keeper) GetActiveOperatorsForChainID(
 		}
 	}
 	return activeOperator, activePks
+}
+
+func (k *Keeper) ValidatorByConsAddrForChainID(
+	ctx sdk.Context, consAddr sdk.ConsAddress, chainID string,
+) stakingtypes.ValidatorI {
+	found, operatorAddr := k.GetOperatorAddressForChainIDAndConsAddr(
+		ctx, chainID, consAddr,
+	)
+	if !found {
+		return stakingtypes.Validator{}
+	}
+	jailed := k.IsOperatorJailedForChainID(ctx, consAddr, chainID)
+	return stakingtypes.Validator{
+		Jailed:          jailed,
+		OperatorAddress: sdk.ValAddress(operatorAddr).String(),
+	}
 }

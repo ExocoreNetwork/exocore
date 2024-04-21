@@ -35,9 +35,6 @@ type DelegationHooks interface {
 	// AfterUndelegationStarted for undelegation, we use the address of the operator to figure out the list of impacted
 	// chains for that operator. and we need the identifier to hold it until confirmed by subscriber
 	AfterUndelegationStarted(ctx sdk.Context, addr sdk.AccAddress, recordKey []byte) error
-	// AfterUndelegationCompleted whenever an undelegation completes, we should update the vote power of the associated operator
-	// on all of the chain ids that are impacted
-	AfterUndelegationCompleted(ctx sdk.Context, addr sdk.AccAddress)
 }
 
 type OperatorKeeper interface {
