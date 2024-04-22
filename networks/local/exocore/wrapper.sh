@@ -12,7 +12,7 @@ if ! [ -f "${BINARY}" ]; then
 	exit 1
 fi
 
-export EHOME="/data/node${ID}/exocored"
+export EHOME="/home/exocore/data/node${ID}/exocored"
 export APP_TOML="$EHOME/config/app.toml"
 export CLIENT_TOML="$EHOME/config/client.toml"
 #APP_TOML_TMP="$EHOME/config/tmp_app.toml"
