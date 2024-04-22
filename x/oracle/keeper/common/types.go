@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	// maxNonce indicates how many messages a validator can submit in a single roudn to offer price
+	// maxNonce indicates how many messages a validator can submit in a single round to offer price
 	// current we use this as a mock distance
 	MaxNonce = 3
 

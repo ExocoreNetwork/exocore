@@ -1,267 +1,171 @@
 package aggregator
 
 import (
-	"errors"
 	"math/big"
-	"time"
 
-	"github.com/ExocoreNetwork/exocore/x/oracle/keeper/cache"
 	"github.com/ExocoreNetwork/exocore/x/oracle/keeper/common"
 	"github.com/ExocoreNetwork/exocore/x/oracle/types"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-type PriceItemKV struct {
-	TokenID uint64
-	PriceTR types.PriceTimeRound
+type priceWithTimeAndRound struct {
+	price      *big.Int
+	decimal    int32
+	timestamp  string
+	detRoundID string // roundId from source if exists
 }
 
-type roundInfo struct {
-	// this round of price will start from block basedBlock+1, the basedBlock served as a trigger to notify validators to submit prices
-	basedBlock uint64
-	// next round id of the price oracle service, price with thie id will be record on block basedBlock+1 if all prices submitted by validators(for v1, validators serve as oracle nodes) get to consensus immedately
-	nextRoundID uint64
-	// indicate if this round is open for collecting prices or closed in either condition that success with a consensused price or not
-	// 1: open, 2: closed
-	status int32
+type reportPrice struct {
+	validator string
+	// final price, set to -1 as initial
+	price *big.Int
+	// sourceId->priceWithTimeAndRound
+	prices map[uint64]*priceWithTimeAndRound
+	power  *big.Int
 }
 
-// AggregatorContext keeps memory cache for state params, validatorset, and updatedthese values as they updated on chain. And it keeps the information to track all tokenFeeders' status and data collection
-// nolint
-type AggregatorContext struct {
-	params *common.Params
-
-	// validator->power
-	validatorsPower map[string]*big.Int
-	totalPower      *big.Int
-
-	// each active feederToken has a roundInfo
-	rounds map[uint64]*roundInfo
-
-	// each roundInfo has a worker
-	aggregators map[uint64]*worker
+func (r *reportPrice) aggregate() *big.Int {
+	if r.price != nil {
+		return r.price
+	}
+	tmp := make([]*big.Int, 0, len(r.prices))
+	for _, p := range r.prices {
+		tmp = append(tmp, p.price)
+	}
+	r.price = common.BigIntList(tmp).Median()
+	return r.price
 }
 
-func (agc *AggregatorContext) sanityCheck(msg *types.MsgCreatePrice) error {
-	// sanity check
-	// TODO: check nonce [1,3] in anteHandler, related to params, may not able
-	// TODO: check the msgCreatePrice's Decimal is correct with params setting
-	// TODO: check len(price.prices)>0, len(price.prices._range_eachPriceSource.Prices)>0, at least has one source, and for each source has at least one price
-	// TODO: check for each source, at most maxDetId count price (now in filter, ->anteHandler)
+type aggregator struct {
+	finalPrice *big.Int
+	reports    []*reportPrice
+	// total valiadtor power who has submitted pice
+	reportPower *big.Int
+	totalPower  *big.Int
+	// validator set total power
+	//	totalPower string
+	// sourceId->roundId used to track the confirmed DS roundId
+	// updated by calculator, detId use string
+	dsPrices map[uint64]string
+}
 
-	if agc.validatorsPower[msg.Creator] == nil {
-		return errors.New("signer is not validator")
-	}
-
-	if msg.Nonce < 1 || msg.Nonce > common.MaxNonce {
-		return errors.New("nonce invalid")
-	}
-
-	// TODO: sanity check for price(no more than maxDetId count for each source, this should be take care in anteHandler)
-	if msg.Prices == nil || len(msg.Prices) == 0 {
-		return errors.New("msg should provide at least one price")
-	}
-
-	for _, pSource := range msg.Prices {
-		if pSource.Prices == nil || len(pSource.Prices) == 0 || len(pSource.Prices) > common.MaxDetID || !agc.params.IsValidSource(pSource.SourceID) {
-			return errors.New("source should be valid and provide at least one price")
+// fill price from validator submitting into aggregator, and calculation the voting power and check with the consensus status of deterministic source value to decide when to do the aggregation
+// TODO: currently apply mode=1 in V1, add swith modes
+func (agg *aggregator) fillPrice(pSources []*types.PriceSource, validator string, power *big.Int) {
+	report := agg.getReport(validator)
+	if report == nil {
+		report = &reportPrice{
+			validator: validator,
+			prices:    make(map[uint64]*priceWithTimeAndRound),
+			power:     power,
 		}
-		// check with params is coressponding source is deteministic
-		if agc.params.IsDeterministicSource(pSource.SourceID) {
-			for _, pDetID := range pSource.Prices {
-				// TODO: verify the format of DetId is correct, since this is string, and we will make consensus with validator's power, so it's ok not to verify the format
-				// just make sure the DetId won't mess up with NS's placeholder id, the limitation of maximum count one validator can submit will be check by filter
-				if len(pDetID.DetID) == 0 {
-					// deterministic must have specified deterministicId
-					return errors.New("ds should have roundid")
+		agg.reports = append(agg.reports, report)
+		agg.reportPower = new(big.Int).Add(agg.reportPower, power)
+	}
+
+	for _, pSource := range pSources {
+		if len(pSource.Prices[0].DetID) == 0 {
+			// this is an NS price report, price will just be updated instead of append
+			if pTR := report.prices[pSource.SourceID]; pTR == nil {
+				pTmp := pSource.Prices[0]
+				priceBigInt, _ := (&big.Int{}).SetString(pTmp.Price, 10)
+				pTR = &priceWithTimeAndRound{
+					price:     priceBigInt,
+					decimal:   pTmp.Decimal,
+					timestamp: pTmp.Timestamp,
+					//			detRoundId: p.DetId,
 				}
-				// DS's price value will go through consensus process, so it's safe to skip the check here
+				report.prices[pSource.SourceID] = pTR
+			} else {
+				pTR.price, _ = (&big.Int{}).SetString(pSource.Prices[0].Price, 10)
 			}
-			// sanity check: NS submit only one price with detId==""
-		} else if len(pSource.Prices) > 1 || len(pSource.Prices[0].DetID) > 0 {
-			return errors.New("ns should not have roundid")
-		}
-	}
-	return nil
-}
-
-func (agc *AggregatorContext) checkMsg(msg *types.MsgCreatePrice) error {
-	if err := agc.sanityCheck(msg); err != nil {
-		return err
-	}
-
-	// check feeder is active
-	feederContext := agc.rounds[msg.FeederID]
-	if feederContext == nil || feederContext.status != 1 {
-		// feederId does not exist or not alive
-		return errors.New("context not exist or not available")
-	}
-	// senity check on basedBlock
-	if msg.BasedBlock != feederContext.basedBlock {
-		return errors.New("baseblock not match")
-	}
-
-	// check sources rule matches
-	if ok, err := agc.params.CheckRules(msg.FeederID, msg.Prices); !ok {
-		return err
-	}
-	return nil
-}
-
-func (agc *AggregatorContext) FillPrice(msg *types.MsgCreatePrice) (*PriceItemKV, *cache.ItemM, error) {
-	feederWorker := agc.aggregators[msg.FeederID]
-	// worker initialzed here reduce workload for Endblocker
-	if feederWorker == nil {
-		feederWorker = newWorker(msg.FeederID, agc)
-		agc.aggregators[msg.FeederID] = feederWorker
-	}
-
-	if feederWorker.sealed {
-		return nil, nil, types.ErrPriceProposalIgnored.Wrap("price aggregation for this round has sealed")
-	}
-
-	if listFilled := feederWorker.do(msg); listFilled != nil {
-		if finalPrice := feederWorker.aggregate(); finalPrice != nil {
-			agc.rounds[msg.FeederID].status = 2
-			feederWorker.seal()
-			return &PriceItemKV{agc.params.GetTokenFeeder(msg.FeederID).TokenID, types.PriceTimeRound{
-				Price:   finalPrice.String(),
-				Decimal: agc.params.GetTokenInfo(msg.FeederID).Decimal,
-				// TODO: check the format
-				Timestamp: time.Now().String(),
-				RoundID:   agc.rounds[msg.FeederID].nextRoundID,
-			}}, &cache.ItemM{FeederID: msg.FeederID}, nil
-		}
-		return nil, &cache.ItemM{FeederID: msg.FeederID, PSources: listFilled, Validator: msg.Creator}, nil
-	}
-
-	// return nil, nil, errors.New("no valid price proposal to add for aggregation")
-	return nil, nil, types.ErrPriceProposalIgnored
-}
-
-// NewCreatePrice receives msgCreatePrice message, and goes process: filter->aggregator, filter->calculator->aggregator
-// non-deterministic data will goes directly into aggregator, and deterministic data will goes into calculator first to get consensus on the deterministic id.
-func (agc *AggregatorContext) NewCreatePrice(_ sdk.Context, msg *types.MsgCreatePrice) (*PriceItemKV, *cache.ItemM, error) {
-	if err := agc.checkMsg(msg); err != nil {
-		return nil, nil, types.ErrInvalidMsg.Wrap(err.Error())
-	}
-	return agc.FillPrice(msg)
-}
-
-// prepare for new roundInfo, just update the status kept in memory
-// executed at EndBlock stage, seall all success or expired roundInfo
-// including possible aggregation and state update
-// when validatorSet update, set force to true, to seal all alive round
-// returns: 1st successful sealed, need to be written to KVStore, 2nd: failed sealed tokenID, use previous price to write to KVStore
-func (agc *AggregatorContext) SealRound(ctx sdk.Context, force bool) (success []*PriceItemKV, failed []uint64) {
-	// 1. check validatorSet udpate
-	// TODO: if validatoSet has been updated in current block, just seal all active rounds and return
-	// 1. for sealed worker, the KVStore has been updated
-	for feederID, round := range agc.rounds {
-		if round.status == 1 {
-			feeder := agc.params.GetTokenFeeder(feederID)
-			// TODO: for mode=1, we don't do aggregate() here, since if it donesn't success in the transaction execution stage, it won't success here
-			// but it's not always the same for other modes, switch modes
-			switch common.Mode {
-			case 1:
-				expired := feeder.EndBlock > 0 && uint64(ctx.BlockHeight()) >= feeder.EndBlock
-				outOfWindow := uint64(ctx.BlockHeight())-round.basedBlock >= uint64(common.MaxNonce)
-				if expired || outOfWindow || force {
-					failed = append(failed, feeder.TokenID)
-					if expired {
-						delete(agc.rounds, feederID)
-						delete(agc.aggregators, feederID)
-					} else {
-						round.status = 2
-						agc.aggregators[feederID] = nil
+		} else {
+			// this is an DS price report
+			if pTR := report.prices[pSource.SourceID]; pTR == nil {
+				pTmp := pSource.Prices[0]
+				pTR = &priceWithTimeAndRound{
+					// price:     nil,
+					decimal: pTmp.Decimal,
+					//	timestamp: "",
+					// detRoundId: "",
+				}
+				if len(agg.dsPrices[pSource.SourceID]) > 0 {
+					for _, reportTmp := range agg.reports {
+						if priceTmp := reportTmp.prices[pSource.SourceID]; priceTmp != nil && priceTmp.price != nil {
+							pTR.price = new(big.Int).Set(priceTmp.price)
+							pTR.detRoundID = priceTmp.detRoundID
+							pTR.timestamp = priceTmp.timestamp
+						}
 					}
 				}
-			default:
-				ctx.Logger().Info("mode other than 1 is not support now")
+				report.prices[pSource.SourceID] = pTR
 			}
-		}
-		// all status: 1->2, remove its aggregator
-		if agc.aggregators[feederID] != nil && agc.aggregators[feederID].sealed {
-			agc.aggregators[feederID] = nil
+			// skip if this DS's slot exists, DS's value only updated by calculator
 		}
 	}
-	return success, failed
 }
 
-func (agc *AggregatorContext) PrepareRound(ctx sdk.Context, block uint64) {
-	// block>0 means recache initialization, all roundInfo is empty
-	if block == 0 {
-		block = uint64(ctx.BlockHeight())
-	}
-
-	for feederID, feeder := range agc.params.GetTokenFeeders() {
-		if feederID == 0 {
-			continue
-		}
-		if (feeder.EndBlock > 0 && feeder.EndBlock <= block) || feeder.StartBaseBlock > block {
-			// this feeder is inactive
-			continue
-		}
-
-		delta := block - feeder.StartBaseBlock
-		left := delta % feeder.Interval
-		count := delta / feeder.Interval
-		latestBasedblock := block - left
-		latestNextRoundID := feeder.StartRoundID + count
-
-		feederIDUint64 := uint64(feederID)
-		round := agc.rounds[feederIDUint64]
-		if round == nil {
-			round = &roundInfo{
-				basedBlock:  latestBasedblock,
-				nextRoundID: latestNextRoundID,
-			}
-			if left >= common.MaxNonce {
-				round.status = 2
-			} else {
-				round.status = 1
-			}
-			agc.rounds[feederIDUint64] = round
-		} else {
-			// prepare a new round for exist roundInfo
-			if left == 0 {
-				round.basedBlock = latestBasedblock
-				round.nextRoundID = latestNextRoundID
-				round.status = 1
-				// drop previous worker
-				agc.aggregators[feederIDUint64] = nil
-			} else if round.status == 1 && left >= common.MaxNonce {
-				// this shouldn't happen, if do sealround properly before prepareRound, basically for test only
-				round.status = 2
-				// TODO: just modify the status here, since sealRound should do all the related seal actios already when parepare invoked
+// TODO: for v1 use mode=1, which means agg.dsPrices with each key only be updated once, switch modes
+func (agg *aggregator) confirmDSPrice(confirmedRounds []*confirmedPrice) {
+	for _, priceSourceRound := range confirmedRounds {
+		// update the latest round-detId for DS, TODO: in v1 we only update this value once since calculator will just ignore any further value once a detId has reached consensus
+		//		agg.dsPrices[priceSourceRound.sourceId] = priceSourceRound.detId
+		// this id's comparison need to format id to make sure them be the same length
+		if id := agg.dsPrices[priceSourceRound.sourceID]; len(id) == 0 || (len(id) > 0 && id < priceSourceRound.detID) {
+			agg.dsPrices[priceSourceRound.sourceID] = priceSourceRound.detID
+			for _, report := range agg.reports {
+				if report.price != nil {
+					// price of IVA has completed
+					continue
+				}
+				if price := report.prices[priceSourceRound.sourceID]; price != nil {
+					price.detRoundID = priceSourceRound.detID
+					price.timestamp = priceSourceRound.timestamp
+					price.price = priceSourceRound.price
+				} // else TODO: panice in V1
 			}
 		}
 	}
 }
 
-func (agc *AggregatorContext) SetParams(p *common.Params) {
-	agc.params = p
-}
-
-func (agc *AggregatorContext) SetValidatorPowers(vp map[string]*big.Int) {
-	//	t := big.NewInt(0)
-	agc.totalPower = big.NewInt(0)
-	agc.validatorsPower = make(map[string]*big.Int)
-	for addr, power := range vp {
-		agc.validatorsPower[addr] = power
-		agc.totalPower = new(big.Int).Add(agc.totalPower, power)
+func (agg *aggregator) getReport(validator string) *reportPrice {
+	for _, r := range agg.reports {
+		if r.validator == validator {
+			return r
+		}
 	}
+	return nil
 }
 
-func (agc *AggregatorContext) GetValidatorPowers() (vp map[string]*big.Int) {
-	return agc.validatorsPower
+func (agg *aggregator) aggregate() *big.Int {
+	if agg.finalPrice != nil {
+		return agg.finalPrice
+	}
+	// TODO: implemetn different MODE for definition of consensus,
+	// currently: use rule_1+MODE_1: {rule:specified source:`chainlink`, MODE: asap when power exceeds the threshold}
+	// 1. check OVA threshold
+	// 2. check IVA consensus with rule, TODO: for v1 we only implement with mode=1&rule=1
+	if common.ExceedsThreshold(agg.reportPower, agg.totalPower) {
+		// TODO: this is kind of a mock way to suite V1, need update to check with params.rule
+		// check if IVA all reached consensus
+		if len(agg.dsPrices) > 0 {
+			validatorPrices := make([]*big.Int, 0, len(agg.reports))
+			// do the aggregation to find out the 'final price'
+			for _, validatorReport := range agg.reports {
+				validatorPrices = append(validatorPrices, validatorReport.aggregate())
+			}
+			// vTmp := bigIntList(validatorPrices)
+			agg.finalPrice = common.BigIntList(validatorPrices).Median()
+			// clear relative aggregator for this feeder, all the aggregator,calculator, filter can be removed since this round has been sealed
+		}
+	}
+	return agg.finalPrice
 }
 
-func NewAggregatorContext() *AggregatorContext {
-	return &AggregatorContext{
-		validatorsPower: make(map[string]*big.Int),
-		totalPower:      big.NewInt(0),
-		rounds:          make(map[uint64]*roundInfo),
-		aggregators:     make(map[uint64]*worker),
+func newAggregator(validatorSetLength int, totalPower *big.Int) *aggregator {
+	return &aggregator{
+		reports:     make([]*reportPrice, 0, validatorSetLength),
+		reportPower: big.NewInt(0),
+		dsPrices:    make(map[uint64]string),
+		totalPower:  totalPower,
 	}
 }

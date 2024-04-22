@@ -3,96 +3,66 @@ package aggregator
 import (
 	"math/big"
 	"testing"
-	"time"
 
-	"github.com/ExocoreNetwork/exocore/x/oracle/keeper/common"
-	. "github.com/agiledragon/gomonkey/v2"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	. "github.com/smartystreets/goconvey/convey"
 )
 
-func TestAggregatorContext(t *testing.T) {
-	Convey("init aggregatorContext with default params", t, func() {
-		agc := initAggregatorContext4Test()
-		var ctx sdk.Context
-		Convey("prepare round to gengerate round info of feeders for next block", func() {
-			Convey("pepare within the window", func() {
-				p := patchBlockHeight(12)
-				agc.PrepareRound(ctx, 0)
+func TestAggregator(t *testing.T) {
+	Convey("fill prices into aggregator", t, func() {
+		a := newAggregator(5, big.NewInt(4))
+		// a.fillPrice(pS1, "v1", one) //v1:{1, 2}
 
-				Convey("for empty round list", func() {
-					So(*agc.rounds[1], ShouldResemble, roundInfo{10, 2, 1})
-				})
+		Convey("fill v1's report", func() {
+			a.fillPrice(pS1, "v1", one) // v1:{1, 2}
+			report := a.getReport("v1")
+			So(report.prices[1].price, ShouldBeNil)
+			Convey("fill v2's report", func() {
+				a.fillPrice(pS2, "v2", one)
+				report := a.getReport("v2")
+				So(report.prices[1].price, ShouldBeNil)
+				Convey("fill more v1's report", func() {
+					a.fillPrice(pS21, "v1", one)
+					report := a.getReport("v1")
+					So(report.prices[1].price, ShouldBeNil)
+					So(report.prices[2].price, ShouldBeNil)
+					Convey("confirm deterministic source_1 and source 2", func() {
+						a.confirmDSPrice([]*confirmedPrice{
+							{
+								sourceID:  1,
+								detID:     "9",
+								price:     ten,
+								timestamp: "-",
+							},
+							{
+								sourceID:  2,
+								detID:     "3",
+								price:     twenty,
+								timestamp: "-",
+							},
+						})
+						reportV1 := a.getReport("v1")
+						reportV2 := a.getReport("v2")
+						So(reportV1.prices[1].price, ShouldResemble, ten)
+						So(reportV1.prices[1].detRoundID, ShouldEqual, "9")
 
-				Convey("update already exist round info", func() {
-					p.Reset()
-					time.Sleep(1 * time.Second)
-					patchBlockHeight(10 + common.MaxNonce)
+						So(reportV2.prices[1].price, ShouldResemble, ten)
+						So(reportV2.prices[1].detRoundID, ShouldEqual, "9")
 
-					agc.PrepareRound(ctx, 0)
-					So(agc.rounds[1].status, ShouldEqual, 2)
-				})
-				p.Reset()
-				time.Sleep(1 * time.Second)
-			})
-			Convey("pepare outside the window", func() {
-				Convey("for empty round list", func() {
-					p := patchBlockHeight(10 + common.MaxNonce)
-					agc.PrepareRound(ctx, 0)
-					So(agc.rounds[1].status, ShouldEqual, 2)
-					p.Reset()
-					time.Sleep(1 * time.Second)
+						So(reportV1.prices[2].price, ShouldResemble, twenty)
+						So(reportV1.prices[2].detRoundID, ShouldEqual, "3")
+
+						// current implementation only support v1's single source
+						Convey("aggregate after all source confirmed", func() {
+							a.fillPrice(pS6, "v3", one)
+							a.aggregate() // v1:{s1:9-10, s2:3-20}:15, v2:{s1:9-10}:10
+							So(a.getReport("v1").price, ShouldResemble, fifteen)
+							So(a.getReport("v2").price, ShouldResemble, ten)
+							So(a.getReport("v3").price, ShouldResemble, twenty)
+							So(a.finalPrice, ShouldResemble, fifteen)
+						})
+					})
 				})
 			})
 		})
-
-		Convey("seal existed round without any msg recieved", func() {
-			p := patchBlockHeight(11)
-			agc.PrepareRound(ctx, 0)
-			Convey("seal when exceed the window", func() {
-				So(agc.rounds[1].status, ShouldEqual, 1)
-				p.Reset()
-				time.Sleep(1 * time.Second)
-				patchBlockHeight(13)
-				agc.SealRound(ctx, false)
-				So(agc.rounds[1].status, ShouldEqual, 2)
-			})
-
-			Convey("force seal by required", func() {
-				p.Reset()
-				time.Sleep(1 * time.Second)
-				patchBlockHeight(12)
-				agc.SealRound(ctx, false)
-				So(agc.rounds[1].status, ShouldEqual, 1)
-				agc.SealRound(ctx, true)
-				So(agc.rounds[1].status, ShouldEqual, 2)
-			})
-			p.Reset()
-			time.Sleep(1 * time.Second)
-		})
-
-	})
-}
-
-func initAggregatorContext4Test() *AggregatorContext {
-	agc := NewAggregatorContext()
-
-	validatorPowers := map[string]*big.Int{
-		"v1": big.NewInt(1),
-		"v2": big.NewInt(1),
-		"v3": big.NewInt(1),
-	}
-
-	p := defaultParams
-	pWrapped := common.Params(p)
-
-	agc.SetValidatorPowers(validatorPowers)
-	agc.SetParams(&pWrapped)
-	return agc
-}
-
-func patchBlockHeight(h int64) *Patches {
-	return ApplyMethod(sdk.Context{}, "BlockHeight", func(sdk.Context) int64 {
-		return h
 	})
 }
