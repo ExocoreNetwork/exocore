@@ -101,7 +101,7 @@ func ConsPubKeyToBytesCmd() *cobra.Command {
 		Short: "Convert a consensus public key to a byte32 representation",
 		Long:  `Convert a consensus public key to a byte32 representation for usage with Solidity contracts`,
 		Args:  cobra.ExactArgs(0),
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(cmd *cobra.Command, _ []string) error {
 			// basic stuff
 			clientCtx := client.GetClientContextFromCmd(cmd)
 			serverCtx := server.GetServerContextFromCmd(cmd)
