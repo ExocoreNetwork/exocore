@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"fmt"
+	"reflect"
 
 	"github.com/cometbft/cometbft/libs/log"
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -26,7 +27,6 @@ type (
 		operatorKeeper   types.OperatorKeeper
 		delegationKeeper types.DelegationKeeper
 		restakingKeeper  types.AssetsKeeper
-		slashingKeeper   types.SlashingKeeper
 	}
 )
 
@@ -39,14 +39,13 @@ func NewKeeper(
 	operatorKeeper types.OperatorKeeper,
 	delegationKeeper types.DelegationKeeper,
 	restakingKeeper types.AssetsKeeper,
-	slashingKeeper types.SlashingKeeper,
 ) Keeper {
 	// set KeyTable if it has not already been set
 	if !ps.HasKeyTable() {
 		ps = ps.WithKeyTable(types.ParamKeyTable())
 	}
 
-	return Keeper{
+	k := Keeper{
 		cdc:              cdc,
 		storeKey:         storeKey,
 		paramstore:       ps,
@@ -54,8 +53,10 @@ func NewKeeper(
 		operatorKeeper:   operatorKeeper,
 		delegationKeeper: delegationKeeper,
 		restakingKeeper:  restakingKeeper,
-		slashingKeeper:   slashingKeeper,
 	}
+	k.mustValidateFields()
+
+	return k
 }
 
 // Logger returns a logger object for use within the module.
@@ -102,4 +103,17 @@ func (k Keeper) ClearEpochEnd(ctx sdk.Context) {
 	store := ctx.KVStore(k.storeKey)
 	key := types.EpochEndKey()
 	store.Delete(key)
+}
+
+func (k Keeper) mustValidateFields() {
+	if reflect.ValueOf(k).NumField() != 8 {
+		panic("Keeper has unexpected number of fields")
+	}
+	types.PanicIfZeroOrNil(k.storeKey, "storeKey")
+	types.PanicIfZeroOrNil(k.cdc, "cdc")
+	types.PanicIfZeroOrNil(k.paramstore, "paramstore")
+	types.PanicIfZeroOrNil(k.epochsKeeper, "epochsKeeper")
+	types.PanicIfZeroOrNil(k.operatorKeeper, "operatorKeeper")
+	types.PanicIfZeroOrNil(k.delegationKeeper, "delegationKeeper")
+	types.PanicIfZeroOrNil(k.restakingKeeper, "restakingKeeper")
 }
