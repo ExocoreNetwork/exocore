@@ -577,14 +577,14 @@ func NewExocoreApp(
 		app.OperatorKeeper,
 	)
 
-	// the dogfood module is the first AVS
+	// the dogfood module is the first AVS. it receives slashing calls from either x/slashing
+	// or x/evidence and forwards them to the operator module which handles it.
 	app.StakingKeeper = stakingkeeper.NewKeeper(
 		appCodec, keys[stakingtypes.StoreKey], app.GetSubspace(stakingtypes.ModuleName),
 		app.EpochsKeeper,     // epoch hook to be registered separately
 		app.OperatorKeeper,   // operator registration / opt in
 		app.DelegationKeeper, // undelegation response
 		app.AssetsKeeper,     // assets for vote power
-		app.SlashingKeeper,   // slash for infraction
 	)
 
 	(&app.EpochsKeeper).SetHooks(
@@ -632,6 +632,29 @@ func NewExocoreApp(
 	// it is created after the Staking and Slashing keepers have been set up.
 	app.EvidenceKeeper = *evidencekeeper.NewKeeper(
 		appCodec, keys[evidencetypes.StoreKey], app.StakingKeeper, app.SlashingKeeper,
+	)
+
+	// initialize the IBC keeper but the rest of the stack is done after EVM.
+	// add capability keeper and ScopeToModule for ibc module
+	app.CapabilityKeeper = capabilitykeeper.NewKeeper(
+		appCodec,
+		keys[capabilitytypes.StoreKey],
+		memKeys[capabilitytypes.MemStoreKey],
+	)
+	scopedIBCKeeper := app.CapabilityKeeper.ScopeToModule(ibcexported.ModuleName)
+	scopedTransferKeeper := app.CapabilityKeeper.ScopeToModule(ibctransfertypes.ModuleName)
+	scopedICAHostKeeper := app.CapabilityKeeper.ScopeToModule(icahosttypes.SubModuleName)
+	// Applications that wish to enforce statically created ScopedKeepers should call `Seal`
+	// after creating their scoped modules in `NewApp` with `ScopeToModule`
+	app.CapabilityKeeper.Seal()
+	// Create IBC Keeper
+	app.IBCKeeper = ibckeeper.NewKeeper(
+		appCodec,
+		keys[ibcexported.StoreKey],
+		app.GetSubspace(ibcexported.ModuleName),
+		app.StakingKeeper,
+		app.UpgradeKeeper,
+		scopedIBCKeeper,
 	)
 
 	// add the governance module, with first step being setting up the proposal types.
@@ -718,29 +741,8 @@ func NewExocoreApp(
 		),
 	)
 
-	// IBC stack
+	// remaining bits of the IBC stack: transfer stack and interchain accounts.
 
-	// add capability keeper and ScopeToModule for ibc module
-	app.CapabilityKeeper = capabilitykeeper.NewKeeper(
-		appCodec,
-		keys[capabilitytypes.StoreKey],
-		memKeys[capabilitytypes.MemStoreKey],
-	)
-	scopedIBCKeeper := app.CapabilityKeeper.ScopeToModule(ibcexported.ModuleName)
-	scopedTransferKeeper := app.CapabilityKeeper.ScopeToModule(ibctransfertypes.ModuleName)
-	scopedICAHostKeeper := app.CapabilityKeeper.ScopeToModule(icahosttypes.SubModuleName)
-	// Applications that wish to enforce statically created ScopedKeepers should call `Seal`
-	// after creating their scoped modules in `NewApp` with `ScopeToModule`
-	app.CapabilityKeeper.Seal()
-	// Create IBC Keeper
-	app.IBCKeeper = ibckeeper.NewKeeper(
-		appCodec,
-		keys[ibcexported.StoreKey],
-		app.GetSubspace(ibcexported.ModuleName),
-		app.StakingKeeper,
-		app.UpgradeKeeper,
-		scopedIBCKeeper,
-	)
 	// transfer assets across chains
 	app.TransferKeeper = transferkeeper.NewKeeper(
 		appCodec, keys[ibctransfertypes.StoreKey], app.GetSubspace(ibctransfertypes.ModuleName),
@@ -988,16 +990,16 @@ func NewExocoreApp(
 		ibcexported.ModuleName,
 		ibctransfertypes.ModuleName,
 		icatypes.ModuleName,
-		// // no-op modules, not required to be added here.
-		// paramstypes.ModuleName,
-		// consensusparamtypes.ModuleName,
-		// upgradetypes.ModuleName,  // no-op since we don't call SetInitVersionMap
-		// depositTypes.ModuleName,  // state handled by x/assets
-		// withdrawTypes.ModuleName, // state handled by x/assets
-		// rewardTypes.ModuleName,   // not fully implemented yet
-		// exoslashTypes.ModuleName, // not fully implemented yet
-		// avsManagerTypes.ModuleName,
-		// avsTaskTypes.ModuleName,
+		// no-op modules
+		paramstypes.ModuleName,
+		consensusparamtypes.ModuleName,
+		upgradetypes.ModuleName,  // no-op since we don't call SetInitVersionMap
+		depositTypes.ModuleName,  // state handled by x/assets
+		withdrawTypes.ModuleName, // state handled by x/assets
+		rewardTypes.ModuleName,   // not fully implemented yet
+		exoslashTypes.ModuleName, // not fully implemented yet
+		avsManagerTypes.ModuleName,
+		avsTaskTypes.ModuleName,
 		// must be the last module after others have been set up, so that it can check
 		// the invariants (if configured to do so).
 		crisistypes.ModuleName,
