@@ -116,7 +116,10 @@ func ConsPubKeyToBytesCmd() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			output, _ := cmd.Flags().GetString(cli.OutputFlag)
+			output, err := cmd.Flags().GetString(cli.OutputFlag)
+			if err != nil {
+				return err
+			}
 			outstream := cmd.OutOrStdout()
 			displayConsKeyBytes(outstream, newConsKeyBytes(tmValPubKey.Bytes()), output)
 			return nil
