@@ -65,7 +65,7 @@ func (k Keeper) Logger(ctx sdk.Context) log.Logger {
 
 // SetHooks sets the hooks on the keeper. It intentionally has a pointer receiver so that
 // changes can be saved to the object.
-func (k *Keeper) SetHooks(sh types.DogfoodHooks) *Keeper {
+func (k *Keeper) SetHooks(sh types.DogfoodHooks) {
 	if k.dogfoodHooks != nil {
 		panic("cannot set dogfood hooks twice")
 	}
@@ -73,7 +73,6 @@ func (k *Keeper) SetHooks(sh types.DogfoodHooks) *Keeper {
 		panic("cannot set nil dogfood hooks")
 	}
 	k.dogfoodHooks = sh
-	return k
 }
 
 // Hooks returns the hooks registered to the module.

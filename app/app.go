@@ -554,7 +554,7 @@ func NewExocoreApp(
 
 	// withdrawals - validates from assets and deposits keepers and executes them.
 	// could potentially be merged with the assets keeper.
-	app.WithdrawKeeper = *withdrawKeeper.NewKeeper(
+	app.WithdrawKeeper = withdrawKeeper.NewKeeper(
 		appCodec, keys[withdrawTypes.StoreKey],
 		app.AssetsKeeper, app.DepositKeeper,
 	)
@@ -587,6 +587,10 @@ func NewExocoreApp(
 		app.SlashingKeeper,   // slash for infraction
 	)
 
+	(&app.EpochsKeeper).SetHooks(
+		app.StakingKeeper.EpochsHooks(),
+	)
+
 	// these two modules aren't finalized yet.
 	app.RewardKeeper = rewardKeeper.NewKeeper(
 		appCodec, keys[rewardTypes.StoreKey], app.AssetsKeeper,
@@ -613,6 +617,12 @@ func NewExocoreApp(
 	app.SlashingKeeper = slashingkeeper.NewKeeper(
 		appCodec, app.LegacyAmino(), keys[slashingtypes.StoreKey],
 		app.StakingKeeper, authAddrString,
+	)
+
+	(&app.StakingKeeper).SetHooks(
+		stakingtypes.NewMultiDogfoodHooks(
+			app.SlashingKeeper.Hooks(),
+		),
 	)
 
 	// the evidence module handles any external evidence of misbehavior submitted to it, if such
@@ -668,6 +678,22 @@ func NewExocoreApp(
 		app.GetSubspace(evmtypes.ModuleName),
 	)
 
+	app.EvmKeeper.WithPrecompiles(
+		evmkeeper.AvailablePrecompiles(
+			app.AuthzKeeper,
+			app.TransferKeeper,
+			app.IBCKeeper.ChannelKeeper,
+			app.DepositKeeper,
+			app.DelegationKeeper,
+			app.AssetsKeeper,
+			app.WithdrawKeeper,
+			app.ExoSlashKeeper,
+			app.RewardKeeper,
+			app.AVSManagerKeeper,
+			app.TaskKeeper,
+		),
+	)
+
 	// the recovery keeper is used to help recover any assets wrongly sent (over IBC) to the
 	// Cosmos address instead of Eth address by users. it needs IBC related stuff initialized
 	// which needs the staking keeper, so it is initialized later in the stack.
@@ -684,6 +710,12 @@ func NewExocoreApp(
 	app.Erc20Keeper = erc20keeper.NewKeeper(
 		keys[erc20types.StoreKey], appCodec, authtypes.NewModuleAddress(govtypes.ModuleName),
 		app.AccountKeeper, app.BankKeeper, app.EvmKeeper, app.StakingKeeper, app.RecoveryKeeper,
+	)
+
+	app.EvmKeeper.SetHooks(
+		evmkeeper.NewMultiEvmHooks(
+			app.Erc20Keeper.Hooks(),
+		),
 	)
 
 	// IBC stack
