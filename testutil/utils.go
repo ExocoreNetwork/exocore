@@ -151,12 +151,12 @@ func (suite *BaseTestSuite) SetupWithGenesisValSet(genAccs []authtypes.GenesisAc
 
 	// operator registration
 	operatorInfos := []operatortypes.OperatorInfo{
-		operatortypes.OperatorInfo{
+		{
 			EarningsAddr:     operator1.String(),
 			OperatorMetaInfo: "operator1",
 			Commission:       stakingtypes.NewCommission(sdk.ZeroDec(), sdk.ZeroDec(), sdk.ZeroDec()),
 		},
-		operatortypes.OperatorInfo{
+		{
 			EarningsAddr:     operator2.String(),
 			OperatorMetaInfo: "operator2",
 			Commission:       stakingtypes.NewCommission(sdk.ZeroDec(), sdk.ZeroDec(), sdk.ZeroDec()),
@@ -171,7 +171,7 @@ func (suite *BaseTestSuite) SetupWithGenesisValSet(genAccs []authtypes.GenesisAc
 	suite.Require().NoError(err)
 	// operator consensus keys
 	consensusKeyRecords := []operatortypes.OperatorConsKeyRecord{
-		operatortypes.OperatorConsKeyRecord{
+		{
 			OperatorAddress: operatorInfos[0].EarningsAddr,
 			Chains: []operatortypes.ChainDetails{
 				{
@@ -180,7 +180,7 @@ func (suite *BaseTestSuite) SetupWithGenesisValSet(genAccs []authtypes.GenesisAc
 				},
 			},
 		},
-		operatortypes.OperatorConsKeyRecord{
+		{
 			OperatorAddress: operatorInfos[1].EarningsAddr,
 			Chains: []operatortypes.ChainDetails{
 				{
@@ -324,7 +324,7 @@ func (suite *BaseTestSuite) DoSetupTest() {
 	// Exocore modules genesis
 	// x/assets
 	suite.ClientChains = []assetstypes.ClientChainInfo{
-		assetstypes.ClientChainInfo{
+		{
 			Name:               "ethereum",
 			MetaInfo:           "ethereum blockchain",
 			ChainId:            1,
@@ -334,7 +334,7 @@ func (suite *BaseTestSuite) DoSetupTest() {
 		},
 	}
 	suite.Assets = []assetstypes.AssetInfo{
-		assetstypes.AssetInfo{
+		{
 			Name:             "Tether USD",
 			Symbol:           "USDT",
 			Address:          "0xdAC17F958D2ee523a2206206994597C13D831ec7",
