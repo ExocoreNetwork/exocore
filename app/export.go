@@ -14,7 +14,6 @@ import (
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 	govtypesv1 "github.com/cosmos/cosmos-sdk/x/gov/types/v1"
 	slashingtypes "github.com/cosmos/cosmos-sdk/x/slashing/types"
-	"github.com/cosmos/cosmos-sdk/x/staking"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	evmtypes "github.com/evmos/evmos/v14/x/evm/types"
 
@@ -83,7 +82,7 @@ func (app *ExocoreApp) ExportAppStateAndValidators(
 		return servertypes.ExportedApp{}, err
 	}
 
-	validators, err := staking.WriteValidators(ctx, &app.StakingKeeper)
+	validators, err := app.StakingKeeper.WriteValidators(ctx)
 	if err != nil {
 		return servertypes.ExportedApp{}, err
 	}

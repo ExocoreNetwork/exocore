@@ -62,7 +62,7 @@ func (k *Keeper) AllOperators(ctx sdk.Context) []string {
 	return ret
 }
 
-func (k *Keeper) IsOperator(ctx sdk.Context, addr sdk.AccAddress) bool {
+func (k Keeper) IsOperator(ctx sdk.Context, addr sdk.AccAddress) bool {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), operatortypes.KeyPrefixOperatorInfo)
 	return store.Has(addr)
 }

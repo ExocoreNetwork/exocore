@@ -40,13 +40,13 @@ func NewKeeper(
 	delegationKeeper types.DelegationKeeper,
 	restakingKeeper types.AssetsKeeper,
 	slashingKeeper types.SlashingKeeper,
-) *Keeper {
+) Keeper {
 	// set KeyTable if it has not already been set
 	if !ps.HasKeyTable() {
 		ps = ps.WithKeyTable(types.ParamKeyTable())
 	}
 
-	return &Keeper{
+	return Keeper{
 		cdc:              cdc,
 		storeKey:         storeKey,
 		paramstore:       ps,

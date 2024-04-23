@@ -30,8 +30,8 @@ func NewKeeper(
 	storeKey storetypes.StoreKey,
 	operatorKeeper delegationtypes.OperatorKeeper,
 	assetKeeper assettypes.Keeper,
-) *Keeper {
-	return &Keeper{
+) Keeper {
+	return Keeper{
 		cdc:            cdc,
 		storeKey:       storeKey,
 		operatorKeeper: operatorKeeper,

@@ -336,7 +336,7 @@ func (k *Keeper) GetStakerShare(ctx sdk.Context, avsAddr, stakerID, operatorAddr
 	return ret.Amount, nil
 }
 
-func (k *Keeper) GetAvgDelegatedValue(
+func (k Keeper) GetAvgDelegatedValue(
 	ctx sdk.Context, operators []sdk.AccAddress, chainID, _ string,
 ) ([]int64, error) {
 	avsAddr, err := k.avsKeeper.GetAvsAddrByChainID(ctx, chainID)
