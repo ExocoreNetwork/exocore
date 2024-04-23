@@ -14,7 +14,6 @@ import (
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 	govtypesv1 "github.com/cosmos/cosmos-sdk/x/gov/types/v1"
 	slashingtypes "github.com/cosmos/cosmos-sdk/x/slashing/types"
-	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	evmtypes "github.com/evmos/evmos/v14/x/evm/types"
 
 	"github.com/evmos/evmos/v14/encoding"
@@ -25,16 +24,9 @@ func NewDefaultGenesisState(cdc codec.Codec) simapp.GenesisState {
 	encCfg := encoding.MakeConfig(ModuleBasics)
 	defaultGenesis := ModuleBasics.DefaultGenesis(encCfg.Codec)
 
-	// staking module
-	stakingGenesis := stakingtypes.GenesisState{}
-	rawGenesis := defaultGenesis[stakingtypes.ModuleName]
-	cdc.MustUnmarshalJSON(rawGenesis, &stakingGenesis)
-	stakingGenesis.Params.BondDenom = utils.BaseDenom
-	defaultGenesis[stakingtypes.ModuleName] = cdc.MustMarshalJSON(&stakingGenesis)
-
 	// crisis module
 	crisisGenesis := crisistypes.GenesisState{}
-	rawGenesis = defaultGenesis[crisistypes.ModuleName]
+	rawGenesis := defaultGenesis[crisistypes.ModuleName]
 	cdc.MustUnmarshalJSON(rawGenesis, &crisisGenesis)
 	crisisGenesis.ConstantFee.Denom = utils.BaseDenom
 	defaultGenesis[crisistypes.ModuleName] = cdc.MustMarshalJSON(&crisisGenesis)
