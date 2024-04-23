@@ -285,7 +285,7 @@ func (k *Keeper) GetChainIDsAndKeysForOperator(
 	for ; iterator.Valid(); iterator.Next() {
 		// the key returned is the full key, with the prefix. drop the prefix and the length.
 		chainID := string(iterator.Key()[len(prefix)+8:])
-		var key *tmprotocrypto.PublicKey
+		key := &tmprotocrypto.PublicKey{}
 		if err := key.Unmarshal(iterator.Value()); err != nil {
 			// grave error because we are the ones who stored this information in the first
 			// place
@@ -323,7 +323,7 @@ func (k *Keeper) GetOperatorsForChainID(
 		// so just drop it and convert to sdk.AccAddress
 		addr := iterator.Key()[len(prefix):]
 		res := iterator.Value()
-		var ret *tmprotocrypto.PublicKey
+		ret := &tmprotocrypto.PublicKey{}
 		if err := ret.Unmarshal(res); err != nil {
 			// grave error
 			panic(err)
