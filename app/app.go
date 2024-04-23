@@ -1299,11 +1299,6 @@ func (app *ExocoreApp) GetStakingKeeper() ibctestingtypes.StakingKeeper {
 	return app.StakingKeeper
 }
 
-// GetStakingKeeperSDK implements the TestingApp interface.
-func (app *ExocoreApp) GetStakingKeeperSDK() stakingkeeper.Keeper {
-	return app.StakingKeeper
-}
-
 // GetIBCKeeper implements the TestingApp interface.
 func (app *ExocoreApp) GetIBCKeeper() *ibckeeper.Keeper {
 	return app.IBCKeeper
