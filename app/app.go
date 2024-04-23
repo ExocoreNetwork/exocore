@@ -480,7 +480,7 @@ func NewExocoreApp(
 	)
 
 	// get the address of the authority, which is the governance module.
-	// as the authority, the governance module can modify paramters in the modules that support
+	// as the authority, the governance module can modify parameters in the modules that support
 	// such modifications.
 	authAddr := authtypes.NewModuleAddress(govtypes.ModuleName)
 	authAddrString := authAddr.String()
