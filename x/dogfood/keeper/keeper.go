@@ -2,7 +2,6 @@ package keeper
 
 import (
 	"fmt"
-	"reflect"
 
 	"github.com/cometbft/cometbft/libs/log"
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -106,14 +105,11 @@ func (k Keeper) ClearEpochEnd(ctx sdk.Context) {
 }
 
 func (k Keeper) mustValidateFields() {
-	if reflect.ValueOf(k).NumField() != 8 {
-		panic("Keeper has unexpected number of fields")
-	}
-	types.PanicIfZeroOrNil(k.storeKey, "storeKey")
-	types.PanicIfZeroOrNil(k.cdc, "cdc")
-	types.PanicIfZeroOrNil(k.paramstore, "paramstore")
-	types.PanicIfZeroOrNil(k.epochsKeeper, "epochsKeeper")
-	types.PanicIfZeroOrNil(k.operatorKeeper, "operatorKeeper")
-	types.PanicIfZeroOrNil(k.delegationKeeper, "delegationKeeper")
-	types.PanicIfZeroOrNil(k.restakingKeeper, "restakingKeeper")
+	types.PanicIfNil(k.storeKey, "storeKey")
+	types.PanicIfNil(k.cdc, "cdc")
+	types.PanicIfNil(k.paramstore, "paramstore")
+	types.PanicIfNil(k.epochsKeeper, "epochsKeeper")
+	types.PanicIfNil(k.operatorKeeper, "operatorKeeper")
+	types.PanicIfNil(k.delegationKeeper, "delegationKeeper")
+	types.PanicIfNil(k.restakingKeeper, "restakingKeeper")
 }

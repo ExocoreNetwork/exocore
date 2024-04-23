@@ -2,7 +2,6 @@ package types
 
 import (
 	"bytes"
-	"reflect"
 )
 
 // RemoveFromBytesList removes an address from a list of addresses
@@ -16,8 +15,8 @@ func RemoveFromBytesList(list [][]byte, addr []byte) [][]byte {
 	panic("address not found in list")
 }
 
-func PanicIfZeroOrNil(x interface{}, msg string) {
-	if x == nil || reflect.ValueOf(x).IsZero() {
+func PanicIfNil(x interface{}, msg string) {
+	if x == nil {
 		panic("zero or nil value for " + msg)
 	}
 }
