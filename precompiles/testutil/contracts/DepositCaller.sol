@@ -9,7 +9,7 @@ contract DepositCaller {
     event ErrorOccurred(string errorMessage);
 
     function testDepositTo(
-        uint16 clientChainLzID,
+        uint32 clientChainLzID,
         bytes memory assetsAddress,
         bytes memory stakerAddress,
         uint256 opAmount
@@ -24,7 +24,7 @@ contract DepositCaller {
     }
 
     function testCallDepositToAndEmitEvent(
-        uint16 clientChainLzID,
+        uint32 clientChainLzID,
         bytes memory assetsAddress,
         bytes memory stakerAddress,
         uint256 opAmount
@@ -41,7 +41,7 @@ contract DepositCaller {
     }
 
     function testCallDepositToWithTryCatch(
-        uint16 clientChainLzID,
+        uint32 clientChainLzID,
         bytes memory assetsAddress,
         bytes memory stakerAddress,
         uint256 opAmount
@@ -61,42 +61,4 @@ contract DepositCaller {
         }
         return (false,0);
     }
-/*    function testDelegateCallDepositTo(
-        uint16 clientChainLzID,
-        bytes memory assetsAddress,
-        bytes memory stakerAddress,
-        uint256 opAmount
-    ) public returns (bool, uint256) {
-        (bool success,uint256 latestAssetState) = deposit.DEPOSIT_PRECOMPILE_ADDRESS.delegatecall(
-            abi.encodeWithSignature(
-                "depositTo(uint16,bytes,bytes,uint256)",
-                clientChainLzID,
-                assetsAddress,
-                stakerAddress,
-                opAmount
-            )
-        );
-        require(success, "failed delegateCall to precompile");
-        return (success, latestAssetState);
-    }
-
-    function testStaticCallDepositTo(
-        uint16 clientChainLzID,
-        bytes memory assetsAddress,
-        bytes memory stakerAddress,
-        uint256 opAmount
-    ) public view {
-        (bool success,) = deposit
-            .DEPOSIT_PRECOMPILE_ADDRESS
-            .staticcall(
-            abi.encodeWithSignature(
-                "depositTo(uint16,bytes,bytes,uint256)",
-                clientChainLzID,
-                assetsAddress,
-                stakerAddress,
-                opAmount
-            )
-        );
-        require(success, "failed staticCall to precompile");
-    }*/
 }

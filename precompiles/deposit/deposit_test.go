@@ -60,7 +60,7 @@ func (s *DepositPrecompileSuite) TestRunDepositTo() {
 	commonMalleate := func() (common.Address, []byte) {
 		input, err := s.precompile.Pack(
 			deposit.MethodDepositTo,
-			uint16(clientChainLzID),
+			uint32(clientChainLzID),
 			assetAddr,
 			stakerAddr,
 			opAmount,

@@ -65,7 +65,7 @@ func (s *WithdrawPrecompileTestSuite) TestRequiredGas() {
 			func() []byte {
 				input, err := s.precompile.Pack(
 					withdraw.MethodWithdraw,
-					uint16(clientChainLzID),
+					uint32(clientChainLzID),
 					assetAddr,
 					withdrawAddr,
 					opAmount,
@@ -116,7 +116,7 @@ func (s *WithdrawPrecompileTestSuite) TestRunWithdrawThroughClientChain() {
 		// Prepare the call input for withdraw test
 		input, err := s.precompile.Pack(
 			withdraw.MethodWithdraw,
-			uint16(clientChainLzID),
+			uint32(clientChainLzID),
 			assetAddr,
 			paddingClientChainAddress(s.Address.Bytes(), assetstype.GeneralClientChainAddrLength),
 			withdrawAmount,

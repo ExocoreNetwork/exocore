@@ -19,7 +19,7 @@ func (p Precompile) GetSlashParamsFromInputs(ctx sdk.Context, args []interface{}
 		return nil, fmt.Errorf(cmn.ErrInvalidNumberOfArgs, 4, len(args))
 	}
 	slashParams := &keeper.SlashParams{}
-	clientChainLzID, ok := args[0].(uint16)
+	clientChainLzID, ok := args[0].(uint32)
 	if !ok {
 		return nil, fmt.Errorf(exocmn.ErrContractInputParaOrType, 0, reflect.TypeOf(args[0]), clientChainLzID)
 	}

@@ -60,7 +60,7 @@ func (s *WithdrawPrecompileTestSuite) TestCallWithdrawFromEOA() {
 		s.Require().NoError(err)
 		defaultWithdrawArgs := defaultCallArgs.WithMethodName(method)
 		return defaultWithdrawArgs.WithArgs(
-			uint16(clientChainLzID),
+			uint32(clientChainLzID),
 			assetAddr,
 			stakerAddr,
 			opAmount)
