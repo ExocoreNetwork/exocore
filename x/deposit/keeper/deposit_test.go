@@ -45,4 +45,5 @@ func (suite *DepositTestSuite) TestDeposit() {
 	assetInfo, err := suite.App.AssetsKeeper.GetStakingAssetInfo(suite.Ctx, assetID)
 	suite.NoError(err)
 	suite.Equal(params.OpAmount, assetInfo.StakingTotalAmount)
+	suite.Equal(params.OpAmount.Add(assets[assetID].StakingTotalAmount), assetInfo.StakingTotalAmount)
 }

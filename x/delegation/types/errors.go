@@ -17,9 +17,9 @@ var (
 		"the operator has not been registered",
 	)
 
-	ErrOpAmountIsNotPositive = errorsmod.Register(
+	ErrAmountIsNotPositive = errorsmod.Register(
 		ModuleName, 3,
-		"the delegation or Undelegation amount isn't positive",
+		"the amount isn't positive",
 	)
 
 	OperatorAddrIsNotAccAddr = errorsmod.Register(
@@ -79,4 +79,8 @@ var (
 	ErrInsufficientShares = errorsmod.Register(
 		ModuleName, 15,
 		"insufficient delegation shares")
+
+	ErrInsufficientAssetAmount = errorsmod.Register(
+		ModuleName, 16,
+		"insufficient asset amount")
 )

@@ -52,18 +52,6 @@ type BaseTestSuite struct {
 	BondDenom      string
 	StateDB        *statedb.StateDB
 	QueryClientEVM evmtypes.QueryClient
-
-	// needed by test
-	/*	operatorAddr          sdk.AccAddress
-		avsAddr               string
-		assetID               string
-		stakerID              string
-		assetAddr             common.Address
-		assetDecimal          uint32
-		clientChainLzID       uint64
-		depositAmount         sdkmath.Int
-		delegationAmount      sdkmath.Int
-		updatedAmountForOptIn sdkmath.Int*/
 }
 
 func (suite *BaseTestSuite) SetupTest() {

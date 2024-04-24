@@ -88,7 +88,7 @@ func (k *Keeper) AllDelegatedAmountForStakerAsset(ctx sdk.Context, stakerID stri
 	return ret, nil
 }
 
-// UpdateDelegationState The function is used to update the staker's asset amount that is delegated to a specified operator.
+// UpdateDelegationState is used to update the staker's asset amount that is delegated to a specified operator.
 // Compared to `UpdateStakerDelegationTotalAmount`,they use the same kv store, but in this function the store key needs to add the operator address as a suffix.
 func (k *Keeper) UpdateDelegationState(ctx sdk.Context, stakerID, assetID, opAddr string, deltaAmounts *delegationtype.DeltaDelegationAmounts) (bool, error) {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), delegationtype.KeyPrefixRestakerDelegationInfo)

@@ -91,7 +91,7 @@ var (
 	KeyPrefixAppChainInfo = []byte{prefixAppChainInfo}
 
 	// KeyPrefixReStakingAssetInfo AssetID = AssetAddr+'_'+chainIndex
-	// KeyPrefixReStakingAssetInfo key->value: AssetID->ReStakingAssetInfo
+	// KeyPrefixReStakingAssetInfo key->value: AssetID-> StakingAssetInfo
 	KeyPrefixReStakingAssetInfo = []byte{prefixRestakingAssetInfo}
 
 	// KeyPrefixReStakerAssetInfos restakerID = clientChainAddr+'_'+ExoCoreChainIndex

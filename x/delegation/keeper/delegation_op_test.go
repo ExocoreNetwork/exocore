@@ -15,26 +15,63 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 )
 
-func (suite *DelegationTestSuite) TestDelegateTo() {
-	usdtAddress := common.HexToAddress("0xdAC17F958D2ee523a2206206994597C13D831ec7")
-	clientChainLzID := uint64(101)
+func (suite *DelegationTestSuite) prepare() {
+	suite.assetAddr = common.HexToAddress("0xdAC17F958D2ee523a2206206994597C13D831ec7")
+	suite.clientChainLzID = uint64(101)
+	opAccAddr, err := sdk.AccAddressFromBech32("exo13h6xg79g82e2g2vhjwg7j4r2z2hlncelwutkjr")
+	suite.NoError(err)
+	suite.opAccAddr = opAccAddr
+	suite.depositAmount = sdkmath.NewInt(100)
+	suite.delegationAmount = sdkmath.NewInt(50)
+}
 
+func (suite *DelegationTestSuite) prepareDeposit() *keeper.DepositParams {
+	suite.prepare()
 	depositEvent := &keeper.DepositParams{
-		ClientChainLzID: clientChainLzID,
+		ClientChainLzID: suite.clientChainLzID,
 		Action:          types.Deposit,
 		StakerAddress:   suite.Address[:],
-		OpAmount:        sdkmath.NewInt(100),
+		OpAmount:        suite.depositAmount,
 	}
-	depositEvent.AssetsAddress = usdtAddress[:]
+	depositEvent.AssetsAddress = suite.assetAddr[:]
 	err := suite.App.DepositKeeper.Deposit(suite.Ctx, depositEvent)
 	suite.NoError(err)
+	return depositEvent
+}
 
+func (suite *DelegationTestSuite) prepareDelegation() *delegationtype.DelegationOrUndelegationParams {
+	delegationEvent := &delegationtype.DelegationOrUndelegationParams{
+		ClientChainLzID: suite.clientChainLzID,
+		Action:          types.DelegateTo,
+		AssetsAddress:   suite.assetAddr.Bytes(),
+		OperatorAddress: suite.opAccAddr,
+		StakerAddress:   suite.Address[:],
+		OpAmount:        suite.delegationAmount,
+		LzNonce:         0,
+		TxHash:          common.HexToHash("0x24c4a315d757249c12a7a1d7b6fb96261d49deee26f06a3e1787d008b445c3ac"),
+	}
+	registerReq := &operatortype.RegisterOperatorReq{
+		FromAddress: suite.opAccAddr.String(),
+		Info: &operatortype.OperatorInfo{
+			EarningsAddr: suite.opAccAddr.String(),
+		},
+	}
+	_, err := suite.App.OperatorKeeper.RegisterOperator(suite.Ctx, registerReq)
+	suite.NoError(err)
+
+	err = suite.App.DelegationKeeper.DelegateTo(suite.Ctx, delegationEvent)
+	suite.NoError(err)
+	return delegationEvent
+}
+
+func (suite *DelegationTestSuite) TestDelegateTo() {
+	suite.prepareDeposit()
 	opAccAddr, err := sdk.AccAddressFromBech32("exo13h6xg79g82e2g2vhjwg7j4r2z2hlncelwutkjr")
 	suite.NoError(err)
 	delegationParams := &delegationtype.DelegationOrUndelegationParams{
-		ClientChainLzID: clientChainLzID,
+		ClientChainLzID: suite.clientChainLzID,
 		Action:          types.DelegateTo,
-		AssetsAddress:   usdtAddress[:],
+		AssetsAddress:   suite.assetAddr.Bytes(),
 		OperatorAddress: opAccAddr,
 		StakerAddress:   suite.Address[:],
 		OpAmount:        sdkmath.NewInt(50),
@@ -61,8 +98,8 @@ func (suite *DelegationTestSuite) TestDelegateTo() {
 	restakerState, err := suite.App.AssetsKeeper.GetStakerSpecifiedAssetInfo(suite.Ctx, stakerID, assetID)
 	suite.NoError(err)
 	suite.Equal(types.StakerAssetInfo{
-		TotalDepositAmount:  depositEvent.OpAmount,
-		WithdrawableAmount:  depositEvent.OpAmount.Sub(delegationParams.OpAmount),
+		TotalDepositAmount:  suite.depositAmount,
+		WithdrawableAmount:  suite.depositAmount.Sub(delegationParams.OpAmount),
 		WaitUnbondingAmount: sdkmath.NewInt(0),
 	}, *restakerState)
 
@@ -90,46 +127,11 @@ func (suite *DelegationTestSuite) TestDelegateTo() {
 }
 
 func (suite *DelegationTestSuite) TestUndelegateFrom() {
-	usdtAddress := common.HexToAddress("0xdAC17F958D2ee523a2206206994597C13D831ec7")
-	clientChainLzID := uint64(101)
-
-	depositEvent := &keeper.DepositParams{
-		ClientChainLzID: clientChainLzID,
-		Action:          types.Deposit,
-		StakerAddress:   suite.Address[:],
-		OpAmount:        sdkmath.NewInt(100),
-	}
-	depositEvent.AssetsAddress = usdtAddress[:]
-	err := suite.App.DepositKeeper.Deposit(suite.Ctx, depositEvent)
-	suite.NoError(err)
-
-	opAccAddr, err := sdk.AccAddressFromBech32("exo13h6xg79g82e2g2vhjwg7j4r2z2hlncelwutkjr")
-	suite.NoError(err)
-	delegationEvent := &delegationtype.DelegationOrUndelegationParams{
-		ClientChainLzID: clientChainLzID,
-		Action:          types.DelegateTo,
-		AssetsAddress:   usdtAddress[:],
-		OperatorAddress: opAccAddr,
-		StakerAddress:   suite.Address[:],
-		OpAmount:        sdkmath.NewInt(50),
-		LzNonce:         0,
-		TxHash:          common.HexToHash("0x24c4a315d757249c12a7a1d7b6fb96261d49deee26f06a3e1787d008b445c3ac"),
-	}
-	registerReq := &operatortype.RegisterOperatorReq{
-		FromAddress: opAccAddr.String(),
-		Info: &operatortype.OperatorInfo{
-			EarningsAddr: opAccAddr.String(),
-		},
-	}
-	_, err = suite.App.OperatorKeeper.RegisterOperator(suite.Ctx, registerReq)
-	suite.NoError(err)
-
-	err = suite.App.DelegationKeeper.DelegateTo(suite.Ctx, delegationEvent)
-	suite.NoError(err)
-
+	suite.prepareDeposit()
+	delegationEvent := suite.prepareDelegation()
 	// test Undelegation
 	delegationEvent.LzNonce = 1
-	err = suite.App.DelegationKeeper.UndelegateFrom(suite.Ctx, delegationEvent)
+	err := suite.App.DelegationKeeper.UndelegateFrom(suite.Ctx, delegationEvent)
 	suite.NoError(err)
 
 	// check state
@@ -137,12 +139,12 @@ func (suite *DelegationTestSuite) TestUndelegateFrom() {
 	restakerState, err := suite.App.AssetsKeeper.GetStakerSpecifiedAssetInfo(suite.Ctx, stakerID, assetID)
 	suite.NoError(err)
 	suite.Equal(types.StakerAssetInfo{
-		TotalDepositAmount:  depositEvent.OpAmount,
-		WithdrawableAmount:  depositEvent.OpAmount.Sub(delegationEvent.OpAmount),
+		TotalDepositAmount:  suite.depositAmount,
+		WithdrawableAmount:  suite.depositAmount.Sub(delegationEvent.OpAmount),
 		WaitUnbondingAmount: delegationEvent.OpAmount,
 	}, *restakerState)
 
-	operatorState, err := suite.App.AssetsKeeper.GetOperatorSpecifiedAssetInfo(suite.Ctx, opAccAddr, assetID)
+	operatorState, err := suite.App.AssetsKeeper.GetOperatorSpecifiedAssetInfo(suite.Ctx, delegationEvent.OperatorAddress, assetID)
 	suite.NoError(err)
 	suite.Equal(types.OperatorAssetInfo{
 		TotalAmount:             sdkmath.NewInt(0),
@@ -153,7 +155,7 @@ func (suite *DelegationTestSuite) TestUndelegateFrom() {
 		OperatorShare:           sdkmath.LegacyNewDec(0),
 	}, *operatorState)
 
-	specifiedDelegationAmount, err := suite.App.DelegationKeeper.GetSingleDelegationInfo(suite.Ctx, stakerID, assetID, opAccAddr.String())
+	specifiedDelegationAmount, err := suite.App.DelegationKeeper.GetSingleDelegationInfo(suite.Ctx, stakerID, assetID, delegationEvent.OperatorAddress.String())
 	suite.NoError(err)
 	suite.Equal(delegationtype.DelegationAmounts{
 		WaitUndelegationAmount: delegationEvent.OpAmount,
@@ -189,45 +191,11 @@ func (suite *DelegationTestSuite) TestUndelegateFrom() {
 }
 
 func (suite *DelegationTestSuite) TestCompleteUndelegation() {
-	usdtAddress := common.HexToAddress("0xdAC17F958D2ee523a2206206994597C13D831ec7")
-	clientChainLzID := uint64(101)
-
-	depositEvent := &keeper.DepositParams{
-		ClientChainLzID: clientChainLzID,
-		Action:          types.Deposit,
-		StakerAddress:   suite.Address[:],
-		OpAmount:        sdkmath.NewInt(100),
-	}
-	depositEvent.AssetsAddress = usdtAddress[:]
-	err := suite.App.DepositKeeper.Deposit(suite.Ctx, depositEvent)
-	suite.NoError(err)
-
-	opAccAddr, err := sdk.AccAddressFromBech32("exo13h6xg79g82e2g2vhjwg7j4r2z2hlncelwutkjr")
-	suite.NoError(err)
-	delegationEvent := &delegationtype.DelegationOrUndelegationParams{
-		ClientChainLzID: clientChainLzID,
-		Action:          types.DelegateTo,
-		AssetsAddress:   usdtAddress[:],
-		OperatorAddress: opAccAddr,
-		StakerAddress:   suite.Address[:],
-		OpAmount:        sdkmath.NewInt(50),
-		LzNonce:         0,
-		TxHash:          common.HexToHash("0x24c4a315d757249c12a7a1d7b6fb96261d49deee26f06a3e1787d008b445c3ac"),
-	}
-	registerReq := &operatortype.RegisterOperatorReq{
-		FromAddress: opAccAddr.String(),
-		Info: &operatortype.OperatorInfo{
-			EarningsAddr: opAccAddr.String(),
-		},
-	}
-	_, err = suite.App.OperatorKeeper.RegisterOperator(suite.Ctx, registerReq)
-	suite.NoError(err)
-
-	err = suite.App.DelegationKeeper.DelegateTo(suite.Ctx, delegationEvent)
-	suite.NoError(err)
+	suite.prepareDeposit()
+	delegationEvent := suite.prepareDelegation()
 
 	delegationEvent.LzNonce = 1
-	err = suite.App.DelegationKeeper.UndelegateFrom(suite.Ctx, delegationEvent)
+	err := suite.App.DelegationKeeper.UndelegateFrom(suite.Ctx, delegationEvent)
 	suite.NoError(err)
 	UndelegateHeight := suite.Ctx.BlockHeight()
 	suite.Ctx.Logger().Info("the ctx block height is:", "height", UndelegateHeight)
@@ -242,12 +210,12 @@ func (suite *DelegationTestSuite) TestCompleteUndelegation() {
 	restakerState, err := suite.App.AssetsKeeper.GetStakerSpecifiedAssetInfo(suite.Ctx, stakerID, assetID)
 	suite.NoError(err)
 	suite.Equal(types.StakerAssetInfo{
-		TotalDepositAmount:  depositEvent.OpAmount,
-		WithdrawableAmount:  depositEvent.OpAmount,
+		TotalDepositAmount:  suite.depositAmount,
+		WithdrawableAmount:  suite.depositAmount,
 		WaitUnbondingAmount: sdkmath.NewInt(0),
 	}, *restakerState)
 
-	operatorState, err := suite.App.AssetsKeeper.GetOperatorSpecifiedAssetInfo(suite.Ctx, opAccAddr, assetID)
+	operatorState, err := suite.App.AssetsKeeper.GetOperatorSpecifiedAssetInfo(suite.Ctx, delegationEvent.OperatorAddress, assetID)
 	suite.NoError(err)
 	suite.Equal(types.OperatorAssetInfo{
 		TotalAmount:             sdkmath.NewInt(0),
@@ -258,7 +226,7 @@ func (suite *DelegationTestSuite) TestCompleteUndelegation() {
 		OperatorShare:           sdkmath.LegacyNewDec(0),
 	}, *operatorState)
 
-	specifiedDelegationAmount, err := suite.App.DelegationKeeper.GetSingleDelegationInfo(suite.Ctx, stakerID, assetID, opAccAddr.String())
+	specifiedDelegationAmount, err := suite.App.DelegationKeeper.GetSingleDelegationInfo(suite.Ctx, stakerID, assetID, delegationEvent.OperatorAddress.String())
 	suite.NoError(err)
 	suite.Equal(delegationtype.DelegationAmounts{
 		UndelegatableShare:     sdkmath.LegacyNewDec(0),

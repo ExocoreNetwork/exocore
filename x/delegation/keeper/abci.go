@@ -27,9 +27,9 @@ func (k *Keeper) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.Valida
 				if record.CompleteBlockNumber <= uint64(ctx.BlockHeight()) {
 					panic(fmt.Sprintf("the reset completedHeight isn't in future,setHeight:%v,curHeight:%v", record.CompleteBlockNumber, ctx.BlockHeight()))
 				}
-				_, err = k.SetSingleUndelegationRecord(ctx, record)
-				if err != nil {
-					panic(err)
+				_, innerError = k.SetSingleUndelegationRecord(ctx, record)
+				if innerError != nil {
+					panic(innerError)
 				}
 				continue
 			}*/

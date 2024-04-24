@@ -23,6 +23,9 @@ func (k *Keeper) delegateTo(
 	params *delegationtype.DelegationOrUndelegationParams,
 	notGenesis bool,
 ) error {
+	if !params.OpAmount.IsPositive() {
+		return delegationtype.ErrAmountIsNotPositive
+	}
 	// check if the delegatedTo address is an operator
 	if !k.operatorKeeper.IsOperator(ctx, params.OperatorAddress) {
 		return errorsmod.Wrap(delegationtype.ErrOperatorNotExist, fmt.Sprintf("input operatorAddr is:%s", params.OperatorAddress))
@@ -32,13 +35,6 @@ func (k *Keeper) delegateTo(
 	// skip the check if not genesis (or chain restart)
 	if notGenesis && k.slashKeeper.IsOperatorFrozen(ctx, params.OperatorAddress) {
 		return delegationtype.ErrOperatorIsFrozen
-	}
-
-	// todo: The operator approved signature might be needed here in future
-
-	// update the related states
-	if params.OpAmount.IsNegative() {
-		return delegationtype.ErrOpAmountIsNotPositive
 	}
 
 	stakerID, assetID := assetstype.GetStakeIDAndAssetID(params.ClientChainLzID, params.StakerAddress, params.AssetsAddress)
@@ -98,12 +94,12 @@ func (k *Keeper) delegateTo(
 // Because only after the operator has served the AVS can the staking asset be undelegated.
 // So we use two steps to handle the undelegation. Fist,record the undelegation request and the corresponding exit time which needs to be obtained from the operator opt-in module. Then,we handle the record when the exit time has expired.
 func (k *Keeper) UndelegateFrom(ctx sdk.Context, params *delegationtype.DelegationOrUndelegationParams) error {
+	if !params.OpAmount.IsPositive() {
+		return delegationtype.ErrAmountIsNotPositive
+	}
 	// check if the UndelegatedFrom address is an operator
 	if !k.operatorKeeper.IsOperator(ctx, params.OperatorAddress) {
 		return delegationtype.ErrOperatorNotExist
-	}
-	if !params.OpAmount.IsPositive() {
-		return delegationtype.ErrOpAmountIsNotPositive
 	}
 	// get staker delegation state, then check the validation of Undelegation amount
 	stakerID, assetID := assetstype.GetStakeIDAndAssetID(params.ClientChainLzID, params.StakerAddress, params.AssetsAddress)

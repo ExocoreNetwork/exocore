@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	errorsmod "cosmossdk.io/errors"
 	sdkmath "cosmossdk.io/math"
 	assetstype "github.com/ExocoreNetwork/exocore/x/assets/types"
 	delegationtypes "github.com/ExocoreNetwork/exocore/x/delegation/types"
@@ -16,6 +17,9 @@ import (
 // remaining token to avoid the calculated token amount is bigger than the remaining token
 // caused by the bankers rounding.
 func TokensFromShares(stakerShare, totalShare sdkmath.LegacyDec, operatorAmount sdkmath.Int) (sdkmath.Int, error) {
+	if stakerShare.GT(totalShare) {
+		return sdkmath.NewInt(0), errorsmod.Wrapf(delegationtypes.ErrInsufficientShares, "the stakerShare is:%v the totalShare is:%v", stakerShare, totalShare)
+	}
 	if totalShare.IsZero() {
 		return sdkmath.NewInt(0), delegationtypes.ErrDivisorIsZero
 	}
@@ -29,6 +33,9 @@ func TokensFromShares(stakerShare, totalShare sdkmath.LegacyDec, operatorAmount 
 // So the calculated share might tend to be smaller, but it seems acceptable, because
 // we need to make sure the staker can't get a bigger share than they should get.
 func SharesFromTokens(totalShare sdkmath.LegacyDec, stakerAmount, operatorAmount sdkmath.Int) (sdkmath.LegacyDec, error) {
+	if stakerAmount.GT(operatorAmount) {
+		return sdkmath.LegacyNewDec(0), errorsmod.Wrapf(delegationtypes.ErrInsufficientAssetAmount, "the stakerAmount is:%v the operatorAmount is:%v", stakerAmount, operatorAmount)
+	}
 	if operatorAmount.IsZero() {
 		return sdkmath.LegacyZeroDec(), delegationtypes.ErrDivisorIsZero
 	}
@@ -69,6 +76,10 @@ func (k Keeper) CalculateShare(ctx sdk.Context, operator sdk.AccAddress, assetID
 func (k Keeper) ValidateUndeleagtionAmount(
 	ctx sdk.Context, operator sdk.AccAddress, stakerID, assetID string, amount sdkmath.Int,
 ) (share sdkmath.LegacyDec, err error) {
+	if !amount.IsPositive() {
+		return share, delegationtypes.ErrAmountIsNotPositive
+	}
+
 	delegationInfo, err := k.GetSingleDelegationInfo(ctx, stakerID, assetID, operator.String())
 	if err != nil {
 		return share, err
@@ -108,6 +119,7 @@ func (k Keeper) ValidateUndeleagtionAmount(
 func (k Keeper) CalculateSlashShare(
 	ctx sdk.Context, operator sdk.AccAddress, stakerID, assetID string, slashAmount sdkmath.Int,
 ) (share sdkmath.LegacyDec, err error) {
+
 	delegationInfo, err := k.GetSingleDelegationInfo(ctx, stakerID, assetID, operator.String())
 	if err != nil {
 		return share, err
@@ -131,6 +143,9 @@ func (k Keeper) CalculateSlashShare(
 func (k Keeper) RemoveShareFromOperator(
 	ctx sdk.Context, isUndelegation bool, operator sdk.AccAddress, assetID string, share sdkmath.LegacyDec,
 ) (token sdkmath.Int, err error) {
+	if !share.IsPositive() {
+		return token, delegationtypes.ErrAmountIsNotPositive
+	}
 	operatorAssetState, err := k.assetsKeeper.GetOperatorSpecifiedAssetInfo(ctx, operator, assetID)
 	if err != nil {
 		return token, err
@@ -173,6 +188,9 @@ func (k Keeper) RemoveShareFromOperator(
 func (k Keeper) RemoveShare(
 	ctx sdk.Context, isUndelegation bool, operator sdk.AccAddress, stakerID, assetID string, share sdkmath.LegacyDec,
 ) (removeToken sdkmath.Int, err error) {
+	if !share.IsPositive() {
+		return removeToken, delegationtypes.ErrAmountIsNotPositive
+	}
 	// remove share from operator
 	removeToken, err = k.RemoveShareFromOperator(ctx, isUndelegation, operator, assetID, share)
 	if err != nil {
