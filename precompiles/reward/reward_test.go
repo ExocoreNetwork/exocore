@@ -74,7 +74,7 @@ func (s *RewardPrecompileTestSuite) TestRunRewardThroughClientChain() {
 		// Prepare the call input for reward test
 		input, err := s.precompile.Pack(
 			reward.MethodReward,
-			uint16(clientChainLzID),
+			uint32(clientChainLzID),
 			assetAddr,
 			paddingClientChainAddress(s.Address.Bytes(), assetstype.GeneralClientChainAddrLength),
 			withdrawAmount,

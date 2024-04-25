@@ -21,7 +21,7 @@ interface IClaimReward {
 /// @param withdrawRewardAddress The claim reward address
 /// @param opAmount The reward amount
     function claimReward(
-    uint16 clientChainLzID,
+    uint32 clientChainLzID,
     bytes memory assetsAddress,
     bytes memory withdrawRewardAddress,
     uint256 opAmount

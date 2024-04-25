@@ -21,9 +21,9 @@ interface IWithdraw {
 /// @param withdrawAddress The withdraw address
 /// @param opAmount The withdraw amount
     function withdrawPrinciple(
-        uint16 clientChainLzID,
+        uint32 clientChainLzID,
         bytes memory assetsAddress,
         bytes memory withdrawAddress,
         uint256 opAmount
-    ) external returns (bool success,uint256 latestAssetState);
+    ) external returns (bool success, uint256 latestAssetState);
 }

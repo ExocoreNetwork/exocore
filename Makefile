@@ -313,7 +313,7 @@ test-race: ARGS=-race
 test-race: TEST_PACKAGES=$(PACKAGES_NOSIMULATION)
 $(TEST_TARGETS): run-tests
 
-test-unit-cover: ARGS=-timeout=15m -coverprofile=cover.out -covermode=atomic
+test-unit-cover: ARGS=-timeout=15m -coverprofile=cover.out -covermode=atomic -gcflags=all=-l
 test-unit-cover: TEST_PACKAGES=$(PACKAGES_UNIT)
 
 test-e2e:
@@ -482,7 +482,7 @@ localnet-build:
 # Generate multi node configuration files and initialize configurations
 # TODO: exocore testnet chainid is still under consideration and need to be finalized later
 localnet-init: localnet-stop
-	exocored testnet init-files --chain-id exocoretestnet_233-1 --v 4 -o  $(CURDIR)/build/.testnets --starting-ip-address 192.168.0.2 --keyring-backend=os  && \
+	exocored testnet init-files --chain-id exocoretestnet_233-1 --v 4 -o  $(CURDIR)/build/.testnets --starting-ip-address 192.168.0.2 --keyring-backend=test && \
 	./networks/init-node.sh
 
 # Start a 4-node testnet locally

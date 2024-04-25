@@ -25,7 +25,7 @@ interface ISlash {
 /// @param proof The Slash proof
 
     function submitSlash(
-        uint16 clientChainLzID,
+        uint32 clientChainLzID,
         bytes memory assetsAddress,
         bytes memory stakerAddress,
         uint256 opAmount,

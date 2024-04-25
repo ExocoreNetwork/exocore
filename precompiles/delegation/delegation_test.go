@@ -98,7 +98,7 @@ func (s *DelegationPrecompileSuite) TestRunDelegateToThroughClientChain() {
 		// prepare the call input for delegation test
 		input, err := s.precompile.Pack(
 			delegation.MethodDelegateToThroughClientChain,
-			uint16(clientChainLzID),
+			uint32(clientChainLzID),
 			uint64(lzNonce),
 			assetAddr,
 			paddingClientChainAddress(s.Address.Bytes(), types.GeneralClientChainAddrLength),
@@ -335,7 +335,7 @@ func (s *DelegationPrecompileSuite) TestRunUnDelegateFromThroughClientChain() {
 		// prepare the call input for delegation test
 		input, err := s.precompile.Pack(
 			delegation.MethodUndelegateFromThroughClientChain,
-			uint16(clientChainLzID),
+			uint32(clientChainLzID),
 			lzNonce+1,
 			assetAddr,
 			paddingClientChainAddress(s.Address.Bytes(), types.GeneralClientChainAddrLength),

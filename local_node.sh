@@ -18,6 +18,11 @@ HOMEDIR="$HOME/.tmp-exocored"
 #TRACE="--trace"
 TRACE=""
 
+# for consistent local genesis account
+VALIDATOR_MNEMONIC="wonder quality resource ketchup occur stadium vicious output situate plug second monkey harbor vanish then myself primary feed earth story real soccer shove like"
+LOCAL_MNEMONIC="knock benefit magnet slogan normal broken frequent level video focus spell utility"
+LOCAL_NAME="local_funded_account"
+
 # Path variables
 CONFIG=$HOMEDIR/config/config.toml
 APP_TOML=$HOMEDIR/config/app.toml
@@ -59,8 +64,12 @@ if [[ $overwrite == "y" || $overwrite == "Y" ]]; then
 		exocored keys add "$KEY" --keyring-backend $KEYRING --algo $ALGO --home "$HOMEDIR"
 	done
 
+	# Use recover so that there is always a consistent address funded in the localnet genesis.
+	echo "${LOCAL_MNEMONIC}" | exocored --home "$HOMEDIR" --keyring-backend $KEYRING keys add "${LOCAL_NAME}" --recover
+
 	# Set moniker and chain-id for Evmos (Moniker can be anything, chain-id must be an integer)
-	exocored init $MONIKER -o --chain-id $CHAINID --home "$HOMEDIR"
+	# Use recover to use a consistent consensus key for validator.
+	echo "${VALIDATOR_MNEMONIC}" | exocored init $MONIKER -o --chain-id $CHAINID --home "$HOMEDIR" --recover
 
 	# Change parameter token denominations to aexo
 	jq '.app_state["staking"]["params"]["bond_denom"]="aexo"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
@@ -153,9 +162,11 @@ if [[ $overwrite == "y" || $overwrite == "Y" ]]; then
 	for KEY in "${KEYS[@]}"; do
 		exocored add-genesis-account "$KEY" 100000000000000000000000000aexo --keyring-backend $KEYRING --home "$HOMEDIR"
 	done
+	exocored add-genesis-account "${LOCAL_NAME}" 100000000000000000000000000aexo --keyring-backend $KEYRING --home "$HOMEDIR"
 
 	# bc is required to add these big numbers
-	total_supply=$(echo "${#KEYS[@]} * 100000000000000000000000000 + $amount_to_claim" | bc)
+	# note the extra +1 is for LOCAL_NAME
+	total_supply=$(echo "(${#KEYS[@]} + 1) * 100000000000000000000000000 + $amount_to_claim" | bc)
 	jq -r --arg total_supply "$total_supply" '.app_state["bank"]["supply"][0]["amount"]=$total_supply' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
 
 	# Sign genesis transaction

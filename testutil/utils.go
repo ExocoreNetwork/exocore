@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"time"
 
+	"cosmossdk.io/math"
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/crypto/keyring"
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
@@ -14,6 +15,7 @@ import (
 	"golang.org/x/exp/rand"
 
 	testutiltx "github.com/ExocoreNetwork/exocore/testutil/tx"
+	oracletypes "github.com/ExocoreNetwork/exocore/x/oracle/types"
 
 	exocoreapp "github.com/ExocoreNetwork/exocore/app"
 	"github.com/ExocoreNetwork/exocore/utils"
@@ -78,7 +80,7 @@ func (suite *BaseTestSuite) SetupTest() {
 	suite.DoSetupTest()
 }
 
-// SetupWithGenesisValSet initializes a new EvmosApp with a validator set and genesis accounts
+// SetupWithGenesisValSet initializes a new ExocoreApp with a validator set and genesis accounts
 // that also act as delegators. For simplicity, each validator is bonded with a delegation
 // of one consensus engine unit (10^6) in the default token of the simapp from first genesis
 // account. A Nop logger is set in SimApp.
@@ -136,6 +138,37 @@ func (suite *BaseTestSuite) SetupWithGenesisValSet(genAccs []authtypes.GenesisAc
 				},
 			},
 		},
+	}
+	// x/oracle initialization
+	oracleDefaultParams := oracletypes.DefaultParams()
+	oracleDefaultParams.TokenFeeders[1].StartBaseBlock = 1
+	oracleGenesis := oracletypes.NewGenesisState(oracleDefaultParams)
+	genesisState[oracletypes.ModuleName] = app.AppCodec().MustMarshalJSON(oracleGenesis)
+
+	// set genesis staking assets
+	ethClientChain := assetstypes.ClientChainInfo{
+		Name:               "ethereum",
+		MetaInfo:           "ethereum blockchain",
+		ChainId:            1,
+		FinalizationBlocks: 10,
+		LayerZeroChainID:   101,
+		AddressLength:      20,
+	}
+	usdtClientChainAsset := assetstypes.AssetInfo{
+		Name:             "Tether USD",
+		Symbol:           "USDT",
+		Address:          "0xdAC17F958D2ee523a2206206994597C13D831ec7",
+		Decimals:         6,
+		LayerZeroChainID: ethClientChain.LayerZeroChainID,
+		MetaInfo:         "Tether USD token",
+	}
+	{
+		totalSupply, _ := sdk.NewIntFromString("40022689732746729")
+		usdtClientChainAsset.TotalSupply = totalSupply
+	}
+	stakingInfo := assetstypes.StakingAssetInfo{
+		AssetBasicInfo:     &usdtClientChainAsset,
+		StakingTotalAmount: math.NewInt(0),
 	}
 	assetsGenesis := assetstypes.NewGenesis(
 		assetstypes.DefaultParams(),

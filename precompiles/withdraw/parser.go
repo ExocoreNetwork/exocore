@@ -19,7 +19,7 @@ func (p Precompile) GetWithdrawParamsFromInputs(ctx sdk.Context, args []interfac
 		return nil, fmt.Errorf(cmn.ErrInvalidNumberOfArgs, 4, len(args))
 	}
 	withdrawParams := &keeper.WithdrawParams{}
-	clientChainLzID, ok := args[0].(uint16)
+	clientChainLzID, ok := args[0].(uint32)
 	if !ok {
 		return nil, fmt.Errorf(exocmn.ErrContractInputParaOrType, 0, reflect.TypeOf(args[0]), clientChainLzID)
 	}

@@ -17,7 +17,7 @@ func (p Precompile) GetDepositToParamsFromInputs(ctx sdk.Context, args []interfa
 		return nil, xerrors.Errorf(cmn.ErrInvalidNumberOfArgs, 4, len(args))
 	}
 	depositParams := &keeper.DepositParams{}
-	clientChainLzID, ok := args[0].(uint16)
+	clientChainLzID, ok := args[0].(uint32)
 	if !ok {
 		return nil, xerrors.Errorf(exocmn.ErrContractInputParaOrType, 0, "uint16", clientChainLzID)
 	}
