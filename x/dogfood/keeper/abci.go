@@ -3,6 +3,7 @@ package keeper
 import (
 	"sort"
 
+	"cosmossdk.io/math"
 	operatortypes "github.com/ExocoreNetwork/exocore/x/operator/types"
 	abci "github.com/cometbft/cometbft/abci/types"
 	tmprotocrypto "github.com/cometbft/cometbft/proto/tendermint/crypto"
@@ -10,8 +11,14 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
+func (k Keeper) BeginBlock(ctx sdk.Context) {
+	// for IBC, track historical validator set
+	k.TrackHistoricalInfo(ctx)
+}
+
 func (k Keeper) EndBlock(ctx sdk.Context) []abci.ValidatorUpdate {
 	if !k.IsEpochEnd(ctx) {
+		k.SetValidatorUpdates(ctx, []abci.ValidatorUpdate{})
 		return []abci.ValidatorUpdate{}
 	}
 	defer k.ClearEpochEnd(ctx)
@@ -47,6 +54,8 @@ func (k Keeper) EndBlock(ctx sdk.Context) []abci.ValidatorUpdate {
 	// 4. loop through #1 and see if anything has changed.
 	//    if it hasn't, do nothing for that operator key.
 	//    if it has, queue an update.
+	// 5. keep in mind the total vote power.
+	totalPower := math.ZeroInt()
 	prevList := k.GetAllExocoreValidators(ctx)
 	// prevMap is a map of the previous validators, indexed by the consensus address
 	// and the value being the vote power.
@@ -98,6 +107,7 @@ func (k Keeper) EndBlock(ctx sdk.Context) []abci.ValidatorUpdate {
 		}
 		addressString := address.String()
 		if prevPower, found := prevMap[addressString]; found && prevPower == power {
+			totalPower = totalPower.Add(sdk.NewInt(power))
 			delete(prevMap, addressString)
 			continue
 		}
@@ -108,10 +118,10 @@ func (k Keeper) EndBlock(ctx sdk.Context) []abci.ValidatorUpdate {
 			// note that this is the final power and not the change in power.
 			Power: power,
 		})
+		totalPower = totalPower.Add(sdk.NewInt(power))
 	}
 	// the remaining validators in prevMap have been removed.
 	// we need to queue a change in power to 0 for them.
-	// we cannot iterate over the map to retain determinism, so we iterate over the list.
 	for _, validator := range prevList { // O(N)
 		// #nosec G703 // already checked in the previous iteration over prevList.
 		pubKey, _ := validator.ConsPubKey()
@@ -126,7 +136,13 @@ func (k Keeper) EndBlock(ctx sdk.Context) []abci.ValidatorUpdate {
 				PubKey: tmprotoKey,
 				Power:  0,
 			})
+			// while calculating total power, we started with 0 and not previous power.
+			// so the previous power of these validators does not need to be substracted.
 		}
+	}
+	// if there are any updates, set total power on lookup index.
+	if len(res) > 0 {
+		k.SetLastTotalPower(ctx, totalPower)
 	}
 
 	// call via wrapper function so that validator info is stored.

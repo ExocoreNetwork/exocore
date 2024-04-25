@@ -910,7 +910,7 @@ func NewExocoreApp(
 		evidencetypes.ModuleName,   // TODO after reward
 		stakingtypes.ModuleName,    // track historical info
 		ibcexported.ModuleName,     // handles upgrades of chain and hence client
-		authz.ModuleName,           // clear approvals
+		authz.ModuleName,           // clear expired approvals
 		// no-op modules
 		ibctransfertypes.ModuleName,
 		icatypes.ModuleName,
@@ -1001,7 +1001,7 @@ func NewExocoreApp(
 		ibcexported.ModuleName,
 		ibctransfertypes.ModuleName,
 		icatypes.ModuleName,
-		oracleTypes.ModuleName, // no particular order required
+		oracleTypes.ModuleName, // after staking module to ensure total vote power available
 		// no-op modules
 		paramstypes.ModuleName,
 		consensusparamtypes.ModuleName,
