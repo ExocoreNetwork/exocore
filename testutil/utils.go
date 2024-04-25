@@ -14,6 +14,7 @@ import (
 	"golang.org/x/exp/rand"
 
 	testutiltx "github.com/ExocoreNetwork/exocore/testutil/tx"
+	oracletypes "github.com/ExocoreNetwork/exocore/x/oracle/types"
 
 	exocoreapp "github.com/ExocoreNetwork/exocore/app"
 	"github.com/ExocoreNetwork/exocore/utils"
@@ -70,7 +71,7 @@ func (suite *BaseTestSuite) SetupTest() {
 	suite.DoSetupTest()
 }
 
-// SetupWithGenesisValSet initializes a new EvmosApp with a validator set and genesis accounts
+// SetupWithGenesisValSet initializes a new ExocoreApp with a validator set and genesis accounts
 // that also act as delegators. For simplicity, each validator is bonded with a delegation
 // of one consensus engine unit (10^6) in the default token of the simapp from first genesis
 // account. A Nop logger is set in SimApp.
@@ -83,6 +84,12 @@ func (suite *BaseTestSuite) SetupWithGenesisValSet(valSet *tmtypes.ValidatorSet,
 	// set genesis accounts
 	authGenesis := authtypes.NewGenesisState(authtypes.DefaultParams(), genAccs)
 	genesisState[authtypes.ModuleName] = app.AppCodec().MustMarshalJSON(authGenesis)
+
+	oracleDefaultParams := oracletypes.DefaultParams()
+	oracleDefaultParams.TokenFeeders[1].StartBaseBlock = 1
+	oracleGenesis := oracletypes.NewGenesisState(oracleDefaultParams)
+
+	genesisState[oracletypes.ModuleName] = app.AppCodec().MustMarshalJSON(oracleGenesis)
 
 	// set genesis staking assets
 	ethClientChain := assetstypes.ClientChainInfo{

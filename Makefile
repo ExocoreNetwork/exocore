@@ -313,7 +313,7 @@ test-race: ARGS=-race
 test-race: TEST_PACKAGES=$(PACKAGES_NOSIMULATION)
 $(TEST_TARGETS): run-tests
 
-test-unit-cover: ARGS=-timeout=15m -coverprofile=cover.out -covermode=atomic
+test-unit-cover: ARGS=-timeout=15m -coverprofile=cover.out -covermode=atomic -gcflags=all=-l
 test-unit-cover: TEST_PACKAGES=$(PACKAGES_UNIT)
 
 test-e2e:
