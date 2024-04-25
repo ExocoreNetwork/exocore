@@ -119,7 +119,9 @@ func (k Keeper) ValidateUndeleagtionAmount(
 func (k Keeper) CalculateSlashShare(
 	ctx sdk.Context, operator sdk.AccAddress, stakerID, assetID string, slashAmount sdkmath.Int,
 ) (share sdkmath.LegacyDec, err error) {
-
+	if !slashAmount.IsPositive() {
+		return share, delegationtypes.ErrAmountIsNotPositive
+	}
 	delegationInfo, err := k.GetSingleDelegationInfo(ctx, stakerID, assetID, operator.String())
 	if err != nil {
 		return share, err

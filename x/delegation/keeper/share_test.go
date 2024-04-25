@@ -210,8 +210,7 @@ func (suite *DelegationTestSuite) TestValidateUndeleagtionAmount() {
 
 	undelegationAmount := sdkmath.NewInt(0)
 	share, err := suite.App.DelegationKeeper.ValidateUndeleagtionAmount(suite.Ctx, suite.opAccAddr, stakerID, assetID, undelegationAmount)
-	suite.NoError(err)
-	suite.Equal(sdkmath.LegacyNewDec(0), share)
+	suite.Error(err, delegationtypes.ErrAmountIsNotPositive)
 
 	undelegationAmount = sdkmath.NewInt(10)
 	share, err = suite.App.DelegationKeeper.ValidateUndeleagtionAmount(suite.Ctx, suite.opAccAddr, stakerID, assetID, undelegationAmount)
@@ -228,5 +227,7 @@ func (suite *DelegationTestSuite) TestCalculateSlashShare() {
 	suite.prepareDelegation()
 	stakerID, assetID := assetstype.GetStakeIDAndAssetID(suite.clientChainLzID, suite.Address[:], suite.assetAddr[:])
 	slashAmount := sdkmath.NewInt(0)
-	suite.App.DelegationKeeper.CalculateSlashShare(suite.Ctx, suite.opAccAddr, stakerID, assetID, slashAmount)
+	_, err := suite.App.DelegationKeeper.CalculateSlashShare(suite.Ctx, suite.opAccAddr, stakerID, assetID, slashAmount)
+	suite.Error(err, delegationtypes.ErrAmountIsNotPositive)
+
 }
