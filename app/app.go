@@ -458,7 +458,6 @@ func NewExocoreApp(
 		oracleTypes.StoreKey,
 	)
 
-	// Add the EVM transient store key
 	tkeys := sdk.NewTransientStoreKeys(paramstypes.TStoreKey, evmtypes.TransientKey, feemarkettypes.TransientKey)
 	memKeys := sdk.NewMemoryStoreKeys(capabilitytypes.MemStoreKey, oracleTypes.MemStoreKey)
 
@@ -985,6 +984,7 @@ func NewExocoreApp(
 		withdrawTypes.ModuleName,
 		rewardTypes.ModuleName,
 		exoslashTypes.ModuleName,
+		// no particular order required
 		oracleTypes.ModuleName,
 		// Evmos modules
 		erc20types.ModuleName,
@@ -1348,6 +1348,7 @@ func initParamsKeeper(
 	paramsKeeper.Subspace(icahosttypes.SubModuleName)
 	// ethermint subspaces
 	paramsKeeper.Subspace(evmtypes.ModuleName).WithKeyTable(evmtypes.ParamKeyTable()) //nolint:staticcheck
+	//nolint:staticcheck
 	paramsKeeper.Subspace(oracleTypes.ModuleName).WithKeyTable(oracleTypes.ParamKeyTable())
 	return paramsKeeper
 }

@@ -121,14 +121,11 @@ func initAggregatorContext(ctx sdk.Context, agc *aggregator.AggregatorContext, k
 	validatorPowers := make(map[string]*big.Int)
 	k.IterateBondedValidatorsByPower(ctx, func(_ int64, validator stakingtypes.ValidatorI) bool {
 		power := big.NewInt(validator.GetConsensusPower(validator.GetBondedTokens()))
-		// addr := string(validator.GetOperator())
 		addr := validator.GetOperator().String()
-		// agc.validatorsPower[addr] = power
 		validatorPowers[addr] = power
 		totalPower = new(big.Int).Add(totalPower, power)
 		return false
 	})
-	//	agc.SetTotalPower(totalPower)
 	agc.SetValidatorPowers(validatorPowers)
 
 	// set validatorPower cache

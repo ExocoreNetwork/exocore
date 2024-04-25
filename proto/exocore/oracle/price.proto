@@ -15,7 +15,7 @@ message PriceTimeDetID {
   int32 decimal = 2;
   // timestamp when the price corresponding to
   string timestamp = 3;
-  // det_id is used for deterministic source to tell of which round from this soure the price is corresponded
+  // det_id is used for deterministic source to tell of which round from this source the price is corresponded
   string det_id = 4 [(gogoproto.customname) = "DetID"];
 }
 

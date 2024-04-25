@@ -32,7 +32,7 @@ type PriceTimeDetID struct {
 	Decimal int32 `protobuf:"varint,2,opt,name=decimal,proto3" json:"decimal,omitempty"`
 	// timestamp when the price corresponding to
 	Timestamp string `protobuf:"bytes,3,opt,name=timestamp,proto3" json:"timestamp,omitempty"`
-	// det_id is used for deterministic source to tell of which round from this soure the price is corresponded
+	// det_id is used for deterministic source to tell of which round from this source the price is corresponded
 	DetID string `protobuf:"bytes,4,opt,name=det_id,json=detId,proto3" json:"det_id,omitempty"`
 }
 
