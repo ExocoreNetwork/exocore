@@ -50,7 +50,6 @@ func OracleKeeper(t testing.TB) (*keeper.Keeper, sdk.Context) {
 	// Initialize params
 	p4Test := types.DefaultParams()
 	p4Test.TokenFeeders[1].StartBaseBlock = 1
-	//k.SetParams(ctx, types.DefaultParams())
 	k.SetParams(ctx, p4Test)
 
 	return &k, ctx
