@@ -41,13 +41,6 @@ func DefaultParams() Params {
 				Decimal:         18,
 				Active:          true,
 			},
-			{
-				Name:            "SHIBA INU",
-				ChainID:         1,
-				ContractAddress: "0x95aD61b0a150d79219dCF64E1E6Cc01f0B64C4cE",
-				Decimal:         18,
-				Active:          true,
-			},
 		},
 		Sources: []*Source{
 			{
@@ -76,14 +69,7 @@ func DefaultParams() Params {
 				TokenID:        1,
 				RuleID:         1,
 				StartRoundID:   1,
-				StartBaseBlock: 1,
-				Interval:       10,
-			},
-			{
-				TokenID:        2,
-				RuleID:         1,
-				StartRoundID:   1,
-				StartBaseBlock: 5,
+				StartBaseBlock: 100000000,
 				Interval:       10,
 			},
 		},

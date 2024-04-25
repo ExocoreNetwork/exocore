@@ -86,7 +86,9 @@ var _ = Describe("MsgCreatePrice", func() {
 			c = keeper.GetCaches()
 			pRes := &common.Params{}
 			c.GetCache(cache.ItemP(pRes))
-			Expect(*pRes).Should(BeEquivalentTo(types.DefaultParams()))
+			p4Test := types.DefaultParams()
+			p4Test.TokenFeeders[1].StartBaseBlock = 1
+			Expect(*pRes).Should(BeEquivalentTo(p4Test))
 		})
 
 		It("success on 3rd message", func() {

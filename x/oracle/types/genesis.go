@@ -21,6 +21,18 @@ func DefaultGenesis() *GenesisState {
 	}
 }
 
+func NewGenesisState(p Params) *GenesisState {
+	return &GenesisState{
+		PricesList:           []Prices{},
+		ValidatorUpdateBlock: nil,
+		IndexRecentParams:    nil,
+		IndexRecentMsg:       nil,
+		RecentMsgList:        []RecentMsg{},
+		RecentParamsList:     []RecentParams{},
+		Params:               p,
+	}
+}
+
 // Validate performs basic genesis state validation returning an error upon any
 // failure.
 func (gs GenesisState) Validate() error {
