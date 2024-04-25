@@ -21,7 +21,7 @@ interface IDeposit {
 /// @param stakerAddress The staker address
 /// @param opAmount The deposit amount
     function depositTo(
-        uint16 clientChainLzID,
+        uint32 clientChainLzID,
         bytes memory assetsAddress,
         bytes memory stakerAddress,
         uint256 opAmount
