@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"time"
 
-	"cosmossdk.io/math"
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/crypto/keyring"
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
@@ -165,10 +164,6 @@ func (suite *BaseTestSuite) SetupWithGenesisValSet(genAccs []authtypes.GenesisAc
 	{
 		totalSupply, _ := sdk.NewIntFromString("40022689732746729")
 		usdtClientChainAsset.TotalSupply = totalSupply
-	}
-	stakingInfo := assetstypes.StakingAssetInfo{
-		AssetBasicInfo:     &usdtClientChainAsset,
-		StakingTotalAmount: math.NewInt(0),
 	}
 	assetsGenesis := assetstypes.NewGenesis(
 		assetstypes.DefaultParams(),

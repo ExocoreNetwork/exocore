@@ -137,7 +137,7 @@ func (k Keeper) EndBlock(ctx sdk.Context) []abci.ValidatorUpdate {
 				Power:  0,
 			})
 			// while calculating total power, we started with 0 and not previous power.
-			// so the previous power of these validators does not need to be substracted.
+			// so the previous power of these validators does not need to be subtracted.
 		}
 	}
 	// if there are any updates, set total power on lookup index.
