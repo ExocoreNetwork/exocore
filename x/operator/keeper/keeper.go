@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"context"
+	"github.com/ExocoreNetwork/exocore/x/assets/types"
 
 	sdkmath "cosmossdk.io/math"
 	operatortypes "github.com/ExocoreNetwork/exocore/x/operator/types"
@@ -11,9 +12,9 @@ import (
 )
 
 type Keeper struct {
-	storeKey storetypes.StoreKey
-	cdc      codec.BinaryCodec
-
+	storeKey      storetypes.StoreKey
+	cdc           codec.BinaryCodec
+	historicalCtx types.CreateQueryContext
 	// other keepers
 	assetsKeeper     operatortypes.AssetsKeeper
 	delegationKeeper operatortypes.DelegationKeeper
@@ -27,18 +28,20 @@ type Keeper struct {
 func NewKeeper(
 	storeKey storetypes.StoreKey,
 	cdc codec.BinaryCodec,
+	historicalCtx types.CreateQueryContext,
 	assetsKeeper operatortypes.AssetsKeeper,
 	oracleKeeper operatortypes.OracleKeeper,
 	avsKeeper operatortypes.AvsKeeper,
 	slashKeeper operatortypes.SlashKeeper,
 ) Keeper {
 	return Keeper{
-		storeKey:     storeKey,
-		cdc:          cdc,
-		assetsKeeper: assetsKeeper,
-		oracleKeeper: oracleKeeper,
-		avsKeeper:    avsKeeper,
-		slashKeeper:  slashKeeper,
+		storeKey:      storeKey,
+		cdc:           cdc,
+		historicalCtx: historicalCtx,
+		assetsKeeper:  assetsKeeper,
+		oracleKeeper:  oracleKeeper,
+		avsKeeper:     avsKeeper,
+		slashKeeper:   slashKeeper,
 	}
 }
 

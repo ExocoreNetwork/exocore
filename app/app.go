@@ -645,6 +645,7 @@ func NewExocoreApp(
 	app.OperatorKeeper = operatorKeeper.NewKeeper(
 		keys[operatorTypes.StoreKey],
 		appCodec,
+		bApp.CreateQueryContext,
 		app.AssetsKeeper,
 		operatorTypes.MockOracle{},
 		operatorTypes.MockAvs{AssetsKeeper: app.AssetsKeeper},

@@ -3,6 +3,7 @@ package keeper
 import (
 	errorsmod "cosmossdk.io/errors"
 	sdkmath "cosmossdk.io/math"
+	"fmt"
 	assetstype "github.com/ExocoreNetwork/exocore/x/assets/types"
 	delegationtypes "github.com/ExocoreNetwork/exocore/x/delegation/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -130,6 +131,9 @@ func (k Keeper) CalculateSlashShare(
 	if err != nil {
 		return share, err
 	}
+	if slashAmount.GT(info.TotalAmount) {
+		slashAmount = info.TotalAmount
+	}
 	shouldSlashShare, err := SharesFromTokens(info.TotalShare, slashAmount, info.TotalAmount)
 	if err != nil {
 		return share, err
@@ -156,6 +160,7 @@ func (k Keeper) RemoveShareFromOperator(
 		return token, delegationtypes.ErrInsufficientShares
 	}
 
+	fmt.Println("the share totalShare and totalAmount is:", share, operatorAssetState.TotalShare, operatorAssetState.TotalAmount)
 	var removedToken sdkmath.Int
 	if operatorAssetState.TotalShare.Equal(share) {
 		// last delegation share gets any trimmings
@@ -168,6 +173,7 @@ func (k Keeper) RemoveShareFromOperator(
 			return token, err
 		}
 	}
+	fmt.Println("the removedToken is:", removedToken)
 
 	delta := assetstype.DeltaOperatorSingleAsset{
 		TotalAmount: removedToken.Neg(),

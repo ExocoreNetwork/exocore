@@ -91,9 +91,4 @@ var (
 		ModuleName, 17,
 		"the value is nil or zero",
 	)
-
-	ErrInputPointerIsNil = errorsmod.Register(
-		ModuleName, 18,
-		"the input pointer is nil",
-	)
 )

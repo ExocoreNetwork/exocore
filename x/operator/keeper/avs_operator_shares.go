@@ -129,7 +129,7 @@ func (k *Keeper) UpdateAVSUSDValue(ctx sdk.Context, avsAddr string, opAmount sdk
 // SetAVSUSDValue is a function to set the total USD share of an Avs,
 func (k *Keeper) SetAVSUSDValue(ctx sdk.Context, avsAddr string, amount sdkmath.LegacyDec) error {
 	if amount.IsNil() {
-		return errorsmod.Wrap(operatortypes.ErrInputPointerIsNil, fmt.Sprintf("SetAVSUSDValue the amount is:%v", amount))
+		return errorsmod.Wrap(operatortypes.ErrValueIsNilOrZero, fmt.Sprintf("SetAVSUSDValue the amount is:%v", amount))
 	}
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), operatortypes.KeyPrefixVotingPowerForAVSOperator)
 	key := []byte(avsAddr)

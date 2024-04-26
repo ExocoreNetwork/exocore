@@ -217,6 +217,7 @@ func (suite *DelegationTestSuite) TestValidateUndeleagtionAmount() {
 	suite.NoError(err)
 	suite.Equal(sdkmath.LegacyNewDecFromBigInt(undelegationAmount.BigInt()), share)
 
+	// test the undelegation amount is greater than the delegated amount
 	undelegationAmount = suite.delegationAmount.Add(sdkmath.NewInt(1))
 	share, err = suite.App.DelegationKeeper.ValidateUndeleagtionAmount(suite.Ctx, suite.opAccAddr, stakerID, assetID, undelegationAmount)
 	suite.Error(err, delegationtypes.ErrInsufficientShares)
@@ -230,4 +231,52 @@ func (suite *DelegationTestSuite) TestCalculateSlashShare() {
 	_, err := suite.App.DelegationKeeper.CalculateSlashShare(suite.Ctx, suite.opAccAddr, stakerID, assetID, slashAmount)
 	suite.Error(err, delegationtypes.ErrAmountIsNotPositive)
 
+	slashAmount = sdkmath.NewInt(10)
+	slashShare, err := suite.App.DelegationKeeper.CalculateSlashShare(suite.Ctx, suite.opAccAddr, stakerID, assetID, slashAmount)
+	suite.NoError(err)
+	suite.Equal(sdkmath.LegacyNewDecFromBigInt(slashAmount.BigInt()), slashShare)
+
+	// test the slashAmount is greater than the delegated amount
+	slashAmount = suite.delegationAmount.Add(sdkmath.NewInt(1))
+	slashShare, err = suite.App.DelegationKeeper.CalculateSlashShare(suite.Ctx, suite.opAccAddr, stakerID, assetID, slashAmount)
+	suite.NoError(err)
+	suite.Equal(sdkmath.LegacyNewDecFromBigInt(suite.delegationAmount.BigInt()), slashShare)
+}
+
+func (suite *DelegationTestSuite) TestRemoveShareFromOperator() {
+	suite.prepareDeposit()
+	suite.prepareDelegation()
+	_, assetID := assetstype.GetStakeIDAndAssetID(suite.clientChainLzID, nil, suite.assetAddr[:])
+	originalInfo, err := suite.App.AssetsKeeper.GetOperatorSpecifiedAssetInfo(suite.Ctx, suite.opAccAddr, assetID)
+	suite.NoError(err)
+
+	// test removing share for slash
+	removeShareForSlash := sdkmath.LegacyMustNewDecFromStr("10.1")
+	amount := removeShareForSlash.TruncateInt()
+	assetAmount, err := suite.App.DelegationKeeper.RemoveShareFromOperator(suite.Ctx, false, suite.opAccAddr, assetID, removeShareForSlash)
+	suite.NoError(err)
+	suite.Equal(amount, assetAmount)
+
+	info, err := suite.App.AssetsKeeper.GetOperatorSpecifiedAssetInfo(suite.Ctx, suite.opAccAddr, assetID)
+	suite.NoError(err)
+	expectedInfo := *originalInfo
+	expectedInfo.TotalAmount = originalInfo.TotalAmount.Sub(amount)
+	expectedInfo.TotalShare = originalInfo.TotalShare.Sub(removeShareForSlash)
+	suite.Equal(expectedInfo, *info)
+
+	originalInfo = info
+	// test removing share for undelegation
+	removeShareForUndelegation := sdkmath.LegacyMustNewDecFromStr("5.5")
+	amount = removeShareForUndelegation.TruncateInt()
+	assetAmount, err = suite.App.DelegationKeeper.RemoveShareFromOperator(suite.Ctx, true, suite.opAccAddr, assetID, removeShareForUndelegation)
+	suite.NoError(err)
+	suite.Equal(amount, assetAmount)
+
+	info, err = suite.App.AssetsKeeper.GetOperatorSpecifiedAssetInfo(suite.Ctx, suite.opAccAddr, assetID)
+	suite.NoError(err)
+	expectedInfo = *originalInfo
+	expectedInfo.TotalAmount = originalInfo.TotalAmount.Sub(amount)
+	expectedInfo.TotalShare = originalInfo.TotalShare.Sub(removeShareForUndelegation)
+	expectedInfo.WaitUnbondingAmount = originalInfo.WaitUnbondingAmount.Add(amount)
+	suite.Equal(expectedInfo, *info)
 }

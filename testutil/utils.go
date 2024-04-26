@@ -185,8 +185,7 @@ func (suite *BaseTestSuite) SetupWithGenesisValSet(valSet *tmtypes.ValidatorSet,
 		Header: header,
 	})
 
-	// need to create UncachedContext when retrieving historical state
-	suite.Ctx = app.BaseApp.NewUncachedContext(false, header)
+	suite.Ctx = app.BaseApp.NewContext(false, header)
 	suite.App = app
 }
 
@@ -238,29 +237,12 @@ func (suite *BaseTestSuite) DoSetupTest() {
 	// Create StateDB
 	suite.StateDB = statedb.New(suite.Ctx, suite.App.EvmKeeper, statedb.NewEmptyTxConfig(common.BytesToHash(suite.Ctx.HeaderHash().Bytes())))
 
-	// bond denom
-	/*	stakingParams := suite.App.StakingKeeper.GetParams(suite.Ctx)
-		stakingParams.BondDenom = utils.BaseDenom
-		suite.BondDenom = stakingParams.BondDenom
-		err = suite.App.StakingKeeper.SetParams(suite.Ctx, stakingParams)
-		suite.Require().NoError(err)*/
-
 	suite.BondDenom = utils.BaseDenom
 	suite.EthSigner = ethtypes.LatestSignerForChainID(suite.App.EvmKeeper.ChainID())
 
 	queryHelperEvm := baseapp.NewQueryServerTestHelper(suite.Ctx, suite.App.InterfaceRegistry())
 	evmtypes.RegisterQueryServer(queryHelperEvm, suite.App.EvmKeeper)
 	suite.QueryClientEVM = evmtypes.NewQueryClient(queryHelperEvm)
-
-	/*	coins := sdk.NewCoins(sdk.NewCoin(utils.BaseDenom, sdk.NewInt(5000000000000000000)))
-		inflCoins := sdk.NewCoins(sdk.NewCoin(utils.BaseDenom, sdk.NewInt(2000000000000000000)))
-		distrCoins := sdk.NewCoins(sdk.NewCoin(utils.BaseDenom, sdk.NewInt(3000000000000000000)))
-		err = suite.App.BankKeeper.MintCoins(suite.Ctx, inflationtypes.ModuleName, coins)
-		suite.Require().NoError(err)
-		err = suite.App.BankKeeper.SendCoinsFromModuleToModule(suite.Ctx, inflationtypes.ModuleName, authtypes.FeeCollectorName, inflCoins)
-		suite.Require().NoError(err)
-		err = suite.App.BankKeeper.SendCoinsFromModuleToModule(suite.Ctx, inflationtypes.ModuleName, distrtypes.ModuleName, distrCoins)
-		suite.Require().NoError(err)*/
 }
 
 // DeployContract deploys a contract that calls the deposit precompile's methods for testing purposes.

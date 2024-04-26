@@ -63,7 +63,10 @@ func (k *Keeper) VerifySlashEvent(ctx sdk.Context, parameter *SlashInputInfo) (s
 	if err != nil {
 		return ctx, err
 	}
-	historicalStateCtx, err := assetstype.ContextForHistoricalState(ctx, heightForVotingPower)
+	if k.historicalCtx == nil {
+		return ctx, errorsmod.Wrap(types.ErrValueIsNilOrZero, "VerifySlashEvent the historicalCtx is nil")
+	}
+	historicalStateCtx, err := k.historicalCtx(heightForVotingPower, false)
 	if err != nil {
 		return ctx, err
 	}
