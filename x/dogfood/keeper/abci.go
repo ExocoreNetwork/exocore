@@ -106,18 +106,25 @@ func (k Keeper) EndBlock(ctx sdk.Context) []abci.ValidatorUpdate {
 			continue
 		}
 		addressString := address.String()
-		if prevPower, found := prevMap[addressString]; found && prevPower == power {
-			totalPower = totalPower.Add(sdk.NewInt(power))
+		prevPower, found := prevMap[addressString]
+		if found {
+			// if the power has changed, queue an update.
+			if prevPower != power {
+				res = append(res, abci.ValidatorUpdate{
+					PubKey: *key,
+					Power:  power,
+				})
+			}
+			// remove the validator from the previous map, so that 0 power
+			// is not queued for it.
 			delete(prevMap, addressString)
-			continue
+		} else {
+			// new consensus key, queue an update.
+			res = append(res, abci.ValidatorUpdate{
+				PubKey: *key,
+				Power:  power,
+			})
 		}
-		// either the key was not in the previous set,
-		// or the power has changed.
-		res = append(res, abci.ValidatorUpdate{
-			PubKey: *key,
-			// note that this is the final power and not the change in power.
-			Power: power,
-		})
 		totalPower = totalPower.Add(sdk.NewInt(power))
 	}
 	// the remaining validators in prevMap have been removed.
