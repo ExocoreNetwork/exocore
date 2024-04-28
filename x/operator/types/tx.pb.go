@@ -185,7 +185,8 @@ type OperatorInfo struct {
 	OperatorMetaInfo string `protobuf:"bytes,3,opt,name=operator_meta_info,json=operatorMetaInfo,proto3" json:"operator_meta_info,omitempty"`
 	// client_chain_earning_addr_list is the client chain earning address list.
 	ClientChainEarningsAddr *ClientChainEarningAddrList `protobuf:"bytes,4,opt,name=client_chain_earnings_addr,json=clientChainEarningsAddr,proto3" json:"client_chain_earnings_addr,omitempty"`
-	// commission defines the commission parameters.
+	// commission defines the commission parameters. it includes the time at which the commission
+	// was last updated.
 	Commission types.Commission `protobuf:"bytes,5,opt,name=commission,proto3" json:"commission"`
 }
 

@@ -11,6 +11,9 @@ import (
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/client/tx"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	stakingcli "github.com/cosmos/cosmos-sdk/x/staking/client/cli"
+	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 
 	"github.com/ExocoreNetwork/exocore/x/operator/types"
 )
@@ -82,6 +85,7 @@ func RegisterOperator() *cobra.Command {
 			"can be supplied multiple times. "+
 			"Format: <client-chain-id>:<client-chain-earnings-addr>",
 	)
+	f.AddFlagSet(stakingcli.FlagSetCommissionCreate())
 
 	// transaction level flags from the SDK
 	flags.AddTxFlagsToCmd(cmd)
@@ -135,5 +139,46 @@ func newBuildRegisterOperatorMsg(
 		}
 	}
 	msg.Info.ClientChainEarningsAddr = clientChainEarningAddress
+	// get the initial commission parameters
+	// #nosec G701
+	rateStr, _ := fs.GetString(stakingcli.FlagCommissionRate)
+	// #nosec G701
+	maxRateStr, _ := fs.GetString(stakingcli.FlagCommissionMaxRate)
+	// #nosec G701
+	maxChangeRateStr, _ := fs.GetString(stakingcli.FlagCommissionMaxChangeRate)
+	commission, err := buildCommission(rateStr, maxRateStr, maxChangeRateStr)
+	if err != nil {
+		return txf, nil, err
+	}
+	msg.Info.Commission = commission
 	return txf, msg, nil
+}
+
+func buildCommission(rateStr, maxRateStr, maxChangeRateStr string) (
+	commission stakingtypes.Commission, err error,
+) {
+	if rateStr == "" || maxRateStr == "" || maxChangeRateStr == "" {
+		return commission, errorsmod.Wrap(
+			types.ErrCliCmdInputArg, "must specify all validator commission parameters",
+		)
+	}
+
+	rate, err := sdk.NewDecFromStr(rateStr)
+	if err != nil {
+		return commission, err
+	}
+
+	maxRate, err := sdk.NewDecFromStr(maxRateStr)
+	if err != nil {
+		return commission, err
+	}
+
+	maxChangeRate, err := sdk.NewDecFromStr(maxChangeRateStr)
+	if err != nil {
+		return commission, err
+	}
+
+	commission = stakingtypes.NewCommission(rate, maxRate, maxChangeRate)
+
+	return commission, nil
 }
