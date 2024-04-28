@@ -267,6 +267,9 @@ func (k *Keeper) GetOperatorsForChainID(
 		// and our prefix is of the format prefix | len | chainID
 		// so just drop it and convert to sdk.AccAddress
 		addr := iterator.Key()[len(prefix):]
+		if k.IsOperatorRemovingKeyFromChainID(ctx, addr, chainID) {
+			continue
+		}
 		res := iterator.Value()
 		ret := &tmprotocrypto.PublicKey{}
 		k.cdc.MustUnmarshal(res, ret)
