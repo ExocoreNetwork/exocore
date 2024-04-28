@@ -20,6 +20,13 @@ service Query {
   rpc OptOutsToFinish(QueryOptOutsToFinishRequest) returns (AccountAddresses) {
     option (google.api.http).get = "/exocore/dogfood/opt_outs_to_finish/{epoch}";
   }
+
+  // OperatorOptOutFinishEpoch queries the epoch when the operator's opt-out will finish.
+  rpc OperatorOptOutFinishEpoch(QueryOperatorOptOutFinishEpochRequest) returns (
+    QueryOperatorOptOutFinishEpochResponse
+  ) {
+    option (google.api.http).get = "/exocore/dogfood/operator_opt_out_finish_epoch/{operator}";
+  }
 }
 
 // QueryParamsRequest is request type for the Query/Params RPC method.
@@ -34,5 +41,19 @@ message QueryParamsResponse {
 // QueryOptOutsToFinishRequest is request type for the Query/OptOutsToFinish RPC method.
 message QueryOptOutsToFinishRequest {
   // epoch is the epoch to query opt-outs for.
+  int64 epoch = 1;
+}
+
+// QueryOperatorOptOutFinishEpochRequest is request type for the Query/OperatorOptOutFinishEpoch
+// RPC method.
+message QueryOperatorOptOutFinishEpochRequest {
+  // operator is the operator address.
+  string operator = 1;
+}
+
+// QueryOperatorOptOutFinishEpochResponse is response type for the 
+// Query/OperatorOptOutFinishEpoch RPC method.
+message QueryOperatorOptOutFinishEpochResponse {
+  // epoch is the epoch when the operator's opt-out will finish.
   int64 epoch = 1;
 }

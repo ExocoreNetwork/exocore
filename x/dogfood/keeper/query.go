@@ -38,3 +38,19 @@ func (k Keeper) OptOutsToFinish(
 	// TODO: consider converting this to a slice of strings?
 	return &types.AccountAddresses{List: addresses}, nil
 }
+
+func (k Keeper) OperatorOptOutFinishEpoch(
+	goCtx context.Context,
+	req *types.QueryOperatorOptOutFinishEpochRequest,
+) (*types.QueryOperatorOptOutFinishEpochResponse, error) {
+	if req == nil {
+		return nil, status.Error(codes.InvalidArgument, "invalid request")
+	}
+	ctx := sdk.UnwrapSDKContext(goCtx)
+	accAddr, err := sdk.AccAddressFromBech32(req.Operator)
+	if err != nil {
+		return nil, status.Error(codes.InvalidArgument, "invalid operator address")
+	}
+	epoch := k.GetOperatorOptOutFinishEpoch(ctx, accAddr)
+	return &types.QueryOperatorOptOutFinishEpochResponse{Epoch: epoch}, nil
+}
