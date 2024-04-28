@@ -10,8 +10,10 @@ import (
 // interface guards
 var (
 	_ sdk.Msg = &RegisterOperatorReq{}
-	_ sdk.Msg = &OptInToCosmosChainRequest{}
-	_ sdk.Msg = &InitOptOutFromCosmosChainRequest{}
+	_ sdk.Msg = &OptIntoAVSReq{}
+	_ sdk.Msg = &OptOutOfAVSReq{}
+	_ sdk.Msg = &SetConsKeyReq{}
+	_ sdk.Msg = &InitConsKeyRemovalReq{}
 )
 
 // GetSigners returns the expected signers for the message.
@@ -29,29 +31,42 @@ func (m *RegisterOperatorReq) ValidateBasic() error {
 }
 
 // GetSigners returns the expected signers for the message.
-func (m *OptInToCosmosChainRequest) GetSigners() []sdk.AccAddress {
+func (m *SetConsKeyReq) GetSigners() []sdk.AccAddress {
 	addr := sdk.MustAccAddressFromBech32(m.Address)
 	return []sdk.AccAddress{addr}
 }
 
 // ValidateBasic does a sanity check of the provided data
-func (m *OptInToCosmosChainRequest) ValidateBasic() error {
+func (m *SetConsKeyReq) ValidateBasic() error {
 	if _, err := sdk.AccAddressFromBech32(m.Address); err != nil {
 		return errorsmod.Wrap(err, "invalid from address")
+	}
+	if !types.IsValidChainID(m.ChainId) {
+		return errorsmod.Wrap(ErrParameterInvalid, "invalid chain id")
+	}
+	if keyType, keyString, err := ParseConsensusKeyFromJSON(m.PublicKey); err != nil {
+		return errorsmod.Wrap(err, "invalid public key")
+	} else if keyType != "/cosmos.crypto.ed25519.PubKey" {
+		return errorsmod.Wrap(ErrParameterInvalid, "invalid public key type")
+	} else if _, err := StringToPubKey(keyString); err != nil {
+		return errorsmod.Wrap(err, "invalid public key")
 	}
 	return nil
 }
 
 // GetSigners returns the expected signers for the message.
-func (m *InitOptOutFromCosmosChainRequest) GetSigners() []sdk.AccAddress {
+func (m *InitConsKeyRemovalReq) GetSigners() []sdk.AccAddress {
 	addr := sdk.MustAccAddressFromBech32(m.Address)
 	return []sdk.AccAddress{addr}
 }
 
 // ValidateBasic does a sanity check of the provided data
-func (m *InitOptOutFromCosmosChainRequest) ValidateBasic() error {
+func (m *InitConsKeyRemovalReq) ValidateBasic() error {
 	if _, err := sdk.AccAddressFromBech32(m.Address); err != nil {
 		return errorsmod.Wrap(err, "invalid from address")
+	}
+	if !types.IsValidChainID(m.ChainId) {
+		return errorsmod.Wrap(ErrParameterInvalid, "invalid chain id")
 	}
 	return nil
 }

@@ -55,11 +55,11 @@ func StringToPubKey(pubKey string) (key *tmprotocrypto.PublicKey, err error) {
 	return subscriberTMConsKey, nil
 }
 
-// ParseConsumerKeyFromJSON parses the consumer key from a JSON string.
+// ParseConsensusKeyFromJSON parses the consumer key from a JSON string.
 // This function replaces deserializing a protobuf any.
-func ParseConsumerKeyFromJSON(jsonStr string) (pkType, key string, err error) {
+func ParseConsensusKeyFromJSON(jsonStr string) (pkType, key string, err error) {
 	type PubKey struct {
-		Type string `json:"type"`
+		Type string `json:"@type"`
 		Key  string `json:"value"`
 	}
 	var pubKey PubKey
