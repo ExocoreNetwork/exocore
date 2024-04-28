@@ -23,6 +23,7 @@ func GetQueryCmd() *cobra.Command {
 	cmd.AddCommand(
 		GetOperatorInfo(),
 		GetOperatorConsKey(),
+		GetOperatorConsAddress(),
 		GetAllOperatorsByChainID(),
 	)
 	return cmd
@@ -45,7 +46,7 @@ func GetOperatorInfo() *cobra.Command {
 			req := &operatortypes.GetOperatorInfoReq{
 				OperatorAddr: args[0],
 			}
-			res, err := queryClient.GetOperatorInfo(context.Background(), req)
+			res, err := queryClient.QueryOperatorInfo(context.Background(), req)
 			if err != nil {
 				return err
 			}
@@ -110,6 +111,36 @@ func GetAllOperatorsByChainID() *cobra.Command {
 				Pagination: pageReq,
 			}
 			res, err := queryClient.QueryAllOperatorKeysByChainID(
+				context.Background(), req,
+			)
+			if err != nil {
+				return err
+			}
+			return clientCtx.PrintProto(res)
+		},
+	}
+	flags.AddQueryFlagsToCmd(cmd)
+	return cmd
+}
+
+// GetOperatorConsAddress queries operator consensus address for the provided chain ID
+func GetOperatorConsAddress() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "get-operator-cons-address <chain_id>",
+		Short: "Get operator consensus address",
+		Long:  "Get operator consensus address for the provided chain ID",
+		Args:  cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx, err := client.GetClientQueryContext(cmd)
+			if err != nil {
+				return err
+			}
+
+			queryClient := operatortypes.NewQueryClient(clientCtx)
+			req := &operatortypes.QueryOperatorConsAddressRequest{
+				ChainID: args[0],
+			}
+			res, err := queryClient.QueryOperatorConsAddressForChainID(
 				context.Background(), req,
 			)
 			if err != nil {

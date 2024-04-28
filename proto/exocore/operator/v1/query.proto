@@ -31,6 +31,21 @@ message QueryOperatorConsKeyResponse {
   tendermint.crypto.PublicKey public_key = 1 [ (gogoproto.nullable) = false ];
 }
 
+// QueryOperatorConsAddressRequest is the request to obtain the consensus address of the operator
+// for a specific chain ID.
+message QueryOperatorConsAddressRequest {
+  // addr is the ACC address of operator
+  string addr = 1;
+  // chain_id is the id of the chain served by the operator
+  string chain_id = 2 [(gogoproto.customname) = "ChainID"];
+}
+
+// QueryOperatorConsAddressResponse is the response for QueryOperatorConsAddressRequest.
+message QueryOperatorConsAddressResponse {
+  // address is the consensus address of the operator
+  string address = 1;
+}
+
 // QueryAllOperatorsByChainIDRequest is the request to obtain all operator addresses
 // and consensus keys for a specific chain ID, with pagination.
 message QueryAllOperatorsByChainIDRequest {
@@ -59,15 +74,26 @@ message OperatorConsKeyPair {
 
 // Query defines the gRPC querier service.
 service Query {
-  // OperatorInfo queries the operator information.
-  rpc GetOperatorInfo(GetOperatorInfoReq) returns (OperatorInfo) {
-    option (google.api.http).get = "/exocore/operator/v1/GetOperatorInfo";
+  // QueryOperatorInfo queries the operator information.
+  rpc QueryOperatorInfo(GetOperatorInfoReq) returns (OperatorInfo) {
+    option (google.api.http).get = "/exocore/operator/v1/operator_info/{operator_addr}";
   }
 
   // QueryOperatorConsKeyForChainID queries the consensus public key for the operator
-  rpc QueryOperatorConsKeyForChainID(QueryOperatorConsKeyRequest) returns (QueryOperatorConsKeyResponse) {
+  rpc QueryOperatorConsKeyForChainID(QueryOperatorConsKeyRequest) returns (
+    QueryOperatorConsKeyResponse
+  ) {
     option (google.api.http) = {
-      get: "/exocore/operator/v1/GetOperatorConsKey/{addr}/{chain_id}"
+      get: "/exocore/operator/v1/operator_cons_key/{addr}/{chain_id}"
+    };
+  }
+
+  // QueryOperatorConsAddressForChainID queries the consensus address for the operator.
+  rpc QueryOperatorConsAddressForChainID(QueryOperatorConsAddressRequest) returns (
+    QueryOperatorConsAddressResponse
+  ) {
+    option (google.api.http) = {
+      get: "/exocore/operator/v1/operator_cons_address/{addr}/{chain_id}"
     };
   }
 
@@ -77,7 +103,7 @@ service Query {
     QueryAllOperatorsByChainIDResponse
   ) {
     option (google.api.http) = {
-      get: "/exocore/operator/v1/all_operators/{chain_id}"
+      get: "/exocore/operator/v1/all_operator_keys/{chain_id}"
     };
   }
 }

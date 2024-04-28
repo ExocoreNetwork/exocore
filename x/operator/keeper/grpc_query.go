@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 
+	"github.com/ExocoreNetwork/exocore/x/operator/types"
 	operatortypes "github.com/ExocoreNetwork/exocore/x/operator/types"
 	tmprotocrypto "github.com/cometbft/cometbft/proto/tendermint/crypto"
 	"github.com/cosmos/cosmos-sdk/store/prefix"
@@ -13,7 +14,9 @@ import (
 
 var _ operatortypes.QueryServer = &Keeper{}
 
-func (k *Keeper) GetOperatorInfo(ctx context.Context, req *operatortypes.GetOperatorInfoReq) (*operatortypes.OperatorInfo, error) {
+func (k *Keeper) QueryOperatorInfo(
+	ctx context.Context, req *operatortypes.GetOperatorInfoReq,
+) (*operatortypes.OperatorInfo, error) {
 	c := sdk.UnwrapSDKContext(ctx)
 	return k.OperatorInfo(c, req.OperatorAddr)
 }
@@ -39,6 +42,35 @@ func (k *Keeper) QueryOperatorConsKeyForChainID(
 	}
 	return &operatortypes.QueryOperatorConsKeyResponse{
 		PublicKey: *key,
+	}, nil
+}
+
+// QueryOperatorConsAddressForChainID queries the consensus address for the operator on
+// the given chain.
+func (k Keeper) QueryOperatorConsAddressForChainID(
+	goCtx context.Context,
+	req *operatortypes.QueryOperatorConsAddressRequest,
+) (*operatortypes.QueryOperatorConsAddressResponse, error) {
+	ctx := sdk.UnwrapSDKContext(goCtx)
+	addr, err := sdk.AccAddressFromBech32(req.Addr)
+	if err != nil {
+		return nil, err
+	}
+	found, key, err := k.GetOperatorConsKeyForChainID(
+		ctx, addr, req.ChainID,
+	)
+	if err != nil {
+		return nil, err
+	}
+	if !found {
+		return nil, errors.New("no key assigned")
+	}
+	consAddr, err := types.TMCryptoPublicKeyToConsAddr(key)
+	if err != nil {
+		return nil, err
+	}
+	return &operatortypes.QueryOperatorConsAddressResponse{
+		Address: consAddr.String(),
 	}, nil
 }
 
