@@ -18,3 +18,9 @@ func (k *Keeper) QueryDelegationInfo(ctx context.Context, info *delegationtype.D
 	c := sdk.UnwrapSDKContext(ctx)
 	return k.GetDelegationInfo(c, info.StakerID, info.AssetID)
 }
+
+func (k Keeper) QueryUndelegationHoldCount(ctx context.Context, req *delegationtype.UndelegationHoldCountReq) (*delegationtype.UndelegationHoldCountResponse, error) {
+	c := sdk.UnwrapSDKContext(ctx)
+	res := k.GetUndelegationHoldCount(c, req.RecordKey)
+	return &delegationtype.UndelegationHoldCountResponse{HoldCount: res}, nil
+}
