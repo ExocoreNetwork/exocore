@@ -112,7 +112,7 @@ func QueryUndelegationHoldCount() *cobra.Command {
 
 			queryClient := delegationtype.NewQueryClient(clientCtx)
 			req := &delegationtype.UndelegationHoldCountReq{
-				RecordKey: []byte(args[0]),
+				RecordKey: args[0],
 			}
 			res, err := queryClient.QueryUndelegationHoldCount(context.Background(), req)
 			if err != nil {

@@ -69,7 +69,7 @@ message SingleDelegationInfoReq {
 // UndelegationHoldCountReq is the request to obtain the undelegation hold count.
 message UndelegationHoldCountReq {
   // record_key is the record key of the undelegation record.
-  bytes record_key = 1;
+  string record_key = 1;
 }
 
 // UndelegationHoldCountResponse is the response for the undelegation hold count.

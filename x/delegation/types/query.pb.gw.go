@@ -121,7 +121,7 @@ func request_Query_QueryUndelegationHoldCount_0(ctx context.Context, marshaler r
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "record_key")
 	}
 
-	protoReq.RecordKey, err = runtime.Bytes(val)
+	protoReq.RecordKey, err = runtime.String(val)
 
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "record_key", err)
@@ -148,7 +148,7 @@ func local_request_Query_QueryUndelegationHoldCount_0(ctx context.Context, marsh
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "record_key")
 	}
 
-	protoReq.RecordKey, err = runtime.Bytes(val)
+	protoReq.RecordKey, err = runtime.String(val)
 
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "record_key", err)
