@@ -79,3 +79,25 @@ func (m *OptIntoAVSReq) ValidateBasic() error {
 	}
 	return nil
 }
+
+// GetSigners returns the expected signers for the message.
+func (m *OptOutOfAVSReq) GetSigners() []sdk.AccAddress {
+	addr := sdk.MustAccAddressFromBech32(m.FromAddress)
+	return []sdk.AccAddress{addr}
+}
+
+// ValidateBasic does a sanity check of the provided data
+func (m *OptOutOfAVSReq) ValidateBasic() error {
+	if _, err := sdk.AccAddressFromBech32(m.FromAddress); err != nil {
+		return errorsmod.Wrap(err, "invalid from address")
+	}
+	if m.AvsAddress == "" {
+		return errorsmod.Wrap(ErrParameterInvalid, "AVS address is empty")
+	}
+	if !common.IsHexAddress(m.AvsAddress) && !types.IsValidChainID(m.AvsAddress) {
+		return errorsmod.Wrap(
+			ErrParameterInvalid, "AVS address is not a valid hex address or chain id",
+		)
+	}
+	return nil
+}

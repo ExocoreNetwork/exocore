@@ -37,6 +37,7 @@ func NewTxCmd() *cobra.Command {
 	txCmd.AddCommand(
 		CmdRegisterOperator(),
 		CmdOptIntoAVS(),
+		CmdOptOutOfAVS(),
 	)
 	return txCmd
 }
@@ -197,6 +198,26 @@ func CmdOptIntoAVS() *cobra.Command {
 				return err
 			}
 			msg := &types.OptIntoAVSReq{
+				FromAddress: clientCtx.GetFromAddress().String(),
+				AvsAddress:  args[0],
+			}
+			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), msg)
+		},
+	}
+	return cmd
+}
+
+func CmdOptOutOfAVS() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "opt-out-of-avs <avs-address>",
+		Short: "opt out of an AVS by specifying its address or the chain id",
+		Args:  cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx, err := client.GetClientTxContext(cmd)
+			if err != nil {
+				return err
+			}
+			msg := &types.OptOutOfAVSReq{
 				FromAddress: clientCtx.GetFromAddress().String(),
 				AvsAddress:  args[0],
 			}
