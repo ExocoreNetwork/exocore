@@ -41,20 +41,6 @@ message ClientChainInfo {
   uint32 address_length = 8;
 }
 
-// AppChainInfo is used to store information related to the subscriber app chains we validate.
-// The information stored within this module consists only of the chain's identifiers.
-// The validation-related information is stored in the coordinator module.
-message AppChainInfo {
-  // name of the chain, for example "ethereum"
-  string name = 1;
-  // meta_info is at Exocore's discretion to deter,ome
-  string meta_info = 2;
-  // chain_id is used as the primary key
-  string chain_id = 3 [(gogoproto.customname) = "ChainID"];
-  // exocore_chain_index is the index of the chain in exocore, so far unused
-  uint64 exocore_chain_index = 4;
-}
-
 // AssetInfo defines the information for an asset to be used in staking.
 message AssetInfo {
   // name of the asset, like "Tether USD"
