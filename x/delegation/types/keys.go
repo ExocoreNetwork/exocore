@@ -39,7 +39,7 @@ const (
 
 	prefixWaitCompleteUndelegations
 
-	// add for dogfood
+	// used to store the undelegation hold count
 	prefixUndelegationOnHold
 )
 
@@ -90,7 +90,7 @@ func GetWaitCompleteRecordKey(height, lzNonce uint64) []byte {
 	return []byte(strings.Join([]string{hexutil.EncodeUint64(height), hexutil.EncodeUint64(lzNonce)}, "/"))
 }
 
-// GetUndelegationOnHoldKey add for dogfood
+// GetUndelegationOnHoldKey returns the key for the undelegation hold count
 func GetUndelegationOnHoldKey(recordKey []byte) []byte {
 	return append([]byte{prefixUndelegationOnHold}, recordKey...)
 }

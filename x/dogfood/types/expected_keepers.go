@@ -27,11 +27,10 @@ type OperatorKeeper interface {
 	GetOperatorConsKeyForChainID(
 		sdk.Context, sdk.AccAddress, string,
 	) (bool, *tmprotocrypto.PublicKey, error)
-	IsOperatorOptingOutFromChainID(
+	IsOperatorRemovingKeyFromChainID(
 		sdk.Context, sdk.AccAddress, string,
 	) bool
-	CompleteOperatorOptOutFromChainID(sdk.Context, sdk.AccAddress, string)
-	DeleteOperatorAddressForChainIDAndConsAddr(sdk.Context, string, sdk.ConsAddress)
+	CompleteOperatorKeyRemovalForChainID(sdk.Context, sdk.AccAddress, string) error
 	GetOperatorAddressForChainIDAndConsAddr(
 		sdk.Context, string, sdk.ConsAddress,
 	) (bool, sdk.AccAddress)

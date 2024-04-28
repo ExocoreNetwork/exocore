@@ -129,26 +129,24 @@ type AvsKeeper interface {
 	GetOperatorsByAvs(ctx sdk.Context, avsAddr string) ([]string, error)
 }
 
-// add for dogfood
-
 type SlashKeeper interface {
 	IsOperatorFrozen(ctx sdk.Context, addr sdk.AccAddress) bool
 }
 
 type OperatorHooks interface {
-	// This hook is called when an operator opts in to a chain.
-	AfterOperatorOptIn(
+	// This hook is called when an operator declares the consensus key for the provided chain.
+	AfterOperatorKeySet(
 		ctx sdk.Context, addr sdk.AccAddress, chainID string,
 		pubKey *tmprotocrypto.PublicKey,
 	)
-	// This hook is called when an operator's consensus key is replaced for
-	// a chain.
-	AfterOperatorKeyReplacement(
+	// This hook is called when an operator's consensus key is replaced for a chain.
+	AfterOperatorKeyReplaced(
 		ctx sdk.Context, addr sdk.AccAddress, oldKey *tmprotocrypto.PublicKey,
 		newKey *tmprotocrypto.PublicKey, chainID string,
 	)
-	// This hook is called when an operator opts out of a chain.
-	AfterOperatorOptOutInitiated(
+	// This hook is called when an operator initiates the removal of a consensus key for a
+	// chain.
+	AfterOperatorKeyRemovalInitiated(
 		ctx sdk.Context, addr sdk.AccAddress, chainID string, key *tmprotocrypto.PublicKey,
 	)
 }

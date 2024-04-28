@@ -22,7 +22,7 @@ func (k *Keeper) OperatorHooks() OperatorHooksWrapper {
 }
 
 // AfterOperatorOptIn is the implementation of the operator hooks.
-func (h OperatorHooksWrapper) AfterOperatorOptIn(
+func (h OperatorHooksWrapper) AfterOperatorKeySet(
 	ctx sdk.Context, addr sdk.AccAddress, chainID string, key *tmprotocrypto.PublicKey,
 ) {
 	// an operator opting in does not meaningfully affect this module, since
@@ -35,7 +35,7 @@ func (h OperatorHooksWrapper) AfterOperatorOptIn(
 }
 
 // AfterOperatorKeyReplacement is the implementation of the operator hooks.
-func (h OperatorHooksWrapper) AfterOperatorKeyReplacement(
+func (h OperatorHooksWrapper) AfterOperatorKeyReplaced(
 	ctx sdk.Context, operator sdk.AccAddress, oldKey *tmprotocrypto.PublicKey,
 	newKey *tmprotocrypto.PublicKey, chainID string,
 ) {
@@ -47,7 +47,7 @@ func (h OperatorHooksWrapper) AfterOperatorKeyReplacement(
 }
 
 // AfterOperatorOptOutInitiated is the implementation of the operator hooks.
-func (h OperatorHooksWrapper) AfterOperatorOptOutInitiated(
+func (h OperatorHooksWrapper) AfterOperatorKeyRemovalInitiated(
 	ctx sdk.Context, operator sdk.AccAddress, chainID string, key *tmprotocrypto.PublicKey,
 ) {
 	if strings.Compare(chainID, ctx.ChainID()) == 0 {

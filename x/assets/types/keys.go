@@ -45,7 +45,6 @@ const (
 	// prefixReStakerAssetList
 	// prefixOperatorAssetList
 
-	// add for dogfood
 	prefixOperatorSnapshot
 	prefixOperatorLastSnapshotHeight
 	prefixParams

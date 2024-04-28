@@ -15,7 +15,7 @@ func (k *Keeper) GetOperatorInfo(ctx context.Context, req *operatortypes.GetOper
 	return k.OperatorInfo(c, req.OperatorAddr)
 }
 
-// QueryOperatorConsKeyForChainID add for dogfood
+// QueryOperatorConsKeyForChainID queries the consensus key for the operator on the given chain.
 func (k *Keeper) QueryOperatorConsKeyForChainID(
 	goCtx context.Context,
 	req *operatortypes.QueryOperatorConsKeyRequest,

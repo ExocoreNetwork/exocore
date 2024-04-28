@@ -111,10 +111,10 @@ func (k *Keeper) setOperatorConsKeyForChainID(
 	if !genesis {
 		if found {
 			if !alreadyRecorded {
-				k.Hooks().AfterOperatorKeyReplacement(ctx, opAccAddr, prevKey, consKey, chainID)
+				k.Hooks().AfterOperatorKeyReplaced(ctx, opAccAddr, prevKey, consKey, chainID)
 			}
 		} else {
-			k.Hooks().AfterOperatorOptIn(ctx, opAccAddr, chainID, consKey)
+			k.Hooks().AfterOperatorKeySet(ctx, opAccAddr, chainID, consKey)
 		}
 	}
 	return nil
@@ -208,7 +208,7 @@ func (k *Keeper) getOperatorPrevConsKeyForChainID(
 
 // GetOperatorConsKeyForChainID gets the (consensus) public key for the given operator address
 // and chain id. This should be exposed via the query surface.
-func (k *Keeper) GetOperatorConsKeyForChainID(
+func (k Keeper) GetOperatorConsKeyForChainID(
 	ctx sdk.Context,
 	opAccAddr sdk.AccAddress,
 	chainID string,
@@ -276,7 +276,7 @@ func (k *Keeper) GetOperatorsForChainID(
 	return addrs, pubKeys
 }
 
-func (k *Keeper) GetOperatorAddressForChainIDAndConsAddr(
+func (k Keeper) GetOperatorAddressForChainIDAndConsAddr(
 	ctx sdk.Context, chainID string, consAddr sdk.ConsAddress,
 ) (found bool, addr sdk.AccAddress) {
 	store := ctx.KVStore(k.storeKey)
@@ -287,17 +287,6 @@ func (k *Keeper) GetOperatorAddressForChainIDAndConsAddr(
 	found = true
 	addr = sdk.AccAddress(res)
 	return found, addr
-}
-
-// DeleteOperatorAddressForChainIDAndConsAddr is a pruning method used to delete the
-// mapping from chain id and consensus address to operator address. This mapping is used
-// to obtain the operator address from its consensus public key, which is sent to the
-// coordinator chain by a subscriber chain for slashing.
-func (k *Keeper) DeleteOperatorAddressForChainIDAndConsAddr(
-	ctx sdk.Context, chainID string, consAddr sdk.ConsAddress,
-) {
-	store := ctx.KVStore(k.storeKey)
-	store.Delete(types.KeyForChainIDAndConsKeyToOperator(chainID, consAddr))
 }
 
 // SetHooks stores the given hooks implementations.
@@ -349,13 +338,13 @@ func (k *Keeper) InitiateOperatorKeyRemovalForChainID(
 	}
 	store := ctx.KVStore(k.storeKey)
 	store.Set(types.KeyForOperatorKeyRemovalForChainID(opAccAddr, chainID), []byte{})
-	k.Hooks().AfterOperatorOptOutInitiated(ctx, opAccAddr, chainID, key)
+	k.Hooks().AfterOperatorKeyRemovalInitiated(ctx, opAccAddr, chainID, key)
 	return nil
 }
 
 // IsOperatorRemovingKeyFromChainID returns true if the operator is removing the consensus
 // key from the given chain id.
-func (k *Keeper) IsOperatorRemovingKeyFromChainID(
+func (k Keeper) IsOperatorRemovingKeyFromChainID(
 	ctx sdk.Context, opAccAddr sdk.AccAddress, chainID string,
 ) bool {
 	store := ctx.KVStore(k.storeKey)
@@ -363,18 +352,36 @@ func (k *Keeper) IsOperatorRemovingKeyFromChainID(
 	return bz != nil
 }
 
-// CompleteOperatorRemovingKeyFromChainID completes the operator key removal from the given
+// CompleteOperatorKeyRemovalForChainID completes the operator key removal from the given
 // chain id.
-func (k *Keeper) CompleteKeyRemovalForChainID(
+func (k Keeper) CompleteOperatorKeyRemovalForChainID(
 	ctx sdk.Context, opAccAddr sdk.AccAddress, chainID string,
-) {
-	if k.IsOperatorRemovingKeyFromChainID(ctx, opAccAddr, chainID) {
-		store := ctx.KVStore(k.storeKey)
-		store.Delete(types.KeyForOperatorKeyRemovalForChainID(opAccAddr, chainID))
+) error {
+	// check if we are an operator
+	if !k.IsOperator(ctx, opAccAddr) {
+		return delegationtypes.ErrOperatorNotExist
 	}
+	// validate chian id
+	if chainID != ctx.ChainID() {
+		return types.ErrUnknownChainID
+	}
+	// check if the operator is opting out as we speak
+	if !k.IsOperatorRemovingKeyFromChainID(ctx, opAccAddr, chainID) {
+		return types.ErrOperatorNotRemovingKey
+	}
+	store := ctx.KVStore(k.storeKey)
+	// get previous key to calculate consensus address
+	_, prevKey := k.getOperatorConsKeyForChainID(ctx, opAccAddr, chainID)
+	// #nosec G703 // already validated
+	consAddr, _ := types.TMCryptoPublicKeyToConsAddr(prevKey)
+	store.Delete(types.KeyForOperatorAndChainIDToConsKey(opAccAddr, chainID))
+	store.Delete(types.KeyForChainIDAndOperatorToConsKey(chainID, opAccAddr))
+	store.Delete(types.KeyForChainIDAndConsKeyToOperator(chainID, consAddr))
+	store.Delete(types.KeyForOperatorKeyRemovalForChainID(opAccAddr, chainID))
+	return nil
 }
 
-func (k *Keeper) GetActiveOperatorsForChainID(
+func (k Keeper) GetActiveOperatorsForChainID(
 	ctx sdk.Context, chainID string,
 ) ([]sdk.AccAddress, []*tmprotocrypto.PublicKey) {
 	operatorsAddr, pks := k.GetOperatorsForChainID(ctx, chainID)
@@ -396,7 +403,7 @@ func (k *Keeper) GetActiveOperatorsForChainID(
 	return activeOperator, activePks
 }
 
-func (k *Keeper) ValidatorByConsAddrForChainID(
+func (k Keeper) ValidatorByConsAddrForChainID(
 	ctx sdk.Context, consAddr sdk.ConsAddress, chainID string,
 ) stakingtypes.ValidatorI {
 	found, operatorAddr := k.GetOperatorAddressForChainIDAndConsAddr(

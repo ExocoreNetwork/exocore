@@ -34,7 +34,7 @@ func (wrapper DelegationHooksWrapper) AfterUndelegationStarted(
 	ctx sdk.Context, operator sdk.AccAddress, recordKey []byte,
 ) error {
 	var unbondingCompletionEpoch int64
-	if wrapper.keeper.operatorKeeper.IsOperatorOptingOutFromChainID(
+	if wrapper.keeper.operatorKeeper.IsOperatorRemovingKeyFromChainID(
 		ctx, operator, ctx.ChainID(),
 	) {
 		// if the operator is opting out, we need to use the finish epoch of the opt out.

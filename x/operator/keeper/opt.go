@@ -8,6 +8,7 @@ import (
 	errorsmod "cosmossdk.io/errors"
 	sdkmath "cosmossdk.io/math"
 
+	delegationtypes "github.com/ExocoreNetwork/exocore/x/delegation/types"
 	"github.com/ExocoreNetwork/exocore/x/operator/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -207,13 +208,26 @@ func (k *Keeper) OptIn(ctx sdk.Context, operatorAddress sdk.AccAddress, avsAddr 
 
 // OptOut call this function to opt out of AVS
 func (k *Keeper) OptOut(ctx sdk.Context, operatorAddress sdk.AccAddress, avsAddr string) error {
+	if !k.IsOperator(ctx, operatorAddress) {
+		return delegationtypes.ErrOperatorNotExist
+	}
 	// check optedIn info
 	if !k.IsOptedIn(ctx, operatorAddress.String(), avsAddr) {
 		return types.ErrNotOptedIn
 	}
-	if avsAddr == ctx.ChainID() {
-		if !k.IsOperatorRemovingKeyFromChainID(ctx, operatorAddress, avsAddr) {
-			return types.ErrOperatorNotRemovingKey
+	if !common.IsHexAddress(avsAddr) {
+		if avsAddr == ctx.ChainID() {
+			found, _ := k.getOperatorConsKeyForChainID(ctx, operatorAddress, avsAddr)
+			if found {
+				// if the key exists, it should be in the process of being removed.
+				// TODO: if slashing is moved to a snapshot approach, opt out should only be
+				// performed if the key doesn't exist.
+				if !k.IsOperatorRemovingKeyFromChainID(ctx, operatorAddress, avsAddr) {
+					return types.ErrOperatorNotRemovingKey
+				}
+			}
+		} else {
+			return types.ErrInvalidAvsAddr
 		}
 	}
 

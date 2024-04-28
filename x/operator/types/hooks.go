@@ -13,18 +13,18 @@ func NewMultiOperatorHooks(hooks ...OperatorHooks) MultiOperatorHooks {
 	return hooks
 }
 
-func (hooks MultiOperatorHooks) AfterOperatorOptIn(
+func (hooks MultiOperatorHooks) AfterOperatorKeySet(
 	ctx sdk.Context,
 	addr sdk.AccAddress,
 	chainID string,
 	pubKey *tmprotocrypto.PublicKey,
 ) {
 	for _, hook := range hooks {
-		hook.AfterOperatorOptIn(ctx, addr, chainID, pubKey)
+		hook.AfterOperatorKeySet(ctx, addr, chainID, pubKey)
 	}
 }
 
-func (hooks MultiOperatorHooks) AfterOperatorKeyReplacement(
+func (hooks MultiOperatorHooks) AfterOperatorKeyReplaced(
 	ctx sdk.Context,
 	addr sdk.AccAddress,
 	oldKey *tmprotocrypto.PublicKey,
@@ -32,14 +32,14 @@ func (hooks MultiOperatorHooks) AfterOperatorKeyReplacement(
 	chainID string,
 ) {
 	for _, hook := range hooks {
-		hook.AfterOperatorKeyReplacement(ctx, addr, oldKey, newAddr, chainID)
+		hook.AfterOperatorKeyReplaced(ctx, addr, oldKey, newAddr, chainID)
 	}
 }
 
-func (hooks MultiOperatorHooks) AfterOperatorOptOutInitiated(
+func (hooks MultiOperatorHooks) AfterOperatorKeyRemovalInitiated(
 	ctx sdk.Context, addr sdk.AccAddress, chainID string, key *tmprotocrypto.PublicKey,
 ) {
 	for _, hook := range hooks {
-		hook.AfterOperatorOptOutInitiated(ctx, addr, chainID, key)
+		hook.AfterOperatorKeyRemovalInitiated(ctx, addr, chainID, key)
 	}
 }
