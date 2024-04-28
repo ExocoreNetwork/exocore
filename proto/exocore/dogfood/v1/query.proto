@@ -2,6 +2,7 @@ syntax = "proto3";
 
 package exocore.dogfood.v1;
 
+import "exocore/dogfood/v1/dogfood.proto";
 import "exocore/dogfood/v1/params.proto";
 import "gogoproto/gogo.proto";
 import "google/api/annotations.proto";
@@ -10,9 +11,14 @@ option go_package = "github.com/ExocoreNetwork/exocore/x/dogfood/types";
 
 // Query defines the gRPC querier service.
 service Query {
-  // Parameters queries the parameters of the module.
+  // Params queries the parameters of the module.
   rpc Params(QueryParamsRequest) returns (QueryParamsResponse) {
     option (google.api.http).get = "/exocore/dogfood/params";
+  }
+
+  // OptOutsToFinish queries the operators whose opt-outs will finish at the given epoch.
+  rpc OptOutsToFinish(QueryOptOutsToFinishRequest) returns (AccountAddresses) {
+    option (google.api.http).get = "/exocore/dogfood/opt_outs_to_finish/{epoch}";
   }
 }
 
@@ -23,4 +29,10 @@ message QueryParamsRequest {}
 message QueryParamsResponse {
   // params holds all the parameters of this module.
   Params params = 1 [(gogoproto.nullable) = false];
+}
+
+// QueryOptOutsToFinishRequest is request type for the Query/OptOutsToFinish RPC method.
+message QueryOptOutsToFinishRequest {
+  // epoch is the epoch to query opt-outs for.
+  int64 epoch = 1;
 }

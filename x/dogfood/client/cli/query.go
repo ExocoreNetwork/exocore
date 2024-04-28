@@ -2,6 +2,8 @@ package cli
 
 import (
 	"fmt"
+	"strconv"
+
 	// "strings"
 
 	"github.com/spf13/cobra"
@@ -30,6 +32,7 @@ func GetQueryCmd(string) *cobra.Command {
 	}
 
 	cmd.AddCommand(CmdQueryParams())
+	cmd.AddCommand(CmdQueryOptOutsToFinish())
 
 	return cmd
 }
@@ -48,6 +51,38 @@ func CmdQueryParams() *cobra.Command {
 			queryClient := types.NewQueryClient(clientCtx)
 
 			res, err := queryClient.Params(cmd.Context(), &types.QueryParamsRequest{})
+			if err != nil {
+				return err
+			}
+
+			return clientCtx.PrintProto(res)
+		},
+	}
+
+	flags.AddQueryFlagsToCmd(cmd)
+
+	return cmd
+}
+
+func CmdQueryOptOutsToFinish() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "opt-outs-to-finish [epoch]",
+		Short: "shows the operator addresses whose opt out matures at the provided epoch",
+		Args:  cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx, err := client.GetClientQueryContext(cmd)
+			if err != nil {
+				return err
+			}
+			queryClient := types.NewQueryClient(clientCtx)
+			epoch := args[0]
+			cEpoch, err := strconv.ParseInt(epoch, 10, 64)
+			if err != nil {
+				return err
+			}
+			res, err := queryClient.OptOutsToFinish(
+				cmd.Context(), &types.QueryOptOutsToFinishRequest{Epoch: cEpoch},
+			)
 			if err != nil {
 				return err
 			}
