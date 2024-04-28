@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 
-	"github.com/ExocoreNetwork/exocore/x/operator/types"
 	operatortypes "github.com/ExocoreNetwork/exocore/x/operator/types"
 	tmprotocrypto "github.com/cometbft/cometbft/proto/tendermint/crypto"
 	"github.com/cosmos/cosmos-sdk/store/prefix"
@@ -65,7 +64,7 @@ func (k Keeper) QueryOperatorConsAddressForChainID(
 	if !found {
 		return nil, errors.New("no key assigned")
 	}
-	consAddr, err := types.TMCryptoPublicKeyToConsAddr(key)
+	consAddr, err := operatortypes.TMCryptoPublicKeyToConsAddr(key)
 	if err != nil {
 		return nil, err
 	}
@@ -88,7 +87,7 @@ func (k Keeper) QueryAllOperatorKeysByChainID(
 	)
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), chainPrefix)
 	pageRes, err := query.Paginate(store, req.Pagination, func(key []byte, value []byte) error {
-		addr := sdk.AccAddress(key[:])
+		addr := sdk.AccAddress(key)
 		ret := &tmprotocrypto.PublicKey{}
 		// don't use MustUnmarshal to not panic for queries
 		if err := ret.Unmarshal(value); err != nil {
@@ -123,13 +122,13 @@ func (k Keeper) QueryAllOperatorConsAddrsByChainID(
 	)
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), chainPrefix)
 	pageRes, err := query.Paginate(store, req.Pagination, func(key []byte, value []byte) error {
-		addr := sdk.AccAddress(key[:])
+		addr := sdk.AccAddress(key)
 		ret := &tmprotocrypto.PublicKey{}
 		// don't use MustUnmarshal to not panic for queries
 		if err := ret.Unmarshal(value); err != nil {
 			return err
 		}
-		consAddr, err := types.TMCryptoPublicKeyToConsAddr(ret)
+		consAddr, err := operatortypes.TMCryptoPublicKeyToConsAddr(ret)
 		if err != nil {
 			return err
 		}

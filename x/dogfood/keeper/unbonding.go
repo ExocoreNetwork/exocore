@@ -2,17 +2,18 @@ package keeper
 
 import (
 	"github.com/ExocoreNetwork/exocore/x/dogfood/types"
-	tmprotocrypto "github.com/cometbft/cometbft/proto/tendermint/crypto"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-// SetUnbondingInformation sets information related to an operator's opt out or key replacement.
-func (k Keeper) SetUnbondingInformation(
-	ctx sdk.Context, addr sdk.AccAddress, pubKey *tmprotocrypto.PublicKey,
+// SetOptOutInformation sets information related to an operator's opt out.
+func (k Keeper) SetOptOutInformation(
+	ctx sdk.Context, addr sdk.AccAddress,
 ) {
 	unbondingCompletionEpoch := k.GetUnbondingCompletionEpoch(ctx)
 	k.AppendOptOutToFinish(ctx, unbondingCompletionEpoch, addr)
 	k.SetOperatorOptOutFinishEpoch(ctx, addr, unbondingCompletionEpoch)
+	// CompleteOperatorKeyRemovalForChainID calls DeleteOperatorAddressForChainIDAndConsAddr,
+	// so we do not need to save ConsensusAddrToPrune in the unbonding case.
 }
 
 // GetUnbondingCompletionEpoch returns the epoch at the end of which

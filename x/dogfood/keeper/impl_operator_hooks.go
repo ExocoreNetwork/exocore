@@ -35,8 +35,8 @@ func (h OperatorHooksWrapper) AfterOperatorKeySet(
 // CONTRACT: key replacement from newKey to oldKey is not allowed, after a replacement from
 // oldKey to newKey.
 func (h OperatorHooksWrapper) AfterOperatorKeyReplaced(
-	ctx sdk.Context, operator sdk.AccAddress, oldKey *tmprotocrypto.PublicKey,
-	newKey *tmprotocrypto.PublicKey, chainID string,
+	ctx sdk.Context, _ sdk.AccAddress, oldKey *tmprotocrypto.PublicKey,
+	_ *tmprotocrypto.PublicKey, chainID string,
 ) {
 	// the impact of key replacement is:
 	// 1. vote power of old key is 0, which happens automatically at epoch end in EndBlock. this
@@ -61,7 +61,7 @@ func (h OperatorHooksWrapper) AfterOperatorKeyReplaced(
 
 // AfterOperatorKeyRemovalInitiated is the implementation of the operator hooks.
 func (h OperatorHooksWrapper) AfterOperatorKeyRemovalInitiated(
-	ctx sdk.Context, operator sdk.AccAddress, chainID string, key *tmprotocrypto.PublicKey,
+	ctx sdk.Context, operator sdk.AccAddress, chainID string, _ *tmprotocrypto.PublicKey,
 ) {
 	// the impact of key removal is:
 	// 1. vote power of the operator is 0, which happens automatically at epoch end in EndBlock.
@@ -69,6 +69,6 @@ func (h OperatorHooksWrapper) AfterOperatorKeyRemovalInitiated(
 	// keys from the chain.
 	// 2. X epochs later, the removal is marked complete in the operator module.
 	if chainID == ctx.ChainID() {
-		h.keeper.SetUnbondingInformation(ctx, operator, key)
+		h.keeper.SetOptOutInformation(ctx, operator)
 	}
 }

@@ -4,6 +4,7 @@ import (
 	"strings"
 
 	sdkmath "cosmossdk.io/math"
+	"github.com/ExocoreNetwork/exocore/testutil/tx"
 	assetstypes "github.com/ExocoreNetwork/exocore/x/assets/types"
 	delegationtype "github.com/ExocoreNetwork/exocore/x/delegation/types"
 	"github.com/ExocoreNetwork/exocore/x/deposit/keeper"
@@ -28,7 +29,7 @@ func (suite *OperatorTestSuite) prepare() {
 	usdtAddress := common.HexToAddress("0xdAC17F958D2ee523a2206206994597C13D831ec7")
 	clientChainLzID := uint64(101)
 
-	suite.avsAddr = "avsTestAddr"
+	suite.avsAddr = common.Bytes2Hex(tx.GenerateAddress().Bytes())
 	suite.operatorAddr = opAccAddr
 	suite.assetAddr = usdtAddress
 	suite.assetDecimal = 6

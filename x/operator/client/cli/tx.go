@@ -48,7 +48,7 @@ func CmdRegisterOperator() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "register-operator",
 		Short: "register to become an operator",
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(cmd *cobra.Command, _ []string) error {
 			clientCtx, err := client.GetClientTxContext(cmd)
 			if err != nil {
 				return err

@@ -40,18 +40,20 @@ func (k *Keeper) SetOperatorInfo(
 	// TODO: add minimum commission rate module parameter and check that commission exceeds it.
 	info.Commission.UpdateTime = ctx.BlockTime()
 
-	for _, data := range info.ClientChainEarningsAddr.EarningInfoList {
-		if data.ClientChainEarningAddr == "" {
-			return errorsmod.Wrap(
-				operatortypes.ErrParameterInvalid,
-				"SetOperatorInfo: client chain earning address is empty",
-			)
-		}
-		if !k.assetsKeeper.ClientChainExists(ctx, data.LzClientChainID) {
-			return errorsmod.Wrap(
-				operatortypes.ErrParameterInvalid,
-				"SetOperatorInfo: client chain not found",
-			)
+	if info.ClientChainEarningsAddr != nil {
+		for _, data := range info.ClientChainEarningsAddr.EarningInfoList {
+			if data.ClientChainEarningAddr == "" {
+				return errorsmod.Wrap(
+					operatortypes.ErrParameterInvalid,
+					"SetOperatorInfo: client chain earning address is empty",
+				)
+			}
+			if !k.assetsKeeper.ClientChainExists(ctx, data.LzClientChainID) {
+				return errorsmod.Wrap(
+					operatortypes.ErrParameterInvalid,
+					"SetOperatorInfo: client chain not found",
+				)
+			}
 		}
 	}
 
