@@ -9,9 +9,34 @@ import (
 
 var _ types.MsgServer = &Keeper{}
 
+// RegisterOperator is an implementation of the msg server for the operator module.
 func (k *Keeper) RegisterOperator(ctx context.Context, req *types.RegisterOperatorReq) (*types.RegisterOperatorResponse, error) {
 	c := sdk.UnwrapSDKContext(ctx)
 	err := k.SetOperatorInfo(c, req.FromAddress, req.Info)
+	if err != nil {
+		return nil, err
+	}
+	return nil, nil
+}
+
+// OptIntoAVS is an implementation of the msg server for the operator module.
+func (k Keeper) OptIntoAVS(ctx context.Context, req *types.OptIntoAVSReq) (*types.OptIntoAVSResponse, error) {
+	c := sdk.UnwrapSDKContext(ctx)
+	// #nosec G703 // already validated
+	accAddr, _ := sdk.AccAddressFromBech32(req.FromAddress)
+	err := k.OptIn(c, accAddr, req.AvsAddress)
+	if err != nil {
+		return nil, err
+	}
+	return nil, nil
+}
+
+// OptOutOfAVS is an implementation of the msg server for the operator module.
+func (k Keeper) OptOutOfAVS(ctx context.Context, req *types.OptOutOfAVSReq) (*types.OptOutOfAVSResponse, error) {
+	c := sdk.UnwrapSDKContext(ctx)
+	// #nosec G703 // already validated
+	accAddr, _ := sdk.AccAddressFromBech32(req.FromAddress)
+	err := k.OptOut(c, accAddr, req.AvsAddress)
 	if err != nil {
 		return nil, err
 	}

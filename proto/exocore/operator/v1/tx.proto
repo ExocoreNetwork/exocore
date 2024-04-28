@@ -201,4 +201,9 @@ service Msg {
   // as long as the chain's unbonding period to complete, plus some loose change
   // for message relaying across chains.
   rpc InitOptOutFromCosmosChain(InitOptOutFromCosmosChainRequest) returns (InitOptOutFromCosmosChainResponse) {};
+
+  // OptIntoAVS opts an operator into an AVS.
+  rpc OptIntoAVS(OptIntoAVSReq) returns (OptIntoAVSResponse);
+  // OptOutOfAVS opts an operator out of an AVS.
+  rpc OptOutOfAVS(OptOutOfAVSReq) returns (OptOutOfAVSResponse);
 }
