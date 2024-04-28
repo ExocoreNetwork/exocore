@@ -1,6 +1,7 @@
 syntax = "proto3";
 package exocore.operator.v1;
 
+import "cosmos/base/query/v1beta1/pagination.proto";
 import "cosmos_proto/cosmos.proto";
 import "exocore/operator/v1/tx.proto";
 import "gogoproto/gogo.proto";
@@ -21,7 +22,7 @@ message QueryOperatorConsKeyRequest {
   // addr is the ACC address of operator
   string addr = 1;
   // chain_id is the id of the chain served by the operator
-  string chain_id = 2;
+  string chain_id = 2 [(gogoproto.customname) = "ChainID"];
 }
 
 // QueryOperatorConsKeyResponse is the response for QueryOperatorConsKeyRequest
@@ -30,18 +31,53 @@ message QueryOperatorConsKeyResponse {
   tendermint.crypto.PublicKey public_key = 1 [ (gogoproto.nullable) = false ];
 }
 
+// QueryAllOperatorsByChainIDRequest is the request to obtain all operator addresses
+// and consensus keys for a specific chain ID, with pagination.
+message QueryAllOperatorsByChainIDRequest {
+  // chain_id to query for operator info.
+  string chain_id = 1 [(gogoproto.customname) = "ChainID"];
+  // pagination related options.
+  cosmos.base.query.v1beta1.PageRequest pagination = 2;
+}
+
+// QueryAllOperatorsByChainIDResponse is the response that includes a list of all operators
+// and their consensus keys for a specified chain ID.
+message QueryAllOperatorsByChainIDResponse {
+  // operator_cons_keys is a list of operator addresses and their consensus public key.
+  repeated OperatorConsKeyPair operator_cons_keys = 1;
+  // pagination related response.
+  cosmos.base.query.v1beta1.PageResponse pagination = 2;
+}
+
+// OperatorConsKeyPair holds the operator address and the corresponding consensus public key.
+message OperatorConsKeyPair {
+  // operator_addr is the operator address.
+  string operator_addr = 1;
+  // public_key is the consensus public key of the operator.
+  tendermint.crypto.PublicKey public_key = 2;
+}
+
 // Query defines the gRPC querier service.
 service Query {
   // OperatorInfo queries the operator information.
-  rpc GetOperatorInfo(GetOperatorInfoReq) returns(OperatorInfo){
-    option (google.api.http).get = "/exocore/delegation/v1/GetOperatorInfo";
+  rpc GetOperatorInfo(GetOperatorInfoReq) returns (OperatorInfo) {
+    option (google.api.http).get = "/exocore/operator/v1/GetOperatorInfo";
   }
 
   // QueryOperatorConsKeyForChainID queries the consensus public key for the operator
   rpc QueryOperatorConsKeyForChainID(QueryOperatorConsKeyRequest) returns (QueryOperatorConsKeyResponse) {
     option (google.api.http) = {
-      get: "/exocore/operator_consent/v1/GetOperatorConsKey/{addr}/{chain_id}"
+      get: "/exocore/operator/v1/GetOperatorConsKey/{addr}/{chain_id}"
+    };
+  }
+
+  // QueryAllOperatorKeysByChainID queries all operators and their consensus public keys
+  // for a specific chain ID
+  rpc QueryAllOperatorKeysByChainID(QueryAllOperatorsByChainIDRequest) returns (
+    QueryAllOperatorsByChainIDResponse
+  ) {
+    option (google.api.http) = {
+      get: "/exocore/operator/v1/all_operators/{chain_id}"
     };
   }
 }
-

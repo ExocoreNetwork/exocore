@@ -5,7 +5,10 @@ import (
 	"errors"
 
 	operatortypes "github.com/ExocoreNetwork/exocore/x/operator/types"
+	tmprotocrypto "github.com/cometbft/cometbft/proto/tendermint/crypto"
+	"github.com/cosmos/cosmos-sdk/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/types/query"
 )
 
 var _ operatortypes.QueryServer = &Keeper{}
@@ -26,7 +29,7 @@ func (k *Keeper) QueryOperatorConsKeyForChainID(
 		return nil, err
 	}
 	found, key, err := k.GetOperatorConsKeyForChainID(
-		ctx, addr, req.ChainId,
+		ctx, addr, req.ChainID,
 	)
 	if err != nil {
 		return nil, err
@@ -36,5 +39,39 @@ func (k *Keeper) QueryOperatorConsKeyForChainID(
 	}
 	return &operatortypes.QueryOperatorConsKeyResponse{
 		PublicKey: *key,
+	}, nil
+}
+
+// QueryAllOperatorKeysByChainID queries all operators for the given chain.
+func (k Keeper) QueryAllOperatorKeysByChainID(
+	goCtx context.Context,
+	req *operatortypes.QueryAllOperatorsByChainIDRequest,
+) (*operatortypes.QueryAllOperatorsByChainIDResponse, error) {
+	ctx := sdk.UnwrapSDKContext(goCtx)
+	res := make([]*operatortypes.OperatorConsKeyPair, 0)
+	chainPrefix := operatortypes.ChainIDAndAddrKey(
+		operatortypes.BytePrefixForChainIDAndOperatorToConsKey,
+		req.ChainID, nil,
+	)
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), chainPrefix)
+	pageRes, err := query.Paginate(store, req.Pagination, func(key []byte, value []byte) error {
+		addr := sdk.AccAddress(key[:])
+		ret := &tmprotocrypto.PublicKey{}
+		// don't use MustUnmarshal to not panic for queries
+		if err := ret.Unmarshal(value); err != nil {
+			return err
+		}
+		res = append(res, &operatortypes.OperatorConsKeyPair{
+			OperatorAddr: addr.String(),
+			PublicKey:    ret,
+		})
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
+	return &operatortypes.QueryAllOperatorsByChainIDResponse{
+		OperatorConsKeys: res,
+		Pagination:       pageRes,
 	}, nil
 }
