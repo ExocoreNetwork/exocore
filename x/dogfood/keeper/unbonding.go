@@ -6,26 +6,13 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-// ClearUnbondingInformation clears all information related to an operator's opt out
-// or key replacement. This is done because the operator has opted back in or has
-// replaced their key (again) with the original one.
-func (k Keeper) ClearUnbondingInformation(
-	ctx sdk.Context, addr sdk.AccAddress, pubKey *tmprotocrypto.PublicKey,
-) {
-	optOutEpoch := k.GetOperatorOptOutFinishEpoch(ctx, addr)
-	k.DeleteOperatorOptOutFinishEpoch(ctx, addr)
-	k.RemoveOptOutToFinish(ctx, optOutEpoch, addr)
-}
-
 // SetUnbondingInformation sets information related to an operator's opt out or key replacement.
 func (k Keeper) SetUnbondingInformation(
-	ctx sdk.Context, addr sdk.AccAddress, pubKey *tmprotocrypto.PublicKey, isOptingOut bool,
+	ctx sdk.Context, addr sdk.AccAddress, pubKey *tmprotocrypto.PublicKey,
 ) {
 	unbondingCompletionEpoch := k.GetUnbondingCompletionEpoch(ctx)
-	if isOptingOut {
-		k.AppendOptOutToFinish(ctx, unbondingCompletionEpoch, addr)
-		k.SetOperatorOptOutFinishEpoch(ctx, addr, unbondingCompletionEpoch)
-	}
+	k.AppendOptOutToFinish(ctx, unbondingCompletionEpoch, addr)
+	k.SetOperatorOptOutFinishEpoch(ctx, addr, unbondingCompletionEpoch)
 }
 
 // GetUnbondingCompletionEpoch returns the epoch at the end of which

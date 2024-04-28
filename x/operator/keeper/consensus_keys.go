@@ -74,7 +74,9 @@ func (k *Keeper) setOperatorConsKeyForChainID(
 			err, "SetOperatorConsKeyForChainID: cannot convert pub key to consensus address",
 		)
 	}
-	// check if the key is already in use by another operator
+	// check if the provided key is already in use by another operator. such use
+	// also includes whether it was replaced by the same operator. this check ensures
+	// that a key that has been replaced cannot be used again until it matures.
 	// even if it is the same operator, do not allow calling this function twice.
 	keyInUse, _ := k.GetOperatorAddressForChainIDAndConsAddr(ctx, chainID, consAddr)
 	if keyInUse {
@@ -415,4 +417,14 @@ func (k Keeper) ValidatorByConsAddrForChainID(
 		Jailed:          jailed,
 		OperatorAddress: sdk.ValAddress(operatorAddr).String(),
 	}
+}
+
+// DeleteOperatorAddressForChainIDAndConsAddr is a pruning method used to delete the
+// mapping from chain id and consensus address to operator address. This mapping is used
+// to obtain the operator address from its consensus public key when slashing.
+func (k Keeper) DeleteOperatorAddressForChainIDAndConsAddr(
+	ctx sdk.Context, chainID string, consAddr sdk.ConsAddress,
+) {
+	store := ctx.KVStore(k.storeKey)
+	store.Delete(types.KeyForChainIDAndConsKeyToOperator(chainID, consAddr))
 }

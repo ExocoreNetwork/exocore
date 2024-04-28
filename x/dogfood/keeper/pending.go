@@ -32,6 +32,36 @@ func (k Keeper) ClearPendingOptOuts(ctx sdk.Context) {
 	store.Delete(types.PendingOptOutsKey())
 }
 
+// SetPendingConsensusAddrs sets the pending consensus addresses to be pruned at the end of the
+// block.
+func (k Keeper) SetPendingConsensusAddrs(ctx sdk.Context, addrs types.ConsensusAddresses) {
+	store := ctx.KVStore(k.storeKey)
+	bz := k.cdc.MustMarshal(&addrs)
+	store.Set(types.PendingConsensusAddrsKey(), bz)
+}
+
+// GetPendingConsensusAddrs returns the pending consensus addresses to be pruned at the end of
+// the block.
+func (k Keeper) GetPendingConsensusAddrs(ctx sdk.Context) types.ConsensusAddresses {
+	store := ctx.KVStore(k.storeKey)
+	bz := store.Get(types.PendingConsensusAddrsKey())
+	if bz == nil {
+		return types.ConsensusAddresses{}
+	}
+	var addrs types.ConsensusAddresses
+	if err := addrs.Unmarshal(bz); err != nil {
+		return types.ConsensusAddresses{}
+	}
+	return addrs
+}
+
+// ClearPendingConsensusAddrs clears the pending consensus addresses to be pruned at the end of
+// the block.
+func (k Keeper) ClearPendingConsensusAddrs(ctx sdk.Context) {
+	store := ctx.KVStore(k.storeKey)
+	store.Delete(types.PendingConsensusAddrsKey())
+}
+
 // SetPendingUndelegations sets the pending undelegations to be released at the end of the
 // block.
 func (k Keeper) SetPendingUndelegations(

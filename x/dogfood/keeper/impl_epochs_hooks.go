@@ -37,7 +37,16 @@ func (wrapper EpochsHooksWrapper) AfterEpochEnd(
 		// find the opt outs that mature when this epoch ends, and move them to pending.
 		optOuts := wrapper.keeper.GetOptOutsToFinish(ctx, epoch)
 		wrapper.keeper.SetPendingOptOuts(ctx, types.AccountAddresses{List: optOuts})
+		for _, addr := range optOuts {
+			wrapper.keeper.DeleteOperatorOptOutFinishEpoch(ctx, addr)
+		}
 		wrapper.keeper.ClearOptOutsToFinish(ctx, epoch)
+		// next, find the consensus addresses that are to be pruned, and move them to pending.
+		consAddresses := wrapper.keeper.GetConsensusAddrsToPrune(ctx, epoch)
+		wrapper.keeper.SetPendingConsensusAddrs(
+			ctx, types.ConsensusAddresses{List: consAddresses},
+		)
+		wrapper.keeper.ClearConsensusAddrsToPrune(ctx, epoch)
 		// finally, find the undelegations that mature when this epoch ends, and move them to
 		// pending.
 		undelegations := wrapper.keeper.GetUndelegationsToMature(ctx, epoch)

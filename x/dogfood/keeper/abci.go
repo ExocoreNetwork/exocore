@@ -31,6 +31,16 @@ func (k Keeper) EndBlock(ctx sdk.Context) []abci.ValidatorUpdate {
 		_ = k.operatorKeeper.CompleteOperatorKeyRemovalForChainID(ctx, addr, ctx.ChainID())
 	}
 	k.ClearPendingOptOuts(ctx)
+	// for slashing, the operator module is required to store a mapping of chain id + cons addr
+	// to operator address. this information can now be pruned, since the opt out is considered
+	// complete.
+	consensusAddrs := k.GetPendingConsensusAddrs(ctx)
+	for _, consensusAddr := range consensusAddrs.GetList() {
+		k.operatorKeeper.DeleteOperatorAddressForChainIDAndConsAddr(
+			ctx, ctx.ChainID(), consensusAddr,
+		)
+	}
+	k.ClearPendingConsensusAddrs(ctx)
 	// finally, perform the actual operations of vote power changes.
 	// 1. find all operator keys for the chain.
 	// 2. find last stored operator keys + their powers.
