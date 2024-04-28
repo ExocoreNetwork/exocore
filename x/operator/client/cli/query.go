@@ -24,7 +24,8 @@ func GetQueryCmd() *cobra.Command {
 		GetOperatorInfo(),
 		GetOperatorConsKey(),
 		GetOperatorConsAddress(),
-		GetAllOperatorsByChainID(),
+		GetAllOperatorKeys(),
+		GetAllOperatorConsAddrs(),
 	)
 	return cmd
 }
@@ -88,8 +89,9 @@ func GetOperatorConsKey() *cobra.Command {
 	return cmd
 }
 
-// GetAllOperatorsByChainID queries all operators for the provided chain ID
-func GetAllOperatorsByChainID() *cobra.Command {
+// GetAllOperatorKeys queries all operators for the provided chain ID and their
+// consensus keys
+func GetAllOperatorKeys() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "get-all-operators-by-chain-id <chain_id>",
 		Short: "Get all operators for the provided chain ID",
@@ -106,7 +108,7 @@ func GetAllOperatorsByChainID() *cobra.Command {
 			}
 
 			queryClient := operatortypes.NewQueryClient(clientCtx)
-			req := &operatortypes.QueryAllOperatorsByChainIDRequest{
+			req := &operatortypes.QueryAllOperatorKeysByChainIDRequest{
 				ChainID:    args[0],
 				Pagination: pageReq,
 			}
@@ -141,6 +143,42 @@ func GetOperatorConsAddress() *cobra.Command {
 				ChainID: args[0],
 			}
 			res, err := queryClient.QueryOperatorConsAddressForChainID(
+				context.Background(), req,
+			)
+			if err != nil {
+				return err
+			}
+			return clientCtx.PrintProto(res)
+		},
+	}
+	flags.AddQueryFlagsToCmd(cmd)
+	return cmd
+}
+
+// GetAllOperatorConsAddrs queries all operators for the provided chain ID and their
+// consensus addresses
+func GetAllOperatorConsAddrs() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "get-all-operator-cons-addrs <chain_id>",
+		Short: "Get all operators for the provided chain ID",
+		Long:  "Get all operators for the provided chain ID",
+		Args:  cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx, err := client.GetClientQueryContext(cmd)
+			if err != nil {
+				return err
+			}
+			pageReq, err := client.ReadPageRequest(cmd.Flags())
+			if err != nil {
+				return err
+			}
+
+			queryClient := operatortypes.NewQueryClient(clientCtx)
+			req := &operatortypes.QueryAllOperatorConsAddrsByChainIDRequest{
+				ChainID:    args[0],
+				Pagination: pageReq,
+			}
+			res, err := queryClient.QueryAllOperatorConsAddrsByChainID(
 				context.Background(), req,
 			)
 			if err != nil {

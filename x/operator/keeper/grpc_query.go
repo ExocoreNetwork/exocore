@@ -74,11 +74,12 @@ func (k Keeper) QueryOperatorConsAddressForChainID(
 	}, nil
 }
 
-// QueryAllOperatorKeysByChainID queries all operators for the given chain.
+// QueryAllOperatorKeysByChainID queries all operators for the given chain and returns
+// their consensus keys.
 func (k Keeper) QueryAllOperatorKeysByChainID(
 	goCtx context.Context,
-	req *operatortypes.QueryAllOperatorsByChainIDRequest,
-) (*operatortypes.QueryAllOperatorsByChainIDResponse, error) {
+	req *operatortypes.QueryAllOperatorKeysByChainIDRequest,
+) (*operatortypes.QueryAllOperatorKeysByChainIDResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 	res := make([]*operatortypes.OperatorConsKeyPair, 0)
 	chainPrefix := operatortypes.ChainIDAndAddrKey(
@@ -102,8 +103,47 @@ func (k Keeper) QueryAllOperatorKeysByChainID(
 	if err != nil {
 		return nil, err
 	}
-	return &operatortypes.QueryAllOperatorsByChainIDResponse{
+	return &operatortypes.QueryAllOperatorKeysByChainIDResponse{
 		OperatorConsKeys: res,
 		Pagination:       pageRes,
+	}, nil
+}
+
+// QueryAllOperatorConsAddrsByChainID queries all operators for the given chain and returns
+// their consensus addresses.
+func (k Keeper) QueryAllOperatorConsAddrsByChainID(
+	goCtx context.Context,
+	req *operatortypes.QueryAllOperatorConsAddrsByChainIDRequest,
+) (*operatortypes.QueryAllOperatorConsAddrsByChainIDResponse, error) {
+	ctx := sdk.UnwrapSDKContext(goCtx)
+	res := make([]*operatortypes.OperatorConsAddrPair, 0)
+	chainPrefix := operatortypes.ChainIDAndAddrKey(
+		operatortypes.BytePrefixForChainIDAndOperatorToConsKey,
+		req.ChainID, nil,
+	)
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), chainPrefix)
+	pageRes, err := query.Paginate(store, req.Pagination, func(key []byte, value []byte) error {
+		addr := sdk.AccAddress(key[:])
+		ret := &tmprotocrypto.PublicKey{}
+		// don't use MustUnmarshal to not panic for queries
+		if err := ret.Unmarshal(value); err != nil {
+			return err
+		}
+		consAddr, err := types.TMCryptoPublicKeyToConsAddr(ret)
+		if err != nil {
+			return err
+		}
+		res = append(res, &operatortypes.OperatorConsAddrPair{
+			OperatorAddr: addr.String(),
+			ConsAddress:  consAddr.String(),
+		})
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
+	return &operatortypes.QueryAllOperatorConsAddrsByChainIDResponse{
+		OperatorConsAddrs: res,
+		Pagination:        pageRes,
 	}, nil
 }
