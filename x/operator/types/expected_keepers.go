@@ -21,7 +21,6 @@ type AssetsKeeper interface {
 		ctx sdk.Context,
 		f func(operatorAddr, assetID string, state *assetstype.OperatorAssetInfo) error,
 	) error
-	AppChainInfoIsExist(ctx sdk.Context, chainID string) bool
 	GetOperatorAssetInfos(
 		ctx sdk.Context, operatorAddr sdk.Address, _ map[string]interface{},
 	) (assetsInfo map[string]*assetstype.OperatorAssetInfo, err error)

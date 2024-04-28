@@ -211,6 +211,11 @@ func (k *Keeper) OptOut(ctx sdk.Context, operatorAddress sdk.AccAddress, avsAddr
 	if !k.IsOptedIn(ctx, operatorAddress.String(), avsAddr) {
 		return types.ErrNotOptedIn
 	}
+	if avsAddr == ctx.ChainID() {
+		if !k.IsOperatorRemovingKeyFromChainID(ctx, operatorAddress, avsAddr) {
+			return types.ErrOperatorNotRemovingKey
+		}
+	}
 
 	// get the assets supported by the AVS
 	avsSupportedAssets, err := k.avsKeeper.GetAvsSupportedAssets(ctx, avsAddr)

@@ -49,7 +49,7 @@ const (
 	BytePrefixForOperatorAndChainIDToPrevConsKey
 	BytePrefixForChainIDAndOperatorToConsKey
 	BytePrefixForChainIDAndConsKeyToOperator
-	BytePrefixForOperatorOptOutFromChainID
+	BytePrefixForOperatorKeyRemovalForChainID
 )
 
 var (
@@ -146,9 +146,9 @@ func KeyForChainIDAndConsKeyToOperator(chainID string, addr sdk.ConsAddress) []b
 	)
 }
 
-func KeyForOperatorOptOutFromChainID(addr sdk.AccAddress, chainID string) []byte {
+func KeyForOperatorKeyRemovalForChainID(addr sdk.AccAddress, chainID string) []byte {
 	return AppendMany(
-		[]byte{BytePrefixForOperatorOptOutFromChainID}, addr,
+		[]byte{BytePrefixForOperatorKeyRemovalForChainID}, addr,
 		ChainIDWithLenKey(chainID),
 	)
 }

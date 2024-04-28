@@ -58,8 +58,8 @@ var (
 		"consensus key already in use by another operator",
 	)
 
-	ErrAlreadyOptingOut = errorsmod.Register(
-		ModuleName, 11, "operator already opting out",
+	ErrAlreadyRemovingKey = errorsmod.Register(
+		ModuleName, 11, "operator already removing consensus key",
 	)
 
 	ErrInvalidPubKey = errorsmod.Register(
@@ -80,5 +80,15 @@ var (
 	ErrOperatorAlreadyExists = errorsmod.Register(
 		ModuleName, 15,
 		"operator already exists",
+	)
+
+	ErrUnknownChainID = errorsmod.Register(
+		ModuleName, 16,
+		"unknown chain id",
+	)
+
+	ErrOperatorNotRemovingKey = errorsmod.Register(
+		ModuleName, 17,
+		"operator not removing key",
 	)
 )
