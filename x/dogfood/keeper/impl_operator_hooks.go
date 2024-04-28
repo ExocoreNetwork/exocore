@@ -22,7 +22,7 @@ func (k *Keeper) OperatorHooks() OperatorHooksWrapper {
 // AfterOperatorKeySet is the implementation of the operator hooks.
 // CONTRACT: an operator cannot set their key if they are already in the process of removing it.
 func (h OperatorHooksWrapper) AfterOperatorKeySet(
-	ctx sdk.Context, addr sdk.AccAddress, chainID string, key *tmprotocrypto.PublicKey,
+	sdk.Context, sdk.AccAddress, string, *tmprotocrypto.PublicKey,
 ) {
 	// an operator opting in does not meaningfully affect this module, since
 	// this information will be fetched at the end of the epoch
@@ -45,8 +45,18 @@ func (h OperatorHooksWrapper) AfterOperatorKeyReplaced(
 	// 2. vote power of new key is calculated, which happens automatically at epoch end in
 	// EndBlock.
 	// 3. X epochs later, the reverse lookup of old cons addr + chain id -> operator addr
-	// should be cleared. however, if the key is replaced again with the old one, this reverse
-	// lookup should be retained.
+	// should be cleared.
+	if chainID == ctx.ChainID() {
+		unbondingEpoch := h.keeper.GetUnbondingCompletionEpoch(ctx)
+		// #nosec G703 // type is known so this will not fail
+		consAddr, _ := operatortypes.TMCryptoPublicKeyToConsAddr(oldKey)
+		// nb: if operator sets key, it is not "at stake" till the end of the epoch.
+		// before that time, any key replacement will store a superfluous entry for pruning
+		// since the old key will not be in use.
+		// this technically gives an operator the opportunity to spam the pruning queue
+		// but it is not a security risk or a DOS vector given the cost charged.
+		h.keeper.AppendConsensusAddrToPrune(ctx, unbondingEpoch, consAddr)
+	}
 }
 
 // AfterOperatorKeyRemovalInitiated is the implementation of the operator hooks.
