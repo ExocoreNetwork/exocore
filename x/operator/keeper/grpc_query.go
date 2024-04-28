@@ -32,7 +32,7 @@ func (k *Keeper) QueryOperatorConsKeyForChainID(
 		return nil, err
 	}
 	found, key, err := k.GetOperatorConsKeyForChainID(
-		ctx, addr, req.ChainID,
+		ctx, addr, req.Chain,
 	)
 	if err != nil {
 		return nil, err
@@ -57,7 +57,7 @@ func (k Keeper) QueryOperatorConsAddressForChainID(
 		return nil, err
 	}
 	found, key, err := k.GetOperatorConsKeyForChainID(
-		ctx, addr, req.ChainID,
+		ctx, addr, req.Chain,
 	)
 	if err != nil {
 		return nil, err
@@ -84,7 +84,7 @@ func (k Keeper) QueryAllOperatorKeysByChainID(
 	res := make([]*operatortypes.OperatorConsKeyPair, 0)
 	chainPrefix := operatortypes.ChainIDAndAddrKey(
 		operatortypes.BytePrefixForChainIDAndOperatorToConsKey,
-		req.ChainID, nil,
+		req.Chain, nil,
 	)
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), chainPrefix)
 	pageRes, err := query.Paginate(store, req.Pagination, func(key []byte, value []byte) error {
@@ -119,7 +119,7 @@ func (k Keeper) QueryAllOperatorConsAddrsByChainID(
 	res := make([]*operatortypes.OperatorConsAddrPair, 0)
 	chainPrefix := operatortypes.ChainIDAndAddrKey(
 		operatortypes.BytePrefixForChainIDAndOperatorToConsKey,
-		req.ChainID, nil,
+		req.Chain, nil,
 	)
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), chainPrefix)
 	pageRes, err := query.Paginate(store, req.Pagination, func(key []byte, value []byte) error {

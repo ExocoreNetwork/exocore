@@ -109,15 +109,15 @@ func request_Query_QueryOperatorConsKeyForChainID_0(ctx context.Context, marshal
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "addr", err)
 	}
 
-	val, ok = pathParams["chain_id"]
+	val, ok = pathParams["chain"]
 	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "chain_id")
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "chain")
 	}
 
-	protoReq.ChainId, err = runtime.String(val)
+	protoReq.Chain, err = runtime.String(val)
 
 	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "chain_id", err)
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "chain", err)
 	}
 
 	msg, err := client.QueryOperatorConsKeyForChainID(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
@@ -147,15 +147,15 @@ func local_request_Query_QueryOperatorConsKeyForChainID_0(ctx context.Context, m
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "addr", err)
 	}
 
-	val, ok = pathParams["chain_id"]
+	val, ok = pathParams["chain"]
 	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "chain_id")
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "chain")
 	}
 
-	protoReq.ChainId, err = runtime.String(val)
+	protoReq.Chain, err = runtime.String(val)
 
 	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "chain_id", err)
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "chain", err)
 	}
 
 	msg, err := server.QueryOperatorConsKeyForChainID(ctx, &protoReq)
@@ -185,15 +185,15 @@ func request_Query_QueryOperatorConsAddressForChainID_0(ctx context.Context, mar
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "addr", err)
 	}
 
-	val, ok = pathParams["chain_id"]
+	val, ok = pathParams["chain"]
 	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "chain_id")
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "chain")
 	}
 
-	protoReq.ChainId, err = runtime.String(val)
+	protoReq.Chain, err = runtime.String(val)
 
 	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "chain_id", err)
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "chain", err)
 	}
 
 	msg, err := client.QueryOperatorConsAddressForChainID(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
@@ -223,15 +223,15 @@ func local_request_Query_QueryOperatorConsAddressForChainID_0(ctx context.Contex
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "addr", err)
 	}
 
-	val, ok = pathParams["chain_id"]
+	val, ok = pathParams["chain"]
 	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "chain_id")
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "chain")
 	}
 
-	protoReq.ChainId, err = runtime.String(val)
+	protoReq.Chain, err = runtime.String(val)
 
 	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "chain_id", err)
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "chain", err)
 	}
 
 	msg, err := server.QueryOperatorConsAddressForChainID(ctx, &protoReq)
@@ -240,7 +240,7 @@ func local_request_Query_QueryOperatorConsAddressForChainID_0(ctx context.Contex
 }
 
 var (
-	filter_Query_QueryAllOperatorKeysByChainID_0 = &utilities.DoubleArray{Encoding: map[string]int{"chain_id": 0}, Base: []int{1, 1, 0}, Check: []int{0, 1, 2}}
+	filter_Query_QueryAllOperatorKeysByChainID_0 = &utilities.DoubleArray{Encoding: map[string]int{"chain": 0}, Base: []int{1, 1, 0}, Check: []int{0, 1, 2}}
 )
 
 func request_Query_QueryAllOperatorKeysByChainID_0(ctx context.Context, marshaler runtime.Marshaler, client QueryClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
@@ -254,15 +254,15 @@ func request_Query_QueryAllOperatorKeysByChainID_0(ctx context.Context, marshale
 		_   = err
 	)
 
-	val, ok = pathParams["chain_id"]
+	val, ok = pathParams["chain"]
 	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "chain_id")
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "chain")
 	}
 
-	protoReq.ChainId, err = runtime.String(val)
+	protoReq.Chain, err = runtime.String(val)
 
 	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "chain_id", err)
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "chain", err)
 	}
 
 	if err := req.ParseForm(); err != nil {
@@ -288,15 +288,15 @@ func local_request_Query_QueryAllOperatorKeysByChainID_0(ctx context.Context, ma
 		_   = err
 	)
 
-	val, ok = pathParams["chain_id"]
+	val, ok = pathParams["chain"]
 	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "chain_id")
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "chain")
 	}
 
-	protoReq.ChainId, err = runtime.String(val)
+	protoReq.Chain, err = runtime.String(val)
 
 	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "chain_id", err)
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "chain", err)
 	}
 
 	if err := req.ParseForm(); err != nil {
@@ -312,7 +312,7 @@ func local_request_Query_QueryAllOperatorKeysByChainID_0(ctx context.Context, ma
 }
 
 var (
-	filter_Query_QueryAllOperatorConsAddrsByChainID_0 = &utilities.DoubleArray{Encoding: map[string]int{"chain_id": 0}, Base: []int{1, 1, 0}, Check: []int{0, 1, 2}}
+	filter_Query_QueryAllOperatorConsAddrsByChainID_0 = &utilities.DoubleArray{Encoding: map[string]int{"chain": 0}, Base: []int{1, 1, 0}, Check: []int{0, 1, 2}}
 )
 
 func request_Query_QueryAllOperatorConsAddrsByChainID_0(ctx context.Context, marshaler runtime.Marshaler, client QueryClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
@@ -326,15 +326,15 @@ func request_Query_QueryAllOperatorConsAddrsByChainID_0(ctx context.Context, mar
 		_   = err
 	)
 
-	val, ok = pathParams["chain_id"]
+	val, ok = pathParams["chain"]
 	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "chain_id")
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "chain")
 	}
 
-	protoReq.ChainId, err = runtime.String(val)
+	protoReq.Chain, err = runtime.String(val)
 
 	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "chain_id", err)
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "chain", err)
 	}
 
 	if err := req.ParseForm(); err != nil {
@@ -360,15 +360,15 @@ func local_request_Query_QueryAllOperatorConsAddrsByChainID_0(ctx context.Contex
 		_   = err
 	)
 
-	val, ok = pathParams["chain_id"]
+	val, ok = pathParams["chain"]
 	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "chain_id")
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "chain")
 	}
 
-	protoReq.ChainId, err = runtime.String(val)
+	protoReq.Chain, err = runtime.String(val)
 
 	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "chain_id", err)
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "chain", err)
 	}
 
 	if err := req.ParseForm(); err != nil {
@@ -651,13 +651,13 @@ func RegisterQueryHandlerClient(ctx context.Context, mux *runtime.ServeMux, clie
 var (
 	pattern_Query_QueryOperatorInfo_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 4}, []string{"exocore", "operator", "v1", "operator_info", "operator_addr"}, "", runtime.AssumeColonVerbOpt(false)))
 
-	pattern_Query_QueryOperatorConsKeyForChainID_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 4, 1, 0, 4, 1, 5, 5}, []string{"exocore", "operator", "v1", "operator_cons_key", "addr", "chain_id"}, "", runtime.AssumeColonVerbOpt(false)))
+	pattern_Query_QueryOperatorConsKeyForChainID_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 4, 1, 0, 4, 1, 5, 5}, []string{"exocore", "operator", "v1", "operator_cons_key", "addr", "chain"}, "", runtime.AssumeColonVerbOpt(false)))
 
-	pattern_Query_QueryOperatorConsAddressForChainID_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 4, 1, 0, 4, 1, 5, 5}, []string{"exocore", "operator", "v1", "operator_cons_address", "addr", "chain_id"}, "", runtime.AssumeColonVerbOpt(false)))
+	pattern_Query_QueryOperatorConsAddressForChainID_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 4, 1, 0, 4, 1, 5, 5}, []string{"exocore", "operator", "v1", "operator_cons_address", "addr", "chain"}, "", runtime.AssumeColonVerbOpt(false)))
 
-	pattern_Query_QueryAllOperatorKeysByChainID_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 4}, []string{"exocore", "operator", "v1", "all_operator_keys", "chain_id"}, "", runtime.AssumeColonVerbOpt(false)))
+	pattern_Query_QueryAllOperatorKeysByChainID_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 4}, []string{"exocore", "operator", "v1", "all_operator_keys", "chain"}, "", runtime.AssumeColonVerbOpt(false)))
 
-	pattern_Query_QueryAllOperatorConsAddrsByChainID_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 4}, []string{"exocore", "operator", "v1", "all_operator_addrs", "chain_id"}, "", runtime.AssumeColonVerbOpt(false)))
+	pattern_Query_QueryAllOperatorConsAddrsByChainID_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 4}, []string{"exocore", "operator", "v1", "all_operator_addrs", "chain"}, "", runtime.AssumeColonVerbOpt(false)))
 )
 
 var (

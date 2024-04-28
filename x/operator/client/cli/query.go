@@ -74,7 +74,7 @@ func GetOperatorConsKey() *cobra.Command {
 
 			queryClient := operatortypes.NewQueryClient(clientCtx)
 			req := &operatortypes.QueryOperatorConsKeyRequest{
-				ChainID: args[0],
+				Chain: args[0],
 			}
 			res, err := queryClient.QueryOperatorConsKeyForChainID(
 				context.Background(), req,
@@ -109,7 +109,7 @@ func GetAllOperatorKeys() *cobra.Command {
 
 			queryClient := operatortypes.NewQueryClient(clientCtx)
 			req := &operatortypes.QueryAllOperatorKeysByChainIDRequest{
-				ChainID:    args[0],
+				Chain:      args[0],
 				Pagination: pageReq,
 			}
 			res, err := queryClient.QueryAllOperatorKeysByChainID(
@@ -140,7 +140,7 @@ func GetOperatorConsAddress() *cobra.Command {
 
 			queryClient := operatortypes.NewQueryClient(clientCtx)
 			req := &operatortypes.QueryOperatorConsAddressRequest{
-				ChainID: args[0],
+				Chain: args[0],
 			}
 			res, err := queryClient.QueryOperatorConsAddressForChainID(
 				context.Background(), req,
@@ -175,7 +175,7 @@ func GetAllOperatorConsAddrs() *cobra.Command {
 
 			queryClient := operatortypes.NewQueryClient(clientCtx)
 			req := &operatortypes.QueryAllOperatorConsAddrsByChainIDRequest{
-				ChainID:    args[0],
+				Chain:      args[0],
 				Pagination: pageReq,
 			}
 			res, err := queryClient.QueryAllOperatorConsAddrsByChainID(
