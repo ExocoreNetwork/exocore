@@ -35,14 +35,15 @@ func NewTxCmd() *cobra.Command {
 	}
 
 	txCmd.AddCommand(
-		RegisterOperator(),
+		CmdRegisterOperator(),
+		CmdOptIntoAVS(),
 	)
 	return txCmd
 }
 
-// RegisterOperator returns a CLI command handler for creating a MsgRegisterOperator
+// CmdRegisterOperator returns a CLI command handler for creating a MsgRegisterOperator
 // transaction.
-func RegisterOperator() *cobra.Command {
+func CmdRegisterOperator() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "register-operator",
 		Short: "register to become an operator",
@@ -62,6 +63,7 @@ func RegisterOperator() *cobra.Command {
 				return err
 			}
 
+			// this calls ValidateBasic internally so we don't need to do that.
 			return tx.GenerateOrBroadcastTxWithFactory(clientCtx, txf, msg)
 		},
 	}
@@ -100,7 +102,7 @@ func newBuildRegisterOperatorMsg(
 	clientCtx client.Context, txf tx.Factory, fs *flag.FlagSet,
 ) (tx.Factory, *types.RegisterOperatorReq, error) {
 	sender := clientCtx.GetFromAddress()
-	// #nosec G701 // this only errors if the flag isn't defined.
+	// #nosec G703 // this only errors if the flag isn't defined.
 	approveAddr, _ := fs.GetString(FlagApproveAddr)
 	if approveAddr == "" {
 		approveAddr = sender.String()
@@ -115,7 +117,7 @@ func newBuildRegisterOperatorMsg(
 		},
 	}
 	clientChainEarningAddress := &types.ClientChainEarningAddrList{}
-	// #nosec G701
+	// #nosec G703
 	ccData, _ := fs.GetStringArray(FlagClientChainData)
 	clientChainEarningAddress.EarningInfoList = make(
 		[]*types.ClientChainEarningAddrInfo, len(ccData),
@@ -140,11 +142,11 @@ func newBuildRegisterOperatorMsg(
 	}
 	msg.Info.ClientChainEarningsAddr = clientChainEarningAddress
 	// get the initial commission parameters
-	// #nosec G701
+	// #nosec G703
 	rateStr, _ := fs.GetString(stakingcli.FlagCommissionRate)
-	// #nosec G701
+	// #nosec G703
 	maxRateStr, _ := fs.GetString(stakingcli.FlagCommissionMaxRate)
-	// #nosec G701
+	// #nosec G703
 	maxChangeRateStr, _ := fs.GetString(stakingcli.FlagCommissionMaxChangeRate)
 	commission, err := buildCommission(rateStr, maxRateStr, maxChangeRateStr)
 	if err != nil {
@@ -181,4 +183,25 @@ func buildCommission(rateStr, maxRateStr, maxChangeRateStr string) (
 	commission = stakingtypes.NewCommission(rate, maxRate, maxChangeRate)
 
 	return commission, nil
+}
+
+// CmdOptIntoAVS returns a CLI command handler for creating a MsgOptIntoAVS transaction.
+func CmdOptIntoAVS() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "opt-into-avs <avs-address>",
+		Short: "opt into an AVS by specifying its address or the chain id",
+		Args:  cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx, err := client.GetClientTxContext(cmd)
+			if err != nil {
+				return err
+			}
+			msg := &types.OptIntoAVSReq{
+				FromAddress: clientCtx.GetFromAddress().String(),
+				AvsAddress:  args[0],
+			}
+			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), msg)
+		},
+	}
+	return cmd
 }

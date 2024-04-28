@@ -7,7 +7,6 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 
 	assetstype "github.com/ExocoreNetwork/exocore/x/assets/types"
 	operatortypes "github.com/ExocoreNetwork/exocore/x/operator/types"
@@ -15,61 +14,28 @@ import (
 
 // SetOperatorInfo is used to store the operator's information on the chain.
 // There is no current way implemented to delete an operator's registration or edit it.
-// TODO: implement operator edit function. delete can simply be done by opting out.
+// TODO: implement operator edit function, which should allow editing:
+// approve address?
+// commission, subject to limits and once within 24 hours.
+// client chain earnings addresses (maybe append only?)
 func (k *Keeper) SetOperatorInfo(
 	ctx sdk.Context, addr string, info *operatortypes.OperatorInfo,
 ) (err error) {
-	// basic check 1
-	if info == nil {
-		return errorsmod.Wrap(
-			operatortypes.ErrParameterInvalid, "SetOperatorInfo: info is nil",
-		)
-	}
-	// basic check 2
-	opAccAddr, err := sdk.AccAddressFromBech32(addr)
-	if err != nil {
-		return errorsmod.Wrap(
-			err, "SetOperatorInfo: error occurred when parse acc address from Bech32",
-		)
-	}
-	// the operator's address must match the earnings address. we check this here because this
-	// function may be called via CLI or via RPC.
+	// the operator's `addr` must match the earnings address.
 	if addr != info.EarningsAddr {
 		return errorsmod.Wrap(
 			operatortypes.ErrParameterInvalid,
 			"SetOperatorInfo: earnings address is not equal to the operator address",
 		)
 	}
+	// #nosec G703 // already validated in `ValidateBasic`
+	opAccAddr, _ := sdk.AccAddressFromBech32(info.EarningsAddr)
 	// if already registered, this request should go to EditOperator.
 	if k.IsOperator(ctx, opAccAddr) {
 		return errorsmod.Wrap(
 			operatortypes.ErrOperatorAlreadyExists,
 			fmt.Sprintf("SetOperatorInfo: operator already exists, address: %suite", opAccAddr),
 		)
-	}
-	// do not allow empty operator info
-	if info.OperatorMetaInfo == "" {
-		return errorsmod.Wrap(
-			operatortypes.ErrParameterInvalid, "SetOperatorInfo: operator meta info is empty",
-		)
-	}
-	// do not allow operator info to exceed the maximum length
-	if len(info.OperatorMetaInfo) > stakingtypes.MaxIdentityLength {
-		return errorsmod.Wrapf(
-			operatortypes.ErrParameterInvalid,
-			"SetOperatorInfo: info length exceeds %d", stakingtypes.MaxIdentityLength,
-		)
-	}
-	// do not allow empty approve address
-	if info.ApproveAddr == "" {
-		return errorsmod.Wrap(
-			operatortypes.ErrParameterInvalid,
-			"SetOperatorInfo: approve address is empty",
-		)
-	}
-	// TODO(Chuang): should the approve address be bech32 validated?
-	if err := info.Commission.Validate(); err != nil {
-		return errorsmod.Wrap(err, "SetOperatorInfo: invalid commission rate")
 	}
 	// TODO: add minimum commission rate module parameter and check that commission exceeds it.
 	info.Commission.UpdateTime = ctx.BlockTime()

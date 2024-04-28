@@ -89,15 +89,18 @@ func (k *Keeper) UpdateOptedInAssetsState(ctx sdk.Context, stakerID, assetID, op
 
 // OptIn call this function to opt in AVS
 func (k *Keeper) OptIn(ctx sdk.Context, operatorAddress sdk.AccAddress, avsAddr string) error {
-	// avsAddr should be an evm contract address
-	if common.IsHexAddress(avsAddr) {
-		return types.ErrInvalidAvsAddr
+	// avsAddr should be an evm contract address or a chain id.
+	if !common.IsHexAddress(avsAddr) {
+		if avsAddr != ctx.ChainID() { // TODO: other chain ids besides this chain's.
+			return types.ErrInvalidAvsAddr
+		}
 	}
 	// check optedIn info
 	if k.IsOptedIn(ctx, operatorAddress.String(), avsAddr) {
 		return types.ErrAlreadyOptedIn
 	}
 	// get the assets supported by the AVS
+	// TODO: for x/dogfood, read the value from the params.
 	avsSupportedAssets, err := k.avsKeeper.GetAvsSupportedAssets(ctx, avsAddr)
 	if err != nil {
 		return err
