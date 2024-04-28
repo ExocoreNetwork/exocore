@@ -18,7 +18,7 @@ func (k Keeper) SetClientChainInfo(ctx sdk.Context, info *assetstype.ClientChain
 	return nil
 }
 
-func (k Keeper) IsExistedClientChain(ctx sdk.Context, index uint64) bool {
+func (k Keeper) ClientChainExists(ctx sdk.Context, index uint64) bool {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), assetstype.KeyPrefixClientChainInfo)
 	return store.Has([]byte(hexutil.EncodeUint64(index)))
 }

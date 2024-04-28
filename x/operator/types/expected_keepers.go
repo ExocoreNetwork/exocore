@@ -33,6 +33,7 @@ type AssetsKeeper interface {
 		ctx sdk.Context, operatorAddr sdk.Address, assetID string,
 		changeAmount assetstype.OperatorSingleAssetChangeInfo,
 	) (err error)
+	ClientChainExists(ctx sdk.Context, index uint64) bool
 }
 
 type DelegationKeeper interface {

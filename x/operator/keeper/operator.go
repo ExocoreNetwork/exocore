@@ -3,28 +3,94 @@ package keeper
 import (
 	"fmt"
 
-	assetstype "github.com/ExocoreNetwork/exocore/x/assets/types"
-
 	errorsmod "cosmossdk.io/errors"
 
-	operatortypes "github.com/ExocoreNetwork/exocore/x/operator/types"
 	"github.com/cosmos/cosmos-sdk/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
+
+	assetstype "github.com/ExocoreNetwork/exocore/x/assets/types"
+	operatortypes "github.com/ExocoreNetwork/exocore/x/operator/types"
 )
 
-// SetOperatorInfo This function is used to register to be an operator in exoCore, the provided info will be stored on the chain.
-// Once an address has become an operator,the operator can't return to a normal address.But the operator can update the info through this function
-func (k *Keeper) SetOperatorInfo(ctx sdk.Context, addr string, info *operatortypes.OperatorInfo) (err error) {
+// SetOperatorInfo is used to store the operator's information on the chain.
+// There is no current way implemented to delete an operator's registration or edit it.
+// TODO: implement operator edit function. delete can simply be done by opting out.
+func (k *Keeper) SetOperatorInfo(
+	ctx sdk.Context, addr string, info *operatortypes.OperatorInfo,
+) (err error) {
+	// basic check 1
+	if info == nil {
+		return errorsmod.Wrap(
+			operatortypes.ErrParameterInvalid, "SetOperatorInfo: info is nil",
+		)
+	}
+	// basic check 2
 	opAccAddr, err := sdk.AccAddressFromBech32(addr)
 	if err != nil {
-		return errorsmod.Wrap(err, "SetOperatorInfo: error occurred when parse acc address from Bech32")
+		return errorsmod.Wrap(
+			err, "SetOperatorInfo: error occurred when parse acc address from Bech32",
+		)
 	}
-	store := prefix.NewStore(ctx.KVStore(k.storeKey), operatortypes.KeyPrefixOperatorInfo)
-	// todo: think about the difference between init and update in future
+	// the operator's address must match the earnings address. we check this here because this
+	// function may be called via CLI or via RPC.
+	if addr != info.EarningsAddr {
+		return errorsmod.Wrap(
+			operatortypes.ErrParameterInvalid,
+			"SetOperatorInfo: earnings address is not equal to the operator address",
+		)
+	}
+	// if already registered, this request should go to EditOperator.
+	if k.IsOperator(ctx, opAccAddr) {
+		return errorsmod.Wrap(
+			operatortypes.ErrOperatorAlreadyExists,
+			fmt.Sprintf("SetOperatorInfo: operator already exists, address: %suite", opAccAddr),
+		)
+	}
+	// do not allow empty operator info
+	if info.OperatorMetaInfo == "" {
+		return errorsmod.Wrap(
+			operatortypes.ErrParameterInvalid, "SetOperatorInfo: operator meta info is empty",
+		)
+	}
+	// do not allow operator info to exceed the maximum length
+	if len(info.OperatorMetaInfo) > stakingtypes.MaxIdentityLength {
+		return errorsmod.Wrapf(
+			operatortypes.ErrParameterInvalid,
+			"SetOperatorInfo: info length exceeds %d", stakingtypes.MaxIdentityLength,
+		)
+	}
+	// do not allow empty approve address
+	if info.ApproveAddr == "" {
+		return errorsmod.Wrap(
+			operatortypes.ErrParameterInvalid,
+			"SetOperatorInfo: approve address is empty",
+		)
+	}
+	// TODO(Chuang): should the approve address be bech32 validated?
+	if err := info.Commission.Validate(); err != nil {
+		return errorsmod.Wrap(err, "SetOperatorInfo: invalid commission rate")
+	}
+	// TODO: add minimum commission rate module parameter and check that commission exceeds it.
+	info.Commission.UpdateTime = ctx.BlockTime()
 
-	// key := common.HexToAddress(incentive.Contract)
+	for _, data := range info.ClientChainEarningsAddr.EarningInfoList {
+		if data.ClientChainEarningAddr == "" {
+			return errorsmod.Wrap(
+				operatortypes.ErrParameterInvalid,
+				"SetOperatorInfo: client chain earning address is empty",
+			)
+		}
+		if !k.assetsKeeper.ClientChainExists(ctx, data.LzClientChainID) {
+			return errorsmod.Wrap(
+				operatortypes.ErrParameterInvalid,
+				"SetOperatorInfo: client chain not found",
+			)
+		}
+	}
+
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), operatortypes.KeyPrefixOperatorInfo)
 	bz := k.cdc.MustMarshal(info)
-	// TODO: check about client chain registration for earnings addresses provided?
 	store.Set(opAccAddr, bz)
 	return nil
 }

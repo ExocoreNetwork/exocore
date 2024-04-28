@@ -76,4 +76,9 @@ var (
 		ModuleName, 14,
 		"avs address should be a hex evm contract address",
 	)
+
+	ErrOperatorAlreadyExists = errorsmod.Register(
+		ModuleName, 15,
+		"operator already exists",
+	)
 )
