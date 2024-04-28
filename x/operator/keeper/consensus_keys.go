@@ -27,7 +27,6 @@ func (k *Keeper) SetOperatorConsKeyForChainID(
 	ctx sdk.Context,
 	opAccAddr sdk.AccAddress,
 	chainID string,
-	// should be tm-ed25519
 	consKey *tmprotocrypto.PublicKey,
 ) error {
 	return k.setOperatorConsKeyForChainID(ctx, opAccAddr, chainID, consKey, false)
@@ -83,10 +82,6 @@ func (k *Keeper) setOperatorConsKeyForChainID(
 	}
 	// check that such a key is already set. if yes, we will consider it as key replacement.
 	found, prevKey := k.getOperatorConsKeyForChainID(ctx, opAccAddr, chainID)
-	if err != nil {
-		// this should not happen
-		panic(err)
-	}
 	var alreadyRecorded bool
 	if found {
 		// ultimately performs bytes.Equal
@@ -364,7 +359,7 @@ func (k Keeper) CompleteOperatorKeyRemovalForChainID(
 	if !k.IsOperator(ctx, opAccAddr) {
 		return delegationtypes.ErrOperatorNotExist
 	}
-	// validate chian id
+	// validate chain id
 	if chainID != ctx.ChainID() {
 		return types.ErrUnknownChainID
 	}

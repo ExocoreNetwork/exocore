@@ -52,7 +52,7 @@ func (k Keeper) SetConsKey(ctx context.Context, req *types.SetConsKeyReq) (*type
 	keyString, _, _ := types.ParseConsensusKeyFromJSON(req.PublicKey)
 	// #nosec G703 // already validated
 	keyObj, _ := types.StringToPubKey(keyString)
-	if err := k.SetOperatorConsKeyForChainID(c, accAddr, req.ChainId, keyObj); err != nil {
+	if err := k.SetOperatorConsKeyForChainID(c, accAddr, req.ChainID, keyObj); err != nil {
 		return nil, err
 	}
 	return &types.SetConsKeyResponse{}, nil
@@ -63,7 +63,7 @@ func (k Keeper) InitConsKeyRemoval(ctx context.Context, req *types.InitConsKeyRe
 	c := sdk.UnwrapSDKContext(ctx)
 	// #nosec G703 // already validated
 	accAddr, _ := sdk.AccAddressFromBech32(req.Address)
-	err := k.InitiateOperatorKeyRemovalForChainID(c, accAddr, req.ChainId)
+	err := k.InitiateOperatorKeyRemovalForChainID(c, accAddr, req.ChainID)
 	if err != nil {
 		return nil, err
 	}

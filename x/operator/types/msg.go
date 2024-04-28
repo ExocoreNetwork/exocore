@@ -41,7 +41,7 @@ func (m *SetConsKeyReq) ValidateBasic() error {
 	if _, err := sdk.AccAddressFromBech32(m.Address); err != nil {
 		return errorsmod.Wrap(err, "invalid from address")
 	}
-	if !types.IsValidChainID(m.ChainId) {
+	if !types.IsValidChainID(m.ChainID) {
 		return errorsmod.Wrap(ErrParameterInvalid, "invalid chain id")
 	}
 	if keyType, keyString, err := ParseConsensusKeyFromJSON(m.PublicKey); err != nil {
@@ -65,7 +65,7 @@ func (m *InitConsKeyRemovalReq) ValidateBasic() error {
 	if _, err := sdk.AccAddressFromBech32(m.Address); err != nil {
 		return errorsmod.Wrap(err, "invalid from address")
 	}
-	if !types.IsValidChainID(m.ChainId) {
+	if !types.IsValidChainID(m.ChainID) {
 		return errorsmod.Wrap(ErrParameterInvalid, "invalid chain id")
 	}
 	return nil
