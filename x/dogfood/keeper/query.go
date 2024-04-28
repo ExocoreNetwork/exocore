@@ -54,3 +54,16 @@ func (k Keeper) OperatorOptOutFinishEpoch(
 	epoch := k.GetOperatorOptOutFinishEpoch(ctx, accAddr)
 	return &types.QueryOperatorOptOutFinishEpochResponse{Epoch: epoch}, nil
 }
+
+func (k Keeper) UndelegationsToMature(
+	goCtx context.Context,
+	req *types.QueryUndelegationsToMatureRequest,
+) (*types.UndelegationRecordKeys, error) {
+	if req == nil {
+		return nil, status.Error(codes.InvalidArgument, "invalid request")
+	}
+	ctx := sdk.UnwrapSDKContext(goCtx)
+	epoch := req.Epoch
+	keys := k.GetUndelegationsToMature(ctx, epoch)
+	return &types.UndelegationRecordKeys{List: keys}, nil
+}
