@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"context"
+	"encoding/hex"
 
 	"github.com/ExocoreNetwork/exocore/x/dogfood/types"
 	"google.golang.org/grpc/codes"
@@ -81,4 +82,24 @@ func (k Keeper) UndelegationMaturityEpoch(
 		return nil, status.Error(codes.NotFound, "undelegation record not found")
 	}
 	return &types.QueryUndelegationMaturityEpochResponse{Epoch: epoch}, nil
+}
+
+func (k Keeper) QueryValidator(
+	goCtx context.Context,
+	req *types.QueryValidatorRequest,
+) (*types.ExocoreValidator, error) {
+	if req == nil {
+		return nil, status.Error(codes.InvalidArgument, "invalid request")
+	}
+	ctx := sdk.UnwrapSDKContext(goCtx)
+	consAddress := req.ConsensusAddress
+	consAddressbytes, err := hex.DecodeString(consAddress)
+	if err != nil {
+		return nil, status.Error(codes.InvalidArgument, "invalid consensus address")
+	}
+	validator, found := k.GetValidator(ctx, consAddressbytes)
+	if !found {
+		return nil, status.Error(codes.NotFound, "validator not found")
+	}
+	return &validator, nil
 }

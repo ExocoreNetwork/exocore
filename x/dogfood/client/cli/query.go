@@ -36,6 +36,7 @@ func GetQueryCmd(string) *cobra.Command {
 	cmd.AddCommand(CmdQueryOperatorOptOutFinishEpoch())
 	cmd.AddCommand(CmdQueryUndelegationsToMature())
 	cmd.AddCommand(CmdQueryUndelegationMaturityEpoch())
+	cmd.AddCommand(CmdQueryValidator())
 
 	return cmd
 }
@@ -173,6 +174,33 @@ func CmdQueryUndelegationMaturityEpoch() *cobra.Command {
 			recordKey := args[0]
 			res, err := queryClient.UndelegationMaturityEpoch(
 				cmd.Context(), &types.QueryUndelegationMaturityEpochRequest{RecordKey: recordKey},
+			)
+			if err != nil {
+				return err
+			}
+
+			return clientCtx.PrintProto(res)
+		},
+	}
+	flags.AddQueryFlagsToCmd(cmd)
+
+	return cmd
+}
+
+func CmdQueryValidator() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "validator [consensus-address]",
+		Short: "shows the validator information for the provided consensus address",
+		Args:  cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx, err := client.GetClientQueryContext(cmd)
+			if err != nil {
+				return err
+			}
+			queryClient := types.NewQueryClient(clientCtx)
+			address := args[0]
+			res, err := queryClient.QueryValidator(
+				cmd.Context(), &types.QueryValidatorRequest{ConsensusAddress: address},
 			)
 			if err != nil {
 				return err

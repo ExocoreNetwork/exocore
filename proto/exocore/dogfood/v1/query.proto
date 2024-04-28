@@ -39,6 +39,11 @@ service Query {
   ) {
     option (google.api.http).get = "/exocore/dogfood/undelegation_maturity_epoch/{record_key}";
   }
+
+  // QueryValidator queries the validator for the given consensus address.
+  rpc QueryValidator(QueryValidatorRequest) returns (ExocoreValidator) {
+    option (google.api.http).get = "/exocore/dogfood/validator/{consensus_address}";
+  }
 }
 
 // QueryParamsRequest is request type for the Query/Params RPC method.
@@ -88,4 +93,10 @@ message QueryUndelegationMaturityEpochRequest {
 message QueryUndelegationMaturityEpochResponse {
   // epoch is the epoch when the undelegation will mature.
   int64 epoch = 1;
+}
+
+// QueryValidatorRequest is request type for the Query/QueryValidator RPC method.
+message QueryValidatorRequest {
+  // consensus_address is the consensus address.
+  string consensus_address = 1;
 }
