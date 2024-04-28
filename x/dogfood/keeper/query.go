@@ -67,3 +67,18 @@ func (k Keeper) UndelegationsToMature(
 	keys := k.GetUndelegationsToMature(ctx, epoch)
 	return &types.UndelegationRecordKeys{List: keys}, nil
 }
+
+func (k Keeper) UndelegationMaturityEpoch(
+	goCtx context.Context,
+	req *types.QueryUndelegationMaturityEpochRequest,
+) (*types.QueryUndelegationMaturityEpochResponse, error) {
+	if req == nil {
+		return nil, status.Error(codes.InvalidArgument, "invalid request")
+	}
+	ctx := sdk.UnwrapSDKContext(goCtx)
+	epoch, found := k.GetUndelegationMaturityEpoch(ctx, []byte(req.RecordKey))
+	if !found {
+		return nil, status.Error(codes.NotFound, "undelegation record not found")
+	}
+	return &types.QueryUndelegationMaturityEpochResponse{Epoch: epoch}, nil
+}

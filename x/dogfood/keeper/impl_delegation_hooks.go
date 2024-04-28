@@ -49,5 +49,6 @@ func (wrapper DelegationHooksWrapper) AfterUndelegationStarted(
 		// so this is not a concern.
 	}
 	wrapper.keeper.AppendUndelegationToMature(ctx, unbondingCompletionEpoch, recordKey)
+	wrapper.keeper.SetUndelegationMaturityEpoch(ctx, recordKey, unbondingCompletionEpoch)
 	return wrapper.keeper.delegationKeeper.IncrementUndelegationHoldCount(ctx, recordKey)
 }

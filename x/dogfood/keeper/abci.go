@@ -22,6 +22,7 @@ func (k Keeper) EndBlock(ctx sdk.Context) []abci.ValidatorUpdate {
 		if err != nil {
 			panic(err)
 		}
+		k.ClearUndelegationMaturityEpoch(ctx, undelegation)
 	}
 	k.ClearPendingUndelegations(ctx)
 	// then, let the operator module know that the opt out has finished.

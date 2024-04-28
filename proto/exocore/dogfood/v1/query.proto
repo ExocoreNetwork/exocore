@@ -28,8 +28,16 @@ service Query {
     option (google.api.http).get = "/exocore/dogfood/operator_opt_out_finish_epoch/{operator}";
   }
 
+  // UndelegationsToMature queries the undelegations that will mature at the given epoch.
   rpc UndelegationsToMature(QueryUndelegationsToMatureRequest) returns (UndelegationRecordKeys) {
     option (google.api.http).get = "/exocore/dogfood/undelegations_to_mature/{epoch}";
+  }
+
+  // UndelegationMaturityEpoch queries the epoch when the undelegation will mature.
+  rpc UndelegationMaturityEpoch(QueryUndelegationMaturityEpochRequest) returns (
+    QueryUndelegationMaturityEpochResponse
+  ) {
+    option (google.api.http).get = "/exocore/dogfood/undelegation_maturity_epoch/{record_key}";
   }
 }
 
@@ -65,5 +73,19 @@ message QueryOperatorOptOutFinishEpochResponse {
 // QueryUndelegationsToMatureRequest is request type for the Query/UndelegationsToMature RPC method.
 message QueryUndelegationsToMatureRequest {
   // epoch is the epoch to query undelegations for.
+  int64 epoch = 1;
+}
+
+// QueryUndelegationMaturityEpochRequest is request type for the Query/UndelegationMaturityEpoch
+// RPC method.
+message QueryUndelegationMaturityEpochRequest {
+  // record_key is the undelegation record key.
+  string record_key = 1;
+}
+
+// QueryUndelegationMaturityEpochResponse is response type for the
+// Query/UndelegationMaturityEpoch RPC method.
+message QueryUndelegationMaturityEpochResponse {
+  // epoch is the epoch when the undelegation will mature.
   int64 epoch = 1;
 }

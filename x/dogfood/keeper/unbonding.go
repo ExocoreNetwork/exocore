@@ -85,3 +85,37 @@ func (k Keeper) setUndelegationsToMature(
 	}
 	store.Set(key, val)
 }
+
+// GetUndelegationMaturityEpoch gets the maturity epoch for the undelegation record.
+func (k Keeper) GetUndelegationMaturityEpoch(
+	ctx sdk.Context, recordKey []byte,
+) (int64, bool) {
+	store := ctx.KVStore(k.storeKey)
+	key := types.UndelegationMaturityEpochKey(recordKey)
+	bz := store.Get(key)
+	if bz == nil {
+		return 0, false
+	}
+	epoch := sdk.BigEndianToUint64(bz)
+	return types.SafeUint64ToInt64(epoch)
+}
+
+// SetUndelegationMaturityEpoch sets the maturity epoch for the undelegation record.
+func (k Keeper) SetUndelegationMaturityEpoch(
+	ctx sdk.Context, recordKey []byte, epoch int64,
+) {
+	store := ctx.KVStore(k.storeKey)
+	key := types.UndelegationMaturityEpochKey(recordKey)
+	uepoch, _ := types.SafeInt64ToUint64(epoch)
+	bz := sdk.Uint64ToBigEndian(uepoch)
+	store.Set(key, bz)
+}
+
+// ClearUndelegationMaturityEpoch clears the maturity epoch for the undelegation record.
+func (k Keeper) ClearUndelegationMaturityEpoch(
+	ctx sdk.Context, recordKey []byte,
+) {
+	store := ctx.KVStore(k.storeKey)
+	key := types.UndelegationMaturityEpochKey(recordKey)
+	store.Delete(key)
+}
