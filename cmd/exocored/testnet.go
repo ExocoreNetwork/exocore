@@ -9,10 +9,14 @@ import (
 	"net"
 	"os"
 	"path/filepath"
+	"sort"
+	"strings"
 
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/common/hexutil"
 
 	tmconfig "github.com/cometbft/cometbft/config"
+	tmos "github.com/cometbft/cometbft/libs/os"
 	tmrand "github.com/cometbft/cometbft/libs/rand"
 	"github.com/cometbft/cometbft/types"
 	tmtime "github.com/cometbft/cometbft/types/time"
@@ -20,7 +24,6 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
-	"github.com/cosmos/cosmos-sdk/client/tx"
 	"github.com/cosmos/cosmos-sdk/crypto/keyring"
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
 	sdkserver "github.com/cosmos/cosmos-sdk/server"
@@ -47,6 +50,13 @@ import (
 	cmdcfg "github.com/ExocoreNetwork/exocore/cmd/config"
 	evmoskr "github.com/evmos/evmos/v14/crypto/keyring"
 	"github.com/evmos/evmos/v14/testutil/network"
+
+	assetstypes "github.com/ExocoreNetwork/exocore/x/assets/types"
+	delegationtypes "github.com/ExocoreNetwork/exocore/x/delegation/types"
+	dogfoodtypes "github.com/ExocoreNetwork/exocore/x/dogfood/types"
+	operatortypes "github.com/ExocoreNetwork/exocore/x/operator/types"
+
+	cfg "github.com/cometbft/cometbft/config"
 )
 
 var (
@@ -227,17 +237,18 @@ func initTestnetFiles(
 	appConfig.Telemetry.GlobalLabels = [][]string{{"chain_id", args.chainID}}
 
 	var (
-		genAccounts []authtypes.GenesisAccount
-		genBalances []banktypes.Balance
-		genFiles    []string
+		genAccounts     []authtypes.GenesisAccount
+		genBalances     []banktypes.Balance
+		genFiles        []string
+		persistentPeers []string
 	)
 
 	inBuf := bufio.NewReader(cmd.InOrStdin())
+	addrs := make([]sdk.AccAddress, args.numValidators)
 	// generate private keys, node IDs, and initial transactions
 	for i := 0; i < args.numValidators; i++ {
 		nodeDirName := fmt.Sprintf("%s%d", args.nodeDirPrefix, i)
 		nodeDir := filepath.Join(args.outputDir, nodeDirName, args.nodeDaemonHome)
-		gentxsDir := filepath.Join(args.outputDir, "gentxs")
 
 		nodeConfig.SetRoot(nodeDir)
 		nodeConfig.RPC.ListenAddress = "tcp://0.0.0.0:26657"
@@ -249,7 +260,7 @@ func initTestnetFiles(
 
 		nodeConfig.Moniker = nodeDirName
 
-		ip, err := getIP(i, args.startingIPAddress)
+		_, err := getIP(i, args.startingIPAddress)
 		if err != nil {
 			_ = os.RemoveAll(args.outputDir)
 			return err
@@ -261,7 +272,6 @@ func initTestnetFiles(
 			return err
 		}
 
-		memo := fmt.Sprintf("%s@%s:26656", nodeIDs[i], ip)
 		genFiles = append(genFiles, nodeConfig.GenesisFile())
 
 		kb, err := keyring.New(sdk.KeyringServiceName(), args.keyringBackend, nodeDir, inBuf, clientCtx.Codec, evmoskr.Option())
@@ -280,6 +290,7 @@ func initTestnetFiles(
 			_ = os.RemoveAll(args.outputDir)
 			return err
 		}
+		addrs[i] = addr
 
 		info := map[string]string{"secret": secret}
 
@@ -293,9 +304,10 @@ func initTestnetFiles(
 			return err
 		}
 
-		accStakingTokens := sdk.TokensFromConsensusPower(5000, evmostypes.PowerReduction)
+		// faucet of 5000
+		accountTokens := sdk.TokensFromConsensusPower(5000, evmostypes.PowerReduction)
 		coins := sdk.Coins{
-			sdk.NewCoin(cmdcfg.BaseDenom, accStakingTokens),
+			sdk.NewCoin(cmdcfg.BaseDenom, accountTokens),
 		}
 
 		genBalances = append(genBalances, banktypes.Balance{Address: addr.String(), Coins: coins.Sort()})
@@ -303,46 +315,6 @@ func initTestnetFiles(
 			BaseAccount: authtypes.NewBaseAccount(addr, nil, 0, 0),
 			CodeHash:    common.BytesToHash(evmtypes.EmptyCodeHash).Hex(),
 		})
-
-		valTokens := sdk.TokensFromConsensusPower(100, evmostypes.PowerReduction)
-		createValMsg, err := stakingtypes.NewMsgCreateValidator(
-			sdk.ValAddress(addr),
-			valPubKeys[i],
-			sdk.NewCoin(cmdcfg.BaseDenom, valTokens),
-			stakingtypes.NewDescription(nodeDirName, "", "", "", ""),
-			stakingtypes.NewCommissionRates(sdk.OneDec(), sdk.OneDec(), sdk.OneDec()),
-			sdk.OneInt(),
-		)
-		if err != nil {
-			return err
-		}
-
-		txBuilder := clientCtx.TxConfig.NewTxBuilder()
-		if err := txBuilder.SetMsgs(createValMsg); err != nil {
-			return err
-		}
-
-		txBuilder.SetMemo(memo)
-
-		txFactory := tx.Factory{}
-		txFactory = txFactory.
-			WithChainID(args.chainID).
-			WithMemo(memo).
-			WithKeybase(kb).
-			WithTxConfig(clientCtx.TxConfig)
-
-		if err := tx.Sign(txFactory, nodeDirName, txBuilder, true); err != nil {
-			return err
-		}
-
-		txBz, err := clientCtx.TxConfig.TxJSONEncoder()(txBuilder.GetTx())
-		if err != nil {
-			return err
-		}
-
-		if err := network.WriteFile(fmt.Sprintf("%v.json", nodeDirName), gentxsDir, txBz); err != nil {
-			return err
-		}
 
 		customAppTemplate, customAppConfig := config.AppConfig(cmdcfg.BaseDenom)
 		srvconfig.SetConfigTemplate(customAppTemplate)
@@ -354,23 +326,169 @@ func initTestnetFiles(
 
 		srvconfig.WriteConfigFile(filepath.Join(nodeDir, "config/app.toml"), appConfig)
 	}
+	for i := 0; i < args.numValidators; i++ {
+		var ithPeers []string
+		for j := 0; j < args.numValidators; j++ {
+			if i != j {
+				ip, _ := getIP(j, args.startingIPAddress)
+				memo := fmt.Sprintf("%s@%s:26656", nodeIDs[j], ip)
+				ithPeers = append(ithPeers, memo)
+			}
+		}
+		sort.Strings(ithPeers)
+		persistentPeers = append(persistentPeers, strings.Join(ithPeers, ","))
+	}
+	fmt.Println("Here1", persistentPeers)
 
-	if err := initGenFiles(clientCtx, mbm, args.chainID, cmdcfg.BaseDenom, genAccounts, genBalances, genFiles, args.numValidators); err != nil {
+	if err := initGenFiles(clientCtx, mbm, args.chainID, cmdcfg.BaseDenom, genAccounts, genBalances, genFiles, args.numValidators, addrs, valPubKeys); err != nil {
 		return err
 	}
+	fmt.Println("Here2")
 
 	err := collectGenFiles(
 		clientCtx, nodeConfig, args.chainID, nodeIDs, valPubKeys, args.numValidators,
 		args.outputDir, args.nodeDirPrefix, args.nodeDaemonHome, genBalIterator,
+		persistentPeers,
 	)
 	if err != nil {
 		return err
 	}
+	fmt.Println("Here3")
 
 	cmd.PrintErrf("Successfully initialized %d node directories\n", args.numValidators)
 	return nil
 }
 
+func getTestExocoreGenesis(
+	chainID string,
+	operatorAddrs []sdk.AccAddress, // self delegated
+	pubKeys []cryptotypes.PubKey,
+) (
+	*assetstypes.GenesisState,
+	*operatortypes.GenesisState,
+	*delegationtypes.GenesisState,
+	*dogfoodtypes.GenesisState,
+) {
+	// x/assets
+	clientChains := []assetstypes.ClientChainInfo{
+		{
+			Name:               "ethereum",
+			MetaInfo:           "ethereum blockchain",
+			ChainId:            1,
+			FinalizationBlocks: 10,
+			LayerZeroChainID:   101,
+			AddressLength:      20,
+		},
+	}
+	assets := []assetstypes.AssetInfo{
+		{
+			Name:             "Tether USD",
+			Symbol:           "USDT",
+			Address:          "0xdAC17F958D2ee523a2206206994597C13D831ec7",
+			Decimals:         6,
+			LayerZeroChainID: clientChains[0].LayerZeroChainID,
+			MetaInfo:         "Tether USD token",
+		},
+	}
+	{
+		totalSupply, _ := sdk.NewIntFromString("40022689732746729")
+		assets[0].TotalSupply = totalSupply
+	}
+	_, assetID := assetstypes.GetStakeIDAndAssetIDFromStr(
+		clientChains[0].LayerZeroChainID,
+		"", assets[0].Address,
+	)
+	power := int64(300)
+	depositAmount := sdk.TokensFromConsensusPower(power, evmostypes.PowerReduction)
+	depositsByStaker := []assetstypes.DepositsByStaker{}
+	operatorInfos := []operatortypes.OperatorInfo{}
+	consensusKeyRecords := []operatortypes.OperatorConsKeyRecord{}
+	delegationsByStaker := []delegationtypes.DelegationsByStaker{}
+	validators := []dogfoodtypes.GenesisValidator{}
+	for i := range operatorAddrs {
+		operator := operatorAddrs[i]
+		stakerID, _ := assetstypes.GetStakeIDAndAssetIDFromStr(
+			clientChains[0].LayerZeroChainID,
+			common.Address(operator.Bytes()).String(), "",
+		)
+		pubKeyHex := hexutil.Encode(pubKeys[i].Bytes())
+		depositsByStaker = append(depositsByStaker, assetstypes.DepositsByStaker{
+			StakerID: stakerID,
+			Deposits: []assetstypes.DepositByAsset{
+				{
+					AssetID: assetID,
+					Info: assetstypes.StakerAssetInfo{
+						TotalDepositAmount:  depositAmount,
+						WithdrawableAmount:  depositAmount,
+						WaitUnbondingAmount: sdk.ZeroInt(),
+					},
+				},
+			},
+		})
+		operatorInfos = append(operatorInfos, operatortypes.OperatorInfo{
+			EarningsAddr:     operator.String(),
+			OperatorMetaInfo: "operator1",
+			Commission: stakingtypes.NewCommission(
+				sdk.ZeroDec(), sdk.ZeroDec(), sdk.ZeroDec(),
+			),
+		})
+		consensusKeyRecords = append(consensusKeyRecords, operatortypes.OperatorConsKeyRecord{
+			OperatorAddress: operator.String(),
+			Chains: []operatortypes.ChainDetails{
+				{
+					ChainID:      chainID,
+					ConsensusKey: pubKeyHex,
+				},
+			},
+		})
+		delegationsByStaker = append(delegationsByStaker, delegationtypes.DelegationsByStaker{
+			StakerID: stakerID,
+			Delegations: []delegationtypes.DelegatedSingleAssetInfo{
+				{
+					AssetID: assetID,
+					PerOperatorAmounts: []delegationtypes.KeyValue{
+						{
+							Key: operator.String(),
+							Value: &delegationtypes.ValueField{
+								Amount: depositAmount,
+							},
+						},
+					},
+				},
+			},
+		})
+		validators = append(validators, dogfoodtypes.GenesisValidator{
+			PublicKey: pubKeyHex,
+			Power:     power,
+		})
+	}
+	return assetstypes.NewGenesis(
+			assetstypes.DefaultParams(),
+			clientChains, []assetstypes.StakingAssetInfo{
+				{
+					AssetBasicInfo: &assets[0],
+					// required to be 0, since deposits are handled after token init.
+					StakingTotalAmount: sdk.ZeroInt(),
+				},
+			}, depositsByStaker,
+		), operatortypes.NewGenesisState(
+			operatorInfos,
+			consensusKeyRecords,
+		), delegationtypes.NewGenesis(
+			delegationsByStaker,
+		), dogfoodtypes.NewGenesis(
+			dogfoodtypes.NewParams(
+				dogfoodtypes.DefaultEpochsUntilUnbonded,
+				dogfoodtypes.DefaultEpochIdentifier,
+				dogfoodtypes.DefaultMaxValidators,
+				dogfoodtypes.DefaultHistoricalEntries,
+				[]string{assetID},
+			),
+			validators,
+		)
+}
+
+// initGenFiles saves the genesis.json for each validator.
 func initGenFiles(
 	clientCtx client.Context,
 	mbm module.BasicManager,
@@ -380,6 +498,8 @@ func initGenFiles(
 	genBalances []banktypes.Balance,
 	genFiles []string,
 	numValidators int,
+	addrs []sdk.AccAddress,
+	pubKeys []cryptotypes.PubKey,
 ) error {
 	appGenState := mbm.DefaultGenesis(clientCtx.Codec)
 	// set the accounts in the genesis state
@@ -419,6 +539,12 @@ func initGenFiles(
 	evmGenState.Params.EvmDenom = coinDenom
 	appGenState[evmtypes.ModuleName] = clientCtx.Codec.MustMarshalJSON(&evmGenState)
 
+	assets, operator, delegation, dogfood := getTestExocoreGenesis(chainID, addrs, pubKeys)
+	appGenState[assetstypes.ModuleName] = clientCtx.Codec.MustMarshalJSON(assets)
+	appGenState[operatortypes.ModuleName] = clientCtx.Codec.MustMarshalJSON(operator)
+	appGenState[delegationtypes.ModuleName] = clientCtx.Codec.MustMarshalJSON(delegation)
+	appGenState[dogfoodtypes.ModuleName] = clientCtx.Codec.MustMarshalJSON(dogfood)
+
 	appGenStateJSON, err := json.MarshalIndent(appGenState, "", "  ")
 	if err != nil {
 		return err
@@ -439,10 +565,11 @@ func initGenFiles(
 	return nil
 }
 
+// collectGenFiles runs gentx and sets up the `app.toml` and `config.toml` for each validator.
 func collectGenFiles(
 	clientCtx client.Context, nodeConfig *tmconfig.Config, chainID string,
 	nodeIDs []string, valPubKeys []cryptotypes.PubKey, numValidators int,
-	outputDir, nodeDirPrefix, nodeDaemonHome string, genBalIterator banktypes.GenesisBalancesIterator,
+	outputDir, nodeDirPrefix, nodeDaemonHome string, genBalIterator banktypes.GenesisBalancesIterator, persistentPeers []string,
 ) error {
 	var appState json.RawMessage
 	genTime := tmtime.Now()
@@ -451,36 +578,50 @@ func collectGenFiles(
 		nodeDirName := fmt.Sprintf("%s%d", nodeDirPrefix, i)
 		nodeDir := filepath.Join(outputDir, nodeDirName, nodeDaemonHome)
 		gentxsDir := filepath.Join(outputDir, "gentxs")
+		err := tmos.EnsureDir(gentxsDir, 0o755)
+		if err != nil {
+			return err
+		}
 		nodeConfig.Moniker = nodeDirName
 
 		nodeConfig.SetRoot(nodeDir)
 
-		nodeID, valPubKey := nodeIDs[i], valPubKeys[i]
-		initCfg := genutiltypes.NewInitConfig(chainID, gentxsDir, nodeID, valPubKey)
-
 		genDoc, err := types.GenesisDocFromFile(nodeConfig.GenesisFile())
+		if err != nil {
+			fmt.Println("Error reading genesis doc:", err)
+			return err
+		}
+
+		nodeConfig.P2P.PersistentPeers = persistentPeers[i]
+		cfg.WriteConfigFile(filepath.Join(nodeConfig.RootDir, "config", "config.toml"), nodeConfig)
+
+		// create the app state
+		appGenesisState, err := genutiltypes.GenesisStateFromGenDoc(*genDoc)
 		if err != nil {
 			return err
 		}
 
-		nodeAppState, err := genutil.GenAppStateFromConfig(
-			clientCtx.Codec, clientCtx.TxConfig,
-			nodeConfig, initCfg, *genDoc, genBalIterator,
-			genutiltypes.DefaultMessageValidator,
-		)
+		marshalledState, err := json.MarshalIndent(appGenesisState, "", "  ")
+		if err != nil {
+			return err
+		}
+
+		genDoc.AppState = marshalledState
+		err = genutil.ExportGenesisFile(genDoc, nodeConfig.GenesisFile())
 		if err != nil {
 			return err
 		}
 
 		if appState == nil {
 			// set the canonical application state (they should not differ)
-			appState = nodeAppState
+			appState = marshalledState
 		}
 
 		genFile := nodeConfig.GenesisFile()
 
 		// overwrite each validator's genesis file to have a canonical genesis time
 		if err := genutil.ExportGenesisFileWithTime(genFile, chainID, nil, appState, genTime); err != nil {
+			fmt.Println("Error exporting genesis file:", err)
 			return err
 		}
 	}
