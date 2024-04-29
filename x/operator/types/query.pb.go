@@ -82,7 +82,9 @@ func (m *GetOperatorInfoReq) GetOperatorAddr() string {
 type QueryOperatorConsKeyRequest struct {
 	// operator_acc_addr is the operator account address.
 	OperatorAccAddr string `protobuf:"bytes,1,opt,name=operator_acc_addr,json=operatorAccAddr,proto3" json:"operator_acc_addr,omitempty"`
-	// chain is the id of the chain served by the operator.
+	// chain is the id of the chain served by the operator. here chain_id is not used since the
+	// Linter complains about capitalization, which can be set with a gogoproto.custom_name but
+	// that is not compatible with google.api.http.get in the Query service below.
 	Chain string `protobuf:"bytes,2,opt,name=chain,proto3" json:"chain,omitempty"`
 }
 
@@ -287,7 +289,9 @@ func (m *QueryOperatorConsAddressResponse) GetConsAddr() string {
 // QueryAllOperatorConsKeysByChainIDRequest is the request to obtain all operator addresses
 // and consensus keys for a specific chain ID, with pagination.
 type QueryAllOperatorConsKeysByChainIDRequest struct {
-	// chain for which the operator consensus keys are being queried.
+	// chain for which the cons keys are being queried. here chain_id is not used since the
+	// Linter complains about capitalization, which can be set with a gogoproto.custom_name but
+	// that is not compatible with google.api.http.get in the Query service below.
 	Chain string `protobuf:"bytes,1,opt,name=chain,proto3" json:"chain,omitempty"`
 	// pagination related options.
 	Pagination *query.PageRequest `protobuf:"bytes,2,opt,name=pagination,proto3" json:"pagination,omitempty"`
@@ -461,7 +465,9 @@ func (m *OperatorConsKeyPair) GetPublicKey() *crypto.PublicKey {
 // QueryAllOperatorConsAddrsByChainIDRequest is the request to obtain all operator addresses
 // and consensus addresses for a specific chain ID, with pagination.
 type QueryAllOperatorConsAddrsByChainIDRequest struct {
-	// chain to query for operator info.
+	// chain for which the cons addrs are being queried. here chain_id is not used since the
+	// Linter complains about capitalization, which can be set with a gogoproto.custom_name but
+	// that is not compatible with google.api.http.get in the Query service below.
 	Chain string `protobuf:"bytes,1,opt,name=chain,proto3" json:"chain,omitempty"`
 	// pagination related options.
 	Pagination *query.PageRequest `protobuf:"bytes,2,opt,name=pagination,proto3" json:"pagination,omitempty"`
