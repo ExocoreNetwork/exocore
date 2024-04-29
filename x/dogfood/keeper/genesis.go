@@ -28,7 +28,7 @@ func (k Keeper) InitGenesis(
 	// apply the same logic to the staking assets.
 	for _, assetID := range genState.Params.AssetIDs {
 		if !k.restakingKeeper.IsStakingAsset(ctx, assetID) {
-			panic(fmt.Errorf("staking asset %s not found", assetID))
+			panic(fmt.Errorf("staking param %s not found in assets module", assetID))
 		}
 	}
 	// at genesis, not chain restarts, each operator may not necessarily be an initial

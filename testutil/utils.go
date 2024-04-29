@@ -144,27 +144,6 @@ func (suite *BaseTestSuite) SetupWithGenesisValSet(genAccs []authtypes.GenesisAc
 	oracleGenesis := oracletypes.NewGenesisState(oracleDefaultParams)
 	genesisState[oracletypes.ModuleName] = app.AppCodec().MustMarshalJSON(oracleGenesis)
 
-	// set genesis staking assets
-	ethClientChain := assetstypes.ClientChainInfo{
-		Name:               "ethereum",
-		MetaInfo:           "ethereum blockchain",
-		ChainId:            1,
-		FinalizationBlocks: 10,
-		LayerZeroChainID:   101,
-		AddressLength:      20,
-	}
-	usdtClientChainAsset := assetstypes.AssetInfo{
-		Name:             "Tether USD",
-		Symbol:           "USDT",
-		Address:          "0xdAC17F958D2ee523a2206206994597C13D831ec7",
-		Decimals:         6,
-		LayerZeroChainID: ethClientChain.LayerZeroChainID,
-		MetaInfo:         "Tether USD token",
-	}
-	{
-		totalSupply, _ := sdk.NewIntFromString("40022689732746729")
-		usdtClientChainAsset.TotalSupply = totalSupply
-	}
 	assetsGenesis := assetstypes.NewGenesis(
 		assetstypes.DefaultParams(),
 		suite.ClientChains, []assetstypes.StakingAssetInfo{
@@ -280,7 +259,7 @@ func (suite *BaseTestSuite) SetupWithGenesisValSet(genAccs []authtypes.GenesisAc
 
 	totalSupply := sdk.NewCoins()
 	for _, b := range balances {
-		// add genesis acc tokens and delegated tokens to total supply
+		// add genesis acc tokens to total supply
 		totalSupply = totalSupply.Add(b.Coins...)
 	}
 	bankGenesis := banktypes.NewGenesisState(

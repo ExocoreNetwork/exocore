@@ -34,7 +34,21 @@ func DefaultGenesis() *GenesisState {
 func (gs GenesisState) Validate() error {
 	// client_chain.go -> check no repeat chain
 	lzIDs := make(map[uint64]struct{}, len(gs.ClientChains))
-	for _, info := range gs.ClientChains {
+	for i, info := range gs.ClientChains {
+		if info.Name == "" {
+			return errorsmod.Wrapf(
+				ErrInvalidGenesisData,
+				"nil Name for chain %d",
+				i,
+			)
+		}
+		if info.LayerZeroChainID == 0 {
+			return errorsmod.Wrapf(
+				ErrInvalidGenesisData,
+				"nil LayerZeroChainID for chain %s",
+				info.Name,
+			)
+		}
 		if _, ok := lzIDs[info.LayerZeroChainID]; ok {
 			return errorsmod.Wrapf(
 				ErrInvalidGenesisData,
@@ -82,6 +96,13 @@ func (gs GenesisState) Validate() error {
 		// ensure there are no deposits for this asset already (since they are handled in the
 		// genesis exec). while it is possible to remove this field entirely (and assume 0),
 		// i did not do so in order to make the genesis state more explicit.
+		if info.StakingTotalAmount.IsNil() {
+			return errorsmod.Wrapf(
+				ErrInvalidGenesisData,
+				"nil staking total amount for asset %s",
+				assetID,
+			)
+		}
 		if !info.StakingTotalAmount.IsZero() {
 			return errorsmod.Wrapf(
 				ErrInvalidGenesisData,
