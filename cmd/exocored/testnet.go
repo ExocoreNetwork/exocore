@@ -55,8 +55,6 @@ import (
 	delegationtypes "github.com/ExocoreNetwork/exocore/x/delegation/types"
 	dogfoodtypes "github.com/ExocoreNetwork/exocore/x/dogfood/types"
 	operatortypes "github.com/ExocoreNetwork/exocore/x/operator/types"
-
-	cfg "github.com/cometbft/cometbft/config"
 )
 
 var (
@@ -107,7 +105,7 @@ func addTestnetFlagsToCmd(cmd *cobra.Command) {
 
 // NewTestnetCmd creates a root testnet command with subcommands to run an in-process testnet or initialize
 // validator configuration files for running a multi-validator testnet in a separate process
-func NewTestnetCmd(mbm module.BasicManager, genBalIterator banktypes.GenesisBalancesIterator) *cobra.Command {
+func NewTestnetCmd(mbm module.BasicManager) *cobra.Command {
 	testnetCmd := &cobra.Command{
 		Use:                        "testnet",
 		Short:                      "subcommands for starting or configuring local testnets",
@@ -117,13 +115,13 @@ func NewTestnetCmd(mbm module.BasicManager, genBalIterator banktypes.GenesisBala
 	}
 
 	testnetCmd.AddCommand(testnetStartCmd())
-	testnetCmd.AddCommand(testnetInitFilesCmd(mbm, genBalIterator))
+	testnetCmd.AddCommand(testnetInitFilesCmd(mbm))
 
 	return testnetCmd
 }
 
 // get cmd to initialize all files for tendermint testnet and application
-func testnetInitFilesCmd(mbm module.BasicManager, genBalIterator banktypes.GenesisBalancesIterator) *cobra.Command {
+func testnetInitFilesCmd(mbm module.BasicManager) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "init-files",
 		Short: "Initialize config directories & files for a multi-validator testnet running locally via separate processes (e.g. Docker Compose or similar)",
@@ -157,7 +155,7 @@ Example:
 			args.numValidators, _ = cmd.Flags().GetInt(flagNumValidators)
 			args.algo, _ = cmd.Flags().GetString(flags.FlagKeyType)
 
-			return initTestnetFiles(clientCtx, cmd, serverCtx.Config, mbm, genBalIterator, args)
+			return initTestnetFiles(clientCtx, cmd, serverCtx.Config, mbm, args)
 		},
 	}
 
@@ -218,7 +216,6 @@ func initTestnetFiles(
 	cmd *cobra.Command,
 	nodeConfig *tmconfig.Config,
 	mbm module.BasicManager,
-	genBalIterator banktypes.GenesisBalancesIterator,
 	args initArgs,
 ) error {
 	if args.chainID == "" {
@@ -346,8 +343,8 @@ func initTestnetFiles(
 	fmt.Println("Here2")
 
 	err := collectGenFiles(
-		clientCtx, nodeConfig, args.chainID, nodeIDs, valPubKeys, args.numValidators,
-		args.outputDir, args.nodeDirPrefix, args.nodeDaemonHome, genBalIterator,
+		nodeConfig, args.chainID, args.numValidators,
+		args.outputDir, args.nodeDirPrefix, args.nodeDaemonHome,
 		persistentPeers,
 	)
 	if err != nil {
@@ -567,9 +564,8 @@ func initGenFiles(
 
 // collectGenFiles runs gentx and sets up the `app.toml` and `config.toml` for each validator.
 func collectGenFiles(
-	clientCtx client.Context, nodeConfig *tmconfig.Config, chainID string,
-	nodeIDs []string, valPubKeys []cryptotypes.PubKey, numValidators int,
-	outputDir, nodeDirPrefix, nodeDaemonHome string, genBalIterator banktypes.GenesisBalancesIterator, persistentPeers []string,
+	nodeConfig *tmconfig.Config, chainID string, numValidators int,
+	outputDir, nodeDirPrefix, nodeDaemonHome string, persistentPeers []string,
 ) error {
 	var appState json.RawMessage
 	genTime := tmtime.Now()
@@ -593,7 +589,7 @@ func collectGenFiles(
 		}
 
 		nodeConfig.P2P.PersistentPeers = persistentPeers[i]
-		cfg.WriteConfigFile(filepath.Join(nodeConfig.RootDir, "config", "config.toml"), nodeConfig)
+		tmconfig.WriteConfigFile(filepath.Join(nodeConfig.RootDir, "config", "config.toml"), nodeConfig)
 
 		// create the app state
 		appGenesisState, err := genutiltypes.GenesisStateFromGenDoc(*genDoc)
