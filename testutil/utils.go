@@ -57,7 +57,8 @@ type BaseTestSuite struct {
 	ClientChains []assetstypes.ClientChainInfo
 	Assets       []assetstypes.AssetInfo
 	// for tracking validator across blocks
-	ValSet *tmtypes.ValidatorSet
+	ValSet    *tmtypes.ValidatorSet
+	Operators []sdk.AccAddress
 
 	StateDB        *statedb.StateDB
 	QueryClientEVM evmtypes.QueryClient

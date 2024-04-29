@@ -52,8 +52,9 @@ func (suite *KeeperSuite) Reset() {
 
 func (suite *KeeperSuite) SetupTest() {
 	suite.DoSetupTest()
-	suite.valAddr1, _ = sdk.ValAddressFromBech32(suite.Validators[0].OperatorAddress)
-	suite.valAddr2, _ = sdk.ValAddressFromBech32(suite.Validators[1].OperatorAddress)
+	validators := suite.ValSet.Validators
+	suite.valAddr1, _ = sdk.ValAddressFromBech32(sdk.ValAddress(validators[0].Address).String())
+	suite.valAddr2, _ = sdk.ValAddressFromBech32(sdk.ValAddress(validators[1].Address).String())
 	resetSingle()
 }
 

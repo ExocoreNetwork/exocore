@@ -179,11 +179,19 @@ func (k Keeper) IterateBondedValidatorsByPower(
 			// will only happen if there is an error in deserialization.
 			continue
 		}
-		val, err := stakingtypes.NewValidator(nil, pk, stakingtypes.Description{})
+		val, err := stakingtypes.NewValidator(
+			// TODO: this is not the correct address, which is derived from
+			// sdk.ValAddress(sdk.AccAddress)
+			sdk.ValAddress(pk.Address()),
+			pk, stakingtypes.Description{},
+		)
 		if err != nil {
 			// will only happen if there is an error in deserialization.
 			continue
 		}
+		// allow calculation of power
+		val.Status = stakingtypes.Bonded
+		val.Tokens = sdk.TokensFromConsensusPower(v.Power, sdk.DefaultPowerReduction)
 		if f(int64(i), val) {
 			break
 		}
