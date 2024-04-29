@@ -66,6 +66,20 @@ func (gs GenesisState) Validate() error {
 				}
 			}
 		}
+		if op.Commission.CommissionRates.Rate.IsNil() ||
+			op.Commission.CommissionRates.MaxRate.IsNil() ||
+			op.Commission.CommissionRates.MaxChangeRate.IsNil() {
+			return errorsmod.Wrapf(
+				ErrInvalidGenesisData,
+				"missing commission for operator %s", address,
+			)
+		}
+		if err := op.Commission.Validate(); err != nil {
+			return errorsmod.Wrapf(
+				ErrInvalidGenesisData,
+				"invalid commission for operator %s: %s", address, err,
+			)
+		}
 	}
 	// - correct bech32 format for each address in `gs.OperatorRecords`.
 	// - no duplicate addresses in `gs.OperatorRecords`.

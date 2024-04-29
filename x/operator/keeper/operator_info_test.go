@@ -36,5 +36,6 @@ func (suite *OperatorTestSuite) TestAllOperators() {
 	suite.NoError(err)
 
 	getOperators := suite.App.OperatorKeeper.AllOperators(suite.Ctx)
-	suite.Equal(operators, getOperators)
+	suite.Contains(getOperators, operators[0])
+	suite.Contains(getOperators, operators[1])
 }

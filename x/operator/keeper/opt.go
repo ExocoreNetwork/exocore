@@ -30,7 +30,7 @@ type SlashAssets struct {
 
 // UpdateOptedInAssetsState will update the USD share state related to asset, operator and AVS when
 // the asset amount changes caused by delegation, undelegation, slashStaker and slashOperator.
-func (k *Keeper) UpdateOptedInAssetsState(ctx sdk.Context, stakerID, assetID, operatorAddr string, opAmount sdkmath.Int) error {
+func (k Keeper) UpdateOptedInAssetsState(ctx sdk.Context, stakerID, assetID, operatorAddr string, opAmount sdkmath.Int) error {
 	// get the AVS opted-in by the operator
 	avsList, err := k.GetOptedInAVSForOperator(ctx, operatorAddr)
 	if err != nil {

@@ -8,6 +8,7 @@ import (
 	"sort"
 	"time"
 
+	"cosmossdk.io/math"
 	"github.com/ExocoreNetwork/exocore/x/dogfood/types"
 	abci "github.com/cometbft/cometbft/abci/types"
 	cryptocodec "github.com/cosmos/cosmos-sdk/crypto/codec"
@@ -96,6 +97,9 @@ func (k Keeper) ApplyValidatorChanges(
 		}
 		return ret[i].PubKey.String() > ret[j].PubKey.String()
 	})
+
+	// set the list of validator updates
+	k.SetValidatorUpdates(ctx, ret)
 
 	return ret
 }
@@ -264,4 +268,41 @@ func (k Keeper) MustGetCurrentValidatorsAsABCIUpdates(ctx sdk.Context) []abci.Va
 	}
 
 	return valUpdates
+}
+
+// GetLastTotalPower gets the last total validator power.
+func (k Keeper) GetLastTotalPower(ctx sdk.Context) math.Int {
+	store := ctx.KVStore(k.storeKey)
+	bz := store.Get(types.LastTotalPowerKey())
+	if bz == nil {
+		return math.ZeroInt()
+	}
+	ip := sdk.IntProto{}
+	k.cdc.MustUnmarshal(bz, &ip)
+	return ip.Int
+}
+
+// SetLastTotalPower sets the last total validator power.
+func (k Keeper) SetLastTotalPower(ctx sdk.Context, power math.Int) {
+	store := ctx.KVStore(k.storeKey)
+	bz := k.cdc.MustMarshal(&sdk.IntProto{Int: power})
+	store.Set(types.LastTotalPowerKey(), bz)
+}
+
+// SetValidatorUpdates sets the ABCI validator power updates for the current block.
+func (k Keeper) SetValidatorUpdates(ctx sdk.Context, valUpdates []abci.ValidatorUpdate) {
+	store := ctx.KVStore(k.storeKey)
+	bz := k.cdc.MustMarshal(&stakingtypes.ValidatorUpdates{Updates: valUpdates})
+	store.Set(types.ValidatorUpdatesKey(), bz)
+}
+
+// GetValidatorUpdates returns the ABCI validator power updates within the current block.
+func (k Keeper) GetValidatorUpdates(ctx sdk.Context) []abci.ValidatorUpdate {
+	store := ctx.KVStore(k.storeKey)
+	bz := store.Get(types.ValidatorUpdatesKey())
+
+	var valUpdates stakingtypes.ValidatorUpdates
+	k.cdc.MustUnmarshal(bz, &valUpdates)
+
+	return valUpdates.Updates
 }
