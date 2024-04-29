@@ -4,14 +4,14 @@
     "inputs": [
       {
         "indexed": true,
-        "internalType": "address",
+        "internalType": "string",
         "name": "operator",
-        "type": "address"
+        "type": "string"
       },
       {
         "indexed": false,
         "internalType": "bytes",
-        "name": "pubkeyG1",
+        "name": "pubKey",
         "type": "bytes"
       }
     ],
@@ -21,17 +21,17 @@
   {
     "inputs": [
       {
-        "internalType": "address",
+        "internalType": "string",
         "name": "operator",
-        "type": "address"
+        "type": "string"
       }
     ],
     "name": "getRegisteredPubkey",
     "outputs": [
       {
-        "internalType": "bytes32",
-        "name": "",
-        "type": "bytes32"
+        "internalType": "bytes",
+        "name": "pubkey",
+        "type": "bytes"
       }
     ],
     "stateMutability": "nonpayable",

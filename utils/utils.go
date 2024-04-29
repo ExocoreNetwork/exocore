@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"encoding/hex"
 	"strings"
 
 	"github.com/evmos/evmos/v14/crypto/ethsecp256k1"
@@ -85,4 +86,13 @@ func GetExocoreAddressFromBech32(address string) (sdk.AccAddress, error) {
 	}
 
 	return sdk.AccAddress(addressBz), nil
+}
+func DecodeHexString(hexString string) ([]byte, error) {
+	if strings.HasPrefix(hexString, "0x") || strings.HasPrefix(hexString, "0X") {
+		hexString = hexString[2:]
+	}
+	if len(hexString)%2 != 0 {
+		hexString = "0" + hexString
+	}
+	return hex.DecodeString(hexString)
 }

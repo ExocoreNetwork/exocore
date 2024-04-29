@@ -2,7 +2,9 @@ package avs
 
 import (
 	exocmn "github.com/ExocoreNetwork/exocore/precompiles/common"
+	util "github.com/ExocoreNetwork/exocore/utils"
 	avstypes "github.com/ExocoreNetwork/exocore/x/avs/keeper"
+	"github.com/cosmos/btcutil/bech32"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	cmn "github.com/evmos/evmos/v14/precompiles/common"
 	"golang.org/x/xerrors"
@@ -23,14 +25,14 @@ func (p Precompile) GetAVSParamsFromInputs(_ sdk.Context, args []interface{}) (*
 	if !ok {
 		return nil, xerrors.Errorf(exocmn.ErrContractInputParaOrType, 1, "[]byte", avsAddress)
 	}
-	avsParams.AvsAddress = avsAddress
-
+	avsAddressHex, _ := util.DecodeHexString(avsAddress)
+	avsParams.AvsAddress, _ = bech32.EncodeFromBase256("exo", avsAddressHex)
 	operatorAddress, ok := args[2].(string)
 	if !ok || operatorAddress == "" {
 		return nil, xerrors.Errorf(exocmn.ErrContractInputParaOrType, 2, "[]byte", operatorAddress)
 	}
-	avsParams.OperatorAddress = operatorAddress
-
+	operatorAddressHex, _ := util.DecodeHexString(operatorAddress)
+	avsParams.OperatorAddress, _ = bech32.EncodeFromBase256("exo", operatorAddressHex)
 	action, ok := args[3].(uint64)
 	if !ok || (action != avstypes.RegisterAction && action != avstypes.DeRegisterAction) {
 		return nil, xerrors.Errorf(exocmn.ErrContractInputParaOrType, 3, "uint64", action)
@@ -41,8 +43,8 @@ func (p Precompile) GetAVSParamsFromInputs(_ sdk.Context, args []interface{}) (*
 	if !ok || avsOwnerAddress == "" {
 		return nil, xerrors.Errorf(exocmn.ErrContractInputParaOrType, 4, "string", avsOwnerAddress)
 	}
-	avsParams.AvsOwnerAddress = avsOwnerAddress
-
+	AvsOwnerAddressHex, _ := util.DecodeHexString(avsOwnerAddress)
+	avsParams.AvsOwnerAddress, _ = bech32.EncodeFromBase256("exo", AvsOwnerAddressHex)
 	assetID, ok := args[5].(string)
 	if !ok || assetID == "" {
 		return nil, xerrors.Errorf(exocmn.ErrContractInputParaOrType, 3, "uint64", action)
