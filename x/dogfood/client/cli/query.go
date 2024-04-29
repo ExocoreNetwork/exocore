@@ -113,7 +113,9 @@ func CmdQueryOperatorOptOutFinishEpoch() *cobra.Command {
 			queryClient := types.NewQueryClient(clientCtx)
 			operator := args[0]
 			res, err := queryClient.OperatorOptOutFinishEpoch(
-				cmd.Context(), &types.QueryOperatorOptOutFinishEpochRequest{Operator: operator},
+				cmd.Context(), &types.QueryOperatorOptOutFinishEpochRequest{
+					OperatorAccAddr: operator,
+				},
 			)
 			if err != nil {
 				return err
@@ -200,7 +202,7 @@ func CmdQueryValidator() *cobra.Command {
 			queryClient := types.NewQueryClient(clientCtx)
 			address := args[0]
 			res, err := queryClient.QueryValidator(
-				cmd.Context(), &types.QueryValidatorRequest{ConsensusAddress: address},
+				cmd.Context(), &types.QueryValidatorRequest{ConsAddr: address},
 			)
 			if err != nil {
 				return err

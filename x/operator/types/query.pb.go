@@ -78,11 +78,11 @@ func (m *GetOperatorInfoReq) GetOperatorAddr() string {
 	return ""
 }
 
-// QueryOperatorConsKeyRequest is the request to obtain the consensus public key of the operator
+// QueryOperatorConsKeyRequest is a request to obtain the consensus public key of the operator.
 type QueryOperatorConsKeyRequest struct {
-	// addr is the ACC address of operator
-	Addr string `protobuf:"bytes,1,opt,name=addr,proto3" json:"addr,omitempty"`
-	// chain is the id of the chain served by the operator
+	// operator_acc_addr is the operator account address.
+	OperatorAccAddr string `protobuf:"bytes,1,opt,name=operator_acc_addr,json=operatorAccAddr,proto3" json:"operator_acc_addr,omitempty"`
+	// chain is the id of the chain served by the operator.
 	Chain string `protobuf:"bytes,2,opt,name=chain,proto3" json:"chain,omitempty"`
 }
 
@@ -119,9 +119,9 @@ func (m *QueryOperatorConsKeyRequest) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_QueryOperatorConsKeyRequest proto.InternalMessageInfo
 
-func (m *QueryOperatorConsKeyRequest) GetAddr() string {
+func (m *QueryOperatorConsKeyRequest) GetOperatorAccAddr() string {
 	if m != nil {
-		return m.Addr
+		return m.OperatorAccAddr
 	}
 	return ""
 }
@@ -133,9 +133,9 @@ func (m *QueryOperatorConsKeyRequest) GetChain() string {
 	return ""
 }
 
-// QueryOperatorConsKeyResponse is the response for QueryOperatorConsKeyRequest
+// QueryOperatorConsKeyResponse is the response for QueryOperatorConsKeyRequest.
 type QueryOperatorConsKeyResponse struct {
-	// public_key is the consensus public key of the operator
+	// public_key is the consensus public key of the operator.
 	PublicKey crypto.PublicKey `protobuf:"bytes,1,opt,name=public_key,json=publicKey,proto3" json:"public_key"`
 }
 
@@ -182,9 +182,11 @@ func (m *QueryOperatorConsKeyResponse) GetPublicKey() crypto.PublicKey {
 // QueryOperatorConsAddressRequest is the request to obtain the consensus address of the operator
 // for a specific chain ID.
 type QueryOperatorConsAddressRequest struct {
-	// addr is the ACC address of operator
-	Addr string `protobuf:"bytes,1,opt,name=addr,proto3" json:"addr,omitempty"`
-	// chain is the id of the chain served by the operator
+	// operator_acc_addr is the operator account address.
+	OperatorAccAddr string `protobuf:"bytes,1,opt,name=operator_acc_addr,json=operatorAccAddr,proto3" json:"operator_acc_addr,omitempty"`
+	// chain is the id of the chain served by the operator. here chain_id is not used since the
+	// Linter complains about capitalization, which can be set with a gogoproto.custom_name but
+	// that is not compatible with google.api.http.get in the Query service below.
 	Chain string `protobuf:"bytes,2,opt,name=chain,proto3" json:"chain,omitempty"`
 }
 
@@ -221,9 +223,9 @@ func (m *QueryOperatorConsAddressRequest) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_QueryOperatorConsAddressRequest proto.InternalMessageInfo
 
-func (m *QueryOperatorConsAddressRequest) GetAddr() string {
+func (m *QueryOperatorConsAddressRequest) GetOperatorAccAddr() string {
 	if m != nil {
-		return m.Addr
+		return m.OperatorAccAddr
 	}
 	return ""
 }
@@ -237,8 +239,9 @@ func (m *QueryOperatorConsAddressRequest) GetChain() string {
 
 // QueryOperatorConsAddressResponse is the response for QueryOperatorConsAddressRequest.
 type QueryOperatorConsAddressResponse struct {
-	// address is the consensus address of the operator
-	Address string `protobuf:"bytes,1,opt,name=address,proto3" json:"address,omitempty"`
+	// cons_addr is the consensus address corresponding to the consensus public key
+	// currently in use by the operator.
+	ConsAddr string `protobuf:"bytes,1,opt,name=cons_addr,json=consAddr,proto3" json:"cons_addr,omitempty"`
 }
 
 func (m *QueryOperatorConsAddressResponse) Reset()         { *m = QueryOperatorConsAddressResponse{} }
@@ -274,34 +277,36 @@ func (m *QueryOperatorConsAddressResponse) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_QueryOperatorConsAddressResponse proto.InternalMessageInfo
 
-func (m *QueryOperatorConsAddressResponse) GetAddress() string {
+func (m *QueryOperatorConsAddressResponse) GetConsAddr() string {
 	if m != nil {
-		return m.Address
+		return m.ConsAddr
 	}
 	return ""
 }
 
-// QueryAllOperatorKeysByChainIDRequest is the request to obtain all operator addresses
+// QueryAllOperatorConsKeysByChainIDRequest is the request to obtain all operator addresses
 // and consensus keys for a specific chain ID, with pagination.
-type QueryAllOperatorKeysByChainIDRequest struct {
-	// chain to query for operator info.
+type QueryAllOperatorConsKeysByChainIDRequest struct {
+	// chain for which the operator consensus keys are being queried.
 	Chain string `protobuf:"bytes,1,opt,name=chain,proto3" json:"chain,omitempty"`
 	// pagination related options.
 	Pagination *query.PageRequest `protobuf:"bytes,2,opt,name=pagination,proto3" json:"pagination,omitempty"`
 }
 
-func (m *QueryAllOperatorKeysByChainIDRequest) Reset()         { *m = QueryAllOperatorKeysByChainIDRequest{} }
-func (m *QueryAllOperatorKeysByChainIDRequest) String() string { return proto.CompactTextString(m) }
-func (*QueryAllOperatorKeysByChainIDRequest) ProtoMessage()    {}
-func (*QueryAllOperatorKeysByChainIDRequest) Descriptor() ([]byte, []int) {
+func (m *QueryAllOperatorConsKeysByChainIDRequest) Reset() {
+	*m = QueryAllOperatorConsKeysByChainIDRequest{}
+}
+func (m *QueryAllOperatorConsKeysByChainIDRequest) String() string { return proto.CompactTextString(m) }
+func (*QueryAllOperatorConsKeysByChainIDRequest) ProtoMessage()    {}
+func (*QueryAllOperatorConsKeysByChainIDRequest) Descriptor() ([]byte, []int) {
 	return fileDescriptor_f91e795a3cecbdbf, []int{5}
 }
-func (m *QueryAllOperatorKeysByChainIDRequest) XXX_Unmarshal(b []byte) error {
+func (m *QueryAllOperatorConsKeysByChainIDRequest) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *QueryAllOperatorKeysByChainIDRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *QueryAllOperatorConsKeysByChainIDRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_QueryAllOperatorKeysByChainIDRequest.Marshal(b, m, deterministic)
+		return xxx_messageInfo_QueryAllOperatorConsKeysByChainIDRequest.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -311,53 +316,57 @@ func (m *QueryAllOperatorKeysByChainIDRequest) XXX_Marshal(b []byte, determinist
 		return b[:n], nil
 	}
 }
-func (m *QueryAllOperatorKeysByChainIDRequest) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_QueryAllOperatorKeysByChainIDRequest.Merge(m, src)
+func (m *QueryAllOperatorConsKeysByChainIDRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryAllOperatorConsKeysByChainIDRequest.Merge(m, src)
 }
-func (m *QueryAllOperatorKeysByChainIDRequest) XXX_Size() int {
+func (m *QueryAllOperatorConsKeysByChainIDRequest) XXX_Size() int {
 	return m.Size()
 }
-func (m *QueryAllOperatorKeysByChainIDRequest) XXX_DiscardUnknown() {
-	xxx_messageInfo_QueryAllOperatorKeysByChainIDRequest.DiscardUnknown(m)
+func (m *QueryAllOperatorConsKeysByChainIDRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryAllOperatorConsKeysByChainIDRequest.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_QueryAllOperatorKeysByChainIDRequest proto.InternalMessageInfo
+var xxx_messageInfo_QueryAllOperatorConsKeysByChainIDRequest proto.InternalMessageInfo
 
-func (m *QueryAllOperatorKeysByChainIDRequest) GetChain() string {
+func (m *QueryAllOperatorConsKeysByChainIDRequest) GetChain() string {
 	if m != nil {
 		return m.Chain
 	}
 	return ""
 }
 
-func (m *QueryAllOperatorKeysByChainIDRequest) GetPagination() *query.PageRequest {
+func (m *QueryAllOperatorConsKeysByChainIDRequest) GetPagination() *query.PageRequest {
 	if m != nil {
 		return m.Pagination
 	}
 	return nil
 }
 
-// QueryAllOperatorKeysByChainIDResponse is the response that includes a list of all operators
+// QueryAllOperatorConsKeysByChainIDResponse is the response that includes a list of all operators
 // and their consensus keys for a specified chain ID.
-type QueryAllOperatorKeysByChainIDResponse struct {
-	// operator_cons_keys is a list of operator addresses and their consensus public key.
+type QueryAllOperatorConsKeysByChainIDResponse struct {
+	// operator_cons_keys is a list of operator addresses and their consensus public keys.
 	OperatorConsKeys []*OperatorConsKeyPair `protobuf:"bytes,1,rep,name=operator_cons_keys,json=operatorConsKeys,proto3" json:"operator_cons_keys,omitempty"`
 	// pagination related response.
 	Pagination *query.PageResponse `protobuf:"bytes,2,opt,name=pagination,proto3" json:"pagination,omitempty"`
 }
 
-func (m *QueryAllOperatorKeysByChainIDResponse) Reset()         { *m = QueryAllOperatorKeysByChainIDResponse{} }
-func (m *QueryAllOperatorKeysByChainIDResponse) String() string { return proto.CompactTextString(m) }
-func (*QueryAllOperatorKeysByChainIDResponse) ProtoMessage()    {}
-func (*QueryAllOperatorKeysByChainIDResponse) Descriptor() ([]byte, []int) {
+func (m *QueryAllOperatorConsKeysByChainIDResponse) Reset() {
+	*m = QueryAllOperatorConsKeysByChainIDResponse{}
+}
+func (m *QueryAllOperatorConsKeysByChainIDResponse) String() string {
+	return proto.CompactTextString(m)
+}
+func (*QueryAllOperatorConsKeysByChainIDResponse) ProtoMessage() {}
+func (*QueryAllOperatorConsKeysByChainIDResponse) Descriptor() ([]byte, []int) {
 	return fileDescriptor_f91e795a3cecbdbf, []int{6}
 }
-func (m *QueryAllOperatorKeysByChainIDResponse) XXX_Unmarshal(b []byte) error {
+func (m *QueryAllOperatorConsKeysByChainIDResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *QueryAllOperatorKeysByChainIDResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *QueryAllOperatorConsKeysByChainIDResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_QueryAllOperatorKeysByChainIDResponse.Marshal(b, m, deterministic)
+		return xxx_messageInfo_QueryAllOperatorConsKeysByChainIDResponse.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -367,36 +376,37 @@ func (m *QueryAllOperatorKeysByChainIDResponse) XXX_Marshal(b []byte, determinis
 		return b[:n], nil
 	}
 }
-func (m *QueryAllOperatorKeysByChainIDResponse) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_QueryAllOperatorKeysByChainIDResponse.Merge(m, src)
+func (m *QueryAllOperatorConsKeysByChainIDResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryAllOperatorConsKeysByChainIDResponse.Merge(m, src)
 }
-func (m *QueryAllOperatorKeysByChainIDResponse) XXX_Size() int {
+func (m *QueryAllOperatorConsKeysByChainIDResponse) XXX_Size() int {
 	return m.Size()
 }
-func (m *QueryAllOperatorKeysByChainIDResponse) XXX_DiscardUnknown() {
-	xxx_messageInfo_QueryAllOperatorKeysByChainIDResponse.DiscardUnknown(m)
+func (m *QueryAllOperatorConsKeysByChainIDResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryAllOperatorConsKeysByChainIDResponse.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_QueryAllOperatorKeysByChainIDResponse proto.InternalMessageInfo
+var xxx_messageInfo_QueryAllOperatorConsKeysByChainIDResponse proto.InternalMessageInfo
 
-func (m *QueryAllOperatorKeysByChainIDResponse) GetOperatorConsKeys() []*OperatorConsKeyPair {
+func (m *QueryAllOperatorConsKeysByChainIDResponse) GetOperatorConsKeys() []*OperatorConsKeyPair {
 	if m != nil {
 		return m.OperatorConsKeys
 	}
 	return nil
 }
 
-func (m *QueryAllOperatorKeysByChainIDResponse) GetPagination() *query.PageResponse {
+func (m *QueryAllOperatorConsKeysByChainIDResponse) GetPagination() *query.PageResponse {
 	if m != nil {
 		return m.Pagination
 	}
 	return nil
 }
 
-// OperatorConsKeyPair holds the operator address and the corresponding consensus public key.
+// OperatorConsKeyPair holds the operator address and the consensus public key currently in
+// use by the operator.
 type OperatorConsKeyPair struct {
-	// operator_addr is the operator address.
-	OperatorAddr string `protobuf:"bytes,1,opt,name=operator_addr,json=operatorAddr,proto3" json:"operator_addr,omitempty"`
+	// operator_acc_addr is the operator account address.
+	OperatorAccAddr string `protobuf:"bytes,1,opt,name=operator_acc_addr,json=operatorAccAddr,proto3" json:"operator_acc_addr,omitempty"`
 	// public_key is the consensus public key of the operator.
 	PublicKey *crypto.PublicKey `protobuf:"bytes,2,opt,name=public_key,json=publicKey,proto3" json:"public_key,omitempty"`
 }
@@ -434,9 +444,9 @@ func (m *OperatorConsKeyPair) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_OperatorConsKeyPair proto.InternalMessageInfo
 
-func (m *OperatorConsKeyPair) GetOperatorAddr() string {
+func (m *OperatorConsKeyPair) GetOperatorAccAddr() string {
 	if m != nil {
-		return m.OperatorAddr
+		return m.OperatorAccAddr
 	}
 	return ""
 }
@@ -511,7 +521,7 @@ func (m *QueryAllOperatorConsAddrsByChainIDRequest) GetPagination() *query.PageR
 // QueryAllOperatorConsAddrsByChainIDResponse is the response that includes a list of all operators
 // and their consensus addresses for a specified chain ID.
 type QueryAllOperatorConsAddrsByChainIDResponse struct {
-	// operator_cons_addrs is a list of operator account addresses and their consensus addresses.
+	// operator_cons_addrs is a list of operator account addresses and the consensus addresses.
 	OperatorConsAddrs []*OperatorConsAddrPair `protobuf:"bytes,1,rep,name=operator_cons_addrs,json=operatorConsAddrs,proto3" json:"operator_cons_addrs,omitempty"`
 	// pagination related response.
 	Pagination *query.PageResponse `protobuf:"bytes,2,opt,name=pagination,proto3" json:"pagination,omitempty"`
@@ -570,10 +580,11 @@ func (m *QueryAllOperatorConsAddrsByChainIDResponse) GetPagination() *query.Page
 
 // OperatorConsAddrPair holds the operator address and the corresponding consensus address.
 type OperatorConsAddrPair struct {
-	// operator_addr is the operator address.
-	OperatorAddr string `protobuf:"bytes,1,opt,name=operator_addr,json=operatorAddr,proto3" json:"operator_addr,omitempty"`
-	// cons_address is the consensus address of the operator.
-	ConsAddress string `protobuf:"bytes,2,opt,name=cons_address,json=consAddress,proto3" json:"cons_address,omitempty"`
+	// operator_acc_addr is the operator account address.
+	OperatorAccAddr string `protobuf:"bytes,1,opt,name=operator_acc_addr,json=operatorAccAddr,proto3" json:"operator_acc_addr,omitempty"`
+	// cons_addr is the consensus address corresponding to the consensus public key
+	// currently in use by the operator.
+	ConsAddr string `protobuf:"bytes,2,opt,name=cons_addr,json=consAddr,proto3" json:"cons_addr,omitempty"`
 }
 
 func (m *OperatorConsAddrPair) Reset()         { *m = OperatorConsAddrPair{} }
@@ -609,16 +620,16 @@ func (m *OperatorConsAddrPair) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_OperatorConsAddrPair proto.InternalMessageInfo
 
-func (m *OperatorConsAddrPair) GetOperatorAddr() string {
+func (m *OperatorConsAddrPair) GetOperatorAccAddr() string {
 	if m != nil {
-		return m.OperatorAddr
+		return m.OperatorAccAddr
 	}
 	return ""
 }
 
-func (m *OperatorConsAddrPair) GetConsAddress() string {
+func (m *OperatorConsAddrPair) GetConsAddr() string {
 	if m != nil {
-		return m.ConsAddress
+		return m.ConsAddr
 	}
 	return ""
 }
@@ -629,8 +640,8 @@ func init() {
 	proto.RegisterType((*QueryOperatorConsKeyResponse)(nil), "exocore.operator.v1.QueryOperatorConsKeyResponse")
 	proto.RegisterType((*QueryOperatorConsAddressRequest)(nil), "exocore.operator.v1.QueryOperatorConsAddressRequest")
 	proto.RegisterType((*QueryOperatorConsAddressResponse)(nil), "exocore.operator.v1.QueryOperatorConsAddressResponse")
-	proto.RegisterType((*QueryAllOperatorKeysByChainIDRequest)(nil), "exocore.operator.v1.QueryAllOperatorKeysByChainIDRequest")
-	proto.RegisterType((*QueryAllOperatorKeysByChainIDResponse)(nil), "exocore.operator.v1.QueryAllOperatorKeysByChainIDResponse")
+	proto.RegisterType((*QueryAllOperatorConsKeysByChainIDRequest)(nil), "exocore.operator.v1.QueryAllOperatorConsKeysByChainIDRequest")
+	proto.RegisterType((*QueryAllOperatorConsKeysByChainIDResponse)(nil), "exocore.operator.v1.QueryAllOperatorConsKeysByChainIDResponse")
 	proto.RegisterType((*OperatorConsKeyPair)(nil), "exocore.operator.v1.OperatorConsKeyPair")
 	proto.RegisterType((*QueryAllOperatorConsAddrsByChainIDRequest)(nil), "exocore.operator.v1.QueryAllOperatorConsAddrsByChainIDRequest")
 	proto.RegisterType((*QueryAllOperatorConsAddrsByChainIDResponse)(nil), "exocore.operator.v1.QueryAllOperatorConsAddrsByChainIDResponse")
@@ -640,59 +651,59 @@ func init() {
 func init() { proto.RegisterFile("exocore/operator/v1/query.proto", fileDescriptor_f91e795a3cecbdbf) }
 
 var fileDescriptor_f91e795a3cecbdbf = []byte{
-	// 832 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xbc, 0x96, 0xcd, 0x4f, 0x13, 0x4d,
-	0x1c, 0xc7, 0xbb, 0x3c, 0xf0, 0x10, 0xa6, 0x3c, 0xc9, 0xc3, 0xd0, 0x43, 0xad, 0x58, 0x60, 0x7d,
-	0xe1, 0x25, 0x71, 0x87, 0x56, 0x90, 0x00, 0xa2, 0x69, 0x51, 0x08, 0xa9, 0x51, 0x5c, 0x12, 0x13,
-	0x3d, 0xd8, 0x6c, 0xb7, 0xc3, 0xb2, 0xa1, 0xec, 0x2c, 0xbb, 0x53, 0x60, 0x43, 0xb8, 0x18, 0x2f,
-	0xde, 0x4c, 0x3c, 0xfa, 0x6f, 0xf8, 0x27, 0x78, 0xe0, 0x64, 0x88, 0x7a, 0xf0, 0x44, 0x0c, 0xf8,
-	0x2f, 0x78, 0x37, 0x3b, 0x3b, 0xbb, 0xed, 0x96, 0xed, 0x0b, 0xc4, 0x78, 0xdb, 0x99, 0xf9, 0xbd,
-	0x7d, 0xe6, 0xfb, 0x9b, 0x5f, 0x0b, 0x86, 0xf1, 0x3e, 0x51, 0x89, 0x85, 0x11, 0x31, 0xb1, 0xa5,
-	0x50, 0x62, 0xa1, 0xdd, 0x0c, 0xda, 0xa9, 0x62, 0xcb, 0x91, 0x4c, 0x8b, 0x50, 0x02, 0x07, 0xb9,
-	0x81, 0xe4, 0x1b, 0x48, 0xbb, 0x99, 0xd4, 0xa4, 0x4a, 0xec, 0x6d, 0x62, 0xa3, 0x92, 0x62, 0x63,
-	0xcf, 0x1a, 0xed, 0x66, 0x4a, 0x98, 0x2a, 0x19, 0x64, 0x2a, 0x9a, 0x6e, 0x28, 0x54, 0x27, 0x86,
-	0x17, 0x20, 0x75, 0xc5, 0xb3, 0x2d, 0xb2, 0x15, 0xf2, 0x16, 0xfc, 0x68, 0x28, 0x2a, 0x39, 0xdd,
-	0xe7, 0xa7, 0x09, 0x8d, 0x68, 0xc4, 0xf3, 0x72, 0xbf, 0x7c, 0x1f, 0x8d, 0x10, 0xad, 0x82, 0x91,
-	0x62, 0xea, 0x48, 0x31, 0x0c, 0x42, 0x59, 0xae, 0x20, 0x22, 0xc5, 0x46, 0x19, 0x5b, 0xdb, 0xba,
-	0x41, 0x91, 0x6a, 0x39, 0x26, 0x25, 0x68, 0x0b, 0x3b, 0xfc, 0x54, 0x5c, 0x07, 0x70, 0x05, 0xd3,
-	0xa7, 0x3c, 0xd9, 0xaa, 0xb1, 0x41, 0x64, 0xbc, 0x03, 0x17, 0xc1, 0x7f, 0x7e, 0xfe, 0xa2, 0x52,
-	0x2e, 0x5b, 0x49, 0x61, 0x44, 0x18, 0xef, 0xcb, 0x27, 0xbf, 0x7c, 0xbc, 0x9d, 0xe0, 0xe5, 0xe6,
-	0xca, 0x65, 0x0b, 0xdb, 0xf6, 0x3a, 0xb5, 0x74, 0x43, 0x93, 0xfb, 0x7d, 0x73, 0x77, 0x5b, 0x5c,
-	0x01, 0x57, 0x9f, 0xb9, 0x37, 0xe0, 0x87, 0x5d, 0x22, 0x86, 0x5d, 0xc0, 0x8e, 0x8c, 0x77, 0xaa,
-	0xd8, 0xa6, 0x10, 0x82, 0xee, 0x5a, 0x50, 0x99, 0x7d, 0xc3, 0x04, 0xe8, 0x51, 0x37, 0x15, 0xdd,
-	0x48, 0x76, 0xb1, 0x4d, 0x6f, 0x21, 0x2a, 0x60, 0x28, 0x3a, 0x90, 0x6d, 0x12, 0xc3, 0xc6, 0x30,
-	0x07, 0x80, 0x59, 0x2d, 0x55, 0x74, 0xb5, 0xb8, 0x85, 0x1d, 0x16, 0x2f, 0x9e, 0x1d, 0x92, 0x6a,
-	0xc0, 0x92, 0x07, 0x2c, 0xad, 0x31, 0xa3, 0x02, 0x76, 0xf2, 0xdd, 0x47, 0x27, 0xc3, 0x31, 0xb9,
-	0xcf, 0xf4, 0x37, 0xc4, 0x02, 0x18, 0x3e, 0x97, 0x82, 0xb3, 0x5d, 0xbc, 0xde, 0x7b, 0x60, 0xa4,
-	0x79, 0x30, 0x5e, 0x73, 0x12, 0xf4, 0x2a, 0xde, 0x16, 0x0f, 0xe8, 0x2f, 0xc5, 0x37, 0x02, 0xb8,
-	0xc1, 0xdc, 0x73, 0x95, 0x8a, 0x1f, 0xa1, 0x80, 0x1d, 0x3b, 0xef, 0x2c, 0xb9, 0xd1, 0x57, 0x1f,
-	0xfa, 0x05, 0x05, 0xc9, 0x85, 0xba, 0xe4, 0x70, 0x19, 0x80, 0x5a, 0xa7, 0xb1, 0xba, 0xe2, 0xd9,
-	0x5b, 0x12, 0x97, 0xcb, 0x6d, 0x4b, 0xc9, 0x6b, 0x62, 0xde, 0x96, 0xd2, 0x9a, 0xa2, 0x61, 0x1e,
-	0x51, 0xae, 0xf3, 0x14, 0x8f, 0x04, 0x70, 0xb3, 0x4d, 0x19, 0x1c, 0xe5, 0x39, 0x80, 0x41, 0x9b,
-	0xa8, 0xc4, 0xb0, 0x5d, 0x15, 0x5c, 0xaa, 0x7f, 0xc6, 0xe3, 0xd9, 0x71, 0x29, 0xe2, 0x95, 0x48,
-	0x0d, 0x42, 0xae, 0x29, 0xba, 0x25, 0xff, 0x4f, 0xc2, 0x9b, 0x36, 0x5c, 0x89, 0x20, 0x19, 0x6b,
-	0x4b, 0xe2, 0x15, 0x15, 0x42, 0xd9, 0x03, 0x83, 0x11, 0x19, 0xe1, 0xf5, 0xc8, 0xf6, 0x0e, 0x37,
-	0x31, 0x5c, 0x08, 0xf5, 0x56, 0x57, 0xfb, 0xde, 0xaa, 0xef, 0xaa, 0xb7, 0x02, 0x98, 0x68, 0xbc,
-	0x43, 0xbf, 0x19, 0xfe, 0xb6, 0x9e, 0xc7, 0x02, 0x98, 0xec, 0xa4, 0x16, 0x2e, 0xea, 0x0b, 0x30,
-	0x18, 0x16, 0xd5, 0xbd, 0x21, 0x5f, 0xd5, 0x89, 0xb6, 0xaa, 0xba, 0x51, 0x99, 0xac, 0x03, 0xa4,
-	0x31, 0xd7, 0x9f, 0xd3, 0xf5, 0x15, 0x48, 0x44, 0xe5, 0xec, 0x4c, 0xd8, 0x51, 0xd0, 0x1f, 0x70,
-	0xb9, 0xaf, 0xd0, 0x7b, 0xc1, 0x71, 0xb5, 0xf6, 0x56, 0xb3, 0xbf, 0x7a, 0x41, 0x0f, 0xbb, 0x32,
-	0xf8, 0x41, 0x00, 0x03, 0xa1, 0x27, 0xed, 0x8e, 0x48, 0x38, 0x16, 0x79, 0x0d, 0xe7, 0x07, 0x69,
-	0x6a, 0xb4, 0xe5, 0x7d, 0xb9, 0x56, 0xe2, 0xfc, 0xeb, 0xaf, 0x3f, 0xdf, 0x77, 0x4d, 0xc3, 0x2c,
-	0x8a, 0x1a, 0xfd, 0x01, 0x8e, 0x6e, 0x6c, 0x10, 0x74, 0x10, 0xa2, 0x3b, 0x84, 0x9f, 0x04, 0x90,
-	0x8e, 0x1a, 0x90, 0xcb, 0xc4, 0xe2, 0xb2, 0xc2, 0xa9, 0xc8, 0x0a, 0x5a, 0x8c, 0xe7, 0x54, 0xe6,
-	0x02, 0x1e, 0x9e, 0x36, 0xe2, 0x22, 0x63, 0x98, 0x85, 0x33, 0xad, 0x19, 0xfc, 0x19, 0x81, 0x0e,
-	0x58, 0xf9, 0xe8, 0x80, 0x35, 0xfa, 0x21, 0xfc, 0x26, 0x00, 0xb1, 0xd9, 0xdc, 0xac, 0x43, 0x99,
-	0xee, 0xac, 0xb0, 0xf0, 0xf4, 0x4e, 0xcd, 0x5c, 0xd0, 0x8b, 0x23, 0xe5, 0x18, 0xd2, 0x02, 0x9c,
-	0xeb, 0x00, 0x89, 0x77, 0x52, 0x23, 0xd6, 0x67, 0x01, 0x5c, 0x6b, 0x39, 0x48, 0xe1, 0x5c, 0xf3,
-	0xda, 0xda, 0xfc, 0x06, 0xa4, 0xe6, 0x2f, 0xe3, 0xca, 0xd9, 0xee, 0x32, 0xb6, 0x29, 0x28, 0x45,
-	0xb2, 0x29, 0x95, 0x4a, 0x31, 0xe0, 0x73, 0x27, 0x7a, 0x00, 0x74, 0xe2, 0xeb, 0xd4, 0x72, 0x92,
-	0xc0, 0xfb, 0x1d, 0x95, 0xd6, 0x74, 0x1c, 0xa6, 0x1e, 0x5c, 0xda, 0x9f, 0xf3, 0xcd, 0x32, 0xbe,
-	0x0c, 0x44, 0xed, 0xf9, 0xd8, 0x70, 0xf3, 0x01, 0xf3, 0x8f, 0x8f, 0x4e, 0xd3, 0xc2, 0xf1, 0x69,
-	0x5a, 0xf8, 0x71, 0x9a, 0x16, 0xde, 0x9d, 0xa5, 0x63, 0xc7, 0x67, 0xe9, 0xd8, 0xf7, 0xb3, 0x74,
-	0xec, 0x65, 0x56, 0xd3, 0xe9, 0x66, 0xb5, 0x24, 0xa9, 0x64, 0x1b, 0x3d, 0xf2, 0x82, 0x3e, 0xc1,
-	0x74, 0x8f, 0x58, 0x5b, 0x41, 0x8e, 0xfd, 0x5a, 0x16, 0xea, 0x98, 0xd8, 0x2e, 0xfd, 0xcb, 0xfe,
-	0x62, 0xdd, 0xf9, 0x1d, 0x00, 0x00, 0xff, 0xff, 0x2a, 0x27, 0x29, 0x9e, 0x51, 0x0a, 0x00, 0x00,
+	// 825 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xbc, 0x56, 0x4d, 0x4f, 0xdb, 0x4a,
+	0x14, 0xcd, 0xe4, 0x3d, 0x9e, 0x60, 0x78, 0x4f, 0xaf, 0x0c, 0x59, 0xa4, 0x01, 0x05, 0xf0, 0xa2,
+	0x04, 0xa4, 0x7a, 0x9a, 0x00, 0x5d, 0x94, 0x52, 0x44, 0xf8, 0x12, 0xa5, 0x6a, 0x69, 0x90, 0x2a,
+	0xb5, 0x9b, 0xc8, 0x71, 0x06, 0x63, 0x11, 0x3c, 0xc6, 0x9e, 0x50, 0x2c, 0x44, 0x17, 0x5d, 0xb5,
+	0xbb, 0x4a, 0x5d, 0x76, 0xd7, 0xdf, 0xd0, 0x1f, 0xc1, 0xa2, 0x0b, 0xda, 0x6e, 0xba, 0xa2, 0x15,
+	0xe9, 0x0f, 0xa9, 0x3c, 0x1e, 0x27, 0x71, 0x70, 0x12, 0x07, 0xa1, 0xee, 0x62, 0xcf, 0xbd, 0xe7,
+	0xdc, 0x73, 0xcf, 0x9d, 0xeb, 0xc0, 0x31, 0x72, 0x44, 0x55, 0x6a, 0x11, 0x4c, 0x4d, 0x62, 0x29,
+	0x8c, 0x5a, 0xf8, 0x30, 0x8b, 0x0f, 0xaa, 0xc4, 0x72, 0x64, 0xd3, 0xa2, 0x8c, 0xa2, 0x61, 0x11,
+	0x20, 0xfb, 0x01, 0xf2, 0x61, 0x36, 0x35, 0xad, 0x52, 0x7b, 0x9f, 0xda, 0xb8, 0xa4, 0xd8, 0xc4,
+	0x8b, 0xc6, 0x87, 0xd9, 0x12, 0x61, 0x4a, 0x16, 0x9b, 0x8a, 0xa6, 0x1b, 0x0a, 0xd3, 0xa9, 0xe1,
+	0x01, 0xa4, 0x6e, 0x7a, 0xb1, 0x45, 0xfe, 0x84, 0xbd, 0x07, 0x71, 0x34, 0x1a, 0x46, 0xce, 0x8e,
+	0xc4, 0x69, 0x42, 0xa3, 0x1a, 0xf5, 0xb2, 0xdc, 0x5f, 0x7e, 0x8e, 0x46, 0xa9, 0x56, 0x21, 0x58,
+	0x31, 0x75, 0xac, 0x18, 0x06, 0x65, 0x9c, 0xab, 0x8e, 0xc8, 0x88, 0x51, 0x26, 0xd6, 0xbe, 0x6e,
+	0x30, 0xac, 0x5a, 0x8e, 0xc9, 0x28, 0xde, 0x23, 0x8e, 0x38, 0x95, 0xb6, 0x21, 0x5a, 0x27, 0xec,
+	0x89, 0x20, 0xdb, 0x30, 0x76, 0x68, 0x81, 0x1c, 0xa0, 0x05, 0xf8, 0x9f, 0xcf, 0x5f, 0x54, 0xca,
+	0x65, 0x2b, 0x09, 0xc6, 0x41, 0x66, 0x20, 0x9f, 0xfc, 0xfa, 0xe9, 0x76, 0x42, 0x94, 0xbb, 0x54,
+	0x2e, 0x5b, 0xc4, 0xb6, 0xb7, 0x99, 0xa5, 0x1b, 0x5a, 0xe1, 0x5f, 0x3f, 0xdc, 0x7d, 0x2d, 0x15,
+	0xe1, 0xc8, 0x53, 0xb7, 0x03, 0x3e, 0xec, 0x32, 0x35, 0xec, 0x4d, 0xe2, 0x14, 0xc8, 0x41, 0x95,
+	0xd8, 0x0c, 0x4d, 0xc3, 0xa1, 0x06, 0xba, 0xaa, 0x36, 0x31, 0x14, 0xfe, 0xaf, 0xe3, 0xa8, 0xaa,
+	0x0b, 0x85, 0x12, 0xb0, 0x4f, 0xdd, 0x55, 0x74, 0x23, 0x19, 0xe7, 0xe7, 0xde, 0x83, 0xa4, 0xc0,
+	0xd1, 0x70, 0x02, 0xdb, 0xa4, 0x86, 0x4d, 0xd0, 0x12, 0x84, 0x66, 0xb5, 0x54, 0xd1, 0xd5, 0xe2,
+	0x1e, 0x71, 0x38, 0xf4, 0x60, 0x6e, 0x54, 0x6e, 0x34, 0x42, 0xf6, 0x1a, 0x21, 0x6f, 0xf1, 0xa0,
+	0x4d, 0xe2, 0xe4, 0xff, 0x3e, 0x3d, 0x1f, 0x8b, 0x15, 0x06, 0x4c, 0xff, 0x85, 0xa4, 0xc2, 0xb1,
+	0x4b, 0x14, 0x42, 0xf3, 0xf5, 0xe9, 0x58, 0x84, 0xe3, 0xed, 0x49, 0x84, 0x96, 0x11, 0x38, 0xa0,
+	0x52, 0xc3, 0x6e, 0x46, 0xef, 0x57, 0x45, 0x9c, 0xf4, 0x06, 0xc0, 0x0c, 0x47, 0x58, 0xaa, 0x54,
+	0x5a, 0x9a, 0x61, 0xe7, 0x9d, 0x65, 0x97, 0x64, 0x63, 0xc5, 0xaf, 0xb7, 0x5e, 0x03, 0x68, 0xaa,
+	0x01, 0xad, 0x41, 0xd8, 0x18, 0x50, 0x5e, 0xde, 0x60, 0xee, 0x96, 0x2c, 0x5c, 0x76, 0xa7, 0x59,
+	0xf6, 0x66, 0x5f, 0x4c, 0xb3, 0xbc, 0xa5, 0x68, 0x44, 0x20, 0x16, 0x9a, 0x32, 0xa5, 0xcf, 0x00,
+	0x4e, 0x45, 0x28, 0x45, 0xa8, 0x7a, 0x06, 0x51, 0xbd, 0x77, 0x5c, 0x9e, 0x3b, 0x93, 0x49, 0x30,
+	0xfe, 0x57, 0x66, 0x30, 0x97, 0x91, 0x43, 0x2e, 0x98, 0xdc, 0x82, 0xb9, 0xa5, 0xe8, 0x56, 0xe1,
+	0x06, 0x6d, 0x21, 0x42, 0xeb, 0x21, 0x6a, 0x26, 0xbb, 0xaa, 0xf1, 0x8a, 0x0a, 0xc8, 0x79, 0x05,
+	0x87, 0x43, 0x18, 0x7b, 0xf2, 0x7c, 0x3e, 0x30, 0x85, 0xf1, 0xee, 0x53, 0xd8, 0x3c, 0x7f, 0x6f,
+	0xdb, 0xb4, 0xd3, 0x45, 0xfe, 0xd3, 0xd6, 0x9e, 0x01, 0x38, 0x1d, 0xa5, 0x16, 0xe1, 0xed, 0x73,
+	0x38, 0x1c, 0xf4, 0xd6, 0x6d, 0x92, 0x6f, 0xee, 0x54, 0x57, 0x73, 0x5d, 0x54, 0xee, 0xee, 0x10,
+	0x6d, 0xe5, 0xba, 0x3e, 0x7b, 0x8b, 0x30, 0x11, 0xc6, 0xd9, 0x93, 0xbf, 0x81, 0x9b, 0x19, 0x0f,
+	0xde, 0xcc, 0xdc, 0xc7, 0x7e, 0xd8, 0xc7, 0x7b, 0x86, 0x3e, 0x00, 0x38, 0x14, 0xb8, 0xe5, 0xee,
+	0x96, 0x45, 0x93, 0xa1, 0x7d, 0xb8, 0xbc, 0x8b, 0x53, 0x13, 0x1d, 0x1b, 0xe6, 0x46, 0x49, 0xf7,
+	0x5e, 0x7f, 0xfb, 0xf5, 0x3e, 0x3e, 0x8b, 0x72, 0x38, 0xec, 0xeb, 0x51, 0xd7, 0xa3, 0x1b, 0x3b,
+	0x14, 0x1f, 0x07, 0x16, 0xfb, 0x09, 0xfa, 0x02, 0x60, 0x3a, 0x6c, 0x97, 0xae, 0x51, 0x4b, 0xf8,
+	0x8a, 0xee, 0x84, 0x56, 0xd0, 0x61, 0xc3, 0xa7, 0xb2, 0x3d, 0x64, 0x78, 0xe6, 0x48, 0x0f, 0xb9,
+	0x86, 0x15, 0x94, 0xef, 0xac, 0xc1, 0xdf, 0x15, 0xcd, 0x3a, 0x84, 0x4d, 0x27, 0xf8, 0x98, 0x8f,
+	0xfd, 0x09, 0x3a, 0x07, 0x50, 0x6a, 0xb7, 0x57, 0x9b, 0x74, 0xcd, 0x46, 0xab, 0x32, 0xb8, 0xf5,
+	0x53, 0x73, 0x3d, 0x66, 0x09, 0x7d, 0x9b, 0x5c, 0xdf, 0x2a, 0x5a, 0x8e, 0xa0, 0xcf, 0x55, 0xd3,
+	0x51, 0xe0, 0x0f, 0x00, 0x27, 0xba, 0xee, 0x5a, 0xb4, 0xd0, 0xbe, 0xd2, 0x08, 0x9f, 0x8b, 0xd4,
+	0x83, 0xab, 0xa6, 0x0b, 0xc5, 0xf3, 0x5c, 0xf1, 0x1c, 0x9a, 0x09, 0x55, 0xac, 0x54, 0x2a, 0xc5,
+	0xcb, 0x5f, 0x80, 0xba, 0xc2, 0x9a, 0x6f, 0x61, 0xc7, 0x95, 0x83, 0xa2, 0xd7, 0x18, 0xba, 0x37,
+	0x53, 0x8b, 0x57, 0xce, 0x17, 0x22, 0xef, 0x73, 0x91, 0x77, 0xd1, 0x6c, 0x44, 0x91, 0x7c, 0x15,
+	0xfa, 0x2a, 0xf3, 0x8f, 0x4e, 0x2f, 0xd2, 0xe0, 0xec, 0x22, 0x0d, 0x7e, 0x5e, 0xa4, 0xc1, 0xbb,
+	0x5a, 0x3a, 0x76, 0x56, 0x4b, 0xc7, 0xbe, 0xd7, 0xd2, 0xb1, 0x17, 0x39, 0x4d, 0x67, 0xbb, 0xd5,
+	0x92, 0xac, 0xd2, 0x7d, 0xbc, 0xea, 0x21, 0x3f, 0x26, 0xec, 0x25, 0xb5, 0xf6, 0xea, 0x44, 0x47,
+	0x0d, 0x2a, 0xe6, 0x98, 0xc4, 0x2e, 0xfd, 0xc3, 0xff, 0xd2, 0xcd, 0xfc, 0x0e, 0x00, 0x00, 0xff,
+	0xff, 0xa0, 0x72, 0x95, 0x64, 0xc1, 0x0a, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -713,9 +724,9 @@ type QueryClient interface {
 	QueryOperatorConsKeyForChainID(ctx context.Context, in *QueryOperatorConsKeyRequest, opts ...grpc.CallOption) (*QueryOperatorConsKeyResponse, error)
 	// QueryOperatorConsAddressForChainID queries the consensus address for the operator.
 	QueryOperatorConsAddressForChainID(ctx context.Context, in *QueryOperatorConsAddressRequest, opts ...grpc.CallOption) (*QueryOperatorConsAddressResponse, error)
-	// QueryAllOperatorKeysByChainID queries all operators and their consensus public keys
+	// QueryAllOperatorConsKeysByChainID queries all operators and their consensus public keys
 	// for a specific chain ID
-	QueryAllOperatorKeysByChainID(ctx context.Context, in *QueryAllOperatorKeysByChainIDRequest, opts ...grpc.CallOption) (*QueryAllOperatorKeysByChainIDResponse, error)
+	QueryAllOperatorConsKeysByChainID(ctx context.Context, in *QueryAllOperatorConsKeysByChainIDRequest, opts ...grpc.CallOption) (*QueryAllOperatorConsKeysByChainIDResponse, error)
 	// QueryAllOperatorConsAddrsByChainID queries all operators and their consensus addresses
 	// for a specific chain ID
 	QueryAllOperatorConsAddrsByChainID(ctx context.Context, in *QueryAllOperatorConsAddrsByChainIDRequest, opts ...grpc.CallOption) (*QueryAllOperatorConsAddrsByChainIDResponse, error)
@@ -756,9 +767,9 @@ func (c *queryClient) QueryOperatorConsAddressForChainID(ctx context.Context, in
 	return out, nil
 }
 
-func (c *queryClient) QueryAllOperatorKeysByChainID(ctx context.Context, in *QueryAllOperatorKeysByChainIDRequest, opts ...grpc.CallOption) (*QueryAllOperatorKeysByChainIDResponse, error) {
-	out := new(QueryAllOperatorKeysByChainIDResponse)
-	err := c.cc.Invoke(ctx, "/exocore.operator.v1.Query/QueryAllOperatorKeysByChainID", in, out, opts...)
+func (c *queryClient) QueryAllOperatorConsKeysByChainID(ctx context.Context, in *QueryAllOperatorConsKeysByChainIDRequest, opts ...grpc.CallOption) (*QueryAllOperatorConsKeysByChainIDResponse, error) {
+	out := new(QueryAllOperatorConsKeysByChainIDResponse)
+	err := c.cc.Invoke(ctx, "/exocore.operator.v1.Query/QueryAllOperatorConsKeysByChainID", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -782,9 +793,9 @@ type QueryServer interface {
 	QueryOperatorConsKeyForChainID(context.Context, *QueryOperatorConsKeyRequest) (*QueryOperatorConsKeyResponse, error)
 	// QueryOperatorConsAddressForChainID queries the consensus address for the operator.
 	QueryOperatorConsAddressForChainID(context.Context, *QueryOperatorConsAddressRequest) (*QueryOperatorConsAddressResponse, error)
-	// QueryAllOperatorKeysByChainID queries all operators and their consensus public keys
+	// QueryAllOperatorConsKeysByChainID queries all operators and their consensus public keys
 	// for a specific chain ID
-	QueryAllOperatorKeysByChainID(context.Context, *QueryAllOperatorKeysByChainIDRequest) (*QueryAllOperatorKeysByChainIDResponse, error)
+	QueryAllOperatorConsKeysByChainID(context.Context, *QueryAllOperatorConsKeysByChainIDRequest) (*QueryAllOperatorConsKeysByChainIDResponse, error)
 	// QueryAllOperatorConsAddrsByChainID queries all operators and their consensus addresses
 	// for a specific chain ID
 	QueryAllOperatorConsAddrsByChainID(context.Context, *QueryAllOperatorConsAddrsByChainIDRequest) (*QueryAllOperatorConsAddrsByChainIDResponse, error)
@@ -803,8 +814,8 @@ func (*UnimplementedQueryServer) QueryOperatorConsKeyForChainID(ctx context.Cont
 func (*UnimplementedQueryServer) QueryOperatorConsAddressForChainID(ctx context.Context, req *QueryOperatorConsAddressRequest) (*QueryOperatorConsAddressResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method QueryOperatorConsAddressForChainID not implemented")
 }
-func (*UnimplementedQueryServer) QueryAllOperatorKeysByChainID(ctx context.Context, req *QueryAllOperatorKeysByChainIDRequest) (*QueryAllOperatorKeysByChainIDResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method QueryAllOperatorKeysByChainID not implemented")
+func (*UnimplementedQueryServer) QueryAllOperatorConsKeysByChainID(ctx context.Context, req *QueryAllOperatorConsKeysByChainIDRequest) (*QueryAllOperatorConsKeysByChainIDResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method QueryAllOperatorConsKeysByChainID not implemented")
 }
 func (*UnimplementedQueryServer) QueryAllOperatorConsAddrsByChainID(ctx context.Context, req *QueryAllOperatorConsAddrsByChainIDRequest) (*QueryAllOperatorConsAddrsByChainIDResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method QueryAllOperatorConsAddrsByChainID not implemented")
@@ -868,20 +879,20 @@ func _Query_QueryOperatorConsAddressForChainID_Handler(srv interface{}, ctx cont
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Query_QueryAllOperatorKeysByChainID_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(QueryAllOperatorKeysByChainIDRequest)
+func _Query_QueryAllOperatorConsKeysByChainID_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryAllOperatorConsKeysByChainIDRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(QueryServer).QueryAllOperatorKeysByChainID(ctx, in)
+		return srv.(QueryServer).QueryAllOperatorConsKeysByChainID(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/exocore.operator.v1.Query/QueryAllOperatorKeysByChainID",
+		FullMethod: "/exocore.operator.v1.Query/QueryAllOperatorConsKeysByChainID",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(QueryServer).QueryAllOperatorKeysByChainID(ctx, req.(*QueryAllOperatorKeysByChainIDRequest))
+		return srv.(QueryServer).QueryAllOperatorConsKeysByChainID(ctx, req.(*QueryAllOperatorConsKeysByChainIDRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -921,8 +932,8 @@ var _Query_serviceDesc = grpc.ServiceDesc{
 			Handler:    _Query_QueryOperatorConsAddressForChainID_Handler,
 		},
 		{
-			MethodName: "QueryAllOperatorKeysByChainID",
-			Handler:    _Query_QueryAllOperatorKeysByChainID_Handler,
+			MethodName: "QueryAllOperatorConsKeysByChainID",
+			Handler:    _Query_QueryAllOperatorConsKeysByChainID_Handler,
 		},
 		{
 			MethodName: "QueryAllOperatorConsAddrsByChainID",
@@ -990,10 +1001,10 @@ func (m *QueryOperatorConsKeyRequest) MarshalToSizedBuffer(dAtA []byte) (int, er
 		i--
 		dAtA[i] = 0x12
 	}
-	if len(m.Addr) > 0 {
-		i -= len(m.Addr)
-		copy(dAtA[i:], m.Addr)
-		i = encodeVarintQuery(dAtA, i, uint64(len(m.Addr)))
+	if len(m.OperatorAccAddr) > 0 {
+		i -= len(m.OperatorAccAddr)
+		copy(dAtA[i:], m.OperatorAccAddr)
+		i = encodeVarintQuery(dAtA, i, uint64(len(m.OperatorAccAddr)))
 		i--
 		dAtA[i] = 0xa
 	}
@@ -1060,10 +1071,10 @@ func (m *QueryOperatorConsAddressRequest) MarshalToSizedBuffer(dAtA []byte) (int
 		i--
 		dAtA[i] = 0x12
 	}
-	if len(m.Addr) > 0 {
-		i -= len(m.Addr)
-		copy(dAtA[i:], m.Addr)
-		i = encodeVarintQuery(dAtA, i, uint64(len(m.Addr)))
+	if len(m.OperatorAccAddr) > 0 {
+		i -= len(m.OperatorAccAddr)
+		copy(dAtA[i:], m.OperatorAccAddr)
+		i = encodeVarintQuery(dAtA, i, uint64(len(m.OperatorAccAddr)))
 		i--
 		dAtA[i] = 0xa
 	}
@@ -1090,17 +1101,17 @@ func (m *QueryOperatorConsAddressResponse) MarshalToSizedBuffer(dAtA []byte) (in
 	_ = i
 	var l int
 	_ = l
-	if len(m.Address) > 0 {
-		i -= len(m.Address)
-		copy(dAtA[i:], m.Address)
-		i = encodeVarintQuery(dAtA, i, uint64(len(m.Address)))
+	if len(m.ConsAddr) > 0 {
+		i -= len(m.ConsAddr)
+		copy(dAtA[i:], m.ConsAddr)
+		i = encodeVarintQuery(dAtA, i, uint64(len(m.ConsAddr)))
 		i--
 		dAtA[i] = 0xa
 	}
 	return len(dAtA) - i, nil
 }
 
-func (m *QueryAllOperatorKeysByChainIDRequest) Marshal() (dAtA []byte, err error) {
+func (m *QueryAllOperatorConsKeysByChainIDRequest) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -1110,12 +1121,12 @@ func (m *QueryAllOperatorKeysByChainIDRequest) Marshal() (dAtA []byte, err error
 	return dAtA[:n], nil
 }
 
-func (m *QueryAllOperatorKeysByChainIDRequest) MarshalTo(dAtA []byte) (int, error) {
+func (m *QueryAllOperatorConsKeysByChainIDRequest) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *QueryAllOperatorKeysByChainIDRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *QueryAllOperatorConsKeysByChainIDRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
@@ -1142,7 +1153,7 @@ func (m *QueryAllOperatorKeysByChainIDRequest) MarshalToSizedBuffer(dAtA []byte)
 	return len(dAtA) - i, nil
 }
 
-func (m *QueryAllOperatorKeysByChainIDResponse) Marshal() (dAtA []byte, err error) {
+func (m *QueryAllOperatorConsKeysByChainIDResponse) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -1152,12 +1163,12 @@ func (m *QueryAllOperatorKeysByChainIDResponse) Marshal() (dAtA []byte, err erro
 	return dAtA[:n], nil
 }
 
-func (m *QueryAllOperatorKeysByChainIDResponse) MarshalTo(dAtA []byte) (int, error) {
+func (m *QueryAllOperatorConsKeysByChainIDResponse) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *QueryAllOperatorKeysByChainIDResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *QueryAllOperatorConsKeysByChainIDResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
@@ -1223,10 +1234,10 @@ func (m *OperatorConsKeyPair) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		i--
 		dAtA[i] = 0x12
 	}
-	if len(m.OperatorAddr) > 0 {
-		i -= len(m.OperatorAddr)
-		copy(dAtA[i:], m.OperatorAddr)
-		i = encodeVarintQuery(dAtA, i, uint64(len(m.OperatorAddr)))
+	if len(m.OperatorAccAddr) > 0 {
+		i -= len(m.OperatorAccAddr)
+		copy(dAtA[i:], m.OperatorAccAddr)
+		i = encodeVarintQuery(dAtA, i, uint64(len(m.OperatorAccAddr)))
 		i--
 		dAtA[i] = 0xa
 	}
@@ -1344,17 +1355,17 @@ func (m *OperatorConsAddrPair) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	_ = i
 	var l int
 	_ = l
-	if len(m.ConsAddress) > 0 {
-		i -= len(m.ConsAddress)
-		copy(dAtA[i:], m.ConsAddress)
-		i = encodeVarintQuery(dAtA, i, uint64(len(m.ConsAddress)))
+	if len(m.ConsAddr) > 0 {
+		i -= len(m.ConsAddr)
+		copy(dAtA[i:], m.ConsAddr)
+		i = encodeVarintQuery(dAtA, i, uint64(len(m.ConsAddr)))
 		i--
 		dAtA[i] = 0x12
 	}
-	if len(m.OperatorAddr) > 0 {
-		i -= len(m.OperatorAddr)
-		copy(dAtA[i:], m.OperatorAddr)
-		i = encodeVarintQuery(dAtA, i, uint64(len(m.OperatorAddr)))
+	if len(m.OperatorAccAddr) > 0 {
+		i -= len(m.OperatorAccAddr)
+		copy(dAtA[i:], m.OperatorAccAddr)
+		i = encodeVarintQuery(dAtA, i, uint64(len(m.OperatorAccAddr)))
 		i--
 		dAtA[i] = 0xa
 	}
@@ -1391,7 +1402,7 @@ func (m *QueryOperatorConsKeyRequest) Size() (n int) {
 	}
 	var l int
 	_ = l
-	l = len(m.Addr)
+	l = len(m.OperatorAccAddr)
 	if l > 0 {
 		n += 1 + l + sovQuery(uint64(l))
 	}
@@ -1419,7 +1430,7 @@ func (m *QueryOperatorConsAddressRequest) Size() (n int) {
 	}
 	var l int
 	_ = l
-	l = len(m.Addr)
+	l = len(m.OperatorAccAddr)
 	if l > 0 {
 		n += 1 + l + sovQuery(uint64(l))
 	}
@@ -1436,14 +1447,14 @@ func (m *QueryOperatorConsAddressResponse) Size() (n int) {
 	}
 	var l int
 	_ = l
-	l = len(m.Address)
+	l = len(m.ConsAddr)
 	if l > 0 {
 		n += 1 + l + sovQuery(uint64(l))
 	}
 	return n
 }
 
-func (m *QueryAllOperatorKeysByChainIDRequest) Size() (n int) {
+func (m *QueryAllOperatorConsKeysByChainIDRequest) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -1460,7 +1471,7 @@ func (m *QueryAllOperatorKeysByChainIDRequest) Size() (n int) {
 	return n
 }
 
-func (m *QueryAllOperatorKeysByChainIDResponse) Size() (n int) {
+func (m *QueryAllOperatorConsKeysByChainIDResponse) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -1485,7 +1496,7 @@ func (m *OperatorConsKeyPair) Size() (n int) {
 	}
 	var l int
 	_ = l
-	l = len(m.OperatorAddr)
+	l = len(m.OperatorAccAddr)
 	if l > 0 {
 		n += 1 + l + sovQuery(uint64(l))
 	}
@@ -1538,11 +1549,11 @@ func (m *OperatorConsAddrPair) Size() (n int) {
 	}
 	var l int
 	_ = l
-	l = len(m.OperatorAddr)
+	l = len(m.OperatorAccAddr)
 	if l > 0 {
 		n += 1 + l + sovQuery(uint64(l))
 	}
-	l = len(m.ConsAddress)
+	l = len(m.ConsAddr)
 	if l > 0 {
 		n += 1 + l + sovQuery(uint64(l))
 	}
@@ -1668,7 +1679,7 @@ func (m *QueryOperatorConsKeyRequest) Unmarshal(dAtA []byte) error {
 		switch fieldNum {
 		case 1:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Addr", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field OperatorAccAddr", wireType)
 			}
 			var stringLen uint64
 			for shift := uint(0); ; shift += 7 {
@@ -1696,7 +1707,7 @@ func (m *QueryOperatorConsKeyRequest) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.Addr = string(dAtA[iNdEx:postIndex])
+			m.OperatorAccAddr = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
 		case 2:
 			if wireType != 2 {
@@ -1865,7 +1876,7 @@ func (m *QueryOperatorConsAddressRequest) Unmarshal(dAtA []byte) error {
 		switch fieldNum {
 		case 1:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Addr", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field OperatorAccAddr", wireType)
 			}
 			var stringLen uint64
 			for shift := uint(0); ; shift += 7 {
@@ -1893,7 +1904,7 @@ func (m *QueryOperatorConsAddressRequest) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.Addr = string(dAtA[iNdEx:postIndex])
+			m.OperatorAccAddr = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
 		case 2:
 			if wireType != 2 {
@@ -1979,7 +1990,7 @@ func (m *QueryOperatorConsAddressResponse) Unmarshal(dAtA []byte) error {
 		switch fieldNum {
 		case 1:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Address", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field ConsAddr", wireType)
 			}
 			var stringLen uint64
 			for shift := uint(0); ; shift += 7 {
@@ -2007,7 +2018,7 @@ func (m *QueryOperatorConsAddressResponse) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.Address = string(dAtA[iNdEx:postIndex])
+			m.ConsAddr = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
 		default:
 			iNdEx = preIndex
@@ -2030,7 +2041,7 @@ func (m *QueryOperatorConsAddressResponse) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *QueryAllOperatorKeysByChainIDRequest) Unmarshal(dAtA []byte) error {
+func (m *QueryAllOperatorConsKeysByChainIDRequest) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -2053,10 +2064,10 @@ func (m *QueryAllOperatorKeysByChainIDRequest) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: QueryAllOperatorKeysByChainIDRequest: wiretype end group for non-group")
+			return fmt.Errorf("proto: QueryAllOperatorConsKeysByChainIDRequest: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: QueryAllOperatorKeysByChainIDRequest: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: QueryAllOperatorConsKeysByChainIDRequest: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
@@ -2148,7 +2159,7 @@ func (m *QueryAllOperatorKeysByChainIDRequest) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *QueryAllOperatorKeysByChainIDResponse) Unmarshal(dAtA []byte) error {
+func (m *QueryAllOperatorConsKeysByChainIDResponse) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -2171,10 +2182,10 @@ func (m *QueryAllOperatorKeysByChainIDResponse) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: QueryAllOperatorKeysByChainIDResponse: wiretype end group for non-group")
+			return fmt.Errorf("proto: QueryAllOperatorConsKeysByChainIDResponse: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: QueryAllOperatorKeysByChainIDResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: QueryAllOperatorConsKeysByChainIDResponse: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
@@ -2299,7 +2310,7 @@ func (m *OperatorConsKeyPair) Unmarshal(dAtA []byte) error {
 		switch fieldNum {
 		case 1:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field OperatorAddr", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field OperatorAccAddr", wireType)
 			}
 			var stringLen uint64
 			for shift := uint(0); ; shift += 7 {
@@ -2327,7 +2338,7 @@ func (m *OperatorConsKeyPair) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.OperatorAddr = string(dAtA[iNdEx:postIndex])
+			m.OperatorAccAddr = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
 		case 2:
 			if wireType != 2 {
@@ -2655,7 +2666,7 @@ func (m *OperatorConsAddrPair) Unmarshal(dAtA []byte) error {
 		switch fieldNum {
 		case 1:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field OperatorAddr", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field OperatorAccAddr", wireType)
 			}
 			var stringLen uint64
 			for shift := uint(0); ; shift += 7 {
@@ -2683,11 +2694,11 @@ func (m *OperatorConsAddrPair) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.OperatorAddr = string(dAtA[iNdEx:postIndex])
+			m.OperatorAccAddr = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
 		case 2:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field ConsAddress", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field ConsAddr", wireType)
 			}
 			var stringLen uint64
 			for shift := uint(0); ; shift += 7 {
@@ -2715,7 +2726,7 @@ func (m *OperatorConsAddrPair) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.ConsAddress = string(dAtA[iNdEx:postIndex])
+			m.ConsAddr = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
 		default:
 			iNdEx = preIndex

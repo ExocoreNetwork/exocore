@@ -108,11 +108,11 @@ func GetAllOperatorKeys() *cobra.Command {
 			}
 
 			queryClient := operatortypes.NewQueryClient(clientCtx)
-			req := &operatortypes.QueryAllOperatorKeysByChainIDRequest{
+			req := &operatortypes.QueryAllOperatorConsKeysByChainIDRequest{
 				Chain:      args[0],
 				Pagination: pageReq,
 			}
-			res, err := queryClient.QueryAllOperatorKeysByChainID(
+			res, err := queryClient.QueryAllOperatorConsKeysByChainID(
 				context.Background(), req,
 			)
 			if err != nil {

@@ -17,57 +17,61 @@ message GetOperatorInfoReq {
   [(cosmos_proto.scalar) = "cosmos.AddressString"];
 }
 
-// QueryOperatorConsKeyRequest is the request to obtain the consensus public key of the operator
+// QueryOperatorConsKeyRequest is a request to obtain the consensus public key of the operator.
 message QueryOperatorConsKeyRequest {
-  // addr is the ACC address of operator
-  string addr = 1;
-  // chain is the id of the chain served by the operator
+  // operator_acc_addr is the operator account address.
+  string operator_acc_addr = 1;
+  // chain is the id of the chain served by the operator.
   string chain = 2;
 }
 
-// QueryOperatorConsKeyResponse is the response for QueryOperatorConsKeyRequest
+// QueryOperatorConsKeyResponse is the response for QueryOperatorConsKeyRequest.
 message QueryOperatorConsKeyResponse {
-  // public_key is the consensus public key of the operator
+  // public_key is the consensus public key of the operator.
   tendermint.crypto.PublicKey public_key = 1 [ (gogoproto.nullable) = false ];
 }
 
 // QueryOperatorConsAddressRequest is the request to obtain the consensus address of the operator
 // for a specific chain ID.
 message QueryOperatorConsAddressRequest {
-  // addr is the ACC address of operator
-  string addr = 1;
-  // chain is the id of the chain served by the operator
+  // operator_acc_addr is the operator account address.
+  string operator_acc_addr = 1;
+  // chain is the id of the chain served by the operator. here chain_id is not used since the
+  // Linter complains about capitalization, which can be set with a gogoproto.custom_name but
+  // that is not compatible with google.api.http.get in the Query service below.
   string chain = 2;
 }
 
 // QueryOperatorConsAddressResponse is the response for QueryOperatorConsAddressRequest.
 message QueryOperatorConsAddressResponse {
-  // address is the consensus address of the operator
-  string address = 1;
+  // cons_addr is the consensus address corresponding to the consensus public key
+  // currently in use by the operator.
+  string cons_addr = 1;
 }
 
-// QueryAllOperatorKeysByChainIDRequest is the request to obtain all operator addresses
+// QueryAllOperatorConsKeysByChainIDRequest is the request to obtain all operator addresses
 // and consensus keys for a specific chain ID, with pagination.
-message QueryAllOperatorKeysByChainIDRequest {
-  // chain to query for operator info.
+message QueryAllOperatorConsKeysByChainIDRequest {
+  // chain for which the operator consensus keys are being queried.
   string chain = 1;
   // pagination related options.
   cosmos.base.query.v1beta1.PageRequest pagination = 2;
 }
 
-// QueryAllOperatorKeysByChainIDResponse is the response that includes a list of all operators
+// QueryAllOperatorConsKeysByChainIDResponse is the response that includes a list of all operators
 // and their consensus keys for a specified chain ID.
-message QueryAllOperatorKeysByChainIDResponse {
-  // operator_cons_keys is a list of operator addresses and their consensus public key.
+message QueryAllOperatorConsKeysByChainIDResponse {
+  // operator_cons_keys is a list of operator addresses and their consensus public keys.
   repeated OperatorConsKeyPair operator_cons_keys = 1;
   // pagination related response.
   cosmos.base.query.v1beta1.PageResponse pagination = 2;
 }
 
-// OperatorConsKeyPair holds the operator address and the corresponding consensus public key.
+// OperatorConsKeyPair holds the operator address and the consensus public key currently in
+// use by the operator.
 message OperatorConsKeyPair {
-  // operator_addr is the operator address.
-  string operator_addr = 1;
+  // operator_acc_addr is the operator account address.
+  string operator_acc_addr = 1;
   // public_key is the consensus public key of the operator.
   tendermint.crypto.PublicKey public_key = 2;
 }
@@ -84,7 +88,7 @@ message QueryAllOperatorConsAddrsByChainIDRequest {
 // QueryAllOperatorConsAddrsByChainIDResponse is the response that includes a list of all operators
 // and their consensus addresses for a specified chain ID.
 message QueryAllOperatorConsAddrsByChainIDResponse {
-  // operator_cons_addrs is a list of operator account addresses and their consensus addresses.
+  // operator_cons_addrs is a list of operator account addresses and the consensus addresses.
   repeated OperatorConsAddrPair operator_cons_addrs = 1;
   // pagination related response.
   cosmos.base.query.v1beta1.PageResponse pagination = 2;
@@ -92,10 +96,11 @@ message QueryAllOperatorConsAddrsByChainIDResponse {
 
 // OperatorConsAddrPair holds the operator address and the corresponding consensus address.
 message OperatorConsAddrPair {
-  // operator_addr is the operator address.
-  string operator_addr = 1;
-  // cons_address is the consensus address of the operator.
-  string cons_address = 2;
+  // operator_acc_addr is the operator account address.
+  string operator_acc_addr = 1;
+  // cons_addr is the consensus address corresponding to the consensus public key
+  // currently in use by the operator.
+  string cons_addr = 2;
 }
 
 // Query defines the gRPC querier service.
@@ -110,7 +115,7 @@ service Query {
     QueryOperatorConsKeyResponse
   ) {
     option (google.api.http) = {
-      get: "/exocore/operator/v1/operator_cons_key/{addr}/{chain}"
+      get: "/exocore/operator/v1/operator_cons_key/{operator_acc_addr}/{chain}"
     };
   }
 
@@ -119,17 +124,17 @@ service Query {
     QueryOperatorConsAddressResponse
   ) {
     option (google.api.http) = {
-      get: "/exocore/operator/v1/operator_cons_address/{addr}/{chain}"
+      get: "/exocore/operator/v1/operator_cons_addr/{operator_acc_addr}/{chain}"
     };
   }
 
-  // QueryAllOperatorKeysByChainID queries all operators and their consensus public keys
+  // QueryAllOperatorConsKeysByChainID queries all operators and their consensus public keys
   // for a specific chain ID
-  rpc QueryAllOperatorKeysByChainID(QueryAllOperatorKeysByChainIDRequest) returns (
-    QueryAllOperatorKeysByChainIDResponse
+  rpc QueryAllOperatorConsKeysByChainID(QueryAllOperatorConsKeysByChainIDRequest) returns (
+    QueryAllOperatorConsKeysByChainIDResponse
   ) {
     option (google.api.http) = {
-      get: "/exocore/operator/v1/all_operator_keys/{chain}"
+      get: "/exocore/operator/v1/all_operator_cons_keys/{chain}"
     };
   }
 
@@ -139,7 +144,7 @@ service Query {
     QueryAllOperatorConsAddrsByChainIDResponse
   ) {
     option (google.api.http) = {
-      get: "/exocore/operator/v1/all_operator_addrs/{chain}"
+      get: "/exocore/operator/v1/all_operator_cons_addrs/{chain}"
     };
   }
 }

@@ -48,7 +48,7 @@ func (k Keeper) OperatorOptOutFinishEpoch(
 		return nil, status.Error(codes.InvalidArgument, "invalid request")
 	}
 	ctx := sdk.UnwrapSDKContext(goCtx)
-	accAddr, err := sdk.AccAddressFromBech32(req.Operator)
+	accAddr, err := sdk.AccAddressFromBech32(req.OperatorAccAddr)
 	if err != nil {
 		return nil, status.Error(codes.InvalidArgument, "invalid operator address")
 	}
@@ -92,7 +92,7 @@ func (k Keeper) QueryValidator(
 		return nil, status.Error(codes.InvalidArgument, "invalid request")
 	}
 	ctx := sdk.UnwrapSDKContext(goCtx)
-	consAddress := req.ConsensusAddress
+	consAddress := req.ConsAddr
 	consAddressbytes, err := hex.DecodeString(consAddress)
 	if err != nil {
 		return nil, status.Error(codes.InvalidArgument, "invalid consensus address")

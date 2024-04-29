@@ -116,15 +116,15 @@ func request_Query_OperatorOptOutFinishEpoch_0(ctx context.Context, marshaler ru
 		_   = err
 	)
 
-	val, ok = pathParams["operator"]
+	val, ok = pathParams["operator_acc_addr"]
 	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "operator")
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "operator_acc_addr")
 	}
 
-	protoReq.Operator, err = runtime.String(val)
+	protoReq.OperatorAccAddr, err = runtime.String(val)
 
 	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "operator", err)
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "operator_acc_addr", err)
 	}
 
 	msg, err := client.OperatorOptOutFinishEpoch(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
@@ -143,15 +143,15 @@ func local_request_Query_OperatorOptOutFinishEpoch_0(ctx context.Context, marsha
 		_   = err
 	)
 
-	val, ok = pathParams["operator"]
+	val, ok = pathParams["operator_acc_addr"]
 	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "operator")
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "operator_acc_addr")
 	}
 
-	protoReq.Operator, err = runtime.String(val)
+	protoReq.OperatorAccAddr, err = runtime.String(val)
 
 	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "operator", err)
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "operator_acc_addr", err)
 	}
 
 	msg, err := server.OperatorOptOutFinishEpoch(ctx, &protoReq)
@@ -278,15 +278,15 @@ func request_Query_QueryValidator_0(ctx context.Context, marshaler runtime.Marsh
 		_   = err
 	)
 
-	val, ok = pathParams["consensus_address"]
+	val, ok = pathParams["cons_addr"]
 	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "consensus_address")
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "cons_addr")
 	}
 
-	protoReq.ConsensusAddress, err = runtime.String(val)
+	protoReq.ConsAddr, err = runtime.String(val)
 
 	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "consensus_address", err)
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "cons_addr", err)
 	}
 
 	msg, err := client.QueryValidator(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
@@ -305,15 +305,15 @@ func local_request_Query_QueryValidator_0(ctx context.Context, marshaler runtime
 		_   = err
 	)
 
-	val, ok = pathParams["consensus_address"]
+	val, ok = pathParams["cons_addr"]
 	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "consensus_address")
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "cons_addr")
 	}
 
-	protoReq.ConsensusAddress, err = runtime.String(val)
+	protoReq.ConsAddr, err = runtime.String(val)
 
 	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "consensus_address", err)
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "cons_addr", err)
 	}
 
 	msg, err := server.QueryValidator(ctx, &protoReq)
@@ -634,13 +634,13 @@ var (
 
 	pattern_Query_OptOutsToFinish_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"exocore", "dogfood", "opt_outs_to_finish", "epoch"}, "", runtime.AssumeColonVerbOpt(false)))
 
-	pattern_Query_OperatorOptOutFinishEpoch_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"exocore", "dogfood", "operator_opt_out_finish_epoch", "operator"}, "", runtime.AssumeColonVerbOpt(false)))
+	pattern_Query_OperatorOptOutFinishEpoch_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"exocore", "dogfood", "operator_opt_out_finish_epoch", "operator_acc_addr"}, "", runtime.AssumeColonVerbOpt(false)))
 
 	pattern_Query_UndelegationsToMature_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"exocore", "dogfood", "undelegations_to_mature", "epoch"}, "", runtime.AssumeColonVerbOpt(false)))
 
 	pattern_Query_UndelegationMaturityEpoch_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"exocore", "dogfood", "undelegation_maturity_epoch", "record_key"}, "", runtime.AssumeColonVerbOpt(false)))
 
-	pattern_Query_QueryValidator_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"exocore", "dogfood", "validator", "consensus_address"}, "", runtime.AssumeColonVerbOpt(false)))
+	pattern_Query_QueryValidator_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"exocore", "dogfood", "validator", "cons_addr"}, "", runtime.AssumeColonVerbOpt(false)))
 )
 
 var (

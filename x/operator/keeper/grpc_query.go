@@ -26,7 +26,7 @@ func (k *Keeper) QueryOperatorConsKeyForChainID(
 	req *operatortypes.QueryOperatorConsKeyRequest,
 ) (*operatortypes.QueryOperatorConsKeyResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
-	addr, err := sdk.AccAddressFromBech32(req.Addr)
+	addr, err := sdk.AccAddressFromBech32(req.OperatorAccAddr)
 	if err != nil {
 		return nil, err
 	}
@@ -51,7 +51,7 @@ func (k Keeper) QueryOperatorConsAddressForChainID(
 	req *operatortypes.QueryOperatorConsAddressRequest,
 ) (*operatortypes.QueryOperatorConsAddressResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
-	addr, err := sdk.AccAddressFromBech32(req.Addr)
+	addr, err := sdk.AccAddressFromBech32(req.OperatorAccAddr)
 	if err != nil {
 		return nil, err
 	}
@@ -69,16 +69,16 @@ func (k Keeper) QueryOperatorConsAddressForChainID(
 		return nil, err
 	}
 	return &operatortypes.QueryOperatorConsAddressResponse{
-		Address: consAddr.String(),
+		ConsAddr: consAddr.String(),
 	}, nil
 }
 
-// QueryAllOperatorKeysByChainID queries all operators for the given chain and returns
+// QueryAllOperatorConsKeysByChainID queries all operators for the given chain and returns
 // their consensus keys.
-func (k Keeper) QueryAllOperatorKeysByChainID(
+func (k Keeper) QueryAllOperatorConsKeysByChainID(
 	goCtx context.Context,
-	req *operatortypes.QueryAllOperatorKeysByChainIDRequest,
-) (*operatortypes.QueryAllOperatorKeysByChainIDResponse, error) {
+	req *operatortypes.QueryAllOperatorConsKeysByChainIDRequest,
+) (*operatortypes.QueryAllOperatorConsKeysByChainIDResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 	res := make([]*operatortypes.OperatorConsKeyPair, 0)
 	chainPrefix := operatortypes.ChainIDAndAddrKey(
@@ -94,15 +94,15 @@ func (k Keeper) QueryAllOperatorKeysByChainID(
 			return err
 		}
 		res = append(res, &operatortypes.OperatorConsKeyPair{
-			OperatorAddr: addr.String(),
-			PublicKey:    ret,
+			OperatorAccAddr: addr.String(),
+			PublicKey:       ret,
 		})
 		return nil
 	})
 	if err != nil {
 		return nil, err
 	}
-	return &operatortypes.QueryAllOperatorKeysByChainIDResponse{
+	return &operatortypes.QueryAllOperatorConsKeysByChainIDResponse{
 		OperatorConsKeys: res,
 		Pagination:       pageRes,
 	}, nil
@@ -133,8 +133,8 @@ func (k Keeper) QueryAllOperatorConsAddrsByChainID(
 			return err
 		}
 		res = append(res, &operatortypes.OperatorConsAddrPair{
-			OperatorAddr: addr.String(),
-			ConsAddress:  consAddr.String(),
+			OperatorAccAddr: addr.String(),
+			ConsAddr:        consAddr.String(),
 		})
 		return nil
 	})

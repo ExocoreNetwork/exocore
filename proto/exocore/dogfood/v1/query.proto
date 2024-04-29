@@ -25,7 +25,7 @@ service Query {
   rpc OperatorOptOutFinishEpoch(QueryOperatorOptOutFinishEpochRequest) returns (
     QueryOperatorOptOutFinishEpochResponse
   ) {
-    option (google.api.http).get = "/exocore/dogfood/operator_opt_out_finish_epoch/{operator}";
+    option (google.api.http).get = "/exocore/dogfood/operator_opt_out_finish_epoch/{operator_acc_addr}";
   }
 
   // UndelegationsToMature queries the undelegations that will mature at the given epoch.
@@ -42,7 +42,7 @@ service Query {
 
   // QueryValidator queries the validator for the given consensus address.
   rpc QueryValidator(QueryValidatorRequest) returns (ExocoreValidator) {
-    option (google.api.http).get = "/exocore/dogfood/validator/{consensus_address}";
+    option (google.api.http).get = "/exocore/dogfood/validator/{cons_addr}";
   }
 }
 
@@ -64,11 +64,11 @@ message QueryOptOutsToFinishRequest {
 // QueryOperatorOptOutFinishEpochRequest is request type for the Query/OperatorOptOutFinishEpoch
 // RPC method.
 message QueryOperatorOptOutFinishEpochRequest {
-  // operator is the operator address.
-  string operator = 1;
+  // operator_acc_addr is the operator account address.
+  string operator_acc_addr = 1;
 }
 
-// QueryOperatorOptOutFinishEpochResponse is response type for the 
+// QueryOperatorOptOutFinishEpochResponse is response type for the
 // Query/OperatorOptOutFinishEpoch RPC method.
 message QueryOperatorOptOutFinishEpochResponse {
   // epoch is the epoch when the operator's opt-out will finish.
@@ -84,7 +84,8 @@ message QueryUndelegationsToMatureRequest {
 // QueryUndelegationMaturityEpochRequest is request type for the Query/UndelegationMaturityEpoch
 // RPC method.
 message QueryUndelegationMaturityEpochRequest {
-  // record_key is the undelegation record key.
+  // record_key is the undelegation record key. note that the UndelegationRecordKey used by the
+  // delegation module is just a string converted to bytes, which we will reverse here.
   string record_key = 1;
 }
 
@@ -97,6 +98,7 @@ message QueryUndelegationMaturityEpochResponse {
 
 // QueryValidatorRequest is request type for the Query/QueryValidator RPC method.
 message QueryValidatorRequest {
-  // consensus_address is the consensus address.
-  string consensus_address = 1;
+  // cons_addr is the consensus address of the validator being queried. From the perspective of
+  // this module, the acc_addr is not relevant and is thus not stored.
+  string cons_addr = 1;
 }
