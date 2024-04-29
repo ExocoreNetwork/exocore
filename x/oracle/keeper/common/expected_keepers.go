@@ -2,10 +2,10 @@ package common
 
 import (
 	"cosmossdk.io/math"
+	stakingkeeper "github.com/ExocoreNetwork/exocore/x/dogfood/keeper"
 	"github.com/ExocoreNetwork/exocore/x/oracle/types"
 	abci "github.com/cometbft/cometbft/abci/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
 	stakingTypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 )
 

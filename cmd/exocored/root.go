@@ -40,8 +40,8 @@ import (
 	genutiltypes "github.com/cosmos/cosmos-sdk/x/genutil/types"
 
 	app "github.com/ExocoreNetwork/exocore/app"
-	evmosclient "github.com/evmos/evmos/v14/client"
-	"github.com/evmos/evmos/v14/client/debug"
+	evmosclient "github.com/ExocoreNetwork/exocore/client"
+	"github.com/ExocoreNetwork/exocore/client/debug"
 	"github.com/evmos/evmos/v14/encoding"
 	"github.com/evmos/evmos/v14/ethereum/eip712"
 	evmosserver "github.com/evmos/evmos/v14/server"
@@ -119,7 +119,7 @@ func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 		genutilcli.ValidateGenesisCmd(app.ModuleBasics),
 		AddGenesisAccountCmd(app.DefaultNodeHome),
 		tmcli.NewCompletionCmd(rootCmd, true),
-		NewTestnetCmd(app.ModuleBasics, banktypes.GenesisBalancesIterator{}),
+		NewTestnetCmd(app.ModuleBasics),
 		debug.Cmd(),
 		config.Cmd(),
 		pruning.PruningCmd(a.newApp),

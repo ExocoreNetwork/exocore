@@ -26,7 +26,6 @@ type (
 		operatorKeeper   types.OperatorKeeper
 		delegationKeeper types.DelegationKeeper
 		restakingKeeper  types.AssetsKeeper
-		slashingKeeper   types.SlashingKeeper
 	}
 )
 
@@ -39,14 +38,13 @@ func NewKeeper(
 	operatorKeeper types.OperatorKeeper,
 	delegationKeeper types.DelegationKeeper,
 	restakingKeeper types.AssetsKeeper,
-	slashingKeeper types.SlashingKeeper,
-) *Keeper {
+) Keeper {
 	// set KeyTable if it has not already been set
 	if !ps.HasKeyTable() {
 		ps = ps.WithKeyTable(types.ParamKeyTable())
 	}
 
-	return &Keeper{
+	k := Keeper{
 		cdc:              cdc,
 		storeKey:         storeKey,
 		paramstore:       ps,
@@ -54,8 +52,10 @@ func NewKeeper(
 		operatorKeeper:   operatorKeeper,
 		delegationKeeper: delegationKeeper,
 		restakingKeeper:  restakingKeeper,
-		slashingKeeper:   slashingKeeper,
 	}
+	k.mustValidateFields()
+
+	return k
 }
 
 // Logger returns a logger object for use within the module.
@@ -65,7 +65,7 @@ func (k Keeper) Logger(ctx sdk.Context) log.Logger {
 
 // SetHooks sets the hooks on the keeper. It intentionally has a pointer receiver so that
 // changes can be saved to the object.
-func (k *Keeper) SetHooks(sh types.DogfoodHooks) *Keeper {
+func (k *Keeper) SetHooks(sh types.DogfoodHooks) {
 	if k.dogfoodHooks != nil {
 		panic("cannot set dogfood hooks twice")
 	}
@@ -73,7 +73,6 @@ func (k *Keeper) SetHooks(sh types.DogfoodHooks) *Keeper {
 		panic("cannot set nil dogfood hooks")
 	}
 	k.dogfoodHooks = sh
-	return k
 }
 
 // Hooks returns the hooks registered to the module.
@@ -103,4 +102,14 @@ func (k Keeper) ClearEpochEnd(ctx sdk.Context) {
 	store := ctx.KVStore(k.storeKey)
 	key := types.EpochEndKey()
 	store.Delete(key)
+}
+
+func (k Keeper) mustValidateFields() {
+	types.PanicIfNil(k.storeKey, "storeKey")
+	types.PanicIfNil(k.cdc, "cdc")
+	types.PanicIfNil(k.paramstore, "paramstore")
+	types.PanicIfNil(k.epochsKeeper, "epochsKeeper")
+	types.PanicIfNil(k.operatorKeeper, "operatorKeeper")
+	types.PanicIfNil(k.delegationKeeper, "delegationKeeper")
+	types.PanicIfNil(k.restakingKeeper, "restakingKeeper")
 }

@@ -56,6 +56,12 @@ const (
 
 	// HistoricalInfoBytePrefix is the byte prefix for the historical info store.
 	HistoricalInfoBytePrefix
+
+	// LastTotalPowerByte is the byte key for the last total power store.
+	LastTotalPowerByte
+
+	// ValidatorUpdatesByte is the byte key for the validator updates store.
+	ValidatorUpdatesByte
 )
 
 // ExocoreValidatorKey returns the key for the validator store.
@@ -158,4 +164,14 @@ func HistoricalInfoKey(height int64) ([]byte, bool) {
 	return append(
 		[]byte{HistoricalInfoBytePrefix}, sdk.Uint64ToBigEndian(uheight)...,
 	), true
+}
+
+// LastTotalPowerKey returns the key for the last total power store.
+func LastTotalPowerKey() []byte {
+	return []byte{LastTotalPowerByte}
+}
+
+// ValidatorUpdatesKey returns the key for the validator updates store.
+func ValidatorUpdatesKey() []byte {
+	return []byte{ValidatorUpdatesByte}
 }

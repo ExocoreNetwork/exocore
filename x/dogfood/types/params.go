@@ -22,7 +22,7 @@ const (
 	DefaultEpochsUntilUnbonded = 7
 	// DefaultEpochIdentifier is the epoch identifier which is used, by default, to identify the
 	// epoch. Note that the options include week, day or hour.
-	DefaultEpochIdentifier = epochstypes.HourEpochID
+	DefaultEpochIdentifier = epochstypes.DayEpochID
 	// DefaultMaxValidators is the default maximum number of bonded validators. It is defined as
 	// a copy here so that we can use a value other than that in x/staking, if necessary.
 	DefaultMaxValidators = stakingtypes.DefaultMaxValidators
