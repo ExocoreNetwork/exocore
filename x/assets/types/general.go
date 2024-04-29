@@ -16,11 +16,13 @@ const (
 	CrossChainOpAmountLength     = 32
 	GeneralAssetsAddrLength      = 32
 	GeneralClientChainAddrLength = 32
-
 	ClientChainLzIDIndexInTopics = 0
-	LzNonceIndexInTopics         = 2
+	ExoCoreOperatorAddrLength    = 42
 
-	ExoCoreOperatorAddrLength = 42
+	// MaxDecimal and MaxDecForTotalSupply are set to prevent the overflow
+	// during the calculation of share and usd value.
+	MaxDecimal           = 18
+	MaxDecForTotalSupply = 38
 )
 
 const (
@@ -31,6 +33,8 @@ const (
 	UndelegateFrom
 	Slash
 )
+
+var MaxAssetTotalSupply = math.NewIntWithDecimal(1, MaxDecForTotalSupply)
 
 type GeneralAssetsAddr [32]byte
 

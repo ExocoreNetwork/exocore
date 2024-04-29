@@ -11,7 +11,7 @@ import (
 
 var (
 	_ OracleKeeper = MockOracle{}
-	_ AvsKeeper    = MockAvs{}
+	_ AVSKeeper    = MockAVS{}
 )
 
 type AssetsKeeper interface {
@@ -140,11 +140,11 @@ func (MockOracle) GetMultipleAssetsPrices(_ sdk.Context, assets map[string]inter
 	return ret, nil
 }
 
-type MockAvs struct {
+type MockAVS struct {
 	AssetsKeeper AssetsKeeper
 }
 
-func (a MockAvs) GetAvsSupportedAssets(ctx sdk.Context, _ string) (map[string]interface{}, error) {
+func (a MockAVS) GetAVSSupportedAssets(ctx sdk.Context, _ string) (map[string]interface{}, error) {
 	// set all registered assets as the default asset supported by mock AVS
 	ret := make(map[string]interface{})
 	allAssets, err := a.AssetsKeeper.GetAllStakingAssetsInfo(ctx)
@@ -157,37 +157,37 @@ func (a MockAvs) GetAvsSupportedAssets(ctx sdk.Context, _ string) (map[string]in
 	return ret, nil
 }
 
-func (a MockAvs) GetAvsSlashContract(_ sdk.Context, _ string) (string, error) {
+func (a MockAVS) GetAVSSlashContract(_ sdk.Context, _ string) (string, error) {
 	return "", nil
 }
 
-func (a MockAvs) GetAvsAddrByChainID(_ sdk.Context, chainID string) (string, error) {
+func (a MockAVS) GetAVSAddrByChainID(_ sdk.Context, chainID string) (string, error) {
 	return chainID, nil
 }
 
-func (a MockAvs) GetAVSMinimumSelfDelegation(_ sdk.Context, _ string) (sdkmath.LegacyDec, error) {
+func (a MockAVS) GetAVSMinimumSelfDelegation(_ sdk.Context, _ string) (sdkmath.LegacyDec, error) {
 	return sdkmath.LegacyNewDec(0), nil
 }
 
-func (a MockAvs) GetEpochEndAVSs(ctx sdk.Context) ([]string, error) {
+func (a MockAVS) GetEpochEndAVSs(ctx sdk.Context) ([]string, error) {
 	avsList := make([]string, 0)
 	avsList = append(avsList, ctx.ChainID())
 	return avsList, nil
 }
 
-func (a MockAvs) GetHeightForVotingPower(_ sdk.Context, _ string, height int64) (int64, error) {
+func (a MockAVS) GetHeightForVotingPower(_ sdk.Context, _ string, height int64) (int64, error) {
 	return height, nil
 }
 
-type AvsKeeper interface {
-	// GetAvsSupportedAssets The ctx can be historical or current, depending on the state you
+type AVSKeeper interface {
+	// GetAVSSupportedAssets The ctx can be historical or current, depending on the state you
 	// wish to retrieve. If the caller want to retrieve a historical assets info supported by
 	// Avs, it needs to generate a historical context through calling
 	// `ContextForHistoricalState` implemented in x/assets/types/general.go
-	GetAvsSupportedAssets(ctx sdk.Context, avsAddr string) (map[string]interface{}, error)
-	GetAvsSlashContract(ctx sdk.Context, avsAddr string) (string, error)
-	// GetAvsAddrByChainID get the general Avs address for dogfood module.
-	GetAvsAddrByChainID(ctx sdk.Context, chainID string) (string, error)
+	GetAVSSupportedAssets(ctx sdk.Context, avsAddr string) (map[string]interface{}, error)
+	GetAVSSlashContract(ctx sdk.Context, avsAddr string) (string, error)
+	// GetAVSAddrByChainID get the general Avs address for dogfood module.
+	GetAVSAddrByChainID(ctx sdk.Context, chainID string) (string, error)
 	// GetAVSMinimumSelfDelegation returns the USD value of minimum self delegation, which
 	// is set for operator
 	GetAVSMinimumSelfDelegation(ctx sdk.Context, avsAddr string) (sdkmath.LegacyDec, error)

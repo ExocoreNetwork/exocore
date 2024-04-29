@@ -2,9 +2,8 @@ package keeper_test
 
 import (
 	sdkmath "cosmossdk.io/math"
-	"github.com/ExocoreNetwork/exocore/x/assets/types"
+	assetstypes "github.com/ExocoreNetwork/exocore/x/assets/types"
 	"github.com/ExocoreNetwork/exocore/x/deposit/keeper"
-	deposittype "github.com/ExocoreNetwork/exocore/x/deposit/types"
 	"github.com/ethereum/go-ethereum/common"
 )
 
@@ -13,7 +12,7 @@ func (suite *DepositTestSuite) TestDeposit() {
 	usdcAddress := common.HexToAddress("0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48")
 	params := &keeper.DepositParams{
 		ClientChainLzID: 101,
-		Action:          types.Deposit,
+		Action:          assetstypes.Deposit,
 		StakerAddress:   suite.Address[:],
 		OpAmount:        sdkmath.NewInt(100),
 	}
@@ -21,7 +20,7 @@ func (suite *DepositTestSuite) TestDeposit() {
 	// test the case that the deposit asset hasn't registered
 	params.AssetsAddress = usdcAddress[:]
 	err := suite.App.DepositKeeper.Deposit(suite.Ctx, params)
-	suite.ErrorContains(err, deposittype.ErrDepositAssetNotExist.Error())
+	suite.ErrorContains(err, assetstypes.ErrNoClientChainAssetKey.Error())
 
 	assets, err := suite.App.AssetsKeeper.GetAllStakingAssetsInfo(suite.Ctx)
 	suite.NoError(err)
@@ -33,10 +32,10 @@ func (suite *DepositTestSuite) TestDeposit() {
 	suite.NoError(err)
 
 	// check state after deposit
-	stakerID, assetID := types.GetStakeIDAndAssetID(params.ClientChainLzID, params.StakerAddress, params.AssetsAddress)
+	stakerID, assetID := assetstypes.GetStakeIDAndAssetID(params.ClientChainLzID, params.StakerAddress, params.AssetsAddress)
 	info, err := suite.App.AssetsKeeper.GetStakerSpecifiedAssetInfo(suite.Ctx, stakerID, assetID)
 	suite.NoError(err)
-	suite.Equal(types.StakerAssetInfo{
+	suite.Equal(assetstypes.StakerAssetInfo{
 		TotalDepositAmount:  params.OpAmount,
 		WithdrawableAmount:  params.OpAmount,
 		WaitUnbondingAmount: sdkmath.NewInt(0),

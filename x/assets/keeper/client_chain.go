@@ -26,13 +26,10 @@ func (k Keeper) IsExistedClientChain(ctx sdk.Context, index uint64) bool {
 // GetClientChainInfoByIndex using LayerZeroChainID as the query index.
 func (k Keeper) GetClientChainInfoByIndex(ctx sdk.Context, index uint64) (info *assetstype.ClientChainInfo, err error) {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), assetstype.KeyPrefixClientChainInfo)
-	ifExist := store.Has([]byte(hexutil.EncodeUint64(index)))
-	if !ifExist {
+	value := store.Get([]byte(hexutil.EncodeUint64(index)))
+	if value == nil {
 		return nil, assetstype.ErrNoClientChainKey
 	}
-
-	value := store.Get([]byte(hexutil.EncodeUint64(index)))
-
 	ret := assetstype.ClientChainInfo{}
 	k.cdc.MustUnmarshal(value, &ret)
 	return &ret, nil

@@ -60,6 +60,7 @@ func (k *Keeper) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.Valida
 		}
 		_, err = k.UpdateDelegationState(ctx, record.StakerID, record.AssetID, record.OperatorAddr, deltaAmount)
 		if err != nil {
+			// todo: using cached context to remove the panic
 			panic(err)
 		}
 

@@ -33,12 +33,10 @@ func (k Keeper) GetStakerAssetInfos(ctx sdk.Context, stakerID string) (assetsInf
 func (k Keeper) GetStakerSpecifiedAssetInfo(ctx sdk.Context, stakerID string, assetID string) (info *assetstype.StakerAssetInfo, err error) {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), assetstype.KeyPrefixReStakerAssetInfos)
 	key := assetstype.GetJoinedStoreKey(stakerID, assetID)
-	ifExist := store.Has(key)
-	if !ifExist {
+	value := store.Get(key)
+	if value == nil {
 		return nil, errorsmod.Wrap(assetstype.ErrNoStakerAssetKey, fmt.Sprintf("the key is:%s", key))
 	}
-
-	value := store.Get(key)
 
 	ret := assetstype.StakerAssetInfo{}
 	k.cdc.MustUnmarshal(value, &ret)
@@ -57,11 +55,10 @@ func (k Keeper) UpdateStakerAssetState(ctx sdk.Context, stakerID string, assetID
 		WithdrawableAmount:  math.NewInt(0),
 		WaitUnbondingAmount: math.NewInt(0),
 	}
-	if store.Has(key) {
-		value := store.Get(key)
+	value := store.Get(key)
+	if value != nil {
 		k.cdc.MustUnmarshal(value, &assetState)
 	}
-
 	// update all states of the specified restaker asset
 	err = assetstype.UpdateAssetValue(&assetState.TotalDepositAmount, &changeAmount.TotalDepositAmount)
 	if err != nil {

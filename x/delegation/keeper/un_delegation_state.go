@@ -75,14 +75,12 @@ func (k *Keeper) GetUndelegationRecords(ctx sdk.Context, singleRecordKeys []stri
 	ret := make([]*types.UndelegationRecord, 0)
 	for _, singleRecordKey := range singleRecordKeys {
 		keyBytes := []byte(singleRecordKey)
-		isExit := store.Has(keyBytes)
-		undelegationRecord := types.UndelegationRecord{}
-		if isExit {
-			value := store.Get(keyBytes)
-			k.cdc.MustUnmarshal(value, &undelegationRecord)
-		} else {
+		value := store.Get(keyBytes)
+		if value == nil {
 			return nil, errorsmod.Wrap(types.ErrNoKeyInTheStore, fmt.Sprintf("GetSingleDelegationRecord: key is %s", singleRecordKey))
 		}
+		undelegationRecord := types.UndelegationRecord{}
+		k.cdc.MustUnmarshal(value, &undelegationRecord)
 		ret = append(ret, &undelegationRecord)
 	}
 	return ret, nil

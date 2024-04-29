@@ -24,34 +24,10 @@ type StateForCheck struct {
 	StakerShare      sdkmath.LegacyDec
 }
 
-func (suite *OperatorTestSuite) prepare() {
+func (suite *OperatorTestSuite) prepareOperator() {
 	opAccAddr, err := sdk.AccAddressFromBech32("exo13h6xg79g82e2g2vhjwg7j4r2z2hlncelwutkjr")
-	suite.NoError(err)
-	usdtAddress := common.HexToAddress("0xdAC17F958D2ee523a2206206994597C13D831ec7")
-	clientChainLzID := uint64(101)
-
-	// suite.avsAddr = "avsTestAddr"
-	suite.avsAddr = suite.Ctx.ChainID()
 	suite.operatorAddr = opAccAddr
-	suite.assetAddr = usdtAddress
-	suite.assetDecimal = 6
-	suite.clientChainLzID = clientChainLzID
-	suite.depositAmount = sdkmath.NewInt(100)
-	suite.delegationAmount = sdkmath.NewInt(50)
-	suite.updatedAmountForOptIn = sdkmath.NewInt(20)
-	suite.stakerID, suite.assetID = assetstypes.GetStakeIDAndAssetID(suite.clientChainLzID, suite.Address[:], suite.assetAddr[:])
-
-	// staking assets
-	depositParam := &keeper.DepositParams{
-		ClientChainLzID: suite.clientChainLzID,
-		Action:          assetstypes.Deposit,
-		StakerAddress:   suite.Address[:],
-		OpAmount:        suite.depositAmount,
-	}
-	depositParam.AssetsAddress = suite.assetAddr[:]
-	err = suite.App.DepositKeeper.Deposit(suite.Ctx, depositParam)
 	suite.NoError(err)
-
 	// register operator
 	registerReq := &operatorTypes.RegisterOperatorReq{
 		FromAddress: suite.operatorAddr.String(),
@@ -61,20 +37,54 @@ func (suite *OperatorTestSuite) prepare() {
 	}
 	_, err = suite.App.OperatorKeeper.RegisterOperator(suite.Ctx, registerReq)
 	suite.NoError(err)
+}
 
+func (suite *OperatorTestSuite) prepareDeposit(assetAddr common.Address, amount sdkmath.Int) {
+	clientChainLzID := uint64(101)
+	// suite.avsAddr = "avsTestAddr"
+	suite.avsAddr = suite.Ctx.ChainID()
+	suite.assetAddr = assetAddr
+	suite.assetDecimal = 6
+	suite.clientChainLzID = clientChainLzID
+	suite.depositAmount = amount
+	suite.updatedAmountForOptIn = sdkmath.NewInt(20)
+	suite.stakerID, suite.assetID = assetstypes.GetStakeIDAndAssetID(suite.clientChainLzID, suite.Address[:], suite.assetAddr[:])
+	// staking assets
+	depositParam := &keeper.DepositParams{
+		ClientChainLzID: suite.clientChainLzID,
+		Action:          assetstypes.Deposit,
+		StakerAddress:   suite.Address[:],
+		OpAmount:        suite.depositAmount,
+		AssetsAddress:   assetAddr[:],
+	}
+	err := suite.App.DepositKeeper.Deposit(suite.Ctx, depositParam)
+	suite.NoError(err)
+}
+
+func (suite *OperatorTestSuite) prepareDelegation(assetAddr common.Address, amount sdkmath.Int) {
+	suite.delegationAmount = amount
 	// delegate to operator
 	delegationParam := &delegationtype.DelegationOrUndelegationParams{
 		ClientChainLzID: suite.clientChainLzID,
 		Action:          assetstypes.DelegateTo,
-		AssetsAddress:   suite.assetAddr[:],
+		AssetsAddress:   assetAddr[:],
 		OperatorAddress: suite.operatorAddr,
 		StakerAddress:   suite.Address[:],
-		OpAmount:        suite.delegationAmount,
+		OpAmount:        amount,
 		LzNonce:         0,
 		TxHash:          common.HexToHash("0x24c4a315d757249c12a7a1d7b6fb96261d49deee26f06a3e1787d008b445c3ac"),
 	}
-	err = suite.App.DelegationKeeper.DelegateTo(suite.Ctx, delegationParam)
+	err := suite.App.DelegationKeeper.DelegateTo(suite.Ctx, delegationParam)
 	suite.NoError(err)
+}
+
+func (suite *OperatorTestSuite) prepare() {
+	usdtAddress := common.HexToAddress("0xdAC17F958D2ee523a2206206994597C13D831ec7")
+	depositAmount := sdkmath.NewInt(100)
+	delegationAmount := sdkmath.NewInt(50)
+	suite.prepareOperator()
+	suite.prepareDeposit(usdtAddress, depositAmount)
+	suite.prepareDelegation(usdtAddress, delegationAmount)
 }
 
 func (suite *OperatorTestSuite) CheckState(expectedState *StateForCheck) {
@@ -155,14 +165,6 @@ func (suite *OperatorTestSuite) TestOptOut() {
 	}
 	suite.App.OperatorKeeper.EndBlock(suite.Ctx, abci.RequestEndBlock{})
 	suite.CheckState(expectedState)
-}
-
-func (suite *OperatorTestSuite) TestCalculateShare() {
-	suite.prepare()
-	price, err := suite.App.OperatorKeeper.OracleInterface().GetSpecifiedAssetsPrice(suite.Ctx, suite.assetID)
-	suite.NoError(err)
-	share := operatorKeeper.CalculateUSDValue(suite.delegationAmount, price.Value, suite.assetDecimal, price.Decimal)
-	suite.Equal(sdkmath.LegacyNewDecWithPrec(5000, int64(operatorTypes.USDValueDefaultDecimal)), share)
 }
 
 func (suite *OperatorTestSuite) TestSlash() {

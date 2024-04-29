@@ -28,13 +28,19 @@ func (suite *OperatorTestSuite) TestOperatorInfo() {
 
 func (suite *OperatorTestSuite) TestAllOperators() {
 	suite.prepare()
-	operators := []string{suite.operatorAddr.String(), suite.AccAddress.String()}
+	operators := make(map[string]interface{})
+	operators[suite.operatorAddr.String()] = nil
+	operators[suite.AccAddress.String()] = nil
 	info := &operatortype.OperatorInfo{}
 	err := suite.App.OperatorKeeper.SetOperatorInfo(suite.Ctx, suite.AccAddress.String(), info)
 	suite.NoError(err)
 
 	getOperators := suite.App.OperatorKeeper.AllOperators(suite.Ctx)
-	suite.Equal(operators, getOperators)
+	suite.Equal(len(operators), len(getOperators))
+	for _, operator := range getOperators {
+		_, ok := operators[operator]
+		suite.True(ok)
+	}
 }
 
 func (suite *OperatorTestSuite) TestHistoricalOperatorInfo() {

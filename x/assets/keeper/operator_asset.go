@@ -34,13 +34,10 @@ func (k Keeper) IsOperatorAssetExist(ctx sdk.Context, operatorAddr sdk.Address, 
 func (k Keeper) GetOperatorSpecifiedAssetInfo(ctx sdk.Context, operatorAddr sdk.Address, assetID string) (info *assetstype.OperatorAssetInfo, err error) {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), assetstype.KeyPrefixOperatorAssetInfos)
 	key := assetstype.GetJoinedStoreKey(operatorAddr.String(), assetID)
-	ifExist := store.Has(key)
-	if !ifExist {
+	value := store.Get(key)
+	if value == nil {
 		return nil, assetstype.ErrNoOperatorAssetKey
 	}
-
-	value := store.Get(key)
-
 	ret := assetstype.OperatorAssetInfo{}
 	k.cdc.MustUnmarshal(value, &ret)
 	return &ret, nil
@@ -61,8 +58,8 @@ func (k Keeper) UpdateOperatorAssetState(ctx sdk.Context, operatorAddr sdk.Addre
 		TotalShare:              math.LegacyNewDec(0),
 		OperatorShare:           math.LegacyNewDec(0),
 	}
-	if store.Has(key) {
-		value := store.Get(key)
+	value := store.Get(key)
+	if value != nil {
 		k.cdc.MustUnmarshal(value, &assetState)
 	}
 

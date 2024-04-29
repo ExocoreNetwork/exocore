@@ -12,16 +12,14 @@ import (
 // The function will be called when stakers deposit and withdraw their assets
 func (k Keeper) UpdateStakingAssetTotalAmount(ctx sdk.Context, assetID string, changeAmount sdkmath.Int) (err error) {
 	if changeAmount.IsNil() {
-		return nil
+		return assetstype.ErrInputPointerIsNil
 	}
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), assetstype.KeyPrefixReStakingAssetInfo)
 	key := []byte(assetID)
-	ifExist := store.Has(key)
-	if !ifExist {
+	value := store.Get(key)
+	if value == nil {
 		return assetstype.ErrNoClientChainAssetKey
 	}
-
-	value := store.Get(key)
 
 	ret := assetstype.StakingAssetInfo{}
 	k.cdc.MustUnmarshal(value, &ret)
@@ -32,15 +30,19 @@ func (k Keeper) UpdateStakingAssetTotalAmount(ctx sdk.Context, assetID string, c
 		return err
 	}
 	bz := k.cdc.MustMarshal(&ret)
-
 	store.Set(key, bz)
-
 	return nil
 }
 
 // SetStakingAssetInfo todo: Temporarily use clientChainAssetAddr+'_'+LayerZeroChainID as the key.
 // It provides a function to register the client chain assets supported by exoCore.It's called by genesis configuration now,however it will be called by the governance in the future
 func (k Keeper) SetStakingAssetInfo(ctx sdk.Context, info *assetstype.StakingAssetInfo) (err error) {
+	if info.AssetBasicInfo.Decimals > assetstype.MaxDecimal {
+		return errorsmod.Wrapf(assetstype.ErrInvalidInputParameter, "the decimal is greater than the MaxDecimal,decimal:%v,MaxDecimal:%v", info.AssetBasicInfo.Decimals, assetstype.MaxDecimal)
+	}
+	if info.AssetBasicInfo.TotalSupply.GT(assetstype.MaxAssetTotalSupply) {
+		return errorsmod.Wrapf(assetstype.ErrInvalidInputParameter, "the total supply is greater than the MaxAssetTotalSupply,totalSupply:%v,MaxAssetTotalSupply:%v", info.AssetBasicInfo.TotalSupply, assetstype.MaxAssetTotalSupply)
+	}
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), assetstype.KeyPrefixReStakingAssetInfo)
 	// key := common.HexToAddress(incentive.Contract)
 	bz := k.cdc.MustMarshal(info)
@@ -57,12 +59,10 @@ func (k Keeper) IsStakingAsset(ctx sdk.Context, assetID string) bool {
 
 func (k Keeper) GetStakingAssetInfo(ctx sdk.Context, assetID string) (info *assetstype.StakingAssetInfo, err error) {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), assetstype.KeyPrefixReStakingAssetInfo)
-	ifExist := store.Has([]byte(assetID))
-	if !ifExist {
+	value := store.Get([]byte(assetID))
+	if value == nil {
 		return nil, assetstype.ErrNoClientChainAssetKey
 	}
-
-	value := store.Get([]byte(assetID))
 
 	ret := assetstype.StakingAssetInfo{}
 	k.cdc.MustUnmarshal(value, &ret)
@@ -76,12 +76,10 @@ func (k Keeper) GetAssetsDecimal(ctx sdk.Context, assets map[string]interface{})
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), assetstype.KeyPrefixReStakingAssetInfo)
 	decimals = make(map[string]uint32, 0)
 	for assetID := range assets {
-		ifExist := store.Has([]byte(assetID))
-		if !ifExist {
+		value := store.Get([]byte(assetID))
+		if value == nil {
 			return nil, assetstype.ErrNoClientChainAssetKey
 		}
-
-		value := store.Get([]byte(assetID))
 		ret := assetstype.StakingAssetInfo{}
 		k.cdc.MustUnmarshal(value, &ret)
 		decimals[assetID] = ret.AssetBasicInfo.Decimals

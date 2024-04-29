@@ -86,6 +86,7 @@ func (suite *BaseTestSuite) SetupWithGenesisValSet(valSet *tmtypes.ValidatorSet,
 		Symbol:           "USDT",
 		Address:          "0xdAC17F958D2ee523a2206206994597C13D831ec7",
 		Decimals:         6,
+		TotalSupply:      math.NewInt(1e18),
 		LayerZeroChainID: ethClientChain.LayerZeroChainID,
 		MetaInfo:         "Tether USD token",
 	}
