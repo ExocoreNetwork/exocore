@@ -66,6 +66,3 @@ type DelegationKeeper interface {
 type AssetsKeeper interface {
 	IsStakingAsset(sdk.Context, string) bool
 }
-
-// SlashingKeeper represents the expected keeper interface for the (exo-)slashing module.
-type SlashingKeeper interface{}

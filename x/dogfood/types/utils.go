@@ -14,3 +14,9 @@ func RemoveFromBytesList(list [][]byte, addr []byte) [][]byte {
 	}
 	panic("address not found in list")
 }
+
+func PanicIfNil(x interface{}, msg string) {
+	if x == nil {
+		panic("zero or nil value for " + msg)
+	}
+}

@@ -26,19 +26,19 @@ func (suite *SlashTestSuite) TestSlash() {
 		OpAmount:        sdkmath.NewInt(100),
 	}
 
+	assets, err := suite.App.AssetsKeeper.GetAllStakingAssetsInfo(suite.Ctx)
+	suite.NoError(err)
+	suite.App.Logger().Info("the assets is:", "assets", assets)
+
 	// deposit firstly
 	depositEvent.AssetsAddress = usdtAddress[:]
-	err := suite.App.DepositKeeper.Deposit(suite.Ctx, depositEvent)
+	err = suite.App.DepositKeeper.Deposit(suite.Ctx, depositEvent)
 	suite.NoError(err)
 
 	// test the case that the slash  hasn't registered
 	event.AssetsAddress = usdcAddress[:]
 	err = suite.App.ExoSlashKeeper.Slash(suite.Ctx, event)
 	suite.ErrorContains(err, slashtype.ErrSlashAssetNotExist.Error())
-
-	assets, err := suite.App.AssetsKeeper.GetAllStakingAssetsInfo(suite.Ctx)
-	suite.NoError(err)
-	suite.App.Logger().Info("the assets is:", "assets", assets)
 
 	stakerID, assetID := types.GetStakeIDAndAssetID(depositEvent.ClientChainLzID, depositEvent.StakerAddress, depositEvent.AssetsAddress)
 	info, err := suite.App.AssetsKeeper.GetStakerSpecifiedAssetInfo(suite.Ctx, stakerID, assetID)
@@ -66,5 +66,5 @@ func (suite *SlashTestSuite) TestSlash() {
 
 	assetInfo, err := suite.App.AssetsKeeper.GetStakingAssetInfo(suite.Ctx, assetID)
 	suite.NoError(err)
-	suite.Equal(sdkmath.NewInt(10), assetInfo.StakingTotalAmount)
+	suite.Equal(assets[assetID].StakingTotalAmount.Add(depositEvent.OpAmount).Sub(event.OpAmount), assetInfo.StakingTotalAmount)
 }

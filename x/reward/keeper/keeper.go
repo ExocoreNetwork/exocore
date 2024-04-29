@@ -24,8 +24,8 @@ func NewKeeper(
 	cdc codec.BinaryCodec,
 	storeKey storetypes.StoreKey,
 	assetsKeeper keeper.Keeper,
-) *Keeper {
-	return &Keeper{
+) Keeper {
+	return Keeper{
 		cdc:          cdc,
 		storeKey:     storeKey,
 		assetsKeeper: assetsKeeper,

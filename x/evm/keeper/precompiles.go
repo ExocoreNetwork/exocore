@@ -21,12 +21,10 @@ import (
 	exoslashKeeper "github.com/ExocoreNetwork/exocore/x/slash/keeper"
 	withdrawKeeper "github.com/ExocoreNetwork/exocore/x/withdraw/keeper"
 	authzkeeper "github.com/cosmos/cosmos-sdk/x/authz/keeper"
-	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
 	channelkeeper "github.com/cosmos/ibc-go/v7/modules/core/04-channel/keeper"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/vm"
 	ics20precompile "github.com/evmos/evmos/v14/precompiles/ics20"
-	stakingprecompile "github.com/evmos/evmos/v14/precompiles/staking"
 	transferkeeper "github.com/evmos/evmos/v14/x/ibc/transfer/keeper"
 	"golang.org/x/exp/maps"
 )
@@ -38,7 +36,6 @@ const (
 // AvailablePrecompiles returns the list of all available precompiled contracts.
 // NOTE: this should only be used during initialization of the Keeper.
 func AvailablePrecompiles(
-	stakingKeeper stakingkeeper.Keeper,
 	authzKeeper authzkeeper.Keeper,
 	transferKeeper transferkeeper.Keeper,
 	channelKeeper channelkeeper.Keeper,
@@ -53,11 +50,6 @@ func AvailablePrecompiles(
 ) map[common.Address]vm.PrecompiledContract {
 	// Clone the mapping from the latest EVM fork.
 	precompiles := maps.Clone(vm.PrecompiledContractsBerlin)
-
-	stakingPrecompile, err := stakingprecompile.NewPrecompile(stakingKeeper, authzKeeper)
-	if err != nil {
-		panic(fmt.Errorf("failed to load staking precompile: %w", err))
-	}
 
 	ibcTransferPrecompile, err := ics20precompile.NewPrecompile(
 		transferKeeper,
@@ -137,7 +129,6 @@ func AvailablePrecompiles(
 	precompiles[delegationPrecompile.Address()] = delegationPrecompile
 	precompiles[avsManagerPrecompile.Address()] = avsManagerPrecompile
 	precompiles[taskPrecompile.Address()] = taskPrecompile
-	precompiles[stakingPrecompile.Address()] = stakingPrecompile
 	precompiles[ibcTransferPrecompile.Address()] = ibcTransferPrecompile
 	precompiles[blsPrecompile.Address()] = blsPrecompile
 	return precompiles

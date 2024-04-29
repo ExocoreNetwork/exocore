@@ -221,7 +221,7 @@ func (k *Keeper) getOperatorPrevConsKeyForChainID(
 
 // GetOperatorConsKeyForChainID gets the (consensus) public key for the given operator address
 // and chain id. This should be exposed via the query surface.
-func (k *Keeper) GetOperatorConsKeyForChainID(
+func (k Keeper) GetOperatorConsKeyForChainID(
 	ctx sdk.Context,
 	opAccAddr sdk.AccAddress,
 	chainID string,
@@ -285,7 +285,7 @@ func (k *Keeper) GetChainIDsAndKeysForOperator(
 	for ; iterator.Valid(); iterator.Next() {
 		// the key returned is the full key, with the prefix. drop the prefix and the length.
 		chainID := string(iterator.Key()[len(prefix)+8:])
-		var key *tmprotocrypto.PublicKey
+		key := &tmprotocrypto.PublicKey{}
 		if err := key.Unmarshal(iterator.Value()); err != nil {
 			// grave error because we are the ones who stored this information in the first
 			// place
@@ -323,7 +323,7 @@ func (k *Keeper) GetOperatorsForChainID(
 		// so just drop it and convert to sdk.AccAddress
 		addr := iterator.Key()[len(prefix):]
 		res := iterator.Value()
-		var ret *tmprotocrypto.PublicKey
+		ret := &tmprotocrypto.PublicKey{}
 		if err := ret.Unmarshal(res); err != nil {
 			// grave error
 			panic(err)
@@ -334,7 +334,7 @@ func (k *Keeper) GetOperatorsForChainID(
 	return addrs, pubKeys
 }
 
-func (k *Keeper) GetOperatorAddressForChainIDAndConsAddr(
+func (k Keeper) GetOperatorAddressForChainIDAndConsAddr(
 	ctx sdk.Context, chainID string, consAddr sdk.ConsAddress,
 ) (found bool, addr sdk.AccAddress) {
 	store := ctx.KVStore(k.storeKey)
@@ -351,7 +351,7 @@ func (k *Keeper) GetOperatorAddressForChainIDAndConsAddr(
 // mapping from chain id and consensus address to operator address. This mapping is used
 // to obtain the operator address from its consensus public key, which is sent to the
 // coordinator chain by a subscriber chain for slashing.
-func (k *Keeper) DeleteOperatorAddressForChainIDAndConsAddr(
+func (k Keeper) DeleteOperatorAddressForChainIDAndConsAddr(
 	ctx sdk.Context, chainID string, consAddr sdk.ConsAddress,
 ) {
 	store := ctx.KVStore(k.storeKey)
@@ -415,7 +415,7 @@ func (k *Keeper) InitiateOperatorOptOutFromChainID(
 
 // IsOperatorOptingOutFromChainID returns true if the operator is opting out from the given
 // chain id.
-func (k *Keeper) IsOperatorOptingOutFromChainID(
+func (k Keeper) IsOperatorOptingOutFromChainID(
 	ctx sdk.Context, opAccAddr sdk.AccAddress, chainID string,
 ) bool {
 	store := ctx.KVStore(k.storeKey)
@@ -425,7 +425,7 @@ func (k *Keeper) IsOperatorOptingOutFromChainID(
 
 // CompleteOperatorOptOutFromChainID completes the operator opting out from the given chain id.
 // TODO(mm): would it be better to store as 3 states? (opted in, opting out, opted out)
-func (k *Keeper) CompleteOperatorOptOutFromChainID(
+func (k Keeper) CompleteOperatorOptOutFromChainID(
 	ctx sdk.Context, opAccAddr sdk.AccAddress, chainID string,
 ) {
 	if !k.IsOperatorOptingOutFromChainID(ctx, opAccAddr, chainID) {
@@ -435,7 +435,7 @@ func (k *Keeper) CompleteOperatorOptOutFromChainID(
 	store.Delete(types.KeyForOperatorOptOutFromChainID(opAccAddr, chainID))
 }
 
-func (k *Keeper) GetActiveOperatorsForChainID(
+func (k Keeper) GetActiveOperatorsForChainID(
 	ctx sdk.Context, chainID string,
 ) ([]sdk.AccAddress, []*tmprotocrypto.PublicKey) {
 	operatorsAddr, pks := k.GetOperatorsForChainID(ctx, chainID)
@@ -457,7 +457,7 @@ func (k *Keeper) GetActiveOperatorsForChainID(
 	return activeOperator, activePks
 }
 
-func (k *Keeper) ValidatorByConsAddrForChainID(
+func (k Keeper) ValidatorByConsAddrForChainID(
 	ctx sdk.Context, consAddr sdk.ConsAddress, chainID string,
 ) stakingtypes.ValidatorI {
 	found, operatorAddr := k.GetOperatorAddressForChainIDAndConsAddr(
