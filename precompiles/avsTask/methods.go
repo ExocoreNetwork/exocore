@@ -31,7 +31,14 @@ func (p Precompile) RegisterAVSTask(
 ) ([]byte, error) {
 	// check the invalidation of caller contract
 	callerAddress, _ := bech32.EncodeFromBase256("exo", contract.CallerAddress.Bytes())
-	_, err := p.avsKeeper.GetAVSInfo(ctx, callerAddress)
+	avs, err := p.avsKeeper.GetAVSInfo(ctx, callerAddress)
+	if err != nil {
+		return nil, err
+	}
+
+	if avs.GetInfo() == nil {
+		return nil, fmt.Errorf(ErrNotYetRegistered, contract.CallerAddress)
+	}
 
 	params, err := p.GetTaskParamsFromInputs(ctx, args)
 	if err != nil {
@@ -103,5 +110,5 @@ func (p Precompile) GetRegisteredPubkey(
 	if err != nil {
 		return nil, err
 	}
-	return method.Outputs.Pack([]byte(pubkey))
+	return method.Outputs.Pack(pubkey)
 }

@@ -4,6 +4,8 @@ import (
 	"encoding/hex"
 	"strings"
 
+	"github.com/cosmos/btcutil/bech32"
+
 	"github.com/evmos/evmos/v14/crypto/ethsecp256k1"
 
 	errorsmod "cosmossdk.io/errors"
@@ -87,6 +89,7 @@ func GetExocoreAddressFromBech32(address string) (sdk.AccAddress, error) {
 
 	return sdk.AccAddress(addressBz), nil
 }
+
 func DecodeHexString(hexString string) ([]byte, error) {
 	if strings.HasPrefix(hexString, "0x") || strings.HasPrefix(hexString, "0X") {
 		hexString = hexString[2:]
@@ -95,4 +98,23 @@ func DecodeHexString(hexString string) ([]byte, error) {
 		hexString = "0" + hexString
 	}
 	return hex.DecodeString(hexString)
+}
+
+func ProcessAvsAddress(address string) (string, error) {
+	switch {
+	case strings.HasPrefix(address, "0x"):
+		avsAddressHex, err := DecodeHexString(address)
+		if err != nil {
+			return "", errorsmod.Wrapf(errortypes.ErrInvalidAddress, "invalid input address: %s", address)
+		}
+		encodedAddress, err := bech32.EncodeFromBase256("exo", avsAddressHex)
+		if err != nil {
+			return "", err
+		}
+		return encodedAddress, nil
+	case strings.HasPrefix(address, "exo"):
+		return address, nil
+	default:
+		return "", errorsmod.Wrapf(errortypes.ErrInvalidAddress, "invalid input address: %s", address)
+	}
 }

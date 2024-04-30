@@ -37,7 +37,6 @@ func (p Precompile) EmitEventTypeNewPubkeyRegistration(
 	// Pack the arguments to be used as the Data field
 	arguments := abi.Arguments{event.Inputs[0], event.Inputs[1]}
 	packed, err := arguments.Pack(operator, pubkey)
-
 	if err != nil {
 		return err
 	}
