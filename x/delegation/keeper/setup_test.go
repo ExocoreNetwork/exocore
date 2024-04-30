@@ -1,10 +1,11 @@
 package keeper_test
 
 import (
+	"testing"
+
 	sdkmath "cosmossdk.io/math"
 	"github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/common"
-	"testing"
 
 	"github.com/ExocoreNetwork/exocore/testutil"
 
@@ -25,7 +26,6 @@ var s *DelegationTestSuite
 func TestKeeperTestSuite(t *testing.T) {
 	s = new(DelegationTestSuite)
 	suite.Run(t, s)
-
 }
 
 func (suite *DelegationTestSuite) SetupTest() {

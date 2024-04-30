@@ -1,6 +1,8 @@
 package bls_test
 
 import (
+	"testing"
+
 	"github.com/ExocoreNetwork/exocore/precompiles/bls"
 	testutiltx "github.com/ExocoreNetwork/exocore/testutil/tx"
 	"github.com/ethereum/go-ethereum/common"
@@ -8,7 +10,6 @@ import (
 	"github.com/prysmaticlabs/prysm/v4/crypto/bls/blst"
 	blscommon "github.com/prysmaticlabs/prysm/v4/crypto/bls/common"
 	"github.com/stretchr/testify/suite"
-	"testing"
 )
 
 var s *PrecompileTestSuite

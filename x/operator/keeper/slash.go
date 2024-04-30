@@ -92,7 +92,7 @@ func (k *Keeper) VerifySlashEvent(ctx sdk.Context, parameter *SlashInputInfo) (s
 // there isn't any slash mistake for the new-coming delegations after the slash event.
 func (k *Keeper) NoInstantaneousSlash(ctx, historicalStateCtx sdk.Context, parameter *SlashInputInfo) error {
 	// get assetsInfo supported by AVS
-	assetsFilter, err := k.avsKeeper.GetAvsSupportedAssets(historicalStateCtx, parameter.AVSAddr)
+	assetsFilter, err := k.avsKeeper.GetAVSSupportedAssets(historicalStateCtx, parameter.AVSAddr)
 	if err != nil {
 		return err
 	}
@@ -178,7 +178,7 @@ func (k *Keeper) InstantSlash(ctx, historicalStateCtx sdk.Context, parameter *Sl
 
 	slashAssets := make(map[string]sdkmath.Int, 0)
 	// get assetsInfo supported by AVS
-	assetsFilter, err := k.avsKeeper.GetAvsSupportedAssets(historicalStateCtx, parameter.AVSAddr)
+	assetsFilter, err := k.avsKeeper.GetAVSSupportedAssets(historicalStateCtx, parameter.AVSAddr)
 	if err != nil {
 		return err
 	}
@@ -308,32 +308,34 @@ func (k Keeper) SlashWithInfractionReason(
 	ctx sdk.Context, addr sdk.AccAddress, infractionHeight, _ int64,
 	slashFactor sdk.Dec, infraction stakingtypes.Infraction,
 ) sdkmath.Int {
-	chainID := ctx.ChainID()
-	avsAddr, err := k.avsKeeper.GetAvsAddrByChainID(ctx, chainID)
-	if err != nil {
-		k.Logger(ctx).Error(err.Error(), chainID)
-		return sdkmath.NewInt(0)
-	}
-	slashContract, err := k.avsKeeper.GetAvsSlashContract(ctx, avsAddr)
-	if err != nil {
-		k.Logger(ctx).Error(err.Error(), avsAddr)
-		return sdkmath.NewInt(0)
-	}
-	slashID := GetSlashIDForDogfood(infraction, infractionHeight)
-	slashParam := &SlashInputInfo{
-		SlashType:        types.SlashType_SLASH_TYPE_INSTANT_SLASH,
-		Operator:         addr,
-		AVSAddr:          avsAddr,
-		SlashContract:    slashContract,
-		SlashID:          slashID,
-		SlashEventHeight: infractionHeight,
-		SlashProportion:  slashFactor,
-	}
-	err = k.Slash(ctx, slashParam)
-	if err != nil {
-		k.Logger(ctx).Error(err.Error(), avsAddr)
-		return sdkmath.NewInt(0)
-	}
+	// todo: disable the slash currently, waiting for the new slash implementation
+	k.Logger(ctx).Info("slash occurs", addr, infractionHeight, slashFactor, infraction)
+	/*	chainID := ctx.ChainID()
+		avsAddr, err := k.avsKeeper.GetAVSAddrByChainID(ctx, chainID)
+		if err != nil {
+			k.Logger(ctx).Error(err.Error(), chainID)
+			return sdkmath.NewInt(0)
+		}
+		slashContract, err := k.avsKeeper.GetAVSSlashContract(ctx, avsAddr)
+		if err != nil {
+			k.Logger(ctx).Error(err.Error(), avsAddr)
+			return sdkmath.NewInt(0)
+		}
+		slashID := GetSlashIDForDogfood(infraction, infractionHeight)
+		slashParam := &SlashInputInfo{
+			SlashType:        types.SlashType_SLASH_TYPE_INSTANT_SLASH,
+			Operator:         addr,
+			AVSAddr:          avsAddr,
+			SlashContract:    slashContract,
+			SlashID:          slashID,
+			SlashEventHeight: infractionHeight,
+			SlashProportion:  slashFactor,
+		}
+		err = k.Slash(ctx, slashParam)
+		if err != nil {
+			k.Logger(ctx).Error(err.Error(), avsAddr)
+			return sdkmath.NewInt(0)
+		}*/
 	// todo: The returned value should be the amount of burned Exo if we considering a slash from the reward
 	// Now it doesn't slash from the reward, so just return 0
 	return sdkmath.NewInt(0)
@@ -347,7 +349,7 @@ func (k Keeper) IsOperatorJailedForChainID(ctx sdk.Context, consAddr sdk.ConsAdd
 		return false
 	}
 
-	avsAddr, err := k.avsKeeper.GetAvsAddrByChainID(ctx, chainID)
+	avsAddr, err := k.avsKeeper.GetAVSAddrByChainID(ctx, chainID)
 	if err != nil {
 		k.Logger(ctx).Error(err.Error(), chainID)
 		return false
@@ -368,7 +370,7 @@ func (k *Keeper) SetJailedState(ctx sdk.Context, consAddr sdk.ConsAddress, chain
 		return
 	}
 
-	avsAddr, err := k.avsKeeper.GetAvsAddrByChainID(ctx, chainID)
+	avsAddr, err := k.avsKeeper.GetAVSAddrByChainID(ctx, chainID)
 	if err != nil {
 		k.Logger(ctx).Error(err.Error(), chainID)
 		return

@@ -53,14 +53,12 @@ func (k *Keeper) UpdateOperatorSlashInfo(ctx sdk.Context, operatorAddr, avsAddr,
 func (k *Keeper) GetOperatorSlashInfo(ctx sdk.Context, avsAddr, operatorAddr, slashID string) (changeState *operatortypes.OperatorSlashInfo, err error) {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), operatortypes.KeyPrefixOperatorSlashInfo)
 	slashInfoKey := assetstype.GetJoinedStoreKey(operatorAddr, avsAddr, slashID)
-	isExit := store.Has(slashInfoKey)
-	operatorSlashInfo := operatortypes.OperatorSlashInfo{}
-	if isExit {
-		value := store.Get(slashInfoKey)
-		k.cdc.MustUnmarshal(value, &operatorSlashInfo)
-	} else {
+	value := store.Get(slashInfoKey)
+	if value == nil {
 		return nil, errorsmod.Wrap(operatortypes.ErrNoKeyInTheStore, fmt.Sprintf("GetOperatorSlashInfo: key is %s", slashInfoKey))
 	}
+	operatorSlashInfo := operatortypes.OperatorSlashInfo{}
+	k.cdc.MustUnmarshal(value, &operatorSlashInfo)
 	return &operatorSlashInfo, nil
 }
 
@@ -86,10 +84,11 @@ func (k *Keeper) UpdateSlashAssetsState(ctx sdk.Context, assetID, stakerOrOperat
 
 	key = assetstype.GetJoinedStoreKey(hexutil.EncodeUint64(processedHeight), assetID, stakerOrOperator)
 	slashAmount := assetstype.ValueField{Amount: sdkmath.NewInt(0)}
-	if store.Has(key) {
-		value := store.Get(key)
+	value := store.Get(key)
+	if value != nil {
 		k.cdc.MustUnmarshal(value, &slashAmount)
 	}
+
 	err := assetstype.UpdateAssetValue(&slashAmount.Amount, &opAmount)
 	if err != nil {
 		return err
@@ -99,10 +98,11 @@ func (k *Keeper) UpdateSlashAssetsState(ctx sdk.Context, assetID, stakerOrOperat
 
 	key = assetstype.GetJoinedStoreKey(hexutil.EncodeUint64(processedHeight), assetID)
 	totalSlashAmount := assetstype.ValueField{Amount: sdkmath.NewInt(0)}
-	if store.Has(key) {
-		value := store.Get(key)
+	value = store.Get(key)
+	if value != nil {
 		k.cdc.MustUnmarshal(value, &totalSlashAmount)
 	}
+
 	err = assetstype.UpdateAssetValue(&totalSlashAmount.Amount, &opAmount)
 	if err != nil {
 		return err
@@ -124,12 +124,11 @@ func (k *Keeper) GetSlashAssetsState(ctx sdk.Context, assetID, stakerOrOperator 
 	} else {
 		key = assetstype.GetJoinedStoreKey(hexutil.EncodeUint64(processedHeight), assetID, stakerOrOperator)
 	}
-	var ret assetstype.ValueField
-	isExit := store.Has(key)
-	if !isExit {
+	value := store.Get(key)
+	if value == nil {
 		return sdkmath.Int{}, errorsmod.Wrap(operatortypes.ErrNoKeyInTheStore, fmt.Sprintf("GetSlashAssetsState: key is %s", key))
 	}
-	value := store.Get(key)
+	var ret assetstype.ValueField
 	k.cdc.MustUnmarshal(value, &ret)
 
 	return ret.Amount, nil

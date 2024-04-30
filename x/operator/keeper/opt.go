@@ -36,7 +36,7 @@ func (k *Keeper) OptIn(ctx sdk.Context, operatorAddress sdk.AccAddress, avsAddr 
 	}
 
 	// update opted-in info
-	slashContract, err := k.avsKeeper.GetAvsSlashContract(ctx, avsAddr)
+	slashContract, err := k.avsKeeper.GetAVSSlashContract(ctx, avsAddr)
 	if err != nil {
 		return err
 	}

@@ -36,13 +36,10 @@ func (k *Keeper) OperatorInfo(ctx sdk.Context, addr string) (info *operatortypes
 	}
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), operatortypes.KeyPrefixOperatorInfo)
 	// key := common.HexToAddress(incentive.Contract)
-	isExist := store.Has(opAccAddr)
-	if !isExist {
+	value := store.Get(opAccAddr)
+	if value == nil {
 		return nil, errorsmod.Wrap(operatortypes.ErrNoKeyInTheStore, fmt.Sprintf("GetOperatorInfo: key is %s", opAccAddr))
 	}
-
-	value := store.Get(opAccAddr)
-
 	ret := operatortypes.OperatorInfo{}
 	k.cdc.MustUnmarshal(value, &ret)
 	return &ret, nil
@@ -74,12 +71,11 @@ func (k *Keeper) HandleOptedInfo(ctx sdk.Context, operatorAddr, avsAddr string, 
 	}
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), operatortypes.KeyPrefixOperatorOptedAVSInfo)
 	infoKey := assetstype.GetJoinedStoreKey(operatorAddr, avsAddr)
-	ifExist := store.Has(infoKey)
-	if !ifExist {
-		return errorsmod.Wrap(operatortypes.ErrNoKeyInTheStore, fmt.Sprintf("HandleOptedInfo: key is %s", opAccAddr))
-	}
 	// get info from the store
 	value := store.Get(infoKey)
+	if value == nil {
+		return errorsmod.Wrap(operatortypes.ErrNoKeyInTheStore, fmt.Sprintf("HandleOptedInfo: key is %s", opAccAddr))
+	}
 	info := &operatortypes.OptedInfo{}
 	k.cdc.MustUnmarshal(value, info)
 	// call the handleFunc
@@ -112,12 +108,10 @@ func (k *Keeper) GetOptedInfo(ctx sdk.Context, operatorAddr, avsAddr string) (in
 	}
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), operatortypes.KeyPrefixOperatorOptedAVSInfo)
 	infoKey := assetstype.GetJoinedStoreKey(operatorAddr, avsAddr)
-	ifExist := store.Has(infoKey)
-	if !ifExist {
+	value := store.Get(infoKey)
+	if value == nil {
 		return nil, errorsmod.Wrap(operatortypes.ErrNoKeyInTheStore, fmt.Sprintf("GetOptedInfo: key is %s", opAccAddr))
 	}
-
-	value := store.Get(infoKey)
 
 	ret := operatortypes.OptedInfo{}
 	k.cdc.MustUnmarshal(value, &ret)

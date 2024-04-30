@@ -17,7 +17,6 @@ var s *StakingAssetsTestSuite
 func TestKeeperTestSuite(t *testing.T) {
 	s = new(StakingAssetsTestSuite)
 	suite.Run(t, s)
-
 }
 
 func (suite *StakingAssetsTestSuite) SetupTest() {

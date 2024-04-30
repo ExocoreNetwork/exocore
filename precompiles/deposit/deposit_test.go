@@ -6,7 +6,6 @@ import (
 	"github.com/ExocoreNetwork/exocore/app"
 	"github.com/ExocoreNetwork/exocore/precompiles/deposit"
 	assetstype "github.com/ExocoreNetwork/exocore/x/assets/types"
-	deposittype "github.com/ExocoreNetwork/exocore/x/deposit/types"
 	"github.com/ethereum/go-ethereum/common"
 	ethtypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/core/vm"
@@ -117,7 +116,7 @@ func (s *DepositPrecompileSuite) TestRunDepositTo() {
 			},
 			readOnly:    false,
 			expPass:     false,
-			errContains: deposittype.ErrDepositAssetNotExist.Error(),
+			errContains: assetstype.ErrNoClientChainAssetKey.Error(),
 		},
 		{
 			name: "pass - depositTo transaction",

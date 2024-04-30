@@ -22,8 +22,6 @@ const (
 
 	DefaultOptedOutHeight = uint64(math.MaxUint64)
 
-	USDValueDefaultDecimal = uint8(8)
-
 	SlashVetoDuration = int64(1000)
 
 	UnbondingExpiration = 10

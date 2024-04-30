@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"context"
+
 	"github.com/ExocoreNetwork/exocore/x/assets/types"
 
 	sdkmath "cosmossdk.io/math"
@@ -19,7 +20,7 @@ type Keeper struct {
 	assetsKeeper     operatortypes.AssetsKeeper
 	delegationKeeper operatortypes.DelegationKeeper
 	oracleKeeper     operatortypes.OracleKeeper
-	avsKeeper        operatortypes.AvsKeeper
+	avsKeeper        operatortypes.AVSKeeper
 
 	hooks       operatortypes.OperatorHooks // set separately via call to SetHooks
 	slashKeeper operatortypes.SlashKeeper   // for jailing and unjailing check TODO(mm)
@@ -32,7 +33,7 @@ func NewKeeper(
 	assetsKeeper operatortypes.AssetsKeeper,
 	delegationKeeper operatortypes.DelegationKeeper,
 	oracleKeeper operatortypes.OracleKeeper,
-	avsKeeper operatortypes.AvsKeeper,
+	avsKeeper operatortypes.AVSKeeper,
 	slashKeeper operatortypes.SlashKeeper,
 ) Keeper {
 	return Keeper{

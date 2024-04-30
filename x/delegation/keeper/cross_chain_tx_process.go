@@ -78,7 +78,7 @@ func (k *Keeper) delegateTo(
 	if err != nil {
 		return err
 	}
-	err = k.SetStakersForOperator(ctx, params.OperatorAddress.String(), assetID, stakerID)
+	err = k.AppendStakerForOperator(ctx, params.OperatorAddress.String(), assetID, stakerID)
 	if err != nil {
 		return err
 	}
@@ -105,7 +105,7 @@ func (k *Keeper) UndelegateFrom(ctx sdk.Context, params *delegationtype.Delegati
 	stakerID, assetID := assetstype.GetStakeIDAndAssetID(params.ClientChainLzID, params.StakerAddress, params.AssetsAddress)
 
 	// verify the undelegation amount
-	share, err := k.ValidateUndeleagtionAmount(ctx, params.OperatorAddress, stakerID, assetID, params.OpAmount)
+	share, err := k.ValidateUndelegationAmount(ctx, params.OperatorAddress, stakerID, assetID, params.OpAmount)
 	if err != nil {
 		return err
 	}

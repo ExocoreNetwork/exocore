@@ -334,6 +334,7 @@ func (suite *BaseTestSuite) DoSetupTest() {
 			Symbol:           "USDT",
 			Address:          "0xdAC17F958D2ee523a2206206994597C13D831ec7",
 			Decimals:         6,
+			TotalSupply:      math.NewInt(1e18),
 			LayerZeroChainID: suite.ClientChains[0].LayerZeroChainID,
 			MetaInfo:         "Tether USD token",
 		},

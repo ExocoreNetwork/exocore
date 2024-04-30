@@ -111,11 +111,10 @@ func (k Keeper) UpdateDelegationState(ctx sdk.Context, stakerID, assetID, opAddr
 		UndelegatableShare:     sdkmath.LegacyNewDec(0),
 	}
 
-	if store.Has(singleStateKey) {
-		value := store.Get(singleStateKey)
+	value := store.Get(singleStateKey)
+	if value != nil {
 		k.cdc.MustUnmarshal(value, &delegationState)
 	}
-
 	err = assetstype.UpdateAssetValue(&delegationState.WaitUndelegationAmount, &deltaAmounts.WaitUndelegationAmount)
 	if err != nil {
 		return shareIsZero, errorsmod.Wrap(err, "UpdateDelegationState WaitUndelegationAmount error")
@@ -144,14 +143,12 @@ func (k Keeper) UpdateDelegationState(ctx sdk.Context, stakerID, assetID, opAddr
 func (k *Keeper) GetSingleDelegationInfo(ctx sdk.Context, stakerID, assetID, operatorAddr string) (*delegationtype.DelegationAmounts, error) {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), delegationtype.KeyPrefixRestakerDelegationInfo)
 	singleStateKey := assetstype.GetJoinedStoreKey(stakerID, assetID, operatorAddr)
-	isExit := store.Has(singleStateKey)
 	delegationState := delegationtype.DelegationAmounts{}
-	if isExit {
-		value := store.Get(singleStateKey)
-		k.cdc.MustUnmarshal(value, &delegationState)
-	} else {
+	value := store.Get(singleStateKey)
+	if value == nil {
 		return nil, errorsmod.Wrap(delegationtype.ErrNoKeyInTheStore, fmt.Sprintf("QuerySingleDelegationInfo: key is %s", singleStateKey))
 	}
+	k.cdc.MustUnmarshal(value, &delegationState)
 	return &delegationState, nil
 }
 
@@ -170,14 +167,14 @@ func (k *Keeper) GetDelegationInfo(ctx sdk.Context, stakerID, assetID string) (*
 	return &ret, nil
 }
 
-func (k *Keeper) SetStakersForOperator(ctx sdk.Context, operator, assetID, stakerID string) error {
+func (k *Keeper) AppendStakerForOperator(ctx sdk.Context, operator, assetID, stakerID string) error {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), delegationtype.KeyPrefixStakersByOperator)
 	Key := assetstype.GetJoinedStoreKey(operator, assetID)
 	stakerMap := delegationtype.StakerMap{
 		Stakers: make(map[string]bool),
 	}
-	if store.Has(Key) {
-		value := store.Get(Key)
+	value := store.Get(Key)
+	if value != nil {
 		k.cdc.MustUnmarshal(value, &stakerMap)
 	}
 	if _, ok := stakerMap.Stakers[stakerID]; !ok {
@@ -216,10 +213,10 @@ func (k *Keeper) DeleteStakerMapForOperator(ctx sdk.Context, operator, assetID s
 func (k *Keeper) GetStakersByOperator(ctx sdk.Context, operator, assetID string) (delegationtype.StakerMap, error) {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), delegationtype.KeyPrefixStakersByOperator)
 	Key := assetstype.GetJoinedStoreKey(operator, assetID)
-	if !store.Has(Key) {
+	value := store.Get(Key)
+	if value == nil {
 		return delegationtype.StakerMap{}, delegationtype.ErrNoKeyInTheStore
 	}
-	value := store.Get(Key)
 	stakerMap := delegationtype.StakerMap{}
 	k.cdc.MustUnmarshal(value, &stakerMap)
 	return stakerMap, nil
@@ -229,9 +226,9 @@ func (k *Keeper) SetStakerShareToZero(ctx sdk.Context, operator, assetID string,
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), delegationtype.KeyPrefixRestakerDelegationInfo)
 	for stakerID := range stakerMap.Stakers {
 		singleStateKey := assetstype.GetJoinedStoreKey(stakerID, assetID, operator)
-		delegationState := delegationtype.DelegationAmounts{}
-		if store.Has(singleStateKey) {
-			value := store.Get(singleStateKey)
+		value := store.Get(singleStateKey)
+		if value != nil {
+			delegationState := delegationtype.DelegationAmounts{}
 			k.cdc.MustUnmarshal(value, &delegationState)
 			delegationState.UndelegatableShare = sdkmath.LegacyNewDec(0)
 			bz := k.cdc.MustMarshal(&delegationState)

@@ -3,7 +3,6 @@ package keeper
 import (
 	errorsmod "cosmossdk.io/errors"
 	sdkmath "cosmossdk.io/math"
-	"fmt"
 	assetstype "github.com/ExocoreNetwork/exocore/x/assets/types"
 	delegationtypes "github.com/ExocoreNetwork/exocore/x/delegation/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -17,14 +16,14 @@ import (
 // undelegation. Additionally, the last undelegation from an operator will undelegate all
 // remaining token to avoid the calculated token amount is bigger than the remaining token
 // caused by the bankers rounding.
-func TokensFromShares(stakerShare, totalShare sdkmath.LegacyDec, operatorAmount sdkmath.Int) (sdkmath.Int, error) {
+func TokensFromShares(stakerShare, totalShare sdkmath.LegacyDec, totalAmount sdkmath.Int) (sdkmath.Int, error) {
 	if stakerShare.GT(totalShare) {
 		return sdkmath.NewInt(0), errorsmod.Wrapf(delegationtypes.ErrInsufficientShares, "the stakerShare is:%v the totalShare is:%v", stakerShare, totalShare)
 	}
 	if totalShare.IsZero() {
 		return sdkmath.NewInt(0), delegationtypes.ErrDivisorIsZero
 	}
-	return (stakerShare.MulInt(operatorAmount)).Quo(totalShare).TruncateInt(), nil
+	return (stakerShare.MulInt(totalAmount)).Quo(totalShare).TruncateInt(), nil
 }
 
 // SharesFromTokens returns the shares of a delegation given a delegated amount. It
@@ -33,14 +32,14 @@ func TokensFromShares(stakerShare, totalShare sdkmath.LegacyDec, operatorAmount 
 // be truncated through the truncation implemented by golang's standard big.Int.
 // So the calculated share might tend to be smaller, but it seems acceptable, because
 // we need to make sure the staker can't get a bigger share than they should get.
-func SharesFromTokens(totalShare sdkmath.LegacyDec, stakerAmount, operatorAmount sdkmath.Int) (sdkmath.LegacyDec, error) {
-	if stakerAmount.GT(operatorAmount) {
-		return sdkmath.LegacyNewDec(0), errorsmod.Wrapf(delegationtypes.ErrInsufficientAssetAmount, "the stakerAmount is:%v the operatorAmount is:%v", stakerAmount, operatorAmount)
+func SharesFromTokens(totalShare sdkmath.LegacyDec, stakerAmount, totalAmount sdkmath.Int) (sdkmath.LegacyDec, error) {
+	if stakerAmount.GT(totalAmount) {
+		return sdkmath.LegacyNewDec(0), errorsmod.Wrapf(delegationtypes.ErrInsufficientAssetAmount, "the stakerAmount is:%v the totalAmount is:%v", stakerAmount, totalAmount)
 	}
-	if operatorAmount.IsZero() {
+	if totalAmount.IsZero() {
 		return sdkmath.LegacyZeroDec(), delegationtypes.ErrDivisorIsZero
 	}
-	return totalShare.MulInt(stakerAmount).QuoInt(operatorAmount), nil
+	return totalShare.MulInt(stakerAmount).QuoInt(totalAmount), nil
 }
 
 // CalculateShare calculates the S_j
@@ -71,10 +70,10 @@ func (k Keeper) CalculateShare(ctx sdk.Context, operator sdk.AccAddress, assetID
 	return share, nil
 }
 
-// ValidateUndeleagtionAmount validates that a given undelegation amount is
+// ValidateUndelegationAmount validates that a given undelegation amount is
 // valid based on upon the converted shares. If the amount is valid, the total
 // amount of respective shares is returned, otherwise an error is returned.
-func (k Keeper) ValidateUndeleagtionAmount(
+func (k Keeper) ValidateUndelegationAmount(
 	ctx sdk.Context, operator sdk.AccAddress, stakerID, assetID string, amount sdkmath.Int,
 ) (share sdkmath.LegacyDec, err error) {
 	if !amount.IsPositive() {
@@ -160,7 +159,6 @@ func (k Keeper) RemoveShareFromOperator(
 		return token, delegationtypes.ErrInsufficientShares
 	}
 
-	fmt.Println("the share totalShare and totalAmount is:", share, operatorAssetState.TotalShare, operatorAssetState.TotalAmount)
 	var removedToken sdkmath.Int
 	if operatorAssetState.TotalShare.Equal(share) {
 		// last delegation share gets any trimmings
@@ -173,7 +171,6 @@ func (k Keeper) RemoveShareFromOperator(
 			return token, err
 		}
 	}
-	fmt.Println("the removedToken is:", removedToken)
 
 	delta := assetstype.DeltaOperatorSingleAsset{
 		TotalAmount: removedToken.Neg(),
