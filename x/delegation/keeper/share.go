@@ -33,9 +33,6 @@ func TokensFromShares(stakerShare, totalShare sdkmath.LegacyDec, totalAmount sdk
 // So the calculated share might tend to be smaller, but it seems acceptable, because
 // we need to make sure the staker can't get a bigger share than they should get.
 func SharesFromTokens(totalShare sdkmath.LegacyDec, stakerAmount, totalAmount sdkmath.Int) (sdkmath.LegacyDec, error) {
-	if stakerAmount.GT(totalAmount) {
-		return sdkmath.LegacyNewDec(0), errorsmod.Wrapf(delegationtypes.ErrInsufficientAssetAmount, "the stakerAmount is:%v the totalAmount is:%v", stakerAmount, totalAmount)
-	}
 	if totalAmount.IsZero() {
 		return sdkmath.LegacyZeroDec(), delegationtypes.ErrDivisorIsZero
 	}

@@ -63,6 +63,11 @@ func (k *Keeper) UpdateVotingPower(ctx sdk.Context, avsAddr string) error {
 	}
 	// update the voting power of operators and AVS
 	avsVotingPower := sdkmath.LegacyNewDec(0)
+	// check if self USD value is more than the minimum self delegation.
+	minimumSelfDelegation, err := k.avsKeeper.GetAVSMinimumSelfDelegation(ctx, avsAddr)
+	if err != nil {
+		return err
+	}
 	opFunc := func(operator string, votingPower *sdkmath.LegacyDec) error {
 		// clear the old voting power for the operator
 		*votingPower = sdkmath.LegacyNewDec(0)
@@ -70,15 +75,10 @@ func (k *Keeper) UpdateVotingPower(ctx sdk.Context, avsAddr string) error {
 		if err != nil {
 			return err
 		}
-		// check if self USD value is more than the minimum self delegation.
-		minimumSelfDelegation, err := k.avsKeeper.GetAVSMinimumSelfDelegation(ctx, avsAddr)
-		if err != nil {
-			return err
-		}
 		if selfUSDValue.GTE(minimumSelfDelegation) {
 			*votingPower = votingPower.Add(usdValue)
+			avsVotingPower = avsVotingPower.Add(*votingPower)
 		}
-		avsVotingPower = avsVotingPower.Add(*votingPower)
 		return nil
 	}
 	// iterate all operators of the AVS to update their voting power

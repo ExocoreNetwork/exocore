@@ -105,13 +105,6 @@ func (suite *DelegationTestSuite) TestSharesFromTokens() {
 		// error cases
 		{
 			totalShare:     sdkmath.LegacyNewDec(50),
-			operatorAmount: sdkmath.NewInt(50),
-			stakerAmount:   sdkmath.NewInt(51),
-			innerError:     delegationtypes.ErrInsufficientAssetAmount,
-			stakerShare:    sdkmath.LegacyNewDec(0),
-		},
-		{
-			totalShare:     sdkmath.LegacyNewDec(50),
 			operatorAmount: sdkmath.NewInt(0),
 			stakerAmount:   sdkmath.NewInt(0),
 			innerError:     delegationtypes.ErrDivisorIsZero,
@@ -125,6 +118,13 @@ func (suite *DelegationTestSuite) TestSharesFromTokens() {
 			stakerAmount:   sdkmath.NewInt(0),
 			innerError:     nil,
 			stakerShare:    sdkmath.LegacyNewDec(0),
+		},
+		{
+			totalShare:     sdkmath.LegacyNewDec(50),
+			operatorAmount: sdkmath.NewInt(50),
+			stakerAmount:   sdkmath.NewInt(51),
+			innerError:     nil,
+			stakerShare:    sdkmath.LegacyNewDec(51),
 		},
 		{
 			totalShare:     sdkmath.LegacyNewDec(50),
