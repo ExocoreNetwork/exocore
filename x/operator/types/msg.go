@@ -30,7 +30,8 @@ func (m *RegisterOperatorReq) ValidateBasic() error {
 	return m.Info.ValidateBasic()
 }
 
-func (msg *RegisterOperatorReq) Route() string {
+// Route returns the transaction route. This must be specified for successful signing.
+func (m *RegisterOperatorReq) Route() string {
 	return RouterKey
 }
 
@@ -58,7 +59,8 @@ func (m *SetConsKeyReq) ValidateBasic() error {
 	return nil
 }
 
-func (msg *SetConsKeyReq) Route() string {
+// Route returns the transaction route. This must be specified for successful signing.
+func (m *SetConsKeyReq) Route() string {
 	return RouterKey
 }
 
@@ -79,7 +81,8 @@ func (m *InitConsKeyRemovalReq) ValidateBasic() error {
 	return nil
 }
 
-func (msg *InitConsKeyRemovalReq) Route() string {
+// Route returns the transaction route. This must be specified for successful signing.
+func (m *InitConsKeyRemovalReq) Route() string {
 	return RouterKey
 }
 
@@ -107,7 +110,8 @@ func (m *OptIntoAVSReq) ValidateBasic() error {
 	return nil
 }
 
-func (msg *OptIntoAVSReq) Route() string {
+// Route returns the transaction route. This must be specified for successful signing.
+func (m *OptIntoAVSReq) Route() string {
 	return RouterKey
 }
 
@@ -133,6 +137,7 @@ func (m *OptOutOfAVSReq) ValidateBasic() error {
 	return nil
 }
 
-func (msg *OptOutOfAVSReq) Route() string {
+// Route returns the transaction route. This must be specified for successful signing.
+func (m *OptOutOfAVSReq) Route() string {
 	return RouterKey
 }
