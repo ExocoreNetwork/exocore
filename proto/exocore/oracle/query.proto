@@ -1,0 +1,193 @@
+syntax = "proto3";
+
+package exocore.oracle;
+
+import "cosmos/base/query/v1beta1/pagination.proto";
+import "exocore/oracle/index_recent_msg.proto";
+import "exocore/oracle/index_recent_params.proto";
+import "exocore/oracle/params.proto";
+import "exocore/oracle/prices.proto";
+import "exocore/oracle/recent_msg.proto";
+import "exocore/oracle/recent_params.proto";
+import "exocore/oracle/validator_update_block.proto";
+import "gogoproto/gogo.proto";
+import "google/api/annotations.proto";
+
+option go_package = "github.com/ExocoreNetwork/exocore/x/oracle/types";
+
+// Query defines the gRPC querier service.
+service Query {
+  
+  // Parameters queries the parameters of the module.
+  rpc Params (QueryParamsRequest) returns (QueryParamsResponse) {
+    option (google.api.http).get = "/ExocoreNetwork/exocore/oracle/params";
+  
+  }
+  
+  // Queries a list of Prices items.
+  rpc Prices    (QueryGetPricesRequest) returns (QueryGetPricesResponse) {
+    option (google.api.http).get = "/ExocoreNetwork/exocore/oracle/prices/{token_id}";
+  
+  }
+  //  rpc PricesAll (QueryAllPricesRequest) returns (QueryAllPricesResponse) {
+  //    option (google.api.http).get = "/ExocoreNetwork/exocore/oracle/prices";
+  //  
+  //  }
+  
+  // Queries a ValidatorUpdateBlock by index.
+  rpc ValidatorUpdateBlock (QueryGetValidatorUpdateBlockRequest) returns (QueryGetValidatorUpdateBlockResponse) {
+    option (google.api.http).get = "/ExocoreNetwork/exocore/oracle/validator_update_block";
+  
+  }
+  
+  // Queries a IndexRecentParams by index.
+  rpc IndexRecentParams (QueryGetIndexRecentParamsRequest) returns (QueryGetIndexRecentParamsResponse) {
+    option (google.api.http).get = "/ExocoreNetwork/exocore/oracle/index_recent_params";
+  
+  }
+  
+  // Queries a IndexRecentMsg by index.
+  rpc IndexRecentMsg (QueryGetIndexRecentMsgRequest) returns (QueryGetIndexRecentMsgResponse) {
+    option (google.api.http).get = "/ExocoreNetwork/exocore/oracle/index_recent_msg";
+  
+  }
+  
+  // Queries a list of RecentMsg items.
+  rpc RecentMsg    (QueryGetRecentMsgRequest) returns (QueryGetRecentMsgResponse) {
+    option (google.api.http).get = "/ExocoreNetwork/exocore/oracle/recent_msg/{block}";
+  
+  }
+
+  // RecentMsgAll all RecentMsg items.
+  rpc RecentMsgAll (QueryAllRecentMsgRequest) returns (QueryAllRecentMsgResponse) {
+    option (google.api.http).get = "/ExocoreNetwork/exocore/oracle/recent_msg";
+  
+  }
+  
+  // Queries a list of RecentParams items.
+  rpc RecentParams    (QueryGetRecentParamsRequest) returns (QueryGetRecentParamsResponse) {
+    option (google.api.http).get = "/ExocoreNetwork/exocore/oracle/recent_params/{block}";
+  
+  }
+
+  // RecentParamsAll query all RecentParams.
+  rpc RecentParamsAll (QueryAllRecentParamsRequest) returns (QueryAllRecentParamsResponse) {
+    option (google.api.http).get = "/ExocoreNetwork/exocore/oracle/recent_params";
+  
+  }
+}
+// QueryParamsRequest is request type for the Query/Params RPC method.
+message QueryParamsRequest {}
+
+// QueryParamsResponse is response type for the Query/Params RPC method.
+message QueryParamsResponse {
+  
+  // params holds all the parameters of this module.
+  Params params = 1 [(gogoproto.nullable) = false];
+}
+
+// QueryGetPricesRequest is request type for all prices of a specific token
+message QueryGetPricesRequest {
+  // token_id represents which token's price will be retrieved
+  uint64 token_id = 1; //[(gogoproto.customname) = "TokenID"];
+}
+
+// QueryGetPricesResponse
+message QueryGetPricesResponse {
+  // prices returned prices
+  Prices prices = 1 [(gogoproto.nullable) = false];
+}
+
+// QueryAllPricesRequest
+message QueryAllPricesRequest {
+  // info of the pagination
+  cosmos.base.query.v1beta1.PageRequest pagination = 1;
+}
+
+// QueryAllPricesResponse
+message QueryAllPricesResponse {
+  // prices retreived
+  repeated Prices                                 prices     = 1 [(gogoproto.nullable) = false];
+  // info of the pagination
+  cosmos.base.query.v1beta1.PageResponse pagination = 2;
+}
+
+// QueryGetValidatorUpdateBlockRequest
+message QueryGetValidatorUpdateBlockRequest {}
+
+//QueryGetValidatorUpdateBlockResponse
+message QueryGetValidatorUpdateBlockResponse {
+  // ValidatorUpdateBlock tells the latest block on which the valdiator set was updated
+  ValidatorUpdateBlock validator_update_block = 1 [(gogoproto.nullable) = false];
+}
+
+// QueryGetIndexRecentParamsRequest
+message QueryGetIndexRecentParamsRequest {}
+
+// QueryGetIndexRecentParamsResponse
+message QueryGetIndexRecentParamsResponse {
+  // index_recent_params index of cached recent params
+  IndexRecentParams index_recent_params = 1 [(gogoproto.nullable) = false];
+}
+
+// QueryGetIndexRecentMsgReque
+message QueryGetIndexRecentMsgRequest {}
+
+// QueryIndexRecentMsgResponse
+message QueryGetIndexRecentMsgResponse {
+  // index_recent_msg index of cached recent messages
+  IndexRecentMsg index_recent_msg = 1 [(gogoproto.nullable) = false];
+}
+
+// QueryGetRecentMsgRequest
+message QueryGetRecentMsgRequest {
+  // block represents of which block the cached message query for
+  uint64 block = 1;
+}
+
+// QueryGetRecentMsgResponse
+message QueryGetRecentMsgResponse {
+  // cached recent message
+  RecentMsg recent_msg = 1 [(gogoproto.nullable) = false];
+}
+
+// QueryAllRecentMsgRequest
+message QueryAllRecentMsgRequest {
+  // info of pagination
+  cosmos.base.query.v1beta1.PageRequest pagination = 1;
+}
+
+// QueryAllRecentMsgResponse
+message QueryAllRecentMsgResponse {
+  // recent_msg represets the cached recent message
+  repeated RecentMsg                              recent_msg  = 1 [(gogoproto.nullable) = false];
+  // info of pagination
+  cosmos.base.query.v1beta1.PageResponse pagination = 2;
+}
+
+// QueryGetRecentParamsRequest
+message QueryGetRecentParamsRequest {
+  // block represents of which block the cached params from
+  uint64 block = 1;
+}
+
+// QueryGetRecentParamsResponse
+message QueryGetRecentParamsResponse {
+  // recent_params cached recent params
+  RecentParams recent_params = 1 [(gogoproto.nullable) = false];
+}
+
+// QueryAllRecentParamsRequest
+message QueryAllRecentParamsRequest {
+  // info of pagination
+  cosmos.base.query.v1beta1.PageRequest pagination = 1;
+}
+
+// QueryAllRecentParamsResponse
+message QueryAllRecentParamsResponse {
+  // recent_params cached recent params
+  repeated RecentParams                           recent_params = 1 [(gogoproto.nullable) = false];
+  // info of pagination
+  cosmos.base.query.v1beta1.PageResponse pagination   = 2;
+}
+

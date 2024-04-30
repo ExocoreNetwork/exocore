@@ -184,7 +184,7 @@ func (k *Keeper) GetWaitCompleteUndelegationRecords(ctx sdk.Context, height uint
 	return k.GetUndelegationRecords(ctx, recordKeys)
 }
 
-func (k *Keeper) IncrementUndelegationHoldCount(ctx sdk.Context, recordKey []byte) error {
+func (k Keeper) IncrementUndelegationHoldCount(ctx sdk.Context, recordKey []byte) error {
 	prev := k.GetUndelegationHoldCount(ctx, recordKey)
 	if prev == math.MaxUint64 {
 		return types.ErrCannotIncHoldCount
@@ -201,7 +201,7 @@ func (k *Keeper) GetUndelegationHoldCount(ctx sdk.Context, recordKey []byte) uin
 	return sdk.BigEndianToUint64(bz)
 }
 
-func (k *Keeper) DecrementUndelegationHoldCount(ctx sdk.Context, recordKey []byte) error {
+func (k Keeper) DecrementUndelegationHoldCount(ctx sdk.Context, recordKey []byte) error {
 	prev := k.GetUndelegationHoldCount(ctx, recordKey)
 	if prev == 0 {
 		return types.ErrCannotDecHoldCount

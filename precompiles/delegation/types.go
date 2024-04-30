@@ -20,7 +20,7 @@ func (p Precompile) GetDelegationParamsFromInputs(ctx sdk.Context, args []interf
 		return nil, fmt.Errorf(cmn.ErrInvalidNumberOfArgs, 6, len(args))
 	}
 	delegationParams := &delegationtypes.DelegationOrUndelegationParams{}
-	clientChainLzID, ok := args[0].(uint16)
+	clientChainLzID, ok := args[0].(uint32)
 	if !ok {
 		return nil, fmt.Errorf(exocmn.ErrContractInputParaOrType, 0, reflect.TypeOf(args[0]), clientChainLzID)
 	}

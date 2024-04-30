@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 KEYS[0]="dev0"
 KEYS[1]="dev1"
@@ -17,6 +17,14 @@ HOMEDIR="$HOME/.tmp-exocored"
 # to trace evm
 #TRACE="--trace"
 TRACE=""
+
+# make the validator consensus key consistent
+CONSENSUS_KEY_MNEMONIC="wonder quality resource ketchup occur stadium vicious output situate plug second monkey harbor vanish then myself primary feed earth story real soccer shove like"
+# the account below acts as both initial operator and local consistent faucet.
+# pk: D196DCA836F8AC2FFF45B3C9F0113825CCBB33FA1B39737B948503B263ED75AE
+# 0x3e108c058e8066DA635321Dc3018294cA82ddEdf == exo18cggcpvwspnd5c6ny8wrqxpffj5zmhklprtnph
+LOCAL_MNEMONIC="knock benefit magnet slogan normal broken frequent level video focus spell utility"
+LOCAL_NAME="local_funded_account"
 
 # Path variables
 CONFIG=$HOMEDIR/config/config.toml
@@ -59,41 +67,55 @@ if [[ $overwrite == "y" || $overwrite == "Y" ]]; then
 		exocored keys add "$KEY" --keyring-backend $KEYRING --algo $ALGO --home "$HOMEDIR"
 	done
 
+	# Use recover so that there is always a consistent address funded in the localnet genesis.
+	echo "${LOCAL_MNEMONIC}" | exocored --home "$HOMEDIR" --keyring-backend $KEYRING keys add "${LOCAL_NAME}" --recover
+
 	# Set moniker and chain-id for Evmos (Moniker can be anything, chain-id must be an integer)
-	exocored init $MONIKER -o --chain-id $CHAINID --home "$HOMEDIR"
+	# Use recover to use a consistent consensus key for validator.
+	echo "${CONSENSUS_KEY_MNEMONIC}" | exocored init $MONIKER -o --chain-id $CHAINID --home "$HOMEDIR" --recover
 
 	# Change parameter token denominations to aexo
-	jq '.app_state["staking"]["params"]["bond_denom"]="aexo"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
 	jq '.app_state["crisis"]["constant_fee"]["denom"]="aexo"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
 	jq '.app_state["gov"]["deposit_params"]["min_deposit"][0]["denom"]="aexo"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
 	# When upgrade to cosmos-sdk v0.47, use gov.params to edit the deposit params
 	jq '.app_state["gov"]["params"]["min_deposit"][0]["denom"]="aexo"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
 	jq '.app_state["evm"]["params"]["evm_denom"]="aexo"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
-	jq '.app_state["inflation"]["params"]["mint_denom"]="aexo"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
 
 	# Set gas limit in genesis
 	jq '.consensus_params["block"]["max_gas"]="10000000"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
 
-	# Set claims start time
-	current_date=$(date -u +"%Y-%m-%dT%TZ")
-	jq -r --arg current_date "$current_date" '.app_state["claims"]["params"]["airdrop_start_time"]=$current_date' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
+	# x/assets
+	jq '.app_state["assets"]["client_chains"][0]["name"]="Example EVM chain"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
+	jq '.app_state["assets"]["client_chains"][0]["layer_zero_chain_id"]="101"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
+	jq '.app_state["assets"]["tokens"][0]["asset_basic_info"]["address"]="0xdAC17F958D2ee523a2206206994597C13D831ec7"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
+	jq '.app_state["assets"]["tokens"][0]["asset_basic_info"]["layer_zero_chain_id"]="101"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
+	jq '.app_state["assets"]["tokens"][0]["asset_basic_info"]["total_supply"]="40022689732746729"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
+	jq '.app_state["assets"]["tokens"][0]["staking_total_amount"]="0"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
+	jq '.app_state["assets"]["deposits"][0]["staker"]="0x3e108c058e8066da635321dc3018294ca82ddedf_0x65"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
+	jq '.app_state["assets"]["deposits"][0]["deposits"][0]["asset_id"]="0xdac17f958d2ee523a2206206994597c13d831ec7_0x65"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
+	jq '.app_state["assets"]["deposits"][0]["deposits"][0]["info"]["total_deposit_amount"]="5000"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
+	jq '.app_state["assets"]["deposits"][0]["deposits"][0]["info"]["withdrawable_amount"]="5000"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
+	jq '.app_state["assets"]["deposits"][0]["deposits"][0]["info"]["wait_unbonding_amount"]="0"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
 
-	# Set claims denom
-	jq '.app_state["claims"]["params"]["claims_denom"]="aexo"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
+	# x/operator
+	jq '.app_state["operator"]["operators"][0]["earnings_addr"]="exo18cggcpvwspnd5c6ny8wrqxpffj5zmhklprtnph"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
+	jq '.app_state["operator"]["operators"][0]["operator_meta_info"]="operator1"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
+	jq '.app_state["operator"]["operators"][0]["commission"]["commission_rates"]["rate"]="0.0"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
+	jq '.app_state["operator"]["operators"][0]["commission"]["commission_rates"]["max_rate"]="0.0"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
+	jq '.app_state["operator"]["operators"][0]["commission"]["commission_rates"]["max_change_rate"]="0.0"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
+	jq '.app_state["operator"]["operator_records"][0]["operator_address"]="exo18cggcpvwspnd5c6ny8wrqxpffj5zmhklprtnph"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
+	jq ".app_state.operator.operator_records[0].chains[0].chain_id = \"${CHAINID}\"" "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
+	jq ".app_state.operator.operator_records[0].chains[0].consensus_key = \"0xf0f6919e522c5b97db2c8255bff743f9dfddd7ad9fc37cb0c1670b480d0f9914\"" "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
 
-	# Set claims records for validator account
-	amount_to_claim=10000
-	claims_key=${KEYS[0]}
-	node_address=$(exocored keys show "$claims_key" --keyring-backend $KEYRING --home "$HOMEDIR" | grep "address" | cut -c12-)
-	jq -r --arg node_address "$node_address" --arg amount_to_claim "$amount_to_claim" '.app_state["claims"]["claims_records"]=[{"initial_claimable_amount":$amount_to_claim, "actions_completed":[false, false, false, false],"address":$node_address}]' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
+	# x/delegation
+	jq '.app_state["delegation"]["delegations"][0]["staker_id"]="0x3e108c058e8066da635321dc3018294ca82ddedf_0x65"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
+	jq '.app_state["delegation"]["delegations"][0]["delegations"][0]["asset_id"]="0xdac17f958d2ee523a2206206994597c13d831ec7_0x65"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
+	jq '.app_state["delegation"]["delegations"][0]["delegations"][0]["per_operator_amounts"][0]["key"]="exo18cggcpvwspnd5c6ny8wrqxpffj5zmhklprtnph"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
+	jq '.app_state["delegation"]["delegations"][0]["delegations"][0]["per_operator_amounts"][0]["value"]["amount"]="5000"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
 
-	# Set claims decay
-	jq '.app_state["claims"]["params"]["duration_of_decay"]="1000000s"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
-	jq '.app_state["claims"]["params"]["duration_until_decay"]="100000s"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
-
-	# Claim module account:
-	# 0xA61808Fe40fEb8B3433778BBC2ecECCAA47c8c47 || exo15cvq3ljql6utxseh0zau9m8ve2j8erz8lry4g6
-	jq -r --arg amount_to_claim "$amount_to_claim" '.app_state["bank"]["balances"] += [{"address":"exo15cvq3ljql6utxseh0zau9m8ve2j8erz8lry4g6","coins":[{"denom":"aexo", "amount":$amount_to_claim}]}]' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
+	# x/dogfood
+	jq '.app_state["dogfood"]["initial_val_set"][0]["public_key"]="0xf0f6919e522c5b97db2c8255bff743f9dfddd7ad9fc37cb0c1670b480d0f9914"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
+	jq '.app_state["dogfood"]["initial_val_set"][0]["power"]="5000"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
 
 	if [[ $1 == "pending" ]]; then
 		if [[ "$OSTYPE" == "darwin"* ]]; then
@@ -153,22 +175,12 @@ if [[ $overwrite == "y" || $overwrite == "Y" ]]; then
 	for KEY in "${KEYS[@]}"; do
 		exocored add-genesis-account "$KEY" 100000000000000000000000000aexo --keyring-backend $KEYRING --home "$HOMEDIR"
 	done
+	exocored add-genesis-account "${LOCAL_NAME}" 100000000000000000000000000aexo --keyring-backend $KEYRING --home "$HOMEDIR"
 
 	# bc is required to add these big numbers
-	total_supply=$(echo "${#KEYS[@]} * 100000000000000000000000000 + $amount_to_claim" | bc)
+	# note the extra +1 is for LOCAL_NAME
+	total_supply=$(echo "(${#KEYS[@]} + 1) * 100000000000000000000000000" | bc)
 	jq -r --arg total_supply "$total_supply" '.app_state["bank"]["supply"][0]["amount"]=$total_supply' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
-
-	# Sign genesis transaction
-	exocored gentx "${KEYS[0]}" 1000000000000000000000aexo --keyring-backend $KEYRING --chain-id $CHAINID --home "$HOMEDIR"
-	## In case you want to create multiple validators at genesis
-	## 1. Back to `exocored keys add` step, init more keys
-	## 2. Back to `exocored add-genesis-account` step, add balance for those
-	## 3. Clone this ~/.exocored home directory into some others, let's say `~/.clonedExocored`
-	## 4. Run `gentx` in each of those folders
-	## 5. Copy the `gentx-*` folders under `~/.clonedExocored/config/gentx/` folders into the original `~/.exocored/config/gentx`
-
-	# Collect genesis tx
-	exocored collect-gentxs --home "$HOMEDIR"
 
 	# Run this to ensure everything worked and that the genesis file is setup correctly
 	exocored validate-genesis --home "$HOMEDIR"

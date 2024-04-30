@@ -74,7 +74,7 @@ func (s *SlashPrecompileTestSuite) TestRunSlash() {
 		// Prepare the call input for slash test
 		input, err := s.precompile.Pack(
 			slash.MethodSlash,
-			uint16(clientChainLzID),
+			uint32(clientChainLzID),
 			assetAddr,
 			paddingClientChainAddress(s.Address.Bytes(), assetstype.GeneralClientChainAddrLength),
 			slashAmount,

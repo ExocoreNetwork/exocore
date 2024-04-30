@@ -30,30 +30,28 @@ func NewKeeper(
 	cdc codec.BinaryCodec,
 	historicalCtx types.CreateQueryContext,
 	assetsKeeper operatortypes.AssetsKeeper,
+	delegationKeeper operatortypes.DelegationKeeper,
 	oracleKeeper operatortypes.OracleKeeper,
 	avsKeeper operatortypes.AvsKeeper,
 	slashKeeper operatortypes.SlashKeeper,
 ) Keeper {
 	return Keeper{
-		storeKey:      storeKey,
-		cdc:           cdc,
+		storeKey:         storeKey,
+		cdc:              cdc,
 		historicalCtx: historicalCtx,
-		assetsKeeper:  assetsKeeper,
-		oracleKeeper:  oracleKeeper,
-		avsKeeper:     avsKeeper,
-		slashKeeper:   slashKeeper,
+		assetsKeeper:     assetsKeeper,
+		delegationKeeper: delegationKeeper,
+		oracleKeeper:     oracleKeeper,
+		avsKeeper:        avsKeeper,
+		slashKeeper:      slashKeeper,
 	}
-}
-
-func (k *Keeper) RegisterExpectDelegationInterface(delegationKeeper operatortypes.DelegationKeeper) {
-	k.delegationKeeper = delegationKeeper
 }
 
 func (k *Keeper) OracleInterface() operatortypes.OracleKeeper {
 	return k.oracleKeeper
 }
 
-func (k *Keeper) GetUnbondingExpirationBlockNumber(_ sdk.Context, _ sdk.AccAddress, startHeight uint64) uint64 {
+func (k Keeper) GetUnbondingExpirationBlockNumber(_ sdk.Context, _ sdk.AccAddress, startHeight uint64) uint64 {
 	return startHeight + operatortypes.UnbondingExpiration
 }
 

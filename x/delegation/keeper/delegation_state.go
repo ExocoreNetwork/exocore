@@ -15,7 +15,7 @@ type DelegationOpFunc func(keys *delegationtype.SingleDelegationInfoReq, amounts
 
 // IterateDelegationsForStakerAndAsset processes all operations
 // that require iterating over delegations for a specified staker and asset.
-func (k *Keeper) IterateDelegationsForStakerAndAsset(ctx sdk.Context, stakerID string, assetID string, opFunc DelegationOpFunc) error {
+func (k Keeper) IterateDelegationsForStakerAndAsset(ctx sdk.Context, stakerID string, assetID string, opFunc DelegationOpFunc) error {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), delegationtype.KeyPrefixRestakerDelegationInfo)
 	iterator := sdk.KVStorePrefixIterator(store, delegationtype.GetDelegationStateIteratorPrefix(stakerID, assetID))
 	defer iterator.Close()
@@ -37,7 +37,7 @@ func (k *Keeper) IterateDelegationsForStakerAndAsset(ctx sdk.Context, stakerID s
 
 // StakerDelegatedTotalAmount query the total delegation amount of the specified staker and asset.
 // It needs to be calculated from the share and amount of the asset pool.
-func (k *Keeper) StakerDelegatedTotalAmount(ctx sdk.Context, stakerID string, assetID string) (amount sdkmath.Int, err error) {
+func (k Keeper) StakerDelegatedTotalAmount(ctx sdk.Context, stakerID string, assetID string) (amount sdkmath.Int, err error) {
 	amount = sdkmath.NewInt(0)
 	opFunc := func(keys *delegationtype.SingleDelegationInfoReq, amounts *delegationtype.DelegationAmounts) error {
 		if amounts.UndelegatableShare.IsZero() {
@@ -90,7 +90,7 @@ func (k *Keeper) AllDelegatedAmountForStakerAsset(ctx sdk.Context, stakerID stri
 
 // UpdateDelegationState is used to update the staker's asset amount that is delegated to a specified operator.
 // Compared to `UpdateStakerDelegationTotalAmount`,they use the same kv store, but in this function the store key needs to add the operator address as a suffix.
-func (k *Keeper) UpdateDelegationState(ctx sdk.Context, stakerID, assetID, opAddr string, deltaAmounts *delegationtype.DeltaDelegationAmounts) (bool, error) {
+func (k Keeper) UpdateDelegationState(ctx sdk.Context, stakerID, assetID, opAddr string, deltaAmounts *delegationtype.DeltaDelegationAmounts) (bool, error) {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), delegationtype.KeyPrefixRestakerDelegationInfo)
 	// todo: think about the difference between init and update in future
 	shareIsZero := false
@@ -245,7 +245,7 @@ func (k *Keeper) SetStakerShareToZero(ctx sdk.Context, operator, assetID string,
 // assetsFilter: assetID->nil, it's used to filter the specified assets
 // the first return value is a nested map, its type is: stakerID->assetID->DelegationAmounts
 // It means all delegation information related to the specified operator and filtered by the specified asset IDs
-func (k *Keeper) DelegationStateByOperatorAssets(ctx sdk.Context, operatorAddr string, assetsFilter map[string]interface{}) (map[string]map[string]delegationtype.DelegationAmounts, error) {
+func (k Keeper) DelegationStateByOperatorAssets(ctx sdk.Context, operatorAddr string, assetsFilter map[string]interface{}) (map[string]map[string]delegationtype.DelegationAmounts, error) {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), delegationtype.KeyPrefixRestakerDelegationInfo)
 	iterator := sdk.KVStorePrefixIterator(store, nil)
 	defer iterator.Close()

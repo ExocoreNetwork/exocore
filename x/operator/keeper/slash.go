@@ -304,7 +304,7 @@ func (k *Keeper) Slash(ctx sdk.Context, parameter *SlashInputInfo) error {
 }
 
 // SlashWithInfractionReason is an expected slash interface for the dogfood module.
-func (k *Keeper) SlashWithInfractionReason(
+func (k Keeper) SlashWithInfractionReason(
 	ctx sdk.Context, addr sdk.AccAddress, infractionHeight, _ int64,
 	slashFactor sdk.Dec, infraction stakingtypes.Infraction,
 ) sdkmath.Int {
@@ -340,7 +340,7 @@ func (k *Keeper) SlashWithInfractionReason(
 }
 
 // IsOperatorJailedForChainID add for dogfood
-func (k *Keeper) IsOperatorJailedForChainID(ctx sdk.Context, consAddr sdk.ConsAddress, chainID string) bool {
+func (k Keeper) IsOperatorJailedForChainID(ctx sdk.Context, consAddr sdk.ConsAddress, chainID string) bool {
 	found, operatorAddr := k.GetOperatorAddressForChainIDAndConsAddr(ctx, chainID, consAddr)
 	if !found {
 		k.Logger(ctx).Info("couldn't find operator by consensus address and chainID", consAddr, chainID)
@@ -384,11 +384,11 @@ func (k *Keeper) SetJailedState(ctx sdk.Context, consAddr sdk.ConsAddress, chain
 }
 
 // Jail an operator
-func (k *Keeper) Jail(ctx sdk.Context, consAddr sdk.ConsAddress, chainID string) {
+func (k Keeper) Jail(ctx sdk.Context, consAddr sdk.ConsAddress, chainID string) {
 	k.SetJailedState(ctx, consAddr, chainID, true)
 }
 
 // Unjail an operator
-func (k *Keeper) Unjail(ctx sdk.Context, consAddr sdk.ConsAddress, chainID string) {
+func (k Keeper) Unjail(ctx sdk.Context, consAddr sdk.ConsAddress, chainID string) {
 	k.SetJailedState(ctx, consAddr, chainID, true)
 }

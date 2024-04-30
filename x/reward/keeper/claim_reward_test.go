@@ -9,6 +9,9 @@ import (
 )
 
 func (suite *RewardTestSuite) TestClaimWithdrawRequest() {
+	assets, err := suite.App.AssetsKeeper.GetAllStakingAssetsInfo(suite.Ctx)
+	suite.NoError(err)
+
 	usdtAddress := common.HexToAddress("0xdAC17F958D2ee523a2206206994597C13D831ec7")
 	usdcAddress := common.HexToAddress("0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48")
 	event := &keeper.RewardParams{
@@ -20,7 +23,7 @@ func (suite *RewardTestSuite) TestClaimWithdrawRequest() {
 
 	// test the case that the deposit asset hasn't registered
 	event.AssetsAddress = usdcAddress[:]
-	err := suite.App.RewardKeeper.RewardForWithdraw(suite.Ctx, event)
+	err = suite.App.RewardKeeper.RewardForWithdraw(suite.Ctx, event)
 	suite.ErrorContains(err, rewardtype.ErrRewardAssetNotExist.Error())
 
 	// test the normal case
@@ -40,5 +43,5 @@ func (suite *RewardTestSuite) TestClaimWithdrawRequest() {
 
 	assetInfo, err := suite.App.AssetsKeeper.GetStakingAssetInfo(suite.Ctx, assetID)
 	suite.NoError(err)
-	suite.Equal(sdkmath.NewInt(10), assetInfo.StakingTotalAmount)
+	suite.Equal(sdkmath.NewInt(10).Add(assets[assetID].StakingTotalAmount), assetInfo.StakingTotalAmount)
 }

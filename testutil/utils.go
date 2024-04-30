@@ -4,36 +4,40 @@ import (
 	"encoding/json"
 	"time"
 
-	"cosmossdk.io/math"
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/crypto/keyring"
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
 	pruningtypes "github.com/cosmos/cosmos-sdk/store/pruning/types"
+	"github.com/cosmos/cosmos-sdk/testutil/mock"
 	"github.com/evmos/evmos/v14/testutil"
 	"github.com/stretchr/testify/suite"
 	"golang.org/x/exp/rand"
 
 	testutiltx "github.com/ExocoreNetwork/exocore/testutil/tx"
+	oracletypes "github.com/ExocoreNetwork/exocore/x/oracle/types"
 
 	exocoreapp "github.com/ExocoreNetwork/exocore/app"
 	"github.com/ExocoreNetwork/exocore/utils"
 	assetstypes "github.com/ExocoreNetwork/exocore/x/assets/types"
+	delegationtypes "github.com/ExocoreNetwork/exocore/x/delegation/types"
+	dogfoodtypes "github.com/ExocoreNetwork/exocore/x/dogfood/types"
+	operatortypes "github.com/ExocoreNetwork/exocore/x/operator/types"
 	abci "github.com/cometbft/cometbft/abci/types"
 	"github.com/cometbft/cometbft/crypto/tmhash"
 	tmtypes "github.com/cometbft/cometbft/types"
-	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
-	cryptocodec "github.com/cosmos/cosmos-sdk/crypto/codec"
 	"github.com/cosmos/cosmos-sdk/crypto/keys/ed25519"
-	"github.com/cosmos/cosmos-sdk/testutil/mock"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/common/hexutil"
 	ethtypes "github.com/ethereum/go-ethereum/core/types"
 	evmostypes "github.com/evmos/evmos/v14/types"
 	"github.com/evmos/evmos/v14/x/evm/statedb"
 	evmtypes "github.com/evmos/evmos/v14/x/evm/types"
+
+	cryptocodec "github.com/cosmos/cosmos-sdk/crypto/codec"
 )
 
 type BaseTestSuite struct {
@@ -44,12 +48,18 @@ type BaseTestSuite struct {
 	Address    common.Address
 	AccAddress sdk.AccAddress
 
-	Validators     []stakingtypes.Validator
-	ValSet         *tmtypes.ValidatorSet
-	EthSigner      ethtypes.Signer
-	PrivKey        cryptotypes.PrivKey
-	Signer         keyring.Signer
-	BondDenom      string
+	PrivKey   cryptotypes.PrivKey
+	Signer    keyring.Signer
+	EthSigner ethtypes.Signer
+
+	// construct genesis state from this info
+	// x/assets
+	ClientChains []assetstypes.ClientChainInfo
+	Assets       []assetstypes.AssetInfo
+	// for tracking validator across blocks
+	ValSet    *tmtypes.ValidatorSet
+	Operators []sdk.AccAddress
+
 	StateDB        *statedb.StateDB
 	QueryClientEVM evmtypes.QueryClient
 }
@@ -58,11 +68,11 @@ func (suite *BaseTestSuite) SetupTest() {
 	suite.DoSetupTest()
 }
 
-// SetupWithGenesisValSet initializes a new EvmosApp with a validator set and genesis accounts
+// SetupWithGenesisValSet initializes a new ExocoreApp with a validator set and genesis accounts
 // that also act as delegators. For simplicity, each validator is bonded with a delegation
 // of one consensus engine unit (10^6) in the default token of the simapp from first genesis
 // account. A Nop logger is set in SimApp.
-func (suite *BaseTestSuite) SetupWithGenesisValSet(valSet *tmtypes.ValidatorSet, genAccs []authtypes.GenesisAccount, balances ...banktypes.Balance) {
+func (suite *BaseTestSuite) SetupWithGenesisValSet(genAccs []authtypes.GenesisAccount, balances ...banktypes.Balance) {
 	pruneOpts := pruningtypes.NewPruningOptionsFromString(pruningtypes.PruningOptionDefault)
 	appI, genesisState := exocoreapp.SetupTestingApp(utils.DefaultChainID, &pruneOpts, false)()
 	app, ok := appI.(*exocoreapp.ExocoreApp)
@@ -72,89 +82,179 @@ func (suite *BaseTestSuite) SetupWithGenesisValSet(valSet *tmtypes.ValidatorSet,
 	authGenesis := authtypes.NewGenesisState(authtypes.DefaultParams(), genAccs)
 	genesisState[authtypes.ModuleName] = app.AppCodec().MustMarshalJSON(authGenesis)
 
-	// set genesis staking assets
-	ethClientChain := assetstypes.ClientChainInfo{
-		Name:               "ethereum",
-		MetaInfo:           "ethereum blockchain",
-		ChainId:            1,
-		FinalizationBlocks: 10,
-		LayerZeroChainID:   101,
-		AddressLength:      20,
+	// x/operator initialization - address only
+	operator1 := sdk.AccAddress(testutiltx.GenerateAddress().Bytes())
+	operator2 := sdk.AccAddress(testutiltx.GenerateAddress().Bytes())
+	stakerID1, _ := assetstypes.GetStakeIDAndAssetIDFromStr(
+		suite.ClientChains[0].LayerZeroChainID,
+		common.Address(operator1.Bytes()).String(), "",
+	)
+	stakerID2, _ := assetstypes.GetStakeIDAndAssetIDFromStr(
+		suite.ClientChains[0].LayerZeroChainID,
+		common.Address(operator2.Bytes()).String(), "",
+	)
+	_, assetID := assetstypes.GetStakeIDAndAssetIDFromStr(
+		suite.ClientChains[0].LayerZeroChainID,
+		"", suite.Assets[0].Address,
+	)
+	// x/assets initialization - deposits (client chains and tokens are from caller)
+	depositAmount := sdk.TokensFromConsensusPower(1, evmostypes.PowerReduction)
+	depositsByStaker := []assetstypes.DepositsByStaker{
+		{
+			StakerID: stakerID1,
+			Deposits: []assetstypes.DepositByAsset{
+				{
+					AssetID: assetID,
+					Info: assetstypes.StakerAssetInfo{
+						TotalDepositAmount:  depositAmount,
+						WithdrawableAmount:  depositAmount,
+						WaitUnbondingAmount: sdk.ZeroInt(),
+					},
+				},
+			},
+		},
+		{
+			StakerID: stakerID2,
+			Deposits: []assetstypes.DepositByAsset{
+				{
+					AssetID: assetID,
+					Info: assetstypes.StakerAssetInfo{
+						TotalDepositAmount:  depositAmount,
+						WithdrawableAmount:  depositAmount,
+						WaitUnbondingAmount: sdk.ZeroInt(),
+					},
+				},
+			},
+		},
 	}
-	usdtClientChainAsset := assetstypes.AssetInfo{
-		Name:             "Tether USD",
-		Symbol:           "USDT",
-		Address:          "0xdAC17F958D2ee523a2206206994597C13D831ec7",
-		Decimals:         6,
-		LayerZeroChainID: ethClientChain.LayerZeroChainID,
-		MetaInfo:         "Tether USD token",
-	}
-	{
-		totalSupply, _ := sdk.NewIntFromString("40022689732746729")
-		usdtClientChainAsset.TotalSupply = totalSupply
-	}
-	stakingInfo := assetstypes.StakingAssetInfo{
-		AssetBasicInfo:     &usdtClientChainAsset,
-		StakingTotalAmount: math.NewInt(0),
-	}
+	// x/oracle initialization
+	oracleDefaultParams := oracletypes.DefaultParams()
+	oracleDefaultParams.TokenFeeders[1].StartBaseBlock = 1
+	oracleGenesis := oracletypes.NewGenesisState(oracleDefaultParams)
+	genesisState[oracletypes.ModuleName] = app.AppCodec().MustMarshalJSON(oracleGenesis)
+
 	assetsGenesis := assetstypes.NewGenesis(
 		assetstypes.DefaultParams(),
-		[]assetstypes.ClientChainInfo{ethClientChain},
-		[]assetstypes.StakingAssetInfo{stakingInfo},
-		[]assetstypes.DepositsByStaker{},
+		suite.ClientChains, []assetstypes.StakingAssetInfo{
+			{
+				AssetBasicInfo: &suite.Assets[0],
+				// required to be 0, since deposits are handled after token init.
+				StakingTotalAmount: sdk.ZeroInt(),
+			},
+		}, depositsByStaker,
 	)
 	genesisState[assetstypes.ModuleName] = app.AppCodec().MustMarshalJSON(assetsGenesis)
 
-	validators := make([]stakingtypes.Validator, 0, len(valSet.Validators))
-	delegations := make([]stakingtypes.Delegation, 0, len(valSet.Validators))
-
-	bondAmt := sdk.TokensFromConsensusPower(1, evmostypes.PowerReduction)
-
-	for _, val := range valSet.Validators {
-		pk, err := cryptocodec.FromTmPubKeyInterface(val.PubKey)
-		suite.Require().NoError(err)
-		pkAny, err := codectypes.NewAnyWithValue(pk)
-		suite.Require().NoError(err)
-		validator := stakingtypes.Validator{
-			OperatorAddress:   sdk.ValAddress(val.Address).String(),
-			ConsensusPubkey:   pkAny,
-			Jailed:            false,
-			Status:            stakingtypes.Bonded,
-			Tokens:            bondAmt,
-			DelegatorShares:   sdk.OneDec(),
-			Description:       stakingtypes.Description{},
-			UnbondingHeight:   int64(0),
-			UnbondingTime:     time.Unix(0, 0).UTC(),
-			Commission:        stakingtypes.NewCommission(sdk.ZeroDec(), sdk.ZeroDec(), sdk.ZeroDec()),
-			MinSelfDelegation: sdk.ZeroInt(),
-		}
-		validators = append(validators, validator)
-		delegations = append(delegations, stakingtypes.NewDelegation(genAccs[0].GetAddress(), val.Address.Bytes(), sdk.OneDec()))
+	// operator registration
+	operatorInfos := []operatortypes.OperatorInfo{
+		{
+			EarningsAddr:     operator1.String(),
+			OperatorMetaInfo: "operator1",
+			Commission:       stakingtypes.NewCommission(sdk.ZeroDec(), sdk.ZeroDec(), sdk.ZeroDec()),
+		},
+		{
+			EarningsAddr:     operator2.String(),
+			OperatorMetaInfo: "operator2",
+			Commission:       stakingtypes.NewCommission(sdk.ZeroDec(), sdk.ZeroDec(), sdk.ZeroDec()),
+		},
 	}
-	suite.Validators = validators
-
-	// set Validators and delegations
-	stakingParams := stakingtypes.DefaultParams()
-	// set bond demon to be aevmos
-	stakingParams.BondDenom = utils.BaseDenom
-	stakingGenesis := stakingtypes.NewGenesisState(stakingParams, validators, delegations)
-	genesisState[stakingtypes.ModuleName] = app.AppCodec().MustMarshalJSON(stakingGenesis)
-
-	totalBondAmt := bondAmt.Add(bondAmt)
-	totalSupply := sdk.NewCoins()
-	for _, b := range balances {
-		// add genesis acc tokens and delegated tokens to total supply
-		totalSupply = totalSupply.Add(b.Coins.Add(sdk.NewCoin(utils.BaseDenom, totalBondAmt))...)
+	// generate validator private/public key
+	privVal := mock.NewPV()
+	pubKey, err := privVal.GetPubKey()
+	suite.Require().NoError(err)
+	privVal2 := mock.NewPV()
+	pubKey2, err := privVal2.GetPubKey()
+	suite.Require().NoError(err)
+	// operator consensus keys
+	consensusKeyRecords := []operatortypes.OperatorConsKeyRecord{
+		{
+			OperatorAddress: operatorInfos[0].EarningsAddr,
+			Chains: []operatortypes.ChainDetails{
+				{
+					ChainID:      utils.DefaultChainID,
+					ConsensusKey: hexutil.Encode(pubKey.Bytes()),
+				},
+			},
+		},
+		{
+			OperatorAddress: operatorInfos[1].EarningsAddr,
+			Chains: []operatortypes.ChainDetails{
+				{
+					ChainID:      utils.DefaultChainID,
+					ConsensusKey: hexutil.Encode(pubKey2.Bytes()),
+				},
+			},
+		},
 	}
+	operatorGenesis := operatortypes.NewGenesisState(operatorInfos, consensusKeyRecords)
+	genesisState[operatortypes.ModuleName] = app.AppCodec().MustMarshalJSON(operatorGenesis)
 
-	// add bonded amount to bonded pool module account
-	balances = append(balances, banktypes.Balance{
-		Address: authtypes.NewModuleAddress(stakingtypes.BondedPoolName).String(),
-		Coins:   sdk.Coins{sdk.NewCoin(utils.BaseDenom, totalBondAmt)},
+	// x/delegation
+	delegationsByStaker := []delegationtypes.DelegationsByStaker{
+		{
+			StakerID: stakerID1,
+			Delegations: []delegationtypes.DelegatedSingleAssetInfo{
+				{
+					AssetID: assetID,
+					PerOperatorAmounts: []delegationtypes.KeyValue{
+						{
+							Key: operator1.String(),
+							Value: &delegationtypes.ValueField{
+								Amount: depositAmount,
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			StakerID: stakerID2,
+			Delegations: []delegationtypes.DelegatedSingleAssetInfo{
+				{
+					AssetID: assetID,
+					PerOperatorAmounts: []delegationtypes.KeyValue{
+						{
+							Key: operator2.String(),
+							Value: &delegationtypes.ValueField{
+								Amount: depositAmount,
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+	delegationGenesis := delegationtypes.NewGenesis(delegationsByStaker)
+	genesisState[delegationtypes.ModuleName] = app.AppCodec().MustMarshalJSON(delegationGenesis)
+
+	dogfoodGenesis := dogfoodtypes.NewGenesis(
+		dogfoodtypes.DefaultParams(), []dogfoodtypes.GenesisValidator{
+			{
+				PublicKey: hexutil.Encode(pubKey.Bytes()),
+				Power:     1,
+			},
+			{
+				PublicKey: hexutil.Encode(pubKey.Bytes()),
+				Power:     1,
+			},
+		},
+	)
+	genesisState[dogfoodtypes.ModuleName] = app.AppCodec().MustMarshalJSON(dogfoodGenesis)
+
+	suite.ValSet = tmtypes.NewValidatorSet([]*tmtypes.Validator{
+		tmtypes.NewValidator(pubKey, 1),
+		tmtypes.NewValidator(pubKey2, 1),
 	})
 
-	// update total supply
-	bankGenesis := banktypes.NewGenesisState(banktypes.DefaultGenesisState().Params, balances, totalSupply, []banktypes.Metadata{}, []banktypes.SendEnabled{})
+	totalSupply := sdk.NewCoins()
+	for _, b := range balances {
+		// add genesis acc tokens to total supply
+		totalSupply = totalSupply.Add(b.Coins...)
+	}
+	bankGenesis := banktypes.NewGenesisState(
+		banktypes.DefaultParams(), balances, totalSupply,
+		[]banktypes.Metadata{}, []banktypes.SendEnabled{},
+	)
 	genesisState[banktypes.ModuleName] = app.AppCodec().MustMarshalJSON(bankGenesis)
 
 	stateBytes, err := json.MarshalIndent(genesisState, "", " ")
@@ -172,11 +272,13 @@ func (suite *BaseTestSuite) SetupWithGenesisValSet(valSet *tmtypes.ValidatorSet,
 	app.Commit()
 
 	// instantiate new header
+	convKey, err := cryptocodec.FromTmPubKeyInterface(pubKey)
+	suite.Require().NoError(err)
 	header := testutil.NewHeader(
 		2,
 		time.Now().UTC(),
 		utils.DefaultChainID,
-		sdk.ConsAddress(validators[0].GetOperator()),
+		sdk.GetConsAddress(convKey),
 		tmhash.Sum([]byte("App")),
 		tmhash.Sum([]byte("Validators")),
 	)
@@ -190,27 +292,10 @@ func (suite *BaseTestSuite) SetupWithGenesisValSet(valSet *tmtypes.ValidatorSet,
 }
 
 func (suite *BaseTestSuite) DoSetupTest() {
-	// generate validator private/public key
-	privVal := mock.NewPV()
-	pubKey, err := privVal.GetPubKey()
-	suite.Require().NoError(err)
-
-	privVal2 := mock.NewPV()
-	pubKey2, err := privVal2.GetPubKey()
-	suite.Require().NoError(err)
-
-	// create validator set with two Validators
-	validator := tmtypes.NewValidator(pubKey, 1)
-	validator2 := tmtypes.NewValidator(pubKey2, 2)
-	suite.ValSet = tmtypes.NewValidatorSet([]*tmtypes.Validator{validator, validator2})
-	signers := make(map[string]tmtypes.PrivValidator)
-	signers[pubKey.Address().String()] = privVal
-	signers[pubKey2.Address().String()] = privVal2
-
 	// create AccAddress for test
 	pubBz := make([]byte, ed25519.PubKeySize)
 	pub := &ed25519.PubKey{Key: pubBz}
-	_, err = rand.Read(pub.Key)
+	_, err := rand.Read(pub.Key)
 	suite.Require().NoError(err)
 	suite.AccAddress = sdk.AccAddress(pub.Address())
 
@@ -231,13 +316,41 @@ func (suite *BaseTestSuite) DoSetupTest() {
 		Coins:   sdk.NewCoins(sdk.NewCoin(utils.BaseDenom, amount)),
 	}
 
+	// Exocore modules genesis
+	// x/assets
+	suite.ClientChains = []assetstypes.ClientChainInfo{
+		{
+			Name:               "ethereum",
+			MetaInfo:           "ethereum blockchain",
+			ChainId:            1,
+			FinalizationBlocks: 10,
+			LayerZeroChainID:   101,
+			AddressLength:      20,
+		},
+	}
+	suite.Assets = []assetstypes.AssetInfo{
+		{
+			Name:             "Tether USD",
+			Symbol:           "USDT",
+			Address:          "0xdAC17F958D2ee523a2206206994597C13D831ec7",
+			Decimals:         6,
+			LayerZeroChainID: suite.ClientChains[0].LayerZeroChainID,
+			MetaInfo:         "Tether USD token",
+		},
+	}
+	{
+		totalSupply, _ := sdk.NewIntFromString("40022689732746729")
+		suite.Assets[0].TotalSupply = totalSupply
+	}
+
 	// Initialize an ExocoreApp for test
-	suite.SetupWithGenesisValSet(suite.ValSet, []authtypes.GenesisAccount{acc}, balance)
+	suite.SetupWithGenesisValSet(
+		[]authtypes.GenesisAccount{acc}, balance,
+	)
 
 	// Create StateDB
 	suite.StateDB = statedb.New(suite.Ctx, suite.App.EvmKeeper, statedb.NewEmptyTxConfig(common.BytesToHash(suite.Ctx.HeaderHash().Bytes())))
 
-	suite.BondDenom = utils.BaseDenom
 	suite.EthSigner = ethtypes.LatestSignerForChainID(suite.App.EvmKeeper.ChainID())
 
 	queryHelperEvm := baseapp.NewQueryServerTestHelper(suite.Ctx, suite.App.InterfaceRegistry())

@@ -59,7 +59,7 @@ func (s *DepositPrecompileSuite) TestCallDepositToFromEOA() {
 		s.Require().NoError(err)
 		defaultDepositArgs := defaultCallArgs.WithMethodName(method)
 		return defaultDepositArgs.WithArgs(
-			uint16(clientChainLzID),
+			uint32(clientChainLzID),
 			assetAddr,
 			stakerAddr,
 			opAmount)
@@ -130,7 +130,7 @@ func (s *DepositPrecompileSuite) TestCallDepositToFromContract() {
 		s.Require().NoError(err)
 		defaultDepositArgs := defaultCallArgs.WithMethodName(method)
 		return defaultDepositArgs.WithArgs(
-			uint16(clientChainLzID),
+			uint32(clientChainLzID),
 			assetAddr,
 			stakerAddr,
 			opAmount)

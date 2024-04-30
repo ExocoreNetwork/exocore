@@ -3,9 +3,9 @@
     "inputs":
     [
       {
-        "internalType": "uint16",
+        "internalType": "uint32",
         "name": "clientChainLzID",
-        "type": "uint16"
+        "type": "uint32"
       },
       {
         "internalType": "bytes",
