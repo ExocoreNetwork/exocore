@@ -62,10 +62,10 @@ func GetOperatorInfo() *cobra.Command {
 // GetOperatorConsKey queries operator consensus key for the provided chain ID
 func GetOperatorConsKey() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "get-operator-cons-key <chain_id>",
+		Use:   "get-operator-cons-key <operator_address> <chain_id>",
 		Short: "Get operator consensus key",
 		Long:  "Get operator consensus key for the provided chain ID",
-		Args:  cobra.ExactArgs(1),
+		Args:  cobra.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx, err := client.GetClientQueryContext(cmd)
 			if err != nil {
@@ -74,7 +74,8 @@ func GetOperatorConsKey() *cobra.Command {
 
 			queryClient := operatortypes.NewQueryClient(clientCtx)
 			req := &operatortypes.QueryOperatorConsKeyRequest{
-				Chain: args[0],
+				OperatorAccAddr: args[0],
+				Chain:           args[1],
 			}
 			res, err := queryClient.QueryOperatorConsKeyForChainID(
 				context.Background(), req,
@@ -128,10 +129,10 @@ func GetAllOperatorKeys() *cobra.Command {
 // GetOperatorConsAddress queries operator consensus address for the provided chain ID
 func GetOperatorConsAddress() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "get-operator-cons-address <chain_id>",
+		Use:   "get-operator-cons-address <operator_address> <chain_id>",
 		Short: "Get operator consensus address",
 		Long:  "Get operator consensus address for the provided chain ID",
-		Args:  cobra.ExactArgs(1),
+		Args:  cobra.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx, err := client.GetClientQueryContext(cmd)
 			if err != nil {
@@ -140,7 +141,8 @@ func GetOperatorConsAddress() *cobra.Command {
 
 			queryClient := operatortypes.NewQueryClient(clientCtx)
 			req := &operatortypes.QueryOperatorConsAddressRequest{
-				Chain: args[0],
+				OperatorAccAddr: args[0],
+				Chain:           args[1],
 			}
 			res, err := queryClient.QueryOperatorConsAddressForChainID(
 				context.Background(), req,
