@@ -223,14 +223,14 @@ func (k *Keeper) GetStakersByOperator(ctx sdk.Context, operator, assetID string)
 	if value == nil {
 		return delegationtype.StakerList{}, delegationtype.ErrNoKeyInTheStore
 	}
-	stakerMap := delegationtype.StakerList{}
-	k.cdc.MustUnmarshal(value, &stakerMap)
-	return stakerMap, nil
+	stakerList := delegationtype.StakerList{}
+	k.cdc.MustUnmarshal(value, &stakerList)
+	return stakerList, nil
 }
 
-func (k *Keeper) SetStakerShareToZero(ctx sdk.Context, operator, assetID string, stakerMap delegationtype.StakerList) error {
+func (k *Keeper) SetStakerShareToZero(ctx sdk.Context, operator, assetID string, stakerList delegationtype.StakerList) error {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), delegationtype.KeyPrefixRestakerDelegationInfo)
-	for _, stakerID := range stakerMap.Stakers {
+	for _, stakerID := range stakerList.Stakers {
 		singleStateKey := assetstype.GetJoinedStoreKey(stakerID, assetID, operator)
 		value := store.Get(singleStateKey)
 		if value != nil {

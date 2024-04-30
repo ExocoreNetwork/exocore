@@ -48,7 +48,7 @@ var (
 	// restakerID +'/'+assetID+'/'+operatorAddr -> DelegationAmounts
 	KeyPrefixRestakerDelegationInfo = []byte{prefixRestakerDelegationInfo}
 
-	// KeyPrefixStakersByOperator key->value: operatorAddr+'/'+assetID -> StakerMap
+	// KeyPrefixStakersByOperator key->value: operatorAddr+'/'+assetID -> stakerList
 	KeyPrefixStakersByOperator = []byte{prefixStakersByOperator}
 
 	// KeyPrefixUndelegationInfo singleRecordKey = operatorAddr+'/'+BlockHeight+'/'+LzNonce+'/'+txHash

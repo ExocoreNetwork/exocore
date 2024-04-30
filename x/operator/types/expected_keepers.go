@@ -60,7 +60,7 @@ type DelegationKeeper interface {
 		ctx sdk.Context, operator, assetID string,
 	) (delegationtype.StakerList, error)
 	SetStakerShareToZero(
-		ctx sdk.Context, operator, assetID string, stakerMap delegationtype.StakerList,
+		ctx sdk.Context, operator, assetID string, stakerList delegationtype.StakerList,
 	) error
 	DeleteStakersListForOperator(ctx sdk.Context, operator, assetID string) error
 	GetStakerUndelegationRecords(
