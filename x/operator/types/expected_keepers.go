@@ -7,6 +7,7 @@ import (
 	delegationtype "github.com/ExocoreNetwork/exocore/x/delegation/types"
 	tmprotocrypto "github.com/cometbft/cometbft/proto/tendermint/crypto"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/ethereum/go-ethereum/common"
 )
 
 var (
@@ -170,9 +171,10 @@ func (a MockAVS) GetAVSMinimumSelfDelegation(_ sdk.Context, _ string) (sdkmath.L
 }
 
 func (a MockAVS) GetEpochEndAVSs(ctx sdk.Context) ([]string, error) {
-	avsList := make([]string, 0)
-	avsList = append(avsList, ctx.ChainID(), "avsTestAddr")
-	return avsList, nil
+	return []string{
+		ctx.ChainID(),
+		common.BytesToAddress([]byte("avsTestAddr")).String(),
+	}, nil
 }
 
 func (a MockAVS) GetHeightForVotingPower(_ sdk.Context, _ string, height int64) (int64, error) {
