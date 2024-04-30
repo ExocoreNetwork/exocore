@@ -33,7 +33,7 @@ func GetQueryCmd() *cobra.Command {
 // GetOperatorInfo queries operator info
 func GetOperatorInfo() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "GetOperatorInfo operatorAddr",
+		Use:   "get-operator-info operatorAddr",
 		Short: "Get operator info",
 		Long:  "Get operator info",
 		Args:  cobra.ExactArgs(1),

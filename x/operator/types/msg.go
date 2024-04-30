@@ -30,6 +30,10 @@ func (m *RegisterOperatorReq) ValidateBasic() error {
 	return m.Info.ValidateBasic()
 }
 
+func (msg *RegisterOperatorReq) Route() string {
+	return RouterKey
+}
+
 // GetSigners returns the expected signers for the message.
 func (m *SetConsKeyReq) GetSigners() []sdk.AccAddress {
 	addr := sdk.MustAccAddressFromBech32(m.Address)
@@ -54,6 +58,10 @@ func (m *SetConsKeyReq) ValidateBasic() error {
 	return nil
 }
 
+func (msg *SetConsKeyReq) Route() string {
+	return RouterKey
+}
+
 // GetSigners returns the expected signers for the message.
 func (m *InitConsKeyRemovalReq) GetSigners() []sdk.AccAddress {
 	addr := sdk.MustAccAddressFromBech32(m.Address)
@@ -69,6 +77,10 @@ func (m *InitConsKeyRemovalReq) ValidateBasic() error {
 		return errorsmod.Wrap(ErrParameterInvalid, "invalid chain id")
 	}
 	return nil
+}
+
+func (msg *InitConsKeyRemovalReq) Route() string {
+	return RouterKey
 }
 
 // GetSigners returns the expected signers for the message.
@@ -95,6 +107,10 @@ func (m *OptIntoAVSReq) ValidateBasic() error {
 	return nil
 }
 
+func (msg *OptIntoAVSReq) Route() string {
+	return RouterKey
+}
+
 // GetSigners returns the expected signers for the message.
 func (m *OptOutOfAVSReq) GetSigners() []sdk.AccAddress {
 	addr := sdk.MustAccAddressFromBech32(m.FromAddress)
@@ -115,4 +131,8 @@ func (m *OptOutOfAVSReq) ValidateBasic() error {
 		)
 	}
 	return nil
+}
+
+func (msg *OptOutOfAVSReq) Route() string {
+	return RouterKey
 }
