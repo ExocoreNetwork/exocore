@@ -38,7 +38,7 @@ func NewKeeper(
 	return Keeper{
 		storeKey:         storeKey,
 		cdc:              cdc,
-		historicalCtx: historicalCtx,
+		historicalCtx:    historicalCtx,
 		assetsKeeper:     assetsKeeper,
 		delegationKeeper: delegationKeeper,
 		oracleKeeper:     oracleKeeper,
@@ -63,8 +63,6 @@ type OperatorKeeper interface {
 	IsOperator(ctx sdk.Context, addr sdk.AccAddress) bool
 
 	GetUnbondingExpirationBlockNumber(ctx sdk.Context, OperatorAddress sdk.AccAddress, startHeight uint64) uint64
-
-	// UpdateOptedInAssetsState(ctx sdk.Context, assetID, operatorAddr string, opAmount sdkmath.Int) error
 
 	OptIn(ctx sdk.Context, operatorAddress sdk.AccAddress, AVSAddr string) error
 
