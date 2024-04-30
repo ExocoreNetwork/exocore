@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"time"
 
+	"cosmossdk.io/math"
+
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/crypto/keyring"
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
@@ -98,7 +100,7 @@ func (suite *BaseTestSuite) SetupWithGenesisValSet(genAccs []authtypes.GenesisAc
 		"", suite.Assets[0].Address,
 	)
 	// x/assets initialization - deposits (client chains and tokens are from caller)
-	depositAmount := sdk.TokensFromConsensusPower(1, evmostypes.PowerReduction)
+	depositAmount := math.NewIntWithDecimal(1, 6)
 	depositsByStaker := []assetstypes.DepositsByStaker{
 		{
 			StakerID: stakerID1,
@@ -334,7 +336,6 @@ func (suite *BaseTestSuite) DoSetupTest() {
 			Symbol:           "USDT",
 			Address:          "0xdAC17F958D2ee523a2206206994597C13D831ec7",
 			Decimals:         6,
-			TotalSupply:      math.NewInt(1e18),
 			LayerZeroChainID: suite.ClientChains[0].LayerZeroChainID,
 			MetaInfo:         "Tether USD token",
 		},

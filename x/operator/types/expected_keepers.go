@@ -171,7 +171,7 @@ func (a MockAVS) GetAVSMinimumSelfDelegation(_ sdk.Context, _ string) (sdkmath.L
 
 func (a MockAVS) GetEpochEndAVSs(ctx sdk.Context) ([]string, error) {
 	avsList := make([]string, 0)
-	avsList = append(avsList, ctx.ChainID())
+	avsList = append(avsList, ctx.ChainID(), "avsTestAddr")
 	return avsList, nil
 }
 
