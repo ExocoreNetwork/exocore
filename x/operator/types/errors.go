@@ -91,4 +91,19 @@ var (
 		ModuleName, 17,
 		"operator not removing key",
 	)
+
+	ErrInvalidSlashType = errorsmod.Register(
+		ModuleName, 18,
+		"the slash type is invalid",
+	)
+
+	ErrKeyAlreadyExist = errorsmod.Register(
+		ModuleName, 19,
+		"the key already exists",
+	)
+
+	ErrValueIsNilOrZero = errorsmod.Register(
+		ModuleName, 20,
+		"the value is nil or zero",
+	)
 )

@@ -15,7 +15,7 @@ func (p Precompile) GetClientChains(
 	args []interface{},
 ) ([]byte, error) {
 	if len(args) > 0 {
-		return nil, errorsmod.Wrapf(assetstypes.ErrInvalidInput, "no input is required")
+		return nil, errorsmod.Wrapf(assetstypes.ErrInvalidInputParameter, "no input is required")
 	}
 	infos, err := p.assetsKeeper.GetAllClientChainInfo(ctx)
 	if err != nil {
@@ -28,7 +28,7 @@ func (p Precompile) GetClientChains(
 		// TODO: change it to uint32 here and in other precompiles.
 		if id > math.MaxUint16 {
 			return nil, errorsmod.Wrapf(
-				assetstypes.ErrInvalidInput, "client chain id is too large",
+				assetstypes.ErrInvalidInputParameter, "client chain id is too large",
 			)
 		}
 		// #nosec G701 // already checked

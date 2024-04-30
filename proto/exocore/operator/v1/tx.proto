@@ -81,6 +81,18 @@ message OptedInAssetState {
   ];
 }
 
+// SlashType represents different slash type
+enum SlashType {
+  // SLASH_TYPE__UNSPECIFIED represents the unspecified slash type
+  SLASH_TYPE_UNSPECIFIED = 0;
+  // SLASH_TYPE_INSTANT_SLASH represents the slash events that will be handled instantly after occurring
+  // so the slash will reduce the amount of related operator's assets pool.
+  SLASH_TYPE_INSTANT_SLASH = 1;
+  // NoInstantaneousSlash indicates that the slash event will be processed after a certain
+  // period of time, thus requiring a reduction in the share of the corresponding staker.
+  SLASH_TYPE_NO_INSTANTANEOUS_SLASH = 2;
+}
+
 // OperatorSlashInfo is the slash info of operator
 message OperatorSlashInfo {
   // slash_contract is the address of slash contract
@@ -100,6 +112,8 @@ message OperatorSlashInfo {
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
     (gogoproto.nullable) = false
   ];
+  // type indicates the slash type.
+  SlashType slash_type = 7;
 }
 
 // RegisterOperatorReq is the request to register a new operator.

@@ -41,11 +41,13 @@ type OperatorKeeper interface {
 	IsOperator(ctx sdk.Context, addr sdk.AccAddress) bool
 	GetUnbondingExpirationBlockNumber(ctx sdk.Context, OperatorAddress sdk.AccAddress, startHeight uint64) uint64
 
-	UpdateOptedInAssetsState(ctx sdk.Context, stakerID, assetID, operatorAddr string, opAmount sdkmath.Int) error
+	// UpdateOptedInAssetsState(ctx sdk.Context, assetID, operatorAddr string, opAmount sdkmath.Int) error
 }
 
 type AssetsKeeper interface {
-	UpdateStakerAssetState(ctx sdk.Context, stakerID string, assetID string, changeAmount assetstype.StakerSingleAssetChangeInfo) (err error)
-	UpdateOperatorAssetState(ctx sdk.Context, operatorAddr sdk.Address, assetID string, changeAmount assetstype.OperatorSingleAssetChangeInfo) (err error)
+	UpdateStakerAssetState(ctx sdk.Context, stakerID string, assetID string, changeAmount assetstype.DeltaStakerSingleAsset) (err error)
+	UpdateOperatorAssetState(ctx sdk.Context, operatorAddr sdk.Address, assetID string, changeAmount assetstype.DeltaOperatorSingleAsset) (err error)
 	GetStakerSpecifiedAssetInfo(ctx sdk.Context, stakerID string, assetID string) (info *assetstype.StakerAssetInfo, err error)
+	GetOperatorSpecifiedAssetInfo(ctx sdk.Context, operatorAddr sdk.Address, assetID string) (info *assetstype.OperatorAssetInfo, err error)
+	IsOperatorAssetExist(ctx sdk.Context, operatorAddr sdk.Address, assetID string) bool
 }

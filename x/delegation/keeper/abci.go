@@ -27,14 +27,14 @@ func (k *Keeper) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.Valida
 				if record.CompleteBlockNumber <= uint64(ctx.BlockHeight()) {
 					panic(fmt.Sprintf("the reset completedHeight isn't in future,setHeight:%v,curHeight:%v", record.CompleteBlockNumber, ctx.BlockHeight()))
 				}
-				_, err = k.SetSingleUndelegationRecord(ctx, record)
-				if err != nil {
-					panic(err)
+				_, innerError = k.SetSingleUndelegationRecord(ctx, record)
+				if innerError != nil {
+					panic(innerError)
 				}
 				continue
 			}*/
 
-		recordID := delegationtype.GetUndelegationRecordKey(record.LzTxNonce, record.TxHash, record.OperatorAddr)
+		recordID := delegationtype.GetUndelegationRecordKey(record.BlockNumber, record.LzTxNonce, record.TxHash, record.OperatorAddr)
 		if k.GetUndelegationHoldCount(ctx, recordID) > 0 {
 			// store it again with the next block and move on
 			// #nosec G701
@@ -53,31 +53,19 @@ func (k *Keeper) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.Valida
 		}
 		// TODO(mike): ensure that operator is required to perform self delegation to match above.
 
-		// calculate the actual canUndelegated asset amount
-		delegationInfo, err := k.GetSingleDelegationInfo(ctx, record.StakerID, record.AssetID, record.OperatorAddr)
-		if err != nil {
-			panic(err)
-		}
-		if record.Amount.GT(delegationInfo.UndelegatableAfterSlash) {
-			record.ActualCompletedAmount = delegationInfo.UndelegatableAfterSlash
-		} else {
-			record.ActualCompletedAmount = record.Amount
-		}
 		recordAmountNeg := record.Amount.Neg()
-
 		// update delegation state
-		delegatorAndAmount := make(map[string]*delegationtype.DelegationAmounts)
-		delegatorAndAmount[record.OperatorAddr] = &delegationtype.DelegationAmounts{
-			WaitUndelegationAmount:  recordAmountNeg,
-			UndelegatableAfterSlash: record.ActualCompletedAmount.Neg(),
+		deltaAmount := &delegationtype.DeltaDelegationAmounts{
+			WaitUndelegationAmount: recordAmountNeg,
 		}
-		err = k.UpdateDelegationState(ctx, record.StakerID, record.AssetID, delegatorAndAmount)
+		_, err = k.UpdateDelegationState(ctx, record.StakerID, record.AssetID, record.OperatorAddr, deltaAmount)
 		if err != nil {
+			// todo: using cached context to remove the panic
 			panic(err)
 		}
 
 		// update the staker state
-		err = k.assetsKeeper.UpdateStakerAssetState(ctx, record.StakerID, record.AssetID, types.StakerSingleAssetChangeInfo{
+		err = k.assetsKeeper.UpdateStakerAssetState(ctx, record.StakerID, record.AssetID, types.DeltaStakerSingleAsset{
 			WithdrawableAmount:  record.ActualCompletedAmount,
 			WaitUnbondingAmount: recordAmountNeg,
 		})
@@ -86,16 +74,15 @@ func (k *Keeper) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.Valida
 		}
 
 		// update the operator state
-		err = k.assetsKeeper.UpdateOperatorAssetState(ctx, operatorAccAddress, record.AssetID, types.OperatorSingleAssetChangeInfo{
+		err = k.assetsKeeper.UpdateOperatorAssetState(ctx, operatorAccAddress, record.AssetID, types.DeltaOperatorSingleAsset{
 			WaitUnbondingAmount: recordAmountNeg,
 		})
 		if err != nil {
 			panic(err)
 		}
 
-		// update Undelegation record
-		record.IsPending = false
-		_, err = k.SetSingleUndelegationRecord(ctx, record)
+		// delete the Undelegation records that have been complemented
+		err = k.DeleteUndelegationRecord(ctx, record)
 		if err != nil {
 			panic(err)
 		}

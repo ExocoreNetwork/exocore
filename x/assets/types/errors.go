@@ -47,8 +47,7 @@ var (
 	)
 
 	ErrInvalidOperatorAddr = errorsmod.Register(
-		ModuleName,
-		8,
+		ModuleName, 8,
 		"the operator address isn't a valid account address",
 	)
 
@@ -77,8 +76,8 @@ var (
 		"the genesis data supplied is invalid",
 	)
 
-	ErrInvalidInput = errorsmod.Register(
-		ModuleName, 14,
-		"the input is invalid",
+	ErrInvalidInputParameter = errorsmod.Register(
+		ModuleName, 15,
+		"the input parameter is invalid",
 	)
 )

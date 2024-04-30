@@ -3,8 +3,9 @@ package keeper_test
 import (
 	"strings"
 
+	abci "github.com/cometbft/cometbft/abci/types"
+
 	sdkmath "cosmossdk.io/math"
-	"github.com/ExocoreNetwork/exocore/testutil/tx"
 	assetstypes "github.com/ExocoreNetwork/exocore/x/assets/types"
 	delegationtype "github.com/ExocoreNetwork/exocore/x/delegation/types"
 	"github.com/ExocoreNetwork/exocore/x/deposit/keeper"
@@ -23,33 +24,10 @@ type StateForCheck struct {
 	StakerShare      sdkmath.LegacyDec
 }
 
-func (suite *OperatorTestSuite) prepare() {
+func (suite *OperatorTestSuite) prepareOperator() {
 	opAccAddr, err := sdk.AccAddressFromBech32("exo13h6xg79g82e2g2vhjwg7j4r2z2hlncelwutkjr")
-	suite.NoError(err)
-	usdtAddress := common.HexToAddress("0xdAC17F958D2ee523a2206206994597C13D831ec7")
-	clientChainLzID := uint64(101)
-
-	suite.avsAddr = common.Bytes2Hex(tx.GenerateAddress().Bytes())
 	suite.operatorAddr = opAccAddr
-	suite.assetAddr = usdtAddress
-	suite.assetDecimal = 6
-	suite.clientChainLzID = clientChainLzID
-	suite.depositAmount = sdkmath.NewInt(100)
-	suite.delegationAmount = sdkmath.NewInt(50)
-	suite.updatedAmountForOptIn = sdkmath.NewInt(20)
-	suite.stakerID, suite.assetID = assetstypes.GetStakeIDAndAssetID(suite.clientChainLzID, suite.Address[:], suite.assetAddr[:])
-
-	// staking assets
-	depositParam := &keeper.DepositParams{
-		ClientChainLzID: suite.clientChainLzID,
-		Action:          assetstypes.Deposit,
-		StakerAddress:   suite.Address[:],
-		OpAmount:        suite.depositAmount,
-	}
-	depositParam.AssetsAddress = suite.assetAddr[:]
-	err = suite.App.DepositKeeper.Deposit(suite.Ctx, depositParam)
 	suite.NoError(err)
-
 	// register operator
 	registerReq := &operatorTypes.RegisterOperatorReq{
 		FromAddress: suite.operatorAddr.String(),
@@ -59,20 +37,53 @@ func (suite *OperatorTestSuite) prepare() {
 	}
 	_, err = suite.App.OperatorKeeper.RegisterOperator(suite.Ctx, registerReq)
 	suite.NoError(err)
+}
 
+func (suite *OperatorTestSuite) prepareDeposit(assetAddr common.Address, amount sdkmath.Int) {
+	clientChainLzID := uint64(101)
+	suite.avsAddr = "avsTestAddr"
+	suite.assetAddr = assetAddr
+	suite.assetDecimal = 6
+	suite.clientChainLzID = clientChainLzID
+	suite.depositAmount = amount
+	suite.updatedAmountForOptIn = sdkmath.NewInt(20)
+	suite.stakerID, suite.assetID = assetstypes.GetStakeIDAndAssetID(suite.clientChainLzID, suite.Address[:], suite.assetAddr[:])
+	// staking assets
+	depositParam := &keeper.DepositParams{
+		ClientChainLzID: suite.clientChainLzID,
+		Action:          assetstypes.Deposit,
+		StakerAddress:   suite.Address[:],
+		OpAmount:        suite.depositAmount,
+		AssetsAddress:   assetAddr[:],
+	}
+	err := suite.App.DepositKeeper.Deposit(suite.Ctx, depositParam)
+	suite.NoError(err)
+}
+
+func (suite *OperatorTestSuite) prepareDelegation(assetAddr common.Address, amount sdkmath.Int) {
+	suite.delegationAmount = amount
 	// delegate to operator
 	delegationParam := &delegationtype.DelegationOrUndelegationParams{
 		ClientChainLzID: suite.clientChainLzID,
 		Action:          assetstypes.DelegateTo,
-		AssetsAddress:   suite.assetAddr[:],
+		AssetsAddress:   assetAddr[:],
 		OperatorAddress: suite.operatorAddr,
 		StakerAddress:   suite.Address[:],
-		OpAmount:        suite.delegationAmount,
+		OpAmount:        amount,
 		LzNonce:         0,
 		TxHash:          common.HexToHash("0x24c4a315d757249c12a7a1d7b6fb96261d49deee26f06a3e1787d008b445c3ac"),
 	}
-	err = suite.App.DelegationKeeper.DelegateTo(suite.Ctx, delegationParam)
+	err := suite.App.DelegationKeeper.DelegateTo(suite.Ctx, delegationParam)
 	suite.NoError(err)
+}
+
+func (suite *OperatorTestSuite) prepare() {
+	usdtAddress := common.HexToAddress("0xdAC17F958D2ee523a2206206994597C13D831ec7")
+	depositAmount := sdkmath.NewInt(100)
+	delegationAmount := sdkmath.NewInt(50)
+	suite.prepareOperator()
+	suite.prepareDeposit(usdtAddress, depositAmount)
+	suite.prepareDelegation(usdtAddress, delegationAmount)
 }
 
 func (suite *OperatorTestSuite) CheckState(expectedState *StateForCheck) {
@@ -85,7 +96,7 @@ func (suite *OperatorTestSuite) CheckState(expectedState *StateForCheck) {
 		suite.Equal(*expectedState.OptedInfo, *optInfo)
 	}
 	// check total USD value for AVS and operator
-	value, err := suite.App.OperatorKeeper.GetAVSShare(suite.Ctx, suite.avsAddr)
+	value, err := suite.App.OperatorKeeper.GetAVSUSDValue(suite.Ctx, suite.avsAddr)
 	if expectedState.AVSTotalShare.IsNil() {
 		suite.True(strings.Contains(err.Error(), operatorTypes.ErrNoKeyInTheStore.Error()))
 	} else {
@@ -93,37 +104,12 @@ func (suite *OperatorTestSuite) CheckState(expectedState *StateForCheck) {
 		suite.Equal(expectedState.AVSTotalShare, value)
 	}
 
-	value, err = suite.App.OperatorKeeper.GetOperatorShare(suite.Ctx, suite.avsAddr, suite.operatorAddr.String())
+	value, err = suite.App.OperatorKeeper.GetOperatorUSDValue(suite.Ctx, suite.avsAddr, suite.operatorAddr.String())
 	if expectedState.AVSOperatorShare.IsNil() {
 		suite.True(strings.Contains(err.Error(), operatorTypes.ErrNoKeyInTheStore.Error()))
 	} else {
 		suite.NoError(err)
 		suite.Equal(expectedState.AVSOperatorShare, value)
-	}
-
-	// check assets state for AVS and operator
-	assetState, err := suite.App.OperatorKeeper.GetAssetState(suite.Ctx, suite.assetID, suite.avsAddr, suite.operatorAddr.String())
-	if expectedState.AssetState == nil {
-		suite.True(strings.Contains(err.Error(), operatorTypes.ErrNoKeyInTheStore.Error()))
-	} else {
-		suite.NoError(err)
-		suite.Equal(*expectedState.AssetState, *assetState)
-	}
-
-	// check asset USD share for staker and operator
-	operatorShare, err := suite.App.OperatorKeeper.GetStakerShare(suite.Ctx, suite.avsAddr, "", suite.operatorAddr.String())
-	if expectedState.OperatorShare.IsNil() {
-		suite.True(strings.Contains(err.Error(), operatorTypes.ErrNoKeyInTheStore.Error()))
-	} else {
-		suite.NoError(err)
-		suite.Equal(expectedState.OperatorShare, operatorShare)
-	}
-	stakerShare, err := suite.App.OperatorKeeper.GetStakerShare(suite.Ctx, suite.avsAddr, suite.stakerID, suite.operatorAddr.String())
-	if expectedState.StakerShare.IsNil() {
-		suite.True(strings.Contains(err.Error(), operatorTypes.ErrNoKeyInTheStore.Error()))
-	} else {
-		suite.NoError(err)
-		suite.Equal(expectedState.StakerShare, stakerShare)
 	}
 }
 
@@ -132,22 +118,23 @@ func (suite *OperatorTestSuite) TestOptIn() {
 	err := suite.App.OperatorKeeper.OptIn(suite.Ctx, suite.operatorAddr, suite.avsAddr)
 	suite.NoError(err)
 	// check if the related state is correct
-	price, decimal, err := suite.App.OperatorKeeper.OracleInterface().GetSpecifiedAssetsPrice(suite.Ctx, suite.assetID)
-	share := operatorKeeper.CalculateShare(suite.delegationAmount, price, suite.assetDecimal, decimal)
+	price, err := suite.App.OperatorKeeper.OracleInterface().GetSpecifiedAssetsPrice(suite.Ctx, suite.assetID)
+	usdValue := operatorKeeper.CalculateUSDValue(suite.delegationAmount, price.Value, suite.assetDecimal, price.Decimal)
 	expectedState := &StateForCheck{
 		OptedInfo: &operatorTypes.OptedInfo{
 			OptedInHeight:  uint64(suite.Ctx.BlockHeight()),
 			OptedOutHeight: operatorTypes.DefaultOptedOutHeight,
 		},
-		AVSTotalShare:    share,
-		AVSOperatorShare: share,
+		AVSTotalShare:    usdValue,
+		AVSOperatorShare: usdValue,
 		AssetState: &operatorTypes.OptedInAssetState{
 			Amount: suite.delegationAmount,
-			Value:  share,
+			Value:  usdValue,
 		},
 		OperatorShare: sdkmath.LegacyDec{},
-		StakerShare:   share,
+		StakerShare:   usdValue,
 	}
+	suite.App.OperatorKeeper.EndBlock(suite.Ctx, abci.RequestEndBlock{})
 	suite.CheckState(expectedState)
 }
 
@@ -175,46 +162,7 @@ func (suite *OperatorTestSuite) TestOptOut() {
 		OperatorShare:    sdkmath.LegacyDec{},
 		StakerShare:      sdkmath.LegacyDec{},
 	}
-	suite.CheckState(expectedState)
-}
-
-func (suite *OperatorTestSuite) TestCalculateShare() {
-	suite.prepare()
-	price, decimal, err := suite.App.OperatorKeeper.OracleInterface().GetSpecifiedAssetsPrice(suite.Ctx, suite.assetID)
-	suite.NoError(err)
-	share := operatorKeeper.CalculateShare(suite.delegationAmount, price, suite.assetDecimal, decimal)
-	suite.Equal(sdkmath.LegacyNewDecWithPrec(5000, int64(operatorTypes.USDValueDefaultDecimal)), share)
-}
-
-func (suite *OperatorTestSuite) TestUpdateOptedInAssetsState() {
-	suite.prepare()
-	err := suite.App.OperatorKeeper.OptIn(suite.Ctx, suite.operatorAddr, suite.avsAddr)
-	suite.NoError(err)
-	optInHeight := suite.Ctx.BlockHeight()
-	suite.NextBlock()
-
-	err = suite.App.OperatorKeeper.UpdateOptedInAssetsState(suite.Ctx, suite.stakerID, suite.assetID, suite.operatorAddr.String(), suite.updatedAmountForOptIn)
-	suite.NoError(err)
-
-	price, decimal, err := suite.App.OperatorKeeper.OracleInterface().GetSpecifiedAssetsPrice(suite.Ctx, suite.assetID)
-	oldShare := operatorKeeper.CalculateShare(suite.delegationAmount, price, suite.assetDecimal, decimal)
-	addShare := operatorKeeper.CalculateShare(suite.updatedAmountForOptIn, price, suite.assetDecimal, decimal)
-	newShare := oldShare.Add(addShare)
-
-	expectedState := &StateForCheck{
-		OptedInfo: &operatorTypes.OptedInfo{
-			OptedInHeight:  uint64(optInHeight),
-			OptedOutHeight: operatorTypes.DefaultOptedOutHeight,
-		},
-		AVSTotalShare:    newShare,
-		AVSOperatorShare: newShare,
-		AssetState: &operatorTypes.OptedInAssetState{
-			Amount: suite.delegationAmount.Add(suite.updatedAmountForOptIn),
-			Value:  newShare,
-		},
-		OperatorShare: sdkmath.LegacyDec{},
-		StakerShare:   newShare,
-	}
+	suite.App.OperatorKeeper.EndBlock(suite.Ctx, abci.RequestEndBlock{})
 	suite.CheckState(expectedState)
 }
 

@@ -41,61 +41,25 @@ const (
 
 	prefixRestakerExocoreAddrReverse
 
-	// prefixReStakingAssetList
-	// prefixReStakerAssetList
-	// prefixOperatorAssetList
-
-	prefixOperatorSnapshot
-	prefixOperatorLastSnapshotHeight
 	prefixParams
 )
 
 // KVStore key prefixes
 var (
-	/*
-		exoCore stored info:
-
-		//stored info in assets module
-		//used to record supported client chain and reStaking token info
-		chainIndex->ChainInfo
-		tokenIndex->tokenInfo
-		chainList ?
-		tokenList ?
-
-		//record restaker reStaking info
-		restaker->mapping(tokenIndex->amount)
-		restaker->ReStakingTokenList ?
-		restakerList?
-
-		//record operator reStaking info
-		operator->mapping(tokenIndex->amount)
-		operator->ReStakingTokenList ?
-		operator->mapping(tokenIndex->middleWareAddress) ?
-
-
-		//stored info in delegation module
-		//record the operator info which restaker delegate to
-		restaker->mapping(operator->mapping(tokenIndex->amount))
-		restaker->operatorList
-		operator->operatorInfo
-
-		//stored info in middleWare module
-		middleWareAddr->middleWareInfo
-		middleWareAddr->OptedInOperatorInfo
-	*/
 	// KeyPrefixClientChainInfo key->value: chainIndex->ClientChainInfo
 	KeyPrefixClientChainInfo = []byte{prefixClientChainInfo}
 
 	// KeyPrefixReStakingAssetInfo AssetID = AssetAddr+'_'+chainIndex
-	// KeyPrefixReStakingAssetInfo key->value: AssetID->ReStakingAssetInfo
+	// KeyPrefixReStakingAssetInfo key->value: AssetID-> StakingAssetInfo
+	// the `_` will only be used as a separated character for the stakerID and assetID
 	KeyPrefixReStakingAssetInfo = []byte{prefixRestakingAssetInfo}
 
 	// KeyPrefixReStakerAssetInfos restakerID = clientChainAddr+'_'+ExoCoreChainIndex
-	// KeyPrefixReStakerAssetInfos key->value: restakerID+'_'+AssetID->ReStakerAssetInfo
-	// or restakerID->mapping(AssetID->ReStakerAssetInfo)?
+	// KeyPrefixReStakerAssetInfos key->value: restakerID+'/'+AssetID->ReStakerAssetInfo
+	// the `/` will be used as a separated character for the other joined keys.
 	KeyPrefixReStakerAssetInfos = []byte{prefixRestakerAssetInfo}
 
-	// KeyPrefixOperatorAssetInfos key->value: operatorAddr+'_'+AssetID->OperatorAssetInfo
+	// KeyPrefixOperatorAssetInfos key->value: operatorAddr+'/'+AssetID-> OperatorAssetInfo
 	// or operatorAddr->mapping(AssetID->OperatorAssetInfo) ?
 	KeyPrefixOperatorAssetInfos = []byte{prefixOperatorAssetInfo}
 

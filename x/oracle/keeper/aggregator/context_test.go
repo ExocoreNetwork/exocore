@@ -70,7 +70,6 @@ func TestAggregatorContext(t *testing.T) {
 			p.Reset()
 			time.Sleep(1 * time.Second)
 		})
-
 	})
 }
 

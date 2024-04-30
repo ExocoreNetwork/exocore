@@ -11,7 +11,7 @@ import (
 func (suite *StakingAssetsTestSuite) TestUpdateStakerAssetsState() {
 	stakerID := fmt.Sprintf("%s_%s", suite.Address, "0")
 	ethUniAssetID := fmt.Sprintf("%s_%s", "0x1f9840a85d5af5bf1d1762f925bdaddc4201f984", "101")
-	ethUniInitialChangeValue := assetstype.StakerSingleAssetChangeInfo{
+	ethUniInitialChangeValue := assetstype.DeltaStakerSingleAsset{
 		TotalDepositAmount: math.NewInt(1000),
 		WithdrawableAmount: math.NewInt(1000),
 	}
@@ -68,7 +68,7 @@ func (suite *StakingAssetsTestSuite) TestUpdateStakerAssetsState() {
 
 	// test the storage of multiple assets state
 	ethUsdtAssetID := fmt.Sprintf("%s_%s", "0xdac17f958d2ee523a2206206994597c13d831ec7", "101")
-	ethUsdtInitialChangeValue := assetstype.StakerSingleAssetChangeInfo{
+	ethUsdtInitialChangeValue := assetstype.DeltaStakerSingleAsset{
 		TotalDepositAmount: math.NewInt(2000),
 		WithdrawableAmount: math.NewInt(2000),
 	}
@@ -84,11 +84,11 @@ func (suite *StakingAssetsTestSuite) TestGetStakerAssetInfos() {
 	stakerID := fmt.Sprintf("%s_%s", suite.Address, "0")
 	ethUniAssetID := fmt.Sprintf("%s_%s", "0x1f9840a85d5af5bf1d1762f925bdaddc4201f984", "101")
 	ethUsdtAssetID := fmt.Sprintf("%s_%s", "0xdac17f958d2ee523a2206206994597c13d831ec7", "101")
-	ethUniInitialChangeValue := assetstype.StakerSingleAssetChangeInfo{
+	ethUniInitialChangeValue := assetstype.DeltaStakerSingleAsset{
 		TotalDepositAmount: math.NewInt(1000),
 		WithdrawableAmount: math.NewInt(1000),
 	}
-	ethUsdtInitialChangeValue := assetstype.StakerSingleAssetChangeInfo{
+	ethUsdtInitialChangeValue := assetstype.DeltaStakerSingleAsset{
 		TotalDepositAmount: math.NewInt(2000),
 		WithdrawableAmount: math.NewInt(2000),
 	}

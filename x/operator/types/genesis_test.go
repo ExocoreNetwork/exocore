@@ -228,6 +228,5 @@ func (suite *GenesisTestSuite) TestValidateGenesis() {
 		} else {
 			suite.Require().Error(err, tc.name)
 		}
-		// fmt.Println(tc.name, err)
 	}
 }
