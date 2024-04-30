@@ -106,7 +106,7 @@ func (k *Keeper) NoInstantaneousSlash(ctx, historicalStateCtx sdk.Context, param
 			return err
 		}
 		// slash the staker share according to the historical and current state
-		for stakerID := range stakerMap.Stakers {
+		for _, stakerID := range stakerMap.Stakers {
 			delegationState, err := k.delegationKeeper.GetSingleDelegationInfo(historicalStateCtx, stakerID, assetID, parameter.Operator.String())
 			if err != nil {
 				return err
@@ -251,7 +251,7 @@ func (k *Keeper) InstantSlash(ctx, historicalStateCtx sdk.Context, parameter *Sl
 			if err != nil {
 				return err
 			}
-			err = k.delegationKeeper.DeleteStakerMapForOperator(ctx, parameter.Operator.String(), assetID)
+			err = k.delegationKeeper.DeleteStakersListForOperator(ctx, parameter.Operator.String(), assetID)
 			if err != nil {
 				return err
 			}

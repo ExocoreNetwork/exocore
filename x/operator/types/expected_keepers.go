@@ -58,11 +58,11 @@ type DelegationKeeper interface {
 		opFunc func(undelegation *delegationtype.UndelegationRecord) error) error
 	GetStakersByOperator(
 		ctx sdk.Context, operator, assetID string,
-	) (delegationtype.StakerMap, error)
+	) (delegationtype.StakerList, error)
 	SetStakerShareToZero(
-		ctx sdk.Context, operator, assetID string, stakerMap delegationtype.StakerMap,
+		ctx sdk.Context, operator, assetID string, stakerMap delegationtype.StakerList,
 	) error
-	DeleteStakerMapForOperator(ctx sdk.Context, operator, assetID string) error
+	DeleteStakersListForOperator(ctx sdk.Context, operator, assetID string) error
 	GetStakerUndelegationRecords(
 		ctx sdk.Context, stakerID, assetID string,
 	) (records []*delegationtype.UndelegationRecord, err error)
