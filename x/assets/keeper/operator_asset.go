@@ -13,9 +13,7 @@ import (
 func (k Keeper) GetOperatorAssetInfos(ctx sdk.Context, operatorAddr sdk.Address, assetsFilter map[string]interface{}) (assetsInfo map[string]*assetstype.OperatorAssetInfo, err error) {
 	ret := make(map[string]*assetstype.OperatorAssetInfo, 0)
 	opFunc := func(assetID string, state *assetstype.OperatorAssetInfo) error {
-		if _, ok := assetsFilter[assetID]; ok {
-			ret[assetID] = state
-		}
+		ret[assetID] = state
 		return nil
 	}
 	err = k.IteratorAssetsForOperator(ctx, operatorAddr.String(), assetsFilter, opFunc)
