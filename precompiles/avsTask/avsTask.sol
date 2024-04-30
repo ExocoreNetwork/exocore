@@ -34,9 +34,9 @@ interface IAVSTask {
 
     /// @dev Returns the pubkey and pubkey hash of an operator,Reverts if the operator has not registered a valid pubkey
     /// @param operator is the operator for whom the key is being registered
-    function getRegisteredPubkey(address operator) external returns (bytes32);
+    function getRegisteredPubkey(string memory operator) external returns (bytes memory pubkey);
 
     // EVENTS
-    /// @notice Emitted when `operator` registers with the public keys `pubkeyG1`.
-    event NewPubkeyRegistration(address indexed operator, bytes pubkeyG1);
+    /// @notice Emitted when `operator` registers with the public keys `pubKey`.
+    event NewPubkeyRegistration(string indexed operator, bytes pubKey);
 }
