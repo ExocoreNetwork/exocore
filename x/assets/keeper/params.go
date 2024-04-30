@@ -29,12 +29,10 @@ func (k Keeper) SetParams(ctx sdk.Context, params *assetstypes.Params) error {
 
 func (k Keeper) GetParams(ctx sdk.Context) (*assetstypes.Params, error) {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), assetstypes.KeyPrefixParams)
-	isExist := store.Has(assetstypes.ParamsKey)
-	if !isExist {
+	value := store.Get(assetstypes.ParamsKey)
+	if value == nil {
 		return nil, assetstypes.ErrNoParamsKey
 	}
-
-	value := store.Get(assetstypes.ParamsKey)
 
 	ret := &assetstypes.Params{}
 	k.cdc.MustUnmarshal(value, ret)

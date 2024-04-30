@@ -41,10 +41,10 @@ func (k Keeper) GetAppChainInfoByChainID(
 		}, nil
 	}
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), assetstype.KeyPrefixAppChainInfo)
-	if !store.Has([]byte(chainID)) {
+	value := store.Get([]byte(chainID))
+	if value == nil {
 		return nil, assetstype.ErrUnknownAppChainID
 	}
-	value := store.Get([]byte(chainID))
 	ret := &assetstype.AppChainInfo{}
 	k.cdc.MustUnmarshal(value, ret)
 	return ret, nil

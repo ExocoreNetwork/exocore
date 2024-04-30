@@ -2,7 +2,6 @@ package keeper_test
 
 import (
 	"cosmossdk.io/math"
-	"github.com/ExocoreNetwork/exocore/x/assets/types"
 	operatortype "github.com/ExocoreNetwork/exocore/x/operator/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 )
@@ -59,8 +58,11 @@ func (suite *OperatorTestSuite) TestHistoricalOperatorInfo() {
 	err = suite.App.OperatorKeeper.SetOperatorInfo(suite.Ctx, suite.AccAddress.String(), &newInfo)
 	suite.NoError(err)
 
+	for i := 0; i < 10; i++ {
+		suite.NextBlock()
+	}
 	// get historical operator info
-	historicalQueryCtx, err := types.ContextForHistoricalState(suite.Ctx, height)
+	historicalQueryCtx, err := suite.App.CreateQueryContext(height, false)
 	suite.NoError(err)
 	getInfo, err := suite.App.OperatorKeeper.GetOperatorInfo(historicalQueryCtx, &operatortype.GetOperatorInfoReq{
 		OperatorAddr: suite.AccAddress.String(),

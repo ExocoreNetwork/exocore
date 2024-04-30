@@ -33,12 +33,10 @@ func (k Keeper) GetStakerAssetInfos(ctx sdk.Context, stakerID string) (assetsInf
 func (k Keeper) GetStakerSpecifiedAssetInfo(ctx sdk.Context, stakerID string, assetID string) (info *assetstype.StakerAssetInfo, err error) {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), assetstype.KeyPrefixReStakerAssetInfos)
 	key := assetstype.GetJoinedStoreKey(stakerID, assetID)
-	ifExist := store.Has(key)
-	if !ifExist {
+	value := store.Get(key)
+	if value == nil {
 		return nil, errorsmod.Wrap(assetstype.ErrNoStakerAssetKey, fmt.Sprintf("the key is:%s", key))
 	}
-
-	value := store.Get(key)
 
 	ret := assetstype.StakerAssetInfo{}
 	k.cdc.MustUnmarshal(value, &ret)
@@ -48,8 +46,8 @@ func (k Keeper) GetStakerSpecifiedAssetInfo(ctx sdk.Context, stakerID string, as
 // UpdateStakerAssetState is used to update the staker asset state
 // The input `changeAmount` represents the values that you want to add or decrease,using positive or negative values for increasing and decreasing,respectively. The function will calculate and update new state after a successful check.
 // The function will be called when there is deposit or withdraw related to the specified staker.
-func (k Keeper) UpdateStakerAssetState(ctx sdk.Context, stakerID string, assetID string, changeAmount assetstype.StakerSingleAssetChangeInfo) (err error) {
-	// get the latest state, use the default initial state if the state hasn't been stored
+func (k Keeper) UpdateStakerAssetState(ctx sdk.Context, stakerID string, assetID string, changeAmount assetstype.DeltaStakerSingleAsset) (err error) {
+	// get the latest state,use the default initial state if the state hasn't been stored
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), assetstype.KeyPrefixReStakerAssetInfos)
 	key := assetstype.GetJoinedStoreKey(stakerID, assetID)
 	assetState := assetstype.StakerAssetInfo{
@@ -57,11 +55,10 @@ func (k Keeper) UpdateStakerAssetState(ctx sdk.Context, stakerID string, assetID
 		WithdrawableAmount:  math.NewInt(0),
 		WaitUnbondingAmount: math.NewInt(0),
 	}
-	if store.Has(key) {
-		value := store.Get(key)
+	value := store.Get(key)
+	if value != nil {
 		k.cdc.MustUnmarshal(value, &assetState)
 	}
-
 	// update all states of the specified restaker asset
 	err = assetstype.UpdateAssetValue(&assetState.TotalDepositAmount, &changeAmount.TotalDepositAmount)
 	if err != nil {

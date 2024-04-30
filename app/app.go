@@ -565,10 +565,11 @@ func NewExocoreApp(
 	// operator registry, which handles vote power (and this requires delegation keeper).
 	app.OperatorKeeper = operatorKeeper.NewKeeper(
 		keys[operatorTypes.StoreKey], appCodec,
+		bApp.CreateQueryContext,
 		app.AssetsKeeper,
 		&app.DelegationKeeper, // intentionally a pointer, since not yet initialized.
 		operatorTypes.MockOracle{},
-		operatorTypes.MockAvs{},
+		operatorTypes.MockAVS{AssetsKeeper: app.AssetsKeeper},
 		delegationTypes.VirtualSlashKeeper{},
 	)
 

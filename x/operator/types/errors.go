@@ -76,4 +76,19 @@ var (
 		ModuleName, 14,
 		"avs address should be a hex evm contract address",
 	)
+
+	ErrInvalidSlashType = errorsmod.Register(
+		ModuleName, 15,
+		"the slash type is invalid",
+	)
+
+	ErrKeyAlreadyExist = errorsmod.Register(
+		ModuleName, 16,
+		"the key already exists",
+	)
+
+	ErrValueIsNilOrZero = errorsmod.Register(
+		ModuleName, 17,
+		"the value is nil or zero",
+	)
 )

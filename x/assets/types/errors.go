@@ -82,8 +82,8 @@ var (
 		"the genesis data supplied is invalid",
 	)
 
-	ErrInvalidInput = errorsmod.Register(
+	ErrInvalidInputParameter = errorsmod.Register(
 		ModuleName, 15,
-		"the input is invalid",
+		"the input parameter is invalid",
 	)
 )

@@ -136,7 +136,7 @@ func (k Keeper) RewardForWithdraw(ctx sdk.Context, event *RewardParams) error {
 	}
 
 	// TODO
-	changeAmount := types.StakerSingleAssetChangeInfo{
+	changeAmount := types.DeltaStakerSingleAsset{
 		TotalDepositAmount: event.OpAmount,
 		WithdrawableAmount: event.OpAmount,
 	}

@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"time"
 
+	"cosmossdk.io/math"
+
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/crypto/keyring"
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
@@ -62,18 +64,6 @@ type BaseTestSuite struct {
 
 	StateDB        *statedb.StateDB
 	QueryClientEVM evmtypes.QueryClient
-
-	// needed by test
-	/*	operatorAddr          sdk.AccAddress
-		avsAddr               string
-		assetID               string
-		stakerID              string
-		assetAddr             common.Address
-		assetDecimal          uint32
-		clientChainLzID       uint64
-		depositAmount         sdkmath.Int
-		delegationAmount      sdkmath.Int
-		updatedAmountForOptIn sdkmath.Int*/
 }
 
 func (suite *BaseTestSuite) SetupTest() {
@@ -110,7 +100,7 @@ func (suite *BaseTestSuite) SetupWithGenesisValSet(genAccs []authtypes.GenesisAc
 		"", suite.Assets[0].Address,
 	)
 	// x/assets initialization - deposits (client chains and tokens are from caller)
-	depositAmount := sdk.TokensFromConsensusPower(1, evmostypes.PowerReduction)
+	depositAmount := math.NewIntWithDecimal(1, 6)
 	depositsByStaker := []assetstypes.DepositsByStaker{
 		{
 			StakerID: stakerID1,
@@ -299,8 +289,7 @@ func (suite *BaseTestSuite) SetupWithGenesisValSet(genAccs []authtypes.GenesisAc
 		Header: header,
 	})
 
-	// need to create UncachedContext when retrieving historical state
-	suite.Ctx = app.BaseApp.NewUncachedContext(false, header)
+	suite.Ctx = app.BaseApp.NewContext(false, header)
 	suite.App = app
 }
 
