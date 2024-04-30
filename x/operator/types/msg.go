@@ -2,9 +2,9 @@ package types
 
 import (
 	errorsmod "cosmossdk.io/errors"
-	"github.com/ExocoreNetwork/exocore/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/evmos/evmos/v14/types"
 )
 
 // interface guards
