@@ -14,6 +14,7 @@ import (
 var cs *cache.Cache
 
 var agc *aggregator.AggregatorContext
+var agcCheckTx *aggregator.AggregatorContext
 
 func GetCaches() *cache.Cache {
 	if cs != nil {
@@ -25,6 +26,24 @@ func GetCaches() *cache.Cache {
 
 // GetAggregatorContext returns singleton aggregatorContext used to calculate final price for each round of each tokenFeeder
 func GetAggregatorContext(ctx sdk.Context, k Keeper) *aggregator.AggregatorContext {
+	if ctx.IsCheckTx() {
+		if agcCheckTx != nil {
+			return agcCheckTx
+		}
+		if agc == nil {
+			c := GetCaches()
+			c.ResetCaches()
+			agcCheckTx = aggregator.NewAggregatorContext()
+			if ok := recacheAggregatorContext(ctx, agcCheckTx, k, c); !ok {
+				// this is the very first time oracle has been started, fill relalted info as initialization
+				initAggregatorContext(ctx, agcCheckTx, k, c)
+			}
+			return agcCheckTx
+		}
+		agcCheckTx = agc.Copy4ChekTx()
+		return agcCheckTx
+	}
+
 	if agc != nil {
 		return agc
 	}
@@ -158,4 +177,8 @@ func ResetAggregatorContext() {
 
 func ResetCache() {
 	cs = nil
+}
+
+func ResetAggregatorContextCheckTx() {
+	agcCheckTx = nil
 }

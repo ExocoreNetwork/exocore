@@ -42,9 +42,13 @@ func (ms msgServer) CreatePrice(goCtx context.Context, msg *types.MsgCreatePrice
 				sdk.NewAttribute(types.AttributeKeyPriceUpdated, types.AttributeValuePriceUpdatedSuccess),
 			),
 			)
-			cs.RemoveCache(caches)
+			if !ctx.IsCheckTx() {
+				cs.RemoveCache(caches)
+			}
 		} else {
-			cs.AddCache(caches)
+			if !ctx.IsCheckTx() {
+				cs.AddCache(caches)
+			}
 		}
 	}
 

@@ -66,6 +66,32 @@ type roundPricesList struct {
 	roundPricesCount int
 }
 
+func (r *roundPricesList) copy4ChekTx() *roundPricesList {
+	ret := &roundPricesList{
+		roundPricesList:  make([]*roundPrices, len(r.roundPricesList)),
+		roundPricesCount: r.roundPricesCount,
+	}
+
+	for _, v := range r.roundPricesList {
+		tmpRP := &roundPrices{
+			detID: v.detID,
+			price: big.NewInt(v.price.Int64()),
+			//price:     v.price,
+			prices:    make([]*priceAndPower, len(v.prices)),
+			timestamp: v.timestamp,
+		}
+		for _, pNP := range v.prices {
+			tmpPNP := *pNP
+			// power will be modified during execution
+			tmpPNP.power = big.NewInt(pNP.power.Int64())
+			tmpRP.prices = append(tmpRP.prices, &tmpPNP)
+		}
+
+		ret.roundPricesList = append(ret.roundPricesList, tmpRP)
+	}
+	return ret
+}
+
 // to tell if any round of this DS has reached consensus/confirmed
 func (r *roundPricesList) hasConfirmedDetID() bool {
 	for _, round := range r.roundPricesList {
@@ -106,6 +132,17 @@ type calculator struct {
 	deterministicSource map[uint64]*roundPricesList
 	validatorLength     int
 	totalPower          *big.Int
+}
+
+func (c *calculator) copy4CheckTx() *calculator {
+	ret := newCalculator(c.validatorLength, c.totalPower)
+
+	// copy deterministicSource
+	for k, v := range c.deterministicSource {
+		c.deterministicSource[k] = v.copy4ChekTx()
+	}
+
+	return ret
 }
 
 func (c *calculator) newRoundPricesList() *roundPricesList {
