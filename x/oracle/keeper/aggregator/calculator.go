@@ -74,9 +74,8 @@ func (r *roundPricesList) copy4ChekTx() *roundPricesList {
 
 	for _, v := range r.roundPricesList {
 		tmpRP := &roundPrices{
-			detID: v.detID,
-			price: big.NewInt(v.price.Int64()),
-			//price:     v.price,
+			detID:     v.detID,
+			price:     big.NewInt(v.price.Int64()),
 			prices:    make([]*priceAndPower, len(v.prices)),
 			timestamp: v.timestamp,
 		}

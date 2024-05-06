@@ -28,28 +28,26 @@ func (ms msgServer) CreatePrice(goCtx context.Context, msg *types.MsgCreatePrice
 	),
 	)
 
-	if caches != nil {
-		if newItem != nil {
-			ms.AppendPriceTR(ctx, newItem.TokenID, newItem.PriceTR)
+	if caches == nil {
+		return &types.MsgCreatePriceResponse{}, nil
+	}
+	if newItem != nil {
+		ms.AppendPriceTR(ctx, newItem.TokenID, newItem.PriceTR)
 
-			logger.Info("final price aggregation done", "feederID", msg.FeederID, "roundID", newItem.PriceTR.RoundID, "price", newItem.PriceTR.Price)
+		logger.Info("final price aggregation done", "feederID", msg.FeederID, "roundID", newItem.PriceTR.RoundID, "price", newItem.PriceTR.Price)
 
-			ctx.EventManager().EmitEvent(sdk.NewEvent(
-				types.EventTypeCreatePrice,
-				sdk.NewAttribute(types.AttributeKeyFeederID, strconv.FormatUint(msg.FeederID, 10)),
-				sdk.NewAttribute(types.AttributeKeyRoundID, strconv.FormatUint(newItem.PriceTR.RoundID, 10)),
-				sdk.NewAttribute(types.AttributeKeyFinalPrice, newItem.PriceTR.Price),
-				sdk.NewAttribute(types.AttributeKeyPriceUpdated, types.AttributeValuePriceUpdatedSuccess),
-			),
-			)
-			if !ctx.IsCheckTx() {
-				cs.RemoveCache(caches)
-			}
-		} else {
-			if !ctx.IsCheckTx() {
-				cs.AddCache(caches)
-			}
+		ctx.EventManager().EmitEvent(sdk.NewEvent(
+			types.EventTypeCreatePrice,
+			sdk.NewAttribute(types.AttributeKeyFeederID, strconv.FormatUint(msg.FeederID, 10)),
+			sdk.NewAttribute(types.AttributeKeyRoundID, strconv.FormatUint(newItem.PriceTR.RoundID, 10)),
+			sdk.NewAttribute(types.AttributeKeyFinalPrice, newItem.PriceTR.Price),
+			sdk.NewAttribute(types.AttributeKeyPriceUpdated, types.AttributeValuePriceUpdatedSuccess)),
+		)
+		if !ctx.IsCheckTx() {
+			cs.RemoveCache(caches)
 		}
+	} else if !ctx.IsCheckTx() {
+		cs.AddCache(caches)
 	}
 
 	return &types.MsgCreatePriceResponse{}, nil

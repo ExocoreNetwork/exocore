@@ -13,8 +13,7 @@ import (
 
 var cs *cache.Cache
 
-var agc *aggregator.AggregatorContext
-var agcCheckTx *aggregator.AggregatorContext
+var agc, agcCheckTx *aggregator.AggregatorContext
 
 func GetCaches() *cache.Cache {
 	if cs != nil {
