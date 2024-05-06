@@ -188,7 +188,7 @@ type AVSKeeper interface {
 	// `ContextForHistoricalState` implemented in x/assets/types/general.go
 	GetAVSSupportedAssets(ctx sdk.Context, avsAddr string) (map[string]interface{}, error)
 	GetAVSSlashContract(ctx sdk.Context, avsAddr string) (string, error)
-	// GetAVSAddrByChainID get the general Avs address for dogfood module.
+	// GetAVSAddrByChainID converts the chainID to a general EVM-compatible hex address.
 	GetAVSAddrByChainID(ctx sdk.Context, chainID string) (string, error)
 	// GetAVSMinimumSelfDelegation returns the USD value of minimum self delegation, which
 	// is set for operator

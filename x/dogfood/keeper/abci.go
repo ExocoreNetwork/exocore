@@ -22,7 +22,11 @@ func (k Keeper) EndBlock(ctx sdk.Context) []abci.ValidatorUpdate {
 		return []abci.ValidatorUpdate{}
 	}
 	defer k.ClearEpochEnd(ctx)
-	// start with clearing the hold on the undelegations.
+	// start by clearing the previous consensus keys for the chain.
+	// each AVS can have a separate epoch and hence this function is a part of this module
+	// and not the operator module.
+	k.operatorKeeper.ClearPreviousConsensusKeys(ctx, ctx.ChainID())
+	// clear the hold on the pending undelegations.
 	undelegations := k.GetPendingUndelegations(ctx)
 	for _, undelegation := range undelegations.GetList() {
 		err := k.delegationKeeper.DecrementUndelegationHoldCount(ctx, undelegation)

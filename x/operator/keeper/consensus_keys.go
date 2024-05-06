@@ -58,6 +58,7 @@ func (k *Keeper) setOperatorConsKeyForChainID(
 	// check if the operator is opted in. it is a 2-step process.
 	// 1. opt into chainID
 	// 2. set key for chainID.
+	// TODO: rationalize this limitation because these two are not atomic.
 	if !k.IsOptedIn(ctx, opAccAddr.String(), chainID) {
 		return types.ErrNotOptedIn
 	}
@@ -164,7 +165,7 @@ func (k *Keeper) setOperatorPrevConsKeyForChainID(
 		)
 	}
 	store := ctx.KVStore(k.storeKey)
-	store.Set(types.KeyForOperatorAndChainIDToPrevConsKey(opAccAddr, chainID), bz)
+	store.Set(types.KeyForChainIDAndOperatorToPrevConsKey(chainID, opAccAddr), bz)
 	return nil
 }
 
@@ -194,7 +195,7 @@ func (k *Keeper) getOperatorPrevConsKeyForChainID(
 	chainID string,
 ) (bool, *tmprotocrypto.PublicKey) {
 	store := ctx.KVStore(k.storeKey)
-	res := store.Get(types.KeyForOperatorAndChainIDToPrevConsKey(opAccAddr, chainID))
+	res := store.Get(types.KeyForChainIDAndOperatorToPrevConsKey(chainID, opAccAddr))
 	if res == nil {
 		return false, nil
 	}
@@ -314,6 +315,9 @@ func (k *Keeper) Hooks() types.OperatorHooks {
 // that the chain is present within the system. It also checks if the operator is already
 // removing the key.
 // The operator must first call this method, and then call `OptOut` to complete the process.
+// TODO: currently there is no penalty for operators failing to complete this and the data
+// is also mismatched (ex: while the operator is removed from the validator set, the opt out
+// height is the height of calling OptOut). We should rationalize this somehow.
 func (k *Keeper) InitiateOperatorKeyRemovalForChainID(
 	ctx sdk.Context, opAccAddr sdk.AccAddress, chainID string,
 ) error {
@@ -427,4 +431,23 @@ func (k Keeper) DeleteOperatorAddressForChainIDAndConsAddr(
 ) {
 	store := ctx.KVStore(k.storeKey)
 	store.Delete(types.KeyForChainIDAndConsKeyToOperator(chainID, consAddr))
+}
+
+// ClearPreviousConsensusKeys clears the previous consensus public key for all operators
+// of the specified chain.
+func (k *Keeper) ClearPreviousConsensusKeys(ctx sdk.Context, chainID string) {
+	partialKey := types.ChainIDWithLenKey(chainID)
+	store := ctx.KVStore(k.storeKey)
+	iterator := sdk.KVStorePrefixIterator(
+		store,
+		types.AppendMany(
+			[]byte{types.BytePrefixForOperatorAndChainIDToPrevConsKey},
+			partialKey,
+		),
+	)
+	defer iterator.Close()
+
+	for ; iterator.Valid(); iterator.Next() {
+		store.Delete(iterator.Key())
+	}
 }

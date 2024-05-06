@@ -56,6 +56,7 @@ type OperatorKeeper interface {
 	DeleteOperatorAddressForChainIDAndConsAddr(
 		ctx sdk.Context, chainID string, consAddr sdk.ConsAddress,
 	)
+	ClearPreviousConsensusKeys(ctx sdk.Context, chainID string)
 }
 
 // DelegationKeeper represents the expected keeper interface for the delegation module.
