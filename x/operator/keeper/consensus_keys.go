@@ -435,7 +435,7 @@ func (k Keeper) DeleteOperatorAddressForChainIDAndConsAddr(
 
 // ClearPreviousConsensusKeys clears the previous consensus public key for all operators
 // of the specified chain.
-func (k *Keeper) ClearPreviousConsensusKeys(ctx sdk.Context, chainID string) {
+func (k Keeper) ClearPreviousConsensusKeys(ctx sdk.Context, chainID string) {
 	partialKey := types.ChainIDWithLenKey(chainID)
 	store := ctx.KVStore(k.storeKey)
 	iterator := sdk.KVStorePrefixIterator(
