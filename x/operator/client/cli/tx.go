@@ -38,11 +38,16 @@ func NewTxCmd() *cobra.Command {
 		CmdRegisterOperator(),
 		CmdOptIntoAVS(),
 		CmdOptOutOfAVS(),
+		// TODO: while the operator module is storing the consensus keys for now
+		// are they really a property of the operator or of the respective AVS?
+		// operator vs dogfood vs appchain coordinator
+		CmdSetConsKey(),
+		CmdInitConsKeyRemoval(),
 	)
 	return txCmd
 }
 
-// CmdRegisterOperator returns a CLI command handler for creating a MsgRegisterOperator
+// CmdRegisterOperator returns a CLI command handler for creating a RegisterOperatorReq
 // transaction.
 func CmdRegisterOperator() *cobra.Command {
 	cmd := &cobra.Command{
@@ -59,7 +64,7 @@ func CmdRegisterOperator() *cobra.Command {
 				return err
 			}
 
-			txf, msg, err := newBuildRegisterOperatorMsg(clientCtx, txf, cmd.Flags())
+			msg, err := newBuildRegisterOperatorMsg(clientCtx, cmd.Flags())
 			if err != nil {
 				return err
 			}
@@ -100,8 +105,8 @@ func CmdRegisterOperator() *cobra.Command {
 }
 
 func newBuildRegisterOperatorMsg(
-	clientCtx client.Context, txf tx.Factory, fs *flag.FlagSet,
-) (tx.Factory, *types.RegisterOperatorReq, error) {
+	clientCtx client.Context, fs *flag.FlagSet,
+) (*types.RegisterOperatorReq, error) {
 	sender := clientCtx.GetFromAddress()
 	// #nosec G703 // this only errors if the flag isn't defined.
 	approveAddr, _ := fs.GetString(FlagApproveAddr)
@@ -126,14 +131,14 @@ func newBuildRegisterOperatorMsg(
 	for i, arg := range ccData {
 		strList := strings.Split(arg, ":")
 		if len(strList) != 2 {
-			return txf, nil, errorsmod.Wrapf(
+			return nil, errorsmod.Wrapf(
 				types.ErrCliCmdInputArg, "the error input arg is:%s", arg,
 			)
 		}
 		// note that this is not the hex value but the decimal number.
 		clientChainLzID, err := strconv.ParseUint(strList[0], 10, 64)
 		if err != nil {
-			return txf, nil, errorsmod.Wrapf(
+			return nil, errorsmod.Wrapf(
 				types.ErrCliCmdInputArg, "the error input arg is:%s", arg,
 			)
 		}
@@ -151,10 +156,10 @@ func newBuildRegisterOperatorMsg(
 	maxChangeRateStr, _ := fs.GetString(stakingcli.FlagCommissionMaxChangeRate)
 	commission, err := buildCommission(rateStr, maxRateStr, maxChangeRateStr)
 	if err != nil {
-		return txf, nil, err
+		return nil, err
 	}
 	msg.Info.Commission = commission
-	return txf, msg, nil
+	return msg, nil
 }
 
 func buildCommission(rateStr, maxRateStr, maxChangeRateStr string) (
@@ -186,7 +191,7 @@ func buildCommission(rateStr, maxRateStr, maxChangeRateStr string) (
 	return commission, nil
 }
 
-// CmdOptIntoAVS returns a CLI command handler for creating a MsgOptIntoAVS transaction.
+// CmdOptIntoAVS returns a CLI command handler for creating a OptIntoAVSReq transaction.
 func CmdOptIntoAVS() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "opt-into-avs <avs-address>",
@@ -207,6 +212,7 @@ func CmdOptIntoAVS() *cobra.Command {
 	return cmd
 }
 
+// CmdOptOutOfAVS returns a CLI command handler for creating a OptOutOfAVSReq transaction.
 func CmdOptOutOfAVS() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "opt-out-of-avs <avs-address>",
@@ -220,6 +226,50 @@ func CmdOptOutOfAVS() *cobra.Command {
 			msg := &types.OptOutOfAVSReq{
 				FromAddress: clientCtx.GetFromAddress().String(),
 				AvsAddress:  args[0],
+			}
+			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), msg)
+		},
+	}
+	return cmd
+}
+
+// CmdSetConsKey returns a CLI command handler for creating a SetConsKeyReq transaction.
+func CmdSetConsKey() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "set-cons-key <chain-id> <public-key-in-JSON>",
+		Short: "set the consensus key for a chain",
+		Args:  cobra.ExactArgs(2),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx, err := client.GetClientTxContext(cmd)
+			if err != nil {
+				return err
+			}
+			msg := &types.SetConsKeyReq{
+				Address:   clientCtx.GetFromAddress().String(),
+				ChainID:   args[0],
+				PublicKey: args[1],
+			}
+			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), msg)
+		},
+	}
+	return cmd
+}
+
+// CmdInitConsKeyRemoval returns a CLI command handler for creating an InitConsKeyRemovalReq
+// transaction.
+func CmdInitConsKeyRemoval() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "init-cons-key-removal <chain-id>",
+		Short: "initiate consensus key removal for a chain",
+		Args:  cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx, err := client.GetClientTxContext(cmd)
+			if err != nil {
+				return err
+			}
+			msg := &types.InitConsKeyRemovalReq{
+				Address: clientCtx.GetFromAddress().String(),
+				ChainID: args[0],
 			}
 			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), msg)
 		},
