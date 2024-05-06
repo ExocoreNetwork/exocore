@@ -163,16 +163,23 @@ func (k *Keeper) IsOptedIn(ctx sdk.Context, operatorAddr, avsAddr string) bool {
 	return true
 }
 
-func (k *Keeper) IsActive(ctx sdk.Context, operatorAddr, avsAddr string) bool {
-	optedInfo, err := k.GetOptedInfo(ctx, operatorAddr, avsAddr)
+func (k *Keeper) IsActive(ctx sdk.Context, operatorAddr sdk.AccAddress, avsAddr string) bool {
+	optedInfo, err := k.GetOptedInfo(ctx, operatorAddr.String(), avsAddr)
 	if err != nil {
+		// not opted in
 		return false
 	}
 	if optedInfo.OptedOutHeight != operatortypes.DefaultOptedOutHeight {
+		// opted out
 		return false
 	}
 	if optedInfo.Jailed {
+		// frozen - either temporarily or permanently
 		return false
+	}
+	if avsAddr == ctx.ChainID() {
+		// if in the process of opting out, return false
+		return !k.IsOperatorRemovingKeyFromChainID(ctx, operatorAddr, avsAddr)
 	}
 	return true
 }

@@ -239,44 +239,8 @@ func (k *Keeper) getOperatorConsKeyForChainID(
 	return true, key
 }
 
-// GetOperatorsForChainID returns a list of {operatorAddr, pubKey} for the given
-// chainID. This is used to create or update the validator set. It skips
-// jailed or frozen operators.
-func (k *Keeper) GetOperatorsForChainID(
-	ctx sdk.Context, chainID string,
-) ([]sdk.AccAddress, []*tmprotocrypto.PublicKey) {
-	if ctx.ChainID() != chainID {
-		return nil, nil
-	}
-	// prefix is the byte prefix and then chainID with length
-	prefix := types.ChainIDAndAddrKey(
-		types.BytePrefixForChainIDAndOperatorToConsKey,
-		chainID, nil,
-	)
-	store := ctx.KVStore(k.storeKey)
-	iterator := sdk.KVStorePrefixIterator(
-		store, prefix,
-	)
-	defer iterator.Close()
-	var addrs []sdk.AccAddress
-	var pubKeys []*tmprotocrypto.PublicKey
-	for ; iterator.Valid(); iterator.Next() {
-		// this key is of the format prefix | len | chainID | addr
-		// and our prefix is of the format prefix | len | chainID
-		// so just drop it and convert to sdk.AccAddress
-		addr := iterator.Key()[len(prefix):]
-		if k.IsOperatorRemovingKeyFromChainID(ctx, addr, chainID) {
-			continue
-		}
-		res := iterator.Value()
-		ret := &tmprotocrypto.PublicKey{}
-		k.cdc.MustUnmarshal(res, ret)
-		addrs = append(addrs, addr)
-		pubKeys = append(pubKeys, ret)
-	}
-	return addrs, pubKeys
-}
-
+// GetOperatorAddressForChainIDAndConsAddr returns the operator address for the given chain id
+// and consensus address. This is used during slashing to find the operator address to slash.
 func (k Keeper) GetOperatorAddressForChainIDAndConsAddr(
 	ctx sdk.Context, chainID string, consAddr sdk.ConsAddress,
 ) (found bool, addr sdk.AccAddress) {
@@ -288,26 +252,6 @@ func (k Keeper) GetOperatorAddressForChainIDAndConsAddr(
 	found = true
 	addr = sdk.AccAddress(res)
 	return found, addr
-}
-
-// SetHooks stores the given hooks implementations.
-// Note that the Keeper is changed into a pointer to prevent an ineffective assignment.
-func (k *Keeper) SetHooks(hooks types.OperatorHooks) {
-	if hooks == nil {
-		panic("cannot set nil hooks")
-	}
-	if k.hooks != nil {
-		panic("cannot set hooks twice")
-	}
-	k.hooks = hooks
-}
-
-func (k *Keeper) Hooks() types.OperatorHooks {
-	if k.hooks == nil {
-		// return a no-op implementation if no hooks are set to prevent calling nil functions
-		return types.MultiOperatorHooks{}
-	}
-	return k.hooks
 }
 
 // InitiateOperatorKeyRemovalForChainID initiates an operator removing their key from the
@@ -385,6 +329,44 @@ func (k Keeper) CompleteOperatorKeyRemovalForChainID(
 	return nil
 }
 
+// GetOperatorsForChainID returns a list of {operatorAddr, pubKey} for the given
+// chainID. This is used to create or update the validator set. It includes
+// jailed operators, frozen operators and those in the process of opting out.
+func (k *Keeper) GetOperatorsForChainID(
+	ctx sdk.Context, chainID string,
+) ([]sdk.AccAddress, []*tmprotocrypto.PublicKey) {
+	if ctx.ChainID() != chainID {
+		return nil, nil
+	}
+	// prefix is the byte prefix and then chainID with length
+	prefix := types.ChainIDAndAddrKey(
+		types.BytePrefixForChainIDAndOperatorToConsKey,
+		chainID, nil,
+	)
+	store := ctx.KVStore(k.storeKey)
+	iterator := sdk.KVStorePrefixIterator(
+		store, prefix,
+	)
+	defer iterator.Close()
+	var addrs []sdk.AccAddress
+	var pubKeys []*tmprotocrypto.PublicKey
+	for ; iterator.Valid(); iterator.Next() {
+		// this key is of the format prefix | len | chainID | addr
+		// and our prefix is of the format prefix | len | chainID
+		// so just drop it and convert to sdk.AccAddress
+		addr := iterator.Key()[len(prefix):]
+		res := iterator.Value()
+		ret := &tmprotocrypto.PublicKey{}
+		k.cdc.MustUnmarshal(res, ret)
+		addrs = append(addrs, addr)
+		pubKeys = append(pubKeys, ret)
+	}
+	return addrs, pubKeys
+}
+
+// GetActiveOperatorsForChainID should return a list of operators and their public keys.
+// These operators are neither jailed, nor frozen, nor opted out, and nor in the process
+// of doing so.
 func (k Keeper) GetActiveOperatorsForChainID(
 	ctx sdk.Context, chainID string,
 ) ([]sdk.AccAddress, []*tmprotocrypto.PublicKey) {
@@ -399,7 +381,7 @@ func (k Keeper) GetActiveOperatorsForChainID(
 	activePks := make([]*tmprotocrypto.PublicKey, 0)
 	// check if the operator is active
 	for i, operator := range operatorsAddr {
-		if k.IsActive(ctx, operator.String(), avsAddr) {
+		if k.IsActive(ctx, operator, avsAddr) {
 			activeOperator = append(activeOperator, operator)
 			activePks = append(activePks, pks[i])
 		}
@@ -407,6 +389,8 @@ func (k Keeper) GetActiveOperatorsForChainID(
 	return activeOperator, activePks
 }
 
+// ValidatorByConsAddrForChainID returns a stakingtypes.ValidatorI for the given consensus
+// address and chain id.
 func (k Keeper) ValidatorByConsAddrForChainID(
 	ctx sdk.Context, consAddr sdk.ConsAddress, chainID string,
 ) stakingtypes.ValidatorI {
@@ -420,6 +404,7 @@ func (k Keeper) ValidatorByConsAddrForChainID(
 	return stakingtypes.Validator{
 		Jailed:          jailed,
 		OperatorAddress: sdk.ValAddress(operatorAddr).String(),
+		// TODO: add more parameters here
 	}
 }
 
