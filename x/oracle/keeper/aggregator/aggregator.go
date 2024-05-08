@@ -67,7 +67,9 @@ func (agg *aggregator) copy4CheckTx() *aggregator {
 
 		for k, v := range report.prices {
 			// prices are just record, will not be modified during execution
-			rTmp.prices[k] = v
+			tmpV := *v
+			tmpV.price = big.NewInt(0).Set(v.price)
+			rTmp.prices[k] = &tmpV
 		}
 
 		ret.reports = append(ret.reports, &rTmp)
