@@ -50,9 +50,9 @@ type aggregator struct {
 
 func (agg *aggregator) copy4CheckTx() *aggregator {
 	ret := &aggregator{
-		finalPrice:  big.NewInt(agg.finalPrice.Int64()),
-		reportPower: big.NewInt(agg.reportPower.Int64()),
-		totalPower:  big.NewInt(agg.totalPower.Int64()),
+		finalPrice:  big.NewInt(0).Set(agg.finalPrice),
+		reportPower: big.NewInt(0).Set(agg.reportPower),
+		totalPower:  big.NewInt(0).Set(agg.totalPower),
 
 		reports:  make([]*reportPrice, 0, len(agg.reports)),
 		dsPrices: agg.dsPrices,
@@ -62,8 +62,8 @@ func (agg *aggregator) copy4CheckTx() *aggregator {
 	}
 	for _, report := range agg.reports {
 		rTmp := *report
-		rTmp.price = big.NewInt(report.price.Int64())
-		rTmp.power = big.NewInt(report.power.Int64())
+		rTmp.price = big.NewInt(0).Set(report.price)
+		rTmp.power = big.NewInt(0).Set(report.power)
 
 		for k, v := range report.prices {
 			// prices are just record, will not be modified during execution

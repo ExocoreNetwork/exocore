@@ -42,7 +42,7 @@ type AggregatorContext struct {
 	aggregators map[uint64]*worker
 }
 
-func (agc *AggregatorContext) Copy4ChekTx() *AggregatorContext {
+func (agc *AggregatorContext) Copy4CheckTx() *AggregatorContext {
 	ret := &AggregatorContext{
 		// params, validatorsPower, totalPower, these values won't change during block executing
 		params:          agc.params,

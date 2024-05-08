@@ -66,7 +66,7 @@ type roundPricesList struct {
 	roundPricesCount int
 }
 
-func (r *roundPricesList) copy4ChekTx() *roundPricesList {
+func (r *roundPricesList) copy4CheckTx() *roundPricesList {
 	ret := &roundPricesList{
 		roundPricesList:  make([]*roundPrices, len(r.roundPricesList)),
 		roundPricesCount: r.roundPricesCount,
@@ -138,7 +138,7 @@ func (c *calculator) copy4CheckTx() *calculator {
 
 	// copy deterministicSource
 	for k, v := range c.deterministicSource {
-		c.deterministicSource[k] = v.copy4ChekTx()
+		c.deterministicSource[k] = v.copy4CheckTx()
 	}
 
 	return ret

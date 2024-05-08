@@ -39,7 +39,7 @@ func GetAggregatorContext(ctx sdk.Context, k Keeper) *aggregator.AggregatorConte
 			}
 			return agcCheckTx
 		}
-		agcCheckTx = agc.Copy4ChekTx()
+		agcCheckTx = agc.Copy4CheckTx()
 		return agcCheckTx
 	}
 
