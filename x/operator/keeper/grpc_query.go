@@ -13,11 +13,33 @@ import (
 
 var _ operatortypes.QueryServer = &Keeper{}
 
+// QueryOperatorInfo queries the operator information for the given address.
 func (k *Keeper) QueryOperatorInfo(
 	ctx context.Context, req *operatortypes.GetOperatorInfoReq,
 ) (*operatortypes.OperatorInfo, error) {
 	c := sdk.UnwrapSDKContext(ctx)
 	return k.OperatorInfo(c, req.OperatorAddr)
+}
+
+// QueryAllOperators queries all operators on the chain.
+func (k *Keeper) QueryAllOperators(
+	goCtx context.Context, req *operatortypes.QueryAllOperatorsRequest,
+) (*operatortypes.QueryAllOperatorsResponse, error) {
+	ctx := sdk.UnwrapSDKContext(goCtx)
+	res := make([]string, 0)
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), operatortypes.KeyPrefixOperatorInfo)
+	pageRes, err := query.Paginate(store, req.Pagination, func(key []byte, _ []byte) error {
+		addr := sdk.AccAddress(key)
+		res = append(res, addr.String())
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
+	return &operatortypes.QueryAllOperatorsResponse{
+		OperatorAccAddrs: res,
+		Pagination:       pageRes,
+	}, nil
 }
 
 // QueryOperatorConsKeyForChainID queries the consensus key for the operator on the given chain.

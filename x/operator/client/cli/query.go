@@ -22,6 +22,7 @@ func GetQueryCmd() *cobra.Command {
 
 	cmd.AddCommand(
 		GetOperatorInfo(),
+		GetAllOperators(),
 		GetOperatorConsKey(),
 		GetOperatorConsAddress(),
 		GetAllOperatorKeys(),
@@ -57,6 +58,39 @@ func GetOperatorInfo() *cobra.Command {
 
 	flags.AddQueryFlagsToCmd(cmd)
 	return cmd
+}
+
+// GetAllOperators queries all operators
+func GetAllOperators() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "get-all-operators",
+		Short: "Get all operators",
+		Long:  "Get all operator account addresses",
+		Args:  cobra.NoArgs,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx, err := client.GetClientQueryContext(cmd)
+			if err != nil {
+				return err
+			}
+			pageReq, err := client.ReadPageRequest(cmd.Flags())
+			if err != nil {
+				return err
+			}
+
+			queryClient := operatortypes.NewQueryClient(clientCtx)
+			req := &operatortypes.QueryAllOperatorsRequest{
+				Pagination: pageReq,
+			}
+			res, err := queryClient.QueryAllOperators(context.Background(), req)
+			if err != nil {
+				return err
+			}
+			return clientCtx.PrintProto(res)
+		},
+	}
+	flags.AddQueryFlagsToCmd(cmd)
+	return cmd
+
 }
 
 // GetOperatorConsKey queries operator consensus key for the provided chain ID
