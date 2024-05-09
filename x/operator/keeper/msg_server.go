@@ -49,7 +49,7 @@ func (k Keeper) SetConsKey(ctx context.Context, req *types.SetConsKeyReq) (*type
 	// #nosec G703 // already validated
 	accAddr, _ := sdk.AccAddressFromBech32(req.Address)
 	// #nosec G703 // already validated, including type
-	keyString, _, _ := types.ParseConsensusKeyFromJSON(req.PublicKey)
+	_, keyString, _ := types.ParseConsensusKeyFromJSON(req.PublicKey)
 	// #nosec G703 // already validated
 	keyObj, _ := types.StringToPubKey(keyString)
 	if err := k.SetOperatorConsKeyForChainID(c, accAddr, req.ChainID, keyObj); err != nil {
