@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	"fmt"
 	"sort"
 
 	"cosmossdk.io/math"
@@ -214,7 +215,12 @@ func (k Keeper) IterateDelegations(
 	panic("unimplemented on this keeper")
 }
 
-func (k Keeper) WriteValidators(ctx sdk.Context) ([]tmtypes.GenesisValidator, error) {
+// WriteValidators returns all the currently active validators. This is called by the export
+// CLI. During this call, ctx.ChainID() is blank, and hence, chainID is passed separately.
+func (k Keeper) WriteValidators(
+	ctx sdk.Context, chainID string,
+) ([]tmtypes.GenesisValidator, error) {
+	fmt.Println("chainID", chainID)
 	validators := k.GetAllExocoreValidators(ctx)
 	sort.SliceStable(validators, func(i, j int) bool {
 		return validators[i].Power > validators[j].Power
@@ -234,7 +240,7 @@ func (k Keeper) WriteValidators(ctx sdk.Context) ([]tmtypes.GenesisValidator, er
 		}
 		consAddress := sdk.GetConsAddress(pk)
 		found, addr := k.operatorKeeper.GetOperatorAddressForChainIDAndConsAddr(
-			ctx, ctx.ChainID(), consAddress,
+			ctx, chainID, consAddress,
 		)
 		if !found {
 			retErr = operatortypes.ErrNoKeyInTheStore
