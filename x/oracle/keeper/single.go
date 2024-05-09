@@ -36,6 +36,7 @@ func GetAggregatorContext(ctx sdk.Context, k Keeper) *aggregator.AggregatorConte
 		// this is the very first time oracle has been started, fill relalted info as initialization
 		initAggregatorContext(ctx, agc, k, c)
 	} else {
+		// this is when a node restart and use the persistent state to refill cache, we don't need to commit these data again
 		c.SkipCommit()
 	}
 	return agc

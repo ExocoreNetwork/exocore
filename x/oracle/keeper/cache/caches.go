@@ -190,6 +190,7 @@ func (c *Cache) GetCache(i any) bool {
 	return true
 }
 
+// SkipCommit skip real commit by setting the updage flag to false
 func (c *Cache) SkipCommit() {
 	c.validators.update = false
 	c.params.update = false
