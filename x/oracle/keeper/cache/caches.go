@@ -190,6 +190,11 @@ func (c *Cache) GetCache(i any) bool {
 	return true
 }
 
+func (c *Cache) SkipCommit() {
+	c.validators.update = false
+	c.params.update = false
+}
+
 func (c *Cache) CommitCache(ctx sdk.Context, reset bool, k common.KeeperOracle) {
 	if len(c.msg) > 0 {
 		c.msg.commit(ctx, k)

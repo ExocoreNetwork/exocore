@@ -35,6 +35,8 @@ func GetAggregatorContext(ctx sdk.Context, k Keeper) *aggregator.AggregatorConte
 	if ok := recacheAggregatorContext(ctx, agc, k, c); !ok {
 		// this is the very first time oracle has been started, fill relalted info as initialization
 		initAggregatorContext(ctx, agc, k, c)
+	} else {
+		c.SkipCommit()
 	}
 	return agc
 }
