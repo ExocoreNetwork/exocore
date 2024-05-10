@@ -66,6 +66,8 @@ func (k Keeper) GetAllRecentParamsAsMap(ctx sdk.Context) (result map[int64]*type
 
 	defer iterator.Close()
 
+	result = make(map[int64]*types.Params)
+
 	for ; iterator.Valid(); iterator.Next() {
 		var val types.RecentParams
 		k.cdc.MustUnmarshal(iterator.Value(), &val)
