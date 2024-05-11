@@ -170,37 +170,43 @@ func (k *Keeper) GetDelegationInfo(ctx sdk.Context, stakerID, assetID string) (*
 func (k *Keeper) AppendStakerForOperator(ctx sdk.Context, operator, assetID, stakerID string) error {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), delegationtype.KeyPrefixStakersByOperator)
 	Key := assetstype.GetJoinedStoreKey(operator, assetID)
-	stakerMap := delegationtype.StakerMap{
-		Stakers: make(map[string]bool),
-	}
+	stakers := delegationtype.StakerList{}
 	value := store.Get(Key)
 	if value != nil {
-		k.cdc.MustUnmarshal(value, &stakerMap)
+		k.cdc.MustUnmarshal(value, &stakers)
 	}
-	if _, ok := stakerMap.Stakers[stakerID]; !ok {
-		stakerMap.Stakers[stakerID] = true
-		bz := k.cdc.MustMarshal(&stakerMap)
-		store.Set(Key, bz)
+	for _, v := range stakers.Stakers {
+		if v == stakerID {
+			return nil
+		}
 	}
+	stakers.Stakers = append(stakers.Stakers, stakerID)
+	bz := k.cdc.MustMarshal(&stakers)
+	store.Set(Key, bz)
 	return nil
 }
 
 func (k *Keeper) DeleteStakerForOperator(ctx sdk.Context, operator, assetID, stakerID string) error {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), delegationtype.KeyPrefixStakersByOperator)
 	Key := assetstype.GetJoinedStoreKey(operator, assetID)
-	stakerMap := delegationtype.StakerMap{
-		Stakers: make(map[string]bool),
-	}
+	stakers := delegationtype.StakerList{}
 	if !store.Has(Key) {
 		return delegationtype.ErrNoKeyInTheStore
 	}
-	delete(stakerMap.Stakers, stakerID)
-	bz := k.cdc.MustMarshal(&stakerMap)
+	value := store.Get(Key)
+	k.cdc.MustUnmarshal(value, &stakers)
+	for i, v := range stakers.Stakers {
+		if v == stakerID {
+			stakers.Stakers = append(stakers.Stakers[:i], stakers.Stakers[i+1:]...)
+			break
+		}
+	}
+	bz := k.cdc.MustMarshal(&stakers)
 	store.Set(Key, bz)
 	return nil
 }
 
-func (k *Keeper) DeleteStakerMapForOperator(ctx sdk.Context, operator, assetID string) error {
+func (k *Keeper) DeleteStakersListForOperator(ctx sdk.Context, operator, assetID string) error {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), delegationtype.KeyPrefixStakersByOperator)
 	Key := assetstype.GetJoinedStoreKey(operator, assetID)
 	if !store.Has(Key) {
@@ -210,21 +216,21 @@ func (k *Keeper) DeleteStakerMapForOperator(ctx sdk.Context, operator, assetID s
 	return nil
 }
 
-func (k *Keeper) GetStakersByOperator(ctx sdk.Context, operator, assetID string) (delegationtype.StakerMap, error) {
+func (k *Keeper) GetStakersByOperator(ctx sdk.Context, operator, assetID string) (delegationtype.StakerList, error) {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), delegationtype.KeyPrefixStakersByOperator)
 	Key := assetstype.GetJoinedStoreKey(operator, assetID)
 	value := store.Get(Key)
 	if value == nil {
-		return delegationtype.StakerMap{}, delegationtype.ErrNoKeyInTheStore
+		return delegationtype.StakerList{}, delegationtype.ErrNoKeyInTheStore
 	}
-	stakerMap := delegationtype.StakerMap{}
-	k.cdc.MustUnmarshal(value, &stakerMap)
-	return stakerMap, nil
+	stakerList := delegationtype.StakerList{}
+	k.cdc.MustUnmarshal(value, &stakerList)
+	return stakerList, nil
 }
 
-func (k *Keeper) SetStakerShareToZero(ctx sdk.Context, operator, assetID string, stakerMap delegationtype.StakerMap) error {
+func (k *Keeper) SetStakerShareToZero(ctx sdk.Context, operator, assetID string, stakerList delegationtype.StakerList) error {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), delegationtype.KeyPrefixRestakerDelegationInfo)
-	for stakerID := range stakerMap.Stakers {
+	for _, stakerID := range stakerList.Stakers {
 		singleStateKey := assetstype.GetJoinedStoreKey(stakerID, assetID, operator)
 		value := store.Get(singleStateKey)
 		if value != nil {
