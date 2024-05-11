@@ -249,6 +249,8 @@ replace (
 	github.com/evmos/evmos/v14 => github.com/ExocoreNetwork/evmos/v14 v14.1.1-0.20240408040728-a6f685cfebb9
 	// Security Advisory https://github.com/advisories/GHSA-h395-qcrw-5vmq
 	github.com/gin-gonic/gin => github.com/gin-gonic/gin v1.9.1
+
+	github.com/hashicorp/go-getter v1.7.1 => github.com/hashicorp/go-getter v1.7.4 // indirect
 	// replace broken goleveldb
 	github.com/syndtr/goleveldb => github.com/syndtr/goleveldb v1.0.1-0.20210819022825-2ae1ddf74ef7
 	//fix cosmos-sdk error

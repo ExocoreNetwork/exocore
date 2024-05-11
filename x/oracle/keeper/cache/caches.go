@@ -125,21 +125,28 @@ func (c *cacheParams) add(p *common.Params) {
 func (c *cacheParams) commit(ctx sdk.Context, k common.KeeperOracle) {
 	block := uint64(ctx.BlockHeight())
 	index, _ := k.GetIndexRecentParams(ctx)
-	for i, b := range index.Index {
+	i := 0
+	for ; i < len(index.Index); i++ {
+		b := index.Index[i]
 		if b >= block-common.MaxNonce {
 			index.Index = index.Index[i:]
 			break
 		}
 		k.RemoveRecentParams(ctx, b)
 	}
+	index.Index = index.Index[i:]
 	// remove and append for KVStore
-	k.SetIndexRecentParams(ctx, index)
 	index.Index = append(index.Index, block)
 	k.SetIndexRecentParams(ctx, index)
+
+	p := types.Params(*c.params)
+	k.SetRecentParams(ctx, types.RecentParams{
+		Block:  block,
+		Params: &p,
+	})
 }
 
 // memory cache
-// func (c *Cache) AddCache(i any, k common.KeeperOracle) {
 func (c *Cache) AddCache(i any) {
 	switch item := i.(type) {
 	case *ItemM:
@@ -188,6 +195,12 @@ func (c *Cache) GetCache(i any) bool {
 		return false
 	}
 	return true
+}
+
+// SkipCommit skip real commit by setting the updage flag to false
+func (c *Cache) SkipCommit() {
+	c.validators.update = false
+	c.params.update = false
 }
 
 func (c *Cache) CommitCache(ctx sdk.Context, reset bool, k common.KeeperOracle) {
