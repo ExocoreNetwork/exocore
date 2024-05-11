@@ -67,7 +67,7 @@ func GetAllOperators() *cobra.Command {
 		Short: "Get all operators",
 		Long:  "Get all operator account addresses",
 		Args:  cobra.NoArgs,
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(cmd *cobra.Command, _ []string) error {
 			clientCtx, err := client.GetClientQueryContext(cmd)
 			if err != nil {
 				return err
@@ -90,7 +90,6 @@ func GetAllOperators() *cobra.Command {
 	}
 	flags.AddQueryFlagsToCmd(cmd)
 	return cmd
-
 }
 
 // GetOperatorConsKey queries operator consensus key for the provided chain ID
