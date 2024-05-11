@@ -2,6 +2,7 @@ package avs
 
 import (
 	exocmn "github.com/ExocoreNetwork/exocore/precompiles/common"
+	util "github.com/ExocoreNetwork/exocore/utils"
 	avstypes "github.com/ExocoreNetwork/exocore/x/avs/keeper"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	cmn "github.com/evmos/evmos/v14/precompiles/common"
@@ -23,14 +24,22 @@ func (p Precompile) GetAVSParamsFromInputs(_ sdk.Context, args []interface{}) (*
 	if !ok {
 		return nil, xerrors.Errorf(exocmn.ErrContractInputParaOrType, 1, "[]byte", avsAddress)
 	}
+	avsAddress, err := util.ProcessAvsAddress(avsAddress)
+	if err != nil {
+		return nil, xerrors.Errorf(exocmn.ErrContractInputParaOrType, 1, "[]byte", avsAddress)
+	}
 	avsParams.AvsAddress = avsAddress
 
 	operatorAddress, ok := args[2].(string)
 	if !ok || operatorAddress == "" {
 		return nil, xerrors.Errorf(exocmn.ErrContractInputParaOrType, 2, "[]byte", operatorAddress)
 	}
-	avsParams.OperatorAddress = operatorAddress
 
+	operatorAddress, err = util.ProcessAvsAddress(operatorAddress)
+	if err != nil {
+		return nil, xerrors.Errorf(exocmn.ErrContractInputParaOrType, 1, "[]byte", operatorAddress)
+	}
+	avsParams.OperatorAddress = operatorAddress
 	action, ok := args[3].(uint64)
 	if !ok || (action != avstypes.RegisterAction && action != avstypes.DeRegisterAction) {
 		return nil, xerrors.Errorf(exocmn.ErrContractInputParaOrType, 3, "uint64", action)
@@ -40,6 +49,10 @@ func (p Precompile) GetAVSParamsFromInputs(_ sdk.Context, args []interface{}) (*
 	avsOwnerAddress, ok := args[4].(string)
 	if !ok || avsOwnerAddress == "" {
 		return nil, xerrors.Errorf(exocmn.ErrContractInputParaOrType, 4, "string", avsOwnerAddress)
+	}
+	avsOwnerAddress, err = util.ProcessAvsAddress(avsOwnerAddress)
+	if err != nil {
+		return nil, xerrors.Errorf(exocmn.ErrContractInputParaOrType, 1, "[]byte", avsOwnerAddress)
 	}
 	avsParams.AvsOwnerAddress = avsOwnerAddress
 

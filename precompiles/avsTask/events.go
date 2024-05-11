@@ -22,7 +22,7 @@ func (p Precompile) EmitEventTypeNewPubkeyRegistration(
 	pubkey []byte,
 ) error {
 	event := p.ABI.Events[EventTypeNewPubkeyRegistration]
-	topics := make([]common.Hash, 3)
+	topics := make([]common.Hash, 2)
 
 	// The first topic is always the signature of the event.
 	topics[0] = event.ID
@@ -34,9 +34,9 @@ func (p Precompile) EmitEventTypeNewPubkeyRegistration(
 		return err
 	}
 
-	// Prepare the event data: denom, amount, memo
-	arguments := abi.Arguments{event.Inputs[2]}
-	packed, err := arguments.Pack(pubkey)
+	// Pack the arguments to be used as the Data field
+	arguments := abi.Arguments{event.Inputs[0], event.Inputs[1]}
+	packed, err := arguments.Pack(operator, pubkey)
 	if err != nil {
 		return err
 	}

@@ -65,6 +65,7 @@ func (k Keeper) GetAllRecentMsgAsMap(ctx sdk.Context) (result map[int64][]*types
 	iterator := sdk.KVStorePrefixIterator(store, []byte{})
 
 	defer iterator.Close()
+	result = make(map[int64][]*types.MsgItem)
 
 	for ; iterator.Valid(); iterator.Next() {
 		var val types.RecentMsg

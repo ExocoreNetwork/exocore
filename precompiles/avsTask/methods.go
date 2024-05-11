@@ -78,12 +78,13 @@ func (p Precompile) RegisterBLSPublicKey(
 	if err != nil {
 		return nil, err
 	}
-	if err = p.EmitEventTypeNewPubkeyRegistration(
+	err = p.EmitEventTypeNewPubkeyRegistration(
 		ctx,
 		stateDB,
 		addr,
 		pubkeyBz,
-	); err != nil {
+	)
+	if err != nil {
 		return nil, err
 	}
 	return method.Outputs.Pack(true)

@@ -17,11 +17,12 @@ message DelegationInfoReq {
   string asset_id = 2 [(gogoproto.customname) = "AssetID"];
 }
 
-// StakerMap is a map to save a batch of stakers
-message StakerMap {
-  // stakers is a map, the bool value is useless, just because the protobuf
-  // doesn't support the nil value. The key is stakerID
-  map<string,bool> stakers = 1;
+// StakerList is a list to save a batch of stakers
+message StakerList {
+  // stakers is a list of stakers. the caller is responsible for ensuring
+  // uniqueness of the stakers, since dumping this into a map could lead
+  // to non-deterministic behavior.
+  repeated string stakers = 1;
 }
 
 // DelegationAmounts is the delegation amount response for a single delegation.

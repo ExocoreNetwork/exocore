@@ -35,6 +35,9 @@ func GetAggregatorContext(ctx sdk.Context, k Keeper) *aggregator.AggregatorConte
 	if ok := recacheAggregatorContext(ctx, agc, k, c); !ok {
 		// this is the very first time oracle has been started, fill relalted info as initialization
 		initAggregatorContext(ctx, agc, k, c)
+	} else {
+		// this is when a node restart and use the persistent state to refill cache, we don't need to commit these data again
+		c.SkipCommit()
 	}
 	return agc
 }
@@ -45,7 +48,7 @@ func recacheAggregatorContext(ctx sdk.Context, agc *aggregator.AggregatorContext
 
 	h, ok := k.GetValidatorUpdateBlock(ctx)
 	recentParamsMap := k.GetAllRecentParamsAsMap(ctx)
-	if !ok || recentParamsMap == nil {
+	if !ok || len(recentParamsMap) == 0 {
 		// no cache, this is the very first running, so go to initial process instead
 		return false
 	}
@@ -66,7 +69,7 @@ func recacheAggregatorContext(ctx sdk.Context, agc *aggregator.AggregatorContext
 	agc.SetValidatorPowers(validatorPowers)
 	// TODO: test only
 	if k.GetLastTotalPower(ctx).BigInt().Cmp(totalPower) != 0 {
-		panic("something wrong when get validatorsPower from staking module")
+		ctx.Logger().Error("something wrong when get validatorsPower from staking module")
 	}
 
 	// reset validators

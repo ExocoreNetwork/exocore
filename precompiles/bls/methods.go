@@ -110,8 +110,8 @@ func (p Precompile) GeneratePrivateKey(
 	if err != nil {
 		return nil, err
 	}
-
-	return method.Outputs.Pack(privkey.Marshal())
+	pri := privkey.Marshal()
+	return method.Outputs.Pack(pri)
 }
 
 func (p Precompile) PublicKey(

@@ -1,6 +1,6 @@
 module github.com/ExocoreNetwork/exocore
 
-go 1.21
+go 1.21.9
 
 require (
 	cosmossdk.io/errors v1.0.0
@@ -141,7 +141,7 @@ require (
 	github.com/gtank/merlin v0.1.1 // indirect
 	github.com/gtank/ristretto255 v0.1.2 // indirect
 	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
-	github.com/hashicorp/go-getter v1.7.1 // indirect
+	github.com/hashicorp/go-getter v1.7.4 // indirect
 	github.com/hashicorp/go-immutable-radix v1.3.1 // indirect
 	github.com/hashicorp/go-safetemp v1.0.0 // indirect
 	github.com/hashicorp/golang-lru v0.5.5-0.20210104140557-80c98217689d // indirect
@@ -249,6 +249,8 @@ replace (
 	github.com/evmos/evmos/v14 => github.com/ExocoreNetwork/evmos/v14 v14.1.1-0.20240408040728-a6f685cfebb9
 	// Security Advisory https://github.com/advisories/GHSA-h395-qcrw-5vmq
 	github.com/gin-gonic/gin => github.com/gin-gonic/gin v1.9.1
+
+	github.com/hashicorp/go-getter v1.7.1 => github.com/hashicorp/go-getter v1.7.4 // indirect
 	// replace broken goleveldb
 	github.com/syndtr/goleveldb => github.com/syndtr/goleveldb v1.0.1-0.20210819022825-2ae1ddf74ef7
 	//fix cosmos-sdk error
