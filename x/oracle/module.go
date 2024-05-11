@@ -167,7 +167,7 @@ func (am AppModule) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.Val
 			validator, _ := am.keeper.GetValidatorByConsAddr(ctx, sdk.GetConsAddress(pubKey))
 			validatorList[validator.OperatorAddress] = big.NewInt(vu.Power)
 		}
-		// update validator set infomation in cache
+		// update validator set information in cache
 		cs.AddCache(cache.ItemV(validatorList))
 		validatorPowers := make(map[string]*big.Int)
 		cs.GetCache(cache.ItemV(validatorPowers))
