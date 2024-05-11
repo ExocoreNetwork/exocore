@@ -124,6 +124,7 @@ func (m *QueryAllOperatorsRequest) GetPagination() *query.PageRequest {
 	return nil
 }
 
+// QueryAllOperatorsResponse is the response containing all operator account addresses.
 type QueryAllOperatorsResponse struct {
 	// operators is a list of all operators.
 	OperatorAccAddrs []string `protobuf:"bytes,1,rep,name=operator_acc_addrs,json=operatorAccAddrs,proto3" json:"operator_acc_addrs,omitempty"`

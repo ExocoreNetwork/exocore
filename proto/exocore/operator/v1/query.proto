@@ -23,6 +23,7 @@ message QueryAllOperatorsRequest {
   cosmos.base.query.v1beta1.PageRequest pagination = 1;
 }
 
+// QueryAllOperatorsResponse is the response containing all operator account addresses.
 message QueryAllOperatorsResponse {
   // operators is a list of all operators.
   repeated string operator_acc_addrs = 1;
