@@ -265,7 +265,22 @@ func (a appCreator) newApp(logger log.Logger, db dbm.DB, traceStore io.Writer, a
 		cast.ToUint32(appOpts.Get(sdkserver.FlagStateSyncSnapshotKeepRecent)),
 	)
 
-	chainID := getChainID(appOpts, home)
+	// Setup chainId
+	chainID := cast.ToString(appOpts.Get(flags.FlagChainID))
+	if len(chainID) == 0 {
+		v := viper.New()
+		v.AddConfigPath(filepath.Join(home, "config"))
+		v.SetConfigName("client")
+		v.SetConfigType("toml")
+		if err := v.ReadInConfig(); err != nil {
+			panic(err)
+		}
+		conf := new(config.ClientConfig)
+		if err := v.Unmarshal(conf); err != nil {
+			panic(err)
+		}
+		chainID = conf.ChainID
+	}
 
 	evmosApp := app.NewExocoreApp(
 		logger, db, traceStore, true, skipUpgradeHeights,
@@ -308,31 +323,17 @@ func (a appCreator) appExport(
 		return servertypes.ExportedApp{}, errors.New("application home not set")
 	}
 
-	chainID := getChainID(appOpts, homePath)
-
 	if height != -1 {
-		evmosApp = app.NewExocoreApp(
-			logger, db, traceStore, false,
-			map[int64]bool{}, "", uint(1), a.encCfg, appOpts,
-			baseapp.SetChainID(chainID),
-		)
+		evmosApp = app.NewExocoreApp(logger, db, traceStore, false, map[int64]bool{}, "", uint(1), a.encCfg, appOpts)
 
 		if err := evmosApp.LoadHeight(height); err != nil {
 			return servertypes.ExportedApp{}, err
 		}
 	} else {
-		evmosApp = app.NewExocoreApp(
-			logger, db, traceStore, true,
-			map[int64]bool{}, "", uint(1), a.encCfg, appOpts,
-			baseapp.SetChainID(chainID),
-		)
+		evmosApp = app.NewExocoreApp(logger, db, traceStore, true, map[int64]bool{}, "", uint(1), a.encCfg, appOpts)
 	}
 
-	return evmosApp.ExportAppStateAndValidators(
-		forZeroHeight,
-		jailAllowedAddrs,
-		modulesToExport,
-	)
+	return evmosApp.ExportAppStateAndValidators(forZeroHeight, jailAllowedAddrs, modulesToExport)
 }
 
 // initTendermintConfig helps to override default Tendermint Config values.
@@ -348,25 +349,4 @@ func initTendermintConfig() *tmcfg.Config {
 	// cfg.P2P.MaxNumOutboundPeers = 40
 
 	return cfg
-}
-
-// getChainID loads the chainID from the flag or the config.toml file, with the
-// former taking precedence over the latter.
-func getChainID(appOpts servertypes.AppOptions, home string) string {
-	chainID := cast.ToString(appOpts.Get(flags.FlagChainID))
-	if len(chainID) == 0 {
-		v := viper.New()
-		v.AddConfigPath(filepath.Join(home, "config"))
-		v.SetConfigName("client")
-		v.SetConfigType("toml")
-		if err := v.ReadInConfig(); err != nil {
-			panic(err)
-		}
-		conf := new(config.ClientConfig)
-		if err := v.Unmarshal(conf); err != nil {
-			panic(err)
-		}
-		chainID = conf.ChainID
-	}
-	return chainID
 }

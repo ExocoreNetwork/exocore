@@ -74,7 +74,7 @@ func (app *ExocoreApp) ExportAppStateAndValidators(
 		return servertypes.ExportedApp{}, err
 	}
 
-	validators, err := app.StakingKeeper.WriteValidators(ctx, app.ChainID())
+	validators, err := app.StakingKeeper.WriteValidators(ctx)
 	if err != nil {
 		return servertypes.ExportedApp{}, err
 	}
