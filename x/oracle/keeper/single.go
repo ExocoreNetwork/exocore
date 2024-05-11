@@ -60,7 +60,7 @@ func recacheAggregatorContext(ctx sdk.Context, agc *aggregator.AggregatorContext
 	totalPower := big.NewInt(0)
 	validatorPowers := make(map[string]*big.Int)
 	k.IterateBondedValidatorsByPower(ctx, func(_ int64, validator stakingtypes.ValidatorI) bool {
-		power := big.NewInt(validator.GetConsensusPower(validator.GetBondedTokens()))
+		power := big.NewInt(validator.GetConsensusPower(sdk.DefaultPowerReduction))
 		addr := string(validator.GetOperator())
 		validatorPowers[addr] = power
 		totalPower = new(big.Int).Add(totalPower, power)
@@ -123,7 +123,7 @@ func initAggregatorContext(ctx sdk.Context, agc *aggregator.AggregatorContext, k
 	totalPower := big.NewInt(0)
 	validatorPowers := make(map[string]*big.Int)
 	k.IterateBondedValidatorsByPower(ctx, func(_ int64, validator stakingtypes.ValidatorI) bool {
-		power := big.NewInt(validator.GetConsensusPower(validator.GetBondedTokens()))
+		power := big.NewInt(validator.GetConsensusPower(sdk.DefaultPowerReduction))
 		addr := validator.GetOperator().String()
 		validatorPowers[addr] = power
 		totalPower = new(big.Int).Add(totalPower, power)
