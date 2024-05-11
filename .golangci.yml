@@ -2,6 +2,7 @@ run:
   tests: false
   timeout: 5m
   concurrency: 4
+  go: "1.21.9"
 
 linters:
   enable:
@@ -49,8 +50,6 @@ linters-settings:
     allow-leading-space: true
     require-explanation: false
     require-specific: false
-  gofumpt:
-    lang-version: "1.21.9"
   gomodguard:
     blocked:
       versions:                                                         # List of blocked module version constraints
