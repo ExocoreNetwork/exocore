@@ -1,7 +1,6 @@
 package keeper
 
 import (
-	"fmt"
 	"sort"
 
 	"cosmossdk.io/math"
@@ -220,7 +219,6 @@ func (k Keeper) IterateDelegations(
 func (k Keeper) WriteValidators(
 	ctx sdk.Context, chainID string,
 ) ([]tmtypes.GenesisValidator, error) {
-	fmt.Println("chainID", chainID)
 	validators := k.GetAllExocoreValidators(ctx)
 	sort.SliceStable(validators, func(i, j int) bool {
 		return validators[i].Power > validators[j].Power
