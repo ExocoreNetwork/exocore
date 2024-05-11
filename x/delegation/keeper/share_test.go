@@ -295,8 +295,7 @@ func (suite *DelegationTestSuite) TestRemoveShare() {
 	suite.Equal(remainShare, delegationInfo.UndelegatableShare)
 	stakerMap, err := suite.App.DelegationKeeper.GetStakersByOperator(suite.Ctx, suite.opAccAddr.String(), assetID)
 	suite.NoError(err)
-	_, ok := stakerMap.Stakers[stakerID]
-	suite.True(ok)
+	suite.Contains(stakerMap.Stakers, stakerID)
 
 	removeShare = remainShare
 	removeToken, err = suite.App.DelegationKeeper.RemoveShare(suite.Ctx, true, suite.opAccAddr, stakerID, assetID, removeShare)
@@ -311,6 +310,5 @@ func (suite *DelegationTestSuite) TestRemoveShare() {
 	suite.Equal(removeShare.TruncateInt(), stakerAssetInfo.WaitUnbondingAmount)
 	stakerMap, err = suite.App.DelegationKeeper.GetStakersByOperator(suite.Ctx, suite.opAccAddr.String(), assetID)
 	suite.NoError(err)
-	_, ok = stakerMap.Stakers[stakerID]
-	suite.False(ok)
+	suite.NotContains(stakerMap.Stakers, stakerID)
 }

@@ -101,12 +101,12 @@ func (k *Keeper) NoInstantaneousSlash(ctx, historicalStateCtx sdk.Context, param
 		if err != nil {
 			return err
 		}
-		stakerMap, err := k.delegationKeeper.GetStakersByOperator(historicalStateCtx, parameter.Operator.String(), assetID)
+		stakerList, err := k.delegationKeeper.GetStakersByOperator(historicalStateCtx, parameter.Operator.String(), assetID)
 		if err != nil {
 			return err
 		}
 		// slash the staker share according to the historical and current state
-		for stakerID := range stakerMap.Stakers {
+		for _, stakerID := range stakerList.Stakers {
 			delegationState, err := k.delegationKeeper.GetSingleDelegationInfo(historicalStateCtx, stakerID, assetID, parameter.Operator.String())
 			if err != nil {
 				return err
@@ -243,15 +243,15 @@ func (k *Keeper) InstantSlash(ctx, historicalStateCtx sdk.Context, parameter *Sl
 		// the new delegations.
 		if isClearUselessShare {
 			// clear the share of other stakers
-			stakerMap, err := k.delegationKeeper.GetStakersByOperator(ctx, parameter.Operator.String(), assetID)
+			stakerList, err := k.delegationKeeper.GetStakersByOperator(ctx, parameter.Operator.String(), assetID)
 			if err != nil {
 				return err
 			}
-			err = k.delegationKeeper.SetStakerShareToZero(ctx, parameter.Operator.String(), assetID, stakerMap)
+			err = k.delegationKeeper.SetStakerShareToZero(ctx, parameter.Operator.String(), assetID, stakerList)
 			if err != nil {
 				return err
 			}
-			err = k.delegationKeeper.DeleteStakerMapForOperator(ctx, parameter.Operator.String(), assetID)
+			err = k.delegationKeeper.DeleteStakersListForOperator(ctx, parameter.Operator.String(), assetID)
 			if err != nil {
 				return err
 			}

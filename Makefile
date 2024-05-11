@@ -525,7 +525,7 @@ localnet-show-logstream:
 ###############################################################################
 
 PACKAGE_NAME:=github.com/ExocoreNetwork/exocore
-GOLANG_CROSS_VERSION  = v1.21
+GOLANG_CROSS_VERSION  = v1.21.9
 GOPATH ?= '$(HOME)/go'
 release-dry-run:
 	docker run \
