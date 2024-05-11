@@ -55,7 +55,8 @@ func (app *ExocoreApp) ExportAppStateAndValidators(
 ) (servertypes.ExportedApp, error) {
 	// Creates context with current height and checks txs for ctx to be usable by start of next
 	// block
-	ctx := app.NewContext(true, tmproto.Header{Height: app.LastBlockHeight()})
+	ctx := app.NewContext(true, tmproto.Header{Height: app.LastBlockHeight()}).
+		WithChainID(app.ChainID())
 
 	// We export at last height + 1, because that's the height at which
 	// Tendermint will start InitChain.
@@ -74,7 +75,7 @@ func (app *ExocoreApp) ExportAppStateAndValidators(
 		return servertypes.ExportedApp{}, err
 	}
 
-	validators, err := app.StakingKeeper.WriteValidators(ctx, app.ChainID())
+	validators, err := app.StakingKeeper.WriteValidators(ctx)
 	if err != nil {
 		return servertypes.ExportedApp{}, err
 	}

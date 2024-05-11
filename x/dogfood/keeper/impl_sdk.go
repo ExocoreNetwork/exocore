@@ -220,9 +220,9 @@ func (k Keeper) IterateDelegations(
 }
 
 // WriteValidators returns all the currently active validators. This is called by the export
-// CLI. During this call, ctx.ChainID() is blank, and hence, chainID is passed separately.
+// CLI. which must ensure that `ctx.ChainID()` is set.
 func (k Keeper) WriteValidators(
-	ctx sdk.Context, chainID string,
+	ctx sdk.Context,
 ) ([]tmtypes.GenesisValidator, error) {
 	validators := k.GetAllExocoreValidators(ctx)
 	sort.SliceStable(validators, func(i, j int) bool {
@@ -243,7 +243,7 @@ func (k Keeper) WriteValidators(
 		}
 		consAddress := sdk.GetConsAddress(pk)
 		found, addr := k.operatorKeeper.GetOperatorAddressForChainIDAndConsAddr(
-			ctx, chainID, consAddress,
+			ctx, ctx.ChainID(), consAddress,
 		)
 		if !found {
 			retErr = operatortypes.ErrNoKeyInTheStore
