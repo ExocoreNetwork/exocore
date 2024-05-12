@@ -55,7 +55,7 @@ func (agg *aggregator) copy4CheckTx() *aggregator {
 		totalPower:  big.NewInt(0).Set(agg.totalPower),
 
 		reports:  make([]*reportPrice, 0, len(agg.reports)),
-		dsPrices: agg.dsPrices,
+		dsPrices: make(map[uint64]string),
 	}
 	for k, v := range agg.dsPrices {
 		ret.dsPrices[k] = v
@@ -66,7 +66,7 @@ func (agg *aggregator) copy4CheckTx() *aggregator {
 		rTmp.power = big.NewInt(0).Set(report.power)
 
 		for k, v := range report.prices {
-			// prices are just record, will not be modified during execution
+			// prices are information submitted by validators, these data will not change under deterministic sources, but with non-deterministic sources they might be overwrite by later prices
 			tmpV := *v
 			tmpV.price = big.NewInt(0).Set(v.price)
 			rTmp.prices[k] = &tmpV

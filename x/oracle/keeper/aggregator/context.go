@@ -260,7 +260,7 @@ func (agc *AggregatorContext) PrepareRound(ctx sdk.Context, block uint64) {
 				round.nextRoundID = latestNextRoundID
 				round.status = 1
 				// drop previous worker
-				agc.aggregators[feederIDUint64] = nil
+				delete(agc.aggregators, feederIDUint64)
 			} else if round.status == 1 && left >= common.MaxNonce {
 				// this shouldn't happen, if do sealround properly before prepareRound, basically for test only
 				round.status = 2
