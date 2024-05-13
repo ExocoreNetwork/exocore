@@ -104,9 +104,24 @@ func recacheAggregatorContext(ctx sdk.Context, agc *aggregator.AggregatorContext
 		agc.SealRound(ctx, false)
 	}
 
-	// fill params cache
-	c.AddCache(cache.ItemP(&pTmp))
+	if from >= to {
+		// backwards compatible for that the validatorUpdateBlock updated every block
+		prev := int64(0)
+		for b, p := range recentParamsMap {
+			if b > prev {
+				// pTmp be set at least once, since len(recentParamsMap)>0
+				pTmp = common.Params(*p)
+				prev = b
+			}
+		}
+		agc.SetParams(&pTmp)
+	}
 
+	var pRet common.Params
+	if updated := c.GetCache(cache.ItemP(&pRet)); !updated {
+		c.AddCache(cache.ItemP(&pTmp))
+	}
+	// fill params cache
 	agc.PrepareRound(ctx, uint64(to))
 
 	return true
