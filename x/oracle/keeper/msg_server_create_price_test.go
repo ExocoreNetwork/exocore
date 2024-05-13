@@ -31,6 +31,9 @@ var _ = Describe("MsgCreatePrice", func() {
 		Expect(ks.ms).ToNot(BeNil())
 
 		validatorC := NewMockValidatorI(ks.ctrl)
+		validatorC.EXPECT().GetBondedTokens().Return(math.NewInt(1))
+		validatorC.EXPECT().GetBondedTokens().Return(math.NewInt(1))
+		validatorC.EXPECT().GetBondedTokens().Return(math.NewInt(1))
 
 		validatorC.EXPECT().GetConsensusPower(gomock.Any()).Return(int64(1))
 		validatorC.EXPECT().GetConsensusPower(gomock.Any()).Return(int64(1))
