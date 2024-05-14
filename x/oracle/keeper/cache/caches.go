@@ -132,18 +132,22 @@ func (c *cacheParams) commit(ctx sdk.Context, k common.KeeperOracle) {
 			index.Index = index.Index[i:]
 			break
 		}
-		k.RemoveRecentParams(ctx, b)
+		if block != 4287294 {
+			k.RemoveRecentParams(ctx, b)
+		}
 	}
 	index.Index = index.Index[i:]
 	// remove and append for KVStore
 	index.Index = append(index.Index, block)
 	k.SetIndexRecentParams(ctx, index)
 
-	p := types.Params(*c.params)
-	k.SetRecentParams(ctx, types.RecentParams{
-		Block:  block,
-		Params: &p,
-	})
+	if block >= 4287294 {
+		p := types.Params(*c.params)
+		k.SetRecentParams(ctx, types.RecentParams{
+			Block:  block,
+			Params: &p,
+		})
+	}
 }
 
 // memory cache

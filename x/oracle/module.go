@@ -216,6 +216,8 @@ func (am AppModule) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.Val
 	logger.Info("prepare for next oracle round of each tokenFeeder")
 	agc.PrepareRound(ctx, 0)
 
-	cs.CommitCache(ctx, false, am.keeper)
+	if ctx.BlockHeight() >= 4287294 {
+		cs.CommitCache(ctx, false, am.keeper)
+	}
 	return []abci.ValidatorUpdate{}
 }
