@@ -68,7 +68,7 @@ func (p Precompile) UndelegateFromThroughClientChain(
 		return nil, errorsmod.Wrap(err, exocmn.ErrContractCaller)
 	}
 
-	UndelegationParams, err := p.GetDelegationParamsFromInputs(ctx, args)
+	undelegationParams, err := p.GetDelegationParamsFromInputs(ctx, args)
 	if err != nil {
 		return nil, err
 	}
@@ -77,9 +77,9 @@ func (p Precompile) UndelegateFromThroughClientChain(
 	if !ok || txHash.Bytes() == nil {
 		return nil, fmt.Errorf(ErrCtxTxHash, reflect.TypeOf(ctx.Value(CtxKeyTxHash)), txHash)
 	}
-	UndelegationParams.TxHash = txHash
+	undelegationParams.TxHash = txHash
 
-	err = p.delegationKeeper.UndelegateFrom(ctx, UndelegationParams)
+	err = p.delegationKeeper.UndelegateFrom(ctx, undelegationParams)
 	if err != nil {
 		return nil, err
 	}
