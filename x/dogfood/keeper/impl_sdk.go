@@ -179,11 +179,16 @@ func (k Keeper) IterateBondedValidatorsByPower(
 			// will only happen if there is an error in deserialization.
 			continue
 		}
+		found, addr := k.operatorKeeper.GetOperatorAddressForChainIDAndConsAddr(
+			ctx, ctx.ChainID(), sdk.GetConsAddress(pk),
+		)
+		if !found {
+			// this should never happen. should we panic?
+			continue
+		}
 		val, err := stakingtypes.NewValidator(
-			// TODO: this is not the correct address, which is derived from
-			// sdk.ValAddress(sdk.AccAddress)
-			sdk.ValAddress(pk.Address()),
-			pk, stakingtypes.Description{},
+			sdk.ValAddress(addr),
+			pk, stakingtypes.Description{ /* TODO */ },
 		)
 		if err != nil {
 			// will only happen if there is an error in deserialization.
@@ -214,7 +219,11 @@ func (k Keeper) IterateDelegations(
 	panic("unimplemented on this keeper")
 }
 
-func (k Keeper) WriteValidators(ctx sdk.Context) ([]tmtypes.GenesisValidator, error) {
+// WriteValidators returns all the currently active validators. This is called by the export
+// CLI. which must ensure that `ctx.ChainID()` is set.
+func (k Keeper) WriteValidators(
+	ctx sdk.Context,
+) ([]tmtypes.GenesisValidator, error) {
 	validators := k.GetAllExocoreValidators(ctx)
 	sort.SliceStable(validators, func(i, j int) bool {
 		return validators[i].Power > validators[j].Power

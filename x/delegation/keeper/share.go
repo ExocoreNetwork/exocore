@@ -21,6 +21,10 @@ func TokensFromShares(stakerShare, totalShare sdkmath.LegacyDec, totalAmount sdk
 		return sdkmath.NewInt(0), errorsmod.Wrapf(delegationtypes.ErrInsufficientShares, "the stakerShare is:%v the totalShare is:%v", stakerShare, totalShare)
 	}
 	if totalShare.IsZero() {
+		if totalAmount.IsZero() {
+			// this can happen if everyone exits.
+			return sdkmath.NewInt(0), nil
+		}
 		return sdkmath.NewInt(0), delegationtypes.ErrDivisorIsZero
 	}
 	return (stakerShare.MulInt(totalAmount)).Quo(totalShare).TruncateInt(), nil
@@ -34,6 +38,10 @@ func TokensFromShares(stakerShare, totalShare sdkmath.LegacyDec, totalAmount sdk
 // we need to make sure the staker can't get a bigger share than they should get.
 func SharesFromTokens(totalShare sdkmath.LegacyDec, stakerAmount, totalAmount sdkmath.Int) (sdkmath.LegacyDec, error) {
 	if totalAmount.IsZero() {
+		if totalShare.IsZero() {
+			// this can happen if everyone exits.
+			return sdkmath.LegacyZeroDec(), nil
+		}
 		return sdkmath.LegacyZeroDec(), delegationtypes.ErrDivisorIsZero
 	}
 	return totalShare.MulInt(stakerAmount).QuoInt(totalAmount), nil
