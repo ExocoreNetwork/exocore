@@ -29,11 +29,16 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
+// AVSinfo represent the information of avs
 type AVSInfo struct {
-	Name            string   `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
-	AvsAddress      string   `protobuf:"bytes,2,opt,name=avs_address,json=avsAddress,proto3" json:"avs_address,omitempty"`
+	// name of avs
+	Name string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+	// address of avs
+	AvsAddress string `protobuf:"bytes,2,opt,name=avs_address,json=avsAddress,proto3" json:"avs_address,omitempty"`
+	// registered operator of avs
 	OperatorAddress []string `protobuf:"bytes,3,rep,name=operator_address,json=operatorAddress,proto3" json:"operator_address,omitempty"`
-	AvsOwnerAddress string   `protobuf:"bytes,4,opt,name=avs_owner_address,json=avsOwnerAddress,proto3" json:"avs_owner_address,omitempty"`
+	// the owner who has permission for avs
+	AvsOwnerAddress string `protobuf:"bytes,4,opt,name=avs_owner_address,json=avsOwnerAddress,proto3" json:"avs_owner_address,omitempty"`
 	// asset_basic_info is all the basic asset information of the avs.
 	AssetId []string `protobuf:"bytes,5,rep,name=asset_id,json=assetId,proto3" json:"asset_id,omitempty"`
 }
@@ -106,9 +111,12 @@ func (m *AVSInfo) GetAssetId() []string {
 	return nil
 }
 
+// RegisterAVSReq is requst to register avs
 type RegisterAVSReq struct {
-	FromAddress string   `protobuf:"bytes,1,opt,name=from_address,json=fromAddress,proto3" json:"from_address,omitempty"`
-	Info        *AVSInfo `protobuf:"bytes,2,opt,name=info,proto3" json:"info,omitempty"`
+	// from_address is the source
+	FromAddress string `protobuf:"bytes,1,opt,name=from_address,json=fromAddress,proto3" json:"from_address,omitempty"`
+	// avs information
+	Info *AVSInfo `protobuf:"bytes,2,opt,name=info,proto3" json:"info,omitempty"`
 }
 
 func (m *RegisterAVSReq) Reset()         { *m = RegisterAVSReq{} }
@@ -158,9 +166,12 @@ func (m *RegisterAVSReq) GetInfo() *AVSInfo {
 	return nil
 }
 
+// RegisterAVSResponse is the response for register avs
 type RegisterAVSResponse struct {
-	FromAddress string   `protobuf:"bytes,1,opt,name=from_address,json=fromAddress,proto3" json:"from_address,omitempty"`
-	Info        *AVSInfo `protobuf:"bytes,2,opt,name=info,proto3" json:"info,omitempty"`
+	// from_address is the source
+	FromAddress string `protobuf:"bytes,1,opt,name=from_address,json=fromAddress,proto3" json:"from_address,omitempty"`
+	// avs information
+	Info *AVSInfo `protobuf:"bytes,2,opt,name=info,proto3" json:"info,omitempty"`
 }
 
 func (m *RegisterAVSResponse) Reset()         { *m = RegisterAVSResponse{} }
@@ -210,9 +221,12 @@ func (m *RegisterAVSResponse) GetInfo() *AVSInfo {
 	return nil
 }
 
+// DeRegisterAVSReq is requst to deregister avs
 type DeRegisterAVSReq struct {
-	FromAddress string   `protobuf:"bytes,1,opt,name=from_address,json=fromAddress,proto3" json:"from_address,omitempty"`
-	Info        *AVSInfo `protobuf:"bytes,2,opt,name=info,proto3" json:"info,omitempty"`
+	// from_address is the source address
+	FromAddress string `protobuf:"bytes,1,opt,name=from_address,json=fromAddress,proto3" json:"from_address,omitempty"`
+	// avs information
+	Info *AVSInfo `protobuf:"bytes,2,opt,name=info,proto3" json:"info,omitempty"`
 }
 
 func (m *DeRegisterAVSReq) Reset()         { *m = DeRegisterAVSReq{} }
@@ -262,9 +276,12 @@ func (m *DeRegisterAVSReq) GetInfo() *AVSInfo {
 	return nil
 }
 
+// DeRegisterAVSResponse is requst to register avs
 type DeRegisterAVSResponse struct {
-	FromAddress string   `protobuf:"bytes,1,opt,name=from_address,json=fromAddress,proto3" json:"from_address,omitempty"`
-	Info        *AVSInfo `protobuf:"bytes,2,opt,name=info,proto3" json:"info,omitempty"`
+	// from_address is the source address
+	FromAddress string `protobuf:"bytes,1,opt,name=from_address,json=fromAddress,proto3" json:"from_address,omitempty"`
+	// avs information
+	Info *AVSInfo `protobuf:"bytes,2,opt,name=info,proto3" json:"info,omitempty"`
 }
 
 func (m *DeRegisterAVSResponse) Reset()         { *m = DeRegisterAVSResponse{} }

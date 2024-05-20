@@ -85,7 +85,7 @@ func (suite *OperatorTestSuite) TestAVSUSDValue() {
 	usdcPrice, err := suite.App.OperatorKeeper.OracleInterface().GetSpecifiedAssetsPrice(suite.Ctx, suite.assetID)
 	suite.NoError(err)
 	delegatedAmount := sdkmath.NewIntWithDecimal(8, 7)
-	suite.prepareDelegation(usdcAddr, delegatedAmount)
+	suite.prepareDelegation(true, usdcAddr, delegatedAmount)
 
 	// updating the new voting power
 	suite.NoError(err)

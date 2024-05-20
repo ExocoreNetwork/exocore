@@ -30,8 +30,12 @@ func (k *Keeper) UpdateOperatorSlashInfo(ctx sdk.Context, operatorAddr, avsAddr,
 		return errorsmod.Wrap(operatortypes.ErrSlashInfoExist, fmt.Sprintf("slashInfoKey:%s", slashInfoKey))
 	}
 	// check the validation of slash info
-	if slashInfo.SlashContract == "" {
-		return errorsmod.Wrap(operatortypes.ErrSlashInfo, fmt.Sprintf("err slashContract:%s", slashInfo.SlashContract))
+	getSlashContract, err := k.avsKeeper.GetAVSSlashContract(ctx, avsAddr)
+	if err != nil {
+		return err
+	}
+	if slashInfo.SlashContract != getSlashContract {
+		return errorsmod.Wrap(operatortypes.ErrSlashInfo, fmt.Sprintf("err slashContract:%s, stored contract:%s", slashInfo.SlashContract, getSlashContract))
 	}
 	if slashInfo.EventHeight > slashInfo.SubmittedHeight {
 		return errorsmod.Wrap(operatortypes.ErrSlashInfo, fmt.Sprintf("err SubmittedHeight:%v,EventHeight:%v", slashInfo.SubmittedHeight, slashInfo.EventHeight))
@@ -60,6 +64,26 @@ func (k *Keeper) GetOperatorSlashInfo(ctx sdk.Context, avsAddr, operatorAddr, sl
 	operatorSlashInfo := operatortypes.OperatorSlashInfo{}
 	k.cdc.MustUnmarshal(value, &operatorSlashInfo)
 	return &operatorSlashInfo, nil
+}
+
+// AllOperatorSlashInfo return all slash information for the specified operator and AVS
+func (k *Keeper) AllOperatorSlashInfo(ctx sdk.Context, avsAddr, operatorAddr string) (map[string]*operatortypes.OperatorSlashInfo, error) {
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), operatortypes.KeyPrefixOperatorSlashInfo)
+	prefix := assetstype.GetJoinedStoreKey(operatorAddr, avsAddr)
+
+	ret := make(map[string]*operatortypes.OperatorSlashInfo, 0)
+	iterator := sdk.KVStorePrefixIterator(store, prefix)
+	defer iterator.Close()
+	for ; iterator.Valid(); iterator.Next() {
+		var slashInfo operatortypes.OperatorSlashInfo
+		k.cdc.MustUnmarshal(iterator.Value(), &slashInfo)
+		keys, err := assetstype.ParseJoinedKey(iterator.Key())
+		if err != nil {
+			return nil, err
+		}
+		ret[keys[2]] = &slashInfo
+	}
+	return ret, nil
 }
 
 // UpdateSlashAssetsState This is a function to update the assets amount that need to be slashed

@@ -9,35 +9,61 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
+type OperatorUSDValue struct {
+	Staking                 sdkmath.LegacyDec
+	SelfStaking             sdkmath.LegacyDec
+	StakingAndWaitUnbonding sdkmath.LegacyDec
+}
+
 // CalculateUSDValueForOperator calculates the total and self usd value for the
 // operator according to the input assets filter and prices.
 func (k *Keeper) CalculateUSDValueForOperator(
 	ctx sdk.Context,
+	isForSlash bool,
 	operator string,
 	assetsFilter map[string]interface{},
 	decimals map[string]uint32,
 	prices map[string]operatortypes.Price,
-) (sdkmath.LegacyDec, sdkmath.LegacyDec, error) {
-	usdValue := sdkmath.LegacyNewDec(0)
-	selfUSDValue := sdkmath.LegacyNewDec(0)
+) (OperatorUSDValue, error) {
+	var err error
+	ret := OperatorUSDValue{
+		Staking:                 sdkmath.LegacyNewDec(0),
+		SelfStaking:             sdkmath.LegacyNewDec(0),
+		StakingAndWaitUnbonding: sdkmath.LegacyNewDec(0),
+	}
 	// iterate all assets owned by the operator to calculate its voting power
 	opFuncToIterateAssets := func(assetID string, state *assetstypes.OperatorAssetInfo) error {
-		price := prices[assetID]
-		decimal := decimals[assetID]
-		usdValue = usdValue.Add(CalculateUSDValue(state.TotalAmount, price.Value, decimal, price.Decimal))
-		// calculate the token amount from the share for the operator
-		selfAmount, err := delegationkeeper.TokensFromShares(state.OperatorShare, state.TotalShare, state.TotalAmount)
-		if err != nil {
-			return err
+		var price operatortypes.Price
+		var decimal uint32
+		if isForSlash {
+			price, err = k.oracleKeeper.GetSpecifiedAssetsPrice(ctx, assetID)
+			if err != nil {
+				return err
+			}
+			assetInfo, err := k.assetsKeeper.GetStakingAssetInfo(ctx, assetID)
+			if err != nil {
+				return err
+			}
+			decimal = assetInfo.AssetBasicInfo.Decimals
+			ret.StakingAndWaitUnbonding = ret.StakingAndWaitUnbonding.Add(CalculateUSDValue(state.TotalAmount.Add(state.WaitUnbondingAmount), price.Value, decimal, price.Decimal))
+		} else {
+			price = prices[assetID]
+			decimal = decimals[assetID]
+			ret.Staking = ret.Staking.Add(CalculateUSDValue(state.TotalAmount, price.Value, decimal, price.Decimal))
+			// calculate the token amount from the share for the operator
+			selfAmount, err := delegationkeeper.TokensFromShares(state.OperatorShare, state.TotalShare, state.TotalAmount)
+			if err != nil {
+				return err
+			}
+			ret.SelfStaking = ret.SelfStaking.Add(CalculateUSDValue(selfAmount, price.Value, decimal, price.Decimal))
 		}
-		selfUSDValue = selfUSDValue.Add(CalculateUSDValue(selfAmount, price.Value, decimal, price.Decimal))
 		return nil
 	}
-	err := k.assetsKeeper.IteratorAssetsForOperator(ctx, operator, assetsFilter, opFuncToIterateAssets)
+	err = k.assetsKeeper.IteratorAssetsForOperator(ctx, false, operator, assetsFilter, opFuncToIterateAssets)
 	if err != nil {
-		return sdkmath.LegacyDec{}, sdkmath.LegacyDec{}, err
+		return ret, err
 	}
-	return usdValue, selfUSDValue, nil
+	return ret, nil
 }
 
 // UpdateVotingPower update the voting power of the specified AVS and its operators at
@@ -71,12 +97,12 @@ func (k *Keeper) UpdateVotingPower(ctx sdk.Context, avsAddr string) error {
 	opFunc := func(operator string, votingPower *sdkmath.LegacyDec) error {
 		// clear the old voting power for the operator
 		*votingPower = sdkmath.LegacyNewDec(0)
-		usdValue, selfUSDValue, err := k.CalculateUSDValueForOperator(ctx, operator, assets, decimals, prices)
+		usdValues, err := k.CalculateUSDValueForOperator(ctx, false, operator, assets, decimals, prices)
 		if err != nil {
 			return err
 		}
-		if selfUSDValue.GTE(minimumSelfDelegation) {
-			*votingPower = votingPower.Add(usdValue)
+		if usdValues.SelfStaking.GTE(minimumSelfDelegation) {
+			*votingPower = votingPower.Add(usdValues.Staking)
 			avsVotingPower = avsVotingPower.Add(*votingPower)
 		}
 		return nil

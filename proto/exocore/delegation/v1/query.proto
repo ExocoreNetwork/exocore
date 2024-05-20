@@ -3,6 +3,7 @@ package exocore.delegation.v1;
 
 import "cosmos/query/v1/query.proto";
 import "cosmos_proto/cosmos.proto";
+import "exocore/delegation/v1/tx.proto";
 import "gogoproto/gogo.proto";
 import "google/api/annotations.proto";
 
@@ -69,6 +70,28 @@ message SingleDelegationInfoReq {
   string asset_id = 3 [(gogoproto.customname) = "AssetID"];
 }
 
+// UndelegationsReq is the request to obtain all delegations
+// by staker id and asset id.
+message UndelegationsReq {
+  // staker_id is the staker id.
+  string staker_id = 1 [(gogoproto.customname) = "StakerID"];
+  // asset_id is the asset id.
+  string asset_id = 2 [(gogoproto.customname) = "AssetID"];
+}
+
+// UndelegationsReq is the request to obtain all undelegations waiting to be completed
+// by height.
+message WaitCompleteUndelegationsReq {
+  // block_height is the block height to query.
+  uint64 block_height = 1;
+}
+
+// UndelegationRecordList is the response to query undelegations.
+message UndelegationRecordList {
+  // UndelegationRecord is the returned undelegations
+  repeated UndelegationRecord undelegations = 1;
+}
+
 // Query is the service API for the delegation module.
 service Query {
   // DelegationInfo queries the delegation information for {stakerID, assetID}.
@@ -81,6 +104,20 @@ service Query {
   rpc QuerySingleDelegationInfo(SingleDelegationInfoReq) returns (DelegationAmounts) {
     option (cosmos.query.v1.module_query_safe) = true;
     option (google.api.http).get = "/exocore/delegation/v1/QuerySingleDelegationInfo";
+  }
+
+  // QueryUndelegations queries all undelegations for
+  // {staker, asset}.
+  rpc QueryUndelegations(UndelegationsReq) returns (UndelegationRecordList) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/exocore/delegation/v1/QueryUndelegations";
+  }
+
+  // QueryWaitCompleteUndelegations queries all undelegations waiting to be completed by
+  // {height}.
+  rpc QueryWaitCompleteUndelegations(WaitCompleteUndelegationsReq) returns (UndelegationRecordList) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/exocore/delegation/v1/QueryWaitCompleteUndelegations";
   }
 }
 

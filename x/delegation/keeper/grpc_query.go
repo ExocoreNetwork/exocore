@@ -18,3 +18,25 @@ func (k *Keeper) QueryDelegationInfo(ctx context.Context, info *delegationtype.D
 	c := sdk.UnwrapSDKContext(ctx)
 	return k.GetDelegationInfo(c, info.StakerID, info.AssetID)
 }
+
+func (k *Keeper) QueryUndelegations(ctx context.Context, req *delegationtype.UndelegationsReq) (*delegationtype.UndelegationRecordList, error) {
+	c := sdk.UnwrapSDKContext(ctx)
+	undelegations, err := k.GetStakerUndelegationRecords(c, req.StakerID, req.AssetID)
+	if err != nil {
+		return nil, err
+	}
+	return &delegationtype.UndelegationRecordList{
+		Undelegations: undelegations,
+	}, nil
+}
+
+func (k *Keeper) QueryWaitCompleteUndelegations(ctx context.Context, req *delegationtype.WaitCompleteUndelegationsReq) (*delegationtype.UndelegationRecordList, error) {
+	c := sdk.UnwrapSDKContext(ctx)
+	undelegations, err := k.GetWaitCompleteUndelegationRecords(c, req.BlockHeight)
+	if err != nil {
+		return nil, err
+	}
+	return &delegationtype.UndelegationRecordList{
+		Undelegations: undelegations,
+	}, nil
+}

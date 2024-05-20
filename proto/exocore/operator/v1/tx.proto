@@ -92,6 +92,55 @@ enum SlashType {
   SLASH_TYPE_NO_INSTANTANEOUS_SLASH = 2;
 }
 
+// SlashFromUndelegation records the slash detail from the undelegation
+message SlashFromUndelegation {
+  // staker_id is the staker id.
+  string staker_id = 1 [(gogoproto.customname) = "StakerID"];
+  // asset_id is the asset id.
+  string asset_id = 2 [(gogoproto.customname) = "AssetID"];
+  // amount is the slashed amount from the undelegation.
+  string amount = 3
+  [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.nullable) = false
+  ];
+}
+// SlashFromAssetsPool records the slash detail from the operator assets pool
+message SlashFromAssetsPool {
+  string asset_id = 1 [(gogoproto.customname) = "AssetID"];
+  // amount is the slashed amount from the assets pool.
+  string amount = 2
+  [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.nullable) = false
+  ];
+}
+
+
+// SlashAssetsInfo is the slashed assets information
+message SlashExecutionInfo {
+  // slash_proportion is the new calculated proportion when execute the slash
+  string slash_proportion = 1
+  [
+    (cosmos_proto.scalar) = "cosmos.Dec",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+    (gogoproto.nullable) = false
+  ];
+  // slash_value is the usd value of all slashed assets
+  string slash_value = 2
+  [
+    (cosmos_proto.scalar) = "cosmos.Dec",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+    (gogoproto.nullable) = false
+  ];
+  // SlashUndelegations records all slash info related to the undelegation
+  repeated SlashFromUndelegation slash_undelegations = 3;
+  // SlashFromAssetsPool records all slash info related to the assets pool
+  repeated SlashFromAssetsPool slash_assets_pool = 4;
+}
+
 // OperatorSlashInfo is the slash info of operator
 message OperatorSlashInfo {
   // slash_contract is the address of slash contract
@@ -100,19 +149,19 @@ message OperatorSlashInfo {
   int64 submitted_height = 2;
   // event_height is the exocore block height at which the slash event occurs
   int64 event_height = 3;
-  // processed_height is the exocore block height at which the slash event is processed
-  int64 processed_height = 4;
   // is_vetoed is a flag to indicate if this slash is vetoed
-  bool is_vetoed = 5;
+  bool is_vetoed = 4;
   // slash_proportion is the proportion of assets that need to be slashed
-  string slash_proportion = 6
+  string slash_proportion = 5
   [
     (cosmos_proto.scalar) = "cosmos.Dec",
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
     (gogoproto.nullable) = false
   ];
-  // type indicates the slash type.
-  SlashType slash_type = 7;
+  // slash_type indicates the slash type of specified AVS.
+  uint32 slash_type = 6;
+  // SlashExecutionInfo stores the slashed execution information
+  SlashExecutionInfo execution_info = 7;
 }
 
 // RegisterOperatorReq is the request to register a new operator.

@@ -9,5 +9,4 @@ func (suite *AVSTestSuite) TestAVS() {
 
 	suite.NoError(err)
 	suite.Equal(avsAddres, info.GetInfo().AvsAddress)
-
 }

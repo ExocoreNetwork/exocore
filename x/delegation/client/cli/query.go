@@ -26,6 +26,8 @@ func GetQueryCmd() *cobra.Command {
 	cmd.AddCommand(
 		QuerySingleDelegationInfo(),
 		QueryDelegationInfo(),
+		QueryUndelegations(),
+		QueryWaitCompleteUndelegations(),
 	)
 	return cmd
 }
@@ -85,6 +87,68 @@ func QueryDelegationInfo() *cobra.Command {
 				AssetID:  args[1],
 			}
 			res, err := queryClient.QueryDelegationInfo(context.Background(), req)
+			if err != nil {
+				return err
+			}
+			return clientCtx.PrintProto(res)
+		},
+	}
+
+	flags.AddQueryFlagsToCmd(cmd)
+	return cmd
+}
+
+// QueryUndelegations queries all undelegations for staker and asset
+func QueryUndelegations() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "QueryUndelegations stakerID assetID",
+		Short: "Get undelegations",
+		Long:  "Get undelegations",
+		Args:  cobra.ExactArgs(2),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx, err := client.GetClientQueryContext(cmd)
+			if err != nil {
+				return err
+			}
+
+			queryClient := delegationtype.NewQueryClient(clientCtx)
+			req := &delegationtype.UndelegationsReq{
+				StakerID: args[0],
+				AssetID:  args[1],
+			}
+			res, err := queryClient.QueryUndelegations(context.Background(), req)
+			if err != nil {
+				return err
+			}
+			return clientCtx.PrintProto(res)
+		},
+	}
+
+	flags.AddQueryFlagsToCmd(cmd)
+	return cmd
+}
+
+// QueryWaitCompleteUndelegations queries all undelegations waiting to be completed by height
+func QueryWaitCompleteUndelegations() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "QueryWaitCompleteUndelegations height",
+		Short: "Get undelegations waiting to be completed",
+		Long:  "Get undelegations waiting to be completed",
+		Args:  cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx, err := client.GetClientQueryContext(cmd)
+			if err != nil {
+				return err
+			}
+			height, err := strconv.ParseUint(args[0], 10, 64)
+			if err != nil {
+				return err
+			}
+			queryClient := delegationtype.NewQueryClient(clientCtx)
+			req := &delegationtype.WaitCompleteUndelegationsReq{
+				BlockHeight: height,
+			}
+			res, err := queryClient.QueryWaitCompleteUndelegations(context.Background(), req)
 			if err != nil {
 				return err
 			}

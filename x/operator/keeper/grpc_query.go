@@ -38,3 +38,36 @@ func (k *Keeper) QueryOperatorConsKeyForChainID(
 		PublicKey: *key,
 	}, nil
 }
+
+func (k *Keeper) QueryOperatorUSDValue(ctx context.Context, req *operatortypes.QueryOperatorUSDValueRequest) (*operatortypes.DecValueField, error) {
+	c := sdk.UnwrapSDKContext(ctx)
+	usdValue, err := k.GetOperatorUSDValue(c, req.OperatorAddr, req.AVSAddress)
+	if err != nil {
+		return nil, err
+	}
+	return &operatortypes.DecValueField{
+		Amount: usdValue,
+	}, nil
+}
+
+func (k *Keeper) QueryAVSUSDValue(ctx context.Context, req *operatortypes.QueryAVSUSDValueRequest) (*operatortypes.DecValueField, error) {
+	c := sdk.UnwrapSDKContext(ctx)
+	usdValue, err := k.GetAVSUSDValue(c, req.AVSAddress)
+	if err != nil {
+		return nil, err
+	}
+	return &operatortypes.DecValueField{
+		Amount: usdValue,
+	}, nil
+}
+
+func (k *Keeper) QueryOperatorSlashInfo(ctx context.Context, req *operatortypes.QueryOperatorSlashInfoRequest) (*operatortypes.QueryOperatorSlashInfoResponse, error) {
+	c := sdk.UnwrapSDKContext(ctx)
+	slashInfo, err := k.AllOperatorSlashInfo(c, req.OperatorAddr, req.AVSAddress)
+	if err != nil {
+		return nil, err
+	}
+	return &operatortypes.QueryOperatorSlashInfoResponse{
+		AllSlashInfo: slashInfo,
+	}, nil
+}

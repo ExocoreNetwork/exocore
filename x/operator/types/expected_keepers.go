@@ -22,7 +22,7 @@ type AssetsKeeper interface {
 		ctx sdk.Context, assets map[string]interface{},
 	) (decimals map[string]uint32, err error)
 	IteratorAssetsForOperator(
-		ctx sdk.Context, operator string, assetsFilter map[string]interface{},
+		ctx sdk.Context, isUpdate bool, operator string, assetsFilter map[string]interface{},
 		f func(assetID string, state *assetstype.OperatorAssetInfo) error,
 	) error
 	AppChainInfoIsExist(ctx sdk.Context, chainID string) bool
