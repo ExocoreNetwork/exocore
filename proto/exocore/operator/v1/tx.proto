@@ -108,6 +108,7 @@ message SlashFromUndelegation {
 }
 // SlashFromAssetsPool records the slash detail from the operator assets pool
 message SlashFromAssetsPool {
+  // asset_id is the asset id.
   string asset_id = 1 [(gogoproto.customname) = "AssetID"];
   // amount is the slashed amount from the assets pool.
   string amount = 2
