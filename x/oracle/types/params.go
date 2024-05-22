@@ -1,8 +1,18 @@
 package types
 
 import (
+	"errors"
+
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	"gopkg.in/yaml.v2"
+)
+
+const (
+	TypeChain = iota
+	TypeSource
+	TypeToken
+	TypeRule
+	TypeTokenFeeder
 )
 
 var (
@@ -22,7 +32,13 @@ func ParamKeyTable() paramtypes.KeyTable {
 
 // NewParams creates a new Params instance
 func NewParams() Params {
-	return Params{}
+	return Params{
+		Chains:       []*Chain{{}},
+		Tokens:       []*Token{{}},
+		Sources:      []*Source{{}},
+		Rules:        []*RuleSource{{}},
+		TokenFeeders: []*TokenFeeder{{}},
+	}
 }
 
 // DefaultParams returns a default set of parameters
@@ -70,7 +86,7 @@ func DefaultParams() Params {
 				TokenID:        1,
 				RuleID:         1,
 				StartRoundID:   1,
-				StartBaseBlock: 100000000,
+				StartBaseBlock: 30,
 				Interval:       10,
 			},
 		},
@@ -95,6 +111,34 @@ func (p *Params) ParamSetPairs() paramtypes.ParamSetPairs {
 
 // Validate validates the set of params
 func (p Params) Validate() error {
+	// validate tokenFeeders format
+	for fID, feeder := range p.TokenFeeders {
+		if fID == 0 {
+			continue
+		}
+		if feeder.TokenID < 1 {
+			return errors.New("")
+		}
+
+		if feeder.EndBlock > 0 && (feeder.StartBaseBlock >= feeder.EndBlock || feeder.StartBaseBlock == 0) {
+			return errors.New("")
+		}
+
+		if feeder.Interval > 0 && feeder.Interval < 3*2 {
+
+			return errors.New("")
+
+		}
+
+		if feeder.StartBaseBlock > 0 && feeder.EndBlock > 0 {
+			// create a new feeder with endblock set, endblock should not whithin the window of one price round
+			if feeder.Interval > 0 && (feeder.EndBlock-feeder.StartBaseBlock)%feeder.Interval < 3 {
+				return errors.New("")
+			}
+		}
+	}
+	// TODO: validate chains, tokens, rules, tokenfeeders, and cross validation among these fields
+
 	return nil
 }
 
@@ -102,4 +146,24 @@ func (p Params) Validate() error {
 func (p Params) String() string {
 	out, _ := yaml.Marshal(p)
 	return string(out)
+}
+
+func (p Params) GetSourceIDByName(n string) int {
+	for i, c := range p.Sources {
+		if n == c.Name {
+			return i
+		}
+	}
+	return 0
+}
+
+func (p Params) GetFeederIDsByTokenID(tID uint64) []int {
+	ret := make([]int, 0)
+	for fID, f := range p.TokenFeeders {
+		// feeder list is ordered, so the slice returned is in the order of the feeders updated for the same token
+		if f.TokenID == tID {
+			ret = append(ret, fID)
+		}
+	}
+	return ret
 }
