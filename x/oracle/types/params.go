@@ -70,7 +70,7 @@ func DefaultParams() Params {
 				TokenID:        1,
 				RuleID:         1,
 				StartRoundID:   1,
-				StartBaseBlock: 20,
+				StartBaseBlock: 100000000,
 				Interval:       10,
 			},
 		},
