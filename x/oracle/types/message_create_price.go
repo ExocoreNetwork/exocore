@@ -29,7 +29,11 @@ func (msg *MsgCreatePrice) Type() string {
 }
 
 func (msg *MsgCreatePrice) GetSigners() []sdk.AccAddress {
-	creator, err := sdk.ValAddressFromBech32(msg.Creator)
+	//	creator, err := sdk.ValAddressFromBech32(msg.Creator)
+	//	if err != nil {
+	//		panic(err)
+	//	}
+	creator, err := sdk.AccAddressFromBech32(msg.Creator)
 	if err != nil {
 		panic(err)
 	}
@@ -42,7 +46,7 @@ func (msg *MsgCreatePrice) GetSignBytes() []byte {
 }
 
 func (msg *MsgCreatePrice) ValidateBasic() error {
-	_, err := sdk.ValAddressFromBech32(msg.Creator)
+	_, err := sdk.AccAddressFromBech32(msg.Creator)
 	if err != nil {
 		return sdkerrors.ErrInvalidAddress.Wrapf("invalid creator address (%s)", err)
 	}

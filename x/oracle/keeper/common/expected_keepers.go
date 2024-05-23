@@ -3,6 +3,7 @@ package common
 import (
 	"cosmossdk.io/math"
 	stakingkeeper "github.com/ExocoreNetwork/exocore/x/dogfood/keeper"
+	dogfoodtypes "github.com/ExocoreNetwork/exocore/x/dogfood/types"
 	"github.com/ExocoreNetwork/exocore/x/oracle/types"
 	abci "github.com/cometbft/cometbft/abci/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -41,4 +42,6 @@ type KeeperStaking interface {
 	IterateBondedValidatorsByPower(ctx sdk.Context, fn func(index int64, validator stakingTypes.ValidatorI) (stop bool))
 	GetValidatorUpdates(ctx sdk.Context) []abci.ValidatorUpdate
 	GetValidatorByConsAddr(ctx sdk.Context, consAddr sdk.ConsAddress) (validator stakingTypes.Validator, found bool)
+
+	GetAllExocoreValidators(ctx sdk.Context) (validators []dogfoodtypes.ExocoreValidator)
 }
