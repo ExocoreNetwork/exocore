@@ -2,7 +2,6 @@ package aggregator
 
 import (
 	"errors"
-	"fmt"
 	"math/big"
 	"time"
 
@@ -79,10 +78,6 @@ func (agc *AggregatorContext) sanityCheck(msg *types.MsgCreatePrice) error {
 	// TODO: check len(price.prices)>0, len(price.prices._range_eachPriceSource.Prices)>0, at least has one source, and for each source has at least one price
 	// TODO: check for each source, at most maxDetId count price (now in filter, ->anteHandler)
 
-	fmt.Println("debug-oracle:", msg.Creator, len(agc.validatorsPower))
-	for k, v := range agc.validatorsPower {
-		fmt.Printf("debug-oracle:validator_%s, power_%s\n", k, v.String())
-	}
 	if agc.validatorsPower[msg.Creator] == nil {
 		return errors.New("signer is not validator")
 	}
