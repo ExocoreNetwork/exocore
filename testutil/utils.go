@@ -236,7 +236,7 @@ func (suite *BaseTestSuite) SetupWithGenesisValSet(genAccs []authtypes.GenesisAc
 				Power:     1,
 			},
 			{
-				PublicKey: hexutil.Encode(pubKey.Bytes()),
+				PublicKey: hexutil.Encode(pubKey2.Bytes()),
 				Power:     1,
 			},
 		},

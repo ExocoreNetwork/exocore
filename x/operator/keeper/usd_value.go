@@ -217,7 +217,7 @@ func (k Keeper) GetAvgDelegatedValue(
 	}
 	ret := make([]int64, 0)
 	for _, operator := range operators {
-		usdValue, err := k.GetOperatorUSDValue(ctx, operator.String(), avsAddr)
+		usdValue, err := k.GetOperatorUSDValue(ctx, avsAddr, operator.String())
 		if err != nil {
 			return nil, err
 		}
