@@ -156,18 +156,10 @@ func initAggregatorContext(ctx sdk.Context, agc *aggregator.AggregatorContext, k
 	validatorPowers := make(map[string]*big.Int)
 	validatorSet := k.GetAllExocoreValidators(ctx)
 	for _, v := range validatorSet {
-		// validatorPowers[cryptotypes.Address(v.Address).String()] = big.NewInt(v.Power)
 		validatorPowers[sdk.AccAddress(v.Address).String()] = big.NewInt(v.Power)
 		totalPower = new(big.Int).Add(totalPower, big.NewInt(v.Power))
 	}
 
-	//	k.IterateBondedValidatorsByPower(ctx, func(_ int64, validator stakingtypes.ValidatorI) bool {
-	//		power := big.NewInt(validator.GetConsensusPower(sdk.DefaultPowerReduction))
-	//		addr := validator.GetOperator().String()
-	//		validatorPowers[addr] = power
-	//		totalPower = new(big.Int).Add(totalPower, power)
-	//		return false
-	//	})
 	agc.SetValidatorPowers(validatorPowers)
 	// TODO: test only
 	if k.GetLastTotalPower(ctx).BigInt().Cmp(totalPower) != 0 {
