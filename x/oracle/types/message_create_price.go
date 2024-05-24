@@ -29,15 +29,11 @@ func (msg *MsgCreatePrice) Type() string {
 }
 
 func (msg *MsgCreatePrice) GetSigners() []sdk.AccAddress {
-	//	creator, err := sdk.ValAddressFromBech32(msg.Creator)
-	//	if err != nil {
-	//		panic(err)
-	//	}
 	creator, err := sdk.AccAddressFromBech32(msg.Creator)
 	if err != nil {
 		panic(err)
 	}
-	return []sdk.AccAddress{sdk.AccAddress(creator)}
+	return []sdk.AccAddress{creator}
 }
 
 func (msg *MsgCreatePrice) GetSignBytes() []byte {
