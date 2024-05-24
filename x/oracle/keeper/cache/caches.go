@@ -177,11 +177,13 @@ func (c *Cache) GetCache(i any) bool {
 		for addr, power := range c.validators.validators {
 			item[addr] = power
 		}
+		return c.validators.update
 	case ItemP:
 		if item == nil {
 			return false
 		}
 		*item = *(c.params.params)
+		return c.params.update
 	case *[]*ItemM:
 		if item == nil {
 			return false
@@ -191,10 +193,10 @@ func (c *Cache) GetCache(i any) bool {
 			tmp = append(tmp, msgs...)
 		}
 		*item = tmp
+		return len(c.msg) > 0
 	default:
 		return false
 	}
-	return true
 }
 
 // SkipCommit skip real commit by setting the updage flag to false
