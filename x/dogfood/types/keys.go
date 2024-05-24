@@ -1,6 +1,8 @@
 package types
 
 import (
+	math "math"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
@@ -56,6 +58,9 @@ const (
 
 	// HistoricalInfoBytePrefix is the byte prefix for the historical info store.
 	HistoricalInfoBytePrefix
+
+	// UndelegationMaturityEpochByte is the byte key for the undelegation maturity epoch store.
+	UndelegationMaturityEpochByte
 
 	// LastTotalPowerByte is the byte key for the last total power store.
 	LastTotalPowerByte
@@ -145,6 +150,11 @@ func EpochEndKey() []byte {
 	return []byte{EpochEndByte}
 }
 
+// UndelegationMaturityEpochKey returns the key for the undelegation maturity epoch store.
+func UndelegationMaturityEpochKey(recordKey []byte) []byte {
+	return append([]byte{UndelegationMaturityEpochByte}, recordKey...)
+}
+
 // SafeInt64ToUint64 is a wrapper function to convert an int64
 // to a uint64. It returns (0, false) if the conversion is not possible.
 // This is safe as long as the int64 is non-negative.
@@ -153,6 +163,16 @@ func SafeInt64ToUint64(id int64) (uint64, bool) {
 		return 0, false
 	}
 	return uint64(id), true // #nosec G701 // already checked.
+}
+
+// SafeUint64ToInt64 is a wrapper function to convert a uint64
+// to an int64. It returns (0, false) if the conversion is not possible,
+// which happens when the uint64 is greater than the maximum int64 value.
+func SafeUint64ToInt64(id uint64) (int64, bool) {
+	if id > math.MaxInt64 {
+		return 0, false
+	}
+	return int64(id), true // #nosec G701 // already checked.
 }
 
 // HistoricalInfoKey returns the key to historical info to a given block height

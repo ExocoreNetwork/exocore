@@ -129,8 +129,9 @@ lint:
         - For
         - Of
       # # The specific keywords including prepositions to ignore. E.g. EndOfSupport is a term you would like to use, and skip checking.
-      # excludes:
-      #   - EndOfSupport
+      excludes:
+        - OptOutOfAVSReq
+        - OptOutOfAVSResponse
 
     # #  RPC_NAMES_CASE rule option.
     # rpc_names_case:

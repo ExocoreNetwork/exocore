@@ -69,6 +69,18 @@ message SingleDelegationInfoReq {
   string asset_id = 3 [(gogoproto.customname) = "AssetID"];
 }
 
+// UndelegationHoldCountReq is the request to obtain the undelegation hold count.
+message UndelegationHoldCountReq {
+  // record_key is the record key of the undelegation record.
+  string record_key = 1;
+}
+
+// UndelegationHoldCountResponse is the response for the undelegation hold count.
+message UndelegationHoldCountResponse {
+  // hold_count is the number of undelegations that are on hold.
+  uint64 hold_count = 1;
+}
+
 // Query is the service API for the delegation module.
 service Query {
   // DelegationInfo queries the delegation information for {stakerID, assetID}.
@@ -81,6 +93,12 @@ service Query {
   rpc QuerySingleDelegationInfo(SingleDelegationInfoReq) returns (DelegationAmounts) {
     option (cosmos.query.v1.module_query_safe) = true;
     option (google.api.http).get = "/exocore/delegation/v1/QuerySingleDelegationInfo";
+  }
+
+  // QueryUndelegationHoldCount queries the undelegation hold count.
+  rpc QueryUndelegationHoldCount(UndelegationHoldCountReq) returns (UndelegationHoldCountResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/exocore/delegation/v1/QueryUndelegationHoldCount/{record_key}";
   }
 }
 

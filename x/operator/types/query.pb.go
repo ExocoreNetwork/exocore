@@ -8,6 +8,7 @@ import (
 	fmt "fmt"
 	crypto "github.com/cometbft/cometbft/proto/tendermint/crypto"
 	_ "github.com/cosmos/cosmos-proto"
+	query "github.com/cosmos/cosmos-sdk/types/query"
 	_ "github.com/cosmos/gogoproto/gogoproto"
 	grpc1 "github.com/cosmos/gogoproto/grpc"
 	proto "github.com/cosmos/gogoproto/proto"
@@ -77,19 +78,122 @@ func (m *GetOperatorInfoReq) GetOperatorAddr() string {
 	return ""
 }
 
-// QueryOperatorConsKeyRequest is the request to obtain the consensus public key of the operator
+// QueryAllOperatorsRequest is the request to obtain all operators.
+type QueryAllOperatorsRequest struct {
+	// pagination related options.
+	Pagination *query.PageRequest `protobuf:"bytes,1,opt,name=pagination,proto3" json:"pagination,omitempty"`
+}
+
+func (m *QueryAllOperatorsRequest) Reset()         { *m = QueryAllOperatorsRequest{} }
+func (m *QueryAllOperatorsRequest) String() string { return proto.CompactTextString(m) }
+func (*QueryAllOperatorsRequest) ProtoMessage()    {}
+func (*QueryAllOperatorsRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_f91e795a3cecbdbf, []int{1}
+}
+func (m *QueryAllOperatorsRequest) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QueryAllOperatorsRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryAllOperatorsRequest.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QueryAllOperatorsRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryAllOperatorsRequest.Merge(m, src)
+}
+func (m *QueryAllOperatorsRequest) XXX_Size() int {
+	return m.Size()
+}
+func (m *QueryAllOperatorsRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryAllOperatorsRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryAllOperatorsRequest proto.InternalMessageInfo
+
+func (m *QueryAllOperatorsRequest) GetPagination() *query.PageRequest {
+	if m != nil {
+		return m.Pagination
+	}
+	return nil
+}
+
+// QueryAllOperatorsResponse is the response containing all operator account addresses.
+type QueryAllOperatorsResponse struct {
+	// operators is a list of all operators.
+	OperatorAccAddrs []string `protobuf:"bytes,1,rep,name=operator_acc_addrs,json=operatorAccAddrs,proto3" json:"operator_acc_addrs,omitempty"`
+	// pagination related response.
+	Pagination *query.PageResponse `protobuf:"bytes,2,opt,name=pagination,proto3" json:"pagination,omitempty"`
+}
+
+func (m *QueryAllOperatorsResponse) Reset()         { *m = QueryAllOperatorsResponse{} }
+func (m *QueryAllOperatorsResponse) String() string { return proto.CompactTextString(m) }
+func (*QueryAllOperatorsResponse) ProtoMessage()    {}
+func (*QueryAllOperatorsResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_f91e795a3cecbdbf, []int{2}
+}
+func (m *QueryAllOperatorsResponse) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QueryAllOperatorsResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryAllOperatorsResponse.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QueryAllOperatorsResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryAllOperatorsResponse.Merge(m, src)
+}
+func (m *QueryAllOperatorsResponse) XXX_Size() int {
+	return m.Size()
+}
+func (m *QueryAllOperatorsResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryAllOperatorsResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryAllOperatorsResponse proto.InternalMessageInfo
+
+func (m *QueryAllOperatorsResponse) GetOperatorAccAddrs() []string {
+	if m != nil {
+		return m.OperatorAccAddrs
+	}
+	return nil
+}
+
+func (m *QueryAllOperatorsResponse) GetPagination() *query.PageResponse {
+	if m != nil {
+		return m.Pagination
+	}
+	return nil
+}
+
+// QueryOperatorConsKeyRequest is a request to obtain the consensus public key of the operator.
 type QueryOperatorConsKeyRequest struct {
-	// addr is the ACC address of operator
-	Addr string `protobuf:"bytes,1,opt,name=addr,proto3" json:"addr,omitempty"`
-	// chain_id is the id of the chain served by the operator
-	ChainId string `protobuf:"bytes,2,opt,name=chain_id,json=chainId,proto3" json:"chain_id,omitempty"`
+	// operator_acc_addr is the operator account address.
+	OperatorAccAddr string `protobuf:"bytes,1,opt,name=operator_acc_addr,json=operatorAccAddr,proto3" json:"operator_acc_addr,omitempty"`
+	// chain is the id of the chain served by the operator. here chain_id is not used since the
+	// Linter complains about capitalization, which can be set with a gogoproto.custom_name but
+	// that is not compatible with google.api.http.get in the Query service below.
+	Chain string `protobuf:"bytes,2,opt,name=chain,proto3" json:"chain,omitempty"`
 }
 
 func (m *QueryOperatorConsKeyRequest) Reset()         { *m = QueryOperatorConsKeyRequest{} }
 func (m *QueryOperatorConsKeyRequest) String() string { return proto.CompactTextString(m) }
 func (*QueryOperatorConsKeyRequest) ProtoMessage()    {}
 func (*QueryOperatorConsKeyRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_f91e795a3cecbdbf, []int{1}
+	return fileDescriptor_f91e795a3cecbdbf, []int{3}
 }
 func (m *QueryOperatorConsKeyRequest) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -118,23 +222,23 @@ func (m *QueryOperatorConsKeyRequest) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_QueryOperatorConsKeyRequest proto.InternalMessageInfo
 
-func (m *QueryOperatorConsKeyRequest) GetAddr() string {
+func (m *QueryOperatorConsKeyRequest) GetOperatorAccAddr() string {
 	if m != nil {
-		return m.Addr
+		return m.OperatorAccAddr
 	}
 	return ""
 }
 
-func (m *QueryOperatorConsKeyRequest) GetChainId() string {
+func (m *QueryOperatorConsKeyRequest) GetChain() string {
 	if m != nil {
-		return m.ChainId
+		return m.Chain
 	}
 	return ""
 }
 
-// QueryOperatorConsKeyResponse is the response for QueryOperatorConsKeyRequest
+// QueryOperatorConsKeyResponse is the response for QueryOperatorConsKeyRequest.
 type QueryOperatorConsKeyResponse struct {
-	// public_key is the consensus public key of the operator
+	// public_key is the consensus public key of the operator.
 	PublicKey crypto.PublicKey `protobuf:"bytes,1,opt,name=public_key,json=publicKey,proto3" json:"public_key"`
 }
 
@@ -142,7 +246,7 @@ func (m *QueryOperatorConsKeyResponse) Reset()         { *m = QueryOperatorConsK
 func (m *QueryOperatorConsKeyResponse) String() string { return proto.CompactTextString(m) }
 func (*QueryOperatorConsKeyResponse) ProtoMessage()    {}
 func (*QueryOperatorConsKeyResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_f91e795a3cecbdbf, []int{2}
+	return fileDescriptor_f91e795a3cecbdbf, []int{4}
 }
 func (m *QueryOperatorConsKeyResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -178,47 +282,541 @@ func (m *QueryOperatorConsKeyResponse) GetPublicKey() crypto.PublicKey {
 	return crypto.PublicKey{}
 }
 
+// QueryOperatorConsAddressRequest is the request to obtain the consensus address of the operator
+// for a specific chain ID.
+type QueryOperatorConsAddressRequest struct {
+	// operator_acc_addr is the operator account address.
+	OperatorAccAddr string `protobuf:"bytes,1,opt,name=operator_acc_addr,json=operatorAccAddr,proto3" json:"operator_acc_addr,omitempty"`
+	// chain is the id of the chain served by the operator. here chain_id is not used since the
+	// Linter complains about capitalization, which can be set with a gogoproto.custom_name but
+	// that is not compatible with google.api.http.get in the Query service below.
+	Chain string `protobuf:"bytes,2,opt,name=chain,proto3" json:"chain,omitempty"`
+}
+
+func (m *QueryOperatorConsAddressRequest) Reset()         { *m = QueryOperatorConsAddressRequest{} }
+func (m *QueryOperatorConsAddressRequest) String() string { return proto.CompactTextString(m) }
+func (*QueryOperatorConsAddressRequest) ProtoMessage()    {}
+func (*QueryOperatorConsAddressRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_f91e795a3cecbdbf, []int{5}
+}
+func (m *QueryOperatorConsAddressRequest) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QueryOperatorConsAddressRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryOperatorConsAddressRequest.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QueryOperatorConsAddressRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryOperatorConsAddressRequest.Merge(m, src)
+}
+func (m *QueryOperatorConsAddressRequest) XXX_Size() int {
+	return m.Size()
+}
+func (m *QueryOperatorConsAddressRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryOperatorConsAddressRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryOperatorConsAddressRequest proto.InternalMessageInfo
+
+func (m *QueryOperatorConsAddressRequest) GetOperatorAccAddr() string {
+	if m != nil {
+		return m.OperatorAccAddr
+	}
+	return ""
+}
+
+func (m *QueryOperatorConsAddressRequest) GetChain() string {
+	if m != nil {
+		return m.Chain
+	}
+	return ""
+}
+
+// QueryOperatorConsAddressResponse is the response for QueryOperatorConsAddressRequest.
+type QueryOperatorConsAddressResponse struct {
+	// cons_addr is the consensus address corresponding to the consensus public key
+	// currently in use by the operator.
+	ConsAddr string `protobuf:"bytes,1,opt,name=cons_addr,json=consAddr,proto3" json:"cons_addr,omitempty"`
+}
+
+func (m *QueryOperatorConsAddressResponse) Reset()         { *m = QueryOperatorConsAddressResponse{} }
+func (m *QueryOperatorConsAddressResponse) String() string { return proto.CompactTextString(m) }
+func (*QueryOperatorConsAddressResponse) ProtoMessage()    {}
+func (*QueryOperatorConsAddressResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_f91e795a3cecbdbf, []int{6}
+}
+func (m *QueryOperatorConsAddressResponse) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QueryOperatorConsAddressResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryOperatorConsAddressResponse.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QueryOperatorConsAddressResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryOperatorConsAddressResponse.Merge(m, src)
+}
+func (m *QueryOperatorConsAddressResponse) XXX_Size() int {
+	return m.Size()
+}
+func (m *QueryOperatorConsAddressResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryOperatorConsAddressResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryOperatorConsAddressResponse proto.InternalMessageInfo
+
+func (m *QueryOperatorConsAddressResponse) GetConsAddr() string {
+	if m != nil {
+		return m.ConsAddr
+	}
+	return ""
+}
+
+// QueryAllOperatorConsKeysByChainIDRequest is the request to obtain all operator addresses
+// and consensus keys for a specific chain ID, with pagination.
+type QueryAllOperatorConsKeysByChainIDRequest struct {
+	// chain for which the cons keys are being queried. here chain_id is not used since the
+	// Linter complains about capitalization, which can be set with a gogoproto.custom_name but
+	// that is not compatible with google.api.http.get in the Query service below.
+	Chain string `protobuf:"bytes,1,opt,name=chain,proto3" json:"chain,omitempty"`
+	// pagination related options.
+	Pagination *query.PageRequest `protobuf:"bytes,2,opt,name=pagination,proto3" json:"pagination,omitempty"`
+}
+
+func (m *QueryAllOperatorConsKeysByChainIDRequest) Reset() {
+	*m = QueryAllOperatorConsKeysByChainIDRequest{}
+}
+func (m *QueryAllOperatorConsKeysByChainIDRequest) String() string { return proto.CompactTextString(m) }
+func (*QueryAllOperatorConsKeysByChainIDRequest) ProtoMessage()    {}
+func (*QueryAllOperatorConsKeysByChainIDRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_f91e795a3cecbdbf, []int{7}
+}
+func (m *QueryAllOperatorConsKeysByChainIDRequest) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QueryAllOperatorConsKeysByChainIDRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryAllOperatorConsKeysByChainIDRequest.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QueryAllOperatorConsKeysByChainIDRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryAllOperatorConsKeysByChainIDRequest.Merge(m, src)
+}
+func (m *QueryAllOperatorConsKeysByChainIDRequest) XXX_Size() int {
+	return m.Size()
+}
+func (m *QueryAllOperatorConsKeysByChainIDRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryAllOperatorConsKeysByChainIDRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryAllOperatorConsKeysByChainIDRequest proto.InternalMessageInfo
+
+func (m *QueryAllOperatorConsKeysByChainIDRequest) GetChain() string {
+	if m != nil {
+		return m.Chain
+	}
+	return ""
+}
+
+func (m *QueryAllOperatorConsKeysByChainIDRequest) GetPagination() *query.PageRequest {
+	if m != nil {
+		return m.Pagination
+	}
+	return nil
+}
+
+// QueryAllOperatorConsKeysByChainIDResponse is the response that includes a list of all operators
+// and their consensus keys for a specified chain ID.
+type QueryAllOperatorConsKeysByChainIDResponse struct {
+	// operator_cons_keys is a list of operator addresses and their consensus public keys.
+	OperatorConsKeys []*OperatorConsKeyPair `protobuf:"bytes,1,rep,name=operator_cons_keys,json=operatorConsKeys,proto3" json:"operator_cons_keys,omitempty"`
+	// pagination related response.
+	Pagination *query.PageResponse `protobuf:"bytes,2,opt,name=pagination,proto3" json:"pagination,omitempty"`
+}
+
+func (m *QueryAllOperatorConsKeysByChainIDResponse) Reset() {
+	*m = QueryAllOperatorConsKeysByChainIDResponse{}
+}
+func (m *QueryAllOperatorConsKeysByChainIDResponse) String() string {
+	return proto.CompactTextString(m)
+}
+func (*QueryAllOperatorConsKeysByChainIDResponse) ProtoMessage() {}
+func (*QueryAllOperatorConsKeysByChainIDResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_f91e795a3cecbdbf, []int{8}
+}
+func (m *QueryAllOperatorConsKeysByChainIDResponse) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QueryAllOperatorConsKeysByChainIDResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryAllOperatorConsKeysByChainIDResponse.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QueryAllOperatorConsKeysByChainIDResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryAllOperatorConsKeysByChainIDResponse.Merge(m, src)
+}
+func (m *QueryAllOperatorConsKeysByChainIDResponse) XXX_Size() int {
+	return m.Size()
+}
+func (m *QueryAllOperatorConsKeysByChainIDResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryAllOperatorConsKeysByChainIDResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryAllOperatorConsKeysByChainIDResponse proto.InternalMessageInfo
+
+func (m *QueryAllOperatorConsKeysByChainIDResponse) GetOperatorConsKeys() []*OperatorConsKeyPair {
+	if m != nil {
+		return m.OperatorConsKeys
+	}
+	return nil
+}
+
+func (m *QueryAllOperatorConsKeysByChainIDResponse) GetPagination() *query.PageResponse {
+	if m != nil {
+		return m.Pagination
+	}
+	return nil
+}
+
+// OperatorConsKeyPair holds the operator address and the consensus public key currently in
+// use by the operator.
+type OperatorConsKeyPair struct {
+	// operator_acc_addr is the operator account address.
+	OperatorAccAddr string `protobuf:"bytes,1,opt,name=operator_acc_addr,json=operatorAccAddr,proto3" json:"operator_acc_addr,omitempty"`
+	// public_key is the consensus public key of the operator.
+	PublicKey *crypto.PublicKey `protobuf:"bytes,2,opt,name=public_key,json=publicKey,proto3" json:"public_key,omitempty"`
+}
+
+func (m *OperatorConsKeyPair) Reset()         { *m = OperatorConsKeyPair{} }
+func (m *OperatorConsKeyPair) String() string { return proto.CompactTextString(m) }
+func (*OperatorConsKeyPair) ProtoMessage()    {}
+func (*OperatorConsKeyPair) Descriptor() ([]byte, []int) {
+	return fileDescriptor_f91e795a3cecbdbf, []int{9}
+}
+func (m *OperatorConsKeyPair) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *OperatorConsKeyPair) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_OperatorConsKeyPair.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *OperatorConsKeyPair) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_OperatorConsKeyPair.Merge(m, src)
+}
+func (m *OperatorConsKeyPair) XXX_Size() int {
+	return m.Size()
+}
+func (m *OperatorConsKeyPair) XXX_DiscardUnknown() {
+	xxx_messageInfo_OperatorConsKeyPair.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_OperatorConsKeyPair proto.InternalMessageInfo
+
+func (m *OperatorConsKeyPair) GetOperatorAccAddr() string {
+	if m != nil {
+		return m.OperatorAccAddr
+	}
+	return ""
+}
+
+func (m *OperatorConsKeyPair) GetPublicKey() *crypto.PublicKey {
+	if m != nil {
+		return m.PublicKey
+	}
+	return nil
+}
+
+// QueryAllOperatorConsAddrsByChainIDRequest is the request to obtain all operator addresses
+// and consensus addresses for a specific chain ID, with pagination.
+type QueryAllOperatorConsAddrsByChainIDRequest struct {
+	// chain for which the cons addrs are being queried. here chain_id is not used since the
+	// Linter complains about capitalization, which can be set with a gogoproto.custom_name but
+	// that is not compatible with google.api.http.get in the Query service below.
+	Chain string `protobuf:"bytes,1,opt,name=chain,proto3" json:"chain,omitempty"`
+	// pagination related options.
+	Pagination *query.PageRequest `protobuf:"bytes,2,opt,name=pagination,proto3" json:"pagination,omitempty"`
+}
+
+func (m *QueryAllOperatorConsAddrsByChainIDRequest) Reset() {
+	*m = QueryAllOperatorConsAddrsByChainIDRequest{}
+}
+func (m *QueryAllOperatorConsAddrsByChainIDRequest) String() string {
+	return proto.CompactTextString(m)
+}
+func (*QueryAllOperatorConsAddrsByChainIDRequest) ProtoMessage() {}
+func (*QueryAllOperatorConsAddrsByChainIDRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_f91e795a3cecbdbf, []int{10}
+}
+func (m *QueryAllOperatorConsAddrsByChainIDRequest) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QueryAllOperatorConsAddrsByChainIDRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryAllOperatorConsAddrsByChainIDRequest.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QueryAllOperatorConsAddrsByChainIDRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryAllOperatorConsAddrsByChainIDRequest.Merge(m, src)
+}
+func (m *QueryAllOperatorConsAddrsByChainIDRequest) XXX_Size() int {
+	return m.Size()
+}
+func (m *QueryAllOperatorConsAddrsByChainIDRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryAllOperatorConsAddrsByChainIDRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryAllOperatorConsAddrsByChainIDRequest proto.InternalMessageInfo
+
+func (m *QueryAllOperatorConsAddrsByChainIDRequest) GetChain() string {
+	if m != nil {
+		return m.Chain
+	}
+	return ""
+}
+
+func (m *QueryAllOperatorConsAddrsByChainIDRequest) GetPagination() *query.PageRequest {
+	if m != nil {
+		return m.Pagination
+	}
+	return nil
+}
+
+// QueryAllOperatorConsAddrsByChainIDResponse is the response that includes a list of all operators
+// and their consensus addresses for a specified chain ID.
+type QueryAllOperatorConsAddrsByChainIDResponse struct {
+	// operator_cons_addrs is a list of operator account addresses and the consensus addresses.
+	OperatorConsAddrs []*OperatorConsAddrPair `protobuf:"bytes,1,rep,name=operator_cons_addrs,json=operatorConsAddrs,proto3" json:"operator_cons_addrs,omitempty"`
+	// pagination related response.
+	Pagination *query.PageResponse `protobuf:"bytes,2,opt,name=pagination,proto3" json:"pagination,omitempty"`
+}
+
+func (m *QueryAllOperatorConsAddrsByChainIDResponse) Reset() {
+	*m = QueryAllOperatorConsAddrsByChainIDResponse{}
+}
+func (m *QueryAllOperatorConsAddrsByChainIDResponse) String() string {
+	return proto.CompactTextString(m)
+}
+func (*QueryAllOperatorConsAddrsByChainIDResponse) ProtoMessage() {}
+func (*QueryAllOperatorConsAddrsByChainIDResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_f91e795a3cecbdbf, []int{11}
+}
+func (m *QueryAllOperatorConsAddrsByChainIDResponse) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QueryAllOperatorConsAddrsByChainIDResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryAllOperatorConsAddrsByChainIDResponse.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QueryAllOperatorConsAddrsByChainIDResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryAllOperatorConsAddrsByChainIDResponse.Merge(m, src)
+}
+func (m *QueryAllOperatorConsAddrsByChainIDResponse) XXX_Size() int {
+	return m.Size()
+}
+func (m *QueryAllOperatorConsAddrsByChainIDResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryAllOperatorConsAddrsByChainIDResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryAllOperatorConsAddrsByChainIDResponse proto.InternalMessageInfo
+
+func (m *QueryAllOperatorConsAddrsByChainIDResponse) GetOperatorConsAddrs() []*OperatorConsAddrPair {
+	if m != nil {
+		return m.OperatorConsAddrs
+	}
+	return nil
+}
+
+func (m *QueryAllOperatorConsAddrsByChainIDResponse) GetPagination() *query.PageResponse {
+	if m != nil {
+		return m.Pagination
+	}
+	return nil
+}
+
+// OperatorConsAddrPair holds the operator address and the corresponding consensus address.
+type OperatorConsAddrPair struct {
+	// operator_acc_addr is the operator account address.
+	OperatorAccAddr string `protobuf:"bytes,1,opt,name=operator_acc_addr,json=operatorAccAddr,proto3" json:"operator_acc_addr,omitempty"`
+	// cons_addr is the consensus address corresponding to the consensus public key
+	// currently in use by the operator.
+	ConsAddr string `protobuf:"bytes,2,opt,name=cons_addr,json=consAddr,proto3" json:"cons_addr,omitempty"`
+}
+
+func (m *OperatorConsAddrPair) Reset()         { *m = OperatorConsAddrPair{} }
+func (m *OperatorConsAddrPair) String() string { return proto.CompactTextString(m) }
+func (*OperatorConsAddrPair) ProtoMessage()    {}
+func (*OperatorConsAddrPair) Descriptor() ([]byte, []int) {
+	return fileDescriptor_f91e795a3cecbdbf, []int{12}
+}
+func (m *OperatorConsAddrPair) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *OperatorConsAddrPair) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_OperatorConsAddrPair.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *OperatorConsAddrPair) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_OperatorConsAddrPair.Merge(m, src)
+}
+func (m *OperatorConsAddrPair) XXX_Size() int {
+	return m.Size()
+}
+func (m *OperatorConsAddrPair) XXX_DiscardUnknown() {
+	xxx_messageInfo_OperatorConsAddrPair.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_OperatorConsAddrPair proto.InternalMessageInfo
+
+func (m *OperatorConsAddrPair) GetOperatorAccAddr() string {
+	if m != nil {
+		return m.OperatorAccAddr
+	}
+	return ""
+}
+
+func (m *OperatorConsAddrPair) GetConsAddr() string {
+	if m != nil {
+		return m.ConsAddr
+	}
+	return ""
+}
+
 func init() {
 	proto.RegisterType((*GetOperatorInfoReq)(nil), "exocore.operator.v1.GetOperatorInfoReq")
+	proto.RegisterType((*QueryAllOperatorsRequest)(nil), "exocore.operator.v1.QueryAllOperatorsRequest")
+	proto.RegisterType((*QueryAllOperatorsResponse)(nil), "exocore.operator.v1.QueryAllOperatorsResponse")
 	proto.RegisterType((*QueryOperatorConsKeyRequest)(nil), "exocore.operator.v1.QueryOperatorConsKeyRequest")
 	proto.RegisterType((*QueryOperatorConsKeyResponse)(nil), "exocore.operator.v1.QueryOperatorConsKeyResponse")
+	proto.RegisterType((*QueryOperatorConsAddressRequest)(nil), "exocore.operator.v1.QueryOperatorConsAddressRequest")
+	proto.RegisterType((*QueryOperatorConsAddressResponse)(nil), "exocore.operator.v1.QueryOperatorConsAddressResponse")
+	proto.RegisterType((*QueryAllOperatorConsKeysByChainIDRequest)(nil), "exocore.operator.v1.QueryAllOperatorConsKeysByChainIDRequest")
+	proto.RegisterType((*QueryAllOperatorConsKeysByChainIDResponse)(nil), "exocore.operator.v1.QueryAllOperatorConsKeysByChainIDResponse")
+	proto.RegisterType((*OperatorConsKeyPair)(nil), "exocore.operator.v1.OperatorConsKeyPair")
+	proto.RegisterType((*QueryAllOperatorConsAddrsByChainIDRequest)(nil), "exocore.operator.v1.QueryAllOperatorConsAddrsByChainIDRequest")
+	proto.RegisterType((*QueryAllOperatorConsAddrsByChainIDResponse)(nil), "exocore.operator.v1.QueryAllOperatorConsAddrsByChainIDResponse")
+	proto.RegisterType((*OperatorConsAddrPair)(nil), "exocore.operator.v1.OperatorConsAddrPair")
 }
 
 func init() { proto.RegisterFile("exocore/operator/v1/query.proto", fileDescriptor_f91e795a3cecbdbf) }
 
 var fileDescriptor_f91e795a3cecbdbf = []byte{
-	// 483 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x94, 0x53, 0x4d, 0x6f, 0xd3, 0x40,
-	0x10, 0x8d, 0xa3, 0xf2, 0xd1, 0x05, 0x84, 0xb4, 0xf4, 0x90, 0x86, 0xc8, 0x05, 0x1f, 0xa0, 0x17,
-	0x76, 0x49, 0x38, 0x73, 0x48, 0xc2, 0x87, 0xa2, 0x56, 0x7c, 0xb8, 0x37, 0x2e, 0x96, 0x63, 0x0f,
-	0xae, 0x95, 0x64, 0xc7, 0xd9, 0xdd, 0x94, 0x58, 0x55, 0x2f, 0xdc, 0x91, 0x90, 0xf8, 0x2b, 0xfc,
-	0x88, 0x1e, 0x23, 0xb8, 0x70, 0x42, 0x28, 0xe1, 0xc4, 0xaf, 0x40, 0x5e, 0xdb, 0x0d, 0x0a, 0x16,
-	0x12, 0x37, 0xef, 0xec, 0x9b, 0xf7, 0x66, 0xde, 0x5b, 0x93, 0x3d, 0x98, 0x63, 0x80, 0x12, 0x38,
-	0x26, 0x20, 0x7d, 0x8d, 0x92, 0x9f, 0xb4, 0xf9, 0x74, 0x06, 0x32, 0x65, 0x89, 0x44, 0x8d, 0xf4,
-	0x56, 0x01, 0x60, 0x25, 0x80, 0x9d, 0xb4, 0x9b, 0xbb, 0x01, 0xaa, 0x09, 0x2a, 0xcf, 0x40, 0x78,
-	0x7e, 0xc8, 0xf1, 0xcd, 0x56, 0x15, 0xa1, 0x9e, 0x17, 0xb7, 0x3b, 0x11, 0x46, 0x98, 0x77, 0x65,
-	0x5f, 0x65, 0x4f, 0x84, 0x18, 0x8d, 0x81, 0xfb, 0x49, 0xcc, 0x7d, 0x21, 0x50, 0xfb, 0x3a, 0x46,
-	0x71, 0xc1, 0xa8, 0x41, 0x84, 0x20, 0x27, 0xb1, 0xd0, 0x3c, 0x90, 0x69, 0xa2, 0x91, 0x8f, 0x20,
-	0x2d, 0x6e, 0x9d, 0x23, 0x42, 0x9f, 0x83, 0x7e, 0x59, 0x88, 0x0d, 0xc4, 0x5b, 0x74, 0x61, 0x4a,
-	0x1f, 0x93, 0x1b, 0xa5, 0xbe, 0xe7, 0x87, 0xa1, 0x6c, 0x58, 0x77, 0xac, 0xfd, 0xed, 0x5e, 0xe3,
-	0xcb, 0xe7, 0x07, 0x3b, 0xc5, 0xb8, 0xdd, 0x30, 0x94, 0xa0, 0xd4, 0x91, 0x96, 0xb1, 0x88, 0xdc,
-	0xeb, 0x25, 0x3c, 0x2b, 0x3b, 0x87, 0xe4, 0xf6, 0xeb, 0xcc, 0x83, 0x92, 0xb6, 0x8f, 0x42, 0x1d,
-	0x40, 0xea, 0xc2, 0x74, 0x06, 0x4a, 0x53, 0x4a, 0xb6, 0xd6, 0xa4, 0xae, 0xf9, 0xa6, 0xbb, 0xe4,
-	0x6a, 0x70, 0xec, 0xc7, 0xc2, 0x8b, 0xc3, 0x46, 0xdd, 0xd4, 0xaf, 0x98, 0xf3, 0x20, 0x74, 0x7c,
-	0xd2, 0xaa, 0x66, 0x53, 0x09, 0x0a, 0x05, 0xb4, 0x4b, 0x48, 0x32, 0x1b, 0x8e, 0xe3, 0xc0, 0x1b,
-	0x41, 0x6a, 0x48, 0xaf, 0x75, 0x5a, 0x6c, 0xbd, 0x35, 0xcb, 0xb7, 0x66, 0xaf, 0x0c, 0xe8, 0x00,
-	0xd2, 0xde, 0xd6, 0xf9, 0xf7, 0xbd, 0x9a, 0xbb, 0x9d, 0x94, 0x85, 0xce, 0xaf, 0x3a, 0xb9, 0x64,
-	0x34, 0xe8, 0x07, 0x8b, 0xdc, 0xdc, 0x30, 0x84, 0xde, 0x67, 0x15, 0x21, 0xb2, 0xbf, 0x6d, 0x6b,
-	0xde, 0xad, 0x04, 0xfe, 0x89, 0x72, 0xd8, 0xfb, 0xaf, 0x3f, 0x3f, 0xd5, 0xf7, 0xe9, 0x3d, 0x5e,
-	0x06, 0x1d, 0xc2, 0x18, 0x22, 0x93, 0x58, 0x16, 0xf5, 0xa6, 0xf6, 0xc2, 0x22, 0x76, 0xd5, 0xf6,
-	0xcf, 0x50, 0xf6, 0x8d, 0x3f, 0x4f, 0xe8, 0xc3, 0x4a, 0xd5, 0x7f, 0x04, 0xd0, 0x6c, 0xff, 0x47,
-	0x47, 0x6e, 0xb2, 0x33, 0x30, 0x73, 0xf7, 0x69, 0x97, 0x6f, 0x3e, 0x50, 0x2f, 0xc8, 0x00, 0x42,
-	0x6f, 0x4c, 0x5f, 0x10, 0xf0, 0xd3, 0x2c, 0xde, 0x33, 0x7e, 0x5a, 0xa6, 0x7b, 0xd6, 0x3b, 0x3c,
-	0x5f, 0xda, 0xd6, 0x62, 0x69, 0x5b, 0x3f, 0x96, 0xb6, 0xf5, 0x71, 0x65, 0xd7, 0x16, 0x2b, 0xbb,
-	0xf6, 0x6d, 0x65, 0xd7, 0xde, 0x74, 0xa2, 0x58, 0x1f, 0xcf, 0x86, 0x2c, 0xc0, 0x09, 0x7f, 0x9a,
-	0xcb, 0xbc, 0x00, 0xfd, 0x0e, 0xe5, 0xe8, 0x42, 0x75, 0xbe, 0xfe, 0x31, 0x74, 0x9a, 0x80, 0x1a,
-	0x5e, 0x36, 0xef, 0xf8, 0xd1, 0xef, 0x00, 0x00, 0x00, 0xff, 0xff, 0x78, 0x5d, 0x1f, 0xfe, 0x8a,
-	0x03, 0x00, 0x00,
+	// 891 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xbc, 0x56, 0xdf, 0x4f, 0xd3, 0x50,
+	0x14, 0x5e, 0xa7, 0x18, 0x77, 0xd1, 0x28, 0x97, 0x3d, 0x8c, 0x42, 0x06, 0x34, 0x46, 0xc6, 0x22,
+	0xad, 0x1b, 0xe0, 0x83, 0x88, 0x84, 0xf1, 0x2b, 0x88, 0x51, 0x2c, 0x89, 0x89, 0xbe, 0x2c, 0x5d,
+	0x77, 0x29, 0x0d, 0xa3, 0xb7, 0xb4, 0x1d, 0xd2, 0x10, 0x7c, 0xf0, 0x49, 0xdf, 0x8c, 0x3e, 0x9a,
+	0xf8, 0x57, 0xf8, 0x1f, 0xf8, 0xc2, 0x83, 0x0f, 0xa8, 0x2f, 0x3e, 0xa1, 0x61, 0xfe, 0x21, 0xa6,
+	0xb7, 0xb7, 0x5b, 0x3b, 0xba, 0xad, 0x23, 0xc4, 0xb7, 0xb5, 0x3d, 0xf7, 0x7c, 0xdf, 0x77, 0xce,
+	0x77, 0xcf, 0x19, 0x18, 0x46, 0xfb, 0x58, 0xc6, 0x06, 0x12, 0xb0, 0x8e, 0x0c, 0xc9, 0xc2, 0x86,
+	0xb0, 0x97, 0x13, 0x76, 0xab, 0xc8, 0xb0, 0x79, 0xdd, 0xc0, 0x16, 0x86, 0xfd, 0x34, 0x80, 0xf7,
+	0x02, 0xf8, 0xbd, 0x1c, 0x9b, 0x95, 0xb1, 0xb9, 0x83, 0x4d, 0xa1, 0x24, 0x99, 0xc8, 0x8d, 0x16,
+	0xf6, 0x72, 0x25, 0x64, 0x49, 0x39, 0x41, 0x97, 0x14, 0x55, 0x93, 0x2c, 0x15, 0x6b, 0x6e, 0x02,
+	0x76, 0xc0, 0x8d, 0x2d, 0x92, 0x27, 0xc1, 0x7d, 0xa0, 0x9f, 0x86, 0xc2, 0xc0, 0xad, 0x7d, 0xfa,
+	0x35, 0xa9, 0x60, 0x05, 0xbb, 0xa7, 0x9c, 0x5f, 0xde, 0x19, 0x05, 0x63, 0xa5, 0x82, 0x04, 0x49,
+	0x57, 0x05, 0x49, 0xd3, 0xb0, 0x45, 0xb0, 0xea, 0x19, 0x2d, 0xa4, 0x95, 0x91, 0xb1, 0xa3, 0x6a,
+	0x96, 0x20, 0x1b, 0xb6, 0x6e, 0x61, 0x61, 0x1b, 0xd9, 0xf4, 0x2b, 0xb7, 0x01, 0xe0, 0x0a, 0xb2,
+	0x9e, 0x52, 0xb0, 0x55, 0x6d, 0x13, 0x8b, 0x68, 0x17, 0xce, 0x82, 0xeb, 0x1e, 0x7e, 0x51, 0x2a,
+	0x97, 0x8d, 0x14, 0x33, 0xc2, 0x64, 0x12, 0x85, 0xd4, 0x8f, 0x2f, 0x13, 0x49, 0x4a, 0x77, 0xbe,
+	0x5c, 0x36, 0x90, 0x69, 0x6e, 0x58, 0x86, 0xaa, 0x29, 0xe2, 0x35, 0x2f, 0xdc, 0x79, 0xcd, 0x95,
+	0x40, 0xea, 0x99, 0x53, 0x81, 0xf9, 0x4a, 0xc5, 0xcb, 0x6c, 0x8a, 0x68, 0xb7, 0x8a, 0x4c, 0x0b,
+	0x2e, 0x03, 0xd0, 0xa8, 0x07, 0xc9, 0xdb, 0x9b, 0xbf, 0xcd, 0xd3, 0xa4, 0x4e, 0xf1, 0x78, 0xb7,
+	0xd4, 0xb4, 0x78, 0xfc, 0xba, 0xa4, 0x20, 0x7a, 0x56, 0xf4, 0x9d, 0xe4, 0x3e, 0x30, 0x60, 0x20,
+	0x04, 0xc4, 0xd4, 0xb1, 0x66, 0x22, 0x78, 0x07, 0xc0, 0x86, 0x00, 0x59, 0x26, 0x22, 0xcc, 0x14,
+	0x33, 0x72, 0x29, 0x93, 0x10, 0x6f, 0xd6, 0xb9, 0xca, 0xb2, 0x43, 0xd7, 0x84, 0x2b, 0x01, 0x4e,
+	0x71, 0xc2, 0x69, 0xac, 0x23, 0x27, 0x17, 0x2a, 0x40, 0xaa, 0x08, 0x06, 0x09, 0x27, 0x8f, 0xd0,
+	0x02, 0xd6, 0xcc, 0x35, 0x64, 0x7b, 0xda, 0xb3, 0xa0, 0xef, 0x0c, 0x2b, 0xb7, 0xb4, 0xe2, 0x8d,
+	0x26, 0x52, 0x30, 0x09, 0x7a, 0xe4, 0x2d, 0x49, 0x75, 0xe9, 0x24, 0x44, 0xf7, 0x81, 0x93, 0xc0,
+	0x50, 0x38, 0x00, 0xd5, 0x3d, 0x0f, 0x80, 0x5e, 0x2d, 0x55, 0x54, 0xb9, 0xb8, 0x8d, 0x6c, 0x5a,
+	0xdd, 0x21, 0xbe, 0xe1, 0x00, 0xde, 0x75, 0x00, 0xbf, 0x4e, 0x82, 0xd6, 0x90, 0x5d, 0xb8, 0x7c,
+	0x74, 0x32, 0x1c, 0x13, 0x13, 0xba, 0xf7, 0x82, 0x93, 0xc1, 0xf0, 0x19, 0x08, 0xda, 0xec, 0x8b,
+	0xd3, 0x31, 0x07, 0x46, 0x5a, 0x83, 0x50, 0x2d, 0x83, 0x20, 0x21, 0x63, 0xcd, 0xf4, 0x67, 0xbf,
+	0x2a, 0xd3, 0x38, 0xee, 0x2d, 0x03, 0x32, 0xcd, 0xed, 0xa7, 0xc5, 0x30, 0x0b, 0xf6, 0x82, 0x03,
+	0xb2, 0xba, 0xe8, 0xf1, 0xad, 0x73, 0x60, 0x7c, 0x1c, 0x9a, 0x9c, 0x18, 0x3f, 0xb7, 0x13, 0xbf,
+	0x31, 0x60, 0x3c, 0x02, 0x15, 0xaa, 0xea, 0xb9, 0xcf, 0x99, 0x44, 0x9e, 0x73, 0x19, 0x89, 0x33,
+	0x7b, 0xf3, 0x19, 0x3e, 0x64, 0xb2, 0xf0, 0x4d, 0x39, 0xd7, 0x25, 0xd5, 0x68, 0x78, 0xd8, 0x03,
+	0xba, 0x38, 0x0f, 0xbf, 0x06, 0xfd, 0x21, 0x88, 0x5d, 0xf5, 0x7c, 0x26, 0xe0, 0xc2, 0x78, 0x67,
+	0x17, 0xfa, 0xfd, 0xf7, 0xae, 0x45, 0x39, 0xc9, 0x55, 0xfd, 0xcf, 0xad, 0x3d, 0x66, 0x40, 0x36,
+	0x0a, 0x17, 0xda, 0xdb, 0x17, 0xa0, 0x3f, 0xd8, 0xdb, 0xc6, 0xd8, 0xe9, 0xcd, 0x8f, 0x77, 0x6c,
+	0xae, 0x93, 0x95, 0x74, 0xb7, 0x0f, 0x37, 0x63, 0x5d, 0xe4, 0x88, 0x4a, 0x86, 0x61, 0x76, 0xd5,
+	0xdf, 0xc0, 0xcd, 0x8c, 0x07, 0x6f, 0x66, 0xfe, 0x6b, 0x02, 0xf4, 0x90, 0x9a, 0xc1, 0x4f, 0x0c,
+	0xe8, 0x0b, 0xdc, 0x72, 0x67, 0xbd, 0xc0, 0xb1, 0xd0, 0x3a, 0x9c, 0x5d, 0x42, 0xec, 0x68, 0xdb,
+	0x82, 0x39, 0x51, 0xdc, 0xfd, 0x37, 0x3f, 0xff, 0x7e, 0x8c, 0x4f, 0xc1, 0xbc, 0x10, 0xb6, 0x36,
+	0xeb, 0x7a, 0x54, 0x6d, 0x13, 0x0b, 0x07, 0x81, 0x8d, 0x76, 0x08, 0x3f, 0x7b, 0xec, 0xfc, 0x0b,
+	0x04, 0x4e, 0x84, 0x82, 0xb6, 0xda, 0x66, 0x2c, 0x1f, 0x35, 0xdc, 0xed, 0x04, 0x97, 0x25, 0x84,
+	0x6f, 0x41, 0x2e, 0x94, 0xb0, 0x54, 0xa9, 0x14, 0x71, 0x9d, 0xca, 0x77, 0x06, 0xa4, 0xc3, 0x86,
+	0xfd, 0x32, 0x36, 0xa8, 0xf1, 0xe0, 0xdd, 0xd6, 0xf0, 0xe1, 0x2b, 0x88, 0xcd, 0x75, 0x71, 0x82,
+	0x72, 0x7e, 0x44, 0x38, 0x2f, 0xc2, 0x42, 0xfb, 0x22, 0x7b, 0xc3, 0xcc, 0x5f, 0x68, 0xea, 0xa3,
+	0x43, 0xe1, 0x80, 0xdc, 0xcb, 0x43, 0x78, 0xc2, 0x00, 0xae, 0xd5, 0xe0, 0xf7, 0xe9, 0x9a, 0x8a,
+	0xc6, 0x32, 0xb8, 0x96, 0xd8, 0xe9, 0x2e, 0x4f, 0x51, 0x7d, 0x6b, 0x44, 0xdf, 0x12, 0x5c, 0x88,
+	0xa0, 0xcf, 0x51, 0xd3, 0x56, 0xe0, 0x6f, 0x06, 0x8c, 0x76, 0x5c, 0x06, 0x70, 0x36, 0x92, 0x6d,
+	0x5a, 0xed, 0x33, 0xf6, 0xe1, 0x79, 0x8f, 0x53, 0xc5, 0x33, 0x44, 0xf1, 0x34, 0x9c, 0xec, 0xe8,
+	0xc2, 0xc6, 0x8a, 0xaa, 0x2b, 0xac, 0x79, 0x2d, 0x6c, 0x3b, 0x13, 0x61, 0x74, 0x8e, 0xa1, 0x83,
+	0x9d, 0x9d, 0x3b, 0xf7, 0x79, 0x2a, 0xf2, 0x01, 0x11, 0x79, 0x0f, 0x4e, 0x45, 0x14, 0x49, 0x66,
+	0xb5, 0xa7, 0xb2, 0xf0, 0xf8, 0xe8, 0x34, 0xcd, 0x1c, 0x9f, 0xa6, 0x99, 0x3f, 0xa7, 0x69, 0xe6,
+	0x7d, 0x2d, 0x1d, 0x3b, 0xae, 0xa5, 0x63, 0xbf, 0x6a, 0xe9, 0xd8, 0xcb, 0xbc, 0xa2, 0x5a, 0x5b,
+	0xd5, 0x12, 0x2f, 0xe3, 0x1d, 0x61, 0xc9, 0xcd, 0xfc, 0x04, 0x59, 0xaf, 0xb0, 0xb1, 0x5d, 0x07,
+	0xda, 0x6f, 0x40, 0x59, 0xb6, 0x8e, 0xcc, 0xd2, 0x15, 0xf2, 0x67, 0x7b, 0xf2, 0x5f, 0x00, 0x00,
+	0x00, 0xff, 0xff, 0xae, 0x71, 0x00, 0xfa, 0x5b, 0x0c, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -233,10 +831,20 @@ const _ = grpc.SupportPackageIsVersion4
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
 type QueryClient interface {
-	// OperatorInfo queries the operator information.
-	GetOperatorInfo(ctx context.Context, in *GetOperatorInfoReq, opts ...grpc.CallOption) (*OperatorInfo, error)
+	// QueryOperatorInfo queries the operator information.
+	QueryOperatorInfo(ctx context.Context, in *GetOperatorInfoReq, opts ...grpc.CallOption) (*OperatorInfo, error)
+	// QueryAllOperators queries all operators.
+	QueryAllOperators(ctx context.Context, in *QueryAllOperatorsRequest, opts ...grpc.CallOption) (*QueryAllOperatorsResponse, error)
 	// QueryOperatorConsKeyForChainID queries the consensus public key for the operator
 	QueryOperatorConsKeyForChainID(ctx context.Context, in *QueryOperatorConsKeyRequest, opts ...grpc.CallOption) (*QueryOperatorConsKeyResponse, error)
+	// QueryOperatorConsAddressForChainID queries the consensus address for the operator.
+	QueryOperatorConsAddressForChainID(ctx context.Context, in *QueryOperatorConsAddressRequest, opts ...grpc.CallOption) (*QueryOperatorConsAddressResponse, error)
+	// QueryAllOperatorConsKeysByChainID queries all operators and their consensus public keys
+	// for a specific chain ID
+	QueryAllOperatorConsKeysByChainID(ctx context.Context, in *QueryAllOperatorConsKeysByChainIDRequest, opts ...grpc.CallOption) (*QueryAllOperatorConsKeysByChainIDResponse, error)
+	// QueryAllOperatorConsAddrsByChainID queries all operators and their consensus addresses
+	// for a specific chain ID
+	QueryAllOperatorConsAddrsByChainID(ctx context.Context, in *QueryAllOperatorConsAddrsByChainIDRequest, opts ...grpc.CallOption) (*QueryAllOperatorConsAddrsByChainIDResponse, error)
 }
 
 type queryClient struct {
@@ -247,9 +855,18 @@ func NewQueryClient(cc grpc1.ClientConn) QueryClient {
 	return &queryClient{cc}
 }
 
-func (c *queryClient) GetOperatorInfo(ctx context.Context, in *GetOperatorInfoReq, opts ...grpc.CallOption) (*OperatorInfo, error) {
+func (c *queryClient) QueryOperatorInfo(ctx context.Context, in *GetOperatorInfoReq, opts ...grpc.CallOption) (*OperatorInfo, error) {
 	out := new(OperatorInfo)
-	err := c.cc.Invoke(ctx, "/exocore.operator.v1.Query/GetOperatorInfo", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/exocore.operator.v1.Query/QueryOperatorInfo", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *queryClient) QueryAllOperators(ctx context.Context, in *QueryAllOperatorsRequest, opts ...grpc.CallOption) (*QueryAllOperatorsResponse, error) {
+	out := new(QueryAllOperatorsResponse)
+	err := c.cc.Invoke(ctx, "/exocore.operator.v1.Query/QueryAllOperators", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -265,43 +882,110 @@ func (c *queryClient) QueryOperatorConsKeyForChainID(ctx context.Context, in *Qu
 	return out, nil
 }
 
+func (c *queryClient) QueryOperatorConsAddressForChainID(ctx context.Context, in *QueryOperatorConsAddressRequest, opts ...grpc.CallOption) (*QueryOperatorConsAddressResponse, error) {
+	out := new(QueryOperatorConsAddressResponse)
+	err := c.cc.Invoke(ctx, "/exocore.operator.v1.Query/QueryOperatorConsAddressForChainID", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *queryClient) QueryAllOperatorConsKeysByChainID(ctx context.Context, in *QueryAllOperatorConsKeysByChainIDRequest, opts ...grpc.CallOption) (*QueryAllOperatorConsKeysByChainIDResponse, error) {
+	out := new(QueryAllOperatorConsKeysByChainIDResponse)
+	err := c.cc.Invoke(ctx, "/exocore.operator.v1.Query/QueryAllOperatorConsKeysByChainID", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *queryClient) QueryAllOperatorConsAddrsByChainID(ctx context.Context, in *QueryAllOperatorConsAddrsByChainIDRequest, opts ...grpc.CallOption) (*QueryAllOperatorConsAddrsByChainIDResponse, error) {
+	out := new(QueryAllOperatorConsAddrsByChainIDResponse)
+	err := c.cc.Invoke(ctx, "/exocore.operator.v1.Query/QueryAllOperatorConsAddrsByChainID", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // QueryServer is the server API for Query service.
 type QueryServer interface {
-	// OperatorInfo queries the operator information.
-	GetOperatorInfo(context.Context, *GetOperatorInfoReq) (*OperatorInfo, error)
+	// QueryOperatorInfo queries the operator information.
+	QueryOperatorInfo(context.Context, *GetOperatorInfoReq) (*OperatorInfo, error)
+	// QueryAllOperators queries all operators.
+	QueryAllOperators(context.Context, *QueryAllOperatorsRequest) (*QueryAllOperatorsResponse, error)
 	// QueryOperatorConsKeyForChainID queries the consensus public key for the operator
 	QueryOperatorConsKeyForChainID(context.Context, *QueryOperatorConsKeyRequest) (*QueryOperatorConsKeyResponse, error)
+	// QueryOperatorConsAddressForChainID queries the consensus address for the operator.
+	QueryOperatorConsAddressForChainID(context.Context, *QueryOperatorConsAddressRequest) (*QueryOperatorConsAddressResponse, error)
+	// QueryAllOperatorConsKeysByChainID queries all operators and their consensus public keys
+	// for a specific chain ID
+	QueryAllOperatorConsKeysByChainID(context.Context, *QueryAllOperatorConsKeysByChainIDRequest) (*QueryAllOperatorConsKeysByChainIDResponse, error)
+	// QueryAllOperatorConsAddrsByChainID queries all operators and their consensus addresses
+	// for a specific chain ID
+	QueryAllOperatorConsAddrsByChainID(context.Context, *QueryAllOperatorConsAddrsByChainIDRequest) (*QueryAllOperatorConsAddrsByChainIDResponse, error)
 }
 
 // UnimplementedQueryServer can be embedded to have forward compatible implementations.
 type UnimplementedQueryServer struct {
 }
 
-func (*UnimplementedQueryServer) GetOperatorInfo(ctx context.Context, req *GetOperatorInfoReq) (*OperatorInfo, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetOperatorInfo not implemented")
+func (*UnimplementedQueryServer) QueryOperatorInfo(ctx context.Context, req *GetOperatorInfoReq) (*OperatorInfo, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method QueryOperatorInfo not implemented")
+}
+func (*UnimplementedQueryServer) QueryAllOperators(ctx context.Context, req *QueryAllOperatorsRequest) (*QueryAllOperatorsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method QueryAllOperators not implemented")
 }
 func (*UnimplementedQueryServer) QueryOperatorConsKeyForChainID(ctx context.Context, req *QueryOperatorConsKeyRequest) (*QueryOperatorConsKeyResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method QueryOperatorConsKeyForChainID not implemented")
+}
+func (*UnimplementedQueryServer) QueryOperatorConsAddressForChainID(ctx context.Context, req *QueryOperatorConsAddressRequest) (*QueryOperatorConsAddressResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method QueryOperatorConsAddressForChainID not implemented")
+}
+func (*UnimplementedQueryServer) QueryAllOperatorConsKeysByChainID(ctx context.Context, req *QueryAllOperatorConsKeysByChainIDRequest) (*QueryAllOperatorConsKeysByChainIDResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method QueryAllOperatorConsKeysByChainID not implemented")
+}
+func (*UnimplementedQueryServer) QueryAllOperatorConsAddrsByChainID(ctx context.Context, req *QueryAllOperatorConsAddrsByChainIDRequest) (*QueryAllOperatorConsAddrsByChainIDResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method QueryAllOperatorConsAddrsByChainID not implemented")
 }
 
 func RegisterQueryServer(s grpc1.Server, srv QueryServer) {
 	s.RegisterService(&_Query_serviceDesc, srv)
 }
 
-func _Query_GetOperatorInfo_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Query_QueryOperatorInfo_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(GetOperatorInfoReq)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(QueryServer).GetOperatorInfo(ctx, in)
+		return srv.(QueryServer).QueryOperatorInfo(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/exocore.operator.v1.Query/GetOperatorInfo",
+		FullMethod: "/exocore.operator.v1.Query/QueryOperatorInfo",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(QueryServer).GetOperatorInfo(ctx, req.(*GetOperatorInfoReq))
+		return srv.(QueryServer).QueryOperatorInfo(ctx, req.(*GetOperatorInfoReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Query_QueryAllOperators_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryAllOperatorsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).QueryAllOperators(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/exocore.operator.v1.Query/QueryAllOperators",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).QueryAllOperators(ctx, req.(*QueryAllOperatorsRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -324,17 +1008,87 @@ func _Query_QueryOperatorConsKeyForChainID_Handler(srv interface{}, ctx context.
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Query_QueryOperatorConsAddressForChainID_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryOperatorConsAddressRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).QueryOperatorConsAddressForChainID(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/exocore.operator.v1.Query/QueryOperatorConsAddressForChainID",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).QueryOperatorConsAddressForChainID(ctx, req.(*QueryOperatorConsAddressRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Query_QueryAllOperatorConsKeysByChainID_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryAllOperatorConsKeysByChainIDRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).QueryAllOperatorConsKeysByChainID(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/exocore.operator.v1.Query/QueryAllOperatorConsKeysByChainID",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).QueryAllOperatorConsKeysByChainID(ctx, req.(*QueryAllOperatorConsKeysByChainIDRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Query_QueryAllOperatorConsAddrsByChainID_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryAllOperatorConsAddrsByChainIDRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).QueryAllOperatorConsAddrsByChainID(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/exocore.operator.v1.Query/QueryAllOperatorConsAddrsByChainID",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).QueryAllOperatorConsAddrsByChainID(ctx, req.(*QueryAllOperatorConsAddrsByChainIDRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 var _Query_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "exocore.operator.v1.Query",
 	HandlerType: (*QueryServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "GetOperatorInfo",
-			Handler:    _Query_GetOperatorInfo_Handler,
+			MethodName: "QueryOperatorInfo",
+			Handler:    _Query_QueryOperatorInfo_Handler,
+		},
+		{
+			MethodName: "QueryAllOperators",
+			Handler:    _Query_QueryAllOperators_Handler,
 		},
 		{
 			MethodName: "QueryOperatorConsKeyForChainID",
 			Handler:    _Query_QueryOperatorConsKeyForChainID_Handler,
+		},
+		{
+			MethodName: "QueryOperatorConsAddressForChainID",
+			Handler:    _Query_QueryOperatorConsAddressForChainID_Handler,
+		},
+		{
+			MethodName: "QueryAllOperatorConsKeysByChainID",
+			Handler:    _Query_QueryAllOperatorConsKeysByChainID_Handler,
+		},
+		{
+			MethodName: "QueryAllOperatorConsAddrsByChainID",
+			Handler:    _Query_QueryAllOperatorConsAddrsByChainID_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
@@ -371,6 +1125,85 @@ func (m *GetOperatorInfoReq) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
+func (m *QueryAllOperatorsRequest) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QueryAllOperatorsRequest) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QueryAllOperatorsRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.Pagination != nil {
+		{
+			size, err := m.Pagination.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintQuery(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *QueryAllOperatorsResponse) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QueryAllOperatorsResponse) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QueryAllOperatorsResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.Pagination != nil {
+		{
+			size, err := m.Pagination.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintQuery(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0x12
+	}
+	if len(m.OperatorAccAddrs) > 0 {
+		for iNdEx := len(m.OperatorAccAddrs) - 1; iNdEx >= 0; iNdEx-- {
+			i -= len(m.OperatorAccAddrs[iNdEx])
+			copy(dAtA[i:], m.OperatorAccAddrs[iNdEx])
+			i = encodeVarintQuery(dAtA, i, uint64(len(m.OperatorAccAddrs[iNdEx])))
+			i--
+			dAtA[i] = 0xa
+		}
+	}
+	return len(dAtA) - i, nil
+}
+
 func (m *QueryOperatorConsKeyRequest) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
@@ -391,17 +1224,17 @@ func (m *QueryOperatorConsKeyRequest) MarshalToSizedBuffer(dAtA []byte) (int, er
 	_ = i
 	var l int
 	_ = l
-	if len(m.ChainId) > 0 {
-		i -= len(m.ChainId)
-		copy(dAtA[i:], m.ChainId)
-		i = encodeVarintQuery(dAtA, i, uint64(len(m.ChainId)))
+	if len(m.Chain) > 0 {
+		i -= len(m.Chain)
+		copy(dAtA[i:], m.Chain)
+		i = encodeVarintQuery(dAtA, i, uint64(len(m.Chain)))
 		i--
 		dAtA[i] = 0x12
 	}
-	if len(m.Addr) > 0 {
-		i -= len(m.Addr)
-		copy(dAtA[i:], m.Addr)
-		i = encodeVarintQuery(dAtA, i, uint64(len(m.Addr)))
+	if len(m.OperatorAccAddr) > 0 {
+		i -= len(m.OperatorAccAddr)
+		copy(dAtA[i:], m.OperatorAccAddr)
+		i = encodeVarintQuery(dAtA, i, uint64(len(m.OperatorAccAddr)))
 		i--
 		dAtA[i] = 0xa
 	}
@@ -441,6 +1274,334 @@ func (m *QueryOperatorConsKeyResponse) MarshalToSizedBuffer(dAtA []byte) (int, e
 	return len(dAtA) - i, nil
 }
 
+func (m *QueryOperatorConsAddressRequest) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QueryOperatorConsAddressRequest) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QueryOperatorConsAddressRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.Chain) > 0 {
+		i -= len(m.Chain)
+		copy(dAtA[i:], m.Chain)
+		i = encodeVarintQuery(dAtA, i, uint64(len(m.Chain)))
+		i--
+		dAtA[i] = 0x12
+	}
+	if len(m.OperatorAccAddr) > 0 {
+		i -= len(m.OperatorAccAddr)
+		copy(dAtA[i:], m.OperatorAccAddr)
+		i = encodeVarintQuery(dAtA, i, uint64(len(m.OperatorAccAddr)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *QueryOperatorConsAddressResponse) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QueryOperatorConsAddressResponse) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QueryOperatorConsAddressResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.ConsAddr) > 0 {
+		i -= len(m.ConsAddr)
+		copy(dAtA[i:], m.ConsAddr)
+		i = encodeVarintQuery(dAtA, i, uint64(len(m.ConsAddr)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *QueryAllOperatorConsKeysByChainIDRequest) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QueryAllOperatorConsKeysByChainIDRequest) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QueryAllOperatorConsKeysByChainIDRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.Pagination != nil {
+		{
+			size, err := m.Pagination.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintQuery(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0x12
+	}
+	if len(m.Chain) > 0 {
+		i -= len(m.Chain)
+		copy(dAtA[i:], m.Chain)
+		i = encodeVarintQuery(dAtA, i, uint64(len(m.Chain)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *QueryAllOperatorConsKeysByChainIDResponse) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QueryAllOperatorConsKeysByChainIDResponse) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QueryAllOperatorConsKeysByChainIDResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.Pagination != nil {
+		{
+			size, err := m.Pagination.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintQuery(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0x12
+	}
+	if len(m.OperatorConsKeys) > 0 {
+		for iNdEx := len(m.OperatorConsKeys) - 1; iNdEx >= 0; iNdEx-- {
+			{
+				size, err := m.OperatorConsKeys[iNdEx].MarshalToSizedBuffer(dAtA[:i])
+				if err != nil {
+					return 0, err
+				}
+				i -= size
+				i = encodeVarintQuery(dAtA, i, uint64(size))
+			}
+			i--
+			dAtA[i] = 0xa
+		}
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *OperatorConsKeyPair) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *OperatorConsKeyPair) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *OperatorConsKeyPair) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.PublicKey != nil {
+		{
+			size, err := m.PublicKey.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintQuery(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0x12
+	}
+	if len(m.OperatorAccAddr) > 0 {
+		i -= len(m.OperatorAccAddr)
+		copy(dAtA[i:], m.OperatorAccAddr)
+		i = encodeVarintQuery(dAtA, i, uint64(len(m.OperatorAccAddr)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *QueryAllOperatorConsAddrsByChainIDRequest) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QueryAllOperatorConsAddrsByChainIDRequest) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QueryAllOperatorConsAddrsByChainIDRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.Pagination != nil {
+		{
+			size, err := m.Pagination.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintQuery(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0x12
+	}
+	if len(m.Chain) > 0 {
+		i -= len(m.Chain)
+		copy(dAtA[i:], m.Chain)
+		i = encodeVarintQuery(dAtA, i, uint64(len(m.Chain)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *QueryAllOperatorConsAddrsByChainIDResponse) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QueryAllOperatorConsAddrsByChainIDResponse) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QueryAllOperatorConsAddrsByChainIDResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.Pagination != nil {
+		{
+			size, err := m.Pagination.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintQuery(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0x12
+	}
+	if len(m.OperatorConsAddrs) > 0 {
+		for iNdEx := len(m.OperatorConsAddrs) - 1; iNdEx >= 0; iNdEx-- {
+			{
+				size, err := m.OperatorConsAddrs[iNdEx].MarshalToSizedBuffer(dAtA[:i])
+				if err != nil {
+					return 0, err
+				}
+				i -= size
+				i = encodeVarintQuery(dAtA, i, uint64(size))
+			}
+			i--
+			dAtA[i] = 0xa
+		}
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *OperatorConsAddrPair) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *OperatorConsAddrPair) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *OperatorConsAddrPair) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.ConsAddr) > 0 {
+		i -= len(m.ConsAddr)
+		copy(dAtA[i:], m.ConsAddr)
+		i = encodeVarintQuery(dAtA, i, uint64(len(m.ConsAddr)))
+		i--
+		dAtA[i] = 0x12
+	}
+	if len(m.OperatorAccAddr) > 0 {
+		i -= len(m.OperatorAccAddr)
+		copy(dAtA[i:], m.OperatorAccAddr)
+		i = encodeVarintQuery(dAtA, i, uint64(len(m.OperatorAccAddr)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
 func encodeVarintQuery(dAtA []byte, offset int, v uint64) int {
 	offset -= sovQuery(v)
 	base := offset
@@ -465,17 +1626,49 @@ func (m *GetOperatorInfoReq) Size() (n int) {
 	return n
 }
 
+func (m *QueryAllOperatorsRequest) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.Pagination != nil {
+		l = m.Pagination.Size()
+		n += 1 + l + sovQuery(uint64(l))
+	}
+	return n
+}
+
+func (m *QueryAllOperatorsResponse) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if len(m.OperatorAccAddrs) > 0 {
+		for _, s := range m.OperatorAccAddrs {
+			l = len(s)
+			n += 1 + l + sovQuery(uint64(l))
+		}
+	}
+	if m.Pagination != nil {
+		l = m.Pagination.Size()
+		n += 1 + l + sovQuery(uint64(l))
+	}
+	return n
+}
+
 func (m *QueryOperatorConsKeyRequest) Size() (n int) {
 	if m == nil {
 		return 0
 	}
 	var l int
 	_ = l
-	l = len(m.Addr)
+	l = len(m.OperatorAccAddr)
 	if l > 0 {
 		n += 1 + l + sovQuery(uint64(l))
 	}
-	l = len(m.ChainId)
+	l = len(m.Chain)
 	if l > 0 {
 		n += 1 + l + sovQuery(uint64(l))
 	}
@@ -490,6 +1683,142 @@ func (m *QueryOperatorConsKeyResponse) Size() (n int) {
 	_ = l
 	l = m.PublicKey.Size()
 	n += 1 + l + sovQuery(uint64(l))
+	return n
+}
+
+func (m *QueryOperatorConsAddressRequest) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.OperatorAccAddr)
+	if l > 0 {
+		n += 1 + l + sovQuery(uint64(l))
+	}
+	l = len(m.Chain)
+	if l > 0 {
+		n += 1 + l + sovQuery(uint64(l))
+	}
+	return n
+}
+
+func (m *QueryOperatorConsAddressResponse) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.ConsAddr)
+	if l > 0 {
+		n += 1 + l + sovQuery(uint64(l))
+	}
+	return n
+}
+
+func (m *QueryAllOperatorConsKeysByChainIDRequest) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.Chain)
+	if l > 0 {
+		n += 1 + l + sovQuery(uint64(l))
+	}
+	if m.Pagination != nil {
+		l = m.Pagination.Size()
+		n += 1 + l + sovQuery(uint64(l))
+	}
+	return n
+}
+
+func (m *QueryAllOperatorConsKeysByChainIDResponse) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if len(m.OperatorConsKeys) > 0 {
+		for _, e := range m.OperatorConsKeys {
+			l = e.Size()
+			n += 1 + l + sovQuery(uint64(l))
+		}
+	}
+	if m.Pagination != nil {
+		l = m.Pagination.Size()
+		n += 1 + l + sovQuery(uint64(l))
+	}
+	return n
+}
+
+func (m *OperatorConsKeyPair) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.OperatorAccAddr)
+	if l > 0 {
+		n += 1 + l + sovQuery(uint64(l))
+	}
+	if m.PublicKey != nil {
+		l = m.PublicKey.Size()
+		n += 1 + l + sovQuery(uint64(l))
+	}
+	return n
+}
+
+func (m *QueryAllOperatorConsAddrsByChainIDRequest) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.Chain)
+	if l > 0 {
+		n += 1 + l + sovQuery(uint64(l))
+	}
+	if m.Pagination != nil {
+		l = m.Pagination.Size()
+		n += 1 + l + sovQuery(uint64(l))
+	}
+	return n
+}
+
+func (m *QueryAllOperatorConsAddrsByChainIDResponse) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if len(m.OperatorConsAddrs) > 0 {
+		for _, e := range m.OperatorConsAddrs {
+			l = e.Size()
+			n += 1 + l + sovQuery(uint64(l))
+		}
+	}
+	if m.Pagination != nil {
+		l = m.Pagination.Size()
+		n += 1 + l + sovQuery(uint64(l))
+	}
+	return n
+}
+
+func (m *OperatorConsAddrPair) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.OperatorAccAddr)
+	if l > 0 {
+		n += 1 + l + sovQuery(uint64(l))
+	}
+	l = len(m.ConsAddr)
+	if l > 0 {
+		n += 1 + l + sovQuery(uint64(l))
+	}
 	return n
 }
 
@@ -581,6 +1910,210 @@ func (m *GetOperatorInfoReq) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
+func (m *QueryAllOperatorsRequest) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryAllOperatorsRequest: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryAllOperatorsRequest: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Pagination", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if m.Pagination == nil {
+				m.Pagination = &query.PageRequest{}
+			}
+			if err := m.Pagination.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *QueryAllOperatorsResponse) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryAllOperatorsResponse: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryAllOperatorsResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field OperatorAccAddrs", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.OperatorAccAddrs = append(m.OperatorAccAddrs, string(dAtA[iNdEx:postIndex]))
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Pagination", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if m.Pagination == nil {
+				m.Pagination = &query.PageResponse{}
+			}
+			if err := m.Pagination.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
 func (m *QueryOperatorConsKeyRequest) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -612,7 +2145,7 @@ func (m *QueryOperatorConsKeyRequest) Unmarshal(dAtA []byte) error {
 		switch fieldNum {
 		case 1:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Addr", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field OperatorAccAddr", wireType)
 			}
 			var stringLen uint64
 			for shift := uint(0); ; shift += 7 {
@@ -640,11 +2173,11 @@ func (m *QueryOperatorConsKeyRequest) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.Addr = string(dAtA[iNdEx:postIndex])
+			m.OperatorAccAddr = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
 		case 2:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field ChainId", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field Chain", wireType)
 			}
 			var stringLen uint64
 			for shift := uint(0); ; shift += 7 {
@@ -672,7 +2205,7 @@ func (m *QueryOperatorConsKeyRequest) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.ChainId = string(dAtA[iNdEx:postIndex])
+			m.Chain = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
 		default:
 			iNdEx = preIndex
@@ -756,6 +2289,910 @@ func (m *QueryOperatorConsKeyResponse) Unmarshal(dAtA []byte) error {
 			if err := m.PublicKey.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *QueryOperatorConsAddressRequest) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryOperatorConsAddressRequest: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryOperatorConsAddressRequest: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field OperatorAccAddr", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.OperatorAccAddr = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Chain", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Chain = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *QueryOperatorConsAddressResponse) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryOperatorConsAddressResponse: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryOperatorConsAddressResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field ConsAddr", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.ConsAddr = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *QueryAllOperatorConsKeysByChainIDRequest) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryAllOperatorConsKeysByChainIDRequest: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryAllOperatorConsKeysByChainIDRequest: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Chain", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Chain = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Pagination", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if m.Pagination == nil {
+				m.Pagination = &query.PageRequest{}
+			}
+			if err := m.Pagination.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *QueryAllOperatorConsKeysByChainIDResponse) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryAllOperatorConsKeysByChainIDResponse: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryAllOperatorConsKeysByChainIDResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field OperatorConsKeys", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.OperatorConsKeys = append(m.OperatorConsKeys, &OperatorConsKeyPair{})
+			if err := m.OperatorConsKeys[len(m.OperatorConsKeys)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Pagination", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if m.Pagination == nil {
+				m.Pagination = &query.PageResponse{}
+			}
+			if err := m.Pagination.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *OperatorConsKeyPair) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: OperatorConsKeyPair: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: OperatorConsKeyPair: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field OperatorAccAddr", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.OperatorAccAddr = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field PublicKey", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if m.PublicKey == nil {
+				m.PublicKey = &crypto.PublicKey{}
+			}
+			if err := m.PublicKey.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *QueryAllOperatorConsAddrsByChainIDRequest) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryAllOperatorConsAddrsByChainIDRequest: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryAllOperatorConsAddrsByChainIDRequest: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Chain", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Chain = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Pagination", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if m.Pagination == nil {
+				m.Pagination = &query.PageRequest{}
+			}
+			if err := m.Pagination.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *QueryAllOperatorConsAddrsByChainIDResponse) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryAllOperatorConsAddrsByChainIDResponse: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryAllOperatorConsAddrsByChainIDResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field OperatorConsAddrs", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.OperatorConsAddrs = append(m.OperatorConsAddrs, &OperatorConsAddrPair{})
+			if err := m.OperatorConsAddrs[len(m.OperatorConsAddrs)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Pagination", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if m.Pagination == nil {
+				m.Pagination = &query.PageResponse{}
+			}
+			if err := m.Pagination.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *OperatorConsAddrPair) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: OperatorConsAddrPair: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: OperatorConsAddrPair: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field OperatorAccAddr", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.OperatorAccAddr = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field ConsAddr", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.ConsAddr = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
 		default:
 			iNdEx = preIndex

@@ -48,16 +48,6 @@ func (k Keeper) setOptOutsToFinish(
 	store.Set(key, bz)
 }
 
-// RemoveOptOutToFinish removes an operator address from the list of operator addresses that
-// have opted out and will be finished at the end of the provided epoch.
-func (k Keeper) RemoveOptOutToFinish(ctx sdk.Context, epoch int64, addr sdk.AccAddress) {
-	prev := k.GetOptOutsToFinish(ctx, epoch)
-	next := types.AccountAddresses{
-		List: types.RemoveFromBytesList(prev, addr),
-	}
-	k.setOptOutsToFinish(ctx, epoch, next)
-}
-
 // ClearOptOutsToFinish clears the list of operator addresses that have opted out and will be
 // finished at the end of the provided epoch.
 func (k Keeper) ClearOptOutsToFinish(ctx sdk.Context, epoch int64) {
@@ -129,18 +119,6 @@ func (k Keeper) GetConsensusAddrsToPrune(
 		panic(err)
 	}
 	return res.GetList()
-}
-
-// DeleteConsensusAddrToPrune deletes a consensus address from the list of consensus addresses
-// to prune at the end of the provided epoch.
-func (k Keeper) DeleteConsensusAddrToPrune(
-	ctx sdk.Context, epoch int64, addr sdk.ConsAddress,
-) {
-	prev := k.GetConsensusAddrsToPrune(ctx, epoch)
-	next := types.ConsensusAddresses{
-		List: types.RemoveFromBytesList(prev, addr.Bytes()),
-	}
-	k.setConsensusAddrsToPrune(ctx, epoch, next)
 }
 
 // ClearConsensusAddrsToPrune clears the list of consensus addresses to prune at the end of the

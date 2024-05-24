@@ -33,13 +33,6 @@ message AccountAddresses {
   repeated bytes list = 1;
 }
 
-// ConsensusAddresses represents a list of account addresses. It is used to store the list of
-// addresses (which correspond to operator public keys) to delete at the end of an epoch.
-message ConsensusAddresses {
-  // list is the list of consensus addresses.
-  repeated bytes list = 1;
-}
-
 // UndelegationRecordKeys is a collection of undelegation record keys. This is used to store a
 // list of undelegation records to mature in the delegation module at the end of the epoch.
 message UndelegationRecordKeys {
@@ -51,4 +44,10 @@ message UndelegationRecordKeys {
 message Validators {
   // list is the list of validators.
   repeated cosmos.staking.v1beta1.Validator list = 1 [(gogoproto.nullable) = false];
+}
+
+// ConsensusAddresses is a list of consensus addresses.
+message ConsensusAddresses {
+  // list is the list of consensus addresses.
+  repeated bytes list = 1;
 }
