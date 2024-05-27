@@ -3,8 +3,6 @@ package withdraw_test
 import (
 	"math/big"
 
-	exocmn "github.com/ExocoreNetwork/exocore/precompiles/common"
-
 	"github.com/ExocoreNetwork/exocore/precompiles/testutil"
 	"github.com/ExocoreNetwork/exocore/precompiles/testutil/contracts"
 	assetstype "github.com/ExocoreNetwork/exocore/x/assets/types"
@@ -68,6 +66,23 @@ func (s *WithdrawPrecompileTestSuite) TestCallWithdrawFromEOA() {
 
 	beforeEach()
 	setWithdrawArgs := prepareFunc(&params, method)
-	_, _, err := contracts.CallContractAndCheckLogs(s.Ctx, s.App, setWithdrawArgs, passCheck)
-	s.Require().ErrorContains(err, exocmn.ErrContractCaller)
+	_, response, err := contracts.CallContractAndCheckLogs(s.Ctx, s.App, setWithdrawArgs, passCheck)
+	// contract call should not return error because we return (bool success, *big.Int) instead of error for failed withdrawal
+	s.Require().NoError(err)
+
+	result, err := setWithdrawArgs.ContractABI.Unpack(method, response.Ret)
+	s.Require().NoError((err))
+
+	// solidity: function withdraw(...) returns (bool success, uint256 updatedBalance)
+	s.Require().Equal(len(result), 2)
+
+	// the first element should be bool value that indicates whether the withdrawal is successful
+	success, ok := result[0].(bool)
+	s.Require().True(ok)
+	s.Require().False(success)
+
+	// the second element represents updatedBalance and should be 0 since success is false and withdrawal has failed
+	updatedBalance, ok := result[1].(*big.Int)
+	s.Require().True(ok)
+	s.Require().Zero(updatedBalance.Cmp(new(big.Int)))
 }
