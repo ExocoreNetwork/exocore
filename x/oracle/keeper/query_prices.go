@@ -54,3 +54,5 @@ func (k Keeper) Prices(goCtx context.Context, req *types.QueryGetPricesRequest) 
 
 	return &types.QueryGetPricesResponse{Prices: val}, nil
 }
+
+// TODO: LatestPrice(tokenID)

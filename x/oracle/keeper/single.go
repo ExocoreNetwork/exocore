@@ -13,7 +13,7 @@ import (
 
 var cs *cache.Cache
 
-var agc *aggregator.AggregatorContext
+var agc, agcCheckTx *aggregator.AggregatorContext
 
 func GetCaches() *cache.Cache {
 	if cs != nil {
@@ -25,6 +25,24 @@ func GetCaches() *cache.Cache {
 
 // GetAggregatorContext returns singleton aggregatorContext used to calculate final price for each round of each tokenFeeder
 func GetAggregatorContext(ctx sdk.Context, k Keeper) *aggregator.AggregatorContext {
+	if ctx.IsCheckTx() {
+		if agcCheckTx != nil {
+			return agcCheckTx
+		}
+		if agc == nil {
+			c := GetCaches()
+			c.ResetCaches()
+			agcCheckTx = aggregator.NewAggregatorContext()
+			if ok := recacheAggregatorContext(ctx, agcCheckTx, k, c); !ok {
+				// this is the very first time oracle has been started, fill relalted info as initialization
+				initAggregatorContext(ctx, agcCheckTx, k, c)
+			}
+			return agcCheckTx
+		}
+		agcCheckTx = agc.Copy4CheckTx()
+		return agcCheckTx
+	}
+
 	if agc != nil {
 		return agc
 	}
@@ -61,7 +79,7 @@ func recacheAggregatorContext(ctx sdk.Context, agc *aggregator.AggregatorContext
 	validatorPowers := make(map[string]*big.Int)
 	k.IterateBondedValidatorsByPower(ctx, func(_ int64, validator stakingtypes.ValidatorI) bool {
 		power := big.NewInt(validator.GetConsensusPower(sdk.DefaultPowerReduction))
-		addr := string(validator.GetOperator())
+		addr := validator.GetOperator().String()
 		validatorPowers[addr] = power
 		totalPower = new(big.Int).Add(totalPower, power)
 		return false
@@ -158,4 +176,8 @@ func ResetAggregatorContext() {
 
 func ResetCache() {
 	cs = nil
+}
+
+func ResetAggregatorContextCheckTx() {
+	agcCheckTx = nil
 }
