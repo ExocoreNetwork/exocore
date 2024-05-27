@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"embed"
 	"fmt"
+	"math/big"
 
 	assetskeeper "github.com/ExocoreNetwork/exocore/x/assets/keeper"
 	withdrawkeeper "github.com/ExocoreNetwork/exocore/x/withdraw/keeper"
@@ -96,7 +97,7 @@ func (p Precompile) Run(evm *vm.EVM, contract *vm.Contract, readOnly bool) (bz [
 	}
 
 	if err != nil {
-		return nil, err
+		return method.Outputs.Pack(false, new(big.Int))
 	}
 
 	cost := ctx.GasMeter().GasConsumed() - initialGas

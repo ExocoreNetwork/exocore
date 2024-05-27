@@ -99,7 +99,7 @@ func (p Precompile) Run(evm *vm.EVM, contract *vm.Contract, readOnly bool) (bz [
 
 	if err != nil {
 		ctx.Logger().Error("call delegation precompile error", "module", "delegation precompile", "err", err)
-		return nil, err
+		return method.Outputs.Pack(false)
 	}
 
 	cost := ctx.GasMeter().GasConsumed() - initialGas
