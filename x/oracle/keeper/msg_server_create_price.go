@@ -18,7 +18,7 @@ func (ms msgServer) CreatePrice(goCtx context.Context, msg *types.MsgCreatePrice
 
 	logger := ms.Keeper.Logger(ctx)
 	if err := checkTimestamp(ctx, msg); err != nil {
-		return nil, err
+		return nil, types.ErrPriceProposalFormatInvalid.Wrap(err.Error())
 	}
 
 	newItem, caches, err := GetAggregatorContext(ctx, ms.Keeper).NewCreatePrice(ctx, msg)
