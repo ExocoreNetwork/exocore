@@ -14,9 +14,8 @@ import (
 	avsTaskKeeper "github.com/ExocoreNetwork/exocore/x/avstask/keeper"
 	avsTaskTypes "github.com/ExocoreNetwork/exocore/x/avstask/types"
 
-	"github.com/ExocoreNetwork/exocore/x/oracle"
-	oracleKeeper "github.com/ExocoreNetwork/exocore/x/oracle/keeper"
-	oracleTypes "github.com/ExocoreNetwork/exocore/x/oracle/types"
+	// 	"github.com/ExocoreNetwork/exocore/x/oracle"
+	// 	oracleTypes "github.com/ExocoreNetwork/exocore/x/oracle/types"
 
 	"github.com/ExocoreNetwork/exocore/x/avs"
 	"github.com/ExocoreNetwork/exocore/x/operator"
@@ -283,7 +282,7 @@ var (
 		exoslash.AppModuleBasic{},
 		avs.AppModuleBasic{},
 		avstask.AppModuleBasic{},
-		oracle.AppModuleBasic{},
+		// oracle.AppModuleBasic{},
 	)
 
 	// module account permissions
@@ -368,7 +367,7 @@ type ExocoreApp struct {
 	ExoSlashKeeper   slashKeeper.Keeper
 	AVSManagerKeeper avsManagerKeeper.Keeper
 	TaskKeeper       avsTaskKeeper.Keeper
-	OracleKeeper     oracleKeeper.Keeper
+	// OracleKeeper     oracleKeeper.Keeper
 
 	// the module manager
 	mm *module.Manager
@@ -454,11 +453,11 @@ func NewExocoreApp(
 		operatorTypes.StoreKey,
 		avsManagerTypes.StoreKey,
 		avsTaskTypes.StoreKey,
-		oracleTypes.StoreKey,
+		// oracleTypes.StoreKey,
 	)
 
 	tkeys := sdk.NewTransientStoreKeys(paramstypes.TStoreKey, evmtypes.TransientKey, feemarkettypes.TransientKey)
-	memKeys := sdk.NewMemoryStoreKeys(capabilitytypes.MemStoreKey, oracleTypes.MemStoreKey)
+	memKeys := sdk.NewMemoryStoreKeys(capabilitytypes.MemStoreKey) // , oracleTypes.MemStoreKey)
 
 	// load state streaming if enabled
 	if _, _, err := streaming.LoadStreamingServices(bApp, appOpts, appCodec, logger, keys); err != nil {
@@ -614,10 +613,10 @@ func NewExocoreApp(
 		appCodec, keys[avsTaskTypes.StoreKey], app.AVSManagerKeeper,
 	)
 	// x/oracle is not fully integrated (or enabled) but allows for exchange rates to be added.
-	app.OracleKeeper = oracleKeeper.NewKeeper(
-		appCodec, keys[oracleTypes.StoreKey], memKeys[oracleTypes.MemStoreKey],
-		app.GetSubspace(oracleTypes.ModuleName), app.StakingKeeper,
-	)
+	//	app.OracleKeeper = oracleKeeper.NewKeeper(
+	//		appCodec, keys[oracleTypes.StoreKey], memKeys[oracleTypes.MemStoreKey],
+	//		app.GetSubspace(oracleTypes.ModuleName), app.StakingKeeper,
+	//	)
 
 	// the SDK slashing module is used to slash validators in the case of downtime. it tracks
 	// the validator signature rate and informs the staking keeper to perform the requisite
@@ -895,7 +894,7 @@ func NewExocoreApp(
 		exoslash.NewAppModule(appCodec, app.ExoSlashKeeper),
 		avs.NewAppModule(appCodec, app.AVSManagerKeeper),
 		avstask.NewAppModule(appCodec, app.TaskKeeper),
-		oracle.NewAppModule(appCodec, app.OracleKeeper, app.AccountKeeper, app.BankKeeper),
+		// oracle.NewAppModule(appCodec, app.OracleKeeper, app.AccountKeeper, app.BankKeeper),
 	)
 
 	// During begin block slashing happens after reward.BeginBlocker so that
@@ -934,7 +933,7 @@ func NewExocoreApp(
 		exoslashTypes.ModuleName,
 		avsManagerTypes.ModuleName,
 		avsTaskTypes.ModuleName,
-		oracleTypes.ModuleName,
+		// oracleTypes.ModuleName,
 	)
 
 	app.mm.SetOrderEndBlockers(
@@ -944,9 +943,9 @@ func NewExocoreApp(
 		operatorTypes.ModuleName,   // after staking keeper
 		delegationTypes.ModuleName, // after operator keeper
 		govtypes.ModuleName,        // after staking keeper to ensure new vote powers
-		oracleTypes.ModuleName,     // after staking keeper to ensure new vote powers
-		evmtypes.ModuleName,        // can be anywhere
-		feegrant.ModuleName,        // can be anywhere
+		// oracleTypes.ModuleName,     // after staking keeper to ensure new vote powers
+		evmtypes.ModuleName, // can be anywhere
+		feegrant.ModuleName, // can be anywhere
 		// no-op modules
 		ibcexported.ModuleName,
 		ibctransfertypes.ModuleName,
@@ -1002,7 +1001,7 @@ func NewExocoreApp(
 		ibcexported.ModuleName,
 		ibctransfertypes.ModuleName,
 		icatypes.ModuleName,
-		oracleTypes.ModuleName, // after staking module to ensure total vote power available
+		// oracleTypes.ModuleName, // after staking module to ensure total vote power available
 		// no-op modules
 		paramstypes.ModuleName,
 		consensusparamtypes.ModuleName,
@@ -1365,7 +1364,7 @@ func initParamsKeeper(
 	// ethermint subspaces
 	// nolint:staticcheck
 	paramsKeeper.Subspace(evmtypes.ModuleName).WithKeyTable(evmtypes.ParamKeyTable())
-	paramsKeeper.Subspace(oracleTypes.ModuleName).WithKeyTable(oracleTypes.ParamKeyTable())
+	// paramsKeeper.Subspace(oracleTypes.ModuleName).WithKeyTable(oracleTypes.ParamKeyTable())
 	return paramsKeeper
 }
 
