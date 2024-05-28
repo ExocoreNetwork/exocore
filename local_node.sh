@@ -116,6 +116,20 @@ if [[ $overwrite == "y" || $overwrite == "Y" ]]; then
 	# x/dogfood
 	jq '.app_state["dogfood"]["initial_val_set"][0]["public_key"]="0xf0f6919e522c5b97db2c8255bff743f9dfddd7ad9fc37cb0c1670b480d0f9914"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
 	jq '.app_state["dogfood"]["initial_val_set"][0]["power"]="5000"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
+	# change the epoch to an hour when starting a local node, which facilitates the testing.
+	jq '.app_state["dogfood"]["params"]["epoch_identifier"]="hour"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
+
+  # x/epochs
+  HOUR_EPOCH='{
+    "identifier": "hour",
+    "start_time": "0001-01-01T00:00:00Z",
+    "duration": "3600s",
+    "current_epoch": "0",
+    "current_epoch_start_time": "0001-01-01T00:00:00Z",
+    "epoch_counting_started": false,
+    "current_epoch_start_height": "0"
+  }'
+  jq --argjson newEpoch "$HOUR_EPOCH" '.app_state["epochs"].epochs += [$newEpoch]' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
 
 	if [[ $1 == "pending" ]]; then
 		if [[ "$OSTYPE" == "darwin"* ]]; then
@@ -191,4 +205,4 @@ if [[ $overwrite == "y" || $overwrite == "Y" ]]; then
 fi
 
 # Start the node (remove the --pruning=nothing flag if historical queries are not needed)
-exocored start --metrics "$TRACE" --log_level $LOGLEVEL --minimum-gas-prices=0.0001aexo --json-rpc.api eth,txpool,personal,net,debug,web3 --api.enable --json-rpc.enable true --home "$HOMEDIR" --chain-id "$CHAINID"
+  exocored start --metrics "$TRACE" --log_level $LOGLEVEL --minimum-gas-prices=0.0001aexo --json-rpc.api eth,txpool,personal,net,debug,web3 --api.enable --json-rpc.enable true --home "$HOMEDIR" --chain-id "$CHAINID"
