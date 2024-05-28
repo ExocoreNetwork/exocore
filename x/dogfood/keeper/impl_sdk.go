@@ -81,7 +81,7 @@ func (k Keeper) Validator(ctx sdk.Context, valAddr sdk.ValAddress) stakingtypes.
 		return nil
 	}
 	validator.ConsensusPubkey = pkAny
-	return val
+	return validator
 }
 
 // ValidatorByConsAddr is an implementation of the staking interface expected by the SDK's
