@@ -7,6 +7,7 @@ import (
 	operatortypes "github.com/ExocoreNetwork/exocore/x/operator/types"
 	abci "github.com/cometbft/cometbft/abci/types"
 	tmtypes "github.com/cometbft/cometbft/types"
+	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	cryptocodec "github.com/cosmos/cosmos-sdk/crypto/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	evidencetypes "github.com/cosmos/cosmos-sdk/x/evidence/types"
@@ -45,15 +46,42 @@ func (k Keeper) IterateValidators(sdk.Context,
 }
 
 // Validator is an implementation of the staking interface expected by the SDK's
-// slashing module. The slashing module uses it to obtain a validator's information at
-// its addition to the list of validators, and then to unjail a validator. The former
-// is used to create the pub key to cons address mapping, which we do in the operator module.
-// The latter should also be implemented in the operator module, or maybe the slashing module
-// depending upon the finalized design. We don't need to implement this function here because
-// we are not calling the AfterValidatorCreated hook in our module, so this will never be
-// reached.
-func (k Keeper) Validator(sdk.Context, sdk.ValAddress) stakingtypes.ValidatorI {
-	panic("unimplemented on this keeper")
+// slashing module. The slashing module uses it to obtain a validator's information upon
+// its addition to the list of validators, and then to unjail a validator. During the addition
+// it stores a reverse lookup from consensus address to pub key, which is why we need the
+// pub key to be set in this call.
+func (k Keeper) Validator(ctx sdk.Context, valAddr sdk.ValAddress) stakingtypes.ValidatorI {
+	accAddr := sdk.AccAddress(valAddr)
+	found, consPubKey, err := k.operatorKeeper.GetOperatorConsKeyForChainID(
+		ctx, accAddr, ctx.ChainID(),
+	)
+	if !found || err != nil {
+		return nil
+	}
+	consAddr, err := operatortypes.TMCryptoPublicKeyToConsAddr(consPubKey)
+	if err != nil {
+		return nil
+	}
+	// the slashing keeper needs the ConsensusPubKey set here
+	val := k.operatorKeeper.ValidatorByConsAddrForChainID(
+		ctx, consAddr, ctx.ChainID(),
+	)
+	if val == nil {
+		// not found
+		return nil
+	}
+	validator, ok := val.(stakingtypes.Validator)
+	if !ok {
+		// should never happen
+		return nil
+	}
+	// set the consensus pubkey
+	pkAny, err := codectypes.NewAnyWithValue(consPubKey)
+	if err != nil {
+		return nil
+	}
+	validator.ConsensusPubkey = pkAny
+	return val
 }
 
 // ValidatorByConsAddr is an implementation of the staking interface expected by the SDK's
@@ -68,6 +96,12 @@ func (k Keeper) ValidatorByConsAddr(
 	ctx sdk.Context,
 	addr sdk.ConsAddress,
 ) stakingtypes.ValidatorI {
+	// contents are
+	// jailed status, operator address and bonded status as unspecified
+	// since operator address is not empty, GetPubkey will be called by evidence module
+	// interchain-security does not have this problem since they return an empty validator
+	// we can't do that since our operator address is used by the EVM module to set operator
+	// as coinbase
 	return k.operatorKeeper.ValidatorByConsAddrForChainID(ctx, addr, ctx.ChainID())
 }
 
@@ -179,24 +213,23 @@ func (k Keeper) IterateBondedValidatorsByPower(
 			// will only happen if there is an error in deserialization.
 			continue
 		}
-		found, addr := k.operatorKeeper.GetOperatorAddressForChainIDAndConsAddr(
-			ctx, ctx.ChainID(), sdk.GetConsAddress(pk),
+		validator := k.operatorKeeper.ValidatorByConsAddrForChainID(
+			ctx, sdk.GetConsAddress(pk), ctx.ChainID(),
 		)
-		if !found {
-			// this should never happen. should we panic?
+		if validator == nil {
+			// not found
 			continue
 		}
-		val, err := stakingtypes.NewValidator(
-			sdk.ValAddress(addr),
-			pk, stakingtypes.Description{ /* TODO */ },
-		)
-		if err != nil {
-			// will only happen if there is an error in deserialization.
+		val, ok := validator.(stakingtypes.Validator)
+		if !ok {
+			// should never happen
 			continue
 		}
 		// allow calculation of power
 		val.Status = stakingtypes.Bonded
 		val.Tokens = sdk.TokensFromConsensusPower(v.Power, sdk.DefaultPowerReduction)
+		// items passed are:
+		// jailed status, tokens quantity, operator address as ValAddress, bonded status
 		if f(int64(i), val) {
 			break
 		}

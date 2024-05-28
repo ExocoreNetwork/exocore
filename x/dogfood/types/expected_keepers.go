@@ -20,6 +20,12 @@ type DogfoodHooks interface {
 	AfterValidatorBonded(
 		sdk.Context, sdk.ConsAddress, sdk.ValAddress,
 	) error
+	AfterValidatorRemoved(
+		sdk.Context, sdk.ConsAddress, sdk.ValAddress,
+	) error
+	AfterValidatorCreated(
+		sdk.Context, sdk.ValAddress,
+	) error
 }
 
 // OperatorKeeper represents the expected keeper interface for the operator module.

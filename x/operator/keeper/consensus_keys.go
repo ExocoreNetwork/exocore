@@ -464,11 +464,12 @@ func (k Keeper) ValidatorByConsAddrForChainID(
 		ctx, chainID, consAddr,
 	)
 	if !found {
-		return stakingtypes.Validator{}
+		return nil
 	}
 	jailed := k.IsOperatorJailedForChainID(ctx, consAddr, chainID)
 	return stakingtypes.Validator{
 		Jailed:          jailed,
 		OperatorAddress: sdk.ValAddress(operatorAddr).String(),
+		// Status:          stakingtypes.Unspecified, // default
 	}
 }

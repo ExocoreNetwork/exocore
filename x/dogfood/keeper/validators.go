@@ -59,10 +59,37 @@ func (k Keeper) ApplyValidatorChanges(
 			// update or delete an existing validator.
 			// assumption: power can not be negative.
 			if change.Power < 1 {
-				k.DeleteValidator(ctx, addr)
+				// guard for errors within the hooks.
+				cc, writeFunc := ctx.CacheContext()
+				k.DeleteValidator(cc, addr)
+				// sdk slashing.AfterValidatorRemoved deletes the lookup from cons address to
+				// cons pub key
+				err = k.Hooks().AfterValidatorRemoved(cc, sdk.ConsAddress(addr), nil)
+				if err != nil {
+					continue
+				}
+				writeFunc()
 			} else {
 				val.Power = change.Power
+				// guard for errors within the hooks.
+				cc, writeFunc := ctx.CacheContext()
 				k.SetValidator(ctx, val)
+				// sdk slashing.AfterValidatorCreated stores the lookup from cons address to
+				// cons pub key. it loads the validator from `valAddr` (operator address)
+				// via stakingkeeeper.Validator(ctx, valAddr)
+				// then it fetches the cons pub key from said validator to generate the lookup
+				found, accAddress := k.operatorKeeper.GetOperatorAddressForChainIDAndConsAddr(
+					ctx, ctx.ChainID(), sdk.ConsAddress(addr),
+				)
+				if !found {
+					// should never happen
+					continue
+				}
+				err = k.Hooks().AfterValidatorCreated(cc, sdk.ValAddress(accAddress))
+				if err != nil {
+					continue
+				}
+				writeFunc()
 			}
 		case false:
 			if change.Power > 0 {
@@ -71,7 +98,7 @@ func (k Keeper) ApplyValidatorChanges(
 				if err != nil {
 					continue
 				}
-				// guard for errors within the AfterValidatorBonded hook.
+				// guard for errors within the hooks.
 				cc, writeFunc := ctx.CacheContext()
 				k.SetValidator(cc, ocVal)
 				err = k.Hooks().AfterValidatorBonded(cc, sdk.ConsAddress(addr), nil)
