@@ -119,8 +119,8 @@ if [[ $overwrite == "y" || $overwrite == "Y" ]]; then
 	# change the epoch to an hour when starting a local node, which facilitates the testing.
 	jq '.app_state["dogfood"]["params"]["epoch_identifier"]="hour"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
 
-  # x/epochs
-  HOUR_EPOCH='{
+	# x/epochs
+	HOUR_EPOCH='{
     "identifier": "hour",
     "start_time": "0001-01-01T00:00:00Z",
     "duration": "3600s",
@@ -129,7 +129,7 @@ if [[ $overwrite == "y" || $overwrite == "Y" ]]; then
     "epoch_counting_started": false,
     "current_epoch_start_height": "0"
   }'
-  jq --argjson newEpoch "$HOUR_EPOCH" '.app_state["epochs"].epochs += [$newEpoch]' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
+	jq --argjson newEpoch "$HOUR_EPOCH" '.app_state["epochs"].epochs += [$newEpoch]' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
 
 	if [[ $1 == "pending" ]]; then
 		if [[ "$OSTYPE" == "darwin"* ]]; then
@@ -205,4 +205,4 @@ if [[ $overwrite == "y" || $overwrite == "Y" ]]; then
 fi
 
 # Start the node (remove the --pruning=nothing flag if historical queries are not needed)
-  exocored start --metrics "$TRACE" --log_level $LOGLEVEL --minimum-gas-prices=0.0001aexo --json-rpc.api eth,txpool,personal,net,debug,web3 --api.enable --json-rpc.enable true --home "$HOMEDIR" --chain-id "$CHAINID"
+exocored start --metrics "$TRACE" --log_level $LOGLEVEL --minimum-gas-prices=0.0001aexo --json-rpc.api eth,txpool,personal,net,debug,web3 --api.enable --json-rpc.enable true --home "$HOMEDIR" --chain-id "$CHAINID"
