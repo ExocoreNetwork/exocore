@@ -40,6 +40,7 @@ func DefaultParams() Params {
 				ContractAddress: "0x",
 				Decimal:         18,
 				Active:          true,
+				AssetID:         "",
 			},
 		},
 		Sources: []*Source{
@@ -73,6 +74,11 @@ func DefaultParams() Params {
 				Interval:       10,
 			},
 		},
+		MaxNonce:   3,
+		ThresholdA: 2,
+		ThresholdB: 3,
+		Mode:       1,
+		MaxDetId:   5,
 	}
 }
 
