@@ -140,53 +140,6 @@ func (m *AccountAddresses) GetList() [][]byte {
 	return nil
 }
 
-// ConsensusAddresses represents a list of account addresses. It is used to store the list of
-// addresses (which correspond to operator public keys) to delete at the end of an epoch.
-type ConsensusAddresses struct {
-	// list is the list of consensus addresses.
-	List [][]byte `protobuf:"bytes,1,rep,name=list,proto3" json:"list,omitempty"`
-}
-
-func (m *ConsensusAddresses) Reset()         { *m = ConsensusAddresses{} }
-func (m *ConsensusAddresses) String() string { return proto.CompactTextString(m) }
-func (*ConsensusAddresses) ProtoMessage()    {}
-func (*ConsensusAddresses) Descriptor() ([]byte, []int) {
-	return fileDescriptor_071b9989c501c3f2, []int{2}
-}
-func (m *ConsensusAddresses) XXX_Unmarshal(b []byte) error {
-	return m.Unmarshal(b)
-}
-func (m *ConsensusAddresses) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	if deterministic {
-		return xxx_messageInfo_ConsensusAddresses.Marshal(b, m, deterministic)
-	} else {
-		b = b[:cap(b)]
-		n, err := m.MarshalToSizedBuffer(b)
-		if err != nil {
-			return nil, err
-		}
-		return b[:n], nil
-	}
-}
-func (m *ConsensusAddresses) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_ConsensusAddresses.Merge(m, src)
-}
-func (m *ConsensusAddresses) XXX_Size() int {
-	return m.Size()
-}
-func (m *ConsensusAddresses) XXX_DiscardUnknown() {
-	xxx_messageInfo_ConsensusAddresses.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_ConsensusAddresses proto.InternalMessageInfo
-
-func (m *ConsensusAddresses) GetList() [][]byte {
-	if m != nil {
-		return m.List
-	}
-	return nil
-}
-
 // UndelegationRecordKeys is a collection of undelegation record keys. This is used to store a
 // list of undelegation records to mature in the delegation module at the end of the epoch.
 type UndelegationRecordKeys struct {
@@ -198,7 +151,7 @@ func (m *UndelegationRecordKeys) Reset()         { *m = UndelegationRecordKeys{}
 func (m *UndelegationRecordKeys) String() string { return proto.CompactTextString(m) }
 func (*UndelegationRecordKeys) ProtoMessage()    {}
 func (*UndelegationRecordKeys) Descriptor() ([]byte, []int) {
-	return fileDescriptor_071b9989c501c3f2, []int{3}
+	return fileDescriptor_071b9989c501c3f2, []int{2}
 }
 func (m *UndelegationRecordKeys) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -244,7 +197,7 @@ func (m *Validators) Reset()         { *m = Validators{} }
 func (m *Validators) String() string { return proto.CompactTextString(m) }
 func (*Validators) ProtoMessage()    {}
 func (*Validators) Descriptor() ([]byte, []int) {
-	return fileDescriptor_071b9989c501c3f2, []int{4}
+	return fileDescriptor_071b9989c501c3f2, []int{3}
 }
 func (m *Validators) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -280,44 +233,90 @@ func (m *Validators) GetList() []types1.Validator {
 	return nil
 }
 
+// ConsensusAddresses is a list of consensus addresses.
+type ConsensusAddresses struct {
+	// list is the list of consensus addresses.
+	List [][]byte `protobuf:"bytes,1,rep,name=list,proto3" json:"list,omitempty"`
+}
+
+func (m *ConsensusAddresses) Reset()         { *m = ConsensusAddresses{} }
+func (m *ConsensusAddresses) String() string { return proto.CompactTextString(m) }
+func (*ConsensusAddresses) ProtoMessage()    {}
+func (*ConsensusAddresses) Descriptor() ([]byte, []int) {
+	return fileDescriptor_071b9989c501c3f2, []int{4}
+}
+func (m *ConsensusAddresses) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *ConsensusAddresses) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_ConsensusAddresses.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *ConsensusAddresses) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_ConsensusAddresses.Merge(m, src)
+}
+func (m *ConsensusAddresses) XXX_Size() int {
+	return m.Size()
+}
+func (m *ConsensusAddresses) XXX_DiscardUnknown() {
+	xxx_messageInfo_ConsensusAddresses.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_ConsensusAddresses proto.InternalMessageInfo
+
+func (m *ConsensusAddresses) GetList() [][]byte {
+	if m != nil {
+		return m.List
+	}
+	return nil
+}
+
 func init() {
 	proto.RegisterType((*ExocoreValidator)(nil), "exocore.dogfood.v1.ExocoreValidator")
 	proto.RegisterType((*AccountAddresses)(nil), "exocore.dogfood.v1.AccountAddresses")
-	proto.RegisterType((*ConsensusAddresses)(nil), "exocore.dogfood.v1.ConsensusAddresses")
 	proto.RegisterType((*UndelegationRecordKeys)(nil), "exocore.dogfood.v1.UndelegationRecordKeys")
 	proto.RegisterType((*Validators)(nil), "exocore.dogfood.v1.Validators")
+	proto.RegisterType((*ConsensusAddresses)(nil), "exocore.dogfood.v1.ConsensusAddresses")
 }
 
 func init() { proto.RegisterFile("exocore/dogfood/v1/dogfood.proto", fileDescriptor_071b9989c501c3f2) }
 
 var fileDescriptor_071b9989c501c3f2 = []byte{
-	// 412 bytes of a gzipped FileDescriptorProto
+	// 413 bytes of a gzipped FileDescriptorProto
 	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x7c, 0x92, 0xc1, 0x6e, 0xd3, 0x40,
 	0x10, 0x86, 0xb3, 0xa4, 0x14, 0x69, 0xdb, 0x43, 0xb5, 0x8a, 0xc0, 0xf4, 0xe0, 0x1a, 0x0b, 0x21,
 	0x1f, 0x60, 0x57, 0x6e, 0x6f, 0x70, 0x4a, 0x10, 0x07, 0x14, 0x09, 0x21, 0x4b, 0x70, 0xe0, 0x52,
-	0xad, 0xed, 0xa9, 0xb1, 0xe2, 0x78, 0xac, 0xdd, 0x75, 0xda, 0x7d, 0x0b, 0x5e, 0x82, 0x37, 0xe0,
-	0x21, 0x2a, 0x4e, 0x3d, 0x72, 0x8a, 0x50, 0xf2, 0x06, 0x3c, 0x01, 0x22, 0xeb, 0x8d, 0x38, 0x20,
-	0x6e, 0xf3, 0xef, 0xfc, 0xfb, 0xeb, 0xd3, 0xcc, 0xd0, 0x08, 0x6e, 0xb0, 0x40, 0x05, 0xa2, 0xc4,
-	0xea, 0x0a, 0xb1, 0x14, 0xab, 0xd4, 0x97, 0xbc, 0x53, 0x68, 0x90, 0xb1, 0xc1, 0xc1, 0xfd, 0xf3,
-	0x2a, 0x3d, 0x9d, 0x54, 0x58, 0xe1, 0xae, 0x2d, 0xfe, 0x54, 0xce, 0x79, 0xfa, 0xb8, 0x42, 0xac,
-	0x1a, 0x10, 0x3b, 0x95, 0xf7, 0x57, 0x42, 0xb6, 0x76, 0x68, 0x3d, 0x2d, 0x50, 0x2f, 0x51, 0x0b,
-	0x6d, 0xe4, 0xa2, 0x6e, 0x2b, 0xb1, 0x4a, 0x73, 0x30, 0x32, 0xf5, 0xda, 0x07, 0x38, 0xd7, 0xa5,
-	0x4b, 0x76, 0xc2, 0xb5, 0xe2, 0xaf, 0x84, 0x9e, 0xbc, 0x71, 0x20, 0x1f, 0x65, 0x53, 0x97, 0xd2,
-	0xa0, 0x62, 0x01, 0x7d, 0x20, 0xcb, 0x52, 0x81, 0xd6, 0x01, 0x89, 0x48, 0x72, 0x9c, 0x79, 0xc9,
-	0x26, 0xf4, 0x7e, 0x87, 0xd7, 0xa0, 0x82, 0x7b, 0x11, 0x49, 0xc6, 0x99, 0x13, 0x4c, 0xd2, 0xc3,
-	0xae, 0xcf, 0x17, 0x60, 0x83, 0x71, 0x44, 0x92, 0xa3, 0xf3, 0x09, 0x77, 0xc4, 0xdc, 0x13, 0xf3,
-	0x69, 0x6b, 0x67, 0x17, 0xbf, 0xd6, 0x67, 0x8f, 0xac, 0x5c, 0x36, 0x2f, 0xe3, 0x02, 0x5b, 0x0d,
-	0xad, 0xee, 0xf5, 0xa5, 0xfb, 0x17, 0x7f, 0xff, 0xf6, 0x62, 0x32, 0x70, 0x15, 0xca, 0x76, 0x06,
-	0xf9, 0xfb, 0x3e, 0x9f, 0x83, 0xcd, 0x86, 0xe0, 0xf8, 0x19, 0x3d, 0x99, 0x16, 0x05, 0xf6, 0xad,
-	0x99, 0x3a, 0x14, 0xd0, 0x8c, 0xd1, 0x83, 0xa6, 0xd6, 0x26, 0x20, 0xd1, 0x38, 0x39, 0xce, 0x76,
-	0x75, 0x9c, 0x50, 0xf6, 0xda, 0x87, 0xff, 0xdf, 0xf9, 0x9c, 0x3e, 0xfc, 0xd0, 0x96, 0xd0, 0x40,
-	0x25, 0x4d, 0x8d, 0x6d, 0x06, 0x05, 0xaa, 0x72, 0x0e, 0xf6, 0xdf, 0xee, 0xb7, 0x94, 0xee, 0xe7,
-	0xa3, 0xd9, 0xab, 0xbf, 0x1c, 0x47, 0xe7, 0x4f, 0xf8, 0x80, 0xee, 0xa7, 0x3e, 0x6c, 0x81, 0xef,
-	0x7f, 0xcc, 0x0e, 0x6e, 0xd7, 0x67, 0x23, 0x17, 0x35, 0x9b, 0xdf, 0x6e, 0x42, 0x72, 0xb7, 0x09,
-	0xc9, 0xcf, 0x4d, 0x48, 0xbe, 0x6c, 0xc3, 0xd1, 0xdd, 0x36, 0x1c, 0xfd, 0xd8, 0x86, 0xa3, 0x4f,
-	0x69, 0x55, 0x9b, 0xcf, 0x7d, 0xce, 0x0b, 0x5c, 0x8a, 0x61, 0x29, 0xef, 0xc0, 0x5c, 0xa3, 0x5a,
-	0x08, 0x7f, 0x4e, 0x37, 0xfb, 0x83, 0x32, 0xb6, 0x03, 0x9d, 0x1f, 0xee, 0x46, 0x7c, 0xf1, 0x3b,
-	0x00, 0x00, 0xff, 0xff, 0xbf, 0xcf, 0x53, 0x6a, 0x70, 0x02, 0x00, 0x00,
+	0xad, 0xed, 0xa9, 0xb1, 0xe2, 0x78, 0x2c, 0xef, 0x3a, 0xed, 0xbe, 0x05, 0x2f, 0xc1, 0x1b, 0xf0,
+	0x10, 0x15, 0xa7, 0x1e, 0x39, 0x45, 0x28, 0x79, 0x03, 0x9e, 0x00, 0x91, 0xdd, 0x8d, 0x38, 0x20,
+	0x6e, 0xf3, 0x7b, 0xfe, 0xfd, 0xf5, 0xcd, 0x78, 0x68, 0x04, 0x37, 0x58, 0x60, 0x0f, 0xa2, 0xc4,
+	0xea, 0x0a, 0xb1, 0x14, 0xab, 0xd4, 0x97, 0xbc, 0xeb, 0x51, 0x23, 0x63, 0xce, 0xc1, 0xfd, 0xe7,
+	0x55, 0x7a, 0x3a, 0xa9, 0xb0, 0xc2, 0x5d, 0x5b, 0xfc, 0xa9, 0xac, 0xf3, 0xf4, 0x71, 0x85, 0x58,
+	0x35, 0x20, 0x76, 0x2a, 0x1f, 0xae, 0x84, 0x6c, 0x8d, 0x6b, 0x3d, 0x2d, 0x50, 0x2d, 0x51, 0x09,
+	0xa5, 0xe5, 0xa2, 0x6e, 0x2b, 0xb1, 0x4a, 0x73, 0xd0, 0x32, 0xf5, 0xda, 0x07, 0x58, 0xd7, 0xa5,
+	0x4d, 0xb6, 0xc2, 0xb6, 0xe2, 0xaf, 0x84, 0x9e, 0xbc, 0xb1, 0x20, 0x1f, 0x65, 0x53, 0x97, 0x52,
+	0x63, 0xcf, 0x02, 0xfa, 0x40, 0x96, 0x65, 0x0f, 0x4a, 0x05, 0x24, 0x22, 0xc9, 0x71, 0xe6, 0x25,
+	0x9b, 0xd0, 0xfb, 0x1d, 0x5e, 0x43, 0x1f, 0xdc, 0x8b, 0x48, 0x32, 0xce, 0xac, 0x60, 0x92, 0x1e,
+	0x76, 0x43, 0xbe, 0x00, 0x13, 0x8c, 0x23, 0x92, 0x1c, 0x9d, 0x4f, 0xb8, 0x25, 0xe6, 0x9e, 0x98,
+	0x4f, 0x5b, 0x33, 0xbb, 0xf8, 0xb5, 0x3e, 0x7b, 0x64, 0xe4, 0xb2, 0x79, 0x19, 0x17, 0xd8, 0x2a,
+	0x68, 0xd5, 0xa0, 0x2e, 0xed, 0xbb, 0xf8, 0xfb, 0xb7, 0x17, 0x13, 0xc7, 0x55, 0xf4, 0xa6, 0xd3,
+	0xc8, 0xdf, 0x0f, 0xf9, 0x1c, 0x4c, 0xe6, 0x82, 0xe3, 0x67, 0xf4, 0x64, 0x5a, 0x14, 0x38, 0xb4,
+	0x7a, 0x6a, 0x51, 0x40, 0x31, 0x46, 0x0f, 0x9a, 0x5a, 0xe9, 0x80, 0x44, 0xe3, 0xe4, 0x38, 0xdb,
+	0xd5, 0xf1, 0x73, 0xfa, 0xf0, 0x43, 0x5b, 0x42, 0x03, 0x95, 0xd4, 0x35, 0xb6, 0x19, 0x14, 0xd8,
+	0x97, 0x73, 0x30, 0xff, 0x76, 0xbf, 0xa5, 0x74, 0x3f, 0xb5, 0x62, 0xaf, 0xfe, 0x72, 0x1c, 0x9d,
+	0x3f, 0xe1, 0x0e, 0xc8, 0xef, 0xd2, 0xed, 0x96, 0xef, 0x5f, 0xcc, 0x0e, 0x6e, 0xd7, 0x67, 0x23,
+	0x17, 0x95, 0x50, 0xf6, 0xda, 0x4f, 0xf5, 0x5f, 0xc4, 0xd9, 0xfc, 0x76, 0x13, 0x92, 0xbb, 0x4d,
+	0x48, 0x7e, 0x6e, 0x42, 0xf2, 0x65, 0x1b, 0x8e, 0xee, 0xb6, 0xe1, 0xe8, 0xc7, 0x36, 0x1c, 0x7d,
+	0x4a, 0xab, 0x5a, 0x7f, 0x1e, 0x72, 0x5e, 0xe0, 0x52, 0xb8, 0x9f, 0xf2, 0x0e, 0xf4, 0x35, 0xf6,
+	0x0b, 0xe1, 0xcf, 0xe9, 0x66, 0x7f, 0x50, 0xda, 0x74, 0xa0, 0xf2, 0xc3, 0xdd, 0x8a, 0x2f, 0x7e,
+	0x07, 0x00, 0x00, 0xff, 0xff, 0x0b, 0xfc, 0xef, 0x8c, 0x70, 0x02, 0x00, 0x00,
 }
 
 func (m *ExocoreValidator) Marshal() (dAtA []byte, err error) {
@@ -383,38 +382,6 @@ func (m *AccountAddresses) MarshalTo(dAtA []byte) (int, error) {
 }
 
 func (m *AccountAddresses) MarshalToSizedBuffer(dAtA []byte) (int, error) {
-	i := len(dAtA)
-	_ = i
-	var l int
-	_ = l
-	if len(m.List) > 0 {
-		for iNdEx := len(m.List) - 1; iNdEx >= 0; iNdEx-- {
-			i -= len(m.List[iNdEx])
-			copy(dAtA[i:], m.List[iNdEx])
-			i = encodeVarintDogfood(dAtA, i, uint64(len(m.List[iNdEx])))
-			i--
-			dAtA[i] = 0xa
-		}
-	}
-	return len(dAtA) - i, nil
-}
-
-func (m *ConsensusAddresses) Marshal() (dAtA []byte, err error) {
-	size := m.Size()
-	dAtA = make([]byte, size)
-	n, err := m.MarshalToSizedBuffer(dAtA[:size])
-	if err != nil {
-		return nil, err
-	}
-	return dAtA[:n], nil
-}
-
-func (m *ConsensusAddresses) MarshalTo(dAtA []byte) (int, error) {
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
-}
-
-func (m *ConsensusAddresses) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
@@ -500,6 +467,38 @@ func (m *Validators) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
+func (m *ConsensusAddresses) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *ConsensusAddresses) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *ConsensusAddresses) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.List) > 0 {
+		for iNdEx := len(m.List) - 1; iNdEx >= 0; iNdEx-- {
+			i -= len(m.List[iNdEx])
+			copy(dAtA[i:], m.List[iNdEx])
+			i = encodeVarintDogfood(dAtA, i, uint64(len(m.List[iNdEx])))
+			i--
+			dAtA[i] = 0xa
+		}
+	}
+	return len(dAtA) - i, nil
+}
+
 func encodeVarintDogfood(dAtA []byte, offset int, v uint64) int {
 	offset -= sovDogfood(v)
 	base := offset
@@ -546,21 +545,6 @@ func (m *AccountAddresses) Size() (n int) {
 	return n
 }
 
-func (m *ConsensusAddresses) Size() (n int) {
-	if m == nil {
-		return 0
-	}
-	var l int
-	_ = l
-	if len(m.List) > 0 {
-		for _, b := range m.List {
-			l = len(b)
-			n += 1 + l + sovDogfood(uint64(l))
-		}
-	}
-	return n
-}
-
 func (m *UndelegationRecordKeys) Size() (n int) {
 	if m == nil {
 		return 0
@@ -585,6 +569,21 @@ func (m *Validators) Size() (n int) {
 	if len(m.List) > 0 {
 		for _, e := range m.List {
 			l = e.Size()
+			n += 1 + l + sovDogfood(uint64(l))
+		}
+	}
+	return n
+}
+
+func (m *ConsensusAddresses) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if len(m.List) > 0 {
+		for _, b := range m.List {
+			l = len(b)
 			n += 1 + l + sovDogfood(uint64(l))
 		}
 	}
@@ -818,88 +817,6 @@ func (m *AccountAddresses) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *ConsensusAddresses) Unmarshal(dAtA []byte) error {
-	l := len(dAtA)
-	iNdEx := 0
-	for iNdEx < l {
-		preIndex := iNdEx
-		var wire uint64
-		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
-				return ErrIntOverflowDogfood
-			}
-			if iNdEx >= l {
-				return io.ErrUnexpectedEOF
-			}
-			b := dAtA[iNdEx]
-			iNdEx++
-			wire |= uint64(b&0x7F) << shift
-			if b < 0x80 {
-				break
-			}
-		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
-		if wireType == 4 {
-			return fmt.Errorf("proto: ConsensusAddresses: wiretype end group for non-group")
-		}
-		if fieldNum <= 0 {
-			return fmt.Errorf("proto: ConsensusAddresses: illegal tag %d (wire type %d)", fieldNum, wire)
-		}
-		switch fieldNum {
-		case 1:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field List", wireType)
-			}
-			var byteLen int
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowDogfood
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				byteLen |= int(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			if byteLen < 0 {
-				return ErrInvalidLengthDogfood
-			}
-			postIndex := iNdEx + byteLen
-			if postIndex < 0 {
-				return ErrInvalidLengthDogfood
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.List = append(m.List, make([]byte, postIndex-iNdEx))
-			copy(m.List[len(m.List)-1], dAtA[iNdEx:postIndex])
-			iNdEx = postIndex
-		default:
-			iNdEx = preIndex
-			skippy, err := skipDogfood(dAtA[iNdEx:])
-			if err != nil {
-				return err
-			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
-				return ErrInvalidLengthDogfood
-			}
-			if (iNdEx + skippy) > l {
-				return io.ErrUnexpectedEOF
-			}
-			iNdEx += skippy
-		}
-	}
-
-	if iNdEx > l {
-		return io.ErrUnexpectedEOF
-	}
-	return nil
-}
 func (m *UndelegationRecordKeys) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -1044,6 +961,88 @@ func (m *Validators) Unmarshal(dAtA []byte) error {
 			if err := m.List[len(m.List)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipDogfood(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthDogfood
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *ConsensusAddresses) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowDogfood
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: ConsensusAddresses: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: ConsensusAddresses: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field List", wireType)
+			}
+			var byteLen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowDogfood
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				byteLen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if byteLen < 0 {
+				return ErrInvalidLengthDogfood
+			}
+			postIndex := iNdEx + byteLen
+			if postIndex < 0 {
+				return ErrInvalidLengthDogfood
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.List = append(m.List, make([]byte, postIndex-iNdEx))
+			copy(m.List[len(m.List)-1], dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
 		default:
 			iNdEx = preIndex

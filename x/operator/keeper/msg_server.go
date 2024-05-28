@@ -9,65 +9,63 @@ import (
 
 var _ types.MsgServer = &Keeper{}
 
+// RegisterOperator is an implementation of the msg server for the operator module.
 func (k *Keeper) RegisterOperator(ctx context.Context, req *types.RegisterOperatorReq) (*types.RegisterOperatorResponse, error) {
 	c := sdk.UnwrapSDKContext(ctx)
 	err := k.SetOperatorInfo(c, req.FromAddress, req.Info)
 	if err != nil {
 		return nil, err
 	}
-	return nil, nil
+	return &types.RegisterOperatorResponse{}, nil
 }
 
-// OptInToCosmosChain this is an RPC for the operators
-// that want to service as a validator for the app chain Avs
-// The operator can opt in the cosmos app chain through this RPC
-// In this function, the basic function `OptIn` need to be called
-func (k *Keeper) OptInToCosmosChain(
-	goCtx context.Context,
-	req *types.OptInToCosmosChainRequest,
-) (*types.OptInToCosmosChainResponse, error) {
-	ctx := sdk.UnwrapSDKContext(goCtx)
-	addr, err := sdk.AccAddressFromBech32(req.Address)
+// OptIntoAVS is an implementation of the msg server for the operator module.
+func (k Keeper) OptIntoAVS(ctx context.Context, req *types.OptIntoAVSReq) (*types.OptIntoAVSResponse, error) {
+	c := sdk.UnwrapSDKContext(ctx)
+	// #nosec G703 // already validated
+	accAddr, _ := sdk.AccAddressFromBech32(req.FromAddress)
+	err := k.OptIn(c, accAddr, req.AvsAddress)
 	if err != nil {
 		return nil, err
 	}
-	key, err := types.StringToPubKey(req.PublicKey)
-	if err != nil {
-		return nil, err
-	}
-	err = k.SetOperatorConsKeyForChainID(
-		ctx, addr, req.ChainId, key,
-	)
-	if err != nil {
-		return nil, err
-	}
-	// call the basic OptIn
-	avsAddr, err := k.avsKeeper.GetAVSAddrByChainID(ctx, req.ChainId)
-	if err != nil {
-		return nil, err
-	}
-	err = k.OptIn(ctx, addr, avsAddr)
-	if err != nil {
-		return nil, err
-	}
-	return &types.OptInToCosmosChainResponse{}, nil
+	return &types.OptIntoAVSResponse{}, nil
 }
 
-// InitOptOutFromCosmosChain is a method corresponding to OptInToCosmosChain
-// It provides a function to opt out from the app chain Avs for the operators.
-func (k *Keeper) InitOptOutFromCosmosChain(
-	goCtx context.Context,
-	req *types.InitOptOutFromCosmosChainRequest,
-) (*types.InitOptOutFromCosmosChainResponse, error) {
-	ctx := sdk.UnwrapSDKContext(goCtx)
-	addr, err := sdk.AccAddressFromBech32(req.Address)
+// OptOutOfAVS is an implementation of the msg server for the operator module.
+func (k Keeper) OptOutOfAVS(ctx context.Context, req *types.OptOutOfAVSReq) (*types.OptOutOfAVSResponse, error) {
+	c := sdk.UnwrapSDKContext(ctx)
+	// #nosec G703 // already validated
+	accAddr, _ := sdk.AccAddressFromBech32(req.FromAddress)
+	err := k.OptOut(c, accAddr, req.AvsAddress)
 	if err != nil {
 		return nil, err
 	}
-	if err := k.InitiateOperatorOptOutFromChainID(
-		ctx, addr, req.ChainId,
-	); err != nil {
+	return &types.OptOutOfAVSResponse{}, nil
+}
+
+// SetConsKey is an implementation of the msg server for the operator module.
+func (k Keeper) SetConsKey(ctx context.Context, req *types.SetConsKeyReq) (*types.SetConsKeyResponse, error) {
+	c := sdk.UnwrapSDKContext(ctx)
+	// #nosec G703 // already validated
+	accAddr, _ := sdk.AccAddressFromBech32(req.Address)
+	// #nosec G703 // already validated, including type
+	_, keyString, _ := types.ParseConsensusKeyFromJSON(req.PublicKey)
+	// #nosec G703 // already validated
+	keyObj, _ := types.StringToPubKey(keyString)
+	if err := k.SetOperatorConsKeyForChainID(c, accAddr, req.ChainID, keyObj); err != nil {
 		return nil, err
 	}
-	return &types.InitOptOutFromCosmosChainResponse{}, nil
+	return &types.SetConsKeyResponse{}, nil
+}
+
+// InitConsKeyRemoval is an implementation of the msg server for the operator module.
+func (k Keeper) InitConsKeyRemoval(ctx context.Context, req *types.InitConsKeyRemovalReq) (*types.InitConsKeyRemovalResponse, error) {
+	c := sdk.UnwrapSDKContext(ctx)
+	// #nosec G703 // already validated
+	accAddr, _ := sdk.AccAddressFromBech32(req.Address)
+	err := k.InitiateOperatorKeyRemovalForChainID(c, accAddr, req.ChainID)
+	if err != nil {
+		return nil, err
+	}
+	return &types.InitConsKeyRemovalResponse{}, nil
 }

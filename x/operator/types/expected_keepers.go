@@ -7,6 +7,7 @@ import (
 	delegationtype "github.com/ExocoreNetwork/exocore/x/delegation/types"
 	tmprotocrypto "github.com/cometbft/cometbft/proto/tendermint/crypto"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/ethereum/go-ethereum/common"
 )
 
 var (
@@ -25,7 +26,6 @@ type AssetsKeeper interface {
 		ctx sdk.Context, operator string, assetsFilter map[string]interface{},
 		f func(assetID string, state *assetstype.OperatorAssetInfo) error,
 	) error
-	AppChainInfoIsExist(ctx sdk.Context, chainID string) bool
 	GetOperatorAssetInfos(
 		ctx sdk.Context, operatorAddr sdk.Address, assetsFilter map[string]interface{},
 	) (assetsInfo map[string]*assetstype.OperatorAssetInfo, err error)
@@ -38,6 +38,7 @@ type AssetsKeeper interface {
 		ctx sdk.Context, operatorAddr sdk.Address, assetID string,
 		changeAmount assetstype.DeltaOperatorSingleAsset,
 	) (err error)
+	ClientChainExists(ctx sdk.Context, index uint64) bool
 	GetAllStakingAssetsInfo(ctx sdk.Context) (allAssets map[string]*assetstype.StakingAssetInfo, err error)
 }
 
@@ -170,9 +171,10 @@ func (a MockAVS) GetAVSMinimumSelfDelegation(_ sdk.Context, _ string) (sdkmath.L
 }
 
 func (a MockAVS) GetEpochEndAVSs(ctx sdk.Context) ([]string, error) {
-	avsList := make([]string, 0)
-	avsList = append(avsList, ctx.ChainID(), "avsTestAddr")
-	return avsList, nil
+	return []string{
+		ctx.ChainID(),
+		common.BytesToAddress([]byte("avsTestAddr")).String(),
+	}, nil
 }
 
 func (a MockAVS) GetHeightForVotingPower(_ sdk.Context, _ string, height int64) (int64, error) {
@@ -186,7 +188,7 @@ type AVSKeeper interface {
 	// `ContextForHistoricalState` implemented in x/assets/types/general.go
 	GetAVSSupportedAssets(ctx sdk.Context, avsAddr string) (map[string]interface{}, error)
 	GetAVSSlashContract(ctx sdk.Context, avsAddr string) (string, error)
-	// GetAVSAddrByChainID get the general Avs address for dogfood module.
+	// GetAVSAddrByChainID converts the chainID to a general EVM-compatible hex address.
 	GetAVSAddrByChainID(ctx sdk.Context, chainID string) (string, error)
 	// GetAVSMinimumSelfDelegation returns the USD value of minimum self delegation, which
 	// is set for operator
@@ -200,26 +202,24 @@ type AVSKeeper interface {
 	GetHeightForVotingPower(ctx sdk.Context, avsAddr string, height int64) (int64, error)
 }
 
-// add for dogfood
-
 type SlashKeeper interface {
 	IsOperatorFrozen(ctx sdk.Context, addr sdk.AccAddress) bool
 }
 
 type OperatorHooks interface {
-	// This hook is called when an operator opts in to a chain.
-	AfterOperatorOptIn(
+	// This hook is called when an operator declares the consensus key for the provided chain.
+	AfterOperatorKeySet(
 		ctx sdk.Context, addr sdk.AccAddress, chainID string,
 		pubKey *tmprotocrypto.PublicKey,
 	)
-	// This hook is called when an operator's consensus key is replaced for
-	// a chain.
-	AfterOperatorKeyReplacement(
+	// This hook is called when an operator's consensus key is replaced for a chain.
+	AfterOperatorKeyReplaced(
 		ctx sdk.Context, addr sdk.AccAddress, oldKey *tmprotocrypto.PublicKey,
 		newKey *tmprotocrypto.PublicKey, chainID string,
 	)
-	// This hook is called when an operator opts out of a chain.
-	AfterOperatorOptOutInitiated(
+	// This hook is called when an operator initiates the removal of a consensus key for a
+	// chain.
+	AfterOperatorKeyRemovalInitiated(
 		ctx sdk.Context, addr sdk.AccAddress, chainID string, key *tmprotocrypto.PublicKey,
 	)
 }

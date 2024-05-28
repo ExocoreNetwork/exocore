@@ -1,6 +1,6 @@
 // This file is a duplicate of the subscriber module's validators file with minor changes.
 // The function ApplyValidatorChanges can likely be carved out into a shared package with
-// the appchain module.
+// the appchain module when it is ready.
 
 package keeper
 

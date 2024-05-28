@@ -48,6 +48,36 @@ type aggregator struct {
 	dsPrices map[uint64]string
 }
 
+func (agg *aggregator) copy4CheckTx() *aggregator {
+	ret := &aggregator{
+		finalPrice:  big.NewInt(0).Set(agg.finalPrice),
+		reportPower: big.NewInt(0).Set(agg.reportPower),
+		totalPower:  big.NewInt(0).Set(agg.totalPower),
+
+		reports:  make([]*reportPrice, 0, len(agg.reports)),
+		dsPrices: make(map[uint64]string),
+	}
+	for k, v := range agg.dsPrices {
+		ret.dsPrices[k] = v
+	}
+	for _, report := range agg.reports {
+		rTmp := *report
+		rTmp.price = big.NewInt(0).Set(report.price)
+		rTmp.power = big.NewInt(0).Set(report.power)
+
+		for k, v := range report.prices {
+			// prices are information submitted by validators, these data will not change under deterministic sources, but with non-deterministic sources they might be overwrite by later prices
+			tmpV := *v
+			tmpV.price = big.NewInt(0).Set(v.price)
+			rTmp.prices[k] = &tmpV
+		}
+
+		ret.reports = append(ret.reports, &rTmp)
+	}
+
+	return ret
+}
+
 // fill price from validator submitting into aggregator, and calculation the voting power and check with the consensus status of deterministic source value to decide when to do the aggregation
 // TODO: currently apply mode=1 in V1, add swith modes
 func (agg *aggregator) fillPrice(pSources []*types.PriceSource, validator string, power *big.Int) {

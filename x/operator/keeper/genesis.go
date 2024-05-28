@@ -20,9 +20,9 @@ func (k Keeper) InitGenesis(ctx sdk.Context, state types.GenesisState) []abci.Va
 		for _, detail := range record.Chains {
 			chainID := detail.ChainID
 			// validate that the chain exists
-			// TODO: move this to the avs keeper when it is merged.
-			if !k.assetsKeeper.AppChainInfoIsExist(ctx, chainID) {
-				panic("chain info not found")
+			// TODO: move this check to the avs keeper when implemented.
+			if chainID != ctx.ChainID() {
+				panic("unknown chain id")
 			}
 			// opt into the specified chain (TODO: avs address format)
 			if err := k.OptIn(ctx, operatorAddr, chainID); err != nil {

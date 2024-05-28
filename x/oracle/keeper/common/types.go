@@ -113,6 +113,12 @@ type Set[T comparable] struct {
 	slice []T
 }
 
+func (s *Set[T]) Copy() *Set[T] {
+	ret := NewSet[T](s.Length())
+	ret.slice = append(ret.slice, s.slice...)
+	return ret
+}
+
 func (s *Set[T]) Add(value T) bool {
 	if len(s.slice) == s.size {
 		return false
