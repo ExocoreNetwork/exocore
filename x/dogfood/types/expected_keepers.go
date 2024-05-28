@@ -64,6 +64,9 @@ type OperatorKeeper interface {
 	// at each epoch, the current key becomes the "previous" key
 	// for further key set function calls
 	ClearPreviousConsensusKeys(ctx sdk.Context, chainID string)
+	GetOperatorConsKeyForChainID(
+		sdk.Context, sdk.AccAddress, string,
+	) (bool, *tmprotocrypto.PublicKey, error)
 }
 
 // DelegationKeeper represents the expected keeper interface for the delegation module.
