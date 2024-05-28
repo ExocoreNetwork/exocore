@@ -171,9 +171,12 @@ func (s *RewardPrecompileTestSuite) TestRunRewardThroughClientChain() {
 				s.Require().NoError(err, "expected no error when running the precompile")
 				s.Require().Equal(tc.returnBytes, bz, "the return doesn't match the expected result")
 			} else {
-				s.Require().Error(err, "expected error to be returned when running the precompile")
-				s.Require().Nil(bz, "expected returned bytes to be nil")
-				s.Require().ErrorContains(err, tc.errContains)
+				// for failed cases we expect it returns bool value instead of error
+				// this is a workaround because the error returned by precompile can not be caught in EVM
+				// see https://github.com/ExocoreNetwork/exocore/issues/70
+				// TODO: we should figure out root cause and fix this issue to make precompiles work normally
+				s.Require().NoError(err, "expected no error when running the precompile")
+				s.Require().Equal(tc.returnBytes, bz, "expected returned bytes to be nil")
 			}
 		})
 	}

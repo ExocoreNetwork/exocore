@@ -67,7 +67,11 @@ func (s *WithdrawPrecompileTestSuite) TestCallWithdrawFromEOA() {
 	beforeEach()
 	setWithdrawArgs := prepareFunc(&params, method)
 	_, response, err := contracts.CallContractAndCheckLogs(s.Ctx, s.App, setWithdrawArgs, passCheck)
-	// contract call should not return error because we return (bool success, *big.Int) instead of error for failed withdrawal
+
+	// for failed cases we expect it returns bool value instead of error
+	// this is a workaround because the error returned by precompile can not be caught in EVM
+	// see https://github.com/ExocoreNetwork/exocore/issues/70
+	// TODO: we should figure out root cause and fix this issue to make precompiles work normally
 	s.Require().NoError(err)
 
 	result, err := setWithdrawArgs.ContractABI.Unpack(method, response.Ret)
