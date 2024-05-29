@@ -146,7 +146,7 @@ func (c *calculator) copy4CheckTx() *calculator {
 
 func (c *calculator) newRoundPricesList() *roundPricesList {
 	return &roundPricesList{
-		roundPricesList: make([]*roundPrices, 0, common.MaxDetID*c.validatorLength),
+		roundPricesList: make([]*roundPrices, 0, int(common.MaxDetID)*c.validatorLength),
 		// for each DS-roundId, the count of prices provided is the number of validators at most
 		roundPricesCount: c.validatorLength,
 	}
