@@ -28,6 +28,6 @@ message Params {
   int32 threshold_b = 8;
   // for v1, mode=1, get final price as soon as voting power reach threshold_a/threshold_b
   int32 mode = 9;
-  // for each round, a validator only allowed to provide at most max_det_id continuos rounds of prices from deterministic source
+  // for each round, a validator only allowed to provide at most max_det_id continuos rounds of prices for DS
   int32 max_det_id = 10;
 }
