@@ -1,8 +1,11 @@
 package keeper
 
 import (
-	errorsmod "cosmossdk.io/errors"
 	"fmt"
+	"slices"
+
+	errorsmod "cosmossdk.io/errors"
+
 	assettypes "github.com/ExocoreNetwork/exocore/x/assets/keeper"
 	delegationtypes "github.com/ExocoreNetwork/exocore/x/delegation/types"
 	"github.com/cometbft/cometbft/libs/log"
@@ -43,7 +46,6 @@ func (k Keeper) Logger(ctx sdk.Context) log.Logger {
 }
 
 func (k Keeper) AVSInfoUpdate(ctx sdk.Context, params *AVSRegisterOrDeregisterParams) error {
-
 	avsInfo, _ := k.GetAVSInfo(ctx, params.AvsAddress)
 
 	action := params.Action
@@ -69,11 +71,10 @@ func (k Keeper) AVSInfoUpdate(ctx sdk.Context, params *AVSRegisterOrDeregisterPa
 
 	if avsInfo == nil {
 		return errorsmod.Wrap(types.ErrUnregisterNonExistent, fmt.Sprintf("the error input arg is:%s", avsInfo))
-
 	}
 
 	//TODO:if avs DeRegisterAction check UnbondingEpochs
-	//if avsInfo.Info.AvsUnbondingEpochs < currenUnbondingEpoch - regUnbondingEpoch {
+	// if avsInfo.Info.AvsUnbondingEpochs < currenUnbondingEpoch - regUnbondingEpoch {
 	//	return errorsmod.Wrap(err, fmt.Sprintf("not qualified to deregister %s", avsInfo))
 	//}
 	return k.DeleteAVSInfo(ctx, params.AvsAddress)
@@ -95,23 +96,23 @@ func (k Keeper) AVSInfoUpdateWithOperator(ctx sdk.Context, params *OperatorOptPa
 	avs := avsInfo.GetInfo()
 	addresses := avs.OperatorAddress
 
-	if params.Action == RegisterAction && types.ContainsString(avs.OperatorAddress, operatorAddress) {
+	if params.Action == RegisterAction && slices.Contains(avs.OperatorAddress, operatorAddress) {
 		return errorsmod.Wrap(types.ErrAlreadyRegistered, fmt.Sprintf("Error: Already registered，operatorAddress %s", operatorAddress))
 	}
 
-	if params.Action == RegisterAction && !types.ContainsString(avs.OperatorAddress, operatorAddress) {
+	if params.Action == RegisterAction && !slices.Contains(avs.OperatorAddress, operatorAddress) {
 		addresses = append(addresses, operatorAddress)
 		avs.OperatorAddress = addresses
 		return k.SetAVSInfo(ctx, avs)
 	}
 
-	if params.Action == DeRegisterAction && types.ContainsString(avs.OperatorAddress, operatorAddress) {
+	if params.Action == DeRegisterAction && slices.Contains(avs.OperatorAddress, operatorAddress) {
 		avs.OperatorAddress = types.RemoveOperatorAddress(addresses, operatorAddress)
 		return k.SetAVSInfo(ctx, avs)
 	}
 	return errorsmod.Wrap(types.ErrUnregisterNonExistent, fmt.Sprintf("No available operatorAddress to DeRegisterAction ,operatorAddress: %s", operatorAddress))
-
 }
+
 func (k Keeper) SetAVSInfo(ctx sdk.Context, avs *types.AVSInfo) (err error) {
 	avsAddr, err := sdk.AccAddressFromBech32(avs.AvsAddress)
 	if err != nil {
@@ -123,7 +124,6 @@ func (k Keeper) SetAVSInfo(ctx sdk.Context, avs *types.AVSInfo) (err error) {
 	bz := k.cdc.MustMarshal(AVSInfo)
 	store.Set(avsAddr, bz)
 	return nil
-
 }
 
 func (k Keeper) GetAVSInfo(ctx sdk.Context, addr string) (*types.QueryAVSInfoResponse, error) {

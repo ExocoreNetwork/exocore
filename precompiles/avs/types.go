@@ -71,11 +71,5 @@ func (p Precompile) GetAVSParamsFromInputs(_ sdk.Context, args []interface{}) (*
 	}
 	avsParams.UnbondingEpochs = unbondingEpochs
 
-	//operatorAddress, ok := args[7].(string)
-	//if !ok || operatorAddress == "" {
-	//	return nil, xerrors.Errorf(exocmn.ErrContractInputParaOrType, 7, "string", operatorAddress)
-	//}
-	//operatorAddress, err = util.ProcessAvsAddress(operatorAddress)
-
 	return avsParams, nil
 }

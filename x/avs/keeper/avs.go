@@ -1,14 +1,15 @@
 package keeper
 
 import (
+	"fmt"
+
 	errorsmod "cosmossdk.io/errors"
 	sdkmath "cosmossdk.io/math"
-	"fmt"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 func (k *Keeper) GetAVSSupportedAssets(ctx sdk.Context, avsAddr string) ([]string, error) {
-
 	avsInfo, err := k.GetAVSInfo(ctx, avsAddr)
 	if err != nil {
 		return nil, errorsmod.Wrap(err, fmt.Sprintf("GetAVSSupportedAssets: key is %s", avsAddr))
@@ -16,6 +17,7 @@ func (k *Keeper) GetAVSSupportedAssets(ctx sdk.Context, avsAddr string) ([]strin
 
 	return avsInfo.Info.AssetId, nil
 }
+
 func (k *Keeper) GetAVSSlashContract(ctx sdk.Context, avsAddr string) (string, error) {
 	avsInfo, err := k.GetAVSInfo(ctx, avsAddr)
 	if err != nil {
@@ -37,8 +39,8 @@ func (k *Keeper) GetAVSMinimumSelfDelegation(ctx sdk.Context, avsAddr string) (s
 }
 
 // GetEpochEndAVSs returns the AVS list where the current block marks the end of their epoch.
-//func (k *Keeper) GetEpochEndAVSs(ctx sdk.Context) ([]string, error) {
+// func (k *Keeper) GetEpochEndAVSs(ctx sdk.Context) ([]string, error) {
 
 // GetHeightForVotingPower retrieves the height of the last block in the epoch
 // where the voting power used at the current height resides
-//func (k *Keeper) GetHeightForVotingPower(ctx sdk.Context, avsAddr string, height int64) (int64, error)
+// func (k *Keeper) GetHeightForVotingPower(ctx sdk.Context, avsAddr string, height int64) (int64, error)
