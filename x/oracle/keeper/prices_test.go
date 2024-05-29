@@ -4,6 +4,7 @@ import (
 	"strconv"
 	"testing"
 
+	sdkmath "cosmossdk.io/math"
 	keepertest "github.com/ExocoreNetwork/exocore/testutil/keeper"
 	"github.com/ExocoreNetwork/exocore/testutil/nullify"
 	"github.com/ExocoreNetwork/exocore/x/oracle/keeper"
@@ -44,18 +45,28 @@ func TestPricesGet(t *testing.T) {
 	pRes := testdata.P1
 	pRes.PriceList = append([]*types.PriceTimeRound{{}}, testdata.P1.PriceList...)
 	require.Equal(t, pRes, rst)
-	// items := createNPrices(keeper, ctx, 10)
-	//
-	//	for _, item := range items {
-	//		rst, found := keeper.GetPrices(ctx,
-	//			item.TokenId,
-	//		)
-	//		require.True(t, found)
-	//		require.Equal(t,
-	//			nullify.Fill(&item),
-	//			nullify.Fill(&rst),
-	//		)
-	//	}
+}
+
+func TestPricesGetMultiAssets(t *testing.T) {
+	keeper, ctx := keepertest.OracleKeeper(t)
+	keeper.SetPrices(ctx, testdata.P1)
+	assets := make(map[string]interface{})
+	assets["0x0b34c4d876cd569129cf56bafabb3f9e97a4ff42_0x9ce1"] = new(interface{})
+	prices, err := keeper.GetMultipleAssetsPrices(ctx, assets)
+	expectedPrices := make(map[string]types.Price)
+	v, _ := sdkmath.NewIntFromString(testdata.PTR5.Price)
+	//v, _ := sdkmath.NewIntFromString(testdata.PTR5.Price)
+	expectedPrices["0x0b34c4d876cd569129cf56bafabb3f9e97a4ff42_0x9ce1"] = types.Price{
+		Value:   v,
+		Decimal: uint8(testdata.PTR5.Decimal),
+	}
+	require.NoError(t, err)
+	require.Equal(t, expectedPrices, prices)
+
+	assets["unexistsAsset"] = new(interface{})
+	_, err = keeper.GetMultipleAssetsPrices(ctx, assets)
+	require.ErrorIs(t, err, types.ErrGetPrices.Wrapf("assetID does not exist in oracle %s", "unexistsAsset"))
+
 }
 
 func TestPricesRemove(t *testing.T) {

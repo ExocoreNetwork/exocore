@@ -3,6 +3,7 @@ package keeper
 import (
 	"encoding/binary"
 
+	sdkmath "cosmossdk.io/math"
 	"github.com/ExocoreNetwork/exocore/x/oracle/types"
 	"github.com/cosmos/cosmos-sdk/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -40,8 +41,35 @@ func (k Keeper) GetPrices(
 			found = true
 		}
 	}
-
 	return
+}
+
+// return latest price for assets
+func (k Keeper) GetMultipleAssetsPrices(ctx sdk.Context, assets map[string]interface{}) (map[string]types.Price, error) {
+	var p types.Params
+	// get params from cache if exists
+	if agc != nil {
+		p = agc.GetParams()
+	} else {
+		p = k.GetParams(ctx)
+	}
+	ret := make(map[string]types.Price)
+	for assetID := range assets {
+		tokenID := p.GetTokenIDFromAssetID(assetID)
+		if tokenID == 0 {
+			return nil, types.ErrGetPrices.Wrapf("assetID does not exist in oracle %s", assetID)
+		}
+		price, found := k.GetPriceTRLatest(ctx, uint64(tokenID))
+		if !found {
+			return nil, types.ErrGetPrices.Wrapf("no valid price for assetID=%s", assetID)
+		}
+		v, _ := sdkmath.NewIntFromString(price.Price)
+		ret[assetID] = types.Price{
+			Value:   v,
+			Decimal: uint8(price.Decimal),
+		}
+	}
+	return ret, nil
 }
 
 // RemovePrices removes a prices from the store
@@ -118,14 +146,16 @@ func (k Keeper) GetPriceTRRoundID(ctx sdk.Context, tokenID uint64, roundID uint6
 }
 
 func (k Keeper) GetPriceTRLatest(ctx sdk.Context, tokenID uint64) (price types.PriceTimeRound, found bool) {
-	//	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefix(types.PricesKeyPrefix))
-	//	store = prefix.NewStore(store, types.PricesKey(tokenID))
 	store := k.getPriceTRStore(ctx, tokenID)
 	nextRoundIDB := store.Get(types.PricesNextRoundIDKey)
 	if nextRoundIDB == nil {
 		return
 	}
 	nextRoundID := binary.BigEndian.Uint64(nextRoundIDB)
+	// this token has no valid round yet
+	if nextRoundID <= 1 {
+		return
+	}
 	b := store.Get(types.PricesRoundKey(nextRoundID - 1))
 	if b != nil {
 		// should always be true

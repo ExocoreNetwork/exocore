@@ -29,7 +29,7 @@ type roundInfo struct {
 // AggregatorContext keeps memory cache for state params, validatorset, and updatedthese values as they updated on chain. And it keeps the information to track all tokenFeeders' status and data collection
 // nolint
 type AggregatorContext struct {
-	params *common.Params
+	params *types.Params
 
 	// validator->power
 	validatorsPower map[string]*big.Int
@@ -270,7 +270,7 @@ func (agc *AggregatorContext) PrepareRound(ctx sdk.Context, block uint64) {
 	}
 }
 
-func (agc *AggregatorContext) SetParams(p *common.Params) {
+func (agc *AggregatorContext) SetParams(p *types.Params) {
 	agc.params = p
 }
 
@@ -286,6 +286,20 @@ func (agc *AggregatorContext) SetValidatorPowers(vp map[string]*big.Int) {
 
 func (agc *AggregatorContext) GetValidatorPowers() (vp map[string]*big.Int) {
 	return agc.validatorsPower
+}
+
+func (agc *AggregatorContext) GetTokenIDFromAssetID(assetID string) int {
+	agc.params.GetTokenIDFromAssetID(assetID)
+	for id, token := range agc.params.Tokens {
+		if token.AssetID == assetID {
+			return id
+		}
+	}
+	return 0
+}
+
+func (agc *AggregatorContext) GetParams() types.Params {
+	return *agc.params
 }
 
 func NewAggregatorContext() *AggregatorContext {

@@ -1,6 +1,8 @@
 package types
 
 import (
+	"errors"
+
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	"gopkg.in/yaml.v2"
 )
@@ -40,7 +42,7 @@ func DefaultParams() Params {
 				ContractAddress: "0x",
 				Decimal:         18,
 				Active:          true,
-				AssetID:         "",
+				AssetID:         "0x0b34c4d876cd569129cf56bafabb3f9e97a4ff42_0x9ce1",
 			},
 		},
 		Sources: []*Source{
@@ -102,4 +104,90 @@ func (p Params) Validate() error {
 func (p Params) String() string {
 	out, _ := yaml.Marshal(p)
 	return string(out)
+}
+
+func (p Params) GetTokenIDFromAssetID(assetID string) int {
+	for id, token := range p.Tokens {
+		if token.AssetID == assetID {
+			return id
+		}
+	}
+	return 0
+}
+
+func (p Params) IsDeterministicSource(sourceID uint64) bool {
+	return p.Sources[sourceID].Deterministic
+}
+
+func (p Params) IsValidSource(sourceID uint64) bool {
+	if sourceID == 0 {
+		// custom defined source
+		return true
+	}
+	return p.Sources[sourceID].Valid
+}
+
+func (p Params) GetTokenFeeder(feederID uint64) *TokenFeeder {
+	for k, v := range p.TokenFeeders {
+		if uint64(k) == feederID {
+			return v
+		}
+	}
+	return nil
+}
+
+func (p Params) GetTokenInfo(feederID uint64) *Token {
+	for k, v := range p.TokenFeeders {
+		if uint64(k) == feederID {
+			return p.Tokens[v.TokenID]
+		}
+	}
+	return nil
+}
+
+func (p Params) CheckRules(feederID uint64, prices []*PriceSource) (bool, error) {
+	feeder := p.TokenFeeders[feederID]
+	rule := p.Rules[feeder.RuleID]
+	// specified sources set, v1 use this rule to set `chainlink` as official source
+	if rule.SourceIDs != nil && len(rule.SourceIDs) > 0 {
+		if len(rule.SourceIDs) != len(prices) {
+			return false, errors.New("count prices should match rule")
+		}
+		notFound := false
+		if rule.SourceIDs[0] == 0 {
+			// match all sources listed
+			for sID, source := range p.Sources {
+				if sID == 0 {
+					continue
+				}
+				if source.Valid {
+					notFound = true
+					for _, p := range prices {
+						if p.SourceID == uint64(sID) {
+							notFound = false
+							break
+						}
+					}
+
+				}
+			}
+		} else {
+			for _, source := range rule.SourceIDs {
+				notFound = true
+				for _, p := range prices {
+					if p.SourceID == source {
+						notFound = false
+						break
+					}
+				}
+			}
+		}
+		if notFound {
+			return false, errors.New("price source not match with rule")
+		}
+	}
+
+	// TODO: check NOM
+	// return true if no rule set, we will accept any source
+	return true, nil
 }

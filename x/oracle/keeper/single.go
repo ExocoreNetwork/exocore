@@ -94,16 +94,14 @@ func recacheAggregatorContext(ctx sdk.Context, agc *aggregator.AggregatorContext
 	c.AddCache(cache.ItemV(validatorPowers))
 
 	recentMsgs := k.GetAllRecentMsgAsMap(ctx)
-	var pTmp common.Params
 	for ; from < to; from++ {
 		// fill params
 		prev := int64(0)
 		for b, recentParams := range recentParamsMap {
 			if b <= from && b > prev {
-				pTmp = common.Params(*recentParams)
-				agc.SetParams(&pTmp)
+				agc.SetParams(recentParams)
 				prev = b
-				setCommonParams(*recentParams)
+				setCommonParams(recentParams)
 			}
 		}
 
@@ -122,24 +120,24 @@ func recacheAggregatorContext(ctx sdk.Context, agc *aggregator.AggregatorContext
 		}
 		agc.SealRound(ctx, false)
 	}
-
+	var p *types.Params
+	var b int64
 	if from >= to {
 		// backwards compatible for that the validatorUpdateBlock updated every block
 		prev := int64(0)
-		for b, p := range recentParamsMap {
+		for b, p = range recentParamsMap {
 			if b > prev {
 				// pTmp be set at least once, since len(recentParamsMap)>0
-				pTmp = common.Params(*p)
 				prev = b
 			}
 		}
-		agc.SetParams(&pTmp)
-		setCommonParams(types.Params(pTmp))
+		agc.SetParams(p)
+		setCommonParams(p)
 	}
 
-	var pRet common.Params
-	if updated := c.GetCache(cache.ItemP(&pRet)); !updated {
-		c.AddCache(cache.ItemP(&pTmp))
+	var pRet cache.ItemP
+	if updated := c.GetCache(&pRet); !updated {
+		c.AddCache(cache.ItemP(*p))
 	}
 	// fill params cache
 	agc.PrepareRound(ctx, uint64(to))
@@ -150,11 +148,11 @@ func recacheAggregatorContext(ctx sdk.Context, agc *aggregator.AggregatorContext
 func initAggregatorContext(ctx sdk.Context, agc *aggregator.AggregatorContext, k common.KeeperOracle, c *cache.Cache) {
 	// set params
 	p := k.GetParams(ctx)
-	pTmp := common.Params(p)
-	agc.SetParams(&pTmp)
+	agc.SetParams(&p)
 	// set params cache
-	c.AddCache(cache.ItemP(&pTmp))
-	setCommonParams(p)
+	c.AddCache(cache.ItemP(p))
+	setCommonParams(&p)
+
 	totalPower := big.NewInt(0)
 	validatorPowers := make(map[string]*big.Int)
 	k.IterateBondedValidatorsByPower(ctx, func(_ int64, validator stakingtypes.ValidatorI) bool {
@@ -184,7 +182,7 @@ func ResetAggregatorContextCheckTx() {
 	agcCheckTx = nil
 }
 
-func setCommonParams(p types.Params) {
+func setCommonParams(p *types.Params) {
 	common.MaxNonce = p.MaxNonce
 	common.ThresholdA = p.ThresholdA
 	common.ThresholdB = p.ThresholdB
