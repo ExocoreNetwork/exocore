@@ -41,11 +41,11 @@ func (s *TaskPrecompileTestSuite) TestIsTransaction() {
 
 // TestRun tests the precompiles Run method reg avstask.
 func (s *TaskPrecompileTestSuite) TestRunRegTaskinfo() {
-	avsName, avsAddres, operatorAddress, assetID := "avsTest", "exo13h6xg79g82e2g2vhjwg7j4r2z2hlncelwutkjr", "exo18h6xg79g82e2g2vhjwg7j4r2z2hlncelwutkjr", ""
+	avsName, avsAddres, operatorAddress, avsOwnerAddress, assetID := "avsTest", "exo13h6xg79g82e2g2vhjwg7j4r2z2hlncelwutkjr", "0x3e108c058e8066DA635321Dc3018294cA82ddEdf", "exo18h6xg79g82e2g2vhjwg7j4r2z2hlncelwutkjr", ""
 	_, byteData, _ := bech32.DecodeToBase256(avsAddres)
 	caller := "0x" + hex.EncodeToString(byteData)
 	registerAvs := func() {
-		err := s.App.AVSManagerKeeper.SetAVSInfo(s.Ctx, avsName, avsAddres, operatorAddress, assetID)
+		err := s.App.AVSManagerKeeper.SetAVSInfo(s.Ctx, avsName, avsAddres, operatorAddress, avsOwnerAddress, assetID)
 		s.NoError(err)
 	}
 	commonMalleate := func() (common.Address, []byte) {

@@ -34,10 +34,23 @@ func (k Keeper) SetParams(ctx sdk.Context, params *types.Params) error {
 type AVSRegisterOrDeregisterParams struct {
 	AvsName         string
 	AvsAddress      string
-	OperatorAddress string
 	Action          uint64
-	AvsOwnerAddress string
-	AssetID         string
+	AvsOwnerAddress []string
+	AssetID         []string
+
+	MinimumDelegation uint64
+	UnbondingEpochs   uint64
+	SlashContractAddr string
+	OperatorAddress   []string
+}
+type OperatorOptParams struct {
+	Name            string
+	BlsPublicKey    string
+	IsRegistered    bool
+	Action          uint64
+	OperatorAddress string
+	Status          string
+	AvsAddress      string
 }
 
 const (

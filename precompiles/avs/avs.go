@@ -84,8 +84,11 @@ func (p Precompile) Run(evm *vm.EVM, contract *vm.Contract, readOnly bool) (bz [
 	// It avoids panics and returns the out of gas error so the EVM can continue gracefully.
 	defer cmn.HandleGasError(ctx, contract, initialGas, &err)()
 
-	if method.Name == MethodAVSAction {
+	switch method.Name {
+	case MethodAVSAction:
 		bz, err = p.AVSInfoRegisterOrDeregister(ctx, evm.Origin, contract, stateDB, method, args)
+	case MethodOperatorAction:
+		bz, err = p.OperatorBindingAvs(ctx, evm.Origin, contract, stateDB, method, args)
 	}
 
 	if err != nil {
@@ -108,7 +111,7 @@ func (p Precompile) Run(evm *vm.EVM, contract *vm.Contract, readOnly bool) (bz [
 //   - AVSRegister
 func (Precompile) IsTransaction(methodID string) bool {
 	switch methodID {
-	case MethodAVSAction:
+	case MethodAVSAction, MethodOperatorAction:
 		return true
 	default:
 		return false

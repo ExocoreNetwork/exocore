@@ -20,14 +20,14 @@ func (s *AVSManagerPrecompileSuite) TestIsTransaction() {
 		isTx   bool
 	}{
 		{
-			avs.MethodAVSAction,
-			s.precompile.Methods[avs.MethodAVSAction].Name,
+			avs.MethodOperatorAction,
+			s.precompile.Methods[avs.MethodOperatorAction].Name,
 			true,
 		},
 		{
-			"invalid",
-			"invalid",
-			false,
+			avs.MethodAVSAction,
+			s.precompile.Methods[avs.MethodAVSAction].Name,
+			true,
 		},
 	}
 
@@ -39,9 +39,12 @@ func (s *AVSManagerPrecompileSuite) TestIsTransaction() {
 }
 
 func (s *AVSManagerPrecompileSuite) TestAVSManager() {
-	avsName, avsAddres, operatorAddress := "avsTest", "exo13h6xg79g82e2g2vhjwg7j4r2z2hlncelwutkjr", "exo13h6xg79g82e2g2vhjwg7j4r2z2hlncelwutkjr"
+	avsName, operatorAddress, slashAddress := "avsTest", "exo18cggcpvwspnd5c6ny8wrqxpffj5zmhklprtnph", "0xDF907c29719154eb9872f021d21CAE6E5025d7aB"
+
 	avsAction := avskeeper.RegisterAction
-	avsOwnderAddress, assetID := "0x123", "0x1"
+	from := s.Address
+	avsOwnerAddress := []string{"0x3e108c058e8066DA635321Dc3018294cA82ddEdf", "0xDF907c29719154eb9872f021d21CAE6E5025d7aB", from.String()}
+	assetID := []string{"11", "22", "33"}
 	registerOperator := func() {
 		registerReq := &operatortypes.RegisterOperatorReq{
 			FromAddress: operatorAddress,
@@ -56,12 +59,13 @@ func (s *AVSManagerPrecompileSuite) TestAVSManager() {
 		// prepare the call input for delegation test
 		input, err := s.precompile.Pack(
 			avs.MethodAVSAction,
+			avsOwnerAddress,
 			avsName,
-			avsAddres,
-			operatorAddress,
-			uint64(avsAction),
-			avsOwnderAddress,
+			slashAddress,
 			assetID,
+			uint64(avsAction),
+			uint64(10),
+			uint64(7),
 		)
 		s.Require().NoError(err, "failed to pack input")
 		return s.Address, input
@@ -99,9 +103,9 @@ func (s *AVSManagerPrecompileSuite) TestAVSManager() {
 
 			// malleate testcase
 			caller, input := tc.malleate()
-
 			contract := vm.NewPrecompile(vm.AccountRef(caller), s.precompile, big.NewInt(0), uint64(1e6))
 			contract.Input = input
+			contract.CallerAddress = from
 
 			contractAddr := contract.Address()
 			// Build and sign Ethereum transaction
