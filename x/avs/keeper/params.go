@@ -38,8 +38,8 @@ type AVSRegisterOrDeregisterParams struct {
 	AvsOwnerAddress []string
 	AssetID         []string
 
-	MinimumDelegation uint64
-	UnbondingEpochs   uint64
+	MinSelfDelegation uint64
+	UnbondingPeriod   uint64
 	SlashContractAddr string
 	OperatorAddress   []string
 }

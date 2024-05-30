@@ -20,8 +20,8 @@ func (suite *AVSTestSuite) TestAVS() {
 		SlashAddr:          slashAddress,
 		AvsOwnerAddress:    avsOwnerAddress,
 		AssetId:            assetID,
-		AvsUnbondingEpochs: uint32(7),
-		MinimumDelegation:  sdk.NewIntFromUint64(10),
+		AvsUnbondingPeriod: uint32(7),
+		MinSelfDelegation:  sdk.NewIntFromUint64(10),
 		AvsEpoch:           nil,
 		OperatorAddress:    nil,
 	}
@@ -47,8 +47,8 @@ func (suite *AVSTestSuite) TestAVSInfoUpdate_Register() {
 		Action:            avstypes.RegisterAction,
 		AvsOwnerAddress:   avsOwnerAddress,
 		AssetID:           assetID,
-		MinimumDelegation: uint64(10),
-		UnbondingEpochs:   uint64(7),
+		MinSelfDelegation: uint64(10),
+		UnbondingPeriod:   uint64(7),
 		SlashContractAddr: slashAddress,
 		OperatorAddress:   nil,
 	}
@@ -78,8 +78,8 @@ func (suite *AVSTestSuite) TestAVSInfoUpdate_DeRegister() {
 		Action:            avstypes.DeRegisterAction,
 		AvsOwnerAddress:   avsOwnerAddress,
 		AssetID:           assetID,
-		MinimumDelegation: uint64(10),
-		UnbondingEpochs:   uint64(7),
+		MinSelfDelegation: uint64(10),
+		UnbondingPeriod:   uint64(7),
 		SlashContractAddr: slashAddress,
 		OperatorAddress:   nil,
 	}
@@ -146,8 +146,8 @@ func (suite *AVSTestSuite) TestAVSInfoUpdateWithOperator_Register() {
 		Action:            avstypes.RegisterAction,
 		AvsOwnerAddress:   avsOwnerAddress,
 		AssetID:           assetID,
-		MinimumDelegation: uint64(10),
-		UnbondingEpochs:   uint64(7),
+		MinSelfDelegation: uint64(10),
+		UnbondingPeriod:   uint64(7),
 		SlashContractAddr: slashAddress,
 		OperatorAddress:   nil,
 	}

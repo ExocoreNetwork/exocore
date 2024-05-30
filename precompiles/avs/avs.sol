@@ -19,8 +19,8 @@ interface IAVSManager {
         string memory slashContractAddr,
         string[] memory assetID,
         uint64 action,
-        uint64 minimumDelegation,
-        uint64 unbondingEpochs
+        uint64 minSelfDelegation,
+        uint64 unbondingPeriod
     ) external returns (bool success);
 
 

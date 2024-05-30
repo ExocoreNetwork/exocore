@@ -28,12 +28,12 @@
 			},
 			{
 				"internalType": "uint64",
-				"name": "minimumDelegation",
+				"name": "minSelfDelegation",
 				"type": "uint64"
 			},
 			{
 				"internalType": "uint64",
-				"name": "unbondingEpochs",
+				"name": "unbondingPeriod",
 				"type": "uint64"
 			}
 		],

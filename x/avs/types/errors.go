@@ -18,4 +18,9 @@ var (
 		ModuleName, 2,
 		"Error: No available avs to DeRegisterAction",
 	)
+
+	ErrInvalidAction = errorsmod.Register(
+		ModuleName, 3,
+		"Error: Undefined action",
+	)
 )

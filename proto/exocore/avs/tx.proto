@@ -21,9 +21,9 @@ message AVSInfo {
   // asset_basic_info is all the basic asset information of the avs.
   repeated string asset_id = 5;
   // unbonding duration of avs.
-  uint32 avs_unbonding_epochs = 6;
+  uint32 avs_unbonding_period = 6;
   // the operator minimum delegation amount.
-  string minimum_delegation = 7
+  string min_self_delegation = 7
   [
     (cosmos_proto.scalar) = "cosmos.Int",
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
@@ -33,19 +33,6 @@ message AVSInfo {
   EpochInfo avs_epoch = 8;
   // registered operator of avs
   repeated string operator_address = 9;
-}
-//  The information of OperatorBindingAVSInfo in opt-in avs
-message OperatorBindingAVSInfo {
-  // name of Operator
-  string name = 1;
-  // address of Operator
-  string operator_address = 2;
-  // publicKey of Operator
-  string bls_public_key =3 ;
-  // reg flag
-  bool is_registered =4;
-  // status of operator
-  string status = 5;
 }
 
 // EpochInfo defines the message interface containing the relevant informations aboutt

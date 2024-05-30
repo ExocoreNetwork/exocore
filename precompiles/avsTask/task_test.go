@@ -54,8 +54,8 @@ func (s *TaskPrecompileTestSuite) TestRunRegTaskinfo() {
 		SlashAddr:          slashAddress,
 		AvsOwnerAddress:    avsOwnerAddress,
 		AssetId:            assetID,
-		AvsUnbondingEpochs: uint32(7),
-		MinimumDelegation:  sdk.NewIntFromUint64(10),
+		AvsUnbondingPeriod: uint32(7),
+		MinSelfDelegation:  sdk.NewIntFromUint64(10),
 		AvsEpoch:           nil,
 		OperatorAddress:    nil,
 	}

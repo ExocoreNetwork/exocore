@@ -50,34 +50,35 @@ func (k Keeper) AVSInfoUpdate(ctx sdk.Context, params *AVSRegisterOrDeregisterPa
 
 	action := params.Action
 
-	if action == RegisterAction && avsInfo != nil {
-		return errorsmod.Wrap(types.ErrAlreadyRegistered, fmt.Sprintf("the error input arg is:%s", params.AvsAddress))
-	}
-
-	avs := &types.AVSInfo{
-		Name:               params.AvsName,
-		AvsAddress:         params.AvsAddress,
-		SlashAddr:          params.SlashContractAddr,
-		AvsOwnerAddress:    params.AvsOwnerAddress,
-		AssetId:            params.AssetID,
-		AvsUnbondingEpochs: uint32(params.MinimumDelegation),
-		MinimumDelegation:  sdk.NewIntFromUint64(params.UnbondingEpochs),
-		AvsEpoch:           nil,
-		OperatorAddress:    nil,
-	}
-	if action == RegisterAction && avsInfo == nil {
+	switch action {
+	case RegisterAction:
+		if avsInfo != nil {
+			return errorsmod.Wrap(types.ErrAlreadyRegistered, fmt.Sprintf("the avsaddress is :%s", params.AvsAddress))
+		}
+		avs := &types.AVSInfo{
+			Name:               params.AvsName,
+			AvsAddress:         params.AvsAddress,
+			SlashAddr:          params.SlashContractAddr,
+			AvsOwnerAddress:    params.AvsOwnerAddress,
+			AssetId:            params.AssetID,
+			MinSelfDelegation:  sdk.NewIntFromUint64(params.MinSelfDelegation),
+			AvsUnbondingPeriod: uint32(params.UnbondingPeriod),
+			AvsEpoch:           nil,
+			OperatorAddress:    nil,
+		}
 		return k.SetAVSInfo(ctx, avs)
+	case DeRegisterAction:
+		if avsInfo == nil {
+			return errorsmod.Wrap(types.ErrUnregisterNonExistent, fmt.Sprintf("the avsaddress is :%s", params.AvsAddress))
+		}
+		//TODO:if avs DeRegisterAction check UnbondingPeriod
+		// if avsInfo.Info.AvsUnbondingPeriod < currenUnbondingPeriod - regUnbondingPeriod  {
+		//	return errorsmod.Wrap(err, fmt.Sprintf("not qualified to deregister %s", avsInfo))
+		//}
+		return k.DeleteAVSInfo(ctx, params.AvsAddress)
+	default:
+		return errorsmod.Wrap(types.ErrInvalidAction, fmt.Sprintf("Invalid action: %d", action))
 	}
-
-	if avsInfo == nil {
-		return errorsmod.Wrap(types.ErrUnregisterNonExistent, fmt.Sprintf("the error input arg is:%s", avsInfo))
-	}
-
-	//TODO:if avs DeRegisterAction check UnbondingEpochs
-	// if avsInfo.Info.AvsUnbondingEpochs < currenUnbondingEpoch - regUnbondingEpoch {
-	//	return errorsmod.Wrap(err, fmt.Sprintf("not qualified to deregister %s", avsInfo))
-	//}
-	return k.DeleteAVSInfo(ctx, params.AvsAddress)
 }
 
 func (k Keeper) AVSInfoUpdateWithOperator(ctx sdk.Context, params *OperatorOptParams) error {
@@ -90,8 +91,8 @@ func (k Keeper) AVSInfoUpdateWithOperator(ctx sdk.Context, params *OperatorOptPa
 		return errorsmod.Wrap(delegationtypes.ErrOperatorNotExist, fmt.Sprintf("AVSInfoUpdate: invalid operator address:%s", operatorAddress))
 	}
 	avsInfo, err := k.GetAVSInfo(ctx, params.AvsAddress)
-	if err != nil || avsInfo.GetInfo() == nil {
-		return errorsmod.Wrap(err, fmt.Sprintf("error occurred when get avs info %s", avsInfo))
+	if err != nil || avsInfo == nil {
+		return errorsmod.Wrap(err, fmt.Sprintf("error occurred when get avs info,this avs address: %s", params.AvsAddress))
 	}
 	avs := avsInfo.GetInfo()
 	addresses := avs.OperatorAddress
@@ -120,8 +121,7 @@ func (k Keeper) SetAVSInfo(ctx sdk.Context, avs *types.AVSInfo) (err error) {
 	}
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefixAVSInfo)
 
-	AVSInfo := avs
-	bz := k.cdc.MustMarshal(AVSInfo)
+	bz := k.cdc.MustMarshal(avs)
 	store.Set(avsAddr, bz)
 	return nil
 }

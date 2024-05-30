@@ -22,7 +22,7 @@ func (p Precompile) GetAVSParamsFromInputs(_ sdk.Context, args []interface{}) (*
 	exoAddresses := make([]string, len(avsOwnerAddress))
 	var err error
 	for i, addr := range avsOwnerAddress {
-		exoAddresses[i], err = util.ProcessAvsAddress(addr)
+		exoAddresses[i], err = util.ProcessAddress(addr)
 		if err != nil {
 			return nil, xerrors.Errorf(exocmn.ErrContractInputParaOrType, 0, "[]string", avsOwnerAddress)
 		}
@@ -41,7 +41,7 @@ func (p Precompile) GetAVSParamsFromInputs(_ sdk.Context, args []interface{}) (*
 		return nil, xerrors.Errorf(exocmn.ErrContractInputParaOrType, 2, "string", slashContractAddr)
 	}
 
-	slashContractAddr, err = util.ProcessAvsAddress(slashContractAddr)
+	slashContractAddr, err = util.ProcessAddress(slashContractAddr)
 	if err != nil {
 		return nil, xerrors.Errorf(exocmn.ErrContractInputParaOrType, 2, "string", slashContractAddr)
 	}
@@ -59,17 +59,17 @@ func (p Precompile) GetAVSParamsFromInputs(_ sdk.Context, args []interface{}) (*
 	}
 	avsParams.Action = action
 
-	minimumDelegation, ok := args[5].(uint64)
+	minSelfDelegation, ok := args[5].(uint64)
 	if !ok || (action != avstypes.RegisterAction && action != avstypes.DeRegisterAction) {
-		return nil, xerrors.Errorf(exocmn.ErrContractInputParaOrType, 5, "uint64", minimumDelegation)
+		return nil, xerrors.Errorf(exocmn.ErrContractInputParaOrType, 5, "uint64", minSelfDelegation)
 	}
-	avsParams.MinimumDelegation = minimumDelegation
+	avsParams.MinSelfDelegation = minSelfDelegation
 
-	unbondingEpochs, ok := args[6].(uint64)
+	unbondingPeriod, ok := args[6].(uint64)
 	if !ok || (action != avstypes.RegisterAction && action != avstypes.DeRegisterAction) {
-		return nil, xerrors.Errorf(exocmn.ErrContractInputParaOrType, 6, "uint64", unbondingEpochs)
+		return nil, xerrors.Errorf(exocmn.ErrContractInputParaOrType, 6, "uint64", unbondingPeriod)
 	}
-	avsParams.UnbondingEpochs = unbondingEpochs
+	avsParams.UnbondingPeriod = unbondingPeriod
 
 	return avsParams, nil
 }

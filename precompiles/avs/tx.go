@@ -8,7 +8,7 @@ import (
 
 	exocmn "github.com/ExocoreNetwork/exocore/precompiles/common"
 	util "github.com/ExocoreNetwork/exocore/utils"
-	avstypes "github.com/ExocoreNetwork/exocore/x/avs/keeper"
+	avskeeper "github.com/ExocoreNetwork/exocore/x/avs/keeper"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
@@ -23,7 +23,7 @@ const (
 )
 
 // AVSInfoRegister register the avs related information and change the state in avs keeper module.
-func (p Precompile) AVSInfoRegisterOrDeregister(
+func (p Precompile) RegisterOrDeregisterAVSInfo(
 	ctx sdk.Context,
 	_ common.Address,
 	contract *vm.Contract,
@@ -36,12 +36,12 @@ func (p Precompile) AVSInfoRegisterOrDeregister(
 	if err != nil {
 		return nil, errorsmod.Wrap(err, "parse args error")
 	}
-	avsAddress, err := util.ProcessAvsAddress(contract.Address().String())
+	avsAddress, err := util.ProcessAddress(contract.Address().String())
 	if err != nil {
 		return nil, errorsmod.Wrap(err, "parse avsAddress error")
 	}
 
-	callerAddress, err := util.ProcessAvsAddress(contract.CallerAddress.String())
+	callerAddress, err := util.ProcessAddress(contract.CallerAddress.String())
 	if err != nil {
 		return nil, errorsmod.Wrap(err, "parse callerAddress error")
 	}
@@ -61,7 +61,7 @@ func (p Precompile) AVSInfoRegisterOrDeregister(
 	return method.Outputs.Pack(true)
 }
 
-func (p Precompile) OperatorBindingAvs(
+func (p Precompile) BindOperatorToAVS(
 	ctx sdk.Context,
 	_ common.Address,
 	contract *vm.Contract,
@@ -72,21 +72,21 @@ func (p Precompile) OperatorBindingAvs(
 	if len(args) != 2 {
 		return nil, fmt.Errorf(cmn.ErrInvalidNumberOfArgs, 2, len(args))
 	}
-	operatorParams := &avstypes.OperatorOptParams{}
+	operatorParams := &avskeeper.OperatorOptParams{}
 	action, ok := args[0].(uint64)
-	if !ok || (action != avstypes.RegisterAction && action != avstypes.DeRegisterAction) {
+	if !ok || (action != avskeeper.RegisterAction && action != avskeeper.DeRegisterAction) {
 		return nil, xerrors.Errorf(exocmn.ErrContractInputParaOrType, 0, "uint64", action)
 	}
 	operatorParams.Action = action
 
-	callerAddress, err := util.ProcessAvsAddress(contract.CallerAddress.String())
+	callerAddress, err := util.ProcessAddress(contract.CallerAddress.String())
 	if err != nil {
 		return nil, errorsmod.Wrap(err, "parse callerAddress error")
 	}
 
 	operatorParams.OperatorAddress = callerAddress
 
-	avsAddress, err := util.ProcessAvsAddress(contract.Address().String())
+	avsAddress, err := util.ProcessAddress(contract.Address().String())
 	if err != nil {
 		return nil, errorsmod.Wrap(err, "parse avsAddress error")
 	}

@@ -73,7 +73,7 @@ func (p Precompile) RequiredGas(input []byte) uint64 {
 	return p.Precompile.RequiredGas(input, p.IsTransaction(method.Name))
 }
 
-// Run executes the precompiled contract AVSInfoRegisterOrDeregister methods defined in the ABI.
+// Run executes the precompiled contract RegisterOrDeregisterAVSInfo methods defined in the ABI.
 func (p Precompile) Run(evm *vm.EVM, contract *vm.Contract, readOnly bool) (bz []byte, err error) {
 	ctx, stateDB, method, initialGas, args, err := p.RunSetup(evm, contract, readOnly, p.IsTransaction)
 	if err != nil {
@@ -86,9 +86,9 @@ func (p Precompile) Run(evm *vm.EVM, contract *vm.Contract, readOnly bool) (bz [
 
 	switch method.Name {
 	case MethodAVSAction:
-		bz, err = p.AVSInfoRegisterOrDeregister(ctx, evm.Origin, contract, stateDB, method, args)
+		bz, err = p.RegisterOrDeregisterAVSInfo(ctx, evm.Origin, contract, stateDB, method, args)
 	case MethodOperatorAction:
-		bz, err = p.OperatorBindingAvs(ctx, evm.Origin, contract, stateDB, method, args)
+		bz, err = p.BindOperatorToAVS(ctx, evm.Origin, contract, stateDB, method, args)
 	}
 
 	if err != nil {
