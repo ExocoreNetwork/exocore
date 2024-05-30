@@ -2,10 +2,11 @@ package keeper
 
 import (
 	"context"
+	sdkmath "cosmossdk.io/math"
+	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 
 	"github.com/ExocoreNetwork/exocore/x/assets/types"
 
-	sdkmath "cosmossdk.io/math"
 	operatortypes "github.com/ExocoreNetwork/exocore/x/operator/types"
 	"github.com/cosmos/cosmos-sdk/codec"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
@@ -69,5 +70,15 @@ type OperatorKeeper interface {
 
 	OptOut(ctx sdk.Context, OperatorAddress sdk.AccAddress, AVSAddr string) error
 
-	NoInstantaneousSlash(ctx sdk.Context, operatorAddress sdk.AccAddress, AVSAddr, slashContract, slashID string, occurredSateHeight int64, slashProportion sdkmath.LegacyDec) error
+	Slash(ctx sdk.Context, parameter *SlashInputInfo) error
+
+	SlashWithInfractionReason(
+		ctx sdk.Context, addr sdk.AccAddress, infractionHeight, power int64,
+		slashFactor sdk.Dec, infraction stakingtypes.Infraction,
+	) sdkmath.Int
+
+	OptInToCosmosChain(
+		goCtx context.Context,
+		req *operatortypes.OptInToCosmosChainRequest,
+	) (*operatortypes.OptInToCosmosChainResponse, error)
 }

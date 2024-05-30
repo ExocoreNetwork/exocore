@@ -83,6 +83,11 @@ func (k *Keeper) DeleteOperatorUSDValue(ctx sdk.Context, avsAddr, operatorAddr s
 // of Avs should decrease the USD share of the opted-out operator
 // This function can also serve as an RPC in the future.
 func (k *Keeper) GetOperatorUSDValue(ctx sdk.Context, avsAddr, operatorAddr string) (sdkmath.LegacyDec, error) {
+	// return zero if the operator has opted-out of the AVS
+	if !k.IsOptedIn(ctx, operatorAddr, avsAddr) {
+		return sdkmath.LegacyNewDec(0), nil
+	}
+
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), operatortypes.KeyPrefixVotingPowerForAVSOperator)
 	var ret operatortypes.DecValueField
 	var key []byte
