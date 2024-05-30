@@ -155,10 +155,10 @@ service Query {
     option (cosmos.query.v1.module_query_safe) = true;
     option (google.api.http).get = "/exocore/assets/v1/QueStakerSpecifiedAssetAmount";
   }
-  // StakerExCoreAddr queries the staker exocore address.
-  rpc QueStakerExoCoreAddr(QueryStakerExCoreAddr) returns (QueryStakerExCoreAddrResponse) {
-    option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/exocore/assets/v1/QueStakerExoCoreAddr/{staker}";
-  }
+  // // StakerExCoreAddr queries the staker exocore address.
+  // rpc QueStakerExoCoreAddr(QueryStakerExCoreAddr) returns (QueryStakerExCoreAddrResponse) {
+  //   option (cosmos.query.v1.module_query_safe) = true;
+  //   option (google.api.http).get = "/exocore/assets/v1/QueStakerExoCoreAddr/{staker}";
+  // }
 }
 

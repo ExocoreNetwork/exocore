@@ -332,36 +332,36 @@ func QueOperatorSpecifiedAssetAmount() *cobra.Command {
 	return cmd
 }
 
-// QueStakerExoCoreAddr queries staker ExoCore address
-func QueStakerExoCoreAddr() *cobra.Command {
-	cmd := &cobra.Command{
-		Use:   "QueStakerExoCoreAddr stakerID",
-		Short: "Get staker ExoCore address",
-		Long:  "Get staker ExoCore address",
-		Args:  cobra.ExactArgs(1),
-		RunE: func(cmd *cobra.Command, args []string) error {
-			clientCtx, err := client.GetClientQueryContext(cmd)
-			if err != nil {
-				return err
-			}
+// // QueStakerExoCoreAddr queries staker ExoCore address
+// func QueStakerExoCoreAddr() *cobra.Command {
+// 	cmd := &cobra.Command{
+// 		Use:   "QueStakerExoCoreAddr stakerID",
+// 		Short: "Get staker ExoCore address",
+// 		Long:  "Get staker ExoCore address",
+// 		Args:  cobra.ExactArgs(1),
+// 		RunE: func(cmd *cobra.Command, args []string) error {
+// 			clientCtx, err := client.GetClientQueryContext(cmd)
+// 			if err != nil {
+// 				return err
+// 			}
 
-			stakerID := args[0]
-			if _, _, err := types.ValidateID(stakerID, false, false); err != nil {
-				return errorsmod.Wrap(types.ErrInvalidCliCmdArg, err.Error())
-			}
+// 			stakerID := args[0]
+// 			if _, _, err := types.ValidateID(stakerID, false, false); err != nil {
+// 				return errorsmod.Wrap(types.ErrInvalidCliCmdArg, err.Error())
+// 			}
 
-			queryClient := types.NewQueryClient(clientCtx)
-			req := &types.QueryStakerExCoreAddr{
-				Staker: strings.ToLower(stakerID),
-			}
-			res, err := queryClient.QueStakerExoCoreAddr(context.Background(), req)
-			if err != nil {
-				return err
-			}
-			return clientCtx.PrintProto(res)
-		},
-	}
+// 			queryClient := types.NewQueryClient(clientCtx)
+// 			req := &types.QueryStakerExCoreAddr{
+// 				Staker: strings.ToLower(stakerID),
+// 			}
+// 			res, err := queryClient.QueStakerExoCoreAddr(context.Background(), req)
+// 			if err != nil {
+// 				return err
+// 			}
+// 			return clientCtx.PrintProto(res)
+// 		},
+// 	}
 
-	flags.AddQueryFlagsToCmd(cmd)
-	return cmd
-}
+// 	flags.AddQueryFlagsToCmd(cmd)
+// 	return cmd
+// }
