@@ -85,11 +85,18 @@ func QueryDelegationInfo() *cobra.Command {
 			if err != nil {
 				return err
 			}
-
+			stakerID := strings.ToLower(args[0])
+			if _, _, err := types.ValidateID(stakerID, false, false); err != nil {
+				return errorsmod.Wrap(types.ErrInvalidCliCmdArg, err.Error())
+			}
+			assetID := strings.ToLower(args[1])
+			if _, _, err := types.ValidateID(assetID, false, false); err != nil {
+				return errorsmod.Wrap(types.ErrInvalidCliCmdArg, err.Error())
+			}
 			queryClient := delegationtype.NewQueryClient(clientCtx)
 			req := &delegationtype.DelegationInfoReq{
-				StakerID: strings.ToLower(args[0]),
-				AssetID:  strings.ToLower(args[1]),
+				StakerID: strings.ToLower(stakerID),
+				AssetID:  strings.ToLower(assetID),
 			}
 			res, err := queryClient.QueryDelegationInfo(context.Background(), req)
 			if err != nil {

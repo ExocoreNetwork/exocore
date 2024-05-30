@@ -204,9 +204,14 @@ func QueStakerAssetInfos() *cobra.Command {
 				return err
 			}
 
+			stakerID := args[0]
+			if _, _, err := types.ValidateID(stakerID, false, false); err != nil {
+				return errorsmod.Wrap(types.ErrInvalidCliCmdArg, err.Error())
+			}
+
 			queryClient := types.NewQueryClient(clientCtx)
 			req := &types.QueryStakerAssetInfo{
-				StakerID: strings.ToLower(args[0]),
+				StakerID: strings.ToLower(stakerID),
 			}
 			res, err := queryClient.QueStakerAssetInfos(context.Background(), req)
 			if err != nil {
@@ -340,9 +345,14 @@ func QueStakerExoCoreAddr() *cobra.Command {
 				return err
 			}
 
+			stakerID := args[0]
+			if _, _, err := types.ValidateID(stakerID, false, false); err != nil {
+				return errorsmod.Wrap(types.ErrInvalidCliCmdArg, err.Error())
+			}
+
 			queryClient := types.NewQueryClient(clientCtx)
 			req := &types.QueryStakerExCoreAddr{
-				Staker: strings.ToLower(args[0]),
+				Staker: strings.ToLower(stakerID),
 			}
 			res, err := queryClient.QueStakerExoCoreAddr(context.Background(), req)
 			if err != nil {
