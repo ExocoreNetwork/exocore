@@ -2,6 +2,7 @@ syntax = "proto3";
 
 package exocore.dogfood.v1;
 
+import "exocore/dogfood/v1/dogfood.proto";
 import "exocore/dogfood/v1/params.proto";
 import "gogoproto/gogo.proto";
 import "google/api/annotations.proto";
@@ -10,9 +11,38 @@ option go_package = "github.com/ExocoreNetwork/exocore/x/dogfood/types";
 
 // Query defines the gRPC querier service.
 service Query {
-  // Parameters queries the parameters of the module.
+  // Params queries the parameters of the module.
   rpc Params(QueryParamsRequest) returns (QueryParamsResponse) {
     option (google.api.http).get = "/exocore/dogfood/params";
+  }
+
+  // OptOutsToFinish queries the operators whose opt-outs will finish at the given epoch.
+  rpc OptOutsToFinish(QueryOptOutsToFinishRequest) returns (AccountAddresses) {
+    option (google.api.http).get = "/exocore/dogfood/opt_outs_to_finish/{epoch}";
+  }
+
+  // OperatorOptOutFinishEpoch queries the epoch when the operator's opt-out will finish.
+  rpc OperatorOptOutFinishEpoch(QueryOperatorOptOutFinishEpochRequest) returns (
+    QueryOperatorOptOutFinishEpochResponse
+  ) {
+    option (google.api.http).get = "/exocore/dogfood/operator_opt_out_finish_epoch/{operator_acc_addr}";
+  }
+
+  // UndelegationsToMature queries the undelegations that will mature at the given epoch.
+  rpc UndelegationsToMature(QueryUndelegationsToMatureRequest) returns (UndelegationRecordKeys) {
+    option (google.api.http).get = "/exocore/dogfood/undelegations_to_mature/{epoch}";
+  }
+
+  // UndelegationMaturityEpoch queries the epoch when the undelegation will mature.
+  rpc UndelegationMaturityEpoch(QueryUndelegationMaturityEpochRequest) returns (
+    QueryUndelegationMaturityEpochResponse
+  ) {
+    option (google.api.http).get = "/exocore/dogfood/undelegation_maturity_epoch/{record_key}";
+  }
+
+  // QueryValidator queries the validator for the given consensus address.
+  rpc QueryValidator(QueryValidatorRequest) returns (ExocoreValidator) {
+    option (google.api.http).get = "/exocore/dogfood/validator/{cons_addr}";
   }
 }
 
@@ -23,4 +53,52 @@ message QueryParamsRequest {}
 message QueryParamsResponse {
   // params holds all the parameters of this module.
   Params params = 1 [(gogoproto.nullable) = false];
+}
+
+// QueryOptOutsToFinishRequest is request type for the Query/OptOutsToFinish RPC method.
+message QueryOptOutsToFinishRequest {
+  // epoch is the epoch to query opt-outs for.
+  int64 epoch = 1;
+}
+
+// QueryOperatorOptOutFinishEpochRequest is request type for the Query/OperatorOptOutFinishEpoch
+// RPC method.
+message QueryOperatorOptOutFinishEpochRequest {
+  // operator_acc_addr is the operator account address.
+  string operator_acc_addr = 1;
+}
+
+// QueryOperatorOptOutFinishEpochResponse is response type for the
+// Query/OperatorOptOutFinishEpoch RPC method.
+message QueryOperatorOptOutFinishEpochResponse {
+  // epoch is the epoch when the operator's opt-out will finish.
+  int64 epoch = 1;
+}
+
+// QueryUndelegationsToMatureRequest is request type for the Query/UndelegationsToMature RPC method.
+message QueryUndelegationsToMatureRequest {
+  // epoch is the epoch to query undelegations for.
+  int64 epoch = 1;
+}
+
+// QueryUndelegationMaturityEpochRequest is request type for the Query/UndelegationMaturityEpoch
+// RPC method.
+message QueryUndelegationMaturityEpochRequest {
+  // record_key is the undelegation record key. note that the UndelegationRecordKey used by the
+  // delegation module is just a string converted to bytes, which we will reverse here.
+  string record_key = 1;
+}
+
+// QueryUndelegationMaturityEpochResponse is response type for the
+// Query/UndelegationMaturityEpoch RPC method.
+message QueryUndelegationMaturityEpochResponse {
+  // epoch is the epoch when the undelegation will mature.
+  int64 epoch = 1;
+}
+
+// QueryValidatorRequest is request type for the Query/QueryValidator RPC method.
+message QueryValidatorRequest {
+  // cons_addr is the consensus address of the validator being queried. From the perspective of
+  // this module, the acc_addr is not relevant and is thus not stored.
+  string cons_addr = 1;
 }

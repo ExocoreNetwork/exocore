@@ -13,20 +13,17 @@ var zeroBig = big.NewInt(0)
 type (
 	ItemV map[string]*big.Int
 	ItemP *common.Params
-	ItemM struct {
-		FeederID  uint64
-		PSources  []*types.PriceSource
-		Validator string
-	}
+	ItemM types.MsgItem
 )
 
 type Cache struct {
-	msg        cacheMsgs
+	msg        *cacheMsgs
 	validators *cacheValidator
 	params     *cacheParams
 }
 
-type cacheMsgs map[uint64][]*ItemM
+// type cacheMsgs map[uint64][]*ItemM
+type cacheMsgs []*ItemM
 
 // used to track validator change
 type cacheValidator struct {
@@ -40,54 +37,44 @@ type cacheParams struct {
 	update bool
 }
 
-func (c cacheMsgs) add(item *ItemM) {
-	if ims, ok := c[item.FeederID]; ok {
-		for _, im := range ims {
-			if im.Validator == item.Validator {
-				for _, p := range im.PSources {
-					for _, pInput := range item.PSources {
-						if p.SourceID == pInput.SourceID {
-							p.Prices = append(p.Prices, pInput.Prices...)
-							return
-						}
-					}
-				}
-				im.PSources = append(im.PSources, item.PSources...)
-				return
-			}
-		}
-	}
-	c[item.FeederID] = append(c[item.FeederID], item)
+func (c *cacheMsgs) add(item *ItemM) {
+	*c = append(*c, item)
 }
 
-func (c cacheMsgs) remove(item *ItemM) {
-	delete(c, item.FeederID)
+// remove removes all items with the same feederID
+func (c *cacheMsgs) remove(item *ItemM) {
+	var newCache []*ItemM
+	for _, msg := range *c {
+		if msg.FeederID != item.FeederID {
+			newCache = append(newCache, msg)
+		}
+	}
+	*c = newCache
 }
 
 func (c cacheMsgs) commit(ctx sdk.Context, k common.KeeperOracle) {
 	block := uint64(ctx.BlockHeight())
+
 	recentMsgs := types.RecentMsg{
 		Block: block,
 		Msgs:  make([]*types.MsgItem, 0),
 	}
-	for _, msgs4Feeder := range c {
-		for _, msg := range msgs4Feeder {
-			recentMsgs.Msgs = append(recentMsgs.Msgs, &types.MsgItem{
-				FeederID:  msg.FeederID,
-				PSources:  msg.PSources,
-				Validator: msg.Validator,
-			})
-		}
+
+	for _, msg := range c {
+		msgTmp := types.MsgItem(*msg)
+		recentMsgs.Msgs = append(recentMsgs.Msgs, &msgTmp)
 	}
 	index, _ := k.GetIndexRecentMsg(ctx)
 	for i, b := range index.Index {
-		if b >= block-common.MaxNonce {
+		if b >= block-uint64(common.MaxNonce) {
 			index.Index = index.Index[i:]
 			break
 		}
 		k.RemoveRecentMsg(ctx, b)
 	}
+
 	k.SetRecentMsg(ctx, recentMsgs)
+
 	index.Index = append(index.Index, block)
 	k.SetIndexRecentMsg(ctx, index)
 }
@@ -128,7 +115,7 @@ func (c *cacheParams) commit(ctx sdk.Context, k common.KeeperOracle) {
 	i := 0
 	for ; i < len(index.Index); i++ {
 		b := index.Index[i]
-		if b >= block-common.MaxNonce {
+		if b >= block-uint64(common.MaxNonce) {
 			index.Index = index.Index[i:]
 			break
 		}
@@ -151,7 +138,6 @@ func (c *Cache) AddCache(i any) {
 	switch item := i.(type) {
 	case *ItemM:
 		c.msg.add(item)
-		//	case *params:
 	case ItemP:
 		c.params.add(item)
 	case ItemV:
@@ -161,7 +147,7 @@ func (c *Cache) AddCache(i any) {
 	}
 }
 
-// func (c *Cache) RemoveCache(i any, k common.KeeperOracle) {
+// RemoveCache removes all cached msgs with the same feederID
 func (c *Cache) RemoveCache(i any) {
 	if item, isItemM := i.(*ItemM); isItemM {
 		c.msg.remove(item)
@@ -177,24 +163,22 @@ func (c *Cache) GetCache(i any) bool {
 		for addr, power := range c.validators.validators {
 			item[addr] = power
 		}
+		return c.validators.update
 	case ItemP:
 		if item == nil {
 			return false
 		}
 		*item = *(c.params.params)
-	case *[]*ItemM:
+		return c.params.update
+	case *([]*ItemM):
 		if item == nil {
 			return false
 		}
-		tmp := make([]*ItemM, 0, len(c.msg))
-		for _, msgs := range c.msg {
-			tmp = append(tmp, msgs...)
-		}
-		*item = tmp
+		*item = *c.msg
+		return len(*c.msg) > 0
 	default:
 		return false
 	}
-	return true
 }
 
 // SkipCommit skip real commit by setting the updage flag to false
@@ -204,9 +188,9 @@ func (c *Cache) SkipCommit() {
 }
 
 func (c *Cache) CommitCache(ctx sdk.Context, reset bool, k common.KeeperOracle) {
-	if len(c.msg) > 0 {
+	if len(*(c.msg)) > 0 {
 		c.msg.commit(ctx, k)
-		c.msg = make(map[uint64][]*ItemM)
+		*(c.msg) = make([]*ItemM, 0)
 	}
 
 	if c.validators.update {
@@ -229,7 +213,7 @@ func (c *Cache) ResetCaches() {
 
 func NewCache() *Cache {
 	return &Cache{
-		msg: make(map[uint64][]*ItemM),
+		msg: new(cacheMsgs),
 		validators: &cacheValidator{
 			validators: make(map[string]*big.Int),
 		},

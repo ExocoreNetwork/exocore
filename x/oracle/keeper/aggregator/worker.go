@@ -53,7 +53,7 @@ func (w *worker) seal() {
 // newWorker new a instance for a tokenFeeder's specific round
 func newWorker(feederID uint64, agc *AggregatorContext) *worker {
 	return &worker{
-		f:       newFilter(common.MaxNonce, common.MaxDetID),
+		f:       newFilter(int(common.MaxNonce), int(common.MaxDetID)),
 		c:       newCalculator(len(agc.validatorsPower), agc.totalPower),
 		a:       newAggregator(len(agc.validatorsPower), agc.totalPower),
 		decimal: agc.params.GetTokenInfo(feederID).Decimal,

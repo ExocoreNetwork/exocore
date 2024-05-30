@@ -38,12 +38,25 @@ const (
 
 	prefixSlashAssetsState
 
-	// add keys for dogfood
-	BytePrefixForOperatorAndChainIDToConsKey = iota
+	// BytePrefixForOperatorAndChainIDToConsKey is the prefix to store the consensus key for
+	// an operator for a chainID.
+	BytePrefixForOperatorAndChainIDToConsKey
+
+	// BytePrefixForOperatorAndChainIDToPrevConsKey is the prefix to store the previous
+	// consensus key for an operator for a chainID.
 	BytePrefixForOperatorAndChainIDToPrevConsKey
+
+	// BytePrefixForChainIDAndOperatorToConsKey is the prefix to store the reverse lookup for
+	// a chainID + operator address to the consensus key.
 	BytePrefixForChainIDAndOperatorToConsKey
+
+	// BytePrefixForChainIDAndConsKeyToOperator is the prefix to store the reverse lookup for
+	// a chainID + consensus key to the operator address.
 	BytePrefixForChainIDAndConsKeyToOperator
-	BytePrefixForOperatorOptOutFromChainID
+
+	// BytePrefixForOperatorKeyRemovalForChainID is the prefix to store that the operator with
+	// the given address is in the process of unbonding their key for the given chainID.
+	BytePrefixForOperatorKeyRemovalForChainID
 )
 
 var (
@@ -109,10 +122,10 @@ func KeyForOperatorAndChainIDToConsKey(addr sdk.AccAddress, chainID string) []by
 	)
 }
 
-func KeyForOperatorAndChainIDToPrevConsKey(addr sdk.AccAddress, chainID string) []byte {
-	return AddrAndChainIDKey(
+func KeyForChainIDAndOperatorToPrevConsKey(chainID string, addr sdk.AccAddress) []byte {
+	return ChainIDAndAddrKey(
 		BytePrefixForOperatorAndChainIDToPrevConsKey,
-		addr, chainID,
+		chainID, addr,
 	)
 }
 
@@ -131,9 +144,9 @@ func KeyForChainIDAndConsKeyToOperator(chainID string, addr sdk.ConsAddress) []b
 	)
 }
 
-func KeyForOperatorOptOutFromChainID(addr sdk.AccAddress, chainID string) []byte {
+func KeyForOperatorKeyRemovalForChainID(addr sdk.AccAddress, chainID string) []byte {
 	return AppendMany(
-		[]byte{BytePrefixForOperatorOptOutFromChainID}, addr,
+		[]byte{BytePrefixForOperatorKeyRemovalForChainID}, addr,
 		ChainIDWithLenKey(chainID),
 	)
 }

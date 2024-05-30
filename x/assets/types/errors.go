@@ -47,38 +47,32 @@ var (
 	)
 
 	ErrInvalidOperatorAddr = errorsmod.Register(
-		ModuleName,
-		8,
+		ModuleName, 8,
 		"the operator address isn't a valid account address",
 	)
 
-	ErrUnknownAppChainID = errorsmod.Register(
-		ModuleName, 9,
-		"the app chain id is unknown or invalid",
-	)
-
 	ErrInvalidEvmAddressFormat = errorsmod.Register(
-		ModuleName, 10,
+		ModuleName, 9,
 		"the evm address format is error",
 	)
 
 	ErrInvalidLzUaTopicIDLength = errorsmod.Register(
-		ModuleName, 11,
+		ModuleName, 10,
 		"the LZUaTopicID length isn't equal to HashLength",
 	)
 
 	ErrNoParamsKey = errorsmod.Register(
-		ModuleName, 12,
+		ModuleName, 11,
 		"there is no stored key for deposit module params",
 	)
 
 	ErrNotEqualToLzAppAddr = errorsmod.Register(
-		ModuleName, 13,
+		ModuleName, 12,
 		"the address isn't equal to the layerZero gateway address",
 	)
 
 	ErrInvalidGenesisData = errorsmod.Register(
-		ModuleName, 14,
+		ModuleName, 13,
 		"the genesis data supplied is invalid",
 	)
 

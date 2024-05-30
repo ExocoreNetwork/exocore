@@ -42,6 +42,35 @@ type AggregatorContext struct {
 	aggregators map[uint64]*worker
 }
 
+func (agc *AggregatorContext) Copy4CheckTx() *AggregatorContext {
+	ret := &AggregatorContext{
+		// params, validatorsPower, totalPower, these values won't change during block executing
+		params:          agc.params,
+		validatorsPower: agc.validatorsPower,
+		totalPower:      agc.totalPower,
+
+		rounds:      make(map[uint64]*roundInfo),
+		aggregators: make(map[uint64]*worker),
+	}
+
+	for k, v := range agc.rounds {
+		vTmp := *v
+		ret.rounds[k] = &vTmp
+	}
+
+	for k, v := range agc.aggregators {
+		w := newWorker(k, ret)
+		w.sealed = v.sealed
+		w.price = v.price
+
+		w.f = v.f.copy4CheckTx()
+		w.c = v.c.copy4CheckTx()
+		w.a = v.a.copy4CheckTx()
+	}
+
+	return ret
+}
+
 func (agc *AggregatorContext) sanityCheck(msg *types.MsgCreatePrice) error {
 	// sanity check
 	// TODO: check nonce [1,3] in anteHandler, related to params, may not able
@@ -63,7 +92,7 @@ func (agc *AggregatorContext) sanityCheck(msg *types.MsgCreatePrice) error {
 	}
 
 	for _, pSource := range msg.Prices {
-		if pSource.Prices == nil || len(pSource.Prices) == 0 || len(pSource.Prices) > common.MaxDetID || !agc.params.IsValidSource(pSource.SourceID) {
+		if pSource.Prices == nil || len(pSource.Prices) == 0 || len(pSource.Prices) > int(common.MaxDetID) || !agc.params.IsValidSource(pSource.SourceID) {
 			return errors.New("source should be valid and provide at least one price")
 		}
 		// check with params is coressponding source is deteministic
@@ -173,7 +202,8 @@ func (agc *AggregatorContext) SealRound(ctx sdk.Context, force bool) (success []
 						delete(agc.aggregators, feederID)
 					} else {
 						round.status = 2
-						agc.aggregators[feederID] = nil
+						// agc.aggregators[feederID] = nil
+						delete(agc.aggregators, feederID)
 					}
 				}
 			default:
@@ -182,7 +212,8 @@ func (agc *AggregatorContext) SealRound(ctx sdk.Context, force bool) (success []
 		}
 		// all status: 1->2, remove its aggregator
 		if agc.aggregators[feederID] != nil && agc.aggregators[feederID].sealed {
-			agc.aggregators[feederID] = nil
+			// agc.aggregators[feederID] = nil
+			delete(agc.aggregators, feederID)
 		}
 	}
 	return success, failed
@@ -216,7 +247,7 @@ func (agc *AggregatorContext) PrepareRound(ctx sdk.Context, block uint64) {
 				basedBlock:  latestBasedblock,
 				nextRoundID: latestNextRoundID,
 			}
-			if left >= common.MaxNonce {
+			if left >= uint64(common.MaxNonce) {
 				round.status = 2
 			} else {
 				round.status = 1
@@ -229,8 +260,8 @@ func (agc *AggregatorContext) PrepareRound(ctx sdk.Context, block uint64) {
 				round.nextRoundID = latestNextRoundID
 				round.status = 1
 				// drop previous worker
-				agc.aggregators[feederIDUint64] = nil
-			} else if round.status == 1 && left >= common.MaxNonce {
+				delete(agc.aggregators, feederIDUint64)
+			} else if round.status == 1 && left >= uint64(common.MaxNonce) {
 				// this shouldn't happen, if do sealround properly before prepareRound, basically for test only
 				round.status = 2
 				// TODO: just modify the status here, since sealRound should do all the related seal actios already when parepare invoked

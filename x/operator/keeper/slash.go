@@ -341,7 +341,7 @@ func (k Keeper) SlashWithInfractionReason(
 	return sdkmath.NewInt(0)
 }
 
-// IsOperatorJailedForChainID add for dogfood
+// IsOperatorJailedForChainID returns whether an operator is jailed for a specific chainID.
 func (k Keeper) IsOperatorJailedForChainID(ctx sdk.Context, consAddr sdk.ConsAddress, chainID string) bool {
 	found, operatorAddr := k.GetOperatorAddressForChainIDAndConsAddr(ctx, chainID, consAddr)
 	if !found {
@@ -392,5 +392,5 @@ func (k Keeper) Jail(ctx sdk.Context, consAddr sdk.ConsAddress, chainID string) 
 
 // Unjail an operator
 func (k Keeper) Unjail(ctx sdk.Context, consAddr sdk.ConsAddress, chainID string) {
-	k.SetJailedState(ctx, consAddr, chainID, true)
+	k.SetJailedState(ctx, consAddr, chainID, false)
 }

@@ -95,21 +95,6 @@ func (k *Keeper) UpdateVotingPower(ctx sdk.Context, avsAddr string) error {
 	return nil
 }
 
-// ClearPreConsensusPK clears the previous consensus public key for all operators
-func (k *Keeper) ClearPreConsensusPK(ctx sdk.Context) error {
-	store := ctx.KVStore(k.storeKey)
-	iterator := sdk.KVStorePrefixIterator(
-		store,
-		[]byte{operatortypes.BytePrefixForOperatorAndChainIDToPrevConsKey},
-	)
-	defer iterator.Close()
-
-	for ; iterator.Valid(); iterator.Next() {
-		store.Delete(iterator.Key())
-	}
-	return nil
-}
-
 // EndBlock : update the assets' share when their prices change
 func (k *Keeper) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.ValidatorUpdate {
 	// todo: need to consider the calling order
@@ -122,11 +107,6 @@ func (k *Keeper) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.Valida
 		if err != nil {
 			panic(err)
 		}
-	}
-
-	err = k.ClearPreConsensusPK(ctx)
-	if err != nil {
-		panic(err)
 	}
 	return []abci.ValidatorUpdate{}
 }

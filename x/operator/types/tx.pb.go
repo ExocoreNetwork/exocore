@@ -219,7 +219,8 @@ type OperatorInfo struct {
 	OperatorMetaInfo string `protobuf:"bytes,3,opt,name=operator_meta_info,json=operatorMetaInfo,proto3" json:"operator_meta_info,omitempty"`
 	// client_chain_earning_addr_list is the client chain earning address list.
 	ClientChainEarningsAddr *ClientChainEarningAddrList `protobuf:"bytes,4,opt,name=client_chain_earnings_addr,json=clientChainEarningsAddr,proto3" json:"client_chain_earnings_addr,omitempty"`
-	// commission defines the commission parameters.
+	// commission defines the commission parameters. it includes the time at which the commission
+	// was last updated.
 	Commission types.Commission `protobuf:"bytes,5,opt,name=commission,proto3" json:"commission"`
 }
 
@@ -576,12 +577,168 @@ func (m *RegisterOperatorResponse) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_RegisterOperatorResponse proto.InternalMessageInfo
 
-// OptInToCosmosChainRequest defines the OptInToCosmosChain request.
-type OptInToCosmosChainRequest struct {
+// OptIntoAVSReq is the request to opt into an AVS.
+type OptIntoAVSReq struct {
+	// from_address is the address of the operator (sdk.AccAddress).
+	FromAddress string `protobuf:"bytes,1,opt,name=from_address,json=fromAddress,proto3" json:"from_address,omitempty"`
+	// avs_address is the address of the AVS - either an 0x address or a chainID.
+	AvsAddress string `protobuf:"bytes,2,opt,name=avs_address,json=avsAddress,proto3" json:"avs_address,omitempty"`
+}
+
+func (m *OptIntoAVSReq) Reset()         { *m = OptIntoAVSReq{} }
+func (m *OptIntoAVSReq) String() string { return proto.CompactTextString(m) }
+func (*OptIntoAVSReq) ProtoMessage()    {}
+func (*OptIntoAVSReq) Descriptor() ([]byte, []int) {
+	return fileDescriptor_b229d5663e4df167, []int{9}
+}
+func (m *OptIntoAVSReq) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *OptIntoAVSReq) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_OptIntoAVSReq.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *OptIntoAVSReq) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_OptIntoAVSReq.Merge(m, src)
+}
+func (m *OptIntoAVSReq) XXX_Size() int {
+	return m.Size()
+}
+func (m *OptIntoAVSReq) XXX_DiscardUnknown() {
+	xxx_messageInfo_OptIntoAVSReq.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_OptIntoAVSReq proto.InternalMessageInfo
+
+// OptIntoAVSResponse is the response to a opt into an AVS request.
+type OptIntoAVSResponse struct {
+}
+
+func (m *OptIntoAVSResponse) Reset()         { *m = OptIntoAVSResponse{} }
+func (m *OptIntoAVSResponse) String() string { return proto.CompactTextString(m) }
+func (*OptIntoAVSResponse) ProtoMessage()    {}
+func (*OptIntoAVSResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_b229d5663e4df167, []int{10}
+}
+func (m *OptIntoAVSResponse) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *OptIntoAVSResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_OptIntoAVSResponse.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *OptIntoAVSResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_OptIntoAVSResponse.Merge(m, src)
+}
+func (m *OptIntoAVSResponse) XXX_Size() int {
+	return m.Size()
+}
+func (m *OptIntoAVSResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_OptIntoAVSResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_OptIntoAVSResponse proto.InternalMessageInfo
+
+// OptOutOfAVSReq is the request to opt out from an AVS.
+type OptOutOfAVSReq struct {
+	// from_address is the address of the operator (sdk.AccAddress).
+	FromAddress string `protobuf:"bytes,1,opt,name=from_address,json=fromAddress,proto3" json:"from_address,omitempty"`
+	// avs_address is the address of the AVS - either an 0x address or a chainID.
+	AvsAddress string `protobuf:"bytes,2,opt,name=avs_address,json=avsAddress,proto3" json:"avs_address,omitempty"`
+}
+
+func (m *OptOutOfAVSReq) Reset()         { *m = OptOutOfAVSReq{} }
+func (m *OptOutOfAVSReq) String() string { return proto.CompactTextString(m) }
+func (*OptOutOfAVSReq) ProtoMessage()    {}
+func (*OptOutOfAVSReq) Descriptor() ([]byte, []int) {
+	return fileDescriptor_b229d5663e4df167, []int{11}
+}
+func (m *OptOutOfAVSReq) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *OptOutOfAVSReq) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_OptOutOfAVSReq.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *OptOutOfAVSReq) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_OptOutOfAVSReq.Merge(m, src)
+}
+func (m *OptOutOfAVSReq) XXX_Size() int {
+	return m.Size()
+}
+func (m *OptOutOfAVSReq) XXX_DiscardUnknown() {
+	xxx_messageInfo_OptOutOfAVSReq.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_OptOutOfAVSReq proto.InternalMessageInfo
+
+// OptOutOfAVSResponse is the response to a opt out of an AVS request.
+type OptOutOfAVSResponse struct {
+}
+
+func (m *OptOutOfAVSResponse) Reset()         { *m = OptOutOfAVSResponse{} }
+func (m *OptOutOfAVSResponse) String() string { return proto.CompactTextString(m) }
+func (*OptOutOfAVSResponse) ProtoMessage()    {}
+func (*OptOutOfAVSResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_b229d5663e4df167, []int{12}
+}
+func (m *OptOutOfAVSResponse) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *OptOutOfAVSResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_OptOutOfAVSResponse.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *OptOutOfAVSResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_OptOutOfAVSResponse.Merge(m, src)
+}
+func (m *OptOutOfAVSResponse) XXX_Size() int {
+	return m.Size()
+}
+func (m *OptOutOfAVSResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_OptOutOfAVSResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_OptOutOfAVSResponse proto.InternalMessageInfo
+
+// SetConsKeyReq is the request to set the operator's consensus key for a chain.
+type SetConsKeyReq struct {
 	// address is the operator address
 	Address string `protobuf:"bytes,1,opt,name=address,proto3" json:"address,omitempty"`
 	// chain_id is the identifier for the chain that wants to opt in.
-	ChainId string `protobuf:"bytes,2,opt,name=chain_id,json=chainId,proto3" json:"chain_id,omitempty"`
+	ChainID string `protobuf:"bytes,2,opt,name=chain_id,json=chainId,proto3" json:"chain_id,omitempty"`
 	// `{"@type":"/cosmos.crypto.ed25519.PubKey","key":"Ui5Gf1+mtWUdH8u3xlmzdKID+F3PK0sfXZ73GZ6q6is="}`
 	// there is no need to check for knowledge of the corresponding private key since this is ED25519
 	// and not BLS key, where a rogue key attack can take place. however, we should still check for
@@ -589,18 +746,18 @@ type OptInToCosmosChainRequest struct {
 	PublicKey string `protobuf:"bytes,3,opt,name=public_key,json=publicKey,proto3" json:"public_key,omitempty"`
 }
 
-func (m *OptInToCosmosChainRequest) Reset()         { *m = OptInToCosmosChainRequest{} }
-func (m *OptInToCosmosChainRequest) String() string { return proto.CompactTextString(m) }
-func (*OptInToCosmosChainRequest) ProtoMessage()    {}
-func (*OptInToCosmosChainRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_b229d5663e4df167, []int{9}
+func (m *SetConsKeyReq) Reset()         { *m = SetConsKeyReq{} }
+func (m *SetConsKeyReq) String() string { return proto.CompactTextString(m) }
+func (*SetConsKeyReq) ProtoMessage()    {}
+func (*SetConsKeyReq) Descriptor() ([]byte, []int) {
+	return fileDescriptor_b229d5663e4df167, []int{13}
 }
-func (m *OptInToCosmosChainRequest) XXX_Unmarshal(b []byte) error {
+func (m *SetConsKeyReq) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *OptInToCosmosChainRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *SetConsKeyReq) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_OptInToCosmosChainRequest.Marshal(b, m, deterministic)
+		return xxx_messageInfo_SetConsKeyReq.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -610,55 +767,34 @@ func (m *OptInToCosmosChainRequest) XXX_Marshal(b []byte, deterministic bool) ([
 		return b[:n], nil
 	}
 }
-func (m *OptInToCosmosChainRequest) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_OptInToCosmosChainRequest.Merge(m, src)
+func (m *SetConsKeyReq) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_SetConsKeyReq.Merge(m, src)
 }
-func (m *OptInToCosmosChainRequest) XXX_Size() int {
+func (m *SetConsKeyReq) XXX_Size() int {
 	return m.Size()
 }
-func (m *OptInToCosmosChainRequest) XXX_DiscardUnknown() {
-	xxx_messageInfo_OptInToCosmosChainRequest.DiscardUnknown(m)
+func (m *SetConsKeyReq) XXX_DiscardUnknown() {
+	xxx_messageInfo_SetConsKeyReq.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_OptInToCosmosChainRequest proto.InternalMessageInfo
+var xxx_messageInfo_SetConsKeyReq proto.InternalMessageInfo
 
-func (m *OptInToCosmosChainRequest) GetAddress() string {
-	if m != nil {
-		return m.Address
-	}
-	return ""
+// SetConsKeyResponse is the response to SetConsKeyReq.
+type SetConsKeyResponse struct {
 }
 
-func (m *OptInToCosmosChainRequest) GetChainId() string {
-	if m != nil {
-		return m.ChainId
-	}
-	return ""
+func (m *SetConsKeyResponse) Reset()         { *m = SetConsKeyResponse{} }
+func (m *SetConsKeyResponse) String() string { return proto.CompactTextString(m) }
+func (*SetConsKeyResponse) ProtoMessage()    {}
+func (*SetConsKeyResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_b229d5663e4df167, []int{14}
 }
-
-func (m *OptInToCosmosChainRequest) GetPublicKey() string {
-	if m != nil {
-		return m.PublicKey
-	}
-	return ""
-}
-
-// OptInToCosmosChainResponse defines the OptInToCosmosChain response.
-type OptInToCosmosChainResponse struct {
-}
-
-func (m *OptInToCosmosChainResponse) Reset()         { *m = OptInToCosmosChainResponse{} }
-func (m *OptInToCosmosChainResponse) String() string { return proto.CompactTextString(m) }
-func (*OptInToCosmosChainResponse) ProtoMessage()    {}
-func (*OptInToCosmosChainResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_b229d5663e4df167, []int{10}
-}
-func (m *OptInToCosmosChainResponse) XXX_Unmarshal(b []byte) error {
+func (m *SetConsKeyResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *OptInToCosmosChainResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *SetConsKeyResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_OptInToCosmosChainResponse.Marshal(b, m, deterministic)
+		return xxx_messageInfo_SetConsKeyResponse.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -668,38 +804,40 @@ func (m *OptInToCosmosChainResponse) XXX_Marshal(b []byte, deterministic bool) (
 		return b[:n], nil
 	}
 }
-func (m *OptInToCosmosChainResponse) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_OptInToCosmosChainResponse.Merge(m, src)
+func (m *SetConsKeyResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_SetConsKeyResponse.Merge(m, src)
 }
-func (m *OptInToCosmosChainResponse) XXX_Size() int {
+func (m *SetConsKeyResponse) XXX_Size() int {
 	return m.Size()
 }
-func (m *OptInToCosmosChainResponse) XXX_DiscardUnknown() {
-	xxx_messageInfo_OptInToCosmosChainResponse.DiscardUnknown(m)
+func (m *SetConsKeyResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_SetConsKeyResponse.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_OptInToCosmosChainResponse proto.InternalMessageInfo
+var xxx_messageInfo_SetConsKeyResponse proto.InternalMessageInfo
 
-// InitOptOutFromCosmosChainRequest defines the InitOptOutFromCosmosChain request.
-type InitOptOutFromCosmosChainRequest struct {
+// InitConsKeyRemovalReq is the request for an operator to stop validating on a chain. It
+// allows the operator to remove their consensus key from the specified chain. It must be
+// followed by a separate call to OptOutOfAVS to remove the operator from the AVS.
+type InitConsKeyRemovalReq struct {
 	// address is the operator address
 	Address string `protobuf:"bytes,1,opt,name=address,proto3" json:"address,omitempty"`
 	// chain_id is the identifier for the chain that wants to opt out.
-	ChainId string `protobuf:"bytes,2,opt,name=chain_id,json=chainId,proto3" json:"chain_id,omitempty"`
+	ChainID string `protobuf:"bytes,2,opt,name=chain_id,json=chainId,proto3" json:"chain_id,omitempty"`
 }
 
-func (m *InitOptOutFromCosmosChainRequest) Reset()         { *m = InitOptOutFromCosmosChainRequest{} }
-func (m *InitOptOutFromCosmosChainRequest) String() string { return proto.CompactTextString(m) }
-func (*InitOptOutFromCosmosChainRequest) ProtoMessage()    {}
-func (*InitOptOutFromCosmosChainRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_b229d5663e4df167, []int{11}
+func (m *InitConsKeyRemovalReq) Reset()         { *m = InitConsKeyRemovalReq{} }
+func (m *InitConsKeyRemovalReq) String() string { return proto.CompactTextString(m) }
+func (*InitConsKeyRemovalReq) ProtoMessage()    {}
+func (*InitConsKeyRemovalReq) Descriptor() ([]byte, []int) {
+	return fileDescriptor_b229d5663e4df167, []int{15}
 }
-func (m *InitOptOutFromCosmosChainRequest) XXX_Unmarshal(b []byte) error {
+func (m *InitConsKeyRemovalReq) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *InitOptOutFromCosmosChainRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *InitConsKeyRemovalReq) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_InitOptOutFromCosmosChainRequest.Marshal(b, m, deterministic)
+		return xxx_messageInfo_InitConsKeyRemovalReq.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -709,48 +847,34 @@ func (m *InitOptOutFromCosmosChainRequest) XXX_Marshal(b []byte, deterministic b
 		return b[:n], nil
 	}
 }
-func (m *InitOptOutFromCosmosChainRequest) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_InitOptOutFromCosmosChainRequest.Merge(m, src)
+func (m *InitConsKeyRemovalReq) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_InitConsKeyRemovalReq.Merge(m, src)
 }
-func (m *InitOptOutFromCosmosChainRequest) XXX_Size() int {
+func (m *InitConsKeyRemovalReq) XXX_Size() int {
 	return m.Size()
 }
-func (m *InitOptOutFromCosmosChainRequest) XXX_DiscardUnknown() {
-	xxx_messageInfo_InitOptOutFromCosmosChainRequest.DiscardUnknown(m)
+func (m *InitConsKeyRemovalReq) XXX_DiscardUnknown() {
+	xxx_messageInfo_InitConsKeyRemovalReq.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_InitOptOutFromCosmosChainRequest proto.InternalMessageInfo
+var xxx_messageInfo_InitConsKeyRemovalReq proto.InternalMessageInfo
 
-func (m *InitOptOutFromCosmosChainRequest) GetAddress() string {
-	if m != nil {
-		return m.Address
-	}
-	return ""
+// InitConsKeyRemovalResponse defines the InitConsKeyRemovalReq response.
+type InitConsKeyRemovalResponse struct {
 }
 
-func (m *InitOptOutFromCosmosChainRequest) GetChainId() string {
-	if m != nil {
-		return m.ChainId
-	}
-	return ""
+func (m *InitConsKeyRemovalResponse) Reset()         { *m = InitConsKeyRemovalResponse{} }
+func (m *InitConsKeyRemovalResponse) String() string { return proto.CompactTextString(m) }
+func (*InitConsKeyRemovalResponse) ProtoMessage()    {}
+func (*InitConsKeyRemovalResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_b229d5663e4df167, []int{16}
 }
-
-// InitOptOutFromCosmosChainResponse defines the InitOptOutFromCosmosChain response.
-type InitOptOutFromCosmosChainResponse struct {
-}
-
-func (m *InitOptOutFromCosmosChainResponse) Reset()         { *m = InitOptOutFromCosmosChainResponse{} }
-func (m *InitOptOutFromCosmosChainResponse) String() string { return proto.CompactTextString(m) }
-func (*InitOptOutFromCosmosChainResponse) ProtoMessage()    {}
-func (*InitOptOutFromCosmosChainResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_b229d5663e4df167, []int{12}
-}
-func (m *InitOptOutFromCosmosChainResponse) XXX_Unmarshal(b []byte) error {
+func (m *InitConsKeyRemovalResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *InitOptOutFromCosmosChainResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *InitConsKeyRemovalResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_InitOptOutFromCosmosChainResponse.Marshal(b, m, deterministic)
+		return xxx_messageInfo_InitConsKeyRemovalResponse.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -760,17 +884,17 @@ func (m *InitOptOutFromCosmosChainResponse) XXX_Marshal(b []byte, deterministic 
 		return b[:n], nil
 	}
 }
-func (m *InitOptOutFromCosmosChainResponse) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_InitOptOutFromCosmosChainResponse.Merge(m, src)
+func (m *InitConsKeyRemovalResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_InitConsKeyRemovalResponse.Merge(m, src)
 }
-func (m *InitOptOutFromCosmosChainResponse) XXX_Size() int {
+func (m *InitConsKeyRemovalResponse) XXX_Size() int {
 	return m.Size()
 }
-func (m *InitOptOutFromCosmosChainResponse) XXX_DiscardUnknown() {
-	xxx_messageInfo_InitOptOutFromCosmosChainResponse.DiscardUnknown(m)
+func (m *InitConsKeyRemovalResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_InitConsKeyRemovalResponse.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_InitOptOutFromCosmosChainResponse proto.InternalMessageInfo
+var xxx_messageInfo_InitConsKeyRemovalResponse proto.InternalMessageInfo
 
 func init() {
 	proto.RegisterEnum("exocore.operator.v1.SlashType", SlashType_name, SlashType_value)
@@ -783,88 +907,99 @@ func init() {
 	proto.RegisterType((*OperatorSlashInfo)(nil), "exocore.operator.v1.OperatorSlashInfo")
 	proto.RegisterType((*RegisterOperatorReq)(nil), "exocore.operator.v1.RegisterOperatorReq")
 	proto.RegisterType((*RegisterOperatorResponse)(nil), "exocore.operator.v1.RegisterOperatorResponse")
-	proto.RegisterType((*OptInToCosmosChainRequest)(nil), "exocore.operator.v1.OptInToCosmosChainRequest")
-	proto.RegisterType((*OptInToCosmosChainResponse)(nil), "exocore.operator.v1.OptInToCosmosChainResponse")
-	proto.RegisterType((*InitOptOutFromCosmosChainRequest)(nil), "exocore.operator.v1.InitOptOutFromCosmosChainRequest")
-	proto.RegisterType((*InitOptOutFromCosmosChainResponse)(nil), "exocore.operator.v1.InitOptOutFromCosmosChainResponse")
+	proto.RegisterType((*OptIntoAVSReq)(nil), "exocore.operator.v1.OptIntoAVSReq")
+	proto.RegisterType((*OptIntoAVSResponse)(nil), "exocore.operator.v1.OptIntoAVSResponse")
+	proto.RegisterType((*OptOutOfAVSReq)(nil), "exocore.operator.v1.OptOutOfAVSReq")
+	proto.RegisterType((*OptOutOfAVSResponse)(nil), "exocore.operator.v1.OptOutOfAVSResponse")
+	proto.RegisterType((*SetConsKeyReq)(nil), "exocore.operator.v1.SetConsKeyReq")
+	proto.RegisterType((*SetConsKeyResponse)(nil), "exocore.operator.v1.SetConsKeyResponse")
+	proto.RegisterType((*InitConsKeyRemovalReq)(nil), "exocore.operator.v1.InitConsKeyRemovalReq")
+	proto.RegisterType((*InitConsKeyRemovalResponse)(nil), "exocore.operator.v1.InitConsKeyRemovalResponse")
 }
 
 func init() { proto.RegisterFile("exocore/operator/v1/tx.proto", fileDescriptor_b229d5663e4df167) }
 
 var fileDescriptor_b229d5663e4df167 = []byte{
-	// 1139 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xac, 0x56, 0xcf, 0x4f, 0x1b, 0x47,
-	0x14, 0xf6, 0x62, 0x7e, 0xf9, 0x61, 0xb0, 0x19, 0x22, 0x30, 0x2e, 0x35, 0xb0, 0x69, 0x22, 0x82,
-	0x8a, 0x2d, 0x68, 0x53, 0xa9, 0x69, 0x2b, 0xd5, 0x18, 0xa3, 0x58, 0x05, 0x1b, 0xad, 0x9d, 0x48,
-	0x6d, 0x0f, 0xab, 0x65, 0x3d, 0x98, 0x29, 0xf6, 0xce, 0x66, 0x67, 0xec, 0x40, 0xa4, 0x4a, 0x6d,
-	0x4f, 0x55, 0xd5, 0x43, 0xaf, 0x95, 0x7a, 0xc8, 0xb1, 0x47, 0x0e, 0xb9, 0x56, 0x55, 0x6f, 0x39,
-	0x46, 0x39, 0x55, 0x3d, 0xa0, 0x0a, 0x0e, 0xf4, 0x4f, 0xe8, 0xb1, 0x9a, 0xd9, 0x59, 0xb3, 0x04,
-	0xd3, 0x04, 0x25, 0x97, 0xc4, 0xf3, 0xde, 0xf7, 0x7e, 0x7d, 0xf3, 0xcd, 0x63, 0x61, 0x06, 0xef,
-	0x53, 0x9b, 0x7a, 0x38, 0x47, 0x5d, 0xec, 0x59, 0x9c, 0x7a, 0xb9, 0xce, 0x72, 0x8e, 0xef, 0x67,
-	0x5d, 0x8f, 0x72, 0x8a, 0x26, 0x94, 0x37, 0x1b, 0x78, 0xb3, 0x9d, 0xe5, 0xf4, 0xb8, 0xd5, 0x22,
-	0x0e, 0xcd, 0xc9, 0x7f, 0x7d, 0x5c, 0x7a, 0xca, 0xa6, 0xac, 0x45, 0x59, 0xae, 0xc5, 0x1a, 0x22,
-	0xbe, 0xc5, 0x1a, 0xca, 0xf1, 0x8e, 0x72, 0x30, 0x6e, 0xed, 0x11, 0x47, 0x38, 0xb7, 0x31, 0xb7,
-	0x96, 0x83, 0xb3, 0x42, 0x4d, 0xfb, 0x28, 0x53, 0x9e, 0x72, 0xfe, 0x41, 0xb9, 0xae, 0x35, 0x68,
-	0x83, 0xfa, 0x76, 0xf1, 0xcb, 0xb7, 0xea, 0x18, 0x46, 0xd7, 0xb0, 0x7d, 0xdf, 0x6a, 0xb6, 0xf1,
-	0x3a, 0xc1, 0xcd, 0x3a, 0xaa, 0xc1, 0xa0, 0xd5, 0xa2, 0x6d, 0x87, 0xa7, 0xb4, 0x39, 0x6d, 0x21,
-	0xb6, 0xfa, 0xf1, 0xd3, 0xa3, 0xd9, 0xc8, 0x5f, 0x47, 0xb3, 0x37, 0x1b, 0x84, 0xef, 0xb6, 0xb7,
-	0xb3, 0x36, 0x6d, 0xa9, 0xbc, 0xea, 0xbf, 0x25, 0x56, 0xdf, 0xcb, 0xf1, 0x03, 0x17, 0xb3, 0xec,
-	0x1a, 0xb6, 0x9f, 0x3f, 0x59, 0x02, 0x55, 0x76, 0x0d, 0xdb, 0x86, 0xca, 0xa5, 0x1f, 0x40, 0xba,
-	0xd0, 0x24, 0xd8, 0xe1, 0x85, 0x5d, 0x8b, 0x38, 0x45, 0xcb, 0x73, 0x88, 0xd3, 0xc8, 0xd7, 0xeb,
-	0xde, 0x06, 0x61, 0x1c, 0x7d, 0x09, 0xe3, 0xd8, 0x37, 0x99, 0xc4, 0xd9, 0xa1, 0x66, 0x93, 0x30,
-	0x51, 0x3e, 0xba, 0x30, 0xb2, 0x92, 0xcb, 0xf6, 0x20, 0x2e, 0xdb, 0x3b, 0x57, 0xc9, 0xd9, 0xa1,
-	0x46, 0x42, 0x65, 0x12, 0x07, 0x91, 0x5c, 0xff, 0x59, 0xbb, 0xac, 0xb6, 0x80, 0xa0, 0x4f, 0x01,
-	0x35, 0x1f, 0x99, 0xb6, 0x04, 0x98, 0xb6, 0x40, 0x98, 0xa4, 0x2e, 0x67, 0xef, 0x5f, 0x9d, 0x38,
-	0x3e, 0x9a, 0x4d, 0x6c, 0x3c, 0x0a, 0x45, 0x97, 0xd6, 0x8c, 0x44, 0xf3, 0x9c, 0xa1, 0x8e, 0x3e,
-	0x84, 0xe9, 0x73, 0xe1, 0xc1, 0x28, 0x56, 0xbd, 0xee, 0xa5, 0xfa, 0x04, 0x89, 0xc6, 0xa4, 0xdd,
-	0xb3, 0x01, 0xfd, 0x8f, 0x3e, 0x88, 0x57, 0xd4, 0x5c, 0xb2, 0x9b, 0xeb, 0x30, 0xaa, 0xc2, 0x99,
-	0x1f, 0x2f, 0x2f, 0xc1, 0x88, 0x07, 0x46, 0x11, 0x85, 0xe6, 0x21, 0x6e, 0xb9, 0xae, 0x47, 0x3b,
-	0x38, 0x5c, 0x63, 0x44, 0xd9, 0x24, 0xe4, 0x5d, 0x40, 0x01, 0x5f, 0x66, 0x0b, 0x73, 0x4b, 0xf2,
-	0x9a, 0x8a, 0x4a, 0x60, 0x32, 0xf0, 0x6c, 0x62, 0x6e, 0xc9, 0xaa, 0x4d, 0x48, 0xf7, 0x9a, 0x40,
-	0xb5, 0xd0, 0x3f, 0xa7, 0x5d, 0xf1, 0x22, 0x04, 0xef, 0xc6, 0xd4, 0xc5, 0x99, 0xfd, 0xf6, 0x37,
-	0x01, 0x6c, 0xda, 0x6a, 0x11, 0xc6, 0x08, 0x75, 0x52, 0x03, 0x32, 0xbb, 0x9e, 0x55, 0xa2, 0x09,
-	0xe4, 0xac, 0xe4, 0x9d, 0x2d, 0x74, 0x91, 0xab, 0x31, 0xa1, 0xc4, 0x5f, 0x4f, 0x0f, 0x17, 0x35,
-	0x23, 0x94, 0x40, 0xff, 0x45, 0x83, 0x58, 0xc5, 0xe5, 0xb8, 0x2e, 0x47, 0xb9, 0x01, 0x63, 0xac,
-	0x69, 0xb1, 0x5d, 0xd3, 0xa6, 0x0e, 0xf7, 0x2c, 0x5b, 0xc9, 0xd8, 0x18, 0x95, 0xd6, 0x82, 0x32,
-	0xa2, 0x9b, 0x90, 0xa0, 0x22, 0xc6, 0x24, 0x8e, 0xb9, 0x8b, 0x49, 0x63, 0x97, 0x4b, 0x16, 0xfb,
-	0x8d, 0x51, 0xea, 0xa7, 0xba, 0x2b, 0x8d, 0x68, 0x01, 0x92, 0x3e, 0x8e, 0xb6, 0x79, 0x00, 0x8c,
-	0x4a, 0xe0, 0x98, 0xb4, 0x57, 0xda, 0x5c, 0x21, 0x27, 0x61, 0xf0, 0x2b, 0x8b, 0x34, 0x71, 0x5d,
-	0xf2, 0x35, 0x6c, 0xa8, 0x93, 0xfe, 0x9b, 0x06, 0xe3, 0xaa, 0xbd, 0x3c, 0x63, 0x98, 0x57, 0xb9,
-	0xc5, 0xf1, 0x6b, 0xbd, 0xb2, 0x92, 0xc3, 0x43, 0xaf, 0xac, 0xe4, 0xf0, 0xe0, 0x95, 0x21, 0x03,
-	0x06, 0x3a, 0xe2, 0x25, 0xfb, 0x8a, 0x78, 0xcd, 0xa7, 0xeb, 0xa7, 0xd2, 0xff, 0xed, 0x13, 0xfd,
-	0xfb, 0x37, 0x5e, 0x15, 0x1c, 0x5e, 0x85, 0xe6, 0x5b, 0x90, 0x64, 0xed, 0xed, 0x16, 0xe1, 0x82,
-	0xc2, 0x10, 0xcf, 0x51, 0x23, 0xd1, 0xb5, 0x2b, 0xfe, 0xe6, 0x21, 0x8e, 0x3b, 0x42, 0x82, 0x21,
-	0x96, 0xa3, 0xc6, 0x88, 0xb4, 0x29, 0xc8, 0x2d, 0x48, 0xba, 0x1e, 0xb5, 0x31, 0x63, 0x67, 0xd9,
-	0xfa, 0xfd, 0x6c, 0x5d, 0xbb, 0x82, 0xbe, 0x05, 0x31, 0xc2, 0xcc, 0x0e, 0xe6, 0x14, 0xd7, 0xa5,
-	0xc4, 0x86, 0x8d, 0x61, 0xc2, 0xee, 0xcb, 0x33, 0x6a, 0x40, 0xd2, 0x6f, 0xde, 0xf5, 0xa8, 0x4b,
-	0x3d, 0x2e, 0x64, 0x38, 0xf8, 0x06, 0x18, 0x4b, 0xc8, 0xac, 0x5b, 0xdd, 0xa4, 0xe8, 0x13, 0x00,
-	0xbf, 0x90, 0x88, 0x48, 0x0d, 0xcd, 0x69, 0x0b, 0x63, 0x2b, 0x99, 0x9e, 0xef, 0x48, 0x32, 0x5b,
-	0x3b, 0x70, 0xb1, 0x11, 0x63, 0xc1, 0x4f, 0xfd, 0x77, 0x0d, 0x26, 0x0c, 0xdc, 0x20, 0x8c, 0x63,
-	0x2f, 0xb8, 0x02, 0x03, 0x3f, 0x40, 0x1f, 0x41, 0x7c, 0xc7, 0xa3, 0x2d, 0xf9, 0x3a, 0x31, 0x63,
-	0x4a, 0x42, 0xa9, 0xe7, 0x4f, 0x96, 0xae, 0xa9, 0x6e, 0xf2, 0xbe, 0xa7, 0xca, 0x3d, 0xe2, 0x34,
-	0x8c, 0x11, 0x81, 0x56, 0x26, 0x74, 0x1b, 0xfa, 0xe5, 0x2e, 0xe8, 0x93, 0xef, 0x6e, 0xbe, 0x67,
-	0x37, 0xe1, 0x95, 0x64, 0x48, 0xf8, 0x9d, 0xf7, 0xbf, 0x7f, 0x3c, 0x1b, 0xf9, 0xe7, 0xf1, 0x6c,
-	0xe4, 0xbb, 0xd3, 0xc3, 0xc5, 0x91, 0xf5, 0xb3, 0x84, 0x3f, 0x9c, 0x1e, 0x2e, 0x4e, 0x85, 0xc8,
-	0x09, 0xc7, 0xea, 0x69, 0x48, 0x5d, 0x1c, 0x80, 0xb9, 0xd4, 0x61, 0x58, 0xff, 0x1a, 0xa6, 0x2b,
-	0x2e, 0x2f, 0x39, 0x35, 0x5a, 0x90, 0xd1, 0x72, 0x51, 0x18, 0xf8, 0x41, 0x1b, 0x33, 0x8e, 0x52,
-	0x30, 0x74, 0x6e, 0x3a, 0x23, 0x38, 0xa2, 0x69, 0x18, 0xee, 0x6e, 0x69, 0x7f, 0xf1, 0x0d, 0xd9,
-	0x6a, 0x11, 0xbf, 0x0d, 0xe0, 0xb6, 0xb7, 0x9b, 0xc4, 0x36, 0xf7, 0xf0, 0x81, 0x5a, 0x76, 0x31,
-	0xdf, 0xf2, 0x19, 0x3e, 0xb8, 0x13, 0x17, 0xad, 0x07, 0x79, 0xf4, 0x19, 0x48, 0xf7, 0x2a, 0xaf,
-	0x9a, 0xc3, 0x30, 0x57, 0x72, 0x08, 0xaf, 0xb8, 0xbc, 0xd2, 0xe6, 0x62, 0xda, 0x37, 0xd4, 0xe3,
-	0x0b, 0x4d, 0x5c, 0x87, 0xf9, 0xff, 0x29, 0xe3, 0xf7, 0xb2, 0xd8, 0x84, 0x58, 0x57, 0x1e, 0x28,
-	0x0d, 0x93, 0xd5, 0x8d, 0x7c, 0xf5, 0xae, 0x59, 0xfb, 0x7c, 0xab, 0x68, 0xde, 0x2b, 0x57, 0xb7,
-	0x8a, 0x85, 0xd2, 0x7a, 0xa9, 0xb8, 0x96, 0x8c, 0xa0, 0x19, 0x48, 0x85, 0x7c, 0xa5, 0x72, 0xb5,
-	0x96, 0x2f, 0xd7, 0x4c, 0x69, 0x4a, 0x6a, 0xe8, 0x06, 0xcc, 0x87, 0xbc, 0xe5, 0x4a, 0x00, 0xc8,
-	0x97, 0x8b, 0x95, 0x7b, 0x55, 0x05, 0xeb, 0x5b, 0xf9, 0x36, 0x0a, 0xd1, 0x4d, 0xd6, 0x40, 0x7b,
-	0x90, 0x7c, 0xf1, 0xea, 0xd0, 0x42, 0x4f, 0xb5, 0xf4, 0x90, 0x68, 0x7a, 0xe9, 0x15, 0x91, 0xfe,
-	0x88, 0xe8, 0x21, 0xa0, 0x8b, 0x97, 0x81, 0xb2, 0x97, 0x88, 0xf3, 0x12, 0xd1, 0xa4, 0x73, 0xaf,
-	0x8c, 0x57, 0xb7, 0x1c, 0x41, 0x3f, 0x6a, 0x30, 0x7d, 0xe9, 0x0d, 0xa0, 0xdb, 0x3d, 0x13, 0xbe,
-	0x4c, 0x18, 0xe9, 0x0f, 0xae, 0x1a, 0x16, 0xb4, 0x93, 0x1e, 0xf8, 0x46, 0xfc, 0x79, 0x5b, 0xdd,
-	0x78, 0x7a, 0x9c, 0xd1, 0x9e, 0x1d, 0x67, 0xb4, 0xbf, 0x8f, 0x33, 0xda, 0x4f, 0x27, 0x99, 0xc8,
-	0xb3, 0x93, 0x4c, 0xe4, 0xcf, 0x93, 0x4c, 0xe4, 0x8b, 0x95, 0xd0, 0x62, 0x2a, 0xfa, 0x45, 0xca,
-	0x98, 0x3f, 0xa4, 0xde, 0x5e, 0x2e, 0xf8, 0xfc, 0xdc, 0x3f, 0xfb, 0x00, 0x95, 0x8b, 0x6a, 0x7b,
-	0x50, 0x7e, 0xe9, 0xbd, 0xf7, 0x5f, 0x00, 0x00, 0x00, 0xff, 0xff, 0x04, 0x8a, 0x43, 0x4e, 0xa1,
-	0x0a, 0x00, 0x00,
+	// 1262 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xbc, 0x57, 0xcd, 0x6f, 0x1b, 0x45,
+	0x14, 0xf7, 0x26, 0x69, 0x12, 0x3f, 0xe7, 0xc3, 0x9d, 0xf4, 0xc3, 0x5d, 0x8a, 0x9d, 0x6c, 0x69,
+	0x49, 0x23, 0x62, 0x2b, 0x81, 0x22, 0x35, 0x80, 0x84, 0xf3, 0x51, 0xd5, 0x6a, 0x1a, 0x57, 0xeb,
+	0xb4, 0x52, 0x29, 0xd2, 0x6a, 0xb3, 0x9e, 0x38, 0x4b, 0x76, 0x77, 0x96, 0x9d, 0xb1, 0x69, 0x7a,
+	0x42, 0x88, 0x03, 0xe2, 0xc4, 0x15, 0x89, 0x43, 0x0f, 0x08, 0x71, 0x42, 0x3d, 0xf4, 0x5a, 0x21,
+	0x6e, 0x3d, 0x56, 0x3d, 0x21, 0x0e, 0x11, 0x4a, 0x0f, 0xe5, 0x4f, 0xe0, 0x88, 0xe6, 0x63, 0x9d,
+	0x75, 0xb3, 0xe9, 0x87, 0x0a, 0x5c, 0x5a, 0xcf, 0x6f, 0x7e, 0xef, 0xcd, 0xef, 0xbd, 0x79, 0xef,
+	0x4d, 0x16, 0x4e, 0xe3, 0xdb, 0xc4, 0x21, 0x11, 0xae, 0x90, 0x10, 0x47, 0x36, 0x23, 0x51, 0xa5,
+	0x33, 0x57, 0x61, 0xb7, 0xcb, 0x61, 0x44, 0x18, 0x41, 0x13, 0x6a, 0xb7, 0x1c, 0xef, 0x96, 0x3b,
+	0x73, 0xfa, 0x51, 0xdb, 0x77, 0x03, 0x52, 0x11, 0xff, 0x4a, 0x9e, 0x7e, 0xd2, 0x21, 0xd4, 0x27,
+	0xb4, 0xe2, 0xd3, 0x16, 0xb7, 0xf7, 0x69, 0x4b, 0x6d, 0xbc, 0xa5, 0x36, 0x28, 0xb3, 0xb7, 0xdd,
+	0x80, 0x6f, 0x6e, 0x60, 0x66, 0xcf, 0xc5, 0x6b, 0xc5, 0x3a, 0x25, 0x59, 0x96, 0x58, 0x55, 0xe4,
+	0x42, 0x6d, 0x1d, 0x6b, 0x91, 0x16, 0x91, 0x38, 0xff, 0x25, 0x51, 0x03, 0xc3, 0xe8, 0x32, 0x76,
+	0x6e, 0xd8, 0x5e, 0x1b, 0x5f, 0x72, 0xb1, 0xd7, 0x44, 0xeb, 0x30, 0x68, 0xfb, 0xa4, 0x1d, 0xb0,
+	0x82, 0x36, 0xa9, 0x4d, 0x67, 0x17, 0x3f, 0x7c, 0xb8, 0x5b, 0xca, 0xfc, 0xb1, 0x5b, 0x3a, 0xd7,
+	0x72, 0xd9, 0x56, 0x7b, 0xa3, 0xec, 0x10, 0x5f, 0xf9, 0x55, 0xff, 0xcd, 0xd2, 0xe6, 0x76, 0x85,
+	0xed, 0x84, 0x98, 0x96, 0x97, 0xb1, 0xf3, 0xf8, 0xfe, 0x2c, 0xa8, 0x63, 0x97, 0xb1, 0x63, 0x2a,
+	0x5f, 0xc6, 0x0e, 0xe8, 0x4b, 0x9e, 0x8b, 0x03, 0xb6, 0xb4, 0x65, 0xbb, 0xc1, 0x8a, 0x1d, 0x05,
+	0x6e, 0xd0, 0xaa, 0x36, 0x9b, 0xd1, 0xaa, 0x4b, 0x19, 0xba, 0x05, 0x47, 0xb1, 0x84, 0x2c, 0x37,
+	0xd8, 0x24, 0x96, 0xe7, 0x52, 0x7e, 0x7c, 0xff, 0x74, 0x6e, 0xbe, 0x52, 0x4e, 0x49, 0x5c, 0x39,
+	0xdd, 0x57, 0x2d, 0xd8, 0x24, 0xe6, 0xb8, 0xf2, 0xc4, 0x17, 0xdc, 0xb9, 0xf1, 0xbd, 0x76, 0xd8,
+	0xd9, 0x9c, 0x82, 0x3e, 0x06, 0xe4, 0xdd, 0xb1, 0x1c, 0x41, 0xb0, 0x1c, 0xce, 0xb0, 0xdc, 0xa6,
+	0x88, 0x7d, 0x60, 0x71, 0x62, 0x6f, 0xb7, 0x34, 0xbe, 0x7a, 0x27, 0x61, 0x5d, 0x5b, 0x36, 0xc7,
+	0xbd, 0x1e, 0xa0, 0x89, 0x2e, 0xc2, 0xa9, 0x1e, 0xf3, 0x38, 0x14, 0xbb, 0xd9, 0x8c, 0x0a, 0x7d,
+	0x3c, 0x89, 0xe6, 0x09, 0x27, 0x55, 0x80, 0xf1, 0x5b, 0x1f, 0x8c, 0xd4, 0x55, 0x5c, 0x42, 0xcd,
+	0x19, 0x18, 0x55, 0xe6, 0x54, 0xda, 0x8b, 0x4b, 0x30, 0x47, 0x62, 0x90, 0x5b, 0xa1, 0x29, 0x18,
+	0xb1, 0xc3, 0x30, 0x22, 0x1d, 0x9c, 0x3c, 0x23, 0xa7, 0x30, 0x41, 0x79, 0x07, 0x50, 0x9c, 0x2f,
+	0xcb, 0xc7, 0xcc, 0x16, 0x79, 0x2d, 0xf4, 0x0b, 0x62, 0x3e, 0xde, 0xb9, 0x8a, 0x99, 0x2d, 0x4e,
+	0xf5, 0x40, 0x4f, 0x8b, 0x40, 0x49, 0x18, 0x98, 0xd4, 0x5e, 0xf1, 0x22, 0x78, 0xde, 0xcd, 0x93,
+	0x07, 0x63, 0x96, 0xf2, 0xaf, 0x02, 0x38, 0xc4, 0xf7, 0x5d, 0x4a, 0x5d, 0x12, 0x14, 0x8e, 0x08,
+	0xef, 0x46, 0x59, 0x15, 0x4d, 0x5c, 0xce, 0xaa, 0xbc, 0xcb, 0x4b, 0x5d, 0xe6, 0x62, 0x96, 0x57,
+	0xe2, 0xcf, 0x4f, 0xef, 0xcd, 0x68, 0x66, 0xc2, 0x81, 0xf1, 0x83, 0x06, 0xd9, 0x7a, 0xc8, 0x70,
+	0x53, 0x84, 0x72, 0x16, 0xc6, 0xa8, 0x67, 0xd3, 0x2d, 0xcb, 0x21, 0x01, 0x8b, 0x6c, 0x47, 0x95,
+	0xb1, 0x39, 0x2a, 0xd0, 0x25, 0x05, 0xa2, 0x73, 0x30, 0x4e, 0xb8, 0x8d, 0xe5, 0x06, 0xd6, 0x16,
+	0x76, 0x5b, 0x5b, 0x4c, 0x64, 0x71, 0xc0, 0x1c, 0x25, 0xd2, 0xd5, 0x65, 0x01, 0xa2, 0x69, 0xc8,
+	0x4b, 0x1e, 0x69, 0xb3, 0x98, 0xd8, 0x2f, 0x88, 0x63, 0x02, 0xaf, 0xb7, 0x99, 0x62, 0x9e, 0x80,
+	0xc1, 0xcf, 0x6c, 0xd7, 0xc3, 0x4d, 0x91, 0xaf, 0x61, 0x53, 0xad, 0x8c, 0x07, 0x1a, 0x1c, 0x55,
+	0xf2, 0xaa, 0x94, 0x62, 0xd6, 0x60, 0x36, 0xc3, 0xaf, 0xd5, 0x65, 0xb5, 0x80, 0x25, 0xba, 0xac,
+	0x16, 0xb0, 0xb8, 0xcb, 0x90, 0x09, 0x47, 0x3a, 0xbc, 0x93, 0x65, 0x45, 0xbc, 0x66, 0xeb, 0x4a,
+	0x57, 0xc6, 0xdf, 0x7d, 0x5c, 0xbf, 0xbc, 0xf1, 0x06, 0xcf, 0xe1, 0xab, 0xa4, 0xf9, 0x3c, 0xe4,
+	0x69, 0x7b, 0xc3, 0x77, 0x19, 0x4f, 0x61, 0x22, 0xcf, 0xfd, 0xe6, 0x78, 0x17, 0x57, 0xf9, 0x9b,
+	0x82, 0x11, 0xdc, 0xe1, 0x25, 0x98, 0xc8, 0x72, 0xbf, 0x99, 0x13, 0x98, 0xa2, 0x9c, 0x87, 0x7c,
+	0x18, 0x11, 0x07, 0x53, 0xba, 0xef, 0x6d, 0x40, 0x7a, 0xeb, 0xe2, 0x8a, 0xfa, 0x06, 0x64, 0x5d,
+	0x6a, 0x75, 0x30, 0x23, 0xb8, 0x29, 0x4a, 0x6c, 0xd8, 0x1c, 0x76, 0xe9, 0x0d, 0xb1, 0x46, 0x2d,
+	0xc8, 0x4b, 0xf1, 0x61, 0x44, 0x42, 0x12, 0x31, 0x5e, 0x86, 0x83, 0xff, 0x42, 0xc6, 0xc6, 0x85,
+	0xd7, 0x6b, 0x5d, 0xa7, 0xe8, 0x23, 0x00, 0x79, 0x10, 0xb7, 0x28, 0x0c, 0x4d, 0x6a, 0xd3, 0x63,
+	0xf3, 0xc5, 0xd4, 0x3e, 0x12, 0x99, 0x5d, 0xdf, 0x09, 0xb1, 0x99, 0xa5, 0xf1, 0x4f, 0xe3, 0x57,
+	0x0d, 0x26, 0x4c, 0xdc, 0x72, 0x29, 0xc3, 0x51, 0x7c, 0x05, 0x26, 0xfe, 0x1c, 0x7d, 0x00, 0x23,
+	0x9b, 0x11, 0xf1, 0x45, 0x77, 0x62, 0x4a, 0x55, 0x09, 0x15, 0x1e, 0xdf, 0x9f, 0x3d, 0xa6, 0xd4,
+	0x54, 0xe5, 0x4e, 0x83, 0x45, 0x6e, 0xd0, 0x32, 0x73, 0x9c, 0xad, 0x20, 0x74, 0x01, 0x06, 0xc4,
+	0x2c, 0xe8, 0x13, 0x7d, 0x37, 0x95, 0xaa, 0x26, 0x39, 0x92, 0x4c, 0x41, 0x5f, 0x78, 0xef, 0x9b,
+	0xbb, 0xa5, 0xcc, 0x5f, 0x77, 0x4b, 0x99, 0xaf, 0x9e, 0xde, 0x9b, 0xc9, 0x5d, 0xda, 0x77, 0xf8,
+	0xed, 0xd3, 0x7b, 0x33, 0x27, 0x13, 0xc9, 0x49, 0xda, 0x1a, 0x3a, 0x14, 0x0e, 0x06, 0x40, 0x43,
+	0x12, 0x50, 0x6c, 0xfc, 0xa8, 0xc1, 0x68, 0x3d, 0x64, 0xb5, 0x80, 0x91, 0xea, 0x8d, 0xc6, 0x6b,
+	0xc7, 0x55, 0x82, 0x9c, 0xdd, 0xa1, 0x5d, 0x5b, 0x39, 0x13, 0xc1, 0xee, 0x50, 0x45, 0x58, 0xb8,
+	0xf0, 0xbc, 0x08, 0x0a, 0x3d, 0x11, 0x24, 0x44, 0x19, 0xc7, 0x00, 0x25, 0x01, 0x25, 0xfe, 0x27,
+	0x0d, 0xc6, 0xea, 0x21, 0xab, 0xb7, 0x59, 0x7d, 0xf3, 0x7f, 0x51, 0xff, 0xfe, 0xf3, 0xd4, 0x9f,
+	0xea, 0x55, 0x9f, 0x50, 0x65, 0x1c, 0x87, 0x89, 0x1e, 0x44, 0xe9, 0x7f, 0xa0, 0xc1, 0x68, 0x03,
+	0xb3, 0x25, 0x12, 0xd0, 0x2b, 0x78, 0x87, 0xcb, 0x9f, 0x87, 0xa1, 0x97, 0x55, 0x1e, 0x13, 0xd1,
+	0x39, 0x18, 0xee, 0xbe, 0x98, 0x72, 0xe4, 0xe4, 0xf6, 0x76, 0x4b, 0x43, 0xf1, 0x4b, 0x39, 0xe4,
+	0xa8, 0x17, 0xf2, 0x4d, 0x80, 0xb0, 0xbd, 0xe1, 0xb9, 0x8e, 0xb5, 0x8d, 0x77, 0xd4, 0x2b, 0x94,
+	0x95, 0xc8, 0x15, 0xbc, 0xb3, 0x30, 0x97, 0x8c, 0x2d, 0x76, 0xfe, 0xec, 0xad, 0xf4, 0xa8, 0xe5,
+	0xb7, 0x92, 0x04, 0x54, 0x54, 0xbf, 0x68, 0x70, 0xbc, 0x16, 0xb8, 0xfb, 0xb8, 0x4f, 0x3a, 0xb6,
+	0xf7, 0x1f, 0x47, 0xb7, 0x70, 0xf1, 0x30, 0xf9, 0x93, 0x09, 0xf9, 0xa9, 0xb2, 0x8c, 0xd3, 0xa0,
+	0xa7, 0x6d, 0xc8, 0x70, 0x66, 0x3c, 0xc8, 0x76, 0xe7, 0x02, 0xd2, 0xe1, 0x44, 0x63, 0xb5, 0xda,
+	0xb8, 0x6c, 0xad, 0xdf, 0xbc, 0xb6, 0x62, 0x5d, 0x5f, 0x6b, 0x5c, 0x5b, 0x59, 0xaa, 0x5d, 0xaa,
+	0xad, 0x2c, 0xe7, 0x33, 0xe8, 0x34, 0x14, 0x12, 0x7b, 0xb5, 0xb5, 0xc6, 0x7a, 0x75, 0x6d, 0xdd,
+	0x12, 0x50, 0x5e, 0x43, 0x67, 0x61, 0x2a, 0xb1, 0xbb, 0x56, 0x8f, 0x09, 0xd5, 0xb5, 0x95, 0xfa,
+	0xf5, 0x86, 0xa2, 0xf5, 0xcd, 0x7f, 0x3d, 0x00, 0xfd, 0x57, 0x69, 0x0b, 0x6d, 0x43, 0xfe, 0xd9,
+	0x9e, 0x45, 0xd3, 0xa9, 0x63, 0x22, 0x65, 0x36, 0xe9, 0xb3, 0x2f, 0xc9, 0x94, 0x21, 0xa2, 0x5b,
+	0x00, 0xfb, 0xf7, 0x88, 0x8c, 0xf4, 0xd9, 0x98, 0xbc, 0x79, 0xfd, 0xed, 0x17, 0x72, 0x54, 0x31,
+	0x64, 0x10, 0x05, 0x74, 0x30, 0xbb, 0x68, 0x26, 0xd5, 0x41, 0xea, 0xfd, 0xe8, 0x95, 0x97, 0xe6,
+	0x76, 0x0f, 0xbd, 0x09, 0xb0, 0x3f, 0x2f, 0x0e, 0x89, 0xa8, 0x67, 0xc2, 0x1c, 0x12, 0xd1, 0xc1,
+	0xa1, 0x83, 0x3e, 0x85, 0x5c, 0xa2, 0x97, 0xd1, 0x99, 0xc3, 0xec, 0x12, 0xfd, 0xaf, 0x4f, 0xbf,
+	0x98, 0x24, 0xbd, 0xeb, 0x47, 0xbe, 0xe4, 0x7f, 0x5a, 0x2d, 0xae, 0x3e, 0xdc, 0x2b, 0x6a, 0x8f,
+	0xf6, 0x8a, 0xda, 0x9f, 0x7b, 0x45, 0xed, 0xbb, 0x27, 0xc5, 0xcc, 0xa3, 0x27, 0xc5, 0xcc, 0xef,
+	0x4f, 0x8a, 0x99, 0x4f, 0xe6, 0x13, 0x8f, 0xe2, 0x8a, 0x74, 0xba, 0x86, 0xd9, 0x17, 0x24, 0xda,
+	0xae, 0xc4, 0x9f, 0x3e, 0xb7, 0xf7, 0x3f, 0x7e, 0xc4, 0x23, 0xb9, 0x31, 0x28, 0xbe, 0x32, 0xde,
+	0xfd, 0x27, 0x00, 0x00, 0xff, 0xff, 0x85, 0xf8, 0xd5, 0xb9, 0x1d, 0x0d, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -881,17 +1016,14 @@ const _ = grpc.SupportPackageIsVersion4
 type MsgClient interface {
 	// RegisterOperator registers a new operator.
 	RegisterOperator(ctx context.Context, in *RegisterOperatorReq, opts ...grpc.CallOption) (*RegisterOperatorResponse, error)
-	// add services for dogfood
-	// OptInToCosmosChain acts as opt in method for an operator to
-	// start validatring on a chain. The operator must sign the request with
-	// the key with which they registered in the system.
-	OptInToCosmosChain(ctx context.Context, in *OptInToCosmosChainRequest, opts ...grpc.CallOption) (*OptInToCosmosChainResponse, error)
-	// InitOptOutFromCosmosChain is a method with which an operator can initiate
-	// the opt out process from a chain. The operator must sign the request with
-	// the key with which they registered in the system. The opt-out process takes
-	// as long as the chain's unbonding period to complete, plus some loose change
-	// for message relaying across chains.
-	InitOptOutFromCosmosChain(ctx context.Context, in *InitOptOutFromCosmosChainRequest, opts ...grpc.CallOption) (*InitOptOutFromCosmosChainResponse, error)
+	// SetConsKey sets the operator's consensus key for a chain.
+	SetConsKey(ctx context.Context, in *SetConsKeyReq, opts ...grpc.CallOption) (*SetConsKeyResponse, error)
+	// InitConsKeyRemoval removes the operator's consensus key for a chain.
+	InitConsKeyRemoval(ctx context.Context, in *InitConsKeyRemovalReq, opts ...grpc.CallOption) (*InitConsKeyRemovalResponse, error)
+	// OptIntoAVS opts an operator into an AVS.
+	OptIntoAVS(ctx context.Context, in *OptIntoAVSReq, opts ...grpc.CallOption) (*OptIntoAVSResponse, error)
+	// OptOutOfAVS opts an operator out of an AVS.
+	OptOutOfAVS(ctx context.Context, in *OptOutOfAVSReq, opts ...grpc.CallOption) (*OptOutOfAVSResponse, error)
 }
 
 type msgClient struct {
@@ -911,18 +1043,36 @@ func (c *msgClient) RegisterOperator(ctx context.Context, in *RegisterOperatorRe
 	return out, nil
 }
 
-func (c *msgClient) OptInToCosmosChain(ctx context.Context, in *OptInToCosmosChainRequest, opts ...grpc.CallOption) (*OptInToCosmosChainResponse, error) {
-	out := new(OptInToCosmosChainResponse)
-	err := c.cc.Invoke(ctx, "/exocore.operator.v1.Msg/OptInToCosmosChain", in, out, opts...)
+func (c *msgClient) SetConsKey(ctx context.Context, in *SetConsKeyReq, opts ...grpc.CallOption) (*SetConsKeyResponse, error) {
+	out := new(SetConsKeyResponse)
+	err := c.cc.Invoke(ctx, "/exocore.operator.v1.Msg/SetConsKey", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *msgClient) InitOptOutFromCosmosChain(ctx context.Context, in *InitOptOutFromCosmosChainRequest, opts ...grpc.CallOption) (*InitOptOutFromCosmosChainResponse, error) {
-	out := new(InitOptOutFromCosmosChainResponse)
-	err := c.cc.Invoke(ctx, "/exocore.operator.v1.Msg/InitOptOutFromCosmosChain", in, out, opts...)
+func (c *msgClient) InitConsKeyRemoval(ctx context.Context, in *InitConsKeyRemovalReq, opts ...grpc.CallOption) (*InitConsKeyRemovalResponse, error) {
+	out := new(InitConsKeyRemovalResponse)
+	err := c.cc.Invoke(ctx, "/exocore.operator.v1.Msg/InitConsKeyRemoval", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *msgClient) OptIntoAVS(ctx context.Context, in *OptIntoAVSReq, opts ...grpc.CallOption) (*OptIntoAVSResponse, error) {
+	out := new(OptIntoAVSResponse)
+	err := c.cc.Invoke(ctx, "/exocore.operator.v1.Msg/OptIntoAVS", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *msgClient) OptOutOfAVS(ctx context.Context, in *OptOutOfAVSReq, opts ...grpc.CallOption) (*OptOutOfAVSResponse, error) {
+	out := new(OptOutOfAVSResponse)
+	err := c.cc.Invoke(ctx, "/exocore.operator.v1.Msg/OptOutOfAVS", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -933,17 +1083,14 @@ func (c *msgClient) InitOptOutFromCosmosChain(ctx context.Context, in *InitOptOu
 type MsgServer interface {
 	// RegisterOperator registers a new operator.
 	RegisterOperator(context.Context, *RegisterOperatorReq) (*RegisterOperatorResponse, error)
-	// add services for dogfood
-	// OptInToCosmosChain acts as opt in method for an operator to
-	// start validatring on a chain. The operator must sign the request with
-	// the key with which they registered in the system.
-	OptInToCosmosChain(context.Context, *OptInToCosmosChainRequest) (*OptInToCosmosChainResponse, error)
-	// InitOptOutFromCosmosChain is a method with which an operator can initiate
-	// the opt out process from a chain. The operator must sign the request with
-	// the key with which they registered in the system. The opt-out process takes
-	// as long as the chain's unbonding period to complete, plus some loose change
-	// for message relaying across chains.
-	InitOptOutFromCosmosChain(context.Context, *InitOptOutFromCosmosChainRequest) (*InitOptOutFromCosmosChainResponse, error)
+	// SetConsKey sets the operator's consensus key for a chain.
+	SetConsKey(context.Context, *SetConsKeyReq) (*SetConsKeyResponse, error)
+	// InitConsKeyRemoval removes the operator's consensus key for a chain.
+	InitConsKeyRemoval(context.Context, *InitConsKeyRemovalReq) (*InitConsKeyRemovalResponse, error)
+	// OptIntoAVS opts an operator into an AVS.
+	OptIntoAVS(context.Context, *OptIntoAVSReq) (*OptIntoAVSResponse, error)
+	// OptOutOfAVS opts an operator out of an AVS.
+	OptOutOfAVS(context.Context, *OptOutOfAVSReq) (*OptOutOfAVSResponse, error)
 }
 
 // UnimplementedMsgServer can be embedded to have forward compatible implementations.
@@ -953,11 +1100,17 @@ type UnimplementedMsgServer struct {
 func (*UnimplementedMsgServer) RegisterOperator(ctx context.Context, req *RegisterOperatorReq) (*RegisterOperatorResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RegisterOperator not implemented")
 }
-func (*UnimplementedMsgServer) OptInToCosmosChain(ctx context.Context, req *OptInToCosmosChainRequest) (*OptInToCosmosChainResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method OptInToCosmosChain not implemented")
+func (*UnimplementedMsgServer) SetConsKey(ctx context.Context, req *SetConsKeyReq) (*SetConsKeyResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SetConsKey not implemented")
 }
-func (*UnimplementedMsgServer) InitOptOutFromCosmosChain(ctx context.Context, req *InitOptOutFromCosmosChainRequest) (*InitOptOutFromCosmosChainResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method InitOptOutFromCosmosChain not implemented")
+func (*UnimplementedMsgServer) InitConsKeyRemoval(ctx context.Context, req *InitConsKeyRemovalReq) (*InitConsKeyRemovalResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method InitConsKeyRemoval not implemented")
+}
+func (*UnimplementedMsgServer) OptIntoAVS(ctx context.Context, req *OptIntoAVSReq) (*OptIntoAVSResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method OptIntoAVS not implemented")
+}
+func (*UnimplementedMsgServer) OptOutOfAVS(ctx context.Context, req *OptOutOfAVSReq) (*OptOutOfAVSResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method OptOutOfAVS not implemented")
 }
 
 func RegisterMsgServer(s grpc1.Server, srv MsgServer) {
@@ -982,38 +1135,74 @@ func _Msg_RegisterOperator_Handler(srv interface{}, ctx context.Context, dec fun
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Msg_OptInToCosmosChain_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(OptInToCosmosChainRequest)
+func _Msg_SetConsKey_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SetConsKeyReq)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(MsgServer).OptInToCosmosChain(ctx, in)
+		return srv.(MsgServer).SetConsKey(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/exocore.operator.v1.Msg/OptInToCosmosChain",
+		FullMethod: "/exocore.operator.v1.Msg/SetConsKey",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MsgServer).OptInToCosmosChain(ctx, req.(*OptInToCosmosChainRequest))
+		return srv.(MsgServer).SetConsKey(ctx, req.(*SetConsKeyReq))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Msg_InitOptOutFromCosmosChain_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(InitOptOutFromCosmosChainRequest)
+func _Msg_InitConsKeyRemoval_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(InitConsKeyRemovalReq)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(MsgServer).InitOptOutFromCosmosChain(ctx, in)
+		return srv.(MsgServer).InitConsKeyRemoval(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/exocore.operator.v1.Msg/InitOptOutFromCosmosChain",
+		FullMethod: "/exocore.operator.v1.Msg/InitConsKeyRemoval",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MsgServer).InitOptOutFromCosmosChain(ctx, req.(*InitOptOutFromCosmosChainRequest))
+		return srv.(MsgServer).InitConsKeyRemoval(ctx, req.(*InitConsKeyRemovalReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Msg_OptIntoAVS_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(OptIntoAVSReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MsgServer).OptIntoAVS(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/exocore.operator.v1.Msg/OptIntoAVS",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MsgServer).OptIntoAVS(ctx, req.(*OptIntoAVSReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Msg_OptOutOfAVS_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(OptOutOfAVSReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MsgServer).OptOutOfAVS(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/exocore.operator.v1.Msg/OptOutOfAVS",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MsgServer).OptOutOfAVS(ctx, req.(*OptOutOfAVSReq))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -1027,12 +1216,20 @@ var _Msg_serviceDesc = grpc.ServiceDesc{
 			Handler:    _Msg_RegisterOperator_Handler,
 		},
 		{
-			MethodName: "OptInToCosmosChain",
-			Handler:    _Msg_OptInToCosmosChain_Handler,
+			MethodName: "SetConsKey",
+			Handler:    _Msg_SetConsKey_Handler,
 		},
 		{
-			MethodName: "InitOptOutFromCosmosChain",
-			Handler:    _Msg_InitOptOutFromCosmosChain_Handler,
+			MethodName: "InitConsKeyRemoval",
+			Handler:    _Msg_InitConsKeyRemoval_Handler,
+		},
+		{
+			MethodName: "OptIntoAVS",
+			Handler:    _Msg_OptIntoAVS_Handler,
+		},
+		{
+			MethodName: "OptOutOfAVS",
+			Handler:    _Msg_OptOutOfAVS_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
@@ -1438,7 +1635,7 @@ func (m *RegisterOperatorResponse) MarshalToSizedBuffer(dAtA []byte) (int, error
 	return len(dAtA) - i, nil
 }
 
-func (m *OptInToCosmosChainRequest) Marshal() (dAtA []byte, err error) {
+func (m *OptIntoAVSReq) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -1448,12 +1645,132 @@ func (m *OptInToCosmosChainRequest) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *OptInToCosmosChainRequest) MarshalTo(dAtA []byte) (int, error) {
+func (m *OptIntoAVSReq) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *OptInToCosmosChainRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *OptIntoAVSReq) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.AvsAddress) > 0 {
+		i -= len(m.AvsAddress)
+		copy(dAtA[i:], m.AvsAddress)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.AvsAddress)))
+		i--
+		dAtA[i] = 0x12
+	}
+	if len(m.FromAddress) > 0 {
+		i -= len(m.FromAddress)
+		copy(dAtA[i:], m.FromAddress)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.FromAddress)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *OptIntoAVSResponse) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *OptIntoAVSResponse) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *OptIntoAVSResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	return len(dAtA) - i, nil
+}
+
+func (m *OptOutOfAVSReq) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *OptOutOfAVSReq) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *OptOutOfAVSReq) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.AvsAddress) > 0 {
+		i -= len(m.AvsAddress)
+		copy(dAtA[i:], m.AvsAddress)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.AvsAddress)))
+		i--
+		dAtA[i] = 0x12
+	}
+	if len(m.FromAddress) > 0 {
+		i -= len(m.FromAddress)
+		copy(dAtA[i:], m.FromAddress)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.FromAddress)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *OptOutOfAVSResponse) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *OptOutOfAVSResponse) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *OptOutOfAVSResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	return len(dAtA) - i, nil
+}
+
+func (m *SetConsKeyReq) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *SetConsKeyReq) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *SetConsKeyReq) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
@@ -1465,10 +1782,10 @@ func (m *OptInToCosmosChainRequest) MarshalToSizedBuffer(dAtA []byte) (int, erro
 		i--
 		dAtA[i] = 0x1a
 	}
-	if len(m.ChainId) > 0 {
-		i -= len(m.ChainId)
-		copy(dAtA[i:], m.ChainId)
-		i = encodeVarintTx(dAtA, i, uint64(len(m.ChainId)))
+	if len(m.ChainID) > 0 {
+		i -= len(m.ChainID)
+		copy(dAtA[i:], m.ChainID)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.ChainID)))
 		i--
 		dAtA[i] = 0x12
 	}
@@ -1482,7 +1799,7 @@ func (m *OptInToCosmosChainRequest) MarshalToSizedBuffer(dAtA []byte) (int, erro
 	return len(dAtA) - i, nil
 }
 
-func (m *OptInToCosmosChainResponse) Marshal() (dAtA []byte, err error) {
+func (m *SetConsKeyResponse) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -1492,12 +1809,12 @@ func (m *OptInToCosmosChainResponse) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *OptInToCosmosChainResponse) MarshalTo(dAtA []byte) (int, error) {
+func (m *SetConsKeyResponse) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *OptInToCosmosChainResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *SetConsKeyResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
@@ -1505,7 +1822,7 @@ func (m *OptInToCosmosChainResponse) MarshalToSizedBuffer(dAtA []byte) (int, err
 	return len(dAtA) - i, nil
 }
 
-func (m *InitOptOutFromCosmosChainRequest) Marshal() (dAtA []byte, err error) {
+func (m *InitConsKeyRemovalReq) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -1515,20 +1832,20 @@ func (m *InitOptOutFromCosmosChainRequest) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *InitOptOutFromCosmosChainRequest) MarshalTo(dAtA []byte) (int, error) {
+func (m *InitConsKeyRemovalReq) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *InitOptOutFromCosmosChainRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *InitConsKeyRemovalReq) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
 	_ = l
-	if len(m.ChainId) > 0 {
-		i -= len(m.ChainId)
-		copy(dAtA[i:], m.ChainId)
-		i = encodeVarintTx(dAtA, i, uint64(len(m.ChainId)))
+	if len(m.ChainID) > 0 {
+		i -= len(m.ChainID)
+		copy(dAtA[i:], m.ChainID)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.ChainID)))
 		i--
 		dAtA[i] = 0x12
 	}
@@ -1542,7 +1859,7 @@ func (m *InitOptOutFromCosmosChainRequest) MarshalToSizedBuffer(dAtA []byte) (in
 	return len(dAtA) - i, nil
 }
 
-func (m *InitOptOutFromCosmosChainResponse) Marshal() (dAtA []byte, err error) {
+func (m *InitConsKeyRemovalResponse) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -1552,12 +1869,12 @@ func (m *InitOptOutFromCosmosChainResponse) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *InitOptOutFromCosmosChainResponse) MarshalTo(dAtA []byte) (int, error) {
+func (m *InitConsKeyRemovalResponse) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *InitOptOutFromCosmosChainResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *InitConsKeyRemovalResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
@@ -1736,7 +2053,59 @@ func (m *RegisterOperatorResponse) Size() (n int) {
 	return n
 }
 
-func (m *OptInToCosmosChainRequest) Size() (n int) {
+func (m *OptIntoAVSReq) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.FromAddress)
+	if l > 0 {
+		n += 1 + l + sovTx(uint64(l))
+	}
+	l = len(m.AvsAddress)
+	if l > 0 {
+		n += 1 + l + sovTx(uint64(l))
+	}
+	return n
+}
+
+func (m *OptIntoAVSResponse) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	return n
+}
+
+func (m *OptOutOfAVSReq) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.FromAddress)
+	if l > 0 {
+		n += 1 + l + sovTx(uint64(l))
+	}
+	l = len(m.AvsAddress)
+	if l > 0 {
+		n += 1 + l + sovTx(uint64(l))
+	}
+	return n
+}
+
+func (m *OptOutOfAVSResponse) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	return n
+}
+
+func (m *SetConsKeyReq) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -1746,7 +2115,7 @@ func (m *OptInToCosmosChainRequest) Size() (n int) {
 	if l > 0 {
 		n += 1 + l + sovTx(uint64(l))
 	}
-	l = len(m.ChainId)
+	l = len(m.ChainID)
 	if l > 0 {
 		n += 1 + l + sovTx(uint64(l))
 	}
@@ -1757,7 +2126,7 @@ func (m *OptInToCosmosChainRequest) Size() (n int) {
 	return n
 }
 
-func (m *OptInToCosmosChainResponse) Size() (n int) {
+func (m *SetConsKeyResponse) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -1766,7 +2135,7 @@ func (m *OptInToCosmosChainResponse) Size() (n int) {
 	return n
 }
 
-func (m *InitOptOutFromCosmosChainRequest) Size() (n int) {
+func (m *InitConsKeyRemovalReq) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -1776,14 +2145,14 @@ func (m *InitOptOutFromCosmosChainRequest) Size() (n int) {
 	if l > 0 {
 		n += 1 + l + sovTx(uint64(l))
 	}
-	l = len(m.ChainId)
+	l = len(m.ChainID)
 	if l > 0 {
 		n += 1 + l + sovTx(uint64(l))
 	}
 	return n
 }
 
-func (m *InitOptOutFromCosmosChainResponse) Size() (n int) {
+func (m *InitConsKeyRemovalResponse) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -2920,7 +3289,7 @@ func (m *RegisterOperatorResponse) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *OptInToCosmosChainRequest) Unmarshal(dAtA []byte) error {
+func (m *OptIntoAVSReq) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -2943,10 +3312,338 @@ func (m *OptInToCosmosChainRequest) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: OptInToCosmosChainRequest: wiretype end group for non-group")
+			return fmt.Errorf("proto: OptIntoAVSReq: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: OptInToCosmosChainRequest: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: OptIntoAVSReq: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field FromAddress", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.FromAddress = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field AvsAddress", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.AvsAddress = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipTx(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthTx
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *OptIntoAVSResponse) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowTx
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: OptIntoAVSResponse: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: OptIntoAVSResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		default:
+			iNdEx = preIndex
+			skippy, err := skipTx(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthTx
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *OptOutOfAVSReq) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowTx
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: OptOutOfAVSReq: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: OptOutOfAVSReq: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field FromAddress", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.FromAddress = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field AvsAddress", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.AvsAddress = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipTx(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthTx
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *OptOutOfAVSResponse) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowTx
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: OptOutOfAVSResponse: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: OptOutOfAVSResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		default:
+			iNdEx = preIndex
+			skippy, err := skipTx(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthTx
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *SetConsKeyReq) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowTx
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: SetConsKeyReq: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: SetConsKeyReq: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
@@ -2983,7 +3680,7 @@ func (m *OptInToCosmosChainRequest) Unmarshal(dAtA []byte) error {
 			iNdEx = postIndex
 		case 2:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field ChainId", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field ChainID", wireType)
 			}
 			var stringLen uint64
 			for shift := uint(0); ; shift += 7 {
@@ -3011,7 +3708,7 @@ func (m *OptInToCosmosChainRequest) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.ChainId = string(dAtA[iNdEx:postIndex])
+			m.ChainID = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
 		case 3:
 			if wireType != 2 {
@@ -3066,7 +3763,7 @@ func (m *OptInToCosmosChainRequest) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *OptInToCosmosChainResponse) Unmarshal(dAtA []byte) error {
+func (m *SetConsKeyResponse) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -3089,10 +3786,10 @@ func (m *OptInToCosmosChainResponse) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: OptInToCosmosChainResponse: wiretype end group for non-group")
+			return fmt.Errorf("proto: SetConsKeyResponse: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: OptInToCosmosChainResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: SetConsKeyResponse: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		default:
@@ -3116,7 +3813,7 @@ func (m *OptInToCosmosChainResponse) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *InitOptOutFromCosmosChainRequest) Unmarshal(dAtA []byte) error {
+func (m *InitConsKeyRemovalReq) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -3139,10 +3836,10 @@ func (m *InitOptOutFromCosmosChainRequest) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: InitOptOutFromCosmosChainRequest: wiretype end group for non-group")
+			return fmt.Errorf("proto: InitConsKeyRemovalReq: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: InitOptOutFromCosmosChainRequest: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: InitConsKeyRemovalReq: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
@@ -3179,7 +3876,7 @@ func (m *InitOptOutFromCosmosChainRequest) Unmarshal(dAtA []byte) error {
 			iNdEx = postIndex
 		case 2:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field ChainId", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field ChainID", wireType)
 			}
 			var stringLen uint64
 			for shift := uint(0); ; shift += 7 {
@@ -3207,7 +3904,7 @@ func (m *InitOptOutFromCosmosChainRequest) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.ChainId = string(dAtA[iNdEx:postIndex])
+			m.ChainID = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
 		default:
 			iNdEx = preIndex
@@ -3230,7 +3927,7 @@ func (m *InitOptOutFromCosmosChainRequest) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *InitOptOutFromCosmosChainResponse) Unmarshal(dAtA []byte) error {
+func (m *InitConsKeyRemovalResponse) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -3253,10 +3950,10 @@ func (m *InitOptOutFromCosmosChainResponse) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: InitOptOutFromCosmosChainResponse: wiretype end group for non-group")
+			return fmt.Errorf("proto: InitConsKeyRemovalResponse: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: InitOptOutFromCosmosChainResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: InitConsKeyRemovalResponse: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		default:

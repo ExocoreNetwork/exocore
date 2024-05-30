@@ -93,9 +93,20 @@ func TestCache(t *testing.T) {
 			Convey("add more items", func() {
 				c.AddCache(msgItems[1])
 				c.AddCache(msgItems[2])
+
+				c.GetCache(&msgItemsReturn)
+				So(msgItemsReturn, ShouldContain, msgItems[0])
+				So(msgItemsReturn, ShouldContain, msgItems[2])
+			})
+			Convey("remove two items with same feederID", func() {
+				c.AddCache(msgItems[1])
+				c.AddCache(msgItems[2])
+				c.RemoveCache(msgItems[0])
+
 				c.GetCache(&msgItemsReturn)
 				So(msgItemsReturn, ShouldContain, msgItems[2])
 				So(msgItemsReturn, ShouldNotContain, msgItems[0])
+				So(msgItemsReturn, ShouldNotContain, msgItems[1])
 			})
 		})
 	})

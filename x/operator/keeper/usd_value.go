@@ -170,7 +170,10 @@ func (k *Keeper) BatchUpdateUSDValueForAVSAndOperator(ctx sdk.Context, avsOperat
 // AVSAddr -> types.DecValueField（the total USD share of specified Avs）
 // It hasn't been used now. but it can serve as an RPC in the future.
 func (k *Keeper) GetAVSUSDValue(ctx sdk.Context, avsAddr string) (sdkmath.LegacyDec, error) {
-	store := prefix.NewStore(ctx.KVStore(k.storeKey), operatortypes.KeyPrefixVotingPowerForAVSOperator)
+	store := prefix.NewStore(
+		ctx.KVStore(k.storeKey),
+		operatortypes.KeyPrefixVotingPowerForAVSOperator,
+	)
 	var ret operatortypes.DecValueField
 	key := []byte(avsAddr)
 	value := store.Get(key)
@@ -217,7 +220,7 @@ func (k Keeper) GetAvgDelegatedValue(
 	}
 	ret := make([]int64, 0)
 	for _, operator := range operators {
-		usdValue, err := k.GetOperatorUSDValue(ctx, operator.String(), avsAddr)
+		usdValue, err := k.GetOperatorUSDValue(ctx, avsAddr, operator.String())
 		if err != nil {
 			return nil, err
 		}
