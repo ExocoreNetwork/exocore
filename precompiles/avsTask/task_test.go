@@ -2,6 +2,8 @@ package task_test
 
 import (
 	"encoding/hex"
+	"github.com/ExocoreNetwork/exocore/x/avs/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	"math/big"
 
 	"github.com/ExocoreNetwork/exocore/app"
@@ -41,11 +43,25 @@ func (s *TaskPrecompileTestSuite) TestIsTransaction() {
 
 // TestRun tests the precompiles Run method reg avstask.
 func (s *TaskPrecompileTestSuite) TestRunRegTaskinfo() {
-	avsName, avsAddres, operatorAddress, assetID := "avsTest", "exo13h6xg79g82e2g2vhjwg7j4r2z2hlncelwutkjr", "exo18h6xg79g82e2g2vhjwg7j4r2z2hlncelwutkjr", ""
+	avsName, avsAddres, slashAddress := "avsTest", "exo13h6xg79g82e2g2vhjwg7j4r2z2hlncelwutkjr", "exo13h6xg79g82e2g2vhjwg7j4r2z2hlncelwutash"
+	avsOwnerAddress := []string{"exo13h6xg79g82e2g2vhjwg7j4r2z2hlncelwutkjr", "exo13h6xg79g82e2g2vhjwg7j4r2z2hlncelwutkj1", "exo13h6xg79g82e2g2vhjwg7j4r2z2hlncelwutkj2"}
+	assetID := []string{"11", "22", "33"}
 	_, byteData, _ := bech32.DecodeToBase256(avsAddres)
 	caller := "0x" + hex.EncodeToString(byteData)
+	avs := &types.AVSInfo{
+		Name:               avsName,
+		AvsAddress:         avsAddres,
+		SlashAddr:          slashAddress,
+		AvsOwnerAddress:    avsOwnerAddress,
+		AssetId:            assetID,
+		AvsUnbondingPeriod: uint32(7),
+		MinSelfDelegation:  sdk.NewIntFromUint64(10),
+		AvsEpoch:           nil,
+		OperatorAddress:    nil,
+	}
+
 	registerAvs := func() {
-		err := s.App.AVSManagerKeeper.SetAVSInfo(s.Ctx, avsName, avsAddres, operatorAddress, assetID)
+		err := s.App.AVSManagerKeeper.SetAVSInfo(s.Ctx, avs)
 		s.NoError(err)
 	}
 	commonMalleate := func() (common.Address, []byte) {

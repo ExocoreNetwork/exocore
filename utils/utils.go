@@ -100,7 +100,7 @@ func DecodeHexString(hexString string) ([]byte, error) {
 	return hex.DecodeString(hexString)
 }
 
-func ProcessAvsAddress(address string) (string, error) {
+func ProcessAddress(address string) (string, error) {
 	switch {
 	case strings.HasPrefix(address, "0x"):
 		avsAddressHex, err := DecodeHexString(address)
