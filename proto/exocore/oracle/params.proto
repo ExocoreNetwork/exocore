@@ -20,4 +20,14 @@ message Params {
   repeated RuleSource rules = 4;
   // each tokenFeeder represents an active token whose price being updated
   repeated TokenFeeder token_feeders = 5;
+  // for each round allow at most max_nonce transactions to be sent by one validator, [1,max_nonce]
+  int32 max_nonce = 6;
+  // voting power need to reach more than threshold_a/threshold_b
+  int32 threshold_a = 7;
+  // voting power need to reach more than threshold_a/threshold_b
+  int32 threshold_b = 8;
+  // for v1, mode=1, get final price as soon as voting power reach threshold_a/threshold_b
+  int32 mode = 9;
+  // for each round, a validator only allowed to provide at most max_det_id continuos rounds of prices for DS
+  int32 max_det_id = 10;
 }

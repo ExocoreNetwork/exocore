@@ -24,29 +24,18 @@ type DogfoodHooks interface {
 
 // OperatorKeeper represents the expected keeper interface for the operator module.
 type OperatorKeeper interface {
-	GetOperatorConsKeyForChainID(
-		sdk.Context, sdk.AccAddress, string,
-	) (bool, *tmprotocrypto.PublicKey, error)
-	IsOperatorOptingOutFromChainID(
-		sdk.Context, sdk.AccAddress, string,
-	) bool
-	CompleteOperatorOptOutFromChainID(sdk.Context, sdk.AccAddress, string)
-	DeleteOperatorAddressForChainIDAndConsAddr(sdk.Context, string, sdk.ConsAddress)
+	// use a shorted undelegation period if the operator is opting out
+	IsOperatorRemovingKeyFromChainID(sdk.Context, sdk.AccAddress, string) bool
+	// complete the removal when done
+	CompleteOperatorKeyRemovalForChainID(sdk.Context, sdk.AccAddress, string) error
+	// reverse lookup for slashing
 	GetOperatorAddressForChainIDAndConsAddr(
 		sdk.Context, string, sdk.ConsAddress,
 	) (bool, sdk.AccAddress)
+	// impl_sdk
 	IsOperatorJailedForChainID(sdk.Context, sdk.ConsAddress, string) bool
 	Jail(sdk.Context, sdk.ConsAddress, string)
 	Unjail(sdk.Context, sdk.ConsAddress, string)
-	// GetActiveOperatorsForChainID should return a list of operators and their public keys.
-	// These operators should not be in the process of opting out, and should not be jailed
-	// whether permanently or temporarily.
-	GetActiveOperatorsForChainID(
-		sdk.Context, string,
-	) ([]sdk.AccAddress, []*tmprotocrypto.PublicKey)
-	GetAvgDelegatedValue(
-		sdk.Context, []sdk.AccAddress, string, string,
-	) ([]int64, error)
 	SlashWithInfractionReason(
 		sdk.Context, sdk.AccAddress, int64,
 		int64, sdk.Dec, stakingtypes.Infraction,
@@ -54,6 +43,21 @@ type OperatorKeeper interface {
 	ValidatorByConsAddrForChainID(
 		ctx sdk.Context, consAddr sdk.ConsAddress, chainID string,
 	) stakingtypes.ValidatorI
+	// at each epoch, get the list and create validator update
+	GetActiveOperatorsForChainID(
+		sdk.Context, string,
+	) ([]sdk.AccAddress, []*tmprotocrypto.PublicKey)
+	// get vote power. TODO: replace with vote power call.
+	GetAvgDelegatedValue(
+		sdk.Context, []sdk.AccAddress, string, string,
+	) ([]int64, error)
+	// prune slashing-related reverse lookup when matured
+	DeleteOperatorAddressForChainIDAndConsAddr(
+		ctx sdk.Context, chainID string, consAddr sdk.ConsAddress,
+	)
+	// at each epoch, the current key becomes the "previous" key
+	// for further key set function calls
+	ClearPreviousConsensusKeys(ctx sdk.Context, chainID string)
 }
 
 // DelegationKeeper represents the expected keeper interface for the delegation module.

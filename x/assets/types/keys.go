@@ -32,7 +32,6 @@ func init() {
 // prefix bytes for the reStaking assets manage store
 const (
 	prefixClientChainInfo = iota + 1
-	prefixAppChainInfo
 	prefixRestakingAssetInfo
 	prefixRestakerAssetInfo
 	prefixOperatorAssetInfo
@@ -49,8 +48,6 @@ const (
 var (
 	// KeyPrefixClientChainInfo key->value: chainIndex->ClientChainInfo
 	KeyPrefixClientChainInfo = []byte{prefixClientChainInfo}
-
-	KeyPrefixAppChainInfo = []byte{prefixAppChainInfo}
 
 	// KeyPrefixReStakingAssetInfo AssetID = AssetAddr+'_'+chainIndex
 	// KeyPrefixReStakingAssetInfo key->value: AssetID-> StakingAssetInfo

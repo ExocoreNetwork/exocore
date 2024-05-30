@@ -82,3 +82,24 @@ type OperatorKeeper interface {
 		req *operatortypes.OptInToCosmosChainRequest,
 	) (*operatortypes.OptInToCosmosChainResponse, error)
 }
+
+// SetHooks stores the given hooks implementations.
+// Note that the Keeper is changed into a pointer to prevent an ineffective assignment.
+func (k *Keeper) SetHooks(hooks operatortypes.OperatorHooks) {
+	if hooks == nil {
+		panic("cannot set nil hooks")
+	}
+	if k.hooks != nil {
+		panic("cannot set hooks twice")
+	}
+	k.hooks = hooks
+}
+
+// Hooks returns the keeper's hooks.
+func (k *Keeper) Hooks() operatortypes.OperatorHooks {
+	if k.hooks == nil {
+		// return a no-op implementation if no hooks are set to prevent calling nil functions
+		return operatortypes.MultiOperatorHooks{}
+	}
+	return k.hooks
+}

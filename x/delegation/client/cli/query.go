@@ -28,6 +28,7 @@ func GetQueryCmd() *cobra.Command {
 		QueryDelegationInfo(),
 		QueryUndelegations(),
 		QueryWaitCompleteUndelegations(),
+		QueryUndelegationHoldCount(),
 	)
 	return cmd
 }
@@ -149,6 +150,35 @@ func QueryWaitCompleteUndelegations() *cobra.Command {
 				BlockHeight: height,
 			}
 			res, err := queryClient.QueryWaitCompleteUndelegations(context.Background(), req)
+			if err != nil {
+				return err
+			}
+			return clientCtx.PrintProto(res)
+		},
+	}
+
+	flags.AddQueryFlagsToCmd(cmd)
+	return cmd
+}
+
+// QueryUndelegationHoldCount queries undelegation hold count for a record key.
+func QueryUndelegationHoldCount() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "QueryUndelegationHoldCount recordKey",
+		Short: "Get undelegation hold count",
+		Long:  "Get undelegation hold count",
+		Args:  cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx, err := client.GetClientQueryContext(cmd)
+			if err != nil {
+				return err
+			}
+
+			queryClient := delegationtype.NewQueryClient(clientCtx)
+			req := &delegationtype.UndelegationHoldCountReq{
+				RecordKey: args[0],
+			}
+			res, err := queryClient.QueryUndelegationHoldCount(context.Background(), req)
 			if err != nil {
 				return err
 			}

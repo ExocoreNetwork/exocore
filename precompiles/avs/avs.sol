@@ -14,11 +14,20 @@ IAVSManager constant AVSMANAGER_CONTRACT = IAVSManager(
 /// @custom:address 0x0000000000000000000000000000000000000902
 interface IAVSManager {
     function AVSAction(
+        string[] memory avsOwnerAddress,
         string memory avsName,
-        string memory avsAddress,
-        string memory operatorAddress,
+        string memory slashContractAddr,
+        string[] memory assetID,
         uint64 action,
-        string memory avsOwnerAddress,
-        string memory assetID
+        uint64 minSelfDelegation,
+        uint64 unbondingPeriod
     ) external returns (bool success);
+
+
+    function OperatorOptAction(
+        uint64 action
+    ) external returns (bool success);
+
 }
+
+

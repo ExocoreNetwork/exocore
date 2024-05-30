@@ -41,7 +41,7 @@ func (suite *OperatorTestSuite) prepareOperator() {
 
 func (suite *OperatorTestSuite) prepareDeposit(assetAddr common.Address, amount sdkmath.Int) {
 	clientChainLzID := uint64(101)
-	suite.avsAddr = "avsTestAddr"
+	suite.avsAddr = common.BytesToAddress([]byte("avsTestAddr")).String()
 	suite.assetAddr = assetAddr
 	suite.assetDecimal = 6
 	suite.clientChainLzID = clientChainLzID

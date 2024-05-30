@@ -3,28 +3,62 @@ package keeper
 import (
 	"fmt"
 
-	assetstype "github.com/ExocoreNetwork/exocore/x/assets/types"
-
 	errorsmod "cosmossdk.io/errors"
 
-	operatortypes "github.com/ExocoreNetwork/exocore/x/operator/types"
 	"github.com/cosmos/cosmos-sdk/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+
+	assetstype "github.com/ExocoreNetwork/exocore/x/assets/types"
+	operatortypes "github.com/ExocoreNetwork/exocore/x/operator/types"
 )
 
-// SetOperatorInfo This function is used to register to be an operator in exoCore, the provided info will be stored on the chain.
-// Once an address has become an operator,the operator can't return to a normal address.But the operator can update the info through this function
-func (k *Keeper) SetOperatorInfo(ctx sdk.Context, addr string, info *operatortypes.OperatorInfo) (err error) {
-	opAccAddr, err := sdk.AccAddressFromBech32(addr)
-	if err != nil {
-		return errorsmod.Wrap(err, "SetOperatorInfo: error occurred when parse acc address from Bech32")
+// SetOperatorInfo is used to store the operator's information on the chain.
+// There is no current way implemented to delete an operator's registration or edit it.
+// TODO: implement operator edit function, which should allow editing:
+// approve address?
+// commission, subject to limits and once within 24 hours.
+// client chain earnings addresses (maybe append only?)
+func (k *Keeper) SetOperatorInfo(
+	ctx sdk.Context, addr string, info *operatortypes.OperatorInfo,
+) (err error) {
+	// the operator's `addr` must match the earnings address.
+	if addr != info.EarningsAddr {
+		return errorsmod.Wrap(
+			operatortypes.ErrParameterInvalid,
+			"SetOperatorInfo: earnings address is not equal to the operator address",
+		)
 	}
-	store := prefix.NewStore(ctx.KVStore(k.storeKey), operatortypes.KeyPrefixOperatorInfo)
-	// todo: think about the difference between init and update in future
+	// #nosec G703 // already validated in `ValidateBasic`
+	opAccAddr, _ := sdk.AccAddressFromBech32(info.EarningsAddr)
+	// if already registered, this request should go to EditOperator.
+	if k.IsOperator(ctx, opAccAddr) {
+		return errorsmod.Wrap(
+			operatortypes.ErrOperatorAlreadyExists,
+			fmt.Sprintf("SetOperatorInfo: operator already exists, address: %suite", opAccAddr),
+		)
+	}
+	// TODO: add minimum commission rate module parameter and check that commission exceeds it.
+	info.Commission.UpdateTime = ctx.BlockTime()
 
-	// key := common.HexToAddress(incentive.Contract)
+	if info.ClientChainEarningsAddr != nil {
+		for _, data := range info.ClientChainEarningsAddr.EarningInfoList {
+			if data.ClientChainEarningAddr == "" {
+				return errorsmod.Wrap(
+					operatortypes.ErrParameterInvalid,
+					"SetOperatorInfo: client chain earning address is empty",
+				)
+			}
+			if !k.assetsKeeper.ClientChainExists(ctx, data.LzClientChainID) {
+				return errorsmod.Wrap(
+					operatortypes.ErrParameterInvalid,
+					"SetOperatorInfo: client chain not found",
+				)
+			}
+		}
+	}
+
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), operatortypes.KeyPrefixOperatorInfo)
 	bz := k.cdc.MustMarshal(info)
-	// TODO: check about client chain registration for earnings addresses provided?
 	store.Set(opAccAddr, bz)
 	return nil
 }
@@ -129,16 +163,23 @@ func (k *Keeper) IsOptedIn(ctx sdk.Context, operatorAddr, avsAddr string) bool {
 	return true
 }
 
-func (k *Keeper) IsActive(ctx sdk.Context, operatorAddr, avsAddr string) bool {
-	optedInfo, err := k.GetOptedInfo(ctx, operatorAddr, avsAddr)
+func (k *Keeper) IsActive(ctx sdk.Context, operatorAddr sdk.AccAddress, avsAddr string) bool {
+	optedInfo, err := k.GetOptedInfo(ctx, operatorAddr.String(), avsAddr)
 	if err != nil {
+		// not opted in
 		return false
 	}
 	if optedInfo.OptedOutHeight != operatortypes.DefaultOptedOutHeight {
+		// opted out
 		return false
 	}
 	if optedInfo.Jailed {
+		// frozen - either temporarily or permanently
 		return false
+	}
+	if avsAddr == ctx.ChainID() {
+		// if in the process of opting out, return false
+		return !k.IsOperatorRemovingKeyFromChainID(ctx, operatorAddr, avsAddr)
 	}
 	return true
 }
