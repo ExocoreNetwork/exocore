@@ -83,7 +83,8 @@ func (k *Keeper) OptOut(ctx sdk.Context, operatorAddress sdk.AccAddress, avsAddr
 
 	// DeleteOperatorUSDValue, delete the operator voting power, it can facilitate to
 	// update the voting powers of all opted-in operators at the end of epoch.
-	// there isn't going to be any reward for the operator in this opted-out epoch.
+	// There might still be a reward for the operator in this opted-out epoch,
+	// which is determined by the reward logic.
 	err := k.DeleteOperatorUSDValue(ctx, avsAddr, operatorAddress.String())
 	if err != nil {
 		return err

@@ -26,19 +26,6 @@ type AssetsKeeper interface {
 		ctx sdk.Context, isUpdate bool, operator string, assetsFilter map[string]interface{},
 		f func(assetID string, state *assetstype.OperatorAssetInfo) error,
 	) error
-	AppChainInfoIsExist(ctx sdk.Context, chainID string) bool
-	GetOperatorAssetInfos(
-		ctx sdk.Context, operatorAddr sdk.Address, assetsFilter map[string]interface{},
-	) (assetsInfo map[string]*assetstype.OperatorAssetInfo, err error)
-	GetOperatorSpecifiedAssetInfo(ctx sdk.Context, operatorAddr sdk.Address, assetID string) (info *assetstype.OperatorAssetInfo, err error)
-	UpdateStakerAssetState(
-		ctx sdk.Context, stakerID string, assetID string,
-		changeAmount assetstype.DeltaStakerSingleAsset,
-	) (err error)
-	UpdateOperatorAssetState(
-		ctx sdk.Context, operatorAddr sdk.Address, assetID string,
-		changeAmount assetstype.DeltaOperatorSingleAsset,
-	) (err error)
 	ClientChainExists(ctx sdk.Context, index uint64) bool
 	GetAllStakingAssetsInfo(ctx sdk.Context) (allAssets map[string]*assetstype.StakingAssetInfo, err error)
 }

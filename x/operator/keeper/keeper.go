@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"context"
+
 	sdkmath "cosmossdk.io/math"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 
@@ -76,11 +77,6 @@ type OperatorKeeper interface {
 		ctx sdk.Context, addr sdk.AccAddress, infractionHeight, power int64,
 		slashFactor sdk.Dec, infraction stakingtypes.Infraction,
 	) sdkmath.Int
-
-	OptInToCosmosChain(
-		goCtx context.Context,
-		req *operatortypes.OptInToCosmosChainRequest,
-	) (*operatortypes.OptInToCosmosChainResponse, error)
 }
 
 // SetHooks stores the given hooks implementations.

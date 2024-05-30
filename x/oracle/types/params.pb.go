@@ -43,7 +43,7 @@ type Params struct {
 	ThresholdB int32 `protobuf:"varint,8,opt,name=threshold_b,json=thresholdB,proto3" json:"threshold_b,omitempty"`
 	// for v1, mode=1, get final price as soon as voting power reach threshold_a/threshold_b
 	Mode int32 `protobuf:"varint,9,opt,name=mode,proto3" json:"mode,omitempty"`
-	// for each round, a validator only allowed to provide at most max_det_id continuos rounds of prices from deterministic source
+	// for each round, a validator only allowed to provide at most max_det_id continuos rounds of prices for DS
 	MaxDetId int32 `protobuf:"varint,10,opt,name=max_det_id,json=maxDetId,proto3" json:"max_det_id,omitempty"`
 }
 

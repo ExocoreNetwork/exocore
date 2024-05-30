@@ -63,8 +63,8 @@ func (suite *AVSTestSuite) TestAVSInfoUpdate_Register() {
 	err = suite.App.AVSManagerKeeper.AVSInfoUpdate(suite.Ctx, avsParams)
 	suite.Error(err)
 	suite.Contains(err.Error(), types.ErrAlreadyRegistered.Error())
-
 }
+
 func (suite *AVSTestSuite) TestAVSInfoUpdate_DeRegister() {
 	// Test case setup
 	avsName, avsAddres, slashAddress := "avsTest", "exo13h6xg79g82e2g2vhjwg7j4r2z2hlncelwutkjr", "exo13h6xg79g82e2g2vhjwg7j4r2z2hlncelwutash"
@@ -99,7 +99,6 @@ func (suite *AVSTestSuite) TestAVSInfoUpdate_DeRegister() {
 	info, err = suite.App.AVSManagerKeeper.GetAVSInfo(suite.Ctx, avsAddres)
 	suite.Error(err)
 	suite.Contains(err.Error(), types.ErrNoKeyInTheStore.Error())
-
 }
 
 func (suite *AVSTestSuite) TestAVSInfoUpdateWithOperator_Register() {
@@ -115,7 +114,7 @@ func (suite *AVSTestSuite) TestAVSInfoUpdateWithOperator_Register() {
 	suite.Error(err)
 	suite.Contains(err.Error(), delegationtypes.ErrOperatorNotExist.Error())
 
-	//register operator but avs not register
+	// register operator but avs not register
 	info := &operatortype.OperatorInfo{
 		EarningsAddr:     suite.AccAddress.String(),
 		ApproveAddr:      "",
@@ -134,7 +133,7 @@ func (suite *AVSTestSuite) TestAVSInfoUpdateWithOperator_Register() {
 	suite.Error(err)
 	suite.Contains(err.Error(), types.ErrNoKeyInTheStore.Error())
 
-	//register avs
+	// register avs
 	avsName, avsAddres, slashAddress := "avsTest", "exo13h6xg79g82e2g2vhjwg7j4r2z2hlncelwutkjr", "exo13h6xg79g82e2g2vhjwg7j4r2z2hlncelwutash"
 	avsOwnerAddress := []string{"exo13h6xg79g82e2g2vhjwg7j4r2z2hlncelwutkjr", "exo13h6xg79g82e2g2vhjwg7j4r2z2hlncelwutkj1", "exo13h6xg79g82e2g2vhjwg7j4r2z2hlncelwutkj2"}
 	assetID := []string{"11", "22", "33"}
@@ -157,19 +156,18 @@ func (suite *AVSTestSuite) TestAVSInfoUpdateWithOperator_Register() {
 	operatorParams.AvsAddress = avsAddres
 	err = suite.App.AVSManagerKeeper.AVSInfoUpdateWithOperator(suite.Ctx, operatorParams)
 	suite.NoError(err)
-	//duplicate register operator
+	// duplicate register operator
 	err = suite.App.AVSManagerKeeper.AVSInfoUpdateWithOperator(suite.Ctx, operatorParams)
 	suite.Error(err)
 	suite.Contains(err.Error(), types.ErrAlreadyRegistered.Error())
-	//deregister operator
+	// deregister operator
 	operatorParams.Action = avstypes.DeRegisterAction
 	err = suite.App.AVSManagerKeeper.AVSInfoUpdateWithOperator(suite.Ctx, operatorParams)
 	suite.NoError(err)
 
-	//duplicate deregister operator
+	// duplicate deregister operator
 	operatorParams.Action = avstypes.DeRegisterAction
 	err = suite.App.AVSManagerKeeper.AVSInfoUpdateWithOperator(suite.Ctx, operatorParams)
 	suite.Error(err)
 	suite.Contains(err.Error(), types.ErrUnregisterNonExistent.Error())
-
 }

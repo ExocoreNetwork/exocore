@@ -2,9 +2,10 @@ package task_test
 
 import (
 	"encoding/hex"
+	"math/big"
+
 	"github.com/ExocoreNetwork/exocore/x/avs/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"math/big"
 
 	"github.com/ExocoreNetwork/exocore/app"
 	"github.com/ExocoreNetwork/exocore/precompiles/avsTask"
