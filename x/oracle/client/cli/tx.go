@@ -29,7 +29,6 @@ func GetTxCmd() *cobra.Command {
 	}
 
 	cmd.AddCommand(CmdCreatePrice())
-	cmd.AddCommand(UpdateParams())
 	// this line is used by starport scaffolding # 1
 
 	return cmd
