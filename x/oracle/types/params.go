@@ -234,14 +234,23 @@ func (p Params) AddChains(chains ...*Chain) (Params, error) {
 	return p, nil
 }
 
-func (p Params) AddTokens(tokens ...*Token) (Params, error) {
+func (p Params) UpdateTokens(tokens ...*Token) (Params, error) {
 	for _, t := range tokens {
+		update := false
 		for _, token := range p.Tokens {
 			if token.ChainID == t.ChainID && token.Name == t.Name {
+				// AssetID is only field can be updated/modified
+				if len(t.AssetID) > 0 {
+					token.AssetID = t.AssetID
+					update = true
+					break
+				}
 				return p, ErrInvalidParams.Wrap("invalid token to add, duplicated")
 			}
 		}
-		p.Tokens = append(p.Tokens, t)
+		if !update {
+			p.Tokens = append(p.Tokens, t)
+		}
 	}
 	return p, nil
 }
