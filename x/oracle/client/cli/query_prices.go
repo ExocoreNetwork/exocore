@@ -48,7 +48,7 @@ import (
 func CmdShowPrices() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "show-prices [token-id]",
-		Short: "shows a prices",
+		Short: "shows all prices of a specific token",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) (err error) {
 			clientCtx, err := client.GetClientQueryContext(cmd)
@@ -76,6 +76,39 @@ func CmdShowPrices() *cobra.Command {
 		},
 	}
 
+	flags.AddQueryFlagsToCmd(cmd)
+
+	return cmd
+}
+
+func CmdShowLatestPrice() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "show-latest-price [token-id]",
+		Short: "shows the latest price of a specific token",
+		Args:  cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) (err error) {
+			clientCtx, err := client.GetClientQueryContext(cmd)
+			if err != nil {
+				return err
+			}
+			argTokenID, err := cast.ToUint64E(args[0])
+			if err != nil {
+				return err
+			}
+
+			queryClient := types.NewQueryClient(clientCtx)
+
+			input := &types.QueryGetLatestPriceRequest{
+				TokenId: argTokenID,
+			}
+			res, err := queryClient.LatestPrice(cmd.Context(), input)
+			if err != nil {
+				return err
+			}
+
+			return clientCtx.PrintProto(res)
+		},
+	}
 	flags.AddQueryFlagsToCmd(cmd)
 
 	return cmd

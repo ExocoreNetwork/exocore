@@ -7,6 +7,7 @@ import "exocore/oracle/index_recent_msg.proto";
 import "exocore/oracle/index_recent_params.proto";
 import "exocore/oracle/params.proto";
 import "exocore/oracle/prices.proto";
+import "exocore/oracle/price.proto";
 import "exocore/oracle/recent_msg.proto";
 import "exocore/oracle/recent_params.proto";
 import "exocore/oracle/validator_update_block.proto";
@@ -25,10 +26,17 @@ service Query {
   }
   
   // Queries a list of Prices items.
-  rpc Prices    (QueryGetPricesRequest) returns (QueryGetPricesResponse) {
+  rpc Prices (QueryGetPricesRequest) returns (QueryGetPricesResponse) {
     option (google.api.http).get = "/ExocoreNetwork/exocore/oracle/prices/{token_id}";
   
   }
+
+  // Queries the latest price of a specific token
+  rpc LatestPrice (QueryGetLatestPriceRequest) returns (QueryGetLatestPriceResponse) {
+    option (google.api.http).get = "/ExocoreNetwork/exocore/oracle/latest_price/{token_id}";
+  
+  }
+
   //  rpc PricesAll (QueryAllPricesRequest) returns (QueryAllPricesResponse) {
   //    option (google.api.http).get = "/ExocoreNetwork/exocore/oracle/prices";
   //  
@@ -92,10 +100,23 @@ message QueryGetPricesRequest {
   uint64 token_id = 1; //[(gogoproto.customname) = "TokenID"];
 }
 
+// QueryGetLatestPriceRequest is request type for the latest price of a specific token
+message QueryGetLatestPriceRequest {
+  // token_id represents which token's price will be retrieved
+  uint64 token_id = 1; //[(gogoproto.customname) = "TokenID"];
+}
+
+
 // QueryGetPricesResponse
 message QueryGetPricesResponse {
   // prices returned prices
   Prices prices = 1 [(gogoproto.nullable) = false];
+}
+
+// QueryGetLatestPriceResponse
+message QueryGetLatestPriceResponse {
+  // prices returned prices
+  PriceTimeRound price = 1 [(gogoproto.nullable) = false];
 }
 
 // QueryAllPricesRequest
