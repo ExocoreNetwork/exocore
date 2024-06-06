@@ -136,7 +136,7 @@ func (gs GenesisState) Validate() error {
 		// validate the stakerID
 		var stakerClientChainID uint64
 		var err error
-		if _, stakerClientChainID, err = ValidateID(stakerID, true); err != nil {
+		if _, stakerClientChainID, err = ValidateID(stakerID, true, true); err != nil {
 			return errorsmod.Wrapf(
 				ErrInvalidGenesisData,
 				"invalid stakerID: %s",
