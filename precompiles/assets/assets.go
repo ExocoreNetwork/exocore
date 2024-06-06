@@ -1,9 +1,10 @@
-package clientchains
+package assets
 
 import (
 	"bytes"
 	"embed"
 	"fmt"
+	"math/big"
 
 	assetskeeper "github.com/ExocoreNetwork/exocore/x/assets/keeper"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
@@ -36,7 +37,7 @@ func NewPrecompile(
 ) (*Precompile, error) {
 	abiBz, err := f.ReadFile("abi.json")
 	if err != nil {
-		return nil, fmt.Errorf("error loading the client chains ABI %s", err)
+		return nil, fmt.Errorf("error loading the deposit ABI %s", err)
 	}
 
 	newAbi, err := abi.JSON(bytes.NewReader(abiBz))
@@ -50,17 +51,16 @@ func NewPrecompile(
 			AuthzKeeper:          authzKeeper,
 			KvGasConfig:          storetypes.KVGasConfig(),
 			TransientKVGasConfig: storetypes.TransientGasConfig(),
-			// should be configurable in the future.
-			ApprovalExpiration: cmn.DefaultExpirationDuration,
+			ApprovalExpiration:   cmn.DefaultExpirationDuration, // should be configurable in the future.
 		},
 		assetsKeeper: assetsKeeper,
 	}, nil
 }
 
-// Address defines the address of the client chains precompile contract.
-// address: 0x0000000000000000000000000000000000000801
+// Address defines the address of the deposit compile contract.
+// address: 0x0000000000000000000000000000000000000804
 func (p Precompile) Address() common.Address {
-	return common.HexToAddress("0x0000000000000000000000000000000000000801")
+	return common.HexToAddress("0x0000000000000000000000000000000000000804")
 }
 
 // RequiredGas calculates the precompiled contract's base gas rate.
@@ -75,30 +75,37 @@ func (p Precompile) RequiredGas(input []byte) uint64 {
 	return p.Precompile.RequiredGas(input, p.IsTransaction(method.Name))
 }
 
-// Run executes the precompiled contract client chain methods defined in the ABI.
-func (p Precompile) Run(
-	evm *vm.EVM, contract *vm.Contract, readOnly bool,
-) (bz []byte, err error) {
-	// if the user calls instead of staticcalls, it is their problem. we don't validate that.
-	ctx, _, method, initialGas, args, err := p.RunSetup(
-		evm, contract, readOnly, p.IsTransaction,
-	)
+// Run executes the precompiled contract deposit methods defined in the ABI.
+func (p Precompile) Run(evm *vm.EVM, contract *vm.Contract, readOnly bool) (bz []byte, err error) {
+	ctx, stateDB, method, initialGas, args, err := p.RunSetup(evm, contract, readOnly, p.IsTransaction)
 	if err != nil {
 		return nil, err
 	}
 
-	// This handles any out of gas errors that may occur during the execution of a precompile tx
-	// or query. It avoids panics and returns the out of gas error so the EVM can continue
-	// gracefully.
+	// This handles any out of gas errors that may occur during the execution of a precompile tx or query.
+	// It avoids panics and returns the out of gas error so the EVM can continue gracefully.
 	defer cmn.HandleGasError(ctx, contract, initialGas, &err)()
 
-	bz, err = p.GetClientChains(ctx, method, args)
+	switch method.Name {
+	// transactions
+	case MethodDepositTo, MethodWithdraw:
+		bz, err = p.DepositAndWithdraw(ctx, evm.Origin, contract, stateDB, method, args)
+		if err != nil {
+			// for failed cases we expect it returns bool value instead of error
+			// this is a workaround because the error returned by precompile can not be caught in EVM
+			// see https://github.com/ExocoreNetwork/exocore/issues/70
+			// TODO: we should figure out root cause and fix this issue to make precompiles work normally
+			return method.Outputs.Pack(false, new(big.Int))
+		}
+	// queries
+	case MethodGetClientChains:
+		bz, err = p.GetClientChains(ctx, method, args)
+	default:
+		return nil, fmt.Errorf(cmn.ErrUnknownMethod, method.Name)
+	}
+
 	if err != nil {
-		ctx.Logger().Error(
-			"call client chains precompile error",
-			"module", "client chains precompile",
-			"err", err,
-		)
+		ctx.Logger().Error("call assets precompile error", "module", "assets precompile", "method", method.Name, "err", err)
 		return nil, err
 	}
 
@@ -111,9 +118,16 @@ func (p Precompile) Run(
 	return bz, nil
 }
 
-// IsTransaction checks if the given methodID corresponds to a transaction (true)
-// or query (false).
-func (Precompile) IsTransaction(string) bool {
-	// there are no transaction methods in this precompile, only queries.
-	return false
+// IsTransaction checks if the given methodID corresponds to a transaction or query.
+//
+// Available assets transactions are:
+//   - depositTo
+//   - withdrawPrinciple
+func (Precompile) IsTransaction(methodID string) bool {
+	switch methodID {
+	case MethodDepositTo, MethodWithdraw:
+		return true
+	default:
+		return false
+	}
 }

@@ -1,14 +1,16 @@
 package keeper
 
 import (
+	"fmt"
+
 	errorsmod "cosmossdk.io/errors"
 	sdkmath "cosmossdk.io/math"
-	"fmt"
+
 	assetstypes "github.com/ExocoreNetwork/exocore/x/assets/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-type OpParams struct {
+type DepositWithdrawParams struct {
 	ClientChainLzID uint64
 	Action          assetstypes.CrossChainOpType
 	AssetsAddress   []byte
@@ -18,7 +20,7 @@ type OpParams struct {
 
 // PerformDepositOrWithdraw the assets precompile contract will call this function to update asset state
 // when there is a deposit or withdraw.
-func (k Keeper) PerformDepositOrWithdraw(ctx sdk.Context, params *OpParams) error {
+func (k Keeper) PerformDepositOrWithdraw(ctx sdk.Context, params *DepositWithdrawParams) error {
 	// check params parameter before executing deposit operation
 	if params.OpAmount.IsNegative() {
 		return errorsmod.Wrap(assetstypes.ErrInvalidDepositAmount, fmt.Sprintf("negative deposit amount:%s", params.OpAmount))
@@ -26,7 +28,7 @@ func (k Keeper) PerformDepositOrWithdraw(ctx sdk.Context, params *OpParams) erro
 	stakeID, assetID := assetstypes.GetStakeIDAndAssetID(params.ClientChainLzID, params.StakerAddress, params.AssetsAddress)
 	assetsInfo, err := k.GetStakingAssetInfo(ctx, assetID)
 	if err != nil {
-		return err
+		return errorsmod.Wrapf(err, "the assetID is:%s", assetID)
 	}
 
 	actualOpAmount := params.OpAmount
@@ -48,13 +50,13 @@ func (k Keeper) PerformDepositOrWithdraw(ctx sdk.Context, params *OpParams) erro
 	// update asset state of the specified staker
 	err = k.UpdateStakerAssetState(ctx, stakeID, assetID, changeAmount)
 	if err != nil {
-		return err
+		return errorsmod.Wrapf(err, "stakeID:%s assetID:%s", stakeID, assetID)
 	}
 
 	// update total amount of the deposited asset
-	err = k.UpdateStakingAssetTotalAmount(ctx, assetID, params.OpAmount)
+	err = k.UpdateStakingAssetTotalAmount(ctx, assetID, actualOpAmount)
 	if err != nil {
-		return err
+		return errorsmod.Wrapf(err, "assetID:%s", assetID)
 	}
 	return nil
 }
