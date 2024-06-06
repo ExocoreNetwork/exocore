@@ -93,13 +93,3 @@ func (k Keeper) QueOperatorSpecifiedAssetAmount(ctx context.Context, req *assets
 	}
 	return k.GetOperatorSpecifiedAssetInfo(c, addr, req.AssetID)
 }
-
-// QueStakerExoCoreAddr outdated,will be deprecated
-func (k Keeper) QueStakerExoCoreAddr(ctx context.Context, req *assetstype.QueryStakerExCoreAddr) (*assetstype.QueryStakerExCoreAddrResponse, error) {
-	c := sdk.UnwrapSDKContext(ctx)
-	exoCoreAddr, err := k.GetStakerExoCoreAddr(c, req.Staker)
-	if err != nil {
-		return nil, err
-	}
-	return &assetstype.QueryStakerExCoreAddrResponse{ExoCoreAddr: exoCoreAddr}, nil
-}
