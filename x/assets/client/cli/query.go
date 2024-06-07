@@ -4,12 +4,14 @@ import (
 	"context"
 	"fmt"
 	"strconv"
+	"strings"
 
 	errorsmod "cosmossdk.io/errors"
 	"github.com/ExocoreNetwork/exocore/x/assets/types"
 
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/spf13/cobra"
 )
 
@@ -33,7 +35,6 @@ func GetQueryCmd() *cobra.Command {
 		QueStakerSpecifiedAssetAmount(),
 		QueOperatorAssetInfos(),
 		QueOperatorSpecifiedAssetAmount(),
-		// QueStakerExoCoreAddr(),
 	)
 	return cmd
 }
@@ -148,7 +149,7 @@ func QueStakingAssetInfo() *cobra.Command {
 			_, assetID := types.GetStakeIDAndAssetIDFromStr(clientChainLzID, "", args[0])
 			queryClient := types.NewQueryClient(clientCtx)
 			req := &types.QueryStakingAssetInfo{
-				AssetID: assetID,
+				AssetID: assetID, // already lowercase
 			}
 			res, err := queryClient.QueStakingAssetInfo(context.Background(), req)
 			if err != nil {
@@ -202,9 +203,14 @@ func QueStakerAssetInfos() *cobra.Command {
 				return err
 			}
 
+			stakerID := args[0]
+			if _, _, err := types.ValidateID(stakerID, false, false); err != nil {
+				return errorsmod.Wrap(types.ErrInvalidCliCmdArg, err.Error())
+			}
+
 			queryClient := types.NewQueryClient(clientCtx)
 			req := &types.QueryStakerAssetInfo{
-				StakerID: args[0],
+				StakerID: strings.ToLower(stakerID),
 			}
 			res, err := queryClient.QueStakerAssetInfos(context.Background(), req)
 			if err != nil {
@@ -238,8 +244,8 @@ func QueStakerSpecifiedAssetAmount() *cobra.Command {
 			}
 			stakerID, assetID := types.GetStakeIDAndAssetIDFromStr(clientChainLzID, args[1], args[2])
 			req := &types.QuerySpecifiedAssetAmountReq{
-				StakerID: stakerID,
-				AssetID:  assetID,
+				StakerID: stakerID, // already lowercase
+				AssetID:  assetID,  // already lowercase
 			}
 			res, err := queryClient.QueStakerSpecifiedAssetAmount(context.Background(), req)
 			if err != nil {
@@ -267,8 +273,12 @@ func QueOperatorAssetInfos() *cobra.Command {
 			}
 
 			queryClient := types.NewQueryClient(clientCtx)
+			accAddr, err := sdk.AccAddressFromBech32(args[0])
+			if err != nil {
+				return errorsmod.Wrap(types.ErrInvalidCliCmdArg, err.Error())
+			}
 			req := &types.QueryOperatorAssetInfos{
-				OperatorAddr: args[0],
+				OperatorAddr: accAddr.String(), // already lowercase
 			}
 			res, err := queryClient.QueOperatorAssetInfos(context.Background(), req)
 			if err != nil {
@@ -300,41 +310,16 @@ func QueOperatorSpecifiedAssetAmount() *cobra.Command {
 				return errorsmod.Wrap(types.ErrInvalidCliCmdArg, err.Error())
 			}
 			_, assetID := types.GetStakeIDAndAssetIDFromStr(clientChainLzID, "", args[2])
+			accAddr, err := sdk.AccAddressFromBech32(args[0])
+			if err != nil {
+				return errorsmod.Wrap(types.ErrInvalidCliCmdArg, err.Error())
+			}
 			queryClient := types.NewQueryClient(clientCtx)
 			req := &types.QueryOperatorSpecifiedAssetAmountReq{
-				OperatorAddr: args[0],
-				AssetID:      assetID,
+				OperatorAddr: accAddr.String(), // already lowercase
+				AssetID:      assetID,          // already lowercase
 			}
 			res, err := queryClient.QueOperatorSpecifiedAssetAmount(context.Background(), req)
-			if err != nil {
-				return err
-			}
-			return clientCtx.PrintProto(res)
-		},
-	}
-
-	flags.AddQueryFlagsToCmd(cmd)
-	return cmd
-}
-
-// QueStakerExoCoreAddr queries staker ExoCore address
-func QueStakerExoCoreAddr() *cobra.Command {
-	cmd := &cobra.Command{
-		Use:   "QueStakerExoCoreAddr stakerID",
-		Short: "Get staker ExoCore address",
-		Long:  "Get staker ExoCore address",
-		Args:  cobra.ExactArgs(1),
-		RunE: func(cmd *cobra.Command, args []string) error {
-			clientCtx, err := client.GetClientQueryContext(cmd)
-			if err != nil {
-				return err
-			}
-
-			queryClient := types.NewQueryClient(clientCtx)
-			req := &types.QueryStakerExCoreAddr{
-				Staker: args[0],
-			}
-			res, err := queryClient.QueStakerExoCoreAddr(context.Background(), req)
 			if err != nil {
 				return err
 			}

@@ -33,7 +33,9 @@ func (gs GenesisState) Validate() error {
 		// validate staker ID
 		var stakerClientChainID uint64
 		var err error
-		if _, stakerClientChainID, err = assetstypes.ValidateID(stakerID, true); err != nil {
+		if _, stakerClientChainID, err = assetstypes.ValidateID(
+			stakerID, true, true,
+		); err != nil {
 			return errorsmod.Wrapf(
 				ErrInvalidGenesisData, "invalid staker ID %s: %s", stakerID, err,
 			)
@@ -53,7 +55,9 @@ func (gs GenesisState) Validate() error {
 			assets[assetID] = struct{}{}
 			// validate asset ID
 			var assetClientChainID uint64
-			if _, assetClientChainID, err = assetstypes.ValidateID(assetID, true); err != nil {
+			if _, assetClientChainID, err = assetstypes.ValidateID(
+				assetID, true, true,
+			); err != nil {
 				return errorsmod.Wrapf(
 					ErrInvalidGenesisData, "invalid asset ID %s: %s", assetID, err,
 				)

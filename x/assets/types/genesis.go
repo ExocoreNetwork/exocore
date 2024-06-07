@@ -42,6 +42,7 @@ func (gs GenesisState) Validate() error {
 				i,
 			)
 		}
+		// this is our primary method of cross-chain communication.
 		if info.LayerZeroChainID == 0 {
 			return errorsmod.Wrapf(
 				ErrInvalidGenesisData,
@@ -49,6 +50,15 @@ func (gs GenesisState) Validate() error {
 				info.Name,
 			)
 		}
+		// the address length is used to convert from bytes32 to address.
+		if info.AddressLength == 0 {
+			return errorsmod.Wrapf(
+				ErrInvalidGenesisData,
+				"nil AddressLength for chain %s",
+				info.Name,
+			)
+		}
+		// check for no duplicated chain, indexed by LayerZeroChainID.
 		if _, ok := lzIDs[info.LayerZeroChainID]; ok {
 			return errorsmod.Wrapf(
 				ErrInvalidGenesisData,
@@ -136,7 +146,7 @@ func (gs GenesisState) Validate() error {
 		// validate the stakerID
 		var stakerClientChainID uint64
 		var err error
-		if _, stakerClientChainID, err = ValidateID(stakerID, true); err != nil {
+		if _, stakerClientChainID, err = ValidateID(stakerID, true, true); err != nil {
 			return errorsmod.Wrapf(
 				ErrInvalidGenesisData,
 				"invalid stakerID: %s",
