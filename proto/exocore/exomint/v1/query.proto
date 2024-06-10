@@ -3,7 +3,6 @@ package exocore.exomint.v1;
 
 import "gogoproto/gogo.proto";
 import "google/api/annotations.proto";
-import "cosmos/base/query/v1beta1/pagination.proto";
 
 import "exocore/exomint/v1/params.proto";
 
