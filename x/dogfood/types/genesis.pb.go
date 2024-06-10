@@ -5,6 +5,9 @@ package types
 
 import (
 	fmt "fmt"
+	types "github.com/cometbft/cometbft/abci/types"
+	github_com_cosmos_cosmos_sdk_types "github.com/cosmos/cosmos-sdk/types"
+	_ "github.com/cosmos/cosmos-sdk/types/tx/amino"
 	_ "github.com/cosmos/gogoproto/gogoproto"
 	proto "github.com/cosmos/gogoproto/proto"
 	io "io"
@@ -23,12 +26,36 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
-// GenesisState defines the dogfood module's genesis state.
+// GenesisState defines the dogfood module's genesis state. Note that, as always,
+// `genesis` is a misnomer. Ideally, this state can be exported at any point in
+// time (or height), and reimported elsewhere where it will be the new genesis
+// potentially at a non-zero height. In other words, it is the entire, current,
+// state of the module.
 type GenesisState struct {
 	// params refers to the parameters of the module.
 	Params Params `protobuf:"bytes,1,opt,name=params,proto3" json:"params"`
-	// initial_val_set is the initial validator set.
-	InitialValSet []GenesisValidator `protobuf:"bytes,2,rep,name=initial_val_set,json=initialValSet,proto3" json:"initial_val_set"`
+	// val_set is the initial validator set. it onyl represents the active
+	// validators.
+	ValSet []GenesisValidator `protobuf:"bytes,2,rep,name=val_set,json=valSet,proto3" json:"val_set"`
+	// epochs_opt_out_expiries is a list of (future) epochs at the end of which the
+	// corresponding operators' opt-out will expire. we store this, as well as its reverse
+	// lookup.
+	EpochsOptOutExpiries []EpochToOperatorAddrs `protobuf:"bytes,3,rep,name=epochs_opt_out_expiries,json=epochsOptOutExpiries,proto3" json:"epochs_opt_out_expiries"`
+	// epochs_consensus_addrs is a list of epochs at the end of which the corresponding
+	// consensus addresses should be pruned from the operator module.
+	EpochsConsensusAddrs []EpochToConsensusAddrs `protobuf:"bytes,4,rep,name=epochs_consensus_addrs,json=epochsConsensusAddrs,proto3" json:"epochs_consensus_addrs"`
+	// undelegation_maturities is a list of epochs at the end of which the corresponding
+	// undelegations will mature. we store its reverse lookup as well.
+	UndelegationMaturities []EpochToUndelegationRecordKeys `protobuf:"bytes,5,rep,name=undelegation_maturities,json=undelegationMaturities,proto3" json:"undelegation_maturities"`
+	// last_total_power tracks the total voting power as of the last validator set
+	// update. such an update is most likely to be at the end of the last epoch (or the
+	// beginning of this one, to be more precise) and less likely to be at other blocks,
+	// since the validator set can otherwise only change as a result of slashing events.
+	LastTotalPower github_com_cosmos_cosmos_sdk_types.Int `protobuf:"bytes,6,opt,name=last_total_power,json=lastTotalPower,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Int" json:"last_total_power"`
+	// validator_updates is a list of validator updates applied at the end of the previous
+	// block. it is then cleared at the end of the next block, and hence, is available
+	// for other modules to access during that block. it must, therefore, be exported.
+	ValidatorUpdates []types.ValidatorUpdate `protobuf:"bytes,7,rep,name=validator_updates,json=validatorUpdates,proto3" json:"validator_updates" yaml:"validator_updates"`
 }
 
 func (m *GenesisState) Reset()         { *m = GenesisState{} }
@@ -71,15 +98,47 @@ func (m *GenesisState) GetParams() Params {
 	return Params{}
 }
 
-func (m *GenesisState) GetInitialValSet() []GenesisValidator {
+func (m *GenesisState) GetValSet() []GenesisValidator {
 	if m != nil {
-		return m.InitialValSet
+		return m.ValSet
+	}
+	return nil
+}
+
+func (m *GenesisState) GetEpochsOptOutExpiries() []EpochToOperatorAddrs {
+	if m != nil {
+		return m.EpochsOptOutExpiries
+	}
+	return nil
+}
+
+func (m *GenesisState) GetEpochsConsensusAddrs() []EpochToConsensusAddrs {
+	if m != nil {
+		return m.EpochsConsensusAddrs
+	}
+	return nil
+}
+
+func (m *GenesisState) GetUndelegationMaturities() []EpochToUndelegationRecordKeys {
+	if m != nil {
+		return m.UndelegationMaturities
+	}
+	return nil
+}
+
+func (m *GenesisState) GetValidatorUpdates() []types.ValidatorUpdate {
+	if m != nil {
+		return m.ValidatorUpdates
 	}
 	return nil
 }
 
 // GenesisValidator defines a genesis validator. It is a helper struct
-// used for serializing the genesis state.
+// used for serializing the genesis state. The only reason it is a different
+// structure is to support importing hex public keys from Solidity.
+// TODO: consider this set up when resolving issue 73 about storage
+// optimization between dogfood and operator modules.
+// https://github.com/ExocoreNetwork/exocore/issues/73
 type GenesisValidator struct {
 	// public_key is the consensus public key of the validator. It should
 	// be exactly 32 bytes, but this is not enforced in protobuf.
@@ -135,34 +194,231 @@ func (m *GenesisValidator) GetPower() int64 {
 	return 0
 }
 
+// EpochToOperatorAddress is used to store a mapping from epoch to a list of
+// operator account addresses.
+type EpochToOperatorAddrs struct {
+	// epoch is the epoch in question.
+	Epoch int64 `protobuf:"varint,1,opt,name=epoch,proto3" json:"epoch,omitempty"`
+	// operator_acc_addrs is the list of account addresses to expire at this epoch.
+	// It is of type string for human readability of the genesis file.
+	OperatorAccAddrs []string `protobuf:"bytes,2,rep,name=operator_acc_addrs,json=operatorAccAddrs,proto3" json:"operator_acc_addrs,omitempty"`
+}
+
+func (m *EpochToOperatorAddrs) Reset()         { *m = EpochToOperatorAddrs{} }
+func (m *EpochToOperatorAddrs) String() string { return proto.CompactTextString(m) }
+func (*EpochToOperatorAddrs) ProtoMessage()    {}
+func (*EpochToOperatorAddrs) Descriptor() ([]byte, []int) {
+	return fileDescriptor_1a9d908a27866b1b, []int{2}
+}
+func (m *EpochToOperatorAddrs) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *EpochToOperatorAddrs) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_EpochToOperatorAddrs.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *EpochToOperatorAddrs) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_EpochToOperatorAddrs.Merge(m, src)
+}
+func (m *EpochToOperatorAddrs) XXX_Size() int {
+	return m.Size()
+}
+func (m *EpochToOperatorAddrs) XXX_DiscardUnknown() {
+	xxx_messageInfo_EpochToOperatorAddrs.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_EpochToOperatorAddrs proto.InternalMessageInfo
+
+func (m *EpochToOperatorAddrs) GetEpoch() int64 {
+	if m != nil {
+		return m.Epoch
+	}
+	return 0
+}
+
+func (m *EpochToOperatorAddrs) GetOperatorAccAddrs() []string {
+	if m != nil {
+		return m.OperatorAccAddrs
+	}
+	return nil
+}
+
+// EpochToConsensusAddrs is used to store a mapping from the epoch to a list of
+// consensus addresses.
+type EpochToConsensusAddrs struct {
+	// epoch is the epoch in question.
+	Epoch int64 `protobuf:"varint,1,opt,name=epoch,proto3" json:"epoch,omitempty"`
+	// cons_addrs is the list of consensus addresses to prune at this epoch.
+	// It is of type string for human readability of the genesis file.
+	ConsAddrs []string `protobuf:"bytes,2,rep,name=cons_addrs,json=consAddrs,proto3" json:"cons_addrs,omitempty"`
+}
+
+func (m *EpochToConsensusAddrs) Reset()         { *m = EpochToConsensusAddrs{} }
+func (m *EpochToConsensusAddrs) String() string { return proto.CompactTextString(m) }
+func (*EpochToConsensusAddrs) ProtoMessage()    {}
+func (*EpochToConsensusAddrs) Descriptor() ([]byte, []int) {
+	return fileDescriptor_1a9d908a27866b1b, []int{3}
+}
+func (m *EpochToConsensusAddrs) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *EpochToConsensusAddrs) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_EpochToConsensusAddrs.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *EpochToConsensusAddrs) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_EpochToConsensusAddrs.Merge(m, src)
+}
+func (m *EpochToConsensusAddrs) XXX_Size() int {
+	return m.Size()
+}
+func (m *EpochToConsensusAddrs) XXX_DiscardUnknown() {
+	xxx_messageInfo_EpochToConsensusAddrs.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_EpochToConsensusAddrs proto.InternalMessageInfo
+
+func (m *EpochToConsensusAddrs) GetEpoch() int64 {
+	if m != nil {
+		return m.Epoch
+	}
+	return 0
+}
+
+func (m *EpochToConsensusAddrs) GetConsAddrs() []string {
+	if m != nil {
+		return m.ConsAddrs
+	}
+	return nil
+}
+
+// EpochToUndelegationRecordKeys is used to store a mapping from an epoch to a list of
+// undelegations which mature at that epoch.
+type EpochToUndelegationRecordKeys struct {
+	// epoch is the epoch in question.
+	Epoch int64 `protobuf:"varint,1,opt,name=epoch,proto3" json:"epoch,omitempty"`
+	// undelegation_record_keys is the list of undelegations (defined by the record key)
+	// to expire at this epoch.
+	// It is of type string for human readability of the genesis file.
+	UndelegationRecordKeys []string `protobuf:"bytes,2,rep,name=undelegation_record_keys,json=undelegationRecordKeys,proto3" json:"undelegation_record_keys,omitempty"`
+}
+
+func (m *EpochToUndelegationRecordKeys) Reset()         { *m = EpochToUndelegationRecordKeys{} }
+func (m *EpochToUndelegationRecordKeys) String() string { return proto.CompactTextString(m) }
+func (*EpochToUndelegationRecordKeys) ProtoMessage()    {}
+func (*EpochToUndelegationRecordKeys) Descriptor() ([]byte, []int) {
+	return fileDescriptor_1a9d908a27866b1b, []int{4}
+}
+func (m *EpochToUndelegationRecordKeys) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *EpochToUndelegationRecordKeys) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_EpochToUndelegationRecordKeys.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *EpochToUndelegationRecordKeys) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_EpochToUndelegationRecordKeys.Merge(m, src)
+}
+func (m *EpochToUndelegationRecordKeys) XXX_Size() int {
+	return m.Size()
+}
+func (m *EpochToUndelegationRecordKeys) XXX_DiscardUnknown() {
+	xxx_messageInfo_EpochToUndelegationRecordKeys.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_EpochToUndelegationRecordKeys proto.InternalMessageInfo
+
+func (m *EpochToUndelegationRecordKeys) GetEpoch() int64 {
+	if m != nil {
+		return m.Epoch
+	}
+	return 0
+}
+
+func (m *EpochToUndelegationRecordKeys) GetUndelegationRecordKeys() []string {
+	if m != nil {
+		return m.UndelegationRecordKeys
+	}
+	return nil
+}
+
 func init() {
 	proto.RegisterType((*GenesisState)(nil), "exocore.dogfood.v1.GenesisState")
 	proto.RegisterType((*GenesisValidator)(nil), "exocore.dogfood.v1.GenesisValidator")
+	proto.RegisterType((*EpochToOperatorAddrs)(nil), "exocore.dogfood.v1.EpochToOperatorAddrs")
+	proto.RegisterType((*EpochToConsensusAddrs)(nil), "exocore.dogfood.v1.EpochToConsensusAddrs")
+	proto.RegisterType((*EpochToUndelegationRecordKeys)(nil), "exocore.dogfood.v1.EpochToUndelegationRecordKeys")
 }
 
 func init() { proto.RegisterFile("exocore/dogfood/v1/genesis.proto", fileDescriptor_1a9d908a27866b1b) }
 
 var fileDescriptor_1a9d908a27866b1b = []byte{
-	// 302 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x6c, 0x90, 0xbd, 0x6a, 0x32, 0x41,
-	0x18, 0x85, 0x77, 0xf4, 0xfb, 0x04, 0xc7, 0x84, 0x84, 0xc1, 0x42, 0x84, 0x8c, 0x8b, 0xa4, 0xb0,
-	0x9a, 0x41, 0xd3, 0xa4, 0x16, 0x82, 0x85, 0x10, 0xc2, 0x0a, 0x16, 0x69, 0x64, 0xd4, 0x37, 0x9b,
-	0xc1, 0xd5, 0x77, 0x99, 0x1d, 0xff, 0xee, 0x22, 0x17, 0x90, 0x0b, 0xb2, 0xb4, 0x4c, 0x15, 0x82,
-	0xde, 0x48, 0xc8, 0xce, 0x24, 0x45, 0x62, 0x37, 0x3f, 0x0f, 0xcf, 0x39, 0x1c, 0x1a, 0xc2, 0x06,
-	0x27, 0x68, 0x40, 0x4e, 0x31, 0x7e, 0x42, 0x9c, 0xca, 0x55, 0x5b, 0xc6, 0xb0, 0x80, 0x4c, 0x67,
-	0x22, 0x35, 0x68, 0x91, 0x31, 0x4f, 0x08, 0x4f, 0x88, 0x55, 0xbb, 0x5e, 0x8d, 0x31, 0xc6, 0xfc,
-	0x5b, 0x7e, 0x9d, 0x1c, 0x59, 0x6f, 0x9c, 0x70, 0xa5, 0xca, 0xa8, 0xb9, 0x57, 0x35, 0x5f, 0x09,
-	0x3d, 0xeb, 0x39, 0xf9, 0xc0, 0x2a, 0x0b, 0xec, 0x96, 0x96, 0x1c, 0x50, 0x23, 0x21, 0x69, 0x55,
-	0x3a, 0x75, 0xf1, 0x37, 0x4c, 0x3c, 0xe4, 0x44, 0xf7, 0xdf, 0xee, 0xbd, 0x11, 0x44, 0x9e, 0x67,
-	0x11, 0xbd, 0xd0, 0x0b, 0x6d, 0xb5, 0x4a, 0x46, 0x2b, 0x95, 0x8c, 0x32, 0xb0, 0xb5, 0x42, 0x58,
-	0x6c, 0x55, 0x3a, 0xd7, 0xa7, 0x14, 0x3e, 0x74, 0xa8, 0x12, 0x3d, 0x55, 0x16, 0x8d, 0x97, 0x9d,
-	0x7b, 0xc5, 0x50, 0x25, 0x03, 0xb0, 0xcd, 0x1e, 0xbd, 0xfc, 0x0d, 0xb2, 0x2b, 0x4a, 0xd3, 0xe5,
-	0x38, 0xd1, 0x93, 0xd1, 0x0c, 0xb6, 0x79, 0xcb, 0x72, 0x54, 0x76, 0x2f, 0x7d, 0xd8, 0xb2, 0x2a,
-	0xfd, 0x9f, 0xe2, 0x1a, 0x4c, 0xad, 0x10, 0x92, 0x56, 0x31, 0x72, 0x97, 0x6e, 0x7f, 0x77, 0xe0,
-	0x64, 0x7f, 0xe0, 0xe4, 0xe3, 0xc0, 0xc9, 0xcb, 0x91, 0x07, 0xfb, 0x23, 0x0f, 0xde, 0x8e, 0x3c,
-	0x78, 0x6c, 0xc7, 0xda, 0x3e, 0x2f, 0xc7, 0x62, 0x82, 0x73, 0x79, 0xe7, 0x7a, 0xde, 0x83, 0x5d,
-	0xa3, 0x99, 0xc9, 0xef, 0xf1, 0x36, 0x3f, 0xf3, 0xd9, 0x6d, 0x0a, 0xd9, 0xb8, 0x94, 0x6f, 0x77,
-	0xf3, 0x19, 0x00, 0x00, 0xff, 0xff, 0x94, 0xc2, 0x5a, 0x03, 0xaa, 0x01, 0x00, 0x00,
+	// 643 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x7c, 0x94, 0xcf, 0x4e, 0xdb, 0x4a,
+	0x18, 0xc5, 0x63, 0xc2, 0x1f, 0x65, 0x40, 0x57, 0xc1, 0xca, 0x05, 0x2b, 0x57, 0x24, 0x56, 0x74,
+	0x75, 0x95, 0x5b, 0xb5, 0xb6, 0x02, 0x1b, 0xd4, 0x1d, 0x20, 0x84, 0x2a, 0xda, 0x82, 0x0c, 0x74,
+	0x81, 0x54, 0x59, 0x13, 0xfb, 0x6b, 0xb0, 0xb0, 0xfd, 0x59, 0x33, 0xe3, 0x40, 0xde, 0xa2, 0x2f,
+	0xd0, 0x7d, 0x97, 0x7d, 0x0c, 0x96, 0x2c, 0xab, 0x2e, 0x50, 0x05, 0x8b, 0xee, 0xfb, 0x04, 0xd5,
+	0x8c, 0xc7, 0x34, 0x29, 0x81, 0x4d, 0x92, 0x99, 0x39, 0xe7, 0x77, 0x66, 0x32, 0x47, 0x43, 0x6c,
+	0xb8, 0xc4, 0x00, 0x19, 0xb8, 0x21, 0x0e, 0x3e, 0x20, 0x86, 0xee, 0xb0, 0xe7, 0x0e, 0x20, 0x05,
+	0x1e, 0x71, 0x27, 0x63, 0x28, 0xd0, 0x34, 0xb5, 0xc2, 0xd1, 0x0a, 0x67, 0xd8, 0x6b, 0x36, 0x06,
+	0x38, 0x40, 0xb5, 0xec, 0xca, 0x5f, 0x85, 0xb2, 0xb9, 0x4c, 0x93, 0x28, 0x45, 0x57, 0x7d, 0xea,
+	0xa9, 0x7f, 0x04, 0xa4, 0x21, 0xb0, 0x24, 0x4a, 0x85, 0x4b, 0xfb, 0x41, 0xe4, 0x8a, 0x51, 0x06,
+	0x9a, 0xdc, 0x6c, 0x4f, 0xc9, 0xce, 0x28, 0xa3, 0x89, 0x16, 0x74, 0x3e, 0xcd, 0x91, 0xa5, 0xbd,
+	0x62, 0x33, 0x47, 0x82, 0x0a, 0x30, 0x37, 0xc9, 0x7c, 0x21, 0xb0, 0x0c, 0xdb, 0xe8, 0x2e, 0xae,
+	0x37, 0x9d, 0x87, 0x9b, 0x73, 0x0e, 0x95, 0x62, 0x7b, 0xf6, 0xea, 0xa6, 0x5d, 0xf1, 0xb4, 0xde,
+	0xdc, 0x21, 0x0b, 0x43, 0x1a, 0xfb, 0x1c, 0x84, 0x35, 0x63, 0x57, 0xbb, 0x8b, 0xeb, 0xff, 0x4e,
+	0xb3, 0xea, 0xb0, 0x77, 0x34, 0x8e, 0x42, 0x2a, 0x90, 0x95, 0x90, 0x21, 0x8d, 0x8f, 0x40, 0x98,
+	0x40, 0x56, 0x21, 0xc3, 0xe0, 0x8c, 0xfb, 0x98, 0x09, 0x1f, 0x73, 0xe1, 0xc3, 0x65, 0x16, 0xb1,
+	0x08, 0xb8, 0x55, 0x55, 0xd0, 0xee, 0x34, 0xe8, 0xae, 0xb4, 0x1c, 0xe3, 0x41, 0x06, 0x4c, 0x32,
+	0xb7, 0xc2, 0x90, 0x95, 0xbb, 0x6b, 0x14, 0xb8, 0x83, 0x4c, 0x1c, 0xe4, 0x62, 0x57, 0xb3, 0x4c,
+	0x20, 0x2b, 0x3a, 0x26, 0xc0, 0x94, 0x43, 0xca, 0x73, 0xee, 0x53, 0xe9, 0xb2, 0x66, 0x55, 0xca,
+	0xff, 0x4f, 0xa4, 0xec, 0x94, 0x8e, 0x29, 0x31, 0x93, 0x6b, 0x66, 0x46, 0x56, 0xf3, 0x34, 0x84,
+	0x18, 0x06, 0x54, 0x44, 0x98, 0xfa, 0x09, 0x15, 0x39, 0x8b, 0x84, 0x3c, 0xcd, 0x9c, 0xca, 0xe9,
+	0x3d, 0x91, 0x73, 0x32, 0xe6, 0xf4, 0x20, 0x40, 0x16, 0xee, 0xc3, 0xa8, 0xcc, 0x5b, 0x19, 0xe7,
+	0xbe, 0xb9, 0xc7, 0x9a, 0xef, 0x49, 0x3d, 0xa6, 0x5c, 0xf8, 0x02, 0x05, 0x8d, 0xfd, 0x0c, 0x2f,
+	0x80, 0x59, 0xf3, 0xb6, 0xd1, 0x5d, 0xda, 0xde, 0x90, 0xbe, 0x6f, 0x37, 0xed, 0xff, 0x06, 0x91,
+	0x38, 0xcb, 0xfb, 0x4e, 0x80, 0x89, 0x1b, 0x20, 0x4f, 0x90, 0xeb, 0xaf, 0x17, 0x3c, 0x3c, 0xd7,
+	0xe5, 0x79, 0x95, 0x8a, 0xcf, 0x3f, 0xbe, 0x3c, 0x33, 0xbc, 0xbf, 0x24, 0xec, 0x58, 0xb2, 0x0e,
+	0x25, 0xca, 0x44, 0xb2, 0x3c, 0x2c, 0x6f, 0xce, 0xcf, 0xb3, 0x90, 0x0a, 0xe0, 0xd6, 0x82, 0x3a,
+	0x8a, 0xed, 0xfc, 0x2e, 0xa2, 0x23, 0x8b, 0xe8, 0xdc, 0xdf, 0xf1, 0x89, 0x12, 0x6e, 0xdb, 0x72,
+	0x07, 0x3f, 0x6f, 0xda, 0xd6, 0x88, 0x26, 0xf1, 0xcb, 0xce, 0x03, 0x50, 0xc7, 0xab, 0x0f, 0x27,
+	0x2d, 0xbc, 0xb3, 0x47, 0xea, 0x7f, 0x36, 0xc6, 0x5c, 0x23, 0x24, 0xcb, 0xfb, 0x71, 0x14, 0xf8,
+	0xe7, 0x30, 0x52, 0x35, 0xad, 0x79, 0xb5, 0x62, 0x66, 0x1f, 0x46, 0x66, 0x83, 0xcc, 0x15, 0xe7,
+	0x9e, 0xb1, 0x8d, 0x6e, 0xd5, 0x2b, 0x06, 0x9d, 0x53, 0xd2, 0x98, 0xd6, 0x12, 0xa9, 0x56, 0x57,
+	0xa7, 0x38, 0x55, 0xaf, 0x18, 0x98, 0xcf, 0x89, 0x89, 0x5a, 0xe6, 0xd3, 0x20, 0xd0, 0xdd, 0x90,
+	0xb5, 0xae, 0x79, 0xf5, 0x72, 0x65, 0x2b, 0x08, 0x14, 0xa3, 0xf3, 0x9a, 0xfc, 0x3d, 0xb5, 0x1b,
+	0x8f, 0xc0, 0xd7, 0x08, 0x91, 0xad, 0x9b, 0x80, 0xd6, 0xe4, 0x4c, 0x41, 0x43, 0xb2, 0xf6, 0x64,
+	0x03, 0x1e, 0xa1, 0x6e, 0x12, 0x6b, 0xa2, 0x6b, 0x4c, 0x19, 0xe4, 0x5f, 0x54, 0x66, 0x4c, 0x74,
+	0x66, 0xac, 0x51, 0xfb, 0x57, 0xb7, 0x2d, 0xe3, 0xfa, 0xb6, 0x65, 0x7c, 0xbf, 0x6d, 0x19, 0x1f,
+	0xef, 0x5a, 0x95, 0xeb, 0xbb, 0x56, 0xe5, 0xeb, 0x5d, 0xab, 0x72, 0xda, 0x1b, 0xeb, 0xca, 0x6e,
+	0x51, 0xd4, 0xb7, 0x20, 0x2e, 0x90, 0x9d, 0xbb, 0xe5, 0xc3, 0x72, 0x79, 0xff, 0xb4, 0xa8, 0xea,
+	0xf4, 0xe7, 0xd5, 0xbb, 0xb2, 0xf1, 0x2b, 0x00, 0x00, 0xff, 0xff, 0x85, 0xe8, 0x0e, 0xe5, 0xf6,
+	0x04, 0x00, 0x00,
 }
 
 func (m *GenesisState) Marshal() (dAtA []byte, err error) {
@@ -185,10 +441,76 @@ func (m *GenesisState) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	_ = i
 	var l int
 	_ = l
-	if len(m.InitialValSet) > 0 {
-		for iNdEx := len(m.InitialValSet) - 1; iNdEx >= 0; iNdEx-- {
+	if len(m.ValidatorUpdates) > 0 {
+		for iNdEx := len(m.ValidatorUpdates) - 1; iNdEx >= 0; iNdEx-- {
 			{
-				size, err := m.InitialValSet[iNdEx].MarshalToSizedBuffer(dAtA[:i])
+				size, err := m.ValidatorUpdates[iNdEx].MarshalToSizedBuffer(dAtA[:i])
+				if err != nil {
+					return 0, err
+				}
+				i -= size
+				i = encodeVarintGenesis(dAtA, i, uint64(size))
+			}
+			i--
+			dAtA[i] = 0x3a
+		}
+	}
+	{
+		size := m.LastTotalPower.Size()
+		i -= size
+		if _, err := m.LastTotalPower.MarshalTo(dAtA[i:]); err != nil {
+			return 0, err
+		}
+		i = encodeVarintGenesis(dAtA, i, uint64(size))
+	}
+	i--
+	dAtA[i] = 0x32
+	if len(m.UndelegationMaturities) > 0 {
+		for iNdEx := len(m.UndelegationMaturities) - 1; iNdEx >= 0; iNdEx-- {
+			{
+				size, err := m.UndelegationMaturities[iNdEx].MarshalToSizedBuffer(dAtA[:i])
+				if err != nil {
+					return 0, err
+				}
+				i -= size
+				i = encodeVarintGenesis(dAtA, i, uint64(size))
+			}
+			i--
+			dAtA[i] = 0x2a
+		}
+	}
+	if len(m.EpochsConsensusAddrs) > 0 {
+		for iNdEx := len(m.EpochsConsensusAddrs) - 1; iNdEx >= 0; iNdEx-- {
+			{
+				size, err := m.EpochsConsensusAddrs[iNdEx].MarshalToSizedBuffer(dAtA[:i])
+				if err != nil {
+					return 0, err
+				}
+				i -= size
+				i = encodeVarintGenesis(dAtA, i, uint64(size))
+			}
+			i--
+			dAtA[i] = 0x22
+		}
+	}
+	if len(m.EpochsOptOutExpiries) > 0 {
+		for iNdEx := len(m.EpochsOptOutExpiries) - 1; iNdEx >= 0; iNdEx-- {
+			{
+				size, err := m.EpochsOptOutExpiries[iNdEx].MarshalToSizedBuffer(dAtA[:i])
+				if err != nil {
+					return 0, err
+				}
+				i -= size
+				i = encodeVarintGenesis(dAtA, i, uint64(size))
+			}
+			i--
+			dAtA[i] = 0x1a
+		}
+	}
+	if len(m.ValSet) > 0 {
+		for iNdEx := len(m.ValSet) - 1; iNdEx >= 0; iNdEx-- {
+			{
+				size, err := m.ValSet[iNdEx].MarshalToSizedBuffer(dAtA[:i])
 				if err != nil {
 					return 0, err
 				}
@@ -247,6 +569,117 @@ func (m *GenesisValidator) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
+func (m *EpochToOperatorAddrs) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *EpochToOperatorAddrs) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *EpochToOperatorAddrs) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.OperatorAccAddrs) > 0 {
+		for iNdEx := len(m.OperatorAccAddrs) - 1; iNdEx >= 0; iNdEx-- {
+			i -= len(m.OperatorAccAddrs[iNdEx])
+			copy(dAtA[i:], m.OperatorAccAddrs[iNdEx])
+			i = encodeVarintGenesis(dAtA, i, uint64(len(m.OperatorAccAddrs[iNdEx])))
+			i--
+			dAtA[i] = 0x12
+		}
+	}
+	if m.Epoch != 0 {
+		i = encodeVarintGenesis(dAtA, i, uint64(m.Epoch))
+		i--
+		dAtA[i] = 0x8
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *EpochToConsensusAddrs) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *EpochToConsensusAddrs) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *EpochToConsensusAddrs) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.ConsAddrs) > 0 {
+		for iNdEx := len(m.ConsAddrs) - 1; iNdEx >= 0; iNdEx-- {
+			i -= len(m.ConsAddrs[iNdEx])
+			copy(dAtA[i:], m.ConsAddrs[iNdEx])
+			i = encodeVarintGenesis(dAtA, i, uint64(len(m.ConsAddrs[iNdEx])))
+			i--
+			dAtA[i] = 0x12
+		}
+	}
+	if m.Epoch != 0 {
+		i = encodeVarintGenesis(dAtA, i, uint64(m.Epoch))
+		i--
+		dAtA[i] = 0x8
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *EpochToUndelegationRecordKeys) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *EpochToUndelegationRecordKeys) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *EpochToUndelegationRecordKeys) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.UndelegationRecordKeys) > 0 {
+		for iNdEx := len(m.UndelegationRecordKeys) - 1; iNdEx >= 0; iNdEx-- {
+			i -= len(m.UndelegationRecordKeys[iNdEx])
+			copy(dAtA[i:], m.UndelegationRecordKeys[iNdEx])
+			i = encodeVarintGenesis(dAtA, i, uint64(len(m.UndelegationRecordKeys[iNdEx])))
+			i--
+			dAtA[i] = 0x12
+		}
+	}
+	if m.Epoch != 0 {
+		i = encodeVarintGenesis(dAtA, i, uint64(m.Epoch))
+		i--
+		dAtA[i] = 0x8
+	}
+	return len(dAtA) - i, nil
+}
+
 func encodeVarintGenesis(dAtA []byte, offset int, v uint64) int {
 	offset -= sovGenesis(v)
 	base := offset
@@ -266,8 +699,34 @@ func (m *GenesisState) Size() (n int) {
 	_ = l
 	l = m.Params.Size()
 	n += 1 + l + sovGenesis(uint64(l))
-	if len(m.InitialValSet) > 0 {
-		for _, e := range m.InitialValSet {
+	if len(m.ValSet) > 0 {
+		for _, e := range m.ValSet {
+			l = e.Size()
+			n += 1 + l + sovGenesis(uint64(l))
+		}
+	}
+	if len(m.EpochsOptOutExpiries) > 0 {
+		for _, e := range m.EpochsOptOutExpiries {
+			l = e.Size()
+			n += 1 + l + sovGenesis(uint64(l))
+		}
+	}
+	if len(m.EpochsConsensusAddrs) > 0 {
+		for _, e := range m.EpochsConsensusAddrs {
+			l = e.Size()
+			n += 1 + l + sovGenesis(uint64(l))
+		}
+	}
+	if len(m.UndelegationMaturities) > 0 {
+		for _, e := range m.UndelegationMaturities {
+			l = e.Size()
+			n += 1 + l + sovGenesis(uint64(l))
+		}
+	}
+	l = m.LastTotalPower.Size()
+	n += 1 + l + sovGenesis(uint64(l))
+	if len(m.ValidatorUpdates) > 0 {
+		for _, e := range m.ValidatorUpdates {
 			l = e.Size()
 			n += 1 + l + sovGenesis(uint64(l))
 		}
@@ -287,6 +746,60 @@ func (m *GenesisValidator) Size() (n int) {
 	}
 	if m.Power != 0 {
 		n += 1 + sovGenesis(uint64(m.Power))
+	}
+	return n
+}
+
+func (m *EpochToOperatorAddrs) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.Epoch != 0 {
+		n += 1 + sovGenesis(uint64(m.Epoch))
+	}
+	if len(m.OperatorAccAddrs) > 0 {
+		for _, s := range m.OperatorAccAddrs {
+			l = len(s)
+			n += 1 + l + sovGenesis(uint64(l))
+		}
+	}
+	return n
+}
+
+func (m *EpochToConsensusAddrs) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.Epoch != 0 {
+		n += 1 + sovGenesis(uint64(m.Epoch))
+	}
+	if len(m.ConsAddrs) > 0 {
+		for _, s := range m.ConsAddrs {
+			l = len(s)
+			n += 1 + l + sovGenesis(uint64(l))
+		}
+	}
+	return n
+}
+
+func (m *EpochToUndelegationRecordKeys) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.Epoch != 0 {
+		n += 1 + sovGenesis(uint64(m.Epoch))
+	}
+	if len(m.UndelegationRecordKeys) > 0 {
+		for _, s := range m.UndelegationRecordKeys {
+			l = len(s)
+			n += 1 + l + sovGenesis(uint64(l))
+		}
 	}
 	return n
 }
@@ -361,7 +874,7 @@ func (m *GenesisState) Unmarshal(dAtA []byte) error {
 			iNdEx = postIndex
 		case 2:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field InitialValSet", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field ValSet", wireType)
 			}
 			var msglen int
 			for shift := uint(0); ; shift += 7 {
@@ -388,8 +901,177 @@ func (m *GenesisState) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.InitialValSet = append(m.InitialValSet, GenesisValidator{})
-			if err := m.InitialValSet[len(m.InitialValSet)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+			m.ValSet = append(m.ValSet, GenesisValidator{})
+			if err := m.ValSet[len(m.ValSet)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 3:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field EpochsOptOutExpiries", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowGenesis
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthGenesis
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthGenesis
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.EpochsOptOutExpiries = append(m.EpochsOptOutExpiries, EpochToOperatorAddrs{})
+			if err := m.EpochsOptOutExpiries[len(m.EpochsOptOutExpiries)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 4:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field EpochsConsensusAddrs", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowGenesis
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthGenesis
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthGenesis
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.EpochsConsensusAddrs = append(m.EpochsConsensusAddrs, EpochToConsensusAddrs{})
+			if err := m.EpochsConsensusAddrs[len(m.EpochsConsensusAddrs)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 5:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field UndelegationMaturities", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowGenesis
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthGenesis
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthGenesis
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.UndelegationMaturities = append(m.UndelegationMaturities, EpochToUndelegationRecordKeys{})
+			if err := m.UndelegationMaturities[len(m.UndelegationMaturities)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 6:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field LastTotalPower", wireType)
+			}
+			var byteLen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowGenesis
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				byteLen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if byteLen < 0 {
+				return ErrInvalidLengthGenesis
+			}
+			postIndex := iNdEx + byteLen
+			if postIndex < 0 {
+				return ErrInvalidLengthGenesis
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.LastTotalPower.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 7:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field ValidatorUpdates", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowGenesis
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthGenesis
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthGenesis
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.ValidatorUpdates = append(m.ValidatorUpdates, types.ValidatorUpdate{})
+			if err := m.ValidatorUpdates[len(m.ValidatorUpdates)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
@@ -494,6 +1176,309 @@ func (m *GenesisValidator) Unmarshal(dAtA []byte) error {
 					break
 				}
 			}
+		default:
+			iNdEx = preIndex
+			skippy, err := skipGenesis(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthGenesis
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *EpochToOperatorAddrs) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowGenesis
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: EpochToOperatorAddrs: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: EpochToOperatorAddrs: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Epoch", wireType)
+			}
+			m.Epoch = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowGenesis
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.Epoch |= int64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field OperatorAccAddrs", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowGenesis
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthGenesis
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthGenesis
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.OperatorAccAddrs = append(m.OperatorAccAddrs, string(dAtA[iNdEx:postIndex]))
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipGenesis(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthGenesis
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *EpochToConsensusAddrs) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowGenesis
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: EpochToConsensusAddrs: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: EpochToConsensusAddrs: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Epoch", wireType)
+			}
+			m.Epoch = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowGenesis
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.Epoch |= int64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field ConsAddrs", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowGenesis
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthGenesis
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthGenesis
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.ConsAddrs = append(m.ConsAddrs, string(dAtA[iNdEx:postIndex]))
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipGenesis(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthGenesis
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *EpochToUndelegationRecordKeys) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowGenesis
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: EpochToUndelegationRecordKeys: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: EpochToUndelegationRecordKeys: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Epoch", wireType)
+			}
+			m.Epoch = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowGenesis
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.Epoch |= int64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field UndelegationRecordKeys", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowGenesis
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthGenesis
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthGenesis
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.UndelegationRecordKeys = append(m.UndelegationRecordKeys, string(dAtA[iNdEx:postIndex]))
+			iNdEx = postIndex
 		default:
 			iNdEx = preIndex
 			skippy, err := skipGenesis(dAtA[iNdEx:])
