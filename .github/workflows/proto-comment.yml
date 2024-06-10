@@ -17,9 +17,7 @@ on:
 jobs:
   download-artifact-and-comment:
     runs-on: ubuntu-latest
-    if: >
-      github.event.workflow_run.conclusion == 'success' &&
-      ${{ false }}
+    if: ${{ false }}
     steps:
       - name: 'Download artifact'
         uses: actions/github-script@v7.0.1
