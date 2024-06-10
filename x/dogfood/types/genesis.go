@@ -105,6 +105,7 @@ func (gs GenesisState) Validate() error {
 		// incremented, and then AfterEpochEnd is called with a value of 2.
 		// therefore, the first epoch in the dogfood module is 2. all expiries
 		// must happen at the end of this epoch or any epoch thereafter.
+		// TODO: we should fix this bug in our fork of the epochs module.
 		if epoch <= 1 {
 			return errorsmod.Wrapf(
 				ErrInvalidGenesisData,
