@@ -240,6 +240,11 @@ func (suite *BaseTestSuite) SetupWithGenesisValSet(genAccs []authtypes.GenesisAc
 				Power:     1,
 			},
 		},
+		[]dogfoodtypes.EpochToOperatorAddrs{},
+		[]dogfoodtypes.EpochToConsensusAddrs{},
+		[]dogfoodtypes.EpochToUndelegationRecordKeys{},
+		math.NewInt(2),
+		[]abci.ValidatorUpdate{},
 	)
 	genesisState[dogfoodtypes.ModuleName] = app.AppCodec().MustMarshalJSON(dogfoodGenesis)
 

@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"time"
 
+	"cosmossdk.io/math"
 	"cosmossdk.io/simapp"
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -252,6 +253,8 @@ func genesisStateWithValSet(codec codec.Codec, genesisState simapp.GenesisState,
 				Power:     1,
 			},
 		},
+		[]dogfoodtypes.EpochToOperatorAddrs{}, []dogfoodtypes.EpochToConsensusAddrs{},
+		[]dogfoodtypes.EpochToUndelegationRecordKeys{}, math.NewInt(1), []abci.ValidatorUpdate{},
 	)
 	genesisState[dogfoodtypes.ModuleName] = codec.MustMarshalJSON(dogfoodGenesis)
 

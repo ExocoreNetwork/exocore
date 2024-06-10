@@ -4,6 +4,7 @@ import (
 	"strings"
 
 	assetstypes "github.com/ExocoreNetwork/exocore/x/assets/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
@@ -90,6 +91,10 @@ func ParseUndelegationRecordKey(key []byte) (field *UndelegationKeyFields, err e
 	if err != nil {
 		return nil, err
 	}
+	operatorAccAddr, err := sdk.AccAddressFromBech32(stringList[0])
+	if err != nil {
+		return nil, err
+	}
 	height, err := hexutil.DecodeUint64(stringList[1])
 	if err != nil {
 		return nil, err
@@ -99,10 +104,11 @@ func ParseUndelegationRecordKey(key []byte) (field *UndelegationKeyFields, err e
 		return nil, err
 	}
 	return &UndelegationKeyFields{
-		OperatorAddr: stringList[0],
+		OperatorAddr: operatorAccAddr.String(),
 		BlockHeight:  height,
 		LzNonce:      lzNonce,
-		TxHash:       stringList[3],
+		// TODO: validate the TxHash?
+		TxHash: stringList[3],
 	}, nil
 }
 

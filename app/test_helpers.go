@@ -10,6 +10,7 @@ import (
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/crypto"
 
+	"cosmossdk.io/math"
 	"cosmossdk.io/simapp"
 	dbm "github.com/cometbft/cometbft-db"
 	abci "github.com/cometbft/cometbft/abci/types"
@@ -274,6 +275,8 @@ func GenesisStateWithValSet(app *ExocoreApp, genesisState simapp.GenesisState,
 				Power:     1,
 			},
 		},
+		[]dogfoodtypes.EpochToOperatorAddrs{}, []dogfoodtypes.EpochToConsensusAddrs{},
+		[]dogfoodtypes.EpochToUndelegationRecordKeys{}, math.NewInt(1), []abci.ValidatorUpdate{},
 	)
 	genesisState[dogfoodtypes.ModuleName] = app.AppCodec().MustMarshalJSON(dogfoodGenesis)
 

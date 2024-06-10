@@ -36,8 +36,8 @@ func (k Keeper) InitGenesis(
 	// to be considered, or may not be in the top N operators. so checking that count here
 	// is meaningless as well.
 	totalPower := sdk.NewInt(0)
-	out := make([]abci.ValidatorUpdate, len(genState.InitialValSet))
-	for _, val := range genState.InitialValSet {
+	out := make([]abci.ValidatorUpdate, len(genState.ValSet))
+	for _, val := range genState.ValSet {
 		// #nosec G703 // already validated
 		consKey, _ := operatortypes.HexStringToPubKey(val.PublicKey)
 		// #nosec G703 // this only fails if the key is of a type not already defined.
