@@ -2,8 +2,8 @@ syntax = "proto3";
 
 package exocore.dogfood.v1;
 
-import "gogoproto/gogo.proto";
 import "amino/amino.proto";
+import "gogoproto/gogo.proto";
 
 import "exocore/dogfood/v1/params.proto";
 
@@ -75,11 +75,11 @@ message GenesisState {
 // optimization between dogfood and operator modules.
 // https://github.com/ExocoreNetwork/exocore/issues/73
 message GenesisValidator {
-    // public_key is the consensus public key of the validator. It should
-    // be exactly 32 bytes, but this is not enforced in protobuf.
-    string public_key = 1;
-    // power is the voting power of the validator.
-    int64 power = 2;
+  // public_key is the consensus public key of the validator. It should
+  // be exactly 32 bytes, but this is not enforced in protobuf.
+  string public_key = 1;
+  // power is the voting power of the validator.
+  int64 power = 2;
 }
 
 // EpochToOperatorAddress is used to store a mapping from epoch to a list of
