@@ -4,7 +4,6 @@ package exocore.dogfood.v1;
 
 import "gogoproto/gogo.proto";
 import "amino/amino.proto";
-import "tendermint/abci/types.proto";
 
 import "exocore/dogfood/v1/params.proto";
 
