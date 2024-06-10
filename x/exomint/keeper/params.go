@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	"cosmossdk.io/math"
 	"github.com/ExocoreNetwork/exocore/x/exomint/types"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -19,14 +20,14 @@ func (k Keeper) SetMintDenom(ctx sdk.Context, mintDenom string) {
 }
 
 // GetEpochReward gets the reward minted per epoch.
-func (k Keeper) GetEpochReward(ctx sdk.Context) sdk.Int {
-	var epochReward sdk.Int
+func (k Keeper) GetEpochReward(ctx sdk.Context) math.Int {
+	var epochReward math.Int
 	k.paramstore.Get(ctx, types.KeyEpochReward, &epochReward)
 	return epochReward
 }
 
 // SetEpochReward sets the reward minted per epoch.
-func (k Keeper) SetEpochReward(ctx sdk.Context, epochReward sdk.Int) {
+func (k Keeper) SetEpochReward(ctx sdk.Context, epochReward math.Int) {
 	k.paramstore.Set(ctx, types.KeyEpochReward, epochReward)
 }
 

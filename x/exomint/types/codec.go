@@ -6,7 +6,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/msgservice"
 )
 
-func RegisterCodec(cdc *codec.LegacyAmino) {
+func RegisterCodec(*codec.LegacyAmino) {
 }
 
 func RegisterInterfaces(registry cdctypes.InterfaceRegistry) {

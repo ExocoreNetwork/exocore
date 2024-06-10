@@ -75,7 +75,7 @@ func ValidateMintDenom(i interface{}) error {
 }
 
 func ValidateEpochReward(i interface{}) error {
-	v, ok := i.(sdk.Int)
+	v, ok := i.(math.Int)
 	if !ok {
 		return fmt.Errorf("invalid parameter type: %T", i)
 	}

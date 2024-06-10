@@ -24,7 +24,7 @@ func (k *Keeper) EpochsHooks() EpochsHooksWrapper {
 
 // AfterEpochEnd is called after an epoch ends. It is called during the BeginBlock function.
 func (wrapper EpochsHooksWrapper) AfterEpochEnd(
-	ctx sdk.Context, identifier string, epoch int64,
+	ctx sdk.Context, identifier string, _ int64,
 ) {
 	params := wrapper.keeper.GetParams(ctx)
 	if strings.Compare(identifier, params.EpochIdentifier) == 0 {
