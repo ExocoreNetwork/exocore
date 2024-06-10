@@ -18,6 +18,7 @@ type (
 		storeKey         storetypes.StoreKey
 		paramstore       paramtypes.Subspace
 		bankKeeper       types.BankKeeper
+		epochsKeeper     types.EpochsKeeper
 		feeCollectorName string
 	}
 )
@@ -28,6 +29,7 @@ func NewKeeper(
 	ps paramtypes.Subspace,
 	ak types.AccountKeeper,
 	bk types.BankKeeper,
+	ek types.EpochsKeeper,
 	feeCollectorName string,
 ) Keeper {
 	// ensure mint module account is set
@@ -45,6 +47,7 @@ func NewKeeper(
 		storeKey:         storeKey,
 		paramstore:       ps,
 		bankKeeper:       bk,
+		epochsKeeper:     ek,
 		feeCollectorName: feeCollectorName,
 	}
 }

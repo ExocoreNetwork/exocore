@@ -13,6 +13,7 @@ import (
 	"github.com/ExocoreNetwork/exocore/x/dogfood/client/cli"
 	"github.com/ExocoreNetwork/exocore/x/dogfood/keeper"
 	"github.com/ExocoreNetwork/exocore/x/dogfood/types"
+
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/codec"
 	cdctypes "github.com/cosmos/cosmos-sdk/codec/types"

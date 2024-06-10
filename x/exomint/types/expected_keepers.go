@@ -2,13 +2,12 @@ package types
 
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/cosmos-sdk/x/auth/types"
+	epochstypes "github.com/evmos/evmos/v14/x/epochs/types"
 )
 
+// AccountKeeper defines the expected interface for the account keeper.
 type AccountKeeper interface {
 	GetModuleAddress(name string) sdk.AccAddress
-	SetModuleAccount(sdk.Context, types.ModuleAccountI)
-	GetModuleAccount(ctx sdk.Context, moduleName string) types.ModuleAccountI
 }
 
 // BankKeeper defines the expected interface needed to retrieve account balances.
@@ -25,4 +24,9 @@ type BankKeeper interface {
 		amt sdk.Coins,
 	) error
 	MintCoins(ctx sdk.Context, name string, amt sdk.Coins) error
+}
+
+// EpochsKeeper represents the expected keeper interface for the epochs module.
+type EpochsKeeper interface {
+	GetEpochInfo(sdk.Context, string) (epochstypes.EpochInfo, bool)
 }
