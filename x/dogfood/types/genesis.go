@@ -5,8 +5,6 @@ import (
 	"cosmossdk.io/math"
 	delegationtypes "github.com/ExocoreNetwork/exocore/x/delegation/types"
 	operatortypes "github.com/ExocoreNetwork/exocore/x/operator/types"
-	abci "github.com/cometbft/cometbft/abci/types"
-	cryptocodec "github.com/cosmos/cosmos-sdk/crypto/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 )
@@ -20,7 +18,6 @@ func NewGenesis(
 	consAddrs []EpochToConsensusAddrs,
 	recordKeys []EpochToUndelegationRecordKeys,
 	power math.Int,
-	valUpdates []abci.ValidatorUpdate,
 ) *GenesisState {
 	return &GenesisState{
 		Params:                 params,
@@ -29,7 +26,6 @@ func NewGenesis(
 		EpochsConsensusAddrs:   consAddrs,
 		UndelegationMaturities: recordKeys,
 		LastTotalPower:         power,
-		ValidatorUpdates:       valUpdates,
 	}
 }
 
@@ -42,7 +38,6 @@ func DefaultGenesis() *GenesisState {
 		[]EpochToConsensusAddrs{},
 		[]EpochToUndelegationRecordKeys{},
 		math.ZeroInt(),
-		[]abci.ValidatorUpdate{},
 	)
 }
 
@@ -253,24 +248,6 @@ func (gs GenesisState) Validate() error {
 			"last total power mismatch %s, expected %d",
 			gs.LastTotalPower, totalPower,
 		)
-	}
-
-	// ValidatorUpdates is a list of updates applied at the end of the previous block.
-	// since these are only changes and not the sum total, we can't do too much with it.
-	for _, change := range gs.ValidatorUpdates {
-		if _, err := cryptocodec.FromTmProtoPublicKey(change.GetPubKey()); err != nil {
-			return errorsmod.Wrapf(
-				ErrInvalidGenesisData,
-				"invalid validator update",
-			)
-		}
-		if change.Power <= 0 {
-			return errorsmod.Wrapf(
-				ErrInvalidGenesisData,
-				"invalid validator power %d",
-				change.Power,
-			)
-		}
 	}
 
 	return gs.Params.Validate()

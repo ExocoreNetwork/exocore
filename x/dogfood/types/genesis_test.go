@@ -7,7 +7,6 @@ import (
 	testutiltx "github.com/ExocoreNetwork/exocore/testutil/tx"
 	delegationtypes "github.com/ExocoreNetwork/exocore/x/delegation/types"
 	"github.com/ExocoreNetwork/exocore/x/dogfood/types"
-	abci "github.com/cometbft/cometbft/abci/types"
 	"github.com/cometbft/cometbft/crypto/ed25519"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/common"
@@ -68,7 +67,6 @@ func (suite *GenesisTestSuite) TestValidateGenesis() {
 				[]types.EpochToConsensusAddrs{},
 				[]types.EpochToUndelegationRecordKeys{},
 				math.ZeroInt(),
-				[]abci.ValidatorUpdate{},
 			),
 			expPass:  false, // 0 voting power isn't permitted
 			expError: "non-positive last total power",

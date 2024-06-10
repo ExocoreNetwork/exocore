@@ -276,7 +276,7 @@ func GenesisStateWithValSet(app *ExocoreApp, genesisState simapp.GenesisState,
 			},
 		},
 		[]dogfoodtypes.EpochToOperatorAddrs{}, []dogfoodtypes.EpochToConsensusAddrs{},
-		[]dogfoodtypes.EpochToUndelegationRecordKeys{}, math.NewInt(1), []abci.ValidatorUpdate{},
+		[]dogfoodtypes.EpochToUndelegationRecordKeys{}, math.NewInt(1),
 	)
 	genesisState[dogfoodtypes.ModuleName] = app.AppCodec().MustMarshalJSON(dogfoodGenesis)
 

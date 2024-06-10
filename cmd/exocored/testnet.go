@@ -13,7 +13,6 @@ import (
 	"strings"
 
 	"cosmossdk.io/math"
-	abci "github.com/cometbft/cometbft/abci/types"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 
@@ -489,7 +488,6 @@ func getTestExocoreGenesis(
 			[]dogfoodtypes.EpochToConsensusAddrs{},
 			[]dogfoodtypes.EpochToUndelegationRecordKeys{},
 			totalPower,
-			[]abci.ValidatorUpdate{},
 		)
 }
 

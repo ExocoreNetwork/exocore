@@ -64,11 +64,9 @@ message GenesisState {
 
   // validator_updates is a list of validator updates applied at the end of the previous
   // block. it is then cleared at the end of the next block, and hence, is available
-  // for other modules to access during that block. it must, therefore, be exported.
-  repeated .tendermint.abci.ValidatorUpdate validator_updates = 7 [
-    (gogoproto.nullable) = false,
-    (gogoproto.moretags) = "yaml:\"validator_updates\""
-  ];
+  // for other modules to access during that block. however, for a new chain, it does
+  // not make sense for it to exist, since all of the validators should be considered
+  // as an update. this behaviour is the same as the Cosmos SDK.
 }
 
 // GenesisValidator defines a genesis validator. It is a helper struct
