@@ -1,4 +1,4 @@
-FROM golang:1.21.9-alpine3.18 AS build
+FROM golang:1.21.11-alpine3.18 AS build
 RUN apk add --no-cache build-base=0.5-r3 linux-headers=6.3-r0 git=2.40.1-r0
 # Set working directory for the build
 WORKDIR /go/work
