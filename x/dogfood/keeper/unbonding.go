@@ -3,6 +3,7 @@ package keeper
 import (
 	"github.com/ExocoreNetwork/exocore/x/dogfood/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/ethereum/go-ethereum/common/hexutil"
 )
 
 // SetOptOutInformation sets information related to an operator's opt out.
@@ -85,6 +86,33 @@ func (k Keeper) setUndelegationsToMature(
 		panic(err)
 	}
 	store.Set(key, val)
+}
+
+// GetAllUndelegationsToMature gets a list of epochs and the corresponding undelegation record
+// keys which are scheduled to mature at the end of that epoch. It is ordered, first by the
+// epoch and then by the record key's bytes.
+func (k Keeper) GetAllUndelegationsToMature(ctx sdk.Context) []types.EpochToUndelegationRecordKeys {
+	store := ctx.KVStore(k.storeKey)
+	iterator := sdk.KVStorePrefixIterator(store, []byte{types.OptOutsToFinishBytePrefix})
+	defer iterator.Close()
+
+	res := []types.EpochToUndelegationRecordKeys{}
+
+	for ; iterator.Valid(); iterator.Next() {
+		epoch, _ := types.SafeUint64ToInt64(sdk.BigEndianToUint64(iterator.Key()[1:]))
+		var recordKeys types.UndelegationRecordKeys
+		k.cdc.MustUnmarshal(iterator.Value(), &recordKeys)
+		subRes := []string{}
+		for _, recordKey := range recordKeys.GetList() {
+			subRes = append(subRes, hexutil.Encode(recordKey))
+		}
+		res = append(res, types.EpochToUndelegationRecordKeys{
+			Epoch:                  epoch,
+			UndelegationRecordKeys: subRes,
+		})
+	}
+
+	return res
 }
 
 // GetUndelegationMaturityEpoch gets the maturity epoch for the undelegation record.

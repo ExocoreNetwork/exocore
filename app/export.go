@@ -16,6 +16,7 @@ import (
 	slashingtypes "github.com/cosmos/cosmos-sdk/x/slashing/types"
 	evmtypes "github.com/evmos/evmos/v14/x/evm/types"
 
+	tmtypes "github.com/cometbft/cometbft/types"
 	"github.com/evmos/evmos/v14/encoding"
 )
 
@@ -75,14 +76,9 @@ func (app *ExocoreApp) ExportAppStateAndValidators(
 		return servertypes.ExportedApp{}, err
 	}
 
-	validators, err := app.StakingKeeper.WriteValidators(ctx)
-	if err != nil {
-		return servertypes.ExportedApp{}, err
-	}
-
 	return servertypes.ExportedApp{
 		AppState:        appState,
-		Validators:      validators,
+		Validators:      []tmtypes.GenesisValidator{}, // exported directly in dogfood
 		Height:          height,
 		ConsensusParams: app.BaseApp.GetConsensusParams(ctx),
 	}, nil

@@ -6,7 +6,9 @@ import (
 	"github.com/ExocoreNetwork/exocore/x/dogfood/types"
 	operatortypes "github.com/ExocoreNetwork/exocore/x/operator/types"
 	abci "github.com/cometbft/cometbft/abci/types"
+	cryptocodec "github.com/cosmos/cosmos-sdk/crypto/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 )
 
@@ -66,6 +68,7 @@ func (k Keeper) InitGenesis(
 			// #nosec G703 // already validated
 			operatorAddr, _ := sdk.AccAddressFromBech32(addr)
 			k.AppendOptOutToFinish(ctx, epoch, operatorAddr)
+			k.SetOperatorOptOutFinishEpoch(ctx, operatorAddr, epoch)
 		}
 	}
 	for i := range genState.ConsensusAddrsToPrune {
@@ -90,6 +93,7 @@ func (k Keeper) InitGenesis(
 			// #nosec G703 // already validated
 			recordKeyBytes, _ := hexutil.Decode(recordKey)
 			k.AppendUndelegationToMature(ctx, epoch, recordKeyBytes)
+			k.SetUndelegationMaturityEpoch(ctx, recordKeyBytes, epoch)
 		}
 	}
 	// ApplyValidatorChanges only gets changes and hence the vote power must be set here.
@@ -105,6 +109,26 @@ func (k Keeper) InitGenesis(
 func (k Keeper) ExportGenesis(ctx sdk.Context) *types.GenesisState {
 	genesis := types.DefaultGenesis()
 	genesis.Params = k.GetDogfoodParams(ctx)
-	// TODO(mm)
-	return genesis
+	validators := []types.GenesisValidator{}
+	k.IterateBondedValidatorsByPower(ctx, func(i int64, val stakingtypes.ValidatorI) bool {
+		// #nosec G703 // already validated
+		pubKey, _ := val.ConsPubKey()
+		// #nosec G703 // already validated
+		convKey, _ := cryptocodec.ToTmPubKeyInterface(pubKey)
+		validators = append(validators,
+			types.GenesisValidator{
+				PublicKey: hexutil.Encode(convKey.Bytes()),
+				Power:     val.GetConsensusPower(sdk.DefaultPowerReduction),
+			},
+		)
+		return true
+	})
+	return types.NewGenesis(
+		k.GetDogfoodParams(ctx),
+		validators,
+		k.GetAllOptOutsToFinish(ctx),
+		k.GetAllConsAddrsToPrune(ctx),
+		k.GetAllUndelegationsToMature(ctx),
+		k.GetLastTotalPower(ctx),
+	)
 }
