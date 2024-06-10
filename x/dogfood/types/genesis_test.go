@@ -204,7 +204,7 @@ func (suite *GenesisTestSuite) TestValidateGenesis() {
 					},
 				},
 				LastTotalPower: math.NewInt(5),
-				EpochsOptOutExpiries: []types.EpochToOperatorAddrs{
+				OptOutExpiries: []types.EpochToOperatorAddrs{
 					{
 						Epoch: 2,
 						OperatorAccAddrs: []string{
@@ -233,7 +233,7 @@ func (suite *GenesisTestSuite) TestValidateGenesis() {
 					},
 				},
 				LastTotalPower: math.NewInt(5),
-				EpochsOptOutExpiries: []types.EpochToOperatorAddrs{
+				OptOutExpiries: []types.EpochToOperatorAddrs{
 					{
 						Epoch: 1,
 						OperatorAccAddrs: []string{
@@ -256,7 +256,7 @@ func (suite *GenesisTestSuite) TestValidateGenesis() {
 					},
 				},
 				LastTotalPower: math.NewInt(5),
-				EpochsOptOutExpiries: []types.EpochToOperatorAddrs{
+				OptOutExpiries: []types.EpochToOperatorAddrs{
 					{
 						Epoch: 2,
 					},
@@ -276,7 +276,7 @@ func (suite *GenesisTestSuite) TestValidateGenesis() {
 					},
 				},
 				LastTotalPower: math.NewInt(5),
-				EpochsOptOutExpiries: []types.EpochToOperatorAddrs{
+				OptOutExpiries: []types.EpochToOperatorAddrs{
 					{
 						Epoch: 2,
 						OperatorAccAddrs: []string{
@@ -300,7 +300,7 @@ func (suite *GenesisTestSuite) TestValidateGenesis() {
 					},
 				},
 				LastTotalPower: math.NewInt(5),
-				EpochsOptOutExpiries: []types.EpochToOperatorAddrs{
+				OptOutExpiries: []types.EpochToOperatorAddrs{
 					{
 						Epoch: 2,
 						OperatorAccAddrs: []string{
@@ -323,7 +323,7 @@ func (suite *GenesisTestSuite) TestValidateGenesis() {
 					},
 				},
 				LastTotalPower: math.NewInt(5),
-				EpochsOptOutExpiries: []types.EpochToOperatorAddrs{
+				OptOutExpiries: []types.EpochToOperatorAddrs{
 					{
 						Epoch: 2,
 						OperatorAccAddrs: []string{
@@ -345,7 +345,7 @@ func (suite *GenesisTestSuite) TestValidateGenesis() {
 					},
 				},
 				LastTotalPower: math.NewInt(5),
-				EpochsConsensusAddrs: []types.EpochToConsensusAddrs{
+				ConsensusAddrsToPrune: []types.EpochToConsensusAddrs{
 					{
 						Epoch: 2,
 						ConsAddrs: []string{
@@ -374,7 +374,7 @@ func (suite *GenesisTestSuite) TestValidateGenesis() {
 					},
 				},
 				LastTotalPower: math.NewInt(5),
-				EpochsConsensusAddrs: []types.EpochToConsensusAddrs{
+				ConsensusAddrsToPrune: []types.EpochToConsensusAddrs{
 					{
 						Epoch: 1,
 						ConsAddrs: []string{
@@ -397,7 +397,7 @@ func (suite *GenesisTestSuite) TestValidateGenesis() {
 					},
 				},
 				LastTotalPower: math.NewInt(5),
-				EpochsConsensusAddrs: []types.EpochToConsensusAddrs{
+				ConsensusAddrsToPrune: []types.EpochToConsensusAddrs{
 					{
 						Epoch: 2,
 					},
@@ -417,7 +417,7 @@ func (suite *GenesisTestSuite) TestValidateGenesis() {
 					},
 				},
 				LastTotalPower: math.NewInt(5),
-				EpochsConsensusAddrs: []types.EpochToConsensusAddrs{
+				ConsensusAddrsToPrune: []types.EpochToConsensusAddrs{
 					{
 						Epoch: 2,
 						ConsAddrs: []string{
@@ -441,7 +441,7 @@ func (suite *GenesisTestSuite) TestValidateGenesis() {
 					},
 				},
 				LastTotalPower: math.NewInt(5),
-				EpochsConsensusAddrs: []types.EpochToConsensusAddrs{
+				ConsensusAddrsToPrune: []types.EpochToConsensusAddrs{
 					{
 						Epoch: 2,
 						ConsAddrs: []string{
@@ -463,7 +463,7 @@ func (suite *GenesisTestSuite) TestValidateGenesis() {
 					},
 				},
 				LastTotalPower: math.NewInt(5),
-				EpochsConsensusAddrs: []types.EpochToConsensusAddrs{
+				ConsensusAddrsToPrune: []types.EpochToConsensusAddrs{
 					{
 						Epoch: 2,
 						ConsAddrs: []string{
