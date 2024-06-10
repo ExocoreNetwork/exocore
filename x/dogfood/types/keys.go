@@ -18,10 +18,9 @@ const (
 	// ExocoreValidatorBytePrefix is the prefix for the validator store.
 	ExocoreValidatorBytePrefix byte = iota + 1
 
-	// queuedOperationsByte is the byte used to store the queue of operations.
-	// It is no longer used, but it is retained for backward compatibility,
-	// which is also why it is lower case (not exported).
-	queuedOperationsByte
+	// QueuedOperationsByte was the byte used to store the queue of operations.
+	// It is no longer used, but it is retained for backward compatibility.
+	_
 
 	// OptOutsToFinishBytePrefix is the byte used to store the list of operator addresses whose
 	// opt outs are maturing at the provided epoch.
@@ -39,10 +38,10 @@ const (
 	// that will mature at the provided epoch.
 	UnbondingReleaseMaturityBytePrefix
 
-	// pendingOperationsByte is the byte used to store the list of operations to be applied at
+	// PendingOperationsByte was the byte used to store the list of operations to be applied at
 	// the end of the current block. It is no longer used, and is retained for backward
 	// compatibility.
-	pendingOperationsByte
+	_
 
 	// PendingOptOutsByte is the byte used to store the list of operator addresses whose opt
 	// outs will be made effective at the end of the current block.

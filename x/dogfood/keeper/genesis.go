@@ -110,7 +110,7 @@ func (k Keeper) ExportGenesis(ctx sdk.Context) *types.GenesisState {
 	genesis := types.DefaultGenesis()
 	genesis.Params = k.GetDogfoodParams(ctx)
 	validators := []types.GenesisValidator{}
-	k.IterateBondedValidatorsByPower(ctx, func(i int64, val stakingtypes.ValidatorI) bool {
+	k.IterateBondedValidatorsByPower(ctx, func(_ int64, val stakingtypes.ValidatorI) bool {
 		// #nosec G703 // already validated
 		pubKey, _ := val.ConsPubKey()
 		// #nosec G703 // already validated
