@@ -24,15 +24,15 @@ message GenesisState {
   repeated GenesisValidator val_set = 2
   [ (gogoproto.nullable) = false ];
 
-  // epochs_opt_out_expiries is a list of (future) epochs at the end of which the
+  // opt_out_expiries is a list of (future) epochs at the end of which the
   // corresponding operators' opt-out will expire. we store this, as well as its reverse
   // lookup.
-  repeated EpochToOperatorAddrs epochs_opt_out_expiries = 3
+  repeated EpochToOperatorAddrs opt_out_expiries = 3
   [ (gogoproto.nullable) = false ];
 
   // epochs_consensus_addrs is a list of epochs at the end of which the corresponding
   // consensus addresses should be pruned from the operator module.
-  repeated EpochToConsensusAddrs epochs_consensus_addrs = 4
+  repeated EpochToConsensusAddrs consensus_addrs_to_prune = 4
   [ (gogoproto.nullable) = false ];
 
   // undelegation_maturities is a list of epochs at the end of which the corresponding

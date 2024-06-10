@@ -22,8 +22,8 @@ func NewGenesis(
 	return &GenesisState{
 		Params:                 params,
 		ValSet:                 vals,
-		EpochsOptOutExpiries:   expiries,
-		EpochsConsensusAddrs:   consAddrs,
+		OptOutExpiries:         expiries,
+		ConsensusAddrsToPrune:  consAddrs,
 		UndelegationMaturities: recordKeys,
 		LastTotalPower:         power,
 	}
@@ -90,10 +90,10 @@ func (gs GenesisState) Validate() error {
 
 	// we don't know the current epoch, since this is stateless validation.
 	// to check epoochs aren't duplicated.
-	epochs := make(map[int64]struct{}, len(gs.EpochsOptOutExpiries))
+	epochs := make(map[int64]struct{}, len(gs.OptOutExpiries))
 	// to check that there is no duplicate address - not by per epoch but overall.
 	addrsMap := make(map[string]struct{})
-	for _, obj := range gs.EpochsOptOutExpiries {
+	for _, obj := range gs.OptOutExpiries {
 		epoch := obj.Epoch
 		if _, ok := epochs[epoch]; ok {
 			return errorsmod.Wrapf(
@@ -138,9 +138,9 @@ func (gs GenesisState) Validate() error {
 		}
 	}
 
-	epochs = make(map[int64]struct{}, len(gs.EpochsConsensusAddrs))
+	epochs = make(map[int64]struct{}, len(gs.ConsensusAddrsToPrune))
 	addrsMap = make(map[string]struct{})
-	for _, obj := range gs.EpochsConsensusAddrs {
+	for _, obj := range gs.ConsensusAddrsToPrune {
 		epoch := obj.Epoch
 		if _, ok := epochs[epoch]; ok {
 			return errorsmod.Wrapf(

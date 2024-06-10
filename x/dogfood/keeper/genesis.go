@@ -56,8 +56,8 @@ func (k Keeper) InitGenesis(
 			Power:  val.Power,
 		})
 	}
-	for i := range genState.EpochsOptOutExpiries {
-		obj := genState.EpochsOptOutExpiries[i]
+	for i := range genState.OptOutExpiries {
+		obj := genState.OptOutExpiries[i]
 		epoch := obj.Epoch
 		if epoch < epochInfo.CurrentEpoch {
 			panic(fmt.Sprintf("epoch %d is in the past", epoch))
@@ -68,8 +68,8 @@ func (k Keeper) InitGenesis(
 			k.AppendOptOutToFinish(ctx, epoch, operatorAddr)
 		}
 	}
-	for i := range genState.EpochsConsensusAddrs {
-		obj := genState.EpochsConsensusAddrs[i]
+	for i := range genState.ConsensusAddrsToPrune {
+		obj := genState.ConsensusAddrsToPrune[i]
 		epoch := obj.Epoch
 		if epoch < epochInfo.CurrentEpoch {
 			panic(fmt.Sprintf("epoch %d is in the past", epoch))
