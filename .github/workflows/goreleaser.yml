@@ -1,5 +1,9 @@
 name: goreleaser
 
+permissions:
+  # github releases
+  contents: write
+
 on:
   push:
     tags:
@@ -15,7 +19,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v4
         with:
-          go-version: '1.20'
+          go-version: '1.21.9'
           check-latest: true
       - name: release dry run
         run: make release-dry-run

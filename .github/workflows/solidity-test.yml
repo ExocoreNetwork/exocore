@@ -1,17 +1,25 @@
 name: Solidity Test
 on:
   pull_request:
+  push:
     branches:
+      - develop
       - main
+      - master
       - release/**
+
+permissions:
+  contents: read
 
 jobs:
   test-solidity:
+    # disabled for now, since we don't have any Solidity files.
+    if: ${{ false }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/setup-go@v4
         with:
-          go-version: '1.20'
+          go-version: '1.21'
           check-latest: true
       - uses: actions/checkout@v4
       - uses: technote-space/get-diff-action@v6.1.2

@@ -18,9 +18,9 @@ ifdef GITHUB_TOKEN
 		DOCKER_ARGS += --secret id=GITHUB_TOKEN
 	endif
 endif
-NAMESPACE := tharsishq
+NAMESPACE := ExocoreNetwork
 PROJECT := exocore
-DOCKER_IMAGE := $(NAMESPACE)/$(PROJECT)
+DOCKER_IMAGE := $(shell echo $(NAMESPACE)/$(PROJECT) | tr '[:upper:]' '[:lower:]')
 COMMIT_HASH := $(shell git rev-parse --short=7 HEAD)
 DOCKER_TAG := $(COMMIT_HASH)
 # e2e env
@@ -297,21 +297,23 @@ test: test-unit
 test-all: test-unit test-race
 # For unit tests we don't want to execute the upgrade tests in tests/e2e but
 # we want to include all unit tests in the subfolders (tests/e2e/*)
-PACKAGES_UNIT=$(shell go list ./... | grep -v '/tests/e2e$$')
+# We also want to exclude the testutil folder because it contains only
+# helper functions for the tests.
+PACKAGES_UNIT=$(shell go list ./... | grep -v '/tests/e2e$$' | grep -v 'testutil')
 TEST_PACKAGES=./...
 TEST_TARGETS := test-unit test-unit-cover test-race
 
 # Test runs-specific rules. To add a new test target, just add
 # a new rule, customise ARGS or TEST_PACKAGES ad libitum, and
 # append the new rule to the TEST_TARGETS list.
-test-unit: ARGS=-timeout=15m
+test-unit: ARGS=-timeout=15m -gcflags=all=-l
 test-unit: TEST_PACKAGES=$(PACKAGES_UNIT)
 
 test-race: ARGS=-race
 test-race: TEST_PACKAGES=$(PACKAGES_NOSIMULATION)
 $(TEST_TARGETS): run-tests
 
-test-unit-cover: ARGS=-timeout=15m -coverprofile=coverage.txt -covermode=atomic
+test-unit-cover: ARGS=-timeout=15m -coverprofile=cover.out -covermode=atomic -gcflags=all=-l
 test-unit-cover: TEST_PACKAGES=$(PACKAGES_UNIT)
 
 test-e2e:
@@ -412,7 +414,7 @@ proto-format:
 
 proto-lint:
 	@echo "Linting Protobuf files"
-	@$(protoImage) buf lint --error-format=json	
+	@$(protoImage) buf lint --error-format=json
 
 proto-check-breaking:
 	@echo "Checking Protobuf files for breaking changes"
@@ -428,7 +430,7 @@ proto-download-deps:
 	git remote add origin "https://github.com/cosmos/cosmos-sdk.git" && \
 	git config core.sparseCheckout true && \
 	printf "proto\nthird_party\n" > .git/info/sparse-checkout && \
-	git pull origin main && \
+	git pull origin release/v0.47.x && \
 	rm -f ./proto/buf.* && \
 	mv ./proto/* ..
 	rm -rf "$(THIRD_PARTY_DIR)/cosmos_tmp"
@@ -439,7 +441,7 @@ proto-download-deps:
 	git remote add origin "https://github.com/cosmos/ibc-go.git" && \
 	git config core.sparseCheckout true && \
 	printf "proto\n" > .git/info/sparse-checkout && \
-	git pull origin main && \
+	git pull origin release/v7.2.x && \
 	rm -f ./proto/buf.* && \
 	mv ./proto/* ..
 	rm -rf "$(THIRD_PARTY_DIR)/ibc_tmp"
@@ -450,7 +452,8 @@ proto-download-deps:
 	git remote add origin "https://github.com/cosmos/cosmos-proto.git" && \
 	git config core.sparseCheckout true && \
 	printf "proto\n" > .git/info/sparse-checkout && \
-	git pull origin main && \
+    git fetch origin tags/v1.0.0-beta.3 && \
+    git checkout -b my_branch FETCH_HEAD && \
 	rm -f ./proto/buf.* && \
 	mv ./proto/* ..
 	rm -rf "$(THIRD_PARTY_DIR)/cosmos_proto_tmp"
@@ -479,7 +482,7 @@ localnet-build:
 # Generate multi node configuration files and initialize configurations
 # TODO: exocore testnet chainid is still under consideration and need to be finalized later
 localnet-init: localnet-stop
-	exocored testnet init-files --chain-id exocoretestnet_233-1 --v 4 -o  $(CURDIR)/build/.testnets --starting-ip-address 192.168.10.2 --keyring-backend=os  && \
+	exocored testnet init-files --chain-id exocoretestnet_233-1 --v 4 -o  $(CURDIR)/build/.testnets --starting-ip-address 192.168.0.2 --keyring-backend=test && \
 	./networks/init-node.sh
 
 # Start a 4-node testnet locally
@@ -522,7 +525,7 @@ localnet-show-logstream:
 ###############################################################################
 
 PACKAGE_NAME:=github.com/ExocoreNetwork/exocore
-GOLANG_CROSS_VERSION  = v1.20
+GOLANG_CROSS_VERSION  = v1.21.9
 GOPATH ?= '$(HOME)/go'
 release-dry-run:
 	docker run \

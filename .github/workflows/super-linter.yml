@@ -7,11 +7,14 @@
 ---
 name: Lint Code Base
 
+permissions:
+  contents: read
+
 on:
   push:
-    branches: ["main"]
+    branches: ["develop", "main", "master"]
   pull_request:
-    branches: ["main"]
+    branches: ["develop", "main", "master"]
 jobs:
   run-lint:
     runs-on: ubuntu-latest
@@ -23,7 +26,7 @@ jobs:
           fetch-depth: 0
 
       - name: Lint Code Base
-        uses: github/super-linter@v5
+        uses: super-linter/super-linter@v6.3.0  # x-release-please-version
         env:
           LINTER_RULES_PATH: /
           YAML_CONFIG_FILE: .yamllint
@@ -33,6 +36,10 @@ jobs:
           VALIDATE_NATURAL_LANGUAGE: false
           VALIDATE_OPENAPI: false
           VALIDATE_JSCPD: false
+          # The JSON files in the repo are generated (abis or swagger)
+          # or are linting files. So this can be safely disabled.
+          VALIDATE_JSON: false
+          # separate workflow
           VALIDATE_GO: false
-          DEFAULT_BRANCH: "main"
+          VALIDATE_GO_MODULES: false
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

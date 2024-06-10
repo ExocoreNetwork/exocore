@@ -1,7 +1,10 @@
 package utils
 
 import (
+	"encoding/hex"
 	"strings"
+
+	"github.com/cosmos/btcutil/bech32"
 
 	"github.com/evmos/evmos/v14/crypto/ethsecp256k1"
 
@@ -20,6 +23,8 @@ const (
 	// TestnetChainID defines the Evmos EIP155 chain ID for testnet
 	// TODO: the testnet chainid is still under consideration and need to be finalized later
 	TestnetChainID = "exocoretestnet_233"
+	// DefaultChainID is the standard chain id used for testing purposes
+	DefaultChainID = MainnetChainID + "-1"
 	// BaseDenom defines the Evmos mainnet denomination
 	BaseDenom = "aexo"
 )
@@ -62,11 +67,11 @@ func IsSupportedKey(pubkey cryptotypes.PubKey) bool {
 	}
 }
 
-// GetEvmosAddressFromBech32 returns the sdk.Account address of given address,
+// GetExocoreAddressFromBech32 returns the sdk.Account address of given address,
 // while also changing bech32 human readable prefix (HRP) to the value set on
 // the global sdk.Config (eg: `evmos`).
 // The function fails if the provided bech32 address is invalid.
-func GetEvmosAddressFromBech32(address string) (sdk.AccAddress, error) {
+func GetExocoreAddressFromBech32(address string) (sdk.AccAddress, error) {
 	bech32Prefix := strings.SplitN(address, "1", 2)[0]
 	if bech32Prefix == address {
 		return nil, errorsmod.Wrapf(errortypes.ErrInvalidAddress, "invalid bech32 address: %s", address)
@@ -83,4 +88,33 @@ func GetEvmosAddressFromBech32(address string) (sdk.AccAddress, error) {
 	}
 
 	return sdk.AccAddress(addressBz), nil
+}
+
+func DecodeHexString(hexString string) ([]byte, error) {
+	if strings.HasPrefix(hexString, "0x") || strings.HasPrefix(hexString, "0X") {
+		hexString = hexString[2:]
+	}
+	if len(hexString)%2 != 0 {
+		hexString = "0" + hexString
+	}
+	return hex.DecodeString(hexString)
+}
+
+func ProcessAddress(address string) (string, error) {
+	switch {
+	case strings.HasPrefix(address, "0x"):
+		avsAddressHex, err := DecodeHexString(address)
+		if err != nil {
+			return "", errorsmod.Wrapf(errortypes.ErrInvalidAddress, "invalid input address: %s", address)
+		}
+		encodedAddress, err := bech32.EncodeFromBase256("exo", avsAddressHex)
+		if err != nil {
+			return "", err
+		}
+		return encodedAddress, nil
+	case strings.HasPrefix(address, "exo"):
+		return address, nil
+	default:
+		return "", errorsmod.Wrapf(errortypes.ErrInvalidAddress, "invalid input address: %s", address)
+	}
 }

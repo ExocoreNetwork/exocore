@@ -6,10 +6,8 @@ import (
 	sdkmath "cosmossdk.io/math"
 	"github.com/ExocoreNetwork/exocore/app"
 	"github.com/ExocoreNetwork/exocore/precompiles/reward"
+	assetstype "github.com/ExocoreNetwork/exocore/x/assets/types"
 	"github.com/ExocoreNetwork/exocore/x/deposit/keeper"
-	depositParams "github.com/ExocoreNetwork/exocore/x/deposit/types"
-	"github.com/ExocoreNetwork/exocore/x/restaking_assets_manage/types"
-	rewardParams "github.com/ExocoreNetwork/exocore/x/reward/types"
 	"github.com/ethereum/go-ethereum/common"
 	ethtypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/core/vm"
@@ -17,7 +15,7 @@ import (
 	evmtypes "github.com/evmos/evmos/v14/x/evm/types"
 )
 
-func (s *PrecompileTestSuite) TestIsTransaction() {
+func (s *RewardPrecompileTestSuite) TestIsTransaction() {
 	testCases := []struct {
 		name   string
 		method string
@@ -51,24 +49,24 @@ func paddingClientChainAddress(input []byte, outputLength int) []byte {
 }
 
 // TestRun tests the precompiled Run method reward.
-func (s *PrecompileTestSuite) TestRunRewardThroughClientChain() {
+func (s *RewardPrecompileTestSuite) TestRunRewardThroughClientChain() {
 	// deposit params for test
-	exoCoreLzAppEventTopic := "0xc6a377bfc4eb120024a8ac08eef205be16b817020812c73223e81d1bdb9708ec"
+	exocoreLzAppEventTopic := "0xc6a377bfc4eb120024a8ac08eef205be16b817020812c73223e81d1bdb9708ec"
 	usdtAddress := common.FromHex("0xdAC17F958D2ee523a2206206994597C13D831ec7")
-	clientChainLzId := 101
+	clientChainLzID := 101
 	withdrawAmount := big.NewInt(10)
 	depositAmount := big.NewInt(100)
-	assetAddr := paddingClientChainAddress(usdtAddress, types.GeneralClientChainAddrLength)
+	assetAddr := paddingClientChainAddress(usdtAddress, assetstype.GeneralClientChainAddrLength)
 	depositAsset := func(staker []byte, depositAmount sdkmath.Int) {
 		// deposit asset for reward test
 		params := &keeper.DepositParams{
-			ClientChainLzId: 101,
-			Action:          types.Deposit,
+			ClientChainLzID: 101,
+			Action:          assetstype.Deposit,
 			StakerAddress:   staker,
 			AssetsAddress:   usdtAddress,
 			OpAmount:        depositAmount,
 		}
-		err := s.app.DepositKeeper.Deposit(s.ctx, params)
+		err := s.App.DepositKeeper.Deposit(s.Ctx, params)
 		s.Require().NoError(err)
 	}
 
@@ -76,13 +74,13 @@ func (s *PrecompileTestSuite) TestRunRewardThroughClientChain() {
 		// Prepare the call input for reward test
 		input, err := s.precompile.Pack(
 			reward.MethodReward,
-			uint16(clientChainLzId),
+			uint32(clientChainLzID),
 			assetAddr,
-			paddingClientChainAddress(s.address.Bytes(), types.GeneralClientChainAddrLength),
+			paddingClientChainAddress(s.Address.Bytes(), assetstype.GeneralClientChainAddrLength),
 			withdrawAmount,
 		)
 		s.Require().NoError(err, "failed to pack input")
-		return s.address, input
+		return s.Address, input
 	}
 	successRet, err := s.precompile.Methods[reward.MethodReward].Outputs.Pack(true, new(big.Int).Add(depositAmount, withdrawAmount))
 	s.Require().NoError(err)
@@ -97,19 +95,13 @@ func (s *PrecompileTestSuite) TestRunRewardThroughClientChain() {
 		{
 			name: "pass - reward via pre-compiles",
 			malleate: func() (common.Address, []byte) {
-				depositModuleParam := &depositParams.Params{
-					ExoCoreLzAppAddress:    s.address.String(),
-					ExoCoreLzAppEventTopic: exoCoreLzAppEventTopic,
+				depositModuleParam := &assetstype.Params{
+					ExocoreLzAppAddress:    s.Address.String(),
+					ExocoreLzAppEventTopic: exocoreLzAppEventTopic,
 				}
-				err := s.app.DepositKeeper.SetParams(s.ctx, depositModuleParam)
+				err := s.App.AssetsKeeper.SetParams(s.Ctx, depositModuleParam)
 				s.Require().NoError(err)
-				depositAsset(s.address.Bytes(), sdkmath.NewIntFromBigInt(depositAmount))
-				rewardModuleParam := &rewardParams.Params{
-					ExoCoreLzAppAddress:    s.address.String(),
-					ExoCoreLzAppEventTopic: exoCoreLzAppEventTopic,
-				}
-				err = s.app.RewardKeeper.SetParams(s.ctx, rewardModuleParam)
-				s.Require().NoError(err)
+				depositAsset(s.Address.Bytes(), sdkmath.NewIntFromBigInt(depositAmount))
 				return commonMalleate()
 			},
 			returnBytes: successRet,
@@ -123,7 +115,7 @@ func (s *PrecompileTestSuite) TestRunRewardThroughClientChain() {
 			// setup basic test suite
 			s.SetupTest()
 
-			baseFee := s.app.FeeMarketKeeper.GetBaseFee(s.ctx)
+			baseFee := s.App.FeeMarketKeeper.GetBaseFee(s.Ctx)
 
 			// malleate testcase
 			caller, input := tc.malleate()
@@ -134,7 +126,7 @@ func (s *PrecompileTestSuite) TestRunRewardThroughClientChain() {
 			contractAddr := contract.Address()
 			// Build and sign Ethereum transaction
 			txArgs := evmtypes.EvmTxArgs{
-				ChainID:   s.app.EvmKeeper.ChainID(),
+				ChainID:   s.App.EvmKeeper.ChainID(),
 				Nonce:     0,
 				To:        &contractAddr,
 				Amount:    nil,
@@ -146,27 +138,27 @@ func (s *PrecompileTestSuite) TestRunRewardThroughClientChain() {
 			}
 			msgEthereumTx := evmtypes.NewTx(&txArgs)
 
-			msgEthereumTx.From = s.address.String()
-			err := msgEthereumTx.Sign(s.ethSigner, s.signer)
+			msgEthereumTx.From = s.Address.String()
+			err := msgEthereumTx.Sign(s.EthSigner, s.Signer)
 			s.Require().NoError(err, "failed to sign Ethereum message")
 
 			// Instantiate config
-			proposerAddress := s.ctx.BlockHeader().ProposerAddress
-			cfg, err := s.app.EvmKeeper.EVMConfig(s.ctx, proposerAddress, s.app.EvmKeeper.ChainID())
+			proposerAddress := s.Ctx.BlockHeader().ProposerAddress
+			cfg, err := s.App.EvmKeeper.EVMConfig(s.Ctx, proposerAddress, s.App.EvmKeeper.ChainID())
 			s.Require().NoError(err, "failed to instantiate EVM config")
 
-			msg, err := msgEthereumTx.AsMessage(s.ethSigner, baseFee)
+			msg, err := msgEthereumTx.AsMessage(s.EthSigner, baseFee)
 			s.Require().NoError(err, "failed to instantiate Ethereum message")
 
 			// Create StateDB
-			s.stateDB = statedb.New(s.ctx, s.app.EvmKeeper, statedb.NewEmptyTxConfig(common.BytesToHash(s.ctx.HeaderHash().Bytes())))
+			s.StateDB = statedb.New(s.Ctx, s.App.EvmKeeper, statedb.NewEmptyTxConfig(common.BytesToHash(s.Ctx.HeaderHash().Bytes())))
 			// Instantiate EVM
-			evm := s.app.EvmKeeper.NewEVM(
-				s.ctx, msg, cfg, nil, s.stateDB,
+			evm := s.App.EvmKeeper.NewEVM(
+				s.Ctx, msg, cfg, nil, s.StateDB,
 			)
-			params := s.app.EvmKeeper.GetParams(s.ctx)
+			params := s.App.EvmKeeper.GetParams(s.Ctx)
 			activePrecompiles := params.GetActivePrecompilesAddrs()
-			precompileMap := s.app.EvmKeeper.Precompiles(activePrecompiles...)
+			precompileMap := s.App.EvmKeeper.Precompiles(activePrecompiles...)
 			err = vm.ValidatePrecompiles(precompileMap, activePrecompiles)
 			s.Require().NoError(err, "invalid precompiles", activePrecompiles)
 			evm.WithPrecompiles(precompileMap, activePrecompiles)
@@ -179,9 +171,12 @@ func (s *PrecompileTestSuite) TestRunRewardThroughClientChain() {
 				s.Require().NoError(err, "expected no error when running the precompile")
 				s.Require().Equal(tc.returnBytes, bz, "the return doesn't match the expected result")
 			} else {
-				s.Require().Error(err, "expected error to be returned when running the precompile")
-				s.Require().Nil(bz, "expected returned bytes to be nil")
-				s.Require().ErrorContains(err, tc.errContains)
+				// for failed cases we expect it returns bool value instead of error
+				// this is a workaround because the error returned by precompile can not be caught in EVM
+				// see https://github.com/ExocoreNetwork/exocore/issues/70
+				// TODO: we should figure out root cause and fix this issue to make precompiles work normally
+				s.Require().NoError(err, "expected no error when running the precompile")
+				s.Require().Equal(tc.returnBytes, bz, "expected returned bytes to be nil")
 			}
 		})
 	}

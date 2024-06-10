@@ -3,10 +3,12 @@ package cli
 import (
 	"context"
 	"strconv"
+	"strings"
 
 	errorsmod "cosmossdk.io/errors"
+	"github.com/ExocoreNetwork/exocore/x/assets/types"
 	delegationtype "github.com/ExocoreNetwork/exocore/x/delegation/types"
-	"github.com/ExocoreNetwork/exocore/x/restaking_assets_manage/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
@@ -26,7 +28,7 @@ func GetQueryCmd() *cobra.Command {
 	cmd.AddCommand(
 		QuerySingleDelegationInfo(),
 		QueryDelegationInfo(),
-		QueryOperatorInfo(),
+		QueryUndelegationHoldCount(),
 	)
 	return cmd
 }
@@ -34,7 +36,7 @@ func GetQueryCmd() *cobra.Command {
 // QuerySingleDelegationInfo queries the single delegation info
 func QuerySingleDelegationInfo() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "QuerySingleDelegationInfo clientChainId stakerAddr assetAddr operatorAddr",
+		Use:   "QuerySingleDelegationInfo clientChainID stakerAddr assetAddr operatorAddr",
 		Short: "Get single delegation info",
 		Long:  "Get single delegation info",
 		Args:  cobra.ExactArgs(4),
@@ -45,15 +47,19 @@ func QuerySingleDelegationInfo() *cobra.Command {
 			}
 
 			queryClient := delegationtype.NewQueryClient(clientCtx)
-			clientChainLzId, err := strconv.ParseUint(args[0], 10, 64)
+			clientChainLzID, err := strconv.ParseUint(args[0], 10, 64)
 			if err != nil {
-				return errorsmod.Wrap(types.ErrCliCmdInputArg, err.Error())
+				return errorsmod.Wrap(types.ErrInvalidCliCmdArg, err.Error())
 			}
-			stakerId, assetId := types.GetStakeIDAndAssetIdFromStr(clientChainLzId, args[1], args[2])
+			stakerID, assetID := types.GetStakeIDAndAssetIDFromStr(clientChainLzID, args[1], args[2])
+			accAddr, err := sdk.AccAddressFromBech32(args[3])
+			if err != nil {
+				return errorsmod.Wrap(types.ErrInvalidCliCmdArg, err.Error())
+			}
 			req := &delegationtype.SingleDelegationInfoReq{
-				StakerId:     stakerId,
-				AssetId:      assetId,
-				OperatorAddr: args[3],
+				StakerID:     stakerID,         // already lowercase
+				AssetID:      assetID,          // already lowercase
+				OperatorAddr: accAddr.String(), // already lowercase
 			}
 			res, err := queryClient.QuerySingleDelegationInfo(context.Background(), req)
 			if err != nil {
@@ -70,7 +76,7 @@ func QuerySingleDelegationInfo() *cobra.Command {
 // QueryDelegationInfo queries delegation info
 func QueryDelegationInfo() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "QueryDelegationInfo stakerId assetId",
+		Use:   "QueryDelegationInfo stakerID assetID",
 		Short: "Get delegation info",
 		Long:  "Get delegation info",
 		Args:  cobra.ExactArgs(2),
@@ -79,11 +85,18 @@ func QueryDelegationInfo() *cobra.Command {
 			if err != nil {
 				return err
 			}
-
+			stakerID := strings.ToLower(args[0])
+			if _, _, err := types.ValidateID(stakerID, false, false); err != nil {
+				return errorsmod.Wrap(types.ErrInvalidCliCmdArg, err.Error())
+			}
+			assetID := strings.ToLower(args[1])
+			if _, _, err := types.ValidateID(assetID, false, false); err != nil {
+				return errorsmod.Wrap(types.ErrInvalidCliCmdArg, err.Error())
+			}
 			queryClient := delegationtype.NewQueryClient(clientCtx)
 			req := &delegationtype.DelegationInfoReq{
-				StakerId: args[0],
-				AssetId:  args[1],
+				StakerID: strings.ToLower(stakerID),
+				AssetID:  strings.ToLower(assetID),
 			}
 			res, err := queryClient.QueryDelegationInfo(context.Background(), req)
 			if err != nil {
@@ -97,12 +110,12 @@ func QueryDelegationInfo() *cobra.Command {
 	return cmd
 }
 
-// QueryOperatorInfo queries operator info
-func QueryOperatorInfo() *cobra.Command {
+// QueryUndelegationHoldCount queries undelegation hold count for a record key.
+func QueryUndelegationHoldCount() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "QueryOperatorInfo operatorAddr",
-		Short: "Get operator info",
-		Long:  "Get operator info",
+		Use:   "QueryUndelegationHoldCount recordKey",
+		Short: "Get undelegation hold count",
+		Long:  "Get undelegation hold count",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx, err := client.GetClientQueryContext(cmd)
@@ -111,10 +124,10 @@ func QueryOperatorInfo() *cobra.Command {
 			}
 
 			queryClient := delegationtype.NewQueryClient(clientCtx)
-			req := &delegationtype.QueryOperatorInfoReq{
-				OperatorAddr: args[0],
+			req := &delegationtype.UndelegationHoldCountReq{
+				RecordKey: strings.ToLower(args[0]),
 			}
-			res, err := queryClient.QueryOperatorInfo(context.Background(), req)
+			res, err := queryClient.QueryUndelegationHoldCount(context.Background(), req)
 			if err != nil {
 				return err
 			}

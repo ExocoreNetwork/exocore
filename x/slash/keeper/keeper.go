@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	sdkmath "cosmossdk.io/math"
-	"github.com/ExocoreNetwork/exocore/x/restaking_assets_manage/keeper"
+	"github.com/ExocoreNetwork/exocore/x/assets/keeper"
 	"github.com/cometbft/cometbft/libs/log"
 	"github.com/cosmos/cosmos-sdk/codec"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
@@ -20,18 +20,18 @@ type Keeper struct {
 	storeKey storetypes.StoreKey
 
 	// other keepers
-	restakingStateKeeper keeper.Keeper
+	assetsKeeper keeper.Keeper
 }
 
 func NewKeeper(
 	cdc codec.BinaryCodec,
 	storeKey storetypes.StoreKey,
-	restakingStateKeeper keeper.Keeper,
+	assetsKeeper keeper.Keeper,
 ) Keeper {
 	return Keeper{
-		cdc:                  cdc,
-		storeKey:             storeKey,
-		restakingStateKeeper: restakingStateKeeper,
+		cdc:          cdc,
+		storeKey:     storeKey,
+		assetsKeeper: assetsKeeper,
 	}
 }
 
@@ -48,5 +48,5 @@ type IEXOSlash interface {
 	IsOperatorFrozen(ctx sdk.Context, event *SlashParams) (bool, error)
 	SetParams(ctx sdk.Context, params *types.Params) error
 	GetParams(ctx sdk.Context) (*types.Params, error)
-	OperatorAssetSlashedProportion(ctx sdk.Context, opAddr sdk.AccAddress, assetId string, startHeight, endHeight uint64) sdkmath.LegacyDec
+	OperatorAssetSlashedProportion(ctx sdk.Context, opAddr sdk.AccAddress, assetID string, startHeight, endHeight uint64) sdkmath.LegacyDec
 }

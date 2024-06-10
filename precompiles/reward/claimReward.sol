@@ -16,12 +16,12 @@ interface IClaimReward {
 /// TRANSACTIONS
 /// @dev ClaimReward To the staker, that will change the state in reward module
 /// Note that this address cannot be a module account.
-/// @param clientChainLzId The lzId of client chain
+/// @param clientChainLzID The LzID of client chain
 /// @param assetsAddress The client chain asset Address
 /// @param withdrawRewardAddress The claim reward address
 /// @param opAmount The reward amount
     function claimReward(
-    uint16 clientChainLzId,
+    uint32 clientChainLzID,
     bytes memory assetsAddress,
     bytes memory withdrawRewardAddress,
     uint256 opAmount

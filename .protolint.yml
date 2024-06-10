@@ -129,8 +129,9 @@ lint:
         - For
         - Of
       # # The specific keywords including prepositions to ignore. E.g. EndOfSupport is a term you would like to use, and skip checking.
-      # excludes:
-      #   - EndOfSupport
+      excludes:
+        - OptOutOfAVSReq
+        - OptOutOfAVSResponse
 
     # #  RPC_NAMES_CASE rule option.
     # rpc_names_case:
@@ -138,35 +139,35 @@ lint:
     #   ## Available conventions are "lower_camel_case", "upper_snake_case", or "lower_snake_case".
     #   convention: upper_snake_case
 
-    # MESSAGES_HAVE_COMMENT rule option.
-    messages_have_comment:
-      # Comments need to begin with the name of the thing being described. default is false.
-      should_follow_golang_style: true
+    # # MESSAGES_HAVE_COMMENT rule option.
+    # messages_have_comment:
+    #   # Comments need to begin with the name of the thing being described. default is false.
+    #   should_follow_golang_style: true
 
-    # SERVICES_HAVE_COMMENT rule option.
-    services_have_comment:
-      # Comments need to begin with the name of the thing being described. default is false.
-      should_follow_golang_style: true
+    # # SERVICES_HAVE_COMMENT rule option.
+    # services_have_comment:
+    #   # Comments need to begin with the name of the thing being described. default is false.
+    #   should_follow_golang_style: true
 
-    # RPCS_HAVE_COMMENT rule option.
-    rpcs_have_comment:
-      # Comments need to begin with the name of the thing being described. default is false.
-      should_follow_golang_style: true
+    # # RPCS_HAVE_COMMENT rule option.
+    # rpcs_have_comment:
+    #   # Comments need to begin with the name of the thing being described. default is false.
+    #   should_follow_golang_style: true
 
-    # FIELDS_HAVE_COMMENT rule option.
-    fields_have_comment:
-      # Comments need to begin with the name of the thing being described. default is false.
-      should_follow_golang_style: true
+    # # FIELDS_HAVE_COMMENT rule option.
+    # fields_have_comment:
+    #   # Comments need to begin with the name of the thing being described. default is false.
+    #   should_follow_golang_style: true
 
-    # ENUMS_HAVE_COMMENT rule option.
-    enums_have_comment:
-      # Comments need to begin with the name of the thing being described. default is false.
-      should_follow_golang_style: true
+    # # ENUMS_HAVE_COMMENT rule option.
+    # enums_have_comment:
+    #   # Comments need to begin with the name of the thing being described. default is false.
+    #   should_follow_golang_style: true
 
-    # ENUM_FIELDS_HAVE_COMMENT rule option.
-    enum_fields_have_comment:
-      # Comments need to begin with the name of the thing being described. default is false.
-      should_follow_golang_style: true
+    # # ENUM_FIELDS_HAVE_COMMENT rule option.
+    # enum_fields_have_comment:
+    #   # Comments need to begin with the name of the thing being described. default is false.
+    #   should_follow_golang_style: true
 
     # # SYNTAX_CONSISTENT rule option.
     # syntax_consistent:

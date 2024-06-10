@@ -1,4 +1,5 @@
 name: "Dependency Review"
+# only run on pull requests and not any branch.
 on: pull_request
 
 permissions:
@@ -10,7 +11,7 @@ jobs:
     steps:
       - uses: actions/setup-go@v4
         with:
-          go-version: '1.20'
+          go-version: '1.21.9'
           check-latest: true
       - name: "Checkout Repository"
         uses: actions/checkout@v4
@@ -23,6 +24,8 @@ jobs:
       - name: "Dependency Review"
         uses: actions/dependency-review-action@v3
         if: env.GIT_DIFF
+        with:
+          fail-on-severity: high
       - name: "Go vulnerability check"
         run: make vulncheck
         if: env.GIT_DIFF

@@ -4,14 +4,12 @@ package exocore.deposit.v1;
 
 import "cosmos/msg/v1/msg.proto";
 import "cosmos_proto/cosmos.proto";
-import "gogoproto/gogo.proto";
-import "amino/amino.proto";
 import "exocore/deposit/v1/deposit.proto";
+import "gogoproto/gogo.proto";
 
 option go_package = "github.com/ExocoreNetwork/exocore/x/deposit/types";
 
 // MsgUpdateParams is the Msg/UpdateParams request type for Erc20 parameters.
-// Since: cosmos-sdk 0.47
 message MsgUpdateParams {
   // todo: temporarily not update configuration through gov module
   option (cosmos.msg.v1.signer) = "authority";
@@ -25,12 +23,11 @@ message MsgUpdateParams {
 
 // MsgUpdateParamsResponse defines the response structure for executing a
 // MsgUpdateParams message.
-// Since: cosmos-sdk 0.47
 message MsgUpdateParamsResponse {}
 
+// Msg defines the deposit Msg service.
 service Msg {
-
   option (cosmos.msg.v1.service) = true;
-
+  // UpdateParams updates the parameters of the deposit module.
   rpc UpdateParams(MsgUpdateParams) returns (MsgUpdateParamsResponse);
 }

@@ -4,6 +4,7 @@ services:
   exocorenode0:
     container_name: exocorenode0
     image: "exocore/node"
+    read_only: true
     environment:
       - DEBUG=1
       - ID=0
@@ -11,7 +12,7 @@ services:
     cap_add:
       - SYS_PTRACE
     security_opt:
-      - seccomp:unconfined
+      - no-new-privileges:true
     ports:
       - "26656-26657:26656-26657"
       - "1317:1317"
@@ -20,14 +21,15 @@ services:
       - "26661:26660"
       - "8841:8546"
     volumes:
-      - ./build/.testnets:/data:Z
+      - ./build/.testnets:/home/exocore/data:Z
     networks:
       localnet:
-        ipv4_address: 192.168.10.2
+        ipv4_address: 192.168.0.2
 
   exocorenode1:
     container_name: exocorenode1
     image: "exocore/node"
+    read_only: true
     environment:
       - DEBUG=0
       - ID=1
@@ -35,7 +37,7 @@ services:
     cap_add:
       - SYS_PTRACE
     security_opt:
-      - seccomp:unconfined
+      - no-new-privileges:true
     ports:
       - "26666-26667:26656-26657"
       - "1318:1317"
@@ -44,14 +46,15 @@ services:
       - "26662:26660"
       - "8842:8546"
     volumes:
-      - ./build/.testnets:/data:Z
+      - ./build/.testnets:/home/exocore/data:Z
     networks:
       localnet:
-        ipv4_address: 192.168.10.3
+        ipv4_address: 192.168.0.3
 
   exocorenode2:
     container_name: exocorenode2
     image: "exocore/node"
+    read_only: true
     environment:
       - DEBUG=0
       - ID=2
@@ -59,7 +62,7 @@ services:
     cap_add:
       - SYS_PTRACE
     security_opt:
-      - seccomp:unconfined
+      - no-new-privileges:true
     ports:
       - "26676-26677:26656-26657"
       - "1319:1317"
@@ -68,14 +71,15 @@ services:
       - "26663:26660"
       - "8843:8546"
     volumes:
-      - ./build/.testnets:/data:Z
+      - ./build/.testnets:/home/exocore/data:Z
     networks:
       localnet:
-        ipv4_address: 192.168.10.4
+        ipv4_address: 192.168.0.4
 
   exocorenode3:
     container_name: exocorenode3
     image: "exocore/node"
+    read_only: true
     environment:
       - DEBUG=0
       - ID=3
@@ -83,7 +87,7 @@ services:
     cap_add:
       - SYS_PTRACE
     security_opt:
-      - seccomp:unconfined
+      - no-new-privileges:true
     ports:
       - "26686-26687:26656-26657"
       - "1320:1317"
@@ -92,10 +96,10 @@ services:
       - "26664:26660"
       - "8844:8546"
     volumes:
-      - ./build/.testnets:/data:Z
+      - ./build/.testnets:/home/exocore/data:Z
     networks:
       localnet:
-        ipv4_address: 192.168.10.5
+        ipv4_address: 192.168.0.5
 
 networks:
   localnet:
@@ -103,4 +107,4 @@ networks:
     ipam:
       driver: default
       config:
-        - subnet: 192.168.10.0/18
+        - subnet: 192.168.0.0/18

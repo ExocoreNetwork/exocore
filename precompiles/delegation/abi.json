@@ -3,9 +3,9 @@
     "inputs":
     [
       {
-        "internalType": "uint16",
-        "name": "clientChainLzId",
-        "type": "uint16"
+        "internalType": "uint32",
+        "name": "clientChainLzID",
+        "type": "uint32"
       },
       {
         "internalType": "uint64",
@@ -49,9 +49,9 @@
     "inputs":
     [
       {
-        "internalType": "uint16",
-        "name": "clientChainLzId",
-        "type": "uint16"
+        "internalType": "uint32",
+        "name": "clientChainLzID",
+        "type": "uint32"
       },
       {
         "internalType": "uint64",

@@ -1,11 +1,16 @@
 name: Semgrep
+permissions:
+  contents: read
 on:
   # Scan changed files in PRs, block on new issues only (existing issues ignored)
   pull_request: {}
   push:
     branches:
+      - develop
       - main
+      - master
     paths:
+      # existing issues to be ignored unless this file changes
       - .github/workflows/semgrep.yml
   schedule:
     - cron: '0 0 * * 0'
@@ -19,7 +24,8 @@ jobs:
     if: (github.actor != 'dependabot[bot]')
     steps:
       - name: Permission issue fix
-        run: git config --global --add safe.directory /__w/ExocoreNetwork/exocore
+        # semgrep for some reason sets the working directory to exocore/exocore
+        run: git config --global --add safe.directory /__w/exocore/exocore
       - uses: actions/checkout@v4
       - name: Get Diff
         uses: technote-space/get-diff-action@v6.1.2

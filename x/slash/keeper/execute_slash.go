@@ -10,7 +10,7 @@ import (
 
 	errorsmod "cosmossdk.io/errors"
 	sdkmath "cosmossdk.io/math"
-	"github.com/ExocoreNetwork/exocore/x/restaking_assets_manage/types"
+	"github.com/ExocoreNetwork/exocore/x/assets/types"
 	rtypes "github.com/ExocoreNetwork/exocore/x/slash/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/common"
@@ -21,7 +21,7 @@ import (
 )
 
 type SlashParams struct {
-	ClientChainLzId           uint64
+	ClientChainLzID           uint64
 	Action                    types.CrossChainOpType
 	AssetsAddress             []byte
 	OperatorAddress           sdk.AccAddress
@@ -31,9 +31,13 @@ type SlashParams struct {
 	OpAmount                  sdkmath.Int
 	Proof                     []byte
 }
+
+// nolint: unused // This is to be implemented.
 type OperatorFrozenStatus struct {
+	// nolint: unused // This is to be implemented.
 	operatorAddress sdk.AccAddress
-	status          bool
+	// nolint: unused // This is to be implemented.
+	status bool
 }
 
 func (k Keeper) getParamsFromEventLog(ctx sdk.Context, log *ethtypes.Log) (*SlashParams, error) {
@@ -52,13 +56,13 @@ func (k Keeper) getParamsFromEventLog(ctx sdk.Context, log *ethtypes.Log) (*Slas
 		return nil, nil
 	}
 
-	var clientChainLzId uint64
-	r = bytes.NewReader(log.Topics[types.ClientChainLzIdIndexInTopics][:])
-	err = binary.Read(r, binary.BigEndian, &clientChainLzId)
+	var clientChainLzID uint64
+	r = bytes.NewReader(log.Topics[types.ClientChainLzIDIndexInTopics][:])
+	err = binary.Read(r, binary.BigEndian, &clientChainLzID)
 	if err != nil {
-		return nil, errorsmod.Wrap(err, "error occurred when binary read clientChainLzId from topic")
+		return nil, errorsmod.Wrap(err, "error occurred when binary read clientChainLzID from topic")
 	}
-	clientChainInfo, err := k.restakingStateKeeper.GetClientChainInfoByIndex(ctx, clientChainLzId)
+	clientChainInfo, err := k.assetsKeeper.GetClientChainInfoByIndex(ctx, clientChainLzID)
 	if err != nil {
 		return nil, errorsmod.Wrap(err, "error occurred when get client chain info")
 	}
@@ -100,7 +104,7 @@ func (k Keeper) getParamsFromEventLog(ctx sdk.Context, log *ethtypes.Log) (*Slas
 	amount := sdkmath.NewIntFromBigInt(big.NewInt(0).SetBytes(log.Data[readStart:readEnd]))
 
 	return &SlashParams{
-		ClientChainLzId: clientChainLzId,
+		ClientChainLzID: clientChainLzID,
 		Action:          action,
 		AssetsAddress:   assetsAddress,
 		StakerAddress:   stakerAddress,
@@ -109,36 +113,36 @@ func (k Keeper) getParamsFromEventLog(ctx sdk.Context, log *ethtypes.Log) (*Slas
 	}, nil
 }
 
-func getStakeIDAndAssetId(params *SlashParams) (stakeId string, assetId string) {
-	clientChainLzIdStr := hexutil.EncodeUint64(params.ClientChainLzId)
-	stakeId = strings.Join([]string{hexutil.Encode(params.StakerAddress[:]), clientChainLzIdStr}, "_")
-	assetId = strings.Join([]string{hexutil.Encode(params.AssetsAddress[:]), clientChainLzIdStr}, "_")
+func getStakeIDAndAssetID(params *SlashParams) (stakeID string, assetID string) {
+	clientChainLzIDStr := hexutil.EncodeUint64(params.ClientChainLzID)
+	stakeID = strings.Join([]string{hexutil.Encode(params.StakerAddress), clientChainLzIDStr}, "_")
+	assetID = strings.Join([]string{hexutil.Encode(params.AssetsAddress), clientChainLzIDStr}, "_")
 	return
 }
 
-func (k Keeper) FilterCrossChainEventLogs(ctx sdk.Context, msg core.Message, receipt *ethtypes.Receipt) ([]*ethtypes.Log, error) {
-	params, err := k.GetParams(ctx)
+func (k Keeper) FilterCrossChainEventLogs(ctx sdk.Context, _ core.Message, receipt *ethtypes.Receipt) ([]*ethtypes.Log, error) {
+	params, err := k.assetsKeeper.GetParams(ctx)
 	if err != nil {
 		return nil, err
 	}
 	// filter needed logs
-	addresses := []common.Address{common.HexToAddress(params.ExoCoreLzAppAddress)}
+	addresses := []common.Address{common.HexToAddress(params.ExocoreLzAppAddress)}
 	topics := [][]common.Hash{
-		{common.HexToHash(params.ExoCoreLzAppEventTopic)},
+		{common.HexToHash(params.ExocoreLzAppEventTopic)},
 	}
 	needLogs := filters.FilterLogs(receipt.Logs, nil, nil, addresses, topics)
 	return needLogs, nil
 }
 
-func (k Keeper) PostTxProcessing(ctx sdk.Context, msg core.Message, receipt *ethtypes.Receipt) error {
-	params, err := k.GetParams(ctx)
+func (k Keeper) PostTxProcessing(ctx sdk.Context, _ core.Message, receipt *ethtypes.Receipt) error {
+	params, err := k.assetsKeeper.GetParams(ctx)
 	if err != nil {
 		return err
 	}
 	// filter needed logs
-	addresses := []common.Address{common.HexToAddress(params.ExoCoreLzAppAddress)}
+	addresses := []common.Address{common.HexToAddress(params.ExocoreLzAppAddress)}
 	topics := [][]common.Hash{
-		{common.HexToHash(params.ExoCoreLzAppEventTopic)},
+		{common.HexToHash(params.ExocoreLzAppEventTopic)},
 	}
 	needLogs := filters.FilterLogs(receipt.Logs, nil, nil, addresses, topics)
 	if err != nil {
@@ -179,21 +183,21 @@ func (k Keeper) Slash(ctx sdk.Context, event *SlashParams) error {
 	if event.OpAmount.IsNegative() {
 		return errorsmod.Wrap(rtypes.ErrSlashAmountIsNegative, fmt.Sprintf("the amount is:%s", event.OpAmount))
 	}
-	stakeId, assetId := getStakeIDAndAssetId(event)
+	stakeID, assetID := getStakeIDAndAssetID(event)
 	// check is asset exist
-	if !k.restakingStateKeeper.IsStakingAsset(ctx, assetId) {
-		return errorsmod.Wrap(rtypes.ErrSlashAssetNotExist, fmt.Sprintf("the assetId is:%s", assetId))
+	if !k.assetsKeeper.IsStakingAsset(ctx, assetID) {
+		return errorsmod.Wrap(rtypes.ErrSlashAssetNotExist, fmt.Sprintf("the assetID is:%s", assetID))
 	}
 
-	changeAmount := types.StakerSingleAssetOrChangeInfo{
-		TotalDepositAmountOrWantChangeValue: event.OpAmount.Neg(),
-		CanWithdrawAmountOrWantChangeValue:  event.OpAmount.Neg(),
+	changeAmount := types.DeltaStakerSingleAsset{
+		TotalDepositAmount: event.OpAmount.Neg(),
+		WithdrawableAmount: event.OpAmount.Neg(),
 	}
-	err := k.restakingStateKeeper.UpdateStakerAssetState(ctx, stakeId, assetId, changeAmount)
+	err := k.assetsKeeper.UpdateStakerAssetState(ctx, stakeID, assetID, changeAmount)
 	if err != nil {
 		return err
 	}
-	if err = k.restakingStateKeeper.UpdateStakingAssetTotalAmount(ctx, assetId, event.OpAmount.Neg()); err != nil {
+	if err = k.assetsKeeper.UpdateStakingAssetTotalAmount(ctx, assetID, event.OpAmount.Neg()); err != nil {
 		return err
 	}
 	return nil
@@ -212,7 +216,7 @@ func (k Keeper) Slash(ctx sdk.Context, event *SlashParams) error {
 // 	return k.GetFrozenStatus(ctx, string(event.OperatorAddress))
 
 // }
-// func (k Keeper) OperatorAssetSlashedProportion(ctx sdk.Context, opAddr sdk.AccAddress, assetId string, startHeight, endHeight uint64) sdkmath.LegacyDec {
+// func (k Keeper) OperatorAssetSlashedProportion(ctx sdk.Context, opAddr sdk.AccAddress, assetID string, startHeight, endHeight uint64) sdkmath.LegacyDec {
 // 	//TODO
 // 	return sdkmath.LegacyNewDec(3)
 // }

@@ -2,13 +2,10 @@ package withdraw_test
 
 import (
 	"math/big"
-	"strings"
 
 	"github.com/ExocoreNetwork/exocore/precompiles/testutil"
 	"github.com/ExocoreNetwork/exocore/precompiles/testutil/contracts"
-	"github.com/ExocoreNetwork/exocore/precompiles/withdraw"
-	deposittype "github.com/ExocoreNetwork/exocore/x/deposit/types"
-	"github.com/ExocoreNetwork/exocore/x/restaking_assets_manage/types"
+	assetstype "github.com/ExocoreNetwork/exocore/x/assets/types"
 	"github.com/ethereum/go-ethereum/common"
 )
 
@@ -26,17 +23,17 @@ var (
 	passCheck testutil.LogCheckArgs
 )
 
-func (s *PrecompileTestSuite) TestCallWithdrawFromEOA() {
+func (s *WithdrawPrecompileTestSuite) TestCallWithdrawFromEOA() {
 	// withdraw params for test
-	exoCoreLzAppAddress := "0x3fC91A3afd70395Cd496C647d5a6CC9D4B2b7FAD"
-	exoCoreLzAppEventTopic := "0xc6a377bfc4eb120024a8ac08eef205be16b817020812c73223e81d1bdb9708ec"
-	params := deposittype.Params{
-		ExoCoreLzAppAddress:    exoCoreLzAppAddress,
-		ExoCoreLzAppEventTopic: exoCoreLzAppEventTopic,
+	exocoreLzAppAddress := "0x3fC91A3afd70395Cd496C647d5a6CC9D4B2b7FAD"
+	exocoreLzAppEventTopic := "0xc6a377bfc4eb120024a8ac08eef205be16b817020812c73223e81d1bdb9708ec"
+	params := assetstype.Params{
+		ExocoreLzAppAddress:    exocoreLzAppAddress,
+		ExocoreLzAppEventTopic: exocoreLzAppEventTopic,
 	}
-	usdtAddress := paddingClientChainAddress(common.FromHex("0xdAC17F958D2ee523a2206206994597C13D831ec7"), types.GeneralClientChainAddrLength)
-	clientChainLzId := 101
-	stakerAddr := paddingClientChainAddress(s.address.Bytes(), types.GeneralClientChainAddrLength)
+	usdtAddress := paddingClientChainAddress(common.FromHex("0xdAC17F958D2ee523a2206206994597C13D831ec7"), assetstype.GeneralClientChainAddrLength)
+	clientChainLzID := 101
+	stakerAddr := paddingClientChainAddress(s.Address.Bytes(), assetstype.GeneralClientChainAddrLength)
 	opAmount := big.NewInt(100)
 	assetAddr := usdtAddress
 	method := "withdrawPrinciple"
@@ -47,7 +44,7 @@ func (s *PrecompileTestSuite) TestCallWithdrawFromEOA() {
 		defaultCallArgs = contracts.CallArgs{
 			ContractAddr: s.precompile.Address(),
 			ContractABI:  s.precompile.ABI,
-			PrivKey:      s.privKey,
+			PrivKey:      s.PrivKey,
 		}
 
 		defaultLogCheck = testutil.LogCheckArgs{
@@ -56,12 +53,12 @@ func (s *PrecompileTestSuite) TestCallWithdrawFromEOA() {
 		passCheck = defaultLogCheck.WithExpPass(true)
 	}
 
-	prepareFunc := func(params *deposittype.Params, method string) contracts.CallArgs {
-		err := s.app.DepositKeeper.SetParams(s.ctx, params)
+	prepareFunc := func(params *assetstype.Params, method string) contracts.CallArgs {
+		err := s.App.AssetsKeeper.SetParams(s.Ctx, params)
 		s.Require().NoError(err)
 		defaultWithdrawArgs := defaultCallArgs.WithMethodName(method)
 		return defaultWithdrawArgs.WithArgs(
-			uint16(clientChainLzId),
+			uint32(clientChainLzID),
 			assetAddr,
 			stakerAddr,
 			opAmount)
@@ -69,6 +66,27 @@ func (s *PrecompileTestSuite) TestCallWithdrawFromEOA() {
 
 	beforeEach()
 	setWithdrawArgs := prepareFunc(&params, method)
-	_, _, err := contracts.CallContractAndCheckLogs(s.ctx, s.app, setWithdrawArgs, passCheck)
-	s.Require().ErrorContains(err, strings.Split(withdraw.ErrContractCaller, ",")[0])
+	_, response, err := contracts.CallContractAndCheckLogs(s.Ctx, s.App, setWithdrawArgs, passCheck)
+
+	// for failed cases we expect it returns bool value instead of error
+	// this is a workaround because the error returned by precompile can not be caught in EVM
+	// see https://github.com/ExocoreNetwork/exocore/issues/70
+	// TODO: we should figure out root cause and fix this issue to make precompiles work normally
+	s.Require().NoError(err)
+
+	result, err := setWithdrawArgs.ContractABI.Unpack(method, response.Ret)
+	s.Require().NoError((err))
+
+	// solidity: function withdraw(...) returns (bool success, uint256 updatedBalance)
+	s.Require().Equal(len(result), 2)
+
+	// the first element should be bool value that indicates whether the withdrawal is successful
+	success, ok := result[0].(bool)
+	s.Require().True(ok)
+	s.Require().False(success)
+
+	// the second element represents updatedBalance and should be 0 since success is false and withdrawal has failed
+	updatedBalance, ok := result[1].(*big.Int)
+	s.Require().True(ok)
+	s.Require().Zero(updatedBalance.Cmp(new(big.Int)))
 }

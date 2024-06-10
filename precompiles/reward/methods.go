@@ -1,9 +1,9 @@
 package reward
 
 import (
-	"fmt"
-
-	"github.com/ExocoreNetwork/exocore/x/restaking_assets_manage/types"
+	errorsmod "cosmossdk.io/errors"
+	exocmn "github.com/ExocoreNetwork/exocore/precompiles/common"
+	"github.com/ExocoreNetwork/exocore/x/assets/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
@@ -19,20 +19,16 @@ const (
 // Reward assets to the staker, that will change the state in reward module.
 func (p Precompile) Reward(
 	ctx sdk.Context,
-	origin common.Address,
+	_ common.Address,
 	contract *vm.Contract,
-	stateDB vm.StateDB,
+	_ vm.StateDB,
 	method *abi.Method,
 	args []interface{},
 ) ([]byte, error) {
 	// check the invalidation of caller contract
-	rewardModuleParam, err := p.rewardKeeper.GetParams(ctx)
+	err := p.assetsKeeper.CheckExocoreLzAppAddr(ctx, contract.CallerAddress)
 	if err != nil {
-		return nil, err
-	}
-	exoCoreLzAppAddr := common.HexToAddress(rewardModuleParam.ExoCoreLzAppAddress)
-	if contract.CallerAddress != exoCoreLzAppAddr {
-		return nil, fmt.Errorf(ErrContractCaller, contract.CallerAddress, exoCoreLzAppAddr)
+		return nil, errorsmod.Wrap(err, exocmn.ErrContractCaller)
 	}
 
 	rewardParam, err := p.GetRewardParamsFromInputs(ctx, args)
@@ -45,10 +41,10 @@ func (p Precompile) Reward(
 		return nil, err
 	}
 	// get the latest asset state of staker to return.
-	stakerId, assetId := types.GetStakeIDAndAssetId(rewardParam.ClientChainLzId, rewardParam.WithdrawRewardAddress, rewardParam.AssetsAddress)
-	info, err := p.stakingStateKeeper.GetStakerSpecifiedAssetInfo(ctx, stakerId, assetId)
+	stakerID, assetID := types.GetStakeIDAndAssetID(rewardParam.ClientChainLzID, rewardParam.WithdrawRewardAddress, rewardParam.AssetsAddress)
+	info, err := p.assetsKeeper.GetStakerSpecifiedAssetInfo(ctx, stakerID, assetID)
 	if err != nil {
 		return nil, err
 	}
-	return method.Outputs.Pack(true, info.TotalDepositAmountOrWantChangeValue.BigInt())
+	return method.Outputs.Pack(true, info.TotalDepositAmount.BigInt())
 }

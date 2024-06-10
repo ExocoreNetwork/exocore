@@ -5,142 +5,277 @@ import (
 
 	errorsmod "cosmossdk.io/errors"
 	sdkmath "cosmossdk.io/math"
+	assetstype "github.com/ExocoreNetwork/exocore/x/assets/types"
 	delegationtype "github.com/ExocoreNetwork/exocore/x/delegation/types"
-	"github.com/ExocoreNetwork/exocore/x/restaking_assets_manage/keeper"
-	"github.com/ExocoreNetwork/exocore/x/restaking_assets_manage/types"
 	"github.com/cosmos/cosmos-sdk/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-// UpdateStakerDelegationTotalAmount The function is used to update the delegation total amount of the specified staker and asset.
-// The input `opAmount` represents the values that you want to add or decrease,using positive or negative values for increasing and decreasing,respectively. The function will calculate and update new state after a successful check.
-// The function will be called when there is delegation or undelegation related to the specified staker and asset.
-func (k Keeper) UpdateStakerDelegationTotalAmount(ctx sdk.Context, stakerId string, assetId string, opAmount sdkmath.Int) error {
-	if opAmount.IsNil() || opAmount.IsZero() {
+type DelegationOpFunc func(keys *delegationtype.SingleDelegationInfoReq, amounts *delegationtype.DelegationAmounts) error
+
+// IterateDelegationsForStakerAndAsset processes all operations
+// that require iterating over delegations for a specified staker and asset.
+func (k Keeper) IterateDelegationsForStakerAndAsset(ctx sdk.Context, stakerID string, assetID string, opFunc DelegationOpFunc) error {
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), delegationtype.KeyPrefixRestakerDelegationInfo)
+	iterator := sdk.KVStorePrefixIterator(store, delegationtype.GetDelegationStateIteratorPrefix(stakerID, assetID))
+	defer iterator.Close()
+
+	for ; iterator.Valid(); iterator.Next() {
+		var amounts delegationtype.DelegationAmounts
+		k.cdc.MustUnmarshal(iterator.Value(), &amounts)
+		keys, err := delegationtype.ParseStakerAssetIDAndOperatorAddrFromKey(iterator.Key())
+		if err != nil {
+			return err
+		}
+		err = opFunc(keys, &amounts)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// StakerDelegatedTotalAmount query the total delegation amount of the specified staker and asset.
+// It needs to be calculated from the share and amount of the asset pool.
+func (k Keeper) StakerDelegatedTotalAmount(ctx sdk.Context, stakerID string, assetID string) (amount sdkmath.Int, err error) {
+	amount = sdkmath.NewInt(0)
+	opFunc := func(keys *delegationtype.SingleDelegationInfoReq, amounts *delegationtype.DelegationAmounts) error {
+		if amounts.UndelegatableShare.IsZero() {
+			return nil
+		}
+		opAccAddr := sdk.MustAccAddressFromBech32(keys.GetOperatorAddr())
+		// get the asset state of operator
+		operatorAsset, err := k.assetsKeeper.GetOperatorSpecifiedAssetInfo(ctx, opAccAddr, assetID)
+		if err != nil {
+			return err
+		}
+		singleAmount, err := TokensFromShares(amounts.UndelegatableShare, operatorAsset.TotalShare, operatorAsset.TotalAmount)
+		if err != nil {
+			return err
+		}
+		amount = amount.Add(singleAmount)
 		return nil
 	}
-	c := sdk.UnwrapSDKContext(ctx)
-	// use stakerId+'/'+assetId as the key of total delegation amount
-	store := prefix.NewStore(c.KVStore(k.storeKey), delegationtype.KeyPrefixRestakerDelegationInfo)
-	amount := delegationtype.ValueField{Amount: sdkmath.NewInt(0)}
-	key := types.GetAssetStateKey(stakerId, assetId)
-	if store.Has(key) {
-		value := store.Get(key)
-		k.cdc.MustUnmarshal(value, &amount)
-	}
-
-	err := keeper.UpdateAssetValue(&amount.Amount, &opAmount)
+	err = k.IterateDelegationsForStakerAndAsset(ctx, stakerID, assetID, opFunc)
 	if err != nil {
-		return err
+		return amount, err
 	}
-
-	bz := k.cdc.MustMarshal(&amount)
-	store.Set(key, bz)
-	return nil
+	return amount, nil
 }
 
-// GetStakerDelegationTotalAmount query the total delegation amount of the specified staker and asset.
-func (k Keeper) GetStakerDelegationTotalAmount(ctx sdk.Context, stakerId string, assetId string) (opAmount sdkmath.Int, err error) {
-	c := sdk.UnwrapSDKContext(ctx)
-	store := prefix.NewStore(c.KVStore(k.storeKey), delegationtype.KeyPrefixRestakerDelegationInfo)
-	var ret delegationtype.ValueField
-	prefixKey := types.GetAssetStateKey(stakerId, assetId)
-	isExit := store.Has(prefixKey)
-	if !isExit {
-		return sdkmath.Int{}, errorsmod.Wrap(delegationtype.ErrNoKeyInTheStore, fmt.Sprintf("GetStakerDelegationTotalAmount: key is %s", prefixKey))
-	} else {
-		value := store.Get(prefixKey)
-		k.cdc.MustUnmarshal(value, &ret)
+// AllDelegatedAmountForStakerAsset returns all delegated amount of the specified staker and asset
+// the key of return value is the operator address, and the value is the asset amount.
+func (k *Keeper) AllDelegatedAmountForStakerAsset(ctx sdk.Context, stakerID string, assetID string) (map[string]sdkmath.Int, error) {
+	ret := make(map[string]sdkmath.Int)
+	opFunc := func(keys *delegationtype.SingleDelegationInfoReq, amounts *delegationtype.DelegationAmounts) error {
+		opAccAddr := sdk.MustAccAddressFromBech32(keys.GetOperatorAddr())
+		// get the asset state of operator
+		operatorAsset, err := k.assetsKeeper.GetOperatorSpecifiedAssetInfo(ctx, opAccAddr, assetID)
+		if err != nil {
+			return err
+		}
+		singleAmount, err := TokensFromShares(amounts.UndelegatableShare, operatorAsset.TotalShare, operatorAsset.TotalAmount)
+		if err != nil {
+			return err
+		}
+		ret[keys.OperatorAddr] = singleAmount
+		return nil
 	}
-	return ret.Amount, nil
+	err := k.IterateDelegationsForStakerAndAsset(ctx, stakerID, assetID, opFunc)
+	if err != nil {
+		return nil, err
+	}
+	return ret, nil
 }
 
-// UpdateDelegationState The function is used to update the staker's asset amount that is delegated to a specified operator.
+// UpdateDelegationState is used to update the staker's asset amount that is delegated to a specified operator.
 // Compared to `UpdateStakerDelegationTotalAmount`,they use the same kv store, but in this function the store key needs to add the operator address as a suffix.
-func (k Keeper) UpdateDelegationState(ctx sdk.Context, stakerId string, assetId string, delegationAmounts map[string]*delegationtype.DelegationAmounts) (err error) {
+func (k Keeper) UpdateDelegationState(ctx sdk.Context, stakerID, assetID, opAddr string, deltaAmounts *delegationtype.DeltaDelegationAmounts) (bool, error) {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), delegationtype.KeyPrefixRestakerDelegationInfo)
-	//todo: think about the difference between init and update in future
-
-	for opAddr, amounts := range delegationAmounts {
-		if amounts == nil {
-			continue
-		}
-		if amounts.CanUndelegationAmount.IsNil() && amounts.WaitUndelegationAmount.IsNil() {
-			continue
-		}
-		//check operator address validation
-		_, err := sdk.AccAddressFromBech32(opAddr)
-		if err != nil {
-			return delegationtype.OperatorAddrIsNotAccAddr
-		}
-		singleStateKey := delegationtype.GetDelegationStateKey(stakerId, assetId, opAddr)
-		delegationState := delegationtype.DelegationAmounts{
-			CanUndelegationAmount:  sdkmath.NewInt(0),
-			WaitUndelegationAmount: sdkmath.NewInt(0),
-		}
-
-		if store.Has(singleStateKey) {
-			value := store.Get(singleStateKey)
-			k.cdc.MustUnmarshal(value, &delegationState)
-		}
-
-		err = keeper.UpdateAssetValue(&delegationState.CanUndelegationAmount, &amounts.CanUndelegationAmount)
-		if err != nil {
-			return errorsmod.Wrap(err, "UpdateDelegationState CanUndelegationAmount error")
-		}
-
-		err = keeper.UpdateAssetValue(&delegationState.WaitUndelegationAmount, &amounts.WaitUndelegationAmount)
-		if err != nil {
-			return errorsmod.Wrap(err, "UpdateDelegationState WaitUndelegationAmount error")
-		}
-
-		//save single operator delegation state
-		bz := k.cdc.MustMarshal(&delegationState)
-		store.Set(singleStateKey, bz)
+	// todo: think about the difference between init and update in future
+	shareIsZero := false
+	if deltaAmounts == nil {
+		return false, errorsmod.Wrap(
+			assetstype.ErrInputPointerIsNil,
+			fmt.Sprintf("UpdateDelegationState opAddr:%v,deltaAmounts:%v", opAddr, deltaAmounts),
+		)
 	}
-	return nil
+	// check operator address validation
+	_, err := sdk.AccAddressFromBech32(opAddr)
+	if err != nil {
+		return shareIsZero, delegationtype.OperatorAddrIsNotAccAddr
+	}
+	singleStateKey := assetstype.GetJoinedStoreKey(stakerID, assetID, opAddr)
+	delegationState := delegationtype.DelegationAmounts{
+		WaitUndelegationAmount: sdkmath.NewInt(0),
+		UndelegatableShare:     sdkmath.LegacyNewDec(0),
+	}
+
+	value := store.Get(singleStateKey)
+	if value != nil {
+		k.cdc.MustUnmarshal(value, &delegationState)
+	}
+	err = assetstype.UpdateAssetValue(&delegationState.WaitUndelegationAmount, &deltaAmounts.WaitUndelegationAmount)
+	if err != nil {
+		return shareIsZero, errorsmod.Wrap(err, "UpdateDelegationState WaitUndelegationAmount error")
+	}
+
+	err = assetstype.UpdateAssetDecValue(&delegationState.UndelegatableShare, &deltaAmounts.UndelegatableShare)
+	if err != nil {
+		return shareIsZero, errorsmod.Wrap(err, "UpdateDelegationState UndelegatableShare error")
+	}
+
+	if delegationState.UndelegatableShare.IsZero() {
+		shareIsZero = true
+	}
+
+	// todo: should we delete the delegation state if both the share and the WaitUndelegationAmount are zero
+	// to reduce the state storage?
+
+	// save single operator delegation state
+	bz := k.cdc.MustMarshal(&delegationState)
+	store.Set(singleStateKey, bz)
+
+	return shareIsZero, nil
 }
 
 // GetSingleDelegationInfo query the staker's asset amount that has been delegated to the specified operator.
-func (k Keeper) GetSingleDelegationInfo(ctx sdk.Context, stakerId, assetId, operatorAddr string) (*delegationtype.DelegationAmounts, error) {
+func (k *Keeper) GetSingleDelegationInfo(ctx sdk.Context, stakerID, assetID, operatorAddr string) (*delegationtype.DelegationAmounts, error) {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), delegationtype.KeyPrefixRestakerDelegationInfo)
-	singleStateKey := delegationtype.GetDelegationStateKey(stakerId, assetId, operatorAddr)
-	isExit := store.Has(singleStateKey)
+	singleStateKey := assetstype.GetJoinedStoreKey(stakerID, assetID, operatorAddr)
 	delegationState := delegationtype.DelegationAmounts{}
-	if isExit {
-		value := store.Get(singleStateKey)
-		k.cdc.MustUnmarshal(value, &delegationState)
-	} else {
+	value := store.Get(singleStateKey)
+	if value == nil {
 		return nil, errorsmod.Wrap(delegationtype.ErrNoKeyInTheStore, fmt.Sprintf("QuerySingleDelegationInfo: key is %s", singleStateKey))
 	}
+	k.cdc.MustUnmarshal(value, &delegationState)
 	return &delegationState, nil
 }
 
 // GetDelegationInfo query the staker's asset info that has been delegated.
-func (k Keeper) GetDelegationInfo(ctx sdk.Context, stakerId, assetId string) (*delegationtype.QueryDelegationInfoResponse, error) {
-	c := sdk.UnwrapSDKContext(ctx)
-
+func (k *Keeper) GetDelegationInfo(ctx sdk.Context, stakerID, assetID string) (*delegationtype.QueryDelegationInfoResponse, error) {
 	var ret delegationtype.QueryDelegationInfoResponse
-	totalAmount, err := k.GetStakerDelegationTotalAmount(ctx, stakerId, assetId)
+	ret.DelegationInfos = make(map[string]*delegationtype.DelegationAmounts, 0)
+	opFunc := func(keys *delegationtype.SingleDelegationInfoReq, amounts *delegationtype.DelegationAmounts) error {
+		ret.DelegationInfos[keys.OperatorAddr] = amounts
+		return nil
+	}
+	err := k.IterateDelegationsForStakerAndAsset(ctx, stakerID, assetID, opFunc)
 	if err != nil {
 		return nil, err
 	}
-	ret.TotalDelegatedAmount = totalAmount
+	return &ret, nil
+}
 
-	store := prefix.NewStore(c.KVStore(k.storeKey), delegationtype.KeyPrefixRestakerDelegationInfo)
-	iterator := sdk.KVStorePrefixIterator(store, delegationtype.GetDelegationStateIteratorPrefix(stakerId, assetId))
+func (k *Keeper) AppendStakerForOperator(ctx sdk.Context, operator, assetID, stakerID string) error {
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), delegationtype.KeyPrefixStakersByOperator)
+	Key := assetstype.GetJoinedStoreKey(operator, assetID)
+	stakers := delegationtype.StakerList{}
+	value := store.Get(Key)
+	if value != nil {
+		k.cdc.MustUnmarshal(value, &stakers)
+	}
+	for _, v := range stakers.Stakers {
+		if v == stakerID {
+			return nil
+		}
+	}
+	stakers.Stakers = append(stakers.Stakers, stakerID)
+	bz := k.cdc.MustMarshal(&stakers)
+	store.Set(Key, bz)
+	return nil
+}
+
+func (k *Keeper) DeleteStakerForOperator(ctx sdk.Context, operator, assetID, stakerID string) error {
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), delegationtype.KeyPrefixStakersByOperator)
+	Key := assetstype.GetJoinedStoreKey(operator, assetID)
+	stakers := delegationtype.StakerList{}
+	if !store.Has(Key) {
+		return delegationtype.ErrNoKeyInTheStore
+	}
+	value := store.Get(Key)
+	k.cdc.MustUnmarshal(value, &stakers)
+	for i, v := range stakers.Stakers {
+		if v == stakerID {
+			stakers.Stakers = append(stakers.Stakers[:i], stakers.Stakers[i+1:]...)
+			break
+		}
+	}
+	bz := k.cdc.MustMarshal(&stakers)
+	store.Set(Key, bz)
+	return nil
+}
+
+func (k *Keeper) DeleteStakersListForOperator(ctx sdk.Context, operator, assetID string) error {
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), delegationtype.KeyPrefixStakersByOperator)
+	Key := assetstype.GetJoinedStoreKey(operator, assetID)
+	if !store.Has(Key) {
+		return delegationtype.ErrNoKeyInTheStore
+	}
+	store.Delete(Key)
+	return nil
+}
+
+func (k *Keeper) GetStakersByOperator(ctx sdk.Context, operator, assetID string) (delegationtype.StakerList, error) {
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), delegationtype.KeyPrefixStakersByOperator)
+	Key := assetstype.GetJoinedStoreKey(operator, assetID)
+	value := store.Get(Key)
+	if value == nil {
+		return delegationtype.StakerList{}, delegationtype.ErrNoKeyInTheStore
+	}
+	stakerList := delegationtype.StakerList{}
+	k.cdc.MustUnmarshal(value, &stakerList)
+	return stakerList, nil
+}
+
+func (k *Keeper) SetStakerShareToZero(ctx sdk.Context, operator, assetID string, stakerList delegationtype.StakerList) error {
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), delegationtype.KeyPrefixRestakerDelegationInfo)
+	for _, stakerID := range stakerList.Stakers {
+		singleStateKey := assetstype.GetJoinedStoreKey(stakerID, assetID, operator)
+		value := store.Get(singleStateKey)
+		if value != nil {
+			delegationState := delegationtype.DelegationAmounts{}
+			k.cdc.MustUnmarshal(value, &delegationState)
+			delegationState.UndelegatableShare = sdkmath.LegacyNewDec(0)
+			bz := k.cdc.MustMarshal(&delegationState)
+			store.Set(singleStateKey, bz)
+		}
+	}
+	return nil
+}
+
+// DelegationStateByOperatorAssets get the specified assets state delegated to the specified operator
+// assetsFilter: assetID->nil, it's used to filter the specified assets
+// the first return value is a nested map, its type is: stakerID->assetID->DelegationAmounts
+// It means all delegation information related to the specified operator and filtered by the specified asset IDs
+func (k Keeper) DelegationStateByOperatorAssets(ctx sdk.Context, operatorAddr string, assetsFilter map[string]interface{}) (map[string]map[string]delegationtype.DelegationAmounts, error) {
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), delegationtype.KeyPrefixRestakerDelegationInfo)
+	iterator := sdk.KVStorePrefixIterator(store, nil)
 	defer iterator.Close()
 
-	ret.DelegationInfos = make(map[string]*delegationtype.DelegationAmounts, 0)
+	ret := make(map[string]map[string]delegationtype.DelegationAmounts, 0)
 	for ; iterator.Valid(); iterator.Next() {
 		var amounts delegationtype.DelegationAmounts
 		k.cdc.MustUnmarshal(iterator.Value(), &amounts)
-		keys, err := delegationtype.ParseStakerAssetIdAndOperatorAddrFromKey(iterator.Key())
+		keys, err := assetstype.ParseJoinedKey(iterator.Key())
 		if err != nil {
 			return nil, err
 		}
-		ret.DelegationInfos[keys.OperatorAddr] = &amounts
+		if len(keys) != 3 {
+			continue
+		}
+		restakerID, assetID, findOperatorAddr := keys[0], keys[1], keys[2]
+		if operatorAddr != findOperatorAddr {
+			continue
+		}
+		_, assetIDExist := assetsFilter[assetID]
+		_, restakerIDExist := ret[restakerID]
+		if assetIDExist {
+			if !restakerIDExist {
+				ret[restakerID] = make(map[string]delegationtype.DelegationAmounts)
+			}
+			ret[restakerID][assetID] = amounts
+		}
 	}
-
-	return &ret, nil
+	return ret, nil
 }

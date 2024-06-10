@@ -4,9 +4,10 @@ import (
 	"bytes"
 	"embed"
 	"fmt"
+	"math/big"
 
-	stakingStateKeeper "github.com/ExocoreNetwork/exocore/x/restaking_assets_manage/keeper"
-	rewardKeeper "github.com/ExocoreNetwork/exocore/x/reward/keeper"
+	assetskeeper "github.com/ExocoreNetwork/exocore/x/assets/keeper"
+	rewardkeeper "github.com/ExocoreNetwork/exocore/x/reward/keeper"
 	"github.com/cometbft/cometbft/libs/log"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -27,15 +28,15 @@ var f embed.FS
 // Precompile defines the precompiled contract for reward.
 type Precompile struct {
 	cmn.Precompile
-	stakingStateKeeper stakingStateKeeper.Keeper
-	rewardKeeper       rewardKeeper.Keeper
+	assetsKeeper assetskeeper.Keeper
+	rewardKeeper rewardkeeper.Keeper
 }
 
 // NewPrecompile creates a new reward Precompile instance as a
 // PrecompiledContract interface.
 func NewPrecompile(
-	stakingStateKeeper stakingStateKeeper.Keeper,
-	rewardKeeper rewardKeeper.Keeper,
+	stakingStateKeeper assetskeeper.Keeper,
+	rewardKeeper rewardkeeper.Keeper,
 	authzKeeper authzkeeper.Keeper,
 ) (*Precompile, error) {
 	abiBz, err := f.ReadFile("abi.json")
@@ -56,8 +57,8 @@ func NewPrecompile(
 			TransientKVGasConfig: storetypes.TransientGasConfig(),
 			ApprovalExpiration:   cmn.DefaultExpirationDuration, // should be configurable in the future.
 		},
-		rewardKeeper:       rewardKeeper,
-		stakingStateKeeper: stakingStateKeeper,
+		rewardKeeper: rewardKeeper,
+		assetsKeeper: stakingStateKeeper,
 	}, nil
 }
 
@@ -91,14 +92,16 @@ func (p Precompile) Run(evm *vm.EVM, contract *vm.Contract, readOnly bool) (bz [
 	// It avoids panics and returns the out of gas error so the EVM can continue gracefully.
 	defer cmn.HandleGasError(ctx, contract, initialGas, &err)()
 
-	switch method.Name {
-	// reward transactions
-	case MethodReward:
+	if method.Name == MethodReward {
 		bz, err = p.Reward(ctx, evm.Origin, contract, stateDB, method, args)
 	}
 
 	if err != nil {
-		return nil, err
+		// for failed cases we expect it returns bool value instead of error
+		// this is a workaround because the error returned by precompile can not be caught in EVM
+		// see https://github.com/ExocoreNetwork/exocore/issues/70
+		// TODO: we should figure out root cause and fix this issue to make precompiles work normally
+		return method.Outputs.Pack(false, new(big.Int))
 	}
 
 	cost := ctx.GasMeter().GasConsumed() - initialGas

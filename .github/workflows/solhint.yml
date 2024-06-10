@@ -1,9 +1,12 @@
 name: Solhint
-# This workflow is only run when a .sol file has been changed
+# This workflow is only run when a file in the contracts folder changes.
 on:
   pull_request:
     paths:
       - "contracts/**"
+
+permissions:
+  contents: read
 
 jobs:
   solhint:

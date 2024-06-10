@@ -3,48 +3,26 @@ package deposit_test
 import (
 	"testing"
 
-	"github.com/ExocoreNetwork/exocore/precompiles/deposit"
+	"github.com/ExocoreNetwork/exocore/testutil"
 
-	"github.com/evmos/evmos/v14/x/evm/statedb"
+	"github.com/ExocoreNetwork/exocore/precompiles/deposit"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
-	evmosapp "github.com/ExocoreNetwork/exocore/app"
-	tmtypes "github.com/cometbft/cometbft/types"
-	"github.com/cosmos/cosmos-sdk/crypto/keyring"
-	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
-	sdk "github.com/cosmos/cosmos-sdk/types"
-	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
-	"github.com/ethereum/go-ethereum/common"
-	ethtypes "github.com/ethereum/go-ethereum/core/types"
-	evmtypes "github.com/evmos/evmos/v14/x/evm/types"
 	"github.com/stretchr/testify/suite"
 )
 
-var s *PrecompileTestSuite
+var s *DepositPrecompileSuite
 
-type PrecompileTestSuite struct {
-	suite.Suite
-
-	ctx        sdk.Context
-	app        *evmosapp.ExocoreApp
-	address    common.Address
-	validators []stakingtypes.Validator
-	valSet     *tmtypes.ValidatorSet
-	ethSigner  ethtypes.Signer
-	privKey    cryptotypes.PrivKey
-	signer     keyring.Signer
-	bondDenom  string
+type DepositPrecompileSuite struct {
+	testutil.BaseTestSuite
 
 	precompile *deposit.Precompile
-	stateDB    *statedb.StateDB
-
-	queryClientEVM evmtypes.QueryClient
 }
 
 func TestPrecompileTestSuite(t *testing.T) {
-	s = new(PrecompileTestSuite)
+	s = new(DepositPrecompileSuite)
 	suite.Run(t, s)
 
 	// Run Ginkgo integration tests
@@ -52,6 +30,9 @@ func TestPrecompileTestSuite(t *testing.T) {
 	RunSpecs(t, "Distribution Precompile Suite")
 }
 
-func (s *PrecompileTestSuite) SetupTest() {
+func (s *DepositPrecompileSuite) SetupTest() {
 	s.DoSetupTest()
+	precompile, err := deposit.NewPrecompile(s.App.AssetsKeeper, s.App.DepositKeeper, s.App.AuthzKeeper)
+	s.Require().NoError(err)
+	s.precompile = precompile
 }

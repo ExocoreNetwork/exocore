@@ -3,38 +3,31 @@ package keeper_test
 import (
 	"testing"
 
-	"github.com/ExocoreNetwork/exocore/app"
-	"github.com/cosmos/cosmos-sdk/crypto/keyring"
+	sdkmath "cosmossdk.io/math"
+	"github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/common"
 
-	. "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
+	"github.com/ExocoreNetwork/exocore/testutil"
 
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/suite"
 )
 
-type KeeperTestSuite struct {
-	suite.Suite
-
-	ctx        sdk.Context
-	app        *app.ExocoreApp
-	address    common.Address
-	signer     keyring.Signer
-	accAddress sdk.AccAddress
+type DelegationTestSuite struct {
+	testutil.BaseTestSuite
+	assetAddr        common.Address
+	opAccAddr        types.AccAddress
+	clientChainLzID  uint64
+	depositAmount    sdkmath.Int
+	delegationAmount sdkmath.Int
 }
 
-var s *KeeperTestSuite
+var s *DelegationTestSuite
 
 func TestKeeperTestSuite(t *testing.T) {
-	s = new(KeeperTestSuite)
+	s = new(DelegationTestSuite)
 	suite.Run(t, s)
-
-	// Run Ginkgo integration tests
-	RegisterFailHandler(Fail)
-	RunSpecs(t, "Keeper Suite")
 }
 
-func (suite *KeeperTestSuite) SetupTest() {
-	suite.DoSetupTest(suite.T())
+func (suite *DelegationTestSuite) SetupTest() {
+	suite.DoSetupTest()
 }

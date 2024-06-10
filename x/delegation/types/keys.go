@@ -1,12 +1,12 @@
 package types
 
 import (
-	errorsmod "cosmossdk.io/errors"
-	"fmt"
+	"strings"
+
+	assetstypes "github.com/ExocoreNetwork/exocore/x/assets/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
-	"strings"
 )
 
 // constants
@@ -29,68 +29,92 @@ func init() {
 }
 
 const (
-	prefixOperatorInfo = iota + 1
-	prefixRestakerDelegationInfo
-	prefixDelegationUsedSalt
-	prefixOperatorApprovedInfo
-
+	prefixRestakerDelegationInfo = iota + 1
+	prefixStakersByOperator
 	prefixUndelegationInfo
 
 	prefixStakerUndelegationInfo
 
 	prefixWaitCompleteUndelegations
+
+	// used to store the undelegation hold count
+	prefixUndelegationOnHold
 )
 
 var (
-	// KeyPrefixOperatorInfo key-value: operatorAddr->operatorInfo
-	KeyPrefixOperatorInfo = []byte{prefixOperatorInfo}
-	// KeyPrefixRestakerDelegationInfo reStakerId = clientChainAddr+'_'+ExoCoreChainIndex
+	// KeyPrefixRestakerDelegationInfo restakerID = clientChainAddr+'_'+ExoCoreChainIndex
 	// KeyPrefixRestakerDelegationInfo
 	// key-value:
-	// reStakerId +'/'+assetId -> totalDelegationAmount
-	// reStakerId +'/'+assetId+'/'+operatorAddr -> delegationAmounts
-
+	// restakerID +'/'+assetID+'/'+operatorAddr -> DelegationAmounts
 	KeyPrefixRestakerDelegationInfo = []byte{prefixRestakerDelegationInfo}
-	// KeyPrefixDelegationUsedSalt key->value: operatorApproveAddr->map[salt]{}
-	KeyPrefixDelegationUsedSalt = []byte{prefixDelegationUsedSalt}
-	// KeyPrefixOperatorApprovedInfo key-value: operatorApproveAddr->map[reStakerId]{}
-	KeyPrefixOperatorApprovedInfo = []byte{prefixOperatorApprovedInfo}
 
-	// KeyPrefixUndelegationInfo singleRecordKey = lzNonce+'/'+txHash+'/'+operatorAddr
-	// singleRecordKey -> UndelegateReqRecord
+	// KeyPrefixStakersByOperator key->value: operatorAddr+'/'+assetID -> stakerList
+	KeyPrefixStakersByOperator = []byte{prefixStakersByOperator}
+
+	// KeyPrefixUndelegationInfo singleRecordKey = operatorAddr+'/'+BlockHeight+'/'+LzNonce+'/'+txHash
+	// singleRecordKey -> UndelegationRecord
 	KeyPrefixUndelegationInfo = []byte{prefixUndelegationInfo}
-	// KeyPrefixStakerUndelegationInfo reStakerId+'/'+assetId+'/'+lzNonce -> singleRecordKey
+	// KeyPrefixStakerUndelegationInfo restakerID+'/'+assetID+'/'+LzNonce -> singleRecordKey
 	KeyPrefixStakerUndelegationInfo = []byte{prefixStakerUndelegationInfo}
-	// KeyPrefixWaitCompleteUndelegations completeHeight +'/'+lzNonce -> singleRecordKey
+	// KeyPrefixWaitCompleteUndelegations completeHeight +'/'+LzNonce -> singleRecordKey
 	KeyPrefixWaitCompleteUndelegations = []byte{prefixWaitCompleteUndelegations}
 )
 
-func GetDelegationStateKey(stakerId, assetId, operatorAddr string) []byte {
-	return []byte(strings.Join([]string{stakerId, assetId, operatorAddr}, "/"))
-}
-
-func GetDelegationStateIteratorPrefix(stakerId, assetId string) []byte {
-	tmp := []byte(strings.Join([]string{stakerId, assetId}, "/"))
+func GetDelegationStateIteratorPrefix(stakerID, assetID string) []byte {
+	tmp := []byte(strings.Join([]string{stakerID, assetID}, "/"))
 	tmp = append(tmp, '/')
 	return tmp
 }
 
-func ParseStakerAssetIdAndOperatorAddrFromKey(key []byte) (keys *SingleDelegationInfoReq, err error) {
-	stringList := strings.Split(string(key), "/")
-	if len(stringList) != 3 {
-		return nil, errorsmod.Wrap(ErrParseDelegationKey, fmt.Sprintf("the stringList is:%v", stringList))
+func ParseStakerAssetIDAndOperatorAddrFromKey(key []byte) (keys *SingleDelegationInfoReq, err error) {
+	stringList, err := assetstypes.ParseJoinedStoreKey(key, 3)
+	if err != nil {
+		return nil, err
 	}
-	return &SingleDelegationInfoReq{StakerId: stringList[0], AssetId: stringList[1], OperatorAddr: stringList[2]}, nil
+	return &SingleDelegationInfoReq{StakerID: stringList[0], AssetID: stringList[1], OperatorAddr: stringList[2]}, nil
 }
 
-func GetUndelegationRecordKey(lzNonce uint64, txHash string, operatorAddr string) []byte {
-	return []byte(strings.Join([]string{hexutil.EncodeUint64(lzNonce), txHash, operatorAddr}, "/"))
+func GetUndelegationRecordKey(blockHeight, lzNonce uint64, txHash string, operatorAddr string) []byte {
+	return []byte(strings.Join([]string{operatorAddr, hexutil.EncodeUint64(blockHeight), hexutil.EncodeUint64(lzNonce), txHash}, "/"))
 }
 
-func GetStakerUndelegationRecordKey(stakerId, assetId string, lzNonce uint64) []byte {
-	return []byte(strings.Join([]string{stakerId, assetId, hexutil.EncodeUint64(lzNonce)}, "/"))
+type UndelegationKeyFields struct {
+	BlockHeight  uint64
+	LzNonce      uint64
+	TxHash       string
+	OperatorAddr string
+}
+
+func ParseUndelegationRecordKey(key []byte) (field *UndelegationKeyFields, err error) {
+	stringList, err := assetstypes.ParseJoinedStoreKey(key, 4)
+	if err != nil {
+		return nil, err
+	}
+	height, err := hexutil.DecodeUint64(stringList[1])
+	if err != nil {
+		return nil, err
+	}
+	lzNonce, err := hexutil.DecodeUint64(stringList[2])
+	if err != nil {
+		return nil, err
+	}
+	return &UndelegationKeyFields{
+		OperatorAddr: stringList[0],
+		BlockHeight:  height,
+		LzNonce:      lzNonce,
+		TxHash:       stringList[3],
+	}, nil
+}
+
+func GetStakerUndelegationRecordKey(stakerID, assetID string, lzNonce uint64) []byte {
+	return []byte(strings.Join([]string{stakerID, assetID, hexutil.EncodeUint64(lzNonce)}, "/"))
 }
 
 func GetWaitCompleteRecordKey(height, lzNonce uint64) []byte {
 	return []byte(strings.Join([]string{hexutil.EncodeUint64(height), hexutil.EncodeUint64(lzNonce)}, "/"))
+}
+
+// GetUndelegationOnHoldKey returns the key for the undelegation hold count
+func GetUndelegationOnHoldKey(recordKey []byte) []byte {
+	return append([]byte{prefixUndelegationOnHold}, recordKey...)
 }

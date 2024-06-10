@@ -1,14 +1,14 @@
 package testutil
 
 import (
+	"github.com/ExocoreNetwork/exocore/utils"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
-	"github.com/evmos/evmos/v14/utils"
 	inflationtypes "github.com/evmos/evmos/v14/x/inflation/types"
 )
 
 // FundAccount is a utility function that funds an account by minting and
-// sending the coins to the address.
+// sending the coins to the Address.
 func FundAccount(ctx sdk.Context, bankKeeper bankkeeper.Keeper, addr sdk.AccAddress, amounts sdk.Coins) error {
 	if err := bankKeeper.MintCoins(ctx, inflationtypes.ModuleName, amounts); err != nil {
 		return err
@@ -27,7 +27,7 @@ func FundAccountWithBaseDenom(ctx sdk.Context, bankKeeper bankkeeper.Keeper, add
 }
 
 // FundModuleAccount is a utility function that funds a module account by
-// minting and sending the coins to the address.
+// minting and sending the coins to the Address.
 func FundModuleAccount(ctx sdk.Context, bankKeeper bankkeeper.Keeper, recipientMod string, amounts sdk.Coins) error {
 	if err := bankKeeper.MintCoins(ctx, inflationtypes.ModuleName, amounts); err != nil {
 		return err

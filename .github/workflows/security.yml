@@ -3,11 +3,18 @@ on:
   pull_request:
   push:
     branches:
+      - develop
       - main
+      - master
+
+permissions:
+  contents: read
+  security-events: write
 
 jobs:
   Gosec:
     permissions:
+      contents: read
       security-events: write
 
     runs-on: ubuntu-latest
@@ -27,7 +34,9 @@ jobs:
         uses: cosmos/gosec@master
         with:
           # we let the report trigger content trigger a failure using the GitHub Security features.
-          args: "-no-fail -fmt sarif -out results.sarif ./..."
+          # exclude G705 as it is almost always a false positive, it is removed from gosec master
+          # but the action has not been updated to reflect the change.
+          args: "-exclude G705 -no-fail -fmt sarif -out results.sarif ./..."
         if: "env.GIT_DIFF_FILTERED != ''"
       - name: Upload SARIF file
         uses: github/codeql-action/upload-sarif@v2

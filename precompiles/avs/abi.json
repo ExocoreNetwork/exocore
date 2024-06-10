@@ -1,0 +1,70 @@
+[
+	{
+		"inputs": [
+			{
+				"internalType": "string[]",
+				"name": "avsOwnerAddress",
+				"type": "string[]"
+			},
+			{
+				"internalType": "string",
+				"name": "avsName",
+				"type": "string"
+			},
+			{
+				"internalType": "string",
+				"name": "slashContractAddr",
+				"type": "string"
+			},
+			{
+				"internalType": "string[]",
+				"name": "assetID",
+				"type": "string[]"
+			},
+			{
+				"internalType": "uint64",
+				"name": "action",
+				"type": "uint64"
+			},
+			{
+				"internalType": "uint64",
+				"name": "minSelfDelegation",
+				"type": "uint64"
+			},
+			{
+				"internalType": "uint64",
+				"name": "unbondingPeriod",
+				"type": "uint64"
+			}
+		],
+		"name": "AVSAction",
+		"outputs": [
+			{
+				"internalType": "bool",
+				"name": "success",
+				"type": "bool"
+			}
+		],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint64",
+				"name": "action",
+				"type": "uint64"
+			}
+		],
+		"name": "OperatorOptAction",
+		"outputs": [
+			{
+				"internalType": "bool",
+				"name": "success",
+				"type": "bool"
+			}
+		],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	}
+]

@@ -5,8 +5,8 @@ import (
 	"embed"
 	"fmt"
 
+	assetskeeper "github.com/ExocoreNetwork/exocore/x/assets/keeper"
 	delegationKeeper "github.com/ExocoreNetwork/exocore/x/delegation/keeper"
-	stakingStateKeeper "github.com/ExocoreNetwork/exocore/x/restaking_assets_manage/keeper"
 
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	authzkeeper "github.com/cosmos/cosmos-sdk/x/authz/keeper"
@@ -26,14 +26,14 @@ var f embed.FS
 // Precompile defines the precompiled contract for deposit.
 type Precompile struct {
 	cmn.Precompile
-	stakingStateKeeper stakingStateKeeper.Keeper
-	delegationKeeper   delegationKeeper.Keeper
+	assetsKeeper     assetskeeper.Keeper
+	delegationKeeper delegationKeeper.Keeper
 }
 
 // NewPrecompile creates a new deposit Precompile instance as a
 // PrecompiledContract interface.
 func NewPrecompile(
-	stakingStateKeeper stakingStateKeeper.Keeper,
+	stakingStateKeeper assetskeeper.Keeper,
 	delegationKeeper delegationKeeper.Keeper,
 	authzKeeper authzkeeper.Keeper,
 ) (*Precompile, error) {
@@ -55,8 +55,8 @@ func NewPrecompile(
 			TransientKVGasConfig: storetypes.TransientGasConfig(),
 			ApprovalExpiration:   cmn.DefaultExpirationDuration, // should be configurable in the future.
 		},
-		delegationKeeper:   delegationKeeper,
-		stakingStateKeeper: stakingStateKeeper,
+		delegationKeeper: delegationKeeper,
+		assetsKeeper:     stakingStateKeeper,
 	}, nil
 }
 
@@ -99,7 +99,11 @@ func (p Precompile) Run(evm *vm.EVM, contract *vm.Contract, readOnly bool) (bz [
 
 	if err != nil {
 		ctx.Logger().Error("call delegation precompile error", "module", "delegation precompile", "err", err)
-		return nil, err
+		// for failed cases we expect it returns bool value instead of error
+		// this is a workaround because the error returned by precompile can not be caught in EVM
+		// see https://github.com/ExocoreNetwork/exocore/issues/70
+		// TODO: we should figure out root cause and fix this issue to make precompiles work normally
+		return method.Outputs.Pack(false)
 	}
 
 	cost := ctx.GasMeter().GasConsumed() - initialGas

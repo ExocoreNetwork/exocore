@@ -1,30 +1,27 @@
 package delegation_test
 
 import (
-	"fmt"
 	"math/big"
-	"strings"
+
+	operatortypes "github.com/ExocoreNetwork/exocore/x/operator/types"
 
 	sdkmath "cosmossdk.io/math"
 
 	"github.com/ExocoreNetwork/exocore/app"
 	"github.com/ExocoreNetwork/exocore/precompiles/delegation"
-	"github.com/ExocoreNetwork/exocore/precompiles/deposit"
-	keeper2 "github.com/ExocoreNetwork/exocore/x/delegation/keeper"
+	"github.com/ExocoreNetwork/exocore/x/assets/types"
+	assetstype "github.com/ExocoreNetwork/exocore/x/assets/types"
 	delegationtype "github.com/ExocoreNetwork/exocore/x/delegation/types"
 	"github.com/ExocoreNetwork/exocore/x/deposit/keeper"
-	types3 "github.com/ExocoreNetwork/exocore/x/deposit/types"
-	"github.com/ExocoreNetwork/exocore/x/restaking_assets_manage/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/common"
 	ethtypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/core/vm"
-	"github.com/evmos/evmos/v14/utils"
 	"github.com/evmos/evmos/v14/x/evm/statedb"
 	evmtypes "github.com/evmos/evmos/v14/x/evm/types"
 )
 
-func (s *PrecompileTestSuite) TestIsTransaction() {
+func (s *DelegationPrecompileSuite) TestIsTransaction() {
 	testCases := []struct {
 		name   string
 		method string
@@ -63,13 +60,13 @@ func paddingClientChainAddress(input []byte, outputLength int) []byte {
 }
 
 // TestRun tests DelegateToThroughClientChain method through calling Run function.
-func (s *PrecompileTestSuite) TestRunDelegateToThroughClientChain() {
+func (s *DelegationPrecompileSuite) TestRunDelegateToThroughClientChain() {
 	// deposit params for test
-	exoCoreLzAppAddress := "0x3fC91A3afd70395Cd496C647d5a6CC9D4B2b7FAD"
-	exoCoreLzAppEventTopic := "0xc6a377bfc4eb120024a8ac08eef205be16b817020812c73223e81d1bdb9708ec"
+	exocoreLzAppAddress := "0x3fC91A3afd70395Cd496C647d5a6CC9D4B2b7FAD"
+	exocoreLzAppEventTopic := "0xc6a377bfc4eb120024a8ac08eef205be16b817020812c73223e81d1bdb9708ec"
 	usdtAddress := common.FromHex("0xdAC17F958D2ee523a2206206994597C13D831ec7")
-	opAccAddr := "evmos1fl48vsnmsdzcv85q5d2q4z5ajdha8yu3h6cprl"
-	clientChainLzId := 101
+	opAccAddr := "exo13h6xg79g82e2g2vhjwg7j4r2z2hlncelwutkjr"
+	clientChainLzID := 101
 	lzNonce := 0
 	delegationAmount := big.NewInt(50)
 	depositAmount := big.NewInt(100)
@@ -78,45 +75,43 @@ func (s *PrecompileTestSuite) TestRunDelegateToThroughClientChain() {
 	depositAsset := func(staker []byte, depositAmount sdkmath.Int) {
 		// deposit asset for delegation test
 		params := &keeper.DepositParams{
-			ClientChainLzId: 101,
+			ClientChainLzID: 101,
 			Action:          types.Deposit,
 			StakerAddress:   staker,
 			AssetsAddress:   usdtAddress,
 			OpAmount:        depositAmount,
 		}
-		err := s.app.DepositKeeper.Deposit(s.ctx, params)
+		err := s.App.DepositKeeper.Deposit(s.Ctx, params)
 		s.Require().NoError(err)
 	}
 	registerOperator := func() {
-		registerReq := &delegationtype.RegisterOperatorReq{
+		registerReq := &operatortypes.RegisterOperatorReq{
 			FromAddress: opAccAddr,
-			Info: &delegationtype.OperatorInfo{
+			Info: &operatortypes.OperatorInfo{
 				EarningsAddr: opAccAddr,
 			},
 		}
-		_, err := s.app.DelegationKeeper.RegisterOperator(s.ctx, registerReq)
+		_, err := s.App.OperatorKeeper.RegisterOperator(s.Ctx, registerReq)
 		s.NoError(err)
 	}
 	commonMalleate := func() (common.Address, []byte) {
 		// prepare the call input for delegation test
-		valAddr, err := sdk.ValAddressFromBech32(s.validators[0].OperatorAddress)
-		s.Require().NoError(err)
-		val, _ := s.app.StakingKeeper.GetValidator(s.ctx, valAddr)
-		coins := sdk.NewCoins(sdk.NewCoin(utils.BaseDenom, sdk.NewInt(1e18)))
-		s.app.DistrKeeper.AllocateTokensToValidator(s.ctx, val, sdk.NewDecCoinsFromCoins(coins...))
 		input, err := s.precompile.Pack(
 			delegation.MethodDelegateToThroughClientChain,
-			uint16(clientChainLzId),
+			uint32(clientChainLzID),
 			uint64(lzNonce),
 			assetAddr,
-			paddingClientChainAddress(s.address.Bytes(), types.GeneralClientChainAddrLength),
+			paddingClientChainAddress(s.Address.Bytes(), types.GeneralClientChainAddrLength),
 			[]byte(opAccAddr),
 			delegationAmount,
 		)
 		s.Require().NoError(err, "failed to pack input")
-		return s.address, input
+		return s.Address, input
 	}
 	successRet, err := s.precompile.Methods[delegation.MethodDelegateToThroughClientChain].Outputs.Pack(true)
+	s.Require().NoError(err)
+
+	failureRet, err := s.precompile.Methods[delegation.MethodDelegateToThroughClientChain].Outputs.Pack(false)
 	s.Require().NoError(err)
 
 	testcases := []struct {
@@ -128,88 +123,88 @@ func (s *PrecompileTestSuite) TestRunDelegateToThroughClientChain() {
 		returnBytes []byte
 	}{
 		{
-			name: "fail - delegateToThroughClientChain transaction will fail because the exoCoreLzAppAddress haven't been stored",
+			name: "fail - delegateToThroughClientChain transaction will fail because the exocoreLzAppAddress is mismatched",
 			malleate: func() (common.Address, []byte) {
 				return commonMalleate()
 			},
 			readOnly:    false,
 			expPass:     false,
-			errContains: types3.ErrNoParamsKey.Error(),
+			returnBytes: failureRet,
 		},
 		{
 			name: "fail - delegateToThroughClientChain transaction will fail because the contract caller isn't the exoCoreLzAppAddr",
 			malleate: func() (common.Address, []byte) {
-				depositModuleParam := &types3.Params{
-					ExoCoreLzAppAddress:    exoCoreLzAppAddress,
-					ExoCoreLzAppEventTopic: exoCoreLzAppEventTopic,
+				depositModuleParam := &assetstype.Params{
+					ExocoreLzAppAddress:    exocoreLzAppAddress,
+					ExocoreLzAppEventTopic: exocoreLzAppEventTopic,
 				}
-				err := s.app.DepositKeeper.SetParams(s.ctx, depositModuleParam)
+				err := s.App.AssetsKeeper.SetParams(s.Ctx, depositModuleParam)
 				s.Require().NoError(err)
 				return commonMalleate()
 			},
 			readOnly:    false,
 			expPass:     false,
-			errContains: strings.Split(deposit.ErrContractCaller, ",")[0],
+			returnBytes: failureRet,
 		},
 		{
 			name: "fail - delegateToThroughClientChain transaction will fail because the delegated operator hasn't been registered",
 			malleate: func() (common.Address, []byte) {
-				depositModuleParam := &types3.Params{
-					ExoCoreLzAppAddress:    s.address.String(),
-					ExoCoreLzAppEventTopic: exoCoreLzAppEventTopic,
+				depositModuleParam := &assetstype.Params{
+					ExocoreLzAppAddress:    s.Address.String(),
+					ExocoreLzAppEventTopic: exocoreLzAppEventTopic,
 				}
-				err := s.app.DepositKeeper.SetParams(s.ctx, depositModuleParam)
+				err := s.App.AssetsKeeper.SetParams(s.Ctx, depositModuleParam)
 				s.Require().NoError(err)
 				return commonMalleate()
 			},
 			readOnly:    false,
 			expPass:     false,
-			errContains: delegationtype.ErrOperatorNotExist.Error(),
+			returnBytes: failureRet,
 		},
 		{
 			name: "fail - delegateToThroughClientChain transaction will fail because the delegated asset hasn't been deposited",
 			malleate: func() (common.Address, []byte) {
-				depositModuleParam := &types3.Params{
-					ExoCoreLzAppAddress:    s.address.String(),
-					ExoCoreLzAppEventTopic: exoCoreLzAppEventTopic,
+				depositModuleParam := &assetstype.Params{
+					ExocoreLzAppAddress:    s.Address.String(),
+					ExocoreLzAppEventTopic: exocoreLzAppEventTopic,
 				}
-				err := s.app.DepositKeeper.SetParams(s.ctx, depositModuleParam)
+				err := s.App.AssetsKeeper.SetParams(s.Ctx, depositModuleParam)
 				s.Require().NoError(err)
 				registerOperator()
 				return commonMalleate()
 			},
 			readOnly:    false,
 			expPass:     false,
-			errContains: types.ErrNoStakerAssetKey.Error(),
+			returnBytes: failureRet,
 		},
 		{
 			name: "fail - delegateToThroughClientChain transaction will fail because the delegation amount is bigger than the canWithdraw amount",
 			malleate: func() (common.Address, []byte) {
-				depositModuleParam := &types3.Params{
-					ExoCoreLzAppAddress:    s.address.String(),
-					ExoCoreLzAppEventTopic: exoCoreLzAppEventTopic,
+				depositModuleParam := &assetstype.Params{
+					ExocoreLzAppAddress:    s.Address.String(),
+					ExocoreLzAppEventTopic: exocoreLzAppEventTopic,
 				}
-				err := s.app.DepositKeeper.SetParams(s.ctx, depositModuleParam)
+				err := s.App.AssetsKeeper.SetParams(s.Ctx, depositModuleParam)
 				s.Require().NoError(err)
 				registerOperator()
-				depositAsset(s.address.Bytes(), sdkmath.NewIntFromBigInt(smallDepositAmount))
+				depositAsset(s.Address.Bytes(), sdkmath.NewIntFromBigInt(smallDepositAmount))
 				return commonMalleate()
 			},
 			readOnly:    false,
 			expPass:     false,
-			errContains: delegationtype.ErrDelegationAmountTooBig.Error(),
+			returnBytes: failureRet,
 		},
 		{
 			name: "pass - delegateToThroughClientChain transaction",
 			malleate: func() (common.Address, []byte) {
-				depositModuleParam := &types3.Params{
-					ExoCoreLzAppAddress:    s.address.String(),
-					ExoCoreLzAppEventTopic: exoCoreLzAppEventTopic,
+				assetsModuleParam := &assetstype.Params{
+					ExocoreLzAppAddress:    s.Address.String(),
+					ExocoreLzAppEventTopic: exocoreLzAppEventTopic,
 				}
-				err := s.app.DepositKeeper.SetParams(s.ctx, depositModuleParam)
+				err := s.App.AssetsKeeper.SetParams(s.Ctx, assetsModuleParam)
 				s.Require().NoError(err)
 				registerOperator()
-				depositAsset(s.address.Bytes(), sdkmath.NewIntFromBigInt(depositAmount))
+				depositAsset(s.Address.Bytes(), sdkmath.NewIntFromBigInt(depositAmount))
 				return commonMalleate()
 			},
 			returnBytes: successRet,
@@ -224,7 +219,7 @@ func (s *PrecompileTestSuite) TestRunDelegateToThroughClientChain() {
 			// setup basic test suite
 			s.SetupTest()
 
-			baseFee := s.app.FeeMarketKeeper.GetBaseFee(s.ctx)
+			baseFee := s.App.FeeMarketKeeper.GetBaseFee(s.Ctx)
 
 			// malleate testcase
 			caller, input := tc.malleate()
@@ -235,7 +230,7 @@ func (s *PrecompileTestSuite) TestRunDelegateToThroughClientChain() {
 			contractAddr := contract.Address()
 			// Build and sign Ethereum transaction
 			txArgs := evmtypes.EvmTxArgs{
-				ChainID:   s.app.EvmKeeper.ChainID(),
+				ChainID:   s.App.EvmKeeper.ChainID(),
 				Nonce:     0,
 				To:        &contractAddr,
 				Amount:    nil,
@@ -247,28 +242,28 @@ func (s *PrecompileTestSuite) TestRunDelegateToThroughClientChain() {
 			}
 			msgEthereumTx := evmtypes.NewTx(&txArgs)
 
-			msgEthereumTx.From = s.address.String()
-			err := msgEthereumTx.Sign(s.ethSigner, s.signer)
+			msgEthereumTx.From = s.Address.String()
+			err := msgEthereumTx.Sign(s.EthSigner, s.Signer)
 			s.Require().NoError(err, "failed to sign Ethereum message")
 
 			// Instantiate config
-			proposerAddress := s.ctx.BlockHeader().ProposerAddress
-			cfg, err := s.app.EvmKeeper.EVMConfig(s.ctx, proposerAddress, s.app.EvmKeeper.ChainID())
+			proposerAddress := s.Ctx.BlockHeader().ProposerAddress
+			cfg, err := s.App.EvmKeeper.EVMConfig(s.Ctx, proposerAddress, s.App.EvmKeeper.ChainID())
 			s.Require().NoError(err, "failed to instantiate EVM config")
 
-			msg, err := msgEthereumTx.AsMessage(s.ethSigner, baseFee)
+			msg, err := msgEthereumTx.AsMessage(s.EthSigner, baseFee)
 			s.Require().NoError(err, "failed to instantiate Ethereum message")
 
 			// Create StateDB
-			s.stateDB = statedb.New(s.ctx, s.app.EvmKeeper, statedb.NewEmptyTxConfig(common.BytesToHash(s.ctx.HeaderHash().Bytes())))
+			s.StateDB = statedb.New(s.Ctx, s.App.EvmKeeper, statedb.NewEmptyTxConfig(common.BytesToHash(s.Ctx.HeaderHash().Bytes())))
 			// Instantiate EVM
-			evm := s.app.EvmKeeper.NewEVM(
-				s.ctx, msg, cfg, nil, s.stateDB,
+			evm := s.App.EvmKeeper.NewEVM(
+				s.Ctx, msg, cfg, nil, s.StateDB,
 			)
 
-			params := s.app.EvmKeeper.GetParams(s.ctx)
+			params := s.App.EvmKeeper.GetParams(s.Ctx)
 			activePrecompiles := params.GetActivePrecompilesAddrs()
-			precompileMap := s.app.EvmKeeper.Precompiles(activePrecompiles...)
+			precompileMap := s.App.EvmKeeper.Precompiles(activePrecompiles...)
 			err = vm.ValidatePrecompiles(precompileMap, activePrecompiles)
 			s.Require().NoError(err, "invalid precompiles", activePrecompiles)
 			evm.WithPrecompiles(precompileMap, activePrecompiles)
@@ -281,21 +276,24 @@ func (s *PrecompileTestSuite) TestRunDelegateToThroughClientChain() {
 				s.Require().NoError(err, "expected no error when running the precompile")
 				s.Require().Equal(tc.returnBytes, bz, "the return doesn't match the expected result")
 			} else {
-				s.Require().Error(err, "expected error to be returned when running the precompile")
-				s.Require().Nil(bz, "expected returned bytes to be nil")
-				s.Require().ErrorContains(err, tc.errContains)
+				// for failed cases we expect it returns bool value instead of error
+				// this is a workaround because the error returned by precompile can not be caught in EVM
+				// see https://github.com/ExocoreNetwork/exocore/issues/70
+				// TODO: we should figure out root cause and fix this issue to make precompiles work normally
+				s.Require().NoError(err, "expected no error when running the precompile")
+				s.Require().Equal(tc.returnBytes, bz, "expected returned bytes to be nil")
 			}
 		})
 	}
 }
 
 // TestRun tests DelegateToThroughClientChain method through calling Run function.
-func (s *PrecompileTestSuite) TestRunUnDelegateFromThroughClientChain() {
+func (s *DelegationPrecompileSuite) TestRunUnDelegateFromThroughClientChain() {
 	// deposit params for test
-	exoCoreLzAppEventTopic := "0xc6a377bfc4eb120024a8ac08eef205be16b817020812c73223e81d1bdb9708ec"
+	exocoreLzAppEventTopic := "0xc6a377bfc4eb120024a8ac08eef205be16b817020812c73223e81d1bdb9708ec"
 	usdtAddress := common.FromHex("0xdAC17F958D2ee523a2206206994597C13D831ec7")
-	operatorAddr := "evmos1fl48vsnmsdzcv85q5d2q4z5ajdha8yu3h6cprl"
-	clientChainLzId := 101
+	operatorAddr := "exo13h6xg79g82e2g2vhjwg7j4r2z2hlncelwutkjr"
+	clientChainLzID := 101
 	lzNonce := uint64(0)
 	delegationAmount := big.NewInt(50)
 	depositAmount := big.NewInt(100)
@@ -303,20 +301,20 @@ func (s *PrecompileTestSuite) TestRunUnDelegateFromThroughClientChain() {
 	depositAsset := func(staker []byte, depositAmount sdkmath.Int) {
 		// deposit asset for delegation test
 		params := &keeper.DepositParams{
-			ClientChainLzId: 101,
+			ClientChainLzID: 101,
 			Action:          types.Deposit,
 			StakerAddress:   staker,
 			AssetsAddress:   usdtAddress,
 			OpAmount:        depositAmount,
 		}
-		err := s.app.DepositKeeper.Deposit(s.ctx, params)
+		err := s.App.DepositKeeper.Deposit(s.Ctx, params)
 		s.Require().NoError(err)
 	}
 
 	delegateAsset := func(staker []byte, delegateAmount sdkmath.Int) {
 		// deposit asset for delegation test
-		delegateToParams := &keeper2.DelegationOrUndelegationParams{
-			ClientChainLzId: 101,
+		delegateToParams := &delegationtype.DelegationOrUndelegationParams{
+			ClientChainLzID: 101,
 			Action:          types.DelegateTo,
 			StakerAddress:   staker,
 			AssetsAddress:   usdtAddress,
@@ -326,37 +324,32 @@ func (s *PrecompileTestSuite) TestRunUnDelegateFromThroughClientChain() {
 		opAccAddr, err := sdk.AccAddressFromBech32(operatorAddr)
 		s.Require().NoError(err)
 		delegateToParams.OperatorAddress = opAccAddr
-		err = s.app.DelegationKeeper.DelegateTo(s.ctx, delegateToParams)
+		err = s.App.DelegationKeeper.DelegateTo(s.Ctx, delegateToParams)
 		s.Require().NoError(err)
 	}
 	registerOperator := func() {
-		registerReq := &delegationtype.RegisterOperatorReq{
+		registerReq := &operatortypes.RegisterOperatorReq{
 			FromAddress: operatorAddr,
-			Info: &delegationtype.OperatorInfo{
+			Info: &operatortypes.OperatorInfo{
 				EarningsAddr: operatorAddr,
 			},
 		}
-		_, err := s.app.DelegationKeeper.RegisterOperator(s.ctx, registerReq)
+		_, err := s.App.OperatorKeeper.RegisterOperator(s.Ctx, registerReq)
 		s.NoError(err)
 	}
 	commonMalleate := func() (common.Address, []byte) {
 		// prepare the call input for delegation test
-		valAddr, err := sdk.ValAddressFromBech32(s.validators[0].OperatorAddress)
-		s.Require().NoError(err)
-		val, _ := s.app.StakingKeeper.GetValidator(s.ctx, valAddr)
-		coins := sdk.NewCoins(sdk.NewCoin(utils.BaseDenom, sdk.NewInt(1e18)))
-		s.app.DistrKeeper.AllocateTokensToValidator(s.ctx, val, sdk.NewDecCoinsFromCoins(coins...))
 		input, err := s.precompile.Pack(
 			delegation.MethodUndelegateFromThroughClientChain,
-			uint16(clientChainLzId),
+			uint32(clientChainLzID),
 			lzNonce+1,
 			assetAddr,
-			paddingClientChainAddress(s.address.Bytes(), types.GeneralClientChainAddrLength),
+			paddingClientChainAddress(s.Address.Bytes(), types.GeneralClientChainAddrLength),
 			[]byte(operatorAddr),
 			delegationAmount,
 		)
 		s.Require().NoError(err, "failed to pack input")
-		return s.address, input
+		return s.Address, input
 	}
 	successRet, err := s.precompile.Methods[delegation.MethodUndelegateFromThroughClientChain].Outputs.Pack(true)
 	s.Require().NoError(err)
@@ -372,15 +365,15 @@ func (s *PrecompileTestSuite) TestRunUnDelegateFromThroughClientChain() {
 		{
 			name: "pass - undelegateFromThroughClientChain transaction",
 			malleate: func() (common.Address, []byte) {
-				depositModuleParam := &types3.Params{
-					ExoCoreLzAppAddress:    s.address.String(),
-					ExoCoreLzAppEventTopic: exoCoreLzAppEventTopic,
+				depositModuleParam := &assetstype.Params{
+					ExocoreLzAppAddress:    s.Address.String(),
+					ExocoreLzAppEventTopic: exocoreLzAppEventTopic,
 				}
-				err := s.app.DepositKeeper.SetParams(s.ctx, depositModuleParam)
+				err := s.App.AssetsKeeper.SetParams(s.Ctx, depositModuleParam)
 				s.Require().NoError(err)
 				registerOperator()
-				depositAsset(s.address.Bytes(), sdkmath.NewIntFromBigInt(depositAmount))
-				delegateAsset(s.address.Bytes(), sdkmath.NewIntFromBigInt(delegationAmount))
+				depositAsset(s.Address.Bytes(), sdkmath.NewIntFromBigInt(depositAmount))
+				delegateAsset(s.Address.Bytes(), sdkmath.NewIntFromBigInt(delegationAmount))
 				return commonMalleate()
 			},
 			returnBytes: successRet,
@@ -394,7 +387,7 @@ func (s *PrecompileTestSuite) TestRunUnDelegateFromThroughClientChain() {
 			// setup basic test suite
 			s.SetupTest()
 
-			baseFee := s.app.FeeMarketKeeper.GetBaseFee(s.ctx)
+			baseFee := s.App.FeeMarketKeeper.GetBaseFee(s.Ctx)
 
 			// malleate testcase
 			caller, input := tc.malleate()
@@ -405,7 +398,7 @@ func (s *PrecompileTestSuite) TestRunUnDelegateFromThroughClientChain() {
 			contractAddr := contract.Address()
 			// Build and sign Ethereum transaction
 			txArgs := evmtypes.EvmTxArgs{
-				ChainID:   s.app.EvmKeeper.ChainID(),
+				ChainID:   s.App.EvmKeeper.ChainID(),
 				Nonce:     0,
 				To:        &contractAddr,
 				Amount:    nil,
@@ -417,30 +410,29 @@ func (s *PrecompileTestSuite) TestRunUnDelegateFromThroughClientChain() {
 			}
 			msgEthereumTx := evmtypes.NewTx(&txArgs)
 
-			msgEthereumTx.From = s.address.String()
-			err := msgEthereumTx.Sign(s.ethSigner, s.signer)
+			msgEthereumTx.From = s.Address.String()
+			err := msgEthereumTx.Sign(s.EthSigner, s.Signer)
 			s.Require().NoError(err, "failed to sign Ethereum message")
 
 			// Instantiate config
-			proposerAddress := s.ctx.BlockHeader().ProposerAddress
-			cfg, err := s.app.EvmKeeper.EVMConfig(s.ctx, proposerAddress, s.app.EvmKeeper.ChainID())
+			proposerAddress := s.Ctx.BlockHeader().ProposerAddress
+			cfg, err := s.App.EvmKeeper.EVMConfig(s.Ctx, proposerAddress, s.App.EvmKeeper.ChainID())
 			s.Require().NoError(err, "failed to instantiate EVM config")
 
-			msg, err := msgEthereumTx.AsMessage(s.ethSigner, baseFee)
+			msg, err := msgEthereumTx.AsMessage(s.EthSigner, baseFee)
 			s.Require().NoError(err, "failed to instantiate Ethereum message")
 
 			// set txHash for delegation module
-			fmt.Println("the txHash is:", msgEthereumTx.Hash)
-			s.ctx = s.ctx.WithValue(delegation.CtxKeyTxHash, common.HexToHash(msgEthereumTx.Hash))
+			s.Ctx = s.Ctx.WithValue(delegation.CtxKeyTxHash, common.HexToHash(msgEthereumTx.Hash))
 			// Create StateDB
-			s.stateDB = statedb.New(s.ctx, s.app.EvmKeeper, statedb.NewEmptyTxConfig(common.BytesToHash(s.ctx.HeaderHash().Bytes())))
+			s.StateDB = statedb.New(s.Ctx, s.App.EvmKeeper, statedb.NewEmptyTxConfig(common.BytesToHash(s.Ctx.HeaderHash().Bytes())))
 			// Instantiate EVM
-			evm := s.app.EvmKeeper.NewEVM(
-				s.ctx, msg, cfg, nil, s.stateDB,
+			evm := s.App.EvmKeeper.NewEVM(
+				s.Ctx, msg, cfg, nil, s.StateDB,
 			)
-			params := s.app.EvmKeeper.GetParams(s.ctx)
+			params := s.App.EvmKeeper.GetParams(s.Ctx)
 			activePrecompiles := params.GetActivePrecompilesAddrs()
-			precompileMap := s.app.EvmKeeper.Precompiles(activePrecompiles...)
+			precompileMap := s.App.EvmKeeper.Precompiles(activePrecompiles...)
 			err = vm.ValidatePrecompiles(precompileMap, activePrecompiles)
 			s.Require().NoError(err, "invalid precompiles", activePrecompiles)
 			evm.WithPrecompiles(precompileMap, activePrecompiles)
@@ -453,9 +445,12 @@ func (s *PrecompileTestSuite) TestRunUnDelegateFromThroughClientChain() {
 				s.Require().NoError(err, "expected no error when running the precompile")
 				s.Require().Equal(tc.returnBytes, bz, "the return doesn't match the expected result")
 			} else {
-				s.Require().Error(err, "expected error to be returned when running the precompile")
-				s.Require().Nil(bz, "expected returned bytes to be nil")
-				s.Require().ErrorContains(err, tc.errContains)
+				// for failed cases we expect it returns bool value instead of error
+				// this is a workaround because the error returned by precompile can not be caught in EVM
+				// see https://github.com/ExocoreNetwork/exocore/issues/70
+				// TODO: we should figure out root cause and fix this issue to make precompiles work normally
+				s.Require().NoError(err, "expected no error when running the precompile")
+				s.Require().Equal(tc.returnBytes, bz, "expected returned bytes to be nil")
 			}
 		})
 	}

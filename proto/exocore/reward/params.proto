@@ -1,13 +1,7 @@
 syntax = "proto3";
 package exocore.reward;
 
-import "gogoproto/gogo.proto";
-
 option go_package = "github.com/ExocoreNetwork/exocore/x/reward/types";
 
 // Params defines the parameters for the module.
-message Params {
-  string   exoCoreLzAppAddress = 1;
-  string   exoCoreLzAppEventTopic =2;
-  
-}
+message Params {}

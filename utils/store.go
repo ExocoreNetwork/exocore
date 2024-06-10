@@ -4,10 +4,10 @@ import (
 	"bytes"
 	"strings"
 
+	errorsmod "cosmossdk.io/errors"
 	"github.com/cometbft/cometbft/libs/log"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 
 	"github.com/ExocoreNetwork/exocore/utils/key"
 )
@@ -169,7 +169,7 @@ type iterator struct {
 	cdc codec.BinaryCodec
 }
 
-// UnmarshalValue returns the value marshalled into the given type
+// UnmarshalValue returns the value marshaled into the given type
 func (i iterator) UnmarshalValue(value codec.ProtoMarshaler) {
 	value.Reset()
 	i.cdc.MustUnmarshalLengthPrefixed(i.Value(), value)
@@ -262,6 +262,6 @@ func (k basicKey) Equals(other Key) bool {
 func CloseLogError(iter sdk.Iterator, logger log.Logger) {
 	err := iter.Close()
 	if err != nil {
-		logger.Error(sdkerrors.Wrap(err, "failed to close kv store iterator").Error())
+		logger.Error(errorsmod.Wrap(err, "failed to close kv store iterator").Error())
 	}
 }

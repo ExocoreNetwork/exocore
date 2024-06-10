@@ -4,6 +4,10 @@ import (
 	"fmt"
 	"reflect"
 
+	exocmn "github.com/ExocoreNetwork/exocore/precompiles/common"
+
+	errorsmod "cosmossdk.io/errors"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
@@ -22,22 +26,19 @@ const (
 	CtxKeyTxHash = "TxHash"
 )
 
-// DelegateToThroughClientChain delegate the client chain assets to the operator through client chain, that will change the states in delegation and restaking_assets_manage module
+// DelegateToThroughClientChain delegate the client chain assets to the operator through client chain, that will change the states in delegation and assets module
 func (p Precompile) DelegateToThroughClientChain(
 	ctx sdk.Context,
-	origin common.Address,
+	_ common.Address,
 	contract *vm.Contract,
-	stateDB vm.StateDB,
+	_ vm.StateDB,
 	method *abi.Method,
 	args []interface{},
 ) ([]byte, error) {
 	// check the invalidation of caller contract
-	exoCoreLzAppAddr, err := p.delegationKeeper.GetExoCoreLzAppAddress(ctx)
+	err := p.assetsKeeper.CheckExocoreLzAppAddr(ctx, contract.CallerAddress)
 	if err != nil {
-		return nil, err
-	}
-	if contract.CallerAddress != exoCoreLzAppAddr {
-		return nil, fmt.Errorf(ErrContractCaller, contract.CallerAddress, exoCoreLzAppAddr)
+		return nil, errorsmod.Wrap(err, exocmn.ErrContractCaller)
 	}
 
 	delegationParams, err := p.GetDelegationParamsFromInputs(ctx, args)
@@ -52,25 +53,22 @@ func (p Precompile) DelegateToThroughClientChain(
 	return method.Outputs.Pack(true)
 }
 
-// UndelegateFromThroughClientChain Undelegation the client chain assets from the operator through client chain, that will change the states in delegation and restaking_assets_manage module
+// UndelegateFromThroughClientChain Undelegation the client chain assets from the operator through client chain, that will change the states in delegation and assets module
 func (p Precompile) UndelegateFromThroughClientChain(
 	ctx sdk.Context,
-	origin common.Address,
+	_ common.Address,
 	contract *vm.Contract,
-	stateDB vm.StateDB,
+	_ vm.StateDB,
 	method *abi.Method,
 	args []interface{},
 ) ([]byte, error) {
 	// check the invalidation of caller contract
-	exoCoreLzAppAddr, err := p.delegationKeeper.GetExoCoreLzAppAddress(ctx)
+	err := p.assetsKeeper.CheckExocoreLzAppAddr(ctx, contract.CallerAddress)
 	if err != nil {
-		return nil, err
-	}
-	if contract.CallerAddress != exoCoreLzAppAddr {
-		return nil, fmt.Errorf(ErrContractCaller, contract.CallerAddress, exoCoreLzAppAddr)
+		return nil, errorsmod.Wrap(err, exocmn.ErrContractCaller)
 	}
 
-	UndelegationParams, err := p.GetDelegationParamsFromInputs(ctx, args)
+	undelegationParams, err := p.GetDelegationParamsFromInputs(ctx, args)
 	if err != nil {
 		return nil, err
 	}
@@ -79,9 +77,9 @@ func (p Precompile) UndelegateFromThroughClientChain(
 	if !ok || txHash.Bytes() == nil {
 		return nil, fmt.Errorf(ErrCtxTxHash, reflect.TypeOf(ctx.Value(CtxKeyTxHash)), txHash)
 	}
-	UndelegationParams.TxHash = txHash
+	undelegationParams.TxHash = txHash
 
-	err = p.delegationKeeper.UndelegateFrom(ctx, UndelegationParams)
+	err = p.delegationKeeper.UndelegateFrom(ctx, undelegationParams)
 	if err != nil {
 		return nil, err
 	}

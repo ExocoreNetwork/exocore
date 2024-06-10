@@ -1,50 +1,30 @@
 package keeper
 
 import (
-	"strings"
-
-	deposittype "github.com/ExocoreNetwork/exocore/x/deposit/types"
+	"github.com/ExocoreNetwork/exocore/x/deposit/types"
 	"github.com/cosmos/cosmos-sdk/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/ethereum/go-ethereum/common"
 )
 
-var ParamsKey = []byte("Params")
-
-func (k Keeper) SetParams(ctx sdk.Context, params *deposittype.Params) error {
-	// check if addr is evm address
-	if !common.IsHexAddress(params.ExoCoreLzAppAddress) {
-		return deposittype.ErrInvalidEvmAddressFormat
-	}
-	if len(common.FromHex(params.ExoCoreLzAppEventTopic)) != common.HashLength {
-		return deposittype.ErrInvalidLzUaTopicIdLength
-	}
-	params.ExoCoreLzAppAddress = strings.ToLower(params.ExoCoreLzAppAddress)
-	params.ExoCoreLzAppEventTopic = strings.ToLower(params.ExoCoreLzAppEventTopic)
-	store := prefix.NewStore(ctx.KVStore(k.storeKey), deposittype.KeyPrefixParams)
+// SetParams The function related to module parameter should be deleted
+// if no parameters need to be stored in the future.
+func (k Keeper) SetParams(ctx sdk.Context, params *types.Params) error {
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefixParams)
 	bz := k.cdc.MustMarshal(params)
-	store.Set(ParamsKey, bz)
+	store.Set(types.ParamsKey, bz)
 	return nil
 }
 
-func (k Keeper) GetParams(ctx sdk.Context) (*deposittype.Params, error) {
-	store := prefix.NewStore(ctx.KVStore(k.storeKey), deposittype.KeyPrefixParams)
-	isExist := store.Has(ParamsKey)
-	if !isExist {
-		return nil, deposittype.ErrNoParamsKey
+func (k Keeper) GetParams(ctx sdk.Context) (*types.Params, error) {
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefixParams)
+	ifExist := store.Has(types.ParamsKey)
+	if !ifExist {
+		return nil, types.ErrNoParamsKey
 	}
 
-	value := store.Get(ParamsKey)
+	value := store.Get(types.ParamsKey)
 
-	ret := &deposittype.Params{}
+	ret := &types.Params{}
 	k.cdc.MustUnmarshal(value, ret)
 	return ret, nil
-}
-
-func (k Keeper) GetExoCoreLzAppAddress(ctx sdk.Context) (common.Address, error) {
-	depositModuleParam, err := k.GetParams(ctx)
-	if err != nil {
-		return common.Address{}, err
-	}
-	return common.HexToAddress(depositModuleParam.ExoCoreLzAppAddress), nil
 }

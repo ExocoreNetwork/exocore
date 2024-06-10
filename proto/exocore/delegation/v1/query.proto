@@ -1,68 +1,104 @@
 syntax = "proto3";
 package exocore.delegation.v1;
 
-import "gogoproto/gogo.proto";
-import "google/api/annotations.proto";
 import "cosmos/query/v1/query.proto";
 import "cosmos_proto/cosmos.proto";
-import "exocore/delegation/v1/tx.proto";
+import "gogoproto/gogo.proto";
+import "google/api/annotations.proto";
 
 option go_package = "github.com/ExocoreNetwork/exocore/x/delegation/types";
 
+// DelegationInfoReq is the request to obtain the delegation information
+// by staker id and asset id.
 message DelegationInfoReq {
-  string stakerId = 1;
-  string assetId = 2;
+  // staker_id is the staker id.
+  string staker_id = 1 [(gogoproto.customname) = "StakerID"];
+  // asset_id is the asset id.
+  string asset_id = 2 [(gogoproto.customname) = "AssetID"];
 }
 
-message DelegationAmounts{
-  string CanUndelegationAmount = 1
+// StakerList is a list to save a batch of stakers
+message StakerList {
+  // stakers is a list of stakers. the caller is responsible for ensuring
+  // uniqueness of the stakers, since dumping this into a map could lead
+  // to non-deterministic behavior.
+  repeated string stakers = 1;
+}
+
+// DelegationAmounts is the delegation amount response for a single delegation.
+message DelegationAmounts {
+  // undelegatable_share is the share that can be undelegated.
+  // It's to reduce the state updating when slash occurs.
+  // S_j = S * T_j / T, `S` and `T` is the current asset share and amount of operator,
+  // and the T_j represents the change in staker's asset amount when some external
+  // operations occur, such as: delegation, undelegation and non-instantaneous slashing.
+  // S_j represents the change in the staker's asset share,
+  // so the updated share should be added by it.
+  // A special case is the initial delegation, when T = 0 and S = 0, so T_j / T is undefined.
+  // For the initial delegation, delegator j who delegates T_j tokens receive S_j = T_j shares.
+  string undelegatable_share = 1
+  [
+    (cosmos_proto.scalar) = "cosmos.Dec",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+    (gogoproto.nullable) = false
+  ];
+
+  // wait_undelegation_amount is the amount that is waiting to be unbonded.
+  string wait_undelegation_amount = 2
   [
     (cosmos_proto.scalar) = "cosmos.Int",
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
     (gogoproto.nullable) = false
   ];
-  string WaitUndelegationAmount = 2
-  [
-    (cosmos_proto.scalar) = "cosmos.Int",
-    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
-    (gogoproto.nullable) = false
-  ];
 }
 
-message QueryDelegationInfoResponse{
-  string TotalDelegatedAmount = 1
-  [
-    (cosmos_proto.scalar) = "cosmos.Int",
-    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
-    (gogoproto.nullable) = false
-  ];
-  map<string, DelegationAmounts > delegationInfos = 2;
+// QueryDelegationInfoResponse is the response for delegations by staker id and
+// asset id.
+message QueryDelegationInfoResponse {
+  // delegation_infos is the delegation information for each operator.
+  map<string, DelegationAmounts> delegation_infos = 1;
 }
 
+// SingleDelegationInfoReq is the request to obtain the single delegation information.
 message SingleDelegationInfoReq {
-  string stakerId = 1;
-  string operatorAddr = 2 [(cosmos_proto.scalar) = "cosmos.AddressString"];
-  string assetId = 3;
+  // staker_id is the staker id.
+  string staker_id = 1 [(gogoproto.customname) = "StakerID"];
+  // operator_addr is the operator address.
+  string operator_addr = 2 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+  // asset_id is the asset id.
+  string asset_id = 3 [(gogoproto.customname) = "AssetID"];
 }
 
-message QueryOperatorInfoReq {
-  string OperatorAddr = 1
-  [(cosmos_proto.scalar) = "cosmos.AddressString"];
+// UndelegationHoldCountReq is the request to obtain the undelegation hold count.
+message UndelegationHoldCountReq {
+  // record_key is the record key of the undelegation record.
+  string record_key = 1;
 }
 
+// UndelegationHoldCountResponse is the response for the undelegation hold count.
+message UndelegationHoldCountResponse {
+  // hold_count is the number of undelegations that are on hold.
+  uint64 hold_count = 1;
+}
+
+// Query is the service API for the delegation module.
 service Query {
-  rpc QueryOperatorInfo(QueryOperatorInfoReq) returns(OperatorInfo){
-    option (google.api.http).get = "/exocore/delegation/v1/GetOperatorInfo";
-  }
-  // Balance queries the balance of a single coin for a single account.
+  // DelegationInfo queries the delegation information for {stakerID, assetID}.
   rpc QueryDelegationInfo(DelegationInfoReq) returns (QueryDelegationInfoResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
     option (google.api.http).get = "/exocore/delegation/v1/GetDelegationInfo";
   }
-
-  rpc QuerySingleDelegationInfo(SingleDelegationInfoReq) returns(DelegationAmounts){
+  // SingleDelegationInfo queries the single delegation information for 
+  // {chain, staker, asset, operator}.
+  rpc QuerySingleDelegationInfo(SingleDelegationInfoReq) returns (DelegationAmounts) {
     option (cosmos.query.v1.module_query_safe) = true;
     option (google.api.http).get = "/exocore/delegation/v1/QuerySingleDelegationInfo";
+  }
+
+  // QueryUndelegationHoldCount queries the undelegation hold count.
+  rpc QueryUndelegationHoldCount(UndelegationHoldCountReq) returns (UndelegationHoldCountResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/exocore/delegation/v1/QueryUndelegationHoldCount/{record_key}";
   }
 }
 

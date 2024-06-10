@@ -1,3 +1,4 @@
+// nolint: all // this package is not implemented yet.
 package native_token
 
 import (
@@ -84,9 +85,9 @@ type IDeposit interface {
 	PostTxProcessing(ctx sdk.Context, msg core.Message, receipt *ethtypes.Receipt) error
 
 	// SetReStakerExoCoreAddr handle the SetReStakerExoCoreAddr txs from msg service
-	SetReStakerExoCoreAddr(ctx context.Context, reStakerId string) (err error)
-	GetReStakerExoCoreAddr(reStakerId string) (addr sdk.Address, err error)
+	SetReStakerExoCoreAddr(ctx context.Context, restakerID string) (err error)
+	GetReStakerExoCoreAddr(restakerID string) (addr sdk.Address, err error)
 
 	// Deposit internal func for PostTxProcessing
-	Deposit(reStakerId string, assetsInfo map[string]math.Uint) error
+	Deposit(restakerID string, assetsInfo map[string]math.Uint) error
 }

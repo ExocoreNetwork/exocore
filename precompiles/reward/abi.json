@@ -1,41 +1,43 @@
 [
   {
-    "inputs":[
+    "inputs":
+    [
       {
-        "internalType":"uint16",
-        "name":"clientChainLzId",
-        "type":"uint16"
+        "internalType": "uint32",
+        "name": "clientChainLzID",
+        "type": "uint32"
       },
       {
-        "internalType":"bytes",
-        "name":"assetsAddress",
-        "type":"bytes"
+        "internalType": "bytes",
+        "name": "assetsAddress",
+        "type": "bytes"
       },
       {
-        "internalType":"bytes",
-        "name":"withdrawRewardAddress",
-        "type":"bytes"
+        "internalType": "bytes",
+        "name": "withdrawRewardAddress",
+        "type": "bytes"
       },
       {
-        "internalType":"uint256",
-        "name":"opAmount",
-        "type":"uint256"
+        "internalType": "uint256",
+        "name": "opAmount",
+        "type": "uint256"
       }
     ],
-    "name":"claimReward",
-    "outputs":[
+    "name": "claimReward",
+    "outputs":
+    [
       {
-        "internalType":"bool",
-        "name":"success",
-        "type":"bool"
+        "internalType": "bool",
+        "name": "success",
+        "type": "bool"
       },
       {
-        "internalType":"uint256",
-        "name":"latestAssetState",
-        "type":"uint256"
+        "internalType": "uint256",
+        "name": "latestAssetState",
+        "type": "uint256"
       }
     ],
-    "stateMutability":"nonpayable",
-    "type":"function"
+    "stateMutability": "nonpayable",
+    "type": "function"
   }
 ]
