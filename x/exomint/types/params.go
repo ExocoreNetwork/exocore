@@ -40,9 +40,7 @@ func DefaultParams() Params {
 		panic("invalid default mint reward")
 	}
 	return NewParams(
-		sdk.DefaultBondDenom,
-		res,
-		"hour",
+		sdk.DefaultBondDenom, res, epochstypes.HourEpochID,
 	)
 }
 
