@@ -12,6 +12,15 @@ import (
 
 var _ paramtypes.ParamSet = (*Params)(nil)
 
+const (
+	// DefaultMintDenom = sdk.DefaultBondDenom // not a constant
+	// DefaultEpochIdentifier is the epoch identifier which is used, by default, to identify the
+	// epoch. Note that the options include week, day or hour.
+	DefaultEpochIdentifier = epochstypes.DayEpochID
+	// DefaultEpochRewardStr is the amount of MintDenom minted at each epoch end, as a string.
+	DefaultEpochRewardStr = "20000000000000000000"
+)
+
 // Reflection based keys for params subspace
 var (
 	KeyMintDenom       = []byte("MintDenom")
@@ -35,12 +44,12 @@ func NewParams(mintDenom string, epochReward math.Int, epochIdentifier string) P
 
 // DefaultParams returns a default set of parameters
 func DefaultParams() Params {
-	res, ok := sdk.NewIntFromString("20000000000000000000")
+	res, ok := sdk.NewIntFromString(DefaultEpochRewardStr)
 	if !ok {
 		panic("invalid default mint reward")
 	}
 	return NewParams(
-		sdk.DefaultBondDenom, res, epochstypes.HourEpochID,
+		sdk.DefaultBondDenom, res, DefaultEpochIdentifier,
 	)
 }
 
