@@ -493,8 +493,9 @@ func NewExocoreApp(
 	// get the address of the authority, which is the governance module.
 	// as the authority, the governance module can modify parameters in the modules that support
 	// such modifications.
-	authAddr := authtypes.NewModuleAddress(govtypes.ModuleName)
-	authAddrString := authAddr.String()
+	// TODO: replace with governance module once implemented.
+	authAddrString := "exo1u25udsfm5wu3h5s5xqayf6jjycy2etwyfctk5w" // operator2
+	authAddr := sdk.MustAccAddressFromBech32(authAddrString)
 
 	// set the BaseApp's parameter store which is used for setting Tendermint parameters
 	app.ConsensusParamsKeeper = consensusparamkeeper.NewKeeper(
@@ -556,10 +557,11 @@ func NewExocoreApp(
 	// Exocore keepers begin. TODO: replace virtual keepers with actual implementation.
 
 	// the exomint keeper is used to mint the reward for validators and delegators. it needs
-	// the epochs keeper (although indirectly via hooks) and the bank / account keepers.
+	// the epochs keeper and the bank / account keepers.
 	app.ExomintKeeper = exomintkeeper.NewKeeper(
 		appCodec, keys[exominttypes.StoreKey], app.GetSubspace(exominttypes.ModuleName),
 		app.AccountKeeper, app.BankKeeper, app.EpochsKeeper, authtypes.FeeCollectorName,
+		authAddrString,
 	)
 
 	// asset and client chain registry.

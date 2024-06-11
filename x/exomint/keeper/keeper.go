@@ -20,6 +20,8 @@ type (
 		bankKeeper       types.BankKeeper
 		epochsKeeper     types.EpochsKeeper
 		feeCollectorName string
+		// the address capable of executing a MsgUpdateParams message, typically x/gov.
+		authority string
 	}
 )
 
@@ -31,6 +33,7 @@ func NewKeeper(
 	bk types.BankKeeper,
 	ek types.EpochsKeeper,
 	feeCollectorName string,
+	authority string,
 ) Keeper {
 	// ensure mint module account is set
 	if addr := ak.GetModuleAddress(types.ModuleName); addr == nil {
@@ -49,6 +52,7 @@ func NewKeeper(
 		bankKeeper:       bk,
 		epochsKeeper:     ek,
 		feeCollectorName: feeCollectorName,
+		authority:        authority,
 	}
 }
 
