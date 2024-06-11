@@ -50,10 +50,7 @@ func CmdUpdateParams() *cobra.Command {
 				return err
 			}
 
-			msg, err := newBuildUpdateParamsMsg(clientCtx, cmd.Flags())
-			if err != nil {
-				return err
-			}
+			msg := newBuildUpdateParamsMsg(clientCtx, cmd.Flags())
 
 			// this calls ValidateBasic internally so we don't need to do that.
 			return tx.GenerateOrBroadcastTxWithFactory(clientCtx, txf, msg)
@@ -79,7 +76,7 @@ func CmdUpdateParams() *cobra.Command {
 
 func newBuildUpdateParamsMsg(
 	clientCtx client.Context, fs *pflag.FlagSet,
-) (*types.MsgUpdateParams, error) {
+) *types.MsgUpdateParams {
 	sender := clientCtx.GetFromAddress()
 	// #nosec G703 // this only errors if the flag isn't defined.
 	mintDenom, _ := fs.GetString(FlagMintDenom)
@@ -99,5 +96,5 @@ func newBuildUpdateParamsMsg(
 			EpochIdentifier: epochIdentifier,
 		},
 	}
-	return msg, nil
+	return msg
 }

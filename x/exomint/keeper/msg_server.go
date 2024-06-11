@@ -52,6 +52,15 @@ func (k Keeper) UpdateParams(
 		logger.Info("UpdateParams", "overriding EpochIdentifier with value", prevParams.EpochIdentifier)
 		nextParams.EpochIdentifier = prevParams.EpochIdentifier
 	}
+	// stateful validations
+	// no need to check if MintDenom is registered in BankKeeper, since it does not
+	// itself perform such checks.
+	// the reward is already guaranteed to be positive and fits in the bit length.
+	// we just have to check epoch here.
+	if _, found := k.epochsKeeper.GetEpochInfo(c, nextParams.EpochIdentifier); !found {
+		logger.Info("UpdateParams", "overriding EpochIdentifier with value", prevParams.EpochIdentifier)
+		nextParams.EpochIdentifier = prevParams.EpochIdentifier
+	}
 	k.SetParams(c, msg.Params)
 	return nil, nil
 }
