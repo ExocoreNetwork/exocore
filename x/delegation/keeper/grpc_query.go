@@ -30,7 +30,7 @@ func (k *Keeper) QueryUndelegations(ctx context.Context, req *delegationtype.Und
 	}, nil
 }
 
-func (k *Keeper) QueryWaitCompleteUndelegations(ctx context.Context, req *delegationtype.WaitCompleteUndelegationsReq) (*delegationtype.UndelegationRecordList, error) {
+func (k *Keeper) QueryUndelegationsByHeight(ctx context.Context, req *delegationtype.UndelegationsByHeightReq) (*delegationtype.UndelegationRecordList, error) {
 	c := sdk.UnwrapSDKContext(ctx)
 	undelegations, err := k.GetWaitCompleteUndelegationRecords(c, req.BlockHeight)
 	if err != nil {

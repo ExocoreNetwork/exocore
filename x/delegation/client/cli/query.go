@@ -29,7 +29,7 @@ func GetQueryCmd() *cobra.Command {
 		QuerySingleDelegationInfo(),
 		QueryDelegationInfo(),
 		QueryUndelegations(),
-		QueryWaitCompleteUndelegations(),
+		QueryUndelegationsByHeight(),
 		QueryUndelegationHoldCount(),
 	)
 	return cmd
@@ -142,10 +142,10 @@ func QueryUndelegations() *cobra.Command {
 	return cmd
 }
 
-// QueryWaitCompleteUndelegations queries all undelegations waiting to be completed by height
-func QueryWaitCompleteUndelegations() *cobra.Command {
+// QueryUndelegationsByHeight queries all undelegations waiting to be completed by height
+func QueryUndelegationsByHeight() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "QueryWaitCompleteUndelegations height",
+		Use:   "QueryUndelegationsByHeight height",
 		Short: "Get undelegations waiting to be completed",
 		Long:  "Get undelegations waiting to be completed",
 		Args:  cobra.ExactArgs(1),
@@ -159,10 +159,10 @@ func QueryWaitCompleteUndelegations() *cobra.Command {
 				return err
 			}
 			queryClient := delegationtype.NewQueryClient(clientCtx)
-			req := &delegationtype.WaitCompleteUndelegationsReq{
+			req := &delegationtype.UndelegationsByHeightReq{
 				BlockHeight: height,
 			}
-			res, err := queryClient.QueryWaitCompleteUndelegations(context.Background(), req)
+			res, err := queryClient.QueryUndelegationsByHeight(context.Background(), req)
 			if err != nil {
 				return err
 			}

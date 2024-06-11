@@ -34,9 +34,9 @@ func GetSlashIDForDogfood(infraction stakingtypes.Infraction, infractionHeight i
 }
 
 // SlashFromUndelegation executes the slash from an undelegation
-func SlashFromUndelegation(undelegation *delegationtype.UndelegationRecord, slashProportion sdkmath.LegacyDec) (*types.SlashFromUndelegation, error) {
+func SlashFromUndelegation(undelegation *delegationtype.UndelegationRecord, slashProportion sdkmath.LegacyDec) *types.SlashFromUndelegation {
 	if undelegation.ActualCompletedAmount.IsZero() {
-		return nil, nil
+		return nil
 	}
 	slashAmount := slashProportion.MulInt(undelegation.Amount).TruncateInt()
 	// reduce the actual_completed_amount in the record
@@ -51,7 +51,7 @@ func SlashFromUndelegation(undelegation *delegationtype.UndelegationRecord, slas
 		StakerID: undelegation.StakerID,
 		AssetID:  undelegation.AssetID,
 		Amount:   slashAmount,
-	}, nil
+	}
 }
 
 func (k *Keeper) CheckSlashParameter(ctx sdk.Context, parameter *SlashInputInfo) error {
@@ -100,10 +100,7 @@ func (k *Keeper) SlashAssets(ctx sdk.Context, parameter *SlashInputInfo) (*types
 	if parameter.SlashEventHeight < ctx.BlockHeight() {
 		// get the undelegations that are submitted after the slash.
 		opFunc := func(undelegation *delegationtype.UndelegationRecord) error {
-			slashFromUndelegation, err := SlashFromUndelegation(undelegation, newSlashProportion)
-			if err != nil {
-				return err
-			}
+			slashFromUndelegation := SlashFromUndelegation(undelegation, newSlashProportion)
 			if slashFromUndelegation != nil {
 				executionInfo.SlashUndelegations = append(executionInfo.SlashUndelegations, slashFromUndelegation)
 			}
