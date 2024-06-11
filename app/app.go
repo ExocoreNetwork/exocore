@@ -494,7 +494,7 @@ func NewExocoreApp(
 	// as the authority, the governance module can modify parameters in the modules that support
 	// such modifications.
 	// TODO: replace with governance module once implemented.
-	authAddrString := "exo1u25udsfm5wu3h5s5xqayf6jjycy2etwyfctk5w" // operator2
+	authAddrString := "exo1u25udsfm5wu3h5s5xqayf6jjycy2etwyfctk5w" // operator2 #nogitleaks
 	authAddr := sdk.MustAccAddressFromBech32(authAddrString)
 
 	// set the BaseApp's parameter store which is used for setting Tendermint parameters
