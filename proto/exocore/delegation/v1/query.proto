@@ -91,9 +91,9 @@ message UndelegationsReq {
   string asset_id = 2 [(gogoproto.customname) = "AssetID"];
 }
 
-// UndelegationsReq is the request to obtain all undelegations waiting to be completed
+// UndelegationsByHeightReq is the request to obtain all undelegations waiting to be completed
 // by height.
-message WaitCompleteUndelegationsReq {
+message UndelegationsByHeightReq {
   // block_height is the block height to query.
   uint64 block_height = 1;
 }
@@ -131,11 +131,11 @@ service Query {
     option (google.api.http).get = "/exocore/delegation/v1/QueryUndelegations";
   }
 
-  // QueryWaitCompleteUndelegations queries all undelegations waiting to be completed by
+  // QueryUndelegationsByHeight queries all undelegations waiting to be completed by
   // {height}.
-  rpc QueryWaitCompleteUndelegations(WaitCompleteUndelegationsReq) returns (UndelegationRecordList) {
+  rpc QueryUndelegationsByHeight(UndelegationsByHeightReq) returns (UndelegationRecordList) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/exocore/delegation/v1/QueryWaitCompleteUndelegations";
+    option (google.api.http).get = "/exocore/delegation/v1/QueryUndelegationsByHeight";
   }
 }
 

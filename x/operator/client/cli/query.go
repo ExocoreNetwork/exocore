@@ -243,8 +243,10 @@ func QueryOperatorUSDValue() *cobra.Command {
 			}
 			queryClient := operatortypes.NewQueryClient(clientCtx)
 			req := &operatortypes.QueryOperatorUSDValueRequest{
-				OperatorAddr: args[0],
-				AVSAddress:   args[1],
+				AddressInfo: &operatortypes.AddressInfo{
+					OperatorAddr: args[0],
+					AVSAddress:   args[1],
+				},
 			}
 			res, err := queryClient.QueryOperatorUSDValue(context.Background(), req)
 			if err != nil {
@@ -300,8 +302,10 @@ func QueryOperatorSlashInfo() *cobra.Command {
 			}
 			queryClient := operatortypes.NewQueryClient(clientCtx)
 			req := &operatortypes.QueryOperatorSlashInfoRequest{
-				OperatorAddr: args[0],
-				AVSAddress:   args[1],
+				AddressInfo: &operatortypes.AddressInfo{
+					OperatorAddr: args[0],
+					AVSAddress:   args[1],
+				},
 			}
 			res, err := queryClient.QueryOperatorSlashInfo(context.Background(), req)
 			if err != nil {
