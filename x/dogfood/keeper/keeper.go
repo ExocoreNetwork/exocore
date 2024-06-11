@@ -26,6 +26,9 @@ type (
 		operatorKeeper   types.OperatorKeeper
 		delegationKeeper types.DelegationKeeper
 		restakingKeeper  types.AssetsKeeper
+
+		// edit params
+		authority string
 	}
 )
 
@@ -38,6 +41,7 @@ func NewKeeper(
 	operatorKeeper types.OperatorKeeper,
 	delegationKeeper types.DelegationKeeper,
 	restakingKeeper types.AssetsKeeper,
+	authority string,
 ) Keeper {
 	// set KeyTable if it has not already been set
 	if !ps.HasKeyTable() {
@@ -52,6 +56,7 @@ func NewKeeper(
 		operatorKeeper:   operatorKeeper,
 		delegationKeeper: delegationKeeper,
 		restakingKeeper:  restakingKeeper,
+		authority:        authority,
 	}
 	k.mustValidateFields()
 

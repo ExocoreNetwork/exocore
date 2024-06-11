@@ -92,7 +92,7 @@ func (AppModuleBasic) RegisterGRPCGatewayRoutes(
 // GetTxCmd returns the root Tx command for the module. The subcommands of this root command are
 // used by end-users to generate new transactions containing messages defined in the module
 func (a AppModuleBasic) GetTxCmd() *cobra.Command {
-	return cli.GetTxCmd()
+	return cli.NewTxCmd()
 }
 
 // GetQueryCmd returns the root query command for the module. The subcommands of this root
