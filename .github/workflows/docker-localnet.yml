@@ -1,0 +1,23 @@
+name: Docker Build `./local/exocore/Dockerfile`
+on:
+  pull_request:
+  push:
+    branches:
+      - develop
+      - main
+      - master
+      - release/**
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: Build Docker image
+      run: make -C ./networks
