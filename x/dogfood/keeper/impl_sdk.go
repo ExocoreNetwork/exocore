@@ -173,14 +173,14 @@ func (k Keeper) IterateBondedValidatorsByPower(
 	for i, v := range prevList {
 		pk, err := v.ConsPubKey()
 		if err != nil {
-			// will only happen if there is an error in deserialization.
+			ctx.Logger().Error("Failed to deserialize public key; skipping", "error", err, "i", i)
 			continue
 		}
 		found, addr := k.operatorKeeper.GetOperatorAddressForChainIDAndConsAddr(
 			ctx, ctx.ChainID(), sdk.GetConsAddress(pk),
 		)
 		if !found {
-			// this should never happen. should we panic?
+			ctx.Logger().Error("Operator address not found; skipping", "consAddress", sdk.GetConsAddress(pk), "i", i)
 			continue
 		}
 		val, err := stakingtypes.NewValidator(
@@ -188,7 +188,7 @@ func (k Keeper) IterateBondedValidatorsByPower(
 			pk, stakingtypes.Description{ /* TODO */ },
 		)
 		if err != nil {
-			// will only happen if there is an error in deserialization.
+			ctx.Logger().Error("Failed to create validator; skipping", "error", err, "i", i)
 			continue
 		}
 		// allow calculation of power
