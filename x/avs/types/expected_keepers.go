@@ -3,7 +3,13 @@ package types
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/auth/types"
+	epochsTypes "github.com/evmos/evmos/v14/x/epochs/types"
 )
+
+// EpochsKeeper represents the expected keeper interface for the epochs module.
+type EpochsKeeper interface {
+	GetEpochInfo(sdk.Context, string) (epochsTypes.EpochInfo, bool)
+}
 
 // AccountKeeper defines the expected account keeper used for simulations (noalias)
 type AccountKeeper interface {
