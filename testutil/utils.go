@@ -229,6 +229,8 @@ func (suite *BaseTestSuite) SetupWithGenesisValSet(genAccs []authtypes.GenesisAc
 	delegationGenesis := delegationtypes.NewGenesis(delegationsByStaker)
 	genesisState[delegationtypes.ModuleName] = app.AppCodec().MustMarshalJSON(delegationGenesis)
 
+	// create a dogfood genesis with just the validator set, that is, the bare
+	// minimum valid genesis required to start a chain.
 	dogfoodGenesis := dogfoodtypes.NewGenesis(
 		dogfoodtypes.DefaultParams(), []dogfoodtypes.GenesisValidator{
 			{
@@ -243,7 +245,7 @@ func (suite *BaseTestSuite) SetupWithGenesisValSet(genAccs []authtypes.GenesisAc
 		[]dogfoodtypes.EpochToOperatorAddrs{},
 		[]dogfoodtypes.EpochToConsensusAddrs{},
 		[]dogfoodtypes.EpochToUndelegationRecordKeys{},
-		math.NewInt(2),
+		math.NewInt(2), // must match total vote power
 	)
 	genesisState[dogfoodtypes.ModuleName] = app.AppCodec().MustMarshalJSON(dogfoodGenesis)
 

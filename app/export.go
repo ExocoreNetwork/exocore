@@ -16,7 +16,6 @@ import (
 	slashingtypes "github.com/cosmos/cosmos-sdk/x/slashing/types"
 	evmtypes "github.com/evmos/evmos/v14/x/evm/types"
 
-	tmtypes "github.com/cometbft/cometbft/types"
 	"github.com/evmos/evmos/v14/encoding"
 )
 
@@ -76,9 +75,13 @@ func (app *ExocoreApp) ExportAppStateAndValidators(
 		return servertypes.ExportedApp{}, err
 	}
 
+	// the x/dogfood validator set is exported in its `val_set` key, and hence,
+	// does not need to be part of the app export. in other words, we do not
+	// duplicate the exported validator set. besides, as far as i can tell, the
+	// SDK does not use the Validators member of the ExportedApp struct.
+
 	return servertypes.ExportedApp{
 		AppState:        appState,
-		Validators:      []tmtypes.GenesisValidator{}, // exported directly in dogfood
 		Height:          height,
 		ConsensusParams: app.BaseApp.GetConsensusParams(ctx),
 	}, nil
