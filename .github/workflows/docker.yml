@@ -1,7 +1,11 @@
 name: Docker Build `./Dockerfile`
 on:
   pull_request:
+    paths:
+      - Dockerfile
   push:
+    paths:
+      - Dockerfile
     branches:
       - develop
       - main

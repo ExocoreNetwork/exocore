@@ -1,7 +1,13 @@
 name: Docker Build `./local/exocore/Dockerfile`
 on:
   pull_request:
+    paths:
+      - local/exocore/Dockerfile
+      - networks/Makefile
   push:
+    paths:
+      - local/exocore/Dockerfile
+      - networks/Makefile
     branches:
       - develop
       - main
