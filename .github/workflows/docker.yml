@@ -9,7 +9,7 @@ on:
       - release/**
 
 permissions:
-    contents: read
+  contents: read
 
 jobs:
   build:
