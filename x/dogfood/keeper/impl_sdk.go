@@ -164,7 +164,7 @@ func (k Keeper) ApplyAndReturnValidatorSetUpdates(
 // IterateBondedValidatorsByPower is an implementation of the staking interface expected by
 // the SDK's gov module and by our oracle module.
 func (k Keeper) IterateBondedValidatorsByPower(
-	ctx sdk.Context, f func(int64, stakingtypes.ValidatorI) bool,
+	ctx sdk.Context, f func(int64, stakingtypes.ValidatorI) (stop bool),
 ) {
 	prevList := k.GetAllExocoreValidators(ctx)
 	sort.SliceStable(prevList, func(i, j int) bool {

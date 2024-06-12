@@ -121,7 +121,7 @@ func (k Keeper) ExportGenesis(ctx sdk.Context) *types.GenesisState {
 				Power:     val.GetConsensusPower(sdk.DefaultPowerReduction),
 			},
 		)
-		return true
+		return false /* stop */
 	})
 	return types.NewGenesis(
 		k.GetDogfoodParams(ctx),
