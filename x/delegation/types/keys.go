@@ -75,6 +75,8 @@ func ParseStakerAssetIDAndOperatorAddrFromKey(key []byte) (keys *SingleDelegatio
 	return &SingleDelegationInfoReq{StakerID: stringList[0], AssetID: stringList[1], OperatorAddr: stringList[2]}, nil
 }
 
+// GetUndelegationRecordKey returns the key for the undelegation record. The caller must ensure that the parameters
+// are valid; this function performs no validation whatsoever.
 func GetUndelegationRecordKey(blockHeight, lzNonce uint64, txHash string, operatorAddr string) []byte {
 	return []byte(strings.Join([]string{operatorAddr, hexutil.EncodeUint64(blockHeight), hexutil.EncodeUint64(lzNonce), txHash}, "/"))
 }
