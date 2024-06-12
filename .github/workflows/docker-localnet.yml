@@ -1,4 +1,4 @@
-name: Docker Build `./local/exocore/Dockerfile`
+name: Docker build for localnet
 on:
   pull_request:
     paths:

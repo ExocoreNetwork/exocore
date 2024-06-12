@@ -1,4 +1,4 @@
-name: Docker Build `./Dockerfile`
+name: Docker build in root directory
 on:
   pull_request:
     paths:
