@@ -30,12 +30,6 @@ var _ = Describe("MsgCreatePrice", func() {
 		ks.Reset()
 		Expect(ks.ms).ToNot(BeNil())
 
-		//		validatorC := NewMockValidatorI(ks.ctrl)
-
-		// validatorC.EXPECT().GetConsensusPower(gomock.Any()).Return(int64(1))
-		// validatorC.EXPECT().GetConsensusPower(gomock.Any()).Return(int64(1))
-		// validatorC.EXPECT().GetConsensusPower(gomock.Any()).Return(int64(1))
-
 		privVal1 := mock.NewPV()
 		pubKey1, _ := privVal1.GetPubKey()
 		//		operator1 = sdk.ValAddress(pubKey1.Address())
@@ -43,24 +37,13 @@ var _ = Describe("MsgCreatePrice", func() {
 
 		privVal2 := mock.NewPV()
 		pubKey2, _ := privVal2.GetPubKey()
-		//		operator2 = sdk.ValAddress(pubKey2.Address())
 		consKey2 = sdk.AccAddress(pubKey2.Address())
 
 		privVal3 := mock.NewPV()
 		pubKey3, _ := privVal3.GetPubKey()
-		//		operator3 = sdk.ValAddress(pubKey3.Address())
 		consKey3 = sdk.AccAddress(pubKey3.Address())
 
-		// validatorC.EXPECT().GetOperator().Return(operator1)
-		// validatorC.EXPECT().GetOperator().Return(operator2)
-		// validatorC.EXPECT().GetOperator().Return(operator3)
-
 		// TODO: remove monkey patch for test
-		// p = ApplyMethod(reflect.TypeOf(stakingKeeper.Keeper{}), "IterateBondedValidatorsByPower", func(k stakingKeeper.Keeper, ctx sdk.Context, f func(index int64, validator stakingtypes.ValidatorI) bool) {
-		// 	f(0, validatorC)
-		// 	f(0, validatorC)
-		// 	f(0, validatorC)
-		// })
 		p = ApplyMethod(reflect.TypeOf(dogfoodkeeper.Keeper{}), "GetLastTotalPower", func(k dogfoodkeeper.Keeper, ctx sdk.Context) math.Int { return math.NewInt(3) })
 		p.ApplyMethod(reflect.TypeOf(dogfoodkeeper.Keeper{}), "GetAllExocoreValidators", func(k dogfoodkeeper.Keeper, ctx sdk.Context) []dogfoodtypes.ExocoreValidator {
 			return []dogfoodtypes.ExocoreValidator{

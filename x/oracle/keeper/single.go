@@ -84,7 +84,7 @@ func recacheAggregatorContext(ctx sdk.Context, agc *aggregator.AggregatorContext
 	agc.SetValidatorPowers(validatorPowers)
 	// TODO: test only
 	if k.GetLastTotalPower(ctx).BigInt().Cmp(totalPower) != 0 {
-		ctx.Logger().Error("something wrong when get validatorsPower from staking module")
+		ctx.Logger().Error("something wrong when get validatorsPower from dogfood module")
 	}
 
 	// reset validators
@@ -163,7 +163,7 @@ func initAggregatorContext(ctx sdk.Context, agc *aggregator.AggregatorContext, k
 	agc.SetValidatorPowers(validatorPowers)
 	// TODO: test only
 	if k.GetLastTotalPower(ctx).BigInt().Cmp(totalPower) != 0 {
-		ctx.Logger().Error("something wrong when get validatorsPower from staking module")
+		ctx.Logger().Error("something wrong when get validatorsPower from dogfood module")
 	}
 	// set validatorPower cache
 	c.AddCache(cache.ItemV(validatorPowers))

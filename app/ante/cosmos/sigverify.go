@@ -59,7 +59,7 @@ func (spkd SetPubKeyDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate b
 	if isOracleCreatePriceTx(tx) {
 		sigTx, ok := tx.(authsigning.SigVerifiableTx)
 		if !ok {
-			return ctx, sdkerrors.ErrTxDecode.Wrap("invalid tx type")
+			return ctx, sdkerrors.ErrTxDecode.Wrap("invalid transaction type, expected SigVerifiableTx")
 		}
 		signers := sigTx.GetSigners()
 		pubKeys, err := sigTx.GetPubKeys()
@@ -77,7 +77,7 @@ func (spkd SetPubKeyDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate b
 
 	sigTx, ok := tx.(authsigning.SigVerifiableTx)
 	if !ok {
-		return ctx, sdkerrors.ErrTxDecode.Wrap("invalid tx type")
+		return ctx, sdkerrors.ErrTxDecode.Wrap("invalid transaction type, expected SigVerifiableTx")
 	}
 
 	pubkeys, err := sigTx.GetPubKeys()
@@ -173,7 +173,7 @@ func (sgcd SigGasConsumeDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simula
 
 	sigTx, ok := tx.(authsigning.SigVerifiableTx)
 	if !ok {
-		return ctx, sdkerrors.ErrTxDecode.Wrap("invalid transaction type")
+		return ctx, sdkerrors.ErrTxDecode.Wrap("invalid transaction type, expected SigVerifiableTx")
 	}
 
 	params := sgcd.ak.GetParams(ctx)
@@ -261,7 +261,7 @@ func (svd SigVerificationDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simul
 		// TODO: verify ed25519 signature for create-price message which is signed by consensusKey
 		sigTx, ok := tx.(authsigning.SigVerifiableTx)
 		if !ok {
-			return ctx, sdkerrors.ErrTxDecode.Wrap("invalid transaction type")
+			return ctx, sdkerrors.ErrTxDecode.Wrap("invalid transaction type, expected SigVerifiableTx")
 		}
 
 		// stdSigs contains the sequence number, account number, and signatures.
@@ -279,7 +279,7 @@ func (svd SigVerificationDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simul
 			// TODO: is it necessary to support multi-sign ?
 			data, ok := sig.Data.(*signing.SingleSignatureData)
 			if !ok {
-				return ctx, sdkerrors.ErrTxDecode.Wrap("invalid signature type")
+				return ctx, sdkerrors.ErrTxDecode.Wrap("invalid signature type, expected SignleSignatureData")
 			}
 			bytesToSign, err := svd.signModeHandler.GetSignBytes(data.SignMode, authsigning.SignerData{ChainID: ctx.ChainID()}, tx)
 			if err != nil {
@@ -293,7 +293,7 @@ func (svd SigVerificationDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simul
 
 	sigTx, ok := tx.(authsigning.SigVerifiableTx)
 	if !ok {
-		return ctx, sdkerrors.ErrTxDecode.Wrap("invalid transaction type")
+		return ctx, sdkerrors.ErrTxDecode.Wrap("invalid transaction type, expected SigVerifiableTx")
 	}
 
 	// stdSigs contains the sequence number, account number, and signatures.
@@ -389,7 +389,7 @@ func (isd IncrementSequenceDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, sim
 	}
 	sigTx, ok := tx.(authsigning.SigVerifiableTx)
 	if !ok {
-		return ctx, sdkerrors.ErrTxDecode.Wrap("invalid transaction type")
+		return ctx, sdkerrors.ErrTxDecode.Wrap("invalid transaction type, expected SigVerifiableTx")
 	}
 
 	// increment sequence of all signers
