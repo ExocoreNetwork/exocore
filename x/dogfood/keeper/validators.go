@@ -40,6 +40,7 @@ func (k Keeper) ApplyValidatorChanges(
 	ctx sdk.Context, changes []abci.ValidatorUpdate,
 ) []abci.ValidatorUpdate {
 	ret := []abci.ValidatorUpdate{}
+	logger := k.Logger(ctx)
 	for _, change := range changes {
 		// convert TM pubkey to SDK pubkey for storage within the validator object.
 		pubkey, err := cryptocodec.FromTmProtoPublicKey(change.GetPubKey())
@@ -49,6 +50,7 @@ func (k Keeper) ApplyValidatorChanges(
 			// other parts of the module.
 			// In no situation it should happen; however, if it does,
 			// we do not panic. Simply skip the change.
+			logger.Error("could not convert tendermint pubkey to sdk pubkey", "error", err)
 			continue
 		}
 		// the address is just derived from the public key and
@@ -67,6 +69,7 @@ func (k Keeper) ApplyValidatorChanges(
 				// cons pub key
 				err = k.Hooks().AfterValidatorRemoved(cc, sdk.ConsAddress(addr), nil)
 				if err != nil {
+					logger.Error("error in AfterValidatorRemoved", "error", err)
 					continue
 				}
 				writeFunc()
@@ -84,10 +87,12 @@ func (k Keeper) ApplyValidatorChanges(
 				)
 				if !found {
 					// should never happen
+					logger.Error("operator address not found for validator", "cons address", addr)
 					continue
 				}
 				err = k.Hooks().AfterValidatorCreated(cc, sdk.ValAddress(accAddress))
 				if err != nil {
+					logger.Error("error in AfterValidatorCreated", "error", err)
 					continue
 				}
 				writeFunc()
@@ -97,6 +102,7 @@ func (k Keeper) ApplyValidatorChanges(
 				// create a new validator.
 				ocVal, err := types.NewExocoreValidator(addr, change.Power, pubkey)
 				if err != nil {
+					logger.Error("could not create new exocore validator", "error", err)
 					continue
 				}
 				// guard for errors within the hooks.
@@ -104,6 +110,7 @@ func (k Keeper) ApplyValidatorChanges(
 				k.SetExocoreValidator(cc, ocVal)
 				err = k.Hooks().AfterValidatorBonded(cc, sdk.ConsAddress(addr), nil)
 				if err != nil {
+					logger.Error("error in AfterValidatorBonded", "error", err)
 					// If an error is returned, the validator is not added to the `ret` slice.
 					continue
 				}
@@ -112,6 +119,7 @@ func (k Keeper) ApplyValidatorChanges(
 				// edge case: we received an update for 0 power
 				// but the validator is already deleted. Do not forward
 				// to tendermint.
+				logger.Info("received update for non-existent validator", "cons address", addr)
 				continue
 			}
 		}
