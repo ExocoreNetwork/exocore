@@ -48,7 +48,7 @@ import (
 func CmdShowPrices() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "show-prices [token-id]",
-		Short: "shows all prices of a specific token",
+		Short: "shows price of the latest round for a specific token",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) (err error) {
 			clientCtx, err := client.GetClientQueryContext(cmd)
