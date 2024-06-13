@@ -41,7 +41,7 @@ func (k Keeper) GetParams(sdk.Context) stakingtypes.Params {
 func (k Keeper) IterateValidators(sdk.Context,
 	func(index int64, validator stakingtypes.ValidatorI) (stop bool),
 ) {
-	// no op
+	// not intentionally implemented, since unused by the importing modules
 }
 
 // Validator is an implementation of the staking interface expected by the SDK's
@@ -73,7 +73,7 @@ func (k Keeper) ValidatorByConsAddr(
 	// jailed status, operator address, bonded status == unspecified,
 	// consensus public key.
 	// the operator address is used by our EVM module, and its presence triggers
-	// a call to Validator(ctx, addr) in the slashing module, which is implemented here.
+	// a call to Validator(ctx, addr) in the slashing module, which is implemented in this file.
 	// after that call, the ConsPubKey is fetched, which is also set by the below call.
 	val, found := k.operatorKeeper.ValidatorByConsAddrForChainID(ctx, addr, ctx.ChainID())
 	if !found {
@@ -155,6 +155,7 @@ func (k Keeper) MaxValidators(ctx sdk.Context) uint32 {
 
 // GetAllValidators is an implementation of the staking interface expected by the SDK's
 // slashing module. It is not called within the slashing module, but is part of the interface.
+// Hence, it is not implemented meaningfully.
 func (k Keeper) GetAllValidators(sdk.Context) (validators []stakingtypes.Validator) {
 	return []stakingtypes.Validator{}
 }
@@ -180,6 +181,7 @@ func (k Keeper) ApplyAndReturnValidatorSetUpdates(
 func (k Keeper) IterateBondedValidatorsByPower(
 	ctx sdk.Context, f func(int64, stakingtypes.ValidatorI) bool,
 ) {
+	// this is the bonded validators, that is, those that are currently in this module.
 	prevList := k.GetAllExocoreValidators(ctx)
 	sort.SliceStable(prevList, func(i, j int) bool {
 		return prevList[i].Power > prevList[j].Power
@@ -200,6 +202,8 @@ func (k Keeper) IterateBondedValidatorsByPower(
 		// because it is applied at the end of an epoch, whereas that from the operator
 		// module is more recent.
 		val.Tokens = sdk.TokensFromConsensusPower(v.Power, sdk.DefaultPowerReduction)
+		// since the validator object was fetched from this module, we should set it to bonded.
+		val.Status = stakingtypes.Bonded
 		// items passed are:
 		// jailed status, tokens quantity, operator address as ValAddress, bonded status
 		if f(int64(i), val) {

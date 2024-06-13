@@ -337,7 +337,9 @@ func (k Keeper) GetValidatorUpdates(ctx sdk.Context) []abci.ValidatorUpdate {
 
 // GetValidator fetchs a stakingtypes.Validator given the validator's address.
 // This is just the account address, but sent as sdk.ValAddress(accAddr).
-func (k Keeper) GetValidator(ctx sdk.Context, valAddr sdk.ValAddress) (stakingtypes.Validator, bool) {
+func (k Keeper) GetValidator(
+	ctx sdk.Context, valAddr sdk.ValAddress,
+) (stakingtypes.Validator, bool) {
 	accAddr := sdk.AccAddress(valAddr)
 	found, consPubKey, err := k.operatorKeeper.GetOperatorConsKeyForChainID(
 		ctx, accAddr, ctx.ChainID(),
@@ -355,8 +357,8 @@ func (k Keeper) GetValidator(ctx sdk.Context, valAddr sdk.ValAddress) (stakingty
 	if !found {
 		return stakingtypes.Validator{}, false
 	}
-	// any validator stored within the module is bonded. any others are removed from the
-	// validator set when the epoch ends.
-	val.Status = stakingtypes.Bonded
+	// the bonded status of the validator is unspecified, since we don't know if it is
+	// actually in this module or not. we are not checking it either, since there is no
+	// particular reason to do so.
 	return val, true
 }
