@@ -97,7 +97,7 @@ func (k Keeper) QueryValidator(
 	if err != nil {
 		return nil, status.Error(codes.InvalidArgument, "invalid consensus address")
 	}
-	validator, found := k.GetValidator(ctx, consAddressbytes)
+	validator, found := k.GetExocoreValidator(ctx, consAddressbytes)
 	if !found {
 		return nil, status.Error(codes.NotFound, "validator not found")
 	}

@@ -7,7 +7,6 @@ import (
 	operatortypes "github.com/ExocoreNetwork/exocore/x/operator/types"
 	abci "github.com/cometbft/cometbft/abci/types"
 	tmtypes "github.com/cometbft/cometbft/types"
-	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	cryptocodec "github.com/cosmos/cosmos-sdk/crypto/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	evidencetypes "github.com/cosmos/cosmos-sdk/x/evidence/types"
@@ -50,38 +49,12 @@ func (k Keeper) IterateValidators(sdk.Context,
 // its addition to the list of validators, and then to unjail a validator. During the addition
 // it stores a reverse lookup from consensus address to pub key, which is why we need the
 // pub key to be set in this call.
-func (k Keeper) Validator(ctx sdk.Context, valAddr sdk.ValAddress) stakingtypes.ValidatorI {
-	accAddr := sdk.AccAddress(valAddr)
-	found, consPubKey, err := k.operatorKeeper.GetOperatorConsKeyForChainID(
-		ctx, accAddr, ctx.ChainID(),
-	)
-	if !found || err != nil {
+func (k Keeper) Validator(ctx sdk.Context, address sdk.ValAddress) stakingtypes.ValidatorI {
+	val, found := k.GetValidator(ctx, address)
+	if !found {
 		return nil
 	}
-	consAddr, err := operatortypes.TMCryptoPublicKeyToConsAddr(consPubKey)
-	if err != nil {
-		return nil
-	}
-	// the slashing keeper needs the ConsensusPubKey set here
-	val := k.operatorKeeper.ValidatorByConsAddrForChainID(
-		ctx, consAddr, ctx.ChainID(),
-	)
-	if val == nil {
-		// not found
-		return nil
-	}
-	validator, ok := val.(stakingtypes.Validator)
-	if !ok {
-		// should never happen
-		return nil
-	}
-	// set the consensus pubkey
-	pkAny, err := codectypes.NewAnyWithValue(consPubKey)
-	if err != nil {
-		return nil
-	}
-	validator.ConsensusPubkey = pkAny
-	return validator
+	return val
 }
 
 // ValidatorByConsAddr is an implementation of the staking interface expected by the SDK's
@@ -96,13 +69,17 @@ func (k Keeper) ValidatorByConsAddr(
 	ctx sdk.Context,
 	addr sdk.ConsAddress,
 ) stakingtypes.ValidatorI {
-	// contents are
-	// jailed status, operator address and bonded status as unspecified
-	// since operator address is not empty, GetPubkey will be called by evidence module
-	// interchain-security does not have this problem since they return an empty validator
-	// we can't do that since our operator address is used by the EVM module to set operator
-	// as coinbase
-	return k.operatorKeeper.ValidatorByConsAddrForChainID(ctx, addr, ctx.ChainID())
+	// this validator has the following items initialized:
+	// jailed status, operator address, bonded status == unspecified,
+	// consensus public key.
+	// the operator address is used by our EVM module, and its presence triggers
+	// a call to Validator(ctx, addr) in the slashing module, which is implemented here.
+	// after that call, the ConsPubKey is fetched, which is also set by the below call.
+	val, found := k.operatorKeeper.ValidatorByConsAddrForChainID(ctx, addr, ctx.ChainID())
+	if !found {
+		return nil
+	}
+	return val
 }
 
 // Slash is an implementation of the staking interface expected by the SDK's slashing module.
@@ -213,20 +190,15 @@ func (k Keeper) IterateBondedValidatorsByPower(
 			// will only happen if there is an error in deserialization.
 			continue
 		}
-		validator := k.operatorKeeper.ValidatorByConsAddrForChainID(
+		val, found := k.operatorKeeper.ValidatorByConsAddrForChainID(
 			ctx, sdk.GetConsAddress(pk), ctx.ChainID(),
 		)
-		if validator == nil {
-			// not found
+		if !found {
 			continue
 		}
-		val, ok := validator.(stakingtypes.Validator)
-		if !ok {
-			// should never happen
-			continue
-		}
-		// allow calculation of power
-		val.Status = stakingtypes.Bonded
+		// the voting power is fetched from this module and not the operator module
+		// because it is applied at the end of an epoch, whereas that from the operator
+		// module is more recent.
 		val.Tokens = sdk.TokensFromConsensusPower(v.Power, sdk.DefaultPowerReduction)
 		// items passed are:
 		// jailed status, tokens quantity, operator address as ValAddress, bonded status

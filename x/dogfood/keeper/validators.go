@@ -10,6 +10,7 @@ import (
 
 	"cosmossdk.io/math"
 	"github.com/ExocoreNetwork/exocore/x/dogfood/types"
+	operatortypes "github.com/ExocoreNetwork/exocore/x/operator/types"
 	abci "github.com/cometbft/cometbft/abci/types"
 	cryptocodec "github.com/cosmos/cosmos-sdk/crypto/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -53,7 +54,7 @@ func (k Keeper) ApplyValidatorChanges(
 		// the address is just derived from the public key and
 		// has no correlation with the operator address on Exocore.
 		addr := pubkey.Address()
-		val, found := k.GetValidator(ctx, addr)
+		val, found := k.GetExocoreValidator(ctx, addr)
 		switch found {
 		case true:
 			// update or delete an existing validator.
@@ -61,7 +62,7 @@ func (k Keeper) ApplyValidatorChanges(
 			if change.Power < 1 {
 				// guard for errors within the hooks.
 				cc, writeFunc := ctx.CacheContext()
-				k.DeleteValidator(cc, addr)
+				k.DeleteExocoreValidator(cc, addr)
 				// sdk slashing.AfterValidatorRemoved deletes the lookup from cons address to
 				// cons pub key
 				err = k.Hooks().AfterValidatorRemoved(cc, sdk.ConsAddress(addr), nil)
@@ -73,7 +74,7 @@ func (k Keeper) ApplyValidatorChanges(
 				val.Power = change.Power
 				// guard for errors within the hooks.
 				cc, writeFunc := ctx.CacheContext()
-				k.SetValidator(ctx, val)
+				k.SetExocoreValidator(ctx, val)
 				// sdk slashing.AfterValidatorCreated stores the lookup from cons address to
 				// cons pub key. it loads the validator from `valAddr` (operator address)
 				// via stakingkeeeper.Validator(ctx, valAddr)
@@ -100,7 +101,7 @@ func (k Keeper) ApplyValidatorChanges(
 				}
 				// guard for errors within the hooks.
 				cc, writeFunc := ctx.CacheContext()
-				k.SetValidator(cc, ocVal)
+				k.SetExocoreValidator(cc, ocVal)
 				err = k.Hooks().AfterValidatorBonded(cc, sdk.ConsAddress(addr), nil)
 				if err != nil {
 					// If an error is returned, the validator is not added to the `ret` slice.
@@ -131,17 +132,17 @@ func (k Keeper) ApplyValidatorChanges(
 	return ret
 }
 
-// SetValidator stores a validator based on the pub key derived address. This
+// SetExocoreValidator stores a validator based on the pub key derived address. This
 // is accessible in the genesis state via `val_set`.
-func (k Keeper) SetValidator(ctx sdk.Context, validator types.ExocoreValidator) {
+func (k Keeper) SetExocoreValidator(ctx sdk.Context, validator types.ExocoreValidator) {
 	store := ctx.KVStore(k.storeKey)
 	bz := k.cdc.MustMarshal(&validator)
 
 	store.Set(types.ExocoreValidatorKey(validator.Address), bz)
 }
 
-// GetValidator gets a validator based on the pub key derived (consensus) address.
-func (k Keeper) GetValidator(
+// GetExocoreValidator gets a validator based on the pub key derived (consensus) address.
+func (k Keeper) GetExocoreValidator(
 	ctx sdk.Context, addr []byte,
 ) (validator types.ExocoreValidator, found bool) {
 	store := ctx.KVStore(k.storeKey)
@@ -155,8 +156,8 @@ func (k Keeper) GetValidator(
 	return
 }
 
-// DeleteValidator deletes a validator based on the pub key derived address.
-func (k Keeper) DeleteValidator(ctx sdk.Context, addr []byte) {
+// DeleteExocoreValidator deletes a validator based on the pub key derived address.
+func (k Keeper) DeleteExocoreValidator(ctx sdk.Context, addr []byte) {
 	store := ctx.KVStore(k.storeKey)
 	store.Delete(types.ExocoreValidatorKey(addr))
 }
@@ -332,4 +333,30 @@ func (k Keeper) GetValidatorUpdates(ctx sdk.Context) []abci.ValidatorUpdate {
 	k.cdc.MustUnmarshal(bz, &valUpdates)
 
 	return valUpdates.Updates
+}
+
+// GetValidator fetchs a stakingtypes.Validator given the validator's address.
+// This is just the account address, but sent as sdk.ValAddress(accAddr).
+func (k Keeper) GetValidator(ctx sdk.Context, valAddr sdk.ValAddress) (stakingtypes.Validator, bool) {
+	accAddr := sdk.AccAddress(valAddr)
+	found, consPubKey, err := k.operatorKeeper.GetOperatorConsKeyForChainID(
+		ctx, accAddr, ctx.ChainID(),
+	)
+	if !found || err != nil {
+		return stakingtypes.Validator{}, false
+	}
+	consAddr, err := operatortypes.TMCryptoPublicKeyToConsAddr(consPubKey)
+	if err != nil {
+		return stakingtypes.Validator{}, false
+	}
+	val, found := k.operatorKeeper.ValidatorByConsAddrForChainID(
+		ctx, consAddr, ctx.ChainID(),
+	)
+	if !found {
+		return stakingtypes.Validator{}, false
+	}
+	// any validator stored within the module is bonded. any others are removed from the
+	// validator set when the epoch ends.
+	val.Status = stakingtypes.Bonded
+	return val, true
 }

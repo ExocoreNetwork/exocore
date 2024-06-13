@@ -48,7 +48,7 @@ type OperatorKeeper interface {
 	) math.Int
 	ValidatorByConsAddrForChainID(
 		ctx sdk.Context, consAddr sdk.ConsAddress, chainID string,
-	) stakingtypes.ValidatorI
+	) (stakingtypes.Validator, bool)
 	// at each epoch, get the list and create validator update
 	GetActiveOperatorsForChainID(
 		sdk.Context, string,

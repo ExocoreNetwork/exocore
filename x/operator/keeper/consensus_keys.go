@@ -13,6 +13,7 @@ import (
 	"github.com/ExocoreNetwork/exocore/x/operator/types"
 
 	tmprotocrypto "github.com/cometbft/cometbft/proto/tendermint/crypto"
+	cryptocodec "github.com/cosmos/cosmos-sdk/crypto/codec"
 )
 
 func (k *Keeper) Logger(ctx sdk.Context) log.Logger {
@@ -393,20 +394,35 @@ func (k Keeper) GetActiveOperatorsForChainID(
 // address and chain id.
 func (k Keeper) ValidatorByConsAddrForChainID(
 	ctx sdk.Context, consAddr sdk.ConsAddress, chainID string,
-) stakingtypes.ValidatorI {
+) (stakingtypes.Validator, bool) {
 	found, operatorAddr := k.GetOperatorAddressForChainIDAndConsAddr(
 		ctx, chainID, consAddr,
 	)
 	if !found {
-		return nil
+		// TODO(mm): create unit tests for the case where a validator
+		// changes their pub key in the middle of an epoch, resulting
+		// in a different key. work around that issue here.
+		return stakingtypes.Validator{}, false
 	}
-	jailed := k.IsOperatorJailedForChainID(ctx, consAddr, chainID)
-	return stakingtypes.Validator{
-		Jailed:          jailed,
-		OperatorAddress: sdk.ValAddress(operatorAddr).String(),
-		// Status:          stakingtypes.Unspecified, // default
-		// TODO: add more parameters here
+	found, tmKey, err := k.GetOperatorConsKeyForChainID(ctx, operatorAddr, chainID)
+	if !found || err != nil {
+		return stakingtypes.Validator{}, false
 	}
+	// since we are sending the address, we have to send the consensus key as well.
+	// this is because the presence of a non-empty address triggers a call to Validator
+	// which triggers a call to fetch the consensus key, in the slashing module.
+	key, err := cryptocodec.FromTmProtoPublicKey(*tmKey)
+	if err != nil {
+		return stakingtypes.Validator{}, false
+	}
+	val, err := stakingtypes.NewValidator(
+		sdk.ValAddress(operatorAddr), key, stakingtypes.Description{},
+	)
+	if err != nil {
+		return stakingtypes.Validator{}, false
+	}
+	val.Jailed = k.IsOperatorJailedForChainID(ctx, consAddr, chainID)
+	return val, true
 }
 
 // DeleteOperatorAddressForChainIDAndConsAddr is a pruning method used to delete the
