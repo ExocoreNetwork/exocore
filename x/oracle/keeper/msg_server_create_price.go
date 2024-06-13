@@ -61,15 +61,15 @@ func (ms msgServer) CreatePrice(goCtx context.Context, msg *types.MsgCreatePrice
 	return &types.MsgCreatePriceResponse{}, nil
 }
 
-func checkTimestamp(_ context.Context, msg *types.MsgCreatePrice) error {
-	now := time.Now().UTC()
+func checkTimestamp(goCtx context.Context, msg *types.MsgCreatePrice) error {
+	ctx := sdk.UnwrapSDKContext(goCtx)
+	now := ctx.BlockTime().UTC()
 	for _, ps := range msg.Prices {
 		for _, price := range ps.Prices {
 			ts := price.Timestamp
 			if len(ts) == 0 {
 				return errors.New("timestamp should not be empty")
 			}
-			// t, err := time.ParseInLocation("2006-01-02 15:04:05", ts, time.UTC)
 			t, err := time.ParseInLocation(layout, ts, time.UTC)
 			if err != nil {
 				return errors.New("timestamp format invalid")
