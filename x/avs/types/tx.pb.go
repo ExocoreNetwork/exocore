@@ -7,21 +7,28 @@ import (
 	context "context"
 	fmt "fmt"
 	_ "github.com/cosmos/cosmos-proto"
+	github_com_cosmos_cosmos_sdk_types "github.com/cosmos/cosmos-sdk/types"
 	_ "github.com/cosmos/cosmos-sdk/types/msgservice"
+	_ "github.com/cosmos/gogoproto/gogoproto"
 	grpc1 "github.com/cosmos/gogoproto/grpc"
 	proto "github.com/cosmos/gogoproto/proto"
+	github_com_cosmos_gogoproto_types "github.com/cosmos/gogoproto/types"
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
+	_ "google.golang.org/protobuf/types/known/durationpb"
+	_ "google.golang.org/protobuf/types/known/timestamppb"
 	io "io"
 	math "math"
 	math_bits "math/bits"
+	time "time"
 )
 
 // Reference imports to suppress errors if they are not otherwise used.
 var _ = proto.Marshal
 var _ = fmt.Errorf
 var _ = math.Inf
+var _ = time.Kitchen
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the proto package it is being compiled against.
@@ -29,13 +36,26 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
+// AVSinfo represent the information of avs
 type AVSInfo struct {
-	Name            string   `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
-	AvsAddress      string   `protobuf:"bytes,2,opt,name=avs_address,json=avsAddress,proto3" json:"avs_address,omitempty"`
-	OperatorAddress []string `protobuf:"bytes,3,rep,name=operator_address,json=operatorAddress,proto3" json:"operator_address,omitempty"`
-	AvsOwnerAddress string   `protobuf:"bytes,4,opt,name=avs_owner_address,json=avsOwnerAddress,proto3" json:"avs_owner_address,omitempty"`
+	// name of avs
+	Name string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+	// address of avs
+	AvsAddress string `protobuf:"bytes,2,opt,name=avs_address,json=avsAddress,proto3" json:"avs_address,omitempty"`
+	//  slash address of avs
+	SlashAddr string `protobuf:"bytes,3,opt,name=slash_addr,json=slashAddr,proto3" json:"slash_addr,omitempty"`
+	// the owner who has permission for avs
+	AvsOwnerAddress []string `protobuf:"bytes,4,rep,name=avs_owner_address,json=avsOwnerAddress,proto3" json:"avs_owner_address,omitempty"`
 	// asset_basic_info is all the basic asset information of the avs.
 	AssetId []string `protobuf:"bytes,5,rep,name=asset_id,json=assetId,proto3" json:"asset_id,omitempty"`
+	// unbonding duration of avs.
+	AvsUnbondingPeriod uint32 `protobuf:"varint,6,opt,name=avs_unbonding_period,json=avsUnbondingPeriod,proto3" json:"avs_unbonding_period,omitempty"`
+	// the operator minimum delegation amount.
+	MinSelfDelegation github_com_cosmos_cosmos_sdk_types.Int `protobuf:"bytes,7,opt,name=min_self_delegation,json=minSelfDelegation,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Int" json:"min_self_delegation"`
+	//avs epoch ,Subsequently  will be handled by the epochs module.
+	AvsEpoch *EpochInfo `protobuf:"bytes,8,opt,name=avs_epoch,json=avsEpoch,proto3" json:"avs_epoch,omitempty"`
+	// registered operator of avs
+	OperatorAddress []string `protobuf:"bytes,9,rep,name=operator_address,json=operatorAddress,proto3" json:"operator_address,omitempty"`
 }
 
 func (m *AVSInfo) Reset()         { *m = AVSInfo{} }
@@ -85,18 +105,18 @@ func (m *AVSInfo) GetAvsAddress() string {
 	return ""
 }
 
-func (m *AVSInfo) GetOperatorAddress() []string {
+func (m *AVSInfo) GetSlashAddr() string {
 	if m != nil {
-		return m.OperatorAddress
+		return m.SlashAddr
 	}
-	return nil
+	return ""
 }
 
-func (m *AVSInfo) GetAvsOwnerAddress() string {
+func (m *AVSInfo) GetAvsOwnerAddress() []string {
 	if m != nil {
 		return m.AvsOwnerAddress
 	}
-	return ""
+	return nil
 }
 
 func (m *AVSInfo) GetAssetId() []string {
@@ -106,16 +126,141 @@ func (m *AVSInfo) GetAssetId() []string {
 	return nil
 }
 
+func (m *AVSInfo) GetAvsUnbondingPeriod() uint32 {
+	if m != nil {
+		return m.AvsUnbondingPeriod
+	}
+	return 0
+}
+
+func (m *AVSInfo) GetAvsEpoch() *EpochInfo {
+	if m != nil {
+		return m.AvsEpoch
+	}
+	return nil
+}
+
+func (m *AVSInfo) GetOperatorAddress() []string {
+	if m != nil {
+		return m.OperatorAddress
+	}
+	return nil
+}
+
+// EpochInfo defines the message interface containing the relevant informations aboutt
+// an epoch.
+type EpochInfo struct {
+	// identifier of the epoch
+	Identifier string `protobuf:"bytes,1,opt,name=identifier,proto3" json:"identifier,omitempty"`
+	// start_time of the epoch
+	StartTime time.Time `protobuf:"bytes,2,opt,name=start_time,json=startTime,proto3,stdtime" json:"start_time" yaml:"start_time"`
+	// duration of the epoch
+	Duration time.Duration `protobuf:"bytes,3,opt,name=duration,proto3,stdduration" json:"duration,omitempty" yaml:"duration"`
+	// current_epoch is the integer identifier of the epoch
+	CurrentEpoch int64 `protobuf:"varint,4,opt,name=current_epoch,json=currentEpoch,proto3" json:"current_epoch,omitempty"`
+	// current_epoch_start_time defines the timestamp of the start of the epoch
+	CurrentEpochStartTime time.Time `protobuf:"bytes,5,opt,name=current_epoch_start_time,json=currentEpochStartTime,proto3,stdtime" json:"current_epoch_start_time" yaml:"current_epoch_start_time"`
+	// epoch_counting_started reflects if the counting for the epoch has started
+	EpochCountingStarted bool `protobuf:"varint,6,opt,name=epoch_counting_started,json=epochCountingStarted,proto3" json:"epoch_counting_started,omitempty"`
+	// current_epoch_start_height of the epoch
+	CurrentEpochStartHeight int64 `protobuf:"varint,7,opt,name=current_epoch_start_height,json=currentEpochStartHeight,proto3" json:"current_epoch_start_height,omitempty"`
+}
+
+func (m *EpochInfo) Reset()         { *m = EpochInfo{} }
+func (m *EpochInfo) String() string { return proto.CompactTextString(m) }
+func (*EpochInfo) ProtoMessage()    {}
+func (*EpochInfo) Descriptor() ([]byte, []int) {
+	return fileDescriptor_c92b5dfe90086a66, []int{1}
+}
+func (m *EpochInfo) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *EpochInfo) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_EpochInfo.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *EpochInfo) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_EpochInfo.Merge(m, src)
+}
+func (m *EpochInfo) XXX_Size() int {
+	return m.Size()
+}
+func (m *EpochInfo) XXX_DiscardUnknown() {
+	xxx_messageInfo_EpochInfo.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_EpochInfo proto.InternalMessageInfo
+
+func (m *EpochInfo) GetIdentifier() string {
+	if m != nil {
+		return m.Identifier
+	}
+	return ""
+}
+
+func (m *EpochInfo) GetStartTime() time.Time {
+	if m != nil {
+		return m.StartTime
+	}
+	return time.Time{}
+}
+
+func (m *EpochInfo) GetDuration() time.Duration {
+	if m != nil {
+		return m.Duration
+	}
+	return 0
+}
+
+func (m *EpochInfo) GetCurrentEpoch() int64 {
+	if m != nil {
+		return m.CurrentEpoch
+	}
+	return 0
+}
+
+func (m *EpochInfo) GetCurrentEpochStartTime() time.Time {
+	if m != nil {
+		return m.CurrentEpochStartTime
+	}
+	return time.Time{}
+}
+
+func (m *EpochInfo) GetEpochCountingStarted() bool {
+	if m != nil {
+		return m.EpochCountingStarted
+	}
+	return false
+}
+
+func (m *EpochInfo) GetCurrentEpochStartHeight() int64 {
+	if m != nil {
+		return m.CurrentEpochStartHeight
+	}
+	return 0
+}
+
+// RegisterAVSReq is requst to register avs
 type RegisterAVSReq struct {
-	FromAddress string   `protobuf:"bytes,1,opt,name=from_address,json=fromAddress,proto3" json:"from_address,omitempty"`
-	Info        *AVSInfo `protobuf:"bytes,2,opt,name=info,proto3" json:"info,omitempty"`
+	// from_address is the source
+	FromAddress string `protobuf:"bytes,1,opt,name=from_address,json=fromAddress,proto3" json:"from_address,omitempty"`
+	// avs information
+	Info *AVSInfo `protobuf:"bytes,2,opt,name=info,proto3" json:"info,omitempty"`
 }
 
 func (m *RegisterAVSReq) Reset()         { *m = RegisterAVSReq{} }
 func (m *RegisterAVSReq) String() string { return proto.CompactTextString(m) }
 func (*RegisterAVSReq) ProtoMessage()    {}
 func (*RegisterAVSReq) Descriptor() ([]byte, []int) {
-	return fileDescriptor_c92b5dfe90086a66, []int{1}
+	return fileDescriptor_c92b5dfe90086a66, []int{2}
 }
 func (m *RegisterAVSReq) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -158,16 +303,19 @@ func (m *RegisterAVSReq) GetInfo() *AVSInfo {
 	return nil
 }
 
+// RegisterAVSResponse is the response for register avs
 type RegisterAVSResponse struct {
-	FromAddress string   `protobuf:"bytes,1,opt,name=from_address,json=fromAddress,proto3" json:"from_address,omitempty"`
-	Info        *AVSInfo `protobuf:"bytes,2,opt,name=info,proto3" json:"info,omitempty"`
+	// from_address is the source
+	FromAddress string `protobuf:"bytes,1,opt,name=from_address,json=fromAddress,proto3" json:"from_address,omitempty"`
+	// avs information
+	Info *AVSInfo `protobuf:"bytes,2,opt,name=info,proto3" json:"info,omitempty"`
 }
 
 func (m *RegisterAVSResponse) Reset()         { *m = RegisterAVSResponse{} }
 func (m *RegisterAVSResponse) String() string { return proto.CompactTextString(m) }
 func (*RegisterAVSResponse) ProtoMessage()    {}
 func (*RegisterAVSResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_c92b5dfe90086a66, []int{2}
+	return fileDescriptor_c92b5dfe90086a66, []int{3}
 }
 func (m *RegisterAVSResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -210,16 +358,19 @@ func (m *RegisterAVSResponse) GetInfo() *AVSInfo {
 	return nil
 }
 
+// DeRegisterAVSReq is requst to deregister avs
 type DeRegisterAVSReq struct {
-	FromAddress string   `protobuf:"bytes,1,opt,name=from_address,json=fromAddress,proto3" json:"from_address,omitempty"`
-	Info        *AVSInfo `protobuf:"bytes,2,opt,name=info,proto3" json:"info,omitempty"`
+	// from_address is the source address
+	FromAddress string `protobuf:"bytes,1,opt,name=from_address,json=fromAddress,proto3" json:"from_address,omitempty"`
+	// avs information
+	Info *AVSInfo `protobuf:"bytes,2,opt,name=info,proto3" json:"info,omitempty"`
 }
 
 func (m *DeRegisterAVSReq) Reset()         { *m = DeRegisterAVSReq{} }
 func (m *DeRegisterAVSReq) String() string { return proto.CompactTextString(m) }
 func (*DeRegisterAVSReq) ProtoMessage()    {}
 func (*DeRegisterAVSReq) Descriptor() ([]byte, []int) {
-	return fileDescriptor_c92b5dfe90086a66, []int{3}
+	return fileDescriptor_c92b5dfe90086a66, []int{4}
 }
 func (m *DeRegisterAVSReq) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -262,16 +413,19 @@ func (m *DeRegisterAVSReq) GetInfo() *AVSInfo {
 	return nil
 }
 
+// DeRegisterAVSResponse is requst to register avs
 type DeRegisterAVSResponse struct {
-	FromAddress string   `protobuf:"bytes,1,opt,name=from_address,json=fromAddress,proto3" json:"from_address,omitempty"`
-	Info        *AVSInfo `protobuf:"bytes,2,opt,name=info,proto3" json:"info,omitempty"`
+	// from_address is the source address
+	FromAddress string `protobuf:"bytes,1,opt,name=from_address,json=fromAddress,proto3" json:"from_address,omitempty"`
+	// avs information
+	Info *AVSInfo `protobuf:"bytes,2,opt,name=info,proto3" json:"info,omitempty"`
 }
 
 func (m *DeRegisterAVSResponse) Reset()         { *m = DeRegisterAVSResponse{} }
 func (m *DeRegisterAVSResponse) String() string { return proto.CompactTextString(m) }
 func (*DeRegisterAVSResponse) ProtoMessage()    {}
 func (*DeRegisterAVSResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_c92b5dfe90086a66, []int{4}
+	return fileDescriptor_c92b5dfe90086a66, []int{5}
 }
 func (m *DeRegisterAVSResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -316,6 +470,7 @@ func (m *DeRegisterAVSResponse) GetInfo() *AVSInfo {
 
 func init() {
 	proto.RegisterType((*AVSInfo)(nil), "exocore.avs.AVSInfo")
+	proto.RegisterType((*EpochInfo)(nil), "exocore.avs.EpochInfo")
 	proto.RegisterType((*RegisterAVSReq)(nil), "exocore.avs.RegisterAVSReq")
 	proto.RegisterType((*RegisterAVSResponse)(nil), "exocore.avs.RegisterAVSResponse")
 	proto.RegisterType((*DeRegisterAVSReq)(nil), "exocore.avs.DeRegisterAVSReq")
@@ -325,35 +480,60 @@ func init() {
 func init() { proto.RegisterFile("exocore/avs/tx.proto", fileDescriptor_c92b5dfe90086a66) }
 
 var fileDescriptor_c92b5dfe90086a66 = []byte{
-	// 448 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xcc, 0x54, 0x4d, 0x6f, 0xd3, 0x40,
-	0x10, 0xcd, 0x92, 0x94, 0xd2, 0x31, 0xd0, 0xb0, 0x04, 0x91, 0x1a, 0x61, 0x22, 0x9f, 0x42, 0xa4,
-	0xda, 0xa2, 0xdc, 0xe0, 0x94, 0x8a, 0x0f, 0x55, 0xe2, 0x43, 0x72, 0xa4, 0x1e, 0xb8, 0x44, 0xdb,
-	0x78, 0x63, 0x2c, 0x64, 0xaf, 0xd9, 0x59, 0xdc, 0x70, 0x43, 0xdc, 0x10, 0x12, 0xea, 0x2f, 0x41,
-	0x39, 0xf0, 0x23, 0x38, 0x56, 0x9c, 0x38, 0xa2, 0xe4, 0xd0, 0xbf, 0x81, 0xbc, 0x6b, 0xb7, 0x75,
-	0x25, 0xb8, 0xb6, 0x27, 0x7b, 0xe6, 0xbd, 0x7d, 0x9e, 0xf7, 0xac, 0x1d, 0xe8, 0xf0, 0x99, 0x98,
-	0x08, 0xc9, 0x7d, 0x96, 0xa3, 0xaf, 0x66, 0x5e, 0x26, 0x85, 0x12, 0xd4, 0x2a, 0xbb, 0x1e, 0xcb,
-	0xd1, 0xbe, 0x3d, 0x11, 0x98, 0x08, 0xf4, 0x13, 0x8c, 0xfc, 0xfc, 0x41, 0xf1, 0x30, 0x2c, 0x7b,
-	0xc3, 0x00, 0x63, 0x5d, 0xf9, 0xa6, 0x30, 0x90, 0x3b, 0x27, 0xb0, 0x3a, 0xdc, 0x1d, 0xed, 0xa4,
-	0x53, 0x41, 0x29, 0xb4, 0x52, 0x96, 0xf0, 0x2e, 0xe9, 0x91, 0xfe, 0x5a, 0xa0, 0xdf, 0xe9, 0x3d,
-	0xb0, 0x58, 0x8e, 0x63, 0x16, 0x86, 0x92, 0x23, 0x76, 0x2f, 0x69, 0x08, 0x58, 0x8e, 0x43, 0xd3,
-	0xa1, 0xf7, 0xa1, 0x2d, 0x32, 0x2e, 0x99, 0x12, 0xf2, 0x98, 0xd5, 0xec, 0x35, 0xfb, 0x6b, 0xc1,
-	0x7a, 0xd5, 0xaf, 0xa8, 0x03, 0xb8, 0x51, 0x68, 0x89, 0xfd, 0x94, 0x9f, 0x70, 0x5b, 0x5a, 0x71,
-	0x9d, 0xe5, 0xf8, 0xba, 0xe8, 0x57, 0xdc, 0x0d, 0xb8, 0xc2, 0x10, 0xb9, 0x1a, 0xc7, 0x61, 0x77,
-	0x45, 0xcb, 0xad, 0xea, 0x7a, 0x27, 0x74, 0xbf, 0x10, 0xb8, 0x1e, 0xf0, 0x28, 0x46, 0xc5, 0xe5,
-	0x70, 0x77, 0x14, 0xf0, 0xf7, 0xf4, 0x31, 0x5c, 0x9d, 0x4a, 0x91, 0x1c, 0x8b, 0x6a, 0x07, 0xdb,
-	0xdd, 0x5f, 0x3f, 0x36, 0x3b, 0xa5, 0xdb, 0x52, 0x77, 0xa4, 0x64, 0x9c, 0x46, 0x81, 0x55, 0xb0,
-	0xab, 0x4f, 0xf5, 0xa1, 0x15, 0xa7, 0x53, 0xa1, 0xbd, 0x59, 0x5b, 0x1d, 0xef, 0x54, 0xa4, 0x5e,
-	0x19, 0x4d, 0xa0, 0x19, 0x8f, 0xda, 0x9f, 0x8f, 0xe6, 0x03, 0xeb, 0xd9, 0xc9, 0x59, 0xf7, 0x1b,
-	0x81, 0x9b, 0xb5, 0x59, 0x30, 0x13, 0x29, 0xf2, 0xf3, 0x1b, 0xe8, 0x2b, 0x81, 0xf6, 0x13, 0x7e,
-	0x51, 0xe2, 0x39, 0x20, 0x70, 0xeb, 0xcc, 0x34, 0xe7, 0x1c, 0xd0, 0xd6, 0x77, 0x02, 0xcd, 0x97,
-	0x18, 0xd1, 0x17, 0x60, 0x9d, 0x9a, 0x8b, 0xde, 0xa9, 0x89, 0xd4, 0xf3, 0xb3, 0x7b, 0xff, 0x06,
-	0x4b, 0x3b, 0x01, 0x5c, 0xab, 0xf9, 0xa4, 0x77, 0x6b, 0x47, 0xce, 0xfe, 0x11, 0xdb, 0xfd, 0x1f,
-	0x6c, 0x34, 0xed, 0x95, 0x4f, 0x47, 0xf3, 0x01, 0xd9, 0x7e, 0xfe, 0x73, 0xe1, 0x90, 0xc3, 0x85,
-	0x43, 0xfe, 0x2c, 0x1c, 0x72, 0xb0, 0x74, 0x1a, 0x87, 0x4b, 0xa7, 0xf1, 0x7b, 0xe9, 0x34, 0xde,
-	0x6c, 0x46, 0xb1, 0x7a, 0xfb, 0x61, 0xcf, 0x9b, 0x88, 0xc4, 0x7f, 0x6a, 0xe4, 0x5e, 0x71, 0xb5,
-	0x2f, 0xe4, 0x3b, 0xbf, 0x5a, 0x16, 0x33, 0xb3, 0x2e, 0x3e, 0x66, 0x1c, 0xf7, 0x2e, 0xeb, 0x1b,
-	0xff, 0xf0, 0x6f, 0x00, 0x00, 0x00, 0xff, 0xff, 0x3a, 0x5f, 0x36, 0xdd, 0x4a, 0x04, 0x00, 0x00,
+	// 848 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xcc, 0x55, 0xcf, 0x6f, 0x1b, 0x45,
+	0x14, 0xce, 0x60, 0xa7, 0xb1, 0x9f, 0x1b, 0x9a, 0x4c, 0xdd, 0x76, 0x63, 0x14, 0xaf, 0x65, 0x24,
+	0x64, 0x02, 0xd9, 0xa5, 0x29, 0xa7, 0x96, 0x4b, 0x4c, 0x0a, 0x44, 0xe2, 0x97, 0xd6, 0x50, 0x21,
+	0x2e, 0xd6, 0xc4, 0x3b, 0x5e, 0x8f, 0xea, 0x9d, 0x31, 0x3b, 0x63, 0x37, 0xb9, 0x55, 0xdc, 0x00,
+	0x09, 0xe5, 0xc8, 0x1f, 0xc0, 0x19, 0xf5, 0xd0, 0x3f, 0xa2, 0xc7, 0xaa, 0x27, 0xc4, 0xc1, 0xa0,
+	0xe4, 0x50, 0x89, 0x63, 0xff, 0x02, 0x34, 0x3f, 0xd6, 0xb1, 0x53, 0x0a, 0xc7, 0xf6, 0xb4, 0x3b,
+	0xef, 0x7b, 0xef, 0x9b, 0x37, 0xdf, 0xfb, 0x76, 0x16, 0xaa, 0xf4, 0x50, 0xf4, 0x44, 0x46, 0x43,
+	0x32, 0x91, 0xa1, 0x3a, 0x0c, 0x46, 0x99, 0x50, 0x02, 0x57, 0x5c, 0x34, 0x20, 0x13, 0x59, 0xbb,
+	0xd6, 0x13, 0x32, 0x15, 0x32, 0x4c, 0x65, 0x12, 0x4e, 0xae, 0xeb, 0x87, 0xcd, 0xaa, 0x6d, 0x58,
+	0xa0, 0x6b, 0x56, 0xa1, 0x5d, 0x38, 0xa8, 0x9a, 0x88, 0x44, 0xd8, 0xb8, 0x7e, 0x73, 0xd1, 0x7a,
+	0x22, 0x44, 0x32, 0xa4, 0xa1, 0x59, 0x1d, 0x8c, 0xfb, 0x61, 0x3c, 0xce, 0x88, 0x62, 0x82, 0x3b,
+	0xdc, 0x3f, 0x8f, 0x2b, 0x96, 0x52, 0xa9, 0x48, 0x3a, 0xb2, 0x09, 0xcd, 0x5f, 0x0b, 0xb0, 0xb2,
+	0x7b, 0xa7, 0xb3, 0xcf, 0xfb, 0x02, 0x63, 0x28, 0x72, 0x92, 0x52, 0x0f, 0x35, 0x50, 0xab, 0x1c,
+	0x99, 0x77, 0xec, 0x43, 0x85, 0x4c, 0x64, 0x97, 0xc4, 0x71, 0x46, 0xa5, 0xf4, 0x5e, 0x33, 0x10,
+	0x90, 0x89, 0xdc, 0xb5, 0x11, 0xbc, 0x09, 0x20, 0x87, 0x44, 0x0e, 0x4c, 0x8a, 0x57, 0x30, 0x78,
+	0xd9, 0x44, 0x74, 0x06, 0xde, 0x82, 0x75, 0x5d, 0x2f, 0xee, 0x71, 0x9a, 0xcd, 0x58, 0x8a, 0x8d,
+	0x42, 0xab, 0x1c, 0x5d, 0x22, 0x13, 0xf9, 0x85, 0x8e, 0xe7, 0x54, 0x1b, 0x50, 0x22, 0x52, 0x52,
+	0xd5, 0x65, 0xb1, 0xb7, 0x6c, 0x52, 0x56, 0xcc, 0x7a, 0x3f, 0xc6, 0xef, 0x41, 0x55, 0xd3, 0x8c,
+	0xf9, 0x81, 0xe0, 0x31, 0xe3, 0x49, 0x77, 0x44, 0x33, 0x26, 0x62, 0xef, 0x42, 0x03, 0xb5, 0x56,
+	0x23, 0x4c, 0x26, 0xf2, 0xeb, 0x1c, 0xfa, 0xd2, 0x20, 0x78, 0x08, 0x97, 0x53, 0xc6, 0xbb, 0x92,
+	0x0e, 0xfb, 0xdd, 0x98, 0x0e, 0x69, 0x62, 0x64, 0xf1, 0x56, 0x74, 0x83, 0xed, 0x0f, 0x1e, 0x4d,
+	0xfd, 0xa5, 0x3f, 0xa6, 0xfe, 0x5b, 0x09, 0x53, 0x83, 0xf1, 0x41, 0xd0, 0x13, 0xa9, 0x53, 0xdb,
+	0x3d, 0xb6, 0x65, 0x7c, 0x37, 0x54, 0x47, 0x23, 0x2a, 0x83, 0x7d, 0xae, 0x9e, 0x3c, 0xdc, 0x06,
+	0x37, 0x8c, 0x7d, 0xae, 0xa2, 0xf5, 0x94, 0xf1, 0x0e, 0x1d, 0xf6, 0xf7, 0x66, 0xb4, 0xf8, 0x06,
+	0x94, 0x75, 0x7f, 0x74, 0x24, 0x7a, 0x03, 0xaf, 0xd4, 0x40, 0xad, 0xca, 0xce, 0xd5, 0x60, 0x6e,
+	0xe4, 0xc1, 0x6d, 0x8d, 0x68, 0x95, 0xa3, 0x12, 0x99, 0x48, 0xb3, 0xc2, 0x6f, 0xc3, 0x9a, 0x18,
+	0xd1, 0x8c, 0x28, 0x71, 0x26, 0x4d, 0xd9, 0x4a, 0x93, 0xc7, 0x9d, 0x34, 0xcd, 0x1f, 0x8b, 0x50,
+	0x9e, 0x51, 0xe0, 0x3a, 0x00, 0x8b, 0x29, 0x57, 0xac, 0xcf, 0x68, 0xe6, 0xc6, 0x35, 0x17, 0xc1,
+	0xdf, 0x00, 0x48, 0x45, 0x32, 0xd5, 0xd5, 0xd3, 0x36, 0x33, 0xab, 0xec, 0xd4, 0x02, 0x6b, 0x85,
+	0x20, 0xb7, 0x42, 0xf0, 0x55, 0x6e, 0x85, 0xf6, 0xa6, 0x96, 0xe3, 0xd9, 0xd4, 0x5f, 0x3f, 0x22,
+	0xe9, 0xf0, 0x66, 0xf3, 0xac, 0xb6, 0x79, 0xfc, 0xa7, 0x8f, 0xa2, 0xb2, 0x09, 0xe8, 0x74, 0x3c,
+	0x80, 0x52, 0xee, 0x30, 0x33, 0xeb, 0xca, 0xce, 0xc6, 0x73, 0xbc, 0x7b, 0x2e, 0xa1, 0x7d, 0x5d,
+	0xd3, 0xfe, 0x3d, 0xf5, 0x71, 0x5e, 0xf2, 0xae, 0x48, 0x99, 0xa2, 0xe9, 0x48, 0x1d, 0x3d, 0x9b,
+	0xfa, 0x97, 0xec, 0x66, 0x39, 0xd6, 0xfc, 0x45, 0x6f, 0x35, 0x63, 0xc7, 0x6f, 0xc2, 0x6a, 0x6f,
+	0x9c, 0x65, 0x94, 0x2b, 0xa7, 0x6a, 0xb1, 0x81, 0x5a, 0x85, 0xe8, 0xa2, 0x0b, 0x5a, 0x05, 0xef,
+	0x23, 0xf0, 0x16, 0xb2, 0xba, 0x73, 0xe7, 0x5e, 0xfe, 0xdf, 0x73, 0xbf, 0xe3, 0xce, 0xed, 0xdb,
+	0x56, 0x5e, 0xc4, 0x64, 0x55, 0xb8, 0x32, 0xbf, 0x73, 0x67, 0xa6, 0xc8, 0xfb, 0x70, 0xd5, 0xe6,
+	0xf7, 0xc4, 0x98, 0x2b, 0x6d, 0x4d, 0x53, 0x48, 0xad, 0x37, 0x4b, 0x51, 0xd5, 0xa0, 0x1f, 0x3a,
+	0xb0, 0x63, 0x31, 0x7c, 0x0b, 0x6a, 0xff, 0xb6, 0xdb, 0x80, 0xb2, 0x64, 0xa0, 0x8c, 0x49, 0x0b,
+	0xd1, 0xb5, 0xe7, 0x36, 0xfc, 0xc4, 0xc0, 0xcd, 0x1f, 0x10, 0xbc, 0x1e, 0xd1, 0x84, 0x49, 0x45,
+	0xb3, 0xdd, 0x3b, 0x9d, 0x88, 0x7e, 0x87, 0x6f, 0xc1, 0xc5, 0x7e, 0x26, 0xd2, 0x99, 0x8d, 0x8c,
+	0x27, 0xda, 0xde, 0x93, 0x87, 0xdb, 0x55, 0x67, 0x5c, 0xe7, 0xa4, 0x8e, 0xca, 0x18, 0x4f, 0xa2,
+	0x8a, 0xce, 0xce, 0xbf, 0xbb, 0x16, 0x14, 0x19, 0xef, 0x0b, 0x67, 0x94, 0xea, 0x82, 0x6f, 0xdd,
+	0xdd, 0x10, 0x99, 0x8c, 0x9b, 0x6b, 0xdf, 0x3f, 0x7d, 0xb0, 0x55, 0xf9, 0xe8, 0xac, 0xb6, 0xf9,
+	0x33, 0x82, 0xcb, 0x0b, 0xbd, 0xc8, 0x91, 0xe0, 0x92, 0xbe, 0xbc, 0x86, 0x7e, 0x42, 0xb0, 0xb6,
+	0x47, 0x5f, 0x15, 0x79, 0x8e, 0x11, 0x5c, 0x39, 0xd7, 0xcd, 0x4b, 0x16, 0x68, 0xe7, 0x37, 0x04,
+	0x85, 0xcf, 0x64, 0x82, 0x3f, 0x85, 0xca, 0x5c, 0x5f, 0xf8, 0x8d, 0x05, 0x92, 0x45, 0xfd, 0x6a,
+	0x8d, 0x17, 0x83, 0xee, 0x38, 0x11, 0xac, 0x2e, 0x9c, 0x13, 0x6f, 0x2e, 0x94, 0x9c, 0x9f, 0x48,
+	0xad, 0xf9, 0x5f, 0xb0, 0xe5, 0xac, 0x2d, 0xdf, 0x7f, 0xfa, 0x60, 0x0b, 0xb5, 0x3f, 0x7e, 0x74,
+	0x52, 0x47, 0x8f, 0x4f, 0xea, 0xe8, 0xaf, 0x93, 0x3a, 0x3a, 0x3e, 0xad, 0x2f, 0x3d, 0x3e, 0xad,
+	0x2f, 0xfd, 0x7e, 0x5a, 0x5f, 0xfa, 0x76, 0x7b, 0xee, 0xfa, 0xbe, 0x6d, 0xe9, 0x3e, 0xa7, 0xea,
+	0x9e, 0xc8, 0xee, 0x86, 0xf9, 0x4f, 0xf8, 0xd0, 0xfe, 0x86, 0xf5, 0x4d, 0x7e, 0x70, 0xc1, 0x5c,
+	0x01, 0x37, 0xfe, 0x09, 0x00, 0x00, 0xff, 0xff, 0x28, 0xfc, 0x29, 0x81, 0xa2, 0x07, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -496,6 +676,42 @@ func (m *AVSInfo) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	_ = i
 	var l int
 	_ = l
+	if len(m.OperatorAddress) > 0 {
+		for iNdEx := len(m.OperatorAddress) - 1; iNdEx >= 0; iNdEx-- {
+			i -= len(m.OperatorAddress[iNdEx])
+			copy(dAtA[i:], m.OperatorAddress[iNdEx])
+			i = encodeVarintTx(dAtA, i, uint64(len(m.OperatorAddress[iNdEx])))
+			i--
+			dAtA[i] = 0x4a
+		}
+	}
+	if m.AvsEpoch != nil {
+		{
+			size, err := m.AvsEpoch.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintTx(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0x42
+	}
+	{
+		size := m.MinSelfDelegation.Size()
+		i -= size
+		if _, err := m.MinSelfDelegation.MarshalTo(dAtA[i:]); err != nil {
+			return 0, err
+		}
+		i = encodeVarintTx(dAtA, i, uint64(size))
+	}
+	i--
+	dAtA[i] = 0x3a
+	if m.AvsUnbondingPeriod != 0 {
+		i = encodeVarintTx(dAtA, i, uint64(m.AvsUnbondingPeriod))
+		i--
+		dAtA[i] = 0x30
+	}
 	if len(m.AssetId) > 0 {
 		for iNdEx := len(m.AssetId) - 1; iNdEx >= 0; iNdEx-- {
 			i -= len(m.AssetId[iNdEx])
@@ -506,20 +722,20 @@ func (m *AVSInfo) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		}
 	}
 	if len(m.AvsOwnerAddress) > 0 {
-		i -= len(m.AvsOwnerAddress)
-		copy(dAtA[i:], m.AvsOwnerAddress)
-		i = encodeVarintTx(dAtA, i, uint64(len(m.AvsOwnerAddress)))
-		i--
-		dAtA[i] = 0x22
-	}
-	if len(m.OperatorAddress) > 0 {
-		for iNdEx := len(m.OperatorAddress) - 1; iNdEx >= 0; iNdEx-- {
-			i -= len(m.OperatorAddress[iNdEx])
-			copy(dAtA[i:], m.OperatorAddress[iNdEx])
-			i = encodeVarintTx(dAtA, i, uint64(len(m.OperatorAddress[iNdEx])))
+		for iNdEx := len(m.AvsOwnerAddress) - 1; iNdEx >= 0; iNdEx-- {
+			i -= len(m.AvsOwnerAddress[iNdEx])
+			copy(dAtA[i:], m.AvsOwnerAddress[iNdEx])
+			i = encodeVarintTx(dAtA, i, uint64(len(m.AvsOwnerAddress[iNdEx])))
 			i--
-			dAtA[i] = 0x1a
+			dAtA[i] = 0x22
 		}
+	}
+	if len(m.SlashAddr) > 0 {
+		i -= len(m.SlashAddr)
+		copy(dAtA[i:], m.SlashAddr)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.SlashAddr)))
+		i--
+		dAtA[i] = 0x1a
 	}
 	if len(m.AvsAddress) > 0 {
 		i -= len(m.AvsAddress)
@@ -532,6 +748,80 @@ func (m *AVSInfo) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		i -= len(m.Name)
 		copy(dAtA[i:], m.Name)
 		i = encodeVarintTx(dAtA, i, uint64(len(m.Name)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *EpochInfo) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *EpochInfo) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *EpochInfo) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.CurrentEpochStartHeight != 0 {
+		i = encodeVarintTx(dAtA, i, uint64(m.CurrentEpochStartHeight))
+		i--
+		dAtA[i] = 0x38
+	}
+	if m.EpochCountingStarted {
+		i--
+		if m.EpochCountingStarted {
+			dAtA[i] = 1
+		} else {
+			dAtA[i] = 0
+		}
+		i--
+		dAtA[i] = 0x30
+	}
+	n2, err2 := github_com_cosmos_gogoproto_types.StdTimeMarshalTo(m.CurrentEpochStartTime, dAtA[i-github_com_cosmos_gogoproto_types.SizeOfStdTime(m.CurrentEpochStartTime):])
+	if err2 != nil {
+		return 0, err2
+	}
+	i -= n2
+	i = encodeVarintTx(dAtA, i, uint64(n2))
+	i--
+	dAtA[i] = 0x2a
+	if m.CurrentEpoch != 0 {
+		i = encodeVarintTx(dAtA, i, uint64(m.CurrentEpoch))
+		i--
+		dAtA[i] = 0x20
+	}
+	n3, err3 := github_com_cosmos_gogoproto_types.StdDurationMarshalTo(m.Duration, dAtA[i-github_com_cosmos_gogoproto_types.SizeOfStdDuration(m.Duration):])
+	if err3 != nil {
+		return 0, err3
+	}
+	i -= n3
+	i = encodeVarintTx(dAtA, i, uint64(n3))
+	i--
+	dAtA[i] = 0x1a
+	n4, err4 := github_com_cosmos_gogoproto_types.StdTimeMarshalTo(m.StartTime, dAtA[i-github_com_cosmos_gogoproto_types.SizeOfStdTime(m.StartTime):])
+	if err4 != nil {
+		return 0, err4
+	}
+	i -= n4
+	i = encodeVarintTx(dAtA, i, uint64(n4))
+	i--
+	dAtA[i] = 0x12
+	if len(m.Identifier) > 0 {
+		i -= len(m.Identifier)
+		copy(dAtA[i:], m.Identifier)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.Identifier)))
 		i--
 		dAtA[i] = 0xa
 	}
@@ -731,21 +1021,64 @@ func (m *AVSInfo) Size() (n int) {
 	if l > 0 {
 		n += 1 + l + sovTx(uint64(l))
 	}
-	if len(m.OperatorAddress) > 0 {
-		for _, s := range m.OperatorAddress {
+	l = len(m.SlashAddr)
+	if l > 0 {
+		n += 1 + l + sovTx(uint64(l))
+	}
+	if len(m.AvsOwnerAddress) > 0 {
+		for _, s := range m.AvsOwnerAddress {
 			l = len(s)
 			n += 1 + l + sovTx(uint64(l))
 		}
-	}
-	l = len(m.AvsOwnerAddress)
-	if l > 0 {
-		n += 1 + l + sovTx(uint64(l))
 	}
 	if len(m.AssetId) > 0 {
 		for _, s := range m.AssetId {
 			l = len(s)
 			n += 1 + l + sovTx(uint64(l))
 		}
+	}
+	if m.AvsUnbondingPeriod != 0 {
+		n += 1 + sovTx(uint64(m.AvsUnbondingPeriod))
+	}
+	l = m.MinSelfDelegation.Size()
+	n += 1 + l + sovTx(uint64(l))
+	if m.AvsEpoch != nil {
+		l = m.AvsEpoch.Size()
+		n += 1 + l + sovTx(uint64(l))
+	}
+	if len(m.OperatorAddress) > 0 {
+		for _, s := range m.OperatorAddress {
+			l = len(s)
+			n += 1 + l + sovTx(uint64(l))
+		}
+	}
+	return n
+}
+
+func (m *EpochInfo) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.Identifier)
+	if l > 0 {
+		n += 1 + l + sovTx(uint64(l))
+	}
+	l = github_com_cosmos_gogoproto_types.SizeOfStdTime(m.StartTime)
+	n += 1 + l + sovTx(uint64(l))
+	l = github_com_cosmos_gogoproto_types.SizeOfStdDuration(m.Duration)
+	n += 1 + l + sovTx(uint64(l))
+	if m.CurrentEpoch != 0 {
+		n += 1 + sovTx(uint64(m.CurrentEpoch))
+	}
+	l = github_com_cosmos_gogoproto_types.SizeOfStdTime(m.CurrentEpochStartTime)
+	n += 1 + l + sovTx(uint64(l))
+	if m.EpochCountingStarted {
+		n += 2
+	}
+	if m.CurrentEpochStartHeight != 0 {
+		n += 1 + sovTx(uint64(m.CurrentEpochStartHeight))
 	}
 	return n
 }
@@ -919,7 +1252,7 @@ func (m *AVSInfo) Unmarshal(dAtA []byte) error {
 			iNdEx = postIndex
 		case 3:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field OperatorAddress", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field SlashAddr", wireType)
 			}
 			var stringLen uint64
 			for shift := uint(0); ; shift += 7 {
@@ -947,7 +1280,7 @@ func (m *AVSInfo) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.OperatorAddress = append(m.OperatorAddress, string(dAtA[iNdEx:postIndex]))
+			m.SlashAddr = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
 		case 4:
 			if wireType != 2 {
@@ -979,7 +1312,7 @@ func (m *AVSInfo) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.AvsOwnerAddress = string(dAtA[iNdEx:postIndex])
+			m.AvsOwnerAddress = append(m.AvsOwnerAddress, string(dAtA[iNdEx:postIndex]))
 			iNdEx = postIndex
 		case 5:
 			if wireType != 2 {
@@ -1013,6 +1346,366 @@ func (m *AVSInfo) Unmarshal(dAtA []byte) error {
 			}
 			m.AssetId = append(m.AssetId, string(dAtA[iNdEx:postIndex]))
 			iNdEx = postIndex
+		case 6:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field AvsUnbondingPeriod", wireType)
+			}
+			m.AvsUnbondingPeriod = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.AvsUnbondingPeriod |= uint32(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 7:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field MinSelfDelegation", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.MinSelfDelegation.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 8:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field AvsEpoch", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if m.AvsEpoch == nil {
+				m.AvsEpoch = &EpochInfo{}
+			}
+			if err := m.AvsEpoch.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 9:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field OperatorAddress", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.OperatorAddress = append(m.OperatorAddress, string(dAtA[iNdEx:postIndex]))
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipTx(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthTx
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *EpochInfo) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowTx
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: EpochInfo: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: EpochInfo: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Identifier", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Identifier = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field StartTime", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := github_com_cosmos_gogoproto_types.StdTimeUnmarshal(&m.StartTime, dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 3:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Duration", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := github_com_cosmos_gogoproto_types.StdDurationUnmarshal(&m.Duration, dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 4:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field CurrentEpoch", wireType)
+			}
+			m.CurrentEpoch = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.CurrentEpoch |= int64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 5:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field CurrentEpochStartTime", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := github_com_cosmos_gogoproto_types.StdTimeUnmarshal(&m.CurrentEpochStartTime, dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 6:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field EpochCountingStarted", wireType)
+			}
+			var v int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				v |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			m.EpochCountingStarted = bool(v != 0)
+		case 7:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field CurrentEpochStartHeight", wireType)
+			}
+			m.CurrentEpochStartHeight = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.CurrentEpochStartHeight |= int64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
 		default:
 			iNdEx = preIndex
 			skippy, err := skipTx(dAtA[iNdEx:])

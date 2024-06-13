@@ -101,4 +101,4 @@ changelog:
       - '^docs:'
       - '^test:'
 snapshot:
-  name_template: "{{ .Tag }}-next"
+  name_template: "{{ .Tag }}-{{ .Branch }}@{{ .ShortCommit }}-{{ .GitTreeState }}"

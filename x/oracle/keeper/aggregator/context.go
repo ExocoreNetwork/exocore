@@ -92,7 +92,7 @@ func (agc *AggregatorContext) sanityCheck(msg *types.MsgCreatePrice) error {
 	}
 
 	for _, pSource := range msg.Prices {
-		if pSource.Prices == nil || len(pSource.Prices) == 0 || len(pSource.Prices) > common.MaxDetID || !agc.params.IsValidSource(pSource.SourceID) {
+		if pSource.Prices == nil || len(pSource.Prices) == 0 || len(pSource.Prices) > int(common.MaxDetID) || !agc.params.IsValidSource(pSource.SourceID) {
 			return errors.New("source should be valid and provide at least one price")
 		}
 		// check with params is coressponding source is deteministic
@@ -247,7 +247,7 @@ func (agc *AggregatorContext) PrepareRound(ctx sdk.Context, block uint64) {
 				basedBlock:  latestBasedblock,
 				nextRoundID: latestNextRoundID,
 			}
-			if left >= common.MaxNonce {
+			if left >= uint64(common.MaxNonce) {
 				round.status = 2
 			} else {
 				round.status = 1
@@ -261,7 +261,7 @@ func (agc *AggregatorContext) PrepareRound(ctx sdk.Context, block uint64) {
 				round.status = 1
 				// drop previous worker
 				delete(agc.aggregators, feederIDUint64)
-			} else if round.status == 1 && left >= common.MaxNonce {
+			} else if round.status == 1 && left >= uint64(common.MaxNonce) {
 				// this shouldn't happen, if do sealround properly before prepareRound, basically for test only
 				round.status = 2
 				// TODO: just modify the status here, since sealRound should do all the related seal actios already when parepare invoked

@@ -15,11 +15,21 @@ func (p Precompile) GetClientChains(
 	args []interface{},
 ) ([]byte, error) {
 	if len(args) > 0 {
-		return nil, errorsmod.Wrapf(assetstypes.ErrInvalidInputParameter, "no input is required")
+		ctx.Logger().Error(
+			"GetClientChains",
+			"err", errorsmod.Wrapf(
+				assetstypes.ErrInvalidInputParameter, "no input is required",
+			),
+		)
+		return method.Outputs.Pack(false, nil)
 	}
 	infos, err := p.assetsKeeper.GetAllClientChainInfo(ctx)
 	if err != nil {
-		return nil, err
+		ctx.Logger().Error(
+			"GetClientChains",
+			"err", err,
+		)
+		return method.Outputs.Pack(false, nil)
 	}
 	ids := make([]uint16, 0, len(infos))
 	for id := range infos {
@@ -27,9 +37,13 @@ func (p Precompile) GetClientChains(
 		// based it on uint16, so we have to stick with it.
 		// TODO: change it to uint32 here and in other precompiles.
 		if id > math.MaxUint16 {
-			return nil, errorsmod.Wrapf(
-				assetstypes.ErrInvalidInputParameter, "client chain id is too large",
+			ctx.Logger().Error(
+				"GetClientChains",
+				"err", errorsmod.Wrapf(
+					assetstypes.ErrInvalidInputParameter, "client chain id is too large",
+				),
 			)
+			return method.Outputs.Pack(false, nil)
 		}
 		// #nosec G701 // already checked
 		convID := uint16(id)

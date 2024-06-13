@@ -27,7 +27,7 @@ func TestAggregatorContext(t *testing.T) {
 				Convey("update already exist round info", func() {
 					p.Reset()
 					time.Sleep(1 * time.Second)
-					patchBlockHeight(10 + common.MaxNonce)
+					patchBlockHeight(10 + int64(common.MaxNonce))
 
 					agc.PrepareRound(ctx, 0)
 					So(agc.rounds[1].status, ShouldEqual, 2)
@@ -37,7 +37,7 @@ func TestAggregatorContext(t *testing.T) {
 			})
 			Convey("pepare outside the window", func() {
 				Convey("for empty round list", func() {
-					p := patchBlockHeight(10 + common.MaxNonce)
+					p := patchBlockHeight(10 + int64(common.MaxNonce))
 					agc.PrepareRound(ctx, 0)
 					So(agc.rounds[1].status, ShouldEqual, 2)
 					p.Reset()

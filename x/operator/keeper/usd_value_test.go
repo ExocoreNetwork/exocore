@@ -85,7 +85,7 @@ func (suite *OperatorTestSuite) TestAVSUSDValue() {
 	usdcPrice, err := suite.App.OperatorKeeper.OracleInterface().GetSpecifiedAssetsPrice(suite.Ctx, suite.assetID)
 	suite.NoError(err)
 	delegatedAmount := sdkmath.NewIntWithDecimal(8, 7)
-	suite.prepareDelegation(usdcAddr, delegatedAmount)
+	suite.prepareDelegation(true, usdcAddr, delegatedAmount)
 
 	// updating the new voting power
 	suite.NoError(err)
@@ -98,4 +98,55 @@ func (suite *OperatorTestSuite) TestAVSUSDValue() {
 	operatorUSDValue, err := suite.App.OperatorKeeper.GetOperatorUSDValue(suite.Ctx, suite.avsAddr, suite.operatorAddr.String())
 	suite.NoError(err)
 	suite.Equal(expectedUSDvalue, operatorUSDValue)
+}
+
+func (suite *OperatorTestSuite) TestVotingPowerForDogFood() {
+	initialPower := int64(1)
+	initialAVSUSDValue := sdkmath.LegacyNewDec(2)
+	initialOperatorUSDValue := sdkmath.LegacyNewDec(1)
+	addPower := 1
+	addUSDValue := sdkmath.LegacyNewDec(1)
+
+	validators := suite.App.StakingKeeper.GetAllExocoreValidators(suite.Ctx)
+	for _, validator := range validators {
+		_, isFound := suite.App.StakingKeeper.GetValidatorByConsAddr(suite.Ctx, validator.Address)
+		suite.True(isFound)
+		suite.Equal(initialPower, validator.Power)
+	}
+
+	operators, _ := suite.App.OperatorKeeper.GetActiveOperatorsForChainID(suite.Ctx, suite.Ctx.ChainID())
+	allAssets, err := suite.App.AssetsKeeper.GetAllStakingAssetsInfo(suite.Ctx)
+	suite.NoError(err)
+	suite.Equal(1, len(allAssets))
+	var asset assetstype.AssetInfo
+	for _, value := range allAssets {
+		asset = *value.AssetBasicInfo
+	}
+
+	assetAddr := common.HexToAddress(asset.Address)
+	depositAmount := sdkmath.NewIntWithDecimal(2, int(asset.Decimals))
+	delegationAmount := sdkmath.NewIntWithDecimal(int64(addPower), int(asset.Decimals))
+	suite.prepareDeposit(assetAddr, depositAmount)
+	suite.operatorAddr = operators[0]
+	suite.prepareDelegation(true, assetAddr, delegationAmount)
+
+	suite.App.OperatorKeeper.EndBlock(suite.Ctx, abci.RequestEndBlock{})
+	avsUSDValue, err := suite.App.OperatorKeeper.GetAVSUSDValue(suite.Ctx, suite.Ctx.ChainID())
+	suite.NoError(err)
+	suite.Equal(initialAVSUSDValue.Add(addUSDValue), avsUSDValue)
+	operatorUSDValue, err := suite.App.OperatorKeeper.GetOperatorUSDValue(suite.Ctx, suite.Ctx.ChainID(), suite.operatorAddr.String())
+	suite.NoError(err)
+	suite.Equal(initialOperatorUSDValue.Add(addUSDValue), operatorUSDValue)
+
+	found, consensusKey, err := suite.App.OperatorKeeper.GetOperatorConsKeyForChainID(suite.Ctx, suite.operatorAddr, suite.Ctx.ChainID())
+	suite.NoError(err)
+	suite.True(found)
+
+	suite.App.StakingKeeper.MarkEpochEnd(suite.Ctx)
+	validatorUpdates := suite.App.StakingKeeper.EndBlock(suite.Ctx)
+	suite.Equal(1, len(validatorUpdates))
+	for _, update := range validatorUpdates {
+		suite.Equal(*consensusKey, update.PubKey)
+		suite.Equal(initialPower+int64(addPower), update.Power)
+	}
 }

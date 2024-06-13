@@ -66,7 +66,7 @@ func (c cacheMsgs) commit(ctx sdk.Context, k common.KeeperOracle) {
 	}
 	index, _ := k.GetIndexRecentMsg(ctx)
 	for i, b := range index.Index {
-		if b >= block-common.MaxNonce {
+		if b >= block-uint64(common.MaxNonce) {
 			index.Index = index.Index[i:]
 			break
 		}
@@ -115,7 +115,7 @@ func (c *cacheParams) commit(ctx sdk.Context, k common.KeeperOracle) {
 	i := 0
 	for ; i < len(index.Index); i++ {
 		b := index.Index[i]
-		if b >= block-common.MaxNonce {
+		if b >= block-uint64(common.MaxNonce) {
 			index.Index = index.Index[i:]
 			break
 		}

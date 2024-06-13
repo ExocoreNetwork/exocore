@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"embed"
 	"fmt"
+	"math/big"
 
 	assetskeeper "github.com/ExocoreNetwork/exocore/x/assets/keeper"
 	rewardkeeper "github.com/ExocoreNetwork/exocore/x/reward/keeper"
@@ -96,7 +97,11 @@ func (p Precompile) Run(evm *vm.EVM, contract *vm.Contract, readOnly bool) (bz [
 	}
 
 	if err != nil {
-		return nil, err
+		// for failed cases we expect it returns bool value instead of error
+		// this is a workaround because the error returned by precompile can not be caught in EVM
+		// see https://github.com/ExocoreNetwork/exocore/issues/70
+		// TODO: we should figure out root cause and fix this issue to make precompiles work normally
+		return method.Outputs.Pack(false, new(big.Int))
 	}
 
 	cost := ctx.GasMeter().GasConsumed() - initialGas

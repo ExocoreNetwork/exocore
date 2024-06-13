@@ -61,7 +61,7 @@ func GetAggregatorContext(ctx sdk.Context, k Keeper) *aggregator.AggregatorConte
 }
 
 func recacheAggregatorContext(ctx sdk.Context, agc *aggregator.AggregatorContext, k Keeper, c *cache.Cache) bool {
-	from := ctx.BlockHeight() - common.MaxNonce
+	from := ctx.BlockHeight() - int64(common.MaxNonce)
 	to := ctx.BlockHeight() - 1
 
 	h, ok := k.GetValidatorUpdateBlock(ctx)
@@ -103,6 +103,7 @@ func recacheAggregatorContext(ctx sdk.Context, agc *aggregator.AggregatorContext
 				pTmp = common.Params(*recentParams)
 				agc.SetParams(&pTmp)
 				prev = b
+				setCommonParams(*recentParams)
 			}
 		}
 
@@ -133,6 +134,7 @@ func recacheAggregatorContext(ctx sdk.Context, agc *aggregator.AggregatorContext
 			}
 		}
 		agc.SetParams(&pTmp)
+		setCommonParams(types.Params(pTmp))
 	}
 
 	var pRet common.Params
@@ -152,7 +154,7 @@ func initAggregatorContext(ctx sdk.Context, agc *aggregator.AggregatorContext, k
 	agc.SetParams(&pTmp)
 	// set params cache
 	c.AddCache(cache.ItemP(&pTmp))
-
+	setCommonParams(p)
 	totalPower := big.NewInt(0)
 	validatorPowers := make(map[string]*big.Int)
 	k.IterateBondedValidatorsByPower(ctx, func(_ int64, validator stakingtypes.ValidatorI) bool {
@@ -180,4 +182,12 @@ func ResetCache() {
 
 func ResetAggregatorContextCheckTx() {
 	agcCheckTx = nil
+}
+
+func setCommonParams(p types.Params) {
+	common.MaxNonce = p.MaxNonce
+	common.ThresholdA = p.ThresholdA
+	common.ThresholdB = p.ThresholdB
+	common.MaxDetID = p.MaxDetId
+	common.Mode = p.Mode
 }

@@ -111,6 +111,9 @@ func (s *DelegationPrecompileSuite) TestRunDelegateToThroughClientChain() {
 	successRet, err := s.precompile.Methods[delegation.MethodDelegateToThroughClientChain].Outputs.Pack(true)
 	s.Require().NoError(err)
 
+	failureRet, err := s.precompile.Methods[delegation.MethodDelegateToThroughClientChain].Outputs.Pack(false)
+	s.Require().NoError(err)
+
 	testcases := []struct {
 		name        string
 		malleate    func() (common.Address, []byte)
@@ -126,7 +129,7 @@ func (s *DelegationPrecompileSuite) TestRunDelegateToThroughClientChain() {
 			},
 			readOnly:    false,
 			expPass:     false,
-			errContains: assetstype.ErrNotEqualToLzAppAddr.Error(),
+			returnBytes: failureRet,
 		},
 		{
 			name: "fail - delegateToThroughClientChain transaction will fail because the contract caller isn't the exoCoreLzAppAddr",
@@ -141,7 +144,7 @@ func (s *DelegationPrecompileSuite) TestRunDelegateToThroughClientChain() {
 			},
 			readOnly:    false,
 			expPass:     false,
-			errContains: types.ErrNotEqualToLzAppAddr.Error(),
+			returnBytes: failureRet,
 		},
 		{
 			name: "fail - delegateToThroughClientChain transaction will fail because the delegated operator hasn't been registered",
@@ -156,7 +159,7 @@ func (s *DelegationPrecompileSuite) TestRunDelegateToThroughClientChain() {
 			},
 			readOnly:    false,
 			expPass:     false,
-			errContains: delegationtype.ErrOperatorNotExist.Error(),
+			returnBytes: failureRet,
 		},
 		{
 			name: "fail - delegateToThroughClientChain transaction will fail because the delegated asset hasn't been deposited",
@@ -172,7 +175,7 @@ func (s *DelegationPrecompileSuite) TestRunDelegateToThroughClientChain() {
 			},
 			readOnly:    false,
 			expPass:     false,
-			errContains: types.ErrNoStakerAssetKey.Error(),
+			returnBytes: failureRet,
 		},
 		{
 			name: "fail - delegateToThroughClientChain transaction will fail because the delegation amount is bigger than the canWithdraw amount",
@@ -189,7 +192,7 @@ func (s *DelegationPrecompileSuite) TestRunDelegateToThroughClientChain() {
 			},
 			readOnly:    false,
 			expPass:     false,
-			errContains: delegationtype.ErrDelegationAmountTooBig.Error(),
+			returnBytes: failureRet,
 		},
 		{
 			name: "pass - delegateToThroughClientChain transaction",
@@ -273,9 +276,12 @@ func (s *DelegationPrecompileSuite) TestRunDelegateToThroughClientChain() {
 				s.Require().NoError(err, "expected no error when running the precompile")
 				s.Require().Equal(tc.returnBytes, bz, "the return doesn't match the expected result")
 			} else {
-				s.Require().Error(err, "expected error to be returned when running the precompile")
-				s.Require().Nil(bz, "expected returned bytes to be nil")
-				s.Require().ErrorContains(err, tc.errContains)
+				// for failed cases we expect it returns bool value instead of error
+				// this is a workaround because the error returned by precompile can not be caught in EVM
+				// see https://github.com/ExocoreNetwork/exocore/issues/70
+				// TODO: we should figure out root cause and fix this issue to make precompiles work normally
+				s.Require().NoError(err, "expected no error when running the precompile")
+				s.Require().Equal(tc.returnBytes, bz, "expected returned bytes to be nil")
 			}
 		})
 	}
@@ -439,9 +445,12 @@ func (s *DelegationPrecompileSuite) TestRunUnDelegateFromThroughClientChain() {
 				s.Require().NoError(err, "expected no error when running the precompile")
 				s.Require().Equal(tc.returnBytes, bz, "the return doesn't match the expected result")
 			} else {
-				s.Require().Error(err, "expected error to be returned when running the precompile")
-				s.Require().Nil(bz, "expected returned bytes to be nil")
-				s.Require().ErrorContains(err, tc.errContains)
+				// for failed cases we expect it returns bool value instead of error
+				// this is a workaround because the error returned by precompile can not be caught in EVM
+				// see https://github.com/ExocoreNetwork/exocore/issues/70
+				// TODO: we should figure out root cause and fix this issue to make precompiles work normally
+				s.Require().NoError(err, "expected no error when running the precompile")
+				s.Require().Equal(tc.returnBytes, bz, "expected returned bytes to be nil")
 			}
 		})
 	}
