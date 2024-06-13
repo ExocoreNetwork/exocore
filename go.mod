@@ -1,6 +1,6 @@
 module github.com/ExocoreNetwork/exocore
 
-go 1.21.9
+go 1.21.11
 
 require (
 	cosmossdk.io/errors v1.0.1
