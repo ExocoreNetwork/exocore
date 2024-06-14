@@ -139,7 +139,7 @@ func (suite *OperatorTestSuite) TestVotingPowerForDogFood() {
 	suite.Equal(1, len(allAssets))
 	var asset assetstype.AssetInfo
 	for _, value := range allAssets {
-		asset = *value.AssetBasicInfo
+		asset = value.AssetBasicInfo
 	}
 
 	assetAddr := common.HexToAddress(asset.Address)

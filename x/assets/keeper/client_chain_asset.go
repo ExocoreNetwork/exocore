@@ -85,17 +85,16 @@ func (k Keeper) GetAssetsDecimal(ctx sdk.Context, assets map[string]interface{})
 	return decimals, nil
 }
 
-func (k Keeper) GetAllStakingAssetsInfo(ctx sdk.Context) (allAssets map[string]*assetstype.StakingAssetInfo, err error) {
+func (k Keeper) GetAllStakingAssetsInfo(ctx sdk.Context) (allAssets []assetstype.StakingAssetInfo, err error) {
 	store := ctx.KVStore(k.storeKey)
 	iterator := sdk.KVStorePrefixIterator(store, assetstype.KeyPrefixReStakingAssetInfo)
 	defer iterator.Close()
 
-	ret := make(map[string]*assetstype.StakingAssetInfo, 0)
+	ret := make([]assetstype.StakingAssetInfo, 0)
 	for ; iterator.Valid(); iterator.Next() {
 		var assetInfo assetstype.StakingAssetInfo
 		k.cdc.MustUnmarshal(iterator.Value(), &assetInfo)
-		_, assetID := assetstype.GetStakeIDAndAssetIDFromStr(assetInfo.AssetBasicInfo.LayerZeroChainID, "", assetInfo.AssetBasicInfo.Address)
-		ret[assetID] = &assetInfo
+		ret = append(ret, assetInfo)
 	}
 	return ret, nil
 }

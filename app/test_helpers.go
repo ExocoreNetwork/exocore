@@ -216,7 +216,7 @@ func GenesisStateWithValSet(app *ExocoreApp, genesisState simapp.GenesisState,
 		assetstypes.DefaultParams(),
 		clientChains, []assetstypes.StakingAssetInfo{
 			{
-				AssetBasicInfo: &assets[0],
+				AssetBasicInfo: assets[0],
 				// required to be 0, since deposits are handled after token init.
 				StakingTotalAmount: sdk.ZeroInt(),
 			},

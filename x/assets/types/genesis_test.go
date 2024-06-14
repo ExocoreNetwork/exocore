@@ -49,7 +49,7 @@ func (suite *GenesisTestSuite) TestValidateGenesis() {
 		MetaInfo:         "Tether USD token",
 	}
 	stakingInfo := types.StakingAssetInfo{
-		AssetBasicInfo:     &usdtClientChainAsset,
+		AssetBasicInfo:     usdtClientChainAsset,
 		StakingTotalAmount: math.NewInt(0),
 	}
 	// generated information
@@ -345,7 +345,7 @@ func (suite *GenesisTestSuite) TestValidateGenesis() {
 					MetaInfo:         "Circle USD token",
 				}
 				stakingInfo := types.StakingAssetInfo{
-					AssetBasicInfo:     &usdcClientChainAsset,
+					AssetBasicInfo:     usdcClientChainAsset,
 					StakingTotalAmount: math.NewInt(0),
 				}
 				gs.Tokens[1] = stakingInfo

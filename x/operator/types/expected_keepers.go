@@ -24,8 +24,8 @@ type AssetsKeeper interface {
 		f func(assetID string, state *assetstype.OperatorAssetInfo) error,
 	) error
 	ClientChainExists(ctx sdk.Context, index uint64) bool
-	GetAllStakingAssetsInfo(ctx sdk.Context) (allAssets map[string]*assetstype.StakingAssetInfo, err error)
 	GetOperatorSpecifiedAssetInfo(ctx sdk.Context, operatorAddr sdk.Address, assetID string) (info *assetstype.OperatorAssetInfo, err error)
+	GetAllStakingAssetsInfo(ctx sdk.Context) (allAssets []assetstype.StakingAssetInfo, err error)
 }
 
 var _ DelegationKeeper = &delegationkeeper.Keeper{}

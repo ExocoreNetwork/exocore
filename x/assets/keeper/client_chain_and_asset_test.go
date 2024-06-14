@@ -23,8 +23,8 @@ func (suite *StakingAssetsTestSuite) TestGenesisClientChainAndAssetInfo() {
 		MetaInfo:         "Tether USD token",
 	}
 	stakingInfo := assetstype.StakingAssetInfo{
-		AssetBasicInfo:     &usdtClientChainAsset,
-		StakingTotalAmount: math.NewInt(0),
+		AssetBasicInfo:     usdtClientChainAsset,
+		StakingTotalAmount: math.NewInt(2000000),
 	}
 	defaultGensisState := assetstype.NewGenesis(
 		assetstype.DefaultParams(),
@@ -36,26 +36,16 @@ func (suite *StakingAssetsTestSuite) TestGenesisClientChainAndAssetInfo() {
 	// test the client chains getting
 	clientChains, err := suite.App.AssetsKeeper.GetAllClientChainInfo(suite.Ctx)
 	suite.NoError(err)
-	suite.Ctx.Logger().Info("the clientChains is:", "info", clientChains)
-	for _, clientChain := range defaultGensisState.ClientChains {
-		suite.Contains(clientChains, clientChain)
-	}
+	suite.Contains(clientChains, defaultGensisState.ClientChains[0])
 
 	chainInfo, err := suite.App.AssetsKeeper.GetClientChainInfoByIndex(suite.Ctx, 101)
 	suite.NoError(err)
-	suite.Contains(clientChains, *chainInfo)
+	suite.Equal(clientChains[0], *chainInfo)
 
 	// test the client chain assets getting
 	assets, err := suite.App.AssetsKeeper.GetAllStakingAssetsInfo(suite.Ctx)
 	suite.NoError(err)
-	for _, assetX := range defaultGensisState.Tokens {
-		asset := assetX.AssetBasicInfo
-		_, assetID := assetstype.GetStakeIDAndAssetIDFromStr(asset.LayerZeroChainID, "", asset.Address)
-		suite.Ctx.Logger().Info("the asset id is:", "assetID", assetID)
-		info, ok := assets[assetID]
-		suite.True(ok)
-		suite.Equal(asset, info.AssetBasicInfo)
-	}
+	suite.Contains(assets, defaultGensisState.Tokens[0])
 
 	usdtAssetX := defaultGensisState.Tokens[0]
 	usdtAsset := usdtAssetX.AssetBasicInfo

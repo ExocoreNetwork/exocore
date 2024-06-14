@@ -11,12 +11,46 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-func (k Keeper) GetStakerAssetInfos(ctx sdk.Context, stakerID string) (assetsInfo map[string]*assetstype.StakerAssetInfo, err error) {
+// AllDeposits
+// nolint: dupl
+func (k Keeper) AllDeposits(ctx sdk.Context) (deposits []assetstype.DepositsByStaker, err error) {
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), assetstype.KeyPrefixReStakerAssetInfos)
+	iterator := sdk.KVStorePrefixIterator(store, []byte{})
+	defer iterator.Close()
+
+	ret := make([]assetstype.DepositsByStaker, 0)
+	var previousStakerID string
+	for ; iterator.Valid(); iterator.Next() {
+		var stateInfo assetstype.StakerAssetInfo
+		k.cdc.MustUnmarshal(iterator.Value(), &stateInfo)
+		keyList, err := assetstype.ParseJoinedStoreKey(iterator.Key(), 2)
+		if err != nil {
+			return nil, err
+		}
+		stakerID, assetID := keyList[0], keyList[1]
+		if previousStakerID != stakerID {
+			depositsByStaker := assetstype.DepositsByStaker{
+				StakerID: stakerID,
+				Deposits: make([]assetstype.DepositByAsset, 0),
+			}
+			ret = append(ret, depositsByStaker)
+		}
+		index := len(ret) - 1
+		ret[index].Deposits = append(ret[index].Deposits, assetstype.DepositByAsset{
+			AssetID: assetID,
+			Info:    stateInfo,
+		})
+		previousStakerID = stakerID
+	}
+	return ret, nil
+}
+
+func (k Keeper) GetStakerAssetInfos(ctx sdk.Context, stakerID string) (assetsInfo []assetstype.DepositByAsset, err error) {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), assetstype.KeyPrefixReStakerAssetInfos)
 	iterator := sdk.KVStorePrefixIterator(store, []byte(stakerID))
 	defer iterator.Close()
 
-	ret := make(map[string]*assetstype.StakerAssetInfo, 0)
+	ret := make([]assetstype.DepositByAsset, 0)
 	for ; iterator.Valid(); iterator.Next() {
 		var stateInfo assetstype.StakerAssetInfo
 		k.cdc.MustUnmarshal(iterator.Value(), &stateInfo)
@@ -25,7 +59,10 @@ func (k Keeper) GetStakerAssetInfos(ctx sdk.Context, stakerID string) (assetsInf
 			return nil, err
 		}
 		assetID := keyList[1]
-		ret[assetID] = &stateInfo
+		ret = append(ret, assetstype.DepositByAsset{
+			AssetID: assetID,
+			Info:    stateInfo,
+		})
 	}
 	return ret, nil
 }

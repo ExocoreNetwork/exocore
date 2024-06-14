@@ -43,9 +43,27 @@ func (k Keeper) InitGenesis(ctx sdk.Context, data *types.GenesisState) {
 				panic(err)
 			}
 			// now for the asset, increase the deposit value
-			if err := k.UpdateStakingAssetTotalAmount(
-				ctx, assetID, info.TotalDepositAmount,
-			); err != nil {
+			// This should only be called when initializing from the bootStrap contract
+			// because the `TotalDepositAmount` will be initialized when
+			// initializing the tokens information from the general exported genesis file.
+			if !data.NotInitFromBootStrap {
+				if err := k.UpdateStakingAssetTotalAmount(
+					ctx, assetID, info.TotalDepositAmount,
+				); err != nil {
+					panic(err)
+				}
+			}
+		}
+	}
+
+	// initialize the operators assets from the genesis
+	for _, assets := range data.OperatorAssets {
+		for _, assetInfo := range assets.AssetsState {
+			// #nosec G703 // already validated
+			accAddress, _ := sdk.AccAddressFromBech32(assets.Operator)
+			infoAsChange := types.DeltaOperatorSingleAsset(assetInfo.Info)
+			err := k.UpdateOperatorAssetState(ctx, accAddress, assetInfo.AssetID, infoAsChange)
+			if err != nil {
 				panic(err)
 			}
 		}
@@ -53,8 +71,37 @@ func (k Keeper) InitGenesis(ctx sdk.Context, data *types.GenesisState) {
 }
 
 // ExportGenesis returns the module's exported genesis.
-func (Keeper) ExportGenesis(sdk.Context) *types.GenesisState {
+func (k Keeper) ExportGenesis(ctx sdk.Context) *types.GenesisState {
 	res := types.GenesisState{}
-	// TODO
+	params, err := k.GetParams(ctx)
+	if err != nil {
+		panic(err)
+	}
+	res.Params = *params
+
+	allClientChains, err := k.GetAllClientChainInfo(ctx)
+	if err != nil {
+		panic(err)
+	}
+	res.ClientChains = allClientChains
+
+	allAssets, err := k.GetAllStakingAssetsInfo(ctx)
+	if err != nil {
+		panic(err)
+	}
+	res.Tokens = allAssets
+
+	allDeposits, err := k.AllDeposits(ctx)
+	if err != nil {
+		panic(err)
+	}
+	res.Deposits = allDeposits
+
+	operatorAssets, err := k.AllOperatorAssets(ctx)
+	if err != nil {
+		panic(err)
+	}
+	res.OperatorAssets = operatorAssets
+
 	return &res
 }

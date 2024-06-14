@@ -66,5 +66,5 @@ func (suite *SlashTestSuite) TestSlash() {
 
 	assetInfo, err := suite.App.AssetsKeeper.GetStakingAssetInfo(suite.Ctx, assetID)
 	suite.NoError(err)
-	suite.Equal(assets[assetID].StakingTotalAmount.Add(depositEvent.OpAmount).Sub(event.OpAmount), assetInfo.StakingTotalAmount)
+	suite.Equal(assets[0].StakingTotalAmount.Add(depositEvent.OpAmount).Sub(event.OpAmount), assetInfo.StakingTotalAmount)
 }

@@ -163,7 +163,7 @@ func (suite *BaseTestSuite) SetupWithGenesisValSet(genAccs []authtypes.GenesisAc
 		assetstypes.DefaultParams(),
 		suite.ClientChains, []assetstypes.StakingAssetInfo{
 			{
-				AssetBasicInfo: &suite.Assets[0],
+				AssetBasicInfo: suite.Assets[0],
 				// required to be 0, since deposits are handled after token init.
 				StakingTotalAmount: sdk.ZeroInt(),
 			},
