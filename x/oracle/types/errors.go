@@ -6,10 +6,15 @@ import (
 	sdkerrors "cosmossdk.io/errors"
 )
 
+const (
+	invalidMsg = iota + 2
+	priceProposalIgnored
+	priceProposalFormatInvalid
+)
+
 // x/oracle module sentinel errors
 var (
-	ErrSample                     = sdkerrors.Register(ModuleName, 0, "sample error")
-	ErrInvalidMsg                 = sdkerrors.Register(ModuleName, 1, "invalid input create price")
-	ErrPriceProposalIgnored       = sdkerrors.Register(ModuleName, 2, "price proposal ignored")
-	ErrPriceProposalFormatInvalid = sdkerrors.Register(ModuleName, 3, "price proposal message format invalid")
+	ErrInvalidMsg                 = sdkerrors.Register(ModuleName, invalidMsg, "invalid input create price")
+	ErrPriceProposalIgnored       = sdkerrors.Register(ModuleName, priceProposalIgnored, "price proposal ignored")
+	ErrPriceProposalFormatInvalid = sdkerrors.Register(ModuleName, priceProposalFormatInvalid, "price proposal message format invalid")
 )

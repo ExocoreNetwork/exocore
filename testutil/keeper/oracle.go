@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"testing"
+	"time"
 
 	"github.com/ExocoreNetwork/exocore/x/oracle/keeper"
 	"github.com/ExocoreNetwork/exocore/x/oracle/types"
@@ -45,7 +46,9 @@ func OracleKeeper(t testing.TB) (*keeper.Keeper, sdk.Context) {
 		stakingKeeper.Keeper{},
 	)
 
-	ctx := sdk.NewContext(stateStore, tmproto.Header{}, false, log.NewNopLogger())
+	ctx := sdk.NewContext(stateStore, tmproto.Header{
+		Time: time.Now().UTC(),
+	}, false, log.NewNopLogger())
 
 	// Initialize params
 	p4Test := types.DefaultParams()
