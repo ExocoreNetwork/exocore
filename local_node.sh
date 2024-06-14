@@ -117,8 +117,10 @@ if [[ $overwrite == "y" || $overwrite == "Y" ]]; then
 	# x/dogfood
 	jq '.app_state["dogfood"]["initial_val_set"][0]["public_key"]="0xf0f6919e522c5b97db2c8255bff743f9dfddd7ad9fc37cb0c1670b480d0f9914"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
 	jq '.app_state["dogfood"]["initial_val_set"][0]["power"]="5000"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
-	# change the epoch to a minute when starting a local node, which facilitates the testing.
+	# for easy testing, use an epoch of 1 minute and 2 epochs until unbonded.
+	# i did not use 1 epoch to allow for testing that it does not happen at each epoch.
 	jq '.app_state["dogfood"]["params"]["epoch_identifier"]="minute"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
+	jq '.app_state["dogfood"]["params"]["epochs_until_unbonded"]="2"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
 
 	if [[ $1 == "pending" ]]; then
 		if [[ "$OSTYPE" == "darwin"* ]]; then
