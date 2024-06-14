@@ -8,7 +8,7 @@ from Osmosis. Much of the documentation below is sourced from the [README in tha
 ## Abstract
 
 Often in the SDK, we would like to run certain code every-so often. The
-purpose of `epochs` module is to allow other modules to set that they
+purpose of the `epochs` module is to allow other modules to set that they
 would like to be signaled once every period. So another module can
 specify it wants to execute code once a week, starting at UTC-time = x.
 `epochs` creates a generalized epoch interface to other modules so that
