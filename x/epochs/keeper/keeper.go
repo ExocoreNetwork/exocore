@@ -51,5 +51,8 @@ func (k *Keeper) SetHooks(sh types.EpochHooks) {
 
 // Hooks returns the hooks registered to the module.
 func (k Keeper) Hooks() types.EpochHooks {
-	return k.hooks
+	if k.hooks != nil {
+		return k.hooks
+	}
+	return types.MultiEpochHooks{}
 }

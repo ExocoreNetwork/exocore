@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/cosmos/cosmos-sdk/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -37,7 +38,10 @@ func (k Keeper) EpochInfos(
 		return nil
 	})
 	if err != nil {
-		return nil, status.Error(codes.Internal, err.Error())
+		return nil, status.Error(
+			codes.Internal,
+			fmt.Sprintf("Failed to paginate epochs: %s", err),
+		)
 	}
 
 	return &types.QueryEpochsInfoResponse{

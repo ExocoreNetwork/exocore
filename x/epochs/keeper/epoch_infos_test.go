@@ -31,4 +31,8 @@ func (suite *KeeperTestSuite) TestEpochInfoAddition() {
 	suite.Require().Equal(allEpochs[2].Identifier, types.MinuteEpochID)
 	suite.Require().Equal(allEpochs[3].Identifier, epochInfo.Identifier)
 	suite.Require().Equal(allEpochs[4].Identifier, types.WeekEpochID)
+
+	// Test retrieval of non-existent epoch info
+	_, found = suite.App.EpochsKeeper.GetEpochInfo(suite.Ctx, "fake")
+	suite.Require().False(found)
 }
