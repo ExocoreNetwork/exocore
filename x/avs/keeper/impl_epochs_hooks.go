@@ -1,18 +1,26 @@
 package keeper
 
 import (
-	"fmt"
+	"github.com/ExocoreNetwork/exocore/x/avs/types"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	epochstypes "github.com/evmos/evmos/v14/x/epochs/types"
-	"github.com/evmos/evmos/v14/x/inflation/types"
 )
 
 func (k Keeper) BeforeEpochStart(_ sdk.Context, _ string, _ int64) {
 }
 
-// AfterEpochEnd mints and allocates coins at the end of each epoch end
+// AfterEpochEnd Record epoch end avs
 func (k Keeper) AfterEpochEnd(ctx sdk.Context, epochIdentifier string, epochNumber int64) {
+
+	var avsList []types.AVSInfo
+	k.IteratEpochEndAVSInfo(ctx, func(_ int64, epochEndAVSInfo types.AVSInfo) (stop bool) {
+		avsList = append(avsList, epochEndAVSInfo)
+		if epochIdentifier == epochEndAVSInfo.EpochIdentifier {
+			return true
+		}
+		return false
+	})
 
 	if epochIdentifier != epochstypes.DayEpochID {
 		return
@@ -23,10 +31,7 @@ func (k Keeper) AfterEpochEnd(ctx sdk.Context, epochIdentifier string, epochNumb
 		return
 	}
 
-	ctx.EventManager().EmitEvent(
-		sdk.NewEvent(
-			types.EventTypeMint,
-			sdk.NewAttribute(types.AttributeEpochNumber, fmt.Sprintf("%d", epochNumber)),
-		),
+	ctx.EventManager().EmitTypedEvent(
+		&types.AVSInfo{},
 	)
 }

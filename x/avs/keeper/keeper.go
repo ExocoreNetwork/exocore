@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"fmt"
+	epochstypes "github.com/evmos/evmos/v14/x/epochs/types"
 	"slices"
 
 	errorsmod "cosmossdk.io/errors"
@@ -24,6 +25,7 @@ type (
 		operatorKeeper delegationtypes.OperatorKeeper
 		// other keepers
 		assetsKeeper assettypes.Keeper
+		epochsKeeper types.EpochsKeeper
 	}
 )
 
@@ -32,12 +34,15 @@ func NewKeeper(
 	storeKey storetypes.StoreKey,
 	operatorKeeper delegationtypes.OperatorKeeper,
 	assetKeeper assettypes.Keeper,
+	epochsKeeper types.EpochsKeeper,
+
 ) Keeper {
 	return Keeper{
 		cdc:            cdc,
 		storeKey:       storeKey,
 		operatorKeeper: operatorKeeper,
 		assetsKeeper:   assetKeeper,
+		epochsKeeper:   epochsKeeper,
 	}
 }
 
@@ -55,9 +60,7 @@ func (k Keeper) AVSInfoUpdate(ctx sdk.Context, params *AVSRegisterOrDeregisterPa
 		if avsInfo != nil {
 			return errorsmod.Wrap(types.ErrAlreadyRegistered, fmt.Sprintf("the avsaddress is :%s", params.AvsAddress))
 		}
-		epoch := &types.EpochInfo{
-			CurrentEpochStartHeight: ctx.BlockHeight(),
-		}
+
 		avs := &types.AVSInfo{
 			Name:               params.AvsName,
 			AvsAddress:         params.AvsAddress,
@@ -66,8 +69,14 @@ func (k Keeper) AVSInfoUpdate(ctx sdk.Context, params *AVSRegisterOrDeregisterPa
 			AssetId:            params.AssetID,
 			MinSelfDelegation:  sdk.NewIntFromUint64(params.MinSelfDelegation),
 			AvsUnbondingPeriod: uint32(params.UnbondingPeriod),
-			AvsEpoch:           epoch,
+			EpochIdentifier:    epochstypes.DayEpochID,
 			OperatorAddress:    nil,
+		}
+		_, found := k.epochsKeeper.GetEpochInfo(ctx, epochstypes.DayEpochID)
+		if !found {
+			// the panic is suitable here because it is being done at genesis, when the node
+			// is not running. it means that the genesis file is malformed.
+			panic(fmt.Sprintf("epoch info not found %s", epochstypes.DayEpochID))
 		}
 		return k.SetAVSInfo(ctx, avs)
 	case DeRegisterAction:
@@ -165,4 +174,39 @@ func (k Keeper) DeleteAVSInfo(ctx sdk.Context, addr string) error {
 	}
 	store.Delete(avsAddr)
 	return nil
+}
+
+// SetEpochEndAVS set epoch end avs info
+func (k Keeper) SetEpochEndAVS(ctx sdk.Context, avs *types.AVSInfo) (err error) {
+	avsAddr, err := sdk.AccAddressFromBech32(avs.AvsAddress)
+	if err != nil {
+		return errorsmod.Wrap(err, "SetAVSInfo: error occurred when parse acc address from Bech32")
+	}
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefixEpochEndAvs)
+
+	bz := k.cdc.MustMarshal(avs)
+	store.Set(avsAddr, bz)
+	return nil
+}
+
+// IteratEpochEndAVSInfo iterate through avs
+func (k Keeper) IteratEpochEndAVSInfo(ctx sdk.Context, fn func(index int64, epochEndAVSInfo types.AVSInfo) (stop bool)) {
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefixEpochEndAvs)
+
+	iterator := sdk.KVStorePrefixIterator(store, nil)
+	defer iterator.Close()
+
+	i := int64(0)
+
+	for ; iterator.Valid(); iterator.Next() {
+		avs := types.AVSInfo{}
+		k.cdc.MustUnmarshal(iterator.Value(), &avs)
+
+		stop := fn(i, avs)
+
+		if stop {
+			break
+		}
+		i++
+	}
 }
