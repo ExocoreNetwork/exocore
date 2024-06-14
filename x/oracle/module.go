@@ -164,8 +164,7 @@ func (am AppModule) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.Val
 		validatorList := make(map[string]*big.Int)
 		for _, vu := range validatorUpdates {
 			pubKey, _ := cryptocodec.FromTmProtoPublicKey(vu.PubKey)
-			validator, _ := am.keeper.GetValidatorByConsAddr(ctx, sdk.GetConsAddress(pubKey))
-			validatorList[validator.OperatorAddress] = big.NewInt(vu.Power)
+			validatorList[sdk.AccAddress(pubKey.Address()).String()] = big.NewInt(vu.Power)
 		}
 		// update validator set information in cache
 		cs.AddCache(cache.ItemV(validatorList))
