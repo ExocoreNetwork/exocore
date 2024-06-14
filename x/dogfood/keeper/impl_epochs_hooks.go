@@ -4,8 +4,8 @@ import (
 	"strings"
 
 	"github.com/ExocoreNetwork/exocore/x/dogfood/types"
+	epochstypes "github.com/ExocoreNetwork/exocore/x/epochs/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	epochstypes "github.com/evmos/evmos/v14/x/epochs/types"
 )
 
 // EpochsHooksWrapper is the wrapper structure that implements the epochs hooks for the dogfood

@@ -9,7 +9,7 @@ import (
 	"gopkg.in/yaml.v2"
 
 	assetstypes "github.com/ExocoreNetwork/exocore/x/assets/types"
-	epochstypes "github.com/evmos/evmos/v14/x/epochs/types"
+	epochstypes "github.com/ExocoreNetwork/exocore/x/epochs/types"
 )
 
 var _ paramtypes.ParamSet = (*Params)(nil)
@@ -21,8 +21,8 @@ const (
 	// of epoch 16 (9 + DefaultEpochsUntilUnbonded).
 	DefaultEpochsUntilUnbonded = 7
 	// DefaultEpochIdentifier is the epoch identifier which is used, by default, to identify the
-	// epoch. Note that the options include week, day or hour.
-	DefaultEpochIdentifier = epochstypes.DayEpochID
+	// epoch. Note that the options in the default genesis include minute, week, hour or day.
+	DefaultEpochIdentifier = epochstypes.MinuteEpochID
 	// DefaultMaxValidators is the default maximum number of bonded validators. It is defined as
 	// a copy here so that we can use a value other than that in x/staking, if necessary.
 	DefaultMaxValidators = stakingtypes.DefaultMaxValidators

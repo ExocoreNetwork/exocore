@@ -109,6 +109,38 @@ func (suite *GenesisTestSuite) TestValidateGenesis() {
 			expPass: false,
 		},
 		{
+			name: "invalid genesis due to zero layer zero chain id",
+			genState: &types.GenesisState{
+				Params: types.DefaultParams(),
+				ClientChains: []types.ClientChainInfo{
+					ethClientChain,
+				},
+			},
+			malleate: func(gs *types.GenesisState) {
+				gs.ClientChains[0].LayerZeroChainID = 0
+			},
+			unmalleate: func(gs *types.GenesisState) {
+				gs.ClientChains[0].LayerZeroChainID = 101
+			},
+			expPass: false,
+		},
+		{
+			name: "invalid genesis due to zero address length",
+			genState: &types.GenesisState{
+				Params: types.DefaultParams(),
+				ClientChains: []types.ClientChainInfo{
+					ethClientChain,
+				},
+			},
+			malleate: func(gs *types.GenesisState) {
+				gs.ClientChains[0].AddressLength = 0
+			},
+			unmalleate: func(gs *types.GenesisState) {
+				gs.ClientChains[0].AddressLength = 20
+			},
+			expPass: false,
+		},
+		{
 			name: "invalid genesis due to missing client chain",
 			genState: &types.GenesisState{
 				Params: types.DefaultParams(),
