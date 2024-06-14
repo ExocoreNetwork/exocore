@@ -17,11 +17,9 @@ they can easily be signaled upon such events.
 ## Contents
 
 1. **[Concept](#concepts)**
-2. **[State](#state)**
-3. **[Events](#events)**
-4. **[Keeper](#keepers)**
-5. **[Hooks](#hooks)**
-6. **[Queries](#queries)**
+1. **[State](#state)**
+1. **[Hooks](#hooks)**
+1. **[Queries](#queries)**
 
 ## Concepts
 
@@ -33,7 +31,7 @@ Every timer has a unique identifier.
 Every epoch will have a start time, and an end time, where `end time = start time + timer interval`.
 
 The timer will tick at the first block whose block time is greater than the timer end time,
-and set the start as the prior timer end time. (Notably, it's _not_ set to the block time!)
+and set the start as the prior timer end time. (Notably, it's *not* set to the block time!)
 This means that if the chain has been down for a while, you will get **one timer tick per block**,
 until the timer has caught up.
 
