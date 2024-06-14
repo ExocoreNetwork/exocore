@@ -1,0 +1,32 @@
+name: Docker build for localnet
+on:
+  pull_request:
+    paths:
+      - networks/local/exocore/Dockerfile
+      - networks/Makefile
+  push:
+    paths:
+      - networks/local/exocore/Dockerfile
+      - networks/Makefile
+    branches:
+      - develop
+      - main
+      - master
+      - release/**
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Docker image
+        run: make -C ./networks
