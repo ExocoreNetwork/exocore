@@ -5,6 +5,17 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
+// SetOptOutInformation sets information related to an operator's opt out.
+func (k Keeper) SetOptOutInformation(
+	ctx sdk.Context, addr sdk.AccAddress,
+) {
+	unbondingCompletionEpoch := k.GetUnbondingCompletionEpoch(ctx)
+	k.AppendOptOutToFinish(ctx, unbondingCompletionEpoch, addr)
+	k.SetOperatorOptOutFinishEpoch(ctx, addr, unbondingCompletionEpoch)
+	// CompleteOperatorKeyRemovalForChainID calls DeleteOperatorAddressForChainIDAndConsAddr,
+	// so we do not need to save ConsensusAddrToPrune in the unbonding case.
+}
+
 // AppendOptOutToFinish appends an operator address to the list of operator addresses that have
 // opted out and will be finished at the end of the provided epoch.
 func (k Keeper) AppendOptOutToFinish(

@@ -6,17 +6,6 @@ import (
 	"github.com/ethereum/go-ethereum/common/hexutil"
 )
 
-// SetOptOutInformation sets information related to an operator's opt out.
-func (k Keeper) SetOptOutInformation(
-	ctx sdk.Context, addr sdk.AccAddress,
-) {
-	unbondingCompletionEpoch := k.GetUnbondingCompletionEpoch(ctx)
-	k.AppendOptOutToFinish(ctx, unbondingCompletionEpoch, addr)
-	k.SetOperatorOptOutFinishEpoch(ctx, addr, unbondingCompletionEpoch)
-	// CompleteOperatorKeyRemovalForChainID calls DeleteOperatorAddressForChainIDAndConsAddr,
-	// so we do not need to save ConsensusAddrToPrune in the unbonding case.
-}
-
 // GetUnbondingCompletionEpoch returns the epoch at the end of which
 // an unbonding triggered in this epoch will be completed.
 func (k Keeper) GetUnbondingCompletionEpoch(
