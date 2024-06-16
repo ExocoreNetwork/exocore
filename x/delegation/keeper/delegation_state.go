@@ -14,6 +14,33 @@ import (
 
 type DelegationOpFunc func(keys *delegationtype.SingleDelegationInfoReq, amounts *delegationtype.DelegationAmounts) error
 
+func (k Keeper) AllDelegationStates(ctx sdk.Context) (delegationStates []delegationtype.DelegationStates, err error) {
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), delegationtype.KeyPrefixRestakerDelegationInfo)
+	iterator := sdk.KVStorePrefixIterator(store, []byte{})
+	defer iterator.Close()
+
+	ret := make([]delegationtype.DelegationStates, 0)
+	for ; iterator.Valid(); iterator.Next() {
+		var stateInfo delegationtype.DelegationAmounts
+		k.cdc.MustUnmarshal(iterator.Value(), &stateInfo)
+		ret = append(ret, delegationtype.DelegationStates{
+			Key:    string(iterator.Key()),
+			States: stateInfo,
+		})
+	}
+	return ret, nil
+}
+
+func (k Keeper) SetAllDelegationStates(ctx sdk.Context, delegationStates []delegationtype.DelegationStates) error {
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), delegationtype.KeyPrefixRestakerDelegationInfo)
+	for i := range delegationStates {
+		singleElement := delegationStates[i]
+		bz := k.cdc.MustMarshal(&singleElement.States)
+		store.Set([]byte(singleElement.Key), bz)
+	}
+	return nil
+}
+
 // IterateDelegationsForStakerAndAsset processes all operations
 // that require iterating over delegations for a specified staker and asset.
 func (k Keeper) IterateDelegationsForStakerAndAsset(ctx sdk.Context, stakerID string, assetID string, opFunc DelegationOpFunc) error {
@@ -24,7 +51,7 @@ func (k Keeper) IterateDelegationsForStakerAndAsset(ctx sdk.Context, stakerID st
 	for ; iterator.Valid(); iterator.Next() {
 		var amounts delegationtype.DelegationAmounts
 		k.cdc.MustUnmarshal(iterator.Value(), &amounts)
-		keys, err := delegationtype.ParseStakerAssetIDAndOperatorAddrFromKey(iterator.Key())
+		keys, err := delegationtype.ParseStakerAssetIDAndOperator(iterator.Key())
 		if err != nil {
 			return err
 		}
@@ -247,6 +274,33 @@ func (k *Keeper) GetStakersByOperator(ctx sdk.Context, operator, assetID string)
 	stakerList := delegationtype.StakerList{}
 	k.cdc.MustUnmarshal(value, &stakerList)
 	return stakerList, nil
+}
+
+func (k Keeper) AllStakerList(ctx sdk.Context) (stakerList []delegationtype.StakersByOperator, err error) {
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), delegationtype.KeyPrefixStakersByOperator)
+	iterator := sdk.KVStorePrefixIterator(store, []byte{})
+	defer iterator.Close()
+
+	ret := make([]delegationtype.StakersByOperator, 0)
+	for ; iterator.Valid(); iterator.Next() {
+		var stakers delegationtype.StakerList
+		k.cdc.MustUnmarshal(iterator.Value(), &stakers)
+		ret = append(ret, delegationtype.StakersByOperator{
+			Key:     string(iterator.Key()),
+			Stakers: stakers,
+		})
+	}
+	return ret, nil
+}
+
+func (k Keeper) SetAllStakerList(ctx sdk.Context, stakersByOperator []delegationtype.StakersByOperator) error {
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), delegationtype.KeyPrefixStakersByOperator)
+	for i := range stakersByOperator {
+		singleElement := stakersByOperator[i]
+		bz := k.cdc.MustMarshal(&singleElement.Stakers)
+		store.Set([]byte(singleElement.Key), bz)
+	}
+	return nil
 }
 
 func (k *Keeper) SetStakerShareToZero(ctx sdk.Context, operator, assetID string, stakerList delegationtype.StakerList) error {

@@ -53,12 +53,11 @@ func CommonValidation[T any, V constraints.Ordered, D any](
 				field,
 			)
 		}
-		seen[field] = value
-
 		// perform the validation
 		if err := validation(i, v); err != nil {
 			return nil, err
 		}
+		seen[field] = value
 	}
 	return seen, nil
 }
@@ -136,7 +135,7 @@ func (gs GenesisState) ValidateTokens(lzIDs map[uint64]struct{}) (map[string]Tot
 		}
 
 		// the StakingTotalAmount should be zero when init from the bootStrap
-		if !gs.NotInitFromBootStrap && !info.StakingTotalAmount.IsZero() {
+		if !gs.IsGeneralInit && !info.StakingTotalAmount.IsZero() {
 			return errorsmod.Wrapf(
 				ErrInvalidGenesisData,
 				"non-zero deposit amount for asset %s when initializing from the bootStrap contract",
@@ -253,7 +252,7 @@ func (gs GenesisState) ValidateDeposits(lzIDs map[uint64]struct{}, tokenState ma
 				)
 			}
 
-			if !gs.NotInitFromBootStrap {
+			if !gs.IsGeneralInit {
 				// check that deposit amount does not exceed supply.
 				if info.TotalDepositAmount.GT(tokenState[assetID].TotalSupply) {
 					return errorsmod.Wrapf(
@@ -323,7 +322,7 @@ func (gs GenesisState) ValidateDeposits(lzIDs map[uint64]struct{}, tokenState ma
 
 // ValidateOperatorAssets performs basic operator assets validation
 func (gs GenesisState) ValidateOperatorAssets(tokenState map[string]TotalSupplyAndStaking) error {
-	if !gs.NotInitFromBootStrap && len(gs.OperatorAssets) != 0 {
+	if !gs.IsGeneralInit && len(gs.OperatorAssets) != 0 {
 		return errorsmod.Wrap(
 			ErrInvalidGenesisData,
 			"the operator assets should be null when initializing from the bootStrap contract",

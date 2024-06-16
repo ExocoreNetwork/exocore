@@ -126,7 +126,7 @@ func (k *Keeper) UndelegateFrom(ctx sdk.Context, params *delegationtype.Delegati
 		return err
 	}
 	// record Undelegation event
-	r := &delegationtype.UndelegationRecord{
+	r := delegationtype.UndelegationRecord{
 		StakerID:              stakerID,
 		AssetID:               assetID,
 		OperatorAddr:          params.OperatorAddress.String(),
@@ -138,7 +138,7 @@ func (k *Keeper) UndelegateFrom(ctx sdk.Context, params *delegationtype.Delegati
 		ActualCompletedAmount: removeToken,
 	}
 	r.CompleteBlockNumber = k.operatorKeeper.GetUnbondingExpirationBlockNumber(ctx, params.OperatorAddress, r.BlockNumber)
-	err = k.SetUndelegationRecords(ctx, []*delegationtype.UndelegationRecord{r})
+	err = k.SetUndelegationRecords(ctx, []delegationtype.UndelegationRecord{r})
 	if err != nil {
 		return err
 	}

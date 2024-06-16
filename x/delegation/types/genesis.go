@@ -1,9 +1,14 @@
 package types
 
 import (
+	"encoding/hex"
+
 	errorsmod "cosmossdk.io/errors"
+
 	assetstypes "github.com/ExocoreNetwork/exocore/x/assets/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/ethereum/go-ethereum/common"
+	"golang.org/x/xerrors"
 )
 
 // NewGenesis returns a new genesis state with the given inputs.
@@ -22,9 +27,42 @@ func DefaultGenesis() *GenesisState {
 	return NewGenesis(nil, nil)
 }
 
-// Validate performs basic genesis state validation returning an error upon any
-// failure.
-func (gs GenesisState) Validate() error {
+func ValidateIDAndOperator(stakerID, assetID, operator string) error {
+	// validate the operator address
+	if _, err := sdk.AccAddressFromBech32(operator); err != nil {
+		return xerrors.Errorf(
+			"invalid operator address for operator %s", operator,
+		)
+	}
+	_, stakerClientChainID, err := assetstypes.ValidateID(stakerID, true, false)
+	if err != nil {
+		return xerrors.Errorf(
+			"invalid stakerID: %s",
+			stakerID,
+		)
+	}
+	_, assetClientChainID, err := assetstypes.ValidateID(assetID, true, false)
+	if err != nil {
+		return xerrors.Errorf(
+			"invalid assetID: %s",
+			assetID,
+		)
+	}
+	if stakerClientChainID != assetClientChainID {
+		return xerrors.Errorf(
+			"the client chain layerZero IDs of the staker and asset are different, stakerID:%s, assetID:%s",
+			stakerID, assetID)
+	}
+	return nil
+}
+
+func (gs GenesisState) ValidateDelegations() error {
+	if gs.IsGeneralInit && len(gs.Delegations) != 0 {
+		return errorsmod.Wrap(
+			ErrInvalidGenesisData,
+			"the delegations should be null when initializing from the general exporting genesis file",
+		)
+	}
 	// TODO(mm): this can be a very big hash table and impact system performance.
 	// This is likely to be the biggest one amongst the three, and the others
 	// are garbage collected within the loop anyway. Maybe reordering the genesis
@@ -137,6 +175,197 @@ func (gs GenesisState) Validate() error {
 		// we don't check that this `association.stakerID` features in `gs.Delegations`,
 		// because we allow the possibility of a staker without any delegations to be associated
 		// with an operator.
+	}
+	return nil
+}
+
+func (gs GenesisState) ValidateDelegationStates() error {
+	if !gs.IsGeneralInit && len(gs.DelegationStates) != 0 {
+		return errorsmod.Wrap(
+			ErrInvalidGenesisData,
+			"the delegation states should be null when initializing from the boot strap contract",
+		)
+	}
+
+	validationFunc := func(i int, info DelegationStates) error {
+		keys, err := ParseStakerAssetIDAndOperator([]byte(info.Key))
+		if err != nil {
+			return errorsmod.Wrap(ErrInvalidGenesisData, err.Error())
+		}
+
+		err = ValidateIDAndOperator(keys.StakerID, keys.AssetID, keys.OperatorAddr)
+		if err != nil {
+			return errorsmod.Wrap(ErrInvalidGenesisData, err.Error())
+		}
+
+		// check that there is no nil value provided.
+		if info.States.UndelegatableShare.IsNil() || info.States.WaitUndelegationAmount.IsNil() {
+			return errorsmod.Wrapf(
+				ErrInvalidGenesisData,
+				"nil delegation state for %s: %+v",
+				info.Key, info,
+			)
+		}
+
+		// check for negative values.
+		if info.States.UndelegatableShare.IsNegative() || info.States.WaitUndelegationAmount.IsNegative() {
+			return errorsmod.Wrapf(
+				ErrInvalidGenesisData,
+				"negative delegation state  for %s: %+v",
+				info.Key, info,
+			)
+		}
+
+		return nil
+	}
+	seenFieldValueFunc := func(info DelegationStates) (string, struct{}) {
+		return info.Key, struct{}{}
+	}
+	_, err := assetstypes.CommonValidation(gs.DelegationStates, seenFieldValueFunc, validationFunc)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (gs GenesisState) ValidateStakerList() error {
+	if !gs.IsGeneralInit && len(gs.StakersByOperator) != 0 {
+		return errorsmod.Wrap(
+			ErrInvalidGenesisData,
+			"the staker list should be null when initializing from the boot strap contract",
+		)
+	}
+	validationFunc := func(i int, stakersByOperator StakersByOperator) error {
+		// validate the key
+		stringList, err := assetstypes.ParseJoinedStoreKey([]byte(stakersByOperator.Key), 2)
+		if err != nil {
+			return errorsmod.Wrap(ErrInvalidGenesisData, err.Error())
+		}
+		// validate the operator address
+		if _, err := sdk.AccAddressFromBech32(stringList[0]); err != nil {
+			return errorsmod.Wrapf(
+				ErrInvalidGenesisData,
+				"invalid operator address for operator %s", stringList[0],
+			)
+		}
+		// validate the assetID
+		_, assetClientChainID, err := assetstypes.ValidateID(stringList[1], true, false)
+		if err != nil {
+			return errorsmod.Wrapf(
+				ErrInvalidGenesisData,
+				"invalid assetID: %s",
+				stringList[1],
+			)
+		}
+		// validate the staker list
+		stakerValidationFunc := func(i int, stakerID string) error {
+			_, stakerClientChainID, err := assetstypes.ValidateID(stakerID, true, false)
+			if err != nil {
+				return errorsmod.Wrapf(
+					ErrInvalidGenesisData,
+					"invalid stakerID: %s",
+					stakerID,
+				)
+			}
+			if stakerClientChainID != assetClientChainID {
+				return errorsmod.Wrapf(ErrInvalidGenesisData, "the client chain layerZero IDs of the staker and asset are different,key:%s stakerID:%s", stakersByOperator.Key, stakerID)
+			}
+			return nil
+		}
+		seenStakerFunc := func(stakerID string) (string, struct{}) {
+			return stakerID, struct{}{}
+		}
+		_, err = assetstypes.CommonValidation(stakersByOperator.Stakers.Stakers, seenStakerFunc, stakerValidationFunc)
+		if err != nil {
+			return err
+		}
+		return nil
+	}
+	seenFieldValueFunc := func(info StakersByOperator) (string, struct{}) {
+		return info.Key, struct{}{}
+	}
+	_, err := assetstypes.CommonValidation(gs.StakersByOperator, seenFieldValueFunc, validationFunc)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (gs GenesisState) ValidateUndelegations() error {
+	if !gs.IsGeneralInit && len(gs.Undelegations) != 0 {
+		return errorsmod.Wrap(
+			ErrInvalidGenesisData,
+			"the undelegations should be null when initializing from the boot strap contract",
+		)
+	}
+
+	validationFunc := func(i int, undelegaion UndelegationRecord) error {
+		err := ValidateIDAndOperator(undelegaion.StakerID, undelegaion.AssetID, undelegaion.OperatorAddr)
+		if err != nil {
+			return errorsmod.Wrap(ErrInvalidGenesisData, err.Error())
+		}
+
+		bytes, err := hex.DecodeString(undelegaion.TxHash)
+		if err != nil {
+			return errorsmod.Wrapf(
+				ErrInvalidGenesisData, "TxHash isn't a hex string, TxHash: %s",
+				undelegaion.TxHash,
+			)
+		}
+		if len(bytes) != common.HashLength {
+			return errorsmod.Wrapf(
+				ErrInvalidGenesisData, "invalid length of TxHash ,TxHash:%s length: %d, should:%d",
+				undelegaion.TxHash, len(bytes), common.HashLength,
+			)
+		}
+		if !undelegaion.IsPending {
+			return errorsmod.Wrapf(
+				ErrInvalidGenesisData, "all undelegations should be pending, undelegation:%v",
+				undelegaion,
+			)
+		}
+		if undelegaion.CompleteBlockNumber < undelegaion.BlockNumber {
+			return errorsmod.Wrapf(
+				ErrInvalidGenesisData, "the block number to complete shouldn't be less than the submitted , undelegation：%v",
+				undelegaion,
+			)
+		}
+		if undelegaion.ActualCompletedAmount.GT(undelegaion.Amount) {
+			return errorsmod.Wrapf(
+				ErrInvalidGenesisData, "the completed amount shouldn't be greater than the submitted amount , undelegation：%v",
+				undelegaion,
+			)
+		}
+		return nil
+	}
+	seenFieldValueFunc := func(undelegaion UndelegationRecord) (string, struct{}) {
+		return undelegaion.TxHash, struct{}{}
+	}
+	_, err := assetstypes.CommonValidation(gs.Undelegations, seenFieldValueFunc, validationFunc)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// Validate performs basic genesis state validation returning an error upon any
+// failure.
+func (gs GenesisState) Validate() error {
+	err := gs.ValidateDelegations()
+	if err != nil {
+		return err
+	}
+	err = gs.ValidateDelegationStates()
+	if err != nil {
+		return err
+	}
+	err = gs.ValidateStakerList()
+	if err != nil {
+		return err
+	}
+	err = gs.ValidateUndelegations()
+	if err != nil {
+		return err
 	}
 	return nil
 }

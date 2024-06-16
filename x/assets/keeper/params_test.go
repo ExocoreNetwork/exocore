@@ -27,5 +27,5 @@ func (suite *StakingAssetsTestSuite) TestNullFlag() {
 	bytes := suite.App.AppCodec().MustMarshalJSON(&genesisState)
 	var unmarshalResult assetstype.GenesisState
 	suite.App.AppCodec().MustUnmarshalJSON(bytes, &unmarshalResult)
-	suite.False(unmarshalResult.NotInitFromBootStrap)
+	suite.False(unmarshalResult.IsGeneralInit)
 }

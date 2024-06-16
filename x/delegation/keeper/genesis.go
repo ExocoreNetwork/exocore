@@ -66,12 +66,46 @@ func (k Keeper) InitGenesis(
 			panic(errorsmod.Wrap(err, "failed to associate operator with staker"))
 		}
 	}
+
+	// init the state from the general exporting genesis file
+	err := k.SetAllDelegationStates(ctx, gs.DelegationStates)
+	if err != nil {
+		panic(err)
+	}
+	err = k.SetAllStakerList(ctx, gs.StakersByOperator)
+	if err != nil {
+		panic(err)
+	}
+	err = k.SetUndelegationRecords(ctx, gs.Undelegations)
+	if err != nil {
+		panic(err)
+	}
 	return []abci.ValidatorUpdate{}
 }
 
 // ExportGenesis returns the module's exported genesis
-func (Keeper) ExportGenesis(sdk.Context) *delegationtype.GenesisState {
-	genesis := delegationtype.DefaultGenesis()
-	// TODO
-	return genesis
+func (k Keeper) ExportGenesis(ctx sdk.Context) *delegationtype.GenesisState {
+	res := delegationtype.GenesisState{
+		Delegations: []delegationtype.DelegationsByStaker{},
+	}
+	delegationStates, err := k.AllDelegationStates(ctx)
+	if err != nil {
+		panic(err)
+	}
+	res.DelegationStates = delegationStates
+
+	stakerList, err := k.AllStakerList(ctx)
+	if err != nil {
+		panic(err)
+	}
+	res.StakersByOperator = stakerList
+
+	undelegations, err := k.AllUndelegations(ctx)
+	if err != nil {
+		panic(err)
+	}
+	res.Undelegations = undelegations
+	// mark the exported genesis as general import
+	res.IsGeneralInit = true
+	return &res
 }

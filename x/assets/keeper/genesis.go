@@ -46,7 +46,7 @@ func (k Keeper) InitGenesis(ctx sdk.Context, data *types.GenesisState) {
 			// This should only be called when initializing from the bootStrap contract
 			// because the `TotalDepositAmount` will be initialized when
 			// initializing the tokens information from the general exported genesis file.
-			if !data.NotInitFromBootStrap {
+			if !data.IsGeneralInit {
 				if err := k.UpdateStakingAssetTotalAmount(
 					ctx, assetID, info.TotalDepositAmount,
 				); err != nil {
@@ -103,5 +103,7 @@ func (k Keeper) ExportGenesis(ctx sdk.Context) *types.GenesisState {
 	}
 	res.OperatorAssets = operatorAssets
 
+	// mark the exported genesis as general import
+	res.IsGeneralInit = true
 	return &res
 }
