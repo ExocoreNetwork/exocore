@@ -31,3 +31,30 @@ func (hooks MultiDogfoodHooks) AfterValidatorBonded(
 	}
 	return nil
 }
+
+// AfterValidatorRemoved is the implementation of types.DogfoodHooks for MultiDogfoodHooks.
+func (hooks MultiDogfoodHooks) AfterValidatorRemoved(
+	ctx sdk.Context,
+	consAddr sdk.ConsAddress,
+	operator sdk.ValAddress,
+) error {
+	for _, hook := range hooks {
+		if err := hook.AfterValidatorRemoved(ctx, consAddr, operator); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// AfterValidatorCreated is the implementation of types.DogfoodHooks for MultiDogfoodHooks.
+func (hooks MultiDogfoodHooks) AfterValidatorCreated(
+	ctx sdk.Context,
+	operator sdk.ValAddress,
+) error {
+	for _, hook := range hooks {
+		if err := hook.AfterValidatorCreated(ctx, operator); err != nil {
+			return err
+		}
+	}
+	return nil
+}

@@ -38,7 +38,7 @@ func (k Keeper) InitGenesis(
 	// validator. this is because the operator may not have enough minimum self delegation
 	// to be considered, or may not be in the top N operators. so checking that count here
 	// is meaningless as well.
-	out := make([]abci.ValidatorUpdate, len(genState.ValSet))
+	out := make([]abci.ValidatorUpdate, 0, len(genState.ValSet))
 	for _, val := range genState.ValSet {
 		// #nosec G703 // already validated
 		consKey, _ := operatortypes.HexStringToPubKey(val.PublicKey)
