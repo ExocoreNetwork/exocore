@@ -12,8 +12,6 @@ const (
 	TypeRegisterOperatorReq = "register_operator"
 	// TypeSetConsKeyReq is the type for the SetConsKeyReq message.
 	TypeSetConsKeyReq = "set_cons_key"
-	// TypeInitConsKeyRemovalReq is the type for the InitConsKeyRemovalReq message.
-	TypeInitConsKeyRemovalReq = "init_cons_key_removal"
 	// TypeOptIntoAVSReq is the type for the OptIntoAVSReq message.
 	TypeOptIntoAVSReq = "opt_into_avs"
 	// TypeOptOutOfAVSReq is the type for the OptOutOfAVSReq message.
@@ -26,7 +24,6 @@ var (
 	_ sdk.Msg = &OptIntoAVSReq{}
 	_ sdk.Msg = &OptOutOfAVSReq{}
 	_ sdk.Msg = &SetConsKeyReq{}
-	_ sdk.Msg = &InitConsKeyRemovalReq{}
 )
 
 // GetSigners returns the expected signers for the message.
@@ -72,12 +69,8 @@ func (m *SetConsKeyReq) ValidateBasic() error {
 	if !types.IsValidChainID(m.ChainID) {
 		return errorsmod.Wrap(ErrParameterInvalid, "invalid chain id")
 	}
-	if keyType, keyString, err := ParseConsensusKeyFromJSON(m.PublicKey); err != nil {
-		return errorsmod.Wrap(err, "invalid public key")
-	} else if keyType != "/cosmos.crypto.ed25519.PubKey" {
-		return errorsmod.Wrap(ErrParameterInvalid, "invalid public key type")
-	} else if _, err := StringToPubKey(keyString); err != nil {
-		return errorsmod.Wrap(err, "invalid public key")
+	if _, err := ValidateConsensusKeyJSON(m.PublicKey); err != nil {
+		return err
 	}
 	return nil
 }
@@ -94,38 +87,6 @@ func (m *SetConsKeyReq) Type() string {
 
 // GetSignBytes returns the bytes all expected signers must sign over.
 func (m *SetConsKeyReq) GetSignBytes() []byte {
-	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(m))
-}
-
-// GetSigners returns the expected signers for the message.
-func (m *InitConsKeyRemovalReq) GetSigners() []sdk.AccAddress {
-	addr := sdk.MustAccAddressFromBech32(m.Address)
-	return []sdk.AccAddress{addr}
-}
-
-// ValidateBasic does a sanity check of the provided data
-func (m *InitConsKeyRemovalReq) ValidateBasic() error {
-	if _, err := sdk.AccAddressFromBech32(m.Address); err != nil {
-		return errorsmod.Wrap(err, "invalid from address")
-	}
-	if !types.IsValidChainID(m.ChainID) {
-		return errorsmod.Wrap(ErrParameterInvalid, "invalid chain id")
-	}
-	return nil
-}
-
-// Route returns the transaction route.
-func (m *InitConsKeyRemovalReq) Route() string {
-	return RouterKey
-}
-
-// Type returns the transaction type.
-func (m *InitConsKeyRemovalReq) Type() string {
-	return TypeInitConsKeyRemovalReq
-}
-
-// GetSignBytes returns the bytes all expected signers must sign over.
-func (m *InitConsKeyRemovalReq) GetSignBytes() []byte {
 	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(m))
 }
 

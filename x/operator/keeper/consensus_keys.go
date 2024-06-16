@@ -256,39 +256,19 @@ func (k Keeper) GetOperatorAddressForChainIDAndConsAddr(
 }
 
 // InitiateOperatorKeyRemovalForChainID initiates an operator removing their key from the
-// chain id. It validates whether the operator is registered, and that it is not frozen, and
-// that the chain is present within the system. It also checks if the operator is already
-// removing the key.
-// The operator must first call this method, and then call `OptOut` to complete the process.
-// TODO: currently there is no penalty for operators failing to complete this and the data
-// is also mismatched (ex: while the operator is removed from the validator set, the opt out
-// height is the height of calling OptOut). We should rationalize this somehow.
+// chain id. The caller must validate that the chainID is registered and that the address
+// is an operator, that is not frozen, and that the operator is currently opted in.
 func (k *Keeper) InitiateOperatorKeyRemovalForChainID(
 	ctx sdk.Context, opAccAddr sdk.AccAddress, chainID string,
-) error {
-	// check if we are an operator
-	if !k.IsOperator(ctx, opAccAddr) {
-		return delegationtypes.ErrOperatorNotExist
-	}
-	// check for slashing
-	if k.slashKeeper.IsOperatorFrozen(ctx, opAccAddr) {
-		return delegationtypes.ErrOperatorIsFrozen
-	}
-	// check if the chain id is valid
-	if chainID != ctx.ChainID() {
-		return types.ErrUnknownChainID
-	}
-	found, key := k.getOperatorConsKeyForChainID(ctx, opAccAddr, chainID)
-	if !found {
-		return types.ErrNotOptedIn
-	}
-	if k.IsOperatorRemovingKeyFromChainID(ctx, opAccAddr, chainID) {
-		return types.ErrAlreadyRemovingKey
-	}
+) {
+	// found will always be true, since the operator has registered into the chain
+	// and during registration a key must be set.
+	_, key := k.getOperatorConsKeyForChainID(ctx, opAccAddr, chainID)
+	// we don't check if the operator is already opted out, because this function
+	// can only be called if the operator is currently opted in.
 	store := ctx.KVStore(k.storeKey)
 	store.Set(types.KeyForOperatorKeyRemovalForChainID(opAccAddr, chainID), []byte{})
 	k.Hooks().AfterOperatorKeyRemovalInitiated(ctx, opAccAddr, chainID, key)
-	return nil
 }
 
 // IsOperatorRemovingKeyFromChainID returns true if the operator is removing the consensus

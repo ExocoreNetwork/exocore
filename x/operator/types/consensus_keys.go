@@ -79,3 +79,18 @@ func TMCryptoPublicKeyToConsAddr(k *tmprotocrypto.PublicKey) (sdk.ConsAddress, e
 	}
 	return sdk.GetConsAddress(sdkK), nil
 }
+
+// ValidateConsensusKey checks that the key is a JSON with `@type` and `key` keys
+// with the former bearing exactly value `/cosmos.crypto.ed25519.PubKey`, and the
+// latter being a valid base64-encoded public key.
+func ValidateConsensusKeyJSON(key string) (*tmprotocrypto.PublicKey, error) {
+	if keyType, keyString, err := ParseConsensusKeyFromJSON(key); err != nil {
+		return nil, errorsmod.Wrap(err, "invalid public key")
+	} else if keyType != "/cosmos.crypto.ed25519.PubKey" {
+		return nil, errorsmod.Wrap(ErrParameterInvalid, "invalid public key type")
+	} else if res, err := StringToPubKey(keyString); err != nil {
+		return nil, errorsmod.Wrap(err, "invalid public key")
+	} else {
+		return res, nil
+	}
+}
