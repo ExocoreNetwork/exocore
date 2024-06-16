@@ -62,15 +62,14 @@ func (k *Keeper) OptOut(ctx sdk.Context, operatorAddress sdk.AccAddress, avsAddr
 	if !common.IsHexAddress(avsAddr) {
 		if avsAddr != ctx.ChainID() { // TODO: other chain ids besides this chain's.
 			return types.ErrInvalidAvsAddr
-		} else {
-			defer func() {
-				if err == nil {
-					// does not fail, because it performs no validations that this function
-					// has not already performed.
-					k.InitiateOperatorKeyRemovalForChainID(ctx, operatorAddress, avsAddr)
-				}
-			}()
 		}
+		defer func() {
+			if err == nil {
+				// does not fail, because it performs no validations, just stores a key-value pair.
+				// all validations are instead performed by this function.
+				k.InitiateOperatorKeyRemovalForChainID(ctx, operatorAddress, avsAddr)
+			}
+		}()
 	}
 	if !k.IsOperator(ctx, operatorAddress) {
 		return delegationtypes.ErrOperatorNotExist
