@@ -70,7 +70,7 @@ func (m *SetConsKeyReq) ValidateBasic() error {
 		return errorsmod.Wrap(ErrParameterInvalid, "invalid chain id")
 	}
 	if _, err := ValidateConsensusKeyJSON(m.PublicKey); err != nil {
-		return err
+		return errorsmod.Wrapf(ErrParameterInvalid, "invalid public key because %s", err)
 	}
 	return nil
 }
