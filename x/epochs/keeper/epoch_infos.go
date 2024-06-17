@@ -19,6 +19,7 @@ func (k Keeper) AddEpochInfo(ctx sdk.Context, epochInfo types.EpochInfo) error {
 		return types.ErrDuplicateEpochInfo
 	}
 	if epochInfo.StartTime.IsZero() {
+		// this is from the block header, which has it in UTC
 		epochInfo.StartTime = ctx.BlockTime()
 	}
 	if epochInfo.CurrentEpochStartHeight == 0 {

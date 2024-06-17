@@ -40,8 +40,11 @@ func (k Keeper) BeginBlocker(ctx sdk.Context) {
 				epochInfo.EpochCountingStarted = true
 				// even if the genesis file may start at a different number, we will reset to 1.
 				epochInfo.CurrentEpoch = 1
+				// serialized to disk as t.Unix(), which is location independent,
+				// even if the genesis file has `epochInfo.StartTime` in a different timezone.
 				epochInfo.CurrentEpochStartTime = epochInfo.StartTime
 				// we don't call BeforeEpochStart here because it is the first epoch.
+				// similarly, we don't emit an ending event.
 			} else {
 				// if we are here, isTickEnding is true but isFirstTick is false.
 				// in other words, epoch i is ending and epoch i+1 is starting.
@@ -69,6 +72,12 @@ func (k Keeper) BeginBlocker(ctx sdk.Context) {
 				// now, we can increment the epoch number.
 				epochInfo.CurrentEpoch++
 				// and set the new start time.
+				// (1) this time is serialized to disk as t.Unix(), which is location independent.
+				// (2) epoch end time is CurrentEpochStartTime + Duration, of which the former
+				//     is also similarly serialized to disk as t.Unix().
+				//     if it is set in the genesis file with a different time zone, that is thus taken care of.
+				//     if it is not provided, it is set to ctx.BlockTime(), which is UTC.
+				// hence, we do not need to worry about timezones.
 				epochInfo.CurrentEpochStartTime = epochEndTime
 			}
 
