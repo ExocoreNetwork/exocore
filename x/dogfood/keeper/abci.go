@@ -76,6 +76,7 @@ func (k Keeper) EndBlock(ctx sdk.Context) []abci.ValidatorUpdate {
 		prevMap[addressString] = validator.Power
 	}
 	operators, keys := k.operatorKeeper.GetActiveOperatorsForChainID(ctx, ctx.ChainID())
+	// TODO: get only assetIDs and change to vote power call
 	powers, err := k.operatorKeeper.GetAvgDelegatedValue(
 		ctx, operators, ctx.ChainID(), k.GetEpochIdentifier(ctx),
 	)

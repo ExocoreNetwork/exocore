@@ -4,15 +4,12 @@ import (
 	"fmt"
 	"strings"
 
-	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	"gopkg.in/yaml.v2"
 
 	assetstypes "github.com/ExocoreNetwork/exocore/x/assets/types"
 	epochstypes "github.com/evmos/evmos/v14/x/epochs/types"
 )
-
-var _ paramtypes.ParamSet = (*Params)(nil)
 
 const (
 	// DefaultEpochsUntilUnbonded is the default number of epochs after which an unbonding entry
@@ -34,18 +31,6 @@ const (
 	// asset IDs are to be supported by default, separate them with a pipe character.
 	DefaultAssetIDs = "0xdac17f958d2ee523a2206206994597c13d831ec7_0x65"
 )
-
-// Reflection based keys for params subspace.
-var (
-	KeyEpochsUntilUnbonded = []byte("EpochsUntilUnbonded")
-	KeyEpochIdentifier     = []byte("EpochIdentifier")
-	KeyAssetIDs            = []byte("AssetIDs")
-)
-
-// ParamKeyTable returns a key table with the necessary registered params.
-func ParamKeyTable() paramtypes.KeyTable {
-	return paramtypes.NewKeyTable().RegisterParamSet(&Params{})
-}
 
 // NewParams creates a new Params instance.
 func NewParams(
@@ -73,37 +58,6 @@ func DefaultParams() Params {
 		DefaultHistoricalEntries,
 		strings.Split(DefaultAssetIDs, "|"),
 	)
-}
-
-// ParamSetPairs implements params.ParamSet
-func (p *Params) ParamSetPairs() paramtypes.ParamSetPairs {
-	return paramtypes.ParamSetPairs{
-		paramtypes.NewParamSetPair(
-			KeyEpochsUntilUnbonded,
-			&p.EpochsUntilUnbonded,
-			ValidatePositiveUint32,
-		),
-		paramtypes.NewParamSetPair(
-			KeyEpochIdentifier,
-			&p.EpochIdentifier,
-			epochstypes.ValidateEpochIdentifierInterface,
-		),
-		paramtypes.NewParamSetPair(
-			stakingtypes.KeyMaxValidators,
-			&p.MaxValidators,
-			ValidatePositiveUint32,
-		),
-		paramtypes.NewParamSetPair(
-			stakingtypes.KeyHistoricalEntries,
-			&p.HistoricalEntries,
-			ValidatePositiveUint32,
-		),
-		paramtypes.NewParamSetPair(
-			KeyAssetIDs,
-			&p.AssetIDs,
-			ValidateAssetIDs,
-		),
-	}
 }
 
 // Validate validates the set of params.

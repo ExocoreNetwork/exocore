@@ -23,12 +23,11 @@ import (
 // epoch. This function is used by IBC's client keeper to validate the self client, and
 // nowhere else. As long as it reports a consistent value, it's fine.
 func (k Keeper) UnbondingTime(ctx sdk.Context) time.Duration {
-	count := k.GetEpochsUntilUnbonded(ctx)
-	identifier := k.GetEpochIdentifier(ctx)
+	params := k.GetDogfoodParams(ctx)
 	// no need to check for found, as the epoch info is validated at genesis.
-	epoch, _ := k.epochsKeeper.GetEpochInfo(ctx, identifier)
+	epoch, _ := k.epochsKeeper.GetEpochInfo(ctx, params.EpochIdentifier)
 	durationPerEpoch := epoch.Duration
-	return time.Duration(count) * durationPerEpoch
+	return time.Duration(params.EpochsUntilUnbonded) * durationPerEpoch
 }
 
 // ApplyValidatorChanges returns the validator set as is. However, it also

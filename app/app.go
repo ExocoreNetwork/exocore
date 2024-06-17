@@ -585,7 +585,7 @@ func NewExocoreApp(
 	// the dogfood module is the first AVS. it receives slashing calls from either x/slashing
 	// or x/evidence and forwards them to the operator module which handles it.
 	app.StakingKeeper = stakingkeeper.NewKeeper(
-		appCodec, keys[stakingtypes.StoreKey], app.GetSubspace(stakingtypes.ModuleName),
+		appCodec, keys[stakingtypes.StoreKey],
 		app.EpochsKeeper,     // epoch hook to be registered separately
 		app.OperatorKeeper,   // operator registration / opt in
 		app.DelegationKeeper, // undelegation response
@@ -1359,7 +1359,6 @@ func initParamsKeeper(
 	// SDK subspaces
 	paramsKeeper.Subspace(authtypes.ModuleName)
 	paramsKeeper.Subspace(banktypes.ModuleName)
-	paramsKeeper.Subspace(stakingtypes.ModuleName)
 	paramsKeeper.Subspace(slashingtypes.ModuleName)
 	paramsKeeper.Subspace(govtypes.ModuleName).
 		// nolint: staticcheck
