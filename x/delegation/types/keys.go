@@ -105,12 +105,18 @@ func ParseUndelegationRecordKey(key []byte) (field *UndelegationKeyFields, err e
 	if err != nil {
 		return nil, err
 	}
+	hash := stringList[3]
+	// when a key is originally made, it is created with hash.Hex(), which
+	// we reverse by using common.HexToHash. to that end, this validation
+	// is accurate.
+	if len(common.HexToHash(hash)) != common.HashLength {
+		return nil, ErrInvalidHash
+	}
 	return &UndelegationKeyFields{
 		OperatorAddr: operatorAccAddr.String(),
 		BlockHeight:  height,
 		LzNonce:      lzNonce,
-		// TODO: validate the TxHash?
-		TxHash: stringList[3],
+		TxHash:       hash,
 	}, nil
 }
 
