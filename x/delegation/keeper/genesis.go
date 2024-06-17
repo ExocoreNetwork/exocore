@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	errorsmod "cosmossdk.io/errors"
 	assetstype "github.com/ExocoreNetwork/exocore/x/assets/types"
 	delegationtype "github.com/ExocoreNetwork/exocore/x/delegation/types"
 	abci "github.com/cometbft/cometbft/abci/types"
@@ -44,7 +45,7 @@ func (k Keeper) InitGenesis(
 					// they are the LzNonce and TxHash
 				}
 				if err := k.delegateTo(ctx, delegationParams, false); err != nil {
-					panic(err)
+					panic(errorsmod.Wrap(err, "failed to delegate to operator"))
 				}
 			}
 		}

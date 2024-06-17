@@ -42,7 +42,6 @@ func NewTxCmd() *cobra.Command {
 		// are they really a property of the operator or of the respective AVS?
 		// operator vs dogfood vs appchain coordinator
 		CmdSetConsKey(),
-		CmdInitConsKeyRemoval(),
 	)
 	return txCmd
 }
@@ -194,9 +193,10 @@ func buildCommission(rateStr, maxRateStr, maxChangeRateStr string) (
 // CmdOptIntoAVS returns a CLI command handler for creating a OptIntoAVSReq transaction.
 func CmdOptIntoAVS() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "opt-into-avs <avs-address>",
-		Short: "opt into an AVS by specifying its address or the chain id",
-		Args:  cobra.ExactArgs(1),
+		Use:     "opt-into-avs <avs-address> <public-key>",
+		Short:   "opt into an AVS by specifying its address or the chain id, with an optional public key",
+		Example: "exocore tx operator opt-into-avs exocoretestnet_233-1 $(exocored tendermint show-validator)",
+		Args:    cobra.RangeArgs(1, 2),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx, err := client.GetClientTxContext(cmd)
 			if err != nil {
@@ -205,6 +205,9 @@ func CmdOptIntoAVS() *cobra.Command {
 			msg := &types.OptIntoAVSReq{
 				FromAddress: clientCtx.GetFromAddress().String(),
 				AvsAddress:  args[0],
+			}
+			if len(args) == 2 {
+				msg.PublicKey = args[1]
 			}
 			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), msg)
 		},
@@ -248,28 +251,6 @@ func CmdSetConsKey() *cobra.Command {
 				Address:   clientCtx.GetFromAddress().String(),
 				ChainID:   args[0],
 				PublicKey: args[1],
-			}
-			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), msg)
-		},
-	}
-	return cmd
-}
-
-// CmdInitConsKeyRemoval returns a CLI command handler for creating an InitConsKeyRemovalReq
-// transaction.
-func CmdInitConsKeyRemoval() *cobra.Command {
-	cmd := &cobra.Command{
-		Use:   "init-cons-key-removal <chain-id>",
-		Short: "initiate consensus key removal for a chain",
-		Args:  cobra.ExactArgs(1),
-		RunE: func(cmd *cobra.Command, args []string) error {
-			clientCtx, err := client.GetClientTxContext(cmd)
-			if err != nil {
-				return err
-			}
-			msg := &types.InitConsKeyRemovalReq{
-				Address: clientCtx.GetFromAddress().String(),
-				ChainID: args[0],
 			}
 			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), msg)
 		},

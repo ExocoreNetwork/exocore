@@ -63,6 +63,7 @@ func (k *Keeper) QueryOperatorConsKeyForChainID(
 	}
 	return &operatortypes.QueryOperatorConsKeyResponse{
 		PublicKey: *key,
+		OptingOut: k.IsOperatorRemovingKeyFromChainID(ctx, addr, req.Chain),
 	}, nil
 }
 
@@ -91,7 +92,8 @@ func (k Keeper) QueryOperatorConsAddressForChainID(
 		return nil, err
 	}
 	return &operatortypes.QueryOperatorConsAddressResponse{
-		ConsAddr: consAddr.String(),
+		ConsAddr:  consAddr.String(),
+		OptingOut: k.IsOperatorRemovingKeyFromChainID(ctx, addr, req.Chain),
 	}, nil
 }
 
@@ -118,6 +120,7 @@ func (k Keeper) QueryAllOperatorConsKeysByChainID(
 		res = append(res, &operatortypes.OperatorConsKeyPair{
 			OperatorAccAddr: addr.String(),
 			PublicKey:       ret,
+			OptingOut:       k.IsOperatorRemovingKeyFromChainID(ctx, addr, req.Chain),
 		})
 		return nil
 	})
@@ -157,6 +160,7 @@ func (k Keeper) QueryAllOperatorConsAddrsByChainID(
 		res = append(res, &operatortypes.OperatorConsAddrPair{
 			OperatorAccAddr: addr.String(),
 			ConsAddr:        consAddr.String(),
+			OptingOut:       k.IsOperatorRemovingKeyFromChainID(ctx, addr, req.Chain),
 		})
 		return nil
 	})
