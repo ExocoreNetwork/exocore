@@ -38,7 +38,7 @@ func NewTxCmd() *cobra.Command {
 func CmdUpdateParams() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "update-params",
-		Short: "updata the parameters of the module",
+		Short: "update the parameters of the module",
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			clientCtx, err := client.GetClientTxContext(cmd)
 			if err != nil {
