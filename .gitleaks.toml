@@ -1,3 +1,0 @@
-[allowlist]
-    description = "ignore #nogitleaks lines"
-    regexes = ['''#nogitleaks''']
