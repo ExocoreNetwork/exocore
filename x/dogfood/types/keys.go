@@ -72,6 +72,9 @@ const (
 
 	// ValidatorUpdatesByte is the byte key for the validator updates store.
 	ValidatorUpdatesByte
+
+	// ParamsByte is the single-byte key for the params store.
+	ParamsByte
 )
 
 // ExocoreValidatorKey returns the key for the validator store.
@@ -189,4 +192,9 @@ func LastTotalPowerKey() []byte {
 // ValidatorUpdatesKey returns the key for the validator updates store.
 func ValidatorUpdatesKey() []byte {
 	return []byte{ValidatorUpdatesByte}
+}
+
+// ParamsKey returns the key for the params store.
+func ParamsKey() []byte {
+	return []byte{ParamsByte}
 }

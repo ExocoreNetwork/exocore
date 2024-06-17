@@ -11,15 +11,15 @@ import (
 func (k Keeper) GetUnbondingCompletionEpoch(
 	ctx sdk.Context,
 ) int64 {
-	unbondingEpochs := k.GetEpochsUntilUnbonded(ctx)
+	params := k.GetDogfoodParams(ctx)
 	epochInfo, _ := k.epochsKeeper.GetEpochInfo(
-		ctx, k.GetEpochIdentifier(ctx),
+		ctx, params.EpochIdentifier,
 	)
 	// if i execute the transaction at epoch 5, the vote power change
 	// goes into effect at the beginning of epoch 6. the information
 	// should be held for 7 epochs, so it should be deleted at the
 	// beginning of epoch 13 or the end of epoch 12.
-	return epochInfo.CurrentEpoch + int64(unbondingEpochs) // #nosec G701
+	return epochInfo.CurrentEpoch + int64(params.EpochsUntilUnbonded) // #nosec G701
 }
 
 // AppendUndelegationsToMature stores that the undelegation with recordKey should be
