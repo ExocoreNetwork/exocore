@@ -179,7 +179,250 @@ func (m *QueryAllOperatorsResponse) GetPagination() *query.PageResponse {
 	return nil
 }
 
+// AddressInfo includes the address of operator and AVS
+type AddressInfo struct {
+	// operator_addr is the operator address,its type should be a sdk.AccAddress
+	OperatorAddr string `protobuf:"bytes,1,opt,name=operator_addr,json=operatorAddr,proto3" json:"operator_addr,omitempty"`
+	// avs_address is the AVS address opted-in by the operator
+	AVSAddress string `protobuf:"bytes,2,opt,name=avs_address,json=avsAddress,proto3" json:"avs_address,omitempty"`
+}
+
+func (m *AddressInfo) Reset()         { *m = AddressInfo{} }
+func (m *AddressInfo) String() string { return proto.CompactTextString(m) }
+func (*AddressInfo) ProtoMessage()    {}
+func (*AddressInfo) Descriptor() ([]byte, []int) {
+	return fileDescriptor_f91e795a3cecbdbf, []int{3}
+}
+func (m *AddressInfo) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *AddressInfo) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_AddressInfo.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *AddressInfo) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_AddressInfo.Merge(m, src)
+}
+func (m *AddressInfo) XXX_Size() int {
+	return m.Size()
+}
+func (m *AddressInfo) XXX_DiscardUnknown() {
+	xxx_messageInfo_AddressInfo.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_AddressInfo proto.InternalMessageInfo
+
+func (m *AddressInfo) GetOperatorAddr() string {
+	if m != nil {
+		return m.OperatorAddr
+	}
+	return ""
+}
+
+func (m *AddressInfo) GetAVSAddress() string {
+	if m != nil {
+		return m.AVSAddress
+	}
+	return ""
+}
+
 // QueryOperatorConsKeyRequest is a request to obtain the consensus public key of the operator.
+// QueryOperatorUSDValueRequest is the request to obtain the USD value for operator.
+type QueryOperatorUSDValueRequest struct {
+	// address_info is the operator and AVS address
+	AddressInfo *AddressInfo `protobuf:"bytes,1,opt,name=address_info,json=addressInfo,proto3" json:"address_info,omitempty"`
+}
+
+func (m *QueryOperatorUSDValueRequest) Reset()         { *m = QueryOperatorUSDValueRequest{} }
+func (m *QueryOperatorUSDValueRequest) String() string { return proto.CompactTextString(m) }
+func (*QueryOperatorUSDValueRequest) ProtoMessage()    {}
+func (*QueryOperatorUSDValueRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_f91e795a3cecbdbf, []int{4}
+}
+func (m *QueryOperatorUSDValueRequest) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QueryOperatorUSDValueRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryOperatorUSDValueRequest.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QueryOperatorUSDValueRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryOperatorUSDValueRequest.Merge(m, src)
+}
+func (m *QueryOperatorUSDValueRequest) XXX_Size() int {
+	return m.Size()
+}
+func (m *QueryOperatorUSDValueRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryOperatorUSDValueRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryOperatorUSDValueRequest proto.InternalMessageInfo
+
+func (m *QueryOperatorUSDValueRequest) GetAddressInfo() *AddressInfo {
+	if m != nil {
+		return m.AddressInfo
+	}
+	return nil
+}
+
+// QueryAVSUSDValueRequest is the request to obtain the USD value for AVS.
+type QueryAVSUSDValueRequest struct {
+	// avs_address is the AVS address opted-in by the operator
+	AVSAddress string `protobuf:"bytes,1,opt,name=avs_address,json=avsAddress,proto3" json:"avs_address,omitempty"`
+}
+
+func (m *QueryAVSUSDValueRequest) Reset()         { *m = QueryAVSUSDValueRequest{} }
+func (m *QueryAVSUSDValueRequest) String() string { return proto.CompactTextString(m) }
+func (*QueryAVSUSDValueRequest) ProtoMessage()    {}
+func (*QueryAVSUSDValueRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_f91e795a3cecbdbf, []int{5}
+}
+func (m *QueryAVSUSDValueRequest) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QueryAVSUSDValueRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryAVSUSDValueRequest.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QueryAVSUSDValueRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryAVSUSDValueRequest.Merge(m, src)
+}
+func (m *QueryAVSUSDValueRequest) XXX_Size() int {
+	return m.Size()
+}
+func (m *QueryAVSUSDValueRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryAVSUSDValueRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryAVSUSDValueRequest proto.InternalMessageInfo
+
+func (m *QueryAVSUSDValueRequest) GetAVSAddress() string {
+	if m != nil {
+		return m.AVSAddress
+	}
+	return ""
+}
+
+// QueryOperatorSlashInfoRequest is the request to obtain the slash information for the specified
+// operator and AVS
+type QueryOperatorSlashInfoRequest struct {
+	// address_info is the operator and AVS address
+	AddressInfo *AddressInfo `protobuf:"bytes,1,opt,name=address_info,json=addressInfo,proto3" json:"address_info,omitempty"`
+}
+
+func (m *QueryOperatorSlashInfoRequest) Reset()         { *m = QueryOperatorSlashInfoRequest{} }
+func (m *QueryOperatorSlashInfoRequest) String() string { return proto.CompactTextString(m) }
+func (*QueryOperatorSlashInfoRequest) ProtoMessage()    {}
+func (*QueryOperatorSlashInfoRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_f91e795a3cecbdbf, []int{6}
+}
+func (m *QueryOperatorSlashInfoRequest) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QueryOperatorSlashInfoRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryOperatorSlashInfoRequest.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QueryOperatorSlashInfoRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryOperatorSlashInfoRequest.Merge(m, src)
+}
+func (m *QueryOperatorSlashInfoRequest) XXX_Size() int {
+	return m.Size()
+}
+func (m *QueryOperatorSlashInfoRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryOperatorSlashInfoRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryOperatorSlashInfoRequest proto.InternalMessageInfo
+
+func (m *QueryOperatorSlashInfoRequest) GetAddressInfo() *AddressInfo {
+	if m != nil {
+		return m.AddressInfo
+	}
+	return nil
+}
+
+// QueryOperatorSlashInfoResponse is the response for GetOperatorSlashInfoRequest
+type QueryOperatorSlashInfoResponse struct {
+	// AllSlashInfo the key is slashID, the value is the specified slash information
+	// It's okay to use a map here, because it won't be used to store state, only in
+	// the response to an RPC call
+	AllSlashInfo map[string]*OperatorSlashInfo `protobuf:"bytes,1,rep,name=all_slash_info,json=allSlashInfo,proto3" json:"all_slash_info,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
+}
+
+func (m *QueryOperatorSlashInfoResponse) Reset()         { *m = QueryOperatorSlashInfoResponse{} }
+func (m *QueryOperatorSlashInfoResponse) String() string { return proto.CompactTextString(m) }
+func (*QueryOperatorSlashInfoResponse) ProtoMessage()    {}
+func (*QueryOperatorSlashInfoResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_f91e795a3cecbdbf, []int{7}
+}
+func (m *QueryOperatorSlashInfoResponse) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QueryOperatorSlashInfoResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryOperatorSlashInfoResponse.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QueryOperatorSlashInfoResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryOperatorSlashInfoResponse.Merge(m, src)
+}
+func (m *QueryOperatorSlashInfoResponse) XXX_Size() int {
+	return m.Size()
+}
+func (m *QueryOperatorSlashInfoResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryOperatorSlashInfoResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryOperatorSlashInfoResponse proto.InternalMessageInfo
+
+func (m *QueryOperatorSlashInfoResponse) GetAllSlashInfo() map[string]*OperatorSlashInfo {
+	if m != nil {
+		return m.AllSlashInfo
+	}
+	return nil
+}
+
+// QueryOperatorConsKeyRequest is the request to obtain the consensus public key of the operator
 type QueryOperatorConsKeyRequest struct {
 	// operator_acc_addr is the operator account address.
 	OperatorAccAddr string `protobuf:"bytes,1,opt,name=operator_acc_addr,json=operatorAccAddr,proto3" json:"operator_acc_addr,omitempty"`
@@ -193,7 +436,7 @@ func (m *QueryOperatorConsKeyRequest) Reset()         { *m = QueryOperatorConsKe
 func (m *QueryOperatorConsKeyRequest) String() string { return proto.CompactTextString(m) }
 func (*QueryOperatorConsKeyRequest) ProtoMessage()    {}
 func (*QueryOperatorConsKeyRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_f91e795a3cecbdbf, []int{3}
+	return fileDescriptor_f91e795a3cecbdbf, []int{8}
 }
 func (m *QueryOperatorConsKeyRequest) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -240,13 +483,15 @@ func (m *QueryOperatorConsKeyRequest) GetChain() string {
 type QueryOperatorConsKeyResponse struct {
 	// public_key is the consensus public key of the operator.
 	PublicKey crypto.PublicKey `protobuf:"bytes,1,opt,name=public_key,json=publicKey,proto3" json:"public_key"`
+	// opting_out is a flag to indicate if the operator is opting out of consensus.
+	OptingOut bool `protobuf:"varint,2,opt,name=opting_out,json=optingOut,proto3" json:"opting_out,omitempty"`
 }
 
 func (m *QueryOperatorConsKeyResponse) Reset()         { *m = QueryOperatorConsKeyResponse{} }
 func (m *QueryOperatorConsKeyResponse) String() string { return proto.CompactTextString(m) }
 func (*QueryOperatorConsKeyResponse) ProtoMessage()    {}
 func (*QueryOperatorConsKeyResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_f91e795a3cecbdbf, []int{4}
+	return fileDescriptor_f91e795a3cecbdbf, []int{9}
 }
 func (m *QueryOperatorConsKeyResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -282,6 +527,13 @@ func (m *QueryOperatorConsKeyResponse) GetPublicKey() crypto.PublicKey {
 	return crypto.PublicKey{}
 }
 
+func (m *QueryOperatorConsKeyResponse) GetOptingOut() bool {
+	if m != nil {
+		return m.OptingOut
+	}
+	return false
+}
+
 // QueryOperatorConsAddressRequest is the request to obtain the consensus address of the operator
 // for a specific chain ID.
 type QueryOperatorConsAddressRequest struct {
@@ -297,7 +549,7 @@ func (m *QueryOperatorConsAddressRequest) Reset()         { *m = QueryOperatorCo
 func (m *QueryOperatorConsAddressRequest) String() string { return proto.CompactTextString(m) }
 func (*QueryOperatorConsAddressRequest) ProtoMessage()    {}
 func (*QueryOperatorConsAddressRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_f91e795a3cecbdbf, []int{5}
+	return fileDescriptor_f91e795a3cecbdbf, []int{10}
 }
 func (m *QueryOperatorConsAddressRequest) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -345,13 +597,15 @@ type QueryOperatorConsAddressResponse struct {
 	// cons_addr is the consensus address corresponding to the consensus public key
 	// currently in use by the operator.
 	ConsAddr string `protobuf:"bytes,1,opt,name=cons_addr,json=consAddr,proto3" json:"cons_addr,omitempty"`
+	// opting_out is a flag to indicate if the operator is opting out of consensus.
+	OptingOut bool `protobuf:"varint,2,opt,name=opting_out,json=optingOut,proto3" json:"opting_out,omitempty"`
 }
 
 func (m *QueryOperatorConsAddressResponse) Reset()         { *m = QueryOperatorConsAddressResponse{} }
 func (m *QueryOperatorConsAddressResponse) String() string { return proto.CompactTextString(m) }
 func (*QueryOperatorConsAddressResponse) ProtoMessage()    {}
 func (*QueryOperatorConsAddressResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_f91e795a3cecbdbf, []int{6}
+	return fileDescriptor_f91e795a3cecbdbf, []int{11}
 }
 func (m *QueryOperatorConsAddressResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -387,6 +641,13 @@ func (m *QueryOperatorConsAddressResponse) GetConsAddr() string {
 	return ""
 }
 
+func (m *QueryOperatorConsAddressResponse) GetOptingOut() bool {
+	if m != nil {
+		return m.OptingOut
+	}
+	return false
+}
+
 // QueryAllOperatorConsKeysByChainIDRequest is the request to obtain all operator addresses
 // and consensus keys for a specific chain ID, with pagination.
 type QueryAllOperatorConsKeysByChainIDRequest struct {
@@ -404,7 +665,7 @@ func (m *QueryAllOperatorConsKeysByChainIDRequest) Reset() {
 func (m *QueryAllOperatorConsKeysByChainIDRequest) String() string { return proto.CompactTextString(m) }
 func (*QueryAllOperatorConsKeysByChainIDRequest) ProtoMessage()    {}
 func (*QueryAllOperatorConsKeysByChainIDRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_f91e795a3cecbdbf, []int{7}
+	return fileDescriptor_f91e795a3cecbdbf, []int{12}
 }
 func (m *QueryAllOperatorConsKeysByChainIDRequest) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -464,7 +725,7 @@ func (m *QueryAllOperatorConsKeysByChainIDResponse) String() string {
 }
 func (*QueryAllOperatorConsKeysByChainIDResponse) ProtoMessage() {}
 func (*QueryAllOperatorConsKeysByChainIDResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_f91e795a3cecbdbf, []int{8}
+	return fileDescriptor_f91e795a3cecbdbf, []int{13}
 }
 func (m *QueryAllOperatorConsKeysByChainIDResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -514,13 +775,15 @@ type OperatorConsKeyPair struct {
 	OperatorAccAddr string `protobuf:"bytes,1,opt,name=operator_acc_addr,json=operatorAccAddr,proto3" json:"operator_acc_addr,omitempty"`
 	// public_key is the consensus public key of the operator.
 	PublicKey *crypto.PublicKey `protobuf:"bytes,2,opt,name=public_key,json=publicKey,proto3" json:"public_key,omitempty"`
+	// opting_out is a flag to indicate if the operator is opting out of consensus.
+	OptingOut bool `protobuf:"varint,3,opt,name=opting_out,json=optingOut,proto3" json:"opting_out,omitempty"`
 }
 
 func (m *OperatorConsKeyPair) Reset()         { *m = OperatorConsKeyPair{} }
 func (m *OperatorConsKeyPair) String() string { return proto.CompactTextString(m) }
 func (*OperatorConsKeyPair) ProtoMessage()    {}
 func (*OperatorConsKeyPair) Descriptor() ([]byte, []int) {
-	return fileDescriptor_f91e795a3cecbdbf, []int{9}
+	return fileDescriptor_f91e795a3cecbdbf, []int{14}
 }
 func (m *OperatorConsKeyPair) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -563,6 +826,13 @@ func (m *OperatorConsKeyPair) GetPublicKey() *crypto.PublicKey {
 	return nil
 }
 
+func (m *OperatorConsKeyPair) GetOptingOut() bool {
+	if m != nil {
+		return m.OptingOut
+	}
+	return false
+}
+
 // QueryAllOperatorConsAddrsByChainIDRequest is the request to obtain all operator addresses
 // and consensus addresses for a specific chain ID, with pagination.
 type QueryAllOperatorConsAddrsByChainIDRequest struct {
@@ -582,7 +852,7 @@ func (m *QueryAllOperatorConsAddrsByChainIDRequest) String() string {
 }
 func (*QueryAllOperatorConsAddrsByChainIDRequest) ProtoMessage() {}
 func (*QueryAllOperatorConsAddrsByChainIDRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_f91e795a3cecbdbf, []int{10}
+	return fileDescriptor_f91e795a3cecbdbf, []int{15}
 }
 func (m *QueryAllOperatorConsAddrsByChainIDRequest) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -642,7 +912,7 @@ func (m *QueryAllOperatorConsAddrsByChainIDResponse) String() string {
 }
 func (*QueryAllOperatorConsAddrsByChainIDResponse) ProtoMessage() {}
 func (*QueryAllOperatorConsAddrsByChainIDResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_f91e795a3cecbdbf, []int{11}
+	return fileDescriptor_f91e795a3cecbdbf, []int{16}
 }
 func (m *QueryAllOperatorConsAddrsByChainIDResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -692,13 +962,15 @@ type OperatorConsAddrPair struct {
 	// cons_addr is the consensus address corresponding to the consensus public key
 	// currently in use by the operator.
 	ConsAddr string `protobuf:"bytes,2,opt,name=cons_addr,json=consAddr,proto3" json:"cons_addr,omitempty"`
+	// opting_out is a flag to indicate if the operator is opting out of consensus.
+	OptingOut bool `protobuf:"varint,3,opt,name=opting_out,json=optingOut,proto3" json:"opting_out,omitempty"`
 }
 
 func (m *OperatorConsAddrPair) Reset()         { *m = OperatorConsAddrPair{} }
 func (m *OperatorConsAddrPair) String() string { return proto.CompactTextString(m) }
 func (*OperatorConsAddrPair) ProtoMessage()    {}
 func (*OperatorConsAddrPair) Descriptor() ([]byte, []int) {
-	return fileDescriptor_f91e795a3cecbdbf, []int{12}
+	return fileDescriptor_f91e795a3cecbdbf, []int{17}
 }
 func (m *OperatorConsAddrPair) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -741,10 +1013,23 @@ func (m *OperatorConsAddrPair) GetConsAddr() string {
 	return ""
 }
 
+func (m *OperatorConsAddrPair) GetOptingOut() bool {
+	if m != nil {
+		return m.OptingOut
+	}
+	return false
+}
+
 func init() {
 	proto.RegisterType((*GetOperatorInfoReq)(nil), "exocore.operator.v1.GetOperatorInfoReq")
 	proto.RegisterType((*QueryAllOperatorsRequest)(nil), "exocore.operator.v1.QueryAllOperatorsRequest")
 	proto.RegisterType((*QueryAllOperatorsResponse)(nil), "exocore.operator.v1.QueryAllOperatorsResponse")
+	proto.RegisterType((*AddressInfo)(nil), "exocore.operator.v1.AddressInfo")
+	proto.RegisterType((*QueryOperatorUSDValueRequest)(nil), "exocore.operator.v1.QueryOperatorUSDValueRequest")
+	proto.RegisterType((*QueryAVSUSDValueRequest)(nil), "exocore.operator.v1.QueryAVSUSDValueRequest")
+	proto.RegisterType((*QueryOperatorSlashInfoRequest)(nil), "exocore.operator.v1.QueryOperatorSlashInfoRequest")
+	proto.RegisterType((*QueryOperatorSlashInfoResponse)(nil), "exocore.operator.v1.QueryOperatorSlashInfoResponse")
+	proto.RegisterMapType((map[string]*OperatorSlashInfo)(nil), "exocore.operator.v1.QueryOperatorSlashInfoResponse.AllSlashInfoEntry")
 	proto.RegisterType((*QueryOperatorConsKeyRequest)(nil), "exocore.operator.v1.QueryOperatorConsKeyRequest")
 	proto.RegisterType((*QueryOperatorConsKeyResponse)(nil), "exocore.operator.v1.QueryOperatorConsKeyResponse")
 	proto.RegisterType((*QueryOperatorConsAddressRequest)(nil), "exocore.operator.v1.QueryOperatorConsAddressRequest")
@@ -760,63 +1045,82 @@ func init() {
 func init() { proto.RegisterFile("exocore/operator/v1/query.proto", fileDescriptor_f91e795a3cecbdbf) }
 
 var fileDescriptor_f91e795a3cecbdbf = []byte{
-	// 891 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xbc, 0x56, 0xdf, 0x4f, 0xd3, 0x50,
-	0x14, 0x5e, 0xa7, 0x18, 0x77, 0xd1, 0x28, 0x97, 0x3d, 0x8c, 0x42, 0x06, 0x34, 0x46, 0xc6, 0x22,
-	0xad, 0x1b, 0xe0, 0x83, 0x88, 0x84, 0xf1, 0x2b, 0x88, 0x51, 0x2c, 0x89, 0x89, 0xbe, 0x2c, 0x5d,
-	0x77, 0x29, 0x0d, 0xa3, 0xb7, 0xb4, 0x1d, 0xd2, 0x10, 0x7c, 0xf0, 0x49, 0xdf, 0x8c, 0x3e, 0x9a,
-	0xf8, 0x57, 0xf8, 0x1f, 0xf8, 0xc2, 0x83, 0x0f, 0xa8, 0x2f, 0x3e, 0xa1, 0x61, 0xfe, 0x21, 0xa6,
-	0xb7, 0xb7, 0x5b, 0x3b, 0xba, 0xad, 0x23, 0xc4, 0xb7, 0xb5, 0x3d, 0xf7, 0x7c, 0xdf, 0x77, 0xce,
-	0x77, 0xcf, 0x19, 0x18, 0x46, 0xfb, 0x58, 0xc6, 0x06, 0x12, 0xb0, 0x8e, 0x0c, 0xc9, 0xc2, 0x86,
-	0xb0, 0x97, 0x13, 0x76, 0xab, 0xc8, 0xb0, 0x79, 0xdd, 0xc0, 0x16, 0x86, 0xfd, 0x34, 0x80, 0xf7,
-	0x02, 0xf8, 0xbd, 0x1c, 0x9b, 0x95, 0xb1, 0xb9, 0x83, 0x4d, 0xa1, 0x24, 0x99, 0xc8, 0x8d, 0x16,
-	0xf6, 0x72, 0x25, 0x64, 0x49, 0x39, 0x41, 0x97, 0x14, 0x55, 0x93, 0x2c, 0x15, 0x6b, 0x6e, 0x02,
-	0x76, 0xc0, 0x8d, 0x2d, 0x92, 0x27, 0xc1, 0x7d, 0xa0, 0x9f, 0x86, 0xc2, 0xc0, 0xad, 0x7d, 0xfa,
-	0x35, 0xa9, 0x60, 0x05, 0xbb, 0xa7, 0x9c, 0x5f, 0xde, 0x19, 0x05, 0x63, 0xa5, 0x82, 0x04, 0x49,
-	0x57, 0x05, 0x49, 0xd3, 0xb0, 0x45, 0xb0, 0xea, 0x19, 0x2d, 0xa4, 0x95, 0x91, 0xb1, 0xa3, 0x6a,
-	0x96, 0x20, 0x1b, 0xb6, 0x6e, 0x61, 0x61, 0x1b, 0xd9, 0xf4, 0x2b, 0xb7, 0x01, 0xe0, 0x0a, 0xb2,
-	0x9e, 0x52, 0xb0, 0x55, 0x6d, 0x13, 0x8b, 0x68, 0x17, 0xce, 0x82, 0xeb, 0x1e, 0x7e, 0x51, 0x2a,
-	0x97, 0x8d, 0x14, 0x33, 0xc2, 0x64, 0x12, 0x85, 0xd4, 0x8f, 0x2f, 0x13, 0x49, 0x4a, 0x77, 0xbe,
-	0x5c, 0x36, 0x90, 0x69, 0x6e, 0x58, 0x86, 0xaa, 0x29, 0xe2, 0x35, 0x2f, 0xdc, 0x79, 0xcd, 0x95,
-	0x40, 0xea, 0x99, 0x53, 0x81, 0xf9, 0x4a, 0xc5, 0xcb, 0x6c, 0x8a, 0x68, 0xb7, 0x8a, 0x4c, 0x0b,
-	0x2e, 0x03, 0xd0, 0xa8, 0x07, 0xc9, 0xdb, 0x9b, 0xbf, 0xcd, 0xd3, 0xa4, 0x4e, 0xf1, 0x78, 0xb7,
-	0xd4, 0xb4, 0x78, 0xfc, 0xba, 0xa4, 0x20, 0x7a, 0x56, 0xf4, 0x9d, 0xe4, 0x3e, 0x30, 0x60, 0x20,
-	0x04, 0xc4, 0xd4, 0xb1, 0x66, 0x22, 0x78, 0x07, 0xc0, 0x86, 0x00, 0x59, 0x26, 0x22, 0xcc, 0x14,
-	0x33, 0x72, 0x29, 0x93, 0x10, 0x6f, 0xd6, 0xb9, 0xca, 0xb2, 0x43, 0xd7, 0x84, 0x2b, 0x01, 0x4e,
-	0x71, 0xc2, 0x69, 0xac, 0x23, 0x27, 0x17, 0x2a, 0x40, 0xaa, 0x08, 0x06, 0x09, 0x27, 0x8f, 0xd0,
-	0x02, 0xd6, 0xcc, 0x35, 0x64, 0x7b, 0xda, 0xb3, 0xa0, 0xef, 0x0c, 0x2b, 0xb7, 0xb4, 0xe2, 0x8d,
-	0x26, 0x52, 0x30, 0x09, 0x7a, 0xe4, 0x2d, 0x49, 0x75, 0xe9, 0x24, 0x44, 0xf7, 0x81, 0x93, 0xc0,
-	0x50, 0x38, 0x00, 0xd5, 0x3d, 0x0f, 0x80, 0x5e, 0x2d, 0x55, 0x54, 0xb9, 0xb8, 0x8d, 0x6c, 0x5a,
-	0xdd, 0x21, 0xbe, 0xe1, 0x00, 0xde, 0x75, 0x00, 0xbf, 0x4e, 0x82, 0xd6, 0x90, 0x5d, 0xb8, 0x7c,
-	0x74, 0x32, 0x1c, 0x13, 0x13, 0xba, 0xf7, 0x82, 0x93, 0xc1, 0xf0, 0x19, 0x08, 0xda, 0xec, 0x8b,
-	0xd3, 0x31, 0x07, 0x46, 0x5a, 0x83, 0x50, 0x2d, 0x83, 0x20, 0x21, 0x63, 0xcd, 0xf4, 0x67, 0xbf,
-	0x2a, 0xd3, 0x38, 0xee, 0x2d, 0x03, 0x32, 0xcd, 0xed, 0xa7, 0xc5, 0x30, 0x0b, 0xf6, 0x82, 0x03,
-	0xb2, 0xba, 0xe8, 0xf1, 0xad, 0x73, 0x60, 0x7c, 0x1c, 0x9a, 0x9c, 0x18, 0x3f, 0xb7, 0x13, 0xbf,
-	0x31, 0x60, 0x3c, 0x02, 0x15, 0xaa, 0xea, 0xb9, 0xcf, 0x99, 0x44, 0x9e, 0x73, 0x19, 0x89, 0x33,
-	0x7b, 0xf3, 0x19, 0x3e, 0x64, 0xb2, 0xf0, 0x4d, 0x39, 0xd7, 0x25, 0xd5, 0x68, 0x78, 0xd8, 0x03,
-	0xba, 0x38, 0x0f, 0xbf, 0x06, 0xfd, 0x21, 0x88, 0x5d, 0xf5, 0x7c, 0x26, 0xe0, 0xc2, 0x78, 0x67,
-	0x17, 0xfa, 0xfd, 0xf7, 0xae, 0x45, 0x39, 0xc9, 0x55, 0xfd, 0xcf, 0xad, 0x3d, 0x66, 0x40, 0x36,
-	0x0a, 0x17, 0xda, 0xdb, 0x17, 0xa0, 0x3f, 0xd8, 0xdb, 0xc6, 0xd8, 0xe9, 0xcd, 0x8f, 0x77, 0x6c,
-	0xae, 0x93, 0x95, 0x74, 0xb7, 0x0f, 0x37, 0x63, 0x5d, 0xe4, 0x88, 0x4a, 0x86, 0x61, 0x76, 0xd5,
-	0xdf, 0xc0, 0xcd, 0x8c, 0x07, 0x6f, 0x66, 0xfe, 0x6b, 0x02, 0xf4, 0x90, 0x9a, 0xc1, 0x4f, 0x0c,
-	0xe8, 0x0b, 0xdc, 0x72, 0x67, 0xbd, 0xc0, 0xb1, 0xd0, 0x3a, 0x9c, 0x5d, 0x42, 0xec, 0x68, 0xdb,
-	0x82, 0x39, 0x51, 0xdc, 0xfd, 0x37, 0x3f, 0xff, 0x7e, 0x8c, 0x4f, 0xc1, 0xbc, 0x10, 0xb6, 0x36,
-	0xeb, 0x7a, 0x54, 0x6d, 0x13, 0x0b, 0x07, 0x81, 0x8d, 0x76, 0x08, 0x3f, 0x7b, 0xec, 0xfc, 0x0b,
-	0x04, 0x4e, 0x84, 0x82, 0xb6, 0xda, 0x66, 0x2c, 0x1f, 0x35, 0xdc, 0xed, 0x04, 0x97, 0x25, 0x84,
-	0x6f, 0x41, 0x2e, 0x94, 0xb0, 0x54, 0xa9, 0x14, 0x71, 0x9d, 0xca, 0x77, 0x06, 0xa4, 0xc3, 0x86,
-	0xfd, 0x32, 0x36, 0xa8, 0xf1, 0xe0, 0xdd, 0xd6, 0xf0, 0xe1, 0x2b, 0x88, 0xcd, 0x75, 0x71, 0x82,
-	0x72, 0x7e, 0x44, 0x38, 0x2f, 0xc2, 0x42, 0xfb, 0x22, 0x7b, 0xc3, 0xcc, 0x5f, 0x68, 0xea, 0xa3,
-	0x43, 0xe1, 0x80, 0xdc, 0xcb, 0x43, 0x78, 0xc2, 0x00, 0xae, 0xd5, 0xe0, 0xf7, 0xe9, 0x9a, 0x8a,
-	0xc6, 0x32, 0xb8, 0x96, 0xd8, 0xe9, 0x2e, 0x4f, 0x51, 0x7d, 0x6b, 0x44, 0xdf, 0x12, 0x5c, 0x88,
-	0xa0, 0xcf, 0x51, 0xd3, 0x56, 0xe0, 0x6f, 0x06, 0x8c, 0x76, 0x5c, 0x06, 0x70, 0x36, 0x92, 0x6d,
-	0x5a, 0xed, 0x33, 0xf6, 0xe1, 0x79, 0x8f, 0x53, 0xc5, 0x33, 0x44, 0xf1, 0x34, 0x9c, 0xec, 0xe8,
-	0xc2, 0xc6, 0x8a, 0xaa, 0x2b, 0xac, 0x79, 0x2d, 0x6c, 0x3b, 0x13, 0x61, 0x74, 0x8e, 0xa1, 0x83,
-	0x9d, 0x9d, 0x3b, 0xf7, 0x79, 0x2a, 0xf2, 0x01, 0x11, 0x79, 0x0f, 0x4e, 0x45, 0x14, 0x49, 0x66,
-	0xb5, 0xa7, 0xb2, 0xf0, 0xf8, 0xe8, 0x34, 0xcd, 0x1c, 0x9f, 0xa6, 0x99, 0x3f, 0xa7, 0x69, 0xe6,
-	0x7d, 0x2d, 0x1d, 0x3b, 0xae, 0xa5, 0x63, 0xbf, 0x6a, 0xe9, 0xd8, 0xcb, 0xbc, 0xa2, 0x5a, 0x5b,
-	0xd5, 0x12, 0x2f, 0xe3, 0x1d, 0x61, 0xc9, 0xcd, 0xfc, 0x04, 0x59, 0xaf, 0xb0, 0xb1, 0x5d, 0x07,
-	0xda, 0x6f, 0x40, 0x59, 0xb6, 0x8e, 0xcc, 0xd2, 0x15, 0xf2, 0x67, 0x7b, 0xf2, 0x5f, 0x00, 0x00,
-	0x00, 0xff, 0xff, 0xae, 0x71, 0x00, 0xfa, 0x5b, 0x0c, 0x00, 0x00,
+	// 1200 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xbc, 0x58, 0x4f, 0x6f, 0xe3, 0x44,
+	0x14, 0xef, 0xa4, 0x14, 0x6d, 0x5e, 0xba, 0x4b, 0x3b, 0x2d, 0xd0, 0xcd, 0x76, 0xd3, 0xae, 0x05,
+	0xdb, 0x6e, 0x69, 0x6d, 0x9a, 0x76, 0x11, 0xda, 0x3f, 0xa0, 0xa6, 0x7f, 0x56, 0xbb, 0x45, 0x6c,
+	0x71, 0x44, 0x25, 0x38, 0x10, 0x39, 0xce, 0x6c, 0x6a, 0xd5, 0xf5, 0xa4, 0x1e, 0x27, 0x34, 0x5a,
+	0x15, 0x21, 0x4e, 0x70, 0x43, 0xec, 0x11, 0xc1, 0x81, 0xcf, 0x80, 0xe0, 0x2b, 0xec, 0x81, 0x43,
+	0x81, 0x0b, 0xa7, 0x82, 0x5a, 0x3e, 0x03, 0x67, 0xe4, 0xf1, 0x38, 0xb1, 0x1d, 0x27, 0x71, 0x4b,
+	0xc5, 0x2d, 0xb6, 0xe7, 0xbd, 0xf7, 0xfb, 0xfd, 0xde, 0x9b, 0xf7, 0x9e, 0x02, 0x53, 0xe4, 0x80,
+	0xea, 0xd4, 0x26, 0x0a, 0xad, 0x11, 0x5b, 0x73, 0xa8, 0xad, 0x34, 0x16, 0x95, 0xfd, 0x3a, 0xb1,
+	0x9b, 0x72, 0xcd, 0xa6, 0x0e, 0xc5, 0x63, 0xe2, 0x80, 0xec, 0x1f, 0x90, 0x1b, 0x8b, 0xd9, 0x39,
+	0x9d, 0xb2, 0x3d, 0xca, 0x94, 0xb2, 0xc6, 0x88, 0x77, 0x5a, 0x69, 0x2c, 0x96, 0x89, 0xa3, 0x2d,
+	0x2a, 0x35, 0xad, 0x6a, 0x58, 0x9a, 0x63, 0x50, 0xcb, 0x73, 0x90, 0xbd, 0xea, 0x9d, 0x2d, 0xf1,
+	0x27, 0xc5, 0x7b, 0x10, 0x9f, 0x26, 0xe3, 0x82, 0x3b, 0x07, 0xe2, 0xeb, 0x78, 0x95, 0x56, 0xa9,
+	0x67, 0xe5, 0xfe, 0xf2, 0x6d, 0xaa, 0x94, 0x56, 0x4d, 0xa2, 0x68, 0x35, 0x43, 0xd1, 0x2c, 0x8b,
+	0x3a, 0x3c, 0x56, 0xcb, 0xa3, 0x43, 0xac, 0x0a, 0xb1, 0xf7, 0x0c, 0xcb, 0x51, 0x74, 0xbb, 0x59,
+	0x73, 0xa8, 0xb2, 0x4b, 0x9a, 0xe2, 0xab, 0x54, 0x04, 0xfc, 0x80, 0x38, 0x8f, 0x45, 0xb0, 0x87,
+	0xd6, 0x13, 0xaa, 0x92, 0x7d, 0x7c, 0x1f, 0x2e, 0xfb, 0xf1, 0x4b, 0x5a, 0xa5, 0x62, 0x4f, 0xa0,
+	0x69, 0x34, 0x9b, 0x2e, 0x4c, 0xfc, 0xf6, 0xe3, 0xc2, 0xb8, 0x80, 0xbb, 0x52, 0xa9, 0xd8, 0x84,
+	0xb1, 0xa2, 0x63, 0x1b, 0x56, 0x55, 0x1d, 0xf6, 0x8f, 0xbb, 0xaf, 0xa5, 0x32, 0x4c, 0x7c, 0xe0,
+	0x2a, 0xb0, 0x62, 0x9a, 0xbe, 0x67, 0xa6, 0x92, 0xfd, 0x3a, 0x61, 0x0e, 0xde, 0x00, 0x68, 0xeb,
+	0xc1, 0xfd, 0x66, 0xf2, 0x37, 0x65, 0xe1, 0xd4, 0x15, 0x4f, 0xf6, 0xa4, 0x16, 0xe2, 0xc9, 0x5b,
+	0x5a, 0x95, 0x08, 0x5b, 0x35, 0x60, 0x29, 0x7d, 0x83, 0xe0, 0x6a, 0x4c, 0x10, 0x56, 0xa3, 0x16,
+	0x23, 0x78, 0x1e, 0x70, 0x9b, 0x80, 0xae, 0x73, 0x12, 0x6c, 0x02, 0x4d, 0x0f, 0xce, 0xa6, 0xd5,
+	0x91, 0x16, 0x56, 0x5d, 0x77, 0xe1, 0x32, 0xfc, 0x20, 0x84, 0x29, 0xc5, 0x31, 0xcd, 0xf4, 0xc5,
+	0xe4, 0x85, 0x0a, 0x81, 0x3a, 0x84, 0x8c, 0xd0, 0xc5, 0x55, 0xf2, 0x3f, 0xca, 0x88, 0x15, 0xc8,
+	0x68, 0x0d, 0xc6, 0x2d, 0x09, 0x63, 0x1c, 0x57, 0xba, 0x70, 0xe5, 0xe4, 0x78, 0x0a, 0x56, 0xb6,
+	0x8b, 0xc2, 0x50, 0x05, 0xad, 0xc1, 0xc4, 0x6f, 0x49, 0x87, 0x49, 0x2e, 0x89, 0xaf, 0xc7, 0x87,
+	0xc5, 0xb5, 0x6d, 0xcd, 0xac, 0xfb, 0xfa, 0xe1, 0x55, 0x18, 0x16, 0xce, 0x4a, 0x86, 0xf5, 0x84,
+	0x0a, 0xf5, 0xa7, 0xe5, 0x98, 0x7a, 0x96, 0x03, 0x3c, 0xd4, 0x8c, 0xd6, 0x7e, 0x90, 0x1e, 0xc1,
+	0xab, 0x9e, 0xee, 0xdb, 0xc5, 0xa8, 0xff, 0x08, 0x60, 0xd4, 0x17, 0x70, 0x05, 0xae, 0x87, 0x00,
+	0x17, 0x4d, 0x8d, 0xed, 0x88, 0x22, 0xbc, 0x38, 0xc4, 0xff, 0x20, 0xc8, 0x75, 0x0b, 0x23, 0xea,
+	0x65, 0x17, 0xae, 0x68, 0xa6, 0x59, 0x62, 0xee, 0x07, 0x3f, 0xd2, 0xe0, 0x6c, 0x26, 0xbf, 0x1e,
+	0x1b, 0xa9, 0xb7, 0x33, 0x79, 0xc5, 0x34, 0x5b, 0x2f, 0xd7, 0x2d, 0xc7, 0x6e, 0xaa, 0xc3, 0x5a,
+	0xe0, 0x55, 0xb6, 0x0a, 0xa3, 0x1d, 0x47, 0xf0, 0x08, 0x0c, 0xee, 0x92, 0xa6, 0xa7, 0x99, 0xea,
+	0xfe, 0xc4, 0xf7, 0x60, 0xa8, 0xe1, 0xaa, 0x2b, 0x0a, 0xf2, 0x66, 0x2c, 0x94, 0x4e, 0x14, 0x9e,
+	0xd1, 0x9d, 0xd4, 0xdb, 0x48, 0x2a, 0xc1, 0xb5, 0x10, 0xd4, 0x55, 0x6a, 0xb1, 0x4d, 0xd2, 0xf4,
+	0xc5, 0x9d, 0x83, 0xd1, 0x8e, 0x4b, 0x22, 0x00, 0xbc, 0x14, 0xb9, 0x23, 0x78, 0x1c, 0x86, 0xf4,
+	0x1d, 0xcd, 0xf0, 0x6e, 0x47, 0x5a, 0xf5, 0x1e, 0xa4, 0xcf, 0x51, 0xa4, 0xe2, 0x5a, 0x11, 0x84,
+	0xae, 0x2b, 0x00, 0xb5, 0x7a, 0xd9, 0x34, 0xf4, 0x92, 0x4f, 0x2e, 0x93, 0x9f, 0x94, 0xdb, 0x1d,
+	0x49, 0xf6, 0x3a, 0x92, 0xbc, 0xc5, 0x0f, 0x6d, 0x92, 0x66, 0xe1, 0x85, 0xe7, 0xc7, 0x53, 0x03,
+	0x6a, 0xba, 0xe6, 0xbf, 0xc0, 0xd7, 0x01, 0x68, 0xcd, 0x31, 0xac, 0x6a, 0x89, 0xd6, 0x1d, 0x1e,
+	0xfe, 0x92, 0x9a, 0xf6, 0xde, 0x3c, 0xae, 0x3b, 0x92, 0x0e, 0x53, 0x1d, 0x08, 0xfc, 0x52, 0xbb,
+	0x30, 0x9e, 0x9f, 0xc0, 0x74, 0xf7, 0x20, 0x82, 0xea, 0x35, 0x48, 0xeb, 0xd4, 0x62, 0x41, 0xef,
+	0x97, 0x74, 0x71, 0xae, 0x1f, 0x89, 0x2f, 0x11, 0xcc, 0x46, 0x9b, 0x99, 0x90, 0x92, 0x15, 0x9a,
+	0xab, 0x2e, 0x86, 0x87, 0x6b, 0x3e, 0x9d, 0x16, 0x44, 0x14, 0x80, 0x18, 0xe9, 0xab, 0xa9, 0x73,
+	0xf7, 0xd5, 0x5f, 0x10, 0xdc, 0x4a, 0x00, 0x45, 0x90, 0xde, 0x0e, 0xf4, 0x59, 0xce, 0xde, 0x1d,
+	0x2d, 0xe2, 0xee, 0xcc, 0xf6, 0x2c, 0x58, 0xe1, 0x73, 0x4b, 0x33, 0xec, 0x76, 0x47, 0xf6, 0x03,
+	0x5d, 0x5c, 0x47, 0xfe, 0x0e, 0xc1, 0x58, 0x4c, 0xc8, 0x33, 0xd5, 0xc4, 0xdd, 0x50, 0x11, 0xa7,
+	0xfa, 0x17, 0x71, 0xf7, 0xf2, 0x1d, 0x8c, 0x66, 0xfe, 0xab, 0x2e, 0x72, 0xf3, 0xc1, 0xf4, 0x3f,
+	0xa7, 0xfe, 0x08, 0xc1, 0x5c, 0x12, 0x2c, 0x22, 0xf7, 0x1f, 0xc1, 0x58, 0x38, 0xf7, 0xed, 0x21,
+	0x9b, 0xc9, 0xdf, 0xea, 0x9b, 0x7c, 0xd7, 0x2b, 0xcf, 0xfe, 0x28, 0x8d, 0xc6, 0xba, 0xb8, 0xf4,
+	0x7f, 0x06, 0xe3, 0x71, 0x31, 0xcf, 0x94, 0xfe, 0xd0, 0xc5, 0x4e, 0xf5, 0xbc, 0xd8, 0xd1, 0xf4,
+	0xe6, 0x7f, 0xbe, 0x0c, 0x43, 0x5c, 0x52, 0xfc, 0x2d, 0x82, 0xd1, 0x50, 0x0f, 0xe1, 0x1b, 0xc2,
+	0x4c, 0xac, 0x4c, 0x9d, 0x1b, 0x59, 0xf6, 0x46, 0x4f, 0x3d, 0xf9, 0x98, 0xbb, 0xf3, 0xc5, 0xef,
+	0x7f, 0x3f, 0x4b, 0x2d, 0xe3, 0xbc, 0x12, 0xb7, 0x43, 0xb6, 0xe8, 0xba, 0xd3, 0x4d, 0x79, 0x1a,
+	0xda, 0x4b, 0x0e, 0xf1, 0xf7, 0x3e, 0xba, 0xe0, 0x36, 0x85, 0x17, 0xba, 0x4f, 0xbf, 0x98, 0xd5,
+	0x2e, 0x2b, 0x27, 0x3d, 0xee, 0x25, 0x4a, 0x9a, 0xe3, 0x80, 0x5f, 0xc3, 0x52, 0x2c, 0x60, 0x77,
+	0x1e, 0xd3, 0x16, 0x94, 0x5f, 0xa3, 0x33, 0x5c, 0x5c, 0xe6, 0x0d, 0x6a, 0x8b, 0xba, 0xc4, 0x6f,
+	0xf6, 0x9f, 0xd5, 0xe1, 0x01, 0x98, 0x5d, 0x3c, 0x83, 0x85, 0xc0, 0xfc, 0x88, 0x63, 0x5e, 0xc3,
+	0x85, 0xde, 0x22, 0xfb, 0xbd, 0x30, 0x28, 0xb4, 0x28, 0xb3, 0x43, 0xe5, 0x29, 0xbf, 0xb6, 0x87,
+	0xf8, 0x18, 0x81, 0xd4, 0x6d, 0xac, 0x04, 0x78, 0x2d, 0x27, 0x43, 0x19, 0x1e, 0x7a, 0xd9, 0xdb,
+	0x67, 0xb4, 0x12, 0xfc, 0x36, 0x39, 0xbf, 0x75, 0xbc, 0x9a, 0x80, 0x9f, 0xcb, 0xa6, 0x27, 0xc1,
+	0x3f, 0x11, 0xdc, 0xe8, 0x3b, 0x4b, 0xf0, 0xfd, 0x44, 0x65, 0xd3, 0x6d, 0x1c, 0x66, 0xdf, 0x39,
+	0xaf, 0xb9, 0x60, 0x7c, 0x97, 0x33, 0xbe, 0x8d, 0x97, 0xfa, 0x56, 0x61, 0x7b, 0xc2, 0xb5, 0x18,
+	0xfe, 0x80, 0xe0, 0xe5, 0xd8, 0x95, 0x1b, 0x27, 0xa8, 0xad, 0xc8, 0xfa, 0x9c, 0x95, 0x62, 0x4d,
+	0xd6, 0x88, 0xce, 0x4f, 0x6d, 0x18, 0xc4, 0xac, 0x48, 0x79, 0x8e, 0x76, 0x1e, 0xcf, 0xc5, 0xa2,
+	0x8d, 0x87, 0xf2, 0x0c, 0xc1, 0x48, 0x74, 0x65, 0xc7, 0xf3, 0x3d, 0x64, 0xeb, 0xd8, 0xec, 0x13,
+	0x41, 0x5b, 0xe0, 0xd0, 0x66, 0xf0, 0xeb, 0xdd, 0xa1, 0x05, 0x01, 0xfc, 0x84, 0xe0, 0x95, 0xf8,
+	0x45, 0x1a, 0xe7, 0xcf, 0xb4, 0x75, 0x7b, 0x08, 0x97, 0xce, 0xb1, 0xa9, 0x4b, 0x4b, 0x1c, 0xf2,
+	0x02, 0x7e, 0xa3, 0xbf, 0x9a, 0x6d, 0x74, 0xa7, 0xfe, 0xb5, 0xed, 0x39, 0x26, 0x71, 0xf2, 0xba,
+	0x8c, 0x9d, 0xf5, 0xd9, 0x77, 0xcf, 0x6d, 0x2f, 0xc8, 0xdd, 0xe3, 0xe4, 0xde, 0xc2, 0xcb, 0x09,
+	0x0b, 0x9b, 0x8f, 0x6f, 0xbf, 0xb2, 0x0b, 0xef, 0x3d, 0x3f, 0xc9, 0xa1, 0xa3, 0x93, 0x1c, 0xfa,
+	0xeb, 0x24, 0x87, 0xbe, 0x3e, 0xcd, 0x0d, 0x1c, 0x9d, 0xe6, 0x06, 0xfe, 0x38, 0xcd, 0x0d, 0x7c,
+	0x9c, 0xaf, 0x1a, 0xce, 0x4e, 0xbd, 0x2c, 0xeb, 0x74, 0x4f, 0x59, 0xf7, 0x3c, 0xbf, 0x4f, 0x9c,
+	0x4f, 0xa9, 0xbd, 0xdb, 0x0a, 0x74, 0xd0, 0x0e, 0xe5, 0x34, 0x6b, 0x84, 0x95, 0x5f, 0xe4, 0xff,
+	0x36, 0x2c, 0xfd, 0x1b, 0x00, 0x00, 0xff, 0xff, 0x45, 0xa4, 0x16, 0x4e, 0x5c, 0x11, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -842,6 +1146,12 @@ type QueryClient interface {
 	// QueryAllOperatorConsKeysByChainID queries all operators and their consensus public keys
 	// for a specific chain ID
 	QueryAllOperatorConsKeysByChainID(ctx context.Context, in *QueryAllOperatorConsKeysByChainIDRequest, opts ...grpc.CallOption) (*QueryAllOperatorConsKeysByChainIDResponse, error)
+	// QueryOperatorUSDValue queries the opted-in USD value for the operator
+	QueryOperatorUSDValue(ctx context.Context, in *QueryOperatorUSDValueRequest, opts ...grpc.CallOption) (*DecValueField, error)
+	// QueryAVSUSDValue queries the USD value for the AVS
+	QueryAVSUSDValue(ctx context.Context, in *QueryAVSUSDValueRequest, opts ...grpc.CallOption) (*DecValueField, error)
+	// QueryOperatorSlashInfo queries the slash information for the specified operator and AVS
+	QueryOperatorSlashInfo(ctx context.Context, in *QueryOperatorSlashInfoRequest, opts ...grpc.CallOption) (*QueryOperatorSlashInfoResponse, error)
 	// QueryAllOperatorConsAddrsByChainID queries all operators and their consensus addresses
 	// for a specific chain ID
 	QueryAllOperatorConsAddrsByChainID(ctx context.Context, in *QueryAllOperatorConsAddrsByChainIDRequest, opts ...grpc.CallOption) (*QueryAllOperatorConsAddrsByChainIDResponse, error)
@@ -900,6 +1210,33 @@ func (c *queryClient) QueryAllOperatorConsKeysByChainID(ctx context.Context, in 
 	return out, nil
 }
 
+func (c *queryClient) QueryOperatorUSDValue(ctx context.Context, in *QueryOperatorUSDValueRequest, opts ...grpc.CallOption) (*DecValueField, error) {
+	out := new(DecValueField)
+	err := c.cc.Invoke(ctx, "/exocore.operator.v1.Query/QueryOperatorUSDValue", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *queryClient) QueryAVSUSDValue(ctx context.Context, in *QueryAVSUSDValueRequest, opts ...grpc.CallOption) (*DecValueField, error) {
+	out := new(DecValueField)
+	err := c.cc.Invoke(ctx, "/exocore.operator.v1.Query/QueryAVSUSDValue", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *queryClient) QueryOperatorSlashInfo(ctx context.Context, in *QueryOperatorSlashInfoRequest, opts ...grpc.CallOption) (*QueryOperatorSlashInfoResponse, error) {
+	out := new(QueryOperatorSlashInfoResponse)
+	err := c.cc.Invoke(ctx, "/exocore.operator.v1.Query/QueryOperatorSlashInfo", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *queryClient) QueryAllOperatorConsAddrsByChainID(ctx context.Context, in *QueryAllOperatorConsAddrsByChainIDRequest, opts ...grpc.CallOption) (*QueryAllOperatorConsAddrsByChainIDResponse, error) {
 	out := new(QueryAllOperatorConsAddrsByChainIDResponse)
 	err := c.cc.Invoke(ctx, "/exocore.operator.v1.Query/QueryAllOperatorConsAddrsByChainID", in, out, opts...)
@@ -922,6 +1259,12 @@ type QueryServer interface {
 	// QueryAllOperatorConsKeysByChainID queries all operators and their consensus public keys
 	// for a specific chain ID
 	QueryAllOperatorConsKeysByChainID(context.Context, *QueryAllOperatorConsKeysByChainIDRequest) (*QueryAllOperatorConsKeysByChainIDResponse, error)
+	// QueryOperatorUSDValue queries the opted-in USD value for the operator
+	QueryOperatorUSDValue(context.Context, *QueryOperatorUSDValueRequest) (*DecValueField, error)
+	// QueryAVSUSDValue queries the USD value for the AVS
+	QueryAVSUSDValue(context.Context, *QueryAVSUSDValueRequest) (*DecValueField, error)
+	// QueryOperatorSlashInfo queries the slash information for the specified operator and AVS
+	QueryOperatorSlashInfo(context.Context, *QueryOperatorSlashInfoRequest) (*QueryOperatorSlashInfoResponse, error)
 	// QueryAllOperatorConsAddrsByChainID queries all operators and their consensus addresses
 	// for a specific chain ID
 	QueryAllOperatorConsAddrsByChainID(context.Context, *QueryAllOperatorConsAddrsByChainIDRequest) (*QueryAllOperatorConsAddrsByChainIDResponse, error)
@@ -945,6 +1288,15 @@ func (*UnimplementedQueryServer) QueryOperatorConsAddressForChainID(ctx context.
 }
 func (*UnimplementedQueryServer) QueryAllOperatorConsKeysByChainID(ctx context.Context, req *QueryAllOperatorConsKeysByChainIDRequest) (*QueryAllOperatorConsKeysByChainIDResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method QueryAllOperatorConsKeysByChainID not implemented")
+}
+func (*UnimplementedQueryServer) QueryOperatorUSDValue(ctx context.Context, req *QueryOperatorUSDValueRequest) (*DecValueField, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method QueryOperatorUSDValue not implemented")
+}
+func (*UnimplementedQueryServer) QueryAVSUSDValue(ctx context.Context, req *QueryAVSUSDValueRequest) (*DecValueField, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method QueryAVSUSDValue not implemented")
+}
+func (*UnimplementedQueryServer) QueryOperatorSlashInfo(ctx context.Context, req *QueryOperatorSlashInfoRequest) (*QueryOperatorSlashInfoResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method QueryOperatorSlashInfo not implemented")
 }
 func (*UnimplementedQueryServer) QueryAllOperatorConsAddrsByChainID(ctx context.Context, req *QueryAllOperatorConsAddrsByChainIDRequest) (*QueryAllOperatorConsAddrsByChainIDResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method QueryAllOperatorConsAddrsByChainID not implemented")
@@ -1044,6 +1396,60 @@ func _Query_QueryAllOperatorConsKeysByChainID_Handler(srv interface{}, ctx conte
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Query_QueryOperatorUSDValue_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryOperatorUSDValueRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).QueryOperatorUSDValue(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/exocore.operator.v1.Query/QueryOperatorUSDValue",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).QueryOperatorUSDValue(ctx, req.(*QueryOperatorUSDValueRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Query_QueryAVSUSDValue_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryAVSUSDValueRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).QueryAVSUSDValue(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/exocore.operator.v1.Query/QueryAVSUSDValue",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).QueryAVSUSDValue(ctx, req.(*QueryAVSUSDValueRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Query_QueryOperatorSlashInfo_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryOperatorSlashInfoRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).QueryOperatorSlashInfo(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/exocore.operator.v1.Query/QueryOperatorSlashInfo",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).QueryOperatorSlashInfo(ctx, req.(*QueryOperatorSlashInfoRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _Query_QueryAllOperatorConsAddrsByChainID_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(QueryAllOperatorConsAddrsByChainIDRequest)
 	if err := dec(in); err != nil {
@@ -1085,6 +1491,18 @@ var _Query_serviceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "QueryAllOperatorConsKeysByChainID",
 			Handler:    _Query_QueryAllOperatorConsKeysByChainID_Handler,
+		},
+		{
+			MethodName: "QueryOperatorUSDValue",
+			Handler:    _Query_QueryOperatorUSDValue_Handler,
+		},
+		{
+			MethodName: "QueryAVSUSDValue",
+			Handler:    _Query_QueryAVSUSDValue_Handler,
+		},
+		{
+			MethodName: "QueryOperatorSlashInfo",
+			Handler:    _Query_QueryOperatorSlashInfo_Handler,
 		},
 		{
 			MethodName: "QueryAllOperatorConsAddrsByChainID",
@@ -1204,6 +1622,192 @@ func (m *QueryAllOperatorsResponse) MarshalToSizedBuffer(dAtA []byte) (int, erro
 	return len(dAtA) - i, nil
 }
 
+func (m *AddressInfo) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *AddressInfo) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *AddressInfo) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.AVSAddress) > 0 {
+		i -= len(m.AVSAddress)
+		copy(dAtA[i:], m.AVSAddress)
+		i = encodeVarintQuery(dAtA, i, uint64(len(m.AVSAddress)))
+		i--
+		dAtA[i] = 0x12
+	}
+	if len(m.OperatorAddr) > 0 {
+		i -= len(m.OperatorAddr)
+		copy(dAtA[i:], m.OperatorAddr)
+		i = encodeVarintQuery(dAtA, i, uint64(len(m.OperatorAddr)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *QueryOperatorUSDValueRequest) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QueryOperatorUSDValueRequest) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QueryOperatorUSDValueRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.AddressInfo != nil {
+		{
+			size, err := m.AddressInfo.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintQuery(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *QueryAVSUSDValueRequest) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QueryAVSUSDValueRequest) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QueryAVSUSDValueRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.AVSAddress) > 0 {
+		i -= len(m.AVSAddress)
+		copy(dAtA[i:], m.AVSAddress)
+		i = encodeVarintQuery(dAtA, i, uint64(len(m.AVSAddress)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *QueryOperatorSlashInfoRequest) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QueryOperatorSlashInfoRequest) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QueryOperatorSlashInfoRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.AddressInfo != nil {
+		{
+			size, err := m.AddressInfo.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintQuery(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *QueryOperatorSlashInfoResponse) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QueryOperatorSlashInfoResponse) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QueryOperatorSlashInfoResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.AllSlashInfo) > 0 {
+		for k := range m.AllSlashInfo {
+			v := m.AllSlashInfo[k]
+			baseI := i
+			if v != nil {
+				{
+					size, err := v.MarshalToSizedBuffer(dAtA[:i])
+					if err != nil {
+						return 0, err
+					}
+					i -= size
+					i = encodeVarintQuery(dAtA, i, uint64(size))
+				}
+				i--
+				dAtA[i] = 0x12
+			}
+			i -= len(k)
+			copy(dAtA[i:], k)
+			i = encodeVarintQuery(dAtA, i, uint64(len(k)))
+			i--
+			dAtA[i] = 0xa
+			i = encodeVarintQuery(dAtA, i, uint64(baseI-i))
+			i--
+			dAtA[i] = 0xa
+		}
+	}
+	return len(dAtA) - i, nil
+}
+
 func (m *QueryOperatorConsKeyRequest) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
@@ -1261,6 +1865,16 @@ func (m *QueryOperatorConsKeyResponse) MarshalToSizedBuffer(dAtA []byte) (int, e
 	_ = i
 	var l int
 	_ = l
+	if m.OptingOut {
+		i--
+		if m.OptingOut {
+			dAtA[i] = 1
+		} else {
+			dAtA[i] = 0
+		}
+		i--
+		dAtA[i] = 0x10
+	}
 	{
 		size, err := m.PublicKey.MarshalToSizedBuffer(dAtA[:i])
 		if err != nil {
@@ -1331,6 +1945,16 @@ func (m *QueryOperatorConsAddressResponse) MarshalToSizedBuffer(dAtA []byte) (in
 	_ = i
 	var l int
 	_ = l
+	if m.OptingOut {
+		i--
+		if m.OptingOut {
+			dAtA[i] = 1
+		} else {
+			dAtA[i] = 0
+		}
+		i--
+		dAtA[i] = 0x10
+	}
 	if len(m.ConsAddr) > 0 {
 		i -= len(m.ConsAddr)
 		copy(dAtA[i:], m.ConsAddr)
@@ -1452,6 +2076,16 @@ func (m *OperatorConsKeyPair) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	_ = i
 	var l int
 	_ = l
+	if m.OptingOut {
+		i--
+		if m.OptingOut {
+			dAtA[i] = 1
+		} else {
+			dAtA[i] = 0
+		}
+		i--
+		dAtA[i] = 0x18
+	}
 	if m.PublicKey != nil {
 		{
 			size, err := m.PublicKey.MarshalToSizedBuffer(dAtA[:i])
@@ -1585,6 +2219,16 @@ func (m *OperatorConsAddrPair) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	_ = i
 	var l int
 	_ = l
+	if m.OptingOut {
+		i--
+		if m.OptingOut {
+			dAtA[i] = 1
+		} else {
+			dAtA[i] = 0
+		}
+		i--
+		dAtA[i] = 0x18
+	}
 	if len(m.ConsAddr) > 0 {
 		i -= len(m.ConsAddr)
 		copy(dAtA[i:], m.ConsAddr)
@@ -1658,6 +2302,84 @@ func (m *QueryAllOperatorsResponse) Size() (n int) {
 	return n
 }
 
+func (m *AddressInfo) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.OperatorAddr)
+	if l > 0 {
+		n += 1 + l + sovQuery(uint64(l))
+	}
+	l = len(m.AVSAddress)
+	if l > 0 {
+		n += 1 + l + sovQuery(uint64(l))
+	}
+	return n
+}
+
+func (m *QueryOperatorUSDValueRequest) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.AddressInfo != nil {
+		l = m.AddressInfo.Size()
+		n += 1 + l + sovQuery(uint64(l))
+	}
+	return n
+}
+
+func (m *QueryAVSUSDValueRequest) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.AVSAddress)
+	if l > 0 {
+		n += 1 + l + sovQuery(uint64(l))
+	}
+	return n
+}
+
+func (m *QueryOperatorSlashInfoRequest) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.AddressInfo != nil {
+		l = m.AddressInfo.Size()
+		n += 1 + l + sovQuery(uint64(l))
+	}
+	return n
+}
+
+func (m *QueryOperatorSlashInfoResponse) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if len(m.AllSlashInfo) > 0 {
+		for k, v := range m.AllSlashInfo {
+			_ = k
+			_ = v
+			l = 0
+			if v != nil {
+				l = v.Size()
+				l += 1 + sovQuery(uint64(l))
+			}
+			mapEntrySize := 1 + len(k) + sovQuery(uint64(len(k))) + l
+			n += mapEntrySize + 1 + sovQuery(uint64(mapEntrySize))
+		}
+	}
+	return n
+}
+
 func (m *QueryOperatorConsKeyRequest) Size() (n int) {
 	if m == nil {
 		return 0
@@ -1683,6 +2405,9 @@ func (m *QueryOperatorConsKeyResponse) Size() (n int) {
 	_ = l
 	l = m.PublicKey.Size()
 	n += 1 + l + sovQuery(uint64(l))
+	if m.OptingOut {
+		n += 2
+	}
 	return n
 }
 
@@ -1712,6 +2437,9 @@ func (m *QueryOperatorConsAddressResponse) Size() (n int) {
 	l = len(m.ConsAddr)
 	if l > 0 {
 		n += 1 + l + sovQuery(uint64(l))
+	}
+	if m.OptingOut {
+		n += 2
 	}
 	return n
 }
@@ -1766,6 +2494,9 @@ func (m *OperatorConsKeyPair) Size() (n int) {
 		l = m.PublicKey.Size()
 		n += 1 + l + sovQuery(uint64(l))
 	}
+	if m.OptingOut {
+		n += 2
+	}
 	return n
 }
 
@@ -1818,6 +2549,9 @@ func (m *OperatorConsAddrPair) Size() (n int) {
 	l = len(m.ConsAddr)
 	if l > 0 {
 		n += 1 + l + sovQuery(uint64(l))
+	}
+	if m.OptingOut {
+		n += 2
 	}
 	return n
 }
@@ -2114,6 +2848,553 @@ func (m *QueryAllOperatorsResponse) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
+func (m *AddressInfo) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: AddressInfo: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: AddressInfo: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field OperatorAddr", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.OperatorAddr = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field AVSAddress", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.AVSAddress = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *QueryOperatorUSDValueRequest) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryOperatorUSDValueRequest: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryOperatorUSDValueRequest: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field AddressInfo", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if m.AddressInfo == nil {
+				m.AddressInfo = &AddressInfo{}
+			}
+			if err := m.AddressInfo.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *QueryAVSUSDValueRequest) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryAVSUSDValueRequest: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryAVSUSDValueRequest: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field AVSAddress", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.AVSAddress = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *QueryOperatorSlashInfoRequest) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryOperatorSlashInfoRequest: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryOperatorSlashInfoRequest: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field AddressInfo", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if m.AddressInfo == nil {
+				m.AddressInfo = &AddressInfo{}
+			}
+			if err := m.AddressInfo.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *QueryOperatorSlashInfoResponse) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryOperatorSlashInfoResponse: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryOperatorSlashInfoResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field AllSlashInfo", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if m.AllSlashInfo == nil {
+				m.AllSlashInfo = make(map[string]*OperatorSlashInfo)
+			}
+			var mapkey string
+			var mapvalue *OperatorSlashInfo
+			for iNdEx < postIndex {
+				entryPreIndex := iNdEx
+				var wire uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return ErrIntOverflowQuery
+					}
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					wire |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				fieldNum := int32(wire >> 3)
+				if fieldNum == 1 {
+					var stringLenmapkey uint64
+					for shift := uint(0); ; shift += 7 {
+						if shift >= 64 {
+							return ErrIntOverflowQuery
+						}
+						if iNdEx >= l {
+							return io.ErrUnexpectedEOF
+						}
+						b := dAtA[iNdEx]
+						iNdEx++
+						stringLenmapkey |= uint64(b&0x7F) << shift
+						if b < 0x80 {
+							break
+						}
+					}
+					intStringLenmapkey := int(stringLenmapkey)
+					if intStringLenmapkey < 0 {
+						return ErrInvalidLengthQuery
+					}
+					postStringIndexmapkey := iNdEx + intStringLenmapkey
+					if postStringIndexmapkey < 0 {
+						return ErrInvalidLengthQuery
+					}
+					if postStringIndexmapkey > l {
+						return io.ErrUnexpectedEOF
+					}
+					mapkey = string(dAtA[iNdEx:postStringIndexmapkey])
+					iNdEx = postStringIndexmapkey
+				} else if fieldNum == 2 {
+					var mapmsglen int
+					for shift := uint(0); ; shift += 7 {
+						if shift >= 64 {
+							return ErrIntOverflowQuery
+						}
+						if iNdEx >= l {
+							return io.ErrUnexpectedEOF
+						}
+						b := dAtA[iNdEx]
+						iNdEx++
+						mapmsglen |= int(b&0x7F) << shift
+						if b < 0x80 {
+							break
+						}
+					}
+					if mapmsglen < 0 {
+						return ErrInvalidLengthQuery
+					}
+					postmsgIndex := iNdEx + mapmsglen
+					if postmsgIndex < 0 {
+						return ErrInvalidLengthQuery
+					}
+					if postmsgIndex > l {
+						return io.ErrUnexpectedEOF
+					}
+					mapvalue = &OperatorSlashInfo{}
+					if err := mapvalue.Unmarshal(dAtA[iNdEx:postmsgIndex]); err != nil {
+						return err
+					}
+					iNdEx = postmsgIndex
+				} else {
+					iNdEx = entryPreIndex
+					skippy, err := skipQuery(dAtA[iNdEx:])
+					if err != nil {
+						return err
+					}
+					if (skippy < 0) || (iNdEx+skippy) < 0 {
+						return ErrInvalidLengthQuery
+					}
+					if (iNdEx + skippy) > postIndex {
+						return io.ErrUnexpectedEOF
+					}
+					iNdEx += skippy
+				}
+			}
+			m.AllSlashInfo[mapkey] = mapvalue
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
 func (m *QueryOperatorConsKeyRequest) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -2290,6 +3571,26 @@ func (m *QueryOperatorConsKeyResponse) Unmarshal(dAtA []byte) error {
 				return err
 			}
 			iNdEx = postIndex
+		case 2:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field OptingOut", wireType)
+			}
+			var v int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				v |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			m.OptingOut = bool(v != 0)
 		default:
 			iNdEx = preIndex
 			skippy, err := skipQuery(dAtA[iNdEx:])
@@ -2486,6 +3787,26 @@ func (m *QueryOperatorConsAddressResponse) Unmarshal(dAtA []byte) error {
 			}
 			m.ConsAddr = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
+		case 2:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field OptingOut", wireType)
+			}
+			var v int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				v |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			m.OptingOut = bool(v != 0)
 		default:
 			iNdEx = preIndex
 			skippy, err := skipQuery(dAtA[iNdEx:])
@@ -2842,6 +4163,26 @@ func (m *OperatorConsKeyPair) Unmarshal(dAtA []byte) error {
 				return err
 			}
 			iNdEx = postIndex
+		case 3:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field OptingOut", wireType)
+			}
+			var v int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				v |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			m.OptingOut = bool(v != 0)
 		default:
 			iNdEx = preIndex
 			skippy, err := skipQuery(dAtA[iNdEx:])
@@ -3194,6 +4535,26 @@ func (m *OperatorConsAddrPair) Unmarshal(dAtA []byte) error {
 			}
 			m.ConsAddr = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
+		case 3:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field OptingOut", wireType)
+			}
+			var v int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				v |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			m.OptingOut = bool(v != 0)
 		default:
 			iNdEx = preIndex
 			skippy, err := skipQuery(dAtA[iNdEx:])
