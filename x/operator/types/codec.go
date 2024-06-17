@@ -35,7 +35,6 @@ func RegisterInterfaces(registry codectypes.InterfaceRegistry) {
 		&OptIntoAVSReq{},
 		&OptOutOfAVSReq{},
 		&SetConsKeyReq{},
-		&InitConsKeyRemovalReq{},
 	)
 	msgservice.RegisterMsgServiceDesc(registry, &_Msg_serviceDesc)
 }

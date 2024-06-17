@@ -12,6 +12,7 @@ import (
 	"sort"
 	"strings"
 
+	"cosmossdk.io/math"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 
@@ -459,6 +460,7 @@ func getTestExocoreGenesis(
 			Power:     power,
 		})
 	}
+	totalPower := math.NewInt(power * int64(len(operatorAddrs)))
 	return assetstypes.NewGenesis(
 			assetstypes.DefaultParams(),
 			clientChains, []assetstypes.StakingAssetInfo{
@@ -482,6 +484,10 @@ func getTestExocoreGenesis(
 				[]string{assetID},
 			),
 			validators,
+			[]dogfoodtypes.EpochToOperatorAddrs{},
+			[]dogfoodtypes.EpochToConsensusAddrs{},
+			[]dogfoodtypes.EpochToUndelegationRecordKeys{},
+			totalPower,
 		)
 }
 

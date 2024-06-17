@@ -1,5 +1,5 @@
-FROM golang:1.21.11-alpine3.18 AS build
-RUN apk add --no-cache build-base=0.5-r3 linux-headers=6.3-r0 git=2.40.1-r0
+FROM golang:1.21.11-alpine3.19 AS build
+RUN apk add --no-cache build-base=0.5-r3 git=2.43.4-r0 linux-headers=6.5-r0
 # Set working directory for the build
 WORKDIR /go/work
 # Add source files
@@ -9,8 +9,8 @@ COPY . ./
 RUN LEDGER_ENABLED=false make build
 
 #####################################
-FROM alpine:3.18 AS run
-RUN apk add --no-cache libstdc++=12.2.1_git20220924-r10 bash=5.2.15-r5 curl=8.5.0-r0 jq=1.6-r4 \
+FROM alpine:3.19 AS run
+RUN apk add --no-cache libstdc++=13.2.1_git20231014-r0 bash=5.2.21-r0 curl=8.5.0-r0 jq=1.7.1-r0 \
     && addgroup -g 1000 exocore \
     && adduser -S -h /home/exocore -D exocore -u 1000 -G exocore
 EXPOSE 26656 26657 1317 9090 8545 8546
