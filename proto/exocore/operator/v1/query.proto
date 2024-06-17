@@ -45,6 +45,8 @@ message QueryOperatorConsKeyRequest {
 message QueryOperatorConsKeyResponse {
   // public_key is the consensus public key of the operator.
   tendermint.crypto.PublicKey public_key = 1 [ (gogoproto.nullable) = false ];
+  // opting_out is a flag to indicate if the operator is opting out of consensus.
+  bool opting_out = 2;
 }
 
 // QueryOperatorConsAddressRequest is the request to obtain the consensus address of the operator
@@ -63,6 +65,8 @@ message QueryOperatorConsAddressResponse {
   // cons_addr is the consensus address corresponding to the consensus public key
   // currently in use by the operator.
   string cons_addr = 1;
+  // opting_out is a flag to indicate if the operator is opting out of consensus.
+  bool opting_out = 2;
 }
 
 // QueryAllOperatorConsKeysByChainIDRequest is the request to obtain all operator addresses
@@ -92,6 +96,8 @@ message OperatorConsKeyPair {
   string operator_acc_addr = 1;
   // public_key is the consensus public key of the operator.
   tendermint.crypto.PublicKey public_key = 2;
+  // opting_out is a flag to indicate if the operator is opting out of consensus.
+  bool opting_out = 3;
 }
 
 // QueryAllOperatorConsAddrsByChainIDRequest is the request to obtain all operator addresses
@@ -121,6 +127,8 @@ message OperatorConsAddrPair {
   // cons_addr is the consensus address corresponding to the consensus public key
   // currently in use by the operator.
   string cons_addr = 2;
+  // opting_out is a flag to indicate if the operator is opting out of consensus.
+  bool opting_out = 3;
 }
 
 // Query defines the gRPC querier service.
