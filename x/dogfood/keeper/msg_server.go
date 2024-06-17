@@ -40,30 +40,48 @@ func (k Keeper) UpdateParams(
 	nextParams := msg.Params
 	logger := k.Logger(c)
 	if nextParams.EpochsUntilUnbonded == 0 {
-		logger.Info("UpdateParams", "overriding EpochsUntilUnbonded with value", prevParams.EpochsUntilUnbonded)
+		logger.Info(
+			"UpdateParams",
+			"overriding EpochsUntilUnbonded with value", prevParams.EpochsUntilUnbonded,
+		)
 		nextParams.EpochsUntilUnbonded = prevParams.EpochsUntilUnbonded
 	}
 	if nextParams.MaxValidators == 0 {
-		logger.Info("UpdateParams", "overriding MaxValidators with value", prevParams.MaxValidators)
+		logger.Info(
+			"UpdateParams",
+			"overriding MaxValidators with value", prevParams.MaxValidators,
+		)
 		nextParams.MaxValidators = prevParams.MaxValidators
 	}
 	if err := epochstypes.ValidateEpochIdentifierInterface(
 		nextParams.EpochIdentifier,
 	); err != nil {
-		logger.Info("UpdateParams", "overriding EpochIdentifier with value", prevParams.EpochIdentifier)
+		logger.Info(
+			"UpdateParams",
+			"overriding EpochIdentifier with value", prevParams.EpochIdentifier,
+		)
 		nextParams.EpochIdentifier = prevParams.EpochIdentifier
 	}
 	if nextParams.HistoricalEntries == 0 {
-		logger.Info("UpdateParams", "overriding HistoricalEntries with value", prevParams.HistoricalEntries)
+		logger.Info(
+			"UpdateParams",
+			"overriding HistoricalEntries with value", prevParams.HistoricalEntries,
+		)
 		nextParams.HistoricalEntries = prevParams.HistoricalEntries
 	}
 	if len(nextParams.AssetIDs) == 0 {
-		logger.Info("UpdateParams", "overriding AssetIDs with value", prevParams.AssetIDs)
+		logger.Info(
+			"UpdateParams",
+			"overriding AssetIDs with value", prevParams.AssetIDs,
+		)
 		nextParams.AssetIDs = prevParams.AssetIDs
 	}
 	// now do stateful validations
 	if _, found := k.epochsKeeper.GetEpochInfo(c, nextParams.EpochIdentifier); !found {
-		logger.Info("UpdateParams", "overriding EpochIdentifier with value", prevParams.EpochIdentifier)
+		logger.Info(
+			"UpdateParams",
+			"overriding EpochIdentifier with value", prevParams.EpochIdentifier,
+		)
 		nextParams.EpochIdentifier = prevParams.EpochIdentifier
 	}
 	override := false
@@ -74,9 +92,12 @@ func (k Keeper) UpdateParams(
 		}
 	}
 	if override {
-		logger.Info("UpdateParams", "overriding AssetIDs with value", prevParams.AssetIDs)
+		logger.Info(
+			"UpdateParams",
+			"overriding AssetIDs with value", prevParams.AssetIDs,
+		)
 		nextParams.AssetIDs = prevParams.AssetIDs
 	}
 	k.SetParams(c, msg.Params)
-	return nil, nil
+	return &types.MsgUpdateParamsResponse{}, nil
 }
