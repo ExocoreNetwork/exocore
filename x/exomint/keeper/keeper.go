@@ -7,7 +7,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 
 	"github.com/ExocoreNetwork/exocore/x/exomint/types"
 )
@@ -16,7 +15,6 @@ type (
 	Keeper struct {
 		cdc              codec.BinaryCodec
 		storeKey         storetypes.StoreKey
-		paramstore       paramtypes.Subspace
 		bankKeeper       types.BankKeeper
 		epochsKeeper     types.EpochsKeeper
 		feeCollectorName string
@@ -28,7 +26,6 @@ type (
 func NewKeeper(
 	cdc codec.BinaryCodec,
 	storeKey storetypes.StoreKey,
-	ps paramtypes.Subspace,
 	ak types.AccountKeeper,
 	bk types.BankKeeper,
 	ek types.EpochsKeeper,
@@ -40,15 +37,9 @@ func NewKeeper(
 		panic(fmt.Sprintf("the x/%s module account has not been set", types.ModuleName))
 	}
 
-	// set KeyTable if it has not already been set
-	if !ps.HasKeyTable() {
-		ps = ps.WithKeyTable(types.ParamKeyTable())
-	}
-
 	return Keeper{
 		cdc:              cdc,
 		storeKey:         storeKey,
-		paramstore:       ps,
 		bankKeeper:       bk,
 		epochsKeeper:     ek,
 		feeCollectorName: feeCollectorName,

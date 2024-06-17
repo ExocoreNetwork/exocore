@@ -558,7 +558,7 @@ func NewExocoreApp(
 	// the exomint keeper is used to mint the reward for validators and delegators. it needs
 	// the epochs keeper and the bank / account keepers.
 	app.ExomintKeeper = exomintkeeper.NewKeeper(
-		appCodec, keys[exominttypes.StoreKey], app.GetSubspace(exominttypes.ModuleName),
+		appCodec, keys[exominttypes.StoreKey],
 		app.AccountKeeper, app.BankKeeper, app.EpochsKeeper, authtypes.FeeCollectorName,
 		authAddrString,
 	)
@@ -612,7 +612,10 @@ func NewExocoreApp(
 	)
 
 	(&app.EpochsKeeper).SetHooks(
-		app.StakingKeeper.EpochsHooks(),
+		epochskeeper.NewMultiEpochHooks(
+			app.StakingKeeper.EpochsHooks(), // at this point, the order is irrelevant.
+			app.ExomintKeeper.EpochsHooks(), // however, this may change once we have distribution
+		),
 	)
 
 	// these two modules aren't finalized yet.
@@ -1390,7 +1393,6 @@ func initParamsKeeper(
 	// nolint:staticcheck
 	paramsKeeper.Subspace(evmtypes.ModuleName).WithKeyTable(evmtypes.ParamKeyTable())
 	paramsKeeper.Subspace(oracleTypes.ModuleName).WithKeyTable(oracleTypes.ParamKeyTable())
-	paramsKeeper.Subspace(exominttypes.ModuleName)
 	return paramsKeeper
 }
 

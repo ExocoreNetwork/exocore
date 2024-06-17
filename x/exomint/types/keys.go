@@ -14,6 +14,12 @@ const (
 	MemStoreKey = "mem_exomint"
 )
 
-func KeyPrefix(p string) []byte {
-	return []byte(p)
+const (
+	// bytePrefixParams is the single byte prefix for the params store.
+	bytePrefixParams byte = iota + 1
+)
+
+// KeyPrefixParams is the prefix for the params store, as a byte array.
+func KeyPrefixParams() []byte {
+	return []byte{bytePrefixParams}
 }

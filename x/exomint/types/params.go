@@ -5,32 +5,28 @@ import (
 
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	epochstypes "github.com/evmos/evmos/v14/x/epochs/types"
 	"gopkg.in/yaml.v2"
+
+	"github.com/ExocoreNetwork/exocore/utils"
 )
 
-var _ paramtypes.ParamSet = (*Params)(nil)
-
 const (
-	// DefaultMintDenom = sdk.DefaultBondDenom // not a constant
+	// DefaultMintDenom is the denomination in which the inflation is minted.
+	DefaultMintDenom = utils.BaseDenom
 	// DefaultEpochIdentifier is the epoch identifier which is used, by default, to identify the
-	// epoch. Note that the options include week, day or hour.
+	// epoch.
 	DefaultEpochIdentifier = epochstypes.DayEpochID
 	// DefaultEpochRewardStr is the amount of MintDenom minted at each epoch end, as a string.
 	DefaultEpochRewardStr = "20000000000000000000"
 )
 
-// Reflection based keys for params subspace
-var (
-	KeyMintDenom       = []byte("MintDenom")
-	KeyEpochReward     = []byte("EpochReward")
-	KeyEpochIdentifier = []byte("EpochIdentifier")
-)
-
-// ParamKeyTable the param key table for launch module
-func ParamKeyTable() paramtypes.KeyTable {
-	return paramtypes.NewKeyTable().RegisterParamSet(&Params{})
+func init() {
+	// validate during init
+	_, ok := sdk.NewIntFromString(DefaultEpochRewardStr)
+	if !ok {
+		panic(fmt.Sprintf("invalid default epoch reward: %s", DefaultEpochRewardStr))
+	}
 }
 
 // NewParams creates a new Params instance
@@ -44,24 +40,10 @@ func NewParams(mintDenom string, epochReward math.Int, epochIdentifier string) P
 
 // DefaultParams returns a default set of parameters
 func DefaultParams() Params {
-	res, ok := sdk.NewIntFromString(DefaultEpochRewardStr)
-	if !ok {
-		panic("invalid default mint reward")
-	}
+	res, _ := sdk.NewIntFromString(DefaultEpochRewardStr)
 	return NewParams(
-		sdk.DefaultBondDenom, res, DefaultEpochIdentifier,
+		DefaultMintDenom, res, DefaultEpochIdentifier,
 	)
-}
-
-// ParamSetPairs get the params.ParamSet
-func (p *Params) ParamSetPairs() paramtypes.ParamSetPairs {
-	return paramtypes.ParamSetPairs{
-		paramtypes.NewParamSetPair(KeyMintDenom, p.MintDenom, ValidateMintDenom),
-		paramtypes.NewParamSetPair(KeyEpochReward, p.EpochReward, ValidateEpochReward),
-		paramtypes.NewParamSetPair(
-			KeyEpochIdentifier, p.EpochIdentifier, epochstypes.ValidateEpochIdentifierInterface,
-		),
-	}
 }
 
 // Validate validates the set of params
@@ -72,7 +54,7 @@ func (p Params) Validate() error {
 	if err := ValidateEpochReward(p.EpochReward); err != nil {
 		return err
 	}
-	return nil
+	return epochstypes.ValidateEpochIdentifierString(p.EpochIdentifier)
 }
 
 func ValidateMintDenom(i interface{}) error {
