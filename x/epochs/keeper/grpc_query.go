@@ -46,6 +46,7 @@ func (k Keeper) EpochInfos(
 
 	return &types.QueryEpochsInfoResponse{
 		Epochs:     epochs,
+		BlockTime:  ctx.BlockTime(),
 		Pagination: pageRes,
 	}, nil
 }

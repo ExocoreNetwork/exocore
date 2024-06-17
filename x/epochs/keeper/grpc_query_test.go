@@ -6,6 +6,7 @@ import (
 
 	"github.com/ExocoreNetwork/exocore/x/epochs/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/types/query"
 )
 
 func (suite *KeeperTestSuite) TestEpochInfos() {
@@ -64,6 +65,14 @@ func (suite *KeeperTestSuite) TestEpochInfos() {
 						CurrentEpochStartHeight: suite.Ctx.BlockHeight(),
 					},
 				},
+				// we make the query with suite.Ctx, which is what
+				// this responds with.
+				BlockTime: suite.Ctx.BlockTime(),
+				// since we didn't send a pagination, the next key is nil.
+				Pagination: &query.PageResponse{
+					Total:   4,
+					NextKey: nil,
+				},
 			},
 		},
 	}
@@ -73,7 +82,8 @@ func (suite *KeeperTestSuite) TestEpochInfos() {
 			res, err := suite.queryClient.EpochInfos(ctx, tc.req)
 			if tc.expPass {
 				suite.Require().NoError(err)
-				suite.Require().Equal(tc.expRes.Epochs, res.Epochs)
+				suite.Require().Equal(tc.expRes, res)
+				// suite.Require().Equal(tc.expRes.BlockTime, res.BlockTime)
 			} else {
 				suite.Require().Error(err)
 			}
