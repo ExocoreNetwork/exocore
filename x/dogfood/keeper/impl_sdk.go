@@ -4,10 +4,7 @@ import (
 	"sort"
 
 	"cosmossdk.io/math"
-	operatortypes "github.com/ExocoreNetwork/exocore/x/operator/types"
 	abci "github.com/cometbft/cometbft/abci/types"
-	tmtypes "github.com/cometbft/cometbft/types"
-	cryptocodec "github.com/cosmos/cosmos-sdk/crypto/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	evidencetypes "github.com/cosmos/cosmos-sdk/x/evidence/types"
 	genutiltypes "github.com/cosmos/cosmos-sdk/x/genutil/types"
@@ -179,7 +176,7 @@ func (k Keeper) ApplyAndReturnValidatorSetUpdates(
 // IterateBondedValidatorsByPower is an implementation of the staking interface expected by
 // the SDK's gov module and by our oracle module.
 func (k Keeper) IterateBondedValidatorsByPower(
-	ctx sdk.Context, f func(int64, stakingtypes.ValidatorI) bool,
+	ctx sdk.Context, f func(int64, stakingtypes.ValidatorI) (stop bool),
 ) {
 	// this is the bonded validators, that is, those that are currently in this module.
 	prevList := k.GetAllExocoreValidators(ctx)
@@ -189,13 +186,14 @@ func (k Keeper) IterateBondedValidatorsByPower(
 	for i, v := range prevList {
 		pk, err := v.ConsPubKey()
 		if err != nil {
-			// will only happen if there is an error in deserialization.
+			ctx.Logger().Error("Failed to deserialize public key; skipping", "error", err, "i", i)
 			continue
 		}
 		val, found := k.operatorKeeper.ValidatorByConsAddrForChainID(
 			ctx, sdk.GetConsAddress(pk), ctx.ChainID(),
 		)
 		if !found {
+			ctx.Logger().Error("Operator address not found; skipping", "consAddress", sdk.GetConsAddress(pk), "i", i)
 			continue
 		}
 		// the voting power is fetched from this module and not the operator module
@@ -226,44 +224,4 @@ func (k Keeper) IterateDelegations(
 	func(int64, stakingtypes.DelegationI) bool,
 ) {
 	panic("unimplemented on this keeper")
-}
-
-// WriteValidators returns all the currently active validators. This is called by the export
-// CLI. which must ensure that `ctx.ChainID()` is set.
-func (k Keeper) WriteValidators(
-	ctx sdk.Context,
-) ([]tmtypes.GenesisValidator, error) {
-	validators := k.GetAllExocoreValidators(ctx)
-	sort.SliceStable(validators, func(i, j int) bool {
-		return validators[i].Power > validators[j].Power
-	})
-	vals := make([]tmtypes.GenesisValidator, len(validators))
-	var retErr error
-	for i, val := range validators {
-		pk, err := val.ConsPubKey()
-		if err != nil {
-			retErr = err
-			break
-		}
-		tmPk, err := cryptocodec.ToTmPubKeyInterface(pk)
-		if err != nil {
-			retErr = err
-			break
-		}
-		consAddress := sdk.GetConsAddress(pk)
-		found, addr := k.operatorKeeper.GetOperatorAddressForChainIDAndConsAddr(
-			ctx, ctx.ChainID(), consAddress,
-		)
-		if !found {
-			retErr = operatortypes.ErrNoKeyInTheStore
-			break
-		}
-		vals[i] = tmtypes.GenesisValidator{
-			Address: consAddress.Bytes(),
-			PubKey:  tmPk,
-			Power:   val.Power,
-			Name:    addr.String(), // TODO
-		}
-	}
-	return vals, retErr
 }

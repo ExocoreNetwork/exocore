@@ -18,8 +18,9 @@ const (
 	// ExocoreValidatorBytePrefix is the prefix for the validator store.
 	ExocoreValidatorBytePrefix byte = iota + 1
 
-	// QueuedOperationsByte is the byte used to store the queue of operations.
-	QueuedOperationsByte
+	// QueuedOperationsByte was the byte used to store the queue of operations.
+	// It is no longer used, but it is retained for backward compatibility.
+	_
 
 	// OptOutsToFinishBytePrefix is the byte used to store the list of operator addresses whose
 	// opt outs are maturing at the provided epoch.
@@ -37,9 +38,10 @@ const (
 	// that will mature at the provided epoch.
 	UnbondingReleaseMaturityBytePrefix
 
-	// PendingOperationsByte is the byte used to store the list of operations to be applied at
-	// the end of the current block.
-	PendingOperationsByte
+	// PendingOperationsByte was the byte used to store the list of operations to be applied at
+	// the end of the current block. It is no longer used, and is retained for backward
+	// compatibility.
+	_
 
 	// PendingOptOutsByte is the byte used to store the list of operator addresses whose opt
 	// outs will be made effective at the end of the current block.
@@ -72,11 +74,6 @@ const (
 // ExocoreValidatorKey returns the key for the validator store.
 func ExocoreValidatorKey(address sdk.AccAddress) []byte {
 	return append([]byte{ExocoreValidatorBytePrefix}, address.Bytes()...)
-}
-
-// QueuedOperationsKey returns the key for the queued operations store.
-func QueuedOperationsKey() []byte {
-	return []byte{QueuedOperationsByte}
 }
 
 // OptOutsToFinishKey returns the key for the operator opt out maturity store (epoch -> list of
@@ -122,11 +119,6 @@ func UnbondingReleaseMaturityKey(epoch int64) ([]byte, bool) {
 		[]byte{UnbondingReleaseMaturityBytePrefix},
 		sdk.Uint64ToBigEndian(uepoch)...,
 	), true
-}
-
-// PendingOperationsKey returns the key for the pending operations store.
-func PendingOperationsKey() []byte {
-	return []byte{PendingOperationsByte}
 }
 
 // PendingOptOutsKey returns the key for the pending opt-outs store.
