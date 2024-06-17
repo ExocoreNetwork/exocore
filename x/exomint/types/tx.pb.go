@@ -38,7 +38,7 @@ type MsgUpdateParams struct {
 	// typically, it is the address of the governance module.
 	Authority string `protobuf:"bytes,1,opt,name=authority,proto3" json:"authority,omitempty"`
 	// params defines the module parameters to update.
-	// NOTE: All parameters must be supplied.
+	// if a parameter is not supplied, the previously set value is used.
 	Params Params `protobuf:"bytes,2,opt,name=params,proto3" json:"params"`
 }
 
