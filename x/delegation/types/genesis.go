@@ -57,12 +57,6 @@ func ValidateIDAndOperator(stakerID, assetID, operator string) error {
 }
 
 func (gs GenesisState) ValidateDelegations() error {
-	if gs.IsGeneralInit && len(gs.Delegations) != 0 {
-		return errorsmod.Wrap(
-			ErrInvalidGenesisData,
-			"the delegations should be null when initializing from the general exporting genesis file",
-		)
-	}
 	// TODO(mm): this can be a very big hash table and impact system performance.
 	// This is likely to be the biggest one amongst the three, and the others
 	// are garbage collected within the loop anyway. Maybe reordering the genesis
@@ -180,13 +174,6 @@ func (gs GenesisState) ValidateDelegations() error {
 }
 
 func (gs GenesisState) ValidateDelegationStates() error {
-	if !gs.IsGeneralInit && len(gs.DelegationStates) != 0 {
-		return errorsmod.Wrap(
-			ErrInvalidGenesisData,
-			"the delegation states should be null when initializing from the boot strap contract",
-		)
-	}
-
 	validationFunc := func(i int, info DelegationStates) error {
 		keys, err := ParseStakerAssetIDAndOperator([]byte(info.Key))
 		if err != nil {
@@ -229,12 +216,6 @@ func (gs GenesisState) ValidateDelegationStates() error {
 }
 
 func (gs GenesisState) ValidateStakerList() error {
-	if !gs.IsGeneralInit && len(gs.StakersByOperator) != 0 {
-		return errorsmod.Wrap(
-			ErrInvalidGenesisData,
-			"the staker list should be null when initializing from the boot strap contract",
-		)
-	}
 	validationFunc := func(i int, stakersByOperator StakersByOperator) error {
 		// validate the key
 		stringList, err := assetstypes.ParseJoinedStoreKey([]byte(stakersByOperator.Key), 2)
@@ -292,13 +273,6 @@ func (gs GenesisState) ValidateStakerList() error {
 }
 
 func (gs GenesisState) ValidateUndelegations() error {
-	if !gs.IsGeneralInit && len(gs.Undelegations) != 0 {
-		return errorsmod.Wrap(
-			ErrInvalidGenesisData,
-			"the undelegations should be null when initializing from the boot strap contract",
-		)
-	}
-
 	validationFunc := func(i int, undelegaion UndelegationRecord) error {
 		err := ValidateIDAndOperator(undelegaion.StakerID, undelegaion.AssetID, undelegaion.OperatorAddr)
 		if err != nil {

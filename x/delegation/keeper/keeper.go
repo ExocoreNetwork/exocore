@@ -12,6 +12,12 @@ import (
 type Keeper struct {
 	storeKey storetypes.StoreKey
 	cdc      codec.BinaryCodec
+	// isGeneralInit indicates whether the genesis state is initialized from
+	// the bootStrap contract or a general exporting genesis file.
+	// It's better to pass this flag through the context, but the context is
+	// constructed from the base app. Seems like there isn't a good way to pass
+	// the start commandline flag to the context.
+	isGeneralInit bool
 
 	// other keepers
 	assetsKeeper   delegationtype.AssetsKeeper
@@ -23,6 +29,7 @@ type Keeper struct {
 func NewKeeper(
 	storeKey storetypes.StoreKey,
 	cdc codec.BinaryCodec,
+	isGeneralInit bool,
 	assetsKeeper delegationtype.AssetsKeeper,
 	slashKeeper delegationtype.SlashKeeper,
 	operatorKeeper delegationtype.OperatorKeeper,
@@ -30,6 +37,7 @@ func NewKeeper(
 	return Keeper{
 		storeKey:       storeKey,
 		cdc:            cdc,
+		isGeneralInit:  isGeneralInit,
 		assetsKeeper:   assetsKeeper,
 		slashKeeper:    slashKeeper,
 		operatorKeeper: operatorKeeper,

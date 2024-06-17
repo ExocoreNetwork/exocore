@@ -1,7 +1,6 @@
 package types_test
 
 import (
-	"fmt"
 	"strings"
 	"testing"
 
@@ -412,31 +411,6 @@ func (suite *GenesisTestSuite) TestValidateGenesis() {
 			},
 		},
 		{
-			name: "invalid genesis due to non zero unbonding amount for staker",
-			genState: &types.GenesisState{
-				Params: types.DefaultParams(),
-				ClientChains: []types.ClientChainInfo{
-					ethClientChain,
-				},
-				Tokens: []types.StakingAssetInfo{
-					stakingInfo,
-				},
-				Deposits: []types.DepositsByStaker{genesisDeposit},
-			},
-			expPass: false,
-			malleate: func(gs *types.GenesisState) {
-				gs.Deposits[0].Deposits[0].Info.PendingUndelegationAmount = math.NewInt(1)
-			},
-			unmalleate: func(gs *types.GenesisState) {
-				genesisDeposit.Deposits[0].Info = types.StakerAssetInfo{
-					TotalDepositAmount:        math.NewInt(100),
-					WithdrawableAmount:        math.NewInt(0),
-					PendingUndelegationAmount: math.NewInt(0),
-				}
-				gs.Deposits[0].Deposits[0].Info = genesisDeposit.Deposits[0].Info
-			},
-		},
-		{
 			name: "invalid genesis due to negative amount for staker",
 			genState: &types.GenesisState{
 				Params: types.DefaultParams(),
@@ -454,34 +428,8 @@ func (suite *GenesisTestSuite) TestValidateGenesis() {
 			},
 			unmalleate: func(gs *types.GenesisState) {
 				genesisDeposit.Deposits[0].Info = types.StakerAssetInfo{
-					TotalDepositAmount:        math.NewInt(100),
-					WithdrawableAmount:        math.NewInt(0),
-					PendingUndelegationAmount: math.NewInt(0),
-				}
-				gs.Deposits[0].Deposits[0].Info = genesisDeposit.Deposits[0].Info
-			},
-		},
-		{
-			name: "invalid genesis due to excess withdrawable amount for staker",
-			genState: &types.GenesisState{
-				Params: types.DefaultParams(),
-				ClientChains: []types.ClientChainInfo{
-					ethClientChain,
-				},
-				Tokens: []types.StakingAssetInfo{
-					stakingInfo,
-				},
-				Deposits: []types.DepositsByStaker{genesisDeposit},
-			},
-			expPass: false,
-			malleate: func(gs *types.GenesisState) {
-				gs.Deposits[0].Deposits[0].Info.TotalDepositAmount = math.NewInt(1)
-				gs.Deposits[0].Deposits[0].Info.WithdrawableAmount = math.NewInt(2)
-			},
-			unmalleate: func(gs *types.GenesisState) {
-				genesisDeposit.Deposits[0].Info = types.StakerAssetInfo{
-					TotalDepositAmount:        math.NewInt(100),
-					WithdrawableAmount:        math.NewInt(100),
+					TotalDepositAmount:  math.NewInt(100),
+					WithdrawableAmount:  math.NewInt(0),
 					PendingUndelegationAmount: math.NewInt(0),
 				}
 				gs.Deposits[0].Deposits[0].Info = genesisDeposit.Deposits[0].Info
@@ -512,7 +460,6 @@ func (suite *GenesisTestSuite) TestValidateGenesis() {
 		}
 		err := tc.genState.Validate()
 		if tc.expPass {
-			fmt.Println("name is:", tc.name)
 			suite.Require().NoError(err, tc.name)
 		} else {
 			suite.Require().Error(err, tc.name)

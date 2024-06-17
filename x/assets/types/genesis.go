@@ -134,15 +134,6 @@ func (gs GenesisState) ValidateTokens(lzIDs map[uint64]struct{}) (map[string]Tot
 			)
 		}
 
-		// the StakingTotalAmount should be zero when init from the bootStrap
-		if !gs.IsGeneralInit && !info.StakingTotalAmount.IsZero() {
-			return errorsmod.Wrapf(
-				ErrInvalidGenesisData,
-				"non-zero deposit amount for asset %s when initializing from the bootStrap contract",
-				info.AssetBasicInfo.Address,
-			)
-		}
-
 		// validate the amount of supply
 		if info.AssetBasicInfo.TotalSupply.IsNil() ||
 			!info.AssetBasicInfo.TotalSupply.IsPositive() {
@@ -251,54 +242,6 @@ func (gs GenesisState) ValidateDeposits(lzIDs map[uint64]struct{}, tokenState ma
 					assetID, info,
 				)
 			}
-
-			if !gs.IsGeneralInit {
-				// check that deposit amount does not exceed supply.
-				if info.TotalDepositAmount.GT(tokenState[assetID].TotalSupply) {
-					return errorsmod.Wrapf(
-						ErrInvalidGenesisData,
-						"deposit amount exceeds max supply for %s: %+v",
-						assetID, info,
-					)
-				}
-				// at genesis (not chain restart), there is no unbonding amount.
-				if !info.WaitUnbondingAmount.IsZero() {
-					return errorsmod.Wrapf(
-						ErrInvalidGenesisData,
-						"non-zero unbonding amount for %s: %s when initializing from the bootStrap contract",
-						assetID, info.WaitUnbondingAmount,
-					)
-				}
-				// check that the withdrawable amount and the deposited amount are equal.
-				// this is because this module's genesis only sets up free deposits.
-				// the delegation module bonds them, thereby altering the withdrawable amount.
-				if !info.WithdrawableAmount.Equal(info.TotalDepositAmount) {
-					return errorsmod.Wrapf(
-						ErrInvalidGenesisData,
-						"withdrawable amount is not equal to total deposit amount for %s: %+v when initializing from the bootStrap contract",
-						assetID, info,
-					)
-				}
-			} else {
-				// check that deposit amount does not exceed the total staking amount
-				// when initializing from the general exported genesis file
-				if info.TotalDepositAmount.GT(tokenState[assetID].TotalStaking) {
-					return errorsmod.Wrapf(
-						ErrInvalidGenesisData,
-						"deposit amount exceeds the total staking amount for %s: %+v",
-						assetID, info,
-					)
-				}
-				// the sum of `WaitUnbondingAmount` and `WithdrawableAmount` shouldn't be greater than the `TotalDepositAmount`
-				// when initializing from the general exported genesis file
-				if info.WaitUnbondingAmount.Add(info.WithdrawableAmount).GT(info.TotalDepositAmount) {
-					return errorsmod.Wrapf(
-						ErrInvalidGenesisData,
-						"the sum of withdrawable amount and unbonding amount is greater than the total deposit amount for %s: %+v when initializing from the general exported genesis",
-						assetID, info,
-					)
-				}
-			}
 			return nil
 		}
 		depositFieldValueF := func(deposit DepositByAsset) (string, struct{}) {
@@ -322,12 +265,6 @@ func (gs GenesisState) ValidateDeposits(lzIDs map[uint64]struct{}, tokenState ma
 
 // ValidateOperatorAssets performs basic operator assets validation
 func (gs GenesisState) ValidateOperatorAssets(tokenState map[string]TotalSupplyAndStaking) error {
-	if !gs.IsGeneralInit && len(gs.OperatorAssets) != 0 {
-		return errorsmod.Wrap(
-			ErrInvalidGenesisData,
-			"the operator assets should be null when initializing from the bootStrap contract",
-		)
-	}
 	validationFunc := func(i int, assets AssetsByOperator) error {
 		_, err := sdk.AccAddressFromBech32(assets.Operator)
 		if err != nil {

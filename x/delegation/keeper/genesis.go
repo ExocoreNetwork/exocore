@@ -16,6 +16,34 @@ func (k Keeper) InitGenesis(
 	gs delegationtype.GenesisState,
 ) []abci.ValidatorUpdate {
 	// TODO(mm): is it possible to parallelize these without using goroutines?
+	if k.isGeneralInit {
+		if len(gs.Delegations) != 0 {
+			panic(errorsmod.Wrap(
+				delegationtype.ErrInvalidGenesisData,
+				"the delegations should be null when initializing from the general exporting genesis file",
+			))
+		}
+	} else {
+		if len(gs.DelegationStates) != 0 {
+			panic(errorsmod.Wrap(
+				delegationtype.ErrInvalidGenesisData,
+				"the delegation states should be null when initializing from the boot strap contract",
+			))
+		}
+		if len(gs.StakersByOperator) != 0 {
+			panic(errorsmod.Wrap(
+				delegationtype.ErrInvalidGenesisData,
+				"the staker list should be null when initializing from the boot strap contract",
+			))
+		}
+		if len(gs.Undelegations) != 0 {
+			panic(errorsmod.Wrap(
+				delegationtype.ErrInvalidGenesisData,
+				"the undelegations should be null when initializing from the boot strap contract",
+			))
+		}
+	}
+
 	for _, level1 := range gs.Delegations {
 		stakerID := level1.StakerID
 		// #nosec G703 // already validated
@@ -105,7 +133,5 @@ func (k Keeper) ExportGenesis(ctx sdk.Context) *delegationtype.GenesisState {
 		panic(err)
 	}
 	res.Undelegations = undelegations
-	// mark the exported genesis as general import
-	res.IsGeneralInit = true
 	return &res
 }
