@@ -10,6 +10,7 @@ import (
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/crypto"
 
+	"cosmossdk.io/math"
 	"cosmossdk.io/simapp"
 	dbm "github.com/cometbft/cometbft-db"
 	abci "github.com/cometbft/cometbft/abci/types"
@@ -267,6 +268,8 @@ func GenesisStateWithValSet(app *ExocoreApp, genesisState simapp.GenesisState,
 	delegationGenesis := delegationtypes.NewGenesis(delegationsByStaker)
 	genesisState[delegationtypes.ModuleName] = app.AppCodec().MustMarshalJSON(delegationGenesis)
 
+	// create a dogfood genesis with just the validator set, that is, the bare
+	// minimum valid genesis required to start a chain.
 	dogfoodGenesis := dogfoodtypes.NewGenesis(
 		dogfoodtypes.DefaultParams(), []dogfoodtypes.GenesisValidator{
 			{
@@ -274,6 +277,9 @@ func GenesisStateWithValSet(app *ExocoreApp, genesisState simapp.GenesisState,
 				Power:     1,
 			},
 		},
+		[]dogfoodtypes.EpochToOperatorAddrs{}, []dogfoodtypes.EpochToConsensusAddrs{},
+		[]dogfoodtypes.EpochToUndelegationRecordKeys{},
+		math.NewInt(1), // total vote power
 	)
 	genesisState[dogfoodtypes.ModuleName] = app.AppCodec().MustMarshalJSON(dogfoodGenesis)
 

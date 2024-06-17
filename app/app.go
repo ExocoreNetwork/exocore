@@ -591,6 +591,10 @@ func NewExocoreApp(
 		app.AssetsKeeper,     // assets for vote power
 	)
 
+	(&app.OperatorKeeper).SetHooks(
+		app.StakingKeeper.OperatorHooks(),
+	)
+
 	(&app.EpochsKeeper).SetHooks(
 		app.StakingKeeper.EpochsHooks(),
 	)
