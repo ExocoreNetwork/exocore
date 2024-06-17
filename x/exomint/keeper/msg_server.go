@@ -43,10 +43,12 @@ func (k Keeper) UpdateParams(
 		nextParams.MintDenom = prevParams.MintDenom
 	}
 	if nextParams.EpochReward.IsNil() || !nextParams.EpochReward.IsPositive() {
+		// if the reward is negative or 0, we keep the previous value
+		// this allows for the epoch reward to not be supplied.
 		logger.Info("UpdateParams", "overriding EpochReward with value", prevParams.EpochReward)
 		nextParams.EpochReward = prevParams.EpochReward
 	}
-	if err := epochstypes.ValidateEpochIdentifierInterface(
+	if err := epochstypes.ValidateEpochIdentifierString(
 		nextParams.EpochIdentifier,
 	); err != nil {
 		logger.Info("UpdateParams", "overriding EpochIdentifier with value", prevParams.EpochIdentifier)
@@ -62,5 +64,5 @@ func (k Keeper) UpdateParams(
 		nextParams.EpochIdentifier = prevParams.EpochIdentifier
 	}
 	k.SetParams(c, msg.Params)
-	return nil, nil
+	return &types.MsgUpdateParamsResponse{}, nil
 }
