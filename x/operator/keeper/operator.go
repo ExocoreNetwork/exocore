@@ -1,9 +1,8 @@
 package keeper
 
 import (
-	"fmt"
-
 	errorsmod "cosmossdk.io/errors"
+	"fmt"
 
 	"github.com/cosmos/cosmos-sdk/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -21,15 +20,8 @@ import (
 func (k *Keeper) SetOperatorInfo(
 	ctx sdk.Context, addr string, info *operatortypes.OperatorInfo,
 ) (err error) {
-	// the operator's `addr` must match the earnings address.
-	if addr != info.EarningsAddr {
-		return errorsmod.Wrap(
-			operatortypes.ErrParameterInvalid,
-			"SetOperatorInfo: earnings address is not equal to the operator address",
-		)
-	}
 	// #nosec G703 // already validated in `ValidateBasic`
-	opAccAddr, _ := sdk.AccAddressFromBech32(info.EarningsAddr)
+	opAccAddr, _ := sdk.AccAddressFromBech32(addr)
 	// if already registered, this request should go to EditOperator.
 	if k.IsOperator(ctx, opAccAddr) {
 		return errorsmod.Wrap(
@@ -79,16 +71,21 @@ func (k *Keeper) OperatorInfo(ctx sdk.Context, addr string) (info *operatortypes
 	return &ret, nil
 }
 
-// AllOperators return the address list of all operators
-func (k *Keeper) AllOperators(ctx sdk.Context) []string {
+// AllOperators return the list of all operators' detailed information
+func (k *Keeper) AllOperators(ctx sdk.Context) []operatortypes.OperatorDetail {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), operatortypes.KeyPrefixOperatorInfo)
 	iterator := sdk.KVStorePrefixIterator(store, nil)
 	defer iterator.Close()
 
-	ret := make([]string, 0)
+	ret := make([]operatortypes.OperatorDetail, 0)
 	for ; iterator.Valid(); iterator.Next() {
-		accAddr := sdk.AccAddress(iterator.Key())
-		ret = append(ret, accAddr.String())
+		var operatorInfo operatortypes.OperatorInfo
+		operatorAddr := sdk.AccAddress(iterator.Key())
+		k.cdc.MustUnmarshal(iterator.Value(), &operatorInfo)
+		ret = append(ret, operatortypes.OperatorDetail{
+			OperatorAddress: operatorAddr.String(),
+			OperatorInfo:    operatorInfo,
+		})
 	}
 	return ret
 }
@@ -192,6 +189,33 @@ func (k *Keeper) GetOptedInAVSForOperator(ctx sdk.Context, operatorAddr string) 
 		avsList = append(avsList, keys[1])
 	}
 	return avsList, nil
+}
+
+func (k *Keeper) SetAllOptedInfo(ctx sdk.Context, optedStates []operatortypes.OptedState) error {
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), operatortypes.KeyPrefixOperatorOptedAVSInfo)
+	for i := range optedStates {
+		state := optedStates[i]
+		bz := k.cdc.MustMarshal(&state)
+		store.Set([]byte(state.Key), bz)
+	}
+	return nil
+}
+
+func (k *Keeper) GetAllOptedInfo(ctx sdk.Context) ([]operatortypes.OptedState, error) {
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), operatortypes.KeyPrefixOperatorOptedAVSInfo)
+	iterator := sdk.KVStorePrefixIterator(store, []byte{})
+	defer iterator.Close()
+
+	ret := make([]operatortypes.OptedState, 0)
+	for ; iterator.Valid(); iterator.Next() {
+		var optedInfo operatortypes.OptedInfo
+		k.cdc.MustUnmarshal(iterator.Value(), &optedInfo)
+		ret = append(ret, operatortypes.OptedState{
+			Key:     string(iterator.Key()),
+			OptInfo: optedInfo,
+		})
+	}
+	return ret, nil
 }
 
 func (k *Keeper) GetOptedInOperatorListByAVS(ctx sdk.Context, avsAddr string) ([]string, error) {

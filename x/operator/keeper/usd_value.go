@@ -263,6 +263,33 @@ func (k *Keeper) GetOperatorAssetValue(ctx sdk.Context, operator sdk.AccAddress,
 	return optedUSDValues.ActiveUSDValue.TruncateInt64(), nil
 }
 
+func (k *Keeper) SetAllUSDValues(ctx sdk.Context, usdValues []operatortypes.VotingPower) error {
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), operatortypes.KeyPrefixVotingPowerForAVSOperator)
+	for i := range usdValues {
+		usdValue := usdValues[i]
+		bz := k.cdc.MustMarshal(&usdValue)
+		store.Set([]byte(usdValue.Key), bz)
+	}
+	return nil
+}
+
+func (k *Keeper) GetAllUSDValues(ctx sdk.Context) ([]operatortypes.VotingPower, error) {
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), operatortypes.KeyPrefixVotingPowerForAVSOperator)
+	iterator := sdk.KVStorePrefixIterator(store, []byte{})
+	defer iterator.Close()
+
+	ret := make([]operatortypes.VotingPower, 0)
+	for ; iterator.Valid(); iterator.Next() {
+		var usdValue operatortypes.DecValueField
+		k.cdc.MustUnmarshal(iterator.Value(), &usdValue)
+		ret = append(ret, operatortypes.VotingPower{
+			Key:   string(iterator.Key()),
+			Value: usdValue,
+		})
+	}
+	return ret, nil
+}
+
 // CalculateUSDValueForOperator calculates the total and self usd value for the
 // operator according to the input assets filter and prices.
 // This function will be used in slashing calculations and voting power updates per epoch.

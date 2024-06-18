@@ -1,8 +1,6 @@
 package keeper
 
 import (
-	"fmt"
-
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 
@@ -44,9 +42,12 @@ func SlashFromUndelegation(undelegation *delegationtype.UndelegationRecord, slas
 }
 
 func (k *Keeper) CheckSlashParameter(ctx sdk.Context, parameter *types.SlashInputInfo) error {
+	if parameter.SlashProportion.IsNil() || parameter.SlashProportion.IsNegative() {
+		return errorsmod.Wrapf(types.ErrValueIsNilOrZero, "SlashProportion: %+v", parameter.SlashProportion)
+	}
 	height := ctx.BlockHeight()
 	if parameter.SlashEventHeight > height {
-		return errorsmod.Wrap(types.ErrSlashOccurredHeight, fmt.Sprintf("slashEventHeight:%d,curHeight:%d", parameter.SlashEventHeight, height))
+		return errorsmod.Wrapf(types.ErrSlashOccurredHeight, "slashEventHeight:%d,curHeight:%d", parameter.SlashEventHeight, height)
 	}
 
 	if parameter.IsDogFood {
@@ -82,8 +83,8 @@ func (k *Keeper) SlashAssets(ctx sdk.Context, parameter *types.SlashInputInfo) (
 	executionInfo := &types.SlashExecutionInfo{
 		SlashProportion:    newSlashProportion,
 		SlashValue:         slashUSDValue,
-		SlashUndelegations: make([]*types.SlashFromUndelegation, 0),
-		SlashAssetsPool:    make([]*types.SlashFromAssetsPool, 0),
+		SlashUndelegations: make([]types.SlashFromUndelegation, 0),
+		SlashAssetsPool:    make([]types.SlashFromAssetsPool, 0),
 	}
 	// slash from the unbonding stakers
 	if parameter.SlashEventHeight < ctx.BlockHeight() {
@@ -91,7 +92,7 @@ func (k *Keeper) SlashAssets(ctx sdk.Context, parameter *types.SlashInputInfo) (
 		opFunc := func(undelegation *delegationtype.UndelegationRecord) error {
 			slashFromUndelegation := SlashFromUndelegation(undelegation, newSlashProportion)
 			if slashFromUndelegation != nil {
-				executionInfo.SlashUndelegations = append(executionInfo.SlashUndelegations, slashFromUndelegation)
+				executionInfo.SlashUndelegations = append(executionInfo.SlashUndelegations, *slashFromUndelegation)
 			}
 			return nil
 		}
@@ -131,7 +132,7 @@ func (k *Keeper) SlashAssets(ctx sdk.Context, parameter *types.SlashInputInfo) (
 			state.OperatorShare = sdkmath.LegacyNewDec(0)
 		}
 		state.TotalAmount = remainingAmount
-		executionInfo.SlashAssetsPool = append(executionInfo.SlashAssetsPool, &types.SlashFromAssetsPool{
+		executionInfo.SlashAssetsPool = append(executionInfo.SlashAssetsPool, types.SlashFromAssetsPool{
 			AssetID: assetID,
 			Amount:  slashAmount,
 		})

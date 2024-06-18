@@ -72,11 +72,11 @@ func (suite *OperatorTestSuite) TestSlashWithInfractionReason() {
 		StakerID: suite.stakerID,
 		AssetID:  suite.assetID,
 		Amount:   newSlashProportion.MulInt(undelegationAmount).TruncateInt(),
-	}, *slashInfo.ExecutionInfo.SlashUndelegations[0])
+	}, slashInfo.ExecutionInfo.SlashUndelegations[0])
 	suite.Equal(types.SlashFromAssetsPool{
 		AssetID: suite.assetID,
 		Amount:  newSlashProportion.MulInt(delegationRemaining).TruncateInt(),
-	}, *slashInfo.ExecutionInfo.SlashAssetsPool[0])
+	}, slashInfo.ExecutionInfo.SlashAssetsPool[0])
 
 	// check the assets state of undelegation and assets pool
 	assetsInfo, err := suite.App.AssetsKeeper.GetOperatorSpecifiedAssetInfo(suite.Ctx, suite.operatorAddr, suite.assetID)

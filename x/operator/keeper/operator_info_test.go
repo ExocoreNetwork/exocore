@@ -2,6 +2,7 @@ package keeper_test
 
 import (
 	"cosmossdk.io/math"
+	"fmt"
 	operatortype "github.com/ExocoreNetwork/exocore/x/operator/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 )
@@ -18,6 +19,8 @@ func (suite *OperatorTestSuite) TestOperatorInfo() {
 		},
 		Commission: stakingtypes.NewCommission(math.LegacyZeroDec(), math.LegacyZeroDec(), math.LegacyZeroDec()),
 	}
+	suite.Equal(operatortype.AccAddressLength, len(suite.AccAddress))
+	fmt.Println("the acc address length is:", len(suite.AccAddress))
 	err := suite.App.OperatorKeeper.SetOperatorInfo(suite.Ctx, suite.AccAddress.String(), info)
 	suite.NoError(err)
 
@@ -36,8 +39,8 @@ func (suite *OperatorTestSuite) TestAllOperators() {
 	suite.NoError(err)
 
 	getOperators := suite.App.OperatorKeeper.AllOperators(suite.Ctx)
-	suite.Contains(getOperators, operators[0])
-	suite.Contains(getOperators, operators[1])
+	suite.Contains(operators, operators[0])
+	suite.Contains(operators, operators[1])
 }
 
 // TODO: enable this test when editing operator is implemented. allow for querying

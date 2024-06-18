@@ -1,6 +1,7 @@
 package types
 
 import (
+	"golang.org/x/xerrors"
 	"math"
 
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
@@ -25,6 +26,10 @@ const (
 	SlashVetoDuration = int64(1000)
 
 	UnbondingExpiration = 10
+
+	// AccAddressLength is used to parse the key, because the length isn't padded in the key
+	// This might be removed if the address length is padded in the key
+	AccAddressLength = 20
 )
 
 const (
@@ -133,6 +138,37 @@ func KeyForChainIDAndOperatorToPrevConsKey(chainID string, addr sdk.AccAddress) 
 	)
 }
 
+func ParsePrevConsKey(key []byte) (chainID string, addr sdk.AccAddress, err error) {
+	// Check if the key has at least one byte for the prefix and one byte for the chainID length
+	if len(key) < 2 {
+		return "", nil, xerrors.New("key too short")
+	}
+
+	// Extract and validate the prefix
+	prefix := key[0]
+	if prefix != BytePrefixForOperatorAndChainIDToPrevConsKey {
+		return "", nil, xerrors.Errorf("invalid prefix: expected %x, got %x", BytePrefixForOperatorAndChainIDToPrevConsKey, prefix)
+	}
+
+	// Extract the chainID length
+	chainIDLen := sdk.BigEndianToUint64(key[1:9])
+	if len(key) < int(9+chainIDLen) {
+		return "", nil, xerrors.New("key too short for chainID length")
+	}
+
+	// Extract the chainID
+	chainIDBytes := key[9 : 9+chainIDLen]
+	chainID = string(chainIDBytes)
+
+	// Extract the address
+	addr = key[9+chainIDLen:]
+	if len(addr) == 0 {
+		return "", nil, xerrors.New("missing address")
+	}
+
+	return chainID, addr, nil
+}
+
 func KeyForChainIDAndOperatorToConsKey(chainID string, addr sdk.AccAddress) []byte {
 	return ChainIDAndAddrKey(
 		BytePrefixForChainIDAndOperatorToConsKey,
@@ -153,6 +189,37 @@ func KeyForOperatorKeyRemovalForChainID(addr sdk.AccAddress, chainID string) []b
 		[]byte{BytePrefixForOperatorKeyRemovalForChainID}, addr,
 		ChainIDWithLenKey(chainID),
 	)
+}
+
+func ParseKeyForOperatorKeyRemoval(key []byte) (addr sdk.AccAddress, chainID string, err error) {
+	// Check if the key has at least one byte for the prefix and one byte for the chainID length
+	if len(key) < 2 {
+		return nil, "", xerrors.New("key too short")
+	}
+
+	// Extract and validate the prefix
+	prefix := key[0]
+	if prefix != BytePrefixForOperatorKeyRemovalForChainID {
+		return nil, "", xerrors.Errorf("invalid prefix: expected %x, got %x", BytePrefixForOperatorKeyRemovalForChainID, prefix)
+	}
+
+	// Extract the address
+	addr = key[1 : AccAddressLength+1]
+	if len(addr) == 0 {
+		return nil, "", xerrors.New("missing address")
+	}
+
+	// Extract the chainID length
+	chainIDLen := sdk.BigEndianToUint64(key[AccAddressLength+1 : AccAddressLength+9])
+	if len(key) != int(AccAddressLength+9+chainIDLen) {
+		return nil, "", xerrors.Errorf("invalid key length,expected:%d,got:%d", AccAddressLength+9+chainIDLen, len(key))
+	}
+
+	// Extract the chainID
+	chainIDBytes := key[AccAddressLength+9 : AccAddressLength+9+chainIDLen]
+	chainID = string(chainIDBytes)
+
+	return addr, chainID, nil
 }
 
 func IterateOperatorsForAVSPrefix(avsAddr string) []byte {

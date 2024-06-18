@@ -91,11 +91,14 @@ func ParseJoinedKey(key []byte) (keys []string, err error) {
 	return stringList, nil
 }
 
+func IsJoinedStoreKey(key string) bool {
+	return strings.Contains(key, "/")
+}
 func ParseJoinedStoreKey(key []byte, number int) (keys []string, err error) {
 	stringList := strings.Split(string(key), "/")
 	if len(stringList) != number {
 		return nil, errorsmod.Wrap(
-			ErrParseAssetsStateKey,
+			ErrParseJoinedKey,
 			fmt.Sprintf(
 				"expected length:%d,actual length:%d,the stringList is:%v",
 				number,

@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"fmt"
+	"github.com/ethereum/go-ethereum/common/hexutil"
 
 	"github.com/cometbft/cometbft/libs/log"
 
@@ -437,4 +438,73 @@ func (k Keeper) ClearPreviousConsensusKeys(ctx sdk.Context, chainID string) {
 	for ; iterator.Valid(); iterator.Next() {
 		store.Delete(iterator.Key())
 	}
+}
+
+func (k *Keeper) SetAllPrevConsKeys(ctx sdk.Context, prevConsKeys []types.PrevConsKey) error {
+	store := ctx.KVStore(k.storeKey)
+	for i := range prevConsKeys {
+		prevKey := prevConsKeys[i]
+		keyBytes, err := hexutil.Decode(prevKey.Key)
+		if err != nil {
+			return nil
+		}
+		consKey, err := types.HexStringToPubKey(prevKey.ConsensusKey)
+		if err != nil {
+			return nil
+		}
+		bz, err := consKey.Marshal()
+		if err != nil {
+			return errorsmod.Wrap(
+				err,
+				"SetOperatorPrevConsKeyForChainID: error occurred when marshal public key",
+			)
+		}
+
+		store.Set(keyBytes, bz)
+	}
+	return nil
+}
+
+func (k *Keeper) GetAllPrevConsKeys(ctx sdk.Context) ([]types.PrevConsKey, error) {
+	store := ctx.KVStore(k.storeKey)
+	iterator := sdk.KVStorePrefixIterator(store, []byte{types.BytePrefixForOperatorAndChainIDToPrevConsKey})
+	defer iterator.Close()
+
+	ret := make([]types.PrevConsKey, 0)
+	for ; iterator.Valid(); iterator.Next() {
+		var consKey tmprotocrypto.PublicKey
+		k.cdc.MustUnmarshal(iterator.Value(), &consKey)
+		ret = append(ret, types.PrevConsKey{
+			Key:          hexutil.Encode(iterator.Key()),
+			ConsensusKey: hexutil.Encode(consKey.GetEd25519()),
+		})
+	}
+	return ret, nil
+}
+
+func (k *Keeper) SetAllOperatorKeyRemovals(ctx sdk.Context, operatorKeyRemoval []types.OperatorKeyRemoval) error {
+	store := ctx.KVStore(k.storeKey)
+	for i := range operatorKeyRemoval {
+		keyRemoval := operatorKeyRemoval[i]
+		keyBytes, err := hexutil.Decode(keyRemoval.Key)
+		if err != nil {
+			return nil
+		}
+		store.Set(keyBytes, []byte{})
+	}
+	return nil
+}
+
+func (k *Keeper) GetAllOperatorKeyRemovals(ctx sdk.Context) ([]types.OperatorKeyRemoval, error) {
+	store := ctx.KVStore(k.storeKey)
+	iterator := sdk.KVStorePrefixIterator(store, []byte{types.BytePrefixForOperatorKeyRemovalForChainID})
+	defer iterator.Close()
+
+	ret := make([]types.OperatorKeyRemoval, 0)
+	for ; iterator.Valid(); iterator.Next() {
+		ret = append(ret, types.OperatorKeyRemoval{
+			Key: hexutil.Encode(iterator.Key()),
+		})
+	}
+	return ret, nil
 }
