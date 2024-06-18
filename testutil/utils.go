@@ -172,16 +172,22 @@ func (suite *BaseTestSuite) SetupWithGenesisValSet(genAccs []authtypes.GenesisAc
 	genesisState[assetstypes.ModuleName] = app.AppCodec().MustMarshalJSON(assetsGenesis)
 
 	// operator registration
-	operatorInfos := []operatortypes.OperatorInfo{
+	operatorInfos := []operatortypes.OperatorDetail{
 		{
-			EarningsAddr:     operator1.String(),
-			OperatorMetaInfo: "operator1",
-			Commission:       stakingtypes.NewCommission(sdk.ZeroDec(), sdk.ZeroDec(), sdk.ZeroDec()),
+			OperatorAddress: operator1.String(),
+			OperatorInfo: operatortypes.OperatorInfo{
+				EarningsAddr:     operator1.String(),
+				OperatorMetaInfo: "operator1",
+				Commission:       stakingtypes.NewCommission(sdk.ZeroDec(), sdk.ZeroDec(), sdk.ZeroDec()),
+			},
 		},
 		{
-			EarningsAddr:     operator2.String(),
-			OperatorMetaInfo: "operator2",
-			Commission:       stakingtypes.NewCommission(sdk.ZeroDec(), sdk.ZeroDec(), sdk.ZeroDec()),
+			OperatorAddress: operator2.String(),
+			OperatorInfo: operatortypes.OperatorInfo{
+				EarningsAddr:     operator2.String(),
+				OperatorMetaInfo: "operator2",
+				Commission:       stakingtypes.NewCommission(sdk.ZeroDec(), sdk.ZeroDec(), sdk.ZeroDec()),
+			},
 		},
 	}
 	// generate validator private/public key

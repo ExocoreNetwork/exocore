@@ -11,7 +11,6 @@ import (
 // This file provides all functions about operator assets state management.
 
 // AllOperatorAssets
-// nolint: dupl
 func (k Keeper) AllOperatorAssets(ctx sdk.Context) (operatorAssets []assetstype.AssetsByOperator, err error) {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), assetstype.KeyPrefixOperatorAssetInfos)
 	iterator := sdk.KVStorePrefixIterator(store, []byte{})
@@ -20,8 +19,6 @@ func (k Keeper) AllOperatorAssets(ctx sdk.Context) (operatorAssets []assetstype.
 	ret := make([]assetstype.AssetsByOperator, 0)
 	var previousOperator string
 	for ; iterator.Valid(); iterator.Next() {
-		var assetInfo assetstype.OperatorAssetInfo
-		k.cdc.MustUnmarshal(iterator.Value(), &assetInfo)
 		keyList, err := assetstype.ParseJoinedStoreKey(iterator.Key(), 2)
 		if err != nil {
 			return nil, err
@@ -34,6 +31,8 @@ func (k Keeper) AllOperatorAssets(ctx sdk.Context) (operatorAssets []assetstype.
 			}
 			ret = append(ret, assetsByOperator)
 		}
+		var assetInfo assetstype.OperatorAssetInfo
+		k.cdc.MustUnmarshal(iterator.Value(), &assetInfo)
 		index := len(ret) - 1
 		ret[index].AssetsState = append(ret[index].AssetsState, assetstype.AssetByID{
 			AssetID: assetID,

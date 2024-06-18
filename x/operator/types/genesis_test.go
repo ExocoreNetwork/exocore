@@ -43,9 +43,9 @@ func (suite *GenesisTestSuite) TestValidateGenesis() {
 		{
 			name: "invalid genesis state due to non bech32 operator address",
 			genState: &types.GenesisState{
-				Operators: []types.OperatorInfo{
+				Operators: []types.OperatorDetail{
 					{
-						EarningsAddr: "invalid",
+						OperatorAddress: "invalid",
 					},
 				},
 			},
@@ -54,12 +54,12 @@ func (suite *GenesisTestSuite) TestValidateGenesis() {
 		{
 			name: "invalid genesis state due to duplicate operator address",
 			genState: &types.GenesisState{
-				Operators: []types.OperatorInfo{
+				Operators: []types.OperatorDetail{
 					{
-						EarningsAddr: accAddress1.String(),
+						OperatorAddress: accAddress1.String(),
 					},
 					{
-						EarningsAddr: accAddress1.String(),
+						OperatorAddress: accAddress1.String(),
 					},
 				},
 			},
@@ -68,19 +68,144 @@ func (suite *GenesisTestSuite) TestValidateGenesis() {
 		{
 			name: "invalid genesis state due to duplicate lz chain id",
 			genState: &types.GenesisState{
-				Operators: []types.OperatorInfo{
+				Operators: []types.OperatorDetail{
 					{
-						EarningsAddr: accAddress1.String(),
-						ClientChainEarningsAddr: &types.ClientChainEarningAddrList{
-							EarningInfoList: []*types.ClientChainEarningAddrInfo{
-								{
-									LzClientChainID:        1,
-									ClientChainEarningAddr: utiltx.GenerateAddress().String(),
+						OperatorAddress: accAddress1.String(),
+						OperatorInfo: types.OperatorInfo{
+							EarningsAddr: accAddress1.String(),
+							ClientChainEarningsAddr: &types.ClientChainEarningAddrList{
+								EarningInfoList: []*types.ClientChainEarningAddrInfo{
+									{
+										LzClientChainID:        1,
+										ClientChainEarningAddr: utiltx.GenerateAddress().String(),
+									},
+									{
+										LzClientChainID:        1,
+										ClientChainEarningAddr: utiltx.GenerateAddress().String(),
+									},
 								},
-								{
-									LzClientChainID:        1,
-									ClientChainEarningAddr: utiltx.GenerateAddress().String(),
-								},
+							},
+						},
+					},
+				},
+			},
+			expPass: false,
+		},
+		{
+			name: "invalid genesis state due to invalid cons key operator address",
+			genState: &types.GenesisState{
+				Operators: []types.OperatorDetail{
+					{
+						OperatorAddress: accAddress1.String(),
+					},
+				},
+				OperatorRecords: []types.OperatorConsKeyRecord{
+					{
+						OperatorAddress: "invalid",
+					},
+				},
+			},
+			expPass: false,
+		},
+		{
+			name: "invalid genesis state due to unregistered operator in cons key",
+			genState: &types.GenesisState{
+				Operators: []types.OperatorDetail{
+					{
+						OperatorAddress: accAddress1.String(),
+					},
+				},
+				OperatorRecords: []types.OperatorConsKeyRecord{
+					{
+						OperatorAddress: accAddress2.String(),
+					},
+				},
+			},
+			expPass: false,
+		},
+		{
+			name: "invalid genesis state due to duplicate operator in cons key",
+			genState: &types.GenesisState{
+				Operators: []types.OperatorDetail{
+					{
+						OperatorAddress: accAddress1.String(),
+					},
+					{
+						OperatorAddress: accAddress2.String(),
+					},
+				},
+				OperatorRecords: []types.OperatorConsKeyRecord{
+					{
+						OperatorAddress: accAddress1.String(),
+						Chains: []types.ChainDetails{
+							{
+								ChainID:      utils.TestnetChainID,
+								ConsensusKey: key,
+							},
+						},
+					},
+					{
+						OperatorAddress: accAddress1.String(),
+						Chains: []types.ChainDetails{
+							{
+								ChainID:      utils.TestnetChainID,
+								ConsensusKey: hexutil.Encode(ed25519.GenPrivKey().PubKey().Bytes()),
+							},
+						},
+					},
+				},
+			},
+			expPass: false,
+		},
+		{
+			name: "invalid genesis state due to invalid cons key",
+			genState: &types.GenesisState{
+				Operators: []types.OperatorDetail{
+					{
+						OperatorAddress: accAddress1.String(),
+					},
+				},
+				OperatorRecords: []types.OperatorConsKeyRecord{
+					{
+						OperatorAddress: accAddress1.String(),
+						Chains: []types.ChainDetails{
+							{
+								ChainID:      utils.TestnetChainID,
+								ConsensusKey: key + "fake",
+							},
+						},
+					},
+				},
+			},
+			expPass: false,
+		},
+		{
+			name: "invalid genesis state due to duplicate cons key for the same chain id",
+			genState: &types.GenesisState{
+				Operators: []types.OperatorDetail{
+					{
+						OperatorAddress: accAddress1.String(),
+					},
+					{
+						OperatorAddress: accAddress2.String(),
+					},
+				},
+				OperatorRecords: []types.OperatorConsKeyRecord{
+					{
+						OperatorAddress: accAddress1.String(),
+						Chains: []types.ChainDetails{
+							{
+								ChainID:      utils.TestnetChainID,
+								ConsensusKey: key,
+							},
+						},
+					},
+					{
+						OperatorAddress: accAddress2.String(),
+						Chains: []types.ChainDetails{
+							{
+								ChainID:      utils.TestnetChainID,
+								ConsensusKey: key,
 							},
 						},
 					},

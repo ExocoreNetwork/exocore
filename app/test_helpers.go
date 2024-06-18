@@ -224,13 +224,28 @@ func GenesisStateWithValSet(app *ExocoreApp, genesisState simapp.GenesisState,
 	)
 	genesisState[assetstypes.ModuleName] = app.AppCodec().MustMarshalJSON(assetsGenesis)
 	// operator registration
-	operatorInfos := []operatortypes.OperatorInfo{
+	operatorInfos := []operatortypes.OperatorDetail{
 		{
-			EarningsAddr:     operator.String(),
-			OperatorMetaInfo: "operator1",
-			Commission:       stakingtypes.NewCommission(sdk.ZeroDec(), sdk.ZeroDec(), sdk.ZeroDec()),
+			OperatorAddress: operator.String(),
+			OperatorInfo: operatortypes.OperatorInfo{
+				EarningsAddr:     operator.String(),
+				OperatorMetaInfo: "operator1",
+				Commission:       stakingtypes.NewCommission(sdk.ZeroDec(), sdk.ZeroDec(), sdk.ZeroDec()),
+			},
 		},
 	}
+	consensusKeyRecords := []operatortypes.OperatorConsKeyRecord{
+		{
+			OperatorAddress: operatorInfos[0].OperatorInfo.EarningsAddr,
+			Chains: []operatortypes.ChainDetails{
+				{
+					ChainID:      utils.DefaultChainID,
+					ConsensusKey: hexutil.Encode(valSet.Validators[0].PubKey.Bytes()),
+				},
+			},
+		},
+	}
+	operatorGenesis := operatortypes.NewGenesisState(operatorInfos, consensusKeyRecords)
 	operatorGenesis := operatortypes.NewGenesisState(operatorInfos)
 	genesisState[operatortypes.ModuleName] = app.AppCodec().MustMarshalJSON(operatorGenesis)
 	// x/delegation

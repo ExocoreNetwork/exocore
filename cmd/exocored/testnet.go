@@ -391,7 +391,7 @@ func getTestExocoreGenesis(
 	power := int64(300)
 	depositAmount := sdk.TokensFromConsensusPower(power, evmostypes.PowerReduction)
 	depositsByStaker := []assetstypes.DepositsByStaker{}
-	operatorInfos := []operatortypes.OperatorInfo{}
+	operatorInfos := []operatortypes.OperatorDetail{}
 	delegationsByStaker := []delegationtypes.DelegationsByStaker{}
 	validators := []dogfoodtypes.GenesisValidator{}
 	for i := range operatorAddrs {
@@ -414,12 +414,15 @@ func getTestExocoreGenesis(
 				},
 			},
 		})
-		operatorInfos = append(operatorInfos, operatortypes.OperatorInfo{
-			EarningsAddr:     operator.String(),
-			OperatorMetaInfo: "operator1",
-			Commission: stakingtypes.NewCommission(
-				sdk.ZeroDec(), sdk.ZeroDec(), sdk.ZeroDec(),
-			),
+		operatorInfos = append(operatorInfos, operatortypes.OperatorDetail{
+			OperatorAddress: operator.String(),
+			OperatorInfo: operatortypes.OperatorInfo{
+				EarningsAddr:     operator.String(),
+				OperatorMetaInfo: "operator1",
+				Commission: stakingtypes.NewCommission(
+					sdk.ZeroDec(), sdk.ZeroDec(), sdk.ZeroDec(),
+				),
+			},
 		})
 		delegationsByStaker = append(delegationsByStaker, delegationtypes.DelegationsByStaker{
 			StakerID: stakerID,

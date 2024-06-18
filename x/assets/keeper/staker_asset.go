@@ -12,7 +12,6 @@ import (
 )
 
 // AllDeposits
-// nolint: dupl
 func (k Keeper) AllDeposits(ctx sdk.Context) (deposits []assetstype.DepositsByStaker, err error) {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), assetstype.KeyPrefixReStakerAssetInfos)
 	iterator := sdk.KVStorePrefixIterator(store, []byte{})

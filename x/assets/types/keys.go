@@ -94,6 +94,7 @@ func ParseJoinedKey(key []byte) (keys []string, err error) {
 func IsJoinedStoreKey(key string) bool {
 	return strings.Contains(key, "/")
 }
+
 func ParseJoinedStoreKey(key []byte, number int) (keys []string, err error) {
 	stringList := strings.Split(string(key), "/")
 	if len(stringList) != number {

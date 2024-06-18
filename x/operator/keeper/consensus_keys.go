@@ -2,6 +2,8 @@ package keeper
 
 import (
 	"fmt"
+
+	"github.com/cosmos/cosmos-sdk/store/prefix"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 
 	"github.com/cometbft/cometbft/libs/log"
@@ -505,6 +507,37 @@ func (k *Keeper) GetAllOperatorKeyRemovals(ctx sdk.Context) ([]types.OperatorKey
 		ret = append(ret, types.OperatorKeyRemoval{
 			Key: hexutil.Encode(iterator.Key()),
 		})
+	}
+	return ret, nil
+}
+
+func (k *Keeper) GetAllOperatorConsKeyRecords(ctx sdk.Context) ([]types.OperatorConsKeyRecord, error) {
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), []byte{types.BytePrefixForOperatorAndChainIDToConsKey})
+	iterator := sdk.KVStorePrefixIterator(store, []byte{})
+	defer iterator.Close()
+
+	ret := make([]types.OperatorConsKeyRecord, 0)
+	var previousOperator string
+	for ; iterator.Valid(); iterator.Next() {
+		operator, chainID, err := types.ParseKeyForOperatorAndChainIDToConsKey(iterator.Key())
+		if err != nil {
+			return nil, err
+		}
+		if previousOperator != operator.String() {
+			assetsByOperator := types.OperatorConsKeyRecord{
+				OperatorAddress: operator.String(),
+				Chains:          make([]types.ChainDetails, 0),
+			}
+			ret = append(ret, assetsByOperator)
+		}
+		var consKey tmprotocrypto.PublicKey
+		k.cdc.MustUnmarshal(iterator.Value(), &consKey)
+		index := len(ret) - 1
+		ret[index].Chains = append(ret[index].Chains, types.ChainDetails{
+			ChainID:      chainID,
+			ConsensusKey: hexutil.Encode(consKey.GetEd25519()),
+		})
+		previousOperator = operator.String()
 	}
 	return ret, nil
 }

@@ -1,8 +1,9 @@
 package types
 
 import (
-	"golang.org/x/xerrors"
 	"math"
+
+	"golang.org/x/xerrors"
 
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	"github.com/ethereum/go-ethereum/common"
@@ -129,6 +130,26 @@ func KeyForOperatorAndChainIDToConsKey(addr sdk.AccAddress, chainID string) []by
 		BytePrefixForOperatorAndChainIDToConsKey,
 		addr, chainID,
 	)
+}
+
+func ParseKeyForOperatorAndChainIDToConsKey(key []byte) (addr sdk.AccAddress, chainID string, err error) {
+	// Extract the address
+	addr = key[0:AccAddressLength]
+	if len(addr) == 0 {
+		return nil, "", xerrors.New("missing address")
+	}
+
+	// Extract the chainID length
+	chainIDLen := sdk.BigEndianToUint64(key[AccAddressLength : AccAddressLength+8])
+	if len(key) != int(AccAddressLength+8+chainIDLen) {
+		return nil, "", xerrors.Errorf("invalid key length,expected:%d,got:%d", AccAddressLength+8+chainIDLen, len(key))
+	}
+
+	// Extract the chainID
+	chainIDBytes := key[AccAddressLength+8 : AccAddressLength+chainIDLen]
+	chainID = string(chainIDBytes)
+
+	return addr, chainID, nil
 }
 
 func KeyForChainIDAndOperatorToPrevConsKey(chainID string, addr sdk.AccAddress) []byte {

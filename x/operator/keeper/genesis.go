@@ -130,24 +130,45 @@ func (k Keeper) InitGenesis(ctx sdk.Context, state types.GenesisState) []abci.Va
 	return []abci.ValidatorUpdate{}
 }
 
-func (Keeper) ExportGenesis(sdk.Context) *types.GenesisState {
-	/*	res := types.GenesisState{}
-		delegationStates, err := k.AllDelegationStates(ctx)
-		if err != nil {
-			panic(err)
-		}
-		res.DelegationStates = delegationStates
+func (k Keeper) ExportGenesis(ctx sdk.Context) *types.GenesisState {
+	res := types.GenesisState{}
+	res.Operators = k.AllOperators(ctx)
 
-		stakerList, err := k.AllStakerList(ctx)
-		if err != nil {
-			panic(err)
-		}
-		res.StakersByOperator = stakerList
+	operatorRecords, err := k.GetAllOperatorConsKeyRecords(ctx)
+	if err != nil {
+		panic(err)
+	}
+	res.OperatorRecords = operatorRecords
 
-		undelegations, err := k.AllUndelegations(ctx)
-		if err != nil {
-			panic(err)
-		}
-		res.Undelegations = undelegations*/
-	return types.DefaultGenesis()
+	optedInfos, err := k.GetAllOptedInfo(ctx)
+	if err != nil {
+		panic(err)
+	}
+	res.OptStates = optedInfos
+
+	votingPowers, err := k.GetAllUSDValues(ctx)
+	if err != nil {
+		panic(err)
+	}
+	res.VotingPowers = votingPowers
+
+	slashingInfos, err := k.GetAllSlashInfo(ctx)
+	if err != nil {
+		panic(err)
+	}
+	res.SlashStates = slashingInfos
+
+	prevConsKeys, err := k.GetAllPrevConsKeys(ctx)
+	if err != nil {
+		panic(err)
+	}
+	res.PreConsKeys = prevConsKeys
+
+	operatorKeyRemovals, err := k.GetAllOperatorKeyRemovals(ctx)
+	if err != nil {
+		panic(err)
+	}
+	res.OperatorKeyRemovals = operatorKeyRemovals
+
+	return &res
 }

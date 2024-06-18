@@ -1,9 +1,12 @@
 package keeper_test
 
 import (
-	"cosmossdk.io/math"
 	"fmt"
+
+	"cosmossdk.io/math"
+
 	operatortype "github.com/ExocoreNetwork/exocore/x/operator/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 )
 
@@ -31,16 +34,19 @@ func (suite *OperatorTestSuite) TestOperatorInfo() {
 
 func (suite *OperatorTestSuite) TestAllOperators() {
 	suite.prepare()
-	operators := []string{suite.operatorAddr.String(), suite.AccAddress.String()}
-	info := &operatortype.OperatorInfo{
-		EarningsAddr: suite.AccAddress.String(),
+	operatorDetail := operatortype.OperatorDetail{
+		OperatorAddress: suite.AccAddress.String(),
+		OperatorInfo: operatortype.OperatorInfo{
+			EarningsAddr:     suite.AccAddress.String(),
+			OperatorMetaInfo: "testOperator",
+			Commission:       stakingtypes.NewCommission(sdk.ZeroDec(), sdk.ZeroDec(), sdk.ZeroDec()),
+		},
 	}
-	err := suite.App.OperatorKeeper.SetOperatorInfo(suite.Ctx, suite.AccAddress.String(), info)
+	err := suite.App.OperatorKeeper.SetOperatorInfo(suite.Ctx, suite.AccAddress.String(), &operatorDetail.OperatorInfo)
 	suite.NoError(err)
 
 	getOperators := suite.App.OperatorKeeper.AllOperators(suite.Ctx)
-	suite.Contains(operators, operators[0])
-	suite.Contains(operators, operators[1])
+	suite.Contains(getOperators, operatorDetail)
 }
 
 // TODO: enable this test when editing operator is implemented. allow for querying
