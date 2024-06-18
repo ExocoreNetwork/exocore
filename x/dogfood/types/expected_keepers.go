@@ -20,6 +20,12 @@ type DogfoodHooks interface {
 	AfterValidatorBonded(
 		sdk.Context, sdk.ConsAddress, sdk.ValAddress,
 	) error
+	AfterValidatorRemoved(
+		sdk.Context, sdk.ConsAddress, sdk.ValAddress,
+	) error
+	AfterValidatorCreated(
+		sdk.Context, sdk.ValAddress,
+	) error
 }
 
 // OperatorKeeper represents the expected keeper interface for the operator module.
@@ -42,7 +48,7 @@ type OperatorKeeper interface {
 	) math.Int
 	ValidatorByConsAddrForChainID(
 		ctx sdk.Context, consAddr sdk.ConsAddress, chainID string,
-	) stakingtypes.ValidatorI
+	) (stakingtypes.Validator, bool)
 	// at each epoch, get the list and create validator update
 	GetActiveOperatorsForChainID(
 		sdk.Context, string,
@@ -58,6 +64,9 @@ type OperatorKeeper interface {
 	// at each epoch, the current key becomes the "previous" key
 	// for further key set function calls
 	ClearPreviousConsensusKeys(ctx sdk.Context, chainID string)
+	GetOperatorConsKeyForChainID(
+		sdk.Context, sdk.AccAddress, string,
+	) (bool, *tmprotocrypto.PublicKey, error)
 }
 
 // DelegationKeeper represents the expected keeper interface for the delegation module.

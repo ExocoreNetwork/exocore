@@ -2,7 +2,6 @@ package keeper
 
 import (
 	"context"
-	"encoding/hex"
 
 	"github.com/ExocoreNetwork/exocore/x/dogfood/types"
 	"google.golang.org/grpc/codes"
@@ -93,11 +92,11 @@ func (k Keeper) QueryValidator(
 	}
 	ctx := sdk.UnwrapSDKContext(goCtx)
 	consAddress := req.ConsAddr
-	consAddressbytes, err := hex.DecodeString(consAddress)
+	consAddressBytes, err := sdk.ConsAddressFromBech32(consAddress)
 	if err != nil {
 		return nil, status.Error(codes.InvalidArgument, "invalid consensus address")
 	}
-	validator, found := k.GetValidator(ctx, consAddressbytes)
+	validator, found := k.GetExocoreValidator(ctx, consAddressBytes)
 	if !found {
 		return nil, status.Error(codes.NotFound, "validator not found")
 	}

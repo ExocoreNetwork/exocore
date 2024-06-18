@@ -4,10 +4,7 @@ import (
 	"sort"
 
 	"cosmossdk.io/math"
-	operatortypes "github.com/ExocoreNetwork/exocore/x/operator/types"
 	abci "github.com/cometbft/cometbft/abci/types"
-	tmtypes "github.com/cometbft/cometbft/types"
-	cryptocodec "github.com/cosmos/cosmos-sdk/crypto/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	evidencetypes "github.com/cosmos/cosmos-sdk/x/evidence/types"
 	genutiltypes "github.com/cosmos/cosmos-sdk/x/genutil/types"
@@ -41,19 +38,20 @@ func (k Keeper) GetParams(sdk.Context) stakingtypes.Params {
 func (k Keeper) IterateValidators(sdk.Context,
 	func(index int64, validator stakingtypes.ValidatorI) (stop bool),
 ) {
-	// no op
+	// not intentionally implemented, since unused by the importing modules
 }
 
 // Validator is an implementation of the staking interface expected by the SDK's
-// slashing module. The slashing module uses it to obtain a validator's information at
-// its addition to the list of validators, and then to unjail a validator. The former
-// is used to create the pub key to cons address mapping, which we do in the operator module.
-// The latter should also be implemented in the operator module, or maybe the slashing module
-// depending upon the finalized design. We don't need to implement this function here because
-// we are not calling the AfterValidatorCreated hook in our module, so this will never be
-// reached.
-func (k Keeper) Validator(sdk.Context, sdk.ValAddress) stakingtypes.ValidatorI {
-	panic("unimplemented on this keeper")
+// slashing module. The slashing module uses it to obtain a validator's information upon
+// its addition to the list of validators, and then to unjail a validator. During the addition
+// it stores a reverse lookup from consensus address to pub key, which is why we need the
+// pub key to be set in this call.
+func (k Keeper) Validator(ctx sdk.Context, address sdk.ValAddress) stakingtypes.ValidatorI {
+	val, found := k.GetValidator(ctx, address)
+	if !found {
+		return nil
+	}
+	return val
 }
 
 // ValidatorByConsAddr is an implementation of the staking interface expected by the SDK's
@@ -68,7 +66,17 @@ func (k Keeper) ValidatorByConsAddr(
 	ctx sdk.Context,
 	addr sdk.ConsAddress,
 ) stakingtypes.ValidatorI {
-	return k.operatorKeeper.ValidatorByConsAddrForChainID(ctx, addr, ctx.ChainID())
+	// this validator has the following items initialized:
+	// jailed status, operator address, bonded status == unspecified,
+	// consensus public key.
+	// the operator address is used by our EVM module, and its presence triggers
+	// a call to Validator(ctx, addr) in the slashing module, which is implemented in this file.
+	// after that call, the ConsPubKey is fetched, which is also set by the below call.
+	val, found := k.operatorKeeper.ValidatorByConsAddrForChainID(ctx, addr, ctx.ChainID())
+	if !found {
+		return nil
+	}
+	return val
 }
 
 // Slash is an implementation of the staking interface expected by the SDK's slashing module.
@@ -144,6 +152,7 @@ func (k Keeper) MaxValidators(ctx sdk.Context) uint32 {
 
 // GetAllValidators is an implementation of the staking interface expected by the SDK's
 // slashing module. It is not called within the slashing module, but is part of the interface.
+// Hence, it is not implemented meaningfully.
 func (k Keeper) GetAllValidators(sdk.Context) (validators []stakingtypes.Validator) {
 	return []stakingtypes.Validator{}
 }
@@ -167,8 +176,9 @@ func (k Keeper) ApplyAndReturnValidatorSetUpdates(
 // IterateBondedValidatorsByPower is an implementation of the staking interface expected by
 // the SDK's gov module and by our oracle module.
 func (k Keeper) IterateBondedValidatorsByPower(
-	ctx sdk.Context, f func(int64, stakingtypes.ValidatorI) bool,
+	ctx sdk.Context, f func(int64, stakingtypes.ValidatorI) (stop bool),
 ) {
+	// this is the bonded validators, that is, those that are currently in this module.
 	prevList := k.GetAllExocoreValidators(ctx)
 	sort.SliceStable(prevList, func(i, j int) bool {
 		return prevList[i].Power > prevList[j].Power
@@ -176,27 +186,24 @@ func (k Keeper) IterateBondedValidatorsByPower(
 	for i, v := range prevList {
 		pk, err := v.ConsPubKey()
 		if err != nil {
-			// will only happen if there is an error in deserialization.
+			ctx.Logger().Error("Failed to deserialize public key; skipping", "error", err, "i", i)
 			continue
 		}
-		found, addr := k.operatorKeeper.GetOperatorAddressForChainIDAndConsAddr(
-			ctx, ctx.ChainID(), sdk.GetConsAddress(pk),
+		val, found := k.operatorKeeper.ValidatorByConsAddrForChainID(
+			ctx, sdk.GetConsAddress(pk), ctx.ChainID(),
 		)
 		if !found {
-			// this should never happen. should we panic?
+			ctx.Logger().Error("Operator address not found; skipping", "consAddress", sdk.GetConsAddress(pk), "i", i)
 			continue
 		}
-		val, err := stakingtypes.NewValidator(
-			sdk.ValAddress(addr),
-			pk, stakingtypes.Description{ /* TODO */ },
-		)
-		if err != nil {
-			// will only happen if there is an error in deserialization.
-			continue
-		}
-		// allow calculation of power
-		val.Status = stakingtypes.Bonded
+		// the voting power is fetched from this module and not the operator module
+		// because it is applied at the end of an epoch, whereas that from the operator
+		// module is more recent.
 		val.Tokens = sdk.TokensFromConsensusPower(v.Power, sdk.DefaultPowerReduction)
+		// since the validator object was fetched from this module, we should set it to bonded.
+		val.Status = stakingtypes.Bonded
+		// items passed are:
+		// jailed status, tokens quantity, operator address as ValAddress, bonded status
 		if f(int64(i), val) {
 			break
 		}
@@ -217,44 +224,4 @@ func (k Keeper) IterateDelegations(
 	func(int64, stakingtypes.DelegationI) bool,
 ) {
 	panic("unimplemented on this keeper")
-}
-
-// WriteValidators returns all the currently active validators. This is called by the export
-// CLI. which must ensure that `ctx.ChainID()` is set.
-func (k Keeper) WriteValidators(
-	ctx sdk.Context,
-) ([]tmtypes.GenesisValidator, error) {
-	validators := k.GetAllExocoreValidators(ctx)
-	sort.SliceStable(validators, func(i, j int) bool {
-		return validators[i].Power > validators[j].Power
-	})
-	vals := make([]tmtypes.GenesisValidator, len(validators))
-	var retErr error
-	for i, val := range validators {
-		pk, err := val.ConsPubKey()
-		if err != nil {
-			retErr = err
-			break
-		}
-		tmPk, err := cryptocodec.ToTmPubKeyInterface(pk)
-		if err != nil {
-			retErr = err
-			break
-		}
-		consAddress := sdk.GetConsAddress(pk)
-		found, addr := k.operatorKeeper.GetOperatorAddressForChainIDAndConsAddr(
-			ctx, ctx.ChainID(), consAddress,
-		)
-		if !found {
-			retErr = operatortypes.ErrNoKeyInTheStore
-			break
-		}
-		vals[i] = tmtypes.GenesisValidator{
-			Address: consAddress.Bytes(),
-			PubKey:  tmPk,
-			Power:   val.Power,
-			Name:    addr.String(), // TODO
-		}
-	}
-	return vals, retErr
 }
