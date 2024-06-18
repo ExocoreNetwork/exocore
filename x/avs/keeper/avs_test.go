@@ -8,6 +8,7 @@ import (
 	operatortype "github.com/ExocoreNetwork/exocore/x/operator/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
+	epochstypes "github.com/evmos/evmos/v14/x/epochs/types"
 )
 
 func (suite *AVSTestSuite) TestAVS() {
@@ -15,15 +16,16 @@ func (suite *AVSTestSuite) TestAVS() {
 	avsOwnerAddress := []string{"exo13h6xg79g82e2g2vhjwg7j4r2z2hlncelwutkjr", "exo13h6xg79g82e2g2vhjwg7j4r2z2hlncelwutkj1", "exo13h6xg79g82e2g2vhjwg7j4r2z2hlncelwutkj2"}
 	assetID := []string{"11", "22", "33"}
 	avs := &types.AVSInfo{
-		Name:               avsName,
-		AvsAddress:         avsAddres,
-		SlashAddr:          slashAddress,
-		AvsOwnerAddress:    avsOwnerAddress,
-		AssetId:            assetID,
-		AvsUnbondingPeriod: uint32(7),
-		MinSelfDelegation:  sdk.NewIntFromUint64(10),
-		AvsEpoch:           nil,
-		OperatorAddress:    nil,
+		Name:                  avsName,
+		AvsAddress:            avsAddres,
+		SlashAddr:             slashAddress,
+		AvsOwnerAddress:       avsOwnerAddress,
+		AssetId:               assetID,
+		AvsUnbondingPeriod:    uint32(7),
+		MinSelfDelegation:     sdk.NewIntFromUint64(10),
+		OperatorAddress:       nil,
+		EpochIdentifier:       epochstypes.DayEpochID,
+		EffectiveCurrentEpoch: 1,
 	}
 
 	err := suite.App.AVSManagerKeeper.SetAVSInfo(suite.Ctx, avs)

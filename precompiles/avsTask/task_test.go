@@ -4,6 +4,7 @@ import (
 	"encoding/hex"
 	"github.com/ExocoreNetwork/exocore/x/avs/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	epochstypes "github.com/evmos/evmos/v14/x/epochs/types"
 	"math/big"
 
 	"github.com/ExocoreNetwork/exocore/app"
@@ -49,15 +50,16 @@ func (s *TaskPrecompileTestSuite) TestRunRegTaskinfo() {
 	_, byteData, _ := bech32.DecodeToBase256(avsAddres)
 	caller := "0x" + hex.EncodeToString(byteData)
 	avs := &types.AVSInfo{
-		Name:               avsName,
-		AvsAddress:         avsAddres,
-		SlashAddr:          slashAddress,
-		AvsOwnerAddress:    avsOwnerAddress,
-		AssetId:            assetID,
-		AvsUnbondingPeriod: uint32(7),
-		MinSelfDelegation:  sdk.NewIntFromUint64(10),
-		AvsEpoch:           nil,
-		OperatorAddress:    nil,
+		Name:                  avsName,
+		AvsAddress:            avsAddres,
+		SlashAddr:             slashAddress,
+		AvsOwnerAddress:       avsOwnerAddress,
+		AssetId:               assetID,
+		AvsUnbondingPeriod:    uint32(7),
+		MinSelfDelegation:     sdk.NewIntFromUint64(10),
+		OperatorAddress:       nil,
+		EpochIdentifier:       epochstypes.DayEpochID,
+		EffectiveCurrentEpoch: 1,
 	}
 
 	registerAvs := func() {

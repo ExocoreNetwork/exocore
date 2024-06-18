@@ -8,7 +8,5 @@ import (
 // EndBlock
 func (k *Keeper) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.ValidatorUpdate {
 
-	//k.SetEpochEndAVS(ctx, avs)
-
 	return []abci.ValidatorUpdate{}
 }

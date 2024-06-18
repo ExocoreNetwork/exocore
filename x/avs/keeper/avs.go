@@ -43,7 +43,7 @@ func (k *Keeper) GetAVSMinimumSelfDelegation(ctx sdk.Context, avsAddr string) (s
 func (k *Keeper) GetEpochEndAVSs(ctx sdk.Context) ([]string, error) {
 
 	var avsList []types.AVSInfo
-	k.IteratEpochEndAVSInfo(ctx, func(_ int64, epochEndAVSInfo types.AVSInfo) (stop bool) {
+	k.IteratAVSInfo(ctx, func(_ int64, epochEndAVSInfo types.AVSInfo) (stop bool) {
 		avsList = append(avsList, epochEndAVSInfo)
 		return false
 	})

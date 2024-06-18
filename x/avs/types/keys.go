@@ -21,7 +21,6 @@ const (
 	prefixAVSInfo = iota + 1
 	prefixAVSOperatorInfo
 	prefixParams
-	prefixAVSEndInfo
 )
 
 // ModuleAddress is the native module address for EVM
@@ -31,7 +30,6 @@ var (
 	KeyPrefixAVSOperatorInfo = []byte{prefixAVSOperatorInfo}
 	KeyPrefixParams          = []byte{prefixParams}
 	ParamsKey                = []byte("Params")
-	KeyPrefixEpochEndAvs     = []byte{prefixAVSEndInfo}
 )
 
 func init() {

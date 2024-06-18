@@ -33,6 +33,9 @@ message AVSInfo {
   string epoch_identifier = 8;
   // registered operator of avs
   repeated string operator_address = 9;
+
+  // Effective current epoch, accounting for current_epoch + 1 and current_epoch is the integer identifier of the epoch module
+  int64 effective_current_epoch = 10;
 }
 
 // RegisterAVSReq is requst to register avs

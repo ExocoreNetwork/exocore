@@ -54,7 +54,10 @@ func (k Keeper) AVSInfoUpdate(ctx sdk.Context, params *AVSRegisterOrDeregisterPa
 	avsInfo, _ := k.GetAVSInfo(ctx, params.AvsAddress)
 
 	action := params.Action
-
+	epoch, found := k.epochsKeeper.GetEpochInfo(ctx, epochstypes.DayEpochID)
+	if !found {
+		return errorsmod.Wrap(types.ErrEpochNotFound, fmt.Sprintf("epoch info not found %s", epochstypes.DayEpochID))
+	}
 	switch action {
 	case RegisterAction:
 		if avsInfo != nil {
@@ -62,21 +65,16 @@ func (k Keeper) AVSInfoUpdate(ctx sdk.Context, params *AVSRegisterOrDeregisterPa
 		}
 
 		avs := &types.AVSInfo{
-			Name:               params.AvsName,
-			AvsAddress:         params.AvsAddress,
-			SlashAddr:          params.SlashContractAddr,
-			AvsOwnerAddress:    params.AvsOwnerAddress,
-			AssetId:            params.AssetID,
-			MinSelfDelegation:  sdk.NewIntFromUint64(params.MinSelfDelegation),
-			AvsUnbondingPeriod: uint32(params.UnbondingPeriod),
-			EpochIdentifier:    epochstypes.DayEpochID,
-			OperatorAddress:    nil,
-		}
-		_, found := k.epochsKeeper.GetEpochInfo(ctx, epochstypes.DayEpochID)
-		if !found {
-			// the panic is suitable here because it is being done at genesis, when the node
-			// is not running. it means that the genesis file is malformed.
-			panic(fmt.Sprintf("epoch info not found %s", epochstypes.DayEpochID))
+			Name:                  params.AvsName,
+			AvsAddress:            params.AvsAddress,
+			SlashAddr:             params.SlashContractAddr,
+			AvsOwnerAddress:       params.AvsOwnerAddress,
+			AssetId:               params.AssetID,
+			MinSelfDelegation:     sdk.NewIntFromUint64(params.MinSelfDelegation),
+			AvsUnbondingPeriod:    uint32(params.UnbondingPeriod),
+			EpochIdentifier:       epochstypes.DayEpochID,
+			OperatorAddress:       nil,
+			EffectiveCurrentEpoch: epoch.CurrentEpoch + 1, // Effective at CurrentEpoch+1, avoid immediate effects and ensure that the first epoch time of avs is equal to a normal identifier
 		}
 		return k.SetAVSInfo(ctx, avs)
 	case DeRegisterAction:
@@ -84,8 +82,7 @@ func (k Keeper) AVSInfoUpdate(ctx sdk.Context, params *AVSRegisterOrDeregisterPa
 			return errorsmod.Wrap(types.ErrUnregisterNonExistent, fmt.Sprintf("the avsaddress is :%s", params.AvsAddress))
 		}
 		//if avs DeRegisterAction check UnbondingPeriod
-		currentHeight := uint32(ctx.BlockHeight())
-		if avsInfo.Info.AvsUnbondingPeriod < (currentHeight - uint32(avsInfo.GetInfo().AvsEpoch.CurrentEpochStartHeight)) {
+		if int64(avsInfo.Info.AvsUnbondingPeriod) < (epoch.CurrentEpoch - avsInfo.GetInfo().EffectiveCurrentEpoch) {
 			return errorsmod.Wrap(types.ErrUnbondingPeriod, fmt.Sprintf("not qualified to deregister %s", avsInfo))
 		}
 		return k.DeleteAVSInfo(ctx, params.AvsAddress)
@@ -176,22 +173,9 @@ func (k Keeper) DeleteAVSInfo(ctx sdk.Context, addr string) error {
 	return nil
 }
 
-// SetEpochEndAVS set epoch end avs info
-func (k Keeper) SetEpochEndAVS(ctx sdk.Context, avs *types.AVSInfo) (err error) {
-	avsAddr, err := sdk.AccAddressFromBech32(avs.AvsAddress)
-	if err != nil {
-		return errorsmod.Wrap(err, "SetAVSInfo: error occurred when parse acc address from Bech32")
-	}
-	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefixEpochEndAvs)
-
-	bz := k.cdc.MustMarshal(avs)
-	store.Set(avsAddr, bz)
-	return nil
-}
-
-// IteratEpochEndAVSInfo iterate through avs
-func (k Keeper) IteratEpochEndAVSInfo(ctx sdk.Context, fn func(index int64, epochEndAVSInfo types.AVSInfo) (stop bool)) {
-	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefixEpochEndAvs)
+// IteratAVSInfo iterate through avs
+func (k Keeper) IteratAVSInfo(ctx sdk.Context, fn func(index int64, avsInfo types.AVSInfo) (stop bool)) {
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefixAVSInfo)
 
 	iterator := sdk.KVStorePrefixIterator(store, nil)
 	defer iterator.Close()
