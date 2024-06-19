@@ -511,7 +511,7 @@ func (m *SlashFromAssetsPool) GetAssetID() string {
 	return ""
 }
 
-// SlashAssetsInfo is the slashed assets information
+// SlashExecutionInfo is the actual execution state for a slash event
 type SlashExecutionInfo struct {
 	// slash_proportion is the new calculated proportion when execute the slash
 	SlashProportion github_com_cosmos_cosmos_sdk_types.Dec `protobuf:"bytes,1,opt,name=slash_proportion,json=slashProportion,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Dec" json:"slash_proportion"`

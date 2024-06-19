@@ -175,7 +175,7 @@ func (k Keeper) QueryAllOperatorConsAddrsByChainID(
 
 func (k *Keeper) QueryOperatorUSDValue(ctx context.Context, req *operatortypes.QueryOperatorUSDValueRequest) (*operatortypes.DecValueField, error) {
 	c := sdk.UnwrapSDKContext(ctx)
-	usdValue, err := k.GetOperatorUSDValue(c, req.AddressInfo.OperatorAddr, req.AddressInfo.AVSAddress)
+	usdValue, err := k.GetOperatorUSDValue(c, req.Details.OperatorAddr, req.Details.AVSAddress)
 	if err != nil {
 		return nil, err
 	}
@@ -197,7 +197,7 @@ func (k *Keeper) QueryAVSUSDValue(ctx context.Context, req *operatortypes.QueryA
 
 func (k *Keeper) QueryOperatorSlashInfo(ctx context.Context, req *operatortypes.QueryOperatorSlashInfoRequest) (*operatortypes.QueryOperatorSlashInfoResponse, error) {
 	c := sdk.UnwrapSDKContext(ctx)
-	slashInfo, err := k.AllOperatorSlashInfo(c, req.AddressInfo.OperatorAddr, req.AddressInfo.AVSAddress)
+	slashInfo, err := k.AllOperatorSlashInfo(c, req.Details.OperatorAddr, req.Details.AVSAddress)
 	if err != nil {
 		return nil, err
 	}

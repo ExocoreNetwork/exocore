@@ -1,8 +1,6 @@
 package keeper
 
 import (
-	"fmt"
-
 	assetstype "github.com/ExocoreNetwork/exocore/x/assets/types"
 
 	errorsmod "cosmossdk.io/errors"
@@ -27,22 +25,22 @@ func (k *Keeper) UpdateOperatorSlashInfo(ctx sdk.Context, operatorAddr, avsAddr,
 	}
 	slashInfoKey := assetstype.GetJoinedStoreKey(operatorAddr, avsAddr, slashID)
 	if store.Has(slashInfoKey) {
-		return errorsmod.Wrap(operatortypes.ErrSlashInfoExist, fmt.Sprintf("slashInfoKey:%s", slashInfoKey))
+		return errorsmod.Wrapf(operatortypes.ErrSlashInfoExist, "slashInfoKey:%s", slashInfoKey)
 	}
 	// check the validation of slash info
-	getSlashContract, err := k.avsKeeper.GetAVSSlashContract(ctx, avsAddr)
+	slashContract, err := k.avsKeeper.GetAVSSlashContract(ctx, avsAddr)
 	if err != nil {
 		return err
 	}
-	if slashInfo.SlashContract != getSlashContract {
-		return errorsmod.Wrap(operatortypes.ErrSlashInfo, fmt.Sprintf("err slashContract:%s, stored contract:%s", slashInfo.SlashContract, getSlashContract))
+	if slashInfo.SlashContract != slashContract {
+		return errorsmod.Wrapf(operatortypes.ErrSlashInfo, "err slashContract:%s, stored contract:%s", slashInfo.SlashContract, slashContract)
 	}
 	if slashInfo.EventHeight > slashInfo.SubmittedHeight {
-		return errorsmod.Wrap(operatortypes.ErrSlashInfo, fmt.Sprintf("err SubmittedHeight:%v,EventHeight:%v", slashInfo.SubmittedHeight, slashInfo.EventHeight))
+		return errorsmod.Wrapf(operatortypes.ErrSlashInfo, "err SubmittedHeight:%v,EventHeight:%v", slashInfo.SubmittedHeight, slashInfo.EventHeight)
 	}
 
 	if slashInfo.SlashProportion.IsNil() || slashInfo.SlashProportion.IsNegative() || slashInfo.SlashProportion.GT(sdkmath.LegacyNewDec(1)) {
-		return errorsmod.Wrap(operatortypes.ErrSlashInfo, fmt.Sprintf("err SlashProportion:%v", slashInfo.SlashProportion))
+		return errorsmod.Wrapf(operatortypes.ErrSlashInfo, "err SlashProportion:%v", slashInfo.SlashProportion)
 	}
 
 	// save single operator delegation state
@@ -59,7 +57,7 @@ func (k *Keeper) GetOperatorSlashInfo(ctx sdk.Context, avsAddr, operatorAddr, sl
 	slashInfoKey := assetstype.GetJoinedStoreKey(operatorAddr, avsAddr, slashID)
 	value := store.Get(slashInfoKey)
 	if value == nil {
-		return nil, errorsmod.Wrap(operatortypes.ErrNoKeyInTheStore, fmt.Sprintf("GetOperatorSlashInfo: key is %s", slashInfoKey))
+		return nil, errorsmod.Wrapf(operatortypes.ErrNoKeyInTheStore, "GetOperatorSlashInfo: key is %s", slashInfoKey)
 	}
 	operatorSlashInfo := operatortypes.OperatorSlashInfo{}
 	k.cdc.MustUnmarshal(value, &operatorSlashInfo)
@@ -103,7 +101,7 @@ func (k *Keeper) UpdateSlashAssetsState(ctx sdk.Context, assetID, stakerOrOperat
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), operatortypes.KeyPrefixSlashAssetsState)
 	var key []byte
 	if stakerOrOperator == "" || assetID == "" {
-		return errorsmod.Wrap(operatortypes.ErrParameterInvalid, fmt.Sprintf("assetID:%s,stakerOrOperator:%s", assetID, stakerOrOperator))
+		return errorsmod.Wrapf(operatortypes.ErrParameterInvalid, "assetID:%s,stakerOrOperator:%s", assetID, stakerOrOperator)
 	}
 
 	key = assetstype.GetJoinedStoreKey(hexutil.EncodeUint64(processedHeight), assetID, stakerOrOperator)
@@ -150,7 +148,7 @@ func (k *Keeper) GetSlashAssetsState(ctx sdk.Context, assetID, stakerOrOperator 
 	}
 	value := store.Get(key)
 	if value == nil {
-		return sdkmath.Int{}, errorsmod.Wrap(operatortypes.ErrNoKeyInTheStore, fmt.Sprintf("GetSlashAssetsState: key is %s", key))
+		return sdkmath.Int{}, errorsmod.Wrapf(operatortypes.ErrNoKeyInTheStore, "GetSlashAssetsState: key is %s", key)
 	}
 	var ret assetstype.ValueField
 	k.cdc.MustUnmarshal(value, &ret)

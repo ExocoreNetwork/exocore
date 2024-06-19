@@ -121,7 +121,7 @@ message SlashFromAssetsPool {
 }
 
 
-// SlashAssetsInfo is the slashed assets information
+// SlashExecutionInfo is the actual execution state for a slash event
 message SlashExecutionInfo {
   // slash_proportion is the new calculated proportion when execute the slash
   string slash_proportion = 1

@@ -9,12 +9,6 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-type OperatorUSDValue struct {
-	Staking                 sdkmath.LegacyDec
-	SelfStaking             sdkmath.LegacyDec
-	StakingAndWaitUnbonding sdkmath.LegacyDec
-}
-
 // CalculateUSDValueForOperator calculates the total and self usd value for the
 // operator according to the input assets filter and prices.
 func (k *Keeper) CalculateUSDValueForOperator(
@@ -24,9 +18,9 @@ func (k *Keeper) CalculateUSDValueForOperator(
 	assetsFilter map[string]interface{},
 	decimals map[string]uint32,
 	prices map[string]operatortypes.Price,
-) (OperatorUSDValue, error) {
+) (operatortypes.OperatorUSDValue, error) {
 	var err error
-	ret := OperatorUSDValue{
+	ret := operatortypes.OperatorUSDValue{
 		Staking:                 sdkmath.LegacyNewDec(0),
 		SelfStaking:             sdkmath.LegacyNewDec(0),
 		StakingAndWaitUnbonding: sdkmath.LegacyNewDec(0),
@@ -36,6 +30,8 @@ func (k *Keeper) CalculateUSDValueForOperator(
 		var price operatortypes.Price
 		var decimal uint32
 		if isForSlash {
+			// when calculated the USD value for slashing, the input prices map is null
+			// so the price needs to be retrieved here
 			price, err = k.oracleKeeper.GetSpecifiedAssetsPrice(ctx, assetID)
 			if err != nil {
 				return err
