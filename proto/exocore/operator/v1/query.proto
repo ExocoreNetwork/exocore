@@ -60,10 +60,6 @@ message QueryOperatorSlashInfoRequest {
   OperatorAVSAddressDetails details = 1;
 }
 
-message TestScalar {
-  string operator_addr = 1 [(cosmos_proto.scalar) = "cosmos."];
-}
-
 // QueryOperatorSlashInfoResponse is the response for GetOperatorSlashInfoRequest
 message QueryOperatorSlashInfoResponse{
   // AllSlashInfo the key is slashID, the value is the specified slash information
