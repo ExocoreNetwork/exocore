@@ -4,6 +4,7 @@ import (
 	"strings"
 
 	assetstypes "github.com/ExocoreNetwork/exocore/x/assets/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
@@ -35,7 +36,7 @@ const (
 
 	prefixStakerUndelegationInfo
 
-	prefixWaitCompleteUndelegations
+	prefixPendingUndelegations
 
 	// used to store the undelegation hold count
 	prefixUndelegationOnHold
@@ -56,8 +57,8 @@ var (
 	KeyPrefixUndelegationInfo = []byte{prefixUndelegationInfo}
 	// KeyPrefixStakerUndelegationInfo restakerID+'/'+assetID+'/'+LzNonce -> singleRecordKey
 	KeyPrefixStakerUndelegationInfo = []byte{prefixStakerUndelegationInfo}
-	// KeyPrefixWaitCompleteUndelegations completeHeight +'/'+LzNonce -> singleRecordKey
-	KeyPrefixWaitCompleteUndelegations = []byte{prefixWaitCompleteUndelegations}
+	// KeyPrefixPendingUndelegations completeHeight +'/'+LzNonce -> singleRecordKey
+	KeyPrefixPendingUndelegations = []byte{prefixPendingUndelegations}
 )
 
 func GetDelegationStateIteratorPrefix(stakerID, assetID string) []byte {
@@ -74,6 +75,8 @@ func ParseStakerAssetIDAndOperatorAddrFromKey(key []byte) (keys *SingleDelegatio
 	return &SingleDelegationInfoReq{StakerID: stringList[0], AssetID: stringList[1], OperatorAddr: stringList[2]}, nil
 }
 
+// GetUndelegationRecordKey returns the key for the undelegation record. The caller must ensure that the parameters
+// are valid; this function performs no validation whatsoever.
 func GetUndelegationRecordKey(blockHeight, lzNonce uint64, txHash string, operatorAddr string) []byte {
 	return []byte(strings.Join([]string{operatorAddr, hexutil.EncodeUint64(blockHeight), hexutil.EncodeUint64(lzNonce), txHash}, "/"))
 }
@@ -90,6 +93,10 @@ func ParseUndelegationRecordKey(key []byte) (field *UndelegationKeyFields, err e
 	if err != nil {
 		return nil, err
 	}
+	operatorAccAddr, err := sdk.AccAddressFromBech32(stringList[0])
+	if err != nil {
+		return nil, err
+	}
 	height, err := hexutil.DecodeUint64(stringList[1])
 	if err != nil {
 		return nil, err
@@ -99,10 +106,11 @@ func ParseUndelegationRecordKey(key []byte) (field *UndelegationKeyFields, err e
 		return nil, err
 	}
 	return &UndelegationKeyFields{
-		OperatorAddr: stringList[0],
+		OperatorAddr: operatorAccAddr.String(),
 		BlockHeight:  height,
 		LzNonce:      lzNonce,
-		TxHash:       stringList[3],
+		// TODO: validate the TxHash?
+		TxHash: stringList[3],
 	}, nil
 }
 
@@ -110,7 +118,7 @@ func GetStakerUndelegationRecordKey(stakerID, assetID string, lzNonce uint64) []
 	return []byte(strings.Join([]string{stakerID, assetID, hexutil.EncodeUint64(lzNonce)}, "/"))
 }
 
-func GetWaitCompleteRecordKey(height, lzNonce uint64) []byte {
+func GetPendingUndelegationRecordKey(height, lzNonce uint64) []byte {
 	return []byte(strings.Join([]string{hexutil.EncodeUint64(height), hexutil.EncodeUint64(lzNonce)}, "/"))
 }
 

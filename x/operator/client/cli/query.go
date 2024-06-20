@@ -243,7 +243,7 @@ func QueryOperatorUSDValue() *cobra.Command {
 			}
 			queryClient := operatortypes.NewQueryClient(clientCtx)
 			req := &operatortypes.QueryOperatorUSDValueRequest{
-				AddressInfo: &operatortypes.AddressInfo{
+				Details: &operatortypes.OperatorAVSAddressDetails{
 					OperatorAddr: args[0],
 					AVSAddress:   args[1],
 				},
@@ -302,7 +302,7 @@ func QueryOperatorSlashInfo() *cobra.Command {
 			}
 			queryClient := operatortypes.NewQueryClient(clientCtx)
 			req := &operatortypes.QueryOperatorSlashInfoRequest{
-				AddressInfo: &operatortypes.AddressInfo{
+				Details: &operatortypes.OperatorAVSAddressDetails{
 					OperatorAddr: args[0],
 					AVSAddress:   args[1],
 				},

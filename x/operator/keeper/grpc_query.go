@@ -63,6 +63,7 @@ func (k *Keeper) QueryOperatorConsKeyForChainID(
 	}
 	return &operatortypes.QueryOperatorConsKeyResponse{
 		PublicKey: *key,
+		OptingOut: k.IsOperatorRemovingKeyFromChainID(ctx, addr, req.Chain),
 	}, nil
 }
 
@@ -91,7 +92,8 @@ func (k Keeper) QueryOperatorConsAddressForChainID(
 		return nil, err
 	}
 	return &operatortypes.QueryOperatorConsAddressResponse{
-		ConsAddr: consAddr.String(),
+		ConsAddr:  consAddr.String(),
+		OptingOut: k.IsOperatorRemovingKeyFromChainID(ctx, addr, req.Chain),
 	}, nil
 }
 
@@ -118,6 +120,7 @@ func (k Keeper) QueryAllOperatorConsKeysByChainID(
 		res = append(res, &operatortypes.OperatorConsKeyPair{
 			OperatorAccAddr: addr.String(),
 			PublicKey:       ret,
+			OptingOut:       k.IsOperatorRemovingKeyFromChainID(ctx, addr, req.Chain),
 		})
 		return nil
 	})
@@ -157,6 +160,7 @@ func (k Keeper) QueryAllOperatorConsAddrsByChainID(
 		res = append(res, &operatortypes.OperatorConsAddrPair{
 			OperatorAccAddr: addr.String(),
 			ConsAddr:        consAddr.String(),
+			OptingOut:       k.IsOperatorRemovingKeyFromChainID(ctx, addr, req.Chain),
 		})
 		return nil
 	})
@@ -171,7 +175,7 @@ func (k Keeper) QueryAllOperatorConsAddrsByChainID(
 
 func (k *Keeper) QueryOperatorUSDValue(ctx context.Context, req *operatortypes.QueryOperatorUSDValueRequest) (*operatortypes.DecValueField, error) {
 	c := sdk.UnwrapSDKContext(ctx)
-	usdValue, err := k.GetOperatorUSDValue(c, req.AddressInfo.OperatorAddr, req.AddressInfo.AVSAddress)
+	usdValue, err := k.GetOperatorUSDValue(c, req.Details.OperatorAddr, req.Details.AVSAddress)
 	if err != nil {
 		return nil, err
 	}
@@ -193,7 +197,7 @@ func (k *Keeper) QueryAVSUSDValue(ctx context.Context, req *operatortypes.QueryA
 
 func (k *Keeper) QueryOperatorSlashInfo(ctx context.Context, req *operatortypes.QueryOperatorSlashInfoRequest) (*operatortypes.QueryOperatorSlashInfoResponse, error) {
 	c := sdk.UnwrapSDKContext(ctx)
-	slashInfo, err := k.AllOperatorSlashInfo(c, req.AddressInfo.OperatorAddr, req.AddressInfo.AVSAddress)
+	slashInfo, err := k.AllOperatorSlashInfo(c, req.Details.OperatorAddr, req.Details.AVSAddress)
 	if err != nil {
 		return nil, err
 	}

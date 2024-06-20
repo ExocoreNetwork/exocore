@@ -126,9 +126,17 @@ func QueryUndelegations() *cobra.Command {
 			}
 
 			queryClient := delegationtype.NewQueryClient(clientCtx)
+			_, _, err = types.ValidateID(args[0], false, false)
+			if err != nil {
+				return err
+			}
+			_, _, err = types.ValidateID(args[1], false, false)
+			if err != nil {
+				return err
+			}
 			req := &delegationtype.UndelegationsReq{
-				StakerID: args[0],
-				AssetID:  args[1],
+				StakerID: strings.ToLower(args[0]),
+				AssetID:  strings.ToLower(args[1]),
 			}
 			res, err := queryClient.QueryUndelegations(context.Background(), req)
 			if err != nil {

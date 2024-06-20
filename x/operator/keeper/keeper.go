@@ -71,7 +71,7 @@ type OperatorKeeper interface {
 
 	OptOut(ctx sdk.Context, OperatorAddress sdk.AccAddress, AVSAddr string) error
 
-	Slash(ctx sdk.Context, parameter *SlashInputInfo) error
+	Slash(ctx sdk.Context, parameter *operatortypes.SlashInputInfo) error
 
 	SlashWithInfractionReason(
 		ctx sdk.Context, addr sdk.AccAddress, infractionHeight, power int64,

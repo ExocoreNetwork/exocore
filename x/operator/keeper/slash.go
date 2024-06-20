@@ -15,18 +15,6 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-type SlashInputInfo struct {
-	IsDogFood        bool
-	Power            int64
-	SlashType        uint32
-	Operator         sdk.AccAddress
-	AVSAddr          string
-	SlashContract    string
-	SlashID          string
-	SlashEventHeight int64
-	SlashProportion  sdkmath.LegacyDec
-}
-
 // GetSlashIDForDogfood It use infractionType+'/'+'infractionHeight' as the slashID, because the slash event occurs in dogfood doesn't have a TxID. It isn't submitted through an external transaction.
 func GetSlashIDForDogfood(infraction stakingtypes.Infraction, infractionHeight int64) string {
 	// #nosec G701
@@ -54,7 +42,7 @@ func SlashFromUndelegation(undelegation *delegationtype.UndelegationRecord, slas
 	}
 }
 
-func (k *Keeper) CheckSlashParameter(ctx sdk.Context, parameter *SlashInputInfo) error {
+func (k *Keeper) CheckSlashParameter(ctx sdk.Context, parameter *types.SlashInputInfo) error {
 	height := ctx.BlockHeight()
 	if parameter.SlashEventHeight > height {
 		return errorsmod.Wrap(types.ErrSlashOccurredHeight, fmt.Sprintf("slashEventHeight:%d,curHeight:%d", parameter.SlashEventHeight, height))
@@ -78,7 +66,7 @@ func (k *Keeper) CheckSlashParameter(ctx sdk.Context, parameter *SlashInputInfo)
 // If the remaining amount of the assets pool after slash is zero, the share of related
 // stakers should be cleared, because the divisor will be zero when calculating the share
 // of new delegation after the slash.
-func (k *Keeper) SlashAssets(ctx sdk.Context, parameter *SlashInputInfo) (*types.SlashExecutionInfo, error) {
+func (k *Keeper) SlashAssets(ctx sdk.Context, parameter *types.SlashInputInfo) (*types.SlashExecutionInfo, error) {
 	// calculate the new slash proportion according to the historical power and current assets state
 	slashUSDValue := sdkmath.LegacyNewDec(parameter.Power).Mul(parameter.SlashProportion)
 	// calculate the current usd value of all assets pool for the operator
@@ -157,7 +145,7 @@ func (k *Keeper) SlashAssets(ctx sdk.Context, parameter *SlashInputInfo) (*types
 }
 
 // Slash performs all slash events and stores the execution result
-func (k *Keeper) Slash(ctx sdk.Context, parameter *SlashInputInfo) error {
+func (k *Keeper) Slash(ctx sdk.Context, parameter *types.SlashInputInfo) error {
 	err := k.CheckSlashParameter(ctx, parameter)
 	if err != nil {
 		return err
@@ -197,7 +185,7 @@ func (k Keeper) SlashWithInfractionReason(
 		return sdkmath.NewInt(0)
 	}
 	slashID := GetSlashIDForDogfood(infraction, infractionHeight)
-	slashParam := &SlashInputInfo{
+	slashParam := &types.SlashInputInfo{
 		IsDogFood:        true,
 		Power:            power,
 		SlashType:        uint32(infraction),
