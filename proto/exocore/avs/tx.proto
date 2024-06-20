@@ -3,8 +3,7 @@ package exocore.avs;
 import "cosmos/msg/v1/msg.proto";
 import "cosmos_proto/cosmos.proto";
 import "gogoproto/gogo.proto";
-import "google/protobuf/duration.proto";
-import "google/protobuf/timestamp.proto";
+
 
 option go_package = "github.com/ExocoreNetwork/exocore/x/avs/types";
 
@@ -34,7 +33,8 @@ message AVSInfo {
   // registered operator of avs
   repeated string operator_address = 9;
 
-  // Effective current epoch, accounting for current_epoch + 1 and current_epoch is the integer identifier of the epoch module
+  // Effective current epoch, accounting for current_epoch + 1
+  // and current_epoch is the integer identifier of the epoch module
   int64 effective_current_epoch = 10;
 }
 

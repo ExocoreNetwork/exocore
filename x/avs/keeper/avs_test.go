@@ -52,6 +52,7 @@ func (suite *AVSTestSuite) TestAVSInfoUpdate_Register() {
 		MinSelfDelegation: uint64(10),
 		UnbondingPeriod:   uint64(7),
 		SlashContractAddr: slashAddress,
+		EpochIdentifier:   epochstypes.DayEpochID,
 		OperatorAddress:   nil,
 	}
 
@@ -83,6 +84,7 @@ func (suite *AVSTestSuite) TestAVSInfoUpdate_DeRegister() {
 		MinSelfDelegation: uint64(10),
 		UnbondingPeriod:   uint64(7),
 		SlashContractAddr: slashAddress,
+		EpochIdentifier:   epochstypes.DayEpochID,
 		OperatorAddress:   nil,
 	}
 
@@ -151,6 +153,7 @@ func (suite *AVSTestSuite) TestAVSInfoUpdateWithOperator_Register() {
 		MinSelfDelegation: uint64(10),
 		UnbondingPeriod:   uint64(7),
 		SlashContractAddr: slashAddress,
+		EpochIdentifier:   epochstypes.DayEpochID,
 		OperatorAddress:   nil,
 	}
 

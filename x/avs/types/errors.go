@@ -28,7 +28,7 @@ var (
 		"Error: UnbondingPeriod check failed",
 	)
 	ErrEpochNotFound = errorsmod.Register(
-		ModuleName, 4,
+		ModuleName, 5,
 		"Error: epoch info not found",
 	)
 )

@@ -2,7 +2,6 @@ package keeper
 
 import (
 	"fmt"
-	epochstypes "github.com/evmos/evmos/v14/x/epochs/types"
 	"slices"
 
 	errorsmod "cosmossdk.io/errors"
@@ -35,7 +34,6 @@ func NewKeeper(
 	operatorKeeper delegationtypes.OperatorKeeper,
 	assetKeeper assettypes.Keeper,
 	epochsKeeper types.EpochsKeeper,
-
 ) Keeper {
 	return Keeper{
 		cdc:            cdc,
@@ -54,9 +52,10 @@ func (k Keeper) AVSInfoUpdate(ctx sdk.Context, params *AVSRegisterOrDeregisterPa
 	avsInfo, _ := k.GetAVSInfo(ctx, params.AvsAddress)
 
 	action := params.Action
-	epoch, found := k.epochsKeeper.GetEpochInfo(ctx, epochstypes.DayEpochID)
+	epochIdentifier := params.EpochIdentifier
+	epoch, found := k.epochsKeeper.GetEpochInfo(ctx, epochIdentifier)
 	if !found {
-		return errorsmod.Wrap(types.ErrEpochNotFound, fmt.Sprintf("epoch info not found %s", epochstypes.DayEpochID))
+		return errorsmod.Wrap(types.ErrEpochNotFound, fmt.Sprintf("epoch info not found %s", epochIdentifier))
 	}
 	switch action {
 	case RegisterAction:
@@ -72,7 +71,7 @@ func (k Keeper) AVSInfoUpdate(ctx sdk.Context, params *AVSRegisterOrDeregisterPa
 			AssetId:               params.AssetID,
 			MinSelfDelegation:     sdk.NewIntFromUint64(params.MinSelfDelegation),
 			AvsUnbondingPeriod:    uint32(params.UnbondingPeriod),
-			EpochIdentifier:       epochstypes.DayEpochID,
+			EpochIdentifier:       epochIdentifier,
 			OperatorAddress:       nil,
 			EffectiveCurrentEpoch: epoch.CurrentEpoch + 1, // Effective at CurrentEpoch+1, avoid immediate effects and ensure that the first epoch time of avs is equal to a normal identifier
 		}
@@ -81,7 +80,7 @@ func (k Keeper) AVSInfoUpdate(ctx sdk.Context, params *AVSRegisterOrDeregisterPa
 		if avsInfo == nil {
 			return errorsmod.Wrap(types.ErrUnregisterNonExistent, fmt.Sprintf("the avsaddress is :%s", params.AvsAddress))
 		}
-		//if avs DeRegisterAction check UnbondingPeriod
+		// If avs DeRegisterAction check UnbondingPeriod
 		if int64(avsInfo.Info.AvsUnbondingPeriod) < (epoch.CurrentEpoch - avsInfo.GetInfo().EffectiveCurrentEpoch) {
 			return errorsmod.Wrap(types.ErrUnbondingPeriod, fmt.Sprintf("not qualified to deregister %s", avsInfo))
 		}

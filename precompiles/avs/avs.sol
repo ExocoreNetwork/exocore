@@ -20,7 +20,8 @@ interface IAVSManager {
         string[] memory assetID,
         uint64 action,
         uint64 minSelfDelegation,
-        uint64 unbondingPeriod
+        uint64 unbondingPeriod,
+        string memory epochIdentifier
     ) external returns (bool success);
 
 
