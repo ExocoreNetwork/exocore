@@ -4,7 +4,9 @@ const (
 	ErrContractInputParaOrType = "the contract input parameter type or value error,arg index:%d, type is:%s,value:%v"
 	ErrContractCaller          = "the caller doesn't have the permission to call this function"
 
-	ErrInputClientChainAddrLength = "the length of input client chain addr doesn't match,input:%d,need:%d"
+	ErrInvalidAddrLength = "the length of input client chain or asset addr doesn't match,input:%d,expected:%v"
 
-	ErrInputOperatorAddrLength = "mismatched length of the input operator address,actual is:%d,expect:%v"
+	ErrInputOperatorAddrLength = "mismatched length of the input operator address,actual is:%d,expected:%v"
+
+	ErrInvalidInputList = "the length of input list is invalid, actual:%d, expected:%v"
 )

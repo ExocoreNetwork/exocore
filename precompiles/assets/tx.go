@@ -3,6 +3,8 @@ package assets
 import (
 	"fmt"
 
+	sdkmath "cosmossdk.io/math"
+
 	errorsmod "cosmossdk.io/errors"
 
 	exocmn "github.com/ExocoreNetwork/exocore/precompiles/common"
@@ -16,16 +18,20 @@ import (
 
 const (
 	// MethodDepositTo defines the ABI method name for the deposit
-	// DepositAndWithdraw transaction.
+	// DepositOrWithdraw transaction.
 	MethodDepositTo = "depositTo"
 	MethodWithdraw  = "withdrawPrincipal"
 
 	MethodGetClientChains = "getClientChains"
+
+	MethodRegisterClientChain = "registerClientChain"
+
+	MethodRegisterTokens = "registerTokens"
 )
 
-// DepositAndWithdraw deposit and withdraw the client chain assets for the staker,
+// DepositOrWithdraw deposit and withdraw the client chain assets for the staker,
 // that will change the state in assets module.
-func (p Precompile) DepositAndWithdraw(
+func (p Precompile) DepositOrWithdraw(
 	ctx sdk.Context,
 	_ common.Address,
 	contract *vm.Contract,
@@ -34,12 +40,12 @@ func (p Precompile) DepositAndWithdraw(
 	args []interface{},
 ) ([]byte, error) {
 	// check the invalidation of caller contract,the caller must be exoCore LzApp contract
-	err := p.assetsKeeper.CheckExocoreLzAppAddr(ctx, contract.CallerAddress)
+	err := p.assetsKeeper.CheckExocoreGatewayAddr(ctx, contract.CallerAddress)
 	if err != nil {
 		return nil, errorsmod.Wrap(err, exocmn.ErrContractCaller)
 	}
 	// parse the depositTo input params
-	depositWithdrawParams, err := p.GetDepositWithdrawParamsFromInputs(ctx, args)
+	depositWithdrawParams, err := p.DepositWithdrawParamsFromInputs(ctx, args)
 	if err != nil {
 		return nil, err
 	}
@@ -65,7 +71,6 @@ func (p Precompile) DepositAndWithdraw(
 	if err != nil {
 		return nil, err
 	}
-
 	return method.Outputs.Pack(true, info.TotalDepositAmount.BigInt())
 }
 
@@ -83,7 +88,7 @@ func (p Precompile) GetClientChains(
 		)
 		return method.Outputs.Pack(false, nil)
 	}
-	infos, err := p.assetsKeeper.GetAllClientChainInfo(ctx)
+	ids, err := p.assetsKeeper.GetAllClientChainID(ctx)
 	if err != nil {
 		ctx.Logger().Error(
 			"GetClientChains",
@@ -91,11 +96,57 @@ func (p Precompile) GetClientChains(
 		)
 		return method.Outputs.Pack(false, nil)
 	}
-	ids := make([]uint32, 0, len(infos))
-	for id := range infos {
-		// #nosec G701 // already checked
-		convID := uint32(id)
-		ids = append(ids, convID)
-	}
 	return method.Outputs.Pack(true, ids)
+}
+
+func (p Precompile) RegisterClientChain(
+	ctx sdk.Context,
+	contract *vm.Contract,
+	method *abi.Method,
+	args []interface{},
+) ([]byte, error) {
+	// check the invalidation of caller contract,the caller must be exoCore LzApp contract
+	err := p.assetsKeeper.CheckExocoreGatewayAddr(ctx, contract.CallerAddress)
+	if err != nil {
+		return nil, errorsmod.Wrap(err, exocmn.ErrContractCaller)
+	}
+
+	clientChainInfo, err := p.ClientChainInfoFromInputs(ctx, args)
+	if err != nil {
+		return nil, err
+	}
+	err = p.assetsKeeper.SetClientChainInfo(ctx, clientChainInfo)
+	if err != nil {
+		return nil, err
+	}
+	return method.Outputs.Pack(true)
+}
+
+func (p Precompile) RegisterTokens(
+	ctx sdk.Context,
+	contract *vm.Contract,
+	method *abi.Method,
+	args []interface{},
+) ([]byte, error) {
+	// check the invalidation of caller contract,the caller must be exoCore LzApp contract
+	err := p.assetsKeeper.CheckExocoreGatewayAddr(ctx, contract.CallerAddress)
+	if err != nil {
+		return nil, errorsmod.Wrap(err, exocmn.ErrContractCaller)
+	}
+	assets, err := p.TokensFromInputs(ctx, args)
+	if err != nil {
+		return nil, err
+	}
+
+	for i := range assets {
+		err = p.assetsKeeper.SetStakingAssetInfo(ctx, &assetstypes.StakingAssetInfo{
+			AssetBasicInfo:     &assets[i],
+			StakingTotalAmount: sdkmath.NewInt(0),
+		})
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return method.Outputs.Pack(true)
 }

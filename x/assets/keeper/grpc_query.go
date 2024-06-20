@@ -3,6 +3,9 @@ package keeper
 import (
 	"context"
 
+	"github.com/cosmos/cosmos-sdk/store/prefix"
+	"github.com/cosmos/cosmos-sdk/types/query"
+
 	assetstype "github.com/ExocoreNetwork/exocore/x/assets/types"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -29,13 +32,26 @@ func (k Keeper) QueClientChainInfoByIndex(ctx context.Context, info *assetstype.
 
 // QueAllClientChainInfo query all client chain info that have been registered in exoCore
 // the key of returned map is clientChainLzID, the value is the client chain info.
-func (k Keeper) QueAllClientChainInfo(ctx context.Context, _ *assetstype.QueryAllClientChainInfo) (*assetstype.QueryAllClientChainInfoResponse, error) {
-	c := sdk.UnwrapSDKContext(ctx)
-	allInfo, err := k.GetAllClientChainInfo(c)
+func (k Keeper) QueAllClientChainInfo(goCtx context.Context, req *assetstype.QueryAllClientChainInfo) (*assetstype.QueryAllClientChainInfoResponse, error) {
+	ctx := sdk.UnwrapSDKContext(goCtx)
+	res := make([]*assetstype.ClientChainInfo, 0)
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), assetstype.KeyPrefixClientChainInfo)
+	pageRes, err := query.Paginate(store, req.Pagination, func(key []byte, value []byte) error {
+		ret := &assetstype.ClientChainInfo{}
+		// don't use MustUnmarshal to not panic for queries
+		if err := ret.Unmarshal(value); err != nil {
+			return err
+		}
+		res = append(res, ret)
+		return nil
+	})
 	if err != nil {
 		return nil, err
 	}
-	return &assetstype.QueryAllClientChainInfoResponse{AllClientChainInfos: allInfo}, nil
+	return &assetstype.QueryAllClientChainInfoResponse{
+		AllClientChainInfos: res,
+		Pagination:          pageRes,
+	}, nil
 }
 
 // QueStakingAssetInfo query the specified client chain asset info by inputting assetID

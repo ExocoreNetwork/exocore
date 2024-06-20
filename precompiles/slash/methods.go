@@ -25,7 +25,7 @@ func (p Precompile) SubmitSlash(
 	args []interface{},
 ) ([]byte, error) {
 	// check the invalidation of caller contract
-	err := p.assetsKeeper.CheckExocoreLzAppAddr(ctx, contract.CallerAddress)
+	err := p.assetsKeeper.CheckExocoreGatewayAddr(ctx, contract.CallerAddress)
 	if err != nil {
 		return nil, errorsmod.Wrap(err, exocmn.ErrContractCaller)
 	}

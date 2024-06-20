@@ -59,7 +59,7 @@ func paddingClientChainAddress(input []byte, outputLength int) []byte {
 	return input
 }
 
-// TestRunDepositTo tests DepositAndWithdraw method through calling Run function..
+// TestRunDepositTo tests DepositOrWithdraw method through calling Run function..
 func (s *AssetsPrecompileSuite) TestRunDepositTo() {
 	// assetsprecompile params for test
 	exocoreLzAppAddress := "0x3fC91A3afd70395Cd496C647d5a6CC9D4B2b7FAD"

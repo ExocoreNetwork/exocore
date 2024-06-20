@@ -39,7 +39,7 @@ func (k Keeper) GetParams(ctx sdk.Context) (*assetstypes.Params, error) {
 	return ret, nil
 }
 
-func (k Keeper) GetExocoreLzAppAddress(ctx sdk.Context) (common.Address, error) {
+func (k Keeper) GetExocoreGatewayAddress(ctx sdk.Context) (common.Address, error) {
 	depositModuleParam, err := k.GetParams(ctx)
 	if err != nil {
 		return common.Address{}, err
@@ -47,14 +47,14 @@ func (k Keeper) GetExocoreLzAppAddress(ctx sdk.Context) (common.Address, error) 
 	return common.HexToAddress(depositModuleParam.ExocoreLzAppAddress), nil
 }
 
-func (k Keeper) CheckExocoreLzAppAddr(ctx sdk.Context, addr common.Address) error {
+func (k Keeper) CheckExocoreGatewayAddr(ctx sdk.Context, addr common.Address) error {
 	param, err := k.GetParams(ctx)
 	if err != nil {
 		return err
 	}
 	exoCoreLzAppAddr := common.HexToAddress(param.ExocoreLzAppAddress)
 	if addr != exoCoreLzAppAddr {
-		return errorsmod.Wrapf(assetstypes.ErrNotEqualToLzAppAddr, "addr:%s,param.ExocoreLzAppAddress:%s", addr, param.ExocoreLzAppAddress)
+		return errorsmod.Wrapf(assetstypes.ErrNotEqualToLzAppAddr, "addr:%s,param.ExocoreGatewayAddress:%s", addr, param.ExocoreLzAppAddress)
 	}
 	return nil
 }

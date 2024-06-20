@@ -38,7 +38,7 @@ func (p Precompile) GetRewardParamsFromInputs(ctx sdk.Context, args []interface{
 		return nil, fmt.Errorf(exocmn.ErrContractInputParaOrType, 1, reflect.TypeOf(args[0]), assetAddr)
 	}
 	if len(assetAddr) != types.GeneralClientChainAddrLength {
-		return nil, fmt.Errorf(exocmn.ErrInputClientChainAddrLength, len(assetAddr), types.GeneralClientChainAddrLength)
+		return nil, fmt.Errorf(exocmn.ErrInvalidAddrLength, len(assetAddr), types.GeneralClientChainAddrLength)
 	}
 	rewardParams.AssetsAddress = assetAddr[:clientChainAddrLength]
 
@@ -47,7 +47,7 @@ func (p Precompile) GetRewardParamsFromInputs(ctx sdk.Context, args []interface{
 		return nil, fmt.Errorf(exocmn.ErrContractInputParaOrType, 2, reflect.TypeOf(args[0]), stakerAddr)
 	}
 	if len(assetAddr) != types.GeneralClientChainAddrLength {
-		return nil, fmt.Errorf(exocmn.ErrInputClientChainAddrLength, len(assetAddr), types.GeneralClientChainAddrLength)
+		return nil, fmt.Errorf(exocmn.ErrInvalidAddrLength, len(assetAddr), types.GeneralClientChainAddrLength)
 	}
 	rewardParams.WithdrawRewardAddress = stakerAddr[:clientChainAddrLength]
 
