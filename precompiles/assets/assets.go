@@ -122,7 +122,7 @@ func (p Precompile) Run(evm *vm.EVM, contract *vm.Contract, readOnly bool) (bz [
 //
 // Available assets transactions are:
 //   - depositTo
-//   - withdrawPrinciple
+//   - withdrawPrincipal
 func (Precompile) IsTransaction(methodID string) bool {
 	switch methodID {
 	case MethodDepositTo, MethodWithdraw:

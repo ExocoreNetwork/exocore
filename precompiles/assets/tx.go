@@ -18,7 +18,7 @@ const (
 	// MethodDepositTo defines the ABI method name for the deposit
 	// DepositAndWithdraw transaction.
 	MethodDepositTo = "depositTo"
-	MethodWithdraw  = "withdrawPrinciple"
+	MethodWithdraw  = "withdrawPrincipal"
 
 	MethodGetClientChains = "getClientChains"
 )
@@ -50,7 +50,7 @@ func (p Precompile) DepositAndWithdraw(
 	case MethodDepositTo:
 		depositWithdrawParams.Action = assetstypes.Deposit
 	case MethodWithdraw:
-		depositWithdrawParams.Action = assetstypes.WithdrawPrinciple
+		depositWithdrawParams.Action = assetstypes.WithdrawPrincipal
 	default:
 		return nil, fmt.Errorf(cmn.ErrUnknownMethod, method.Name)
 	}

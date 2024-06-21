@@ -37,7 +37,7 @@ func (k Keeper) PerformDepositOrWithdraw(ctx sdk.Context, params *DepositWithdra
 		if params.OpAmount.Add(assetsInfo.StakingTotalAmount).GT(assetsInfo.AssetBasicInfo.TotalSupply) {
 			return errorsmod.Wrapf(assetstypes.ErrInvalidDepositAmount, "deposit amount will make the total staking amount greater than the total supply, amount:%s,totalStakingAmount:%s, totalSupply:%s", params.OpAmount, assetsInfo.StakingTotalAmount, assetsInfo.AssetBasicInfo.TotalSupply)
 		}
-	case assetstypes.WithdrawPrinciple:
+	case assetstypes.WithdrawPrincipal:
 		actualOpAmount = actualOpAmount.Neg()
 	default:
 		return errorsmod.Wrapf(assetstypes.ErrInvalidOperationType, "the operation type is: %v", params.Action)
