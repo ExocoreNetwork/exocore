@@ -310,7 +310,7 @@ func QueryAVSUSDValue() *cobra.Command {
 // QueryOperatorSlashInfo queries the slash information for the specified operator and AVS
 func QueryOperatorSlashInfo() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "QueryOperatorUSDValue operatorAddr avsAddr",
+		Use:   "QueryOperatorSlashInfo operatorAddr avsAddr",
 		Short: "Get the the slash information for the operator",
 		Long:  "Get the the slash information for the operator",
 		Args:  cobra.ExactArgs(2),
