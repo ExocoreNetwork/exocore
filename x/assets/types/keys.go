@@ -87,6 +87,12 @@ func GetJoinedStoreKey(keys ...string) []byte {
 	return []byte(strings.Join(keys, "/"))
 }
 
+func GetJoinedStoreKeyForPrefix(keys ...string) []byte {
+	ret := []byte(strings.Join(keys, "/"))
+	ret = append(ret, '/')
+	return ret
+}
+
 func ParseJoinedKey(key []byte) (keys []string, err error) {
 	stringList := strings.Split(string(key), "/")
 	return stringList, nil

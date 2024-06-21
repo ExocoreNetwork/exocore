@@ -36,7 +36,7 @@ const (
 
 	prefixStakerUndelegationInfo
 
-	prefixWaitCompleteUndelegations
+	prefixPendingUndelegations
 
 	// used to store the undelegation hold count
 	prefixUndelegationOnHold
@@ -57,8 +57,8 @@ var (
 	KeyPrefixUndelegationInfo = []byte{prefixUndelegationInfo}
 	// KeyPrefixStakerUndelegationInfo restakerID+'/'+assetID+'/'+LzNonce -> singleRecordKey
 	KeyPrefixStakerUndelegationInfo = []byte{prefixStakerUndelegationInfo}
-	// KeyPrefixWaitCompleteUndelegations completeHeight +'/'+LzNonce -> singleRecordKey
-	KeyPrefixWaitCompleteUndelegations = []byte{prefixWaitCompleteUndelegations}
+	// KeyPrefixPendingUndelegations completeHeight +'/'+LzNonce -> singleRecordKey
+	KeyPrefixPendingUndelegations = []byte{prefixPendingUndelegations}
 )
 
 func GetDelegationStateIteratorPrefix(stakerID, assetID string) []byte {
@@ -118,7 +118,7 @@ func GetStakerUndelegationRecordKey(stakerID, assetID string, lzNonce uint64) []
 	return []byte(strings.Join([]string{stakerID, assetID, hexutil.EncodeUint64(lzNonce)}, "/"))
 }
 
-func GetWaitCompleteRecordKey(height, lzNonce uint64) []byte {
+func GetPendingUndelegationRecordKey(height, lzNonce uint64) []byte {
 	return []byte(strings.Join([]string{hexutil.EncodeUint64(height), hexutil.EncodeUint64(lzNonce)}, "/"))
 }
 
