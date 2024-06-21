@@ -7,6 +7,7 @@ import (
 	operatortypes "github.com/ExocoreNetwork/exocore/x/operator/types"
 	abci "github.com/cometbft/cometbft/abci/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"golang.org/x/xerrors"
 )
 
 // CalculateUSDValueForOperator calculates the total and self usd value for the
@@ -55,6 +56,9 @@ func (k *Keeper) CalculateUSDValueForOperator(
 			decimal = assetInfo.AssetBasicInfo.Decimals
 			ret.StakingAndWaitUnbonding = ret.StakingAndWaitUnbonding.Add(CalculateUSDValue(state.TotalAmount.Add(state.WaitUnbondingAmount), price.Value, decimal, price.Decimal))
 		} else {
+			if prices == nil {
+				return xerrors.Errorf("CalculateUSDValueForOperator, the input prices map is nil")
+			}
 			price = prices[assetID]
 			decimal = decimals[assetID]
 			ret.Staking = ret.Staking.Add(CalculateUSDValue(state.TotalAmount, price.Value, decimal, price.Decimal))

@@ -3,6 +3,9 @@ package cli
 import (
 	"context"
 
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	"golang.org/x/xerrors"
+
 	operatortypes "github.com/ExocoreNetwork/exocore/x/operator/types"
 
 	"github.com/cosmos/cosmos-sdk/client"
@@ -42,6 +45,10 @@ func GetOperatorInfo() *cobra.Command {
 		Long:  "Get operator info",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
+			_, err := sdk.AccAddressFromBech32(args[0])
+			if err != nil {
+				return xerrors.Errorf("invalid operator address,err:%s", err.Error())
+			}
 			clientCtx, err := client.GetClientQueryContext(cmd)
 			if err != nil {
 				return err
@@ -103,6 +110,10 @@ func GetOperatorConsKey() *cobra.Command {
 		Long:  "Get operator consensus key for the provided chain ID",
 		Args:  cobra.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) error {
+			_, err := sdk.AccAddressFromBech32(args[0])
+			if err != nil {
+				return xerrors.Errorf("invalid operator address,err:%s", err.Error())
+			}
 			clientCtx, err := client.GetClientQueryContext(cmd)
 			if err != nil {
 				return err
@@ -174,6 +185,10 @@ func GetOperatorConsAddress() *cobra.Command {
 			if err != nil {
 				return err
 			}
+			_, err = sdk.AccAddressFromBech32(args[0])
+			if err != nil {
+				return xerrors.Errorf("invalid operator address,err:%s", err.Error())
+			}
 
 			queryClient := operatortypes.NewQueryClient(clientCtx)
 			req := &operatortypes.QueryOperatorConsAddressRequest{
@@ -237,6 +252,10 @@ func QueryOperatorUSDValue() *cobra.Command {
 		Long:  "Get the opted-in USD value for the operator",
 		Args:  cobra.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) error {
+			_, err := sdk.AccAddressFromBech32(args[0])
+			if err != nil {
+				return xerrors.Errorf("invalid operator address,err:%s", err.Error())
+			}
 			clientCtx, err := client.GetClientQueryContext(cmd)
 			if err != nil {
 				return err
@@ -296,7 +315,15 @@ func QueryOperatorSlashInfo() *cobra.Command {
 		Long:  "Get the the slash information for the operator",
 		Args:  cobra.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) error {
+			_, err := sdk.AccAddressFromBech32(args[0])
+			if err != nil {
+				return xerrors.Errorf("invalid operator address,err:%s", err.Error())
+			}
 			clientCtx, err := client.GetClientQueryContext(cmd)
+			if err != nil {
+				return err
+			}
+			pageReq, err := client.ReadPageRequest(cmd.Flags())
 			if err != nil {
 				return err
 			}
@@ -306,6 +333,7 @@ func QueryOperatorSlashInfo() *cobra.Command {
 					OperatorAddr: args[0],
 					AVSAddress:   args[1],
 				},
+				Pagination: pageReq,
 			}
 			res, err := queryClient.QueryOperatorSlashInfo(context.Background(), req)
 			if err != nil {

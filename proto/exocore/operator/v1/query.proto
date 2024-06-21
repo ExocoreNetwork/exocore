@@ -57,14 +57,25 @@ message QueryAVSUSDValueRequest {
 message QueryOperatorSlashInfoRequest {
   // details is the operator and AVS address
   OperatorAVSAddressDetails details = 1;
+  // pagination related options.
+  cosmos.base.query.v1beta1.PageRequest pagination = 2;
+}
+
+// OperatorSlashInfoByID includes the slash information and the slashID
+message OperatorSlashInfoByID {
+  // slash_id is stored as the key of the slash information,
+  // so it will be parsed and padding here.
+  string slash_id = 1 [(gogoproto.customname) = "SlashID"];
+  // info is the specified detailed information for the slashing event.
+  OperatorSlashInfo info = 2;
 }
 
 // QueryOperatorSlashInfoResponse is the response for GetOperatorSlashInfoRequest
 message QueryOperatorSlashInfoResponse{
-  // AllSlashInfo the key is slashID, the value is the specified slash information
-  // It's okay to use a map here, because it won't be used to store state, only in
-  // the response to an RPC call
-  map<string, OperatorSlashInfo> all_slash_info = 1;
+  // all_slash_info is a list of the slash information for the specified operator and AVS
+  repeated OperatorSlashInfoByID all_slash_info = 1;
+  // pagination related response.
+  cosmos.base.query.v1beta1.PageResponse pagination = 2;
 }
 
 // QueryOperatorConsKeyRequest is the request to obtain the consensus public key of the operator
@@ -80,7 +91,7 @@ message QueryOperatorConsKeyRequest {
 // QueryOperatorConsKeyResponse is the response for QueryOperatorConsKeyRequest.
 message QueryOperatorConsKeyResponse {
   // public_key is the consensus public key of the operator.
-  tendermint.crypto.PublicKey public_key = 1 [ (gogoproto.nullable) = false ];
+  tendermint.crypto.PublicKey public_key = 1 [(gogoproto.nullable) = false];
   // opting_out is a flag to indicate if the operator is opting out of consensus.
   bool opting_out = 2;
 }
@@ -183,8 +194,8 @@ service Query {
 
   // QueryOperatorConsKeyForChainID queries the consensus public key for the operator
   rpc QueryOperatorConsKeyForChainID(QueryOperatorConsKeyRequest) returns (
-    QueryOperatorConsKeyResponse
-  ) {
+      QueryOperatorConsKeyResponse
+      ) {
     option (google.api.http) = {
       get: "/exocore/operator/v1/operator_cons_key/{operator_acc_addr}/{chain}"
     };
@@ -192,8 +203,8 @@ service Query {
 
   // QueryOperatorConsAddressForChainID queries the consensus address for the operator.
   rpc QueryOperatorConsAddressForChainID(QueryOperatorConsAddressRequest) returns (
-    QueryOperatorConsAddressResponse
-  ) {
+      QueryOperatorConsAddressResponse
+      ) {
     option (google.api.http) = {
       get: "/exocore/operator/v1/operator_cons_addr/{operator_acc_addr}/{chain}"
     };
@@ -202,8 +213,8 @@ service Query {
   // QueryAllOperatorConsKeysByChainID queries all operators and their consensus public keys
   // for a specific chain ID
   rpc QueryAllOperatorConsKeysByChainID(QueryAllOperatorConsKeysByChainIDRequest) returns (
-    QueryAllOperatorConsKeysByChainIDResponse
-  ) {
+      QueryAllOperatorConsKeysByChainIDResponse
+      ) {
     option (google.api.http) = {
       get: "/exocore/operator/v1/all_operator_cons_keys/{chain}"
     };
@@ -227,8 +238,8 @@ service Query {
   // QueryAllOperatorConsAddrsByChainID queries all operators and their consensus addresses
   // for a specific chain ID
   rpc QueryAllOperatorConsAddrsByChainID(QueryAllOperatorConsAddrsByChainIDRequest) returns (
-    QueryAllOperatorConsAddrsByChainIDResponse
-  ) {
+      QueryAllOperatorConsAddrsByChainIDResponse
+      ) {
     option (google.api.http) = {
       get: "/exocore/operator/v1/all_operator_cons_addrs/{chain}"
     };

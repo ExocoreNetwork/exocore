@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 
+	assetstype "github.com/ExocoreNetwork/exocore/x/assets/types"
+
 	operatortypes "github.com/ExocoreNetwork/exocore/x/operator/types"
 	tmprotocrypto "github.com/cometbft/cometbft/proto/tendermint/crypto"
 	"github.com/cosmos/cosmos-sdk/store/prefix"
@@ -175,7 +177,7 @@ func (k Keeper) QueryAllOperatorConsAddrsByChainID(
 
 func (k *Keeper) QueryOperatorUSDValue(ctx context.Context, req *operatortypes.QueryOperatorUSDValueRequest) (*operatortypes.DecValueField, error) {
 	c := sdk.UnwrapSDKContext(ctx)
-	usdValue, err := k.GetOperatorUSDValue(c, req.Details.OperatorAddr, req.Details.AVSAddress)
+	usdValue, err := k.GetOperatorUSDValue(c, req.Details.AVSAddress, req.Details.OperatorAddr)
 	if err != nil {
 		return nil, err
 	}
@@ -195,13 +197,30 @@ func (k *Keeper) QueryAVSUSDValue(ctx context.Context, req *operatortypes.QueryA
 	}, nil
 }
 
-func (k *Keeper) QueryOperatorSlashInfo(ctx context.Context, req *operatortypes.QueryOperatorSlashInfoRequest) (*operatortypes.QueryOperatorSlashInfoResponse, error) {
-	c := sdk.UnwrapSDKContext(ctx)
-	slashInfo, err := k.AllOperatorSlashInfo(c, req.Details.OperatorAddr, req.Details.AVSAddress)
+func (k *Keeper) QueryOperatorSlashInfo(goCtx context.Context, req *operatortypes.QueryOperatorSlashInfoRequest) (*operatortypes.QueryOperatorSlashInfoResponse, error) {
+	ctx := sdk.UnwrapSDKContext(goCtx)
+	res := make([]*operatortypes.OperatorSlashInfoByID, 0)
+
+	slashPrefix := operatortypes.AppendMany(operatortypes.KeyPrefixOperatorSlashInfo, assetstype.GetJoinedStoreKeyForPrefix(req.Details.OperatorAddr, req.Details.AVSAddress))
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), slashPrefix)
+	pageRes, err := query.Paginate(store, req.Pagination, func(key []byte, value []byte) error {
+		ret := &operatortypes.OperatorSlashInfo{}
+		// don't use MustUnmarshal to not panic for queries
+		if err := ret.Unmarshal(value); err != nil {
+			return err
+		}
+
+		res = append(res, &operatortypes.OperatorSlashInfoByID{
+			SlashID: string(key),
+			Info:    ret,
+		})
+		return nil
+	})
 	if err != nil {
 		return nil, err
 	}
 	return &operatortypes.QueryOperatorSlashInfoResponse{
-		AllSlashInfo: slashInfo,
+		AllSlashInfo: res,
+		Pagination:   pageRes,
 	}, nil
 }
