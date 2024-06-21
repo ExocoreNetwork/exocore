@@ -11,6 +11,18 @@ import (
 
 // CalculateUSDValueForOperator calculates the total and self usd value for the
 // operator according to the input assets filter and prices.
+// This function will be used in slashing calculations and voting power updates per epoch.
+// The inputs/outputs and calculation logic for these two cases are different,
+// so an `isForSlash` flag is used to distinguish between them.
+// When it's called by the voting power update, the needed outputs are the current total
+// staking amount and the self-staking amount of the operator. The current total
+// staking amount excludes the pending unbonding amount, so it's used to calculate the voting power.
+// The self-staking amount is also needed to check if the operator's self-staking is sufficient.
+// At the same time, the prices of all assets have been retrieved in the caller's function, so they
+// are inputted as a parameter.
+// When it's called by the slash execution, the needed output is the sum of the current total amount and
+// the pending unbonding amount, because the undelegation also needs to be slashed. And the prices of
+// all assets haven't been prepared by the caller, so the prices should be retrieved in this function.
 func (k *Keeper) CalculateUSDValueForOperator(
 	ctx sdk.Context,
 	isForSlash bool,

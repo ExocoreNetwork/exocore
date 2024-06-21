@@ -39,7 +39,6 @@ message OperatorAVSAddressDetails {
   string avs_address = 2 [(gogoproto.customname) = "AVSAddress"];
 }
 
-// QueryOperatorConsKeyRequest is a request to obtain the consensus public key of the operator.
 // QueryOperatorUSDValueRequest is the request to obtain the USD value for operator.
 message QueryOperatorUSDValueRequest {
   // details is the operator and AVS address

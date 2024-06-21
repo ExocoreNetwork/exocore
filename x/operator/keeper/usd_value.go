@@ -173,7 +173,6 @@ func (k *Keeper) BatchUpdateUSDValueForAVSAndOperator(ctx sdk.Context, avsOperat
 // GetAVSUSDValue is a function to retrieve the USD share of specified Avs,
 // The key and value to retrieve is:
 // AVSAddr -> types.DecValueField（the total USD share of specified Avs）
-// It hasn't been used now. but it can serve as an RPC in the future.
 func (k *Keeper) GetAVSUSDValue(ctx sdk.Context, avsAddr string) (sdkmath.LegacyDec, error) {
 	store := prefix.NewStore(
 		ctx.KVStore(k.storeKey),
