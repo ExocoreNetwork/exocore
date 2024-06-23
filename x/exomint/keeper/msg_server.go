@@ -8,7 +8,6 @@ import (
 	"github.com/ExocoreNetwork/exocore/x/exomint/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
-	epochstypes "github.com/evmos/evmos/v14/x/epochs/types"
 )
 
 type msgServer struct {
@@ -37,32 +36,16 @@ func (k Keeper) UpdateParams(
 	}
 	prevParams := k.GetParams(c)
 	nextParams := msg.Params
-	logger := c.Logger().With(types.ModuleName)
-	if len(nextParams.MintDenom) == 0 {
-		logger.Info("UpdateParams", "overriding MintDenom with value", prevParams.MintDenom)
-		nextParams.MintDenom = prevParams.MintDenom
-	}
-	if nextParams.EpochReward.IsNil() || !nextParams.EpochReward.IsPositive() {
-		// if the reward is negative or 0, we keep the previous value
-		// this allows for the epoch reward to not be supplied.
-		logger.Info("UpdateParams", "overriding EpochReward with value", prevParams.EpochReward)
-		nextParams.EpochReward = prevParams.EpochReward
-	}
-	if err := epochstypes.ValidateEpochIdentifierString(
-		nextParams.EpochIdentifier,
-	); err != nil {
-		logger.Info("UpdateParams", "overriding EpochIdentifier with value", prevParams.EpochIdentifier)
-		nextParams.EpochIdentifier = prevParams.EpochIdentifier
-	}
+	// stateless validations
+	overParams := nextParams.OverrideIfUnset(prevParams, k.Logger(c))
 	// stateful validations
-	// no need to check if MintDenom is registered in BankKeeper, since it does not
-	// itself perform such checks.
+	// no need to check if MintDenom is registered in BankKeeper, since it does not itself perform such checks.
 	// the reward is already guaranteed to be positive and fits in the bit length.
-	// we just have to check epoch here.
-	if _, found := k.epochsKeeper.GetEpochInfo(c, nextParams.EpochIdentifier); !found {
-		logger.Info("UpdateParams", "overriding EpochIdentifier with value", prevParams.EpochIdentifier)
-		nextParams.EpochIdentifier = prevParams.EpochIdentifier
+	// so, we just have to check epoch here.
+	if _, found := k.epochsKeeper.GetEpochInfo(c, overParams.EpochIdentifier); !found {
+		k.Logger(c).Info("UpdateParams", "overriding EpochIdentifier with value", prevParams.EpochIdentifier)
+		overParams.EpochIdentifier = prevParams.EpochIdentifier
 	}
-	k.SetParams(c, msg.Params)
+	k.SetParams(c, overParams)
 	return &types.MsgUpdateParamsResponse{}, nil
 }

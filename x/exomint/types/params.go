@@ -3,6 +3,8 @@ package types
 import (
 	fmt "fmt"
 
+	"github.com/cometbft/cometbft/libs/log"
+
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	epochstypes "github.com/evmos/evmos/v14/x/epochs/types"
@@ -80,4 +82,41 @@ func ValidateEpochReward(i interface{}) error {
 func (p Params) String() string {
 	out, _ := yaml.Marshal(p)
 	return string(out)
+}
+
+func (p Params) Copy() Params {
+	return Params{
+		MintDenom:       p.MintDenom,
+		EpochReward:     p.EpochReward,
+		EpochIdentifier: p.EpochIdentifier,
+	}
+
+}
+
+// OverrideIfUnset overrides the unset parameters from the previous parameters.
+func (nextParams Params) OverrideIfUnset(prevParams Params, logger log.Logger) Params {
+	overParams := nextParams.Copy()
+	if len(nextParams.MintDenom) == 0 {
+		logger.Info("OverrideIfUnset", "overriding MintDenom with value", prevParams.MintDenom)
+		overParams.MintDenom = prevParams.MintDenom
+	}
+	if nextParams.EpochReward.IsNil() || !nextParams.EpochReward.IsPositive() {
+		// if the reward is negative or 0, we keep the previous value
+		// this allows for the epoch reward to not be supplied.
+		logger.Info("OverrideIfUnset", "overriding EpochReward with value", prevParams.EpochReward)
+		overParams.EpochReward = prevParams.EpochReward
+	}
+	if err := epochstypes.ValidateEpochIdentifierString(
+		nextParams.EpochIdentifier,
+	); err != nil {
+		logger.Info("OverrideIfUnset", "overriding EpochIdentifier with value", prevParams.EpochIdentifier)
+		overParams.EpochIdentifier = prevParams.EpochIdentifier
+	}
+	return overParams
+}
+
+func (p Params) Equal(p2 Params) bool {
+	return p.MintDenom == p2.MintDenom &&
+		p.EpochReward.Equal(p2.EpochReward) &&
+		p.EpochIdentifier == p2.EpochIdentifier
 }
