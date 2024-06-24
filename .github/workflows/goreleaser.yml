@@ -1,19 +1,26 @@
 name: goreleaser
 
 permissions:
-  # github releases
   contents: write
 
 on:
   push:
     tags:
       - "v*.*.*"
+  # Validate on develop, main, and master branches that the releaser
+  # is working as expected.
+  pull_request:
+    branches:
+      - develop
+      - main
+      - master
+
 jobs:
   goreleaser:
     runs-on: ubuntu-latest
-    environment: release
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
         with:
           submodules: true
       - name: Set up Go
@@ -21,12 +28,11 @@ jobs:
         with:
           go-version: '1.21.11'
           check-latest: true
-      - name: release dry run
+      - name: Release dry run
         run: make release-dry-run
-      - name: setup release environment
+      - name: Release publish
+        # Do not publish the release for pull requests.
+        if: github.event_name != 'pull_request'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |-
-          echo 'GITHUB_TOKEN=${{secrets.GITHUB_TOKEN}}' > .release-env
-      - name: release publish
         run: make release
