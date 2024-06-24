@@ -1,29 +1,29 @@
-package deposit
+package assets
 
 import (
 	"math/big"
 
 	sdkmath "cosmossdk.io/math"
 	exocmn "github.com/ExocoreNetwork/exocore/precompiles/common"
+	assetskeeper "github.com/ExocoreNetwork/exocore/x/assets/keeper"
 	"github.com/ExocoreNetwork/exocore/x/assets/types"
-	"github.com/ExocoreNetwork/exocore/x/deposit/keeper"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	cmn "github.com/evmos/evmos/v14/precompiles/common"
 	"golang.org/x/xerrors"
 )
 
-func (p Precompile) GetDepositToParamsFromInputs(ctx sdk.Context, args []interface{}) (*keeper.DepositParams, error) {
+func (p Precompile) GetDepositWithdrawParamsFromInputs(ctx sdk.Context, args []interface{}) (*assetskeeper.DepositWithdrawParams, error) {
 	if len(args) != 4 {
 		return nil, xerrors.Errorf(cmn.ErrInvalidNumberOfArgs, 4, len(args))
 	}
-	depositParams := &keeper.DepositParams{}
+	depositWithdrawParams := &assetskeeper.DepositWithdrawParams{}
 	clientChainLzID, ok := args[0].(uint32)
 	if !ok {
 		return nil, xerrors.Errorf(exocmn.ErrContractInputParaOrType, 0, "uint16", clientChainLzID)
 	}
-	depositParams.ClientChainLzID = uint64(clientChainLzID)
+	depositWithdrawParams.ClientChainLzID = uint64(clientChainLzID)
 
-	info, err := p.assetsKeeper.GetClientChainInfoByIndex(ctx, depositParams.ClientChainLzID)
+	info, err := p.assetsKeeper.GetClientChainInfoByIndex(ctx, depositWithdrawParams.ClientChainLzID)
 	if err != nil {
 		return nil, err
 	}
@@ -37,7 +37,7 @@ func (p Precompile) GetDepositToParamsFromInputs(ctx sdk.Context, args []interfa
 	if len(assetAddr) != types.GeneralAssetsAddrLength {
 		return nil, xerrors.Errorf(exocmn.ErrInputClientChainAddrLength, len(assetAddr), types.GeneralClientChainAddrLength)
 	}
-	depositParams.AssetsAddress = assetAddr[:clientChainAddrLength]
+	depositWithdrawParams.AssetsAddress = assetAddr[:clientChainAddrLength]
 
 	stakerAddr, ok := args[2].([]byte)
 	if !ok || stakerAddr == nil {
@@ -46,13 +46,13 @@ func (p Precompile) GetDepositToParamsFromInputs(ctx sdk.Context, args []interfa
 	if len(stakerAddr) != types.GeneralClientChainAddrLength {
 		return nil, xerrors.Errorf(exocmn.ErrInputClientChainAddrLength, len(assetAddr), types.GeneralClientChainAddrLength)
 	}
-	depositParams.StakerAddress = stakerAddr[:clientChainAddrLength]
+	depositWithdrawParams.StakerAddress = stakerAddr[:clientChainAddrLength]
 
 	opAmount, ok := args[3].(*big.Int)
 	if !ok || opAmount == nil || opAmount.Cmp(big.NewInt(0)) == 0 {
 		return nil, xerrors.Errorf(exocmn.ErrContractInputParaOrType, 3, "*big.Int", opAmount)
 	}
-	depositParams.OpAmount = sdkmath.NewIntFromBigInt(opAmount)
+	depositWithdrawParams.OpAmount = sdkmath.NewIntFromBigInt(opAmount)
 
-	return depositParams, nil
+	return depositWithdrawParams, nil
 }

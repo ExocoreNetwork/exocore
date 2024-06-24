@@ -1,7 +1,0 @@
-syntax = "proto3";
-package exocore.deposit.v1;
-
-option go_package = "github.com/ExocoreNetwork/exocore/x/deposit/types";
-
-// GenesisState defines the deposit module's genesis state.
-message Params {}
