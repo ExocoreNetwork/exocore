@@ -15,8 +15,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	typesparams "github.com/cosmos/cosmos-sdk/x/params/types"
 
-	// stakingKeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
-	stakingKeeper "github.com/ExocoreNetwork/exocore/x/dogfood/keeper"
+	dogfoodkeeper "github.com/ExocoreNetwork/exocore/x/dogfood/keeper"
 	"github.com/stretchr/testify/require"
 )
 
@@ -44,7 +43,7 @@ func OracleKeeper(t testing.TB) (*keeper.Keeper, sdk.Context) {
 		storeKey,
 		memStoreKey,
 		paramsSubspace,
-		stakingKeeper.Keeper{},
+		dogfoodkeeper.Keeper{},
 	)
 
 	ctx := sdk.NewContext(stateStore, tmproto.Header{}, false, log.NewNopLogger())
