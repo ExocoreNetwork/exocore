@@ -35,7 +35,7 @@ interface IAssets {
 /// @param assetsAddress The client chain asset Address
 /// @param withdrawAddress The withdraw address
 /// @param opAmount The withdraw amount
-    function withdrawPrinciple(
+    function withdrawPrincipal(
         uint32 clientChainLzID,
         bytes memory assetsAddress,
         bytes memory withdrawAddress,

@@ -192,7 +192,7 @@ func (s *AssetsPrecompileSuite) TestCallWithdrawFromEOA() {
 	stakerAddr := paddingClientChainAddress(s.Address.Bytes(), assetstype.GeneralClientChainAddrLength)
 	opAmount := big.NewInt(100)
 	assetAddr := usdtAddress
-	method := "withdrawPrinciple"
+	method := "withdrawPrincipal"
 
 	beforeEach := func() {
 		s.SetupTest()

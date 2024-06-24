@@ -1,103 +1,98 @@
 [
   {
-    "inputs":
-    [
-      {
-        "internalType": "uint32",
-        "name": "clientChainLzID",
-        "type": "uint32"
-      },
-      {
-        "internalType": "bytes",
-        "name": "assetsAddress",
-        "type": "bytes"
-      },
-      {
-        "internalType": "bytes",
-        "name": "stakerAddress",
-        "type": "bytes"
-      },
-      {
-        "internalType": "uint256",
-        "name": "opAmount",
-        "type": "uint256"
-      }
-    ],
+    "type": "function",
     "name": "depositTo",
-    "outputs":
-    [
+    "inputs": [
       {
-        "internalType": "bool",
-        "name": "success",
-        "type": "bool"
-      },
-      {
-        "internalType": "uint256",
-        "name": "latestAssetState",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "getClientChains",
-    "outputs":
-    [
-      {
-        "internalType": "bool",
-        "name": "",
-        "type": "bool"
-      },
-      {
-        "internalType": "uint32[]",
-        "name": "",
-        "type": "uint32[]"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs":
-    [
-      {
-        "internalType": "uint32",
         "name": "clientChainLzID",
-        "type": "uint32"
+        "type": "uint32",
+        "internalType": "uint32"
       },
       {
-        "internalType": "bytes",
         "name": "assetsAddress",
-        "type": "bytes"
+        "type": "bytes",
+        "internalType": "bytes"
       },
       {
-        "internalType": "bytes",
-        "name": "withdrawAddress",
-        "type": "bytes"
+        "name": "stakerAddress",
+        "type": "bytes",
+        "internalType": "bytes"
       },
       {
-        "internalType": "uint256",
         "name": "opAmount",
-        "type": "uint256"
+        "type": "uint256",
+        "internalType": "uint256"
       }
     ],
-    "name": "withdrawPrinciple",
-    "outputs":
-    [
+    "outputs": [
       {
-        "internalType": "bool",
         "name": "success",
-        "type": "bool"
+        "type": "bool",
+        "internalType": "bool"
       },
       {
-        "internalType": "uint256",
         "name": "latestAssetState",
-        "type": "uint256"
+        "type": "uint256",
+        "internalType": "uint256"
       }
     ],
-    "stateMutability": "nonpayable",
-    "type": "function"
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "getClientChains",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "bool",
+        "internalType": "bool"
+      },
+      {
+        "name": "",
+        "type": "uint32[]",
+        "internalType": "uint32[]"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "withdrawPrincipal",
+    "inputs": [
+      {
+        "name": "clientChainLzID",
+        "type": "uint32",
+        "internalType": "uint32"
+      },
+      {
+        "name": "assetsAddress",
+        "type": "bytes",
+        "internalType": "bytes"
+      },
+      {
+        "name": "withdrawAddress",
+        "type": "bytes",
+        "internalType": "bytes"
+      },
+      {
+        "name": "opAmount",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "success",
+        "type": "bool",
+        "internalType": "bool"
+      },
+      {
+        "name": "latestAssetState",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "stateMutability": "nonpayable"
   }
 ]
