@@ -1,6 +1,7 @@
 package keeper_test
 
 import (
+	"fmt"
 	"strings"
 
 	abci "github.com/cometbft/cometbft/abci/types"
@@ -41,7 +42,7 @@ func (suite *OperatorTestSuite) prepareOperator() {
 
 func (suite *OperatorTestSuite) prepareDeposit(assetAddr common.Address, amount sdkmath.Int) {
 	clientChainLzID := uint64(101)
-	suite.avsAddr = "avsTestAddr"
+	suite.avsAddr = common.BytesToAddress([]byte("avsTestAddr")).String()
 	suite.assetAddr = assetAddr
 	suite.assetDecimal = 6
 	suite.clientChainLzID = clientChainLzID
@@ -60,12 +61,10 @@ func (suite *OperatorTestSuite) prepareDeposit(assetAddr common.Address, amount 
 	suite.NoError(err)
 }
 
-func (suite *OperatorTestSuite) prepareDelegation(assetAddr common.Address, amount sdkmath.Int) {
+func (suite *OperatorTestSuite) prepareDelegation(isDelegation bool, assetAddr common.Address, amount sdkmath.Int) {
 	suite.delegationAmount = amount
-	// delegate to operator
-	delegationParam := &delegationtype.DelegationOrUndelegationParams{
+	param := &delegationtype.DelegationOrUndelegationParams{
 		ClientChainLzID: suite.clientChainLzID,
-		Action:          assetstypes.DelegateTo,
 		AssetsAddress:   assetAddr[:],
 		OperatorAddress: suite.operatorAddr,
 		StakerAddress:   suite.Address[:],
@@ -73,7 +72,12 @@ func (suite *OperatorTestSuite) prepareDelegation(assetAddr common.Address, amou
 		LzNonce:         0,
 		TxHash:          common.HexToHash("0x24c4a315d757249c12a7a1d7b6fb96261d49deee26f06a3e1787d008b445c3ac"),
 	}
-	err := suite.App.DelegationKeeper.DelegateTo(suite.Ctx, delegationParam)
+	var err error
+	if isDelegation {
+		err = suite.App.DelegationKeeper.DelegateTo(suite.Ctx, param)
+	} else {
+		err = suite.App.DelegationKeeper.UndelegateFrom(suite.Ctx, param)
+	}
 	suite.NoError(err)
 }
 
@@ -83,7 +87,7 @@ func (suite *OperatorTestSuite) prepare() {
 	delegationAmount := sdkmath.NewInt(50)
 	suite.prepareOperator()
 	suite.prepareDeposit(usdtAddress, depositAmount)
-	suite.prepareDelegation(usdtAddress, delegationAmount)
+	suite.prepareDelegation(true, usdtAddress, delegationAmount)
 }
 
 func (suite *OperatorTestSuite) CheckState(expectedState *StateForCheck) {
@@ -106,6 +110,7 @@ func (suite *OperatorTestSuite) CheckState(expectedState *StateForCheck) {
 
 	value, err = suite.App.OperatorKeeper.GetOperatorUSDValue(suite.Ctx, suite.avsAddr, suite.operatorAddr.String())
 	if expectedState.AVSOperatorShare.IsNil() {
+		fmt.Println("the err is:", err)
 		suite.True(strings.Contains(err.Error(), operatorTypes.ErrNoKeyInTheStore.Error()))
 	} else {
 		suite.NoError(err)
@@ -157,25 +162,11 @@ func (suite *OperatorTestSuite) TestOptOut() {
 			OptedOutHeight: uint64(suite.Ctx.BlockHeight()),
 		},
 		AVSTotalShare:    sdkmath.LegacyNewDec(0),
-		AVSOperatorShare: sdkmath.LegacyDec{},
+		AVSOperatorShare: sdkmath.LegacyNewDec(0),
 		AssetState:       nil,
 		OperatorShare:    sdkmath.LegacyDec{},
 		StakerShare:      sdkmath.LegacyDec{},
 	}
 	suite.App.OperatorKeeper.EndBlock(suite.Ctx, abci.RequestEndBlock{})
 	suite.CheckState(expectedState)
-}
-
-func (suite *OperatorTestSuite) TestSlash() {
-	suite.prepare()
-	err := suite.App.OperatorKeeper.OptIn(suite.Ctx, suite.operatorAddr, suite.avsAddr)
-	suite.NoError(err)
-	optInHeight := suite.Ctx.BlockHeight()
-
-	// run to the block at specified height
-	runToHeight := optInHeight + 10
-	for i := optInHeight; i < runToHeight; i++ {
-		suite.NextBlock()
-	}
-	suite.Equal(runToHeight, suite.Ctx.BlockHeight())
 }

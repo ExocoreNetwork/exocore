@@ -17,14 +17,16 @@ message Chain{
 message Token{
   // token name
   string name = 1;
-  //id refer to chainList's index
+  // id refer to chainList's index
   uint64 chain_id = 2 [(gogoproto.customname) = "ChainID"];
-  //if any, like erc20 tokens
+  // if any, like erc20 tokens
   string contract_address = 3;
   // decimal of token price
   int32 decimal = 4;
-  //set false when we stop official price oracle service for a specified token
+  // set false when we stop official price oracle service for a specified token
   bool active = 5;
+  // refer to assetID from assets module if exists
+  string asset_id = 6 [(gogoproto.customname) = "AssetID"];
 }
 
 // Endpoint tells where to fetch the price info

@@ -83,6 +83,11 @@ func (k *Keeper) DeleteOperatorUSDValue(ctx sdk.Context, avsAddr, operatorAddr s
 // of Avs should decrease the USD share of the opted-out operator
 // This function can also serve as an RPC in the future.
 func (k *Keeper) GetOperatorUSDValue(ctx sdk.Context, avsAddr, operatorAddr string) (sdkmath.LegacyDec, error) {
+	// return zero if the operator has opted-out of the AVS
+	if !k.IsOptedIn(ctx, operatorAddr, avsAddr) {
+		return sdkmath.LegacyNewDec(0), nil
+	}
+
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), operatortypes.KeyPrefixVotingPowerForAVSOperator)
 	var ret operatortypes.DecValueField
 	var key []byte
@@ -168,9 +173,11 @@ func (k *Keeper) BatchUpdateUSDValueForAVSAndOperator(ctx sdk.Context, avsOperat
 // GetAVSUSDValue is a function to retrieve the USD share of specified Avs,
 // The key and value to retrieve is:
 // AVSAddr -> types.DecValueField（the total USD share of specified Avs）
-// It hasn't been used now. but it can serve as an RPC in the future.
 func (k *Keeper) GetAVSUSDValue(ctx sdk.Context, avsAddr string) (sdkmath.LegacyDec, error) {
-	store := prefix.NewStore(ctx.KVStore(k.storeKey), operatortypes.KeyPrefixVotingPowerForAVSOperator)
+	store := prefix.NewStore(
+		ctx.KVStore(k.storeKey),
+		operatortypes.KeyPrefixVotingPowerForAVSOperator,
+	)
 	var ret operatortypes.DecValueField
 	key := []byte(avsAddr)
 	value := store.Get(key)
@@ -217,7 +224,7 @@ func (k Keeper) GetAvgDelegatedValue(
 	}
 	ret := make([]int64, 0)
 	for _, operator := range operators {
-		usdValue, err := k.GetOperatorUSDValue(ctx, operator.String(), avsAddr)
+		usdValue, err := k.GetOperatorUSDValue(ctx, avsAddr, operator.String())
 		if err != nil {
 			return nil, err
 		}

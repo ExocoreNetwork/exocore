@@ -1,3 +1,5 @@
+version: 2
+
 before:
   hooks:
     - go mod download
@@ -101,4 +103,4 @@ changelog:
       - '^docs:'
       - '^test:'
 snapshot:
-  name_template: "{{ .Tag }}-next"
+  name_template: "{{ .Tag }}-{{ .Branch }}@{{ .ShortCommit }}-{{ .GitTreeState }}"

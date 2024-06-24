@@ -10,56 +10,66 @@ import (
 )
 
 func (p Precompile) GetAVSParamsFromInputs(_ sdk.Context, args []interface{}) (*avstypes.AVSRegisterOrDeregisterParams, error) {
-	if len(args) != 6 {
+	if len(args) != 7 {
 		return nil, xerrors.Errorf(cmn.ErrInvalidNumberOfArgs, 6, len(args))
 	}
 	avsParams := &avstypes.AVSRegisterOrDeregisterParams{}
-	avsName, ok := args[0].(string)
-	if !ok {
-		return nil, xerrors.Errorf(exocmn.ErrContractInputParaOrType, 0, "string", avsName)
+	avsOwnerAddress, ok := args[0].([]string)
+	if !ok || avsOwnerAddress == nil {
+		return nil, xerrors.Errorf(exocmn.ErrContractInputParaOrType, 0, "[]string", avsOwnerAddress)
+	}
+
+	exoAddresses := make([]string, len(avsOwnerAddress))
+	var err error
+	for i, addr := range avsOwnerAddress {
+		exoAddresses[i], err = util.ProcessAddress(addr)
+		if err != nil {
+			return nil, xerrors.Errorf(exocmn.ErrContractInputParaOrType, 0, "[]string", avsOwnerAddress)
+		}
+	}
+
+	avsParams.AvsOwnerAddress = exoAddresses
+
+	avsName, ok := args[1].(string)
+	if !ok || avsName == "" {
+		return nil, xerrors.Errorf(exocmn.ErrContractInputParaOrType, 1, "string", avsName)
 	}
 	avsParams.AvsName = avsName
 
-	avsAddress, ok := args[1].(string)
-	if !ok {
-		return nil, xerrors.Errorf(exocmn.ErrContractInputParaOrType, 1, "[]byte", avsAddress)
-	}
-	avsAddress, err := util.ProcessAvsAddress(avsAddress)
-	if err != nil {
-		return nil, xerrors.Errorf(exocmn.ErrContractInputParaOrType, 1, "[]byte", avsAddress)
-	}
-	avsParams.AvsAddress = avsAddress
-
-	operatorAddress, ok := args[2].(string)
-	if !ok || operatorAddress == "" {
-		return nil, xerrors.Errorf(exocmn.ErrContractInputParaOrType, 2, "[]byte", operatorAddress)
+	slashContractAddr, ok := args[2].(string)
+	if !ok || slashContractAddr == "" {
+		return nil, xerrors.Errorf(exocmn.ErrContractInputParaOrType, 2, "string", slashContractAddr)
 	}
 
-	operatorAddress, err = util.ProcessAvsAddress(operatorAddress)
+	slashContractAddr, err = util.ProcessAddress(slashContractAddr)
 	if err != nil {
-		return nil, xerrors.Errorf(exocmn.ErrContractInputParaOrType, 1, "[]byte", operatorAddress)
+		return nil, xerrors.Errorf(exocmn.ErrContractInputParaOrType, 2, "string", slashContractAddr)
 	}
-	avsParams.OperatorAddress = operatorAddress
-	action, ok := args[3].(uint64)
+	avsParams.SlashContractAddr = slashContractAddr
+
+	assetID, ok := args[3].([]string)
+	if !ok || assetID == nil {
+		return nil, xerrors.Errorf(exocmn.ErrContractInputParaOrType, 3, "[]string", assetID)
+	}
+	avsParams.AssetID = assetID
+
+	action, ok := args[4].(uint64)
 	if !ok || (action != avstypes.RegisterAction && action != avstypes.DeRegisterAction) {
-		return nil, xerrors.Errorf(exocmn.ErrContractInputParaOrType, 3, "uint64", action)
+		return nil, xerrors.Errorf(exocmn.ErrContractInputParaOrType, 4, "uint64", action)
 	}
 	avsParams.Action = action
 
-	avsOwnerAddress, ok := args[4].(string)
-	if !ok || avsOwnerAddress == "" {
-		return nil, xerrors.Errorf(exocmn.ErrContractInputParaOrType, 4, "string", avsOwnerAddress)
+	minSelfDelegation, ok := args[5].(uint64)
+	if !ok || (action != avstypes.RegisterAction && action != avstypes.DeRegisterAction) {
+		return nil, xerrors.Errorf(exocmn.ErrContractInputParaOrType, 5, "uint64", minSelfDelegation)
 	}
-	avsOwnerAddress, err = util.ProcessAvsAddress(avsOwnerAddress)
-	if err != nil {
-		return nil, xerrors.Errorf(exocmn.ErrContractInputParaOrType, 1, "[]byte", avsOwnerAddress)
-	}
-	avsParams.AvsOwnerAddress = avsOwnerAddress
+	avsParams.MinSelfDelegation = minSelfDelegation
 
-	assetID, ok := args[5].(string)
-	if !ok || assetID == "" {
-		return nil, xerrors.Errorf(exocmn.ErrContractInputParaOrType, 3, "uint64", action)
+	unbondingPeriod, ok := args[6].(uint64)
+	if !ok || (action != avstypes.RegisterAction && action != avstypes.DeRegisterAction) {
+		return nil, xerrors.Errorf(exocmn.ErrContractInputParaOrType, 6, "uint64", unbondingPeriod)
 	}
-	avsParams.AssetID = assetID
+	avsParams.UnbondingPeriod = unbondingPeriod
+
 	return avsParams, nil
 }

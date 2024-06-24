@@ -7,6 +7,7 @@ import (
 	delegationtype "github.com/ExocoreNetwork/exocore/x/delegation/types"
 	tmprotocrypto "github.com/cometbft/cometbft/proto/tendermint/crypto"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/ethereum/go-ethereum/common"
 )
 
 var (
@@ -22,37 +23,16 @@ type AssetsKeeper interface {
 		ctx sdk.Context, assets map[string]interface{},
 	) (decimals map[string]uint32, err error)
 	IteratorAssetsForOperator(
-		ctx sdk.Context, operator string, assetsFilter map[string]interface{},
+		ctx sdk.Context, isUpdate bool, operator string, assetsFilter map[string]interface{},
 		f func(assetID string, state *assetstype.OperatorAssetInfo) error,
 	) error
-	AppChainInfoIsExist(ctx sdk.Context, chainID string) bool
-	GetOperatorAssetInfos(
-		ctx sdk.Context, operatorAddr sdk.Address, assetsFilter map[string]interface{},
-	) (assetsInfo map[string]*assetstype.OperatorAssetInfo, err error)
-	GetOperatorSpecifiedAssetInfo(ctx sdk.Context, operatorAddr sdk.Address, assetID string) (info *assetstype.OperatorAssetInfo, err error)
-	UpdateStakerAssetState(
-		ctx sdk.Context, stakerID string, assetID string,
-		changeAmount assetstype.DeltaStakerSingleAsset,
-	) (err error)
-	UpdateOperatorAssetState(
-		ctx sdk.Context, operatorAddr sdk.Address, assetID string,
-		changeAmount assetstype.DeltaOperatorSingleAsset,
-	) (err error)
+	ClientChainExists(ctx sdk.Context, index uint64) bool
 	GetAllStakingAssetsInfo(ctx sdk.Context) (allAssets map[string]*assetstype.StakingAssetInfo, err error)
 }
 
 var _ DelegationKeeper = &keeper.Keeper{}
 
 type DelegationKeeper interface {
-	GetSingleDelegationInfo(
-		ctx sdk.Context, stakerID, assetID, operatorAddr string,
-	) (*delegationtype.DelegationAmounts, error)
-	DelegationStateByOperatorAssets(
-		ctx sdk.Context, operatorAddr string, assetsFilter map[string]interface{},
-	) (map[string]map[string]delegationtype.DelegationAmounts, error)
-	UpdateDelegationState(
-		ctx sdk.Context, stakerID, assetID, opAddr string, deltaAmounts *delegationtype.DeltaDelegationAmounts,
-	) (bool, error)
 	IterateUndelegationsByOperator(
 		ctx sdk.Context, operator string, heightFilter *uint64, isUpdate bool,
 		opFunc func(undelegation *delegationtype.UndelegationRecord) error) error
@@ -63,19 +43,6 @@ type DelegationKeeper interface {
 		ctx sdk.Context, operator, assetID string, stakerList delegationtype.StakerList,
 	) error
 	DeleteStakersListForOperator(ctx sdk.Context, operator, assetID string) error
-	GetStakerUndelegationRecords(
-		ctx sdk.Context, stakerID, assetID string,
-	) (records []*delegationtype.UndelegationRecord, err error)
-	SetSingleUndelegationRecord(
-		ctx sdk.Context, record *delegationtype.UndelegationRecord,
-	) (recordKey []byte, err error)
-	CalculateSlashShare(
-		ctx sdk.Context, operator sdk.AccAddress, stakerID, assetID string, slashAmount sdkmath.Int,
-	) (share sdkmath.LegacyDec, err error)
-	RemoveShare(
-		ctx sdk.Context, isUndelegation bool, operator sdk.AccAddress,
-		stakerID, assetID string, share sdkmath.LegacyDec,
-	) (removeToken sdkmath.Int, err error)
 }
 
 type PriceChange struct {
@@ -101,11 +68,6 @@ type OracleKeeper interface {
 	// GetMultipleAssetsPrices is a function to retrieve multiple assets prices according to the
 	// assetID.
 	GetMultipleAssetsPrices(ctx sdk.Context, assets map[string]interface{}) (map[string]Price, error)
-	// GetPriceChangeAssets the operator module expect a function that can retrieve all
-	// information about assets price change. Then it can update the USD share state according
-	// to the change information. This function need to return a map, the key is assetID and the
-	// value is PriceChange
-	GetPriceChangeAssets(ctx sdk.Context) (map[string]*PriceChange, error)
 }
 
 type MockOracle struct{}
@@ -170,9 +132,10 @@ func (a MockAVS) GetAVSMinimumSelfDelegation(_ sdk.Context, _ string) (sdkmath.L
 }
 
 func (a MockAVS) GetEpochEndAVSs(ctx sdk.Context) ([]string, error) {
-	avsList := make([]string, 0)
-	avsList = append(avsList, ctx.ChainID(), "avsTestAddr")
-	return avsList, nil
+	return []string{
+		ctx.ChainID(),
+		common.BytesToAddress([]byte("avsTestAddr")).String(),
+	}, nil
 }
 
 func (a MockAVS) GetHeightForVotingPower(_ sdk.Context, _ string, height int64) (int64, error) {
@@ -186,7 +149,7 @@ type AVSKeeper interface {
 	// `ContextForHistoricalState` implemented in x/assets/types/general.go
 	GetAVSSupportedAssets(ctx sdk.Context, avsAddr string) (map[string]interface{}, error)
 	GetAVSSlashContract(ctx sdk.Context, avsAddr string) (string, error)
-	// GetAVSAddrByChainID get the general Avs address for dogfood module.
+	// GetAVSAddrByChainID converts the chainID to a general EVM-compatible hex address.
 	GetAVSAddrByChainID(ctx sdk.Context, chainID string) (string, error)
 	// GetAVSMinimumSelfDelegation returns the USD value of minimum self delegation, which
 	// is set for operator
@@ -195,31 +158,26 @@ type AVSKeeper interface {
 	// todo: maybe the epoch of different AVSs should be implemented in the AVS module,then
 	// the other modules implement the EpochsHooks to trigger state updating.
 	GetEpochEndAVSs(ctx sdk.Context) ([]string, error)
-	// GetHeightForVotingPower retrieves the height of the last block in the epoch
-	// where the voting power used at the current height resides
-	GetHeightForVotingPower(ctx sdk.Context, avsAddr string, height int64) (int64, error)
 }
-
-// add for dogfood
 
 type SlashKeeper interface {
 	IsOperatorFrozen(ctx sdk.Context, addr sdk.AccAddress) bool
 }
 
 type OperatorHooks interface {
-	// This hook is called when an operator opts in to a chain.
-	AfterOperatorOptIn(
+	// This hook is called when an operator declares the consensus key for the provided chain.
+	AfterOperatorKeySet(
 		ctx sdk.Context, addr sdk.AccAddress, chainID string,
 		pubKey *tmprotocrypto.PublicKey,
 	)
-	// This hook is called when an operator's consensus key is replaced for
-	// a chain.
-	AfterOperatorKeyReplacement(
+	// This hook is called when an operator's consensus key is replaced for a chain.
+	AfterOperatorKeyReplaced(
 		ctx sdk.Context, addr sdk.AccAddress, oldKey *tmprotocrypto.PublicKey,
 		newKey *tmprotocrypto.PublicKey, chainID string,
 	)
-	// This hook is called when an operator opts out of a chain.
-	AfterOperatorOptOutInitiated(
+	// This hook is called when an operator initiates the removal of a consensus key for a
+	// chain.
+	AfterOperatorKeyRemovalInitiated(
 		ctx sdk.Context, addr sdk.AccAddress, chainID string, key *tmprotocrypto.PublicKey,
 	)
 }

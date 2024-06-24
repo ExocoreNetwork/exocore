@@ -1,0 +1,30 @@
+name: Docker build in root directory
+on:
+  pull_request:
+    paths:
+      - Dockerfile
+  push:
+    paths:
+      - Dockerfile
+    branches:
+      - develop
+      - main
+      - master
+      - release/**
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Docker image
+        run: docker build .

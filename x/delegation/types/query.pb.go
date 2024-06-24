@@ -296,6 +296,247 @@ func (m *SingleDelegationInfoReq) GetAssetID() string {
 	return ""
 }
 
+// UndelegationHoldCountReq is the request to obtain the undelegation hold count.
+type UndelegationHoldCountReq struct {
+	// record_key is the record key of the undelegation record.
+	RecordKey string `protobuf:"bytes,1,opt,name=record_key,json=recordKey,proto3" json:"record_key,omitempty"`
+}
+
+func (m *UndelegationHoldCountReq) Reset()         { *m = UndelegationHoldCountReq{} }
+func (m *UndelegationHoldCountReq) String() string { return proto.CompactTextString(m) }
+func (*UndelegationHoldCountReq) ProtoMessage()    {}
+func (*UndelegationHoldCountReq) Descriptor() ([]byte, []int) {
+	return fileDescriptor_aab345e1cf20490c, []int{5}
+}
+func (m *UndelegationHoldCountReq) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *UndelegationHoldCountReq) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_UndelegationHoldCountReq.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *UndelegationHoldCountReq) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_UndelegationHoldCountReq.Merge(m, src)
+}
+func (m *UndelegationHoldCountReq) XXX_Size() int {
+	return m.Size()
+}
+func (m *UndelegationHoldCountReq) XXX_DiscardUnknown() {
+	xxx_messageInfo_UndelegationHoldCountReq.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_UndelegationHoldCountReq proto.InternalMessageInfo
+
+func (m *UndelegationHoldCountReq) GetRecordKey() string {
+	if m != nil {
+		return m.RecordKey
+	}
+	return ""
+}
+
+// UndelegationHoldCountResponse is the response for the undelegation hold count.
+type UndelegationHoldCountResponse struct {
+	// hold_count is the number of undelegations that are on hold.
+	HoldCount uint64 `protobuf:"varint,1,opt,name=hold_count,json=holdCount,proto3" json:"hold_count,omitempty"`
+}
+
+func (m *UndelegationHoldCountResponse) Reset()         { *m = UndelegationHoldCountResponse{} }
+func (m *UndelegationHoldCountResponse) String() string { return proto.CompactTextString(m) }
+func (*UndelegationHoldCountResponse) ProtoMessage()    {}
+func (*UndelegationHoldCountResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_aab345e1cf20490c, []int{6}
+}
+func (m *UndelegationHoldCountResponse) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *UndelegationHoldCountResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_UndelegationHoldCountResponse.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *UndelegationHoldCountResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_UndelegationHoldCountResponse.Merge(m, src)
+}
+func (m *UndelegationHoldCountResponse) XXX_Size() int {
+	return m.Size()
+}
+func (m *UndelegationHoldCountResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_UndelegationHoldCountResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_UndelegationHoldCountResponse proto.InternalMessageInfo
+
+func (m *UndelegationHoldCountResponse) GetHoldCount() uint64 {
+	if m != nil {
+		return m.HoldCount
+	}
+	return 0
+}
+
+// UndelegationsReq is the request to obtain all delegations
+// by staker id and asset id.
+type UndelegationsReq struct {
+	// staker_id is the staker id.
+	StakerID string `protobuf:"bytes,1,opt,name=staker_id,json=stakerId,proto3" json:"staker_id,omitempty"`
+	// asset_id is the asset id.
+	AssetID string `protobuf:"bytes,2,opt,name=asset_id,json=assetId,proto3" json:"asset_id,omitempty"`
+}
+
+func (m *UndelegationsReq) Reset()         { *m = UndelegationsReq{} }
+func (m *UndelegationsReq) String() string { return proto.CompactTextString(m) }
+func (*UndelegationsReq) ProtoMessage()    {}
+func (*UndelegationsReq) Descriptor() ([]byte, []int) {
+	return fileDescriptor_aab345e1cf20490c, []int{7}
+}
+func (m *UndelegationsReq) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *UndelegationsReq) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_UndelegationsReq.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *UndelegationsReq) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_UndelegationsReq.Merge(m, src)
+}
+func (m *UndelegationsReq) XXX_Size() int {
+	return m.Size()
+}
+func (m *UndelegationsReq) XXX_DiscardUnknown() {
+	xxx_messageInfo_UndelegationsReq.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_UndelegationsReq proto.InternalMessageInfo
+
+func (m *UndelegationsReq) GetStakerID() string {
+	if m != nil {
+		return m.StakerID
+	}
+	return ""
+}
+
+func (m *UndelegationsReq) GetAssetID() string {
+	if m != nil {
+		return m.AssetID
+	}
+	return ""
+}
+
+// UndelegationsByHeightReq is the request to obtain all undelegations waiting to be completed
+// by height.
+type UndelegationsByHeightReq struct {
+	// block_height is the block height to query.
+	BlockHeight uint64 `protobuf:"varint,1,opt,name=block_height,json=blockHeight,proto3" json:"block_height,omitempty"`
+}
+
+func (m *UndelegationsByHeightReq) Reset()         { *m = UndelegationsByHeightReq{} }
+func (m *UndelegationsByHeightReq) String() string { return proto.CompactTextString(m) }
+func (*UndelegationsByHeightReq) ProtoMessage()    {}
+func (*UndelegationsByHeightReq) Descriptor() ([]byte, []int) {
+	return fileDescriptor_aab345e1cf20490c, []int{8}
+}
+func (m *UndelegationsByHeightReq) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *UndelegationsByHeightReq) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_UndelegationsByHeightReq.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *UndelegationsByHeightReq) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_UndelegationsByHeightReq.Merge(m, src)
+}
+func (m *UndelegationsByHeightReq) XXX_Size() int {
+	return m.Size()
+}
+func (m *UndelegationsByHeightReq) XXX_DiscardUnknown() {
+	xxx_messageInfo_UndelegationsByHeightReq.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_UndelegationsByHeightReq proto.InternalMessageInfo
+
+func (m *UndelegationsByHeightReq) GetBlockHeight() uint64 {
+	if m != nil {
+		return m.BlockHeight
+	}
+	return 0
+}
+
+// UndelegationRecordList is the response to query undelegations.
+type UndelegationRecordList struct {
+	// UndelegationRecord is the returned undelegations
+	Undelegations []*UndelegationRecord `protobuf:"bytes,1,rep,name=undelegations,proto3" json:"undelegations,omitempty"`
+}
+
+func (m *UndelegationRecordList) Reset()         { *m = UndelegationRecordList{} }
+func (m *UndelegationRecordList) String() string { return proto.CompactTextString(m) }
+func (*UndelegationRecordList) ProtoMessage()    {}
+func (*UndelegationRecordList) Descriptor() ([]byte, []int) {
+	return fileDescriptor_aab345e1cf20490c, []int{9}
+}
+func (m *UndelegationRecordList) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *UndelegationRecordList) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_UndelegationRecordList.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *UndelegationRecordList) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_UndelegationRecordList.Merge(m, src)
+}
+func (m *UndelegationRecordList) XXX_Size() int {
+	return m.Size()
+}
+func (m *UndelegationRecordList) XXX_DiscardUnknown() {
+	xxx_messageInfo_UndelegationRecordList.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_UndelegationRecordList proto.InternalMessageInfo
+
+func (m *UndelegationRecordList) GetUndelegations() []*UndelegationRecord {
+	if m != nil {
+		return m.Undelegations
+	}
+	return nil
+}
+
 func init() {
 	proto.RegisterType((*DelegationInfoReq)(nil), "exocore.delegation.v1.DelegationInfoReq")
 	proto.RegisterType((*StakerList)(nil), "exocore.delegation.v1.StakerList")
@@ -303,52 +544,71 @@ func init() {
 	proto.RegisterType((*QueryDelegationInfoResponse)(nil), "exocore.delegation.v1.QueryDelegationInfoResponse")
 	proto.RegisterMapType((map[string]*DelegationAmounts)(nil), "exocore.delegation.v1.QueryDelegationInfoResponse.DelegationInfosEntry")
 	proto.RegisterType((*SingleDelegationInfoReq)(nil), "exocore.delegation.v1.SingleDelegationInfoReq")
+	proto.RegisterType((*UndelegationHoldCountReq)(nil), "exocore.delegation.v1.UndelegationHoldCountReq")
+	proto.RegisterType((*UndelegationHoldCountResponse)(nil), "exocore.delegation.v1.UndelegationHoldCountResponse")
+	proto.RegisterType((*UndelegationsReq)(nil), "exocore.delegation.v1.UndelegationsReq")
+	proto.RegisterType((*UndelegationsByHeightReq)(nil), "exocore.delegation.v1.UndelegationsByHeightReq")
+	proto.RegisterType((*UndelegationRecordList)(nil), "exocore.delegation.v1.UndelegationRecordList")
 }
 
 func init() { proto.RegisterFile("exocore/delegation/v1/query.proto", fileDescriptor_aab345e1cf20490c) }
 
 var fileDescriptor_aab345e1cf20490c = []byte{
-	// 637 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xa4, 0x54, 0x4f, 0x4f, 0x13, 0x41,
-	0x1c, 0xed, 0x94, 0x20, 0x30, 0x60, 0xc4, 0x01, 0xb5, 0x14, 0xd3, 0xe2, 0x1e, 0x48, 0x25, 0x61,
-	0x57, 0xaa, 0x26, 0xc6, 0x88, 0x09, 0xa4, 0x84, 0x6c, 0x62, 0x48, 0xdc, 0xc6, 0x8b, 0x97, 0xcd,
-	0xd0, 0x1d, 0x96, 0x4d, 0xb7, 0x33, 0x65, 0x66, 0x5a, 0xe8, 0xd5, 0x93, 0x47, 0x13, 0xbf, 0x85,
-	0x5e, 0x3c, 0xf0, 0x21, 0x38, 0x12, 0xbc, 0x18, 0x0f, 0x8d, 0x29, 0x26, 0x1e, 0xfc, 0x06, 0x5e,
-	0x34, 0xbb, 0x33, 0xc0, 0xb6, 0x76, 0x55, 0xe2, 0x69, 0x77, 0x7e, 0x7f, 0xde, 0xef, 0xcd, 0x7b,
-	0xbf, 0x5d, 0x78, 0x87, 0x1c, 0xb0, 0x1a, 0xe3, 0xc4, 0xf2, 0x48, 0x48, 0x7c, 0x2c, 0x03, 0x46,
-	0xad, 0xf6, 0x8a, 0xb5, 0xd7, 0x22, 0xbc, 0x63, 0x36, 0x39, 0x93, 0x0c, 0xdd, 0xd0, 0x25, 0xe6,
-	0x45, 0x89, 0xd9, 0x5e, 0xc9, 0xcf, 0xd7, 0x98, 0x68, 0x30, 0xa1, 0x4a, 0x07, 0x7a, 0xf2, 0x73,
-	0x2a, 0xe9, 0xc6, 0x27, 0x4b, 0x1d, 0x74, 0x6a, 0xd6, 0x67, 0x3e, 0x53, 0xf1, 0xe8, 0x4d, 0x47,
-	0x6f, 0xfb, 0x8c, 0xf9, 0x21, 0xb1, 0x70, 0x33, 0xb0, 0x30, 0xa5, 0x4c, 0xc6, 0x73, 0x74, 0x8f,
-	0xb1, 0x03, 0xaf, 0x57, 0xce, 0x87, 0xdb, 0x74, 0x87, 0x39, 0x64, 0x0f, 0xdd, 0x85, 0x13, 0x42,
-	0xe2, 0x3a, 0xe1, 0x6e, 0xe0, 0xe5, 0xc0, 0x02, 0x28, 0x4d, 0xac, 0x4f, 0xf5, 0xba, 0xc5, 0xf1,
-	0x6a, 0x1c, 0xb4, 0x2b, 0xce, 0xb8, 0x4a, 0xdb, 0x1e, 0x5a, 0x84, 0xe3, 0x58, 0x08, 0x22, 0xa3,
-	0xca, 0x6c, 0x5c, 0x39, 0xd9, 0xeb, 0x16, 0xc7, 0xd6, 0xa2, 0x98, 0x5d, 0x71, 0xc6, 0xe2, 0xa4,
-	0xed, 0x19, 0x8b, 0x10, 0xaa, 0xee, 0x67, 0x81, 0x90, 0x28, 0x07, 0xc7, 0x14, 0x82, 0xc8, 0x81,
-	0x85, 0x91, 0xd2, 0x84, 0x73, 0x76, 0x34, 0x7e, 0x80, 0x24, 0xa1, 0xb5, 0x06, 0x6b, 0x51, 0x29,
-	0x50, 0x03, 0xce, 0xb4, 0xa8, 0x16, 0x09, 0x6f, 0x87, 0xc4, 0x15, 0xbb, 0x98, 0x13, 0x4d, 0xed,
-	0xc9, 0x51, 0xb7, 0x98, 0xf9, 0xdc, 0x2d, 0x2e, 0xfa, 0x81, 0xdc, 0x6d, 0x6d, 0x9b, 0x35, 0xd6,
-	0xd0, 0xba, 0xe8, 0xc7, 0xb2, 0xf0, 0xea, 0x96, 0xec, 0x34, 0x89, 0x30, 0x2b, 0xa4, 0x76, 0x72,
-	0xb8, 0x0c, 0xb5, 0x6c, 0x15, 0x52, 0x73, 0x50, 0x1f, 0x70, 0x35, 0xc2, 0x45, 0x6d, 0x98, 0xdb,
-	0xc7, 0x81, 0x74, 0xcf, 0x53, 0x01, 0xa3, 0x2e, 0x8e, 0xb9, 0xe8, 0x4b, 0x5e, 0x66, 0xa6, 0x4d,
-	0x65, 0x62, 0xa6, 0x4d, 0xa5, 0x73, 0x33, 0x42, 0x7f, 0x91, 0x00, 0x57, 0xf7, 0x34, 0x7e, 0x02,
-	0x38, 0xff, 0x3c, 0xf2, 0x7a, 0xd0, 0x12, 0xd1, 0x64, 0x54, 0x10, 0xc4, 0xe1, 0x74, 0x82, 0x50,
-	0x40, 0x77, 0x98, 0xd2, 0x6f, 0xb2, 0xbc, 0x69, 0x0e, 0x5d, 0x25, 0xf3, 0x0f, 0x68, 0x66, 0x7f,
-	0x58, 0x6c, 0x50, 0xc9, 0x3b, 0xce, 0x35, 0xaf, 0x3f, 0x9a, 0x0f, 0xe1, 0xec, 0xb0, 0x42, 0x34,
-	0x0d, 0x47, 0xea, 0xa4, 0xa3, 0x2c, 0x70, 0xa2, 0x57, 0xf4, 0x14, 0x8e, 0xb6, 0x71, 0xd8, 0x22,
-	0xb1, 0x44, 0x93, 0xe5, 0x52, 0x0a, 0xa5, 0xdf, 0xdc, 0x75, 0x54, 0xdb, 0xe3, 0xec, 0x23, 0x60,
-	0xbc, 0x07, 0xf0, 0x56, 0x35, 0xa0, 0x7e, 0x48, 0xfe, 0x6b, 0x2b, 0x57, 0xe1, 0x55, 0xd6, 0x24,
-	0x1c, 0x4b, 0xc6, 0x5d, 0xec, 0x79, 0x5c, 0xbb, 0x96, 0x3b, 0x39, 0x5c, 0x9e, 0xd5, 0x3e, 0xac,
-	0x79, 0x1e, 0x27, 0x42, 0x54, 0x25, 0x0f, 0xa8, 0xef, 0x4c, 0x9d, 0x95, 0x47, 0xe1, 0xbe, 0xa5,
-	0x1e, 0x49, 0x5f, 0xea, 0xf2, 0xf7, 0x2c, 0x1c, 0x8d, 0x15, 0x46, 0xef, 0x00, 0x9c, 0x19, 0xa2,
-	0x35, 0xfa, 0xbb, 0x08, 0xfa, 0x76, 0xf9, 0xf2, 0xe5, 0x1d, 0x34, 0x1e, 0xbe, 0xfe, 0xf6, 0x61,
-	0x09, 0xbc, 0xfa, 0xf8, 0xf5, 0x6d, 0x76, 0x09, 0x95, 0xac, 0xe1, 0x3f, 0x9c, 0x4d, 0x22, 0x07,
-	0x48, 0x1d, 0x02, 0x38, 0x17, 0xc3, 0x0e, 0x53, 0x1a, 0x99, 0x29, 0x44, 0x52, 0x6c, 0xc9, 0xff,
-	0xb3, 0xcf, 0xc6, 0xea, 0x05, 0xdd, 0x32, 0xba, 0x97, 0x42, 0x37, 0x95, 0xd8, 0xfa, 0xd6, 0x51,
-	0xaf, 0x00, 0x8e, 0x7b, 0x05, 0xf0, 0xa5, 0x57, 0x00, 0x6f, 0x4e, 0x0b, 0x99, 0xe3, 0xd3, 0x42,
-	0xe6, 0xd3, 0x69, 0x21, 0xf3, 0xf2, 0x41, 0xe2, 0x2b, 0xdc, 0x50, 0xa8, 0x5b, 0x44, 0xee, 0x33,
-	0x5e, 0x3f, 0x1f, 0x72, 0x90, 0x1c, 0x13, 0x7f, 0x97, 0xdb, 0x57, 0xe2, 0x3f, 0xe0, 0xfd, 0x5f,
-	0x01, 0x00, 0x00, 0xff, 0xff, 0x10, 0x6e, 0xc3, 0x42, 0xa9, 0x05, 0x00, 0x00,
+	// 862 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xb4, 0x56, 0x4f, 0x6f, 0xe3, 0x44,
+	0x14, 0x8f, 0x5b, 0x96, 0x34, 0x2f, 0x5d, 0x51, 0x66, 0xcb, 0x92, 0xf5, 0xd2, 0x64, 0xd7, 0x87,
+	0x92, 0x2e, 0x8a, 0x4d, 0xb3, 0x0b, 0x02, 0x44, 0x23, 0x5a, 0xb2, 0xda, 0x8d, 0x16, 0x15, 0xe1,
+	0x88, 0x0b, 0x17, 0xcb, 0xb1, 0xa7, 0x8e, 0x15, 0xc7, 0x93, 0x7a, 0x26, 0x69, 0x23, 0xc4, 0x85,
+	0x13, 0x47, 0x24, 0xbe, 0x42, 0x4f, 0x70, 0xe1, 0xd0, 0x23, 0x1f, 0xa0, 0xc7, 0xaa, 0x5c, 0x10,
+	0x87, 0x08, 0xa5, 0x48, 0x7c, 0x07, 0x2e, 0x20, 0x8f, 0x27, 0x89, 0xd3, 0x3a, 0x25, 0x11, 0xda,
+	0x53, 0x3c, 0xef, 0xcf, 0x6f, 0x7e, 0xef, 0xbd, 0xdf, 0xb3, 0x03, 0x0f, 0xf1, 0x31, 0xb1, 0x48,
+	0x80, 0x35, 0x1b, 0x7b, 0xd8, 0x31, 0x99, 0x4b, 0x7c, 0xad, 0xb7, 0xad, 0x1d, 0x76, 0x71, 0xd0,
+	0x57, 0x3b, 0x01, 0x61, 0x04, 0xbd, 0x21, 0x42, 0xd4, 0x49, 0x88, 0xda, 0xdb, 0x96, 0xef, 0x5b,
+	0x84, 0xb6, 0x09, 0x8d, 0x42, 0xaf, 0xe4, 0xc8, 0xf7, 0x22, 0xa7, 0xc1, 0x4f, 0x5a, 0x74, 0x10,
+	0xae, 0x7c, 0xf2, 0x8d, 0xec, 0x58, 0xf8, 0xd7, 0x1d, 0xe2, 0x90, 0x28, 0x2f, 0x7c, 0x12, 0xd6,
+	0xb7, 0x1c, 0x42, 0x1c, 0x0f, 0x6b, 0x66, 0xc7, 0xd5, 0x4c, 0xdf, 0x27, 0x8c, 0x27, 0x0a, 0x4c,
+	0xe5, 0x00, 0x5e, 0xaf, 0x8e, 0xd1, 0x6a, 0xfe, 0x01, 0xd1, 0xf1, 0x21, 0xda, 0x82, 0x0c, 0x65,
+	0x66, 0x0b, 0x07, 0x86, 0x6b, 0xe7, 0xa4, 0x07, 0x52, 0x31, 0xb3, 0xb7, 0x3a, 0x1c, 0x14, 0x56,
+	0xea, 0xdc, 0x58, 0xab, 0xea, 0x2b, 0x91, 0xbb, 0x66, 0xa3, 0x4d, 0x58, 0x31, 0x29, 0xc5, 0x2c,
+	0x8c, 0x5c, 0xe2, 0x91, 0xd9, 0xe1, 0xa0, 0x90, 0xde, 0x0d, 0x6d, 0xb5, 0xaa, 0x9e, 0xe6, 0xce,
+	0x9a, 0xad, 0x6c, 0x02, 0x44, 0xd9, 0x9f, 0xb9, 0x94, 0xa1, 0x1c, 0xa4, 0x23, 0x04, 0x9a, 0x93,
+	0x1e, 0x2c, 0x17, 0x33, 0xfa, 0xe8, 0xa8, 0xfc, 0x2d, 0xc5, 0x09, 0xed, 0xb6, 0x49, 0xd7, 0x67,
+	0x14, 0xb5, 0xe1, 0x4e, 0xd7, 0x17, 0x55, 0x9b, 0x0d, 0x0f, 0x1b, 0xb4, 0x69, 0x06, 0x58, 0x50,
+	0xfb, 0xf8, 0x6c, 0x50, 0x48, 0xfd, 0x3e, 0x28, 0x6c, 0x3a, 0x2e, 0x6b, 0x76, 0x1b, 0xaa, 0x45,
+	0xda, 0xa2, 0x6f, 0xe2, 0xa7, 0x44, 0xed, 0x96, 0xc6, 0xfa, 0x1d, 0x4c, 0xd5, 0x2a, 0xb6, 0x2e,
+	0x4e, 0x4b, 0x20, 0xda, 0x5a, 0xc5, 0x96, 0x8e, 0xa6, 0x80, 0xeb, 0x21, 0x2e, 0xea, 0x41, 0xee,
+	0xc8, 0x74, 0x99, 0x31, 0x76, 0xb9, 0xc4, 0x37, 0x4c, 0xce, 0x45, 0x14, 0xb9, 0xc8, 0x9d, 0x35,
+	0x9f, 0xc5, 0xee, 0xac, 0xf9, 0x4c, 0xbf, 0x1b, 0xa2, 0x7f, 0x19, 0x03, 0x8f, 0xea, 0x54, 0xfe,
+	0x91, 0xe0, 0xfe, 0x17, 0xa1, 0x16, 0xae, 0x8e, 0x84, 0x76, 0x88, 0x4f, 0x31, 0x0a, 0x60, 0x2d,
+	0x46, 0xc8, 0xf5, 0x0f, 0x48, 0xd4, 0xbf, 0x6c, 0xf9, 0x99, 0x9a, 0x28, 0x35, 0xf5, 0x06, 0x34,
+	0x75, 0xda, 0x4c, 0x9f, 0xfa, 0x2c, 0xe8, 0xeb, 0xaf, 0xd9, 0xd3, 0x56, 0xd9, 0x83, 0xf5, 0xa4,
+	0x40, 0xb4, 0x06, 0xcb, 0x2d, 0xdc, 0x8f, 0x46, 0xa0, 0x87, 0x8f, 0xa8, 0x02, 0xb7, 0x7a, 0xa6,
+	0xd7, 0xc5, 0xbc, 0x45, 0xd9, 0x72, 0x71, 0x06, 0xa5, 0x6b, 0xd3, 0xd5, 0xa3, 0xb4, 0x8f, 0x96,
+	0x3e, 0x90, 0x94, 0x9f, 0x24, 0x78, 0xb3, 0xee, 0xfa, 0x8e, 0x87, 0xff, 0x97, 0x2a, 0x77, 0xe0,
+	0x36, 0xe9, 0xe0, 0xc0, 0x64, 0x24, 0x30, 0x4c, 0xdb, 0x0e, 0xc4, 0xd4, 0x72, 0x17, 0xa7, 0xa5,
+	0x75, 0x31, 0x87, 0x5d, 0xdb, 0x0e, 0x30, 0xa5, 0x75, 0x16, 0xb8, 0xbe, 0xa3, 0xaf, 0x8e, 0xc2,
+	0x43, 0xf3, 0x94, 0xa8, 0x97, 0x6f, 0x10, 0xf5, 0x87, 0x90, 0x8b, 0x4f, 0xf1, 0x39, 0xf1, 0xec,
+	0x4f, 0xc3, 0x92, 0x42, 0xb6, 0x1b, 0x00, 0x01, 0xb6, 0x48, 0x60, 0x1b, 0x93, 0x36, 0x65, 0x22,
+	0xcb, 0x0b, 0xdc, 0x57, 0x2a, 0xb0, 0x31, 0x23, 0x55, 0xcc, 0x7a, 0x03, 0xa0, 0x49, 0x3c, 0xdb,
+	0xb0, 0xb8, 0xea, 0xc2, 0xfc, 0x57, 0xf4, 0x4c, 0x73, 0x14, 0xa6, 0x60, 0x58, 0x8b, 0xe7, 0xd3,
+	0x97, 0xb4, 0xb6, 0x3b, 0xd3, 0x15, 0xd2, 0xbd, 0xfe, 0x73, 0xec, 0x3a, 0x4d, 0x5e, 0xe1, 0x43,
+	0x58, 0x6d, 0x78, 0xc4, 0x6a, 0x19, 0x4d, 0x6e, 0x12, 0x1c, 0xb3, 0xdc, 0x16, 0x45, 0x29, 0x2e,
+	0xdc, 0x8d, 0xa7, 0xeb, 0xbc, 0x7c, 0xfe, 0x06, 0xf8, 0x1c, 0x6e, 0xc7, 0xb7, 0x6b, 0xa4, 0xe3,
+	0xad, 0x19, 0xa2, 0xb9, 0x8e, 0xa2, 0x4f, 0xe7, 0x97, 0x4f, 0xd2, 0x70, 0x8b, 0xab, 0x1d, 0xfd,
+	0x28, 0xc1, 0x9d, 0x04, 0xdd, 0xa3, 0xff, 0x16, 0xa4, 0x50, 0x9a, 0x5c, 0x5e, 0x7c, 0x9b, 0x94,
+	0xf7, 0xbe, 0xfb, 0xeb, 0xe7, 0x47, 0xd2, 0xb7, 0xbf, 0xfe, 0xf9, 0xc3, 0xd2, 0x23, 0x54, 0xd4,
+	0x92, 0x5f, 0xd5, 0xcf, 0x30, 0xbb, 0x42, 0xea, 0x54, 0x82, 0x7b, 0x1c, 0x36, 0x49, 0xf5, 0x48,
+	0x9d, 0x41, 0x64, 0xc6, 0x8a, 0xc8, 0x73, 0xef, 0x9c, 0xb2, 0x33, 0xa1, 0x5b, 0x46, 0xef, 0xce,
+	0xa0, 0x3b, 0x9b, 0xd8, 0xb9, 0x04, 0x32, 0xf7, 0x26, 0x8a, 0x18, 0x69, 0x73, 0x8c, 0x31, 0xbe,
+	0x2d, 0xf2, 0x93, 0xc5, 0x12, 0x44, 0xcf, 0x5f, 0x4c, 0x8a, 0xf8, 0x04, 0x55, 0x6e, 0x2a, 0x22,
+	0x11, 0x47, 0xfb, 0x7a, 0xb2, 0xa1, 0xdf, 0xa0, 0x13, 0x09, 0xd0, 0xb5, 0x58, 0x8a, 0xde, 0x9e,
+	0x83, 0x59, 0xb8, 0x7d, 0x72, 0x69, 0x6e, 0xe9, 0x86, 0x0b, 0xa0, 0xbc, 0x3f, 0xe1, 0xfe, 0x0e,
+	0xda, 0x9a, 0x97, 0x3b, 0x45, 0xbf, 0x24, 0x75, 0x7e, 0xbc, 0x97, 0x73, 0x75, 0x3e, 0xbe, 0xc5,
+	0x8b, 0xd2, 0xae, 0x4c, 0x68, 0x3f, 0x46, 0xdb, 0x73, 0xd3, 0x1e, 0xdd, 0xb8, 0xb7, 0x7f, 0x36,
+	0xcc, 0x4b, 0xe7, 0xc3, 0xbc, 0xf4, 0xc7, 0x30, 0x2f, 0x7d, 0x7f, 0x99, 0x4f, 0x9d, 0x5f, 0xe6,
+	0x53, 0xbf, 0x5d, 0xe6, 0x53, 0x5f, 0x3d, 0x89, 0x7d, 0x4a, 0x9f, 0x46, 0xb0, 0xfb, 0x98, 0x1d,
+	0x91, 0xa0, 0x35, 0xbe, 0xe5, 0x38, 0x7e, 0x0f, 0xff, 0xb8, 0x36, 0x5e, 0xe5, 0x7f, 0x63, 0x1e,
+	0xff, 0x1b, 0x00, 0x00, 0xff, 0xff, 0x6f, 0x58, 0xb3, 0xa5, 0x8e, 0x09, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -368,6 +628,14 @@ type QueryClient interface {
 	// SingleDelegationInfo queries the single delegation information for
 	// {chain, staker, asset, operator}.
 	QuerySingleDelegationInfo(ctx context.Context, in *SingleDelegationInfoReq, opts ...grpc.CallOption) (*DelegationAmounts, error)
+	// QueryUndelegationHoldCount queries the undelegation hold count.
+	QueryUndelegationHoldCount(ctx context.Context, in *UndelegationHoldCountReq, opts ...grpc.CallOption) (*UndelegationHoldCountResponse, error)
+	// QueryUndelegations queries all undelegations for
+	// {staker, asset}.
+	QueryUndelegations(ctx context.Context, in *UndelegationsReq, opts ...grpc.CallOption) (*UndelegationRecordList, error)
+	// QueryUndelegationsByHeight queries all undelegations waiting to be completed by
+	// {height}.
+	QueryUndelegationsByHeight(ctx context.Context, in *UndelegationsByHeightReq, opts ...grpc.CallOption) (*UndelegationRecordList, error)
 }
 
 type queryClient struct {
@@ -396,6 +664,33 @@ func (c *queryClient) QuerySingleDelegationInfo(ctx context.Context, in *SingleD
 	return out, nil
 }
 
+func (c *queryClient) QueryUndelegationHoldCount(ctx context.Context, in *UndelegationHoldCountReq, opts ...grpc.CallOption) (*UndelegationHoldCountResponse, error) {
+	out := new(UndelegationHoldCountResponse)
+	err := c.cc.Invoke(ctx, "/exocore.delegation.v1.Query/QueryUndelegationHoldCount", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *queryClient) QueryUndelegations(ctx context.Context, in *UndelegationsReq, opts ...grpc.CallOption) (*UndelegationRecordList, error) {
+	out := new(UndelegationRecordList)
+	err := c.cc.Invoke(ctx, "/exocore.delegation.v1.Query/QueryUndelegations", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *queryClient) QueryUndelegationsByHeight(ctx context.Context, in *UndelegationsByHeightReq, opts ...grpc.CallOption) (*UndelegationRecordList, error) {
+	out := new(UndelegationRecordList)
+	err := c.cc.Invoke(ctx, "/exocore.delegation.v1.Query/QueryUndelegationsByHeight", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // QueryServer is the server API for Query service.
 type QueryServer interface {
 	// DelegationInfo queries the delegation information for {stakerID, assetID}.
@@ -403,6 +698,14 @@ type QueryServer interface {
 	// SingleDelegationInfo queries the single delegation information for
 	// {chain, staker, asset, operator}.
 	QuerySingleDelegationInfo(context.Context, *SingleDelegationInfoReq) (*DelegationAmounts, error)
+	// QueryUndelegationHoldCount queries the undelegation hold count.
+	QueryUndelegationHoldCount(context.Context, *UndelegationHoldCountReq) (*UndelegationHoldCountResponse, error)
+	// QueryUndelegations queries all undelegations for
+	// {staker, asset}.
+	QueryUndelegations(context.Context, *UndelegationsReq) (*UndelegationRecordList, error)
+	// QueryUndelegationsByHeight queries all undelegations waiting to be completed by
+	// {height}.
+	QueryUndelegationsByHeight(context.Context, *UndelegationsByHeightReq) (*UndelegationRecordList, error)
 }
 
 // UnimplementedQueryServer can be embedded to have forward compatible implementations.
@@ -414,6 +717,15 @@ func (*UnimplementedQueryServer) QueryDelegationInfo(ctx context.Context, req *D
 }
 func (*UnimplementedQueryServer) QuerySingleDelegationInfo(ctx context.Context, req *SingleDelegationInfoReq) (*DelegationAmounts, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method QuerySingleDelegationInfo not implemented")
+}
+func (*UnimplementedQueryServer) QueryUndelegationHoldCount(ctx context.Context, req *UndelegationHoldCountReq) (*UndelegationHoldCountResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method QueryUndelegationHoldCount not implemented")
+}
+func (*UnimplementedQueryServer) QueryUndelegations(ctx context.Context, req *UndelegationsReq) (*UndelegationRecordList, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method QueryUndelegations not implemented")
+}
+func (*UnimplementedQueryServer) QueryUndelegationsByHeight(ctx context.Context, req *UndelegationsByHeightReq) (*UndelegationRecordList, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method QueryUndelegationsByHeight not implemented")
 }
 
 func RegisterQueryServer(s grpc1.Server, srv QueryServer) {
@@ -456,6 +768,60 @@ func _Query_QuerySingleDelegationInfo_Handler(srv interface{}, ctx context.Conte
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Query_QueryUndelegationHoldCount_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UndelegationHoldCountReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).QueryUndelegationHoldCount(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/exocore.delegation.v1.Query/QueryUndelegationHoldCount",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).QueryUndelegationHoldCount(ctx, req.(*UndelegationHoldCountReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Query_QueryUndelegations_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UndelegationsReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).QueryUndelegations(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/exocore.delegation.v1.Query/QueryUndelegations",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).QueryUndelegations(ctx, req.(*UndelegationsReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Query_QueryUndelegationsByHeight_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UndelegationsByHeightReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).QueryUndelegationsByHeight(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/exocore.delegation.v1.Query/QueryUndelegationsByHeight",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).QueryUndelegationsByHeight(ctx, req.(*UndelegationsByHeightReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 var _Query_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "exocore.delegation.v1.Query",
 	HandlerType: (*QueryServer)(nil),
@@ -467,6 +833,18 @@ var _Query_serviceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "QuerySingleDelegationInfo",
 			Handler:    _Query_QuerySingleDelegationInfo_Handler,
+		},
+		{
+			MethodName: "QueryUndelegationHoldCount",
+			Handler:    _Query_QueryUndelegationHoldCount_Handler,
+		},
+		{
+			MethodName: "QueryUndelegations",
+			Handler:    _Query_QueryUndelegations_Handler,
+		},
+		{
+			MethodName: "QueryUndelegationsByHeight",
+			Handler:    _Query_QueryUndelegationsByHeight_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
@@ -678,6 +1056,166 @@ func (m *SingleDelegationInfoReq) MarshalToSizedBuffer(dAtA []byte) (int, error)
 	return len(dAtA) - i, nil
 }
 
+func (m *UndelegationHoldCountReq) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *UndelegationHoldCountReq) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *UndelegationHoldCountReq) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.RecordKey) > 0 {
+		i -= len(m.RecordKey)
+		copy(dAtA[i:], m.RecordKey)
+		i = encodeVarintQuery(dAtA, i, uint64(len(m.RecordKey)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *UndelegationHoldCountResponse) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *UndelegationHoldCountResponse) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *UndelegationHoldCountResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.HoldCount != 0 {
+		i = encodeVarintQuery(dAtA, i, uint64(m.HoldCount))
+		i--
+		dAtA[i] = 0x8
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *UndelegationsReq) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *UndelegationsReq) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *UndelegationsReq) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.AssetID) > 0 {
+		i -= len(m.AssetID)
+		copy(dAtA[i:], m.AssetID)
+		i = encodeVarintQuery(dAtA, i, uint64(len(m.AssetID)))
+		i--
+		dAtA[i] = 0x12
+	}
+	if len(m.StakerID) > 0 {
+		i -= len(m.StakerID)
+		copy(dAtA[i:], m.StakerID)
+		i = encodeVarintQuery(dAtA, i, uint64(len(m.StakerID)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *UndelegationsByHeightReq) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *UndelegationsByHeightReq) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *UndelegationsByHeightReq) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.BlockHeight != 0 {
+		i = encodeVarintQuery(dAtA, i, uint64(m.BlockHeight))
+		i--
+		dAtA[i] = 0x8
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *UndelegationRecordList) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *UndelegationRecordList) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *UndelegationRecordList) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.Undelegations) > 0 {
+		for iNdEx := len(m.Undelegations) - 1; iNdEx >= 0; iNdEx-- {
+			{
+				size, err := m.Undelegations[iNdEx].MarshalToSizedBuffer(dAtA[:i])
+				if err != nil {
+					return 0, err
+				}
+				i -= size
+				i = encodeVarintQuery(dAtA, i, uint64(size))
+			}
+			i--
+			dAtA[i] = 0xa
+		}
+	}
+	return len(dAtA) - i, nil
+}
+
 func encodeVarintQuery(dAtA []byte, offset int, v uint64) int {
 	offset -= sovQuery(v)
 	base := offset
@@ -773,6 +1311,75 @@ func (m *SingleDelegationInfoReq) Size() (n int) {
 	l = len(m.AssetID)
 	if l > 0 {
 		n += 1 + l + sovQuery(uint64(l))
+	}
+	return n
+}
+
+func (m *UndelegationHoldCountReq) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.RecordKey)
+	if l > 0 {
+		n += 1 + l + sovQuery(uint64(l))
+	}
+	return n
+}
+
+func (m *UndelegationHoldCountResponse) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.HoldCount != 0 {
+		n += 1 + sovQuery(uint64(m.HoldCount))
+	}
+	return n
+}
+
+func (m *UndelegationsReq) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.StakerID)
+	if l > 0 {
+		n += 1 + l + sovQuery(uint64(l))
+	}
+	l = len(m.AssetID)
+	if l > 0 {
+		n += 1 + l + sovQuery(uint64(l))
+	}
+	return n
+}
+
+func (m *UndelegationsByHeightReq) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.BlockHeight != 0 {
+		n += 1 + sovQuery(uint64(m.BlockHeight))
+	}
+	return n
+}
+
+func (m *UndelegationRecordList) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if len(m.Undelegations) > 0 {
+		for _, e := range m.Undelegations {
+			l = e.Size()
+			n += 1 + l + sovQuery(uint64(l))
+		}
 	}
 	return n
 }
@@ -1400,6 +2007,424 @@ func (m *SingleDelegationInfoReq) Unmarshal(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			m.AssetID = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *UndelegationHoldCountReq) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: UndelegationHoldCountReq: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: UndelegationHoldCountReq: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field RecordKey", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.RecordKey = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *UndelegationHoldCountResponse) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: UndelegationHoldCountResponse: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: UndelegationHoldCountResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field HoldCount", wireType)
+			}
+			m.HoldCount = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.HoldCount |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *UndelegationsReq) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: UndelegationsReq: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: UndelegationsReq: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field StakerID", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.StakerID = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field AssetID", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.AssetID = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *UndelegationsByHeightReq) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: UndelegationsByHeightReq: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: UndelegationsByHeightReq: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field BlockHeight", wireType)
+			}
+			m.BlockHeight = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.BlockHeight |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *UndelegationRecordList) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: UndelegationRecordList: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: UndelegationRecordList: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Undelegations", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Undelegations = append(m.Undelegations, &UndelegationRecord{})
+			if err := m.Undelegations[len(m.Undelegations)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
 			iNdEx = postIndex
 		default:
 			iNdEx = preIndex

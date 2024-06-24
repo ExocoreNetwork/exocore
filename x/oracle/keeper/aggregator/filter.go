@@ -25,6 +25,22 @@ func newFilter(maxNonce, maxDetID int) *filter {
 	}
 }
 
+func (f *filter) copy4CheckTx() *filter {
+	ret := *f
+	ret.validatorNonce = make(map[string]*common.Set[int32], len(f.validatorNonce))
+	ret.validatorSource = make(map[string]*common.Set[string], len(f.validatorSource))
+
+	for k, v := range f.validatorNonce {
+		ret.validatorNonce[k] = v.Copy()
+	}
+
+	for k, v := range f.validatorSource {
+		ret.validatorSource[k] = v.Copy()
+	}
+
+	return &ret
+}
+
 func (f *filter) newVNSet() *common.Set[int32] {
 	return common.NewSet[int32](f.maxNonce)
 }

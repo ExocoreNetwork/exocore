@@ -3,9 +3,11 @@ package keeper
 import (
 	"context"
 
+	sdkmath "cosmossdk.io/math"
+	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
+
 	"github.com/ExocoreNetwork/exocore/x/assets/types"
 
-	sdkmath "cosmossdk.io/math"
 	operatortypes "github.com/ExocoreNetwork/exocore/x/operator/types"
 	"github.com/cosmos/cosmos-sdk/codec"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
@@ -69,5 +71,31 @@ type OperatorKeeper interface {
 
 	OptOut(ctx sdk.Context, OperatorAddress sdk.AccAddress, AVSAddr string) error
 
-	NoInstantaneousSlash(ctx sdk.Context, operatorAddress sdk.AccAddress, AVSAddr, slashContract, slashID string, occurredSateHeight int64, slashProportion sdkmath.LegacyDec) error
+	Slash(ctx sdk.Context, parameter *operatortypes.SlashInputInfo) error
+
+	SlashWithInfractionReason(
+		ctx sdk.Context, addr sdk.AccAddress, infractionHeight, power int64,
+		slashFactor sdk.Dec, infraction stakingtypes.Infraction,
+	) sdkmath.Int
+}
+
+// SetHooks stores the given hooks implementations.
+// Note that the Keeper is changed into a pointer to prevent an ineffective assignment.
+func (k *Keeper) SetHooks(hooks operatortypes.OperatorHooks) {
+	if hooks == nil {
+		panic("cannot set nil hooks")
+	}
+	if k.hooks != nil {
+		panic("cannot set hooks twice")
+	}
+	k.hooks = hooks
+}
+
+// Hooks returns the keeper's hooks.
+func (k *Keeper) Hooks() operatortypes.OperatorHooks {
+	if k.hooks == nil {
+		// return a no-op implementation if no hooks are set to prevent calling nil functions
+		return operatortypes.MultiOperatorHooks{}
+	}
+	return k.hooks
 }

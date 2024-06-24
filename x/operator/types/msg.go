@@ -3,17 +3,30 @@ package types
 import (
 	errorsmod "cosmossdk.io/errors"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/evmos/evmos/v14/types"
 )
 
+const (
+	// TypeRegisterOperatorReq is the type for the RegisterOperatorReq message.
+	TypeRegisterOperatorReq = "register_operator"
+	// TypeSetConsKeyReq is the type for the SetConsKeyReq message.
+	TypeSetConsKeyReq = "set_cons_key"
+	// TypeOptIntoAVSReq is the type for the OptIntoAVSReq message.
+	TypeOptIntoAVSReq = "opt_into_avs"
+	// TypeOptOutOfAVSReq is the type for the OptOutOfAVSReq message.
+	TypeOptOutOfAVSReq = "opt_out_of_avs"
+)
+
+// interface guards
 var (
 	_ sdk.Msg = &RegisterOperatorReq{}
-
-	// add for dogfood
-	_ sdk.Msg = &OptInToCosmosChainRequest{}
-	_ sdk.Msg = &InitOptOutFromCosmosChainRequest{}
+	_ sdk.Msg = &OptIntoAVSReq{}
+	_ sdk.Msg = &OptOutOfAVSReq{}
+	_ sdk.Msg = &SetConsKeyReq{}
 )
 
-// GetSigners returns the expected signers for a MsgUpdateParams message.
+// GetSigners returns the expected signers for the message.
 func (m *RegisterOperatorReq) GetSigners() []sdk.AccAddress {
 	addr := sdk.MustAccAddressFromBech32(m.FromAddress)
 	return []sdk.AccAddress{addr}
@@ -24,34 +37,131 @@ func (m *RegisterOperatorReq) ValidateBasic() error {
 	if _, err := sdk.AccAddressFromBech32(m.FromAddress); err != nil {
 		return errorsmod.Wrap(err, "invalid from address")
 	}
-	return nil
+	return m.Info.ValidateBasic()
 }
 
-// GetSignBytes implements the LegacyMsg interface.
+// Route returns the transaction route.
+func (m *RegisterOperatorReq) Route() string {
+	return RouterKey
+}
+
+// Type returns the transaction type.
+func (m *RegisterOperatorReq) Type() string {
+	return TypeRegisterOperatorReq
+}
+
+// GetSignBytes returns the bytes all expected signers must sign over.
 func (m *RegisterOperatorReq) GetSignBytes() []byte {
-	return nil
+	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(m))
 }
 
-func (m *OptInToCosmosChainRequest) GetSigners() []sdk.AccAddress {
+// GetSigners returns the expected signers for the message.
+func (m *SetConsKeyReq) GetSigners() []sdk.AccAddress {
 	addr := sdk.MustAccAddressFromBech32(m.Address)
 	return []sdk.AccAddress{addr}
 }
 
-func (m *OptInToCosmosChainRequest) ValidateBasic() error {
+// ValidateBasic does a sanity check of the provided data
+func (m *SetConsKeyReq) ValidateBasic() error {
 	if _, err := sdk.AccAddressFromBech32(m.Address); err != nil {
 		return errorsmod.Wrap(err, "invalid from address")
+	}
+	if !types.IsValidChainID(m.ChainID) {
+		return errorsmod.Wrap(ErrParameterInvalid, "invalid chain id")
+	}
+	if _, err := ValidateConsensusKeyJSON(m.PublicKey); err != nil {
+		return errorsmod.Wrapf(ErrParameterInvalid, "invalid public key because %s", err)
 	}
 	return nil
 }
 
-func (m *InitOptOutFromCosmosChainRequest) GetSigners() []sdk.AccAddress {
-	addr := sdk.MustAccAddressFromBech32(m.Address)
+// Route returns the transaction route.
+func (m *SetConsKeyReq) Route() string {
+	return RouterKey
+}
+
+// Type returns the transaction type.
+func (m *SetConsKeyReq) Type() string {
+	return TypeSetConsKeyReq
+}
+
+// GetSignBytes returns the bytes all expected signers must sign over.
+func (m *SetConsKeyReq) GetSignBytes() []byte {
+	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(m))
+}
+
+// GetSigners returns the expected signers for the message.
+func (m *OptIntoAVSReq) GetSigners() []sdk.AccAddress {
+	addr := sdk.MustAccAddressFromBech32(m.FromAddress)
 	return []sdk.AccAddress{addr}
 }
 
-func (m *InitOptOutFromCosmosChainRequest) ValidateBasic() error {
-	if _, err := sdk.AccAddressFromBech32(m.Address); err != nil {
+// ValidateBasic does a sanity check of the provided data
+func (m *OptIntoAVSReq) ValidateBasic() error {
+	if _, err := sdk.AccAddressFromBech32(m.FromAddress); err != nil {
 		return errorsmod.Wrap(err, "invalid from address")
 	}
+	if m.AvsAddress == "" {
+		return errorsmod.Wrap(ErrParameterInvalid, "AVS address is empty")
+	}
+	// TODO: there is no specific restriction applied on ChainID in Cosmos, so this check
+	// could potentially be removed.
+	if !common.IsHexAddress(m.AvsAddress) && !types.IsValidChainID(m.AvsAddress) {
+		return errorsmod.Wrap(
+			ErrParameterInvalid, "AVS address is not a valid hex address or chain id",
+		)
+	}
 	return nil
+}
+
+// Route returns the transaction route.
+func (m *OptIntoAVSReq) Route() string {
+	return RouterKey
+}
+
+// Type returns the transaction type.
+func (m *OptIntoAVSReq) Type() string {
+	return TypeOptIntoAVSReq
+}
+
+// GetSignBytes returns the bytes all expected signers must sign over.
+func (m *OptIntoAVSReq) GetSignBytes() []byte {
+	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(m))
+}
+
+// GetSigners returns the expected signers for the message.
+func (m *OptOutOfAVSReq) GetSigners() []sdk.AccAddress {
+	addr := sdk.MustAccAddressFromBech32(m.FromAddress)
+	return []sdk.AccAddress{addr}
+}
+
+// ValidateBasic does a sanity check of the provided data
+func (m *OptOutOfAVSReq) ValidateBasic() error {
+	if _, err := sdk.AccAddressFromBech32(m.FromAddress); err != nil {
+		return errorsmod.Wrap(err, "invalid from address")
+	}
+	if m.AvsAddress == "" {
+		return errorsmod.Wrap(ErrParameterInvalid, "AVS address is empty")
+	}
+	if !common.IsHexAddress(m.AvsAddress) && !types.IsValidChainID(m.AvsAddress) {
+		return errorsmod.Wrap(
+			ErrParameterInvalid, "AVS address is not a valid hex address or chain id",
+		)
+	}
+	return nil
+}
+
+// Route returns the transaction route. This must be specified for successful signing.
+func (m *OptOutOfAVSReq) Route() string {
+	return RouterKey
+}
+
+// Type returns the transaction type.
+func (m *OptOutOfAVSReq) Type() string {
+	return TypeOptOutOfAVSReq
+}
+
+// GetSignBytes returns the bytes all expected signers must sign over.
+func (m *OptOutOfAVSReq) GetSignBytes() []byte {
+	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(m))
 }

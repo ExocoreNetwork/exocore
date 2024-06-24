@@ -2,42 +2,9 @@ package keeper
 
 import (
 	"github.com/ExocoreNetwork/exocore/x/dogfood/types"
-	operatortypes "github.com/ExocoreNetwork/exocore/x/operator/types"
-	tmprotocrypto "github.com/cometbft/cometbft/proto/tendermint/crypto"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/ethereum/go-ethereum/common/hexutil"
 )
-
-// ClearUnbondingInformation clears all information related to an operator's opt out
-// or key replacement. This is done because the operator has opted back in or has
-// replaced their key (again) with the original one.
-func (k Keeper) ClearUnbondingInformation(
-	ctx sdk.Context, addr sdk.AccAddress, pubKey *tmprotocrypto.PublicKey,
-) {
-	optOutEpoch := k.GetOperatorOptOutFinishEpoch(ctx, addr)
-	k.DeleteOperatorOptOutFinishEpoch(ctx, addr)
-	k.RemoveOptOutToFinish(ctx, optOutEpoch, addr)
-	consAddress, err := operatortypes.TMCryptoPublicKeyToConsAddr(pubKey)
-	if err != nil {
-		return
-	}
-	k.DeleteConsensusAddrToPrune(ctx, optOutEpoch, consAddress)
-}
-
-// SetUnbondingInformation sets information related to an operator's opt out or key replacement.
-func (k Keeper) SetUnbondingInformation(
-	ctx sdk.Context, addr sdk.AccAddress, pubKey *tmprotocrypto.PublicKey, isOptingOut bool,
-) {
-	unbondingCompletionEpoch := k.GetUnbondingCompletionEpoch(ctx)
-	if isOptingOut {
-		k.AppendOptOutToFinish(ctx, unbondingCompletionEpoch, addr)
-		k.SetOperatorOptOutFinishEpoch(ctx, addr, unbondingCompletionEpoch)
-	}
-	consAddress, err := operatortypes.TMCryptoPublicKeyToConsAddr(pubKey)
-	if err != nil {
-		return
-	}
-	k.AppendConsensusAddrToPrune(ctx, unbondingCompletionEpoch, consAddress)
-}
 
 // GetUnbondingCompletionEpoch returns the epoch at the end of which
 // an unbonding triggered in this epoch will be completed.
@@ -108,4 +75,65 @@ func (k Keeper) setUndelegationsToMature(
 		panic(err)
 	}
 	store.Set(key, val)
+}
+
+// GetAllUndelegationsToMature gets a list of epochs and the corresponding undelegation record
+// keys which are scheduled to mature at the end of that epoch. It is ordered, first by the
+// epoch and then by the record key's bytes.
+func (k Keeper) GetAllUndelegationsToMature(ctx sdk.Context) []types.EpochToUndelegationRecordKeys {
+	store := ctx.KVStore(k.storeKey)
+	iterator := sdk.KVStorePrefixIterator(store, []byte{types.OptOutsToFinishBytePrefix})
+	defer iterator.Close()
+
+	res := []types.EpochToUndelegationRecordKeys{}
+
+	for ; iterator.Valid(); iterator.Next() {
+		epoch, _ := types.SafeUint64ToInt64(sdk.BigEndianToUint64(iterator.Key()[1:]))
+		var recordKeys types.UndelegationRecordKeys
+		k.cdc.MustUnmarshal(iterator.Value(), &recordKeys)
+		subRes := []string{}
+		for _, recordKey := range recordKeys.GetList() {
+			subRes = append(subRes, hexutil.Encode(recordKey))
+		}
+		res = append(res, types.EpochToUndelegationRecordKeys{
+			Epoch:                  epoch,
+			UndelegationRecordKeys: subRes,
+		})
+	}
+
+	return res
+}
+
+// GetUndelegationMaturityEpoch gets the maturity epoch for the undelegation record.
+func (k Keeper) GetUndelegationMaturityEpoch(
+	ctx sdk.Context, recordKey []byte,
+) (int64, bool) {
+	store := ctx.KVStore(k.storeKey)
+	key := types.UndelegationMaturityEpochKey(recordKey)
+	bz := store.Get(key)
+	if bz == nil {
+		return 0, false
+	}
+	epoch := sdk.BigEndianToUint64(bz)
+	return types.SafeUint64ToInt64(epoch)
+}
+
+// SetUndelegationMaturityEpoch sets the maturity epoch for the undelegation record.
+func (k Keeper) SetUndelegationMaturityEpoch(
+	ctx sdk.Context, recordKey []byte, epoch int64,
+) {
+	store := ctx.KVStore(k.storeKey)
+	key := types.UndelegationMaturityEpochKey(recordKey)
+	uepoch, _ := types.SafeInt64ToUint64(epoch)
+	bz := sdk.Uint64ToBigEndian(uepoch)
+	store.Set(key, bz)
+}
+
+// ClearUndelegationMaturityEpoch clears the maturity epoch for the undelegation record.
+func (k Keeper) ClearUndelegationMaturityEpoch(
+	ctx sdk.Context, recordKey []byte,
+) {
+	store := ctx.KVStore(k.storeKey)
+	key := types.UndelegationMaturityEpochKey(recordKey)
+	store.Delete(key)
 }

@@ -66,6 +66,31 @@ type roundPricesList struct {
 	roundPricesCount int
 }
 
+func (r *roundPricesList) copy4CheckTx() *roundPricesList {
+	ret := &roundPricesList{
+		roundPricesList:  make([]*roundPrices, 0, len(r.roundPricesList)),
+		roundPricesCount: r.roundPricesCount,
+	}
+
+	for _, v := range r.roundPricesList {
+		tmpRP := &roundPrices{
+			detID:     v.detID,
+			price:     big.NewInt(0).Set(v.price),
+			prices:    make([]*priceAndPower, 0, len(v.prices)),
+			timestamp: v.timestamp,
+		}
+		for _, pNP := range v.prices {
+			tmpPNP := *pNP
+			// power will be modified during execution
+			tmpPNP.power = big.NewInt(0).Set(pNP.power)
+			tmpRP.prices = append(tmpRP.prices, &tmpPNP)
+		}
+
+		ret.roundPricesList = append(ret.roundPricesList, tmpRP)
+	}
+	return ret
+}
+
 // to tell if any round of this DS has reached consensus/confirmed
 func (r *roundPricesList) hasConfirmedDetID() bool {
 	for _, round := range r.roundPricesList {
@@ -108,9 +133,20 @@ type calculator struct {
 	totalPower          *big.Int
 }
 
+func (c *calculator) copy4CheckTx() *calculator {
+	ret := newCalculator(c.validatorLength, c.totalPower)
+
+	// copy deterministicSource
+	for k, v := range c.deterministicSource {
+		ret.deterministicSource[k] = v.copy4CheckTx()
+	}
+
+	return ret
+}
+
 func (c *calculator) newRoundPricesList() *roundPricesList {
 	return &roundPricesList{
-		roundPricesList: make([]*roundPrices, 0, common.MaxDetID*c.validatorLength),
+		roundPricesList: make([]*roundPrices, 0, int(common.MaxDetID)*c.validatorLength),
 		// for each DS-roundId, the count of prices provided is the number of validators at most
 		roundPricesCount: c.validatorLength,
 	}

@@ -41,29 +41,29 @@ func HexStringToPubKey(key string) (*tmprotocrypto.PublicKey, error) {
 }
 
 // StringToPubKey converts a base64-encoded public key to a tendermint public key.
-// Typically, this function is fed an input from ParseConsumerKeyFromJSON.
-func StringToPubKey(pubKey string) (key *tmprotocrypto.PublicKey, err error) {
+// Typically, this function is fed an input from ParseConsensusKeyFromJSON.
+func StringToPubKey(pubKey string) (*tmprotocrypto.PublicKey, error) {
 	pubKeyBytes, err := base64.StdEncoding.DecodeString(pubKey)
 	if err != nil {
-		return
+		return nil, err
 	}
-	subscriberTMConsKey := &tmprotocrypto.PublicKey{
+	return &tmprotocrypto.PublicKey{
 		Sum: &tmprotocrypto.PublicKey_Ed25519{
 			Ed25519: pubKeyBytes,
 		},
-	}
-	return subscriberTMConsKey, nil
+	}, nil
 }
 
-// ParseConsumerKeyFromJSON parses the consumer key from a JSON string.
+// ParseConsensusKeyFromJSON parses the consensus key from a JSON string.
+// It returns the key type and the key itself.
 // This function replaces deserializing a protobuf any.
-func ParseConsumerKeyFromJSON(jsonStr string) (pkType, key string, err error) {
+func ParseConsensusKeyFromJSON(jsonStr string) (string, string, error) {
 	type PubKey struct {
-		Type string `json:"type"`
-		Key  string `json:"value"`
+		Type string `json:"@type"`
+		Key  string `json:"key"`
 	}
 	var pubKey PubKey
-	err = json.Unmarshal([]byte(jsonStr), &pubKey)
+	err := json.Unmarshal([]byte(jsonStr), &pubKey)
 	if err != nil {
 		return "", "", err
 	}
@@ -78,4 +78,18 @@ func TMCryptoPublicKeyToConsAddr(k *tmprotocrypto.PublicKey) (sdk.ConsAddress, e
 		return nil, err
 	}
 	return sdk.GetConsAddress(sdkK), nil
+}
+
+// ValidateConsensusKey checks that the key is a JSON with `@type` and `key` keys
+// with the former bearing exactly value `/cosmos.crypto.ed25519.PubKey`, and the
+// latter being a valid base64-encoded public key.
+func ValidateConsensusKeyJSON(key string) (res *tmprotocrypto.PublicKey, err error) {
+	if keyType, keyString, err := ParseConsensusKeyFromJSON(key); err != nil {
+		return nil, errorsmod.Wrap(err, "invalid public key")
+	} else if keyType != "/cosmos.crypto.ed25519.PubKey" {
+		return nil, errorsmod.Wrap(ErrParameterInvalid, "invalid public key type")
+	} else if res, err = StringToPubKey(keyString); err != nil {
+		return nil, errorsmod.Wrap(err, "invalid public key")
+	}
+	return res, nil
 }

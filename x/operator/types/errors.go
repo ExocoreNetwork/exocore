@@ -58,8 +58,8 @@ var (
 		"consensus key already in use by another operator",
 	)
 
-	ErrAlreadyOptingOut = errorsmod.Register(
-		ModuleName, 11, "operator already opting out",
+	ErrAlreadyRemovingKey = errorsmod.Register(
+		ModuleName, 11, "operator already removing consensus key",
 	)
 
 	ErrInvalidPubKey = errorsmod.Register(
@@ -77,18 +77,33 @@ var (
 		"avs address should be a hex evm contract address",
 	)
 
-	ErrInvalidSlashType = errorsmod.Register(
+	ErrOperatorAlreadyExists = errorsmod.Register(
 		ModuleName, 15,
-		"the slash type is invalid",
+		"operator already exists",
+	)
+
+	ErrUnknownChainID = errorsmod.Register(
+		ModuleName, 16,
+		"unknown chain id",
+	)
+
+	ErrOperatorNotRemovingKey = errorsmod.Register(
+		ModuleName, 17,
+		"operator not removing key",
+	)
+
+	ErrInvalidSlashPower = errorsmod.Register(
+		ModuleName, 18,
+		"the slash power is invalid",
 	)
 
 	ErrKeyAlreadyExist = errorsmod.Register(
-		ModuleName, 16,
+		ModuleName, 19,
 		"the key already exists",
 	)
 
 	ErrValueIsNilOrZero = errorsmod.Register(
-		ModuleName, 17,
+		ModuleName, 20,
 		"the value is nil or zero",
 	)
 )

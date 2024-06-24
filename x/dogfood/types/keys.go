@@ -1,6 +1,8 @@
 package types
 
 import (
+	math "math"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
@@ -16,8 +18,9 @@ const (
 	// ExocoreValidatorBytePrefix is the prefix for the validator store.
 	ExocoreValidatorBytePrefix byte = iota + 1
 
-	// QueuedOperationsByte is the byte used to store the queue of operations.
-	QueuedOperationsByte
+	// QueuedOperationsByte was the byte used to store the queue of operations.
+	// It is no longer used, but it is retained for backward compatibility.
+	_
 
 	// OptOutsToFinishBytePrefix is the byte used to store the list of operator addresses whose
 	// opt outs are maturing at the provided epoch.
@@ -35,9 +38,10 @@ const (
 	// that will mature at the provided epoch.
 	UnbondingReleaseMaturityBytePrefix
 
-	// PendingOperationsByte is the byte used to store the list of operations to be applied at
-	// the end of the current block.
-	PendingOperationsByte
+	// PendingOperationsByte was the byte used to store the list of operations to be applied at
+	// the end of the current block. It is no longer used, and is retained for backward
+	// compatibility.
+	_
 
 	// PendingOptOutsByte is the byte used to store the list of operator addresses whose opt
 	// outs will be made effective at the end of the current block.
@@ -57,6 +61,9 @@ const (
 	// HistoricalInfoBytePrefix is the byte prefix for the historical info store.
 	HistoricalInfoBytePrefix
 
+	// UndelegationMaturityEpochByte is the byte key for the undelegation maturity epoch store.
+	UndelegationMaturityEpochByte
+
 	// LastTotalPowerByte is the byte key for the last total power store.
 	LastTotalPowerByte
 
@@ -67,11 +74,6 @@ const (
 // ExocoreValidatorKey returns the key for the validator store.
 func ExocoreValidatorKey(address sdk.AccAddress) []byte {
 	return append([]byte{ExocoreValidatorBytePrefix}, address.Bytes()...)
-}
-
-// QueuedOperationsKey returns the key for the queued operations store.
-func QueuedOperationsKey() []byte {
-	return []byte{QueuedOperationsByte}
 }
 
 // OptOutsToFinishKey returns the key for the operator opt out maturity store (epoch -> list of
@@ -119,11 +121,6 @@ func UnbondingReleaseMaturityKey(epoch int64) ([]byte, bool) {
 	), true
 }
 
-// PendingOperationsKey returns the key for the pending operations store.
-func PendingOperationsKey() []byte {
-	return []byte{PendingOperationsByte}
-}
-
 // PendingOptOutsKey returns the key for the pending opt-outs store.
 func PendingOptOutsKey() []byte {
 	return []byte{PendingOptOutsByte}
@@ -145,6 +142,11 @@ func EpochEndKey() []byte {
 	return []byte{EpochEndByte}
 }
 
+// UndelegationMaturityEpochKey returns the key for the undelegation maturity epoch store.
+func UndelegationMaturityEpochKey(recordKey []byte) []byte {
+	return append([]byte{UndelegationMaturityEpochByte}, recordKey...)
+}
+
 // SafeInt64ToUint64 is a wrapper function to convert an int64
 // to a uint64. It returns (0, false) if the conversion is not possible.
 // This is safe as long as the int64 is non-negative.
@@ -153,6 +155,16 @@ func SafeInt64ToUint64(id int64) (uint64, bool) {
 		return 0, false
 	}
 	return uint64(id), true // #nosec G701 // already checked.
+}
+
+// SafeUint64ToInt64 is a wrapper function to convert a uint64
+// to an int64. It returns (0, false) if the conversion is not possible,
+// which happens when the uint64 is greater than the maximum int64 value.
+func SafeUint64ToInt64(id uint64) (int64, bool) {
+	if id > math.MaxInt64 {
+		return 0, false
+	}
+	return int64(id), true // #nosec G701 // already checked.
 }
 
 // HistoricalInfoKey returns the key to historical info to a given block height

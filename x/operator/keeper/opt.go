@@ -5,6 +5,7 @@ import (
 
 	sdkmath "cosmossdk.io/math"
 
+	delegationtypes "github.com/ExocoreNetwork/exocore/x/delegation/types"
 	"github.com/ExocoreNetwork/exocore/x/operator/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -17,9 +18,11 @@ type AssetPriceAndDecimal struct {
 
 // OptIn call this function to opt in AVS
 func (k *Keeper) OptIn(ctx sdk.Context, operatorAddress sdk.AccAddress, avsAddr string) error {
-	// avsAddr should be an evm contract address
-	if common.IsHexAddress(avsAddr) {
-		return types.ErrInvalidAvsAddr
+	// avsAddr should be an evm contract address or a chain id.
+	if !common.IsHexAddress(avsAddr) {
+		if avsAddr != ctx.ChainID() { // TODO: other chain ids besides this chain's.
+			return types.ErrInvalidAvsAddr
+		}
 	}
 	// check optedIn info
 	if k.IsOptedIn(ctx, operatorAddress.String(), avsAddr) {
@@ -54,16 +57,37 @@ func (k *Keeper) OptIn(ctx sdk.Context, operatorAddress sdk.AccAddress, avsAddr 
 }
 
 // OptOut call this function to opt out of AVS
-func (k *Keeper) OptOut(ctx sdk.Context, operatorAddress sdk.AccAddress, avsAddr string) error {
+func (k *Keeper) OptOut(ctx sdk.Context, operatorAddress sdk.AccAddress, avsAddr string) (err error) {
+	// avsAddr should be an evm contract address or a chain id.
+	if !common.IsHexAddress(avsAddr) {
+		if avsAddr != ctx.ChainID() { // TODO: other chain ids besides this chain's.
+			return types.ErrInvalidAvsAddr
+		}
+		defer func() {
+			if err == nil {
+				// does not fail, because it performs no validations, just stores a key-value pair.
+				// all validations are instead performed by this function.
+				k.InitiateOperatorKeyRemovalForChainID(ctx, operatorAddress, avsAddr)
+			}
+		}()
+	}
+	if !k.IsOperator(ctx, operatorAddress) {
+		return delegationtypes.ErrOperatorNotExist
+	}
 	// check optedIn info
 	if !k.IsOptedIn(ctx, operatorAddress.String(), avsAddr) {
 		return types.ErrNotOptedIn
 	}
+	// do not allow frozen operators to do anything meaningful
+	if k.slashKeeper.IsOperatorFrozen(ctx, operatorAddress) {
+		return delegationtypes.ErrOperatorIsFrozen
+	}
 
 	// DeleteOperatorUSDValue, delete the operator voting power, it can facilitate to
 	// update the voting powers of all opted-in operators at the end of epoch.
-	// there isn't going to be any reward for the operator in this opted-out epoch.
-	err := k.DeleteOperatorUSDValue(ctx, avsAddr, operatorAddress.String())
+	// There might still be a reward for the operator in this opted-out epoch,
+	// which is determined by the reward logic.
+	err = k.DeleteOperatorUSDValue(ctx, avsAddr, operatorAddress.String())
 	if err != nil {
 		return err
 	}
@@ -72,6 +96,10 @@ func (k *Keeper) OptOut(ctx sdk.Context, operatorAddress sdk.AccAddress, avsAddr
 	handleFunc := func(info *types.OptedInfo) {
 		// #nosec G701
 		info.OptedOutHeight = uint64(ctx.BlockHeight())
+		// the opt out, although is requested now, is made effective at the end of the current epoch.
+		// so this is not necessarily the OptedOutHeight, rather, it is the OptOutRequestHeight.
+		// the height is not directly used, beyond ascertaining whether the operator is currently opted in/out.
+		// so the difference due to the epoch scheduling is not too big a concern.
 	}
 	err = k.HandleOptedInfo(ctx, operatorAddress.String(), avsAddr, handleFunc)
 	if err != nil {

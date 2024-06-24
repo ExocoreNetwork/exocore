@@ -22,19 +22,25 @@ func (k Keeper) EndBlock(ctx sdk.Context) []abci.ValidatorUpdate {
 		return []abci.ValidatorUpdate{}
 	}
 	defer k.ClearEpochEnd(ctx)
-	// start with clearing the hold on the undelegations.
+	// start by clearing the previous consensus keys for the chain.
+	// each AVS can have a separate epoch and hence this function is a part of this module
+	// and not the operator module.
+	k.operatorKeeper.ClearPreviousConsensusKeys(ctx, ctx.ChainID())
+	// clear the hold on the pending undelegations.
 	undelegations := k.GetPendingUndelegations(ctx)
 	for _, undelegation := range undelegations.GetList() {
 		err := k.delegationKeeper.DecrementUndelegationHoldCount(ctx, undelegation)
 		if err != nil {
 			panic(err)
 		}
+		k.ClearUndelegationMaturityEpoch(ctx, undelegation)
 	}
 	k.ClearPendingUndelegations(ctx)
 	// then, let the operator module know that the opt out has finished.
 	optOuts := k.GetPendingOptOuts(ctx)
 	for _, addr := range optOuts.GetList() {
-		k.operatorKeeper.CompleteOperatorOptOutFromChainID(ctx, addr, ctx.ChainID())
+		// TODO log the error
+		_ = k.operatorKeeper.CompleteOperatorKeyRemovalForChainID(ctx, addr, ctx.ChainID())
 	}
 	k.ClearPendingOptOuts(ctx)
 	// for slashing, the operator module is required to store a mapping of chain id + cons addr
@@ -84,7 +90,7 @@ func (k Keeper) EndBlock(ctx sdk.Context) []abci.ValidatorUpdate {
 	res := make([]abci.ValidatorUpdate, 0, maxVals*2)
 	for i := range operators {
 		// #nosec G701 // ok on 64-bit systems.
-		if i > int(maxVals) {
+		if i >= int(maxVals) {
 			// we have reached the maximum number of validators, amongst all the validators.
 			// even if there are intersections with the previous validator set, this will
 			// only be reached if we exceed the threshold.
