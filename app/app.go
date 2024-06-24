@@ -596,7 +596,11 @@ func NewExocoreApp(
 	)
 
 	(&app.EpochsKeeper).SetHooks(
-		app.StakingKeeper.EpochsHooks(),
+		epochskeeper.NewMultiEpochHooks(
+			// insert epoch hooks receivers here
+			app.AVSManagerKeeper.Hooks(),
+			app.StakingKeeper.EpochsHooks(),
+		),
 	)
 
 	// these two modules aren't finalized yet.

@@ -2,6 +2,8 @@ package keeper_test
 
 import (
 	"fmt"
+	"github.com/ExocoreNetwork/exocore/x/avs/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/evmos/evmos/v14/x/epochs"
 	"time"
 
@@ -29,13 +31,13 @@ func (suite *AVSTestSuite) TestEpochIdentifierAfterEpochEnd() {
 		suite.Run(fmt.Sprintf("Case %s", tc.name), func() {
 			suite.SetupTest()
 
-			futureCtx := suite.ctx.WithBlockTime(time.Now().Add(time.Hour))
-			newHeight := suite.app.LastBlockHeight() + 1
+			futureCtx := suite.Ctx.WithBlockTime(time.Now().Add(time.Hour))
+			newHeight := suite.App.LastBlockHeight() + 1
 
-			suite.app.EpochsKeeper.BeforeEpochStart(futureCtx, tc.epochIdentifier, newHeight)
-			suite.app.EpochsKeeper.AfterEpochEnd(futureCtx, tc.epochIdentifier, newHeight)
+			suite.App.EpochsKeeper.BeforeEpochStart(futureCtx, tc.epochIdentifier, newHeight)
+			suite.App.EpochsKeeper.AfterEpochEnd(futureCtx, tc.epochIdentifier, newHeight)
 
-			suite.app.EpochsKeeper.AfterEpochEnd(futureCtx, tc.epochIdentifier, newHeight)
+			suite.App.EpochsKeeper.AfterEpochEnd(futureCtx, tc.epochIdentifier, newHeight)
 
 		})
 	}
@@ -43,15 +45,39 @@ func (suite *AVSTestSuite) TestEpochIdentifierAfterEpochEnd() {
 
 func (suite *AVSTestSuite) TestAfterEpochEnd_NoAVSInfoRecords() {
 
+	avsName, avsAddres, slashAddress := "avsTest", "exo13h6xg79g82e2g2vhjwg7j4r2z2hlncelwutkjr", "exo13h6xg79g82e2g2vhjwg7j4r2z2hlncelwutash"
+	avsOwnerAddress := []string{"exo13h6xg79g82e2g2vhjwg7j4r2z2hlncelwutkjr", "exo13h6xg79g82e2g2vhjwg7j4r2z2hlncelwutkj1", "exo13h6xg79g82e2g2vhjwg7j4r2z2hlncelwutkj2"}
+	assetID := []string{"11", "22", "33"}
+	avs := &types.AVSInfo{
+		Name:                  avsName,
+		AvsAddress:            avsAddres,
+		SlashAddr:             slashAddress,
+		AvsOwnerAddress:       avsOwnerAddress,
+		AssetId:               assetID,
+		AvsUnbondingPeriod:    uint32(7),
+		MinSelfDelegation:     sdk.NewIntFromUint64(10),
+		OperatorAddress:       nil,
+		EpochIdentifier:       epochstypes.DayEpochID,
+		EffectiveCurrentEpoch: 1,
+	}
+
+	err := suite.App.AVSManagerKeeper.SetAVSInfo(suite.Ctx, avs)
+	suite.NoError(err)
+
+	info, err := suite.App.AVSManagerKeeper.GetAVSInfo(suite.Ctx, avsAddres)
+
+	suite.NoError(err)
+	suite.Equal(avsAddres, info.GetInfo().AvsAddress)
+
 	// Test case: No AVSInfo records
 	epochIdentifier := "test-epoch"
 	epochNumber := int64(10)
 
 	// Call the AfterEpochEnd function
-	suite.app.EpochsKeeper.AfterEpochEnd(suite.ctx, epochIdentifier, epochNumber)
+	suite.App.EpochsKeeper.AfterEpochEnd(suite.Ctx, epochIdentifier, epochNumber)
 
 	// Verify that no events are emitted
-	suite.Require().Empty(suite.ctx.EventManager().Events())
+	suite.Require().Empty(suite.Ctx.EventManager().Events())
 }
 
 func (suite *AVSTestSuite) TestEpochInfoChangesBeginBlockerAndInitGenesis() {
