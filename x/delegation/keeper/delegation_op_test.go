@@ -184,7 +184,7 @@ func (suite *DelegationTestSuite) TestUndelegateFrom() {
 	suite.Equal(UndelegationRecord, records[0])
 
 	suite.Ctx.Logger().Info("the complete block number is:", "height", UndelegationRecord.CompleteBlockNumber)
-	waitUndelegationRecords, err := suite.App.DelegationKeeper.GetWaitCompleteUndelegationRecords(suite.Ctx, UndelegationRecord.CompleteBlockNumber)
+	waitUndelegationRecords, err := suite.App.DelegationKeeper.GetPendingUndelegationRecords(suite.Ctx, UndelegationRecord.CompleteBlockNumber)
 	suite.NoError(err)
 	suite.Equal(1, len(waitUndelegationRecords))
 	suite.Equal(UndelegationRecord, waitUndelegationRecords[0])
@@ -241,7 +241,7 @@ func (suite *DelegationTestSuite) TestCompleteUndelegation() {
 	suite.NoError(err)
 	suite.Equal(0, len(records))
 
-	waitUndelegationRecords, err := suite.App.DelegationKeeper.GetWaitCompleteUndelegationRecords(suite.Ctx, uint64(completeBlockNumber))
+	waitUndelegationRecords, err := suite.App.DelegationKeeper.GetPendingUndelegationRecords(suite.Ctx, uint64(completeBlockNumber))
 	suite.NoError(err)
 	suite.Equal(0, len(waitUndelegationRecords))
 }

@@ -3,8 +3,6 @@ package keeper
 import (
 	"fmt"
 
-	delegationkeeper "github.com/ExocoreNetwork/exocore/x/delegation/keeper"
-
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 
@@ -17,26 +15,18 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-type SlashInputInfo struct {
-	SlashType        types.SlashType
-	Operator         sdk.AccAddress
-	AVSAddr          string
-	SlashContract    string
-	SlashID          string
-	SlashEventHeight int64
-	SlashProportion  sdkmath.LegacyDec
-}
-
 // GetSlashIDForDogfood It use infractionType+'/'+'infractionHeight' as the slashID, because the slash event occurs in dogfood doesn't have a TxID. It isn't submitted through an external transaction.
 func GetSlashIDForDogfood(infraction stakingtypes.Infraction, infractionHeight int64) string {
 	// #nosec G701
 	return string(assetstype.GetJoinedStoreKey(hexutil.EncodeUint64(uint64(infraction)), hexutil.EncodeUint64(uint64(infractionHeight))))
 }
 
-func SlashFromUndelegation(undelegation *delegationtype.UndelegationRecord, totalSlashAmount, slashAmount sdkmath.Int) (sdkmath.Int, error) {
+// SlashFromUndelegation executes the slash from an undelegation
+func SlashFromUndelegation(undelegation *delegationtype.UndelegationRecord, slashProportion sdkmath.LegacyDec) *types.SlashFromUndelegation {
 	if undelegation.ActualCompletedAmount.IsZero() {
-		return totalSlashAmount, nil
+		return nil
 	}
+	slashAmount := slashProportion.MulInt(undelegation.Amount).TruncateInt()
 	// reduce the actual_completed_amount in the record
 	if slashAmount.GTE(undelegation.ActualCompletedAmount) {
 		slashAmount = undelegation.ActualCompletedAmount
@@ -44,174 +34,63 @@ func SlashFromUndelegation(undelegation *delegationtype.UndelegationRecord, tota
 	} else {
 		undelegation.ActualCompletedAmount = undelegation.ActualCompletedAmount.Sub(slashAmount)
 	}
-	// slashing from the operator isn't needed if the remainingSlashAmount isn't positive
-	remainingSlashAmount := totalSlashAmount.Sub(slashAmount)
-	return remainingSlashAmount, nil
+
+	return &types.SlashFromUndelegation{
+		StakerID: undelegation.StakerID,
+		AssetID:  undelegation.AssetID,
+		Amount:   slashAmount,
+	}
 }
 
-func (k *Keeper) VerifySlashEvent(ctx sdk.Context, parameter *SlashInputInfo) (sdk.Context, error) {
+func (k *Keeper) CheckSlashParameter(ctx sdk.Context, parameter *types.SlashInputInfo) error {
 	height := ctx.BlockHeight()
 	if parameter.SlashEventHeight > height {
-		return ctx, errorsmod.Wrap(types.ErrSlashOccurredHeight, fmt.Sprintf("slashEventHeight:%d,curHeight:%d", parameter.SlashEventHeight, height))
+		return errorsmod.Wrap(types.ErrSlashOccurredHeight, fmt.Sprintf("slashEventHeight:%d,curHeight:%d", parameter.SlashEventHeight, height))
 	}
 
-	// get the state when the slash occurred
-	// get the opted-in info
-	// When the slash occurs, retrieves the end block height of the epoch
-	// where the used voting power resides.
-	heightForVotingPower, err := k.avsKeeper.GetHeightForVotingPower(ctx, parameter.AVSAddr, parameter.SlashEventHeight)
-	if err != nil {
-		return ctx, err
-	}
-	if k.historicalCtx == nil {
-		return ctx, errorsmod.Wrap(types.ErrValueIsNilOrZero, "VerifySlashEvent the historicalCtx is nil")
-	}
-	historicalStateCtx, err := k.historicalCtx(heightForVotingPower, false)
-	if err != nil {
-		return ctx, err
-	}
-	if !k.IsOptedIn(ctx, parameter.Operator.String(), parameter.AVSAddr) {
-		return ctx, types.ErrNotOptedIn
-	}
-	optedInfo, err := k.GetOptedInfo(historicalStateCtx, parameter.Operator.String(), parameter.AVSAddr)
-	if err != nil {
-		return ctx, err
-	}
-	if optedInfo.SlashContract != parameter.SlashContract {
-		return ctx, errorsmod.Wrap(types.ErrSlashContractNotMatch, fmt.Sprintf("input slashContract:%s, opted-in slash contract:%suite", parameter.SlashContract, optedInfo.SlashContract))
-	}
-
-	return historicalStateCtx, nil
-}
-
-// NoInstantaneousSlash indicates that the slash event will be processed after a certain
-// period of time, thus requiring a reduction in the share of the corresponding staker.
-// It will slash the assets from the undelegation firstly, then slash the asset from the
-// staker's share.
-// Compared to the instant slash, the con is the handling isn't efficient, but the pro is
-// there isn't any slash mistake for the new-coming delegations after the slash event.
-func (k *Keeper) NoInstantaneousSlash(ctx, historicalStateCtx sdk.Context, parameter *SlashInputInfo) error {
-	// get assetsInfo supported by AVS
-	assetsFilter, err := k.avsKeeper.GetAVSSupportedAssets(historicalStateCtx, parameter.AVSAddr)
-	if err != nil {
-		return err
-	}
-	for assetID := range assetsFilter {
-		historyOperatorAsset, err := k.assetsKeeper.GetOperatorSpecifiedAssetInfo(historicalStateCtx, parameter.Operator, assetID)
-		if err != nil {
-			return err
+	if parameter.IsDogFood {
+		if parameter.Power <= 0 {
+			return errorsmod.Wrapf(types.ErrInvalidSlashPower, "slash for dogfood, the power is:%v", parameter.Power)
 		}
-		stakerList, err := k.delegationKeeper.GetStakersByOperator(historicalStateCtx, parameter.Operator.String(), assetID)
-		if err != nil {
-			return err
+	} else {
+		if parameter.Power != 0 {
+			return errorsmod.Wrapf(types.ErrInvalidSlashPower, "slash for other AVSs, the power is:%v", parameter.Power)
 		}
-		// slash the staker share according to the historical and current state
-		for _, stakerID := range stakerList.Stakers {
-			delegationState, err := k.delegationKeeper.GetSingleDelegationInfo(historicalStateCtx, stakerID, assetID, parameter.Operator.String())
-			if err != nil {
-				return err
-			}
-			assetAmount, err := delegationkeeper.TokensFromShares(delegationState.UndelegatableShare, historyOperatorAsset.TotalShare, historyOperatorAsset.TotalAmount)
-			if err != nil {
-				return err
-			}
-			shouldSlashAmount := parameter.SlashProportion.MulInt(assetAmount).TruncateInt()
-			// slash the asset from the undelegation firstly.
-			undelegations, err := k.delegationKeeper.GetStakerUndelegationRecords(ctx, stakerID, assetID)
-			if err != nil {
-				return err
-			}
-			isSlashFromShare := true
-			for _, undelegation := range undelegations {
-				if undelegation.OperatorAddr == parameter.Operator.String() {
-					remainingSlashAmount, err := SlashFromUndelegation(undelegation, shouldSlashAmount, shouldSlashAmount)
-					if err != nil {
-						return err
-					}
-					// update the undelegation state
-					_, err = k.delegationKeeper.SetSingleUndelegationRecord(ctx, undelegation)
-					if err != nil {
-						return err
-					}
-					if remainingSlashAmount.IsZero() {
-						// all amount has been slashed from the undelegaion,
-						// so the share of staker shouldn't be slashed.
-						isSlashFromShare = false
-						break
-					}
-					// slash the remaining amount from the next undelegation
-					shouldSlashAmount = remainingSlashAmount
-				}
-			}
-			// slash the asset from the staker's asset share if there is still remaining slash amount after
-			// slashing from the undelegation.
-			if isSlashFromShare {
-				slashShare, err := k.delegationKeeper.CalculateSlashShare(ctx, parameter.Operator, stakerID, assetID, shouldSlashAmount)
-				if err != nil {
-					return err
-				}
-				_, err = k.delegationKeeper.RemoveShare(ctx, false, parameter.Operator, stakerID, assetID, slashShare)
-				if err != nil {
-					return err
-				}
-			}
-		}
+		// todo: get the historical voting power from the snapshot for the other AVSs
 	}
 	return nil
 }
 
-// InstantSlash represents the slash events that will be handled instantly after occurring
-// so the slash will reduce the amount of related operator's assets pool.
-// The implementation is similar to the cosmos-sdk, but the difference is the comos-sdk
-// slashes a proportion from every undelegations, which may result in the actual total slash amount is greater
-// than intended. But this function won't slash the remaining undelegation if the total slash amount
-// is reached. So some undelegations might escape from the slash because of the other new-coming
-// delegations.
-// The new delegated assets after the slash event might be slashed incorrectly, which is same as cosmos-sdk.
-// So this function only apply to the situation that the slash events  will be handled instantly after occurring.
-// The pro is that the handling is more efficient compared to the no-instantaneous slash.
-func (k *Keeper) InstantSlash(ctx, historicalStateCtx sdk.Context, parameter *SlashInputInfo) error {
-	// todo: should we check if the slashEventHeight is too smaller than the current block height?
-	// Then force the AVS using the `NoInstantaneousSlash` if the slash event is too old
-	// This may depend on the level of authority we want to grant to AVS when
-	// setting their own slash logic.
-
-	slashAssets := make(map[string]sdkmath.Int, 0)
-	// get assetsInfo supported by AVS
-	assetsFilter, err := k.avsKeeper.GetAVSSupportedAssets(historicalStateCtx, parameter.AVSAddr)
+// SlashAssets slash the assets according to the new calculated proportion
+// It slashs the undelegation first, then slash the assets pool of the related operator
+// If the remaining amount of the assets pool after slash is zero, the share of related
+// stakers should be cleared, because the divisor will be zero when calculating the share
+// of new delegation after the slash.
+func (k *Keeper) SlashAssets(ctx sdk.Context, parameter *types.SlashInputInfo) (*types.SlashExecutionInfo, error) {
+	// calculate the new slash proportion according to the historical power and current assets state
+	slashUSDValue := sdkmath.LegacyNewDec(parameter.Power).Mul(parameter.SlashProportion)
+	// calculate the current usd value of all assets pool for the operator
+	usdValues, err := k.CalculateUSDValueForOperator(ctx, true, parameter.Operator.String(), nil, nil, nil)
 	if err != nil {
-		return err
+		return nil, err
 	}
+	// calculate the new slash proportion
+	newSlashProportion := slashUSDValue.Quo(usdValues.StakingAndWaitUnbonding)
+	newSlashProportion = sdkmath.LegacyMinDec(sdkmath.LegacyNewDec(1), newSlashProportion)
 
-	// get the Assets opted in the operator
-	historyOperatorAssets, err := k.assetsKeeper.GetOperatorAssetInfos(historicalStateCtx, parameter.Operator, assetsFilter)
-	if err != nil {
-		return err
+	executionInfo := &types.SlashExecutionInfo{
+		SlashProportion:    newSlashProportion,
+		SlashValue:         slashUSDValue,
+		SlashUndelegations: make([]*types.SlashFromUndelegation, 0),
+		SlashAssetsPool:    make([]*types.SlashFromAssetsPool, 0),
 	}
-
-	// calculate the assets amount that should be slashed
-	for assetID, state := range historyOperatorAssets {
-		slashAmount := parameter.SlashProportion.MulInt(state.TotalAmount).TruncateInt()
-		slashAssets[assetID] = slashAmount
-	}
-
 	// slash from the unbonding stakers
 	if parameter.SlashEventHeight < ctx.BlockHeight() {
 		// get the undelegations that are submitted after the slash.
 		opFunc := func(undelegation *delegationtype.UndelegationRecord) error {
-			totalSlashAmount, ok := slashAssets[undelegation.AssetID]
-			if ok {
-				slashAmount := parameter.SlashProportion.MulInt(undelegation.Amount).TruncateInt()
-				remainingSlashAmount, err := SlashFromUndelegation(undelegation, totalSlashAmount, slashAmount)
-				if err != nil {
-					return err
-				}
-				// slashing from the operator isn't needed if the remainingSlashAmount isn't positive
-				if !remainingSlashAmount.IsPositive() {
-					delete(slashAssets, undelegation.AssetID)
-				} else {
-					slashAssets[undelegation.AssetID] = remainingSlashAmount
-				}
+			slashFromUndelegation := SlashFromUndelegation(undelegation, newSlashProportion)
+			if slashFromUndelegation != nil {
+				executionInfo.SlashUndelegations = append(executionInfo.SlashUndelegations, slashFromUndelegation)
 			}
 			return nil
 		}
@@ -219,29 +98,21 @@ func (k *Keeper) InstantSlash(ctx, historicalStateCtx sdk.Context, parameter *Sl
 		heightFilter := uint64(parameter.SlashEventHeight)
 		err = k.delegationKeeper.IterateUndelegationsByOperator(ctx, parameter.Operator.String(), &heightFilter, true, opFunc)
 		if err != nil {
-			return err
+			return nil, err
 		}
 	}
 
-	// slash the remaining from the assets pool of the operator
-	for assetID, slashAmount := range slashAssets {
-		operatorAsset, err := k.assetsKeeper.GetOperatorSpecifiedAssetInfo(ctx, parameter.Operator, assetID)
-		if err != nil {
-			return err
-		}
-		isClearUselessShare := false
-		if slashAmount.GTE(operatorAsset.TotalAmount) {
-			slashAmount = operatorAsset.TotalAmount
-			isClearUselessShare = true
-		}
+	// slash from the assets pool of the operator
+	opFuncToIterateAssets := func(assetID string, state *assetstype.OperatorAssetInfo) error {
+		slashAmount := newSlashProportion.MulInt(state.TotalAmount).TruncateInt()
+		remainingAmount := state.TotalAmount.Sub(slashAmount)
+		// todo: consider slash all assets if the remaining amount is too small,
+		// which can avoid the unbalance between share and amount
 
-		changeAmount := assetstype.DeltaOperatorSingleAsset{
-			TotalAmount: slashAmount.Neg(),
-		}
 		// all shares need to be cleared if the asset amount is slashed to zero,
 		// otherwise there will be a problem in updating the shares when handling
 		// the new delegations.
-		if isClearUselessShare {
+		if remainingAmount.IsZero() {
 			// clear the share of other stakers
 			stakerList, err := k.delegationKeeper.GetStakersByOperator(ctx, parameter.Operator.String(), assetID)
 			if err != nil {
@@ -255,46 +126,45 @@ func (k *Keeper) InstantSlash(ctx, historicalStateCtx sdk.Context, parameter *Sl
 			if err != nil {
 				return err
 			}
-			changeAmount.TotalShare = sdkmath.LegacyNewDec(0)
-			changeAmount.OperatorAmount = sdkmath.NewInt(0)
-			changeAmount.OperatorShare = sdkmath.LegacyNewDec(0)
+			state.TotalShare = sdkmath.LegacyNewDec(0)
+			state.OperatorAmount = sdkmath.NewInt(0)
+			state.OperatorShare = sdkmath.LegacyNewDec(0)
 		}
-
-		err = k.assetsKeeper.UpdateOperatorAssetState(ctx, parameter.Operator, assetID, changeAmount)
-		if err != nil {
-			return err
-		}
+		state.TotalAmount = remainingAmount
+		executionInfo.SlashAssetsPool = append(executionInfo.SlashAssetsPool, &types.SlashFromAssetsPool{
+			AssetID: assetID,
+			Amount:  slashAmount,
+		})
+		return nil
 	}
-	return nil
+	err = k.assetsKeeper.IteratorAssetsForOperator(ctx, true, parameter.Operator.String(), nil, opFuncToIterateAssets)
+	if err != nil {
+		return nil, err
+	}
+	return executionInfo, nil
 }
 
-// Slash performs all slash events include instant slash and no-instantaneous slash.
-func (k *Keeper) Slash(ctx sdk.Context, parameter *SlashInputInfo) error {
-	historicalStateCtx, err := k.VerifySlashEvent(ctx, parameter)
-	if err != nil {
-		return err
-	}
-	switch parameter.SlashType {
-	case types.SlashType_SLASH_TYPE_INSTANT_SLASH:
-		err = k.InstantSlash(ctx, historicalStateCtx, parameter)
-	case types.SlashType_SLASH_TYPE_NO_INSTANTANEOUS_SLASH:
-		err = k.NoInstantaneousSlash(ctx, historicalStateCtx, parameter)
-	default:
-		return errorsmod.Wrap(types.ErrInvalidSlashType, fmt.Sprintf("the slash type is:%v", parameter.SlashType))
-	}
+// Slash performs all slash events and stores the execution result
+func (k *Keeper) Slash(ctx sdk.Context, parameter *types.SlashInputInfo) error {
+	err := k.CheckSlashParameter(ctx, parameter)
 	if err != nil {
 		return err
 	}
 
-	// todo: recording the slash event might be moved to the slash module
+	// slash assets according to the input information
+	executionInfo, err := k.SlashAssets(ctx, parameter)
+	if err != nil {
+		return err
+	}
+	// store the slash information
 	height := ctx.BlockHeight()
 	slashInfo := types.OperatorSlashInfo{
+		SlashType:       parameter.SlashType,
 		SlashContract:   parameter.SlashContract,
 		SubmittedHeight: height,
 		EventHeight:     parameter.SlashEventHeight,
 		SlashProportion: parameter.SlashProportion,
-		ProcessedHeight: height + types.SlashVetoDuration,
-		SlashType:       parameter.SlashType,
+		ExecutionInfo:   executionInfo,
 	}
 	err = k.UpdateOperatorSlashInfo(ctx, parameter.Operator.String(), parameter.AVSAddr, parameter.SlashID, slashInfo)
 	if err != nil {
@@ -305,37 +175,31 @@ func (k *Keeper) Slash(ctx sdk.Context, parameter *SlashInputInfo) error {
 
 // SlashWithInfractionReason is an expected slash interface for the dogfood module.
 func (k Keeper) SlashWithInfractionReason(
-	ctx sdk.Context, addr sdk.AccAddress, infractionHeight, _ int64,
+	ctx sdk.Context, addr sdk.AccAddress, infractionHeight, power int64,
 	slashFactor sdk.Dec, infraction stakingtypes.Infraction,
 ) sdkmath.Int {
-	// todo: disable the slash currently, waiting for the new slash implementation
-	k.Logger(ctx).Info("slash occurs", addr, infractionHeight, slashFactor, infraction)
-	/*	chainID := ctx.ChainID()
-		avsAddr, err := k.avsKeeper.GetAVSAddrByChainID(ctx, chainID)
-		if err != nil {
-			k.Logger(ctx).Error(err.Error(), chainID)
-			return sdkmath.NewInt(0)
-		}
-		slashContract, err := k.avsKeeper.GetAVSSlashContract(ctx, avsAddr)
-		if err != nil {
-			k.Logger(ctx).Error(err.Error(), avsAddr)
-			return sdkmath.NewInt(0)
-		}
-		slashID := GetSlashIDForDogfood(infraction, infractionHeight)
-		slashParam := &SlashInputInfo{
-			SlashType:        types.SlashType_SLASH_TYPE_INSTANT_SLASH,
-			Operator:         addr,
-			AVSAddr:          avsAddr,
-			SlashContract:    slashContract,
-			SlashID:          slashID,
-			SlashEventHeight: infractionHeight,
-			SlashProportion:  slashFactor,
-		}
-		err = k.Slash(ctx, slashParam)
-		if err != nil {
-			k.Logger(ctx).Error(err.Error(), avsAddr)
-			return sdkmath.NewInt(0)
-		}*/
+	chainID := ctx.ChainID()
+	avsAddr, err := k.avsKeeper.GetAVSAddrByChainID(ctx, chainID)
+	if err != nil {
+		k.Logger(ctx).Error(err.Error(), chainID)
+		return sdkmath.NewInt(0)
+	}
+	slashID := GetSlashIDForDogfood(infraction, infractionHeight)
+	slashParam := &types.SlashInputInfo{
+		IsDogFood:        true,
+		Power:            power,
+		SlashType:        uint32(infraction),
+		Operator:         addr,
+		AVSAddr:          avsAddr,
+		SlashID:          slashID,
+		SlashEventHeight: infractionHeight,
+		SlashProportion:  slashFactor,
+	}
+	err = k.Slash(ctx, slashParam)
+	if err != nil {
+		k.Logger(ctx).Error(err.Error(), avsAddr)
+		return sdkmath.NewInt(0)
+	}
 	// todo: The returned value should be the amount of burned Exo if we considering a slash from the reward
 	// Now it doesn't slash from the reward, so just return 0
 	return sdkmath.NewInt(0)
