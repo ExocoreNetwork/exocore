@@ -42,6 +42,13 @@ func (gs GenesisState) Validate() error {
 				i,
 			)
 		}
+		if info.MetaInfo == "" || len(info.MetaInfo) > MaxChainMetaInfoLength {
+			return errorsmod.Wrapf(
+				ErrInvalidGenesisData,
+				"nil meta info or too long for chain %d, maxLength:%d",
+				i, MaxChainMetaInfoLength,
+			)
+		}
 		// this is our primary method of cross-chain communication.
 		if info.LayerZeroChainID == 0 {
 			return errorsmod.Wrapf(

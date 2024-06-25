@@ -45,10 +45,6 @@ interface IAssets {
         uint256 opAmount
     ) external returns (bool success, uint256 latestAssetState);
 
-    /// QUERIES
-    /// @dev Returns the chain indices of the client chains.
-    function getClientChains() external view returns (bool, uint32[] memory);
-
     /// TRANSACTIONS
     /// @dev register some client chain to allow token registration from that chain, staking
     /// from that chain, and other operations from that chain.
@@ -75,4 +71,8 @@ interface IAssets {
         uint8[] memory decimals,
         uint256[] memory tvlLimit
     ) external returns (bool success);
+
+    /// QUERIES
+    /// @dev Returns the chain indices of the client chains.
+    function getClientChains() external view returns (bool, uint32[] memory);
 }

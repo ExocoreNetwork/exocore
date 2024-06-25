@@ -36,7 +36,7 @@ func (k Keeper) QueAllClientChainInfo(goCtx context.Context, req *assetstype.Que
 	ctx := sdk.UnwrapSDKContext(goCtx)
 	res := make([]*assetstype.ClientChainInfo, 0)
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), assetstype.KeyPrefixClientChainInfo)
-	pageRes, err := query.Paginate(store, req.Pagination, func(key []byte, value []byte) error {
+	pageRes, err := query.Paginate(store, req.Pagination, func(_ []byte, value []byte) error {
 		ret := &assetstype.ClientChainInfo{}
 		// don't use MustUnmarshal to not panic for queries
 		if err := ret.Unmarshal(value); err != nil {

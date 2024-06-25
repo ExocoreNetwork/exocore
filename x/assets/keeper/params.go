@@ -40,11 +40,11 @@ func (k Keeper) GetParams(ctx sdk.Context) (*assetstypes.Params, error) {
 }
 
 func (k Keeper) GetExocoreGatewayAddress(ctx sdk.Context) (common.Address, error) {
-	depositModuleParam, err := k.GetParams(ctx)
+	param, err := k.GetParams(ctx)
 	if err != nil {
 		return common.Address{}, err
 	}
-	return common.HexToAddress(depositModuleParam.ExocoreLzAppAddress), nil
+	return common.HexToAddress(param.ExocoreLzAppAddress), nil
 }
 
 func (k Keeper) CheckExocoreGatewayAddr(ctx sdk.Context, addr common.Address) error {

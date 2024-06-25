@@ -230,7 +230,7 @@ func (s *AssetsPrecompileSuite) TestRunDepositTo() {
 }
 
 // TestRun tests the precompiled Run method withdraw.
-func (s *AssetsPrecompileSuite) TestRunWithdrawThroughClientChain() {
+func (s *AssetsPrecompileSuite) TestRunWithdrawPrincipal() {
 	// deposit params for test
 	exocoreLzAppEventTopic := "0xc6a377bfc4eb120024a8ac08eef205be16b817020812c73223e81d1bdb9708ec"
 	usdtAddress := common.FromHex("0xdAC17F958D2ee523a2206206994597C13D831ec7")

@@ -3,7 +3,6 @@ package assets
 import (
 	"fmt"
 	"math/big"
-	"reflect"
 
 	"github.com/ethereum/go-ethereum/common/hexutil"
 
@@ -23,7 +22,7 @@ func (p Precompile) DepositWithdrawParamsFromInputs(ctx sdk.Context, args []inte
 	depositWithdrawParams := &assetskeeper.DepositWithdrawParams{}
 	clientChainID, ok := args[0].(uint32)
 	if !ok {
-		return nil, fmt.Errorf(exocmn.ErrContractInputParaOrType, 0, reflect.TypeOf(args[0]), args[0])
+		return nil, fmt.Errorf(exocmn.ErrContractInputParaOrType, 0, "uint32", args[0])
 	}
 	depositWithdrawParams.ClientChainLzID = uint64(clientChainID)
 
@@ -36,7 +35,7 @@ func (p Precompile) DepositWithdrawParamsFromInputs(ctx sdk.Context, args []inte
 	// the length of client chain address inputted by caller is 32, so we need to check the length and remove the padding according to the actual length.
 	assetAddr, ok := args[1].([]byte)
 	if !ok || assetAddr == nil {
-		return nil, xerrors.Errorf(exocmn.ErrContractInputParaOrType, 1, reflect.TypeOf(args[1]), args[1])
+		return nil, xerrors.Errorf(exocmn.ErrContractInputParaOrType, 1, "[]byte", args[1])
 	}
 	if len(assetAddr) != types.GeneralAssetsAddrLength {
 		return nil, xerrors.Errorf(exocmn.ErrInvalidAddrLength, len(assetAddr), types.GeneralClientChainAddrLength)
@@ -45,7 +44,7 @@ func (p Precompile) DepositWithdrawParamsFromInputs(ctx sdk.Context, args []inte
 
 	stakerAddr, ok := args[2].([]byte)
 	if !ok || stakerAddr == nil {
-		return nil, xerrors.Errorf(exocmn.ErrContractInputParaOrType, 2, reflect.TypeOf(args[2]), args[2])
+		return nil, xerrors.Errorf(exocmn.ErrContractInputParaOrType, 2, "[]byte", args[2])
 	}
 	if len(stakerAddr) != types.GeneralClientChainAddrLength {
 		return nil, xerrors.Errorf(exocmn.ErrInvalidAddrLength, len(assetAddr), types.GeneralClientChainAddrLength)
@@ -54,7 +53,7 @@ func (p Precompile) DepositWithdrawParamsFromInputs(ctx sdk.Context, args []inte
 
 	opAmount, ok := args[3].(*big.Int)
 	if !ok || opAmount == nil || opAmount.Cmp(big.NewInt(0)) == 0 {
-		return nil, xerrors.Errorf(exocmn.ErrContractInputParaOrType, 3, reflect.TypeOf(args[3]), args[3])
+		return nil, xerrors.Errorf(exocmn.ErrContractInputParaOrType, 3, "*big.Int", args[3])
 	}
 	depositWithdrawParams.OpAmount = sdkmath.NewIntFromBigInt(opAmount)
 
@@ -68,13 +67,13 @@ func (p Precompile) ClientChainInfoFromInputs(_ sdk.Context, args []interface{})
 	clientChain := types.ClientChainInfo{}
 	clientChainID, ok := args[0].(uint32)
 	if !ok {
-		return nil, fmt.Errorf(exocmn.ErrContractInputParaOrType, 0, reflect.TypeOf(args[0]), args[0])
+		return nil, fmt.Errorf(exocmn.ErrContractInputParaOrType, 0, "uint32", args[0])
 	}
 	clientChain.LayerZeroChainID = uint64(clientChainID)
 
 	addressLength, ok := args[1].(uint32)
 	if !ok || addressLength == 0 {
-		return nil, fmt.Errorf(exocmn.ErrContractInputParaOrType, 1, reflect.TypeOf(args[1]), args[1])
+		return nil, fmt.Errorf(exocmn.ErrContractInputParaOrType, 1, "uint32", args[1])
 	}
 	if addressLength > types.GeneralAssetsAddrLength {
 		return nil, xerrors.Errorf(exocmn.ErrInvalidAddrLength, addressLength, "not greater than 32")
@@ -83,19 +82,22 @@ func (p Precompile) ClientChainInfoFromInputs(_ sdk.Context, args []interface{})
 
 	name, ok := args[2].(string)
 	if !ok || name == "" {
-		return nil, xerrors.Errorf(exocmn.ErrContractInputParaOrType, 2, reflect.TypeOf(args[2]), args[2])
+		return nil, xerrors.Errorf(exocmn.ErrContractInputParaOrType, 2, "string", args[2])
 	}
 	clientChain.Name = name
 
 	metaInfo, ok := args[3].(string)
 	if !ok {
-		return nil, xerrors.Errorf(exocmn.ErrContractInputParaOrType, 3, reflect.TypeOf(args[2]), args[2])
+		return nil, xerrors.Errorf(exocmn.ErrContractInputParaOrType, 3, "string", args[2])
+	}
+	if len(metaInfo) == 0 || len(metaInfo) > types.MaxChainMetaInfoLength {
+		return nil, xerrors.Errorf(exocmn.ErrInvalidMetaInfoLength, len(metaInfo), types.MaxChainMetaInfoLength)
 	}
 	clientChain.MetaInfo = metaInfo
 
 	signatureType, ok := args[4].(string)
 	if !ok {
-		return nil, xerrors.Errorf(exocmn.ErrContractInputParaOrType, 4, reflect.TypeOf(args[4]), args[4])
+		return nil, xerrors.Errorf(exocmn.ErrContractInputParaOrType, 4, "string", args[4])
 	}
 	clientChain.SignatureType = signatureType
 
@@ -109,7 +111,7 @@ func (p Precompile) TokensFromInputs(ctx sdk.Context, args []interface{}) ([]typ
 	assets := make([]types.AssetInfo, 0)
 	clientChainID, ok := args[0].(uint32)
 	if !ok {
-		return nil, fmt.Errorf(exocmn.ErrContractInputParaOrType, 0, reflect.TypeOf(args[0]), args[0])
+		return nil, fmt.Errorf(exocmn.ErrContractInputParaOrType, 0, "uint32", args[0])
 	}
 	info, err := p.assetsKeeper.GetClientChainInfoByIndex(ctx, uint64(clientChainID))
 	if err != nil {
@@ -119,7 +121,7 @@ func (p Precompile) TokensFromInputs(ctx sdk.Context, args []interface{}) ([]typ
 
 	assetAddrList, ok := args[1].([][]byte)
 	if !ok {
-		return nil, fmt.Errorf(exocmn.ErrContractInputParaOrType, 1, reflect.TypeOf(args[1]), args[1])
+		return nil, fmt.Errorf(exocmn.ErrContractInputParaOrType, 1, "[][]byte", args[1])
 	}
 	assetNumber := len(assetAddrList)
 	if assetNumber == 0 {
@@ -127,14 +129,14 @@ func (p Precompile) TokensFromInputs(ctx sdk.Context, args []interface{}) ([]typ
 	}
 	decimalList, ok := args[2].([]uint8)
 	if !ok {
-		return nil, fmt.Errorf(exocmn.ErrContractInputParaOrType, 2, reflect.TypeOf(args[2]), args[2])
+		return nil, fmt.Errorf(exocmn.ErrContractInputParaOrType, 2, "[]uint8", args[2])
 	}
 	if assetNumber != len(decimalList) {
 		return nil, fmt.Errorf(exocmn.ErrInvalidInputList, len(decimalList), assetNumber)
 	}
 	tvlLimitList, ok := args[3].([]*big.Int)
 	if !ok {
-		return nil, fmt.Errorf(exocmn.ErrContractInputParaOrType, 3, reflect.TypeOf(args[3]), args[3])
+		return nil, fmt.Errorf(exocmn.ErrContractInputParaOrType, 3, "[]*big.Int", args[3])
 	}
 	if assetNumber != len(tvlLimitList) {
 		return nil, fmt.Errorf(exocmn.ErrInvalidInputList, len(tvlLimitList), assetNumber)
@@ -144,6 +146,7 @@ func (p Precompile) TokensFromInputs(ctx sdk.Context, args []interface{}) ([]typ
 		if len(assetAddrList[i]) != types.GeneralAssetsAddrLength {
 			return nil, xerrors.Errorf(exocmn.ErrInvalidAddrLength, len(assetAddrList[i]), types.GeneralClientChainAddrLength)
 		}
+		// todo: It appears that the compatibility of non-EVM chains will be addressed in the Exocore gateway contract. However, encoding for different chains is pending, so decoding might need to be adjusted here.
 		assetAddr := assetAddrList[i][:clientChainAddrLength]
 		assets = append(assets, types.AssetInfo{
 			Address:          hexutil.Encode(assetAddr),
