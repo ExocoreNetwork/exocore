@@ -15,69 +15,6 @@ func (k Keeper) InitGenesis(
 	ctx sdk.Context,
 	gs delegationtype.GenesisState,
 ) []abci.ValidatorUpdate {
-	// TODO(mm): is it possible to parallelize these without using goroutines?
-	if k.isGeneralInit {
-		if len(gs.Delegations) != 0 {
-			panic(errorsmod.Wrap(
-				delegationtype.ErrInvalidGenesisData,
-				"the delegations should be null when initializing from the general exporting genesis file",
-			))
-		}
-	} else {
-		if len(gs.DelegationStates) != 0 {
-			panic(errorsmod.Wrap(
-				delegationtype.ErrInvalidGenesisData,
-				"the delegation states should be null when initializing from the boot strap contract",
-			))
-		}
-		if len(gs.StakersByOperator) != 0 {
-			panic(errorsmod.Wrap(
-				delegationtype.ErrInvalidGenesisData,
-				"the staker list should be null when initializing from the boot strap contract",
-			))
-		}
-		if len(gs.Undelegations) != 0 {
-			panic(errorsmod.Wrap(
-				delegationtype.ErrInvalidGenesisData,
-				"the undelegations should be null when initializing from the boot strap contract",
-			))
-		}
-	}
-
-	for _, level1 := range gs.Delegations {
-		stakerID := level1.StakerID
-		// #nosec G703 // already validated
-		stakerAddress, lzID, _ := assetstype.ParseID(stakerID)
-		// we have checked IsHexAddress already
-		stakerAddressBytes := common.HexToAddress(stakerAddress)
-		for _, level2 := range level1.Delegations {
-			assetID := level2.AssetID
-			// #nosec G703 // already validated
-			assetAddress, _, _ := assetstype.ParseID(assetID)
-			// we have checked IsHexAddress already
-			assetAddressBytes := common.HexToAddress(assetAddress)
-			for _, level3 := range level2.PerOperatorAmounts {
-				operator := level3.Key
-				wrappedAmount := level3.Value
-				amount := wrappedAmount.Amount
-				// #nosec G703 // already validated
-				accAddress, _ := sdk.AccAddressFromBech32(operator)
-				delegationParams := &delegationtype.DelegationOrUndelegationParams{
-					ClientChainID:   lzID,
-					Action:          assetstype.DelegateTo,
-					AssetsAddress:   assetAddressBytes.Bytes(),
-					OperatorAddress: accAddress,
-					StakerAddress:   stakerAddressBytes.Bytes(),
-					OpAmount:        amount,
-					// the uninitialized members are not used in this context
-					// they are the LzNonce and TxHash
-				}
-				if err := k.delegateTo(ctx, delegationParams, false); err != nil {
-					panic(errorsmod.Wrap(err, "failed to delegate to operator"))
-				}
-			}
-		}
-	}
 	for _, association := range gs.Associations {
 		stakerID := association.StakerID
 		operatorAddress := association.Operator
@@ -113,9 +50,13 @@ func (k Keeper) InitGenesis(
 
 // ExportGenesis returns the module's exported genesis
 func (k Keeper) ExportGenesis(ctx sdk.Context) *delegationtype.GenesisState {
-	res := delegationtype.GenesisState{
-		Delegations: []delegationtype.DelegationsByStaker{},
+	res := delegationtype.GenesisState{}
+	associations, err := k.GetAllAssociations(ctx)
+	if err != nil {
+		panic(err)
 	}
+	res.Associations = associations
+
 	delegationStates, err := k.AllDelegationStates(ctx)
 	if err != nil {
 		panic(err)

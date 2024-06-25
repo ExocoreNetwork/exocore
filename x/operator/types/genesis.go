@@ -11,17 +11,27 @@ import (
 
 func NewGenesisState(
 	operators []OperatorDetail,
-	records []OperatorConsKeyRecord,
+	optStates []OptedState,
+	operatorUSDValues []OperatorUSDValue,
+	avsUSDValues []AVSUSDValue,
+	slashStates []OperatorSlashState,
+	prevConsKeys []PrevConsKey,
+	operatorKeyRemovals []OperatorKeyRemoval,
 ) *GenesisState {
 	return &GenesisState{
-		Operators:       operators,
-		OperatorRecords: records,
+		Operators:           operators,
+		OptStates:           optStates,
+		OperatorUSDValues:   operatorUSDValues,
+		AVSUSDValues:        avsUSDValues,
+		SlashStates:         slashStates,
+		PreConsKeys:         prevConsKeys,
+		OperatorKeyRemovals: operatorKeyRemovals,
 	}
 }
 
 // DefaultGenesis returns the default genesis state
 func DefaultGenesis() *GenesisState {
-	return NewGenesisState([]OperatorDetail{}, []OperatorConsKeyRecord{})
+	return NewGenesisState(nil, nil, nil, nil, nil, nil, nil)
 }
 
 // ValidateOperators rationale for the validation:
@@ -131,26 +141,29 @@ func (gs GenesisState) ValidateOperatorConsKeyRecords(operators map[string]struc
 			)
 		}
 		for _, chain := range record.Chains {
-			consensusKeyString := chain.ConsensusKey
 			chainID := chain.ChainID
 			// Cosmos does not describe a specific `chainID` format, so can't validate it.
 			if _, found := keysByChainID[chainID]; !found {
 				keysByChainID[chainID] = make(map[string]struct{})
 			}
-			if _, err := HexStringToPubKey(consensusKeyString); err != nil {
+
+			if wrappedKey := NewWrappedConsKeyFromHex(
+				chain.ConsensusKey,
+			); wrappedKey == nil {
 				return errorsmod.Wrapf(
 					ErrInvalidGenesisData,
-					"invalid consensus key for operator %s: %s", addr, err,
+					"invalid consensus key for operator %s: %s", addr, chain.ConsensusKey,
 				)
 			}
+
 			// within a chain id, there should not be duplicate consensus keys
-			if _, found := keysByChainID[chainID][consensusKeyString]; found {
+			if _, found := keysByChainID[chainID][chain.ConsensusKey]; found {
 				return errorsmod.Wrapf(
 					ErrInvalidGenesisData,
 					"duplicate consensus key for operator %s on chain %s", addr, chainID,
 				)
 			}
-			keysByChainID[chainID][consensusKeyString] = struct{}{}
+			keysByChainID[chainID][chain.ConsensusKey] = struct{}{}
 		}
 	}
 	return nil
@@ -179,7 +192,13 @@ func (gs GenesisState) ValidateOptedStates(operators map[string]struct{}) (map[s
 				state,
 			)
 		}
-		// todo: check the AVS address when the format is finalized.
+		if !common.IsHexAddress(avsAddr) {
+			return errorsmod.Wrapf(
+				ErrInvalidGenesisData,
+				"the AVS address isn't an ethereum hex address, %+v",
+				state,
+			)
+		}
 		avs[avsAddr] = struct{}{}
 		return nil
 	}
@@ -193,75 +212,111 @@ func (gs GenesisState) ValidateOptedStates(operators map[string]struct{}) (map[s
 	return avs, nil
 }
 
-func (gs GenesisState) ValidateVotingPowers(operators, avs map[string]struct{}) error {
-	var avsAddr string
-	var avsVP DecValueField
-	validationFunc := func(i int, vp VotingPower) error {
-		if vp.Value.Amount.IsNil() {
+func (gs GenesisState) ValidateAVSUSDValues(optedAVS map[string]struct{}) (map[string]DecValueField, error) {
+	avsUSDValueMap := make(map[string]DecValueField, 0)
+	validationFunc := func(i int, avsUSDValue AVSUSDValue) error {
+		if !common.IsHexAddress(avsUSDValue.AVSAddr) {
 			return errorsmod.Wrapf(
 				ErrInvalidGenesisData,
-				"nil voting power for :%+v",
-				vp,
+				"the AVS address isn't an ethereum hex address, avsUSDValue: %+v",
+				avsUSDValue,
 			)
 		}
-		if vp.Value.Amount.IsNegative() {
+		if _, ok := optedAVS[avsUSDValue.AVSAddr]; !ok {
 			return errorsmod.Wrapf(
 				ErrInvalidGenesisData,
-				"negative voting power for :%+v",
-				vp,
+				"the avs address should be in the opted-in map, avsUSDValue: %+v", avsUSDValue,
 			)
 		}
-		// the firs field should be the voting power of the AVS, and the operators that
-		// opted into this AVS should follow it. because the iterator
-		// iterates all the keys in ascending order when exporting the genesis file
-		if !assetstypes.IsJoinedStoreKey(vp.Key) {
-			avsAddr = vp.Key
-			avsVP = vp.Value
-			// check whether the AVS is in the opted states.
-			// This check might be removed if the opted-in states are deleted when
-			// the operator opts out of the AVS.
-			if _, ok := avs[avsAddr]; !ok {
-				return errorsmod.Wrapf(
-					ErrInvalidGenesisData,
-					"unknown AVS address for the voting power, %+v",
-					vp,
-				)
-			}
-		} else {
-			stringList, err := assetstypes.ParseJoinedStoreKey([]byte(vp.Key), 2)
-			if err != nil {
-				return errorsmod.Wrap(ErrInvalidGenesisData, err.Error())
-			}
-			operator, avsAddress := stringList[0], stringList[1]
-			// check that the operator is registered
-			if _, ok := operators[operator]; !ok {
-				return errorsmod.Wrapf(
-					ErrInvalidGenesisData,
-					"unknown operator address for the voting power, %+v",
-					vp,
-				)
-			}
-			if avsAddress != avsAddr {
-				return errorsmod.Wrapf(
-					ErrInvalidGenesisData,
-					"the operator should follows the opted-in AVS, AVS: %s, vp: %+v",
-					avsAddr, vp,
-				)
-			}
-			if vp.Value.Amount.GT(avsVP.Amount) {
-				return errorsmod.Wrapf(
-					ErrInvalidGenesisData,
-					"the operator's voting power shouldn't be greater than the voting power of the AVS, avsVP: %s, vp: %+v",
-					avsVP.Amount.String(), vp,
-				)
-			}
+		if avsUSDValue.Value.Amount.IsNil() ||
+			avsUSDValue.Value.Amount.IsNegative() {
+			return errorsmod.Wrapf(
+				ErrInvalidGenesisData,
+				"avsUSDValue is nil or negative, avsUSDValue: %+v", avsUSDValue,
+			)
+		}
+		avsUSDValueMap[avsUSDValue.AVSAddr] = avsUSDValue.Value
+		return nil
+	}
+	seenFieldValueFunc := func(usdValue AVSUSDValue) (string, struct{}) {
+		return usdValue.AVSAddr, struct{}{}
+	}
+	_, err := assetstypes.CommonValidation(gs.AVSUSDValues, seenFieldValueFunc, validationFunc)
+	if err != nil {
+		return nil, err
+	}
+	return avsUSDValueMap, nil
+}
+
+func (gs GenesisState) ValidateOperatorUSDValues(operators map[string]struct{}, avsUSDValues map[string]DecValueField) error {
+	validationFunc := func(i int, operatorUSDValue OperatorUSDValue) error {
+		if operatorUSDValue.OptedUSDValue.SelfUSDValue.IsNil() ||
+			operatorUSDValue.OptedUSDValue.TotalUSDValue.IsNil() ||
+			operatorUSDValue.OptedUSDValue.ActiveUSDValue.IsNil() {
+			return errorsmod.Wrapf(
+				ErrInvalidGenesisData,
+				"nil field in operatorUSDValue: %+v",
+				operatorUSDValue,
+			)
+		}
+		if operatorUSDValue.OptedUSDValue.SelfUSDValue.IsNegative() ||
+			operatorUSDValue.OptedUSDValue.TotalUSDValue.IsNegative() ||
+			operatorUSDValue.OptedUSDValue.ActiveUSDValue.IsNegative() {
+			return errorsmod.Wrapf(
+				ErrInvalidGenesisData,
+				"negative field in operatorUSDValue: %+v",
+				operatorUSDValue,
+			)
+		}
+		stringList, err := assetstypes.ParseJoinedStoreKey([]byte(operatorUSDValue.Key), 2)
+		if err != nil {
+			return errorsmod.Wrap(ErrInvalidGenesisData, err.Error())
+		}
+		operator, avsAddress := stringList[0], stringList[1]
+		// check that the operator is registered
+		if _, ok := operators[operator]; !ok {
+			return errorsmod.Wrapf(
+				ErrInvalidGenesisData,
+				"unknown operator address for the voting power, %+v",
+				operatorUSDValue,
+			)
+		}
+		avsUSDValue, ok := avsUSDValues[avsAddress]
+		if !ok {
+			return errorsmod.Wrapf(
+				ErrInvalidGenesisData,
+				"the parsed AVS address should be in the avsUSDValues map, AVS: %s, avsUSDValues: %+v",
+				avsAddress, avsUSDValues,
+			)
+		}
+
+		if operatorUSDValue.OptedUSDValue.TotalUSDValue.GT(avsUSDValue.Amount) {
+			return errorsmod.Wrapf(
+				ErrInvalidGenesisData,
+				"the total USD value of operator shouldn't be greater than the total USD value of the AVS, avsUSDValue: %s, operatorUSDValue: %+v",
+				avsUSDValue.Amount.String(), operatorUSDValue,
+			)
+		}
+
+		if operatorUSDValue.OptedUSDValue.SelfUSDValue.GT(operatorUSDValue.OptedUSDValue.TotalUSDValue) {
+			return errorsmod.Wrapf(
+				ErrInvalidGenesisData,
+				"the operator's self USD value shouldn't be greater than its total USD value, operatorUSDValue: %+v", operatorUSDValue,
+			)
+		}
+
+		if operatorUSDValue.OptedUSDValue.ActiveUSDValue.GT(operatorUSDValue.OptedUSDValue.TotalUSDValue) {
+			return errorsmod.Wrapf(
+				ErrInvalidGenesisData,
+				"the operator's active USD value shouldn't be greater than its total USD value, operatorUSDValue: %+v", operatorUSDValue,
+			)
 		}
 		return nil
 	}
-	seenFieldValueFunc := func(vp VotingPower) (string, struct{}) {
+	seenFieldValueFunc := func(vp OperatorUSDValue) (string, struct{}) {
 		return vp.Key, struct{}{}
 	}
-	_, err := assetstypes.CommonValidation(gs.VotingPowers, seenFieldValueFunc, validationFunc)
+	_, err := assetstypes.CommonValidation(gs.OperatorUSDValues, seenFieldValueFunc, validationFunc)
 	if err != nil {
 		return err
 	}
@@ -399,10 +454,12 @@ func (gs GenesisState) ValidatePrevConsKeys(operators map[string]struct{}) error
 				prevConsKey,
 			)
 		}
-		if _, err := HexStringToPubKey(prevConsKey.ConsensusKey); err != nil {
+		if wrappedKey := NewWrappedConsKeyFromHex(
+			prevConsKey.ConsensusKey,
+		); wrappedKey == nil {
 			return errorsmod.Wrapf(
 				ErrInvalidGenesisData,
-				"invalid previous consensus key for operator %v: %s", prevConsKey, err,
+				"invalid previous consensus key for operator, %+v", prevConsKey,
 			)
 		}
 		// todo: not sure if the duplication of previous consensus keys needs to be checked
@@ -471,7 +528,11 @@ func (gs GenesisState) Validate() error {
 	if err != nil {
 		return err
 	}
-	err = gs.ValidateVotingPowers(operators, avsMap)
+	avsUSDValueMap, err := gs.ValidateAVSUSDValues(avsMap)
+	if err != nil {
+		return err
+	}
+	err = gs.ValidateOperatorUSDValues(operators, avsUSDValueMap)
 	if err != nil {
 		return err
 	}

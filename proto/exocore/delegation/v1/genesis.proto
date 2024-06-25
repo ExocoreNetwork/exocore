@@ -14,11 +14,8 @@ option go_package = "github.com/ExocoreNetwork/exocore/x/delegation/types";
 // or in the event of a restart. At this point, it is only built with
 // the former in mind. There are no params in this module.
 message GenesisState {
-  // delegations is a list of all delegations in the system.
-  // it's only used to initialize the node from the boot strap contract
-  repeated DelegationsByStaker delegations = 1 [(gogoproto.nullable) = false];
   // associations represents the association between a staker and an operator.
-  repeated StakerToOperator associations = 2 [(gogoproto.nullable) = false];
+  repeated StakerToOperator associations = 1 [(gogoproto.nullable) = false];
 
   // it's only used to initialize the node from the general exported genesis file
   // delegation_states is a list of all delegation states.
@@ -43,7 +40,7 @@ message StakersByOperator {
   // which is a combination of the operator address and the asset ID.
   string key = 1;
   // stakers is the stakers list for the above key
-  StakerList stakers = 2 [(gogoproto.nullable) = false] ;
+  repeated string stakers  = 2 [(gogoproto.nullable) = false] ;
 }
 
 // DelegationsByStaker is a list of delegations for a single staker.

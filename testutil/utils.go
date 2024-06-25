@@ -133,6 +133,47 @@ func (suite *BaseTestSuite) SetupWithGenesisValSet(genAccs []authtypes.GenesisAc
 			},
 		},
 	}
+	operatorAssets := []assetstypes.AssetsByOperator{
+		{
+			Operator: operator1.String(),
+			AssetsState: []assetstypes.AssetByID{
+				{
+					AssetID: assetID,
+					Info: assetstypes.OperatorAssetInfo{
+						TotalAmount:         depositAmount,
+						WaitUnbondingAmount: sdk.ZeroInt(),
+						TotalShare:          sdk.NewDecFromBigInt(depositAmount.BigInt()),
+						OperatorShare:       sdk.NewDecFromBigInt(depositAmount.BigInt()),
+					},
+				},
+			},
+		},
+		{
+			Operator: operator2.String(),
+			AssetsState: []assetstypes.AssetByID{
+				{
+					AssetID: assetID,
+					Info: assetstypes.OperatorAssetInfo{
+						TotalAmount:         depositAmount2,
+						WaitUnbondingAmount: sdk.ZeroInt(),
+						TotalShare:          sdk.NewDecFromBigInt(depositAmount2.BigInt()),
+						OperatorShare:       sdk.NewDecFromBigInt(depositAmount2.BigInt()),
+					},
+				},
+			},
+		},
+	}
+	assetsGenesis := assetstypes.NewGenesis(
+		assetstypes.DefaultParams(),
+		suite.ClientChains, []assetstypes.StakingAssetInfo{
+			{
+				AssetBasicInfo:     suite.Assets[0],
+				StakingTotalAmount: depositAmount.Add(depositAmount2),
+			},
+		}, depositsByStaker, operatorAssets,
+	)
+	genesisState[assetstypes.ModuleName] = app.AppCodec().MustMarshalJSON(assetsGenesis)
+
 	// x/oracle initialization
 	oracleDefaultParams := oracletypes.DefaultParams()
 	oracleDefaultParams.Tokens[1].AssetID = "0xdac17f958d2ee523a2206206994597c13d831ec7_0x65"
@@ -159,19 +200,7 @@ func (suite *BaseTestSuite) SetupWithGenesisValSet(genAccs []authtypes.GenesisAc
 	}
 	genesisState[oracletypes.ModuleName] = app.AppCodec().MustMarshalJSON(oracleGenesis)
 
-	assetsGenesis := assetstypes.NewGenesis(
-		assetstypes.DefaultParams(),
-		suite.ClientChains, []assetstypes.StakingAssetInfo{
-			{
-				AssetBasicInfo: suite.Assets[0],
-				// required to be 0, since deposits are handled after token init.
-				StakingTotalAmount: sdk.ZeroInt(),
-			},
-		}, depositsByStaker,
-	)
-	genesisState[assetstypes.ModuleName] = app.AppCodec().MustMarshalJSON(assetsGenesis)
-
-	// operator registration
+	// x/operator registration
 	operatorInfos := []operatortypes.OperatorDetail{
 		{
 			OperatorAddress: operator1.String(),
@@ -195,41 +224,23 @@ func (suite *BaseTestSuite) SetupWithGenesisValSet(genAccs []authtypes.GenesisAc
 	suite.Require().NotNil(pubKey)
 	pubKey2 := testutiltx.GenerateConsensusKey()
 	suite.Require().NotNil(pubKey2)
-	operatorGenesis := operatortypes.NewGenesisState(operatorInfos)
+	operatorGenesis := operatortypes.NewGenesisState(operatorInfos, nil, nil, nil, nil, nil, nil)
 	genesisState[operatortypes.ModuleName] = app.AppCodec().MustMarshalJSON(operatorGenesis)
 
 	// x/delegation
-	delegationsByStaker := []delegationtypes.DelegationsByStaker{
+	delegationStates := []delegationtypes.DelegationStates{
 		{
-			StakerID: stakerID1,
-			Delegations: []delegationtypes.DelegatedSingleAssetInfo{
-				{
-					AssetID: assetID,
-					PerOperatorAmounts: []delegationtypes.KeyValue{
-						{
-							Key: operator1.String(),
-							Value: &delegationtypes.ValueField{
-								Amount: depositAmount,
-							},
-						},
-					},
-				},
+			Key: string(assetstypes.GetJoinedStoreKey(stakerID1, assetID, operator1.String())),
+			States: delegationtypes.DelegationAmounts{
+				WaitUndelegationAmount: math.NewInt(0),
+				UndelegatableShare:     math.LegacyNewDecFromBigInt(depositAmount.BigInt()),
 			},
 		},
 		{
-			StakerID: stakerID2,
-			Delegations: []delegationtypes.DelegatedSingleAssetInfo{
-				{
-					AssetID: assetID,
-					PerOperatorAmounts: []delegationtypes.KeyValue{
-						{
-							Key: operator2.String(),
-							Value: &delegationtypes.ValueField{
-								Amount: depositAmount2,
-							},
-						},
-					},
-				},
+			Key: string(assetstypes.GetJoinedStoreKey(stakerID2, assetID, operator2.String())),
+			States: delegationtypes.DelegationAmounts{
+				WaitUndelegationAmount: math.NewInt(0),
+				UndelegatableShare:     math.LegacyNewDecFromBigInt(depositAmount2.BigInt()),
 			},
 		},
 	}
@@ -243,7 +254,21 @@ func (suite *BaseTestSuite) SetupWithGenesisValSet(genAccs []authtypes.GenesisAc
 			StakerID: stakerID2,
 		},
 	}
-	delegationGenesis := delegationtypes.NewGenesis(delegationsByStaker, associations)
+	stakersByOperator := []delegationtypes.StakersByOperator{
+		{
+			Key: string(assetstypes.GetJoinedStoreKey(operator1.String(), assetID)),
+			Stakers: []string{
+				stakerID1,
+			},
+		},
+		{
+			Key: string(assetstypes.GetJoinedStoreKey(operator2.String(), assetID)),
+			Stakers: []string{
+				stakerID2,
+			},
+		},
+	}
+	delegationGenesis := delegationtypes.NewGenesis(associations, delegationStates, stakersByOperator, nil)
 	genesisState[delegationtypes.ModuleName] = app.AppCodec().MustMarshalJSON(delegationGenesis)
 
 	// create a dogfood genesis with just the validator set, that is, the bare

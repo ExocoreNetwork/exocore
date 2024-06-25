@@ -13,18 +13,22 @@ import (
 
 // NewGenesis returns a new genesis state with the given inputs.
 func NewGenesis(
-	delegations []DelegationsByStaker,
 	associations []StakerToOperator,
+	delegationStates []DelegationStates,
+	stakersByOperator []StakersByOperator,
+	undelegations []UndelegationRecord,
 ) *GenesisState {
 	return &GenesisState{
-		Delegations:  delegations,
-		Associations: associations,
+		Associations:      associations,
+		DelegationStates:  delegationStates,
+		StakersByOperator: stakersByOperator,
+		Undelegations:     undelegations,
 	}
 }
 
 // DefaultGenesis returns the default genesis state
 func DefaultGenesis() *GenesisState {
-	return NewGenesis(nil, nil)
+	return NewGenesis(nil, nil, nil, nil)
 }
 
 func ValidateIDAndOperator(stakerID, assetID, operator string) error {
@@ -56,12 +60,12 @@ func ValidateIDAndOperator(stakerID, assetID, operator string) error {
 	return nil
 }
 
-func (gs GenesisState) ValidateDelegations() error {
+/*func (gs GenesisState) ValidateDelegations() error {
 	// TODO(mm): this can be a very big hash table and impact system performance.
 	// This is likely to be the biggest one amongst the three, and the others
 	// are garbage collected within the loop anyway. Maybe reordering the genesis
 	// structure could potentially help with this.
-	stakers := make(map[string]struct{}, len(gs.Delegations))
+	stakers := make(map[string]struct{}, len(gs.DelegationStates))
 	for _, level1 := range gs.Delegations {
 		stakerID := level1.StakerID
 		// validate staker ID
@@ -140,6 +144,40 @@ func (gs GenesisState) ValidateDelegations() error {
 			}
 		}
 	}
+	// for associations, one stakerID can be associated only with one operator.
+	// but one operator may have multiple stakerIDs associated with it.
+	associatedStakerIDs := make(map[string]struct{}, len(gs.Associations))
+	for _, association := range gs.Associations {
+		// check operator address
+		if _, err := sdk.AccAddressFromBech32(association.Operator); err != nil {
+			return errorsmod.Wrapf(
+				ErrInvalidGenesisData,
+				"invalid operator address for operator %s", association.Operator,
+			)
+		}
+		// check staker address
+		if _, _, err := assetstypes.ValidateID(
+			association.StakerID, true, true,
+		); err != nil {
+			return errorsmod.Wrapf(
+				ErrInvalidGenesisData, "invalid staker ID %s: %s", association.StakerID, err,
+			)
+		}
+		// check for duplicate stakerIDs
+		if _, ok := associatedStakerIDs[association.StakerID]; ok {
+			return errorsmod.Wrapf(
+				ErrInvalidGenesisData, "duplicate staker ID %s", association.StakerID,
+			)
+		}
+		associatedStakerIDs[association.StakerID] = struct{}{}
+		// we don't check that this `association.stakerID` features in `gs.Delegations`,
+		// because we allow the possibility of a staker without any delegations to be associated
+		// with an operator.
+	}
+	return nil
+}*/
+
+func (gs GenesisState) ValidateAssociations() error {
 	// for associations, one stakerID can be associated only with one operator.
 	// but one operator may have multiple stakerIDs associated with it.
 	associatedStakerIDs := make(map[string]struct{}, len(gs.Associations))
@@ -256,7 +294,7 @@ func (gs GenesisState) ValidateStakerList() error {
 		seenStakerFunc := func(stakerID string) (string, struct{}) {
 			return stakerID, struct{}{}
 		}
-		_, err = assetstypes.CommonValidation(stakersByOperator.Stakers.Stakers, seenStakerFunc, stakerValidationFunc)
+		_, err = assetstypes.CommonValidation(stakersByOperator.Stakers, seenStakerFunc, stakerValidationFunc)
 		if err != nil {
 			return err
 		}
@@ -325,7 +363,7 @@ func (gs GenesisState) ValidateUndelegations() error {
 // Validate performs basic genesis state validation returning an error upon any
 // failure.
 func (gs GenesisState) Validate() error {
-	err := gs.ValidateDelegations()
+	err := gs.ValidateAssociations()
 	if err != nil {
 		return err
 	}

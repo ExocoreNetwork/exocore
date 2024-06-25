@@ -15,12 +15,14 @@ type TotalSupplyAndStaking struct {
 func NewGenesis(
 	params Params, chains []ClientChainInfo,
 	tokens []StakingAssetInfo, deposits []DepositsByStaker,
+	operatorAssets []AssetsByOperator,
 ) *GenesisState {
 	return &GenesisState{
-		Params:       params,
-		ClientChains: chains,
-		Tokens:       tokens,
-		Deposits:     deposits,
+		Params:         params,
+		ClientChains:   chains,
+		Tokens:         tokens,
+		Deposits:       deposits,
+		OperatorAssets: operatorAssets,
 	}
 }
 
@@ -30,7 +32,7 @@ func NewGenesis(
 // for any unit / integration tests.
 func DefaultGenesis() *GenesisState {
 	return NewGenesis(
-		DefaultParams(), []ClientChainInfo{}, []StakingAssetInfo{}, []DepositsByStaker{},
+		DefaultParams(), []ClientChainInfo{}, []StakingAssetInfo{}, []DepositsByStaker{}, []AssetsByOperator{},
 	)
 }
 
@@ -108,7 +110,7 @@ func (gs GenesisState) ValidateTokens(lzIDs map[uint64]struct{}) (map[string]Tot
 		if _, ok := lzIDs[id]; !ok {
 			return errorsmod.Wrapf(
 				ErrInvalidGenesisData,
-				"unknown LayerZeroChainID for token %s: %d",
+				"unknown LayerZeroChainID for token %s, clientChainID: %d",
 				info.AssetBasicInfo.MetaInfo, id,
 			)
 		}
@@ -118,29 +120,30 @@ func (gs GenesisState) ValidateTokens(lzIDs map[uint64]struct{}) (map[string]Tot
 		if !common.IsHexAddress(address) {
 			return errorsmod.Wrapf(
 				ErrInvalidGenesisData,
-				"not hex address for token %s: %s",
-				info.AssetBasicInfo.MetaInfo, address,
+				"not hex address for token %s, address: %s",
+				info.AssetBasicInfo.Name, address,
 			)
 		}
 
 		// ensure there are no deposits for this asset already (since they are handled in the
 		// genesis exec). while it is possible to remove this field entirely (and assume 0),
 		// i did not do so in order to make the genesis state more explicit.
-		if info.StakingTotalAmount.IsNil() {
+		if info.StakingTotalAmount.IsNil() ||
+			info.StakingTotalAmount.IsNegative() {
 			return errorsmod.Wrapf(
 				ErrInvalidGenesisData,
-				"nil staking total amount for asset %s",
+				"nil total staking amount for asset %s",
 				info.AssetBasicInfo.Address,
 			)
 		}
 
 		// validate the amount of supply
 		if info.AssetBasicInfo.TotalSupply.IsNil() ||
-			!info.AssetBasicInfo.TotalSupply.IsPositive() {
+			info.AssetBasicInfo.TotalSupply.IsNegative() {
 			return errorsmod.Wrapf(
 				ErrInvalidGenesisData,
-				"nil total supply for token %s",
-				info.AssetBasicInfo.MetaInfo,
+				"nil or negative total supply for token %s, total supply:%v",
+				info.AssetBasicInfo.Name, info.AssetBasicInfo.TotalSupply,
 			)
 		}
 
@@ -150,7 +153,7 @@ func (gs GenesisState) ValidateTokens(lzIDs map[uint64]struct{}) (map[string]Tot
 			return errorsmod.Wrapf(
 				ErrInvalidGenesisData,
 				"total staking amount is greater than the total supply for token %s",
-				info.AssetBasicInfo.MetaInfo,
+				info.AssetBasicInfo.Name,
 			)
 		}
 		return nil
@@ -174,7 +177,7 @@ func (gs GenesisState) ValidateTokens(lzIDs map[uint64]struct{}) (map[string]Tot
 }
 
 // ValidateDeposits performs basic deposits validation
-func (gs GenesisState) ValidateDeposits(lzIDs map[uint64]struct{}, tokenState map[string]TotalSupplyAndStaking) error {
+func (gs GenesisState) ValidateDeposits(lzIDs map[uint64]struct{}, tokenStates map[string]TotalSupplyAndStaking) error {
 	validationFunc := func(i int, depositByStaker DepositsByStaker) error {
 		stakerID := depositByStaker.StakerID
 		// validate the stakerID
@@ -202,7 +205,8 @@ func (gs GenesisState) ValidateDeposits(lzIDs map[uint64]struct{}, tokenState ma
 			// check that the asset is registered
 			// no need to check for the validity of the assetID, since
 			// an invalid assetID cannot be in the tokens map.
-			if _, ok := tokenState[assetID]; !ok {
+			tokenState, ok := tokenStates[assetID]
+			if !ok {
 				return errorsmod.Wrapf(
 					ErrInvalidGenesisData,
 					"unknown assetID for deposit %s: %s",
@@ -239,6 +243,22 @@ func (gs GenesisState) ValidateDeposits(lzIDs map[uint64]struct{}, tokenState ma
 				return errorsmod.Wrapf(
 					ErrInvalidGenesisData,
 					"negative deposit amount for %s: %+v",
+					assetID, info,
+				)
+			}
+
+			if info.TotalDepositAmount.GT(tokenState.TotalStaking) {
+				return errorsmod.Wrapf(
+					ErrInvalidGenesisData,
+					"invalid deposit amount that is greater than the total staking, assetID: %s: %+v",
+					assetID, info,
+				)
+			}
+
+			if info.WaitUnbondingAmount.Add(info.WithdrawableAmount).GT(info.TotalDepositAmount) {
+				return errorsmod.Wrapf(
+					ErrInvalidGenesisData,
+					"the sum of WaitUnbondingAmount and WithdrawableAmount is greater than the TotalDepositAmount, assetID: %s: %+v",
 					assetID, info,
 				)
 			}
@@ -291,22 +311,6 @@ func (gs GenesisState) ValidateOperatorAssets(tokenState map[string]TotalSupplyA
 				return errorsmod.Wrapf(
 					ErrInvalidGenesisData,
 					"operator's sum amount exceeds the total staking amount for %s: %+v",
-					assets.Operator, asset,
-				)
-			}
-
-			if asset.Info.OperatorAmount.GT(asset.Info.TotalAmount) {
-				return errorsmod.Wrapf(
-					ErrInvalidGenesisData,
-					"operator's amount exceeds the total amount for %s: %+v",
-					assets.Operator, asset,
-				)
-			}
-
-			if asset.Info.OperatorUnbondingAmount.GT(asset.Info.WaitUnbondingAmount) {
-				return errorsmod.Wrapf(
-					ErrInvalidGenesisData,
-					"operator's unbonding amount exceeds the total unbonding amount for %s: %+v",
 					assets.Operator, asset,
 				)
 			}

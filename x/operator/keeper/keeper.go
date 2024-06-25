@@ -6,8 +6,6 @@ import (
 	sdkmath "cosmossdk.io/math"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 
-	"github.com/ExocoreNetwork/exocore/x/assets/types"
-
 	operatortypes "github.com/ExocoreNetwork/exocore/x/operator/types"
 	"github.com/cosmos/cosmos-sdk/codec"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
@@ -17,13 +15,6 @@ import (
 type Keeper struct {
 	storeKey storetypes.StoreKey
 	cdc      codec.BinaryCodec
-	// isGeneralInit indicates whether the genesis state is initialized from
-	// the bootStrap contract or a general exporting genesis file.
-	// It's better to pass this flag through the context, but the context is
-	// constructed from the base app. Seems like there isn't a good way to pass
-	// the start commandline flag to the context.
-	isGeneralInit bool
-	historicalCtx types.CreateQueryContext
 	// other keepers
 	assetsKeeper     operatortypes.AssetsKeeper
 	delegationKeeper operatortypes.DelegationKeeper
@@ -37,8 +28,6 @@ type Keeper struct {
 func NewKeeper(
 	storeKey storetypes.StoreKey,
 	cdc codec.BinaryCodec,
-	isGeneralInit bool,
-	historicalCtx types.CreateQueryContext,
 	assetsKeeper operatortypes.AssetsKeeper,
 	delegationKeeper operatortypes.DelegationKeeper,
 	oracleKeeper operatortypes.OracleKeeper,
@@ -48,8 +37,6 @@ func NewKeeper(
 	return Keeper{
 		storeKey:         storeKey,
 		cdc:              cdc,
-		isGeneralInit:    isGeneralInit,
-		historicalCtx:    historicalCtx,
 		assetsKeeper:     assetsKeeper,
 		delegationKeeper: delegationKeeper,
 		oracleKeeper:     oracleKeeper,

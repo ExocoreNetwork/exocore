@@ -221,6 +221,22 @@ func GenesisStateWithValSet(app *ExocoreApp, genesisState simapp.GenesisState,
 				StakingTotalAmount: sdk.ZeroInt(),
 			},
 		}, depositsByStaker,
+		[]assetstypes.AssetsByOperator{
+			{
+				Operator: operator.String(),
+				AssetsState: []assetstypes.AssetByID{
+					{
+						AssetID: assetID,
+						Info: assetstypes.OperatorAssetInfo{
+							TotalAmount:         depositAmount,
+							WaitUnbondingAmount: math.NewInt(0),
+							TotalShare:          math.LegacyNewDecFromBigInt(depositAmount.BigInt()),
+							OperatorShare:       math.LegacyNewDec(0),
+						},
+					},
+				},
+			},
+		},
 	)
 	genesisState[assetstypes.ModuleName] = app.AppCodec().MustMarshalJSON(assetsGenesis)
 	// operator registration
@@ -234,36 +250,16 @@ func GenesisStateWithValSet(app *ExocoreApp, genesisState simapp.GenesisState,
 			},
 		},
 	}
-	consensusKeyRecords := []operatortypes.OperatorConsKeyRecord{
-		{
-			OperatorAddress: operatorInfos[0].OperatorInfo.EarningsAddr,
-			Chains: []operatortypes.ChainDetails{
-				{
-					ChainID:      utils.DefaultChainID,
-					ConsensusKey: hexutil.Encode(valSet.Validators[0].PubKey.Bytes()),
-				},
-			},
-		},
-	}
-	operatorGenesis := operatortypes.NewGenesisState(operatorInfos, consensusKeyRecords)
-	operatorGenesis := operatortypes.NewGenesisState(operatorInfos)
+	operatorGenesis := operatortypes.NewGenesisState(operatorInfos, nil, nil, nil, nil, nil, nil)
 	genesisState[operatortypes.ModuleName] = app.AppCodec().MustMarshalJSON(operatorGenesis)
 	// x/delegation
-	delegationsByStaker := []delegationtypes.DelegationsByStaker{
+	singleStateKey := assetstypes.GetJoinedStoreKey(stakerID, assetID, operator.String())
+	delegationStates := []delegationtypes.DelegationStates{
 		{
-			StakerID: stakerID,
-			Delegations: []delegationtypes.DelegatedSingleAssetInfo{
-				{
-					AssetID: assetID,
-					PerOperatorAmounts: []delegationtypes.KeyValue{
-						{
-							Key: operator.String(),
-							Value: &delegationtypes.ValueField{
-								Amount: depositAmount,
-							},
-						},
-					},
-				},
+			Key: string(singleStateKey),
+			States: delegationtypes.DelegationAmounts{
+				WaitUndelegationAmount: math.NewInt(0),
+				UndelegatableShare:     math.LegacyNewDecFromBigInt(depositAmount.BigInt()),
 			},
 		},
 	}
@@ -273,7 +269,15 @@ func GenesisStateWithValSet(app *ExocoreApp, genesisState simapp.GenesisState,
 			StakerID: stakerID,
 		},
 	}
-	delegationGenesis := delegationtypes.NewGenesis(delegationsByStaker, associations)
+	stakersByOperator := []delegationtypes.StakersByOperator{
+		{
+			Key: string(assetstypes.GetJoinedStoreKey(operator.String(), assetID)),
+			Stakers: []string{
+				stakerID,
+			},
+		},
+	}
+	delegationGenesis := delegationtypes.NewGenesis(associations, delegationStates, stakersByOperator, nil)
 	genesisState[delegationtypes.ModuleName] = app.AppCodec().MustMarshalJSON(delegationGenesis)
 
 	// create a dogfood genesis with just the validator set, that is, the bare
@@ -283,7 +287,7 @@ func GenesisStateWithValSet(app *ExocoreApp, genesisState simapp.GenesisState,
 			{
 				Power:           1,
 				PublicKey:       hexutil.Encode(valSet.Validators[0].PubKey.Bytes()),
-				OperatorAccAddr: operatorInfos[0].EarningsAddr,
+				OperatorAccAddr: operatorInfos[0].OperatorAddress,
 			},
 		},
 		[]dogfoodtypes.EpochToOperatorAddrs{}, []dogfoodtypes.EpochToConsensusAddrs{},

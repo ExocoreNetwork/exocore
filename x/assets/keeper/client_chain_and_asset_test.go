@@ -24,13 +24,14 @@ func (suite *StakingAssetsTestSuite) TestGenesisClientChainAndAssetInfo() {
 	}
 	stakingInfo := assetstype.StakingAssetInfo{
 		AssetBasicInfo:     usdtClientChainAsset,
-		StakingTotalAmount: math.NewInt(2000000),
+		StakingTotalAmount: math.NewIntWithDecimal(201, 6),
 	}
 	defaultGensisState := assetstype.NewGenesis(
 		assetstype.DefaultParams(),
 		[]assetstype.ClientChainInfo{ethClientChain},
 		[]assetstype.StakingAssetInfo{stakingInfo},
 		[]assetstype.DepositsByStaker{},
+		nil,
 	)
 
 	// test the client chains getting

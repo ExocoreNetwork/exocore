@@ -392,7 +392,9 @@ func getTestExocoreGenesis(
 	depositAmount := sdk.TokensFromConsensusPower(power, evmostypes.PowerReduction)
 	depositsByStaker := []assetstypes.DepositsByStaker{}
 	operatorInfos := []operatortypes.OperatorDetail{}
-	delegationsByStaker := []delegationtypes.DelegationsByStaker{}
+	delegationStates := []delegationtypes.DelegationStates{}
+	associations := []delegationtypes.StakerToOperator{}
+	stakersByOperator := []delegationtypes.StakersByOperator{}
 	validators := []dogfoodtypes.GenesisValidator{}
 	for i := range operatorAddrs {
 		operator := operatorAddrs[i]
@@ -424,20 +426,23 @@ func getTestExocoreGenesis(
 				),
 			},
 		})
-		delegationsByStaker = append(delegationsByStaker, delegationtypes.DelegationsByStaker{
+		singleStateKey := assetstypes.GetJoinedStoreKey(stakerID, assetID, operator.String())
+		delegationStates = append(delegationStates, delegationtypes.DelegationStates{
+			Key: string(singleStateKey),
+			States: delegationtypes.DelegationAmounts{
+				WaitUndelegationAmount: math.NewInt(0),
+				UndelegatableShare:     math.LegacyNewDecFromBigInt(depositAmount.BigInt()),
+			},
+		},
+		)
+		associations = append(associations, delegationtypes.StakerToOperator{
+			Operator: operator.String(),
 			StakerID: stakerID,
-			Delegations: []delegationtypes.DelegatedSingleAssetInfo{
-				{
-					AssetID: assetID,
-					PerOperatorAmounts: []delegationtypes.KeyValue{
-						{
-							Key: operator.String(),
-							Value: &delegationtypes.ValueField{
-								Amount: depositAmount,
-							},
-						},
-					},
-				},
+		})
+		stakersByOperator = append(stakersByOperator, delegationtypes.StakersByOperator{
+			Key: string(assetstypes.GetJoinedStoreKey(operator.String(), assetID)),
+			Stakers: []string{
+				stakerID,
 			},
 		})
 		validators = append(validators, dogfoodtypes.GenesisValidator{
@@ -454,13 +459,10 @@ func getTestExocoreGenesis(
 					// required to be 0, since deposits are handled after token init.
 					StakingTotalAmount: sdk.ZeroInt(),
 				},
-			}, depositsByStaker,
+			}, depositsByStaker, nil,
 		), operatortypes.NewGenesisState(
-			operatorInfos,
-		), delegationtypes.NewGenesis(
-			delegationsByStaker,
-			nil,
-		), dogfoodtypes.NewGenesis(
+			operatorInfos, nil, nil, nil, nil, nil, nil,
+		), delegationtypes.NewGenesis(associations, delegationStates, stakersByOperator, nil), dogfoodtypes.NewGenesis(
 			dogfoodtypes.NewParams(
 				dogfoodtypes.DefaultEpochsUntilUnbonded,
 				dogfoodtypes.DefaultEpochIdentifier,

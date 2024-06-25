@@ -450,18 +450,8 @@ func (k *Keeper) SetAllPrevConsKeys(ctx sdk.Context, prevConsKeys []types.PrevCo
 		if err != nil {
 			return nil
 		}
-		consKey, err := types.HexStringToPubKey(prevKey.ConsensusKey)
-		if err != nil {
-			return nil
-		}
-		bz, err := consKey.Marshal()
-		if err != nil {
-			return errorsmod.Wrap(
-				err,
-				"SetOperatorPrevConsKeyForChainID: error occurred when marshal public key",
-			)
-		}
-
+		wrappedKey := types.NewWrappedConsKeyFromHex(prevKey.ConsensusKey)
+		bz := k.cdc.MustMarshal(wrappedKey.ToTmProtoKey())
 		store.Set(keyBytes, bz)
 	}
 	return nil

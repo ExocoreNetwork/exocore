@@ -1,6 +1,9 @@
 package types_test
 
 import (
+	"github.com/ExocoreNetwork/exocore/utils"
+	"github.com/cosmos/cosmos-sdk/crypto/keys/ed25519"
+	"github.com/ethereum/go-ethereum/common/hexutil"
 	"testing"
 
 	utiltx "github.com/ExocoreNetwork/exocore/testutil/tx"
@@ -21,7 +24,9 @@ func TestGenesisTestSuite(t *testing.T) {
 }
 
 func (suite *GenesisTestSuite) TestValidateGenesis() {
+	key := hexutil.Encode(ed25519.GenPrivKey().PubKey().Bytes())
 	accAddress1 := sdk.AccAddress(utiltx.GenerateAddress().Bytes())
+	accAddress2 := sdk.AccAddress(utiltx.GenerateAddress().Bytes())
 	newGen := &types.GenesisState{}
 
 	testCases := []struct {

@@ -71,7 +71,7 @@ func (k Keeper) IterateDelegationsForStaker(ctx sdk.Context, stakerID string, op
 	for ; iterator.Valid(); iterator.Next() {
 		var amounts delegationtype.DelegationAmounts
 		k.cdc.MustUnmarshal(iterator.Value(), &amounts)
-		keys, err := delegationtype.ParseStakerAssetIDAndOperatorAddrFromKey(iterator.Key())
+		keys, err := delegationtype.ParseStakerAssetIDAndOperator(iterator.Key())
 		if err != nil {
 			return err
 		}
@@ -287,7 +287,7 @@ func (k Keeper) AllStakerList(ctx sdk.Context) (stakerList []delegationtype.Stak
 		k.cdc.MustUnmarshal(iterator.Value(), &stakers)
 		ret = append(ret, delegationtype.StakersByOperator{
 			Key:     string(iterator.Key()),
-			Stakers: stakers,
+			Stakers: stakers.Stakers,
 		})
 	}
 	return ret, nil
@@ -297,7 +297,7 @@ func (k Keeper) SetAllStakerList(ctx sdk.Context, stakersByOperator []delegation
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), delegationtype.KeyPrefixStakersByOperator)
 	for i := range stakersByOperator {
 		singleElement := stakersByOperator[i]
-		bz := k.cdc.MustMarshal(&singleElement.Stakers)
+		bz := k.cdc.MustMarshal(&delegationtype.StakerList{Stakers: singleElement.Stakers})
 		store.Set([]byte(singleElement.Key), bz)
 	}
 	return nil
@@ -378,4 +378,19 @@ func (k *Keeper) GetAssociatedOperator(ctx sdk.Context, stakerID string) (string
 		return string(value), nil
 	}
 	return "", nil
+}
+
+func (k *Keeper) GetAllAssociations(ctx sdk.Context) ([]delegationtype.StakerToOperator, error) {
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), delegationtype.KeyPrefixSelfDelegateOperatorByStaker)
+	iterator := sdk.KVStorePrefixIterator(store, []byte{})
+	defer iterator.Close()
+
+	ret := make([]delegationtype.StakerToOperator, 0)
+	for ; iterator.Valid(); iterator.Next() {
+		ret = append(ret, delegationtype.StakerToOperator{
+			StakerID: string(iterator.Key()),
+			Operator: string(iterator.Value()),
+		})
+	}
+	return ret, nil
 }
