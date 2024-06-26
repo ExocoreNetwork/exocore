@@ -3,11 +3,12 @@ package reward_test
 import (
 	"math/big"
 
+	assetskeeper "github.com/ExocoreNetwork/exocore/x/assets/keeper"
+
 	sdkmath "cosmossdk.io/math"
 	"github.com/ExocoreNetwork/exocore/app"
 	"github.com/ExocoreNetwork/exocore/precompiles/reward"
 	assetstype "github.com/ExocoreNetwork/exocore/x/assets/types"
-	"github.com/ExocoreNetwork/exocore/x/deposit/keeper"
 	"github.com/ethereum/go-ethereum/common"
 	ethtypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/core/vm"
@@ -59,14 +60,14 @@ func (s *RewardPrecompileTestSuite) TestRunRewardThroughClientChain() {
 	assetAddr := paddingClientChainAddress(usdtAddress, assetstype.GeneralClientChainAddrLength)
 	depositAsset := func(staker []byte, depositAmount sdkmath.Int) {
 		// deposit asset for reward test
-		params := &keeper.DepositParams{
+		params := &assetskeeper.DepositWithdrawParams{
 			ClientChainLzID: 101,
 			Action:          assetstype.Deposit,
 			StakerAddress:   staker,
 			AssetsAddress:   usdtAddress,
 			OpAmount:        depositAmount,
 		}
-		err := s.App.DepositKeeper.Deposit(s.Ctx, params)
+		err := s.App.AssetsKeeper.PerformDepositOrWithdraw(s.Ctx, params)
 		s.Require().NoError(err)
 	}
 

@@ -112,11 +112,11 @@ func newCosmosAnteHandler(options HandlerOptions) sdk.AnteHandler {
 		ante.NewConsumeGasForTxSizeDecorator(options.AccountKeeper),
 		cosmosante.NewDeductFeeDecorator(options.AccountKeeper, options.BankKeeper, options.DistributionKeeper, options.FeegrantKeeper, options.StakingKeeper, options.TxFeeChecker),
 		// SetPubKeyDecorator must be called before all signature verification decorators
-		ante.NewSetPubKeyDecorator(options.AccountKeeper),
+		cosmosante.NewSetPubKeyDecorator(options.AccountKeeper),
 		ante.NewValidateSigCountDecorator(options.AccountKeeper),
-		ante.NewSigGasConsumeDecorator(options.AccountKeeper, options.SigGasConsumer),
-		ante.NewSigVerificationDecorator(options.AccountKeeper, options.SignModeHandler),
-		ante.NewIncrementSequenceDecorator(options.AccountKeeper),
+		cosmosante.NewSigGasConsumeDecorator(options.AccountKeeper, options.SigGasConsumer),
+		cosmosante.NewSigVerificationDecorator(options.AccountKeeper, options.SignModeHandler),
+		cosmosante.NewIncrementSequenceDecorator(options.AccountKeeper),
 		ibcante.NewRedundantRelayDecorator(options.IBCKeeper),
 		evmante.NewGasWantedDecorator(options.EvmKeeper, options.FeeMarketKeeper),
 	)

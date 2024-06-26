@@ -47,19 +47,11 @@ import (
 	delegationKeeper "github.com/ExocoreNetwork/exocore/x/delegation/keeper"
 	delegationTypes "github.com/ExocoreNetwork/exocore/x/delegation/types"
 
-	"github.com/ExocoreNetwork/exocore/x/deposit"
-	depositKeeper "github.com/ExocoreNetwork/exocore/x/deposit/keeper"
-	depositTypes "github.com/ExocoreNetwork/exocore/x/deposit/types"
-
 	operatorTypes "github.com/ExocoreNetwork/exocore/x/operator/types"
 
 	"github.com/ExocoreNetwork/exocore/x/reward"
 	rewardKeeper "github.com/ExocoreNetwork/exocore/x/reward/keeper"
 	rewardTypes "github.com/ExocoreNetwork/exocore/x/reward/types"
-
-	"github.com/ExocoreNetwork/exocore/x/withdraw"
-	withdrawKeeper "github.com/ExocoreNetwork/exocore/x/withdraw/keeper"
-	withdrawTypes "github.com/ExocoreNetwork/exocore/x/withdraw/types"
 
 	// increases or decreases block gas limit based on usage
 	"github.com/evmos/evmos/v14/x/feemarket"
@@ -275,10 +267,8 @@ var (
 		consensus.AppModuleBasic{},
 		// Exocore modules
 		assets.AppModuleBasic{},
-		deposit.AppModuleBasic{},
 		operator.AppModuleBasic{},
 		delegation.AppModuleBasic{},
-		withdraw.AppModuleBasic{},
 		reward.AppModuleBasic{},
 		exoslash.AppModuleBasic{},
 		avs.AppModuleBasic{},
@@ -360,9 +350,7 @@ type ExocoreApp struct {
 
 	// exocore assets module keepers
 	AssetsKeeper     assetsKeeper.Keeper
-	DepositKeeper    depositKeeper.Keeper
 	DelegationKeeper delegationKeeper.Keeper
-	WithdrawKeeper   withdrawKeeper.Keeper
 	RewardKeeper     rewardKeeper.Keeper
 	OperatorKeeper   operatorKeeper.Keeper
 	ExoSlashKeeper   slashKeeper.Keeper
@@ -447,8 +435,6 @@ func NewExocoreApp(
 		// exoCore module keys
 		assetsTypes.StoreKey,
 		delegationTypes.StoreKey,
-		depositTypes.StoreKey,
-		withdrawTypes.StoreKey,
 		rewardTypes.StoreKey,
 		exoslashTypes.StoreKey,
 		operatorTypes.StoreKey,
@@ -550,18 +536,6 @@ func NewExocoreApp(
 	// asset and client chain registry.
 	app.AssetsKeeper = assetsKeeper.NewKeeper(keys[assetsTypes.StoreKey], appCodec)
 
-	// handles deposits but most of the information is stored in the assets keeper.
-	app.DepositKeeper = depositKeeper.NewKeeper(
-		keys[depositTypes.StoreKey], appCodec, app.AssetsKeeper,
-	)
-
-	// withdrawals - validates from assets and deposits keepers and executes them.
-	// could potentially be merged with the assets keeper.
-	app.WithdrawKeeper = withdrawKeeper.NewKeeper(
-		appCodec, keys[withdrawTypes.StoreKey],
-		app.AssetsKeeper, app.DepositKeeper,
-	)
-
 	// operator registry, which handles vote power (and this requires delegation keeper).
 	app.OperatorKeeper = operatorKeeper.NewKeeper(
 		keys[operatorTypes.StoreKey], appCodec,
@@ -575,7 +549,7 @@ func NewExocoreApp(
 
 	// handles delegations by stakers, and must know if the delegatee operator is registered.
 	app.DelegationKeeper = delegationKeeper.NewKeeper(
-		keys[depositTypes.StoreKey], appCodec,
+		keys[delegationTypes.StoreKey], appCodec,
 		app.AssetsKeeper,
 		delegationTypes.VirtualSlashKeeper{},
 		app.OperatorKeeper,
@@ -719,10 +693,8 @@ func NewExocoreApp(
 			app.AuthzKeeper,
 			app.TransferKeeper,
 			app.IBCKeeper.ChannelKeeper,
-			app.DepositKeeper,
 			app.DelegationKeeper,
 			app.AssetsKeeper,
-			app.WithdrawKeeper,
 			app.ExoSlashKeeper,
 			app.RewardKeeper,
 			app.AVSManagerKeeper,
@@ -891,10 +863,8 @@ func NewExocoreApp(
 			app.GetSubspace(recoverytypes.ModuleName)),
 		// exoCore app modules
 		assets.NewAppModule(appCodec, app.AssetsKeeper),
-		deposit.NewAppModule(appCodec, app.DepositKeeper),
 		operator.NewAppModule(appCodec, app.OperatorKeeper),
 		delegation.NewAppModule(appCodec, app.DelegationKeeper),
-		withdraw.NewAppModule(appCodec, app.WithdrawKeeper),
 		reward.NewAppModule(appCodec, app.RewardKeeper),
 		exoslash.NewAppModule(appCodec, app.ExoSlashKeeper),
 		avs.NewAppModule(appCodec, app.AVSManagerKeeper),
@@ -930,10 +900,8 @@ func NewExocoreApp(
 		erc20types.ModuleName,
 		recoverytypes.ModuleName,
 		assetsTypes.ModuleName,
-		depositTypes.ModuleName,
 		operatorTypes.ModuleName,
 		delegationTypes.ModuleName,
-		withdrawTypes.ModuleName,
 		rewardTypes.ModuleName,
 		exoslashTypes.ModuleName,
 		avsManagerTypes.ModuleName,
@@ -968,8 +936,6 @@ func NewExocoreApp(
 		recoverytypes.ModuleName,
 		consensusparamtypes.ModuleName,
 		assetsTypes.ModuleName,
-		depositTypes.ModuleName,
-		withdrawTypes.ModuleName,
 		rewardTypes.ModuleName,
 		exoslashTypes.ModuleName,
 		avsManagerTypes.ModuleName,
@@ -1011,8 +977,6 @@ func NewExocoreApp(
 		paramstypes.ModuleName,
 		consensusparamtypes.ModuleName,
 		upgradetypes.ModuleName,  // no-op since we don't call SetInitVersionMap
-		depositTypes.ModuleName,  // state handled by x/assets
-		withdrawTypes.ModuleName, // state handled by x/assets
 		rewardTypes.ModuleName,   // not fully implemented yet
 		exoslashTypes.ModuleName, // not fully implemented yet
 		avsManagerTypes.ModuleName,

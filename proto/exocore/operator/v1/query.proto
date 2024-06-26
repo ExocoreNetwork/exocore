@@ -31,7 +31,54 @@ message QueryAllOperatorsResponse {
   cosmos.base.query.v1beta1.PageResponse pagination = 2;
 }
 
-// QueryOperatorConsKeyRequest is a request to obtain the consensus public key of the operator.
+// OperatorAVSAddressDetails includes the address of operator and AVS
+message OperatorAVSAddressDetails {
+  // operator_addr should be the string type of sdk.AccAddress
+  string operator_addr = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+  // avs_address is the address of the AVS - either an 0x address or a chainID.
+  string avs_address = 2 [(gogoproto.customname) = "AVSAddress"];
+}
+
+// QueryOperatorUSDValueRequest is the request to obtain the USD value for operator.
+message QueryOperatorUSDValueRequest {
+  // details is the operator and AVS address
+  OperatorAVSAddressDetails details = 1;
+}
+
+// QueryAVSUSDValueRequest is the request to obtain the USD value for AVS.
+message QueryAVSUSDValueRequest {
+  // avs_address is the AVS address opted-in by the operator
+  string avs_address = 1
+  [(gogoproto.customname) = "AVSAddress"];
+}
+
+// QueryOperatorSlashInfoRequest is the request to obtain the slash information for the specified
+// operator and AVS
+message QueryOperatorSlashInfoRequest {
+  // details is the operator and AVS address
+  OperatorAVSAddressDetails details = 1;
+  // pagination related options.
+  cosmos.base.query.v1beta1.PageRequest pagination = 2;
+}
+
+// OperatorSlashInfoByID includes the slash information and the slashID
+message OperatorSlashInfoByID {
+  // slash_id is stored as the key of the slash information,
+  // so it will be parsed and padding here.
+  string slash_id = 1 [(gogoproto.customname) = "SlashID"];
+  // info is the specified detailed information for the slashing event.
+  OperatorSlashInfo info = 2;
+}
+
+// QueryOperatorSlashInfoResponse is the response for GetOperatorSlashInfoRequest
+message QueryOperatorSlashInfoResponse{
+  // all_slash_info is a list of the slash information for the specified operator and AVS
+  repeated OperatorSlashInfoByID all_slash_info = 1;
+  // pagination related response.
+  cosmos.base.query.v1beta1.PageResponse pagination = 2;
+}
+
+// QueryOperatorConsKeyRequest is the request to obtain the consensus public key of the operator
 message QueryOperatorConsKeyRequest {
   // operator_acc_addr is the operator account address.
   string operator_acc_addr = 1;
@@ -44,7 +91,7 @@ message QueryOperatorConsKeyRequest {
 // QueryOperatorConsKeyResponse is the response for QueryOperatorConsKeyRequest.
 message QueryOperatorConsKeyResponse {
   // public_key is the consensus public key of the operator.
-  tendermint.crypto.PublicKey public_key = 1 [ (gogoproto.nullable) = false ];
+  tendermint.crypto.PublicKey public_key = 1 [(gogoproto.nullable) = false];
   // opting_out is a flag to indicate if the operator is opting out of consensus.
   bool opting_out = 2;
 }
@@ -147,8 +194,8 @@ service Query {
 
   // QueryOperatorConsKeyForChainID queries the consensus public key for the operator
   rpc QueryOperatorConsKeyForChainID(QueryOperatorConsKeyRequest) returns (
-    QueryOperatorConsKeyResponse
-  ) {
+      QueryOperatorConsKeyResponse
+      ) {
     option (google.api.http) = {
       get: "/exocore/operator/v1/operator_cons_key/{operator_acc_addr}/{chain}"
     };
@@ -156,8 +203,8 @@ service Query {
 
   // QueryOperatorConsAddressForChainID queries the consensus address for the operator.
   rpc QueryOperatorConsAddressForChainID(QueryOperatorConsAddressRequest) returns (
-    QueryOperatorConsAddressResponse
-  ) {
+      QueryOperatorConsAddressResponse
+      ) {
     option (google.api.http) = {
       get: "/exocore/operator/v1/operator_cons_addr/{operator_acc_addr}/{chain}"
     };
@@ -166,18 +213,33 @@ service Query {
   // QueryAllOperatorConsKeysByChainID queries all operators and their consensus public keys
   // for a specific chain ID
   rpc QueryAllOperatorConsKeysByChainID(QueryAllOperatorConsKeysByChainIDRequest) returns (
-    QueryAllOperatorConsKeysByChainIDResponse
-  ) {
+      QueryAllOperatorConsKeysByChainIDResponse
+      ) {
     option (google.api.http) = {
       get: "/exocore/operator/v1/all_operator_cons_keys/{chain}"
     };
   }
 
+  // QueryOperatorUSDValue queries the opted-in USD value for the operator
+  rpc QueryOperatorUSDValue(QueryOperatorUSDValueRequest) returns(DecValueField){
+    option (google.api.http).get = "/exocore/operator/v1/QueryOperatorUSDValue";
+  }
+
+  // QueryAVSUSDValue queries the USD value for the AVS
+  rpc QueryAVSUSDValue(QueryAVSUSDValueRequest) returns(DecValueField){
+    option (google.api.http).get = "/exocore/operator/v1/QueryAVSUSDValue";
+  }
+
+  // QueryOperatorSlashInfo queries the slash information for the specified operator and AVS
+  rpc QueryOperatorSlashInfo(QueryOperatorSlashInfoRequest) returns(QueryOperatorSlashInfoResponse){
+    option (google.api.http).get = "/exocore/operator/v1/QueryOperatorSlashInfo";
+  }
+
   // QueryAllOperatorConsAddrsByChainID queries all operators and their consensus addresses
   // for a specific chain ID
   rpc QueryAllOperatorConsAddrsByChainID(QueryAllOperatorConsAddrsByChainIDRequest) returns (
-    QueryAllOperatorConsAddrsByChainIDResponse
-  ) {
+      QueryAllOperatorConsAddrsByChainIDResponse
+      ) {
     option (google.api.http) = {
       get: "/exocore/operator/v1/all_operator_cons_addrs/{chain}"
     };

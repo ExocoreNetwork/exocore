@@ -7,37 +7,75 @@ import (
 	operatortypes "github.com/ExocoreNetwork/exocore/x/operator/types"
 	abci "github.com/cometbft/cometbft/abci/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"golang.org/x/xerrors"
 )
 
 // CalculateUSDValueForOperator calculates the total and self usd value for the
 // operator according to the input assets filter and prices.
+// This function will be used in slashing calculations and voting power updates per epoch.
+// The inputs/outputs and calculation logic for these two cases are different,
+// so an `isForSlash` flag is used to distinguish between them.
+// When it's called by the voting power update, the needed outputs are the current total
+// staking amount and the self-staking amount of the operator. The current total
+// staking amount excludes the pending unbonding amount, so it's used to calculate the voting power.
+// The self-staking amount is also needed to check if the operator's self-staking is sufficient.
+// At the same time, the prices of all assets have been retrieved in the caller's function, so they
+// are inputted as a parameter.
+// When it's called by the slash execution, the needed output is the sum of the current total amount and
+// the pending unbonding amount, because the undelegation also needs to be slashed. And the prices of
+// all assets haven't been prepared by the caller, so the prices should be retrieved in this function.
 func (k *Keeper) CalculateUSDValueForOperator(
 	ctx sdk.Context,
+	isForSlash bool,
 	operator string,
 	assetsFilter map[string]interface{},
 	decimals map[string]uint32,
 	prices map[string]operatortypes.Price,
-) (sdkmath.LegacyDec, sdkmath.LegacyDec, error) {
-	usdValue := sdkmath.LegacyNewDec(0)
-	selfUSDValue := sdkmath.LegacyNewDec(0)
+) (operatortypes.OperatorUSDValue, error) {
+	var err error
+	ret := operatortypes.OperatorUSDValue{
+		Staking:                 sdkmath.LegacyNewDec(0),
+		SelfStaking:             sdkmath.LegacyNewDec(0),
+		StakingAndWaitUnbonding: sdkmath.LegacyNewDec(0),
+	}
 	// iterate all assets owned by the operator to calculate its voting power
 	opFuncToIterateAssets := func(assetID string, state *assetstypes.OperatorAssetInfo) error {
-		price := prices[assetID]
-		decimal := decimals[assetID]
-		usdValue = usdValue.Add(CalculateUSDValue(state.TotalAmount, price.Value, decimal, price.Decimal))
-		// calculate the token amount from the share for the operator
-		selfAmount, err := delegationkeeper.TokensFromShares(state.OperatorShare, state.TotalShare, state.TotalAmount)
-		if err != nil {
-			return err
+		var price operatortypes.Price
+		var decimal uint32
+		if isForSlash {
+			// when calculated the USD value for slashing, the input prices map is null
+			// so the price needs to be retrieved here
+			price, err = k.oracleKeeper.GetSpecifiedAssetsPrice(ctx, assetID)
+			if err != nil {
+				return err
+			}
+			assetInfo, err := k.assetsKeeper.GetStakingAssetInfo(ctx, assetID)
+			if err != nil {
+				return err
+			}
+			decimal = assetInfo.AssetBasicInfo.Decimals
+			ret.StakingAndWaitUnbonding = ret.StakingAndWaitUnbonding.Add(CalculateUSDValue(state.TotalAmount.Add(state.WaitUnbondingAmount), price.Value, decimal, price.Decimal))
+		} else {
+			if prices == nil {
+				return xerrors.Errorf("CalculateUSDValueForOperator, the input prices map is nil")
+			}
+			price = prices[assetID]
+			decimal = decimals[assetID]
+			ret.Staking = ret.Staking.Add(CalculateUSDValue(state.TotalAmount, price.Value, decimal, price.Decimal))
+			// calculate the token amount from the share for the operator
+			selfAmount, err := delegationkeeper.TokensFromShares(state.OperatorShare, state.TotalShare, state.TotalAmount)
+			if err != nil {
+				return err
+			}
+			ret.SelfStaking = ret.SelfStaking.Add(CalculateUSDValue(selfAmount, price.Value, decimal, price.Decimal))
 		}
-		selfUSDValue = selfUSDValue.Add(CalculateUSDValue(selfAmount, price.Value, decimal, price.Decimal))
 		return nil
 	}
-	err := k.assetsKeeper.IteratorAssetsForOperator(ctx, operator, assetsFilter, opFuncToIterateAssets)
+	err = k.assetsKeeper.IteratorAssetsForOperator(ctx, false, operator, assetsFilter, opFuncToIterateAssets)
 	if err != nil {
-		return sdkmath.LegacyDec{}, sdkmath.LegacyDec{}, err
+		return ret, err
 	}
-	return usdValue, selfUSDValue, nil
+	return ret, nil
 }
 
 // UpdateVotingPower update the voting power of the specified AVS and its operators at
@@ -71,12 +109,12 @@ func (k *Keeper) UpdateVotingPower(ctx sdk.Context, avsAddr string) error {
 	opFunc := func(operator string, votingPower *sdkmath.LegacyDec) error {
 		// clear the old voting power for the operator
 		*votingPower = sdkmath.LegacyNewDec(0)
-		usdValue, selfUSDValue, err := k.CalculateUSDValueForOperator(ctx, operator, assets, decimals, prices)
+		usdValues, err := k.CalculateUSDValueForOperator(ctx, false, operator, assets, decimals, prices)
 		if err != nil {
 			return err
 		}
-		if selfUSDValue.GTE(minimumSelfDelegation) {
-			*votingPower = votingPower.Add(usdValue)
+		if usdValues.SelfStaking.GTE(minimumSelfDelegation) {
+			*votingPower = votingPower.Add(usdValues.Staking)
 			avsVotingPower = avsVotingPower.Add(*votingPower)
 		}
 		return nil

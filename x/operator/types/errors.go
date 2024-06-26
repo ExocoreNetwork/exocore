@@ -92,9 +92,9 @@ var (
 		"operator not removing key",
 	)
 
-	ErrInvalidSlashType = errorsmod.Register(
+	ErrInvalidSlashPower = errorsmod.Register(
 		ModuleName, 18,
-		"the slash type is invalid",
+		"the slash power is invalid",
 	)
 
 	ErrKeyAlreadyExist = errorsmod.Register(

@@ -3,12 +3,13 @@ package keeper_test
 import (
 	"fmt"
 
+	assetskeeper "github.com/ExocoreNetwork/exocore/x/assets/keeper"
+
 	errorsmod "cosmossdk.io/errors"
 	sdkmath "cosmossdk.io/math"
 
 	"github.com/ExocoreNetwork/exocore/x/assets/types"
 	delegationtype "github.com/ExocoreNetwork/exocore/x/delegation/types"
-	"github.com/ExocoreNetwork/exocore/x/deposit/keeper"
 	operatortype "github.com/ExocoreNetwork/exocore/x/operator/types"
 	abci "github.com/cometbft/cometbft/abci/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -25,16 +26,16 @@ func (suite *DelegationTestSuite) prepare() {
 	suite.delegationAmount = sdkmath.NewInt(50)
 }
 
-func (suite *DelegationTestSuite) prepareDeposit() *keeper.DepositParams {
+func (suite *DelegationTestSuite) prepareDeposit() *assetskeeper.DepositWithdrawParams {
 	suite.prepare()
-	depositEvent := &keeper.DepositParams{
+	depositEvent := &assetskeeper.DepositWithdrawParams{
 		ClientChainLzID: suite.clientChainLzID,
 		Action:          types.Deposit,
 		StakerAddress:   suite.Address[:],
 		OpAmount:        suite.depositAmount,
 	}
 	depositEvent.AssetsAddress = suite.assetAddr[:]
-	err := suite.App.DepositKeeper.Deposit(suite.Ctx, depositEvent)
+	err := suite.App.AssetsKeeper.PerformDepositOrWithdraw(suite.Ctx, depositEvent)
 	suite.NoError(err)
 	return depositEvent
 }
@@ -184,7 +185,7 @@ func (suite *DelegationTestSuite) TestUndelegateFrom() {
 	suite.Equal(UndelegationRecord, records[0])
 
 	suite.Ctx.Logger().Info("the complete block number is:", "height", UndelegationRecord.CompleteBlockNumber)
-	waitUndelegationRecords, err := suite.App.DelegationKeeper.GetWaitCompleteUndelegationRecords(suite.Ctx, UndelegationRecord.CompleteBlockNumber)
+	waitUndelegationRecords, err := suite.App.DelegationKeeper.GetPendingUndelegationRecords(suite.Ctx, UndelegationRecord.CompleteBlockNumber)
 	suite.NoError(err)
 	suite.Equal(1, len(waitUndelegationRecords))
 	suite.Equal(UndelegationRecord, waitUndelegationRecords[0])
@@ -241,7 +242,7 @@ func (suite *DelegationTestSuite) TestCompleteUndelegation() {
 	suite.NoError(err)
 	suite.Equal(0, len(records))
 
-	waitUndelegationRecords, err := suite.App.DelegationKeeper.GetWaitCompleteUndelegationRecords(suite.Ctx, uint64(completeBlockNumber))
+	waitUndelegationRecords, err := suite.App.DelegationKeeper.GetPendingUndelegationRecords(suite.Ctx, uint64(completeBlockNumber))
 	suite.NoError(err)
 	suite.Equal(0, len(waitUndelegationRecords))
 }

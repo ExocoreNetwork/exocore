@@ -90,11 +90,13 @@ func (p Precompile) Run(evm *vm.EVM, contract *vm.Contract, readOnly bool) (bz [
 	// It avoids panics and returns the out of gas error so the EVM can continue gracefully.
 	defer cmn.HandleGasError(ctx, contract, initialGas, &err)()
 	switch method.Name {
-	// deposit transactions
+	// delegation transactions
 	case MethodDelegateToThroughClientChain:
 		bz, err = p.DelegateToThroughClientChain(ctx, evm.Origin, contract, stateDB, method, args)
 	case MethodUndelegateFromThroughClientChain:
 		bz, err = p.UndelegateFromThroughClientChain(ctx, evm.Origin, contract, stateDB, method, args)
+	default:
+		return nil, fmt.Errorf(cmn.ErrUnknownMethod, method.Name)
 	}
 
 	if err != nil {
@@ -118,7 +120,7 @@ func (p Precompile) Run(evm *vm.EVM, contract *vm.Contract, readOnly bool) (bz [
 // IsTransaction checks if the given methodID corresponds to a transaction or query.
 //
 // Available deposit transactions are:
-//   - DepositTo
+//   - DepositAndWithdraw
 func (Precompile) IsTransaction(methodID string) bool {
 	switch methodID {
 	case MethodDelegateToThroughClientChain,

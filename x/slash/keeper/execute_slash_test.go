@@ -2,8 +2,8 @@ package keeper_test
 
 import (
 	sdkmath "cosmossdk.io/math"
+	assetskeeper "github.com/ExocoreNetwork/exocore/x/assets/keeper"
 	"github.com/ExocoreNetwork/exocore/x/assets/types"
-	depositKeeper "github.com/ExocoreNetwork/exocore/x/deposit/keeper"
 	"github.com/ExocoreNetwork/exocore/x/slash/keeper"
 	slashtype "github.com/ExocoreNetwork/exocore/x/slash/types"
 	"github.com/ethereum/go-ethereum/common"
@@ -19,7 +19,7 @@ func (suite *SlashTestSuite) TestSlash() {
 		OpAmount:        sdkmath.NewInt(90),
 	}
 
-	depositEvent := &depositKeeper.DepositParams{
+	depositEvent := &assetskeeper.DepositWithdrawParams{
 		ClientChainLzID: 101,
 		Action:          types.Deposit,
 		StakerAddress:   suite.Address[:],
@@ -32,7 +32,7 @@ func (suite *SlashTestSuite) TestSlash() {
 
 	// deposit firstly
 	depositEvent.AssetsAddress = usdtAddress[:]
-	err = suite.App.DepositKeeper.Deposit(suite.Ctx, depositEvent)
+	err = suite.App.AssetsKeeper.PerformDepositOrWithdraw(suite.Ctx, depositEvent)
 	suite.NoError(err)
 
 	// test the case that the slash  hasn't registered
