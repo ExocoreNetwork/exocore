@@ -199,7 +199,7 @@ func (sgcd SigGasConsumeDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simula
 		// shall consume the largest amount, i.e. it takes more gas to verify
 		// secp256k1 keys than ed25519 ones.
 		if simulate && pubKey == nil {
-			pubKey = simSecp256k1Pubkey
+			pubKey = simSecp256k1Pubkey // gitleaks:allow
 		}
 
 		// make a SignatureV2 with PubKey filled in from above
