@@ -230,7 +230,7 @@ func (p Params) AddSources(sources ...*Source) (Params, error) {
 	return p, nil
 }
 
-// AddChains adds new chains on whic tokens are deployed
+// AddChains adds new chains on which tokens are deployed
 func (p Params) AddChains(chains ...*Chain) (Params, error) {
 	cNames := make(map[string]struct{})
 	for _, chain := range p.Chains {
