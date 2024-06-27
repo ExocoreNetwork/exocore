@@ -4,6 +4,7 @@ import (
 	"github.com/ExocoreNetwork/exocore/x/reward/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
+	distrtypes "github.com/cosmos/cosmos-sdk/x/distribution/types"
 )
 
 type rewardPool struct {
@@ -12,6 +13,7 @@ type rewardPool struct {
 	banker      bankkeeper.Keeper
 	distributor types.Distributor
 	types.Pool
+	staker distrtypes.StakingKeeper
 }
 
 func newRewardPool(ctx sdk.Context, k Keeper, banker bankkeeper.Keeper, distributor types.Distributor, p types.Pool) *rewardPool {
@@ -53,4 +55,52 @@ func (p *rewardPool) AddReward(earningAddress string, coin sdk.Coin) {
 		EarningsAddr: earningAddress,
 		Coins:        sdk.NewCoins(coin),
 	})
+}
+
+func (p *rewardPool) ReleaseRewards(earningAddress string) error {
+	rewards, ok := p.getRewards(earningAddress)
+	if !ok {
+		return nil
+	}
+
+	defer p.ClearRewards(earningAddress)
+
+	addr, err := sdk.ValAddressFromBech32(earningAddress)
+	if err != nil {
+		return err
+	}
+
+	v := p.staker.Validator(p.ctx, addr)
+	if v == nil {
+		return nil
+	}
+
+	if err := p.banker.MintCoins(p.ctx, types.ModuleName, rewards); err != nil {
+		return err
+	}
+
+	if err := p.banker.SendCoinsFromModuleToModule(p.ctx, types.ModuleName, distrtypes.ModuleName, rewards); err != nil {
+		return err
+	}
+
+	p.k.Logger(p.ctx).Info("releasing rewards in pool", "pool", p.Name, "earningAddress", earningAddress)
+
+	p.distributor.AllocateTokensToValidator(
+		p.ctx,
+		v,
+		sdk.NewDecCoinsFromCoins(rewards...),
+	)
+
+	return nil
+}
+
+func (p *rewardPool) ClearRewards(earningAddress string) {
+	for i, reward := range p.Rewards {
+		if reward.EarningsAddr == earningAddress {
+			p.k.Logger(p.ctx).Info("clearing rewards in pool", "pool", p.Name, "earningAddress", earningAddress)
+			p.Rewards = append(p.Rewards[:i], p.Rewards[i+1:]...)
+			p.k.setPool(p.ctx, p.Pool)
+			return
+		}
+	}
 }

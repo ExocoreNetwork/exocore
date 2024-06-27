@@ -3,23 +3,23 @@ package keeper
 import (
 	"fmt"
 
-	"cosmossdk.io/errors"
 	"github.com/cometbft/cometbft/libs/log"
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/store/prefix"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
-	"google.golang.org/protobuf/proto"
 
 	"github.com/ExocoreNetwork/exocore/utils"
 	"github.com/ExocoreNetwork/exocore/utils/key"
-	"github.com/ExocoreNetwork/exocore/x/assets/keeper"
+	assetsKeeper "github.com/ExocoreNetwork/exocore/x/assets/keeper"
+	avsKeeper "github.com/ExocoreNetwork/exocore/x/avs/keeper"
 	"github.com/ExocoreNetwork/exocore/x/reward/types"
 )
 
 var (
-	poolNamePrefix = "pool"
+	poolNamePrefix   = "pool"
+	DefaultDelimiter = "_"
 )
 
 type Keeper struct {
@@ -27,20 +27,23 @@ type Keeper struct {
 	storeKey storetypes.StoreKey
 
 	// other keepers
-	assetsKeeper keeper.Keeper
+	assetsKeeper assetsKeeper.Keeper
 	banker       bankkeeper.Keeper
 	distributor  types.Distributor
+	avsKeeper    avsKeeper.Keeper
 }
 
 func NewKeeper(
 	cdc codec.BinaryCodec,
 	storeKey storetypes.StoreKey,
-	assetsKeeper keeper.Keeper,
+	assetsKeeper assetsKeeper.Keeper,
+	avsKeeper avsKeeper.Keeper,
 ) Keeper {
 	return Keeper{
 		cdc:          cdc,
 		storeKey:     storeKey,
 		assetsKeeper: assetsKeeper,
+		avsKeeper:    avsKeeper,
 	}
 }
 
@@ -57,16 +60,14 @@ func (k Keeper) setPool(ctx sdk.Context, pool types.Pool) {
 func (k Keeper) getPools(ctx sdk.Context) ([]types.Pool, error) {
 	var pools []types.Pool
 
+	poolNamePrefix := utils.LowerCaseKey(poolNamePrefix)
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefixRewardInfo)
-	iter := store.Iterator(utils.LowerCaseKey(poolNamePrefix))
+	iter := sdk.KVStorePrefixIterator(store, append(poolNamePrefix.AsKey(), []byte(DefaultDelimiter)...))
 	defer utils.CloseLogError(iter, k.Logger(ctx))
 
 	for ; iter.Valid(); iter.Next() {
 		var pool types.Pool
-		err := proto.Unmarshal(iter.Value(), pool)
-		if err != nil {
-			return nil, errors.Wrap(err, "failed to decode the pool")
-		}
+		k.cdc.MustUnmarshal(iter.Value(), &pool)
 		pools = append(pools, pool)
 	}
 
