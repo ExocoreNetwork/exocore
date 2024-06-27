@@ -21,6 +21,8 @@ message Pool {
         (gogoproto.nullable) = false,
         (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins"
       ];
+    // earnings_addr is the earnings address.
+    string earnings_addr = 1;
 
   }
   // name is the name of the pool.
