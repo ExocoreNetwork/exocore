@@ -1,11 +1,12 @@
 package keeper
 
 import (
+	"fmt"
 	"strings"
 
+	epochstypes "github.com/ExocoreNetwork/exocore/x/epochs/types"
 	types "github.com/ExocoreNetwork/exocore/x/exomint/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	epochstypes "github.com/evmos/evmos/v14/x/epochs/types"
 )
 
 // EpochsHooksWrapper is the wrapper structure that implements the epochs hooks for the
@@ -24,7 +25,7 @@ func (k *Keeper) EpochsHooks() EpochsHooksWrapper {
 
 // AfterEpochEnd is called after an epoch ends. It is called during the BeginBlock function.
 func (wrapper EpochsHooksWrapper) AfterEpochEnd(
-	ctx sdk.Context, identifier string, _ int64,
+	ctx sdk.Context, identifier string, number int64,
 ) {
 	params := wrapper.keeper.GetParams(ctx)
 	if strings.Compare(identifier, params.EpochIdentifier) == 0 {
@@ -34,9 +35,10 @@ func (wrapper EpochsHooksWrapper) AfterEpochEnd(
 		)
 		mintedCoins := sdk.NewCoins(mintedCoin)
 
+		logger := wrapper.keeper.Logger(ctx)
 		err := wrapper.keeper.MintCoins(ctx, mintedCoins)
 		if err != nil {
-			ctx.Logger().With(types.ModuleName).Error(
+			logger.Error(
 				"AfterEpochEnd",
 				"could not mint coins", err,
 			)
@@ -45,7 +47,7 @@ func (wrapper EpochsHooksWrapper) AfterEpochEnd(
 
 		err = wrapper.keeper.AddCollectedFees(ctx, mintedCoins)
 		if err != nil {
-			ctx.Logger().With(types.ModuleName).Error(
+			logger.Error(
 				"AfterEpochEnd",
 				"could not transfer coins", err,
 			)
@@ -56,10 +58,12 @@ func (wrapper EpochsHooksWrapper) AfterEpochEnd(
 			sdk.NewEvent(
 				types.EventTypeMint,
 				sdk.NewAttribute(sdk.AttributeKeyAmount, mintedCoin.Amount.String()),
+				sdk.NewAttribute(types.AttributeEpochIdentifier, identifier),
+				sdk.NewAttribute(types.AttributeEpochNumber, fmt.Sprintf("%d", number)),
 			),
 		)
 
-		ctx.Logger().With(types.ModuleName).Info(
+		logger.Info(
 			"AfterEpochEnd",
 			"minted successfully", mintedCoins.String(),
 		)

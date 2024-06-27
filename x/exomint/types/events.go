@@ -1,5 +1,7 @@
 package types
 
 const (
-	EventTypeMint = ModuleName
+	EventTypeMint            = ModuleName
+	AttributeEpochIdentifier = "epoch_identifier"
+	AttributeEpochNumber     = "epoch_number"
 )
