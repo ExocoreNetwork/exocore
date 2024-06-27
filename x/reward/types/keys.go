@@ -20,10 +20,11 @@ func KeyPrefix(p string) []byte {
 
 const (
 	prefixParams = iota + 1
+	rewardInfo
 )
 
 var (
-	KeyPrefixParams = []byte{prefixParams}
-
-	ParamsKey = []byte("Params")
+	KeyPrefixParams     = []byte{prefixParams}
+	KeyPrefixRewardInfo = []byte{rewardInfo}
+	ParamsKey           = []byte("Params")
 )

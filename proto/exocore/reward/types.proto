@@ -13,20 +13,14 @@ option (gogoproto.goproto_getters_all) = false;
 message Pool {
   // Reward is the reward for a validator.
   message Reward {
-    // validator is the validator address, as an `sdk.ValAddress`.
-    bytes validator = 1 [ (gogoproto.casttype) =
-                                "github.com/cosmos/cosmos-sdk/types.ValAddress" ];
     // coins is the reward amount, as `sdk.Coins`.
     repeated cosmos.base.v1beta1.Coin coins = 2 [
         (gogoproto.nullable) = false,
         (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins"
       ];
     // earnings_addr is the earnings address.
-    string earnings_addr = 1;
-
+    string earnings_addr = 3;
   }
-  // name is the name of the pool.
   string name = 1;
-  // rewards is the rewards for the pool, by validator.
   repeated Reward rewards = 2 [ (gogoproto.nullable) = false ];
 }
