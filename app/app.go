@@ -612,7 +612,7 @@ func NewExocoreApp(
 	)
 
 	(&app.EpochsKeeper).SetHooks(
-		epochskeeper.NewMultiEpochHooks(
+		epochstypes.NewMultiEpochHooks(
 			app.StakingKeeper.EpochsHooks(), // at this point, the order is irrelevant.
 			app.ExomintKeeper.EpochsHooks(), // however, this may change once we have distribution
 		),
