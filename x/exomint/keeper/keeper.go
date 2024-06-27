@@ -69,3 +69,8 @@ func (k Keeper) AddCollectedFees(ctx sdk.Context, fees sdk.Coins) error {
 		ctx, types.ModuleName, k.feeCollectorName, fees,
 	)
 }
+
+// GetAuthority returns the authority address that can execute MsgUpdateParams.
+func (k Keeper) GetAuthority() string {
+	return k.authority
+}

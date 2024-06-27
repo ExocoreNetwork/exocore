@@ -6,8 +6,8 @@ import (
 	"github.com/cometbft/cometbft/libs/log"
 
 	"cosmossdk.io/math"
+	epochstypes "github.com/ExocoreNetwork/exocore/x/epochs/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	epochstypes "github.com/evmos/evmos/v14/x/epochs/types"
 	"gopkg.in/yaml.v2"
 
 	"github.com/ExocoreNetwork/exocore/utils"
@@ -93,23 +93,24 @@ func (p Params) Copy() Params {
 
 }
 
-// OverrideIfUnset overrides the unset parameters from the previous parameters.
-func (nextParams Params) OverrideIfUnset(prevParams Params, logger log.Logger) Params {
+// OverrideIfRequired overrides the unset or invalid parameters from the previous parameters.
+func OverrideIfRequired(nextParams Params, prevParams Params, logger log.Logger) Params {
+	// copy to avoid mutating the original
 	overParams := nextParams.Copy()
-	if len(nextParams.MintDenom) == 0 {
-		logger.Info("OverrideIfUnset", "overriding MintDenom with value", prevParams.MintDenom)
+	if err := sdk.ValidateDenom(nextParams.MintDenom); err != nil {
+		logger.Info("OverrideIfRequired", "overriding MintDenom with value", prevParams.MintDenom)
 		overParams.MintDenom = prevParams.MintDenom
 	}
 	if nextParams.EpochReward.IsNil() || !nextParams.EpochReward.IsPositive() {
 		// if the reward is negative or 0, we keep the previous value
 		// this allows for the epoch reward to not be supplied.
-		logger.Info("OverrideIfUnset", "overriding EpochReward with value", prevParams.EpochReward)
+		logger.Info("OverrideIfRequired", "overriding EpochReward with value", prevParams.EpochReward)
 		overParams.EpochReward = prevParams.EpochReward
 	}
 	if err := epochstypes.ValidateEpochIdentifierString(
 		nextParams.EpochIdentifier,
 	); err != nil {
-		logger.Info("OverrideIfUnset", "overriding EpochIdentifier with value", prevParams.EpochIdentifier)
+		logger.Info("OverrideIfRequired", "overriding EpochIdentifier with value", prevParams.EpochIdentifier)
 		overParams.EpochIdentifier = prevParams.EpochIdentifier
 	}
 	return overParams

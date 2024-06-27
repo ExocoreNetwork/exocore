@@ -37,7 +37,7 @@ func (k Keeper) UpdateParams(
 	prevParams := k.GetParams(c)
 	nextParams := msg.Params
 	// stateless validations
-	overParams := nextParams.OverrideIfUnset(prevParams, k.Logger(c))
+	overParams := types.OverrideIfRequired(nextParams, prevParams, k.Logger(c))
 	// stateful validations
 	// no need to check if MintDenom is registered in BankKeeper, since it does not itself perform such checks.
 	// the reward is already guaranteed to be positive and fits in the bit length.
