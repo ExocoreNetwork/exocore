@@ -93,7 +93,7 @@ func (l NoOpLogger) With(keyvals ...interface{}) log.Logger   { return l }
 
 var _ log.Logger = NoOpLogger{}
 
-func TestOverrideIfUnset(t *testing.T) {
+func TestOverrideIfRequired(t *testing.T) {
 	cases := []struct {
 		name     string
 		prev     types.Params
@@ -159,7 +159,7 @@ func TestOverrideIfUnset(t *testing.T) {
 			if tc.malleate != nil {
 				tc.malleate(&tc.next)
 			}
-			over := tc.next.OverrideIfUnset(tc.prev, NoOpLogger{})
+			over := types.OverrideIfRequired(tc.next, tc.prev, NoOpLogger{})
 			if !over.Equal(tc.over) {
 				t.Fatalf("expected %v, got %v", tc.over, over)
 			}

@@ -72,6 +72,9 @@ func ValidateEpochReward(i interface{}) error {
 	if !ok {
 		return fmt.Errorf("invalid parameter type: %T", i)
 	}
+	if v.IsNil() {
+		return fmt.Errorf("epoch reward cannot be nil")
+	}
 	if v.LTE(sdk.ZeroInt()) {
 		return fmt.Errorf("mint reward must be positive: %s", v)
 	}
