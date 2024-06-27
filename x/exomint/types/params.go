@@ -90,7 +90,6 @@ func (p Params) Copy() Params {
 		EpochReward:     p.EpochReward,
 		EpochIdentifier: p.EpochIdentifier,
 	}
-
 }
 
 // OverrideIfRequired overrides the unset or invalid parameters from the previous parameters.
