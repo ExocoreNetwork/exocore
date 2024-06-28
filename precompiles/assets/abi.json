@@ -68,9 +68,9 @@
         "type": "uint32"
       },
       {
-        "internalType": "uint32",
+        "internalType": "uint8",
         "name": "addressLength",
-        "type": "uint32"
+        "type": "uint8"
       },
       {
         "internalType": "string",
@@ -109,22 +109,32 @@
         "type": "uint32"
       },
       {
-        "internalType": "bytes[]",
-        "name": "tokens",
-        "type": "bytes[]"
+        "internalType": "bytes",
+        "name": "token",
+        "type": "bytes"
       },
       {
-        "internalType": "uint8[]",
+        "internalType": "uint8",
         "name": "decimals",
-        "type": "uint8[]"
+        "type": "uint8"
       },
       {
-        "internalType": "uint256[]",
+        "internalType": "uint256",
         "name": "tvlLimit",
-        "type": "uint256[]"
+        "type": "uint256"
+      },
+      {
+        "internalType": "string",
+        "name": "name",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "metaData",
+        "type": "string"
       }
     ],
-    "name": "registerTokens",
+    "name": "registerToken",
     "outputs":
     [
       {

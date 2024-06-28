@@ -26,7 +26,7 @@ const (
 
 	MethodRegisterClientChain = "registerClientChain"
 
-	MethodRegisterTokens = "registerTokens"
+	MethodRegisterToken = "registerToken"
 )
 
 // DepositOrWithdraw deposit and withdraw the client chain assets for the staker,
@@ -133,19 +133,17 @@ func (p Precompile) RegisterTokens(
 	if err != nil {
 		return nil, errorsmod.Wrap(err, exocmn.ErrContractCaller)
 	}
-	assets, err := p.TokensFromInputs(ctx, args)
+	asset, err := p.TokenFromInputs(ctx, args)
 	if err != nil {
 		return nil, err
 	}
 
-	for i := range assets {
-		err = p.assetsKeeper.SetStakingAssetInfo(ctx, &assetstypes.StakingAssetInfo{
-			AssetBasicInfo:     &assets[i],
-			StakingTotalAmount: sdkmath.NewInt(0),
-		})
-		if err != nil {
-			return nil, err
-		}
+	err = p.assetsKeeper.SetStakingAssetInfo(ctx, &assetstypes.StakingAssetInfo{
+		AssetBasicInfo:     &asset,
+		StakingTotalAmount: sdkmath.NewInt(0),
+	})
+	if err != nil {
+		return nil, err
 	}
 
 	return method.Outputs.Pack(true)

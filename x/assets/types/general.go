@@ -21,9 +21,12 @@ const (
 
 	// MaxDecimal and MaxDecForTotalSupply are set to prevent the overflow
 	// during the calculation of share and usd value.
-	MaxDecimal             = 18
-	MaxDecForTotalSupply   = 38
-	MaxChainMetaInfoLength = 200
+	MaxDecimal                  = 18
+	MaxDecForTotalSupply        = 38
+	MaxChainTokenNameLength     = 20
+	MaxChainTokenMetaInfoLength = 200
+
+	MinClientChainAddrLength = 20
 )
 
 const (

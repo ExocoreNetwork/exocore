@@ -4,10 +4,11 @@ import (
 	"fmt"
 	"math/big"
 
+	"golang.org/x/xerrors"
+
 	exocmn "github.com/ExocoreNetwork/exocore/precompiles/common"
 
 	sdkmath "cosmossdk.io/math"
-	"github.com/ExocoreNetwork/exocore/x/assets/types"
 	"github.com/ExocoreNetwork/exocore/x/slash/keeper"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	cmn "github.com/evmos/evmos/v14/precompiles/common"
@@ -35,8 +36,8 @@ func (p Precompile) GetSlashParamsFromInputs(ctx sdk.Context, args []interface{}
 	if !ok || assetAddr == nil {
 		return nil, fmt.Errorf(exocmn.ErrContractInputParaOrType, 1, "[]byte", assetAddr)
 	}
-	if len(assetAddr) != types.GeneralClientChainAddrLength {
-		return nil, fmt.Errorf(exocmn.ErrInvalidAddrLength, len(assetAddr), types.GeneralClientChainAddrLength)
+	if uint32(len(assetAddr)) < clientChainAddrLength {
+		return nil, xerrors.Errorf(exocmn.ErrInvalidAddrLength, len(assetAddr), clientChainAddrLength)
 	}
 	slashParams.AssetsAddress = assetAddr[:clientChainAddrLength]
 
@@ -44,8 +45,8 @@ func (p Precompile) GetSlashParamsFromInputs(ctx sdk.Context, args []interface{}
 	if !ok || stakerAddr == nil {
 		return nil, fmt.Errorf(exocmn.ErrContractInputParaOrType, 2, "[]byte", stakerAddr)
 	}
-	if len(assetAddr) != types.GeneralClientChainAddrLength {
-		return nil, fmt.Errorf(exocmn.ErrInvalidAddrLength, len(assetAddr), types.GeneralClientChainAddrLength)
+	if uint32(len(stakerAddr)) < clientChainAddrLength {
+		return nil, xerrors.Errorf(exocmn.ErrInvalidAddrLength, len(stakerAddr), clientChainAddrLength)
 	}
 	slashParams.StakerAddress = stakerAddr[:clientChainAddrLength]
 

@@ -35,18 +35,18 @@ func (gs GenesisState) Validate() error {
 	// client_chain.go -> check no repeat chain
 	lzIDs := make(map[uint64]struct{}, len(gs.ClientChains))
 	for i, info := range gs.ClientChains {
-		if info.Name == "" {
+		if info.Name == "" || len(info.Name) > MaxChainTokenNameLength {
 			return errorsmod.Wrapf(
 				ErrInvalidGenesisData,
-				"nil Name for chain %d",
-				i,
+				"nil Name or too long for chain %d, name:%s, maxLength:%d",
+				i, info.Name, MaxChainTokenNameLength,
 			)
 		}
-		if info.MetaInfo == "" || len(info.MetaInfo) > MaxChainMetaInfoLength {
+		if info.MetaInfo == "" || len(info.MetaInfo) > MaxChainTokenMetaInfoLength {
 			return errorsmod.Wrapf(
 				ErrInvalidGenesisData,
-				"nil meta info or too long for chain %d, maxLength:%d",
-				i, MaxChainMetaInfoLength,
+				"nil meta info or too long for chain %d, metaInfo:%s, maxLength:%d",
+				i, info.MetaInfo, MaxChainTokenMetaInfoLength,
 			)
 		}
 		// this is our primary method of cross-chain communication.
@@ -84,6 +84,20 @@ func (gs GenesisState) Validate() error {
 				ErrInvalidGenesisData,
 				"nil AssetBasicInfo for token %s",
 				info.AssetBasicInfo.MetaInfo,
+			)
+		}
+		if info.AssetBasicInfo.Name == "" || len(info.AssetBasicInfo.Name) > MaxChainTokenNameLength {
+			return errorsmod.Wrapf(
+				ErrInvalidGenesisData,
+				"nil Name or too long for token, name:%s, maxLength:%d",
+				info.AssetBasicInfo.Name, MaxChainTokenNameLength,
+			)
+		}
+		if info.AssetBasicInfo.MetaInfo == "" || len(info.AssetBasicInfo.MetaInfo) > MaxChainTokenMetaInfoLength {
+			return errorsmod.Wrapf(
+				ErrInvalidGenesisData,
+				"nil meta info or too long for token, metaInfo:%s, maxLength:%d",
+				info.AssetBasicInfo.MetaInfo, MaxChainTokenMetaInfoLength,
 			)
 		}
 		id := info.AssetBasicInfo.LayerZeroChainID

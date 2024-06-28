@@ -111,7 +111,7 @@ func (p Precompile) Run(evm *vm.EVM, contract *vm.Contract, readOnly bool) (bz [
 		if err != nil {
 			return handleError(ctx, method, err)
 		}
-	case MethodRegisterTokens:
+	case MethodRegisterToken:
 		bz, err = p.RegisterTokens(ctx, contract, method, args)
 		if err != nil {
 			return handleError(ctx, method, err)

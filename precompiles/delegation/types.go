@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"math/big"
 
+	"golang.org/x/xerrors"
+
 	errorsmod "cosmossdk.io/errors"
 	sdkmath "cosmossdk.io/math"
 
@@ -42,8 +44,8 @@ func (p Precompile) GetDelegationParamsFromInputs(ctx sdk.Context, args []interf
 	if !ok || assetAddr == nil {
 		return nil, fmt.Errorf(exocmn.ErrContractInputParaOrType, 2, "[]byte", args[2])
 	}
-	if len(assetAddr) != types.GeneralClientChainAddrLength {
-		return nil, fmt.Errorf(exocmn.ErrInvalidAddrLength, len(assetAddr), types.GeneralClientChainAddrLength)
+	if uint32(len(assetAddr)) < clientChainAddrLength {
+		return nil, xerrors.Errorf(exocmn.ErrInvalidAddrLength, len(assetAddr), clientChainAddrLength)
 	}
 	delegationParams.AssetsAddress = assetAddr[:clientChainAddrLength]
 
@@ -51,8 +53,8 @@ func (p Precompile) GetDelegationParamsFromInputs(ctx sdk.Context, args []interf
 	if !ok || stakerAddr == nil {
 		return nil, fmt.Errorf(exocmn.ErrContractInputParaOrType, 3, "[]byte", args[3])
 	}
-	if len(assetAddr) != types.GeneralClientChainAddrLength {
-		return nil, fmt.Errorf(exocmn.ErrInvalidAddrLength, len(assetAddr), types.GeneralClientChainAddrLength)
+	if uint32(len(stakerAddr)) < clientChainAddrLength {
+		return nil, xerrors.Errorf(exocmn.ErrInvalidAddrLength, len(stakerAddr), clientChainAddrLength)
 	}
 	delegationParams.StakerAddress = stakerAddr[:clientChainAddrLength]
 

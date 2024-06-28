@@ -53,10 +53,10 @@ interface IAssets {
     //  by layerZero
     function registerClientChain(
         uint32 clientChainID,
-        uint32 addressLength,
-        string memory name,
-        string memory metaInfo,
-        string memory signatureType
+        uint8 addressLength,
+        string calldata name,
+        string calldata metaInfo,
+        string calldata signatureType
     ) external returns (bool success);
 
     /// TRANSACTIONS
@@ -64,12 +64,14 @@ interface IAssets {
     /// @param clientChainID is the layerZero chainID if it is supported.
     //  It might be allocated by Exocore when the client chain isn't supported
     //  by layerZero
-    /// @param tokens The token addresses that would be registered to exocore
-    function registerTokens(
+    /// @param token The token addresses that would be registered to exocore
+    function registerToken(
         uint32 clientChainID,
-        bytes[] memory tokens,
-        uint8[] memory decimals,
-        uint256[] memory tvlLimit
+        bytes calldata token,
+        uint8 decimals,
+        uint256 tvlLimit,
+        string calldata name,
+        string calldata metaData
     ) external returns (bool success);
 
     /// QUERIES
