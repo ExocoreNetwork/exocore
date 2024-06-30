@@ -117,7 +117,10 @@ func recacheAggregatorContext(ctx sdk.Context, agc *aggregator.AggregatorContext
 				})
 			}
 		}
-		agc.SealRound(ctx, false)
+
+		// sealRound on height from+1
+		ctxReplay := ctx.WithBlockHeight(from + 1)
+		agc.SealRound(ctxReplay, false)
 	}
 
 	if from >= to {
