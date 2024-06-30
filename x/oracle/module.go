@@ -182,34 +182,16 @@ func (am AppModule) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.Val
 	_, failed := agc.SealRound(ctx, forceSeal)
 	// append new round with previous price for fail-seal token
 	for _, tokenID := range failed {
-		event := sdk.NewEvent(
+		prevPrice, nextRoundID := am.keeper.GrowRoundID(ctx, tokenID)
+		logger.Info("add new round with previous price under fail aggregation", "tokenID", tokenID, "roundID", nextRoundID, "price", prevPrice)
+		ctx.EventManager().EmitEvent(sdk.NewEvent(
 			types.EventTypeCreatePrice,
 			sdk.NewAttribute(types.AttributeKeyTokenID, strconv.FormatUint(tokenID, 10)),
 			sdk.NewAttribute(types.AttributeKeyPriceUpdated, types.AttributeValuePriceUpdatedFail),
+			sdk.NewAttribute(types.AttributeKeyRoundID, strconv.FormatUint(nextRoundID, 10)),
+			sdk.NewAttribute(types.AttributeKeyFinalPrice, prevPrice),
+		),
 		)
-		logInfo := fmt.Sprintf("add new round with previous price under fail aggregation, tokenID:%d", tokenID)
-		if pTR, ok := am.keeper.GetPriceTRLatest(ctx, tokenID); ok {
-			pTR.RoundID++
-			am.keeper.AppendPriceTR(ctx, tokenID, pTR)
-			logger.Info("add new round with previous price under fail aggregation", "tokenID", tokenID, "roundID", pTR.RoundID)
-			logInfo += fmt.Sprintf(", roundID:%d, price:%s", pTR.RoundID, pTR.Price)
-			event.AppendAttributes(
-				sdk.NewAttribute(types.AttributeKeyRoundID, strconv.FormatUint(pTR.RoundID, 10)),
-				sdk.NewAttribute(types.AttributeKeyFinalPrice, pTR.Price),
-			)
-		} else {
-			nextRoundID := am.keeper.GetNextRoundID(ctx, tokenID)
-			am.keeper.AppendPriceTR(ctx, tokenID, types.PriceTimeRound{
-				RoundID: nextRoundID,
-			})
-			logInfo += fmt.Sprintf(", roundID:%d, price:-", nextRoundID)
-			event.AppendAttributes(
-				sdk.NewAttribute(types.AttributeKeyRoundID, strconv.FormatUint(nextRoundID, 10)),
-				sdk.NewAttribute(types.AttributeKeyFinalPrice, "-"),
-			)
-		}
-		logger.Info(logInfo)
-		ctx.EventManager().EmitEvent(event)
 	}
 	// TODO: emit events for success sealed rounds(could ignore for v1)
 

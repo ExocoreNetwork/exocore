@@ -91,19 +91,40 @@ func (k Keeper) GetAllPrices(ctx sdk.Context) (list []types.Prices) {
 	return list
 }
 
-func (k Keeper) AppendPriceTR(ctx sdk.Context, tokenID uint64, priceTR types.PriceTimeRound) {
+// AppenPriceTR append a new round of price for specific token, return false if the roundID not match
+func (k Keeper) AppendPriceTR(ctx sdk.Context, tokenID uint64, priceTR types.PriceTimeRound) bool {
 	nextRoundID := k.GetNextRoundID(ctx, tokenID)
+	// This should not happen
 	if nextRoundID != priceTR.RoundID {
-		// TODO: return error to tell this round adding fail
-		return
+		return false
 	}
 	store := k.getPriceTRStore(ctx, tokenID)
 	b := k.cdc.MustMarshal(&priceTR)
 	store.Set(types.PricesRoundKey(nextRoundID), b)
 	k.IncreaseNextRoundID(ctx, tokenID)
+	return true
 }
 
-// func(k Keeper) SetPriceTR(ctx sdk.Context, tokenID int32, priceTR){}
+// GrowRoundID Increases roundID with the previous price
+func (k Keeper) GrowRoundID(ctx sdk.Context, tokenID uint64) (price string, roundID uint64) {
+	//	logInfo := fmt.Sprintf("add new round with previous price under fail aggregation, tokenID:%d", tokenID)
+	if pTR, ok := k.GetPriceTRLatest(ctx, tokenID); ok {
+		pTR.RoundID++
+		k.AppendPriceTR(ctx, tokenID, pTR)
+		price = pTR.Price
+		roundID = pTR.RoundID
+	} else {
+		nextRoundID := k.GetNextRoundID(ctx, tokenID)
+		k.AppendPriceTR(ctx, tokenID, types.PriceTimeRound{
+			RoundID: nextRoundID,
+		})
+		price = ""
+		roundID = nextRoundID
+	}
+	return
+}
+
+// GetPriceTRRoundID returns price of roundID for specific token
 func (k Keeper) GetPriceTRRoundID(ctx sdk.Context, tokenID uint64, roundID uint64) (price types.PriceTimeRound, found bool) {
 	store := k.getPriceTRStore(ctx, tokenID)
 
@@ -117,9 +138,8 @@ func (k Keeper) GetPriceTRRoundID(ctx sdk.Context, tokenID uint64, roundID uint6
 	return
 }
 
+// GetPricePRLatest returns price of latst round for specific token
 func (k Keeper) GetPriceTRLatest(ctx sdk.Context, tokenID uint64) (price types.PriceTimeRound, found bool) {
-	//	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefix(types.PricesKeyPrefix))
-	//	store = prefix.NewStore(store, types.PricesKey(tokenID))
 	store := k.getPriceTRStore(ctx, tokenID)
 	nextRoundIDB := store.Get(types.PricesNextRoundIDKey)
 	if nextRoundIDB == nil {
@@ -135,6 +155,7 @@ func (k Keeper) GetPriceTRLatest(ctx sdk.Context, tokenID uint64) (price types.P
 	return
 }
 
+// GetNextROundID returns id of next round
 func (k Keeper) GetNextRoundID(ctx sdk.Context, tokenID uint64) (nextRoundID uint64) {
 	nextRoundID = 1
 	store := k.getPriceTRStore(ctx, tokenID)
@@ -147,6 +168,7 @@ func (k Keeper) GetNextRoundID(ctx sdk.Context, tokenID uint64) (nextRoundID uin
 	return
 }
 
+// IncreaseNextRoundID increases roundID by 1
 func (k Keeper) IncreaseNextRoundID(ctx sdk.Context, tokenID uint64) {
 	store := k.getPriceTRStore(ctx, tokenID)
 	nextRoundID := k.GetNextRoundID(ctx, tokenID)

@@ -32,9 +32,14 @@ func (ms msgServer) CreatePrice(goCtx context.Context, msg *types.MsgCreatePrice
 		return &types.MsgCreatePriceResponse{}, nil
 	}
 	if newItem != nil {
-		ms.AppendPriceTR(ctx, newItem.TokenID, newItem.PriceTR)
-
-		logger.Info("final price aggregation done", "feederID", msg.FeederID, "roundID", newItem.PriceTR.RoundID, "price", newItem.PriceTR.Price)
+		if success := ms.AppendPriceTR(ctx, newItem.TokenID, newItem.PriceTR); !success {
+			// This case should not exist, keep this line to avoid consensus fail if this happens
+			// logger.Error("append new price round fail for mismatch roundID, and will just grow roundID with previous price", "roundID from finalPrice", newItem.PriceTR.RoundID)
+			prevPrice, nextRoundID := ms.GrowRoundID(ctx, newItem.TokenID)
+			logger.Error("append new price round fail for mismatch roundID, and will just grow roundID with previous price", "roundID from finalPrice", newItem.PriceTR.RoundID, "expect nextRoundID", nextRoundID, "prevPrice", prevPrice)
+		} else {
+			logger.Info("final price aggregation done", "feederID", msg.FeederID, "roundID", newItem.PriceTR.RoundID, "price", newItem.PriceTR.Price)
+		}
 
 		ctx.EventManager().EmitEvent(sdk.NewEvent(
 			types.EventTypeCreatePrice,
