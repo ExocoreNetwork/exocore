@@ -107,21 +107,21 @@ func (k Keeper) AVSInfoUpdateWithOperator(ctx sdk.Context, params *OperatorOptPa
 	}
 
 	avs := avsInfo.GetInfo()
-	addresses := avs.OperatorAddress
+	operatorAddrList := avs.OperatorAddress
 
 	switch params.Action {
 	case RegisterAction:
-		if slices.Contains(avs.OperatorAddress, operatorAddress) {
+		if slices.Contains(operatorAddrList, operatorAddress) {
 			return errorsmod.Wrap(types.ErrAlreadyRegistered, fmt.Sprintf("Error: Already registered, operatorAddress %s", operatorAddress))
 		}
-		addresses = append(addresses, operatorAddress)
-		avs.OperatorAddress = addresses
+		operatorAddrList = append(operatorAddrList, operatorAddress)
+		avs.OperatorAddress = operatorAddrList
 		return k.SetAVSInfo(ctx, avs)
 	case DeRegisterAction:
 		if !slices.Contains(avs.OperatorAddress, operatorAddress) {
 			return errorsmod.Wrap(types.ErrUnregisterNonExistent, fmt.Sprintf("No available operatorAddress to DeRegisterAction, operatorAddress: %s", operatorAddress))
 		}
-		avs.OperatorAddress = types.RemoveOperatorAddress(addresses, operatorAddress)
+		avs.OperatorAddress = types.RemoveOperatorAddress(operatorAddrList, operatorAddress)
 		return k.SetAVSInfo(ctx, avs)
 	default:
 		return errorsmod.Wrap(types.ErrInvalidAction, fmt.Sprintf("Invalid action: %d", params.Action))
@@ -172,8 +172,8 @@ func (k Keeper) DeleteAVSInfo(ctx sdk.Context, addr string) error {
 	return nil
 }
 
-// IteratAVSInfo iterate through avs
-func (k Keeper) IteratAVSInfo(ctx sdk.Context, fn func(index int64, avsInfo types.AVSInfo) (stop bool)) {
+// IterateAVSInfo iterate through avs
+func (k Keeper) IterateAVSInfo(ctx sdk.Context, fn func(index int64, avsInfo types.AVSInfo) (stop bool)) {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefixAVSInfo)
 
 	iterator := sdk.KVStorePrefixIterator(store, nil)

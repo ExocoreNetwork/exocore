@@ -10,8 +10,8 @@ import (
 )
 
 func (p Precompile) GetAVSParamsFromInputs(_ sdk.Context, args []interface{}) (*avstypes.AVSRegisterOrDeregisterParams, error) {
-	if len(args) != 8 {
-		return nil, xerrors.Errorf(cmn.ErrInvalidNumberOfArgs, 8, len(args))
+	if len(args) != len(p.ABI.Methods[MethodAVSAction].Inputs) {
+		return nil, xerrors.Errorf(cmn.ErrInvalidNumberOfArgs, len(p.ABI.Methods[MethodAVSAction].Inputs), len(args))
 	}
 	avsParams := &avstypes.AVSRegisterOrDeregisterParams{}
 	avsOwnerAddress, ok := args[0].([]string)

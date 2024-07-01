@@ -14,7 +14,7 @@ func (k Keeper) BeforeEpochStart(_ sdk.Context, _ string, _ int64) {
 func (k Keeper) AfterEpochEnd(ctx sdk.Context, epochIdentifier string, epochNumber int64) {
 	logger := k.Logger(ctx)
 
-	k.IteratAVSInfo(ctx, func(_ int64, avsInfo types.AVSInfo) (stop bool) {
+	k.IterateAVSInfo(ctx, func(_ int64, avsInfo types.AVSInfo) (stop bool) {
 		if epochIdentifier == avsInfo.EpochIdentifier && epochNumber > avsInfo.EffectiveCurrentEpoch {
 			{
 				logger.Info("Process business logic during avs epoch end", "identifier", epochIdentifier)

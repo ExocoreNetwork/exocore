@@ -43,20 +43,18 @@ func (k *Keeper) GetAVSMinimumSelfDelegation(ctx sdk.Context, avsAddr string) (s
 // GetEpochEndAVSs returns the AVS list where the current block marks the end of their epoch.
 func (k *Keeper) GetEpochEndAVSs(ctx sdk.Context) ([]string, error) {
 	var avsList []types.AVSInfo
-	k.IteratAVSInfo(ctx, func(_ int64, epochEndAVSInfo types.AVSInfo) (stop bool) {
+	k.IterateAVSInfo(ctx, func(_ int64, epochEndAVSInfo types.AVSInfo) (stop bool) {
 		avsList = append(avsList, epochEndAVSInfo)
 		return false
 	})
 
-	// Check if avsList is not empty
 	if len(avsList) == 0 {
-		return nil, fmt.Errorf("avsList is empty")
+		return nil, nil
 	}
 
-	// Convert avsList to []string
 	avsAddrList := make([]string, len(avsList))
-	for i, avsInfo := range avsList {
-		avsAddrList[i] = avsInfo.AvsAddress
+	for i := range avsList {
+		avsAddrList[i] = avsList[i].AvsAddress
 	}
 
 	return avsAddrList, nil
