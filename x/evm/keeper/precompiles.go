@@ -3,23 +3,19 @@ package keeper
 import (
 	"fmt"
 
+	assetsprecompile "github.com/ExocoreNetwork/exocore/precompiles/assets"
 	avsManagerPrecompile "github.com/ExocoreNetwork/exocore/precompiles/avs"
 	taskPrecompile "github.com/ExocoreNetwork/exocore/precompiles/avsTask"
 	blsPrecompile "github.com/ExocoreNetwork/exocore/precompiles/bls"
-	clientchainsprecompile "github.com/ExocoreNetwork/exocore/precompiles/clientchains"
 	delegationprecompile "github.com/ExocoreNetwork/exocore/precompiles/delegation"
-	depositprecompile "github.com/ExocoreNetwork/exocore/precompiles/deposit"
 	rewardPrecompile "github.com/ExocoreNetwork/exocore/precompiles/reward"
 	slashPrecompile "github.com/ExocoreNetwork/exocore/precompiles/slash"
-	withdrawPrecompile "github.com/ExocoreNetwork/exocore/precompiles/withdraw"
 	stakingStateKeeper "github.com/ExocoreNetwork/exocore/x/assets/keeper"
 	avsManagerKeeper "github.com/ExocoreNetwork/exocore/x/avs/keeper"
 	taskKeeper "github.com/ExocoreNetwork/exocore/x/avstask/keeper"
 	delegationKeeper "github.com/ExocoreNetwork/exocore/x/delegation/keeper"
-	depositKeeper "github.com/ExocoreNetwork/exocore/x/deposit/keeper"
 	rewardKeeper "github.com/ExocoreNetwork/exocore/x/reward/keeper"
 	exoslashKeeper "github.com/ExocoreNetwork/exocore/x/slash/keeper"
-	withdrawKeeper "github.com/ExocoreNetwork/exocore/x/withdraw/keeper"
 	authzkeeper "github.com/cosmos/cosmos-sdk/x/authz/keeper"
 	channelkeeper "github.com/cosmos/ibc-go/v7/modules/core/04-channel/keeper"
 	"github.com/ethereum/go-ethereum/common"
@@ -39,10 +35,8 @@ func AvailablePrecompiles(
 	authzKeeper authzkeeper.Keeper,
 	transferKeeper transferkeeper.Keeper,
 	channelKeeper channelkeeper.Keeper,
-	depositKeeper depositKeeper.Keeper,
 	delegationKeeper delegationKeeper.Keeper,
-	stakingStateKeeper stakingStateKeeper.Keeper,
-	withdrawKeeper withdrawKeeper.Keeper,
+	assetskeeper stakingStateKeeper.Keeper,
 	slashKeeper exoslashKeeper.Keeper,
 	rewardKeeper rewardKeeper.Keeper,
 	avsManagerKeeper avsManagerKeeper.Keeper,
@@ -60,41 +54,24 @@ func AvailablePrecompiles(
 		panic(fmt.Errorf("failed to load ICS20 precompile: %w", err))
 	}
 
-	// add exoCore chain preCompiles
-	clientChainsPrecompile, err := clientchainsprecompile.NewPrecompile(
-		stakingStateKeeper,
-		authzKeeper,
-	)
-	if err != nil {
-		panic(fmt.Errorf("failed to load client chains precompile: %w", err))
-	}
-
-	depositPrecompile, err := depositprecompile.NewPrecompile(
-		stakingStateKeeper,
-		depositKeeper,
+	assetsPrecompile, err := assetsprecompile.NewPrecompile(
+		assetskeeper,
 		authzKeeper,
 	)
 	if err != nil {
 		panic(fmt.Errorf("failed to load deposit precompile: %w", err))
 	}
 	delegationPrecompile, err := delegationprecompile.NewPrecompile(
-		stakingStateKeeper,
+		assetskeeper,
 		delegationKeeper,
 		authzKeeper,
 	)
 	if err != nil {
 		panic(fmt.Errorf("failed to load delegation precompile: %w", err))
 	}
-	withdrawPrecompile, err := withdrawPrecompile.NewPrecompile(
-		stakingStateKeeper,
-		withdrawKeeper,
-		authzKeeper,
-	)
-	if err != nil {
-		panic(fmt.Errorf("failed to load withdraw precompile: %w", err))
-	}
+
 	slashPrecompile, err := slashPrecompile.NewPrecompile(
-		stakingStateKeeper,
+		assetskeeper,
 		slashKeeper,
 		authzKeeper,
 	)
@@ -102,7 +79,7 @@ func AvailablePrecompiles(
 		panic(fmt.Errorf("failed to load slash precompile: %w", err))
 	}
 	rewardPrecompile, err := rewardPrecompile.NewPrecompile(
-		stakingStateKeeper,
+		assetskeeper,
 		rewardKeeper,
 		authzKeeper,
 	)
@@ -123,9 +100,7 @@ func AvailablePrecompiles(
 	}
 	precompiles[slashPrecompile.Address()] = slashPrecompile
 	precompiles[rewardPrecompile.Address()] = rewardPrecompile
-	precompiles[withdrawPrecompile.Address()] = withdrawPrecompile
-	precompiles[clientChainsPrecompile.Address()] = clientChainsPrecompile
-	precompiles[depositPrecompile.Address()] = depositPrecompile
+	precompiles[assetsPrecompile.Address()] = assetsPrecompile
 	precompiles[delegationPrecompile.Address()] = delegationPrecompile
 	precompiles[avsManagerPrecompile.Address()] = avsManagerPrecompile
 	precompiles[taskPrecompile.Address()] = taskPrecompile

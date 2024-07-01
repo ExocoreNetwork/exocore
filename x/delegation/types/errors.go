@@ -83,4 +83,9 @@ var (
 	ErrInsufficientAssetAmount = errorsmod.Register(
 		ModuleName, 16,
 		"insufficient asset amount")
+
+	ErrInvalidHash = errorsmod.Register(
+		ModuleName, 17,
+		"invalid hash",
+	)
 )

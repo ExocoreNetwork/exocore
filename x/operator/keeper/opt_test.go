@@ -4,12 +4,13 @@ import (
 	"fmt"
 	"strings"
 
+	assetskeeper "github.com/ExocoreNetwork/exocore/x/assets/keeper"
+
 	abci "github.com/cometbft/cometbft/abci/types"
 
 	sdkmath "cosmossdk.io/math"
 	assetstypes "github.com/ExocoreNetwork/exocore/x/assets/types"
 	delegationtype "github.com/ExocoreNetwork/exocore/x/delegation/types"
-	"github.com/ExocoreNetwork/exocore/x/deposit/keeper"
 	operatorKeeper "github.com/ExocoreNetwork/exocore/x/operator/keeper"
 	operatorTypes "github.com/ExocoreNetwork/exocore/x/operator/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -50,14 +51,14 @@ func (suite *OperatorTestSuite) prepareDeposit(assetAddr common.Address, amount 
 	suite.updatedAmountForOptIn = sdkmath.NewInt(20)
 	suite.stakerID, suite.assetID = assetstypes.GetStakeIDAndAssetID(suite.clientChainLzID, suite.Address[:], suite.assetAddr[:])
 	// staking assets
-	depositParam := &keeper.DepositParams{
+	depositParam := &assetskeeper.DepositWithdrawParams{
 		ClientChainLzID: suite.clientChainLzID,
 		Action:          assetstypes.Deposit,
 		StakerAddress:   suite.Address[:],
 		OpAmount:        suite.depositAmount,
 		AssetsAddress:   assetAddr[:],
 	}
-	err := suite.App.DepositKeeper.Deposit(suite.Ctx, depositParam)
+	err := suite.App.AssetsKeeper.PerformDepositOrWithdraw(suite.Ctx, depositParam)
 	suite.NoError(err)
 }
 
