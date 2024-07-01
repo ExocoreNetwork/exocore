@@ -219,6 +219,7 @@ func (agc *AggregatorContext) SealRound(ctx sdk.Context, force bool) (success []
 	return success, failed
 }
 
+// PrepareRound prepares the roundInfo for the next block, it will update the roundInfo based on the current block height
 func (agc *AggregatorContext) PrepareRound(ctx sdk.Context, block uint64) {
 	// block>0 means recache initialization, all roundInfo is empty
 	if block == 0 {
@@ -270,10 +271,12 @@ func (agc *AggregatorContext) PrepareRound(ctx sdk.Context, block uint64) {
 	}
 }
 
+// SetParams sets the params field of aggregatorContext“
 func (agc *AggregatorContext) SetParams(p *types.Params) {
 	agc.params = p
 }
 
+// SetValidatorPowers sets the map of validator's power for aggreagtorContext
 func (agc *AggregatorContext) SetValidatorPowers(vp map[string]*big.Int) {
 	//	t := big.NewInt(0)
 	agc.totalPower = big.NewInt(0)
@@ -284,24 +287,25 @@ func (agc *AggregatorContext) SetValidatorPowers(vp map[string]*big.Int) {
 	}
 }
 
+// GetValidatorPowers returns the map of validator's power stored in aggregatorContext
 func (agc *AggregatorContext) GetValidatorPowers() (vp map[string]*big.Int) {
 	return agc.validatorsPower
 }
 
+// GetTokenIDFromAssetID returns tokenID for corresponding tokenID, it returns 0 if agc.params is nil or assetID not found in agc.params
 func (agc *AggregatorContext) GetTokenIDFromAssetID(assetID string) int {
-	agc.params.GetTokenIDFromAssetID(assetID)
-	for id, token := range agc.params.Tokens {
-		if token.AssetID == assetID {
-			return id
-		}
+	if agc.params == nil {
+		return 0
 	}
-	return 0
+	return agc.params.GetTokenIDFromAssetID(assetID)
 }
 
+// GetParams returns the params field of aggregatorContext
 func (agc *AggregatorContext) GetParams() types.Params {
 	return *agc.params
 }
 
+// NewAggregatorContext returns a new instance of AggregatorContext
 func NewAggregatorContext() *AggregatorContext {
 	return &AggregatorContext{
 		validatorsPower: make(map[string]*big.Int),
