@@ -52,7 +52,7 @@ func (p Precompile) DepositWithdrawParamsFromInputs(ctx sdk.Context, args []inte
 	depositWithdrawParams.StakerAddress = stakerAddr[:clientChainAddrLength]
 
 	opAmount, ok := args[3].(*big.Int)
-	if !ok || opAmount == nil || opAmount.Cmp(big.NewInt(0)) == 0 {
+	if !ok || opAmount == nil || !(opAmount.Cmp(big.NewInt(0)) == 1) {
 		return nil, xerrors.Errorf(exocmn.ErrContractInputParaOrType, 3, "*big.Int", args[3])
 	}
 	depositWithdrawParams.OpAmount = sdkmath.NewIntFromBigInt(opAmount)
@@ -139,7 +139,7 @@ func (p Precompile) TokenFromInputs(ctx sdk.Context, args []interface{}) (types.
 	asset.Decimals = uint32(decimal)
 
 	tvlLimit, ok := args[3].(*big.Int)
-	if !ok {
+	if !ok || tvlLimit == nil || !(tvlLimit.Cmp(big.NewInt(0)) == 1) {
 		return types.AssetInfo{}, fmt.Errorf(exocmn.ErrContractInputParaOrType, 3, "*big.Int", args[3])
 	}
 	asset.TotalSupply = sdkmath.NewIntFromBigInt(tvlLimit)

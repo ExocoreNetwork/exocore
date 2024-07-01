@@ -122,7 +122,7 @@ func (p Precompile) RegisterClientChain(
 	return method.Outputs.Pack(true)
 }
 
-func (p Precompile) RegisterTokens(
+func (p Precompile) RegisterToken(
 	ctx sdk.Context,
 	contract *vm.Contract,
 	method *abi.Method,

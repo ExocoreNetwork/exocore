@@ -74,7 +74,7 @@ func (p Precompile) GetDelegationParamsFromInputs(ctx sdk.Context, args []interf
 	delegationParams.OperatorAddress = opAccAddr
 
 	opAmount, ok := args[5].(*big.Int)
-	if !ok || opAmount == nil || opAmount.Cmp(big.NewInt(0)) == 0 {
+	if !ok || opAmount == nil || !(opAmount.Cmp(big.NewInt(0)) == 1) {
 		return nil, fmt.Errorf(exocmn.ErrContractInputParaOrType, 5, "*big.Int", args[5])
 	}
 	delegationParams.OpAmount = sdkmath.NewIntFromBigInt(opAmount)
