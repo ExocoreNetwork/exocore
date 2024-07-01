@@ -5,6 +5,7 @@ import (
 
 	"github.com/ExocoreNetwork/exocore/x/oracle/keeper/common"
 	"github.com/ExocoreNetwork/exocore/x/oracle/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 // worker is the actual instance used to calculate final price for each tokenFeeder's round. Which means, every tokenFeeder corresponds to a specified token, and for that tokenFeeder, each round we use a worker instance to calculate the final price
@@ -22,7 +23,8 @@ type worker struct {
 }
 
 func (w *worker) do(msg *types.MsgCreatePrice) []*types.PriceSource {
-	validator := msg.Creator
+	accAddress, _ := sdk.AccAddressFromBech32(msg.Creator)
+	validator := sdk.ConsAddress(accAddress).String()
 	power := w.ctx.validatorsPower[validator]
 	list4Calculator, list4Aggregator := w.f.filtrate(msg)
 	if list4Aggregator != nil {

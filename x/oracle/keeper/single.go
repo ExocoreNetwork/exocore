@@ -78,7 +78,7 @@ func recacheAggregatorContext(ctx sdk.Context, agc *aggregator.AggregatorContext
 	validatorPowers := make(map[string]*big.Int)
 	validatorSet := k.GetAllExocoreValidators(ctx)
 	for _, v := range validatorSet {
-		validatorPowers[sdk.AccAddress(v.Address).String()] = big.NewInt(v.Power)
+		validatorPowers[sdk.ConsAddress(v.Address).String()] = big.NewInt(v.Power)
 		totalPower = new(big.Int).Add(totalPower, big.NewInt(v.Power))
 	}
 	agc.SetValidatorPowers(validatorPowers)
@@ -156,7 +156,7 @@ func initAggregatorContext(ctx sdk.Context, agc *aggregator.AggregatorContext, k
 	validatorPowers := make(map[string]*big.Int)
 	validatorSet := k.GetAllExocoreValidators(ctx)
 	for _, v := range validatorSet {
-		validatorPowers[sdk.AccAddress(v.Address).String()] = big.NewInt(v.Power)
+		validatorPowers[sdk.ConsAddress(v.Address).String()] = big.NewInt(v.Power)
 		totalPower = new(big.Int).Add(totalPower, big.NewInt(v.Power))
 	}
 
