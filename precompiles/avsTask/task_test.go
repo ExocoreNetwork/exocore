@@ -51,16 +51,16 @@ func (s *TaskPrecompileTestSuite) TestRunRegTaskinfo() {
 	_, byteData, _ := bech32.DecodeToBase256(avsAddres)
 	caller := "0x" + hex.EncodeToString(byteData)
 	avs := &types.AVSInfo{
-		Name:                  avsName,
-		AvsAddress:            avsAddres,
-		SlashAddr:             slashAddress,
-		AvsOwnerAddress:       avsOwnerAddress,
-		AssetId:               assetID,
-		AvsUnbondingPeriod:    uint32(7),
-		MinSelfDelegation:     sdk.NewIntFromUint64(10),
-		OperatorAddress:       nil,
-		EpochIdentifier:       epochstypes.DayEpochID,
-		EffectiveCurrentEpoch: 1,
+		Name:               avsName,
+		AvsAddress:         avsAddres,
+		SlashAddr:          slashAddress,
+		AvsOwnerAddress:    avsOwnerAddress,
+		AssetId:            assetID,
+		AvsUnbondingPeriod: uint32(7),
+		MinSelfDelegation:  sdk.NewIntFromUint64(10),
+		OperatorAddress:    nil,
+		EpochIdentifier:    epochstypes.DayEpochID,
+		StartingEpoch:      1,
 	}
 
 	registerAvs := func() {

@@ -16,16 +16,16 @@ func (suite *AVSTestSuite) TestAVS() {
 	avsOwnerAddress := []string{"exo13h6xg79g82e2g2vhjwg7j4r2z2hlncelwutkjr", "exo13h6xg79g82e2g2vhjwg7j4r2z2hlncelwutkj1", "exo13h6xg79g82e2g2vhjwg7j4r2z2hlncelwutkj2"}
 	assetID := []string{"11", "22", "33"}
 	avs := &types.AVSInfo{
-		Name:                  avsName,
-		AvsAddress:            avsAddres,
-		SlashAddr:             slashAddress,
-		AvsOwnerAddress:       avsOwnerAddress,
-		AssetId:               assetID,
-		AvsUnbondingPeriod:    uint32(7),
-		MinSelfDelegation:     sdk.NewIntFromUint64(10),
-		OperatorAddress:       nil,
-		EpochIdentifier:       epochstypes.DayEpochID,
-		EffectiveCurrentEpoch: 1,
+		Name:               avsName,
+		AvsAddress:         avsAddres,
+		SlashAddr:          slashAddress,
+		AvsOwnerAddress:    avsOwnerAddress,
+		AssetId:            assetID,
+		AvsUnbondingPeriod: uint32(7),
+		MinSelfDelegation:  sdk.NewIntFromUint64(10),
+		OperatorAddress:    nil,
+		EpochIdentifier:    epochstypes.DayEpochID,
+		StartingEpoch:      1,
 	}
 
 	err := suite.App.AVSManagerKeeper.SetAVSInfo(suite.Ctx, avs)
@@ -35,6 +35,13 @@ func (suite *AVSTestSuite) TestAVS() {
 
 	suite.NoError(err)
 	suite.Equal(avsAddres, info.GetInfo().AvsAddress)
+
+	var avsList []types.AVSInfo
+	suite.App.AVSManagerKeeper.IterateAVSInfo(suite.Ctx, func(_ int64, epochEndAVSInfo types.AVSInfo) (stop bool) {
+		avsList = append(avsList, epochEndAVSInfo)
+		return false
+	})
+	suite.Equal(len(avsList), 1)
 }
 
 func (suite *AVSTestSuite) TestAVSInfoUpdate_Register() {

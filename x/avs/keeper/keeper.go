@@ -64,16 +64,16 @@ func (k Keeper) AVSInfoUpdate(ctx sdk.Context, params *AVSRegisterOrDeregisterPa
 		}
 
 		avs := &types.AVSInfo{
-			Name:                  params.AvsName,
-			AvsAddress:            params.AvsAddress,
-			SlashAddr:             params.SlashContractAddr,
-			AvsOwnerAddress:       params.AvsOwnerAddress,
-			AssetId:               params.AssetID,
-			MinSelfDelegation:     sdk.NewIntFromUint64(params.MinSelfDelegation),
-			AvsUnbondingPeriod:    uint32(params.UnbondingPeriod),
-			EpochIdentifier:       epochIdentifier,
-			OperatorAddress:       nil,
-			EffectiveCurrentEpoch: epoch.CurrentEpoch + 1, // Effective at CurrentEpoch+1, avoid immediate effects and ensure that the first epoch time of avs is equal to a normal identifier
+			Name:               params.AvsName,
+			AvsAddress:         params.AvsAddress,
+			SlashAddr:          params.SlashContractAddr,
+			AvsOwnerAddress:    params.AvsOwnerAddress,
+			AssetId:            params.AssetID,
+			MinSelfDelegation:  sdk.NewIntFromUint64(params.MinSelfDelegation),
+			AvsUnbondingPeriod: uint32(params.UnbondingPeriod),
+			EpochIdentifier:    epochIdentifier,
+			OperatorAddress:    nil,
+			StartingEpoch:      epoch.CurrentEpoch + 1, // Effective at CurrentEpoch+1, avoid immediate effects and ensure that the first epoch time of avs is equal to a normal identifier
 		}
 		return k.SetAVSInfo(ctx, avs)
 	case DeRegisterAction:
@@ -81,7 +81,7 @@ func (k Keeper) AVSInfoUpdate(ctx sdk.Context, params *AVSRegisterOrDeregisterPa
 			return errorsmod.Wrap(types.ErrUnregisterNonExistent, fmt.Sprintf("the avsaddress is :%s", params.AvsAddress))
 		}
 		// If avs DeRegisterAction check UnbondingPeriod
-		if int64(avsInfo.Info.AvsUnbondingPeriod) < (epoch.CurrentEpoch - avsInfo.GetInfo().EffectiveCurrentEpoch) {
+		if int64(avsInfo.Info.AvsUnbondingPeriod) < (epoch.CurrentEpoch - avsInfo.GetInfo().StartingEpoch) {
 			return errorsmod.Wrap(types.ErrUnbondingPeriod, fmt.Sprintf("not qualified to deregister %s", avsInfo))
 		}
 		return k.DeleteAVSInfo(ctx, params.AvsAddress)

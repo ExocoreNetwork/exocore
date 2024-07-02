@@ -49,7 +49,7 @@ func (k *Keeper) GetEpochEndAVSs(ctx sdk.Context) ([]string, error) {
 	})
 
 	if len(avsList) == 0 {
-		return nil, nil
+		return []string{}, nil
 	}
 
 	avsAddrList := make([]string, len(avsList))
