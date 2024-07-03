@@ -118,7 +118,7 @@ func (k Keeper) AVSInfoUpdateWithOperator(ctx sdk.Context, params *OperatorOptPa
 		avs.OperatorAddress = operatorAddrList
 		return k.SetAVSInfo(ctx, avs)
 	case DeRegisterAction:
-		if !slices.Contains(avs.OperatorAddress, operatorAddress) {
+		if !slices.Contains(operatorAddrList, operatorAddress) {
 			return errorsmod.Wrap(types.ErrUnregisterNonExistent, fmt.Sprintf("No available operatorAddress to DeRegisterAction, operatorAddress: %s", operatorAddress))
 		}
 		avs.OperatorAddress = types.RemoveOperatorAddress(operatorAddrList, operatorAddress)
