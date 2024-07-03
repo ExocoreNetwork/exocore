@@ -1,6 +1,9 @@
 package keeper_test
 
 import (
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/evmos/evmos/v14/app"
+	evm "github.com/evmos/evmos/v14/x/evm/types"
 	"testing"
 
 	"github.com/ExocoreNetwork/exocore/testutil"
@@ -11,6 +14,11 @@ import (
 
 type AVSTestSuite struct {
 	testutil.BaseTestSuite
+
+	ctx            sdk.Context
+	app            *app.Evmos
+	queryClientEvm evm.QueryClient
+	consAddress    sdk.ConsAddress
 }
 
 var s *AVSTestSuite

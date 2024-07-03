@@ -23,4 +23,12 @@ var (
 		ModuleName, 3,
 		"Error: Undefined action",
 	)
+	ErrUnbondingPeriod = errorsmod.Register(
+		ModuleName, 4,
+		"Error: UnbondingPeriod check failed",
+	)
+	ErrEpochNotFound = errorsmod.Register(
+		ModuleName, 5,
+		"Error: epoch info not found",
+	)
 )
