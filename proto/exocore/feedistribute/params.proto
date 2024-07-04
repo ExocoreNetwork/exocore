@@ -1,0 +1,15 @@
+syntax = "proto3";
+package exocore.feedistribute;
+
+import "amino/amino.proto";
+import "gogoproto/gogo.proto";
+
+option go_package = "github.com/ExocoreNetwork/exocore/x/feedistribution/types";
+
+// Params defines the parameters for the module.
+message Params {
+  option (amino.name) = "exocore/x/feedistribution/Params";
+  option (gogoproto.equal) = true;
+
+  
+}
