@@ -60,7 +60,7 @@ func GetAggregatorContext(ctx sdk.Context, k Keeper) *aggregator.AggregatorConte
 }
 
 func recacheAggregatorContext(ctx sdk.Context, agc *aggregator.AggregatorContext, k Keeper, c *cache.Cache) bool {
-	from := ctx.BlockHeight() - int64(common.MaxNonce)
+	from := ctx.BlockHeight() - int64(common.MaxNonce) + 1
 	to := ctx.BlockHeight() - 1
 
 	h, ok := k.GetValidatorUpdateBlock(ctx)
@@ -71,7 +71,7 @@ func recacheAggregatorContext(ctx sdk.Context, agc *aggregator.AggregatorContext
 	}
 
 	if int64(h.Block) > from {
-		from = int64(h.Block)
+		from = int64(h.Block) + 1
 	}
 
 	totalPower := big.NewInt(0)
@@ -104,7 +104,7 @@ func recacheAggregatorContext(ctx sdk.Context, agc *aggregator.AggregatorContext
 			}
 		}
 
-		agc.PrepareRound(ctx, uint64(from))
+		agc.PrepareRoundBeginBlock(ctx, uint64(from))
 
 		if msgs := recentMsgs[from+1]; msgs != nil {
 			for _, msg := range msgs {
@@ -138,8 +138,6 @@ func recacheAggregatorContext(ctx sdk.Context, agc *aggregator.AggregatorContext
 	if updated := c.GetCache(cache.ItemP(&pRet)); !updated {
 		c.AddCache(cache.ItemP(&pTmp))
 	}
-	// fill params cache
-	agc.PrepareRound(ctx, uint64(to))
 
 	return true
 }
@@ -168,7 +166,7 @@ func initAggregatorContext(ctx sdk.Context, agc *aggregator.AggregatorContext, k
 	// set validatorPower cache
 	c.AddCache(cache.ItemV(validatorPowers))
 
-	agc.PrepareRound(ctx, uint64(ctx.BlockHeight()-1))
+	agc.PrepareRoundBeginBlock(ctx, uint64(ctx.BlockHeight()))
 }
 
 func ResetAggregatorContext() {
