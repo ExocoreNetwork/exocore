@@ -137,7 +137,7 @@ func (k *Keeper) SlashAssets(ctx sdk.Context, parameter *types.SlashInputInfo) (
 		})
 		return nil
 	}
-	err = k.assetsKeeper.IteratorAssetsForOperator(ctx, true, parameter.Operator.String(), nil, opFuncToIterateAssets)
+	err = k.assetsKeeper.IterateAssetsForOperator(ctx, true, parameter.Operator.String(), nil, opFuncToIterateAssets)
 	if err != nil {
 		return nil, err
 	}

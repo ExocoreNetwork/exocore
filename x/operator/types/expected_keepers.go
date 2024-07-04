@@ -22,7 +22,7 @@ type AssetsKeeper interface {
 	GetAssetsDecimal(
 		ctx sdk.Context, assets map[string]interface{},
 	) (decimals map[string]uint32, err error)
-	IteratorAssetsForOperator(
+	IterateAssetsForOperator(
 		ctx sdk.Context, isUpdate bool, operator string, assetsFilter map[string]interface{},
 		f func(assetID string, state *assetstype.OperatorAssetInfo) error,
 	) error

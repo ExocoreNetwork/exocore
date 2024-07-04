@@ -1,6 +1,7 @@
 syntax = "proto3";
 package exocore.assets.v1;
 
+import "cosmos/base/query/v1beta1/pagination.proto";
 import "cosmos/query/v1/query.proto";
 import "cosmos_proto/cosmos.proto";
 import "exocore/assets/v1/params.proto";
@@ -17,12 +18,17 @@ message QueryClientChainInfo {
 }
 
 // QueryAllClientChainInfo is the query for all client chains info.
-message QueryAllClientChainInfo {}
+message QueryAllClientChainInfo {
+  // pagination related options.
+  cosmos.base.query.v1beta1.PageRequest pagination = 1;
+}
 
 // QueryAllClientChainInfoResponse is the response for all client chains info.
 message QueryAllClientChainInfoResponse {
-  // all_client_chain_infos is the all client chain info, indexed by the chain index.
-  map<uint64, ClientChainInfo> all_client_chain_infos = 1;
+  // all_client_chain_infos is a list of all client chain info.
+  repeated ClientChainInfo all_client_chain_infos = 1;
+  // pagination related response.
+  cosmos.base.query.v1beta1.PageResponse pagination = 2;
 }
 
 // QueryStakingAssetInfo is the query for getting the staking asset info.

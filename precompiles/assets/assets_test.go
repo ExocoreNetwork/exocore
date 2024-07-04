@@ -59,7 +59,7 @@ func paddingClientChainAddress(input []byte, outputLength int) []byte {
 	return input
 }
 
-// TestRunDepositTo tests DepositAndWithdraw method through calling Run function..
+// TestRunDepositTo tests DepositOrWithdraw method through calling Run function..
 func (s *AssetsPrecompileSuite) TestRunDepositTo() {
 	// assetsprecompile params for test
 	exocoreLzAppAddress := "0x3fC91A3afd70395Cd496C647d5a6CC9D4B2b7FAD"
@@ -230,7 +230,7 @@ func (s *AssetsPrecompileSuite) TestRunDepositTo() {
 }
 
 // TestRun tests the precompiled Run method withdraw.
-func (s *AssetsPrecompileSuite) TestRunWithdrawThroughClientChain() {
+func (s *AssetsPrecompileSuite) TestRunWithdrawPrincipal() {
 	// deposit params for test
 	exocoreLzAppEventTopic := "0xc6a377bfc4eb120024a8ac08eef205be16b817020812c73223e81d1bdb9708ec"
 	usdtAddress := common.FromHex("0xdAC17F958D2ee523a2206206994597C13D831ec7")
