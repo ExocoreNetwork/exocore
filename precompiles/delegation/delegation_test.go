@@ -315,12 +315,12 @@ func (s *DelegationPrecompileSuite) TestRunUnDelegateFromThroughClientChain() {
 	delegateAsset := func(staker []byte, delegateAmount sdkmath.Int) {
 		// deposit asset for delegation test
 		delegateToParams := &delegationtype.DelegationOrUndelegationParams{
-			ClientChainLzID: 101,
-			Action:          types.DelegateTo,
-			StakerAddress:   staker,
-			AssetsAddress:   usdtAddress,
-			OpAmount:        delegateAmount,
-			LzNonce:         lzNonce,
+			ClientChainID: 101,
+			Action:        types.DelegateTo,
+			StakerAddress: staker,
+			AssetsAddress: usdtAddress,
+			OpAmount:      delegateAmount,
+			LzNonce:       lzNonce,
 		}
 		opAccAddr, err := sdk.AccAddressFromBech32(operatorAddr)
 		s.Require().NoError(err)

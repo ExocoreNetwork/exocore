@@ -88,4 +88,14 @@ var (
 		ModuleName, 19,
 		"invalid hash",
 	)
+
+	ErrOperatorAlreadyMarked = errorsmod.Register(
+		ModuleName, 18,
+		"the operator is already marked by this staker",
+	)
+
+	ErrNoOperatorMarkedByStaker = errorsmod.Register(
+		ModuleName, 19,
+		"there isn't any operator marked by the staker",
+	)
 )

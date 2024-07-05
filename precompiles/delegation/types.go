@@ -21,13 +21,13 @@ func (p Precompile) GetDelegationParamsFromInputs(ctx sdk.Context, args []interf
 		return nil, fmt.Errorf(cmn.ErrInvalidNumberOfArgs, 6, len(args))
 	}
 	delegationParams := &delegationtypes.DelegationOrUndelegationParams{}
-	clientChainLzID, ok := args[0].(uint32)
+	clientChainID, ok := args[0].(uint32)
 	if !ok {
 		return nil, fmt.Errorf(exocmn.ErrContractInputParaOrType, 0, "uint32", args[0])
 	}
-	delegationParams.ClientChainLzID = uint64(clientChainLzID)
+	delegationParams.ClientChainID = uint64(clientChainID)
 
-	info, err := p.assetsKeeper.GetClientChainInfoByIndex(ctx, delegationParams.ClientChainLzID)
+	info, err := p.assetsKeeper.GetClientChainInfoByIndex(ctx, delegationParams.ClientChainID)
 	if err != nil {
 		return nil, err
 	}

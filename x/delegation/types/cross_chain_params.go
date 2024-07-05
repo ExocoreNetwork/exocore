@@ -8,7 +8,7 @@ import (
 )
 
 type DelegationOrUndelegationParams struct {
-	ClientChainLzID uint64
+	ClientChainID   uint64
 	Action          assetstype.CrossChainOpType
 	AssetsAddress   []byte
 	OperatorAddress sdk.AccAddress

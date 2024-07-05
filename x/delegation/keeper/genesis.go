@@ -35,7 +35,7 @@ func (k Keeper) InitGenesis(
 				// #nosec G703 // already validated
 				accAddress, _ := sdk.AccAddressFromBech32(operator)
 				delegationParams := &delegationtype.DelegationOrUndelegationParams{
-					ClientChainLzID: lzID,
+					ClientChainID:   lzID,
 					Action:          assetstype.DelegateTo,
 					AssetsAddress:   assetAddressBytes.Bytes(),
 					OperatorAddress: accAddress,

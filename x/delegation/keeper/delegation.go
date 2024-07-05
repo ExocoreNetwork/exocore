@@ -3,6 +3,8 @@ package keeper
 import (
 	"fmt"
 
+	"github.com/ethereum/go-ethereum/common"
+
 	errorsmod "cosmossdk.io/errors"
 	assetstype "github.com/ExocoreNetwork/exocore/x/assets/types"
 	delegationtype "github.com/ExocoreNetwork/exocore/x/delegation/types"
@@ -37,7 +39,7 @@ func (k *Keeper) delegateTo(
 		return delegationtype.ErrOperatorIsFrozen
 	}
 
-	stakerID, assetID := assetstype.GetStakeIDAndAssetID(params.ClientChainLzID, params.StakerAddress, params.AssetsAddress)
+	stakerID, assetID := assetstype.GetStakeIDAndAssetID(params.ClientChainID, params.StakerAddress, params.AssetsAddress)
 
 	// check if the staker asset has been deposited and the canWithdraw amount is bigger than the delegation amount
 	info, err := k.assetsKeeper.GetStakerSpecifiedAssetInfo(ctx, stakerID, assetID)
@@ -63,10 +65,20 @@ func (k *Keeper) delegateTo(
 		return err
 	}
 
-	err = k.assetsKeeper.UpdateOperatorAssetState(ctx, params.OperatorAddress, assetID, assetstype.DeltaOperatorSingleAsset{
+	deltaOperatorAsset := assetstype.DeltaOperatorSingleAsset{
 		TotalAmount: params.OpAmount,
 		TotalShare:  share,
-	})
+	}
+	// Check if the staker belongs to the delegated operator. Increase the operator's share if yes.
+	operator, err := k.GetSelfDelegatedOperator(ctx, stakerID)
+	if err != nil {
+		return err
+	}
+	if operator != "" && operator == params.OperatorAddress.String() {
+		deltaOperatorAsset.OperatorShare = share
+	}
+
+	err = k.assetsKeeper.UpdateOperatorAssetState(ctx, params.OperatorAddress, assetID, deltaOperatorAsset)
 	if err != nil {
 		return err
 	}
@@ -102,7 +114,7 @@ func (k *Keeper) UndelegateFrom(ctx sdk.Context, params *delegationtype.Delegati
 		return delegationtype.ErrOperatorNotExist
 	}
 	// get staker delegation state, then check the validation of Undelegation amount
-	stakerID, assetID := assetstype.GetStakeIDAndAssetID(params.ClientChainLzID, params.StakerAddress, params.AssetsAddress)
+	stakerID, assetID := assetstype.GetStakeIDAndAssetID(params.ClientChainID, params.StakerAddress, params.AssetsAddress)
 
 	// verify the undelegation amount
 	share, err := k.ValidateUndelegationAmount(ctx, params.OperatorAddress, stakerID, assetID, params.OpAmount)
@@ -135,4 +147,108 @@ func (k *Keeper) UndelegateFrom(ctx sdk.Context, params *delegationtype.Delegati
 
 	// call the hooks registered by the other modules
 	return k.Hooks().AfterUndelegationStarted(ctx, params.OperatorAddress, delegationtype.GetUndelegationRecordKey(r.BlockNumber, r.LzTxNonce, r.TxHash, r.OperatorAddr))
+}
+
+func (k *Keeper) MarkSelfDelegatedOperator(
+	ctx sdk.Context,
+	clientChainID uint64,
+	operatorAddress sdk.AccAddress,
+	stakerAddress common.Address,
+) error {
+	if !k.operatorKeeper.IsOperator(ctx, operatorAddress) {
+		return delegationtype.ErrOperatorNotExist
+	}
+
+	stakerID, _ := assetstype.GetStakeIDAndAssetID(clientChainID, stakerAddress[:], nil)
+	oldOperator, err := k.GetSelfDelegatedOperator(ctx, stakerID)
+	if err != nil {
+		return err
+	}
+
+	if oldOperator != "" && oldOperator == operatorAddress.String() {
+		return delegationtype.ErrOperatorAlreadyMarked
+	}
+
+	var oldOperatorAccAddr sdk.AccAddress
+	if oldOperator != "" {
+		oldOperatorAccAddr, err = sdk.AccAddressFromBech32(oldOperator)
+		if err != nil {
+			return errorsmod.Wrapf(delegationtype.OperatorAddrIsNotAccAddr, "oldOperator:%s", oldOperator)
+		}
+	}
+
+	opFunc := func(keys *delegationtype.SingleDelegationInfoReq, amounts *delegationtype.DelegationAmounts) error {
+		// decrease the share of old operator
+		if oldOperator != "" && keys.OperatorAddr == oldOperator {
+			err = k.assetsKeeper.UpdateOperatorAssetState(ctx, oldOperatorAccAddr, keys.AssetID, assetstype.DeltaOperatorSingleAsset{
+				OperatorShare: amounts.UndelegatableShare.Neg(),
+			})
+		}
+		// increase the share of new marked operator
+		if keys.OperatorAddr == operatorAddress.String() {
+			err = k.assetsKeeper.UpdateOperatorAssetState(ctx, operatorAddress, keys.AssetID, assetstype.DeltaOperatorSingleAsset{
+				OperatorShare: amounts.UndelegatableShare,
+			})
+		}
+		if err != nil {
+			return err
+		}
+		return nil
+	}
+	err = k.IterateDelegationsForStaker(ctx, stakerID, opFunc)
+	if err != nil {
+		return err
+	}
+
+	// update the marking information
+	err = k.SetSelfDelegatedOperator(ctx, stakerID, operatorAddress.String())
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (k *Keeper) UnmarkSelfDelegatedOperator(
+	ctx sdk.Context,
+	clientChainID uint64,
+	stakerAddress common.Address,
+) error {
+	stakerID, _ := assetstype.GetStakeIDAndAssetID(clientChainID, stakerAddress[:], nil)
+	oldOperator, err := k.GetSelfDelegatedOperator(ctx, stakerID)
+	if err != nil {
+		return err
+	}
+	if oldOperator == "" {
+		return delegationtype.ErrNoOperatorMarkedByStaker
+	}
+	oldOperatorAccAddr, err := sdk.AccAddressFromBech32(oldOperator)
+	if err != nil {
+		return delegationtype.OperatorAddrIsNotAccAddr
+	}
+
+	opFunc := func(keys *delegationtype.SingleDelegationInfoReq, amounts *delegationtype.DelegationAmounts) error {
+		// decrease the share of old operator
+		if keys.OperatorAddr == oldOperator {
+			err = k.assetsKeeper.UpdateOperatorAssetState(ctx, oldOperatorAccAddr, keys.AssetID, assetstype.DeltaOperatorSingleAsset{
+				OperatorShare: amounts.UndelegatableShare.Neg(),
+			})
+		}
+		if err != nil {
+			return err
+		}
+		return nil
+	}
+	err = k.IterateDelegationsForStaker(ctx, stakerID, opFunc)
+	if err != nil {
+		return err
+	}
+
+	// delete the marking information
+	err = k.DeleteSelfDelegatedOperator(ctx, stakerID)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

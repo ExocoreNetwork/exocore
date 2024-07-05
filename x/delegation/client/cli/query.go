@@ -31,6 +31,7 @@ func GetQueryCmd() *cobra.Command {
 		QueryUndelegations(),
 		QueryUndelegationsByHeight(),
 		QueryUndelegationHoldCount(),
+		QueryMarkedOperatorByStaker(),
 	)
 	return cmd
 }
@@ -200,6 +201,39 @@ func QueryUndelegationHoldCount() *cobra.Command {
 				RecordKey: strings.ToLower(args[0]),
 			}
 			res, err := queryClient.QueryUndelegationHoldCount(context.Background(), req)
+			if err != nil {
+				return err
+			}
+			return clientCtx.PrintProto(res)
+		},
+	}
+
+	flags.AddQueryFlagsToCmd(cmd)
+	return cmd
+}
+
+// QueryMarkedOperatorByStaker queries the operator owner of the specified staker
+func QueryMarkedOperatorByStaker() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "QueryMarkedOperatorByStaker stakerID",
+		Short: "Get the operator owner of the specified staker",
+		Long:  "Get the operator owner of the specified staker",
+		Args:  cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx, err := client.GetClientQueryContext(cmd)
+			if err != nil {
+				return err
+			}
+
+			stakerID := args[0]
+			if _, _, err := types.ValidateID(stakerID, false, false); err != nil {
+				return errorsmod.Wrap(types.ErrInvalidCliCmdArg, err.Error())
+			}
+			queryClient := delegationtype.NewQueryClient(clientCtx)
+			req := &delegationtype.QueryMarkedOperatorByStakerReq{
+				StakerID: strings.ToLower(stakerID),
+			}
+			res, err := queryClient.QueryMarkedOperatorByStaker(context.Background(), req)
 			if err != nil {
 				return err
 			}

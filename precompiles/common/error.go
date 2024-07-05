@@ -13,4 +13,6 @@ const (
 	ErrInvalidMetaInfoLength = "nil meta info or too long for chain or token,value:%s,actualLength:%d,max:%d"
 
 	ErrInvalidNameLength = "nil name or too long for chain or token,value:%s,actualLength:%d,max:%d"
+
+	ErrInvalidEVMAddr = "the address isn't an invalid EVM address, addr:%s"
 )

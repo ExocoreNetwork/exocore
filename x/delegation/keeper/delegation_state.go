@@ -5,6 +5,7 @@ import (
 
 	errorsmod "cosmossdk.io/errors"
 	sdkmath "cosmossdk.io/math"
+
 	assetstype "github.com/ExocoreNetwork/exocore/x/assets/types"
 	delegationtype "github.com/ExocoreNetwork/exocore/x/delegation/types"
 	"github.com/cosmos/cosmos-sdk/store/prefix"
@@ -18,6 +19,26 @@ type DelegationOpFunc func(keys *delegationtype.SingleDelegationInfoReq, amounts
 func (k Keeper) IterateDelegationsForStakerAndAsset(ctx sdk.Context, stakerID string, assetID string, opFunc DelegationOpFunc) error {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), delegationtype.KeyPrefixRestakerDelegationInfo)
 	iterator := sdk.KVStorePrefixIterator(store, delegationtype.GetDelegationStateIteratorPrefix(stakerID, assetID))
+	defer iterator.Close()
+
+	for ; iterator.Valid(); iterator.Next() {
+		var amounts delegationtype.DelegationAmounts
+		k.cdc.MustUnmarshal(iterator.Value(), &amounts)
+		keys, err := delegationtype.ParseStakerAssetIDAndOperatorAddrFromKey(iterator.Key())
+		if err != nil {
+			return err
+		}
+		err = opFunc(keys, &amounts)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (k Keeper) IterateDelegationsForStaker(ctx sdk.Context, stakerID string, opFunc DelegationOpFunc) error {
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), delegationtype.KeyPrefixRestakerDelegationInfo)
+	iterator := sdk.KVStorePrefixIterator(store, []byte(stakerID))
 	defer iterator.Close()
 
 	for ; iterator.Valid(); iterator.Next() {
@@ -278,4 +299,29 @@ func (k Keeper) DelegationStateByOperatorAssets(ctx sdk.Context, operatorAddr st
 		}
 	}
 	return ret, nil
+}
+
+func (k *Keeper) SetSelfDelegatedOperator(ctx sdk.Context, stakerID, operatorAddr string) error {
+	_, err := sdk.AccAddressFromBech32(operatorAddr)
+	if err != nil {
+		return delegationtype.OperatorAddrIsNotAccAddr
+	}
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), delegationtype.KeyPrefixSelfDelegateOperatorByStaker)
+	store.Set([]byte(stakerID), []byte(operatorAddr))
+	return nil
+}
+
+func (k *Keeper) DeleteSelfDelegatedOperator(ctx sdk.Context, stakerID string) error {
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), delegationtype.KeyPrefixSelfDelegateOperatorByStaker)
+	store.Delete([]byte(stakerID))
+	return nil
+}
+
+func (k *Keeper) GetSelfDelegatedOperator(ctx sdk.Context, stakerID string) (string, error) {
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), delegationtype.KeyPrefixSelfDelegateOperatorByStaker)
+	value := store.Get([]byte(stakerID))
+	if value != nil {
+		return string(value), nil
+	}
+	return "", nil
 }

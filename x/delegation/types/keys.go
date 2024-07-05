@@ -40,6 +40,8 @@ const (
 
 	// used to store the undelegation hold count
 	prefixUndelegationOnHold
+
+	prefixSelfDelegateOperatorByStaker
 )
 
 var (
@@ -59,6 +61,9 @@ var (
 	KeyPrefixStakerUndelegationInfo = []byte{prefixStakerUndelegationInfo}
 	// KeyPrefixPendingUndelegations completeHeight +'/'+LzNonce -> singleRecordKey
 	KeyPrefixPendingUndelegations = []byte{prefixPendingUndelegations}
+
+	// KeyPrefixSelfDelegateOperatorByStaker stakerID -> operator address
+	KeyPrefixSelfDelegateOperatorByStaker = []byte{prefixSelfDelegateOperatorByStaker}
 )
 
 func GetDelegationStateIteratorPrefix(stakerID, assetID string) []byte {

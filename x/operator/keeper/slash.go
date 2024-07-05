@@ -127,7 +127,6 @@ func (k *Keeper) SlashAssets(ctx sdk.Context, parameter *types.SlashInputInfo) (
 				return err
 			}
 			state.TotalShare = sdkmath.LegacyNewDec(0)
-			state.OperatorAmount = sdkmath.NewInt(0)
 			state.OperatorShare = sdkmath.LegacyNewDec(0)
 		}
 		state.TotalAmount = remainingAmount

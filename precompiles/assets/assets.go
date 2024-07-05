@@ -6,8 +6,6 @@ import (
 	"fmt"
 	"math/big"
 
-	sdk "github.com/cosmos/cosmos-sdk/types"
-
 	assetskeeper "github.com/ExocoreNetwork/exocore/x/assets/keeper"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	authzkeeper "github.com/cosmos/cosmos-sdk/x/authz/keeper"
@@ -29,12 +27,6 @@ var f embed.FS
 type Precompile struct {
 	cmn.Precompile
 	assetsKeeper assetskeeper.Keeper
-}
-
-// New helper function to handle errors
-func handleError(ctx sdk.Context, method *abi.Method, err error) ([]byte, error) {
-	ctx.Logger().Error("call assets precompile error", "module", "assets precompile", "method", method.Name, "err", err)
-	return method.Outputs.Pack(false) // Adjust based on actual needs
 }
 
 // NewPrecompile creates a new deposit Precompile instance as a
@@ -99,22 +91,32 @@ func (p Precompile) Run(evm *vm.EVM, contract *vm.Contract, readOnly bool) (bz [
 	case MethodDepositTo, MethodWithdraw:
 		bz, err = p.DepositOrWithdraw(ctx, evm.Origin, contract, stateDB, method, args)
 		if err != nil {
-			ctx.Logger().Error("call assets precompile error", "module", "assets precompile", "method", method.Name, "err", err)
+			ctx.Logger().Error("internal error when calling assets precompile", "module", "assets precompile", "method", method.Name, "err", err)
 			// for failed cases we expect it returns bool value instead of error
 			// this is a workaround because the error returned by precompile can not be caught in EVM
 			// see https://github.com/ExocoreNetwork/exocore/issues/70
 			// TODO: we should figure out root cause and fix this issue to make precompiles work normally
-			return method.Outputs.Pack(false, new(big.Int))
+			bz, err = method.Outputs.Pack(false, new(big.Int))
 		}
 	case MethodRegisterClientChain:
 		bz, err = p.RegisterClientChain(ctx, contract, method, args)
 		if err != nil {
-			return handleError(ctx, method, err)
+			ctx.Logger().Error("internal error when calling assets precompile", "module", "assets precompile", "method", method.Name, "err", err)
+			// for failed cases we expect it returns bool value instead of error
+			// this is a workaround because the error returned by precompile can not be caught in EVM
+			// see https://github.com/ExocoreNetwork/exocore/issues/70
+			// TODO: we should figure out root cause and fix this issue to make precompiles work normally
+			bz, err = method.Outputs.Pack(false) // Adjust based on actual needs
 		}
 	case MethodRegisterToken:
 		bz, err = p.RegisterToken(ctx, contract, method, args)
 		if err != nil {
-			return handleError(ctx, method, err)
+			ctx.Logger().Error("internal error when calling assets precompile", "module", "assets precompile", "method", method.Name, "err", err)
+			// for failed cases we expect it returns bool value instead of error
+			// this is a workaround because the error returned by precompile can not be caught in EVM
+			// see https://github.com/ExocoreNetwork/exocore/issues/70
+			// TODO: we should figure out root cause and fix this issue to make precompiles work normally
+			bz, err = method.Outputs.Pack(false) // Adjust based on actual needs
 		}
 	// queries
 	case MethodGetClientChains:
@@ -124,7 +126,7 @@ func (p Precompile) Run(evm *vm.EVM, contract *vm.Contract, readOnly bool) (bz [
 	}
 
 	if err != nil {
-		ctx.Logger().Error("call assets precompile error", "module", "assets precompile", "method", method.Name, "err", err)
+		ctx.Logger().Error("return error when calling assets precompile", "module", "assets precompile", "method", method.Name, "err", err)
 		return nil, err
 	}
 

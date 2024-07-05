@@ -52,5 +52,29 @@ interface IDelegation {
         bytes memory operatorAddr,
         uint256 opAmount
     ) external returns (bool success);
+
+    /// TRANSACTIONS
+/// @dev mark the staker as owned by the specified operator
+/// @param clientChainID is the layerZero chainID if it is supported.
+//  It might be allocated by Exocore when the client chain isn't supported
+//  by layerZero
+/// @param staker is the EVM address of the staker
+/// @param operator is the address that is to be marked as the owner.
+    function markSelfDelegatedOperator(
+        uint32 clientChainID,
+        string memory staker,
+        string memory operator
+    ) external returns (bool success);
+
+    /// TRANSACTIONS
+/// @dev unmark the staker as owned by the specified operator
+/// @param clientChainID is the layerZero chainID if it is supported.
+//  It might be allocated by Exocore when the client chain isn't supported
+//  by layerZero
+/// @param staker is the EVM address to remove the marking from.
+    function unmarkSelfDelegatedOperator(
+        uint32 clientChainID,
+        string memory staker
+    ) external returns (bool success);
 }
 

@@ -124,16 +124,8 @@ message OperatorAssetInfo {
     (gogoproto.nullable) = false
   ];
 
-  // operator_amount is the amount that the operator owns.
-  //todo: the field is used to mark operator's own assets and is not temporarily used now
-  string operator_amount = 2
-  [
-    (cosmos_proto.scalar) = "cosmos.Int",
-    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
-    (gogoproto.nullable) = false
-  ];
   // wait_unbonding_amount is the amount that is waiting for unbonding.
-  string wait_unbonding_amount = 3
+  string wait_unbonding_amount = 2
   [
     (cosmos_proto.scalar) = "cosmos.Int",
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
@@ -141,7 +133,7 @@ message OperatorAssetInfo {
   ];
 
   // operator_unbonding_amount is the amount that is owned by operator itself and waiting for unbonding.
-  string operator_unbonding_amount = 4
+  string operator_unbonding_amount = 3
   [
     (cosmos_proto.scalar) = "cosmos.Int",
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
@@ -151,7 +143,7 @@ message OperatorAssetInfo {
   // total_share is the total share of an asset, in the formula to update the staker's share
   // S_j = S * T_j / T, `S` represent it.
   // So when the shares of staker and operator change, it also needs to add `S_j` to update.
-  string total_share = 5
+  string total_share = 4
   [
     (cosmos_proto.scalar) = "cosmos.Dec",
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
@@ -160,8 +152,8 @@ message OperatorAssetInfo {
 
   // operator_share is similar to the share of the staker, the calculation and update should
   // be same, the difference is that it represents the share of the operator itself.
-  //todo: the field is used to mark operator's own asset share and is not temporarily used now
-  string operator_share = 6
+  // the field is used to mark operator's own asset share.
+  string operator_share = 5
   [
     (cosmos_proto.scalar) = "cosmos.Dec",
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",

@@ -266,14 +266,14 @@ func (suite *DelegationTestSuite) TestCalculateSlashShare() {
 func (suite *DelegationTestSuite) TestRemoveShareFromOperator() {
 	suite.prepareDeposit()
 	suite.prepareDelegation()
-	_, assetID := assetstype.GetStakeIDAndAssetID(suite.clientChainLzID, nil, suite.assetAddr[:])
+	stakerID, assetID := assetstype.GetStakeIDAndAssetID(suite.clientChainLzID, suite.Address[:], suite.assetAddr[:])
 	originalInfo, err := suite.App.AssetsKeeper.GetOperatorSpecifiedAssetInfo(suite.Ctx, suite.opAccAddr, assetID)
 	suite.NoError(err)
 
 	// test removing share for slash
 	removeShareForSlash := sdkmath.LegacyMustNewDecFromStr("10.1")
 	amount := removeShareForSlash.TruncateInt()
-	assetAmount, err := suite.App.DelegationKeeper.RemoveShareFromOperator(suite.Ctx, false, suite.opAccAddr, assetID, removeShareForSlash)
+	assetAmount, err := suite.App.DelegationKeeper.RemoveShareFromOperator(suite.Ctx, false, suite.opAccAddr, stakerID, assetID, removeShareForSlash)
 	suite.NoError(err)
 	suite.Equal(amount, assetAmount)
 
@@ -288,7 +288,7 @@ func (suite *DelegationTestSuite) TestRemoveShareFromOperator() {
 	// test removing share for undelegation
 	removeShareForUndelegation := sdkmath.LegacyMustNewDecFromStr("5.5")
 	amount = removeShareForUndelegation.TruncateInt()
-	assetAmount, err = suite.App.DelegationKeeper.RemoveShareFromOperator(suite.Ctx, true, suite.opAccAddr, assetID, removeShareForUndelegation)
+	assetAmount, err = suite.App.DelegationKeeper.RemoveShareFromOperator(suite.Ctx, true, suite.opAccAddr, stakerID, assetID, removeShareForUndelegation)
 	suite.NoError(err)
 	suite.Equal(amount, assetAmount)
 

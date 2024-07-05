@@ -104,6 +104,16 @@ message UndelegationRecordList {
   repeated UndelegationRecord undelegations = 1;
 }
 
+// QueryMarkedOperatorByStakerReq is the request to obtain the operator owner of the specified staker
+message QueryMarkedOperatorByStakerReq {
+  string staker_id = 1 [(gogoproto.customname) = "StakerID"];
+}
+
+// QueryMarkedOperatorByStakerResponse is the response to QueryMarkedOperatorByStakerReq
+message QueryMarkedOperatorByStakerResponse {
+  string operator = 1;
+}
+
 // Query is the service API for the delegation module.
 service Query {
   // DelegationInfo queries the delegation information for {stakerID, assetID}.
@@ -136,6 +146,12 @@ service Query {
   rpc QueryUndelegationsByHeight(UndelegationsByHeightReq) returns (UndelegationRecordList) {
     option (cosmos.query.v1.module_query_safe) = true;
     option (google.api.http).get = "/exocore/delegation/v1/QueryUndelegationsByHeight";
+  }
+
+  // QueryMarkedOperatorByStaker queries the operator owner of the specified staker
+  rpc QueryMarkedOperatorByStaker(QueryMarkedOperatorByStakerReq) returns (QueryMarkedOperatorByStakerResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/exocore/delegation/v1/QueryMarkedOperatorByStaker";
   }
 }
 
