@@ -106,7 +106,7 @@ func recacheAggregatorContext(ctx sdk.Context, agc *aggregator.AggregatorContext
 
 		agc.PrepareRoundBeginBlock(ctx, uint64(from))
 
-		if msgs := recentMsgs[from+1]; msgs != nil {
+		if msgs := recentMsgs[from]; msgs != nil {
 			for _, msg := range msgs {
 				// these messages are retreived for recache, just skip the validation check and fill the memory cache
 				//nolint
