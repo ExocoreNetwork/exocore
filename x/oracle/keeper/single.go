@@ -60,12 +60,14 @@ func GetAggregatorContext(ctx sdk.Context, k Keeper) *aggregator.AggregatorConte
 }
 
 func recacheAggregatorContext(ctx sdk.Context, agc *aggregator.AggregatorContext, k Keeper, c *cache.Cache) bool {
+	logger := k.Logger(ctx)
 	from := ctx.BlockHeight() - int64(common.MaxNonce) + 1
-	to := ctx.BlockHeight() - 1
+	to := ctx.BlockHeight()
 
 	h, ok := k.GetValidatorUpdateBlock(ctx)
 	recentParamsMap := k.GetAllRecentParamsAsMap(ctx)
 	if !ok || len(recentParamsMap) == 0 {
+		logger.Info("no validatorUpdateBlock found, go to initial process", "height", ctx.BlockHeight())
 		// no cache, this is the very first running, so go to initial process instead
 		return false
 	}
@@ -74,6 +76,7 @@ func recacheAggregatorContext(ctx sdk.Context, agc *aggregator.AggregatorContext
 		from = int64(h.Block) + 1
 	}
 
+	logger.Info("recacheAggregatorContext", "from", from, "to", to, "height", ctx.BlockHeight())
 	totalPower := big.NewInt(0)
 	validatorPowers := make(map[string]*big.Int)
 	validatorSet := k.GetAllExocoreValidators(ctx)
@@ -91,36 +94,8 @@ func recacheAggregatorContext(ctx sdk.Context, agc *aggregator.AggregatorContext
 	c.AddCache(cache.ItemV(validatorPowers))
 
 	recentMsgs := k.GetAllRecentMsgAsMap(ctx)
+
 	var pTmp common.Params
-	for ; from < to; from++ {
-		// fill params
-		prev := int64(0)
-		for b, recentParams := range recentParamsMap {
-			if b <= from && b > prev {
-				pTmp = common.Params(*recentParams)
-				agc.SetParams(&pTmp)
-				prev = b
-				setCommonParams(*recentParams)
-			}
-		}
-
-		agc.PrepareRoundBeginBlock(ctx, uint64(from))
-
-		if msgs := recentMsgs[from]; msgs != nil {
-			for _, msg := range msgs {
-				// these messages are retreived for recache, just skip the validation check and fill the memory cache
-				//nolint
-				agc.FillPrice(&types.MsgCreatePrice{
-					Creator:  msg.Validator,
-					FeederID: msg.FeederID,
-					Prices:   msg.PSources,
-				})
-			}
-		}
-		ctxReplay := ctx.WithBlockHeight(from)
-		agc.SealRound(ctxReplay, false)
-	}
-
 	if from >= to {
 		// backwards compatible for that the validatorUpdateBlock updated every block
 		prev := int64(0)
@@ -133,6 +108,35 @@ func recacheAggregatorContext(ctx sdk.Context, agc *aggregator.AggregatorContext
 		}
 		agc.SetParams(&pTmp)
 		setCommonParams(types.Params(pTmp))
+	} else {
+		for ; from < to; from++ {
+			// fill params
+			prev := int64(0)
+			for b, recentParams := range recentParamsMap {
+				if b <= from && b > prev {
+					pTmp = common.Params(*recentParams)
+					agc.SetParams(&pTmp)
+					prev = b
+					setCommonParams(*recentParams)
+				}
+			}
+
+			agc.PrepareRoundBeginBlock(ctx, uint64(from))
+
+			if msgs := recentMsgs[from]; msgs != nil {
+				for _, msg := range msgs {
+					// these messages are retreived for recache, just skip the validation check and fill the memory cache
+					//nolint
+					agc.FillPrice(&types.MsgCreatePrice{
+						Creator:  msg.Validator,
+						FeederID: msg.FeederID,
+						Prices:   msg.PSources,
+					})
+				}
+			}
+			ctxReplay := ctx.WithBlockHeight(from)
+			agc.SealRound(ctxReplay, false)
+		}
 	}
 
 	var pRet common.Params
@@ -144,6 +148,7 @@ func recacheAggregatorContext(ctx sdk.Context, agc *aggregator.AggregatorContext
 }
 
 func initAggregatorContext(ctx sdk.Context, agc *aggregator.AggregatorContext, k common.KeeperOracle, c *cache.Cache) {
+	ctx.Logger().Info("initAggregatorContext", "height", ctx.BlockHeight())
 	// set params
 	p := k.GetParams(ctx)
 	pTmp := common.Params(p)
