@@ -18,15 +18,17 @@ func (ms msgServer) CreatePrice(goCtx context.Context, msg *types.MsgCreatePrice
 
 	logger := ms.Keeper.Logger(ctx)
 	if err := checkTimestamp(ctx, msg); err != nil {
+		logger.Info("price proposal timestamp check failed", "error", err, "height", ctx.BlockHeight())
 		return nil, types.ErrPriceProposalFormatInvalid.Wrap(err.Error())
 	}
 
 	newItem, caches, err := GetAggregatorContext(ctx, ms.Keeper).NewCreatePrice(ctx, msg)
 	if err != nil {
+		logger.Info("price proposal failed", "error", err, "height", ctx.BlockHeight())
 		return nil, err
 	}
 
-	logger.Info("add price proposal for aggregation", "feederID", msg.FeederID, "basedBlock", msg.BasedBlock, "proposer", msg.Creator)
+	logger.Info("add price proposal for aggregation", "feederID", msg.FeederID, "basedBlock", msg.BasedBlock, "proposer", msg.Creator, "height", ctx.BlockHeight())
 
 	ctx.EventManager().EmitEvent(sdk.NewEvent(
 		types.EventTypeCreatePrice,
@@ -42,7 +44,7 @@ func (ms msgServer) CreatePrice(goCtx context.Context, msg *types.MsgCreatePrice
 	if newItem != nil {
 		ms.AppendPriceTR(ctx, newItem.TokenID, newItem.PriceTR)
 
-		logger.Info("final price aggregation done", "feederID", msg.FeederID, "roundID", newItem.PriceTR.RoundID, "price", newItem.PriceTR.Price)
+		logger.Info("final price aggregation done", "feederID", msg.FeederID, "roundID", newItem.PriceTR.RoundID, "price", newItem.PriceTR.Price, "height", ctx.BlockHeight())
 
 		ctx.EventManager().EmitEvent(sdk.NewEvent(
 			types.EventTypeCreatePrice,

@@ -156,7 +156,7 @@ func (am AppModule) BeginBlock(ctx sdk.Context, _ abci.RequestBeginBlock) {
 
 	logger := am.keeper.Logger(ctx)
 
-	logger.Info("prepare for next oracle round of each tokenFeeder")
+	logger.Info("prepare for next oracle round of each tokenFeeder", "height", ctx.BlockHeight())
 	agc.PrepareRoundBeginBlock(ctx, 0)
 }
 
@@ -183,7 +183,7 @@ func (am AppModule) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.Val
 		agc.SetValidatorPowers(validatorPowers)
 		// TODO: seal all alive round since validatorSet changed here
 		forceSeal = true
-		logger.Info("validator set changed, force seal all active rounds")
+		logger.Info("validator set changed, force seal all active rounds", "height", ctx.BlockHeight())
 	}
 
 	// TODO: for v1 use mode==1, just check the failed feeders
@@ -199,7 +199,6 @@ func (am AppModule) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.Val
 		if pTR, ok := am.keeper.GetPriceTRLatest(ctx, tokenID); ok {
 			pTR.RoundID++
 			am.keeper.AppendPriceTR(ctx, tokenID, pTR)
-			logger.Info("add new round with previous price under fail aggregation", "tokenID", tokenID, "roundID", pTR.RoundID)
 			logInfo += fmt.Sprintf(", roundID:%d, price:%s", pTR.RoundID, pTR.Price)
 			event.AppendAttributes(
 				sdk.NewAttribute(types.AttributeKeyRoundID, strconv.FormatUint(pTR.RoundID, 10)),
@@ -216,7 +215,7 @@ func (am AppModule) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.Val
 				sdk.NewAttribute(types.AttributeKeyFinalPrice, "-"),
 			)
 		}
-		logger.Info(logInfo)
+		logger.Info(logInfo, "height", ctx.BlockHeight())
 		ctx.EventManager().EmitEvent(event)
 	}
 	// TODO: emit events for success sealed rounds(could ignore for v1)

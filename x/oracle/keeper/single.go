@@ -70,7 +70,7 @@ func recacheAggregatorContext(ctx sdk.Context, agc *aggregator.AggregatorContext
 		return false
 	}
 
-	if int64(h.Block) > from {
+	if int64(h.Block) >= from {
 		from = int64(h.Block) + 1
 	}
 
@@ -117,7 +117,8 @@ func recacheAggregatorContext(ctx sdk.Context, agc *aggregator.AggregatorContext
 				})
 			}
 		}
-		agc.SealRound(ctx, false)
+		ctxReplay := ctx.WithBlockHeight(from)
+		agc.SealRound(ctxReplay, false)
 	}
 
 	if from >= to {
