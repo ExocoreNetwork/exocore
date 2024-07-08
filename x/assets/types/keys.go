@@ -55,7 +55,7 @@ var (
 	KeyPrefixReStakingAssetInfo = []byte{prefixRestakingAssetInfo}
 
 	// KeyPrefixReStakerAssetInfos restakerID = clientChainAddr+'_'+ExoCoreChainIndex
-	// KeyPrefixReStakerAssetInfos key->value: restakerID+'/'+AssetID->ReStakerAssetInfo
+	// KeyPrefixReStakerAssetInfos key->value: restakerID+'/'+AssetID-> StakerAssetInfo
 	// the `/` will be used as a separated character for the other joined keys.
 	KeyPrefixReStakerAssetInfos = []byte{prefixRestakerAssetInfo}
 

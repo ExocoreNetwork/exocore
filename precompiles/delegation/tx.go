@@ -36,7 +36,7 @@ func (p Precompile) DelegateToThroughClientChain(
 	args []interface{},
 ) ([]byte, error) {
 	// check the invalidation of caller contract
-	err := p.assetsKeeper.CheckExocoreLzAppAddr(ctx, contract.CallerAddress)
+	err := p.assetsKeeper.CheckExocoreGatewayAddr(ctx, contract.CallerAddress)
 	if err != nil {
 		return nil, errorsmod.Wrap(err, exocmn.ErrContractCaller)
 	}
@@ -63,7 +63,7 @@ func (p Precompile) UndelegateFromThroughClientChain(
 	args []interface{},
 ) ([]byte, error) {
 	// check the invalidation of caller contract
-	err := p.assetsKeeper.CheckExocoreLzAppAddr(ctx, contract.CallerAddress)
+	err := p.assetsKeeper.CheckExocoreGatewayAddr(ctx, contract.CallerAddress)
 	if err != nil {
 		return nil, errorsmod.Wrap(err, exocmn.ErrContractCaller)
 	}

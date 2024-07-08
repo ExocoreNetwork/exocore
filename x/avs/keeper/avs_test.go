@@ -8,6 +8,7 @@ import (
 	operatortype "github.com/ExocoreNetwork/exocore/x/operator/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
+	epochstypes "github.com/evmos/evmos/v14/x/epochs/types"
 )
 
 func (suite *AVSTestSuite) TestAVS() {
@@ -22,8 +23,9 @@ func (suite *AVSTestSuite) TestAVS() {
 		AssetId:            assetID,
 		AvsUnbondingPeriod: uint32(7),
 		MinSelfDelegation:  sdk.NewIntFromUint64(10),
-		AvsEpoch:           nil,
 		OperatorAddress:    nil,
+		EpochIdentifier:    epochstypes.DayEpochID,
+		StartingEpoch:      1,
 	}
 
 	err := suite.App.AVSManagerKeeper.SetAVSInfo(suite.Ctx, avs)
@@ -33,6 +35,13 @@ func (suite *AVSTestSuite) TestAVS() {
 
 	suite.NoError(err)
 	suite.Equal(avsAddres, info.GetInfo().AvsAddress)
+
+	var avsList []types.AVSInfo
+	suite.App.AVSManagerKeeper.IterateAVSInfo(suite.Ctx, func(_ int64, epochEndAVSInfo types.AVSInfo) (stop bool) {
+		avsList = append(avsList, epochEndAVSInfo)
+		return false
+	})
+	suite.Equal(len(avsList), 1)
 }
 
 func (suite *AVSTestSuite) TestAVSInfoUpdate_Register() {
@@ -49,6 +58,7 @@ func (suite *AVSTestSuite) TestAVSInfoUpdate_Register() {
 		MinSelfDelegation: uint64(10),
 		UnbondingPeriod:   uint64(7),
 		SlashContractAddr: slashAddress,
+		EpochIdentifier:   epochstypes.DayEpochID,
 		OperatorAddress:   nil,
 	}
 
@@ -80,6 +90,7 @@ func (suite *AVSTestSuite) TestAVSInfoUpdate_DeRegister() {
 		MinSelfDelegation: uint64(10),
 		UnbondingPeriod:   uint64(7),
 		SlashContractAddr: slashAddress,
+		EpochIdentifier:   epochstypes.DayEpochID,
 		OperatorAddress:   nil,
 	}
 
@@ -147,6 +158,7 @@ func (suite *AVSTestSuite) TestAVSInfoUpdateWithOperator_Register() {
 		MinSelfDelegation: uint64(10),
 		UnbondingPeriod:   uint64(7),
 		SlashContractAddr: slashAddress,
+		EpochIdentifier:   epochstypes.DayEpochID,
 		OperatorAddress:   nil,
 	}
 

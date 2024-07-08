@@ -91,6 +91,7 @@ func (k Keeper) GetAllPrices(ctx sdk.Context) (list []types.Prices) {
 	return list
 }
 
+// AppendPriceTR appens new round of a token
 func (k Keeper) AppendPriceTR(ctx sdk.Context, tokenID uint64, priceTR types.PriceTimeRound) {
 	nextRoundID := k.GetNextRoundID(ctx, tokenID)
 	if nextRoundID != priceTR.RoundID {
@@ -103,7 +104,7 @@ func (k Keeper) AppendPriceTR(ctx sdk.Context, tokenID uint64, priceTR types.Pri
 	k.IncreaseNextRoundID(ctx, tokenID)
 }
 
-// func(k Keeper) SetPriceTR(ctx sdk.Context, tokenID int32, priceTR){}
+// GetPriceTRoundID gets the price of the specific roundID of a specific token, return format as PriceTimeRound
 func (k Keeper) GetPriceTRRoundID(ctx sdk.Context, tokenID uint64, roundID uint64) (price types.PriceTimeRound, found bool) {
 	store := k.getPriceTRStore(ctx, tokenID)
 
@@ -117,9 +118,8 @@ func (k Keeper) GetPriceTRRoundID(ctx sdk.Context, tokenID uint64, roundID uint6
 	return
 }
 
+// GetPriceTRLatest gets the latest price of the specific tokenID, return format as PriceTimeRound
 func (k Keeper) GetPriceTRLatest(ctx sdk.Context, tokenID uint64) (price types.PriceTimeRound, found bool) {
-	//	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefix(types.PricesKeyPrefix))
-	//	store = prefix.NewStore(store, types.PricesKey(tokenID))
 	store := k.getPriceTRStore(ctx, tokenID)
 	nextRoundIDB := store.Get(types.PricesNextRoundIDKey)
 	if nextRoundIDB == nil {
@@ -135,6 +135,7 @@ func (k Keeper) GetPriceTRLatest(ctx sdk.Context, tokenID uint64) (price types.P
 	return
 }
 
+// GetNextRoundID gets the next round id of a token
 func (k Keeper) GetNextRoundID(ctx sdk.Context, tokenID uint64) (nextRoundID uint64) {
 	nextRoundID = 1
 	store := k.getPriceTRStore(ctx, tokenID)
@@ -147,6 +148,7 @@ func (k Keeper) GetNextRoundID(ctx sdk.Context, tokenID uint64) (nextRoundID uin
 	return
 }
 
+// IncreaseNextRoundID increases nextRoundID persisted by 1 of a token
 func (k Keeper) IncreaseNextRoundID(ctx sdk.Context, tokenID uint64) {
 	store := k.getPriceTRStore(ctx, tokenID)
 	nextRoundID := k.GetNextRoundID(ctx, tokenID)

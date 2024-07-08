@@ -6,6 +6,7 @@ import (
 
 	"github.com/ExocoreNetwork/exocore/x/avs/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	epochstypes "github.com/evmos/evmos/v14/x/epochs/types"
 
 	"github.com/ExocoreNetwork/exocore/app"
 	"github.com/ExocoreNetwork/exocore/precompiles/avsTask"
@@ -57,8 +58,9 @@ func (s *TaskPrecompileTestSuite) TestRunRegTaskinfo() {
 		AssetId:            assetID,
 		AvsUnbondingPeriod: uint32(7),
 		MinSelfDelegation:  sdk.NewIntFromUint64(10),
-		AvsEpoch:           nil,
 		OperatorAddress:    nil,
+		EpochIdentifier:    epochstypes.DayEpochID,
+		StartingEpoch:      1,
 	}
 
 	registerAvs := func() {

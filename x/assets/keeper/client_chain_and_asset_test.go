@@ -41,14 +41,12 @@ func (suite *StakingAssetsTestSuite) TestGenesisClientChainAndAssetInfo() {
 	suite.NoError(err)
 	suite.Ctx.Logger().Info("the clientChains is:", "info", clientChains)
 	for _, clientChain := range defaultGensisState.ClientChains {
-		info, ok := clientChains[clientChain.LayerZeroChainID]
-		suite.True(ok)
-		suite.Equal(info, &clientChain)
+		suite.Contains(clientChains, clientChain)
 	}
 
 	chainInfo, err := suite.App.AssetsKeeper.GetClientChainInfoByIndex(suite.Ctx, 101)
 	suite.NoError(err)
-	suite.Equal(clientChains[101], chainInfo)
+	suite.Contains(clientChains, *chainInfo)
 
 	// test the client chain assets getting
 	assets, err := suite.App.AssetsKeeper.GetAllStakingAssetsInfo(suite.Ctx)

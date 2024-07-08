@@ -71,7 +71,7 @@ func (k *Keeper) CalculateUSDValueForOperator(
 		}
 		return nil
 	}
-	err = k.assetsKeeper.IteratorAssetsForOperator(ctx, false, operator, assetsFilter, opFuncToIterateAssets)
+	err = k.assetsKeeper.IterateAssetsForOperator(ctx, false, operator, assetsFilter, opFuncToIterateAssets)
 	if err != nil {
 		return ret, err
 	}
