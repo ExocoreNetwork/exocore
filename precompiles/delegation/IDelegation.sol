@@ -16,14 +16,16 @@ interface IDelegation {
 /// TRANSACTIONS
 /// @dev delegate the client chain assets to the operator through client chain, that will change the states in delegation and assets module
 /// Note that this address cannot be a module account.
-/// @param clientChainLzID The LzID of client chain
+/// @param clientChainID is the layerZero chainID if it is supported.
+//  It might be allocated by Exocore when the client chain isn't supported
+//  by layerZero
 /// @param lzNonce The cross chain tx layerZero nonce
 /// @param assetsAddress The client chain asset Address
 /// @param stakerAddress The staker address
 /// @param operatorAddr  The operator address that wants to be delegated to
 /// @param opAmount The delegation amount
     function delegateToThroughClientChain(
-        uint32 clientChainLzID,
+        uint32 clientChainID,
         uint64 lzNonce,
         bytes memory assetsAddress,
         bytes memory stakerAddress,
@@ -34,14 +36,16 @@ interface IDelegation {
 /// TRANSACTIONS
 /// @dev undelegate the client chain assets from the operator through client chain, that will change the states in delegation and assets module
 /// Note that this address cannot be a module account.
-/// @param clientChainLzID The LzID of client chain
+/// @param clientChainID is the layerZero chainID if it is supported.
+//  It might be allocated by Exocore when the client chain isn't supported
+//  by layerZero
 /// @param lzNonce The cross chain tx layerZero nonce
 /// @param assetsAddress The client chain asset Address
 /// @param stakerAddress The staker address
 /// @param operatorAddr  The operator address that wants to unDelegate from
 /// @param opAmount The Undelegation amount
     function undelegateFromThroughClientChain(
-        uint32 clientChainLzID,
+        uint32 clientChainID,
         uint64 lzNonce,
         bytes memory assetsAddress,
         bytes memory stakerAddress,

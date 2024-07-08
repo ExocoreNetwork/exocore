@@ -18,7 +18,7 @@ func TestAggregatorContext(t *testing.T) {
 		Convey("prepare round to gengerate round info of feeders for next block", func() {
 			Convey("pepare within the window", func() {
 				p := patchBlockHeight(12)
-				agc.PrepareRound(ctx, 0)
+				agc.PrepareRoundBeginBlock(ctx, 0)
 
 				Convey("for empty round list", func() {
 					So(*agc.rounds[1], ShouldResemble, roundInfo{10, 2, 1})
@@ -27,9 +27,9 @@ func TestAggregatorContext(t *testing.T) {
 				Convey("update already exist round info", func() {
 					p.Reset()
 					time.Sleep(1 * time.Second)
-					patchBlockHeight(10 + int64(common.MaxNonce))
+					patchBlockHeight(10 + int64(common.MaxNonce) + 1)
 
-					agc.PrepareRound(ctx, 0)
+					agc.PrepareRoundBeginBlock(ctx, 0)
 					So(agc.rounds[1].status, ShouldEqual, 2)
 				})
 				p.Reset()
@@ -37,8 +37,8 @@ func TestAggregatorContext(t *testing.T) {
 			})
 			Convey("pepare outside the window", func() {
 				Convey("for empty round list", func() {
-					p := patchBlockHeight(10 + int64(common.MaxNonce))
-					agc.PrepareRound(ctx, 0)
+					p := patchBlockHeight(10 + int64(common.MaxNonce) + 1)
+					agc.PrepareRoundBeginBlock(ctx, 0)
 					So(agc.rounds[1].status, ShouldEqual, 2)
 					p.Reset()
 					time.Sleep(1 * time.Second)
@@ -46,9 +46,9 @@ func TestAggregatorContext(t *testing.T) {
 			})
 		})
 
-		Convey("seal existed round without any msg recieved", func() {
+		Convey("seal existing round without any msg recieved", func() {
 			p := patchBlockHeight(11)
-			agc.PrepareRound(ctx, 0)
+			agc.PrepareRoundBeginBlock(ctx, 0)
 			Convey("seal when exceed the window", func() {
 				So(agc.rounds[1].status, ShouldEqual, 1)
 				p.Reset()

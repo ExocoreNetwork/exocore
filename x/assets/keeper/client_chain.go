@@ -35,16 +35,52 @@ func (k Keeper) GetClientChainInfoByIndex(ctx sdk.Context, index uint64) (info *
 	return &ret, nil
 }
 
-func (k Keeper) GetAllClientChainInfo(ctx sdk.Context) (infos map[uint64]*assetstype.ClientChainInfo, err error) {
-	store := ctx.KVStore(k.storeKey)
-	iterator := sdk.KVStorePrefixIterator(store, assetstype.KeyPrefixClientChainInfo)
+// IterateAllClientChains iterates all client chains, and the `opFunc` will be called for
+// each client chain. As for the `isUpdate`, it a flag to indicate if the client chain
+// info handled by the `opFunc` will be restored.
+func (k Keeper) IterateAllClientChains(ctx sdk.Context, isUpdate bool, opFunc func(clientChain *assetstype.ClientChainInfo) error) error {
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), assetstype.KeyPrefixClientChainInfo)
+	iterator := sdk.KVStorePrefixIterator(store, nil)
 	defer iterator.Close()
-
-	ret := make(map[uint64]*assetstype.ClientChainInfo, 0)
 	for ; iterator.Valid(); iterator.Next() {
-		var chainInfo assetstype.ClientChainInfo
-		k.cdc.MustUnmarshal(iterator.Value(), &chainInfo)
-		ret[chainInfo.LayerZeroChainID] = &chainInfo
+		var clientChain assetstype.ClientChainInfo
+		k.cdc.MustUnmarshal(iterator.Value(), &clientChain)
+		err := opFunc(&clientChain)
+		if err != nil {
+			return err
+		}
+		if isUpdate {
+			// store the updated state
+			bz := k.cdc.MustMarshal(&clientChain)
+			store.Set(iterator.Key(), bz)
+		}
+	}
+	return nil
+}
+
+func (k Keeper) GetAllClientChainInfo(ctx sdk.Context) (infos []assetstype.ClientChainInfo, err error) {
+	ret := make([]assetstype.ClientChainInfo, 0)
+	opFunc := func(clientChain *assetstype.ClientChainInfo) error {
+		ret = append(ret, *clientChain)
+		return nil
+	}
+	err = k.IterateAllClientChains(ctx, false, opFunc)
+	if err != nil {
+		return nil, err
+	}
+	return ret, nil
+}
+
+func (k Keeper) GetAllClientChainID(ctx sdk.Context) ([]uint32, error) {
+	ret := make([]uint32, 0)
+	opFunc := func(clientChain *assetstype.ClientChainInfo) error {
+		// #nosec G701 // already checked
+		ret = append(ret, uint32(clientChain.LayerZeroChainID))
+		return nil
+	}
+	err := k.IterateAllClientChains(ctx, false, opFunc)
+	if err != nil {
+		return nil, err
 	}
 	return ret, nil
 }

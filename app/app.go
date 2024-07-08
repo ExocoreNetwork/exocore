@@ -584,7 +584,7 @@ func NewExocoreApp(
 	// the AVS manager keeper is the AVS registry. it allows registered operators to add or
 	// remove AVSs.
 	app.AVSManagerKeeper = avsManagerKeeper.NewKeeper(
-		appCodec, keys[avsManagerTypes.StoreKey], &app.OperatorKeeper, app.AssetsKeeper,
+		appCodec, keys[avsManagerTypes.StoreKey], &app.OperatorKeeper, app.AssetsKeeper, app.EpochsKeeper,
 	)
 	// the task keeper allows the registration of AVS tasks. it uses the AVS keeper to check
 	// the status of the AVS.

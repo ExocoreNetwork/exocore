@@ -3,7 +3,6 @@ package aggregator
 import (
 	"errors"
 	"math/big"
-	"time"
 
 	"github.com/ExocoreNetwork/exocore/x/oracle/keeper/cache"
 	"github.com/ExocoreNetwork/exocore/x/oracle/keeper/common"
@@ -157,7 +156,7 @@ func (agc *AggregatorContext) FillPrice(msg *types.MsgCreatePrice) (*PriceItemKV
 				Price:   finalPrice.String(),
 				Decimal: agc.params.GetTokenInfo(msg.FeederID).Decimal,
 				// TODO: check the format
-				Timestamp: time.Now().String(),
+				Timestamp: msg.Prices[0].Prices[0].Timestamp,
 				RoundID:   agc.rounds[msg.FeederID].nextRoundID,
 			}}, &cache.ItemM{FeederID: msg.FeederID}, nil
 		}
@@ -219,7 +218,8 @@ func (agc *AggregatorContext) SealRound(ctx sdk.Context, force bool) (success []
 	return success, failed
 }
 
-func (agc *AggregatorContext) PrepareRound(ctx sdk.Context, block uint64) {
+// TODO: test to remove PrepareRound into BeginBlock
+func (agc *AggregatorContext) PrepareRoundBeginBlock(ctx sdk.Context, block uint64) {
 	// block>0 means recache initialization, all roundInfo is empty
 	if block == 0 {
 		block = uint64(ctx.BlockHeight())
@@ -229,15 +229,16 @@ func (agc *AggregatorContext) PrepareRound(ctx sdk.Context, block uint64) {
 		if feederID == 0 {
 			continue
 		}
-		if (feeder.EndBlock > 0 && feeder.EndBlock <= block) || feeder.StartBaseBlock > block {
+		if (feeder.EndBlock > 0 && feeder.EndBlock < block) || feeder.StartBaseBlock >= block {
 			// this feeder is inactive
 			continue
 		}
 
-		delta := block - feeder.StartBaseBlock
+		baseBlock := block - 1
+		delta := baseBlock - feeder.StartBaseBlock
 		left := delta % feeder.Interval
 		count := delta / feeder.Interval
-		latestBasedblock := block - left
+		latestBasedblock := baseBlock - left
 		latestNextRoundID := feeder.StartRoundID + count
 
 		feederIDUint64 := uint64(feederID)
