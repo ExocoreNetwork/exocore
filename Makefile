@@ -525,7 +525,7 @@ localnet-show-logstream:
 ###############################################################################
 
 PACKAGE_NAME:=github.com/ExocoreNetwork/exocore
-# There is no `goreleaser-cross` package for 1.21.11, so we use the next
+# There is no `goreleaser-cross` package for 1.21.12, so we use the next
 # available version of v1.22 with goreleaser version 2.0.0
 GOLANG_CROSS_VERSION  = v1.22-v2.0.0
 GOPATH ?= '$(HOME)/go'
@@ -555,7 +555,7 @@ release:
 		-v `pwd`:/go/src/$(PACKAGE_NAME) \
 		-w /go/src/$(PACKAGE_NAME) \
 		ghcr.io/goreleaser/goreleaser-cross:${GOLANG_CROSS_VERSION} \
-		release --clean --skip-validate
+		release --clean --skip validate
 
 .PHONY: release-dry-run release
 

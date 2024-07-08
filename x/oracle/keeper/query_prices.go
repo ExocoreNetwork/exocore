@@ -38,8 +38,9 @@ import (
 //	return &types.QueryAllPricesResponse{Prices: pricess, Pagination: pageRes}, nil
 //}
 
+// Prices return all prices for a specific token TODO: pagination
 func (k Keeper) Prices(goCtx context.Context, req *types.QueryGetPricesRequest) (*types.QueryGetPricesResponse, error) {
-	if req == nil {
+	if req == nil || req.TokenId < 1 {
 		return nil, status.Error(codes.InvalidArgument, "invalid request")
 	}
 	ctx := sdk.UnwrapSDKContext(goCtx)
@@ -53,4 +54,19 @@ func (k Keeper) Prices(goCtx context.Context, req *types.QueryGetPricesRequest) 
 	}
 
 	return &types.QueryGetPricesResponse{Prices: val}, nil
+}
+
+// LatestPrice return the latest price for a specific token
+func (k Keeper) LatestPrice(goCtx context.Context, req *types.QueryGetLatestPriceRequest) (*types.QueryGetLatestPriceResponse, error) {
+	if req == nil || req.TokenId < 1 {
+		return nil, status.Error(codes.InvalidArgument, "invalid request")
+	}
+	ctx := sdk.UnwrapSDKContext(goCtx)
+
+	val, found := k.GetPriceTRLatest(ctx, req.TokenId)
+	if !found {
+		return nil, status.Error(codes.NotFound, "not found")
+	}
+
+	return &types.QueryGetLatestPriceResponse{Price: val}, nil
 }
