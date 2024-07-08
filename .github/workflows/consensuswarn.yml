@@ -18,7 +18,7 @@ jobs:
       pull-requests: write  # For reading the PR and posting comment
     runs-on: ubuntu-latest
     env:
-      GOTOOLCHAIN: "go1.21.11"
+      GOTOOLCHAIN: "go1.21.12"
     steps:
       # This is used for warning when a PR touches any of the roots, or any function or method directly or indirectly called by a root
       - uses: actions/checkout@v4
