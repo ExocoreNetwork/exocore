@@ -106,11 +106,13 @@ message UndelegationRecordList {
 
 // QueryMarkedOperatorByStakerReq is the request to obtain the operator owner of the specified staker
 message QueryMarkedOperatorByStakerReq {
+  // stake_id is the staker id for which the query is made.
   string staker_id = 1 [(gogoproto.customname) = "StakerID"];
 }
 
 // QueryMarkedOperatorByStakerResponse is the response to QueryMarkedOperatorByStakerReq
 message QueryMarkedOperatorByStakerResponse {
+  // operator is the returned operator owner of the specified staker
   string operator = 1;
 }
 
