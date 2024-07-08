@@ -22,7 +22,6 @@ func (ms msgServer) UpdateParams(goCtx context.Context, msg *types.MsgUpdatePara
 	if p, err = p.AddSources(msg.Params.Sources...); err != nil {
 		return nil, err
 	}
-	//	}
 	// add chains
 	if p, err = p.AddChains(msg.Params.Chains...); err != nil {
 		return nil, err

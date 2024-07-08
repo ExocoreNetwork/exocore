@@ -31,7 +31,7 @@ func (msg *MsgUpdateParams) ValidateBasic() error {
 	if _, err := sdk.AccAddressFromBech32(msg.Authority); err != nil {
 		return sdkerrors.Wrap(err, "invalid authority address")
 	}
-	return msg.Params.Validate()
+	return nil
 }
 
 // GetSigners returns the expected signers for a MsgUpdateParams message
