@@ -85,9 +85,14 @@ if [[ $overwrite == "y" || $overwrite == "Y" ]]; then
 	jq '.consensus_params["block"]["max_gas"]="10000000"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
 
 	# x/assets
+	# Using the local funding address as the Exocore gateway address to facilitate testing for precompiles without depending on the gateway contract.
+	jq '.app_state["assets"]["params"]["exocore_lz_app_address"]="0x3e108c058e8066da635321dc3018294ca82ddedf"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
 	jq '.app_state["assets"]["client_chains"][0]["name"]="Example EVM chain"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
+	jq '.app_state["assets"]["client_chains"][0]["meta_info"]="Example EVM chain meta info"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
 	jq '.app_state["assets"]["client_chains"][0]["layer_zero_chain_id"]="101"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
 	jq '.app_state["assets"]["client_chains"][0]["address_length"]="20"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
+	jq '.app_state["assets"]["tokens"][0]["asset_basic_info"]["name"]="Tether USD"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
+	jq '.app_state["assets"]["tokens"][0]["asset_basic_info"]["meta_info"]="Tether USD token"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
 	jq '.app_state["assets"]["tokens"][0]["asset_basic_info"]["address"]="0xdAC17F958D2ee523a2206206994597C13D831ec7"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
 	jq '.app_state["assets"]["tokens"][0]["asset_basic_info"]["layer_zero_chain_id"]="101"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
 	jq '.app_state["assets"]["tokens"][0]["asset_basic_info"]["total_supply"]="40022689732746729"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
@@ -167,6 +172,7 @@ if [[ $overwrite == "y" || $overwrite == "Y" ]]; then
 		sed -i '' 's/prometheus = false/prometheus = true/' "$CONFIG"
 		sed -i '' 's/prometheus-retention-time = 0/prometheus-retention-time  = 1000000000000/g' "$APP_TOML"
 		sed -i '' 's/enabled = false/enabled = true/g' "$APP_TOML"
+		sed -i '' 's/enable = false/enable = true/g' "$APP_TOML"
 	else
 		sed -i 's/prometheus = false/prometheus = true/' "$CONFIG"
 		sed -i 's/prometheus-retention-time  = "0"/prometheus-retention-time  = "1000000000000"/g' "$APP_TOML"

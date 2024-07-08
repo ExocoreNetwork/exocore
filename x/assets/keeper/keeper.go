@@ -1,8 +1,6 @@
 package keeper
 
 import (
-	"context"
-
 	assetstype "github.com/ExocoreNetwork/exocore/x/assets/types"
 	"github.com/cosmos/cosmos-sdk/codec"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
@@ -36,8 +34,8 @@ func (k Keeper) SetOperatorAssetOptedInMiddleWare(sdk.Address, map[string]sdk.Ad
 	panic("implement me")
 }
 
-// IRestakingAssetsManage interface will be implemented by assets keeper
-type IRestakingAssetsManage interface {
+// IAssets interface will be implemented by assets keeper
+type IAssets interface {
 	SetClientChainInfo(ctx sdk.Context, info *assetstype.ClientChainInfo) (err error)
 	GetClientChainInfoByIndex(ctx sdk.Context, index uint64) (info *assetstype.ClientChainInfo, err error)
 	GetAllClientChainInfo(ctx sdk.Context) (infos map[uint64]*assetstype.ClientChainInfo, err error)
@@ -50,16 +48,7 @@ type IRestakingAssetsManage interface {
 	GetStakerSpecifiedAssetInfo(ctx sdk.Context, stakerID string, assetID string) (info *assetstype.StakerAssetInfo, err error)
 	UpdateStakerAssetState(ctx sdk.Context, stakerID string, assetID string, changeAmount assetstype.DeltaStakerSingleAsset) (err error)
 
-	GetOperatorAssetInfos(ctx sdk.Context, operatorAddr sdk.Address) (assetsInfo map[string]*assetstype.OperatorAssetInfo, err error)
+	GetOperatorAssetInfos(ctx sdk.Context, operatorAddr sdk.Address, assetsFilter map[string]interface{}) (assetsInfo map[string]*assetstype.OperatorAssetInfo, err error)
 	GetOperatorSpecifiedAssetInfo(ctx sdk.Context, operatorAddr sdk.Address, assetID string) (info *assetstype.OperatorAssetInfo, err error)
 	UpdateOperatorAssetState(ctx sdk.Context, operatorAddr sdk.Address, assetID string, changeAmount assetstype.DeltaOperatorSingleAsset) (err error)
-
-	// SetStakerExoCoreAddr handle the SetStakerExoCoreAddr txs from msg service
-	SetStakerExoCoreAddr(ctx context.Context, addr *assetstype.MsgSetExoCoreAddr) (*assetstype.MsgSetExoCoreAddrResponse, error)
-	GetStakerExoCoreAddr(ctx sdk.Context, stakerID string) (string, error)
-
-	// GetOperatorAssetOptedInMiddleWare :the following three interfaces should be implemented in operator opt-in module
-	GetOperatorAssetOptedInMiddleWare(operatorAddr sdk.Address, assetID string) (middleWares []sdk.Address, err error)
-	GetAllOperatorAssetOptedInMiddleWare(operatorAddr sdk.Address) (optedInInfos map[string][]sdk.Address, err error)
-	SetOperatorAssetOptedInMiddleWare(operatorAddr sdk.Address, setInfo map[string]sdk.Address) (middleWares []sdk.Address, err error)
 }

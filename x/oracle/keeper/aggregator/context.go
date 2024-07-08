@@ -3,7 +3,6 @@ package aggregator
 import (
 	"errors"
 	"math/big"
-	"time"
 
 	"github.com/ExocoreNetwork/exocore/x/oracle/keeper/cache"
 	"github.com/ExocoreNetwork/exocore/x/oracle/keeper/common"
@@ -157,7 +156,7 @@ func (agc *AggregatorContext) FillPrice(msg *types.MsgCreatePrice) (*PriceItemKV
 				Price:   finalPrice.String(),
 				Decimal: agc.params.GetTokenInfo(msg.FeederID).Decimal,
 				// TODO: check the format
-				Timestamp: time.Now().String(),
+				Timestamp: msg.Prices[0].Prices[0].Timestamp,
 				RoundID:   agc.rounds[msg.FeederID].nextRoundID,
 			}}, &cache.ItemM{FeederID: msg.FeederID}, nil
 		}

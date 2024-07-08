@@ -35,6 +35,11 @@
 				"internalType": "uint64",
 				"name": "unbondingPeriod",
 				"type": "uint64"
+			},
+			{
+				"internalType": "string",
+				"name": "epochIdentifier",
+				"type": "string"
 			}
 		],
 		"name": "AVSAction",

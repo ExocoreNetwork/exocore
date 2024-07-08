@@ -3,6 +3,8 @@ package delegation_test
 import (
 	"math/big"
 
+	assetskeeper "github.com/ExocoreNetwork/exocore/x/assets/keeper"
+
 	operatortypes "github.com/ExocoreNetwork/exocore/x/operator/types"
 
 	sdkmath "cosmossdk.io/math"
@@ -12,7 +14,6 @@ import (
 	"github.com/ExocoreNetwork/exocore/x/assets/types"
 	assetstype "github.com/ExocoreNetwork/exocore/x/assets/types"
 	delegationtype "github.com/ExocoreNetwork/exocore/x/delegation/types"
-	"github.com/ExocoreNetwork/exocore/x/deposit/keeper"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/common"
 	ethtypes "github.com/ethereum/go-ethereum/core/types"
@@ -74,14 +75,14 @@ func (s *DelegationPrecompileSuite) TestRunDelegateToThroughClientChain() {
 	assetAddr := paddingClientChainAddress(usdtAddress, types.GeneralClientChainAddrLength)
 	depositAsset := func(staker []byte, depositAmount sdkmath.Int) {
 		// deposit asset for delegation test
-		params := &keeper.DepositParams{
+		params := &assetskeeper.DepositWithdrawParams{
 			ClientChainLzID: 101,
 			Action:          types.Deposit,
 			StakerAddress:   staker,
 			AssetsAddress:   usdtAddress,
 			OpAmount:        depositAmount,
 		}
-		err := s.App.DepositKeeper.Deposit(s.Ctx, params)
+		err := s.App.AssetsKeeper.PerformDepositOrWithdraw(s.Ctx, params)
 		s.Require().NoError(err)
 	}
 	registerOperator := func() {
@@ -300,14 +301,14 @@ func (s *DelegationPrecompileSuite) TestRunUnDelegateFromThroughClientChain() {
 	assetAddr := paddingClientChainAddress(usdtAddress, types.GeneralClientChainAddrLength)
 	depositAsset := func(staker []byte, depositAmount sdkmath.Int) {
 		// deposit asset for delegation test
-		params := &keeper.DepositParams{
+		params := &assetskeeper.DepositWithdrawParams{
 			ClientChainLzID: 101,
 			Action:          types.Deposit,
 			StakerAddress:   staker,
 			AssetsAddress:   usdtAddress,
 			OpAmount:        depositAmount,
 		}
-		err := s.App.DepositKeeper.Deposit(s.Ctx, params)
+		err := s.App.AssetsKeeper.PerformDepositOrWithdraw(s.Ctx, params)
 		s.Require().NoError(err)
 	}
 

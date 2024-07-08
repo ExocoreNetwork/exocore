@@ -3,12 +3,8 @@ package types
 import (
 	"fmt"
 
-	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
-
 	"github.com/ethereum/go-ethereum/common"
 )
-
-var _ paramtypes.ParamSet = (*Params)(nil)
 
 const (
 	// DefaultExocoreLzAppAddress is the default address of ExocoreGateway.sol.
@@ -20,17 +16,6 @@ const (
 	// event. TODO: Set this to a sane default?
 	DefaultExocoreLzAppEventTopic = "0x000000000000000000000000000000000000000000000000000000000000000"
 )
-
-// Reflection based keys for params subspace.
-var (
-	KeyExocoreLzAppAddress    = []byte("ExocoreLzAppAddress")
-	KeyExocoreLzAppEventTopic = []byte("ExocoreLzAppEventTopic")
-)
-
-// ParamKeyTable returns a key table with the necessary registered params.
-func ParamKeyTable() paramtypes.KeyTable {
-	return paramtypes.NewKeyTable().RegisterParamSet(&Params{})
-}
 
 // NewParams creates a new Params instance.
 func NewParams(
@@ -49,22 +34,6 @@ func DefaultParams() Params {
 		DefaultExocoreLzAppAddress,
 		DefaultExocoreLzAppEventTopic,
 	)
-}
-
-// ParamSetPairs implements params.ParamSet
-func (p *Params) ParamSetPairs() paramtypes.ParamSetPairs {
-	return paramtypes.ParamSetPairs{
-		paramtypes.NewParamSetPair(
-			KeyExocoreLzAppAddress,
-			&p.ExocoreLzAppAddress,
-			ValidateHexAddress,
-		),
-		paramtypes.NewParamSetPair(
-			KeyExocoreLzAppEventTopic,
-			&p.ExocoreLzAppEventTopic,
-			ValidateHexHash,
-		),
-	}
 }
 
 // Validate validates the set of params.

@@ -3,6 +3,8 @@ package keeper
 import (
 	"fmt"
 
+	"github.com/ExocoreNetwork/exocore/x/avs/types"
+
 	errorsmod "cosmossdk.io/errors"
 	sdkmath "cosmossdk.io/math"
 
@@ -39,4 +41,21 @@ func (k *Keeper) GetAVSMinimumSelfDelegation(ctx sdk.Context, avsAddr string) (s
 }
 
 // GetEpochEndAVSs returns the AVS list where the current block marks the end of their epoch.
-// func (k *Keeper) GetEpochEndAVSs(ctx sdk.Context) ([]string, error) {
+func (k *Keeper) GetEpochEndAVSs(ctx sdk.Context) ([]string, error) {
+	var avsList []types.AVSInfo
+	k.IterateAVSInfo(ctx, func(_ int64, epochEndAVSInfo types.AVSInfo) (stop bool) {
+		avsList = append(avsList, epochEndAVSInfo)
+		return false
+	})
+
+	if len(avsList) == 0 {
+		return []string{}, nil
+	}
+
+	avsAddrList := make([]string, len(avsList))
+	for i := range avsList {
+		avsAddrList[i] = avsList[i].AvsAddress
+	}
+
+	return avsAddrList, nil
+}

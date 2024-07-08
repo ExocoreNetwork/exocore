@@ -8,7 +8,6 @@ import (
 	"github.com/ExocoreNetwork/exocore/x/oracle/keeper/common"
 	"github.com/ExocoreNetwork/exocore/x/oracle/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 )
 
 var cs *cache.Cache
@@ -77,17 +76,15 @@ func recacheAggregatorContext(ctx sdk.Context, agc *aggregator.AggregatorContext
 
 	totalPower := big.NewInt(0)
 	validatorPowers := make(map[string]*big.Int)
-	k.IterateBondedValidatorsByPower(ctx, func(_ int64, validator stakingtypes.ValidatorI) bool {
-		power := big.NewInt(validator.GetConsensusPower(sdk.DefaultPowerReduction))
-		addr := validator.GetOperator().String()
-		validatorPowers[addr] = power
-		totalPower = new(big.Int).Add(totalPower, power)
-		return false
-	})
+	validatorSet := k.GetAllExocoreValidators(ctx)
+	for _, v := range validatorSet {
+		validatorPowers[sdk.AccAddress(v.Address).String()] = big.NewInt(v.Power)
+		totalPower = new(big.Int).Add(totalPower, big.NewInt(v.Power))
+	}
 	agc.SetValidatorPowers(validatorPowers)
 	// TODO: test only
 	if k.GetLastTotalPower(ctx).BigInt().Cmp(totalPower) != 0 {
-		ctx.Logger().Error("something wrong when get validatorsPower from staking module")
+		ctx.Logger().Error("something wrong when get validatorsPower from dogfood module")
 	}
 
 	// reset validators
@@ -155,15 +152,17 @@ func initAggregatorContext(ctx sdk.Context, agc *aggregator.AggregatorContext, k
 
 	totalPower := big.NewInt(0)
 	validatorPowers := make(map[string]*big.Int)
-	k.IterateBondedValidatorsByPower(ctx, func(_ int64, validator stakingtypes.ValidatorI) bool {
-		power := big.NewInt(validator.GetConsensusPower(sdk.DefaultPowerReduction))
-		addr := validator.GetOperator().String()
-		validatorPowers[addr] = power
-		totalPower = new(big.Int).Add(totalPower, power)
-		return false
-	})
-	agc.SetValidatorPowers(validatorPowers)
+	validatorSet := k.GetAllExocoreValidators(ctx)
+	for _, v := range validatorSet {
+		validatorPowers[sdk.AccAddress(v.Address).String()] = big.NewInt(v.Power)
+		totalPower = new(big.Int).Add(totalPower, big.NewInt(v.Power))
+	}
 
+	agc.SetValidatorPowers(validatorPowers)
+	// TODO: test only
+	if k.GetLastTotalPower(ctx).BigInt().Cmp(totalPower) != 0 {
+		ctx.Logger().Error("something wrong when get validatorsPower from dogfood module")
+	}
 	// set validatorPower cache
 	c.AddCache(cache.ItemV(validatorPowers))
 

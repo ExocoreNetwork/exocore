@@ -6,6 +6,7 @@ import (
 
 	errorsmod "cosmossdk.io/errors"
 	anteutils "github.com/ExocoreNetwork/exocore/app/ante/utils"
+	oracletypes "github.com/ExocoreNetwork/exocore/x/oracle/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	errortypes "github.com/cosmos/cosmos-sdk/types/errors"
 	authante "github.com/cosmos/cosmos-sdk/x/auth/ante"
@@ -67,6 +68,19 @@ func (dfd DeductFeeDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bo
 		priority int64
 		err      error
 	)
+
+	msgs := tx.GetMsgs()
+	allOracleMsgs := true
+	for _, msg := range msgs {
+		if _, ok := msg.(*oracletypes.MsgCreatePrice); !ok {
+			allOracleMsgs = false
+			break
+		}
+	}
+	// skip deductgas if this is a oracle price message
+	if allOracleMsgs {
+		return next(ctx, tx, simulate)
+	}
 
 	fee := feeTx.GetFee()
 	if !simulate {

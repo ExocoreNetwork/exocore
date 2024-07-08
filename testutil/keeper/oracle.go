@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"testing"
+	"time"
 
 	"github.com/ExocoreNetwork/exocore/x/oracle/keeper"
 	"github.com/ExocoreNetwork/exocore/x/oracle/types"
@@ -14,7 +15,8 @@ import (
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	typesparams "github.com/cosmos/cosmos-sdk/x/params/types"
-	stakingKeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
+
+	dogfoodkeeper "github.com/ExocoreNetwork/exocore/x/dogfood/keeper"
 	"github.com/stretchr/testify/require"
 )
 
@@ -42,10 +44,12 @@ func OracleKeeper(t testing.TB) (*keeper.Keeper, sdk.Context) {
 		storeKey,
 		memStoreKey,
 		paramsSubspace,
-		stakingKeeper.Keeper{},
+		dogfoodkeeper.Keeper{},
 	)
 
-	ctx := sdk.NewContext(stateStore, tmproto.Header{}, false, log.NewNopLogger())
+	ctx := sdk.NewContext(stateStore, tmproto.Header{
+		Time: time.Now().UTC(),
+	}, false, log.NewNopLogger())
 
 	// Initialize params
 	p4Test := types.DefaultParams()

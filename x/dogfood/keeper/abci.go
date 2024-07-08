@@ -90,7 +90,7 @@ func (k Keeper) EndBlock(ctx sdk.Context) []abci.ValidatorUpdate {
 	res := make([]abci.ValidatorUpdate, 0, maxVals*2)
 	for i := range operators {
 		// #nosec G701 // ok on 64-bit systems.
-		if i > int(maxVals) {
+		if i >= int(maxVals) {
 			// we have reached the maximum number of validators, amongst all the validators.
 			// even if there are intersections with the previous validator set, this will
 			// only be reached if we exceed the threshold.

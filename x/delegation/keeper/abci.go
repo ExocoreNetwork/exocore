@@ -10,7 +10,7 @@ import (
 // EndBlock : completed Undelegation events according to the canCompleted blockHeight
 // This function will be triggered at the end of every block, it will query the undelegation state to get the records that need to be handled and try to complete the undelegation task.
 func (k *Keeper) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.ValidatorUpdate {
-	records, err := k.GetWaitCompleteUndelegationRecords(ctx, uint64(ctx.BlockHeight()))
+	records, err := k.GetPendingUndelegationRecords(ctx, uint64(ctx.BlockHeight()))
 	if err != nil {
 		panic(err)
 	}
@@ -45,7 +45,7 @@ func (k *Keeper) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.Valida
 				panic(err)
 			}
 			// and the other is the fact that it matures at the next block
-			err = k.StoreWaitCompleteRecord(ctx, recordKey, record)
+			err = k.StorePendingUndelegationRecord(ctx, recordKey, record)
 			if err != nil {
 				panic(err)
 			}
