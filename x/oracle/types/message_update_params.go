@@ -43,7 +43,7 @@ func (msg *MsgUpdateParams) GetSigners() []sdk.AccAddress {
 func NewMsgUpdateParams(creator, paramsJSON string) *MsgUpdateParams {
 	var p Params
 	if err := json.Unmarshal([]byte(paramsJSON), &p); err != nil {
-		panic("invalid json for parmas")
+		panic("invalid json for params")
 	}
 	return &MsgUpdateParams{
 		Authority: creator,
