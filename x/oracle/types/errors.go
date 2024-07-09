@@ -11,6 +11,7 @@ const (
 	priceProposalIgnored
 	priceProposalFormatInvalid
 	getPriceFailed
+	invalidParams
 )
 
 // x/oracle module sentinel errors
@@ -19,4 +20,5 @@ var (
 	ErrPriceProposalIgnored       = sdkerrors.Register(ModuleName, priceProposalIgnored, "price proposal ignored")
 	ErrPriceProposalFormatInvalid = sdkerrors.Register(ModuleName, priceProposalFormatInvalid, "price proposal message format invalid")
 	ErrGetPrices                  = sdkerrors.Register(ModuleName, getPriceFailed, "get prices failed")
+	ErrInvalidParams              = sdkerrors.Register(ModuleName, invalidParams, "invalid params")
 )
