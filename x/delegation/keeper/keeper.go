@@ -17,6 +17,7 @@ type Keeper struct {
 	assetsKeeper   delegationtype.AssetsKeeper
 	slashKeeper    delegationtype.SlashKeeper
 	operatorKeeper delegationtype.OperatorKeeper
+	bankKeeper     delegationtype.BankKeeper
 	hooks          delegationtype.DelegationHooks
 }
 

@@ -38,25 +38,31 @@ func (k *Keeper) delegateTo(
 	}
 
 	stakerID, assetID := assetstype.GetStakeIDAndAssetID(params.ClientChainID, params.StakerAddress, params.AssetsAddress)
+	if assetID != assetstype.NativeAssetID {
+		// check if the staker asset has been deposited and the canWithdraw amount is bigger than the delegation amount
+		info, err := k.assetsKeeper.GetStakerSpecifiedAssetInfo(ctx, stakerID, assetID)
+		if err != nil {
+			return err
+		}
 
-	// check if the staker asset has been deposited and the canWithdraw amount is bigger than the delegation amount
-	info, err := k.assetsKeeper.GetStakerSpecifiedAssetInfo(ctx, stakerID, assetID)
-	if err != nil {
-		return err
+		if info.WithdrawableAmount.LT(params.OpAmount) {
+			return errorsmod.Wrap(delegationtype.ErrDelegationAmountTooBig, fmt.Sprintf("the opAmount is:%s the WithdrawableAmount amount is:%s", params.OpAmount, info.WithdrawableAmount))
+		}
+
+		// update staker asset state
+		err = k.assetsKeeper.UpdateStakerAssetState(ctx, stakerID, assetID, assetstype.DeltaStakerSingleAsset{
+			WithdrawableAmount: params.OpAmount.Neg(),
+		})
+		if err != nil {
+			return err
+		}
+	} else {
+		coins := sdk.NewCoins(sdk.NewCoin(assetstype.NativeAssetDenom, params.OpAmount))
+		// transfer the delegation amount from the staker account to the delegated pool
+		if err := k.bankKeeper.DelegateCoinsFromAccountToModule(ctx, params.StakerAddress, delegationtype.DelegatedPoolName, coins); err != nil {
+			return err
+		}
 	}
-
-	if info.WithdrawableAmount.LT(params.OpAmount) {
-		return errorsmod.Wrap(delegationtype.ErrDelegationAmountTooBig, fmt.Sprintf("the opAmount is:%s the WithdrawableAmount amount is:%s", params.OpAmount, info.WithdrawableAmount))
-	}
-
-	// update staker asset state
-	err = k.assetsKeeper.UpdateStakerAssetState(ctx, stakerID, assetID, assetstype.DeltaStakerSingleAsset{
-		WithdrawableAmount: params.OpAmount.Neg(),
-	})
-	if err != nil {
-		return err
-	}
-
 	// calculate the share from the delegation amount
 	share, err := k.CalculateShare(ctx, params.OperatorAddress, assetID, params.OpAmount)
 	if err != nil {

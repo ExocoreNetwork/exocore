@@ -1,10 +1,14 @@
 package keeper
 
 import (
-	"github.com/ExocoreNetwork/exocore/x/assets/types"
-	delegationtype "github.com/ExocoreNetwork/exocore/x/delegation/types"
+	"strings"
+
+	assetstypes "github.com/ExocoreNetwork/exocore/x/assets/types"
+	"github.com/ExocoreNetwork/exocore/x/delegation/types"
+
 	abci "github.com/cometbft/cometbft/abci/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/ethereum/go-ethereum/common/hexutil"
 )
 
 // EndBlock : completed Undelegation events according to the canCompleted blockHeight
@@ -34,7 +38,7 @@ func (k *Keeper) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.Valida
 				continue
 			}*/
 
-		recordID := delegationtype.GetUndelegationRecordKey(record.BlockNumber, record.LzTxNonce, record.TxHash, record.OperatorAddr)
+		recordID := types.GetUndelegationRecordKey(record.BlockNumber, record.LzTxNonce, record.TxHash, record.OperatorAddr)
 		if k.GetUndelegationHoldCount(ctx, recordID) > 0 {
 			// store it again with the next block and move on
 			// #nosec G701
@@ -55,7 +59,7 @@ func (k *Keeper) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.Valida
 
 		recordAmountNeg := record.Amount.Neg()
 		// update delegation state
-		deltaAmount := &delegationtype.DeltaDelegationAmounts{
+		deltaAmount := &types.DeltaDelegationAmounts{
 			WaitUndelegationAmount: recordAmountNeg,
 		}
 		_, err = k.UpdateDelegationState(ctx, record.StakerID, record.AssetID, record.OperatorAddr, deltaAmount)
@@ -65,16 +69,24 @@ func (k *Keeper) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.Valida
 		}
 
 		// update the staker state
-		err = k.assetsKeeper.UpdateStakerAssetState(ctx, record.StakerID, record.AssetID, types.DeltaStakerSingleAsset{
-			WithdrawableAmount:  record.ActualCompletedAmount,
-			WaitUnbondingAmount: recordAmountNeg,
-		})
-		if err != nil {
-			panic(err)
+		if record.AssetID == assetstypes.NativeAssetID {
+			parsedStakerID := strings.Split(record.StakerID, "-")
+			stakerAddr := sdk.AccAddress(hexutil.MustDecode(parsedStakerID[0]))
+			if err := k.bankKeeper.UndelegateCoinsFromModuleToAccount(ctx, types.DelegatedPoolName, stakerAddr, sdk.NewCoins(sdk.NewCoin(assetstypes.NativeAssetDenom, record.ActualCompletedAmount))); err != nil {
+				panic(err)
+			}
+		} else {
+			err = k.assetsKeeper.UpdateStakerAssetState(ctx, record.StakerID, record.AssetID, assetstypes.DeltaStakerSingleAsset{
+				WithdrawableAmount:  record.ActualCompletedAmount,
+				WaitUnbondingAmount: recordAmountNeg,
+			})
+			if err != nil {
+				panic(err)
+			}
 		}
 
 		// update the operator state
-		err = k.assetsKeeper.UpdateOperatorAssetState(ctx, operatorAccAddress, record.AssetID, types.DeltaOperatorSingleAsset{
+		err = k.assetsKeeper.UpdateOperatorAssetState(ctx, operatorAccAddress, record.AssetID, assetstypes.DeltaOperatorSingleAsset{
 			WaitUnbondingAmount: recordAmountNeg,
 		})
 		if err != nil {

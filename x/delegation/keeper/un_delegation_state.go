@@ -19,7 +19,6 @@ func (k *Keeper) SetUndelegationRecords(ctx sdk.Context, records []*types.Undele
 	singleRecordStore := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefixUndelegationInfo)
 	stakerUndelegationStore := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefixStakerUndelegationInfo)
 	pendingUndelegationStore := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefixPendingUndelegations)
-	// key := common.HexToAddress(incentive.Contract)
 	for _, record := range records {
 		bz := k.cdc.MustMarshal(record)
 		// todo: check if the following state can only be set once?
