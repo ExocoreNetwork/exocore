@@ -18,3 +18,25 @@ type DelegationOrUndelegationParams struct {
 	TxHash          common.Hash
 	// todo: The operator approved signature might be needed here in future
 }
+
+func NewDelegationOrUndelegationParams(
+	clientChainLzID uint64,
+	action assetstype.CrossChainOpType,
+	assetsAddress []byte,
+	operatorAddress sdk.AccAddress,
+	stakerAddress []byte,
+	opAmount sdkmath.Int,
+	lzNonce uint64,
+	txHash common.Hash,
+) *DelegationOrUndelegationParams {
+	return &DelegationOrUndelegationParams{
+		ClientChainLzID: clientChainLzID,
+		Action:          action,
+		AssetsAddress:   assetsAddress,
+		OperatorAddress: operatorAddress,
+		StakerAddress:   stakerAddress,
+		OpAmount:        opAmount,
+		LzNonce:         lzNonce,
+		TxHash:          txHash,
+	}
+}

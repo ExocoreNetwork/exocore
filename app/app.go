@@ -116,6 +116,8 @@ import (
 	authsims "github.com/cosmos/cosmos-sdk/x/auth/simulation"
 	authtx "github.com/cosmos/cosmos-sdk/x/auth/tx"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
+	"github.com/cosmos/cosmos-sdk/x/auth/vesting"
+	vestingtypes "github.com/cosmos/cosmos-sdk/x/auth/vesting/types"
 
 	"github.com/cosmos/cosmos-sdk/x/authz"
 	authzmodule "github.com/cosmos/cosmos-sdk/x/authz/module"
@@ -248,6 +250,7 @@ var (
 		ibctm.AppModuleBasic{},
 		ica.AppModuleBasic{},
 		authzmodule.AppModuleBasic{},
+		vesting.AppModuleBasic{},
 		feegrantmodule.AppModuleBasic{},
 		upgrade.AppModuleBasic{},
 		evidence.AppModuleBasic{},
@@ -278,8 +281,9 @@ var (
 			authtypes.Minter,
 			authtypes.Burner,
 		}, // used for secure addition and subtraction of balance using module account
-		erc20types.ModuleName:   {authtypes.Minter, authtypes.Burner},
-		exominttypes.ModuleName: {authtypes.Minter},
+		exominttypes.ModuleName:           {authtypes.Minter},
+		erc20types.ModuleName:             {authtypes.Minter, authtypes.Burner},
+		delegationTypes.DelegatedPoolName: {authtypes.Burner, authtypes.Staking},
 	}
 
 	// module accounts that are allowed to receive tokens
@@ -728,15 +732,15 @@ func NewExocoreApp(
 		Create Transfer Stack
 
 		transfer stack contains (from bottom to top):
-			- ERC-20 Middleware
-		 	- Recovery Middleware
-			- IBC Transfer
+		- ERC-20 Middleware
+		- Recovery Middleware
+		- IBC Transfer
 
 		SendPacket, since it is originating from the application to core IBC:
-		 	transferKeeper.SendPacket -> recovery.SendPacket -> erc20.SendPacket -> channel.SendPacket
+		transferKeeper.SendPacket -> recovery.SendPacket -> erc20.SendPacket -> channel.SendPacket
 
 		RecvPacket, message that originates from core IBC and goes down to app, the flow is the other way
-			channel.RecvPacket -> erc20.OnRecvPacket -> recovery.OnRecvPacket -> transfer.OnRecvPacket
+		channel.RecvPacket -> erc20.OnRecvPacket -> recovery.OnRecvPacket -> transfer.OnRecvPacket
 	*/
 
 	// create IBC module from top to bottom of stack
@@ -802,6 +806,7 @@ func NewExocoreApp(
 			authsims.RandomGenesisAccounts,
 			app.GetSubspace(authtypes.ModuleName),
 		),
+		vesting.NewAppModule(app.AccountKeeper, app.BankKeeper),
 		bank.NewAppModule(
 			appCodec, app.BankKeeper, app.AccountKeeper,
 			app.GetSubspace(banktypes.ModuleName),
@@ -890,6 +895,7 @@ func NewExocoreApp(
 		genutiltypes.ModuleName,
 		feegrant.ModuleName,
 		paramstypes.ModuleName,
+		vestingtypes.ModuleName,
 		consensusparamtypes.ModuleName,
 		erc20types.ModuleName,
 		exominttypes.ModuleName, // called via hooks not directly
@@ -924,6 +930,7 @@ func NewExocoreApp(
 		authz.ModuleName,
 		paramstypes.ModuleName,
 		upgradetypes.ModuleName,
+		vestingtypes.ModuleName,
 		epochstypes.ModuleName, // begin blocker only
 		erc20types.ModuleName,
 		exominttypes.ModuleName,
@@ -968,6 +975,7 @@ func NewExocoreApp(
 		oracleTypes.ModuleName, // after staking module to ensure total vote power available
 		// no-op modules
 		paramstypes.ModuleName,
+		vestingtypes.ModuleName,
 		consensusparamtypes.ModuleName,
 		upgradetypes.ModuleName,  // no-op since we don't call SetInitVersionMap
 		rewardTypes.ModuleName,   // not fully implemented yet

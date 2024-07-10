@@ -14,6 +14,15 @@ import (
 )
 
 const (
+	NativeChainLzID  = 0
+	NativeAssetAddr  = "0x0000000000000000000000000000000000000000"
+	NativeAssetID    = "0x0000000000000000000000000000000000000000_0x0000"
+	NativeAssetDenom = "aexo"
+	// EmptyTxHash      = "0x"
+	// EmptyLzNonce = 0
+)
+
+const (
 	CrossChainActionLength       = 1
 	CrossChainOpAmountLength     = 32
 	GeneralAssetsAddrLength      = 32
