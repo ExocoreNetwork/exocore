@@ -24,6 +24,7 @@ func TestUpdateTokenFeeder(t *testing.T) {
 		height      uint64
 		err         error
 	}{
+		// invalid inputs
 		// fail when add/update fields, before validation
 		{
 			name: "invalid update, empty fields to update",
@@ -110,9 +111,9 @@ func TestUpdateTokenFeeder(t *testing.T) {
 			err:    types.ErrInvalidParams.Wrapf("invalid tokenFeeder to update, invalid EndBlock, currentHeight: %d, set: %d", 11, 0),
 		},
 		{
-			name: "invalid update, for existing feeder, add a new feeder, set endblock>0 but =<startbasedBlock",
+			name: "invalid update, add a new feeder, set endblock>0 but <=startbasedBlock",
 			tokenFeeder: types.TokenFeeder{
-				TokenID:        4,
+				TokenID:        3,
 				StartBaseBlock: 10,
 				StartRoundID:   1,
 				Interval:       10,
@@ -120,6 +121,59 @@ func TestUpdateTokenFeeder(t *testing.T) {
 			},
 			height: 1,
 			err:    types.ErrInvalidParams.Wrapf("invalid TokenFeeder, invalid EndBlock to be set, startBaseBlock: %d, endBlock: %d", 10, 9),
+		},
+		{
+			name: "invalid update, resume a stopped feeder, set startroundID incorrectly",
+			tokenFeeder: types.TokenFeeder{
+				TokenID:        2,
+				RuleID:         1,
+				StartRoundID:   3, // should be 4
+				StartBaseBlock: 51,
+				Interval:       10,
+				EndBlock:       0,
+			},
+			height: 50,
+			err:    types.ErrInvalidParams.Wrapf("invalid tokenFeeder to update, invalid StartBaseBlock or StartRoundID, currentHeight:%d, set_startBasedBlock:%d, set_StartRoundID:%d", 50, 51, 3),
+		},
+		{
+			name: "invalid update, resume a stopped feeder, set startBasedBlock in history",
+			tokenFeeder: types.TokenFeeder{
+				TokenID:        2,
+				RuleID:         1,
+				StartRoundID:   4, // should be 4
+				StartBaseBlock: 50,
+				Interval:       10,
+				EndBlock:       0,
+			},
+			height: 51,
+			err:    types.ErrInvalidParams.Wrapf("invalid tokenFeeder to update, invalid StartBaseBlock or StartRoundID, currentHeight:%d, set_startBasedBlock:%d, set_StartRoundID:%d", 50, 51, 3),
+		},
+
+		// valid inputs
+		{
+			name: "valid update, new feeder",
+			tokenFeeder: types.TokenFeeder{
+				TokenID:        3,
+				StartBaseBlock: 10,
+				StartRoundID:   1,
+				Interval:       10,
+				EndBlock:       19,
+			},
+			height: 1,
+			err:    nil,
+		},
+		{
+			name: "valid update, resume a stopped feeder",
+			tokenFeeder: types.TokenFeeder{
+				TokenID:        2,
+				RuleID:         1,
+				StartRoundID:   4, // should be 4
+				StartBaseBlock: 51,
+				Interval:       10,
+				EndBlock:       0,
+			},
+			height: 50,
+			err:    nil,
 		},
 	}
 	p := types.DefaultParams()
@@ -155,6 +209,8 @@ func TestUpdateTokenFeeder(t *testing.T) {
 			}
 			if tt.err != nil {
 				require.ErrorIs(t, err, tt.err)
+			} else {
+				require.NoError(t, err)
 			}
 		})
 	}
