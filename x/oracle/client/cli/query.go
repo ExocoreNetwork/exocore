@@ -27,6 +27,7 @@ func GetQueryCmd(_ string) *cobra.Command {
 	cmd.AddCommand(CmdQueryParams())
 	// cmd.AddCommand(CmdListPrices())
 	cmd.AddCommand(CmdShowPrices())
+	cmd.AddCommand(CmdShowLatestPrice())
 	cmd.AddCommand(CmdShowValidatorUpdateBlock())
 	cmd.AddCommand(CmdShowIndexRecentParams())
 	cmd.AddCommand(CmdShowIndexRecentMsg())

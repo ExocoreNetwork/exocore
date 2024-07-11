@@ -2,22 +2,30 @@ package keeper
 
 import (
 	"context"
+	"errors"
 	"strconv"
+	"time"
 
 	"github.com/ExocoreNetwork/exocore/x/oracle/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
+const layout = "2006-01-02 15:04:05"
+
 // CreatePrice proposes price for new round of specific tokenFeeder
 func (ms msgServer) CreatePrice(goCtx context.Context, msg *types.MsgCreatePrice) (*types.MsgCreatePriceResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
+
+	logger := ms.Keeper.Logger(ctx)
+	if err := checkTimestamp(ctx, msg); err != nil {
+		return nil, types.ErrPriceProposalFormatInvalid.Wrap(err.Error())
+	}
 
 	newItem, caches, err := GetAggregatorContext(ctx, ms.Keeper).NewCreatePrice(ctx, msg)
 	if err != nil {
 		return nil, err
 	}
 
-	logger := ms.Keeper.Logger(ctx)
 	logger.Info("add price proposal for aggregation", "feederID", msg.FeederID, "basedBlock", msg.BasedBlock, "proposer", msg.Creator)
 
 	ctx.EventManager().EmitEvent(sdk.NewEvent(
@@ -51,4 +59,25 @@ func (ms msgServer) CreatePrice(goCtx context.Context, msg *types.MsgCreatePrice
 	}
 
 	return &types.MsgCreatePriceResponse{}, nil
+}
+
+func checkTimestamp(goCtx context.Context, msg *types.MsgCreatePrice) error {
+	ctx := sdk.UnwrapSDKContext(goCtx)
+	now := ctx.BlockTime().UTC()
+	for _, ps := range msg.Prices {
+		for _, price := range ps.Prices {
+			ts := price.Timestamp
+			if len(ts) == 0 {
+				return errors.New("timestamp should not be empty")
+			}
+			t, err := time.ParseInLocation(layout, ts, time.UTC)
+			if err != nil {
+				return errors.New("timestamp format invalid")
+			}
+			if now.Add(5 * time.Second).Before(t) {
+				return errors.New("timestamp is in the future")
+			}
+		}
+	}
+	return nil
 }

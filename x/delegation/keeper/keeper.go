@@ -7,8 +7,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/ethereum/go-ethereum/core"
-	ethtypes "github.com/ethereum/go-ethereum/core/types"
 )
 
 type Keeper struct {
@@ -58,11 +56,8 @@ func (k *Keeper) Hooks() delegationtype.DelegationHooks {
 	return k.hooks
 }
 
-// IDelegation interface will be implemented by deposit keeper
+// IDelegation interface will be implemented by delegation keeper
 type IDelegation interface {
-	// PostTxProcessing automatically call PostTxProcessing to update delegation state after receiving delegation event tx from layerZero protocol
-	PostTxProcessing(ctx sdk.Context, msg core.Message, receipt *ethtypes.Receipt) error
-
 	// DelegateAssetToOperator handle the DelegateAssetToOperator txs from msg service
 	DelegateAssetToOperator(ctx context.Context, delegation *delegationtype.MsgDelegation) (*delegationtype.DelegationResponse, error)
 	// UndelegateAssetFromOperator handle the UndelegateAssetFromOperator txs from msg service

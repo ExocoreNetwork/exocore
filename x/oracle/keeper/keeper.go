@@ -20,7 +20,7 @@ type (
 		memKey     storetypes.StoreKey
 		paramstore paramtypes.Subspace
 		authority  string
-		common.KeeperStaking
+		common.KeeperDogfood
 	}
 )
 
@@ -31,7 +31,7 @@ func NewKeeper(
 	storeKey storetypes.StoreKey,
 	memKey storetypes.StoreKey,
 	ps paramtypes.Subspace,
-	sKeeper common.KeeperStaking,
+	sKeeper common.KeeperDogfood,
 ) Keeper {
 	// set KeyTable if it has not already been set
 	if !ps.HasKeyTable() {
@@ -43,7 +43,7 @@ func NewKeeper(
 		storeKey:      storeKey,
 		memKey:        memKey,
 		paramstore:    ps,
-		KeeperStaking: sKeeper,
+		KeeperDogfood: sKeeper,
 	}
 }
 

@@ -1,14 +1,16 @@
 package keeper_test
 
 import (
+	"fmt"
 	"strings"
+
+	assetskeeper "github.com/ExocoreNetwork/exocore/x/assets/keeper"
 
 	abci "github.com/cometbft/cometbft/abci/types"
 
 	sdkmath "cosmossdk.io/math"
 	assetstypes "github.com/ExocoreNetwork/exocore/x/assets/types"
 	delegationtype "github.com/ExocoreNetwork/exocore/x/delegation/types"
-	"github.com/ExocoreNetwork/exocore/x/deposit/keeper"
 	operatorKeeper "github.com/ExocoreNetwork/exocore/x/operator/keeper"
 	operatorTypes "github.com/ExocoreNetwork/exocore/x/operator/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -49,14 +51,14 @@ func (suite *OperatorTestSuite) prepareDeposit(assetAddr common.Address, amount 
 	suite.updatedAmountForOptIn = sdkmath.NewInt(20)
 	suite.stakerID, suite.assetID = assetstypes.GetStakeIDAndAssetID(suite.clientChainLzID, suite.Address[:], suite.assetAddr[:])
 	// staking assets
-	depositParam := &keeper.DepositParams{
+	depositParam := &assetskeeper.DepositWithdrawParams{
 		ClientChainLzID: suite.clientChainLzID,
 		Action:          assetstypes.Deposit,
 		StakerAddress:   suite.Address[:],
 		OpAmount:        suite.depositAmount,
 		AssetsAddress:   assetAddr[:],
 	}
-	err := suite.App.DepositKeeper.Deposit(suite.Ctx, depositParam)
+	err := suite.App.AssetsKeeper.PerformDepositOrWithdraw(suite.Ctx, depositParam)
 	suite.NoError(err)
 }
 
@@ -109,6 +111,7 @@ func (suite *OperatorTestSuite) CheckState(expectedState *StateForCheck) {
 
 	value, err = suite.App.OperatorKeeper.GetOperatorUSDValue(suite.Ctx, suite.avsAddr, suite.operatorAddr.String())
 	if expectedState.AVSOperatorShare.IsNil() {
+		fmt.Println("the err is:", err)
 		suite.True(strings.Contains(err.Error(), operatorTypes.ErrNoKeyInTheStore.Error()))
 	} else {
 		suite.NoError(err)
@@ -160,25 +163,11 @@ func (suite *OperatorTestSuite) TestOptOut() {
 			OptedOutHeight: uint64(suite.Ctx.BlockHeight()),
 		},
 		AVSTotalShare:    sdkmath.LegacyNewDec(0),
-		AVSOperatorShare: sdkmath.LegacyDec{},
+		AVSOperatorShare: sdkmath.LegacyNewDec(0),
 		AssetState:       nil,
 		OperatorShare:    sdkmath.LegacyDec{},
 		StakerShare:      sdkmath.LegacyDec{},
 	}
 	suite.App.OperatorKeeper.EndBlock(suite.Ctx, abci.RequestEndBlock{})
 	suite.CheckState(expectedState)
-}
-
-func (suite *OperatorTestSuite) TestSlash() {
-	suite.prepare()
-	err := suite.App.OperatorKeeper.OptIn(suite.Ctx, suite.operatorAddr, suite.avsAddr)
-	suite.NoError(err)
-	optInHeight := suite.Ctx.BlockHeight()
-
-	// run to the block at specified height
-	runToHeight := optInHeight + 10
-	for i := optInHeight; i < runToHeight; i++ {
-		suite.NextBlock()
-	}
-	suite.Equal(runToHeight, suite.Ctx.BlockHeight())
 }

@@ -2,11 +2,13 @@ package testdata
 
 import "github.com/ExocoreNetwork/exocore/x/oracle/types"
 
+const t = "2024-05-01 01:01:01"
+
 func newPTD(detID, price string) *types.PriceTimeDetID {
 	return &types.PriceTimeDetID{
 		Price:     price,
 		Decimal:   18,
-		Timestamp: "-",
+		Timestamp: t,
 		DetID:     detID,
 	}
 }
@@ -22,7 +24,7 @@ func newPTR(price string, roundID uint64) *types.PriceTimeRound {
 	return &types.PriceTimeRound{
 		Price:     price,
 		Decimal:   18,
-		Timestamp: "",
+		Timestamp: t,
 		RoundID:   roundID,
 	}
 }
