@@ -1,7 +1,7 @@
 package avs_test
 
 import (
-	epochstypes "github.com/evmos/evmos/v14/x/epochs/types"
+	epochstypes "github.com/ExocoreNetwork/exocore/x/epochs/types"
 	"math/big"
 
 	"github.com/ExocoreNetwork/exocore/app"

@@ -60,25 +60,28 @@ func GetAggregatorContext(ctx sdk.Context, k Keeper) *aggregator.AggregatorConte
 }
 
 func recacheAggregatorContext(ctx sdk.Context, agc *aggregator.AggregatorContext, k Keeper, c *cache.Cache) bool {
-	from := ctx.BlockHeight() - int64(common.MaxNonce)
-	to := ctx.BlockHeight() - 1
+	logger := k.Logger(ctx)
+	from := ctx.BlockHeight() - int64(common.MaxNonce) + 1
+	to := ctx.BlockHeight()
 
 	h, ok := k.GetValidatorUpdateBlock(ctx)
 	recentParamsMap := k.GetAllRecentParamsAsMap(ctx)
 	if !ok || len(recentParamsMap) == 0 {
+		logger.Info("no validatorUpdateBlock found, go to initial process", "height", ctx.BlockHeight())
 		// no cache, this is the very first running, so go to initial process instead
 		return false
 	}
 
-	if int64(h.Block) > from {
-		from = int64(h.Block)
+	if int64(h.Block) >= from {
+		from = int64(h.Block) + 1
 	}
 
+	logger.Info("recacheAggregatorContext", "from", from, "to", to, "height", ctx.BlockHeight())
 	totalPower := big.NewInt(0)
 	validatorPowers := make(map[string]*big.Int)
 	validatorSet := k.GetAllExocoreValidators(ctx)
 	for _, v := range validatorSet {
-		validatorPowers[sdk.AccAddress(v.Address).String()] = big.NewInt(v.Power)
+		validatorPowers[sdk.ConsAddress(v.Address).String()] = big.NewInt(v.Power)
 		totalPower = new(big.Int).Add(totalPower, big.NewInt(v.Power))
 	}
 	agc.SetValidatorPowers(validatorPowers)
@@ -91,58 +94,59 @@ func recacheAggregatorContext(ctx sdk.Context, agc *aggregator.AggregatorContext
 	c.AddCache(cache.ItemV(validatorPowers))
 
 	recentMsgs := k.GetAllRecentMsgAsMap(ctx)
-	for ; from < to; from++ {
-		// fill params
-		prev := int64(0)
-		for b, recentParams := range recentParamsMap {
-			if b <= from && b > prev {
-				agc.SetParams(recentParams)
-				prev = b
-				setCommonParams(recentParams)
-			}
-		}
-
-		agc.PrepareRound(ctx, uint64(from))
-
-		if msgs := recentMsgs[from+1]; msgs != nil {
-			for _, msg := range msgs {
-				// these messages are retreived for recache, just skip the validation check and fill the memory cache
-				//nolint
-				agc.FillPrice(&types.MsgCreatePrice{
-					Creator:  msg.Validator,
-					FeederID: msg.FeederID,
-					Prices:   msg.PSources,
-				})
-			}
-		}
-		agc.SealRound(ctx, false)
-	}
 	var p *types.Params
 	var b int64
 	if from >= to {
 		// backwards compatible for that the validatorUpdateBlock updated every block
 		prev := int64(0)
-		for b, p = range recentParamsMap {
+		for b = range recentParamsMap {
 			if b > prev {
-				// pTmp be set at least once, since len(recentParamsMap)>0
 				prev = b
 			}
 		}
+		p = recentParamsMap[prev]
 		agc.SetParams(p)
 		setCommonParams(p)
+	} else {
+		for ; from < to; from++ {
+			// fill params
+			prev := int64(0)
+			for b, p = range recentParamsMap {
+				if b <= from && b > prev {
+					agc.SetParams(p)
+					prev = b
+					setCommonParams(p)
+				}
+			}
+
+			agc.PrepareRoundBeginBlock(ctx, uint64(from))
+
+			if msgs := recentMsgs[from]; msgs != nil {
+				for _, msg := range msgs {
+					// these messages are retreived for recache, just skip the validation check and fill the memory cache
+					//nolint
+					agc.FillPrice(&types.MsgCreatePrice{
+						Creator:  msg.Validator,
+						FeederID: msg.FeederID,
+						Prices:   msg.PSources,
+					})
+				}
+			}
+			ctxReplay := ctx.WithBlockHeight(from)
+			agc.SealRound(ctxReplay, false)
+		}
 	}
 
 	var pRet cache.ItemP
 	if updated := c.GetCache(&pRet); !updated {
 		c.AddCache(cache.ItemP(*p))
 	}
-	// fill params cache
-	agc.PrepareRound(ctx, uint64(to))
 
 	return true
 }
 
 func initAggregatorContext(ctx sdk.Context, agc *aggregator.AggregatorContext, k common.KeeperOracle, c *cache.Cache) {
+	ctx.Logger().Info("initAggregatorContext", "height", ctx.BlockHeight())
 	// set params
 	p := k.GetParams(ctx)
 	agc.SetParams(&p)
@@ -154,7 +158,7 @@ func initAggregatorContext(ctx sdk.Context, agc *aggregator.AggregatorContext, k
 	validatorPowers := make(map[string]*big.Int)
 	validatorSet := k.GetAllExocoreValidators(ctx)
 	for _, v := range validatorSet {
-		validatorPowers[sdk.AccAddress(v.Address).String()] = big.NewInt(v.Power)
+		validatorPowers[sdk.ConsAddress(v.Address).String()] = big.NewInt(v.Power)
 		totalPower = new(big.Int).Add(totalPower, big.NewInt(v.Power))
 	}
 
@@ -166,7 +170,7 @@ func initAggregatorContext(ctx sdk.Context, agc *aggregator.AggregatorContext, k
 	// set validatorPower cache
 	c.AddCache(cache.ItemV(validatorPowers))
 
-	agc.PrepareRound(ctx, uint64(ctx.BlockHeight()-1))
+	agc.PrepareRoundBeginBlock(ctx, uint64(ctx.BlockHeight()))
 }
 
 func ResetAggregatorContext() {

@@ -191,9 +191,9 @@ import (
 	recoverykeeper "github.com/evmos/evmos/v14/x/recovery/keeper"
 	recoverytypes "github.com/evmos/evmos/v14/x/recovery/types"
 
-	"github.com/evmos/evmos/v14/x/epochs"
-	epochskeeper "github.com/evmos/evmos/v14/x/epochs/keeper"
-	epochstypes "github.com/evmos/evmos/v14/x/epochs/types"
+	"github.com/ExocoreNetwork/exocore/x/epochs"
+	epochskeeper "github.com/ExocoreNetwork/exocore/x/epochs/keeper"
+	epochstypes "github.com/ExocoreNetwork/exocore/x/epochs/types"
 
 	"github.com/evmos/evmos/v14/x/erc20"
 	erc20keeper "github.com/evmos/evmos/v14/x/erc20/keeper"

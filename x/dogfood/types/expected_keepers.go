@@ -2,10 +2,10 @@ package types
 
 import (
 	"cosmossdk.io/math"
+	epochsTypes "github.com/ExocoreNetwork/exocore/x/epochs/types"
 	tmprotocrypto "github.com/cometbft/cometbft/proto/tendermint/crypto"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
-	epochsTypes "github.com/evmos/evmos/v14/x/epochs/types"
 )
 
 // EpochsKeeper represents the expected keeper interface for the epochs module.
