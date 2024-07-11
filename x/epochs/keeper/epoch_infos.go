@@ -10,6 +10,7 @@ import (
 // It validates the epoch info being sent, and checks that an epoch with the same
 // identifier does not already exist.
 // Before saving, it sets the start time and current epoch start height if they are not set.
+// Since it validates (and fills, where necessary) the input provided, it is a public function.
 func (k Keeper) AddEpochInfo(ctx sdk.Context, epochInfo types.EpochInfo) error {
 	if err := epochInfo.Validate(); err != nil {
 		return err
@@ -47,7 +48,7 @@ func (k Keeper) GetEpochInfo(
 
 // setEpochInfoUnchecked sets the provided epoch info in the store, indexed by the identifier.
 // It performs no validation; the caller must ensure that it is valid and all the fields
-// are populated correctly.
+// are populated correctly. This is why the function is private to this module.
 func (k Keeper) setEpochInfoUnchecked(ctx sdk.Context, epoch types.EpochInfo) {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefixEpoch)
 	bz := k.cdc.MustMarshal(&epoch)
