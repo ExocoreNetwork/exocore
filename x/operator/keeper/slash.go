@@ -70,12 +70,12 @@ func (k *Keeper) SlashAssets(ctx sdk.Context, parameter *types.SlashInputInfo) (
 	// calculate the new slash proportion according to the historical power and current assets state
 	slashUSDValue := sdkmath.LegacyNewDec(parameter.Power).Mul(parameter.SlashProportion)
 	// calculate the current usd value of all assets pool for the operator
-	usdValues, err := k.CalculateUSDValueForOperator(ctx, true, parameter.Operator.String(), nil, nil, nil)
+	stakingInfo, err := k.CalculateUSDValueForOperator(ctx, true, parameter.Operator.String(), nil, nil, nil)
 	if err != nil {
 		return nil, err
 	}
 	// calculate the new slash proportion
-	newSlashProportion := slashUSDValue.Quo(usdValues.StakingAndWaitUnbonding)
+	newSlashProportion := slashUSDValue.Quo(stakingInfo.StakingAndWaitUnbonding)
 	newSlashProportion = sdkmath.LegacyMinDec(sdkmath.LegacyNewDec(1), newSlashProportion)
 
 	executionInfo := &types.SlashExecutionInfo{

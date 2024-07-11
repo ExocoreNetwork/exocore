@@ -20,6 +20,36 @@ message DecValueField {
   ];
 }
 
+// OperatorOptedUSDValue records the self and total opted-in USD value for the specified operator and AVS
+message OperatorOptedUSDValue {
+  // self_usd_value is the USD value owned by the operator itself.
+  string self_usd_value = 1
+  [
+    (cosmos_proto.scalar) = "cosmos.Dec",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+    (gogoproto.nullable) = false,
+    (gogoproto.customname) = "SelfUSDValue"
+  ];
+  // total_usd_value is the total opted-in USD value for the specified operator and AVS
+  string total_usd_value = 2
+  [
+    (cosmos_proto.scalar) = "cosmos.Dec",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+    (gogoproto.nullable) = false,
+    (gogoproto.customname) = "TotalUSDValue"
+  ];
+  // active_usd_value is the active opted-in USD value for the specified operator and AVS
+  // this field will be zero if the operator's self staking isn't sufficient. Of course, it will
+  // be equal to total_usd_value if the operator's self staking meets the AVS requirement.
+  string active_usd_value = 3
+  [
+    (cosmos_proto.scalar) = "cosmos.Dec",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+    (gogoproto.nullable) = false,
+    (gogoproto.customname) = "ActiveUSDValue"
+  ];
+}
+
 // ClientChainEarningAddrList is the list of client chain earning addresses.
 // Because the reward token provide by the AVS might be located at different client chain, the operator need to
 // provide the different client chain address to receive the token rewards.

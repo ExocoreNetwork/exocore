@@ -2,6 +2,7 @@ package types
 
 import (
 	"cosmossdk.io/math"
+	"github.com/ExocoreNetwork/exocore/x/operator/types"
 	epochsTypes "github.com/ExocoreNetwork/exocore/x/epochs/types"
 	tmprotocrypto "github.com/cometbft/cometbft/proto/tendermint/crypto"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -67,6 +68,12 @@ type OperatorKeeper interface {
 	GetOperatorConsKeyForChainID(
 		sdk.Context, sdk.AccAddress, string,
 	) (bool, *tmprotocrypto.PublicKey, error)
+
+	// GetOrCalculateOperatorUSDValues is used to get the self staking value for the operator
+	GetOrCalculateOperatorUSDValues(
+		ctx sdk.Context,
+		operator sdk.AccAddress,
+		chainID string) (optedUSDValues types.OperatorOptedUSDValue, err error)
 }
 
 // DelegationKeeper represents the expected keeper interface for the delegation module.
@@ -78,4 +85,13 @@ type DelegationKeeper interface {
 // AssetsKeeper represents the expected keeper interface for the assets module.
 type AssetsKeeper interface {
 	IsStakingAsset(sdk.Context, string) bool
+}
+
+// AVSKeeper represents the expected keeper interface for the AVS module.
+type AVSKeeper interface {
+	// GetAVSAddrByChainID return the unified AVS address from the app chain ID
+	GetAVSAddrByChainID(ctx sdk.Context, chainID string) (string, error)
+	// GetAVSMinimumSelfDelegation returns the USD value of minimum self delegation, which
+	// is set for operator
+	GetAVSMinimumSelfDelegation(ctx sdk.Context, avsAddr string) (math.LegacyDec, error)
 }

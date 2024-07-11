@@ -26,10 +26,10 @@ func (suite *OperatorTestSuite) TestSlashWithInfractionReason() {
 	// call the EndBlock to update the voting power
 	suite.App.OperatorKeeper.EndBlock(suite.Ctx, abci.RequestEndBlock{})
 	infractionHeight := suite.Ctx.BlockHeight()
-	usdValue, err := suite.App.OperatorKeeper.GetOperatorUSDValue(suite.Ctx, avsAddr, suite.operatorAddr.String())
+	optedUSDValues, err := suite.App.OperatorKeeper.GetOperatorOptedUSDValue(suite.Ctx, avsAddr, suite.operatorAddr.String())
 	suite.NoError(err)
 	// get the historical voting power
-	power := usdValue.TruncateInt64()
+	power := optedUSDValues.TotalUSDValue.TruncateInt64()
 	// run to next block
 	suite.NextBlock()
 
@@ -38,7 +38,7 @@ func (suite *OperatorTestSuite) TestSlashWithInfractionReason() {
 	suite.prepareDelegation(true, suite.assetAddr, newDelegateAmount)
 	// updating the voting power
 	suite.App.OperatorKeeper.EndBlock(suite.Ctx, abci.RequestEndBlock{})
-	newUSDValue, err := suite.App.OperatorKeeper.GetOperatorUSDValue(suite.Ctx, avsAddr, suite.operatorAddr.String())
+	newOptedUSDValues, err := suite.App.OperatorKeeper.GetOperatorOptedUSDValue(suite.Ctx, avsAddr, suite.operatorAddr.String())
 	suite.NoError(err)
 	// submits an undelegation to test the slashFromUndelegation
 	undelegationAmount := sdkmath.NewIntWithDecimal(10, assetDecimal)
@@ -59,8 +59,8 @@ func (suite *OperatorTestSuite) TestSlashWithInfractionReason() {
 	suite.NoError(err)
 
 	// check the stored slash records
-	slashValue := usdValue.Mul(slashFactor)
-	newSlashProportion := slashValue.Quo(newUSDValue)
+	slashValue := optedUSDValues.TotalUSDValue.Mul(slashFactor)
+	newSlashProportion := slashValue.Quo(newOptedUSDValues.TotalUSDValue)
 	suite.Equal(suite.Ctx.BlockHeight(), slashInfo.SubmittedHeight)
 	suite.Equal(infractionHeight, slashInfo.EventHeight)
 	suite.Equal(slashFactor, slashInfo.SlashProportion)

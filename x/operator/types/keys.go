@@ -32,7 +32,8 @@ const (
 
 	prefixOperatorOptedAVSInfo
 
-	prefixVotingPowerForAVSOperator
+	prefixVotingPowerForAVS
+	prefixVotingPowerForOperator
 
 	prefixOperatorSlashInfo
 
@@ -67,10 +68,13 @@ var (
 	// operatorAddr + '/' + AVSAddr -> OptedInfo
 	KeyPrefixOperatorOptedAVSInfo = []byte{prefixOperatorOptedAVSInfo}
 
-	// KeyPrefixVotingPowerForAVSOperator key-value:
+	// KeyPrefixVotingPowerForAVS key-value:
 	// AVSAddr -> types.DecValueField（the voting power of specified Avs）
-	// AVSAddr + '/' + operatorAddr -> types.DecValueField (the voting power of specified operator and Avs)
-	KeyPrefixVotingPowerForAVSOperator = []byte{prefixVotingPowerForAVSOperator}
+	KeyPrefixVotingPowerForAVS = []byte{prefixVotingPowerForAVS}
+
+	// KeyPrefixVotingPowerForOperator key-value:
+	// AVSAddr + '/' + operatorAddr -> types.OperatorUSDInfo (the voting power of specified operator and Avs)
+	KeyPrefixVotingPowerForOperator = []byte{prefixVotingPowerForOperator}
 
 	// KeyPrefixOperatorSlashInfo key-value:
 	// operator + '/' + AVSAddr + '/' + slashId -> OperatorSlashInfo

@@ -95,9 +95,9 @@ func (suite *OperatorTestSuite) TestAVSUSDValue() {
 	avsUSDValue, err := suite.App.OperatorKeeper.GetAVSUSDValue(suite.Ctx, suite.avsAddr)
 	suite.NoError(err)
 	suite.Equal(expectedUSDvalue, avsUSDValue)
-	operatorUSDValue, err := suite.App.OperatorKeeper.GetOperatorUSDValue(suite.Ctx, suite.avsAddr, suite.operatorAddr.String())
+	optedUSDValues, err := suite.App.OperatorKeeper.GetOperatorOptedUSDValue(suite.Ctx, suite.avsAddr, suite.operatorAddr.String())
 	suite.NoError(err)
-	suite.Equal(expectedUSDvalue, operatorUSDValue)
+	suite.Equal(expectedUSDvalue, optedUSDValues.TotalUSDValue)
 }
 
 func (suite *OperatorTestSuite) TestVotingPowerForDogFood() {
@@ -134,9 +134,9 @@ func (suite *OperatorTestSuite) TestVotingPowerForDogFood() {
 	avsUSDValue, err := suite.App.OperatorKeeper.GetAVSUSDValue(suite.Ctx, suite.Ctx.ChainID())
 	suite.NoError(err)
 	suite.Equal(initialAVSUSDValue.Add(addUSDValue), avsUSDValue)
-	operatorUSDValue, err := suite.App.OperatorKeeper.GetOperatorUSDValue(suite.Ctx, suite.Ctx.ChainID(), suite.operatorAddr.String())
+	optedUSDValues, err := suite.App.OperatorKeeper.GetOperatorOptedUSDValue(suite.Ctx, suite.Ctx.ChainID(), suite.operatorAddr.String())
 	suite.NoError(err)
-	suite.Equal(initialOperatorUSDValue.Add(addUSDValue), operatorUSDValue)
+	suite.Equal(initialOperatorUSDValue.Add(addUSDValue), optedUSDValues.TotalUSDValue)
 
 	found, consensusKey, err := suite.App.OperatorKeeper.GetOperatorConsKeyForChainID(suite.Ctx, suite.operatorAddr, suite.Ctx.ChainID())
 	suite.NoError(err)

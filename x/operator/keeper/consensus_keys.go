@@ -370,6 +370,50 @@ func (k Keeper) GetActiveOperatorsForChainID(
 	return activeOperator, activePks
 }
 
+func (k Keeper) GetOrCalculateOperatorUSDValues(
+	ctx sdk.Context,
+	operator sdk.AccAddress,
+	chainID string,
+) (optedUSDValues types.OperatorOptedUSDValue, err error) {
+	avsAddr, err := k.avsKeeper.GetAVSAddrByChainID(ctx, chainID)
+	if err != nil {
+		return types.OperatorOptedUSDValue{}, err
+	}
+	// the usd values will be deleted if the operator opts out, so recalculate the
+	// voting power to set the tokens and shares for this case.
+	if !k.IsOptedIn(ctx, operator.String(), avsAddr) {
+		// get assets supported by the AVS
+		assets, err := k.avsKeeper.GetAVSSupportedAssets(ctx, avsAddr)
+		if err != nil {
+			return types.OperatorOptedUSDValue{}, err
+		}
+		if assets == nil {
+			return types.OperatorOptedUSDValue{}, err
+		}
+		// get the prices and decimals of assets
+		decimals, err := k.assetsKeeper.GetAssetsDecimal(ctx, assets)
+		if err != nil {
+			return types.OperatorOptedUSDValue{}, err
+		}
+		prices, err := k.oracleKeeper.GetMultipleAssetsPrices(ctx, assets)
+		if err != nil {
+			return types.OperatorOptedUSDValue{}, err
+		}
+		stakingInfo, err := k.CalculateUSDValueForOperator(ctx, false, operator.String(), assets, decimals, prices)
+		if err != nil {
+			return types.OperatorOptedUSDValue{}, err
+		}
+		optedUSDValues.SelfUSDValue = stakingInfo.SelfStaking
+		optedUSDValues.TotalUSDValue = stakingInfo.Staking
+	} else {
+		optedUSDValues, err = k.GetOperatorOptedUSDValue(ctx, avsAddr, operator.String())
+		if err != nil {
+			return types.OperatorOptedUSDValue{}, err
+		}
+	}
+	return optedUSDValues, nil
+}
+
 // ValidatorByConsAddrForChainID returns a stakingtypes.ValidatorI for the given consensus
 // address and chain id.
 func (k Keeper) ValidatorByConsAddrForChainID(
@@ -402,6 +446,28 @@ func (k Keeper) ValidatorByConsAddrForChainID(
 		return stakingtypes.Validator{}, false
 	}
 	val.Jailed = k.IsOperatorJailedForChainID(ctx, consAddr, chainID)
+
+	// set the tokens, delegated shares and minimum self delegation for unjail
+	avsAddr, err := k.avsKeeper.GetAVSAddrByChainID(ctx, chainID)
+	if err != nil {
+		return stakingtypes.Validator{}, false
+	}
+	minSelfDelegation, err := k.avsKeeper.GetAVSMinimumSelfDelegation(ctx, avsAddr)
+	if err != nil {
+		return stakingtypes.Validator{}, false
+	}
+	val.MinSelfDelegation = sdk.TokensFromConsensusPower(minSelfDelegation.TruncateInt64(), sdk.DefaultPowerReduction)
+
+	// get opted usd values, then use the total usd value as the virtual tokens and shares
+	// we use USD to simulate the staking token for the cosmos-SDK because the Exocore is
+	// a multi-token staking system. The tokens and shares are always balanced.
+	operatorUSDValues, err := k.GetOrCalculateOperatorUSDValues(ctx, operatorAddr, chainID)
+	if err != nil {
+		return stakingtypes.Validator{}, false
+	}
+	power := operatorUSDValues.TotalUSDValue.TruncateInt64()
+	val.Tokens = sdk.TokensFromConsensusPower(power, sdk.DefaultPowerReduction)
+	val.DelegatorShares = val.Tokens.ToLegacyDec()
 	return val, true
 }
 

@@ -109,13 +109,13 @@ func (suite *OperatorTestSuite) CheckState(expectedState *StateForCheck) {
 		suite.Equal(expectedState.AVSTotalShare, value)
 	}
 
-	value, err = suite.App.OperatorKeeper.GetOperatorUSDValue(suite.Ctx, suite.avsAddr, suite.operatorAddr.String())
+	optedUSDValues, err := suite.App.OperatorKeeper.GetOperatorOptedUSDValue(suite.Ctx, suite.avsAddr, suite.operatorAddr.String())
 	if expectedState.AVSOperatorShare.IsNil() {
 		fmt.Println("the err is:", err)
 		suite.True(strings.Contains(err.Error(), operatorTypes.ErrNoKeyInTheStore.Error()))
 	} else {
 		suite.NoError(err)
-		suite.Equal(expectedState.AVSOperatorShare, value)
+		suite.Equal(expectedState.AVSOperatorShare, optedUSDValues.TotalUSDValue)
 	}
 }
 
