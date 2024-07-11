@@ -74,13 +74,13 @@ func (k Keeper) getPools(ctx sdk.Context) ([]types.Pool, error) {
 	return pools, nil
 }
 
-func (k Keeper) getPool(ctx sdk.Context, name string) *rewardPool {
+func (k Keeper) getPool(ctx sdk.Context, name string) *rewardRecord {
 	var pool types.Pool
 	poolKey := key.FromStr(poolNamePrefix).Append(key.FromStr(name))
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefixRewardInfo)
 	if !store.Has(poolKey.Bytes()) {
-		return newRewardPool(ctx, k, k.banker, k.distributor, types.NewPool(name))
+		return newRewardRecord(ctx, k, k.banker, k.distributor, types.NewPool(name))
 	}
-	return newRewardPool(ctx, k, k.banker, k.distributor, pool)
+	return newRewardRecord(ctx, k, k.banker, k.distributor, pool)
 
 }

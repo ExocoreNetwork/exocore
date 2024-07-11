@@ -7,7 +7,7 @@ import (
 	distrtypes "github.com/cosmos/cosmos-sdk/x/distribution/types"
 )
 
-type rewardPool struct {
+type rewardRecord struct {
 	ctx         sdk.Context
 	k           Keeper
 	banker      bankkeeper.Keeper
@@ -16,8 +16,8 @@ type rewardPool struct {
 	staker distrtypes.StakingKeeper
 }
 
-func newRewardPool(ctx sdk.Context, k Keeper, banker bankkeeper.Keeper, distributor types.Distributor, p types.Pool) *rewardPool {
-	return &rewardPool{
+func newRewardRecord(ctx sdk.Context, k Keeper, banker bankkeeper.Keeper, distributor types.Distributor, p types.Pool) *rewardRecord {
+	return &rewardRecord{
 		ctx:         ctx,
 		k:           k,
 		banker:      banker,
@@ -25,7 +25,7 @@ func newRewardPool(ctx sdk.Context, k Keeper, banker bankkeeper.Keeper, distribu
 	}
 }
 
-func (p rewardPool) getRewards(earningAddress string) (sdk.Coins, bool) {
+func (p rewardRecord) getRewards(earningAddress string) (sdk.Coins, bool) {
 	for _, reward := range p.Pool.Rewards {
 		if reward.EarningsAddr == earningAddress {
 			return reward.Coins, true
@@ -34,7 +34,8 @@ func (p rewardPool) getRewards(earningAddress string) (sdk.Coins, bool) {
 	return sdk.Coins{}, false
 }
 
-func (p *rewardPool) AddReward(earningAddress string, coin sdk.Coin) {
+// Logically recording the rewards
+func (p *rewardRecord) AddReward(earningAddress string, coin sdk.Coin) {
 	defer func() {
 		p.k.Logger(p.ctx).Debug("adding rewards in pool", "pool", p.Name, "earningAddress", earningAddress, "coin", coin.String(), "amount", coin.Amount)
 		p.k.setPool(p.ctx, p.Pool)
@@ -57,7 +58,8 @@ func (p *rewardPool) AddReward(earningAddress string, coin sdk.Coin) {
 	})
 }
 
-func (p *rewardPool) ReleaseRewards(earningAddress string) error {
+// Allocate the rewards actually
+func (p *rewardRecord) ReleaseRewards(earningAddress string) error {
 	rewards, ok := p.getRewards(earningAddress)
 	if !ok {
 		return nil
@@ -94,7 +96,7 @@ func (p *rewardPool) ReleaseRewards(earningAddress string) error {
 	return nil
 }
 
-func (p *rewardPool) ClearRewards(earningAddress string) {
+func (p *rewardRecord) ClearRewards(earningAddress string) {
 	for i, reward := range p.Rewards {
 		if reward.EarningsAddr == earningAddress {
 			p.k.Logger(p.ctx).Info("clearing rewards in pool", "pool", p.Name, "earningAddress", earningAddress)

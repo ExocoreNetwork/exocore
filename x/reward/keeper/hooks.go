@@ -34,12 +34,43 @@ func (k Keeper) AfterEpochEnd(
 	pool := k.getPool(ctx, types.ModuleName)
 	// distribute the reward to the avs accordingly
 	ForEach(epochEndAVS, func(p string) {
-		if err := pool.ReleaseRewards(p); err != nil {
+		avsInfo, err := pool.k.avsKeeper.GetAVSInfo(ctx, p)
+		if err != nil {
 			k.Logger(ctx).Error(
-				"release reward error",
-				"error message", err,
+				"get avsInfo error",
+				"avsInfo err", err,
 			)
 			return
+		}
+		assetId := avsInfo.Info.AssetId
+		operatorAddress := avsInfo.Info.OperatorAddress
+
+		for _, operator := range operatorAddress {
+			opAddr, err := sdk.AccAddressFromBech32(operator)
+			if err != nil {
+				k.Logger(ctx).Error(
+					"get operatorInfo error",
+					"operatorInfo err", err,
+				)
+				return
+			}
+			for _, asset := range assetId {
+				assetInfo, err := k.assetsKeeper.GetStakingAssetInfo(ctx, asset)
+				if err != nil {
+					k.Logger(ctx).Error(
+						"get assetInfo error",
+						"assetInfo err", err,
+					)
+					return
+				}
+				if k.assetsKeeper.IsOperatorAssetExist(ctx, opAddr, asset) {
+					coin := sdk.Coin{
+						Denom:  assetInfo.AssetBasicInfo.Symbol,
+						Amount: sdk.NewInt(avsInfo.Info.AssetRewardAmountEpochBasis[asset]),
+					}
+					pool.AddReward(p, coin)
+				}
+			}
 		}
 	})
 }
