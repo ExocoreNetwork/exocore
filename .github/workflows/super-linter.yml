@@ -43,3 +43,6 @@ jobs:
           VALIDATE_GO: false
           VALIDATE_GO_MODULES: false
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # if running with act, do not try to upload the results
+          MULTI_STATUS: ${{ !env.ACT }}
+          RUN_LOCAL: ${{ env.ACT }}

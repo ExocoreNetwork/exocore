@@ -1,23 +1,24 @@
-
 syntax = "proto3";
-package evmos.epochs.v1;
+
+package exocore.epochs.v1;
 
 import "cosmos/base/query/v1beta1/pagination.proto";
-import "evmos/epochs/v1/genesis.proto";
+import "exocore/epochs/v1/genesis.proto";
 import "gogoproto/gogo.proto";
 import "google/api/annotations.proto";
+import "google/protobuf/timestamp.proto";
 
-option go_package = "github.com/evmos/evmos/v14/x/epochs/types";
+option go_package = "github.com/ExocoreNetwork/exocore/x/epochs/types";
 
 // Query defines the gRPC querier service.
 service Query {
-  // EpochInfos provide running epochInfos
+  // EpochInfos provide a list of currently running epochs.
   rpc EpochInfos(QueryEpochsInfoRequest) returns (QueryEpochsInfoResponse) {
-    option (google.api.http).get = "/evmos/epochs/v1/epochs";
+    option (google.api.http).get = "/exocore/dogfood/v1/epochs";
   }
-  // CurrentEpoch provide current epoch of specified identifier
+  // CurrentEpoch provide the current epoch for the specified identifier.
   rpc CurrentEpoch(QueryCurrentEpochRequest) returns (QueryCurrentEpochResponse) {
-    option (google.api.http).get = "/evmos/epochs/v1/current_epoch";
+    option (google.api.http).get = "/exocore/dogfood/v1/current_epoch";
   }
 }
 
@@ -31,16 +32,19 @@ message QueryEpochsInfoRequest {
 // QueryEpochsInfoResponse is the response type for the Query/EpochInfos RPC
 // method.
 message QueryEpochsInfoResponse {
-  // epochs is a slice of all EpochInfos
+  // epochs is a slice of all EpochInfos returned by the query.
   repeated EpochInfo epochs = 1 [(gogoproto.nullable) = false];
-  // pagination defines an optional pagination for the request.
-  cosmos.base.query.v1beta1.PageResponse pagination = 2;
+  // block_time is the block time of the query block ctx.
+  google.protobuf.Timestamp block_time = 2
+    [(gogoproto.stdtime) = true, (gogoproto.nullable) = false];
+  // pagination defines the pagination for the response.
+  cosmos.base.query.v1beta1.PageResponse pagination = 3;
 }
 
 // QueryCurrentEpochRequest is the request type for the Query/EpochInfos RPC
 // method.
 message QueryCurrentEpochRequest {
-  // identifier of the current epoch
+  // identifier of the epoch for which the current number is requested.
   string identifier = 1;
 }
 

@@ -77,7 +77,10 @@ func (k *Keeper) SetHooks(sh types.DogfoodHooks) {
 
 // Hooks returns the hooks registered to the module.
 func (k Keeper) Hooks() types.DogfoodHooks {
-	return k.dogfoodHooks
+	if k.dogfoodHooks != nil {
+		return k.dogfoodHooks
+	}
+	return types.MultiDogfoodHooks{}
 }
 
 // MarkEpochEnd marks the end of the epoch. It is called within the BeginBlocker to inform

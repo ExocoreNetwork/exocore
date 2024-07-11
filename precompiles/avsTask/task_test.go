@@ -6,7 +6,7 @@ import (
 
 	"github.com/ExocoreNetwork/exocore/x/avs/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	epochstypes "github.com/evmos/evmos/v14/x/epochs/types"
+	epochstypes "github.com/ExocoreNetwork/exocore/x/epochs/types"
 
 	"github.com/ExocoreNetwork/exocore/app"
 	"github.com/ExocoreNetwork/exocore/precompiles/avsTask"
