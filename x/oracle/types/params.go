@@ -317,7 +317,7 @@ func (p Params) UpdateTokenFeeder(tf *TokenFeeder, currentHeight uint64) (Params
 		if tf.StartBaseBlock > 0 {
 			// Set startBlock to some height in history is not allowed
 			if tf.StartBaseBlock <= currentHeight {
-				return p, ErrInvalidParams.Wrap("invalid tokenFeeder to update, invalid StartBaseBlock")
+				return p, ErrInvalidParams.Wrapf("invalid tokenFeeder to update, invalid StartBaseBlock, currentHeight: %d, set: %d", currentHeight, tf.StartBaseBlock)
 			}
 			update = true
 			tokenFeeder.StartBaseBlock = tf.StartBaseBlock
@@ -329,7 +329,7 @@ func (p Params) UpdateTokenFeeder(tf *TokenFeeder, currentHeight uint64) (Params
 		if tf.EndBlock > 0 {
 			// EndBlock must be set to some height in the future
 			if tf.EndBlock <= currentHeight {
-				return p, ErrInvalidParams.Wrap("invalid tokenFeeder to update, invalid EndBlock")
+				return p, ErrInvalidParams.Wrapf("invalid tokenFeeder to update, invalid EndBlock, currentHeight: %d, set: %d", currentHeight, tf.EndBlock)
 			}
 			tokenFeeder.EndBlock = tf.EndBlock
 			update = true
@@ -346,7 +346,7 @@ func (p Params) UpdateTokenFeeder(tf *TokenFeeder, currentHeight uint64) (Params
 	if tokenFeeder.EndBlock == 0 || tokenFeeder.EndBlock > currentHeight {
 		// fields can be modified: endBlock
 		if tf.EndBlock == 0 || tf.EndBlock <= currentHeight {
-			return p, ErrInvalidParams.Wrap("invalid tokenFeeder to update, invalid EndBlock")
+			return p, ErrInvalidParams.Wrapf("invalid tokenFeeder to update, invalid EndBlock, currentHeight: %d, set: %d", currentHeight, tf.EndBlock)
 		}
 		tokenFeeder.EndBlock = tf.EndBlock
 		p.TokenFeeders[tfIdx] = tokenFeeder
@@ -356,7 +356,7 @@ func (p Params) UpdateTokenFeeder(tf *TokenFeeder, currentHeight uint64) (Params
 	// latest feeder is stopped, this is actually a new feeder to resume the latest one for the same token
 	latestRoundID := tokenFeeder.StartRoundID + (tokenFeeder.EndBlock-tokenFeeder.StartBaseBlock)/tokenFeeder.Interval
 	if tf.StartBaseBlock <= currentHeight || tf.StartRoundID != latestRoundID+1 {
-		return p, ErrInvalidParams.Wrap("invalid tokenFeeder to update")
+		return p, ErrInvalidParams.Wrapf("invalid tokenFeeder to update, invalid StartBaseBlock or StartRoundID, currentHeight:%d, set_startBasedBlock:%d, set_StartRoundID:%d", currentHeight, tf.StartBaseBlock, tf.StartRoundID)
 	}
 	p.TokenFeeders = append(p.TokenFeeders, tf)
 
@@ -395,7 +395,7 @@ func (p Params) GetFeederIDsByTokenID(tID uint64) []int {
 func (c Chain) validate() error {
 	// Name must be set
 	if len(c.Name) == 0 {
-		return ErrInvalidParams.Wrap("invalid Chain")
+		return ErrInvalidParams.Wrap("invalid Chain, name not set")
 	}
 	return nil
 }
@@ -404,7 +404,7 @@ func (c Chain) validate() error {
 func (t Token) validate() error {
 	// Name must be set, and chainID must start from 1
 	if len(t.Name) == 0 || t.ChainID < 1 {
-		return ErrInvalidParams.Wrap("invalid Token")
+		return ErrInvalidParams.Wrap("invalid Token, name not set or ChainID<1")
 	}
 	return nil
 }
@@ -426,7 +426,7 @@ func (r RuleSource) validate() error {
 func (s Source) validate() error {
 	// Name must be set
 	if len(s.Name) == 0 {
-		return ErrInvalidParams.Wrap("invalid Source, duplicated name")
+		return ErrInvalidParams.Wrap("invalid Source, name not set")
 	}
 	return nil
 }
@@ -438,12 +438,12 @@ func (f TokenFeeder) validate() error {
 		f.StartRoundID < 1 ||
 		f.Interval < 1 ||
 		f.StartBaseBlock < 1 {
-		return ErrInvalidParams.Wrap("invalid TokenFeeder")
+		return ErrInvalidParams.Wrapf("invalid TokenFeeder, tokenID/startRoundID/interval/startBaseBlock: %d, %d, %d, %d", f.TokenID, f.StartRoundID, f.Interval, f.StartBaseBlock)
 	}
 
 	// if EndBlock is set, it must be bigger than startBaseBlock
 	if f.EndBlock > 0 && f.StartBaseBlock >= f.EndBlock {
-		return ErrInvalidParams.Wrap("invalid TokenFeeder")
+		return ErrInvalidParams.Wrapf("invalid TokenFeeder, invalid EndBlock to be set, startBaseBlock: %d, endBlock: %d", f.StartBaseBlock, f.EndBlock)
 	}
 
 	return nil

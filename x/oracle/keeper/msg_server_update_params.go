@@ -17,6 +17,11 @@ func (ms msgServer) UpdateParams(goCtx context.Context, msg *types.MsgUpdatePara
 
 	p := ms.GetParams(ctx)
 	var err error
+	defer func() {
+		if err != nil {
+			ms.Logger(ctx).Error("UpdateParams failed", "error", err)
+		}
+	}()
 	height := uint64(ctx.BlockHeight())
 	// add sources
 	if p, err = p.AddSources(msg.Params.Sources...); err != nil {
