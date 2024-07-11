@@ -92,6 +92,35 @@ func TestUpdateTokenFeeder(t *testing.T) {
 			height: 1,
 			err:    types.ErrInvalidParams.Wrap("invalid tokenFeeder, non-exist tokenID referred"),
 		},
+		{
+			name: "invalid udpate, for existing feeder, feeder not started, and set endblock to history height",
+			tokenFeeder: types.TokenFeeder{
+				TokenID:  2,
+				EndBlock: 5,
+			},
+			height: 6,
+			err:    types.ErrInvalidParams.Wrapf("invalid tokenFeeder to update, invalid EndBlock, currentHeight: %d, set: %d", 6, 5),
+		},
+		{
+			name: "invalid update, for existing feeder, feeder started, and set endblock to history height including 0",
+			tokenFeeder: types.TokenFeeder{
+				TokenID: 2,
+			},
+			height: 11,
+			err:    types.ErrInvalidParams.Wrapf("invalid tokenFeeder to update, invalid EndBlock, currentHeight: %d, set: %d", 11, 0),
+		},
+		{
+			name: "invalid update, for existing feeder, add a new feeder, set endblock>0 but =<startbasedBlock",
+			tokenFeeder: types.TokenFeeder{
+				TokenID:        4,
+				StartBaseBlock: 10,
+				StartRoundID:   1,
+				Interval:       10,
+				EndBlock:       9,
+			},
+			height: 1,
+			err:    types.ErrInvalidParams.Wrapf("invalid TokenFeeder, invalid EndBlock to be set, startBaseBlock: %d, endBlock: %d", 10, 9),
+		},
 	}
 	p := types.DefaultParams()
 	p.Tokens = append(p.Tokens, &types.Token{
