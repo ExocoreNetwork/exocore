@@ -5,6 +5,7 @@ import (
 	assetstype "github.com/ExocoreNetwork/exocore/x/assets/types"
 	"github.com/ExocoreNetwork/exocore/x/delegation/keeper"
 	delegationtype "github.com/ExocoreNetwork/exocore/x/delegation/types"
+	oracletype "github.com/ExocoreNetwork/exocore/x/oracle/types"
 	tmprotocrypto "github.com/cometbft/cometbft/proto/tendermint/crypto"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/common"
@@ -64,37 +65,25 @@ type Price struct {
 type OracleKeeper interface {
 	// GetSpecifiedAssetsPrice is a function to retrieve the asset price according to the
 	// assetID.
-	GetSpecifiedAssetsPrice(ctx sdk.Context, assetID string) (Price, error)
+	GetSpecifiedAssetsPrice(ctx sdk.Context, assetID string) (oracletype.Price, error)
 	// GetMultipleAssetsPrices is a function to retrieve multiple assets prices according to the
 	// assetID.
-	GetMultipleAssetsPrices(ctx sdk.Context, assets map[string]interface{}) (map[string]Price, error)
+	GetMultipleAssetsPrices(ctx sdk.Context, assets map[string]interface{}) (map[string]oracletype.Price, error)
 }
 
 type MockOracle struct{}
 
-func (MockOracle) GetSpecifiedAssetsPrice(_ sdk.Context, _ string) (Price, error) {
-	return Price{
+func (MockOracle) GetSpecifiedAssetsPrice(_ sdk.Context, _ string) (oracletype.Price, error) {
+	return oracletype.Price{
 		Value:   sdkmath.NewInt(1),
 		Decimal: 0,
 	}, nil
 }
 
-func (MockOracle) GetPriceChangeAssets(_ sdk.Context) (map[string]*PriceChange, error) {
-	// use USDT as the mock asset
-	ret := make(map[string]*PriceChange, 0)
-	usdtAssetID := "0xdac17f958d2ee523a2206206994597c13d831ec7_0x65"
-	ret[usdtAssetID] = &PriceChange{
-		NewPrice:      sdkmath.NewInt(1),
-		OriginalPrice: sdkmath.NewInt(1),
-		Decimal:       0,
-	}
-	return nil, nil
-}
-
-func (MockOracle) GetMultipleAssetsPrices(_ sdk.Context, assets map[string]interface{}) (map[string]Price, error) {
-	ret := make(map[string]Price, 0)
+func (MockOracle) GetMultipleAssetsPrices(_ sdk.Context, assets map[string]interface{}) (map[string]oracletype.Price, error) {
+	ret := make(map[string]oracletype.Price, 0)
 	for assetID := range assets {
-		ret[assetID] = Price{
+		ret[assetID] = oracletype.Price{
 			Value:   sdkmath.NewInt(1),
 			Decimal: 0,
 		}

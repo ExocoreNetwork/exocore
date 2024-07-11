@@ -65,8 +65,7 @@ func TestPricesGetMultiAssets(t *testing.T) {
 
 	assets["unexistsAsset"] = new(interface{})
 	_, err = keeper.GetMultipleAssetsPrices(ctx, assets)
-	require.ErrorIs(t, err, types.ErrGetPrices.Wrapf("assetID does not exist in oracle %s", "unexistsAsset"))
-
+	require.ErrorIs(t, err, types.ErrGetPriceAssetNotFound.Wrapf("assetID does not exist in oracle %s", "unexistsAsset"))
 }
 
 func TestPricesRemove(t *testing.T) {
