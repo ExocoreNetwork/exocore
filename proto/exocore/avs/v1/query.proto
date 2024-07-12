@@ -11,7 +11,7 @@ option go_package = "github.com/ExocoreNetwork/exocore/x/avs/types";
 // QueryAVSInfoReq is the request to query avs related information
 message QueryAVSInfoReq {
   // avs_address is the address of avs
-  string avs_address = 1 [(gogoproto.customname) = "AVSAddres"];
+  string avs_address = 1 [(gogoproto.customname) = "AVSAddress"];
 }
 
 // QueryAVSInfoResponse is the response of avs related information

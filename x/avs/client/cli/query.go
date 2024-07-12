@@ -39,7 +39,7 @@ func QueryAVSInfo() *cobra.Command {
 
 			queryClient := types.NewQueryClient(clientCtx)
 			req := &types.QueryAVSInfoReq{
-				AVSAddres: args[0],
+				AVSAddress: args[0],
 			}
 			res, err := queryClient.QueryAVSInfo(context.Background(), req)
 			if err != nil {

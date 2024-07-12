@@ -224,16 +224,6 @@ func (p Precompile) RegisterAVSTask(
 ) ([]byte, error) {
 	// check the invalidation of caller contract
 	callerAddress, _ := util.ProcessAddress(contract.CallerAddress.String())
-
-	avs, err := p.avsKeeper.GetAVSInfo(ctx, callerAddress)
-	if err != nil {
-		return nil, err
-	}
-
-	if avs.GetInfo() == nil {
-		return nil, errorsmod.Wrap(err, "this AVS has not been registered yet")
-	}
-
 	params, err := p.GetTaskParamsFromInputs(ctx, args)
 	if err != nil {
 		return nil, err
