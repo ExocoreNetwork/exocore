@@ -4,17 +4,10 @@ import (
 	"context"
 	"fmt"
 
-	// "strings"
-
-	"github.com/spf13/cobra"
-
+	"github.com/ExocoreNetwork/exocore/x/avs/types"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
-
-	// "github.com/cosmos/cosmos-sdk/client/flags"
-	// sdk "github.com/cosmos/cosmos-sdk/types"
-
-	"github.com/ExocoreNetwork/exocore/x/avs/types"
+	"github.com/spf13/cobra"
 )
 
 // GetQueryCmd returns the cli query commands for this module
@@ -55,6 +48,34 @@ func QueryAVSInfo() *cobra.Command {
 			return clientCtx.PrintProto(res)
 		},
 	}
+	flags.AddQueryFlagsToCmd(cmd)
+	return cmd
+}
+
+func GetTaskInfo() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "GetTaskInfo avstask info",
+		Short: "Get avstask info",
+		Long:  "Get avstask info",
+		Args:  cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx, err := client.GetClientQueryContext(cmd)
+			if err != nil {
+				return err
+			}
+
+			queryClient := types.NewQueryClient(clientCtx)
+			req := types.QueryAVSTaskInfoReq{
+				TaskAddr: args[0],
+			}
+			res, err := queryClient.QueryAVSTaskInfo(context.Background(), &req)
+			if err != nil {
+				return err
+			}
+			return clientCtx.PrintProto(res)
+		},
+	}
+
 	flags.AddQueryFlagsToCmd(cmd)
 	return cmd
 }

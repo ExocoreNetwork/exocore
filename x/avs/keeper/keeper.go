@@ -53,6 +53,9 @@ func (k Keeper) AVSInfoUpdate(ctx sdk.Context, params *AVSRegisterOrDeregisterPa
 
 	action := params.Action
 	epochIdentifier := params.EpochIdentifier
+	if avsInfo != nil && avsInfo.Info.EpochIdentifier != "" {
+		epochIdentifier = avsInfo.Info.EpochIdentifier
+	}
 	epoch, found := k.epochsKeeper.GetEpochInfo(ctx, epochIdentifier)
 	if !found {
 		return errorsmod.Wrap(types.ErrEpochNotFound, fmt.Sprintf("epoch info not found %s", epochIdentifier))
@@ -66,6 +69,7 @@ func (k Keeper) AVSInfoUpdate(ctx sdk.Context, params *AVSRegisterOrDeregisterPa
 		avs := &types.AVSInfo{
 			Name:               params.AvsName,
 			AvsAddress:         params.AvsAddress,
+			RewardAddr:         params.RewardContractAddr,
 			SlashAddr:          params.SlashContractAddr,
 			AvsOwnerAddress:    params.AvsOwnerAddress,
 			AssetId:            params.AssetID,
@@ -81,10 +85,56 @@ func (k Keeper) AVSInfoUpdate(ctx sdk.Context, params *AVSRegisterOrDeregisterPa
 			return errorsmod.Wrap(types.ErrUnregisterNonExistent, fmt.Sprintf("the avsaddress is :%s", params.AvsAddress))
 		}
 		// If avs DeRegisterAction check UnbondingPeriod
+		if (epoch.CurrentEpoch - avsInfo.GetInfo().StartingEpoch) > int64(avsInfo.Info.AvsUnbondingPeriod) {
+			return errorsmod.Wrap(types.ErrUnbondingPeriod, fmt.Sprintf("not qualified to deregister %s", avsInfo))
+		}
+		// If avs DeRegisterAction check CallerAddress
+		if !slices.Contains(avsInfo.Info.AvsOwnerAddress, params.CallerAddress) {
+			return errorsmod.Wrap(types.ErrCallerAddressUnauthorized, fmt.Sprintf("this caller not qualified to deregister %s", params.CallerAddress))
+		}
+		// If avs DeRegisterAction check avsname
+		if avsInfo.Info.Name != params.AvsName {
+			return errorsmod.Wrap(types.ErrAvsNameMismatch, fmt.Sprintf("Unregistered AVS name is incorrect %s", params.AvsName))
+		}
+		return k.DeleteAVSInfo(ctx, params.AvsAddress)
+	case UpdateAction:
+		if avsInfo == nil {
+			return errorsmod.Wrap(types.ErrUnregisterNonExistent, fmt.Sprintf("the avsaddress is :%s", params.AvsAddress))
+		}
+		// If avs UpdateAction check UnbondingPeriod
 		if int64(avsInfo.Info.AvsUnbondingPeriod) < (epoch.CurrentEpoch - avsInfo.GetInfo().StartingEpoch) {
 			return errorsmod.Wrap(types.ErrUnbondingPeriod, fmt.Sprintf("not qualified to deregister %s", avsInfo))
 		}
-		return k.DeleteAVSInfo(ctx, params.AvsAddress)
+		// If avs UpdateAction check CallerAddress
+		if !slices.Contains(avsInfo.Info.AvsOwnerAddress, params.CallerAddress) {
+			return errorsmod.Wrap(types.ErrCallerAddressUnauthorized, fmt.Sprintf("this caller not qualified to update %s", params.CallerAddress))
+		}
+		avs := avsInfo.Info
+		if params.AvsName != "" {
+			avs.Name = params.AvsName
+		}
+		if params.MinSelfDelegation > 0 {
+			avs.MinSelfDelegation = sdk.NewIntFromUint64(params.MinSelfDelegation)
+		}
+		if params.AvsOwnerAddress != nil {
+			avs.AvsOwnerAddress = params.AvsOwnerAddress
+		}
+		if params.SlashContractAddr != "" {
+			avs.SlashAddr = params.SlashContractAddr
+		}
+		if params.EpochIdentifier != "" {
+			avs.EpochIdentifier = params.EpochIdentifier
+		}
+		if params.UnbondingPeriod > 0 {
+			avs.AvsUnbondingPeriod = uint32(params.UnbondingPeriod)
+		}
+		if params.AssetID != nil {
+			avs.AssetId = params.AssetID
+		}
+		avs.AvsAddress = params.AvsAddress
+		avs.StartingEpoch = epoch.CurrentEpoch + 1
+
+		return k.SetAVSInfo(ctx, avs)
 	default:
 		return errorsmod.Wrap(types.ErrInvalidAction, fmt.Sprintf("Invalid action: %d", action))
 	}
@@ -120,6 +170,14 @@ func (k Keeper) AVSInfoUpdateWithOperator(ctx sdk.Context, params *OperatorOptPa
 	case DeRegisterAction:
 		if !slices.Contains(operatorAddrList, operatorAddress) {
 			return errorsmod.Wrap(types.ErrUnregisterNonExistent, fmt.Sprintf("No available operatorAddress to DeRegisterAction, operatorAddress: %s", operatorAddress))
+		}
+		epoch, found := k.epochsKeeper.GetEpochInfo(ctx, avs.EpochIdentifier)
+		if !found {
+			return errorsmod.Wrap(types.ErrEpochNotFound, fmt.Sprintf("epoch info not found %s", avs.EpochIdentifier))
+		}
+		// If avs UpdateAction check UnbondingPeriod
+		if int64(avsInfo.Info.AvsUnbondingPeriod) < (epoch.CurrentEpoch - avsInfo.GetInfo().StartingEpoch) {
+			return errorsmod.Wrap(types.ErrUnbondingPeriod, fmt.Sprintf("not qualified to deregister %s", operatorAddress))
 		}
 		avs.OperatorAddress = types.RemoveOperatorAddress(operatorAddrList, operatorAddress)
 		return k.SetAVSInfo(ctx, avs)

@@ -56,9 +56,9 @@ func NewPrecompile(
 }
 
 // Address defines the address of the avs compile contract.
-// address: 0x0000000000000000000000000000000000000902
+// address: 0x0000000000000000000000000000000000000901
 func (p Precompile) Address() common.Address {
-	return common.HexToAddress("0x0000000000000000000000000000000000000902")
+	return common.HexToAddress("0x0000000000000000000000000000000000000901")
 }
 
 // RequiredGas calculates the precompiled contract's base gas rate.
@@ -85,10 +85,22 @@ func (p Precompile) Run(evm *vm.EVM, contract *vm.Contract, readOnly bool) (bz [
 	defer cmn.HandleGasError(ctx, contract, initialGas, &err)()
 
 	switch method.Name {
-	case MethodAVSAction:
-		bz, err = p.RegisterOrDeregisterAVSInfo(ctx, evm.Origin, contract, stateDB, method, args)
-	case MethodOperatorAction:
+	case MethodRegisterAVS:
+		bz, err = p.RegisterAVS(ctx, evm.Origin, contract, stateDB, method, args)
+	case MethodDeregisterAVS:
+		bz, err = p.DeregisterAVS(ctx, evm.Origin, contract, stateDB, method, args)
+	case MethodUpdateAVS:
+		bz, err = p.UpdateAVS(ctx, evm.Origin, contract, stateDB, method, args)
+	case MethodRegisterOperatorToAVS:
 		bz, err = p.BindOperatorToAVS(ctx, evm.Origin, contract, stateDB, method, args)
+	case MethodDeregisterOperatorFromAVS:
+		bz, err = p.UnbindOperatorToAVS(ctx, evm.Origin, contract, stateDB, method, args)
+	case MethodRegisterAVSTask:
+		bz, err = p.RegisterAVSTask(ctx, evm.Origin, contract, method, args)
+	case MethodRegisterBLSPublicKey:
+		bz, err = p.RegisterBLSPublicKey(ctx, evm.Origin, stateDB, method, args)
+	case MethodGetRegisteredPubkey:
+		bz, err = p.GetRegisteredPubkey(ctx, contract, method, args)
 	}
 
 	if err != nil {
@@ -111,7 +123,8 @@ func (p Precompile) Run(evm *vm.EVM, contract *vm.Contract, readOnly bool) (bz [
 //   - AVSRegister
 func (Precompile) IsTransaction(methodID string) bool {
 	switch methodID {
-	case MethodAVSAction, MethodOperatorAction:
+	case MethodRegisterAVS, MethodDeregisterAVS, MethodUpdateAVS, MethodRegisterOperatorToAVS,
+		MethodDeregisterOperatorFromAVS, MethodRegisterAVSTask, MethodRegisterBLSPublicKey, MethodGetRegisteredPubkey:
 		return true
 	default:
 		return false

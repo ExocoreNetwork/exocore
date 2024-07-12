@@ -2,6 +2,11 @@ package keeper
 
 import (
 	"context"
+	"fmt"
+
+	errorsmod "cosmossdk.io/errors"
+
+	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	"github.com/ExocoreNetwork/exocore/x/avs/types"
 )
@@ -31,5 +36,21 @@ func (k Keeper) DeRegisterAVS(_ context.Context, _ *types.DeRegisterAVSReq) (*ty
 	// 	return nil, err
 	// }
 
+	return nil, nil
+}
+
+func (k Keeper) RegisterAVSTask(ctx context.Context, req *types.RegisterAVSTaskReq) (*types.RegisterAVSTaskResponse, error) {
+	c := sdk.UnwrapSDKContext(ctx)
+	avs, err := k.GetAVSInfo(c, req.FromAddress)
+	if err != nil {
+		return nil, err
+	}
+	if avs.GetInfo() == nil {
+		return nil, errorsmod.Wrap(types.ErrNotYetRegistered, fmt.Sprintf("RegisterAVSTask: avs address is %s", req.FromAddress))
+	}
+	err = k.SetAVSTaskInfo(c, req)
+	if err != nil {
+		return nil, err
+	}
 	return nil, nil
 }

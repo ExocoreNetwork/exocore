@@ -38,11 +38,13 @@ type AVSRegisterOrDeregisterParams struct {
 	AvsOwnerAddress []string
 	AssetID         []string
 
-	MinSelfDelegation uint64
-	UnbondingPeriod   uint64
-	SlashContractAddr string
-	OperatorAddress   []string
-	EpochIdentifier   string
+	MinSelfDelegation  uint64
+	UnbondingPeriod    uint64
+	RewardContractAddr string
+	SlashContractAddr  string
+	OperatorAddress    []string
+	EpochIdentifier    string
+	CallerAddress      string
 }
 type OperatorOptParams struct {
 	Name            string
@@ -57,4 +59,5 @@ type OperatorOptParams struct {
 const (
 	RegisterAction   = 1
 	DeRegisterAction = 2
+	UpdateAction     = 3
 )

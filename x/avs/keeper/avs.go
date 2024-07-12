@@ -11,13 +11,23 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-func (k *Keeper) GetAVSSupportedAssets(ctx sdk.Context, avsAddr string) ([]string, error) {
+func (k *Keeper) GetAVSSupportedAssets(ctx sdk.Context, avsAddr string) (map[string]interface{}, error) {
 	avsInfo, err := k.GetAVSInfo(ctx, avsAddr)
 	if err != nil {
 		return nil, errorsmod.Wrap(err, fmt.Sprintf("GetAVSSupportedAssets: key is %s", avsAddr))
 	}
+	assetIDList := avsInfo.Info.AssetId
+	ret := make(map[string]interface{})
 
-	return avsInfo.Info.AssetId, nil
+	for _, assetID := range assetIDList {
+		asset, err := k.assetsKeeper.GetStakingAssetInfo(ctx, assetID)
+		if err != nil {
+			return nil, errorsmod.Wrap(err, fmt.Sprintf("GetStakingAssetInfo: key is %s", assetID))
+		}
+		ret[assetID] = asset
+	}
+
+	return ret, nil
 }
 
 func (k *Keeper) GetAVSSlashContract(ctx sdk.Context, avsAddr string) (string, error) {
@@ -41,10 +51,12 @@ func (k *Keeper) GetAVSMinimumSelfDelegation(ctx sdk.Context, avsAddr string) (s
 }
 
 // GetEpochEndAVSs returns the AVS list where the current block marks the end of their epoch.
-func (k *Keeper) GetEpochEndAVSs(ctx sdk.Context) ([]string, error) {
+func (k *Keeper) GetEpochEndAVSs(ctx sdk.Context, epochIdentifier string, epochNumber int64) ([]string, error) {
 	var avsList []types.AVSInfo
-	k.IterateAVSInfo(ctx, func(_ int64, epochEndAVSInfo types.AVSInfo) (stop bool) {
-		avsList = append(avsList, epochEndAVSInfo)
+	k.IterateAVSInfo(ctx, func(_ int64, avsInfo types.AVSInfo) (stop bool) {
+		if epochIdentifier == avsInfo.EpochIdentifier && epochNumber > avsInfo.StartingEpoch {
+			avsList = append(avsList, avsInfo)
+		}
 		return false
 	})
 

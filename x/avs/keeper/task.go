@@ -5,7 +5,7 @@ import (
 
 	errorsmod "cosmossdk.io/errors"
 
-	"github.com/ExocoreNetwork/exocore/x/avstask/types"
+	"github.com/ExocoreNetwork/exocore/x/avs/types"
 	"github.com/cosmos/cosmos-sdk/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )

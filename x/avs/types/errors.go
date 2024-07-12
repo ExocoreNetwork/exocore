@@ -31,4 +31,16 @@ var (
 		ModuleName, 7,
 		"Error: epoch info not found",
 	)
+	ErrCallerAddressUnauthorized = errorsmod.Register(
+		ModuleName, 6,
+		"Error: caller address is not authorized",
+	)
+	ErrAvsNameMismatch = errorsmod.Register(
+		ModuleName, 7,
+		"Error: avs Name mismatch",
+	)
+	ErrNotYetRegistered = errorsmod.Register(
+		ModuleName, 8,
+		"Error: this AVS has not been registered yet",
+	)
 )
