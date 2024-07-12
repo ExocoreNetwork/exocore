@@ -8,7 +8,6 @@ import (
 	dogfoodtypes "github.com/ExocoreNetwork/exocore/x/dogfood/types"
 	"github.com/ExocoreNetwork/exocore/x/oracle/keeper"
 	"github.com/ExocoreNetwork/exocore/x/oracle/keeper/cache"
-	"github.com/ExocoreNetwork/exocore/x/oracle/keeper/common"
 	"github.com/ExocoreNetwork/exocore/x/oracle/keeper/testdata"
 	"github.com/ExocoreNetwork/exocore/x/oracle/types"
 	. "github.com/agiledragon/gomonkey/v2"
@@ -84,11 +83,11 @@ var _ = Describe("MsgCreatePrice", func() {
 			})
 
 			c = keeper.GetCaches()
-			pRes := &common.Params{}
-			c.GetCache(cache.ItemP(pRes))
+			var pRes cache.ItemP
+			c.GetCache(&pRes)
 			p4Test := types.DefaultParams()
 			p4Test.TokenFeeders[1].StartBaseBlock = 1
-			Expect(*pRes).Should(BeEquivalentTo(p4Test))
+			Expect(pRes).Should(BeEquivalentTo(p4Test))
 		})
 
 		It("success on 3rd message", func() {

@@ -5,10 +5,10 @@ import (
 	avstypes "github.com/ExocoreNetwork/exocore/x/avs/keeper"
 	"github.com/ExocoreNetwork/exocore/x/avs/types"
 	delegationtypes "github.com/ExocoreNetwork/exocore/x/delegation/types"
+	epochstypes "github.com/ExocoreNetwork/exocore/x/epochs/types"
 	operatortype "github.com/ExocoreNetwork/exocore/x/operator/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
-	epochstypes "github.com/evmos/evmos/v14/x/epochs/types"
 )
 
 func (suite *AVSTestSuite) TestAVS() {

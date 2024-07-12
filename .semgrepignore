@@ -32,3 +32,6 @@ testutil/
 
 # Documentation
 client/docs/
+
+# Ignore simulation
+x/*/simulation/

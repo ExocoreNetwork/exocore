@@ -64,6 +64,8 @@ type BaseTestSuite struct {
 
 	StateDB        *statedb.StateDB
 	QueryClientEVM evmtypes.QueryClient
+
+	InitTime time.Time
 }
 
 func (suite *BaseTestSuite) SetupTest() {
@@ -71,9 +73,7 @@ func (suite *BaseTestSuite) SetupTest() {
 }
 
 // SetupWithGenesisValSet initializes a new ExocoreApp with a validator set and genesis accounts
-// that also act as delegators. For simplicity, each validator is bonded with a delegation
-// of one consensus engine unit (10^6) in the default token of the simapp from first genesis
-// account. A Nop logger is set in SimApp.
+// that also act as delegators.
 func (suite *BaseTestSuite) SetupWithGenesisValSet(genAccs []authtypes.GenesisAccount, balances ...banktypes.Balance) {
 	pruneOpts := pruningtypes.NewPruningOptionsFromString(pruningtypes.PruningOptionDefault)
 	appI, genesisState := exocoreapp.SetupTestingApp(utils.DefaultChainID, &pruneOpts, false)()
@@ -131,8 +131,28 @@ func (suite *BaseTestSuite) SetupWithGenesisValSet(genAccs []authtypes.GenesisAc
 	}
 	// x/oracle initialization
 	oracleDefaultParams := oracletypes.DefaultParams()
+	oracleDefaultParams.Tokens[1].AssetID = "0xdac17f958d2ee523a2206206994597c13d831ec7_0x65"
 	oracleDefaultParams.TokenFeeders[1].StartBaseBlock = 1
+	oracleDefaultParams.Tokens = append(oracleDefaultParams.Tokens, &oracletypes.Token{
+		Name:            "USDT",
+		ChainID:         1,
+		ContractAddress: "0x",
+		Decimal:         0,
+		Active:          true,
+		AssetID:         "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48_0x65",
+	})
+	oracleDefaultParams.TokenFeeders = append(oracleDefaultParams.TokenFeeders, &oracletypes.TokenFeeder{
+		TokenID:        2,
+		RuleID:         1,
+		StartRoundID:   1,
+		StartBaseBlock: 1,
+		Interval:       10,
+	})
 	oracleGenesis := oracletypes.NewGenesisState(oracleDefaultParams)
+	oracleGenesis.PricesList = []oracletypes.Prices{
+		{TokenID: 1, NextRoundID: 2, PriceList: []*oracletypes.PriceTimeRound{{Price: "1", Decimal: 0, RoundID: 1}}},
+		{TokenID: 2, NextRoundID: 2, PriceList: []*oracletypes.PriceTimeRound{{Price: "1", Decimal: 0, RoundID: 1}}},
+	}
 	genesisState[oracletypes.ModuleName] = app.AppCodec().MustMarshalJSON(oracleGenesis)
 
 	assetsGenesis := assetstypes.NewGenesis(
@@ -269,22 +289,24 @@ func (suite *BaseTestSuite) SetupWithGenesisValSet(genAccs []authtypes.GenesisAc
 	suite.Require().NoError(err)
 
 	// init chain will set the validator set and initialize the genesis accounts
+	suite.InitTime = time.Now().UTC()
 	app.InitChain(
 		abci.RequestInitChain{
+			Time:            suite.InitTime,
 			ChainId:         utils.DefaultChainID,
 			Validators:      []abci.ValidatorUpdate{},
 			ConsensusParams: exocoreapp.DefaultConsensusParams,
 			AppStateBytes:   stateBytes,
 		},
 	)
-	app.Commit()
+	// committing the chain now is not required. doing so will skip the first block.
 
 	// instantiate new header
 	convKey, err := cryptocodec.FromTmPubKeyInterface(pubKey)
 	suite.Require().NoError(err)
 	header := testutil.NewHeader(
-		2,
-		time.Now().UTC(),
+		1,
+		suite.InitTime.Add(time.Second),
 		utils.DefaultChainID,
 		sdk.GetConsAddress(convKey),
 		tmhash.Sum([]byte("App")),
@@ -297,6 +319,10 @@ func (suite *BaseTestSuite) SetupWithGenesisValSet(genAccs []authtypes.GenesisAc
 
 	suite.Ctx = app.BaseApp.NewContext(false, header)
 	suite.App = app
+
+	// at this point, we have reached the genesis state and we are in the middle of the first block.
+	// BeginBlock of block 1 has been done, and we can process txs.
+	// EndBlock is called after that.
 }
 
 func (suite *BaseTestSuite) DoSetupTest() {
@@ -378,9 +404,20 @@ func (suite *BaseTestSuite) DeployContract(contract evmtypes.CompiledContract) (
 	return
 }
 
-// NextBlock commits the current block and sets up the next block.
+// NextBlock commits the current block and sets up the next block at a time t + 1 second.
 func (suite *BaseTestSuite) NextBlock() {
+	suite.CommitAfter(time.Second)
+}
+
+// Commit commits the current block and sets up the next block at a time t + 1 nanosecond.
+func (suite *BaseTestSuite) Commit() {
+	suite.CommitAfter(time.Nanosecond)
+}
+
+// CommitAfter commits the current block and sets up the next block at a time t + d.
+func (suite *BaseTestSuite) CommitAfter(d time.Duration) {
 	var err error
-	suite.Ctx, err = CommitAndCreateNewCtx(suite.Ctx, suite.App, time.Second, suite.ValSet, true)
+	// do not use an uncached ctx here
+	suite.Ctx, err = CommitAndCreateNewCtx(suite.Ctx, suite.App, d, suite.ValSet, false)
 	suite.Require().NoError(err)
 }

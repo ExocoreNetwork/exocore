@@ -12,7 +12,7 @@ var zeroBig = big.NewInt(0)
 
 type (
 	ItemV map[string]*big.Int
-	ItemP *common.Params
+	ItemP types.Params
 	ItemM types.MsgItem
 )
 
@@ -22,7 +22,6 @@ type Cache struct {
 	params     *cacheParams
 }
 
-// type cacheMsgs map[uint64][]*ItemM
 type cacheMsgs []*ItemM
 
 // used to track validator change
@@ -33,7 +32,8 @@ type cacheValidator struct {
 
 // used to track params change
 type cacheParams struct {
-	params *common.Params
+	// params types.Params
+	params *ItemP
 	update bool
 }
 
@@ -102,10 +102,10 @@ func (c *cacheValidator) commit(ctx sdk.Context, k common.KeeperOracle) {
 	k.SetValidatorUpdateBlock(ctx, types.ValidatorUpdateBlock{Block: block})
 }
 
-func (c *cacheParams) add(p *common.Params) {
+func (c *cacheParams) add(p ItemP) {
 	// params' update is triggered when params is actually updated, so no need to do comparison here, just udpate and mark the flag
 	// TODO: add comparison check, that's something should be done for validation
-	c.params = p
+	c.params = &p
 	c.update = true
 }
 
@@ -164,11 +164,11 @@ func (c *Cache) GetCache(i any) bool {
 			item[addr] = power
 		}
 		return c.validators.update
-	case ItemP:
+	case *ItemP:
 		if item == nil {
 			return false
 		}
-		*item = *(c.params.params)
+		*item = *c.params.params
 		return c.params.update
 	case *([]*ItemM):
 		if item == nil {
@@ -218,7 +218,7 @@ func NewCache() *Cache {
 			validators: make(map[string]*big.Int),
 		},
 		params: &cacheParams{
-			params: &common.Params{},
+			params: &ItemP{},
 		},
 	}
 }

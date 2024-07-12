@@ -150,7 +150,15 @@ func (am AppModule) ExportGenesis(ctx sdk.Context, cdc codec.JSONCodec) json.Raw
 func (AppModule) ConsensusVersion() uint64 { return 1 }
 
 // BeginBlock contains the logic that is automatically triggered at the beginning of each block
-func (am AppModule) BeginBlock(_ sdk.Context, _ abci.RequestBeginBlock) {}
+func (am AppModule) BeginBlock(ctx sdk.Context, _ abci.RequestBeginBlock) {
+	_ = keeper.GetCaches()
+	agc := keeper.GetAggregatorContext(ctx, am.keeper)
+
+	logger := am.keeper.Logger(ctx)
+
+	logger.Info("prepare for next oracle round of each tokenFeeder", "height", ctx.BlockHeight())
+	agc.PrepareRoundBeginBlock(ctx, 0)
+}
 
 // EndBlock contains the logic that is automatically triggered at the end of each block
 func (am AppModule) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.ValidatorUpdate {
@@ -164,8 +172,7 @@ func (am AppModule) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.Val
 		validatorList := make(map[string]*big.Int)
 		for _, vu := range validatorUpdates {
 			pubKey, _ := cryptocodec.FromTmProtoPublicKey(vu.PubKey)
-			validator, _ := am.keeper.GetValidatorByConsAddr(ctx, sdk.GetConsAddress(pubKey))
-			validatorList[validator.OperatorAddress] = big.NewInt(vu.Power)
+			validatorList[sdk.ConsAddress(pubKey.Address()).String()] = big.NewInt(vu.Power)
 		}
 		// update validator set information in cache
 		cs.AddCache(cache.ItemV(validatorList))
@@ -175,46 +182,26 @@ func (am AppModule) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.Val
 		agc.SetValidatorPowers(validatorPowers)
 		// TODO: seal all alive round since validatorSet changed here
 		forceSeal = true
-		logger.Info("validator set changed, force seal all active rounds")
+		logger.Info("validator set changed, force seal all active rounds", "height", ctx.BlockHeight())
 	}
 
 	// TODO: for v1 use mode==1, just check the failed feeders
 	_, failed := agc.SealRound(ctx, forceSeal)
 	// append new round with previous price for fail-seal token
 	for _, tokenID := range failed {
-		event := sdk.NewEvent(
+		prevPrice, nextRoundID := am.keeper.GrowRoundID(ctx, tokenID)
+		logger.Info("add new round with previous price under fail aggregation", "tokenID", tokenID, "roundID", nextRoundID, "price", prevPrice)
+		ctx.EventManager().EmitEvent(sdk.NewEvent(
 			types.EventTypeCreatePrice,
 			sdk.NewAttribute(types.AttributeKeyTokenID, strconv.FormatUint(tokenID, 10)),
 			sdk.NewAttribute(types.AttributeKeyPriceUpdated, types.AttributeValuePriceUpdatedFail),
+			sdk.NewAttribute(types.AttributeKeyRoundID, strconv.FormatUint(nextRoundID, 10)),
+			sdk.NewAttribute(types.AttributeKeyFinalPrice, prevPrice),
+		),
 		)
-		logInfo := fmt.Sprintf("add new round with previous price under fail aggregation, tokenID:%d", tokenID)
-		if pTR, ok := am.keeper.GetPriceTRLatest(ctx, tokenID); ok {
-			pTR.RoundID++
-			am.keeper.AppendPriceTR(ctx, tokenID, pTR)
-			logger.Info("add new round with previous price under fail aggregation", "tokenID", tokenID, "roundID", pTR.RoundID)
-			logInfo += fmt.Sprintf(", roundID:%d, price:%s", pTR.RoundID, pTR.Price)
-			event.AppendAttributes(
-				sdk.NewAttribute(types.AttributeKeyRoundID, strconv.FormatUint(pTR.RoundID, 10)),
-				sdk.NewAttribute(types.AttributeKeyFinalPrice, pTR.Price),
-			)
-		} else {
-			nextRoundID := am.keeper.GetNextRoundID(ctx, tokenID)
-			am.keeper.AppendPriceTR(ctx, tokenID, types.PriceTimeRound{
-				RoundID: nextRoundID,
-			})
-			logInfo += fmt.Sprintf(", roundID:%d, price:-", nextRoundID)
-			event.AppendAttributes(
-				sdk.NewAttribute(types.AttributeKeyRoundID, strconv.FormatUint(nextRoundID, 10)),
-				sdk.NewAttribute(types.AttributeKeyFinalPrice, "-"),
-			)
-		}
-		logger.Info(logInfo)
-		ctx.EventManager().EmitEvent(event)
 	}
 	// TODO: emit events for success sealed rounds(could ignore for v1)
 
-	logger.Info("prepare for next oracle round of each tokenFeeder")
-	agc.PrepareRound(ctx, 0)
 	keeper.ResetAggregatorContextCheckTx()
 
 	// TODO: update params happened during this block for cache, for the case: agc is recached from history and cache'params is set with the latest params by recache, but parmas changed during this block as well. or force agc to be GET first before cache be GET(later approch is better)
