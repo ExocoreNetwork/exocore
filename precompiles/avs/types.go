@@ -10,8 +10,8 @@ import (
 )
 
 func (p Precompile) GetAVSParamsFromInputs(_ sdk.Context, args []interface{}) (*avstypes.AVSRegisterOrDeregisterParams, error) {
-	if len(args) != 7 {
-		return nil, xerrors.Errorf(cmn.ErrInvalidNumberOfArgs, 6, len(args))
+	if len(args) != len(p.ABI.Methods[MethodAVSAction].Inputs) {
+		return nil, xerrors.Errorf(cmn.ErrInvalidNumberOfArgs, len(p.ABI.Methods[MethodAVSAction].Inputs), len(args))
 	}
 	avsParams := &avstypes.AVSRegisterOrDeregisterParams{}
 	avsOwnerAddress, ok := args[0].([]string)
@@ -70,6 +70,13 @@ func (p Precompile) GetAVSParamsFromInputs(_ sdk.Context, args []interface{}) (*
 		return nil, xerrors.Errorf(exocmn.ErrContractInputParaOrType, 6, "uint64", unbondingPeriod)
 	}
 	avsParams.UnbondingPeriod = unbondingPeriod
+
+	epochIdentifier, ok := args[7].(string)
+	if !ok || (action != avstypes.RegisterAction && action != avstypes.DeRegisterAction) {
+		return nil, xerrors.Errorf(exocmn.ErrContractInputParaOrType, 7, "string", epochIdentifier)
+	}
+
+	avsParams.EpochIdentifier = epochIdentifier
 
 	return avsParams, nil
 }

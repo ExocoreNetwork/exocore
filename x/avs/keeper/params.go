@@ -42,6 +42,7 @@ type AVSRegisterOrDeregisterParams struct {
 	UnbondingPeriod   uint64
 	SlashContractAddr string
 	OperatorAddress   []string
+	EpochIdentifier   string
 }
 type OperatorOptParams struct {
 	Name            string

@@ -5,6 +5,7 @@ import (
 	assetstype "github.com/ExocoreNetwork/exocore/x/assets/types"
 	"github.com/ExocoreNetwork/exocore/x/delegation/keeper"
 	delegationtype "github.com/ExocoreNetwork/exocore/x/delegation/types"
+	oracletype "github.com/ExocoreNetwork/exocore/x/oracle/types"
 	tmprotocrypto "github.com/cometbft/cometbft/proto/tendermint/crypto"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/common"
@@ -22,22 +23,10 @@ type AssetsKeeper interface {
 	GetAssetsDecimal(
 		ctx sdk.Context, assets map[string]interface{},
 	) (decimals map[string]uint32, err error)
-	IteratorAssetsForOperator(
-		ctx sdk.Context, operator string, assetsFilter map[string]interface{},
+	IterateAssetsForOperator(
+		ctx sdk.Context, isUpdate bool, operator string, assetsFilter map[string]interface{},
 		f func(assetID string, state *assetstype.OperatorAssetInfo) error,
 	) error
-	GetOperatorAssetInfos(
-		ctx sdk.Context, operatorAddr sdk.Address, assetsFilter map[string]interface{},
-	) (assetsInfo map[string]*assetstype.OperatorAssetInfo, err error)
-	GetOperatorSpecifiedAssetInfo(ctx sdk.Context, operatorAddr sdk.Address, assetID string) (info *assetstype.OperatorAssetInfo, err error)
-	UpdateStakerAssetState(
-		ctx sdk.Context, stakerID string, assetID string,
-		changeAmount assetstype.DeltaStakerSingleAsset,
-	) (err error)
-	UpdateOperatorAssetState(
-		ctx sdk.Context, operatorAddr sdk.Address, assetID string,
-		changeAmount assetstype.DeltaOperatorSingleAsset,
-	) (err error)
 	ClientChainExists(ctx sdk.Context, index uint64) bool
 	GetAllStakingAssetsInfo(ctx sdk.Context) (allAssets map[string]*assetstype.StakingAssetInfo, err error)
 }
@@ -45,15 +34,6 @@ type AssetsKeeper interface {
 var _ DelegationKeeper = &keeper.Keeper{}
 
 type DelegationKeeper interface {
-	GetSingleDelegationInfo(
-		ctx sdk.Context, stakerID, assetID, operatorAddr string,
-	) (*delegationtype.DelegationAmounts, error)
-	DelegationStateByOperatorAssets(
-		ctx sdk.Context, operatorAddr string, assetsFilter map[string]interface{},
-	) (map[string]map[string]delegationtype.DelegationAmounts, error)
-	UpdateDelegationState(
-		ctx sdk.Context, stakerID, assetID, opAddr string, deltaAmounts *delegationtype.DeltaDelegationAmounts,
-	) (bool, error)
 	IterateUndelegationsByOperator(
 		ctx sdk.Context, operator string, heightFilter *uint64, isUpdate bool,
 		opFunc func(undelegation *delegationtype.UndelegationRecord) error) error
@@ -64,19 +44,6 @@ type DelegationKeeper interface {
 		ctx sdk.Context, operator, assetID string, stakerList delegationtype.StakerList,
 	) error
 	DeleteStakersListForOperator(ctx sdk.Context, operator, assetID string) error
-	GetStakerUndelegationRecords(
-		ctx sdk.Context, stakerID, assetID string,
-	) (records []*delegationtype.UndelegationRecord, err error)
-	SetSingleUndelegationRecord(
-		ctx sdk.Context, record *delegationtype.UndelegationRecord,
-	) (recordKey []byte, err error)
-	CalculateSlashShare(
-		ctx sdk.Context, operator sdk.AccAddress, stakerID, assetID string, slashAmount sdkmath.Int,
-	) (share sdkmath.LegacyDec, err error)
-	RemoveShare(
-		ctx sdk.Context, isUndelegation bool, operator sdk.AccAddress,
-		stakerID, assetID string, share sdkmath.LegacyDec,
-	) (removeToken sdkmath.Int, err error)
 }
 
 type PriceChange struct {
@@ -98,42 +65,25 @@ type Price struct {
 type OracleKeeper interface {
 	// GetSpecifiedAssetsPrice is a function to retrieve the asset price according to the
 	// assetID.
-	GetSpecifiedAssetsPrice(ctx sdk.Context, assetID string) (Price, error)
+	GetSpecifiedAssetsPrice(ctx sdk.Context, assetID string) (oracletype.Price, error)
 	// GetMultipleAssetsPrices is a function to retrieve multiple assets prices according to the
 	// assetID.
-	GetMultipleAssetsPrices(ctx sdk.Context, assets map[string]interface{}) (map[string]Price, error)
-	// GetPriceChangeAssets the operator module expect a function that can retrieve all
-	// information about assets price change. Then it can update the USD share state according
-	// to the change information. This function need to return a map, the key is assetID and the
-	// value is PriceChange
-	GetPriceChangeAssets(ctx sdk.Context) (map[string]*PriceChange, error)
+	GetMultipleAssetsPrices(ctx sdk.Context, assets map[string]interface{}) (map[string]oracletype.Price, error)
 }
 
 type MockOracle struct{}
 
-func (MockOracle) GetSpecifiedAssetsPrice(_ sdk.Context, _ string) (Price, error) {
-	return Price{
+func (MockOracle) GetSpecifiedAssetsPrice(_ sdk.Context, _ string) (oracletype.Price, error) {
+	return oracletype.Price{
 		Value:   sdkmath.NewInt(1),
 		Decimal: 0,
 	}, nil
 }
 
-func (MockOracle) GetPriceChangeAssets(_ sdk.Context) (map[string]*PriceChange, error) {
-	// use USDT as the mock asset
-	ret := make(map[string]*PriceChange, 0)
-	usdtAssetID := "0xdac17f958d2ee523a2206206994597c13d831ec7_0x65"
-	ret[usdtAssetID] = &PriceChange{
-		NewPrice:      sdkmath.NewInt(1),
-		OriginalPrice: sdkmath.NewInt(1),
-		Decimal:       0,
-	}
-	return nil, nil
-}
-
-func (MockOracle) GetMultipleAssetsPrices(_ sdk.Context, assets map[string]interface{}) (map[string]Price, error) {
-	ret := make(map[string]Price, 0)
+func (MockOracle) GetMultipleAssetsPrices(_ sdk.Context, assets map[string]interface{}) (map[string]oracletype.Price, error) {
+	ret := make(map[string]oracletype.Price, 0)
 	for assetID := range assets {
-		ret[assetID] = Price{
+		ret[assetID] = oracletype.Price{
 			Value:   sdkmath.NewInt(1),
 			Decimal: 0,
 		}
@@ -197,9 +147,6 @@ type AVSKeeper interface {
 	// todo: maybe the epoch of different AVSs should be implemented in the AVS module,then
 	// the other modules implement the EpochsHooks to trigger state updating.
 	GetEpochEndAVSs(ctx sdk.Context) ([]string, error)
-	// GetHeightForVotingPower retrieves the height of the last block in the epoch
-	// where the voting power used at the current height resides
-	GetHeightForVotingPower(ctx sdk.Context, avsAddr string, height int64) (int64, error)
 }
 
 type SlashKeeper interface {

@@ -18,6 +18,17 @@ func (k Keeper) BeginBlocker(ctx sdk.Context) {
 	k.IterateEpochInfos(
 		ctx,
 		func(_ int64, epochInfo types.EpochInfo) (stop bool) {
+			// even though the epochInfo as validated in AddEpochInfo
+			// and setEpochInfoUnchecked is private to this module,
+			// we still validate it here, just in case.
+			if err := epochInfo.Validate(); err != nil {
+				logger.Error(
+					"epoch info validation failed, skipping",
+					"identifier", epochInfo.Identifier,
+					"error", err,
+				)
+				return false
+			}
 			if ctx.BlockTime().Before(epochInfo.StartTime) {
 				// short circuit if this epoch is not yet scheduled to start
 				return false

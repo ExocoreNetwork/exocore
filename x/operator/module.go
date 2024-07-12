@@ -32,9 +32,7 @@ func (b AppModuleBasic) Name() string {
 	return operatortypes.ModuleName
 }
 
-func (b AppModuleBasic) RegisterLegacyAminoCodec(amino *codec.LegacyAmino) {
-	operatortypes.RegisterLegacyAminoCodec(amino)
-}
+func (b AppModuleBasic) RegisterLegacyAminoCodec(_ *codec.LegacyAmino) {}
 
 func (b AppModuleBasic) RegisterInterfaces(registry codectypes.InterfaceRegistry) {
 	operatortypes.RegisterInterfaces(registry)

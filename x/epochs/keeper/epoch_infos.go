@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"github.com/ExocoreNetwork/exocore/x/epochs/types"
+	"github.com/cosmos/cosmos-sdk/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
@@ -9,13 +10,13 @@ import (
 // It validates the epoch info being sent, and checks that an epoch with the same
 // identifier does not already exist.
 // Before saving, it sets the start time and current epoch start height if they are not set.
+// Since it validates (and fills, where necessary) the input provided, it is a public function.
 func (k Keeper) AddEpochInfo(ctx sdk.Context, epochInfo types.EpochInfo) error {
 	if err := epochInfo.Validate(); err != nil {
 		return err
 	}
-	store := ctx.KVStore(k.storeKey)
-	key := types.KeyEpoch(epochInfo.Identifier)
-	if store.Has(key) {
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefixEpoch)
+	if store.Has([]byte(epochInfo.Identifier)) {
 		return types.ErrDuplicateEpochInfo
 	}
 	if epochInfo.StartTime.IsZero() {
@@ -36,9 +37,8 @@ func (k Keeper) AddEpochInfo(ctx sdk.Context, epochInfo types.EpochInfo) error {
 func (k Keeper) GetEpochInfo(
 	ctx sdk.Context, identifier string,
 ) (epoch types.EpochInfo, found bool) {
-	store := ctx.KVStore(k.storeKey)
-	key := types.KeyEpoch(identifier)
-	bz := store.Get(key)
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefixEpoch)
+	bz := store.Get([]byte(identifier))
 	if len(bz) == 0 {
 		return epoch, false
 	}
@@ -48,12 +48,11 @@ func (k Keeper) GetEpochInfo(
 
 // setEpochInfoUnchecked sets the provided epoch info in the store, indexed by the identifier.
 // It performs no validation; the caller must ensure that it is valid and all the fields
-// are populated correctly.
+// are populated correctly. This is why the function is private to this module.
 func (k Keeper) setEpochInfoUnchecked(ctx sdk.Context, epoch types.EpochInfo) {
-	store := ctx.KVStore(k.storeKey)
-	key := types.KeyEpoch(epoch.Identifier)
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefixEpoch)
 	bz := k.cdc.MustMarshal(&epoch)
-	store.Set(key, bz)
+	store.Set([]byte(epoch.Identifier), bz)
 }
 
 // IterateEpochInfos iterates through all the epochs.

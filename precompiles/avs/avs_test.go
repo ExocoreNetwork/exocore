@@ -1,6 +1,7 @@
 package avs_test
 
 import (
+	epochstypes "github.com/ExocoreNetwork/exocore/x/epochs/types"
 	"math/big"
 
 	"github.com/ExocoreNetwork/exocore/app"
@@ -45,6 +46,7 @@ func (s *AVSManagerPrecompileSuite) TestAVSManager() {
 	from := s.Address
 	avsOwnerAddress := []string{"0x3e108c058e8066DA635321Dc3018294cA82ddEdf", "0xDF907c29719154eb9872f021d21CAE6E5025d7aB", from.String()}
 	assetID := []string{"11", "22", "33"}
+	epochIdentifier := epochstypes.DayEpochID
 	registerOperator := func() {
 		registerReq := &operatortypes.RegisterOperatorReq{
 			FromAddress: operatorAddress,
@@ -66,6 +68,7 @@ func (s *AVSManagerPrecompileSuite) TestAVSManager() {
 			uint64(avsAction),
 			uint64(10),
 			uint64(7),
+			epochIdentifier,
 		)
 		s.Require().NoError(err, "failed to pack input")
 		return s.Address, input

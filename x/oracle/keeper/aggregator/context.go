@@ -3,7 +3,6 @@ package aggregator
 import (
 	"errors"
 	"math/big"
-	"time"
 
 	"github.com/ExocoreNetwork/exocore/x/oracle/keeper/cache"
 	"github.com/ExocoreNetwork/exocore/x/oracle/keeper/common"
@@ -29,7 +28,7 @@ type roundInfo struct {
 // AggregatorContext keeps memory cache for state params, validatorset, and updatedthese values as they updated on chain. And it keeps the information to track all tokenFeeders' status and data collection
 // nolint
 type AggregatorContext struct {
-	params *common.Params
+	params *types.Params
 
 	// validator->power
 	validatorsPower map[string]*big.Int
@@ -71,6 +70,7 @@ func (agc *AggregatorContext) Copy4CheckTx() *AggregatorContext {
 	return ret
 }
 
+// sanity check for the msgCreatePrice
 func (agc *AggregatorContext) sanityCheck(msg *types.MsgCreatePrice) error {
 	// sanity check
 	// TODO: check nonce [1,3] in anteHandler, related to params, may not able
@@ -78,7 +78,9 @@ func (agc *AggregatorContext) sanityCheck(msg *types.MsgCreatePrice) error {
 	// TODO: check len(price.prices)>0, len(price.prices._range_eachPriceSource.Prices)>0, at least has one source, and for each source has at least one price
 	// TODO: check for each source, at most maxDetId count price (now in filter, ->anteHandler)
 
-	if agc.validatorsPower[msg.Creator] == nil {
+	if accAddress, err := sdk.AccAddressFromBech32(msg.Creator); err != nil {
+		return errors.New("invalid address")
+	} else if _, ok := agc.validatorsPower[sdk.ConsAddress(accAddress).String()]; !ok {
 		return errors.New("signer is not validator")
 	}
 
@@ -157,7 +159,7 @@ func (agc *AggregatorContext) FillPrice(msg *types.MsgCreatePrice) (*PriceItemKV
 				Price:   finalPrice.String(),
 				Decimal: agc.params.GetTokenInfo(msg.FeederID).Decimal,
 				// TODO: check the format
-				Timestamp: time.Now().String(),
+				Timestamp: msg.Prices[0].Prices[0].Timestamp,
 				RoundID:   agc.rounds[msg.FeederID].nextRoundID,
 			}}, &cache.ItemM{FeederID: msg.FeederID}, nil
 		}
@@ -219,7 +221,8 @@ func (agc *AggregatorContext) SealRound(ctx sdk.Context, force bool) (success []
 	return success, failed
 }
 
-func (agc *AggregatorContext) PrepareRound(ctx sdk.Context, block uint64) {
+// PrepareBeginBlock is called at BeginBlock stage, to prepare the roundInfo for the current block
+func (agc *AggregatorContext) PrepareRoundBeginBlock(ctx sdk.Context, block uint64) {
 	// block>0 means recache initialization, all roundInfo is empty
 	if block == 0 {
 		block = uint64(ctx.BlockHeight())
@@ -229,15 +232,16 @@ func (agc *AggregatorContext) PrepareRound(ctx sdk.Context, block uint64) {
 		if feederID == 0 {
 			continue
 		}
-		if (feeder.EndBlock > 0 && feeder.EndBlock <= block) || feeder.StartBaseBlock > block {
+		if (feeder.EndBlock > 0 && feeder.EndBlock < block) || feeder.StartBaseBlock >= block {
 			// this feeder is inactive
 			continue
 		}
 
-		delta := block - feeder.StartBaseBlock
+		baseBlock := block - 1
+		delta := baseBlock - feeder.StartBaseBlock
 		left := delta % feeder.Interval
 		count := delta / feeder.Interval
-		latestBasedblock := block - left
+		latestBasedblock := baseBlock - left
 		latestNextRoundID := feeder.StartRoundID + count
 
 		feederIDUint64 := uint64(feederID)
@@ -270,10 +274,12 @@ func (agc *AggregatorContext) PrepareRound(ctx sdk.Context, block uint64) {
 	}
 }
 
-func (agc *AggregatorContext) SetParams(p *common.Params) {
+// SetParams sets the params field of aggregatorContext“
+func (agc *AggregatorContext) SetParams(p *types.Params) {
 	agc.params = p
 }
 
+// SetValidatorPowers sets the map of validator's power for aggreagtorContext
 func (agc *AggregatorContext) SetValidatorPowers(vp map[string]*big.Int) {
 	//	t := big.NewInt(0)
 	agc.totalPower = big.NewInt(0)
@@ -284,10 +290,25 @@ func (agc *AggregatorContext) SetValidatorPowers(vp map[string]*big.Int) {
 	}
 }
 
+// GetValidatorPowers returns the map of validator's power stored in aggregatorContext
 func (agc *AggregatorContext) GetValidatorPowers() (vp map[string]*big.Int) {
 	return agc.validatorsPower
 }
 
+// GetTokenIDFromAssetID returns tokenID for corresponding tokenID, it returns 0 if agc.params is nil or assetID not found in agc.params
+func (agc *AggregatorContext) GetTokenIDFromAssetID(assetID string) int {
+	if agc.params == nil {
+		return 0
+	}
+	return agc.params.GetTokenIDFromAssetID(assetID)
+}
+
+// GetParams returns the params field of aggregatorContext
+func (agc *AggregatorContext) GetParams() types.Params {
+	return *agc.params
+}
+
+// NewAggregatorContext returns a new instance of AggregatorContext
 func NewAggregatorContext() *AggregatorContext {
 	return &AggregatorContext{
 		validatorsPower: make(map[string]*big.Int),

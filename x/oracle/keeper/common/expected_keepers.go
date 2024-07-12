@@ -1,16 +1,22 @@
 package common
 
 import (
-	"cosmossdk.io/math"
-	stakingkeeper "github.com/ExocoreNetwork/exocore/x/dogfood/keeper"
+	sdkmath "cosmossdk.io/math"
+	dogfoodkeeper "github.com/ExocoreNetwork/exocore/x/dogfood/keeper"
+	dogfoodtypes "github.com/ExocoreNetwork/exocore/x/dogfood/types"
 	"github.com/ExocoreNetwork/exocore/x/oracle/types"
 	abci "github.com/cometbft/cometbft/abci/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	stakingTypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 )
 
+type Price struct {
+	Value   sdkmath.Int
+	Decimal uint8
+}
+
 type KeeperOracle interface {
-	KeeperStaking
+	KeeperDogfood
 
 	GetParams(sdk.Context) types.Params
 
@@ -32,13 +38,17 @@ type KeeperOracle interface {
 
 	RemoveRecentParams(sdk.Context, uint64)
 	RemoveRecentMsg(sdk.Context, uint64)
+
+	GetMultipleAssetsPrices(ctx sdk.Context, assets map[string]interface{}) (map[string]types.Price, error)
 }
 
-var _ KeeperStaking = stakingkeeper.Keeper{}
+var _ KeeperDogfood = dogfoodkeeper.Keeper{}
 
-type KeeperStaking interface {
-	GetLastTotalPower(ctx sdk.Context) math.Int
+type KeeperDogfood = interface {
+	GetLastTotalPower(ctx sdk.Context) sdkmath.Int
 	IterateBondedValidatorsByPower(ctx sdk.Context, fn func(index int64, validator stakingTypes.ValidatorI) (stop bool))
 	GetValidatorUpdates(ctx sdk.Context) []abci.ValidatorUpdate
 	GetValidatorByConsAddr(ctx sdk.Context, consAddr sdk.ConsAddress) (validator stakingTypes.Validator, found bool)
+
+	GetAllExocoreValidators(ctx sdk.Context) (validators []dogfoodtypes.ExocoreValidator)
 }

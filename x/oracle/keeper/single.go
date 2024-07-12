@@ -8,7 +8,6 @@ import (
 	"github.com/ExocoreNetwork/exocore/x/oracle/keeper/common"
 	"github.com/ExocoreNetwork/exocore/x/oracle/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 )
 
 var cs *cache.Cache
@@ -61,115 +60,117 @@ func GetAggregatorContext(ctx sdk.Context, k Keeper) *aggregator.AggregatorConte
 }
 
 func recacheAggregatorContext(ctx sdk.Context, agc *aggregator.AggregatorContext, k Keeper, c *cache.Cache) bool {
-	from := ctx.BlockHeight() - int64(common.MaxNonce)
-	to := ctx.BlockHeight() - 1
+	logger := k.Logger(ctx)
+	from := ctx.BlockHeight() - int64(common.MaxNonce) + 1
+	to := ctx.BlockHeight()
 
 	h, ok := k.GetValidatorUpdateBlock(ctx)
 	recentParamsMap := k.GetAllRecentParamsAsMap(ctx)
 	if !ok || len(recentParamsMap) == 0 {
+		logger.Info("no validatorUpdateBlock found, go to initial process", "height", ctx.BlockHeight())
 		// no cache, this is the very first running, so go to initial process instead
 		return false
 	}
 
-	if int64(h.Block) > from {
-		from = int64(h.Block)
+	if int64(h.Block) >= from {
+		from = int64(h.Block) + 1
 	}
 
+	logger.Info("recacheAggregatorContext", "from", from, "to", to, "height", ctx.BlockHeight())
 	totalPower := big.NewInt(0)
 	validatorPowers := make(map[string]*big.Int)
-	k.IterateBondedValidatorsByPower(ctx, func(_ int64, validator stakingtypes.ValidatorI) bool {
-		power := big.NewInt(validator.GetConsensusPower(sdk.DefaultPowerReduction))
-		addr := validator.GetOperator().String()
-		validatorPowers[addr] = power
-		totalPower = new(big.Int).Add(totalPower, power)
-		return false
-	})
+	validatorSet := k.GetAllExocoreValidators(ctx)
+	for _, v := range validatorSet {
+		validatorPowers[sdk.ConsAddress(v.Address).String()] = big.NewInt(v.Power)
+		totalPower = new(big.Int).Add(totalPower, big.NewInt(v.Power))
+	}
 	agc.SetValidatorPowers(validatorPowers)
 	// TODO: test only
 	if k.GetLastTotalPower(ctx).BigInt().Cmp(totalPower) != 0 {
-		ctx.Logger().Error("something wrong when get validatorsPower from staking module")
+		ctx.Logger().Error("something wrong when get validatorsPower from dogfood module")
 	}
 
 	// reset validators
 	c.AddCache(cache.ItemV(validatorPowers))
 
 	recentMsgs := k.GetAllRecentMsgAsMap(ctx)
-	var pTmp common.Params
-	for ; from < to; from++ {
-		// fill params
-		prev := int64(0)
-		for b, recentParams := range recentParamsMap {
-			if b <= from && b > prev {
-				pTmp = common.Params(*recentParams)
-				agc.SetParams(&pTmp)
-				prev = b
-				setCommonParams(*recentParams)
-			}
-		}
-
-		agc.PrepareRound(ctx, uint64(from))
-
-		if msgs := recentMsgs[from+1]; msgs != nil {
-			for _, msg := range msgs {
-				// these messages are retreived for recache, just skip the validation check and fill the memory cache
-				//nolint
-				agc.FillPrice(&types.MsgCreatePrice{
-					Creator:  msg.Validator,
-					FeederID: msg.FeederID,
-					Prices:   msg.PSources,
-				})
-			}
-		}
-		agc.SealRound(ctx, false)
-	}
-
+	var p *types.Params
+	var b int64
 	if from >= to {
 		// backwards compatible for that the validatorUpdateBlock updated every block
 		prev := int64(0)
-		for b, p := range recentParamsMap {
+		for b = range recentParamsMap {
 			if b > prev {
-				// pTmp be set at least once, since len(recentParamsMap)>0
-				pTmp = common.Params(*p)
 				prev = b
 			}
 		}
-		agc.SetParams(&pTmp)
-		setCommonParams(types.Params(pTmp))
+		p = recentParamsMap[prev]
+		agc.SetParams(p)
+		setCommonParams(p)
+	} else {
+		for ; from < to; from++ {
+			// fill params
+			prev := int64(0)
+			for b, p = range recentParamsMap {
+				if b <= from && b > prev {
+					agc.SetParams(p)
+					prev = b
+					setCommonParams(p)
+				}
+			}
+
+			agc.PrepareRoundBeginBlock(ctx, uint64(from))
+
+			if msgs := recentMsgs[from]; msgs != nil {
+				for _, msg := range msgs {
+					// these messages are retreived for recache, just skip the validation check and fill the memory cache
+					//nolint
+					agc.FillPrice(&types.MsgCreatePrice{
+						Creator:  msg.Validator,
+						FeederID: msg.FeederID,
+						Prices:   msg.PSources,
+					})
+				}
+			}
+			ctxReplay := ctx.WithBlockHeight(from)
+			agc.SealRound(ctxReplay, false)
+		}
 	}
 
-	var pRet common.Params
-	if updated := c.GetCache(cache.ItemP(&pRet)); !updated {
-		c.AddCache(cache.ItemP(&pTmp))
+	var pRet cache.ItemP
+	if updated := c.GetCache(&pRet); !updated {
+		c.AddCache(cache.ItemP(*p))
 	}
-	// fill params cache
-	agc.PrepareRound(ctx, uint64(to))
 
 	return true
 }
 
 func initAggregatorContext(ctx sdk.Context, agc *aggregator.AggregatorContext, k common.KeeperOracle, c *cache.Cache) {
+	ctx.Logger().Info("initAggregatorContext", "height", ctx.BlockHeight())
 	// set params
 	p := k.GetParams(ctx)
-	pTmp := common.Params(p)
-	agc.SetParams(&pTmp)
+	agc.SetParams(&p)
 	// set params cache
-	c.AddCache(cache.ItemP(&pTmp))
-	setCommonParams(p)
+	c.AddCache(cache.ItemP(p))
+	setCommonParams(&p)
+
 	totalPower := big.NewInt(0)
 	validatorPowers := make(map[string]*big.Int)
-	k.IterateBondedValidatorsByPower(ctx, func(_ int64, validator stakingtypes.ValidatorI) bool {
-		power := big.NewInt(validator.GetConsensusPower(sdk.DefaultPowerReduction))
-		addr := validator.GetOperator().String()
-		validatorPowers[addr] = power
-		totalPower = new(big.Int).Add(totalPower, power)
-		return false
-	})
-	agc.SetValidatorPowers(validatorPowers)
+	validatorSet := k.GetAllExocoreValidators(ctx)
+	for _, v := range validatorSet {
+		validatorPowers[sdk.ConsAddress(v.Address).String()] = big.NewInt(v.Power)
+		totalPower = new(big.Int).Add(totalPower, big.NewInt(v.Power))
+	}
 
+	agc.SetValidatorPowers(validatorPowers)
+	// TODO: test only
+	if k.GetLastTotalPower(ctx).BigInt().Cmp(totalPower) != 0 {
+		ctx.Logger().Error("something wrong when get validatorsPower from dogfood module")
+	}
 	// set validatorPower cache
 	c.AddCache(cache.ItemV(validatorPowers))
 
-	agc.PrepareRound(ctx, uint64(ctx.BlockHeight()-1))
+	agc.PrepareRoundBeginBlock(ctx, uint64(ctx.BlockHeight()))
 }
 
 func ResetAggregatorContext() {
@@ -184,7 +185,7 @@ func ResetAggregatorContextCheckTx() {
 	agcCheckTx = nil
 }
 
-func setCommonParams(p types.Params) {
+func setCommonParams(p *types.Params) {
 	common.MaxNonce = p.MaxNonce
 	common.ThresholdA = p.ThresholdA
 	common.ThresholdB = p.ThresholdB
