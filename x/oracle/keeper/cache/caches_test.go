@@ -4,7 +4,6 @@ import (
 	"math/big"
 	"testing"
 
-	"github.com/ExocoreNetwork/exocore/x/oracle/keeper/common"
 	"github.com/ExocoreNetwork/exocore/x/oracle/types"
 	. "github.com/smartystreets/goconvey/convey"
 	// "go.uber.org/mock/gomock"
@@ -13,7 +12,7 @@ import (
 func TestCache(t *testing.T) {
 	c := NewCache()
 	p := defaultParams
-	pWrapped := common.Params(p)
+	pWrapped := ItemP(p)
 
 	//	ctrl := gomock.NewController(t)
 	//	defer ctrl.Finish()
@@ -22,9 +21,9 @@ func TestCache(t *testing.T) {
 
 	Convey("test cache", t, func() {
 		Convey("add pramams item", func() {
-			c.AddCache(ItemP(&pWrapped))
-			pReturn := &common.Params{}
-			c.GetCache(ItemP(pReturn))
+			c.AddCache(pWrapped)
+			pReturn := &ItemP{}
+			c.GetCache(pReturn)
 			So(*pReturn, ShouldResemble, pWrapped)
 		})
 

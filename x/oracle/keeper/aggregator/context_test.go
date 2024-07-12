@@ -83,10 +83,9 @@ func initAggregatorContext4Test() *AggregatorContext {
 	}
 
 	p := defaultParams
-	pWrapped := common.Params(p)
 
 	agc.SetValidatorPowers(validatorPowers)
-	agc.SetParams(&pWrapped)
+	agc.SetParams(&p)
 	return agc
 }
 

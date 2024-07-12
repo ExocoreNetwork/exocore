@@ -1,10 +1,13 @@
 package keeper
 
 import (
+	"errors"
+
 	sdkmath "cosmossdk.io/math"
 	assetstypes "github.com/ExocoreNetwork/exocore/x/assets/types"
 	delegationkeeper "github.com/ExocoreNetwork/exocore/x/delegation/keeper"
 	operatortypes "github.com/ExocoreNetwork/exocore/x/operator/types"
+	oracletypes "github.com/ExocoreNetwork/exocore/x/oracle/types"
 	abci "github.com/cometbft/cometbft/abci/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"golang.org/x/xerrors"
@@ -30,7 +33,7 @@ func (k *Keeper) CalculateUSDValueForOperator(
 	operator string,
 	assetsFilter map[string]interface{},
 	decimals map[string]uint32,
-	prices map[string]operatortypes.Price,
+	prices map[string]oracletypes.Price,
 ) (operatortypes.OperatorUSDValue, error) {
 	var err error
 	ret := operatortypes.OperatorUSDValue{
@@ -40,14 +43,19 @@ func (k *Keeper) CalculateUSDValueForOperator(
 	}
 	// iterate all assets owned by the operator to calculate its voting power
 	opFuncToIterateAssets := func(assetID string, state *assetstypes.OperatorAssetInfo) error {
-		var price operatortypes.Price
+		//		var price operatortypes.Price
+		var price oracletypes.Price
 		var decimal uint32
 		if isForSlash {
 			// when calculated the USD value for slashing, the input prices map is null
 			// so the price needs to be retrieved here
 			price, err = k.oracleKeeper.GetSpecifiedAssetsPrice(ctx, assetID)
 			if err != nil {
-				return err
+				// TODO: when assetID is not registered in oracle module, this error will finally lead to panic
+				if !errors.Is(err, oracletypes.ErrGetPriceRoundNotFound) {
+					return err
+				}
+				// TODO: for now, we ignore the error when the price round is not found and set the price to 1 to avoid panic
 			}
 			assetInfo, err := k.assetsKeeper.GetStakingAssetInfo(ctx, assetID)
 			if err != nil {
@@ -96,8 +104,13 @@ func (k *Keeper) UpdateVotingPower(ctx sdk.Context, avsAddr string) error {
 		return err
 	}
 	prices, err := k.oracleKeeper.GetMultipleAssetsPrices(ctx, assets)
+	// TODO: for now, we ignore the error when the price round is not found and set the price to 1 to avoid panic
 	if err != nil {
-		return err
+		// TODO: when assetID is not registered in oracle module, this error will finally lead to panic
+		if !errors.Is(err, oracletypes.ErrGetPriceRoundNotFound) {
+			return err
+		}
+		// TODO: for now, we ignore the error when the price round is not found and set the price to 1 to avoid panic
 	}
 	// update the voting power of operators and AVS
 	avsVotingPower := sdkmath.LegacyNewDec(0)

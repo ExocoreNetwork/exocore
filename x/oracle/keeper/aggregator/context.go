@@ -28,7 +28,7 @@ type roundInfo struct {
 // AggregatorContext keeps memory cache for state params, validatorset, and updatedthese values as they updated on chain. And it keeps the information to track all tokenFeeders' status and data collection
 // nolint
 type AggregatorContext struct {
-	params *common.Params
+	params *types.Params
 
 	// validator->power
 	validatorsPower map[string]*big.Int
@@ -221,7 +221,7 @@ func (agc *AggregatorContext) SealRound(ctx sdk.Context, force bool) (success []
 	return success, failed
 }
 
-// TODO: test to remove PrepareRound into BeginBlock
+// PrepareBeginBlock is called at BeginBlock stage, to prepare the roundInfo for the current block
 func (agc *AggregatorContext) PrepareRoundBeginBlock(ctx sdk.Context, block uint64) {
 	// block>0 means recache initialization, all roundInfo is empty
 	if block == 0 {
@@ -274,10 +274,12 @@ func (agc *AggregatorContext) PrepareRoundBeginBlock(ctx sdk.Context, block uint
 	}
 }
 
-func (agc *AggregatorContext) SetParams(p *common.Params) {
+// SetParams sets the params field of aggregatorContext“
+func (agc *AggregatorContext) SetParams(p *types.Params) {
 	agc.params = p
 }
 
+// SetValidatorPowers sets the map of validator's power for aggreagtorContext
 func (agc *AggregatorContext) SetValidatorPowers(vp map[string]*big.Int) {
 	//	t := big.NewInt(0)
 	agc.totalPower = big.NewInt(0)
@@ -288,10 +290,25 @@ func (agc *AggregatorContext) SetValidatorPowers(vp map[string]*big.Int) {
 	}
 }
 
+// GetValidatorPowers returns the map of validator's power stored in aggregatorContext
 func (agc *AggregatorContext) GetValidatorPowers() (vp map[string]*big.Int) {
 	return agc.validatorsPower
 }
 
+// GetTokenIDFromAssetID returns tokenID for corresponding tokenID, it returns 0 if agc.params is nil or assetID not found in agc.params
+func (agc *AggregatorContext) GetTokenIDFromAssetID(assetID string) int {
+	if agc.params == nil {
+		return 0
+	}
+	return agc.params.GetTokenIDFromAssetID(assetID)
+}
+
+// GetParams returns the params field of aggregatorContext
+func (agc *AggregatorContext) GetParams() types.Params {
+	return *agc.params
+}
+
+// NewAggregatorContext returns a new instance of AggregatorContext
 func NewAggregatorContext() *AggregatorContext {
 	return &AggregatorContext{
 		validatorsPower: make(map[string]*big.Int),

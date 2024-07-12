@@ -542,7 +542,7 @@ func NewExocoreApp(
 		bApp.CreateQueryContext,
 		app.AssetsKeeper,
 		&app.DelegationKeeper, // intentionally a pointer, since not yet initialized.
-		operatorTypes.MockOracle{},
+		&app.OracleKeeper,
 		operatorTypes.MockAVS{AssetsKeeper: app.AssetsKeeper},
 		delegationTypes.VirtualSlashKeeper{},
 	)

@@ -1,11 +1,8 @@
 package common
 
 import (
-	"errors"
 	"math/big"
 	"sort"
-
-	"github.com/ExocoreNetwork/exocore/x/oracle/types"
 )
 
 var (
@@ -23,90 +20,6 @@ var (
 	// consensus mode: v1: as soon as possbile
 	Mode int32 = 1
 )
-
-type Params types.Params
-
-func (p Params) GetTokenFeeders() []*types.TokenFeeder {
-	return p.TokenFeeders
-}
-
-func (p Params) IsDeterministicSource(sourceID uint64) bool {
-	return p.Sources[sourceID].Deterministic
-}
-
-func (p Params) IsValidSource(sourceID uint64) bool {
-	if sourceID == 0 {
-		// custom defined source
-		return true
-	}
-	return p.Sources[sourceID].Valid
-}
-
-func (p Params) GetTokenFeeder(feederID uint64) *types.TokenFeeder {
-	for k, v := range p.TokenFeeders {
-		if uint64(k) == feederID {
-			return v
-		}
-	}
-	return nil
-}
-
-func (p Params) GetTokenInfo(feederID uint64) *types.Token {
-	for k, v := range p.TokenFeeders {
-		if uint64(k) == feederID {
-			return p.Tokens[v.TokenID]
-		}
-	}
-	return nil
-}
-
-func (p Params) CheckRules(feederID uint64, prices []*types.PriceSource) (bool, error) {
-	feeder := p.TokenFeeders[feederID]
-	rule := p.Rules[feeder.RuleID]
-	// specified sources set, v1 use this rule to set `chainlink` as official source
-	if rule.SourceIDs != nil && len(rule.SourceIDs) > 0 {
-		if len(rule.SourceIDs) != len(prices) {
-			return false, errors.New("count prices should match rule")
-		}
-		notFound := false
-		if rule.SourceIDs[0] == 0 {
-			// match all sources listed
-			for sID, source := range p.Sources {
-				if sID == 0 {
-					continue
-				}
-				if source.Valid {
-					notFound = true
-					for _, p := range prices {
-						if p.SourceID == uint64(sID) {
-							notFound = false
-							break
-						}
-					}
-
-				}
-			}
-		} else {
-			for _, source := range rule.SourceIDs {
-				notFound = true
-				for _, p := range prices {
-					if p.SourceID == source {
-						notFound = false
-						break
-					}
-				}
-				// return false, errors.New("price source not match with rule")
-			}
-		}
-		if notFound {
-			return false, errors.New("price source not match with rule")
-		}
-	}
-
-	// TODO: check NOM
-	// return true if no rule set, we will accept any source
-	return true, nil
-}
 
 type Set[T comparable] struct {
 	size  int
