@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"embed"
 	"fmt"
-	"math/big"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
@@ -100,22 +99,11 @@ func (p Precompile) Run(evm *vm.EVM, contract *vm.Contract, readOnly bool) (bz [
 		bz, err = p.DepositOrWithdraw(ctx, evm.Origin, contract, stateDB, method, args)
 		if err != nil {
 			ctx.Logger().Error("call assets precompile error", "module", "assets precompile", "method", method.Name, "err", err)
-			// for failed cases we expect it returns bool value instead of error
-			// this is a workaround because the error returned by precompile can not be caught in EVM
-			// see https://github.com/ExocoreNetwork/exocore/issues/70
-			// TODO: we should figure out root cause and fix this issue to make precompiles work normally
-			return method.Outputs.Pack(false, new(big.Int))
 		}
 	case MethodRegisterClientChain:
 		bz, err = p.RegisterClientChain(ctx, contract, method, args)
-		if err != nil {
-			return handleError(ctx, method, err)
-		}
 	case MethodRegisterToken:
 		bz, err = p.RegisterToken(ctx, contract, method, args)
-		if err != nil {
-			return handleError(ctx, method, err)
-		}
 	// queries
 	case MethodGetClientChains:
 		bz, err = p.GetClientChains(ctx, method, args)
@@ -125,7 +113,9 @@ func (p Precompile) Run(evm *vm.EVM, contract *vm.Contract, readOnly bool) (bz [
 
 	if err != nil {
 		ctx.Logger().Error("call assets precompile error", "module", "assets precompile", "method", method.Name, "err", err)
-		return nil, err
+		// return nil, vm.ErrExecutionReverted
+		// return method.Outputs.Pack(false, new(big.Int))
+		return nil, nil
 	}
 
 	cost := ctx.GasMeter().GasConsumed() - initialGas
