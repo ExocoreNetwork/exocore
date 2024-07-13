@@ -136,6 +136,14 @@ func (agc *AggregatorContext) checkMsg(msg *types.MsgCreatePrice) error {
 	if ok, err := agc.params.CheckRules(msg.FeederID, msg.Prices); !ok {
 		return err
 	}
+
+	for _, pSource := range msg.Prices {
+		for _, pTimeDetID := range pSource.Prices {
+			if ok := agc.params.CheckDecimal(msg.FeederID, pTimeDetID.Decimal); !ok {
+				return errors.New("decimal not match")
+			}
+		}
+	}
 	return nil
 }
 

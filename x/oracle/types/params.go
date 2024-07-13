@@ -191,3 +191,9 @@ func (p Params) CheckRules(feederID uint64, prices []*PriceSource) (bool, error)
 	// return true if no rule set, we will accept any source
 	return true, nil
 }
+
+func (p Params) CheckDecimal(feederID uint64, decimal int32) bool {
+	feeder := p.TokenFeeders[feederID]
+	token := p.Tokens[feeder.TokenID]
+	return token.Decimal == decimal
+}
