@@ -65,6 +65,13 @@ func (k Keeper) GetSpecifiedAssetsPrice(ctx sdk.Context, assetID string) (types.
 		}, types.ErrGetPriceRoundNotFound.Wrapf("no valid price for assetID=%s", assetID)
 	}
 	v, _ := sdkmath.NewIntFromString(price.Price)
+	// for tokens really have 0 price, it should be removed from assets support, not here to provide zero price
+	if v.IsNil() || v.LTE(sdkmath.ZeroInt()) {
+		return types.Price{
+			Value:   sdkmath.NewInt(types.DefaultPriceValue),
+			Decimal: types.DefaultPriceDecimal,
+		}, types.ErrGetPriceRoundNotFound.Wrapf("no valid price for assetID=%s", assetID)
+	}
 	return types.Price{
 		Value:   v,
 		Decimal: uint8(price.Decimal),
@@ -99,6 +106,15 @@ func (k Keeper) GetMultipleAssetsPrices(ctx sdk.Context, assets map[string]inter
 			}
 		} else {
 			v, _ := sdkmath.NewIntFromString(price.Price)
+			// for tokens really have 0 price, it should be removed from assets support, not here to provide zero price
+			if v.IsNil() || v.LTE(sdkmath.ZeroInt()) {
+				info = info + assetID + " "
+				prices[assetID] = types.Price{
+					Value:   sdkmath.NewInt(types.DefaultPriceValue),
+					Decimal: types.DefaultPriceDecimal,
+				}
+				continue
+			}
 			prices[assetID] = types.Price{
 				Value:   v,
 				Decimal: uint8(price.Decimal),
