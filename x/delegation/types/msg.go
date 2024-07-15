@@ -3,6 +3,8 @@ package types
 import (
 	errorsmod "cosmossdk.io/errors"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+
+	sdkmath "cosmossdk.io/math"
 )
 
 var (
@@ -22,6 +24,20 @@ func (m *MsgDelegation) ValidateBasic() error {
 		return errorsmod.Wrap(err, "invalid from address")
 	}
 	return nil
+}
+
+// new message to delegate asset to operator
+func NewMsgDelegation(fromAddress string, amountPerOperator map[string]sdkmath.Int) *MsgDelegation {
+	baseInfo := &DelegationIncOrDecInfo{
+		FromAddress:        fromAddress,
+		PerOperatorAmounts: make(map[string]*ValueField),
+	}
+	for operator, amount := range amountPerOperator {
+		baseInfo.PerOperatorAmounts[operator] = &ValueField{Amount: amount}
+	}
+	return &MsgDelegation{
+		BaseInfo: baseInfo,
+	}
 }
 
 // GetSignBytes implements the LegacyMsg interface.

@@ -59,3 +59,7 @@ type BankKeeper interface {
 	DelegateCoinsFromAccountToModule(ctx sdk.Context, senderAddr sdk.AccAddress, recipientModule string, amt sdk.Coins) error
 	UndelegateCoinsFromModuleToAccount(ctx sdk.Context, senderModule string, recipientAddr sdk.AccAddress, amt sdk.Coins) error
 }
+
+type AccountKeeper interface {
+	GetSequence(ctx sdk.Context, addr sdk.AccAddress) (uint64, error)
+}

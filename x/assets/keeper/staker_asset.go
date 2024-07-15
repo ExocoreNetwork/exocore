@@ -4,11 +4,13 @@ import (
 	"fmt"
 
 	assetstype "github.com/ExocoreNetwork/exocore/x/assets/types"
+	delegationkeeper "github.com/ExocoreNetwork/exocore/x/delegation/keeper"
 
 	errorsmod "cosmossdk.io/errors"
 	"cosmossdk.io/math"
 	"github.com/cosmos/cosmos-sdk/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/ethereum/go-ethereum/common/hexutil"
 )
 
 // AllDeposits
@@ -67,6 +69,38 @@ func (k Keeper) GetStakerAssetInfos(ctx sdk.Context, stakerID string) (assetsInf
 }
 
 func (k Keeper) GetStakerSpecifiedAssetInfo(ctx sdk.Context, stakerID string, assetID string) (info *assetstype.StakerAssetInfo, err error) {
+	if assetID == assetstype.NativeAssetID {
+		stakerAddrStr, _, err := assetstype.ParseID(stakerID)
+		if err != nil {
+			return nil, err
+		}
+		stakerAcc := sdk.AccAddress(hexutil.MustDecode(stakerAddrStr))
+		balance := k.bk.GetBalance(ctx, stakerAcc, assetstype.NativeAssetDenom)
+		info := &assetstype.StakerAssetInfo{
+			TotalDepositAmount:  balance.Amount,
+			WithdrawableAmount:  balance.Amount,
+			WaitUnbondingAmount: math.NewInt(0),
+		}
+
+		delegationInfoRecords, err := k.dk.GetDelegationInfo(ctx, stakerID, assetID)
+		if err != nil {
+			return nil, err
+		}
+		for operator, record := range delegationInfoRecords.DelegationInfos {
+			operatorAssetInfo, err := k.GetOperatorSpecifiedAssetInfo(ctx, sdk.MustAccAddressFromBech32(operator), assetID)
+			if err != nil {
+				return nil, err
+			}
+			_ = operatorAssetInfo
+			undelegatableTokens, err := delegationkeeper.TokensFromShares(record.UndelegatableShare, operatorAssetInfo.TotalShare, operatorAssetInfo.TotalAmount)
+			if err != nil {
+				return nil, err
+			}
+			info.TotalDepositAmount = info.TotalDepositAmount.Add(undelegatableTokens).Add(record.WaitUndelegationAmount)
+			info.WaitUnbondingAmount = info.WaitUnbondingAmount.Add(record.WaitUndelegationAmount)
+		}
+		return info, nil
+	}
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), assetstype.KeyPrefixReStakerAssetInfos)
 	key := assetstype.GetJoinedStoreKey(stakerID, assetID)
 	value := store.Get(key)

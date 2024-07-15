@@ -538,7 +538,7 @@ func NewExocoreApp(
 	)
 
 	// asset and client chain registry.
-	app.AssetsKeeper = assetsKeeper.NewKeeper(keys[assetsTypes.StoreKey], appCodec, &app.OracleKeeper)
+	app.AssetsKeeper = assetsKeeper.NewKeeper(keys[assetsTypes.StoreKey], appCodec, &app.OracleKeeper, app.BankKeeper, &app.DelegationKeeper)
 
 	// handles delegations by stakers, and must know if the delegatee operator is registered.
 	app.DelegationKeeper = delegationKeeper.NewKeeper(
@@ -546,6 +546,8 @@ func NewExocoreApp(
 		app.AssetsKeeper,
 		delegationTypes.VirtualSlashKeeper{},
 		&app.OperatorKeeper,
+		app.AccountKeeper,
+		app.BankKeeper,
 	)
 
 	// the dogfood module is the first AVS. it receives slashing calls from either x/slashing
