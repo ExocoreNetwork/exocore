@@ -1,4 +1,4 @@
-package dogfood
+package exomint
 
 import (
 	"context"
@@ -10,9 +10,9 @@ import (
 
 	abci "github.com/cometbft/cometbft/abci/types"
 
-	"github.com/ExocoreNetwork/exocore/x/dogfood/client/cli"
-	"github.com/ExocoreNetwork/exocore/x/dogfood/keeper"
-	"github.com/ExocoreNetwork/exocore/x/dogfood/types"
+	"github.com/ExocoreNetwork/exocore/x/exomint/client/cli"
+	"github.com/ExocoreNetwork/exocore/x/exomint/keeper"
+	"github.com/ExocoreNetwork/exocore/x/exomint/types"
 
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -93,7 +93,7 @@ func (AppModuleBasic) RegisterGRPCGatewayRoutes(
 // GetTxCmd returns the root Tx command for the module. The subcommands of this root command are
 // used by end-users to generate new transactions containing messages defined in the module
 func (a AppModuleBasic) GetTxCmd() *cobra.Command {
-	return cli.GetTxCmd()
+	return cli.NewTxCmd()
 }
 
 // GetQueryCmd returns the root query command for the module. The subcommands of this root
@@ -111,7 +111,6 @@ func (AppModuleBasic) GetQueryCmd() *cobra.Command {
 // modules need to implement
 type AppModule struct {
 	AppModuleBasic
-	// keeper of the module receives the cdc codec separately.
 	keeper keeper.Keeper
 }
 
@@ -147,7 +146,9 @@ func (am AppModule) InitGenesis(
 	// Initialize global index to index in genesis state
 	cdc.MustUnmarshalJSON(gs, &genState)
 
-	return am.keeper.InitGenesis(ctx, genState)
+	am.keeper.InitGenesis(ctx, genState)
+
+	return []abci.ValidatorUpdate{}
 }
 
 // ExportGenesis returns the module's exported genesis state as raw JSON bytes.
@@ -162,11 +163,10 @@ func (am AppModule) ExportGenesis(ctx sdk.Context, cdc codec.JSONCodec) json.Raw
 func (AppModule) ConsensusVersion() uint64 { return 1 }
 
 // BeginBlock contains the logic that is automatically triggered at the beginning of each block
-func (am AppModule) BeginBlock(ctx sdk.Context, _ abci.RequestBeginBlock) {
-	am.keeper.BeginBlock(ctx)
+func (am AppModule) BeginBlock(sdk.Context, abci.RequestBeginBlock) {
 }
 
 // EndBlock contains the logic that is automatically triggered at the end of each block
-func (am AppModule) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.ValidatorUpdate {
-	return am.keeper.EndBlock(ctx)
+func (am AppModule) EndBlock(sdk.Context, abci.RequestEndBlock) []abci.ValidatorUpdate {
+	return []abci.ValidatorUpdate{}
 }

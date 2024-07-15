@@ -172,6 +172,10 @@ import (
 	stakingkeeper "github.com/ExocoreNetwork/exocore/x/dogfood/keeper"
 	stakingtypes "github.com/ExocoreNetwork/exocore/x/dogfood/types"
 
+	exomint "github.com/ExocoreNetwork/exocore/x/exomint"
+	exomintkeeper "github.com/ExocoreNetwork/exocore/x/exomint/keeper"
+	exominttypes "github.com/ExocoreNetwork/exocore/x/exomint/types"
+
 	"github.com/cosmos/cosmos-sdk/x/upgrade"
 	upgradeclient "github.com/cosmos/cosmos-sdk/x/upgrade/client"
 	upgradekeeper "github.com/cosmos/cosmos-sdk/x/upgrade/keeper"
@@ -238,6 +242,7 @@ var (
 		bank.AppModuleBasic{},
 		capability.AppModuleBasic{},
 		staking.AppModuleBasic{},
+		exomint.AppModuleBasic{},
 		gov.NewAppModuleBasic(
 			[]govclient.ProposalHandler{
 				paramsclient.ProposalHandler,
@@ -286,7 +291,8 @@ var (
 			authtypes.Minter,
 			authtypes.Burner,
 		}, // used for secure addition and subtraction of balance using module account
-		erc20types.ModuleName: {authtypes.Minter, authtypes.Burner},
+		erc20types.ModuleName:   {authtypes.Minter, authtypes.Burner},
+		exominttypes.ModuleName: {authtypes.Minter},
 	}
 
 	// module accounts that are allowed to receive tokens
@@ -357,6 +363,7 @@ type ExocoreApp struct {
 	AVSManagerKeeper avsManagerKeeper.Keeper
 	TaskKeeper       avsTaskKeeper.Keeper
 	OracleKeeper     oracleKeeper.Keeper
+	ExomintKeeper    exomintkeeper.Keeper
 
 	// the module manager
 	mm *module.Manager
@@ -441,6 +448,7 @@ func NewExocoreApp(
 		avsManagerTypes.StoreKey,
 		avsTaskTypes.StoreKey,
 		oracleTypes.StoreKey,
+		exominttypes.StoreKey,
 	)
 
 	tkeys := sdk.NewTransientStoreKeys(paramstypes.TStoreKey, evmtypes.TransientKey, feemarkettypes.TransientKey)
@@ -533,6 +541,14 @@ func NewExocoreApp(
 
 	// Exocore keepers begin. TODO: replace virtual keepers with actual implementation.
 
+	// the exomint keeper is used to mint the reward for validators and delegators. it needs
+	// the epochs keeper and the bank / account keepers.
+	app.ExomintKeeper = exomintkeeper.NewKeeper(
+		appCodec, keys[exominttypes.StoreKey],
+		app.AccountKeeper, app.BankKeeper, app.EpochsKeeper, authtypes.FeeCollectorName,
+		authAddrString,
+	)
+
 	// asset and client chain registry.
 	app.AssetsKeeper = assetsKeeper.NewKeeper(keys[assetsTypes.StoreKey], appCodec)
 
@@ -570,7 +586,10 @@ func NewExocoreApp(
 	)
 
 	(&app.EpochsKeeper).SetHooks(
-		app.StakingKeeper.EpochsHooks(),
+		epochstypes.NewMultiEpochHooks(
+			app.StakingKeeper.EpochsHooks(), // at this point, the order is irrelevant.
+			app.ExomintKeeper.EpochsHooks(), // however, this may change once we have distribution
+		),
 	)
 
 	// these two modules aren't finalized yet.
@@ -862,6 +881,7 @@ func NewExocoreApp(
 		recovery.NewAppModule(*app.RecoveryKeeper,
 			app.GetSubspace(recoverytypes.ModuleName)),
 		// exoCore app modules
+		exomint.NewAppModule(appCodec, app.ExomintKeeper),
 		assets.NewAppModule(appCodec, app.AssetsKeeper),
 		operator.NewAppModule(appCodec, app.OperatorKeeper),
 		delegation.NewAppModule(appCodec, app.DelegationKeeper),
@@ -899,6 +919,7 @@ func NewExocoreApp(
 		consensusparamtypes.ModuleName,
 		erc20types.ModuleName,
 		recoverytypes.ModuleName,
+		exominttypes.ModuleName, // called via hooks not directly
 		assetsTypes.ModuleName,
 		operatorTypes.ModuleName,
 		delegationTypes.ModuleName,
@@ -934,6 +955,7 @@ func NewExocoreApp(
 		epochstypes.ModuleName, // begin blocker only
 		erc20types.ModuleName,
 		recoverytypes.ModuleName,
+		exominttypes.ModuleName,
 		consensusparamtypes.ModuleName,
 		assetsTypes.ModuleName,
 		rewardTypes.ModuleName,
@@ -957,7 +979,8 @@ func NewExocoreApp(
 		authz.ModuleName,
 		feemarkettypes.ModuleName,
 		genutiltypes.ModuleName, // after feemarket
-		epochstypes.ModuleName,  // must be before dogfood
+		epochstypes.ModuleName,  // must be before dogfood and exomint
+		exominttypes.ModuleName,
 		assetsTypes.ModuleName,
 		operatorTypes.ModuleName, // must be before delegation
 		delegationTypes.ModuleName,
