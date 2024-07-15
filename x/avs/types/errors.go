@@ -43,4 +43,8 @@ var (
 		ModuleName, 8,
 		"Error: this AVS has not been registered yet",
 	)
+	ErrNotNull = errorsmod.Register(
+		ModuleName, 9,
+		"Error: this chainID is shouldn't null",
+	)
 )

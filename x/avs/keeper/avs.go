@@ -2,6 +2,12 @@ package keeper
 
 import (
 	"fmt"
+	"hash"
+	"strings"
+
+	"github.com/cosmos/cosmos-sdk/store/prefix"
+	"github.com/ethereum/go-ethereum/common"
+	"golang.org/x/crypto/sha3"
 
 	"github.com/ExocoreNetwork/exocore/x/avs/types"
 
@@ -70,4 +76,67 @@ func (k *Keeper) GetEpochEndAVSs(ctx sdk.Context, epochIdentifier string, epochN
 	}
 
 	return avsAddrList, nil
+}
+
+func (k *Keeper) GetAVSAddrByChainID(ctx sdk.Context, chainID string) (string, error) {
+	chainID = ProcessingStr(chainID)
+	if len(chainID) == 0 {
+		return "", errorsmod.Wrap(types.ErrNotNull, "SetAVSAddrByChainID: chainID is null")
+	}
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefixAVSInfoByChainID)
+	if !store.Has([]byte(chainID)) {
+		return "", errorsmod.Wrap(types.ErrNoKeyInTheStore, fmt.Sprintf("GetAVSAddrByChainID: key is %s", chainID))
+	}
+	avsAddr := store.Get([]byte(chainID))
+
+	return string(avsAddr), nil
+}
+
+// SetAVSAddrByChainID creates an avs address given the chainID
+func (k Keeper) SetAVSAddrByChainID(ctx sdk.Context, chainID string) (err error) {
+	chainID = ProcessingStr(chainID)
+	if len(chainID) == 0 {
+		return errorsmod.Wrap(err, "SetAVSAddrByChainID: chainID is null")
+	}
+	avsAddr := common.BytesToAddress(Keccak256([]byte(chainID))).String()
+
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefixAVSInfoByChainID)
+
+	store.Set([]byte(chainID), []byte(avsAddr))
+	return nil
+}
+
+// KeccakState wraps sha3.state. In addition to the usual hash methods, it also supports
+// Read to get a variable amount of data from the hash state. Read is faster than Sum
+// because it doesn't copy the internal state, but also modifies the internal state.
+type KeccakState interface {
+	hash.Hash
+	Read([]byte) (int, error)
+}
+
+// NewKeccakState creates a new KeccakState
+func NewKeccakState() KeccakState {
+	return sha3.NewLegacyKeccak256().(KeccakState)
+}
+
+// Keccak256 calculates and returns the Keccak256 hash of the input data.
+func Keccak256(data ...[]byte) []byte {
+	b := make([]byte, 32)
+	d := NewKeccakState()
+	for _, b := range data {
+		d.Write(b)
+	}
+	_, err := d.Read(b)
+	if err != nil {
+		return nil
+	}
+	return b
+}
+
+func ProcessingStr(str string) string {
+	index := strings.Index(str, "-")
+	if index != -1 {
+		return str[:index]
+	}
+	return ""
 }

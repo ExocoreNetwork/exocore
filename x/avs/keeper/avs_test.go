@@ -2,6 +2,7 @@ package keeper_test
 
 import (
 	"cosmossdk.io/math"
+	"fmt"
 	avstypes "github.com/ExocoreNetwork/exocore/x/avs/keeper"
 	"github.com/ExocoreNetwork/exocore/x/avs/types"
 	delegationtypes "github.com/ExocoreNetwork/exocore/x/delegation/types"
@@ -9,6 +10,7 @@ import (
 	operatortype "github.com/ExocoreNetwork/exocore/x/operator/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
+	"os"
 )
 
 func (suite *AVSTestSuite) TestAVS() {
@@ -184,4 +186,13 @@ func (suite *AVSTestSuite) TestAVSInfoUpdateWithOperator_Register() {
 	err = suite.App.AVSManagerKeeper.AVSInfoUpdateWithOperator(suite.Ctx, operatorParams)
 	suite.Error(err)
 	suite.Contains(err.Error(), types.ErrUnregisterNonExistent.Error())
+}
+func (suite *AVSTestSuite) TestAVSCreateAddress() {
+
+	suite.App.AVSManagerKeeper.SetAVSAddrByChainID(suite.Ctx, "exocoretestnet_233-4")
+
+	avsAddress, _ := suite.App.AVSManagerKeeper.GetAVSAddrByChainID(suite.Ctx, "exocoretestnet_233-1")
+	suite.Equal("0xf5E0B17fD63cc7a3823b6dbFcc678bE5C1e1EA58", avsAddress)
+	fmt.Fprintln(os.Stdout, "Destination address:  ", avsAddress)
+
 }
