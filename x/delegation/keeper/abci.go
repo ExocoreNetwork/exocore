@@ -39,7 +39,7 @@ func (k *Keeper) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.Valida
 			}*/
 
 		recordID := types.GetUndelegationRecordKey(record.BlockNumber, record.LzTxNonce, record.TxHash, record.OperatorAddr)
-		if k.GetUndelegationHoldCount(ctx, recordID) > 0 {
+		if tmp := k.GetUndelegationHoldCount(ctx, recordID); tmp > 0 {
 			// store it again with the next block and move on
 			// #nosec G701
 			record.CompleteBlockNumber = uint64(ctx.BlockHeight()) + 1
@@ -70,7 +70,7 @@ func (k *Keeper) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.Valida
 
 		// update the staker state
 		if record.AssetID == assetstypes.NativeAssetID {
-			parsedStakerID := strings.Split(record.StakerID, "-")
+			parsedStakerID := strings.Split(record.StakerID, "_")
 			stakerAddr := sdk.AccAddress(hexutil.MustDecode(parsedStakerID[0]))
 			if err := k.bankKeeper.UndelegateCoinsFromModuleToAccount(ctx, types.DelegatedPoolName, stakerAddr, sdk.NewCoins(sdk.NewCoin(assetstypes.NativeAssetDenom, record.ActualCompletedAmount))); err != nil {
 				panic(err)

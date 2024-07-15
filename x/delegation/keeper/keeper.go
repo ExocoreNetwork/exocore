@@ -14,6 +14,7 @@ type Keeper struct {
 	cdc      codec.BinaryCodec
 
 	// other keepers
+	accountKeeper  delegationtype.AccountKeeper
 	assetsKeeper   delegationtype.AssetsKeeper
 	slashKeeper    delegationtype.SlashKeeper
 	operatorKeeper delegationtype.OperatorKeeper
@@ -27,6 +28,8 @@ func NewKeeper(
 	assetsKeeper delegationtype.AssetsKeeper,
 	slashKeeper delegationtype.SlashKeeper,
 	operatorKeeper delegationtype.OperatorKeeper,
+	accountKeeper delegationtype.AccountKeeper,
+	bankKeeper delegationtype.BankKeeper,
 ) Keeper {
 	return Keeper{
 		storeKey:       storeKey,
@@ -34,6 +37,8 @@ func NewKeeper(
 		assetsKeeper:   assetsKeeper,
 		slashKeeper:    slashKeeper,
 		operatorKeeper: operatorKeeper,
+		accountKeeper:  accountKeeper,
+		bankKeeper:     bankKeeper,
 	}
 }
 
