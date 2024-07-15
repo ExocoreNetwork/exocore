@@ -9,6 +9,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 
+	sdkmath "cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
@@ -35,10 +36,12 @@ func NewTxCmd() *cobra.Command {
 }
 
 // CmdUpdateParams returns a CLI command handler for creating a MsgUpdateParams transaction.
+// Since such messages are only executed if signed by the (governance) authority, this command
+// is not useful for end users, unless they are the authority.
 func CmdUpdateParams() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "update-params",
-		Short: "updata the parameters of the module",
+		Short: "update the parameters of the module",
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			clientCtx, err := client.GetClientTxContext(cmd)
 			if err != nil {
@@ -86,7 +89,12 @@ func newBuildUpdateParamsMsg(
 	epochRewardStr, _ := fs.GetString(FlagEpochReward)
 	res, ok := sdk.NewIntFromString(epochRewardStr)
 	if !ok {
-		res = sdk.NewInt(0)
+		// if the string is invalid, default to nil.
+		// the `nil` will be overridden by the current value during
+		// message execution.
+		// setting 0 here would be bad, since a value of 0
+		// is considered valid.
+		res = sdkmath.Int{}
 	}
 	msg := &types.MsgUpdateParams{
 		Authority: sender.String(),

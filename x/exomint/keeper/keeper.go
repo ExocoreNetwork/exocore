@@ -52,18 +52,24 @@ func (k Keeper) Logger(ctx sdk.Context) log.Logger {
 }
 
 // MintCoins implements an alias call to the underlying supply keeper's
-// MintCoins to be used in BeginBlocker.
+// MintCoins to be used in the x/epochs hook.
 func (k Keeper) MintCoins(ctx sdk.Context, newCoins sdk.Coins) error {
-	if newCoins.Empty() {
-		// skip as no coins need to be minted
-		return nil
-	}
-
+	// the bank keeper validates `newCoins`, so we don't have to do it here.
+	// it does not complain about `newCoins` being empty, but it does
+	// complain about the following:
+	// 1. valid denomination, which we have checked in the params validation.
+	// 2. sorted denominations amongst multiple coins, which doesn't apply to us
+	//    since we are only minting one coin.
+	// 3. duplicate denomination, which doesn't apply to us since we are only
+	//    minting one coin.
+	// 4. coin amount being positive, which is also true since we check for
+	//    negative amounts in params validation, and zero amount short circuits
+	//    the epochs hook to skip this function.
 	return k.bankKeeper.MintCoins(ctx, types.ModuleName, newCoins)
 }
 
 // AddCollectedFees implements an alias call to the underlying supply keeper's
-// AddCollectedFees to be used in BeginBlocker.
+// AddCollectedFees to be used in the x/epochs hook.
 func (k Keeper) AddCollectedFees(ctx sdk.Context, fees sdk.Coins) error {
 	return k.bankKeeper.SendCoinsFromModuleToModule(
 		ctx, types.ModuleName, k.feeCollectorName, fees,

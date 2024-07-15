@@ -37,7 +37,7 @@ func (k Keeper) UpdateParams(
 	prevParams := k.GetParams(c)
 	nextParams := msg.Params
 	// stateless validations
-	overParams := types.OverrideIfRequired(nextParams, prevParams, k.Logger(c))
+	overParams := nextParams.OverrideIfRequired(prevParams, k.Logger(c))
 	if err := overParams.Validate(); err != nil {
 		return nil, errorsmod.Wrapf(
 			types.ErrInvalidParams,
@@ -45,7 +45,8 @@ func (k Keeper) UpdateParams(
 		)
 	}
 	// stateful validations
-	// no need to check if MintDenom is registered in BankKeeper, since it does not itself perform such checks.
+	// no need to check if MintDenom is registered in BankKeeper, since it does not itself
+	// perform such checks.
 	// the reward is already guaranteed to be positive and fits in the bit length.
 	// so, we just have to check epoch here.
 	if _, found := k.epochsKeeper.GetEpochInfo(c, overParams.EpochIdentifier); !found {

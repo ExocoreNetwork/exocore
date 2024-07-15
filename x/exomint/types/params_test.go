@@ -43,7 +43,26 @@ func TestValidate(t *testing.T) {
 				EpochIdentifier: "day",
 			},
 			expResult: false,
-			expError:  "mint reward must be positive",
+			expError:  "mint reward must be non-negative",
+		},
+		{
+			name: "nil reward",
+			params: types.Params{
+				MintDenom:       "aevmos",
+				EpochReward:     sdkmath.Int{},
+				EpochIdentifier: "day",
+			},
+			expResult: false,
+			expError:  "epoch reward cannot be nil",
+		},
+		{
+			name: "zero reward",
+			params: types.Params{
+				MintDenom:       "aevmos",
+				EpochReward:     sdkmath.NewInt(0),
+				EpochIdentifier: "day",
+			},
+			expResult: true,
 		},
 		{
 			name: "invalid epoch identifier",
@@ -129,7 +148,11 @@ func TestOverrideIfRequired(t *testing.T) {
 			name: "zero epoch reward",
 			prev: types.DefaultParams(),
 			next: types.DefaultParams(),
-			over: types.DefaultParams(),
+			over: types.NewParams(
+				types.DefaultMintDenom,
+				sdkmath.NewInt(0), // 0 is not overridden
+				types.DefaultEpochIdentifier,
+			),
 			malleate: func(next *types.Params) {
 				next.EpochReward = sdkmath.NewInt(0)
 			},
@@ -141,6 +164,15 @@ func TestOverrideIfRequired(t *testing.T) {
 			over: types.DefaultParams(),
 			malleate: func(next *types.Params) {
 				next.EpochReward = sdkmath.NewInt(-1)
+			},
+		},
+		{
+			name: "nil epoch reward",
+			prev: types.DefaultParams(),
+			next: types.DefaultParams(),
+			over: types.DefaultParams(),
+			malleate: func(next *types.Params) {
+				next.EpochReward = sdkmath.Int{}
 			},
 		},
 		{
@@ -159,7 +191,7 @@ func TestOverrideIfRequired(t *testing.T) {
 			if tc.malleate != nil {
 				tc.malleate(&tc.next)
 			}
-			over := types.OverrideIfRequired(tc.next, tc.prev, NoOpLogger{})
+			over := tc.next.OverrideIfRequired(tc.prev, NoOpLogger{})
 			if !over.Equal(tc.over) {
 				t.Fatalf("expected %v, got %v", tc.over, over)
 			}

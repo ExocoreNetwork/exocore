@@ -29,13 +29,21 @@ func (wrapper EpochsHooksWrapper) AfterEpochEnd(
 ) {
 	params := wrapper.keeper.GetParams(ctx)
 	if strings.Compare(identifier, params.EpochIdentifier) == 0 {
-		mintedCoin := sdk.NewCoin(
-			params.MintDenom,
-			params.EpochReward,
-		)
-		mintedCoins := sdk.NewCoins(mintedCoin)
-
 		logger := wrapper.keeper.Logger(ctx)
+		if params.EpochReward.IsZero() {
+			logger.Error( // intentionally error log this
+				"AfterEpochEnd",
+				"epoch reward is zero; skipping minting",
+			)
+			return
+		}
+		// create a single coin object to mint
+		mintedCoin := sdk.NewCoin(
+			params.MintDenom, params.EpochReward,
+		)
+		// but the bank keeper supports only multiple objects together
+		mintedCoins := sdk.NewCoins(mintedCoin)
+		// alias call the bank keeper to mint the coins
 		err := wrapper.keeper.MintCoins(ctx, mintedCoins)
 		if err != nil {
 			logger.Error(
@@ -44,7 +52,8 @@ func (wrapper EpochsHooksWrapper) AfterEpochEnd(
 			)
 			return
 		}
-
+		// after minting (to this module's address),
+		// transfer the minted coins to the fee collector.
 		err = wrapper.keeper.AddCollectedFees(ctx, mintedCoins)
 		if err != nil {
 			logger.Error(

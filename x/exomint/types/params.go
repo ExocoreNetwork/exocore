@@ -75,8 +75,9 @@ func ValidateEpochReward(i interface{}) error {
 	if v.IsNil() {
 		return fmt.Errorf("epoch reward cannot be nil")
 	}
-	if v.LTE(sdk.ZeroInt()) {
-		return fmt.Errorf("mint reward must be positive: %s", v)
+	// we should support 0 rewards, as it is a valid value that effectively disables minting.
+	if v.LT(sdk.ZeroInt()) {
+		return fmt.Errorf("mint reward must be non-negative: %s", v)
 	}
 	return nil
 }
@@ -96,30 +97,45 @@ func (p Params) Copy() Params {
 }
 
 // OverrideIfRequired overrides the unset or invalid parameters from the previous parameters.
-func OverrideIfRequired(nextParams Params, prevParams Params, logger log.Logger) Params {
+func (p Params) OverrideIfRequired(prevParams Params, logger log.Logger) Params {
 	// copy to avoid mutating the original
-	overParams := nextParams.Copy()
-	if err := sdk.ValidateDenom(nextParams.MintDenom); err != nil {
-		logger.Info("OverrideIfRequired", "overriding MintDenom with value", prevParams.MintDenom)
+	overParams := p.Copy()
+	if err := sdk.ValidateDenom(p.MintDenom); err != nil {
+		logger.Info(
+			"OverrideIfRequired",
+			"overriding MintDenom with value", prevParams.MintDenom,
+		)
 		overParams.MintDenom = prevParams.MintDenom
 	}
-	if nextParams.EpochReward.IsNil() || !nextParams.EpochReward.IsPositive() {
-		// if the reward is negative or 0, we keep the previous value
+	if p.EpochReward.IsNil() || p.EpochReward.IsNegative() {
+		// if the reward is nil or negative, we keep the previous value.
 		// this allows for the epoch reward to not be supplied.
-		logger.Info("OverrideIfRequired", "overriding EpochReward with value", prevParams.EpochReward)
+		// note that we should support 0 rewards, as it is a valid value
+		// that effectively disables minting.
+		logger.Info(
+			"OverrideIfRequired",
+			"overriding EpochReward with value", prevParams.EpochReward,
+		)
 		overParams.EpochReward = prevParams.EpochReward
 	}
 	if err := epochstypes.ValidateEpochIdentifierString(
-		nextParams.EpochIdentifier,
+		p.EpochIdentifier,
 	); err != nil {
-		logger.Info("OverrideIfRequired", "overriding EpochIdentifier with value", prevParams.EpochIdentifier)
+		logger.Info(
+			"OverrideIfRequired",
+			"overriding EpochIdentifier with value", prevParams.EpochIdentifier,
+		)
 		overParams.EpochIdentifier = prevParams.EpochIdentifier
 	}
 	return overParams
 }
 
+// Equal returns true if the parameters are equal. It returns false
+// if the EpochReward is nil in either of the parameters.
 func (p Params) Equal(p2 Params) bool {
-	return p.MintDenom == p2.MintDenom &&
+	return !p.EpochReward.IsNil() &&
+		!p2.EpochReward.IsNil() &&
+		p.MintDenom == p2.MintDenom &&
 		p.EpochReward.Equal(p2.EpochReward) &&
 		p.EpochIdentifier == p2.EpochIdentifier
 }
