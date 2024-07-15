@@ -129,8 +129,8 @@ if [[ $overwrite == "y" || $overwrite == "Y" ]]; then
 	jq '.app_state["dogfood"]["last_total_power"]="5000"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
 
 	# x/exomint
-	# the default epoch_identifier is day, which means that rewards are minted once every day
-	# that config is suitable for a live network but less so for testing.
+	# set the epoch identifier to `minute`. the default set by the module is `day`,
+	# which is more suitable for a live network and not a localnet.
 	jq '.app_state["exomint"]["params"]["epoch_identifier"]="minute"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
 
 	# custom epoch definitions can be added here, if required.
