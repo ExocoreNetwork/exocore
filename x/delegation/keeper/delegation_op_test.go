@@ -316,6 +316,7 @@ func (suite *DelegationTestSuite) TestCompleteUndelegation() {
 	epochInfo, found := suite.App.EpochsKeeper.GetEpochInfo(suite.Ctx, epochID)
 	suite.Equal(true, found)
 	epochsUntilUnbonded := suite.App.StakingKeeper.GetEpochsUntilUnbonded(suite.Ctx)
+	matureEpochs := epochInfo.CurrentEpoch + int64(epochsUntilUnbonded)
 
 	suite.prepareDeposit()
 	delegationEvent := suite.prepareDelegation()
@@ -332,12 +333,14 @@ func (suite *DelegationTestSuite) TestCompleteUndelegation() {
 
 	// update epochs to mature pending delegations from dogfood
 	for i := 0; i < int(epochsUntilUnbonded); i++ {
-		suite.App.EpochsKeeper.BeginBlocker(suite.Ctx)
+		epochInfo.EndEpoch()
+		suite.App.EpochsKeeper.AfterEpochEnd(suite.Ctx, epochInfo.Identifier, epochInfo.CurrentEpoch)
 	}
-	epochInfoForUnbond, _ := suite.App.EpochsKeeper.GetEpochInfo(suite.Ctx, epochID)
+	suite.Equal(epochInfo.CurrentEpoch, matureEpochs)
 
-	suite.Equal(epochInfo.CurrentEpoch+int64(epochsUntilUnbonded), epochInfoForUnbond.CurrentEpoch)
+	// update epochs to mature pending delegations from exocore-native-token by decrementing holdcount
 	suite.App.StakingKeeper.EndBlock(suite.Ctx)
+
 	suite.App.DelegationKeeper.EndBlock(suite.Ctx, abci.RequestEndBlock{})
 
 	// check state
@@ -392,12 +395,14 @@ func (suite *DelegationTestSuite) TestCompleteUndelegation() {
 	epochID = suite.App.StakingKeeper.GetEpochIdentifier(suite.Ctx)
 	epochInfo, _ = suite.App.EpochsKeeper.GetEpochInfo(suite.Ctx, epochID)
 	epochsUntilUnbonded = suite.App.StakingKeeper.GetEpochsUntilUnbonded(suite.Ctx)
+	matureEpochs = epochInfo.CurrentEpoch + int64(epochsUntilUnbonded)
 
 	for i := 0; i < int(epochsUntilUnbonded); i++ {
-		suite.App.EpochsKeeper.BeginBlocker(suite.Ctx)
+		epochInfo.EndEpoch()
+		suite.App.EpochsKeeper.AfterEpochEnd(suite.Ctx, epochInfo.Identifier, epochInfo.CurrentEpoch)
 	}
-	epochInfoForUnbond, _ = suite.App.EpochsKeeper.GetEpochInfo(suite.Ctx, epochID)
-	suite.Equal(epochInfo.CurrentEpoch+int64(epochsUntilUnbonded), epochInfoForUnbond.CurrentEpoch)
+	suite.Equal(epochInfo.CurrentEpoch, matureEpochs)
+	// update epochs to mature pending delegations from exocore-native-token by decrementing holdcount
 	suite.App.StakingKeeper.EndBlock(suite.Ctx)
 
 	suite.App.DelegationKeeper.EndBlock(suite.Ctx, abci.RequestEndBlock{})
