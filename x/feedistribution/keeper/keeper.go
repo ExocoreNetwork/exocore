@@ -1,15 +1,15 @@
 package keeper
 
 import (
-	"fmt"
-	storetypes "github.com/cosmos/cosmos-sdk/store/types"
-
+	collections "cosmossdk.io/collections"
 	"cosmossdk.io/core/store"
 	"cosmossdk.io/log"
-	"github.com/cosmos/cosmos-sdk/codec"
-	sdk "github.com/cosmos/cosmos-sdk/types"
-
+	"fmt"
+	stakingkeeper "github.com/ExocoreNetwork/exocore/x/dogfood/keeper"
 	"github.com/ExocoreNetwork/exocore/x/feedistribution/types"
+	"github.com/cosmos/cosmos-sdk/codec"
+	storetypes "github.com/cosmos/cosmos-sdk/store/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 type (
@@ -21,9 +21,22 @@ type (
 
 		// the address capable of executing a MsgUpdateParams message. Typically, this
 		// should be the x/gov module account.
-		authority string
+		authority    string
+		authKeeper   types.AccountKeeper
+		bankKeeper   types.BankKeeper
+		epochsKeeper types.EpochsKeeper
+		poolKeeper   types.PoolKeeper
 
-		bankKeeper types.BankKeeper
+		feeCollectorName string
+		// FeePool stores decimal tokens that cannot be yet distributed.
+		FeePool       collections.Item[types.FeePool]
+		StakingKeeper stakingkeeper.Keeper
+		// ValidatorsAccumulatedCommission key: valAddr | value: ValidatorAccumulatedCommission
+		ValidatorsAccumulatedCommission collections.Map[sdk.ValAddress, types.ValidatorAccumulatedCommission]
+		// ValidatorCurrentRewards key: valAddr | value: ValidatorCurrentRewards
+		ValidatorCurrentRewards collections.Map[sdk.ValAddress, types.ValidatorCurrentRewards]
+		// ValidatorOutstandingRewards key: valAddr | value: ValidatorOustandingRewards
+		ValidatorOutstandingRewards collections.Map[sdk.ValAddress, types.ValidatorOutstandingRewards]
 	}
 )
 

@@ -9,5 +9,8 @@ option go_package = "github.com/ExocoreNetwork/exocore/x/feedistribution/types";
 // Params defines the parameters for the module.
 message Params {
   option (amino.name) = "exocore/x/feedistribution/Params";
-  option (gogoproto.equal) = true;
+  // period is the amount of past periods, based on the epochs per period param
+  uint64 period = 1;
+  // epoch_identifier for fee distribution
+  string epoch_identifier = 2;
 }
