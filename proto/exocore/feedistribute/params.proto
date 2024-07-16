@@ -10,6 +10,4 @@ option go_package = "github.com/ExocoreNetwork/exocore/x/feedistribution/types";
 message Params {
   option (amino.name) = "exocore/x/feedistribution/Params";
   option (gogoproto.equal) = true;
-
-  
 }

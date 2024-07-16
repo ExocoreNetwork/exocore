@@ -11,8 +11,14 @@ const (
 	MemStoreKey = "mem_feedistribute"
 )
 
+const (
+	// EpochIdentifier defines the epoch identifier for fee distribution module
+	EpochIdentifierKey = "epoch_identifier_feedistribute"
+)
+
 var (
-	ParamsKey = []byte("p_feedistribute")
+	ParamsKey                = []byte("p_feedistribute")
+	KeyPrefixEpochIdentifier = []byte(EpochIdentifierKey)
 )
 
 func KeyPrefix(p string) []byte {
