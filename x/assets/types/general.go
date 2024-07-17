@@ -9,15 +9,17 @@ import (
 	errorsmod "cosmossdk.io/errors"
 	"cosmossdk.io/math"
 
+	"github.com/ExocoreNetwork/exocore/utils"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 )
 
 const (
-	NativeChainLzID  = 0
-	NativeAssetAddr  = "0x0000000000000000000000000000000000000000"
-	NativeAssetID    = "0x0000000000000000000000000000000000000000_0x0"
-	NativeAssetDenom = "aexo"
+	NativeChainLzID = 0
+	NativeAssetAddr = "0x0000000000000000000000000000000000000000"
+	NativeAssetID   = "0x0000000000000000000000000000000000000000_0x0"
+	//	NativeAssetDenom = "aexo"
+	NativeAssetDenom = utils.BaseDenom
 	// EmptyTxHash      = "0x"
 	// EmptyLzNonce = 0
 )
