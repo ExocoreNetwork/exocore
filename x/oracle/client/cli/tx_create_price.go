@@ -18,8 +18,7 @@ func CmdCreatePrice() *cobra.Command {
 		// TODO: support v1 single sourceID for temporary
 		Use:   "create-price feederid basedblock nonce sourceid decimal price timestamp detid optinoal(price timestamp detid) optional(desc)",
 		Short: "Broadcast message create-price",
-		// Args:  cobra.ExactArgs(0),
-		Args: cobra.MinimumNArgs(8),
+		Args:  cobra.MinimumNArgs(8),
 		RunE: func(cmd *cobra.Command, args []string) (err error) {
 			clientCtx, err := client.GetClientTxContext(cmd)
 			if err != nil {
