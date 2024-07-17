@@ -8,6 +8,7 @@ import (
 
 	assettypes "github.com/ExocoreNetwork/exocore/x/assets/keeper"
 	delegationtypes "github.com/ExocoreNetwork/exocore/x/delegation/types"
+	//evmtypes "github.com/ExocoreNetwork/exocore/x/evm/keeper"
 	"github.com/cometbft/cometbft/libs/log"
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/store/prefix"
@@ -25,6 +26,7 @@ type (
 		// other keepers
 		assetsKeeper assettypes.Keeper
 		epochsKeeper types.EpochsKeeper
+		//evmKeeper    *evmtypes.Keeper
 	}
 )
 
@@ -34,6 +36,7 @@ func NewKeeper(
 	operatorKeeper delegationtypes.OperatorKeeper,
 	assetKeeper assettypes.Keeper,
 	epochsKeeper types.EpochsKeeper,
+	// evmKeeper *evmtypes.Keeper,
 ) Keeper {
 	return Keeper{
 		cdc:            cdc,
@@ -41,6 +44,7 @@ func NewKeeper(
 		operatorKeeper: operatorKeeper,
 		assetsKeeper:   assetKeeper,
 		epochsKeeper:   epochsKeeper,
+		//evmKeeper:      evmKeeper,
 	}
 }
 
@@ -50,7 +54,6 @@ func (k Keeper) Logger(ctx sdk.Context) log.Logger {
 
 func (k Keeper) AVSInfoUpdate(ctx sdk.Context, params *AVSRegisterOrDeregisterParams) error {
 	avsInfo, _ := k.GetAVSInfo(ctx, params.AvsAddress)
-
 	action := params.Action
 	epochIdentifier := params.EpochIdentifier
 	if avsInfo != nil && avsInfo.Info.EpochIdentifier != "" {
@@ -84,14 +87,16 @@ func (k Keeper) AVSInfoUpdate(ctx sdk.Context, params *AVSRegisterOrDeregisterPa
 		if avsInfo == nil {
 			return errorsmod.Wrap(types.ErrUnregisterNonExistent, fmt.Sprintf("the avsaddress is :%s", params.AvsAddress))
 		}
-		// If avs DeRegisterAction check UnbondingPeriod
-		if (epoch.CurrentEpoch - avsInfo.GetInfo().StartingEpoch) > int64(avsInfo.Info.AvsUnbondingPeriod) {
-			return errorsmod.Wrap(types.ErrUnbondingPeriod, fmt.Sprintf("not qualified to deregister %s", avsInfo))
-		}
 		// If avs DeRegisterAction check CallerAddress
 		if !slices.Contains(avsInfo.Info.AvsOwnerAddress, params.CallerAddress) {
 			return errorsmod.Wrap(types.ErrCallerAddressUnauthorized, fmt.Sprintf("this caller not qualified to deregister %s", params.CallerAddress))
 		}
+
+		// If avs DeRegisterAction check UnbondingPeriod
+		if (epoch.CurrentEpoch - avsInfo.GetInfo().StartingEpoch) > int64(avsInfo.Info.AvsUnbondingPeriod) {
+			return errorsmod.Wrap(types.ErrUnbondingPeriod, fmt.Sprintf("not qualified to deregister %s", avsInfo))
+		}
+
 		// If avs DeRegisterAction check avsname
 		if avsInfo.Info.Name != params.AvsName {
 			return errorsmod.Wrap(types.ErrAvsNameMismatch, fmt.Sprintf("Unregistered AVS name is incorrect %s", params.AvsName))

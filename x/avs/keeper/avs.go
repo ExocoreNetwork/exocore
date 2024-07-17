@@ -1,18 +1,15 @@
 package keeper
 
 import (
-	"fmt"
-	"hash"
-	"strings"
-
-	"github.com/cosmos/cosmos-sdk/store/prefix"
-	"github.com/ethereum/go-ethereum/common"
-	"golang.org/x/crypto/sha3"
-
-	"github.com/ExocoreNetwork/exocore/x/avs/types"
-
 	errorsmod "cosmossdk.io/errors"
 	sdkmath "cosmossdk.io/math"
+	"fmt"
+	"github.com/ExocoreNetwork/exocore/x/avs/types"
+	"github.com/cosmos/cosmos-sdk/store/prefix"
+	ibcclienttypes "github.com/cosmos/ibc-go/v7/modules/core/02-client/types"
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/crypto"
+	"strings"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -58,30 +55,21 @@ func (k *Keeper) GetAVSMinimumSelfDelegation(ctx sdk.Context, avsAddr string) (s
 
 // GetEpochEndAVSs returns the AVS list where the current block marks the end of their epoch.
 func (k *Keeper) GetEpochEndAVSs(ctx sdk.Context, epochIdentifier string, epochNumber int64) ([]string, error) {
-	var avsList []types.AVSInfo
+	var avsList []string
 	k.IterateAVSInfo(ctx, func(_ int64, avsInfo types.AVSInfo) (stop bool) {
 		if epochIdentifier == avsInfo.EpochIdentifier && epochNumber > avsInfo.StartingEpoch {
-			avsList = append(avsList, avsInfo)
+			avsList = append(avsList, avsInfo.AvsAddress)
 		}
 		return false
 	})
 
-	if len(avsList) == 0 {
-		return []string{}, nil
-	}
-
-	avsAddrList := make([]string, len(avsList))
-	for i := range avsList {
-		avsAddrList[i] = avsList[i].AvsAddress
-	}
-
-	return avsAddrList, nil
+	return avsList, nil
 }
 
 func (k *Keeper) GetAVSAddrByChainID(ctx sdk.Context, chainID string) (string, error) {
-	chainID = ProcessingStr(chainID)
+	chainID = ChainIDWithoutRevision(chainID)
 	if len(chainID) == 0 {
-		return "", errorsmod.Wrap(types.ErrNotNull, "SetAVSAddrByChainID: chainID is null")
+		return "", errorsmod.Wrap(types.ErrNotNull, "RegisterAVSWithChainID: chainID is null")
 	}
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefixAVSInfoByChainID)
 	if !store.Has([]byte(chainID)) {
@@ -92,51 +80,29 @@ func (k *Keeper) GetAVSAddrByChainID(ctx sdk.Context, chainID string) (string, e
 	return string(avsAddr), nil
 }
 
-// SetAVSAddrByChainID creates an avs address given the chainID
-func (k Keeper) SetAVSAddrByChainID(ctx sdk.Context, chainID string) (err error) {
-	chainID = ProcessingStr(chainID)
+// RegisterAVSWithChainID creates an avs address given the chainID
+func (k Keeper) RegisterAVSWithChainID(ctx sdk.Context, chainID string) (err error) {
+	chainID = ChainIDWithoutRevision(chainID)
 	if len(chainID) == 0 {
-		return errorsmod.Wrap(err, "SetAVSAddrByChainID: chainID is null")
+		return errorsmod.Wrap(err, "RegisterAVSWithChainID: chainID is null")
 	}
-	avsAddr := common.BytesToAddress(Keccak256([]byte(chainID))).String()
+	avsAddr := common.BytesToAddress(crypto.Keccak256([]byte(chainID))).String()
 
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefixAVSInfoByChainID)
 
+	//k.evmKeeper.SetAccount(ctx, common.HexToAddress(avsAddr), statedb.Account{
+	//	Balance:  big.NewInt(0),
+	//	CodeHash: crypto.Keccak256Hash([]byte("chain-id-code")).Bytes(),
+	//	Nonce:    1,
+	//})
 	store.Set([]byte(chainID), []byte(avsAddr))
 	return nil
 }
 
-// KeccakState wraps sha3.state. In addition to the usual hash methods, it also supports
-// Read to get a variable amount of data from the hash state. Read is faster than Sum
-// because it doesn't copy the internal state, but also modifies the internal state.
-type KeccakState interface {
-	hash.Hash
-	Read([]byte) (int, error)
-}
-
-// NewKeccakState creates a new KeccakState
-func NewKeccakState() KeccakState {
-	return sha3.NewLegacyKeccak256().(KeccakState)
-}
-
-// Keccak256 calculates and returns the Keccak256 hash of the input data.
-func Keccak256(data ...[]byte) []byte {
-	b := make([]byte, 32)
-	d := NewKeccakState()
-	for _, b := range data {
-		d.Write(b)
+func ChainIDWithoutRevision(chainID string) string {
+	if !ibcclienttypes.IsRevisionFormat(chainID) {
+		return chainID
 	}
-	_, err := d.Read(b)
-	if err != nil {
-		return nil
-	}
-	return b
-}
-
-func ProcessingStr(str string) string {
-	index := strings.Index(str, "-")
-	if index != -1 {
-		return str[:index]
-	}
-	return ""
+	splitStr := strings.Split(chainID, "-")
+	return splitStr[0]
 }

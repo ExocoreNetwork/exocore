@@ -219,6 +219,7 @@ func (p Precompile) RegisterAVSTask(
 	ctx sdk.Context,
 	_ common.Address,
 	contract *vm.Contract,
+	stateDB vm.StateDB,
 	method *abi.Method,
 	args []interface{},
 ) ([]byte, error) {
@@ -231,6 +232,9 @@ func (p Precompile) RegisterAVSTask(
 	params.FromAddress = callerAddress
 	_, err = p.avsKeeper.RegisterAVSTask(ctx, params)
 	if err != nil {
+		return nil, err
+	}
+	if err = p.EmitRegisterAVSTaskEvent(ctx, stateDB, params.Task.TaskContractAddress, params.Task.MetaInfo, params.Task.Name); err != nil {
 		return nil, err
 	}
 	return method.Outputs.Pack(true)

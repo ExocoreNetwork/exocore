@@ -189,7 +189,7 @@ func (suite *AVSTestSuite) TestAVSInfoUpdateWithOperator_Register() {
 }
 func (suite *AVSTestSuite) TestAVSCreateAddress() {
 
-	suite.App.AVSManagerKeeper.SetAVSAddrByChainID(suite.Ctx, "exocoretestnet_233-4")
+	suite.App.AVSManagerKeeper.RegisterAVSWithChainID(suite.Ctx, "exocoretestnet_233-4")
 
 	avsAddress, _ := suite.App.AVSManagerKeeper.GetAVSAddrByChainID(suite.Ctx, "exocoretestnet_233-1")
 	suite.Equal("0xf5E0B17fD63cc7a3823b6dbFcc678bE5C1e1EA58", avsAddress)

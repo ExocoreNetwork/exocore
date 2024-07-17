@@ -38,6 +38,8 @@ message AVSInfo {
   // Effective current epoch, accounting for current_epoch + 1
   // and current_epoch is the integer identifier of the epoch module
   int64 starting_epoch = 11;
+  //chain-id for dogfood-avs
+  string chain_id = 12;
 }
 // TaskContractInfo is the task info.
 message TaskContractInfo {

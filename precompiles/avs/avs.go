@@ -96,7 +96,7 @@ func (p Precompile) Run(evm *vm.EVM, contract *vm.Contract, readOnly bool) (bz [
 	case MethodDeregisterOperatorFromAVS:
 		bz, err = p.UnbindOperatorToAVS(ctx, evm.Origin, contract, stateDB, method, args)
 	case MethodRegisterAVSTask:
-		bz, err = p.RegisterAVSTask(ctx, evm.Origin, contract, method, args)
+		bz, err = p.RegisterAVSTask(ctx, evm.Origin, contract, stateDB, method, args)
 	case MethodRegisterBLSPublicKey:
 		bz, err = p.RegisterBLSPublicKey(ctx, evm.Origin, stateDB, method, args)
 	case MethodGetRegisteredPubkey:
@@ -124,7 +124,7 @@ func (p Precompile) Run(evm *vm.EVM, contract *vm.Contract, readOnly bool) (bz [
 func (Precompile) IsTransaction(methodID string) bool {
 	switch methodID {
 	case MethodRegisterAVS, MethodDeregisterAVS, MethodUpdateAVS, MethodRegisterOperatorToAVS,
-		MethodDeregisterOperatorFromAVS, MethodRegisterAVSTask, MethodRegisterBLSPublicKey, MethodGetRegisteredPubkey:
+		MethodDeregisterOperatorFromAVS, MethodRegisterAVSTask, MethodRegisterBLSPublicKey:
 		return true
 	default:
 		return false
