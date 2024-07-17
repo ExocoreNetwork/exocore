@@ -10,7 +10,9 @@ import (
 
 	errorsmod "cosmossdk.io/errors"
 	sdkmath "cosmossdk.io/math"
-	"github.com/ExocoreNetwork/exocore/x/assets/types"
+
+	//	"github.com/ExocoreNetwork/exocore/x/assets/types"
+	assetstypes "github.com/ExocoreNetwork/exocore/x/assets/types"
 	rtypes "github.com/ExocoreNetwork/exocore/x/slash/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/common"
@@ -22,7 +24,7 @@ import (
 
 type SlashParams struct {
 	ClientChainLzID           uint64
-	Action                    types.CrossChainOpType
+	Action                    assetstypes.CrossChainOpType
 	AssetsAddress             []byte
 	OperatorAddress           sdk.AccAddress
 	StakerAddress             []byte
@@ -42,22 +44,22 @@ type OperatorFrozenStatus struct {
 
 func (k Keeper) getParamsFromEventLog(ctx sdk.Context, log *ethtypes.Log) (*SlashParams, error) {
 	// check if action is deposit
-	var action types.CrossChainOpType
+	var action assetstypes.CrossChainOpType
 	var err error
 	readStart := uint32(0)
-	readEnd := uint32(types.CrossChainActionLength)
+	readEnd := uint32(assetstypes.CrossChainActionLength)
 	r := bytes.NewReader(log.Data[readStart:readEnd])
 	err = binary.Read(r, binary.BigEndian, &action)
 	if err != nil {
 		return nil, errorsmod.Wrap(err, "error occurred when binary read action")
 	}
-	if action != types.DelegateTo && action != types.UndelegateFrom {
+	if action != assetstypes.DelegateTo && action != assetstypes.UndelegateFrom {
 		// not handle the actions that isn't deposit
 		return nil, nil
 	}
 
 	var clientChainLzID uint64
-	r = bytes.NewReader(log.Topics[types.ClientChainLzIDIndexInTopics][:])
+	r = bytes.NewReader(log.Topics[assetstypes.ClientChainLzIDIndexInTopics][:])
 	err = binary.Read(r, binary.BigEndian, &clientChainLzID)
 	if err != nil {
 		return nil, errorsmod.Wrap(err, "error occurred when binary read clientChainLzID from topic")
@@ -78,9 +80,9 @@ func (k Keeper) getParamsFromEventLog(ctx sdk.Context, log *ethtypes.Log) (*Slas
 	}
 
 	readStart = readEnd
-	readEnd += types.ExoCoreOperatorAddrLength
+	readEnd += assetstypes.ExoCoreOperatorAddrLength
 	r = bytes.NewReader(log.Data[readStart:readEnd])
-	operatorAddress := [types.ExoCoreOperatorAddrLength]byte{}
+	operatorAddress := [assetstypes.ExoCoreOperatorAddrLength]byte{}
 	err = binary.Read(r, binary.BigEndian, operatorAddress[:])
 	if err != nil {
 		return nil, errorsmod.Wrap(err, "error occurred when binary read operator address")
@@ -100,7 +102,7 @@ func (k Keeper) getParamsFromEventLog(ctx sdk.Context, log *ethtypes.Log) (*Slas
 	}
 
 	readStart = readEnd
-	readEnd += types.CrossChainOpAmountLength
+	readEnd += assetstypes.CrossChainOpAmountLength
 	amount := sdkmath.NewIntFromBigInt(big.NewInt(0).SetBytes(log.Data[readStart:readEnd]))
 
 	return &SlashParams{
@@ -189,16 +191,19 @@ func (k Keeper) Slash(ctx sdk.Context, event *SlashParams) error {
 		return errorsmod.Wrap(rtypes.ErrSlashAssetNotExist, fmt.Sprintf("the assetID is:%s", assetID))
 	}
 
-	changeAmount := types.DeltaStakerSingleAsset{
-		TotalDepositAmount: event.OpAmount.Neg(),
-		WithdrawableAmount: event.OpAmount.Neg(),
-	}
-	err := k.assetsKeeper.UpdateStakerAssetState(ctx, stakeID, assetID, changeAmount)
-	if err != nil {
-		return err
-	}
-	if err = k.assetsKeeper.UpdateStakingAssetTotalAmount(ctx, assetID, event.OpAmount.Neg()); err != nil {
-		return err
+	// dont't create stakerasset info for native token.
+	// TODO: do we need to do any other process for native token 'else{}' ?
+	if assetID != assetstypes.NativeAssetID {
+		changeAmount := assetstypes.DeltaStakerSingleAsset{
+			TotalDepositAmount: event.OpAmount.Neg(),
+		}
+		err := k.assetsKeeper.UpdateStakerAssetState(ctx, stakeID, assetID, changeAmount)
+		if err != nil {
+			return err
+		}
+		if err = k.assetsKeeper.UpdateStakingAssetTotalAmount(ctx, assetID, event.OpAmount.Neg()); err != nil {
+			return err
+		}
 	}
 	return nil
 }

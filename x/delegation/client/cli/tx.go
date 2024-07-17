@@ -19,7 +19,8 @@ func NewTxCmd() *cobra.Command {
 
 	txCmd.AddCommand(
 		// add tx commands
-		CmdDelagateNativeToken(),
+		CmdDelegate(),
+		CmdUndelegate(),
 	)
 	return txCmd
 }

@@ -2,8 +2,11 @@ package keeper
 
 import (
 	"context"
+	"fmt"
 
+	"github.com/ExocoreNetwork/exocore/x/delegation/types"
 	delegationtype "github.com/ExocoreNetwork/exocore/x/delegation/types"
+	"github.com/cometbft/cometbft/libs/log"
 	"github.com/cosmos/cosmos-sdk/codec"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -60,6 +63,10 @@ func (k *Keeper) Hooks() delegationtype.DelegationHooks {
 		return delegationtype.MultiDelegationHooks{}
 	}
 	return k.hooks
+}
+
+func (k Keeper) Logger(ctx sdk.Context) log.Logger {
+	return ctx.Logger().With("module", fmt.Sprintf("x/%s", types.ModuleName))
 }
 
 // IDelegation interface will be implemented by delegation keeper

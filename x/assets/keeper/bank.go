@@ -47,16 +47,20 @@ func (k Keeper) PerformDepositOrWithdraw(ctx sdk.Context, params *DepositWithdra
 		TotalDepositAmount: actualOpAmount,
 		WithdrawableAmount: actualOpAmount,
 	}
-	// update asset state of the specified staker
-	err = k.UpdateStakerAssetState(ctx, stakeID, assetID, changeAmount)
-	if err != nil {
-		return errorsmod.Wrapf(err, "stakeID:%s assetID:%s", stakeID, assetID)
-	}
+	// don't update staker info for exo-native-token
+	// TODO: do we need additional process for exo-native-token ?
+	if assetID != assetstypes.NativeAssetID {
+		// update asset state of the specified staker
+		err = k.UpdateStakerAssetState(ctx, stakeID, assetID, changeAmount)
+		if err != nil {
+			return errorsmod.Wrapf(err, "stakeID:%s assetID:%s", stakeID, assetID)
+		}
 
-	// update total amount of the deposited asset
-	err = k.UpdateStakingAssetTotalAmount(ctx, assetID, actualOpAmount)
-	if err != nil {
-		return errorsmod.Wrapf(err, "assetID:%s", assetID)
+		// update total amount of the deposited asset
+		err = k.UpdateStakingAssetTotalAmount(ctx, assetID, actualOpAmount)
+		if err != nil {
+			return errorsmod.Wrapf(err, "assetID:%s", assetID)
+		}
 	}
 	return nil
 }

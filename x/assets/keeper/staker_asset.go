@@ -3,6 +3,7 @@ package keeper
 import (
 	"fmt"
 
+	"github.com/ExocoreNetwork/exocore/x/assets/types"
 	assetstype "github.com/ExocoreNetwork/exocore/x/assets/types"
 	delegationkeeper "github.com/ExocoreNetwork/exocore/x/delegation/keeper"
 
@@ -29,6 +30,12 @@ func (k Keeper) GetStakerAssetInfos(ctx sdk.Context, stakerID string) (assetsInf
 		assetID := keyList[1]
 		ret[assetID] = &stateInfo
 	}
+	// add exo-native-token info
+	info, err := k.GetStakerSpecifiedAssetInfo(ctx, stakerID, types.NativeAssetID)
+	if err != nil {
+		return nil, err
+	}
+	ret[types.NativeAssetID] = info
 	return ret, nil
 }
 

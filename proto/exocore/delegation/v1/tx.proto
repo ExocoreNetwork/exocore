@@ -59,15 +59,17 @@ message DelegationIncOrDecInfo {
   string   from_address = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
 
   // per_operator_amounts is the amount of the asset delegated to each operator.
-  map<string, ValueField> per_operator_amounts = 2;
+  repeated KeyValue per_operator_amounts = 2 [(gogoproto.nullable) = false];
 }
 
 // MsgDelegation is the delegation Msg.
 message MsgDelegation {
+  // asset_id is the asset id.
+  string asset_id = 1 [(gogoproto.customname) = "AssetID"];
   // base_info is the delegation increase or decrease request container.
-  DelegationIncOrDecInfo base_info = 1;
+  DelegationIncOrDecInfo base_info = 2;
   // approved_info is the delegation increase or decrease response container.
-  DelegationApproveInfo approved_info = 2;
+  DelegationApproveInfo approved_info = 3;
 }
 
 // UndelegationRecord is the undelegation record, keyed by a RecordKey.
@@ -118,7 +120,8 @@ message DelegationResponse {}
 // MsgUndelegation is the undelegation Msg.
 message MsgUndelegation {
   // base_info is the delegation increase or decrease request container.
-  DelegationIncOrDecInfo base_info = 1;
+  string asset_id = 1 [(gogoproto.customname) = "AssetID"];
+  DelegationIncOrDecInfo base_info = 2;
 }
 
 // UndelegationResponse is the response to an undelegation request.
