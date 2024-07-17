@@ -62,7 +62,6 @@ func (k Keeper) GetStakerSpecifiedAssetInfo(ctx sdk.Context, stakerID string, as
 			if err != nil {
 				return nil, err
 			}
-			_ = operatorAssetInfo
 			undelegatableTokens, err := delegationkeeper.TokensFromShares(record.UndelegatableShare, operatorAssetInfo.TotalShare, operatorAssetInfo.TotalAmount)
 			if err != nil {
 				return nil, err

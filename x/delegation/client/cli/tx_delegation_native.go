@@ -18,7 +18,7 @@ func CmdDelegate() *cobra.Command {
 	cmd := &cobra.Command{
 		// TODO: only support native token for now
 		Use:   "delegate asset-id operator amount approve-signature, approve-salt",
-		Short: "Broadcast message delegate-native to delegate native token",
+		Short: "Broadcast a transaction to delegate amount of native token to the operator",
 		Args:  cobra.MinimumNArgs(3),
 		RunE: func(cmd *cobra.Command, args []string) (err error) {
 			clientCtx, err := client.GetClientTxContext(cmd)
@@ -36,7 +36,7 @@ func CmdDelegate() *cobra.Command {
 			operatorAddrStr := args[1]
 
 			amount, ok := sdkmath.NewIntFromString(args[2])
-			if !ok || amount.IsNegative() {
+			if !ok || amount.LTE(sdkmath.ZeroInt()) {
 				return errors.New("amount invalid")
 			}
 			msg := types.NewMsgDelegation(assetID, clientCtx.GetFromAddress().String(), approveSignature, approveSalt, []types.KeyValue{{Key: operatorAddrStr, Value: &types.ValueField{Amount: amount}}})
@@ -56,7 +56,7 @@ func CmdUndelegate() *cobra.Command {
 	cmd := &cobra.Command{
 		// TODO: only support native token for now
 		Use:   "undelegate asset-id operator amount",
-		Short: "Broadcast message delegate-native to delegate native token",
+		Short: "Broadcast a transaction to undelegate amount of native token from the operator",
 		Args:  cobra.MinimumNArgs(3),
 		RunE: func(cmd *cobra.Command, args []string) (err error) {
 			clientCtx, err := client.GetClientTxContext(cmd)
@@ -69,7 +69,7 @@ func CmdUndelegate() *cobra.Command {
 			operatorAddrStr := args[1]
 
 			amount, ok := sdkmath.NewIntFromString(args[2])
-			if !ok || amount.IsNegative() {
+			if !ok || amount.LTE(sdkmath.ZeroInt()) {
 				return errors.New("amount invalid")
 			}
 			msg := types.NewMsgUndelegation(assetID, clientCtx.GetFromAddress().String(), []types.KeyValue{{Key: operatorAddrStr, Value: &types.ValueField{Amount: amount}}})
