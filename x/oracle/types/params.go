@@ -115,6 +115,7 @@ func (p *Params) ParamSetPairs() paramtypes.ParamSetPairs {
 	}
 }
 
+// TODO: consider to parallel verifications of chains, tokens, rules, ..., to improve performance.
 // Validate validates the set of params
 func (p Params) Validate() error {
 	// Some basic configure params validation:
