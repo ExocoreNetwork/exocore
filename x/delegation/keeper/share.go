@@ -4,6 +4,7 @@ import (
 	errorsmod "cosmossdk.io/errors"
 	sdkmath "cosmossdk.io/math"
 	assetstype "github.com/ExocoreNetwork/exocore/x/assets/types"
+	assetstypes "github.com/ExocoreNetwork/exocore/x/assets/types"
 	delegationtypes "github.com/ExocoreNetwork/exocore/x/delegation/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -221,13 +222,16 @@ func (k Keeper) RemoveShare(
 	}
 	if isUndelegation {
 		deltaAmount.WaitUndelegationAmount = removeToken
-		// todo: TotalDepositAmount might be influenced by slash and precision loss,
-		// consider removing it, it can be recalculated from the share for RPC query.
-		err = k.assetsKeeper.UpdateStakerAssetState(ctx, stakerID, assetID, assetstype.DeltaStakerSingleAsset{
-			PendingUndelegationAmount: removeToken,
-		})
-		if err != nil {
-			return removeToken, err
+		// don't update staker asset info for exo-native-token
+		if assetID != assetstypes.NativeAssetID {
+			// todo: TotalDepositAmount might be influenced by slash and precision loss,
+			// consider removing it, it can be recalculated from the share for RPC query.
+			err = k.assetsKeeper.UpdateStakerAssetState(ctx, stakerID, assetID, assetstype.DeltaStakerSingleAsset{
+				PendingUndelegationAmount: removeToken,
+			})
+			if err != nil {
+				return removeToken, err
+			}
 		}
 	}
 	shareIsZero, err := k.UpdateDelegationState(ctx, stakerID, assetID, operator.String(), deltaAmount)

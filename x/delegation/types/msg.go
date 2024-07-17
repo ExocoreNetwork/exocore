@@ -3,8 +3,6 @@ package types
 import (
 	errorsmod "cosmossdk.io/errors"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-
-	sdkmath "cosmossdk.io/math"
 )
 
 var (
@@ -27,16 +25,21 @@ func (m *MsgDelegation) ValidateBasic() error {
 }
 
 // new message to delegate asset to operator
-func NewMsgDelegation(fromAddress string, amountPerOperator map[string]sdkmath.Int) *MsgDelegation {
+func NewMsgDelegation(assetID, fromAddress, approveSignature, approveSalt string, amountPerOperator []KeyValue) *MsgDelegation {
 	baseInfo := &DelegationIncOrDecInfo{
 		FromAddress:        fromAddress,
-		PerOperatorAmounts: make(map[string]*ValueField),
+		PerOperatorAmounts: make([]KeyValue, 0, 1),
 	}
-	for operator, amount := range amountPerOperator {
-		baseInfo.PerOperatorAmounts[operator] = &ValueField{Amount: amount}
+	for _, kv := range amountPerOperator {
+		baseInfo.PerOperatorAmounts = append(baseInfo.PerOperatorAmounts, KeyValue{Key: kv.Key, Value: kv.Value})
 	}
 	return &MsgDelegation{
+		AssetID:  assetID,
 		BaseInfo: baseInfo,
+		ApprovedInfo: &DelegationApproveInfo{
+			Signature: approveSignature,
+			Salt:      approveSalt,
+		},
 	}
 }
 
@@ -62,4 +65,19 @@ func (m *MsgUndelegation) ValidateBasic() error {
 // GetSignBytes implements the LegacyMsg interface.
 func (m *MsgUndelegation) GetSignBytes() []byte {
 	return nil
+}
+
+// new message to delegate asset to operator
+func NewMsgUndelegation(assetID, fromAddress string, amountPerOperator []KeyValue) *MsgUndelegation {
+	baseInfo := &DelegationIncOrDecInfo{
+		FromAddress:        fromAddress,
+		PerOperatorAmounts: make([]KeyValue, 0, 1),
+	}
+	for _, kv := range amountPerOperator {
+		baseInfo.PerOperatorAmounts = append(baseInfo.PerOperatorAmounts, KeyValue{Key: kv.Key, Value: kv.Value})
+	}
+	return &MsgUndelegation{
+		AssetID:  assetID,
+		BaseInfo: baseInfo,
+	}
 }
