@@ -7,8 +7,9 @@ import (
 	errorsmod "cosmossdk.io/errors"
 
 	assettypes "github.com/ExocoreNetwork/exocore/x/assets/keeper"
+	operatortypes "github.com/ExocoreNetwork/exocore/x/operator/keeper"
+
 	delegationtypes "github.com/ExocoreNetwork/exocore/x/delegation/types"
-	//evmtypes "github.com/ExocoreNetwork/exocore/x/evm/keeper"
 	"github.com/cometbft/cometbft/libs/log"
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/store/prefix"
@@ -22,21 +23,21 @@ type (
 	Keeper struct {
 		cdc            codec.BinaryCodec
 		storeKey       storetypes.StoreKey
-		operatorKeeper delegationtypes.OperatorKeeper
+		operatorKeeper operatortypes.Keeper
 		// other keepers
 		assetsKeeper assettypes.Keeper
 		epochsKeeper types.EpochsKeeper
-		//evmKeeper    *evmtypes.Keeper
+		evmKeeper    types.EVMKeeper
 	}
 )
 
 func NewKeeper(
 	cdc codec.BinaryCodec,
 	storeKey storetypes.StoreKey,
-	operatorKeeper delegationtypes.OperatorKeeper,
+	operatorKeeper operatortypes.Keeper,
 	assetKeeper assettypes.Keeper,
 	epochsKeeper types.EpochsKeeper,
-	// evmKeeper *evmtypes.Keeper,
+	evmKeeper types.EVMKeeper,
 ) Keeper {
 	return Keeper{
 		cdc:            cdc,
@@ -44,7 +45,7 @@ func NewKeeper(
 		operatorKeeper: operatorKeeper,
 		assetsKeeper:   assetKeeper,
 		epochsKeeper:   epochsKeeper,
-		//evmKeeper:      evmKeeper,
+		evmKeeper:      evmKeeper,
 	}
 }
 
@@ -145,7 +146,7 @@ func (k Keeper) AVSInfoUpdate(ctx sdk.Context, params *AVSRegisterOrDeregisterPa
 	}
 }
 
-func (k Keeper) AVSInfoUpdateWithOperator(ctx sdk.Context, params *OperatorOptParams) error {
+func (k Keeper) OperatorOptAction(ctx sdk.Context, params *OperatorOptParams) error {
 	operatorAddress := params.OperatorAddress
 	opAccAddr, err := sdk.AccAddressFromBech32(operatorAddress)
 	if err != nil {
@@ -156,36 +157,19 @@ func (k Keeper) AVSInfoUpdateWithOperator(ctx sdk.Context, params *OperatorOptPa
 		return errorsmod.Wrap(delegationtypes.ErrOperatorNotExist, fmt.Sprintf("AVSInfoUpdate: invalid operator address:%s", operatorAddress))
 	}
 
-	avsInfo, err := k.GetAVSInfo(ctx, params.AvsAddress)
-	if err != nil || avsInfo == nil {
+	f, err := k.IsAVS(ctx, params.AvsAddress)
+	if err != nil {
 		return errorsmod.Wrap(err, fmt.Sprintf("error occurred when get avs info,this avs address: %s", params.AvsAddress))
 	}
-
-	avs := avsInfo.GetInfo()
-	operatorAddrList := avs.OperatorAddress
+	if !f {
+		return errorsmod.Wrap(err, fmt.Sprintf("Avs does not exist,this avs address: %s", params.AvsAddress))
+	}
 
 	switch params.Action {
 	case RegisterAction:
-		if slices.Contains(operatorAddrList, operatorAddress) {
-			return errorsmod.Wrap(types.ErrAlreadyRegistered, fmt.Sprintf("Error: Already registered, operatorAddress %s", operatorAddress))
-		}
-		operatorAddrList = append(operatorAddrList, operatorAddress)
-		avs.OperatorAddress = operatorAddrList
-		return k.SetAVSInfo(ctx, avs)
+		return k.operatorKeeper.OptIn(ctx, sdk.AccAddress(operatorAddress), params.AvsAddress)
 	case DeRegisterAction:
-		if !slices.Contains(operatorAddrList, operatorAddress) {
-			return errorsmod.Wrap(types.ErrUnregisterNonExistent, fmt.Sprintf("No available operatorAddress to DeRegisterAction, operatorAddress: %s", operatorAddress))
-		}
-		epoch, found := k.epochsKeeper.GetEpochInfo(ctx, avs.EpochIdentifier)
-		if !found {
-			return errorsmod.Wrap(types.ErrEpochNotFound, fmt.Sprintf("epoch info not found %s", avs.EpochIdentifier))
-		}
-		// If avs UpdateAction check UnbondingPeriod
-		if int64(avsInfo.Info.AvsUnbondingPeriod) < (epoch.CurrentEpoch - avsInfo.GetInfo().StartingEpoch) {
-			return errorsmod.Wrap(types.ErrUnbondingPeriod, fmt.Sprintf("not qualified to deregister %s", operatorAddress))
-		}
-		avs.OperatorAddress = types.RemoveOperatorAddress(operatorAddrList, operatorAddress)
-		return k.SetAVSInfo(ctx, avs)
+		return k.operatorKeeper.OptOut(ctx, sdk.AccAddress(operatorAddress), params.AvsAddress)
 	default:
 		return errorsmod.Wrap(types.ErrInvalidAction, fmt.Sprintf("Invalid action: %d", params.Action))
 	}
@@ -221,7 +205,14 @@ func (k Keeper) GetAVSInfo(ctx sdk.Context, addr string) (*types.QueryAVSInfoRes
 	}
 	return res, nil
 }
-
+func (k *Keeper) IsAVS(ctx sdk.Context, addr string) (bool, error) {
+	avsAddr, err := sdk.AccAddressFromBech32(addr)
+	if err != nil {
+		return false, errorsmod.Wrap(err, "GetAVSInfo: error occurred when parse acc address from Bech32")
+	}
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefixAVSInfo)
+	return store.Has(avsAddr), nil
+}
 func (k Keeper) DeleteAVSInfo(ctx sdk.Context, addr string) error {
 	avsAddr, err := sdk.AccAddressFromBech32(addr)
 	if err != nil {

@@ -596,7 +596,11 @@ func NewExocoreApp(
 	// the AVS manager keeper is the AVS registry. it allows registered operators to add or
 	// remove AVSs.
 	app.AVSManagerKeeper = avsManagerKeeper.NewKeeper(
-		appCodec, keys[avsManagerTypes.StoreKey], &app.OperatorKeeper, app.AssetsKeeper, app.EpochsKeeper,
+		appCodec, keys[avsManagerTypes.StoreKey],
+		app.OperatorKeeper,
+		app.AssetsKeeper,
+		app.EpochsKeeper,
+		app.EvmKeeper,
 	)
 
 	// x/oracle is not fully integrated (or enabled) but allows for exchange rates to be added.

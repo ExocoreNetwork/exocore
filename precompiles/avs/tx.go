@@ -172,7 +172,7 @@ func (p Precompile) BindOperatorToAVS(
 	}
 	operatorParams.AvsAddress = avsAddress
 	operatorParams.Action = avskeeper.RegisterAction
-	err = p.avsKeeper.AVSInfoUpdateWithOperator(ctx, operatorParams)
+	err = p.avsKeeper.OperatorOptAction(ctx, operatorParams)
 	if err != nil {
 		return nil, err
 	}
@@ -206,7 +206,7 @@ func (p Precompile) UnbindOperatorToAVS(
 	if err != nil {
 		return nil, err
 	}
-	err = p.avsKeeper.AVSInfoUpdateWithOperator(ctx, operatorParams)
+	err = p.avsKeeper.OperatorOptAction(ctx, operatorParams)
 	if err != nil {
 		return nil, err
 	}

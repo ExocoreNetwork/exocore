@@ -125,7 +125,7 @@ func (suite *AVSTestSuite) TestAVSInfoUpdateWithOperator_Register() {
 		OperatorAddress: OperatorAddress,
 	}
 	//  operator Not Exist
-	err := suite.App.AVSManagerKeeper.AVSInfoUpdateWithOperator(suite.Ctx, operatorParams)
+	err := suite.App.AVSManagerKeeper.OperatorOptAction(suite.Ctx, operatorParams)
 	suite.Error(err)
 	suite.Contains(err.Error(), delegationtypes.ErrOperatorNotExist.Error())
 
@@ -144,7 +144,7 @@ func (suite *AVSTestSuite) TestAVSInfoUpdateWithOperator_Register() {
 	err = suite.App.OperatorKeeper.SetOperatorInfo(suite.Ctx, suite.AccAddress.String(), info)
 	suite.NoError(err)
 	operatorParams.OperatorAddress = info.EarningsAddr
-	err = suite.App.AVSManagerKeeper.AVSInfoUpdateWithOperator(suite.Ctx, operatorParams)
+	err = suite.App.AVSManagerKeeper.OperatorOptAction(suite.Ctx, operatorParams)
 	suite.Error(err)
 	suite.Contains(err.Error(), types.ErrNoKeyInTheStore.Error())
 
@@ -170,20 +170,20 @@ func (suite *AVSTestSuite) TestAVSInfoUpdateWithOperator_Register() {
 	suite.NoError(err)
 
 	operatorParams.AvsAddress = avsAddres
-	err = suite.App.AVSManagerKeeper.AVSInfoUpdateWithOperator(suite.Ctx, operatorParams)
+	err = suite.App.AVSManagerKeeper.OperatorOptAction(suite.Ctx, operatorParams)
 	suite.NoError(err)
 	// duplicate register operator
-	err = suite.App.AVSManagerKeeper.AVSInfoUpdateWithOperator(suite.Ctx, operatorParams)
+	err = suite.App.AVSManagerKeeper.OperatorOptAction(suite.Ctx, operatorParams)
 	suite.Error(err)
 	suite.Contains(err.Error(), types.ErrAlreadyRegistered.Error())
 	// deregister operator
 	operatorParams.Action = avstypes.DeRegisterAction
-	err = suite.App.AVSManagerKeeper.AVSInfoUpdateWithOperator(suite.Ctx, operatorParams)
+	err = suite.App.AVSManagerKeeper.OperatorOptAction(suite.Ctx, operatorParams)
 	suite.NoError(err)
 
 	// duplicate deregister operator
 	operatorParams.Action = avstypes.DeRegisterAction
-	err = suite.App.AVSManagerKeeper.AVSInfoUpdateWithOperator(suite.Ctx, operatorParams)
+	err = suite.App.AVSManagerKeeper.OperatorOptAction(suite.Ctx, operatorParams)
 	suite.Error(err)
 	suite.Contains(err.Error(), types.ErrUnregisterNonExistent.Error())
 }

@@ -24,8 +24,10 @@ import (
 	ibctesting "github.com/cosmos/ibc-go/v7/testing"
 	"github.com/cosmos/ibc-go/v7/testing/mock"
 
+	avstypes "github.com/ExocoreNetwork/exocore/x/avs/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
+
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 
 	"github.com/evmos/evmos/v14/crypto/ethsecp256k1"
@@ -293,6 +295,9 @@ func GenesisStateWithValSet(app *ExocoreApp, genesisState simapp.GenesisState,
 		[]banktypes.Metadata{}, []banktypes.SendEnabled{},
 	)
 	genesisState[banktypes.ModuleName] = app.AppCodec().MustMarshalJSON(bankGenesis)
+
+	avsGenesis := avstypes.DefaultGenesis()
+	genesisState[avstypes.ModuleName] = app.AppCodec().MustMarshalJSON(avsGenesis)
 
 	return genesisState
 }

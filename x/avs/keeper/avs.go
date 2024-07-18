@@ -9,6 +9,8 @@ import (
 	ibcclienttypes "github.com/cosmos/ibc-go/v7/modules/core/02-client/types"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/evmos/evmos/v14/x/evm/statedb"
+	"math/big"
 	"strings"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -90,11 +92,14 @@ func (k Keeper) RegisterAVSWithChainID(ctx sdk.Context, chainID string) (err err
 
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefixAVSInfoByChainID)
 
-	//k.evmKeeper.SetAccount(ctx, common.HexToAddress(avsAddr), statedb.Account{
-	//	Balance:  big.NewInt(0),
-	//	CodeHash: crypto.Keccak256Hash([]byte("chain-id-code")).Bytes(),
-	//	Nonce:    1,
-	//})
+	err = k.evmKeeper.SetAccount(ctx, common.HexToAddress(avsAddr), statedb.Account{
+		Balance:  big.NewInt(0),
+		CodeHash: crypto.Keccak256Hash([]byte(types.ChainID)).Bytes(),
+		Nonce:    1,
+	})
+	if err != nil {
+		return err
+	}
 	store.Set([]byte(chainID), []byte(avsAddr))
 	return nil
 }
