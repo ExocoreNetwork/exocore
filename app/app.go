@@ -582,6 +582,7 @@ func NewExocoreApp(
 		epochstypes.NewMultiEpochHooks(
 			app.StakingKeeper.EpochsHooks(), // at this point, the order is irrelevant.
 			app.ExomintKeeper.EpochsHooks(), // however, this may change once we have distribution
+			app.AVSManagerKeeper.EpochsHooks(),
 		),
 	)
 
@@ -698,6 +699,15 @@ func NewExocoreApp(
 		app.FeeMarketKeeper,
 		cast.ToString(appOpts.Get(srvflags.EVMTracer)),
 		app.GetSubspace(evmtypes.ModuleName),
+	)
+	// the AVS manager keeper is the AVS registry. it allows registered operators to add or
+	// remove AVSs.
+	app.AVSManagerKeeper = avsManagerKeeper.NewKeeper(
+		appCodec, keys[avsManagerTypes.StoreKey],
+		app.OperatorKeeper,
+		app.AssetsKeeper,
+		app.EpochsKeeper,
+		app.EvmKeeper,
 	)
 
 	app.EvmKeeper.WithPrecompiles(
