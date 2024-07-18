@@ -64,7 +64,9 @@ interface IAVSManager {
     /// @param pubKey  the public keys of the operator
     function registerBLSPublicKey(
         string memory operator,
-        bytes calldata pubKey
+        bytes calldata pubKey,
+        bytes calldata pubkeyRegistrationSignature，
+        bytes calldata pubkeyRegistrationMessageHash
     ) external returns (bool success);
 
     /// @dev Returns the pubkey and pubkey hash of an operator,Reverts if the operator has not registered a valid pubkey

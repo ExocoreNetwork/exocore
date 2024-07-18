@@ -33,7 +33,7 @@ service Query {
     option (google.api.http).get = "/exocore/avs/QueryAVSInfo";
   }
   // TaskInfo queries the task information.
-  rpc QueryAVSTaskInfo(QueryAVSTaskInfoReq) returns (TaskContractInfo) {
+  rpc QueryAVSTaskInfo(QueryAVSTaskInfoReq) returns (TaskInfo) {
     option (google.api.http).get = "/exocore/avstask/v1/GetAVSTaskInfoReq";
   }
 }
