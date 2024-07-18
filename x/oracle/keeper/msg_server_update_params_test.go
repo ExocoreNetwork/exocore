@@ -1,17 +1,54 @@
 package keeper_test
 
 import (
+	reflect "reflect"
+
+	dogfoodkeeper "github.com/ExocoreNetwork/exocore/x/dogfood/keeper"
+	dogfoodtypes "github.com/ExocoreNetwork/exocore/x/dogfood/types"
 	"github.com/ExocoreNetwork/exocore/x/oracle/types"
+	. "github.com/agiledragon/gomonkey/v2"
+	"github.com/cosmos/cosmos-sdk/testutil/mock"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )
 
-var _ = Describe("MsgUpdateParams", func() {
+var _ = Describe("MsgUpdateParams", Ordered, func() {
 	var defaultParams types.Params
+	var patcher *Patches
+	AfterAll(func() {
+		patcher.Reset()
+	})
 	BeforeEach(func() {
 		ks.Reset()
 		Expect(ks.ms).ToNot(BeNil())
 		defaultParams = ks.k.GetParams(ks.ctx)
+
+		privVal1 := mock.NewPV()
+		pubKey1, _ := privVal1.GetPubKey()
+
+		privVal2 := mock.NewPV()
+		pubKey2, _ := privVal2.GetPubKey()
+
+		privVal3 := mock.NewPV()
+		pubKey3, _ := privVal3.GetPubKey()
+
+		patcher = ApplyMethod(reflect.TypeOf(dogfoodkeeper.Keeper{}), "GetAllExocoreValidators", func(k dogfoodkeeper.Keeper, ctx sdk.Context) []dogfoodtypes.ExocoreValidator {
+			return []dogfoodtypes.ExocoreValidator{
+				{
+					Address: pubKey1.Address(),
+					Power:   1,
+				},
+				{
+					Address: pubKey2.Address(),
+					Power:   1,
+				},
+				{
+					Address: pubKey3.Address(),
+					Power:   1,
+				},
+			}
+		})
 	})
 
 	Context("Update Chains", func() {
@@ -25,7 +62,6 @@ var _ = Describe("MsgUpdateParams", func() {
 			Expect(err).Should(BeNil())
 			p := ks.k.GetParams(ks.ctx)
 			Expect(p.Chains[2].Name).Should(BeEquivalentTo("Bitcoin"))
-
 		})
 		It("add chain with duplicated name", func() {
 			_, err := ks.ms.UpdateParams(ks.ctx, types.NewMsgUpdateParams("", inputAddChains[1]))
