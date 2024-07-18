@@ -11,6 +11,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	"os"
+	"time"
 )
 
 func (suite *AVSTestSuite) TestAVS() {
@@ -44,6 +45,15 @@ func (suite *AVSTestSuite) TestAVS() {
 		return false
 	})
 	suite.Equal(len(avsList), 1)
+	suite.CommitAfter(48*time.Hour + time.Nanosecond)
+	// commit will run the EndBlockers for the current block, call app.Commit
+	// and then run the BeginBlockers for the next block with the new time.
+	// during the BeginBlocker, the epoch will be incremented.
+	epoch, found := suite.App.EpochsKeeper.GetEpochInfo(suite.Ctx, epochstypes.DayEpochID)
+	suite.Equal(found, true)
+	suite.Equal(epoch.CurrentEpoch, int64(2))
+	suite.CommitAfter(48*time.Hour + time.Nanosecond)
+
 }
 
 func (suite *AVSTestSuite) TestAVSInfoUpdate_Register() {

@@ -72,7 +72,7 @@ interface IAVSManager {
     /// @dev Returns the pubkey and pubkey hash of an operator,Reverts if the operator has not registered a valid pubkey
     /// @param operator is the operator for whom the key is being registered
     function getRegisteredPubkey(string memory operator) external returns (bytes memory pubkey);
-
+    function getOptinOperators(string memory avsAddress) external returns (bytes memory pubkey);
 
     /// @dev RegisterBLSPublicKey Emitted when `operator` registers with the public keys `pubKey`.
     /// @param operator the address of the delegator

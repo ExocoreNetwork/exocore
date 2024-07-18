@@ -35,7 +35,10 @@ func (wrapper EpochsHooksWrapper) AfterEpochEnd(
 	}
 
 	//TODO:Handling reward and slash
-	avsInfo, err := wrapper.keeper.GetAVSInfo(ctx, "")
+	avsInfo, err := wrapper.keeper.GetAVSInfo(ctx, "exo13h6xg79g82e2g2vhjwg7j4r2z2hlncelwutkjr")
+	if avsInfo.Info == nil {
+		return
+	}
 	assetId := avsInfo.Info.AssetId
 	operatorAddress := avsInfo.Info.OperatorAddress
 	if err != nil {
