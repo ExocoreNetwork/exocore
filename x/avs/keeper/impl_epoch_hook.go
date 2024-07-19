@@ -34,13 +34,30 @@ func (wrapper EpochsHooksWrapper) AfterEpochEnd(
 		return
 	}
 
-	//TODO:Handling reward and slash
+	taskChallengeEpochEndAVS, err := wrapper.keeper.GetTaskChallengeEpochEndAVSs(ctx, epochIdentifier, epochNumber)
+	if err != nil {
+		wrapper.keeper.Logger(ctx).Error(
+			"epochEndAVS got error",
+			"epochEndAVS", taskChallengeEpochEndAVS,
+		)
+		return
+	}
+
+	taskResponseEpochEndAVSepochEndAVS, err := wrapper.keeper.GetTaskChallengeEpochEndAVSs(ctx, epochIdentifier, epochNumber)
+	if err != nil {
+		wrapper.keeper.Logger(ctx).Error(
+			"epochEndAVS got error",
+			"epochEndAVS", taskResponseEpochEndAVSepochEndAVS,
+		)
+		return
+	}
+
+	// TODO:Handling reward and slash
 	avsInfo, err := wrapper.keeper.GetAVSInfo(ctx, "exo13h6xg79g82e2g2vhjwg7j4r2z2hlncelwutkjr")
 	if avsInfo.Info == nil {
 		return
 	}
-	assetId := avsInfo.Info.AssetId
-	operatorAddress := avsInfo.Info.OperatorAddress
+	assetID := avsInfo.Info.AssetId
 	if err != nil {
 		wrapper.keeper.Logger(ctx).Error(
 			"get avsInfo error",
@@ -48,26 +65,17 @@ func (wrapper EpochsHooksWrapper) AfterEpochEnd(
 		)
 		return
 	}
-	for _, operator := range operatorAddress {
-		_, err := sdk.AccAddressFromBech32(operator)
+
+	for _, asset := range assetID {
+		_, err := wrapper.keeper.assetsKeeper.GetStakingAssetInfo(ctx, asset)
 		if err != nil {
 			wrapper.keeper.Logger(ctx).Error(
-				"get operatorInfo error",
-				"operatorInfo err", err,
+				"get assetInfo error",
+				"assetInfo err", err,
 			)
 			return
 		}
-		for _, asset := range assetId {
-			_, err := wrapper.keeper.assetsKeeper.GetStakingAssetInfo(ctx, asset)
-			if err != nil {
-				wrapper.keeper.Logger(ctx).Error(
-					"get assetInfo error",
-					"assetInfo err", err,
-				)
-				return
-			}
 
-		}
 	}
 }
 

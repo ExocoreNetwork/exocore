@@ -38,8 +38,8 @@ type AVSInfo struct {
 	Name string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
 	// address of avs
 	AvsAddress string `protobuf:"bytes,2,opt,name=avs_address,json=avsAddress,proto3" json:"avs_address,omitempty"`
-	//  election address of avs
-	ElectionAddr string `protobuf:"bytes,3,opt,name=election_addr,json=electionAddr,proto3" json:"election_addr,omitempty"`
+	// Minimum amount of funds stake by each operator
+	MinStakeAmount string `protobuf:"bytes,3,opt,name=min_stake_amount,json=minStakeAmount,proto3" json:"min_stake_amount,omitempty"`
 	//  task address of avs
 	TaskAddr string `protobuf:"bytes,4,opt,name=task_addr,json=taskAddr,proto3" json:"task_addr,omitempty"`
 	//  slash address of avs
@@ -51,18 +51,24 @@ type AVSInfo struct {
 	// asset_basic_info is all the basic asset information of the avs.
 	AssetId []string `protobuf:"bytes,8,rep,name=asset_id,json=assetId,proto3" json:"asset_id,omitempty"`
 	// unbonding duration of avs.
-	AvsUnbondingPeriod uint32 `protobuf:"varint,9,opt,name=avs_unbonding_period,json=avsUnbondingPeriod,proto3" json:"avs_unbonding_period,omitempty"`
+	AvsUnbondingPeriod uint64 `protobuf:"varint,9,opt,name=avs_unbonding_period,json=avsUnbondingPeriod,proto3" json:"avs_unbonding_period,omitempty"`
 	// the operator minimum delegation amount.
-	MinSelfDelegation github_com_cosmos_cosmos_sdk_types.Int `protobuf:"bytes,10,opt,name=min_self_delegation,json=minSelfDelegation,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Int" json:"min_self_delegation"`
+	MinSelfDelegation uint64 `protobuf:"varint,10,opt,name=min_self_delegation,json=minSelfDelegation,proto3" json:"min_self_delegation,omitempty"`
 	//avs epoch ,Subsequently  will be handled by the epochs module.
 	EpochIdentifier string `protobuf:"bytes,11,opt,name=epoch_identifier,json=epochIdentifier,proto3" json:"epoch_identifier,omitempty"`
-	// registered operator of avs
-	OperatorAddress []string `protobuf:"bytes,12,rep,name=operator_address,json=operatorAddress,proto3" json:"operator_address,omitempty"`
+	//Minimum number of optin operators
+	MiniOptinOperators uint64 `protobuf:"varint,12,opt,name=mini_optin_operators,json=miniOptinOperators,proto3" json:"mini_optin_operators,omitempty"`
+	// the Minimum total amount of stake by all operator
+	MinTotalStakeAmount uint64 `protobuf:"varint,13,opt,name=min_total_stake_amount,json=minTotalStakeAmount,proto3" json:"min_total_stake_amount,omitempty"`
 	// Effective current epoch, accounting for current_epoch + 1
 	// and current_epoch is the integer identifier of the epoch module
-	StartingEpoch int64 `protobuf:"varint,13,opt,name=starting_epoch,json=startingEpoch,proto3" json:"starting_epoch,omitempty"`
+	StartingEpoch uint64 `protobuf:"varint,14,opt,name=starting_epoch,json=startingEpoch,proto3" json:"starting_epoch,omitempty"`
 	//chain-id for dogfood-avs
-	ChainId string `protobuf:"bytes,14,opt,name=chain_id,json=chainId,proto3" json:"chain_id,omitempty"`
+	ChainId string `protobuf:"bytes,15,opt,name=chain_id,json=chainId,proto3" json:"chain_id,omitempty"`
+	// avs_reward defines the proportion of reward
+	AvsReward github_com_cosmos_cosmos_sdk_types.Dec `protobuf:"bytes,16,opt,name=avs_reward,json=avsReward,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Dec" json:"avs_reward"`
+	// avs_slash defines the proportion of slash
+	AvsSlash github_com_cosmos_cosmos_sdk_types.Dec `protobuf:"bytes,17,opt,name=avs_slash,json=avsSlash,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Dec" json:"avs_slash"`
 }
 
 func (m *AVSInfo) Reset()         { *m = AVSInfo{} }
@@ -112,9 +118,9 @@ func (m *AVSInfo) GetAvsAddress() string {
 	return ""
 }
 
-func (m *AVSInfo) GetElectionAddr() string {
+func (m *AVSInfo) GetMinStakeAmount() string {
 	if m != nil {
-		return m.ElectionAddr
+		return m.MinStakeAmount
 	}
 	return ""
 }
@@ -154,9 +160,16 @@ func (m *AVSInfo) GetAssetId() []string {
 	return nil
 }
 
-func (m *AVSInfo) GetAvsUnbondingPeriod() uint32 {
+func (m *AVSInfo) GetAvsUnbondingPeriod() uint64 {
 	if m != nil {
 		return m.AvsUnbondingPeriod
+	}
+	return 0
+}
+
+func (m *AVSInfo) GetMinSelfDelegation() uint64 {
+	if m != nil {
+		return m.MinSelfDelegation
 	}
 	return 0
 }
@@ -168,14 +181,21 @@ func (m *AVSInfo) GetEpochIdentifier() string {
 	return ""
 }
 
-func (m *AVSInfo) GetOperatorAddress() []string {
+func (m *AVSInfo) GetMiniOptinOperators() uint64 {
 	if m != nil {
-		return m.OperatorAddress
+		return m.MiniOptinOperators
 	}
-	return nil
+	return 0
 }
 
-func (m *AVSInfo) GetStartingEpoch() int64 {
+func (m *AVSInfo) GetMinTotalStakeAmount() uint64 {
+	if m != nil {
+		return m.MinTotalStakeAmount
+	}
+	return 0
+}
+
+func (m *AVSInfo) GetStartingEpoch() uint64 {
 	if m != nil {
 		return m.StartingEpoch
 	}
@@ -189,32 +209,28 @@ func (m *AVSInfo) GetChainId() string {
 	return ""
 }
 
-// TaskContractInfo is the task info.
-type TaskContractInfo struct {
-	// contract address of avstask
-	TaskContractAddress string `protobuf:"bytes,1,opt,name=task_contract_address,json=taskContractAddress,proto3" json:"task_contract_address,omitempty"`
-	// name of task
-	Name string `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
-	// meta_info of task
-	MetaInfo string `protobuf:"bytes,3,opt,name=meta_info,json=metaInfo,proto3" json:"meta_info,omitempty"`
-	// status of task
-	Status string `protobuf:"bytes,4,opt,name=status,proto3" json:"status,omitempty"`
-	// source_code of task
-	SourceCode string `protobuf:"bytes,5,opt,name=source_code,json=sourceCode,proto3" json:"source_code,omitempty"`
+// Status and proof of each operator
+type OperatorStatus struct {
+	// operator address
+	OperatorAddress string `protobuf:"bytes,1,opt,name=operator_address,json=operatorAddress,proto3" json:"operator_address,omitempty"`
+	// Status of the operator,(slash,reward,no)
+	Status string `protobuf:"bytes,2,opt,name=status,proto3" json:"status,omitempty"`
+	// proof data which is supplied by the contract, usually ABI-encoded
+	ProofData []byte `protobuf:"bytes,3,opt,name=proof_data,json=proofData,proto3" json:"proof_data,omitempty"`
 }
 
-func (m *TaskContractInfo) Reset()         { *m = TaskContractInfo{} }
-func (m *TaskContractInfo) String() string { return proto.CompactTextString(m) }
-func (*TaskContractInfo) ProtoMessage()    {}
-func (*TaskContractInfo) Descriptor() ([]byte, []int) {
+func (m *OperatorStatus) Reset()         { *m = OperatorStatus{} }
+func (m *OperatorStatus) String() string { return proto.CompactTextString(m) }
+func (*OperatorStatus) ProtoMessage()    {}
+func (*OperatorStatus) Descriptor() ([]byte, []int) {
 	return fileDescriptor_ef1ed06249b07d86, []int{1}
 }
-func (m *TaskContractInfo) XXX_Unmarshal(b []byte) error {
+func (m *OperatorStatus) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *TaskContractInfo) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *OperatorStatus) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_TaskContractInfo.Marshal(b, m, deterministic)
+		return xxx_messageInfo_OperatorStatus.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -224,51 +240,238 @@ func (m *TaskContractInfo) XXX_Marshal(b []byte, deterministic bool) ([]byte, er
 		return b[:n], nil
 	}
 }
-func (m *TaskContractInfo) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_TaskContractInfo.Merge(m, src)
+func (m *OperatorStatus) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_OperatorStatus.Merge(m, src)
 }
-func (m *TaskContractInfo) XXX_Size() int {
+func (m *OperatorStatus) XXX_Size() int {
 	return m.Size()
 }
-func (m *TaskContractInfo) XXX_DiscardUnknown() {
-	xxx_messageInfo_TaskContractInfo.DiscardUnknown(m)
+func (m *OperatorStatus) XXX_DiscardUnknown() {
+	xxx_messageInfo_OperatorStatus.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_TaskContractInfo proto.InternalMessageInfo
+var xxx_messageInfo_OperatorStatus proto.InternalMessageInfo
 
-func (m *TaskContractInfo) GetTaskContractAddress() string {
+func (m *OperatorStatus) GetOperatorAddress() string {
 	if m != nil {
-		return m.TaskContractAddress
+		return m.OperatorAddress
 	}
 	return ""
 }
 
-func (m *TaskContractInfo) GetName() string {
-	if m != nil {
-		return m.Name
-	}
-	return ""
-}
-
-func (m *TaskContractInfo) GetMetaInfo() string {
-	if m != nil {
-		return m.MetaInfo
-	}
-	return ""
-}
-
-func (m *TaskContractInfo) GetStatus() string {
+func (m *OperatorStatus) GetStatus() string {
 	if m != nil {
 		return m.Status
 	}
 	return ""
 }
 
-func (m *TaskContractInfo) GetSourceCode() string {
+func (m *OperatorStatus) GetProofData() []byte {
 	if m != nil {
-		return m.SourceCode
+		return m.ProofData
+	}
+	return nil
+}
+
+// RewardSlashProof is the task info.
+type RewardSlashProof struct {
+	// task_id of task
+	TaskId string `protobuf:"bytes,1,opt,name=task_id,json=taskId,proto3" json:"task_id,omitempty"`
+	// contract address of avstask
+	TaskContractAddress string `protobuf:"bytes,2,opt,name=task_contract_address,json=taskContractAddress,proto3" json:"task_contract_address,omitempty"`
+	// aggregator  address
+	Aggregator string `protobuf:"bytes,3,opt,name=aggregator,proto3" json:"aggregator,omitempty"`
+	// address of avs
+	AvsAddress string `protobuf:"bytes,4,opt,name=avs_address,json=avsAddress,proto3" json:"avs_address,omitempty"`
+	// Status and proof of  operators
+	OperatorStatus []*OperatorStatus `protobuf:"bytes,5,rep,name=operator_status,json=operatorStatus,proto3" json:"operator_status,omitempty"`
+}
+
+func (m *RewardSlashProof) Reset()         { *m = RewardSlashProof{} }
+func (m *RewardSlashProof) String() string { return proto.CompactTextString(m) }
+func (*RewardSlashProof) ProtoMessage()    {}
+func (*RewardSlashProof) Descriptor() ([]byte, []int) {
+	return fileDescriptor_ef1ed06249b07d86, []int{2}
+}
+func (m *RewardSlashProof) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *RewardSlashProof) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_RewardSlashProof.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *RewardSlashProof) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_RewardSlashProof.Merge(m, src)
+}
+func (m *RewardSlashProof) XXX_Size() int {
+	return m.Size()
+}
+func (m *RewardSlashProof) XXX_DiscardUnknown() {
+	xxx_messageInfo_RewardSlashProof.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_RewardSlashProof proto.InternalMessageInfo
+
+func (m *RewardSlashProof) GetTaskId() string {
+	if m != nil {
+		return m.TaskId
 	}
 	return ""
+}
+
+func (m *RewardSlashProof) GetTaskContractAddress() string {
+	if m != nil {
+		return m.TaskContractAddress
+	}
+	return ""
+}
+
+func (m *RewardSlashProof) GetAggregator() string {
+	if m != nil {
+		return m.Aggregator
+	}
+	return ""
+}
+
+func (m *RewardSlashProof) GetAvsAddress() string {
+	if m != nil {
+		return m.AvsAddress
+	}
+	return ""
+}
+
+func (m *RewardSlashProof) GetOperatorStatus() []*OperatorStatus {
+	if m != nil {
+		return m.OperatorStatus
+	}
+	return nil
+}
+
+// TaskContractInfo is the task info.
+type TaskInfo struct {
+	// contract address of avstask
+	TaskContractAddress string `protobuf:"bytes,1,opt,name=task_contract_address,json=taskContractAddress,proto3" json:"task_contract_address,omitempty"`
+	// name of task
+	Name string `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	// meta_info of task
+	TaskCreatedBlock string `protobuf:"bytes,3,opt,name=task_created_block,json=taskCreatedBlock,proto3" json:"task_created_block,omitempty"`
+	// data which is supplied by the contract, usually ABI-encoded
+	Data []byte `protobuf:"bytes,4,opt,name=data,proto3" json:"data,omitempty"`
+	// task_id of task
+	TaskId string `protobuf:"bytes,5,opt,name=task_id,json=taskId,proto3" json:"task_id,omitempty"`
+	// Deadline for task response
+	TaskResponsePeriod uint64 `protobuf:"varint,6,opt,name=task_response_period,json=taskResponsePeriod,proto3" json:"task_response_period,omitempty"`
+	// challenge period for  task
+	TaskChallengePeriod uint64 `protobuf:"varint,7,opt,name=task_challenge_period,json=taskChallengePeriod,proto3" json:"task_challenge_period,omitempty"`
+	// Signature threshold percentage
+	ThresholdPercentage uint64 `protobuf:"varint,8,opt,name=threshold_percentage,json=thresholdPercentage,proto3" json:"threshold_percentage,omitempty"`
+	// Effective current epoch, accounting for current_epoch + 1
+	// and current_epoch is the integer identifier of the epoch module
+	StartingEpoch uint64 `protobuf:"varint,9,opt,name=starting_epoch,json=startingEpoch,proto3" json:"starting_epoch,omitempty"`
+}
+
+func (m *TaskInfo) Reset()         { *m = TaskInfo{} }
+func (m *TaskInfo) String() string { return proto.CompactTextString(m) }
+func (*TaskInfo) ProtoMessage()    {}
+func (*TaskInfo) Descriptor() ([]byte, []int) {
+	return fileDescriptor_ef1ed06249b07d86, []int{3}
+}
+func (m *TaskInfo) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *TaskInfo) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_TaskInfo.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *TaskInfo) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_TaskInfo.Merge(m, src)
+}
+func (m *TaskInfo) XXX_Size() int {
+	return m.Size()
+}
+func (m *TaskInfo) XXX_DiscardUnknown() {
+	xxx_messageInfo_TaskInfo.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_TaskInfo proto.InternalMessageInfo
+
+func (m *TaskInfo) GetTaskContractAddress() string {
+	if m != nil {
+		return m.TaskContractAddress
+	}
+	return ""
+}
+
+func (m *TaskInfo) GetName() string {
+	if m != nil {
+		return m.Name
+	}
+	return ""
+}
+
+func (m *TaskInfo) GetTaskCreatedBlock() string {
+	if m != nil {
+		return m.TaskCreatedBlock
+	}
+	return ""
+}
+
+func (m *TaskInfo) GetData() []byte {
+	if m != nil {
+		return m.Data
+	}
+	return nil
+}
+
+func (m *TaskInfo) GetTaskId() string {
+	if m != nil {
+		return m.TaskId
+	}
+	return ""
+}
+
+func (m *TaskInfo) GetTaskResponsePeriod() uint64 {
+	if m != nil {
+		return m.TaskResponsePeriod
+	}
+	return 0
+}
+
+func (m *TaskInfo) GetTaskChallengePeriod() uint64 {
+	if m != nil {
+		return m.TaskChallengePeriod
+	}
+	return 0
+}
+
+func (m *TaskInfo) GetThresholdPercentage() uint64 {
+	if m != nil {
+		return m.ThresholdPercentage
+	}
+	return 0
+}
+
+func (m *TaskInfo) GetStartingEpoch() uint64 {
+	if m != nil {
+		return m.StartingEpoch
+	}
+	return 0
 }
 
 // RegisterAVSTaskReq is the request to register a new task for avs.
@@ -276,14 +479,14 @@ type RegisterAVSTaskReq struct {
 	// from_address is the address of the avs (sdk.AccAddress).
 	FromAddress string `protobuf:"bytes,1,opt,name=from_address,json=fromAddress,proto3" json:"from_address,omitempty"`
 	// info is the task info.
-	Task *TaskContractInfo `protobuf:"bytes,2,opt,name=task,proto3" json:"task,omitempty"`
+	Task *TaskInfo `protobuf:"bytes,2,opt,name=task,proto3" json:"task,omitempty"`
 }
 
 func (m *RegisterAVSTaskReq) Reset()         { *m = RegisterAVSTaskReq{} }
 func (m *RegisterAVSTaskReq) String() string { return proto.CompactTextString(m) }
 func (*RegisterAVSTaskReq) ProtoMessage()    {}
 func (*RegisterAVSTaskReq) Descriptor() ([]byte, []int) {
-	return fileDescriptor_ef1ed06249b07d86, []int{2}
+	return fileDescriptor_ef1ed06249b07d86, []int{4}
 }
 func (m *RegisterAVSTaskReq) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -320,7 +523,7 @@ func (m *RegisterAVSTaskResponse) Reset()         { *m = RegisterAVSTaskResponse
 func (m *RegisterAVSTaskResponse) String() string { return proto.CompactTextString(m) }
 func (*RegisterAVSTaskResponse) ProtoMessage()    {}
 func (*RegisterAVSTaskResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_ef1ed06249b07d86, []int{3}
+	return fileDescriptor_ef1ed06249b07d86, []int{5}
 }
 func (m *RegisterAVSTaskResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -361,7 +564,7 @@ func (m *RegisterAVSReq) Reset()         { *m = RegisterAVSReq{} }
 func (m *RegisterAVSReq) String() string { return proto.CompactTextString(m) }
 func (*RegisterAVSReq) ProtoMessage()    {}
 func (*RegisterAVSReq) Descriptor() ([]byte, []int) {
-	return fileDescriptor_ef1ed06249b07d86, []int{4}
+	return fileDescriptor_ef1ed06249b07d86, []int{6}
 }
 func (m *RegisterAVSReq) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -416,7 +619,7 @@ func (m *RegisterAVSResponse) Reset()         { *m = RegisterAVSResponse{} }
 func (m *RegisterAVSResponse) String() string { return proto.CompactTextString(m) }
 func (*RegisterAVSResponse) ProtoMessage()    {}
 func (*RegisterAVSResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_ef1ed06249b07d86, []int{5}
+	return fileDescriptor_ef1ed06249b07d86, []int{7}
 }
 func (m *RegisterAVSResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -471,7 +674,7 @@ func (m *DeRegisterAVSReq) Reset()         { *m = DeRegisterAVSReq{} }
 func (m *DeRegisterAVSReq) String() string { return proto.CompactTextString(m) }
 func (*DeRegisterAVSReq) ProtoMessage()    {}
 func (*DeRegisterAVSReq) Descriptor() ([]byte, []int) {
-	return fileDescriptor_ef1ed06249b07d86, []int{6}
+	return fileDescriptor_ef1ed06249b07d86, []int{8}
 }
 func (m *DeRegisterAVSReq) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -526,7 +729,7 @@ func (m *DeRegisterAVSResponse) Reset()         { *m = DeRegisterAVSResponse{} }
 func (m *DeRegisterAVSResponse) String() string { return proto.CompactTextString(m) }
 func (*DeRegisterAVSResponse) ProtoMessage()    {}
 func (*DeRegisterAVSResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_ef1ed06249b07d86, []int{7}
+	return fileDescriptor_ef1ed06249b07d86, []int{9}
 }
 func (m *DeRegisterAVSResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -571,7 +774,9 @@ func (m *DeRegisterAVSResponse) GetInfo() *AVSInfo {
 
 func init() {
 	proto.RegisterType((*AVSInfo)(nil), "exocore.avs.v1.AVSInfo")
-	proto.RegisterType((*TaskContractInfo)(nil), "exocore.avs.v1.TaskContractInfo")
+	proto.RegisterType((*OperatorStatus)(nil), "exocore.avs.v1.OperatorStatus")
+	proto.RegisterType((*RewardSlashProof)(nil), "exocore.avs.v1.RewardSlashProof")
+	proto.RegisterType((*TaskInfo)(nil), "exocore.avs.v1.TaskInfo")
 	proto.RegisterType((*RegisterAVSTaskReq)(nil), "exocore.avs.v1.RegisterAVSTaskReq")
 	proto.RegisterType((*RegisterAVSTaskResponse)(nil), "exocore.avs.v1.RegisterAVSTaskResponse")
 	proto.RegisterType((*RegisterAVSReq)(nil), "exocore.avs.v1.RegisterAVSReq")
@@ -583,61 +788,76 @@ func init() {
 func init() { proto.RegisterFile("exocore/avs/v1/tx.proto", fileDescriptor_ef1ed06249b07d86) }
 
 var fileDescriptor_ef1ed06249b07d86 = []byte{
-	// 855 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xcc, 0x55, 0xcf, 0x6f, 0x1b, 0x45,
-	0x18, 0xf5, 0x26, 0x6e, 0x12, 0x7f, 0x8e, 0xf3, 0x63, 0x92, 0x92, 0x8d, 0x23, 0x6c, 0xcb, 0x55,
-	0x21, 0x04, 0xc5, 0x4b, 0x03, 0x07, 0x54, 0xb8, 0x24, 0x6d, 0x41, 0x3e, 0xf0, 0x43, 0x1b, 0xa8,
-	0x10, 0x07, 0x56, 0x93, 0xdd, 0xf1, 0x66, 0x15, 0xef, 0x8c, 0x99, 0x19, 0x6f, 0xc2, 0x0d, 0x71,
-	0x42, 0x08, 0x21, 0x10, 0x37, 0x4e, 0xfd, 0x13, 0x7c, 0xe8, 0x1d, 0x71, 0xeb, 0xb1, 0xea, 0x09,
-	0x71, 0xa8, 0x50, 0x72, 0x08, 0x7f, 0x06, 0x9a, 0x1f, 0xeb, 0xda, 0x5b, 0xa9, 0x3d, 0x70, 0x08,
-	0x17, 0x7b, 0xe7, 0xbd, 0xb7, 0xdf, 0xbe, 0xef, 0xcd, 0x37, 0xbb, 0xb0, 0x41, 0xce, 0x58, 0xc8,
-	0x38, 0xf1, 0x70, 0x26, 0xbc, 0xec, 0x96, 0x27, 0xcf, 0x3a, 0x03, 0xce, 0x24, 0x43, 0x4b, 0x96,
-	0xe8, 0xe0, 0x4c, 0x74, 0xb2, 0x5b, 0xf5, 0x55, 0x9c, 0x26, 0x94, 0x79, 0xfa, 0xd7, 0x48, 0xea,
-	0x1b, 0x21, 0x13, 0x29, 0x13, 0x5e, 0x2a, 0x62, 0x75, 0x6b, 0x2a, 0x62, 0x4b, 0x6c, 0x1a, 0x22,
-	0xd0, 0x2b, 0xcf, 0x2c, 0x2c, 0xb5, 0x1e, 0xb3, 0x98, 0x19, 0x5c, 0x5d, 0x19, 0xb4, 0xfd, 0x7b,
-	0x19, 0xe6, 0xf7, 0xef, 0x1f, 0x76, 0x69, 0x8f, 0x21, 0x04, 0x65, 0x8a, 0x53, 0xe2, 0x3a, 0x2d,
-	0x67, 0xbb, 0xe2, 0xeb, 0x6b, 0xd4, 0x84, 0x2a, 0xce, 0x44, 0x80, 0xa3, 0x88, 0x13, 0x21, 0xdc,
-	0x19, 0x4d, 0x01, 0xce, 0xc4, 0xbe, 0x41, 0xd0, 0x0d, 0xa8, 0x91, 0x3e, 0x09, 0x65, 0xc2, 0xa8,
-	0x56, 0xb9, 0xb3, 0x5a, 0xb2, 0x98, 0x83, 0x4a, 0x87, 0xb6, 0xa0, 0x22, 0xb1, 0x38, 0x31, 0x82,
-	0xb2, 0x16, 0x2c, 0x28, 0x40, 0x93, 0xaf, 0x02, 0x88, 0x3e, 0x16, 0xc7, 0x86, 0xbd, 0xa6, 0xd9,
-	0x8a, 0x46, 0x34, 0xdd, 0x84, 0x2a, 0x27, 0xa7, 0x98, 0x47, 0x86, 0x9f, 0x33, 0x0e, 0x0c, 0xa4,
-	0x05, 0x3b, 0xb0, 0xaa, 0x2c, 0xb2, 0x53, 0x4a, 0xf8, 0xd8, 0xe8, 0x7c, 0x6b, 0x76, 0xbb, 0xe2,
-	0x2f, 0xe3, 0x4c, 0x7c, 0xa2, 0xf0, 0xdc, 0xed, 0x26, 0x2c, 0x60, 0x21, 0x88, 0x0c, 0x92, 0xc8,
-	0x5d, 0xd0, 0x92, 0x79, 0xbd, 0xee, 0x46, 0xe8, 0x2d, 0x58, 0x57, 0x65, 0x86, 0xf4, 0x88, 0xd1,
-	0x28, 0xa1, 0x71, 0x30, 0x20, 0x3c, 0x61, 0x91, 0x5b, 0x69, 0x39, 0xdb, 0x35, 0x1f, 0xe1, 0x4c,
-	0x7c, 0x9e, 0x53, 0x9f, 0x6a, 0x06, 0xf5, 0x61, 0x2d, 0x4d, 0x68, 0x20, 0x48, 0xbf, 0x17, 0x44,
-	0xa4, 0x4f, 0x62, 0xac, 0x1a, 0x76, 0x41, 0x39, 0x3c, 0x78, 0xff, 0xd1, 0xd3, 0x66, 0xe9, 0xaf,
-	0xa7, 0xcd, 0xd7, 0xe2, 0x44, 0x1e, 0x0f, 0x8f, 0x3a, 0x21, 0x4b, 0xed, 0x7e, 0xd8, 0xbf, 0x5d,
-	0x11, 0x9d, 0x78, 0xf2, 0x9b, 0x01, 0x11, 0x9d, 0x2e, 0x95, 0x4f, 0x1e, 0xee, 0x82, 0xdd, 0xae,
-	0x2e, 0x95, 0xfe, 0x6a, 0x9a, 0xd0, 0x43, 0xd2, 0xef, 0xdd, 0x1d, 0x97, 0x45, 0x6f, 0xc0, 0x0a,
-	0x19, 0xb0, 0xf0, 0x38, 0x48, 0x22, 0x42, 0x65, 0xd2, 0x4b, 0x08, 0x77, 0xab, 0x3a, 0x8c, 0x65,
-	0x8d, 0x77, 0xc7, 0xb0, 0x92, 0xb2, 0x01, 0xe1, 0x58, 0xb2, 0x67, 0x81, 0x2c, 0x9a, 0x40, 0x72,
-	0x3c, 0x0f, 0xe4, 0x26, 0x2c, 0x09, 0x89, 0xb9, 0x54, 0x0d, 0xeb, 0x32, 0x6e, 0xad, 0xe5, 0x6c,
-	0xcf, 0xfa, 0xb5, 0x1c, 0xbd, 0xa7, 0x40, 0x95, 0x5b, 0x78, 0x8c, 0x13, 0xaa, 0x72, 0x5b, 0xd2,
-	0x0f, 0x9d, 0xd7, 0xeb, 0x6e, 0xd4, 0x1e, 0x39, 0xb0, 0xf2, 0x19, 0x16, 0x27, 0x77, 0x18, 0x95,
-	0x1c, 0x87, 0x52, 0x8f, 0xd2, 0x1e, 0x5c, 0xd7, 0x1b, 0x1e, 0x5a, 0x70, 0x6c, 0xc3, 0xcc, 0xd6,
-	0x9a, 0x9c, 0xb8, 0x21, 0xb7, 0x92, 0x8f, 0xdf, 0xcc, 0xc4, 0xf8, 0x6d, 0x41, 0x25, 0x25, 0x12,
-	0x07, 0x09, 0xed, 0x31, 0x3b, 0x59, 0x0b, 0x0a, 0xd0, 0x0f, 0x79, 0x05, 0xe6, 0x84, 0xc4, 0x72,
-	0x28, 0xec, 0x48, 0xd9, 0x95, 0x9a, 0x18, 0xc1, 0x86, 0x3c, 0x24, 0x41, 0xc8, 0x22, 0x62, 0x27,
-	0x0a, 0x0c, 0x74, 0x87, 0x45, 0xa4, 0xfd, 0x87, 0x03, 0xc8, 0x27, 0x71, 0x22, 0x24, 0xe1, 0xfb,
-	0xf7, 0x0f, 0x95, 0x7b, 0x9f, 0x7c, 0x8d, 0xde, 0x83, 0xc5, 0x1e, 0x67, 0xe9, 0xb4, 0xd7, 0x03,
-	0xf7, 0xc9, 0xc3, 0xdd, 0x75, 0xbb, 0x35, 0xd6, 0xea, 0xa1, 0xe4, 0x09, 0x8d, 0xfd, 0xaa, 0x52,
-	0xe7, 0xee, 0xdf, 0x81, 0xb2, 0x6a, 0x4a, 0xbb, 0xaf, 0xee, 0xb5, 0x3a, 0xd3, 0x87, 0xb8, 0x53,
-	0x4c, 0xc8, 0xd7, 0xea, 0xdb, 0xef, 0x7e, 0xff, 0xa0, 0x59, 0xfa, 0xe7, 0x41, 0xb3, 0xf4, 0xdd,
-	0xe5, 0x68, 0xa7, 0xfa, 0xc1, 0xb3, 0x7a, 0x3f, 0x5c, 0x8e, 0x76, 0xb6, 0x26, 0x06, 0xa5, 0x78,
-	0x7f, 0x7b, 0x13, 0x36, 0x9e, 0x6b, 0x41, 0x0c, 0x18, 0x15, 0xa4, 0xfd, 0xa3, 0x03, 0x4b, 0x13,
-	0xdc, 0x7f, 0x6e, 0xed, 0x4d, 0x28, 0xeb, 0xfc, 0x4d, 0x6b, 0x1b, 0xc5, 0xd6, 0xec, 0xeb, 0xc3,
-	0xd7, 0xa2, 0xdb, 0x2b, 0xc5, 0x4e, 0xda, 0xbf, 0x38, 0xb0, 0x36, 0x65, 0xc7, 0xd8, 0xbc, 0x52,
-	0x4f, 0x3f, 0x39, 0xb0, 0x72, 0x97, 0xfc, 0x8f, 0x42, 0xfa, 0xd5, 0x81, 0xeb, 0x05, 0x43, 0x57,
-	0x1f, 0xd3, 0xde, 0x6f, 0x33, 0x30, 0xfb, 0x91, 0x88, 0x91, 0x0f, 0xd5, 0x09, 0x6b, 0xa8, 0x51,
-	0xac, 0x33, 0x1d, 0x64, 0xfd, 0xc6, 0x0b, 0x79, 0xdb, 0xd7, 0x17, 0x50, 0x9b, 0x6a, 0x18, 0x3d,
-	0x77, 0x66, 0x8a, 0x1b, 0x54, 0xbf, 0xf9, 0x12, 0x85, 0xad, 0xfc, 0x15, 0x2c, 0x17, 0x8e, 0x06,
-	0x6a, 0xbf, 0xc0, 0x91, 0x3d, 0xfe, 0xf5, 0xd7, 0x5f, 0xaa, 0x31, 0xf5, 0xeb, 0xd7, 0xbe, 0xbd,
-	0x1c, 0xed, 0x38, 0x07, 0x1f, 0x3e, 0x3a, 0x6f, 0x38, 0x8f, 0xcf, 0x1b, 0xce, 0xdf, 0xe7, 0x0d,
-	0xe7, 0xe7, 0x8b, 0x46, 0xe9, 0xf1, 0x45, 0xa3, 0xf4, 0xe7, 0x45, 0xa3, 0xf4, 0xe5, 0xee, 0xc4,
-	0x3b, 0xff, 0x9e, 0xa9, 0xf9, 0x31, 0x91, 0xa7, 0x8c, 0x9f, 0x78, 0xf9, 0x47, 0xff, 0x4c, 0x7f,
-	0xf6, 0xf5, 0xeb, 0xff, 0x68, 0x4e, 0x7f, 0x8a, 0xdf, 0xfe, 0x37, 0x00, 0x00, 0xff, 0xff, 0xb5,
-	0xcb, 0x9e, 0xc9, 0x12, 0x08, 0x00, 0x00,
+	// 1096 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xcc, 0x56, 0x4f, 0x6f, 0x1b, 0x45,
+	0x14, 0xf7, 0x26, 0x4e, 0x6c, 0x3f, 0x37, 0x8e, 0x33, 0x49, 0x9b, 0x8d, 0x2b, 0xec, 0xc8, 0xa8,
+	0x10, 0x42, 0x63, 0x37, 0xe9, 0x05, 0x95, 0x53, 0x42, 0x4a, 0x15, 0xa1, 0x92, 0x68, 0x1d, 0x2a,
+	0xc4, 0x81, 0xd5, 0xc4, 0x3b, 0x5e, 0xaf, 0x62, 0xef, 0x98, 0x99, 0x89, 0x13, 0x6e, 0x88, 0x13,
+	0x42, 0x08, 0x81, 0xb8, 0x71, 0xea, 0x47, 0xc8, 0x81, 0x0b, 0xdf, 0xa0, 0xc7, 0x8a, 0x13, 0xe2,
+	0x10, 0xa1, 0xe4, 0x10, 0x38, 0xf0, 0x1d, 0xd0, 0xbc, 0x99, 0x35, 0xb6, 0xd3, 0x3f, 0x12, 0x1c,
+	0xca, 0x25, 0xd9, 0x79, 0xbf, 0xf7, 0x9e, 0x7f, 0xbf, 0xf7, 0x67, 0x76, 0x61, 0x91, 0x9d, 0xf0,
+	0x26, 0x17, 0xac, 0x4e, 0xfb, 0xb2, 0xde, 0x5f, 0xaf, 0xab, 0x93, 0x5a, 0x4f, 0x70, 0xc5, 0x49,
+	0xc1, 0x02, 0x35, 0xda, 0x97, 0xb5, 0xfe, 0x7a, 0x69, 0x8e, 0x76, 0xa3, 0x98, 0xd7, 0xf1, 0xaf,
+	0x71, 0x29, 0x2d, 0x36, 0xb9, 0xec, 0x72, 0x59, 0xef, 0xca, 0x50, 0x87, 0x76, 0x65, 0x68, 0x81,
+	0x25, 0x03, 0xf8, 0x78, 0xaa, 0x9b, 0x83, 0x85, 0x16, 0x42, 0x1e, 0x72, 0x63, 0xd7, 0x4f, 0xc6,
+	0x5a, 0x3d, 0x9b, 0x82, 0xcc, 0xe6, 0xa3, 0xc6, 0x4e, 0xdc, 0xe2, 0x84, 0x40, 0x3a, 0xa6, 0x5d,
+	0xe6, 0x3a, 0xcb, 0xce, 0x4a, 0xce, 0xc3, 0x67, 0x52, 0x81, 0x3c, 0xed, 0x4b, 0x9f, 0x06, 0x81,
+	0x60, 0x52, 0xba, 0x13, 0x08, 0x01, 0xed, 0xcb, 0x4d, 0x63, 0x21, 0x2b, 0x50, 0xec, 0x46, 0xb1,
+	0x2f, 0x15, 0x3d, 0x64, 0x3e, 0xed, 0xf2, 0xa3, 0x58, 0xb9, 0x93, 0xe8, 0x55, 0xe8, 0x46, 0x71,
+	0x43, 0x9b, 0x37, 0xd1, 0x4a, 0x6e, 0x42, 0x4e, 0x51, 0x79, 0x88, 0xb9, 0xdc, 0x34, 0xba, 0x64,
+	0xb5, 0x41, 0x67, 0x22, 0xaf, 0x01, 0xc8, 0x0e, 0x95, 0x6d, 0x83, 0x4e, 0x21, 0x9a, 0x43, 0x0b,
+	0xc2, 0x15, 0xc8, 0x0b, 0x76, 0x4c, 0x45, 0x60, 0xf0, 0x69, 0x43, 0xc3, 0x98, 0xd0, 0x61, 0x15,
+	0xe6, 0x34, 0x4f, 0x7e, 0x1c, 0x33, 0x31, 0x60, 0x9b, 0x59, 0x9e, 0x5c, 0xc9, 0x79, 0xb3, 0xb4,
+	0x2f, 0x77, 0xb5, 0x3d, 0xa1, 0xbc, 0x04, 0x59, 0x2a, 0x25, 0x53, 0x7e, 0x14, 0xb8, 0x59, 0x74,
+	0xc9, 0xe0, 0x79, 0x27, 0x20, 0x77, 0x60, 0x41, 0xa7, 0x39, 0x8a, 0x0f, 0x78, 0x1c, 0x44, 0x71,
+	0xe8, 0xf7, 0x98, 0x88, 0x78, 0xe0, 0xe6, 0x96, 0x9d, 0x95, 0xb4, 0x47, 0x68, 0x5f, 0x7e, 0x94,
+	0x40, 0x7b, 0x88, 0x90, 0x1a, 0xcc, 0xa3, 0x7e, 0xd6, 0x69, 0xf9, 0x01, 0xeb, 0xb0, 0x90, 0xaa,
+	0x88, 0xc7, 0x2e, 0x60, 0xc0, 0x9c, 0x2e, 0x01, 0xeb, 0xb4, 0xb6, 0x07, 0x00, 0x79, 0x0b, 0x8a,
+	0xac, 0xc7, 0x9b, 0x6d, 0x3f, 0x0a, 0x58, 0xac, 0xa2, 0x56, 0xc4, 0x84, 0x9b, 0x47, 0x39, 0xb3,
+	0x68, 0xdf, 0x19, 0x98, 0x35, 0x99, 0x6e, 0x14, 0x47, 0x3e, 0xef, 0xa9, 0x28, 0xf6, 0x79, 0x8f,
+	0x09, 0xaa, 0xb8, 0x90, 0xee, 0x35, 0x43, 0x46, 0x63, 0xbb, 0x1a, 0xda, 0x4d, 0x10, 0x72, 0x17,
+	0x6e, 0x68, 0x32, 0x8a, 0x2b, 0xda, 0x19, 0x6d, 0xc9, 0x0c, 0xc6, 0x68, 0xaa, 0xfb, 0x1a, 0x1c,
+	0xee, 0xcb, 0x2d, 0x28, 0x48, 0x45, 0x85, 0xd2, 0x72, 0x91, 0x82, 0x5b, 0x40, 0xe7, 0x99, 0xc4,
+	0x7a, 0x5f, 0x1b, 0x75, 0xd5, 0x9a, 0x6d, 0x1a, 0xc5, 0xba, 0x6a, 0xb3, 0x48, 0x38, 0x83, 0xe7,
+	0x9d, 0x80, 0x3c, 0x04, 0x3d, 0x11, 0xbe, 0x69, 0x87, 0x5b, 0xd4, 0xe0, 0x56, 0xed, 0xc9, 0x59,
+	0x25, 0xf5, 0xdb, 0x59, 0xe5, 0x8d, 0x30, 0x52, 0xed, 0xa3, 0x83, 0x5a, 0x93, 0x77, 0xed, 0x3c,
+	0xda, 0x7f, 0x6b, 0x32, 0x38, 0xac, 0xab, 0xcf, 0x7b, 0x4c, 0xd6, 0xb6, 0x59, 0xd3, 0xcb, 0xd1,
+	0xbe, 0xf4, 0x30, 0x01, 0xf9, 0x00, 0xf4, 0xc1, 0xc7, 0xee, 0xbb, 0x73, 0xff, 0x2a, 0x5b, 0x96,
+	0xf6, 0x65, 0x43, 0xc7, 0x57, 0x05, 0x14, 0x92, 0xfa, 0x34, 0x14, 0x55, 0x47, 0x52, 0x77, 0x20,
+	0xa9, 0xe5, 0x60, 0x52, 0xcc, 0xc8, 0xcf, 0x26, 0xf6, 0x64, 0x52, 0x6e, 0xc0, 0xb4, 0xc4, 0x20,
+	0x3b, 0xf8, 0xf6, 0xa4, 0xa7, 0xb5, 0x27, 0x38, 0x6f, 0xf9, 0x01, 0x55, 0x14, 0xc7, 0xfd, 0x9a,
+	0x97, 0x43, 0xcb, 0x36, 0x55, 0xb4, 0xfa, 0xa7, 0x03, 0x45, 0xa3, 0x05, 0x39, 0xec, 0x69, 0x80,
+	0x2c, 0x42, 0x06, 0xc7, 0x3f, 0x0a, 0xec, 0xaf, 0x4d, 0xeb, 0xe3, 0x4e, 0x40, 0x36, 0xe0, 0x3a,
+	0x02, 0x4d, 0x1e, 0x2b, 0x41, 0x9b, 0x6a, 0x6c, 0xd9, 0xe6, 0x35, 0xf8, 0x9e, 0xc5, 0x12, 0x62,
+	0x65, 0x00, 0x1a, 0x86, 0x42, 0x0f, 0x15, 0x17, 0x76, 0xdf, 0x86, 0x2c, 0xe3, 0x6b, 0x9b, 0xbe,
+	0xb2, 0xb6, 0x0f, 0x60, 0x20, 0xd6, 0xb7, 0x12, 0xa7, 0x96, 0x27, 0x57, 0xf2, 0x1b, 0xe5, 0xda,
+	0xe8, 0xf5, 0x53, 0x1b, 0xad, 0x9e, 0x57, 0xe0, 0x23, 0xe7, 0xea, 0x5f, 0x13, 0x90, 0xdd, 0xd7,
+	0x42, 0xf4, 0x0d, 0xf2, 0x5c, 0x29, 0xce, 0xf3, 0xa5, 0x24, 0xb7, 0xce, 0xc4, 0xd0, 0xad, 0x73,
+	0x1b, 0x88, 0xc9, 0x23, 0x18, 0x55, 0x2c, 0xf0, 0x0f, 0x3a, 0xbc, 0x79, 0x68, 0x65, 0x16, 0x31,
+	0x89, 0x01, 0xb6, 0xb4, 0x5d, 0x67, 0xc0, 0x3e, 0xa4, 0xb1, 0x0f, 0xf8, 0x3c, 0x5c, 0xed, 0xa9,
+	0x91, 0x6a, 0xdf, 0x81, 0x05, 0x04, 0x04, 0x93, 0x3d, 0x1e, 0x4b, 0x96, 0x6c, 0xf8, 0xb4, 0x59,
+	0x2a, 0x8d, 0x79, 0x16, 0xb2, 0x1b, 0x3e, 0x10, 0xd5, 0xa6, 0x9d, 0x0e, 0x8b, 0xc3, 0x41, 0x48,
+	0xc6, 0xec, 0x14, 0xf2, 0x49, 0x30, 0x1b, 0xb3, 0x0e, 0x0b, 0xaa, 0x2d, 0x98, 0x6c, 0xf3, 0x4e,
+	0xa0, 0xdd, 0x9b, 0x2c, 0x56, 0x34, 0x64, 0x6e, 0xd6, 0x86, 0x24, 0xd8, 0xde, 0x00, 0x7a, 0xc6,
+	0x1a, 0xe6, 0x9e, 0xb1, 0x86, 0xd5, 0x9f, 0x1d, 0x20, 0x1e, 0x0b, 0x23, 0xa9, 0x98, 0xd8, 0x7c,
+	0xd4, 0xd8, 0x47, 0xbe, 0x9f, 0x91, 0x77, 0xe1, 0x5a, 0x4b, 0xf0, 0xee, 0x68, 0xc1, 0xb7, 0xdc,
+	0x5f, 0x7e, 0x5a, 0x5b, 0xb0, 0x6f, 0x01, 0x5b, 0xef, 0x86, 0x12, 0x51, 0x1c, 0x7a, 0x79, 0xed,
+	0x9d, 0xb4, 0xe0, 0x36, 0xa4, 0xb5, 0x08, 0x6c, 0x41, 0x7e, 0xc3, 0x1d, 0x9f, 0x80, 0xa4, 0xbd,
+	0x1e, 0x7a, 0xdd, 0x7b, 0xe7, 0xab, 0xc7, 0x95, 0xd4, 0x1f, 0x8f, 0x2b, 0xa9, 0x2f, 0x2f, 0x4f,
+	0x57, 0xf3, 0xef, 0xff, 0x93, 0xe7, 0xeb, 0xcb, 0xd3, 0xd5, 0x9b, 0x43, 0xeb, 0xb8, 0x3f, 0xd4,
+	0x6d, 0x1d, 0x5f, 0x5d, 0x82, 0xc5, 0x2b, 0xd4, 0x4d, 0xa9, 0xab, 0xdf, 0x38, 0x50, 0x18, 0xc2,
+	0xfe, 0xb3, 0xa4, 0xb7, 0x21, 0x1d, 0xc5, 0x2d, 0x6e, 0x25, 0x2d, 0x8e, 0x4b, 0xb2, 0xaf, 0x3c,
+	0x0f, 0x9d, 0xee, 0x15, 0xc7, 0x95, 0x54, 0xbf, 0x77, 0x60, 0x7e, 0x84, 0x8e, 0xa1, 0xf9, 0x4a,
+	0x39, 0x7d, 0xeb, 0x40, 0x71, 0x9b, 0xfd, 0x8f, 0x8a, 0xf4, 0x83, 0x03, 0xd7, 0xc7, 0x08, 0xbd,
+	0xfa, 0x32, 0x6d, 0xfc, 0x38, 0x01, 0x93, 0x0f, 0x65, 0x48, 0x3c, 0xc8, 0x0f, 0x51, 0x23, 0x57,
+	0xee, 0xb5, 0xd1, 0x42, 0x96, 0x5e, 0x7f, 0x21, 0x6e, 0x75, 0x7d, 0x0c, 0x33, 0x23, 0x82, 0xc9,
+	0xf2, 0x78, 0xd4, 0x78, 0x83, 0x4a, 0xb7, 0x5e, 0xe2, 0x61, 0x33, 0x7f, 0x0a, 0xb3, 0x63, 0xab,
+	0x41, 0xaa, 0x2f, 0x60, 0x64, 0xd7, 0xbe, 0xf4, 0xe6, 0x4b, 0x7d, 0x4c, 0xfe, 0xd2, 0xd4, 0x17,
+	0x97, 0xa7, 0xab, 0xce, 0xd6, 0x83, 0x27, 0xe7, 0x65, 0xe7, 0xe9, 0x79, 0xd9, 0xf9, 0xfd, 0xbc,
+	0xec, 0x7c, 0x77, 0x51, 0x4e, 0x3d, 0xbd, 0x28, 0xa7, 0x7e, 0xbd, 0x28, 0xa7, 0x3e, 0x59, 0x1b,
+	0x7a, 0xb3, 0xde, 0x37, 0x39, 0x3f, 0x64, 0xea, 0x98, 0x8b, 0xc3, 0x7a, 0xf2, 0xa1, 0x7a, 0x82,
+	0x9f, 0xaa, 0xf8, 0x92, 0x3d, 0x98, 0xc6, 0xcf, 0xc7, 0xbb, 0x7f, 0x07, 0x00, 0x00, 0xff, 0xff,
+	0x89, 0x44, 0x77, 0xa1, 0xc6, 0x0a, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -818,26 +1038,51 @@ func (m *AVSInfo) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	_ = i
 	var l int
 	_ = l
+	{
+		size := m.AvsSlash.Size()
+		i -= size
+		if _, err := m.AvsSlash.MarshalTo(dAtA[i:]); err != nil {
+			return 0, err
+		}
+		i = encodeVarintTx(dAtA, i, uint64(size))
+	}
+	i--
+	dAtA[i] = 0x1
+	i--
+	dAtA[i] = 0x8a
+	{
+		size := m.AvsReward.Size()
+		i -= size
+		if _, err := m.AvsReward.MarshalTo(dAtA[i:]); err != nil {
+			return 0, err
+		}
+		i = encodeVarintTx(dAtA, i, uint64(size))
+	}
+	i--
+	dAtA[i] = 0x1
+	i--
+	dAtA[i] = 0x82
 	if len(m.ChainId) > 0 {
 		i -= len(m.ChainId)
 		copy(dAtA[i:], m.ChainId)
 		i = encodeVarintTx(dAtA, i, uint64(len(m.ChainId)))
 		i--
-		dAtA[i] = 0x72
+		dAtA[i] = 0x7a
 	}
 	if m.StartingEpoch != 0 {
 		i = encodeVarintTx(dAtA, i, uint64(m.StartingEpoch))
 		i--
+		dAtA[i] = 0x70
+	}
+	if m.MinTotalStakeAmount != 0 {
+		i = encodeVarintTx(dAtA, i, uint64(m.MinTotalStakeAmount))
+		i--
 		dAtA[i] = 0x68
 	}
-	if len(m.OperatorAddress) > 0 {
-		for iNdEx := len(m.OperatorAddress) - 1; iNdEx >= 0; iNdEx-- {
-			i -= len(m.OperatorAddress[iNdEx])
-			copy(dAtA[i:], m.OperatorAddress[iNdEx])
-			i = encodeVarintTx(dAtA, i, uint64(len(m.OperatorAddress[iNdEx])))
-			i--
-			dAtA[i] = 0x62
-		}
+	if m.MiniOptinOperators != 0 {
+		i = encodeVarintTx(dAtA, i, uint64(m.MiniOptinOperators))
+		i--
+		dAtA[i] = 0x60
 	}
 	if len(m.EpochIdentifier) > 0 {
 		i -= len(m.EpochIdentifier)
@@ -846,16 +1091,11 @@ func (m *AVSInfo) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		i--
 		dAtA[i] = 0x5a
 	}
-	{
-		size := m.MinSelfDelegation.Size()
-		i -= size
-		if _, err := m.MinSelfDelegation.MarshalTo(dAtA[i:]); err != nil {
-			return 0, err
-		}
-		i = encodeVarintTx(dAtA, i, uint64(size))
+	if m.MinSelfDelegation != 0 {
+		i = encodeVarintTx(dAtA, i, uint64(m.MinSelfDelegation))
+		i--
+		dAtA[i] = 0x50
 	}
-	i--
-	dAtA[i] = 0x52
 	if m.AvsUnbondingPeriod != 0 {
 		i = encodeVarintTx(dAtA, i, uint64(m.AvsUnbondingPeriod))
 		i--
@@ -900,10 +1140,10 @@ func (m *AVSInfo) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		i--
 		dAtA[i] = 0x22
 	}
-	if len(m.ElectionAddr) > 0 {
-		i -= len(m.ElectionAddr)
-		copy(dAtA[i:], m.ElectionAddr)
-		i = encodeVarintTx(dAtA, i, uint64(len(m.ElectionAddr)))
+	if len(m.MinStakeAmount) > 0 {
+		i -= len(m.MinStakeAmount)
+		copy(dAtA[i:], m.MinStakeAmount)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.MinStakeAmount)))
 		i--
 		dAtA[i] = 0x1a
 	}
@@ -924,7 +1164,7 @@ func (m *AVSInfo) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
-func (m *TaskContractInfo) Marshal() (dAtA []byte, err error) {
+func (m *OperatorStatus) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -934,34 +1174,163 @@ func (m *TaskContractInfo) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *TaskContractInfo) MarshalTo(dAtA []byte) (int, error) {
+func (m *OperatorStatus) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *TaskContractInfo) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *OperatorStatus) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
 	_ = l
-	if len(m.SourceCode) > 0 {
-		i -= len(m.SourceCode)
-		copy(dAtA[i:], m.SourceCode)
-		i = encodeVarintTx(dAtA, i, uint64(len(m.SourceCode)))
+	if len(m.ProofData) > 0 {
+		i -= len(m.ProofData)
+		copy(dAtA[i:], m.ProofData)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.ProofData)))
 		i--
-		dAtA[i] = 0x2a
+		dAtA[i] = 0x1a
 	}
 	if len(m.Status) > 0 {
 		i -= len(m.Status)
 		copy(dAtA[i:], m.Status)
 		i = encodeVarintTx(dAtA, i, uint64(len(m.Status)))
 		i--
+		dAtA[i] = 0x12
+	}
+	if len(m.OperatorAddress) > 0 {
+		i -= len(m.OperatorAddress)
+		copy(dAtA[i:], m.OperatorAddress)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.OperatorAddress)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *RewardSlashProof) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *RewardSlashProof) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *RewardSlashProof) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.OperatorStatus) > 0 {
+		for iNdEx := len(m.OperatorStatus) - 1; iNdEx >= 0; iNdEx-- {
+			{
+				size, err := m.OperatorStatus[iNdEx].MarshalToSizedBuffer(dAtA[:i])
+				if err != nil {
+					return 0, err
+				}
+				i -= size
+				i = encodeVarintTx(dAtA, i, uint64(size))
+			}
+			i--
+			dAtA[i] = 0x2a
+		}
+	}
+	if len(m.AvsAddress) > 0 {
+		i -= len(m.AvsAddress)
+		copy(dAtA[i:], m.AvsAddress)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.AvsAddress)))
+		i--
 		dAtA[i] = 0x22
 	}
-	if len(m.MetaInfo) > 0 {
-		i -= len(m.MetaInfo)
-		copy(dAtA[i:], m.MetaInfo)
-		i = encodeVarintTx(dAtA, i, uint64(len(m.MetaInfo)))
+	if len(m.Aggregator) > 0 {
+		i -= len(m.Aggregator)
+		copy(dAtA[i:], m.Aggregator)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.Aggregator)))
+		i--
+		dAtA[i] = 0x1a
+	}
+	if len(m.TaskContractAddress) > 0 {
+		i -= len(m.TaskContractAddress)
+		copy(dAtA[i:], m.TaskContractAddress)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.TaskContractAddress)))
+		i--
+		dAtA[i] = 0x12
+	}
+	if len(m.TaskId) > 0 {
+		i -= len(m.TaskId)
+		copy(dAtA[i:], m.TaskId)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.TaskId)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *TaskInfo) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *TaskInfo) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *TaskInfo) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.StartingEpoch != 0 {
+		i = encodeVarintTx(dAtA, i, uint64(m.StartingEpoch))
+		i--
+		dAtA[i] = 0x48
+	}
+	if m.ThresholdPercentage != 0 {
+		i = encodeVarintTx(dAtA, i, uint64(m.ThresholdPercentage))
+		i--
+		dAtA[i] = 0x40
+	}
+	if m.TaskChallengePeriod != 0 {
+		i = encodeVarintTx(dAtA, i, uint64(m.TaskChallengePeriod))
+		i--
+		dAtA[i] = 0x38
+	}
+	if m.TaskResponsePeriod != 0 {
+		i = encodeVarintTx(dAtA, i, uint64(m.TaskResponsePeriod))
+		i--
+		dAtA[i] = 0x30
+	}
+	if len(m.TaskId) > 0 {
+		i -= len(m.TaskId)
+		copy(dAtA[i:], m.TaskId)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.TaskId)))
+		i--
+		dAtA[i] = 0x2a
+	}
+	if len(m.Data) > 0 {
+		i -= len(m.Data)
+		copy(dAtA[i:], m.Data)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.Data)))
+		i--
+		dAtA[i] = 0x22
+	}
+	if len(m.TaskCreatedBlock) > 0 {
+		i -= len(m.TaskCreatedBlock)
+		copy(dAtA[i:], m.TaskCreatedBlock)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.TaskCreatedBlock)))
 		i--
 		dAtA[i] = 0x1a
 	}
@@ -1240,7 +1609,7 @@ func (m *AVSInfo) Size() (n int) {
 	if l > 0 {
 		n += 1 + l + sovTx(uint64(l))
 	}
-	l = len(m.ElectionAddr)
+	l = len(m.MinStakeAmount)
 	if l > 0 {
 		n += 1 + l + sovTx(uint64(l))
 	}
@@ -1271,17 +1640,18 @@ func (m *AVSInfo) Size() (n int) {
 	if m.AvsUnbondingPeriod != 0 {
 		n += 1 + sovTx(uint64(m.AvsUnbondingPeriod))
 	}
-	l = m.MinSelfDelegation.Size()
-	n += 1 + l + sovTx(uint64(l))
+	if m.MinSelfDelegation != 0 {
+		n += 1 + sovTx(uint64(m.MinSelfDelegation))
+	}
 	l = len(m.EpochIdentifier)
 	if l > 0 {
 		n += 1 + l + sovTx(uint64(l))
 	}
-	if len(m.OperatorAddress) > 0 {
-		for _, s := range m.OperatorAddress {
-			l = len(s)
-			n += 1 + l + sovTx(uint64(l))
-		}
+	if m.MiniOptinOperators != 0 {
+		n += 1 + sovTx(uint64(m.MiniOptinOperators))
+	}
+	if m.MinTotalStakeAmount != 0 {
+		n += 1 + sovTx(uint64(m.MinTotalStakeAmount))
 	}
 	if m.StartingEpoch != 0 {
 		n += 1 + sovTx(uint64(m.StartingEpoch))
@@ -1290,10 +1660,66 @@ func (m *AVSInfo) Size() (n int) {
 	if l > 0 {
 		n += 1 + l + sovTx(uint64(l))
 	}
+	l = m.AvsReward.Size()
+	n += 2 + l + sovTx(uint64(l))
+	l = m.AvsSlash.Size()
+	n += 2 + l + sovTx(uint64(l))
 	return n
 }
 
-func (m *TaskContractInfo) Size() (n int) {
+func (m *OperatorStatus) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.OperatorAddress)
+	if l > 0 {
+		n += 1 + l + sovTx(uint64(l))
+	}
+	l = len(m.Status)
+	if l > 0 {
+		n += 1 + l + sovTx(uint64(l))
+	}
+	l = len(m.ProofData)
+	if l > 0 {
+		n += 1 + l + sovTx(uint64(l))
+	}
+	return n
+}
+
+func (m *RewardSlashProof) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.TaskId)
+	if l > 0 {
+		n += 1 + l + sovTx(uint64(l))
+	}
+	l = len(m.TaskContractAddress)
+	if l > 0 {
+		n += 1 + l + sovTx(uint64(l))
+	}
+	l = len(m.Aggregator)
+	if l > 0 {
+		n += 1 + l + sovTx(uint64(l))
+	}
+	l = len(m.AvsAddress)
+	if l > 0 {
+		n += 1 + l + sovTx(uint64(l))
+	}
+	if len(m.OperatorStatus) > 0 {
+		for _, e := range m.OperatorStatus {
+			l = e.Size()
+			n += 1 + l + sovTx(uint64(l))
+		}
+	}
+	return n
+}
+
+func (m *TaskInfo) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -1307,17 +1733,29 @@ func (m *TaskContractInfo) Size() (n int) {
 	if l > 0 {
 		n += 1 + l + sovTx(uint64(l))
 	}
-	l = len(m.MetaInfo)
+	l = len(m.TaskCreatedBlock)
 	if l > 0 {
 		n += 1 + l + sovTx(uint64(l))
 	}
-	l = len(m.Status)
+	l = len(m.Data)
 	if l > 0 {
 		n += 1 + l + sovTx(uint64(l))
 	}
-	l = len(m.SourceCode)
+	l = len(m.TaskId)
 	if l > 0 {
 		n += 1 + l + sovTx(uint64(l))
+	}
+	if m.TaskResponsePeriod != 0 {
+		n += 1 + sovTx(uint64(m.TaskResponsePeriod))
+	}
+	if m.TaskChallengePeriod != 0 {
+		n += 1 + sovTx(uint64(m.TaskChallengePeriod))
+	}
+	if m.ThresholdPercentage != 0 {
+		n += 1 + sovTx(uint64(m.ThresholdPercentage))
+	}
+	if m.StartingEpoch != 0 {
+		n += 1 + sovTx(uint64(m.StartingEpoch))
 	}
 	return n
 }
@@ -1517,7 +1955,7 @@ func (m *AVSInfo) Unmarshal(dAtA []byte) error {
 			iNdEx = postIndex
 		case 3:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field ElectionAddr", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field MinStakeAmount", wireType)
 			}
 			var stringLen uint64
 			for shift := uint(0); ; shift += 7 {
@@ -1545,7 +1983,7 @@ func (m *AVSInfo) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.ElectionAddr = string(dAtA[iNdEx:postIndex])
+			m.MinStakeAmount = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
 		case 4:
 			if wireType != 2 {
@@ -1721,16 +2159,16 @@ func (m *AVSInfo) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				m.AvsUnbondingPeriod |= uint32(b&0x7F) << shift
+				m.AvsUnbondingPeriod |= uint64(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
 			}
 		case 10:
-			if wireType != 2 {
+			if wireType != 0 {
 				return fmt.Errorf("proto: wrong wireType = %d for field MinSelfDelegation", wireType)
 			}
-			var stringLen uint64
+			m.MinSelfDelegation = 0
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowTx
@@ -1740,26 +2178,11 @@ func (m *AVSInfo) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
+				m.MinSelfDelegation |= uint64(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
 			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthTx
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLengthTx
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			if err := m.MinSelfDelegation.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
-				return err
-			}
-			iNdEx = postIndex
 		case 11:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field EpochIdentifier", wireType)
@@ -1793,10 +2216,10 @@ func (m *AVSInfo) Unmarshal(dAtA []byte) error {
 			m.EpochIdentifier = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
 		case 12:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field OperatorAddress", wireType)
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field MiniOptinOperators", wireType)
 			}
-			var stringLen uint64
+			m.MiniOptinOperators = 0
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowTx
@@ -1806,25 +2229,31 @@ func (m *AVSInfo) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
+				m.MiniOptinOperators |= uint64(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
 			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthTx
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLengthTx
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.OperatorAddress = append(m.OperatorAddress, string(dAtA[iNdEx:postIndex]))
-			iNdEx = postIndex
 		case 13:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field MinTotalStakeAmount", wireType)
+			}
+			m.MinTotalStakeAmount = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.MinTotalStakeAmount |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 14:
 			if wireType != 0 {
 				return fmt.Errorf("proto: wrong wireType = %d for field StartingEpoch", wireType)
 			}
@@ -1838,12 +2267,12 @@ func (m *AVSInfo) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				m.StartingEpoch |= int64(b&0x7F) << shift
+				m.StartingEpoch |= uint64(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
 			}
-		case 14:
+		case 15:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field ChainId", wireType)
 			}
@@ -1875,6 +2304,74 @@ func (m *AVSInfo) Unmarshal(dAtA []byte) error {
 			}
 			m.ChainId = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
+		case 16:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field AvsReward", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.AvsReward.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 17:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field AvsSlash", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.AvsSlash.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
 		default:
 			iNdEx = preIndex
 			skippy, err := skipTx(dAtA[iNdEx:])
@@ -1896,7 +2393,7 @@ func (m *AVSInfo) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *TaskContractInfo) Unmarshal(dAtA []byte) error {
+func (m *OperatorStatus) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -1919,10 +2416,370 @@ func (m *TaskContractInfo) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: TaskContractInfo: wiretype end group for non-group")
+			return fmt.Errorf("proto: OperatorStatus: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: TaskContractInfo: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: OperatorStatus: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field OperatorAddress", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.OperatorAddress = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Status", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Status = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 3:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field ProofData", wireType)
+			}
+			var byteLen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				byteLen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if byteLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + byteLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.ProofData = append(m.ProofData[:0], dAtA[iNdEx:postIndex]...)
+			if m.ProofData == nil {
+				m.ProofData = []byte{}
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipTx(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthTx
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *RewardSlashProof) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowTx
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: RewardSlashProof: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: RewardSlashProof: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field TaskId", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.TaskId = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field TaskContractAddress", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.TaskContractAddress = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 3:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Aggregator", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Aggregator = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 4:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field AvsAddress", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.AvsAddress = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 5:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field OperatorStatus", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.OperatorStatus = append(m.OperatorStatus, &OperatorStatus{})
+			if err := m.OperatorStatus[len(m.OperatorStatus)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipTx(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthTx
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *TaskInfo) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowTx
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: TaskInfo: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: TaskInfo: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
@@ -1991,7 +2848,7 @@ func (m *TaskContractInfo) Unmarshal(dAtA []byte) error {
 			iNdEx = postIndex
 		case 3:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field MetaInfo", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field TaskCreatedBlock", wireType)
 			}
 			var stringLen uint64
 			for shift := uint(0); ; shift += 7 {
@@ -2019,13 +2876,13 @@ func (m *TaskContractInfo) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.MetaInfo = string(dAtA[iNdEx:postIndex])
+			m.TaskCreatedBlock = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
 		case 4:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Status", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field Data", wireType)
 			}
-			var stringLen uint64
+			var byteLen int
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowTx
@@ -2035,27 +2892,29 @@ func (m *TaskContractInfo) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
+				byteLen |= int(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
 			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
+			if byteLen < 0 {
 				return ErrInvalidLengthTx
 			}
-			postIndex := iNdEx + intStringLen
+			postIndex := iNdEx + byteLen
 			if postIndex < 0 {
 				return ErrInvalidLengthTx
 			}
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.Status = string(dAtA[iNdEx:postIndex])
+			m.Data = append(m.Data[:0], dAtA[iNdEx:postIndex]...)
+			if m.Data == nil {
+				m.Data = []byte{}
+			}
 			iNdEx = postIndex
 		case 5:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field SourceCode", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field TaskId", wireType)
 			}
 			var stringLen uint64
 			for shift := uint(0); ; shift += 7 {
@@ -2083,8 +2942,84 @@ func (m *TaskContractInfo) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.SourceCode = string(dAtA[iNdEx:postIndex])
+			m.TaskId = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
+		case 6:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field TaskResponsePeriod", wireType)
+			}
+			m.TaskResponsePeriod = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.TaskResponsePeriod |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 7:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field TaskChallengePeriod", wireType)
+			}
+			m.TaskChallengePeriod = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.TaskChallengePeriod |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 8:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field ThresholdPercentage", wireType)
+			}
+			m.ThresholdPercentage = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.ThresholdPercentage |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 9:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field StartingEpoch", wireType)
+			}
+			m.StartingEpoch = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.StartingEpoch |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
 		default:
 			iNdEx = preIndex
 			skippy, err := skipTx(dAtA[iNdEx:])
@@ -2197,7 +3132,7 @@ func (m *RegisterAVSTaskReq) Unmarshal(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			if m.Task == nil {
-				m.Task = &TaskContractInfo{}
+				m.Task = &TaskInfo{}
 			}
 			if err := m.Task.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err

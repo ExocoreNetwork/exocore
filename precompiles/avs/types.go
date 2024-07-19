@@ -175,7 +175,7 @@ func (p Precompile) GetTaskParamsFromInputs(_ sdk.Context, args []interface{}) (
 		return nil, fmt.Errorf(cmn.ErrInvalidNumberOfArgs, 3, len(args))
 	}
 	taskParams := &avstypes.RegisterAVSTaskReq{}
-	taskinfo := &avstypes.TaskContractInfo{}
+	taskinfo := &avstypes.TaskInfo{}
 
 	taskaddr, ok := args[0].(string)
 	if !ok || taskaddr == "" {
@@ -189,11 +189,11 @@ func (p Precompile) GetTaskParamsFromInputs(_ sdk.Context, args []interface{}) (
 	}
 	taskinfo.Name = taskName
 
-	metainfo, ok := args[2].(string)
-	if !ok || metainfo == "" {
-		return nil, xerrors.Errorf(exocmn.ErrContractInputParaOrType, 2, "string", metainfo)
+	name, ok := args[2].(string)
+	if !ok || name == "" {
+		return nil, xerrors.Errorf(exocmn.ErrContractInputParaOrType, 2, "string", name)
 	}
-	taskinfo.MetaInfo = metainfo
+	taskinfo.Name = name
 	taskParams.Task = taskinfo
 	return taskParams, nil
 }

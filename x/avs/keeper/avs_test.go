@@ -8,7 +8,6 @@ import (
 	delegationtypes "github.com/ExocoreNetwork/exocore/x/delegation/types"
 	epochstypes "github.com/ExocoreNetwork/exocore/x/epochs/types"
 	operatortype "github.com/ExocoreNetwork/exocore/x/operator/types"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	"os"
 	"time"
@@ -24,9 +23,8 @@ func (suite *AVSTestSuite) TestAVS() {
 		SlashAddr:          slashAddress,
 		AvsOwnerAddress:    avsOwnerAddress,
 		AssetId:            assetID,
-		AvsUnbondingPeriod: uint32(7),
-		MinSelfDelegation:  sdk.NewIntFromUint64(10),
-		OperatorAddress:    nil,
+		AvsUnbondingPeriod: 7,
+		MinSelfDelegation:  10,
 		EpochIdentifier:    epochstypes.DayEpochID,
 		StartingEpoch:      1,
 	}

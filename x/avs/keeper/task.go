@@ -23,7 +23,7 @@ func (k *Keeper) SetAVSTaskInfo(ctx sdk.Context, info *types.RegisterAVSTaskReq)
 	return nil
 }
 
-func (k *Keeper) GetAVSTaskInfo(ctx sdk.Context, addr string) (info *types.TaskContractInfo, err error) {
+func (k *Keeper) GetAVSTaskInfo(ctx sdk.Context, addr string) (info *types.TaskInfo, err error) {
 	taskAccAddr, err := sdk.AccAddressFromBech32(addr)
 	if err != nil {
 		return nil, errorsmod.Wrap(err, "GetAVSTaskInfo: error occurred when parse acc address from Bech32")

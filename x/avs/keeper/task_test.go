@@ -5,11 +5,11 @@ import tasktype "github.com/ExocoreNetwork/exocore/x/avs/types"
 func (suite *AVSTestSuite) TestTaskInfo() {
 	info := &tasktype.RegisterAVSTaskReq{
 		FromAddress: suite.AccAddress.String(),
-		Task: &tasktype.TaskContractInfo{
+		Task: &tasktype.TaskInfo{
 			Name:                "test-avstask-01",
-			MetaInfo:            "avstask up",
+			TaskId:              "avstask up",
 			TaskContractAddress: "exo1j9ly7f0jynscjgvct0enevaa659te58k3xztc8",
-			Status:              "active",
+			Data:                []byte("active"),
 		},
 	}
 	err := suite.App.AVSManagerKeeper.SetAVSTaskInfo(suite.Ctx, info)

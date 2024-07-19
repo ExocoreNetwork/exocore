@@ -1,17 +1,19 @@
 package keeper
 
 import (
+	"fmt"
+	"math/big"
+	"strings"
+
 	errorsmod "cosmossdk.io/errors"
 	sdkmath "cosmossdk.io/math"
-	"fmt"
+
 	"github.com/ExocoreNetwork/exocore/x/avs/types"
 	"github.com/cosmos/cosmos-sdk/store/prefix"
 	ibcclienttypes "github.com/cosmos/ibc-go/v7/modules/core/02-client/types"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/evmos/evmos/v14/x/evm/statedb"
-	"math/big"
-	"strings"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -52,19 +54,31 @@ func (k *Keeper) GetAVSMinimumSelfDelegation(ctx sdk.Context, avsAddr string) (s
 		return sdkmath.LegacyNewDec(0), errorsmod.Wrap(err, fmt.Sprintf("GetAVSMinimumSelfDelegation: key is %s", avsAddr))
 	}
 
-	return sdkmath.LegacyNewDec(avsInfo.Info.MinSelfDelegation.Int64()), nil
+	return sdkmath.LegacyNewDec(int64(avsInfo.Info.MinSelfDelegation)), nil
 }
 
 // GetEpochEndAVSs returns the AVS list where the current block marks the end of their epoch.
 func (k *Keeper) GetEpochEndAVSs(ctx sdk.Context, epochIdentifier string, epochNumber int64) ([]string, error) {
 	var avsList []string
 	k.IterateAVSInfo(ctx, func(_ int64, avsInfo types.AVSInfo) (stop bool) {
-		if epochIdentifier == avsInfo.EpochIdentifier && epochNumber > avsInfo.StartingEpoch {
+		if epochIdentifier == avsInfo.EpochIdentifier && epochNumber > int64(avsInfo.StartingEpoch) {
 			avsList = append(avsList, avsInfo.AvsAddress)
 		}
 		return false
 	})
 
+	return avsList, nil
+}
+
+// GetTaskChallengeEpochEndAVSs returns the AVS list where the current block marks the end of their epoch.
+func (k *Keeper) GetTaskChallengeEpochEndAVSs(ctx sdk.Context, epochIdentifier string, epochNumber int64) ([]string, error) {
+	var avsList []string
+	k.IterateAVSInfo(ctx, func(_ int64, avsInfo types.AVSInfo) (stop bool) {
+		if epochIdentifier == avsInfo.EpochIdentifier && epochNumber > int64(avsInfo.StartingEpoch) {
+			avsList = append(avsList, avsInfo.AvsAddress)
+		}
+		return false
+	})
 	return avsList, nil
 }
 

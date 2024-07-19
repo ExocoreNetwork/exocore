@@ -234,7 +234,7 @@ func (p Precompile) RegisterAVSTask(
 	if err != nil {
 		return nil, err
 	}
-	if err = p.EmitRegisterAVSTaskEvent(ctx, stateDB, params.Task.TaskContractAddress, params.Task.MetaInfo, params.Task.Name); err != nil {
+	if err = p.EmitRegisterAVSTaskEvent(ctx, stateDB, params.Task.TaskContractAddress, params.Task.Name, params.Task.Name); err != nil {
 		return nil, err
 	}
 	return method.Outputs.Pack(true)

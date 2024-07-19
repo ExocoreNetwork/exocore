@@ -77,11 +77,10 @@ func (k Keeper) AVSInfoUpdate(ctx sdk.Context, params *AVSRegisterOrDeregisterPa
 			SlashAddr:          params.SlashContractAddr,
 			AvsOwnerAddress:    params.AvsOwnerAddress,
 			AssetId:            params.AssetID,
-			MinSelfDelegation:  sdk.NewIntFromUint64(params.MinSelfDelegation),
-			AvsUnbondingPeriod: uint32(params.UnbondingPeriod),
+			MinSelfDelegation:  params.MinSelfDelegation,
+			AvsUnbondingPeriod: params.UnbondingPeriod,
 			EpochIdentifier:    epochIdentifier,
-			OperatorAddress:    nil,
-			StartingEpoch:      epoch.CurrentEpoch + 1, // Effective at CurrentEpoch+1, avoid immediate effects and ensure that the first epoch time of avs is equal to a normal identifier
+			StartingEpoch:      uint64(epoch.CurrentEpoch + 1), // Effective at CurrentEpoch+1, avoid immediate effects and ensure that the first epoch time of avs is equal to a normal identifier
 		}
 		return k.SetAVSInfo(ctx, avs)
 	case DeRegisterAction:
@@ -94,7 +93,7 @@ func (k Keeper) AVSInfoUpdate(ctx sdk.Context, params *AVSRegisterOrDeregisterPa
 		}
 
 		// If avs DeRegisterAction check UnbondingPeriod
-		if (epoch.CurrentEpoch - avsInfo.GetInfo().StartingEpoch) > int64(avsInfo.Info.AvsUnbondingPeriod) {
+		if epoch.CurrentEpoch-int64(avsInfo.GetInfo().StartingEpoch) > int64(avsInfo.Info.AvsUnbondingPeriod) {
 			return errorsmod.Wrap(types.ErrUnbondingPeriod, fmt.Sprintf("not qualified to deregister %s", avsInfo))
 		}
 
@@ -108,7 +107,7 @@ func (k Keeper) AVSInfoUpdate(ctx sdk.Context, params *AVSRegisterOrDeregisterPa
 			return errorsmod.Wrap(types.ErrUnregisterNonExistent, fmt.Sprintf("the avsaddress is :%s", params.AvsAddress))
 		}
 		// If avs UpdateAction check UnbondingPeriod
-		if int64(avsInfo.Info.AvsUnbondingPeriod) < (epoch.CurrentEpoch - avsInfo.GetInfo().StartingEpoch) {
+		if int64(avsInfo.Info.AvsUnbondingPeriod) < (epoch.CurrentEpoch - int64(avsInfo.GetInfo().StartingEpoch)) {
 			return errorsmod.Wrap(types.ErrUnbondingPeriod, fmt.Sprintf("not qualified to deregister %s", avsInfo))
 		}
 		// If avs UpdateAction check CallerAddress
@@ -120,7 +119,7 @@ func (k Keeper) AVSInfoUpdate(ctx sdk.Context, params *AVSRegisterOrDeregisterPa
 			avs.Name = params.AvsName
 		}
 		if params.MinSelfDelegation > 0 {
-			avs.MinSelfDelegation = sdk.NewIntFromUint64(params.MinSelfDelegation)
+			avs.MinSelfDelegation = params.MinSelfDelegation
 		}
 		if params.AvsOwnerAddress != nil {
 			avs.AvsOwnerAddress = params.AvsOwnerAddress
@@ -132,13 +131,13 @@ func (k Keeper) AVSInfoUpdate(ctx sdk.Context, params *AVSRegisterOrDeregisterPa
 			avs.EpochIdentifier = params.EpochIdentifier
 		}
 		if params.UnbondingPeriod > 0 {
-			avs.AvsUnbondingPeriod = uint32(params.UnbondingPeriod)
+			avs.AvsUnbondingPeriod = params.UnbondingPeriod
 		}
 		if params.AssetID != nil {
 			avs.AssetId = params.AssetID
 		}
 		avs.AvsAddress = params.AvsAddress
-		avs.StartingEpoch = epoch.CurrentEpoch + 1
+		avs.StartingEpoch = uint64(epoch.CurrentEpoch + 1)
 
 		return k.SetAVSInfo(ctx, avs)
 	default:
@@ -205,6 +204,7 @@ func (k Keeper) GetAVSInfo(ctx sdk.Context, addr string) (*types.QueryAVSInfoRes
 	}
 	return res, nil
 }
+
 func (k *Keeper) IsAVS(ctx sdk.Context, addr string) (bool, error) {
 	avsAddr, err := sdk.AccAddressFromBech32(addr)
 	if err != nil {
@@ -213,6 +213,7 @@ func (k *Keeper) IsAVS(ctx sdk.Context, addr string) (bool, error) {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefixAVSInfo)
 	return store.Has(avsAddr), nil
 }
+
 func (k Keeper) DeleteAVSInfo(ctx sdk.Context, addr string) error {
 	avsAddr, err := sdk.AccAddressFromBech32(addr)
 	if err != nil {

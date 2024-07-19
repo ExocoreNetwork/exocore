@@ -35,24 +35,18 @@ message AVSInfo {
   uint64 mini_optin_operators = 12;
   // the Minimum total amount of stake by all operator
   uint64 min_total_stake_amount = 13;
-  // Deadline for task response
-  uint64 task_response_period = 14;
-  //challenge period for  task
-  uint64 task_challenge_period = 15;
-  //Signature threshold percentage
-  uint64 threshold_percentage = 16;
   // Effective current epoch, accounting for current_epoch + 1
   // and current_epoch is the integer identifier of the epoch module
-  uint64 starting_epoch = 17;
+  uint64 starting_epoch = 14;
   //chain-id for dogfood-avs
-  string chain_id = 18;
+  string chain_id = 15;
 
   // avs_reward defines the proportion of reward
-  string avs_reward = 19
+  string avs_reward = 16
   [(gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec", (gogoproto.nullable) = false];
 
   // avs_slash defines the proportion of slash
-  string avs_slash = 20
+  string avs_slash = 17
   [(gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec", (gogoproto.nullable) = false];
 }
 
@@ -86,12 +80,19 @@ message TaskInfo {
   string task_contract_address = 1;
   // name of task
   string name = 2;
-  // meta_info of task
-  string task_created_block = 3;
+  // Effective current epoch, accounting for current_epoch + 1
+  // and current_epoch is the integer identifier of the epoch module
+  uint64 starting_epoch = 3;
   // data which is supplied by the contract, usually ABI-encoded
   bytes data = 4;
   // task_id of task
   string task_id = 5;
+  // Deadline for task response
+  uint64 task_response_period = 6;
+  //challenge period for  task
+  uint64 task_challenge_period = 7;
+  //Signature threshold percentage
+  uint64 threshold_percentage = 8;
 }
 // RegisterAVSTaskReq is the request to register a new task for avs.
 message RegisterAVSTaskReq {

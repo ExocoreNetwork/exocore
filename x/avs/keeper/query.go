@@ -14,7 +14,7 @@ func (k Keeper) QueryAVSInfo(ctx context.Context, req *types.QueryAVSInfoReq) (*
 	return k.GetAVSInfo(c, req.AVSAddress)
 }
 
-func (k Keeper) QueryAVSTaskInfo(ctx context.Context, req *types.QueryAVSTaskInfoReq) (*types.TaskContractInfo, error) {
+func (k Keeper) QueryAVSTaskInfo(ctx context.Context, req *types.QueryAVSTaskInfoReq) (*types.TaskInfo, error) {
 	c := sdk.UnwrapSDKContext(ctx)
 	return k.GetAVSTaskInfo(c, req.TaskAddr)
 }

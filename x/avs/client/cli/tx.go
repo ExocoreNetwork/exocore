@@ -41,7 +41,7 @@ func RegisterAVS() *cobra.Command {
 				Info: &types.AVSInfo{
 					Name:            args[0],
 					AvsAddress:      args[1],
-					OperatorAddress: []string{args[2]},
+					SlashAddr:       args[2],
 					AvsOwnerAddress: []string{args[3]},
 					AssetId:         []string{args[4]},
 				},
