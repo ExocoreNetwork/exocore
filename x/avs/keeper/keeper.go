@@ -71,17 +71,24 @@ func (k Keeper) AVSInfoUpdate(ctx sdk.Context, params *AVSRegisterOrDeregisterPa
 		}
 
 		avs := &types.AVSInfo{
-			Name:               params.AvsName,
-			AvsAddress:         params.AvsAddress,
-			RewardAddr:         params.RewardContractAddr,
-			SlashAddr:          params.SlashContractAddr,
-			AvsOwnerAddress:    params.AvsOwnerAddress,
-			AssetId:            params.AssetID,
-			MinSelfDelegation:  params.MinSelfDelegation,
-			AvsUnbondingPeriod: params.UnbondingPeriod,
-			EpochIdentifier:    epochIdentifier,
-			StartingEpoch:      uint64(epoch.CurrentEpoch + 1), // Effective at CurrentEpoch+1, avoid immediate effects and ensure that the first epoch time of avs is equal to a normal identifier
+			Name:                params.AvsName,
+			AvsAddress:          params.AvsAddress,
+			RewardAddr:          params.RewardContractAddr,
+			SlashAddr:           params.SlashContractAddr,
+			AvsOwnerAddress:     params.AvsOwnerAddress,
+			AssetId:             params.AssetID,
+			MinSelfDelegation:   params.MinSelfDelegation,
+			AvsUnbondingPeriod:  params.UnbondingPeriod,
+			EpochIdentifier:     epochIdentifier,
+			StartingEpoch:       uint64(epoch.CurrentEpoch + 1),
+			MiniOptinOperators:  params.MinStakeAmount,
+			TaskAddr:            params.TaskAddr,
+			MinStakeAmount:      params.MinStakeAmount, // Effective at CurrentEpoch+1, avoid immediate effects and ensure that the first epoch time of avs is equal to a normal identifier
+			MinTotalStakeAmount: params.MinTotalStakeAmount,
+			AvsSlash:            sdk.NewDecWithPrec(int64(params.AvsSlash), 2),
+			AvsReward:           sdk.NewDecWithPrec(int64(params.AvsReward), 2),
 		}
+
 		return k.SetAVSInfo(ctx, avs)
 	case DeRegisterAction:
 		if avsInfo == nil {
@@ -115,6 +122,29 @@ func (k Keeper) AVSInfoUpdate(ctx sdk.Context, params *AVSRegisterOrDeregisterPa
 			return errorsmod.Wrap(types.ErrCallerAddressUnauthorized, fmt.Sprintf("this caller not qualified to update %s", params.CallerAddress))
 		}
 		avs := avsInfo.Info
+
+		if params.RewardContractAddr != "" {
+			avs.RewardAddr = params.RewardContractAddr
+		}
+		if params.MinStakeAmount > 0 {
+			avs.MinStakeAmount = params.MinStakeAmount
+		}
+		if params.TaskAddr != "" {
+			avs.TaskAddr = params.TaskAddr
+		}
+		if params.MiniOptinOperators > 0 {
+			avs.MiniOptinOperators = params.MiniOptinOperators
+		}
+		if params.MinTotalStakeAmount > 0 {
+			avs.MinTotalStakeAmount = params.MinTotalStakeAmount
+		}
+		if params.AvsSlash > 0 {
+			avs.AvsSlash = sdk.NewDecWithPrec(int64(params.AvsSlash), 2)
+		}
+		if params.AvsReward > 0 {
+			avs.AvsReward = sdk.NewDecWithPrec(int64(params.AvsReward), 2)
+		}
+
 		if params.AvsName != "" {
 			avs.Name = params.AvsName
 		}
@@ -143,6 +173,42 @@ func (k Keeper) AVSInfoUpdate(ctx sdk.Context, params *AVSRegisterOrDeregisterPa
 	default:
 		return errorsmod.Wrap(types.ErrInvalidAction, fmt.Sprintf("Invalid action: %d", action))
 	}
+}
+
+func (k Keeper) CreateAVSTask(ctx sdk.Context, params *TaskParams) error {
+	if k.IsExistTask(ctx, params.TaskID, params.TaskContractAddress) {
+		return errorsmod.Wrap(types.ErrAlreadyExists, fmt.Sprintf("the task is :%s", params.TaskID))
+	}
+	task := &types.TaskInfo{
+		Name:                params.TaskName,
+		Data:                params.Data,
+		TaskContractAddress: params.TaskContractAddress,
+		TaskId:              params.TaskID,
+		TaskChallengePeriod: params.TaskChallengePeriod,
+		ThresholdPercentage: params.ThresholdPercentage,
+		TaskResponsePeriod:  params.TaskResponsePeriod,
+	}
+	return k.SetTaskInfo(ctx, task)
+}
+
+func (k Keeper) RegisterBLSPublicKey(ctx sdk.Context, params *BlsParams) error {
+	// TODO:check bls signature
+	// params.pubkeyRegistrationSignature == key.sig(params.pubkeyRegistrationMessageHash)
+	if k.IsExistPubKey(ctx, params.Operator) {
+		return errorsmod.Wrap(types.ErrAlreadyExists, fmt.Sprintf("the operator is :%s", params.Operator))
+	}
+	bls := &types.BlsPubKeyInfo{
+		Name:     params.Name,
+		Operator: params.Operator,
+		PubKey:   params.PubKey,
+	}
+	return k.SetOperatorPubKey(ctx, bls)
+}
+
+func (k Keeper) GetOptinOperators(_ sdk.Context, _ string) ([]string, error) {
+	// TODO:expected operator Implement querying all operators that have been optin based on the avs address
+
+	return nil, nil
 }
 
 func (k Keeper) OperatorOptAction(ctx sdk.Context, params *OperatorOptParams) error {

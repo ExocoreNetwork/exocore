@@ -47,4 +47,13 @@ var (
 		ModuleName, 9,
 		"Error: this chainID is shouldn't null",
 	)
+
+	ErrInvalidAddr = errorsmod.Register(
+		ModuleName, 10,
+		"the  address isn't a valid account address",
+	)
+	ErrAlreadyExists = errorsmod.Register(
+		ModuleName, 11,
+		"The task already exists",
+	)
 )

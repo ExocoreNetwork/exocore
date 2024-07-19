@@ -16,12 +16,6 @@
 			},
 			{
 				"indexed": false,
-				"internalType": "uint64",
-				"name": "startingEpoch",
-				"type": "uint64"
-			},
-			{
-				"indexed": false,
 				"internalType": "bytes",
 				"name": "data",
 				"type": "bytes"
@@ -109,9 +103,9 @@
 			},
 			{
 				"indexed": false,
-				"internalType": "uint256",
+				"internalType": "uint64",
 				"name": "minStakeAmount",
-				"type": "uint256"
+				"type": "uint64"
 			},
 			{
 				"indexed": false,
@@ -176,20 +170,14 @@
 			{
 				"indexed": false,
 				"internalType": "uint64",
-				"name": "startingEpoch",
+				"name": "avsReward",
 				"type": "uint64"
 			},
 			{
 				"indexed": false,
-				"internalType": "uint256",
-				"name": "avsReward",
-				"type": "uint256"
-			},
-			{
-				"indexed": false,
-				"internalType": "uint256",
+				"internalType": "uint64",
 				"name": "avsSlash",
-				"type": "uint256"
+				"type": "uint64"
 			}
 		],
 		"name": "RegisterAVS",
@@ -305,9 +293,9 @@
 			},
 			{
 				"indexed": false,
-				"internalType": "uint256",
+				"internalType": "uint64",
 				"name": "minStakeAmount",
-				"type": "uint256"
+				"type": "uint64"
 			},
 			{
 				"indexed": false,
@@ -372,20 +360,14 @@
 			{
 				"indexed": false,
 				"internalType": "uint64",
-				"name": "startingEpoch",
+				"name": "avsReward",
 				"type": "uint64"
 			},
 			{
 				"indexed": false,
-				"internalType": "uint256",
-				"name": "avsReward",
-				"type": "uint256"
-			},
-			{
-				"indexed": false,
-				"internalType": "uint256",
+				"internalType": "uint64",
 				"name": "avsSlash",
-				"type": "uint256"
+				"type": "uint64"
 			}
 		],
 		"name": "UpdateAVS",
@@ -397,11 +379,6 @@
 				"internalType": "string",
 				"name": "name",
 				"type": "string"
-			},
-			{
-				"internalType": "uint64",
-				"name": "startingEpoch",
-				"type": "uint64"
 			},
 			{
 				"internalType": "bytes",
@@ -520,9 +497,9 @@
 				"type": "string"
 			},
 			{
-				"internalType": "uint256",
+				"internalType": "uint64",
 				"name": "minStakeAmount",
-				"type": "uint256"
+				"type": "uint64"
 			},
 			{
 				"internalType": "string",
@@ -572,11 +549,6 @@
 			{
 				"internalType": "uint64",
 				"name": "minTotalStakeAmount",
-				"type": "uint64"
-			},
-			{
-				"internalType": "uint64",
-				"name": "startingEpoch",
 				"type": "uint64"
 			},
 			{
@@ -702,9 +674,9 @@
 				"type": "string"
 			},
 			{
-				"internalType": "uint256",
+				"internalType": "uint64",
 				"name": "minStakeAmount",
-				"type": "uint256"
+				"type": "uint64"
 			},
 			{
 				"internalType": "string",
@@ -754,11 +726,6 @@
 			{
 				"internalType": "uint64",
 				"name": "minTotalStakeAmount",
-				"type": "uint64"
-			},
-			{
-				"internalType": "uint64",
-				"name": "startingEpoch",
 				"type": "uint64"
 			},
 			{

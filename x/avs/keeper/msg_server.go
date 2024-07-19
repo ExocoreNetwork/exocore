@@ -3,8 +3,6 @@ package keeper
 import (
 	"context"
 
-	sdk "github.com/cosmos/cosmos-sdk/types"
-
 	"github.com/ExocoreNetwork/exocore/x/avs/types"
 )
 
@@ -36,11 +34,6 @@ func (k Keeper) DeRegisterAVS(_ context.Context, _ *types.DeRegisterAVSReq) (*ty
 	return nil, nil
 }
 
-func (k Keeper) RegisterAVSTask(ctx context.Context, req *types.RegisterAVSTaskReq) (*types.RegisterAVSTaskResponse, error) {
-	c := sdk.UnwrapSDKContext(ctx)
-	err := k.SetAVSTaskInfo(c, req)
-	if err != nil {
-		return nil, err
-	}
+func (k Keeper) RegisterAVSTask(_ context.Context, _ *types.RegisterAVSTaskReq) (*types.RegisterAVSTaskResponse, error) {
 	return nil, nil
 }

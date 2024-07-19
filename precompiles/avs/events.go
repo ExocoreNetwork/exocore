@@ -1,6 +1,7 @@
 package avs
 
 import (
+	avskeep "github.com/ExocoreNetwork/exocore/x/avs/keeper"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
@@ -10,28 +11,34 @@ import (
 )
 
 const (
-	// EventTypeRegisterAVSTask defines the event type for the avs RegisterAVSTask transaction.
-	EventTypeRegisterAVSTask = "RegisterAVSTask"
+	// EventTypeRegisterAVSTask defines the event type for the avs CreateAVSTask transaction.
+	EventTypeRegisterAVSTask = "CreateAVSTask"
 )
 
-// EmitRegisterAVSTaskEvent creates a new event emitted on a SetWithdrawAddressMethod transaction.
-func (p Precompile) EmitRegisterAVSTaskEvent(ctx sdk.Context, stateDB vm.StateDB, taskContractAddress string, metaInfo string, name string) error {
+// EmitCreateAVSTaskEvent creates a new event emitted on a SetWithdrawAddressMethod transaction.
+func (p Precompile) EmitCreateAVSTaskEvent(ctx sdk.Context, stateDB vm.StateDB, task *avskeep.TaskParams) error {
 	// Prepare the event topics
 	event := p.ABI.Events[EventTypeRegisterAVSTask]
-	topics := make([]common.Hash, 2)
+
+	topics := make([]common.Hash, 3)
 
 	// The first topic is always the signature of the event.
 	topics[0] = event.ID
 
 	var err error
-	topics[1], err = cmn.MakeTopic(taskContractAddress)
+	topics[1], err = cmn.MakeTopic(task.TaskContractAddress)
+	if err != nil {
+		return err
+	}
+
+	topics[2], err = cmn.MakeTopic(task.TaskID)
 	if err != nil {
 		return err
 	}
 
 	// Pack the arguments to be used as the Data field
-	arguments := abi.Arguments{event.Inputs[2], event.Inputs[3]}
-	packed, err := arguments.Pack(metaInfo, name)
+	arguments := abi.Arguments{event.Inputs[2], event.Inputs[3], event.Inputs[4], event.Inputs[5], event.Inputs[6]}
+	packed, err := arguments.Pack(task.TaskName, task.Data, task.TaskResponsePeriod, task.TaskChallengePeriod, task.ThresholdPercentage)
 	if err != nil {
 		return err
 	}

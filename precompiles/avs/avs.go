@@ -95,10 +95,14 @@ func (p Precompile) Run(evm *vm.EVM, contract *vm.Contract, readOnly bool) (bz [
 		bz, err = p.BindOperatorToAVS(ctx, evm.Origin, contract, stateDB, method, args)
 	case MethodDeregisterOperatorFromAVS:
 		bz, err = p.UnbindOperatorToAVS(ctx, evm.Origin, contract, stateDB, method, args)
-	case MethodRegisterAVSTask:
-		bz, err = p.RegisterAVSTask(ctx, evm.Origin, contract, stateDB, method, args)
+	case MethodCreateAVSTask:
+		bz, err = p.CreateAVSTask(ctx, evm.Origin, contract, stateDB, method, args)
 	case MethodRegisterBLSPublicKey:
-		bz, err = p.RegisterBLSPublicKey(ctx, evm.Origin, stateDB, method, args)
+		bz, err = p.RegisterBLSPublicKey(ctx, evm.Origin, contract, stateDB, method, args)
+	case MethodGetOptinOperators:
+		bz, err = p.GetOptinOperators(ctx, contract, method, args)
+	case MethodSubmitProof:
+		bz, err = p.SubmitProof(ctx, contract, method, args)
 	case MethodGetRegisteredPubkey:
 		bz, err = p.GetRegisteredPubkey(ctx, contract, method, args)
 	}
@@ -113,7 +117,6 @@ func (p Precompile) Run(evm *vm.EVM, contract *vm.Contract, readOnly bool) (bz [
 	if !contract.UseGas(cost) {
 		return nil, vm.ErrOutOfGas
 	}
-
 	return bz, nil
 }
 
@@ -124,7 +127,7 @@ func (p Precompile) Run(evm *vm.EVM, contract *vm.Contract, readOnly bool) (bz [
 func (Precompile) IsTransaction(methodID string) bool {
 	switch methodID {
 	case MethodRegisterAVS, MethodDeregisterAVS, MethodUpdateAVS, MethodRegisterOperatorToAVS,
-		MethodDeregisterOperatorFromAVS, MethodRegisterAVSTask, MethodRegisterBLSPublicKey:
+		MethodDeregisterOperatorFromAVS, MethodCreateAVSTask, MethodRegisterBLSPublicKey, MethodSubmitProof:
 		return true
 	default:
 		return false

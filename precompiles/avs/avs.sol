@@ -26,12 +26,11 @@ interface IAVSManager {
     /// @param epochIdentifier The AVS epoch identifier.
     /// @param miniOptinOperators The minimum number of opt-in operators.
     /// @param minTotalStakeAmount The minimum total amount of stake by all operators.
-    /// @param startingEpoch The effective current epoch.
     /// @param avsReward The proportion of reward for AVS.
     /// @param avsSlash The proportion of slash for AVS.
     function registerAVS(
         string memory avsName,
-        uint256  minStakeAmount,
+        uint64  minStakeAmount,
         string memory taskAddr,
         string memory slashAddr,
         string memory rewardAddr,
@@ -42,7 +41,6 @@ interface IAVSManager {
         string memory epochIdentifier,
         uint64  miniOptinOperators,
         uint64  minTotalStakeAmount,
-        uint64  startingEpoch,
         uint64  avsReward,
         uint64  avsSlash
     ) external returns (bool success);
@@ -60,12 +58,11 @@ interface IAVSManager {
     /// @param epochIdentifier The AVS epoch identifier.
     /// @param miniOptinOperators The minimum number of opt-in operators.
     /// @param minTotalStakeAmount The minimum total amount of stake by all operators.
-    /// @param startingEpoch The effective current epoch.
     /// @param avsReward The proportion of reward for AVS.
     /// @param avsSlash The proportion of slash for AVS.
     function updateAVS(
         string memory avsName,
-        uint256  minStakeAmount,
+        uint64  minStakeAmount,
         string memory taskAddr,
         string memory slashAddr,
         string memory rewardAddr,
@@ -76,7 +73,6 @@ interface IAVSManager {
         string memory epochIdentifier,
         uint64  miniOptinOperators,
         uint64  minTotalStakeAmount,
-        uint64  startingEpoch,
         uint64  avsReward,
         uint64  avsSlash
     ) external returns (bool success);
@@ -98,7 +94,6 @@ interface IAVSManager {
 
     /// @dev CreateTask , avs owner create a new task
     /// @param name The name of the task.
-    /// @param startingEpoch The effective current epoch.
     /// @param data The data supplied by the contract, usually ABI-encoded.
     /// @param taskId The task ID of the task.
     /// @param taskResponsePeriod The deadline for task response.
@@ -106,7 +101,6 @@ interface IAVSManager {
     /// @param thresholdPercentage The signature threshold percentage.
     function createTask(
         string memory name,
-        uint64 startingEpoch,
         bytes calldata data,
         string memory taskId,
         uint64 taskResponsePeriod,
@@ -179,13 +173,12 @@ interface IAVSManager {
     /// @param epochIdentifier The AVS epoch identifier.
     /// @param miniOptinOperators The minimum number of opt-in operators.
     /// @param minTotalStakeAmount The minimum total amount of stake by all operators.
-    /// @param startingEpoch The effective current epoch.
     /// @param avsReward The proportion of reward for AVS.
     /// @param avsSlash The proportion of slash for AVS.
     event RegisterAVS(
         string indexed avsAddress,
         string avsName,
-        uint256 minStakeAmount,
+        uint64 minStakeAmount,
         address taskAddr,
         address slashAddr,
         address rewardAddr,
@@ -196,9 +189,8 @@ interface IAVSManager {
         string epochIdentifier,
         uint64 miniOptinOperators,
         uint64 minTotalStakeAmount,
-        uint64 startingEpoch,
-        uint256 avsReward,
-        uint256 avsSlash
+        uint64 avsReward,
+        uint64 avsSlash
     );
 
     /// @dev UpdateAVS Emitted when `avs` update to exocore.
@@ -215,13 +207,12 @@ interface IAVSManager {
     /// @param epochIdentifier The AVS epoch identifier.
     /// @param miniOptinOperators The minimum number of opt-in operators.
     /// @param minTotalStakeAmount The minimum total amount of stake by all operators.
-    /// @param startingEpoch The effective current epoch.
     /// @param avsReward The proportion of reward for AVS.
     /// @param avsSlash The proportion of slash for AVS.
     event UpdateAVS(
         string indexed avsAddress,
         string avsName,
-        uint256 minStakeAmount,
+        uint64 minStakeAmount,
         address taskAddr,
         address slashAddr,
         address rewardAddr,
@@ -232,9 +223,8 @@ interface IAVSManager {
         string epochIdentifier,
         uint64 miniOptinOperators,
         uint64 minTotalStakeAmount,
-        uint64 startingEpoch,
-        uint256 avsReward,
-        uint256 avsSlash
+        uint64 avsReward,
+        uint64 avsSlash
     );
 
     /// @dev DeregisterAVS Emitted when `avs` Deregister to exocore.
@@ -264,7 +254,6 @@ interface IAVSManager {
     /// @dev CreateTask Emitted when `avs` CreateTask.
     /// @param taskContractAddress The contract address of AVSTask.
     /// @param name The name of the task.
-    /// @param startingEpoch The effective current epoch.
     /// @param data The data supplied by the contract, usually ABI-encoded.
     /// @param taskId The task ID of the task.
     /// @param taskResponsePeriod The deadline for task response.
@@ -273,7 +262,6 @@ interface IAVSManager {
     event CreateTask(
         string indexed taskContractAddress,
         string name,
-        uint64 startingEpoch,
         bytes data,
         string indexed taskId,
         uint64 taskResponsePeriod,

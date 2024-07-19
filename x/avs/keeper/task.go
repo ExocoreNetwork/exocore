@@ -3,6 +3,8 @@ package keeper
 import (
 	"fmt"
 
+	assetstype "github.com/ExocoreNetwork/exocore/x/assets/types"
+
 	errorsmod "cosmossdk.io/errors"
 
 	"github.com/ExocoreNetwork/exocore/x/avs/types"
@@ -10,54 +12,57 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-func (k *Keeper) SetAVSTaskInfo(ctx sdk.Context, info *types.RegisterAVSTaskReq) (err error) {
-	taskAccAddr, err := sdk.AccAddressFromBech32(info.Task.TaskContractAddress)
+func (k Keeper) SetTaskInfo(ctx sdk.Context, task *types.TaskInfo) (err error) {
+	taskContractAddress := task.TaskContractAddress
+	// check operator address validation
+	_, err = sdk.AccAddressFromBech32(taskContractAddress)
 	if err != nil {
-		return errorsmod.Wrap(err, "SetTaskInfo: error occurred when parse acc address from Bech32")
+		return types.ErrInvalidAddr
 	}
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefixAVSTaskInfo)
-
-	bz := k.cdc.MustMarshal(info)
-
-	store.Set(taskAccAddr, bz)
+	infoKey := assetstype.GetJoinedStoreKey(taskContractAddress, task.TaskId)
+	bz := k.cdc.MustMarshal(task)
+	store.Set(infoKey, bz)
 	return nil
 }
 
-func (k *Keeper) GetAVSTaskInfo(ctx sdk.Context, addr string) (info *types.TaskInfo, err error) {
-	taskAccAddr, err := sdk.AccAddressFromBech32(addr)
+func (k *Keeper) GetTaskInfo(ctx sdk.Context, taskID, taskContractAddress string) (info *types.TaskInfo, err error) {
+	// check task address validation
+	_, err = sdk.AccAddressFromBech32(taskContractAddress)
 	if err != nil {
-		return nil, errorsmod.Wrap(err, "GetAVSTaskInfo: error occurred when parse acc address from Bech32")
+		return nil, types.ErrInvalidAddr
 	}
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefixAVSTaskInfo)
-	isExist := store.Has(taskAccAddr)
-	if !isExist {
-		return nil, errorsmod.Wrap(types.ErrNoKeyInTheStore, fmt.Sprintf("GetAVSTaskInfo: key is %s", taskAccAddr))
+	infoKey := assetstype.GetJoinedStoreKey(taskContractAddress, taskID)
+	value := store.Get(infoKey)
+	if value == nil {
+		return nil, errorsmod.Wrap(types.ErrNoKeyInTheStore, fmt.Sprintf("GetTaskInfo: key is %s", taskContractAddress))
 	}
 
-	value := store.Get(taskAccAddr)
-
-	ret := types.RegisterAVSTaskReq{}
+	ret := types.TaskInfo{}
 	k.cdc.MustUnmarshal(value, &ret)
-	return ret.Task, nil
+	return &ret, nil
 }
 
-func (k *Keeper) IsExistTask(ctx sdk.Context, addr sdk.AccAddress) bool {
+func (k *Keeper) IsExistTask(ctx sdk.Context, taskID, taskContractAddress string) bool {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefixAVSTaskInfo)
-	return store.Has(addr)
+	infoKey := assetstype.GetJoinedStoreKey(taskContractAddress, taskID)
+
+	return store.Has(infoKey)
 }
 
-func (k *Keeper) SetOperatorPubKey(ctx sdk.Context, addr string, pub []byte) (err error) {
-	opAccAddr, err := sdk.AccAddressFromBech32(addr)
+func (k *Keeper) SetOperatorPubKey(ctx sdk.Context, pub *types.BlsPubKeyInfo) (err error) {
+	operatorAddress, err := sdk.AccAddressFromBech32(pub.Operator)
 	if err != nil {
-		return errorsmod.Wrap(err, "SetOperatorPubKey: error occurred when parse acc address from Bech32")
+		return types.ErrInvalidAddr
 	}
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefixOperatePub)
-
-	store.Set(opAccAddr, pub)
+	bz := k.cdc.MustMarshal(pub)
+	store.Set(operatorAddress, bz)
 	return nil
 }
 
-func (k *Keeper) GetOperatorPubKey(ctx sdk.Context, addr string) (pub []byte, err error) {
+func (k *Keeper) GetOperatorPubKey(ctx sdk.Context, addr string) (pub *types.BlsPubKeyInfo, err error) {
 	opAccAddr, err := sdk.AccAddressFromBech32(addr)
 	if err != nil {
 		return nil, errorsmod.Wrap(err, "GetOperatorPubKey: error occurred when parse acc address from Bech32")
@@ -68,8 +73,14 @@ func (k *Keeper) GetOperatorPubKey(ctx sdk.Context, addr string) (pub []byte, er
 	if !isExist {
 		return nil, errorsmod.Wrap(types.ErrNoKeyInTheStore, fmt.Sprintf("GetOperatorPubKey: key is %s", opAccAddr))
 	}
-
 	value := store.Get(opAccAddr)
+	ret := types.BlsPubKeyInfo{}
+	k.cdc.MustUnmarshal(value, &ret)
+	return &ret, nil
+}
 
-	return value, nil
+func (k *Keeper) IsExistPubKey(ctx sdk.Context, addr string) bool {
+	opAccAddr, _ := sdk.AccAddressFromBech32(addr)
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefixOperatePub)
+	return store.Has(opAccAddr)
 }

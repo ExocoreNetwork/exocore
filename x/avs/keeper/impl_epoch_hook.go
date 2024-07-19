@@ -42,46 +42,10 @@ func (wrapper EpochsHooksWrapper) AfterEpochEnd(
 		)
 		return
 	}
-
-	taskResponseEpochEndAVSepochEndAVS, err := wrapper.keeper.GetTaskChallengeEpochEndAVSs(ctx, epochIdentifier, epochNumber)
-	if err != nil {
-		wrapper.keeper.Logger(ctx).Error(
-			"epochEndAVS got error",
-			"epochEndAVS", taskResponseEpochEndAVSepochEndAVS,
-		)
-		return
-	}
-
-	// TODO:Handling reward and slash
-	avsInfo, err := wrapper.keeper.GetAVSInfo(ctx, "exo13h6xg79g82e2g2vhjwg7j4r2z2hlncelwutkjr")
-	if avsInfo.Info == nil {
-		return
-	}
-	assetID := avsInfo.Info.AssetId
-	if err != nil {
-		wrapper.keeper.Logger(ctx).Error(
-			"get avsInfo error",
-			"avsInfo err", err,
-		)
-		return
-	}
-
-	for _, asset := range assetID {
-		_, err := wrapper.keeper.assetsKeeper.GetStakingAssetInfo(ctx, asset)
-		if err != nil {
-			wrapper.keeper.Logger(ctx).Error(
-				"get assetInfo error",
-				"assetInfo err", err,
-			)
-			return
-		}
-
-	}
 }
 
 // BeforeEpochStart is called before an epoch starts.
 func (wrapper EpochsHooksWrapper) BeforeEpochStart(
 	sdk.Context, string, int64,
 ) {
-	// no-op
 }

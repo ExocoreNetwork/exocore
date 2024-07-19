@@ -32,20 +32,27 @@ func (k Keeper) SetParams(ctx sdk.Context, params *types.Params) error {
 }
 
 type AVSRegisterOrDeregisterParams struct {
-	AvsName         string
-	AvsAddress      string
-	Action          uint64
-	AvsOwnerAddress []string
-	AssetID         []string
-
-	MinSelfDelegation  uint64
-	UnbondingPeriod    uint64
-	RewardContractAddr string
-	SlashContractAddr  string
-	OperatorAddress    []string
-	EpochIdentifier    string
-	CallerAddress      string
+	AvsName             string
+	AvsAddress          string
+	MinStakeAmount      uint64
+	TaskAddr            string
+	SlashContractAddr   string
+	RewardContractAddr  string
+	AvsOwnerAddress     []string
+	AssetID             []string
+	UnbondingPeriod     uint64
+	MinSelfDelegation   uint64
+	EpochIdentifier     string
+	MiniOptinOperators  uint64
+	MinTotalStakeAmount uint64
+	StartingEpoch       []string
+	CallerAddress       string
+	ChainID             string
+	AvsReward           uint64
+	AvsSlash            uint64
+	Action              uint64
 }
+
 type OperatorOptParams struct {
 	Name            string
 	BlsPublicKey    string
@@ -54,6 +61,39 @@ type OperatorOptParams struct {
 	OperatorAddress string
 	Status          string
 	AvsAddress      string
+}
+
+type TaskParams struct {
+	TaskContractAddress string
+	TaskName            string
+	StartingEpoch       string
+	Data                []byte
+	TaskID              string
+	TaskResponsePeriod  uint64
+	TaskChallengePeriod uint64
+	ThresholdPercentage uint64
+	CallerAddress       string
+}
+type BlsParams struct {
+	Operator                      string
+	Name                          string
+	PubKey                        []byte
+	PubkeyRegistrationSignature   []byte
+	PubkeyRegistrationMessageHash []byte
+}
+
+type ProofParams struct {
+	TaskID              string
+	TaskContractAddress string
+	AvsAddress          string
+	Aggregator          string
+	OperatorStatus      []OperatorStatusParams
+	CallerAddress       string
+}
+type OperatorStatusParams struct {
+	OperatorAddress string
+	Status          string
+	ProofData       string
 }
 
 const (

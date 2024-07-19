@@ -14,7 +14,7 @@ message AVSInfo {
   // address of avs
   string avs_address = 2;
   // Minimum amount of funds stake by each operator
-  string min_stake_amount = 3;
+  uint64 min_stake_amount = 3;
   //  task address of avs
   string task_addr = 4;
   //  slash address of avs
@@ -80,19 +80,27 @@ message TaskInfo {
   string task_contract_address = 1;
   // name of task
   string name = 2;
-  // Effective current epoch, accounting for current_epoch + 1
-  // and current_epoch is the integer identifier of the epoch module
-  uint64 starting_epoch = 3;
   // data which is supplied by the contract, usually ABI-encoded
-  bytes data = 4;
+  bytes data = 3;
   // task_id of task
-  string task_id = 5;
+  string task_id = 4;
   // Deadline for task response
-  uint64 task_response_period = 6;
+  uint64 task_response_period = 5;
   //challenge period for  task
-  uint64 task_challenge_period = 7;
+  uint64 task_challenge_period = 6;
   //Signature threshold percentage
-  uint64 threshold_percentage = 8;
+  uint64 threshold_percentage = 7;
+}
+
+// BlsPubKeyInfo is the task info.
+message BlsPubKeyInfo {
+  // operator address
+  string operator = 1;
+  //the name of public keys
+  string name = 2;
+  // the bls public keys of the operator
+  bytes pub_key = 3;
+
 }
 // RegisterAVSTaskReq is the request to register a new task for avs.
 message RegisterAVSTaskReq {

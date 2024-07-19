@@ -18,14 +18,16 @@ import (
 )
 
 const (
-	MethodRegisterOperatorToAVS     = "RegisterOperatorToAVS"
-	MethodDeregisterOperatorFromAVS = "DeregisterOperatorFromAVS"
-	MethodRegisterAVS               = "RegisterAVS"
-	MethodUpdateAVS                 = "UpdateAVS"
-	MethodDeregisterAVS             = "DeregisterAVS"
-	MethodRegisterAVSTask           = "registerAVSTask"
+	MethodRegisterAVS               = "registerAVS"
+	MethodUpdateAVS                 = "updateAVS"
+	MethodDeregisterAVS             = "deregisterAVS"
+	MethodRegisterOperatorToAVS     = "registerOperatorToAVS"
+	MethodDeregisterOperatorFromAVS = "deregisterOperatorFromAVS"
+	MethodCreateAVSTask             = "createTask"
+	MethodSubmitProof               = "submitProof"
 	MethodRegisterBLSPublicKey      = "registerBLSPublicKey"
 	MethodGetRegisteredPubkey       = "getRegisteredPubkey"
+	MethodGetOptinOperators         = "getOptinOperators"
 )
 
 // AVSInfoRegister register the avs related information and change the state in avs keeper module.
@@ -121,7 +123,7 @@ func (p Precompile) UpdateAVS(
 	args []interface{},
 ) ([]byte, error) {
 	// parse the avs input params first.
-	avsParams, err := p.GetAVSParamsFromUpdateInputs(ctx, args)
+	avsParams, err := p.GetAVSParamsFromInputs(ctx, args)
 	if err != nil {
 		return nil, errorsmod.Wrap(err, "parse args error")
 	}
@@ -214,8 +216,8 @@ func (p Precompile) UnbindOperatorToAVS(
 	return method.Outputs.Pack(true)
 }
 
-// RegisterAVSTask Middleware uses exocore's default avstask template to create tasks in avstask module.
-func (p Precompile) RegisterAVSTask(
+// CreateAVSTask Middleware uses exocore's default avstask template to create tasks in avstask module.
+func (p Precompile) CreateAVSTask(
 	ctx sdk.Context,
 	_ common.Address,
 	contract *vm.Contract,
@@ -229,12 +231,18 @@ func (p Precompile) RegisterAVSTask(
 	if err != nil {
 		return nil, err
 	}
-	params.FromAddress = callerAddress
-	_, err = p.avsKeeper.RegisterAVSTask(ctx, params)
+	taskAddress, err := util.ProcessAddress(contract.Address().String())
+	if err != nil {
+		return nil, errorsmod.Wrap(err, "parse taskAddress error")
+	}
+
+	params.TaskContractAddress = taskAddress
+	params.CallerAddress = callerAddress
+	err = p.avsKeeper.CreateAVSTask(ctx, params)
 	if err != nil {
 		return nil, err
 	}
-	if err = p.EmitRegisterAVSTaskEvent(ctx, stateDB, params.Task.TaskContractAddress, params.Task.Name, params.Task.Name); err != nil {
+	if err = p.EmitCreateAVSTaskEvent(ctx, stateDB, params); err != nil {
 		return nil, err
 	}
 	return method.Outputs.Pack(true)
@@ -244,25 +252,44 @@ func (p Precompile) RegisterAVSTask(
 func (p Precompile) RegisterBLSPublicKey(
 	ctx sdk.Context,
 	_ common.Address,
+	contract *vm.Contract,
 	_ vm.StateDB,
 	method *abi.Method,
 	args []interface{},
 ) ([]byte, error) {
-	if len(args) != 2 {
+	blsParams := &avskeeper.BlsParams{}
+	callerAddress, _ := util.ProcessAddress(contract.CallerAddress.String())
+	blsParams.Operator = callerAddress
+
+	if len(args) != len(p.ABI.Methods[MethodRegisterBLSPublicKey].Inputs) {
 		return nil, fmt.Errorf(cmn.ErrInvalidNumberOfArgs, 2, len(args))
 	}
 
-	addr, ok := args[0].(string)
-	if !ok || addr == "" {
-		return nil, xerrors.Errorf(exocmn.ErrContractInputParaOrType, 0, "string", addr)
+	name, ok := args[1].(string)
+	if !ok || name == "" {
+		return nil, xerrors.Errorf(exocmn.ErrContractInputParaOrType, 1, "string", name)
 	}
+	blsParams.Name = name
 
-	pubkeyBz, ok := args[1].([]byte)
+	pubkeyBz, ok := args[2].([]byte)
 	if !ok {
-		return nil, xerrors.Errorf(exocmn.ErrContractInputParaOrType, 0, "[]byte", pubkeyBz)
+		return nil, xerrors.Errorf(exocmn.ErrContractInputParaOrType, 2, "[]byte", pubkeyBz)
 	}
+	blsParams.PubKey = pubkeyBz
 
-	err := p.avsKeeper.SetOperatorPubKey(ctx, addr, pubkeyBz)
+	pubkeyRegistrationSignature, ok := args[3].([]byte)
+	if !ok {
+		return nil, xerrors.Errorf(exocmn.ErrContractInputParaOrType, 3, "[]byte", pubkeyRegistrationSignature)
+	}
+	blsParams.PubkeyRegistrationSignature = pubkeyRegistrationSignature
+
+	pubkeyRegistrationMessageHash, ok := args[4].([]byte)
+	if !ok {
+		return nil, xerrors.Errorf(exocmn.ErrContractInputParaOrType, 4, "[]byte", pubkeyRegistrationMessageHash)
+	}
+	blsParams.PubkeyRegistrationMessageHash = pubkeyRegistrationMessageHash
+
+	err := p.avsKeeper.RegisterBLSPublicKey(ctx, blsParams)
 	if err != nil {
 		return nil, err
 	}
@@ -280,7 +307,7 @@ func (p Precompile) GetRegisteredPubkey(
 	method *abi.Method,
 	args []interface{},
 ) ([]byte, error) {
-	if len(args) != 1 {
+	if len(args) != len(p.ABI.Methods[MethodGetRegisteredPubkey].Inputs) {
 		return nil, fmt.Errorf(cmn.ErrInvalidNumberOfArgs, 1, len(args))
 	}
 
@@ -294,4 +321,50 @@ func (p Precompile) GetRegisteredPubkey(
 		return nil, err
 	}
 	return method.Outputs.Pack(pubkey)
+}
+
+// SubmitProof
+func (p Precompile) SubmitProof(
+	_ sdk.Context,
+	_ *vm.Contract,
+	method *abi.Method,
+	args []interface{},
+) ([]byte, error) {
+	if len(args) != 1 {
+		return nil, fmt.Errorf(cmn.ErrInvalidNumberOfArgs, 1, len(args))
+	}
+
+	addr, ok := args[0].(string)
+	if !ok {
+		return nil, xerrors.Errorf(exocmn.ErrContractInputParaOrType, 0, "string", addr)
+	}
+	// TODO implement SubmitProof
+	// err := p.avsKeeper.SubmitProof(ctx, addr)
+	// if err != nil {
+	//	return nil, err
+	//}
+	return method.Outputs.Pack(true)
+}
+
+// GetOptinOperators
+func (p Precompile) GetOptinOperators(
+	ctx sdk.Context,
+	_ *vm.Contract,
+	method *abi.Method,
+	args []interface{},
+) ([]byte, error) {
+	if len(args) != len(p.ABI.Methods[MethodGetOptinOperators].Inputs) {
+		return nil, fmt.Errorf(cmn.ErrInvalidNumberOfArgs, 1, len(args))
+	}
+
+	addr, ok := args[0].(string)
+	if !ok {
+		return nil, xerrors.Errorf(exocmn.ErrContractInputParaOrType, 0, "string", addr)
+	}
+
+	list, err := p.avsKeeper.GetOptinOperators(ctx, addr)
+	if err != nil {
+		return nil, err
+	}
+	return method.Outputs.Pack(list)
 }
