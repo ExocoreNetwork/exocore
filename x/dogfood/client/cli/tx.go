@@ -79,7 +79,8 @@ func CmdUpdateParams() *cobra.Command {
 	f.Uint64(
 		FlagMinSelfDelegation, 0, "The minimum self delegation amount (must be supplied even if unchanged)",
 	)
-	cmd.MarkFlagRequired(FlagMinSelfDelegation)
+	// #nosec G703 // this only errors if the flag isn't defined.
+	_ = cmd.MarkFlagRequired(FlagMinSelfDelegation)
 
 	// transaction level flags from the SDK
 	flags.AddTxFlagsToCmd(cmd)

@@ -33,11 +33,9 @@ const (
 	DefaultAssetIDs = "0xdac17f958d2ee523a2206206994597c13d831ec7_0x65"
 )
 
-var (
-	// DefaultMinSelfDelegation is the default minimum self-delegation amount for a validator.
-	// It is denominated in USD. We do not support cents, since it is an integer.
-	DefaultMinSelfDelegation = sdkmath.ZeroInt() // not a constant, hence var
-)
+// DefaultMinSelfDelegation is the default minimum self-delegation amount for a validator.
+// It is denominated in USD. We do not support cents, since it is an integer.
+var DefaultMinSelfDelegation = sdkmath.ZeroInt() // not a constant, hence var
 
 // NewParams creates a new Params instance.
 func NewParams(

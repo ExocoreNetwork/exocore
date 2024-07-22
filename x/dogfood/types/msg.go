@@ -27,7 +27,7 @@ func (m *MsgUpdateParams) ValidateBasic() error {
 		return errorsmod.Wrap(err, "invalid from address")
 	}
 	// we cannot use params.Validate here,
-	// since some params may be not defined and overriden later.
+	// since some params may be not defined and overridden later.
 	return nil
 }
 

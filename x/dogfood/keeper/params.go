@@ -1,6 +1,8 @@
 package keeper
 
 import (
+	sdkmath "cosmossdk.io/math"
+
 	"github.com/ExocoreNetwork/exocore/x/dogfood/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -37,7 +39,7 @@ func (k Keeper) GetAssetIDs(ctx sdk.Context) []string {
 
 // GetMinSelfDelegation returns the minimum self-delegation amount for a validator. It is a
 // parameter of the dogfood module.
-func (k Keeper) GetMinSelfDelegation(ctx sdk.Context) sdk.Int {
+func (k Keeper) GetMinSelfDelegation(ctx sdk.Context) sdkmath.Int {
 	return k.GetDogfoodParams(ctx).MinSelfDelegation
 }
 

@@ -125,7 +125,7 @@ func (a MockAVS) GetAVSMinimumSelfDelegation(ctx sdk.Context, avsAddr string) (s
 	if avsAddr == ctx.ChainID() {
 		return sdkmath.LegacyNewDec(a.DogfoodKeeper.GetMinSelfDelegation(ctx).Int64()), nil
 	}
-	return sdkmath.LegacyDec{}, nil
+	return sdkmath.LegacyNewDec(0), nil
 }
 
 func (a MockAVS) GetEpochEndAVSs(ctx sdk.Context) ([]string, error) {
