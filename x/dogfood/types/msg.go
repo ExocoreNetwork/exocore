@@ -26,7 +26,9 @@ func (m *MsgUpdateParams) ValidateBasic() error {
 	if _, err := sdk.AccAddressFromBech32(m.Authority); err != nil {
 		return errorsmod.Wrap(err, "invalid from address")
 	}
-	return m.Params.Validate()
+	// we cannot use params.Validate here,
+	// since some params may be not defined and overriden later.
+	return nil
 }
 
 // Route returns the transaction route.

@@ -70,11 +70,18 @@ func (k Keeper) UpdateParams(
 		nextParams.HistoricalEntries = prevParams.HistoricalEntries
 	}
 	if len(nextParams.AssetIDs) == 0 {
-		logger.Info(
+		logger.Error(
 			"UpdateParams",
 			"overriding AssetIDs with value", prevParams.AssetIDs,
 		)
 		nextParams.AssetIDs = prevParams.AssetIDs
+	}
+	if nextParams.MinSelfDelegation.IsNil() || nextParams.MinSelfDelegation.IsNegative() {
+		logger.Error(
+			"UpdateParams",
+			"overriding MinSelfDelegation with value", prevParams.MinSelfDelegation,
+		)
+		nextParams.MinSelfDelegation = prevParams.MinSelfDelegation
 	}
 	// now do stateful validations
 	if _, found := k.epochsKeeper.GetEpochInfo(c, nextParams.EpochIdentifier); !found {
@@ -98,6 +105,6 @@ func (k Keeper) UpdateParams(
 		)
 		nextParams.AssetIDs = prevParams.AssetIDs
 	}
-	k.SetParams(c, msg.Params)
+	k.SetParams(c, nextParams)
 	return &types.MsgUpdateParamsResponse{}, nil
 }

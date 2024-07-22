@@ -1,6 +1,8 @@
 package cli
 
 import (
+	sdkmath "cosmossdk.io/math"
+
 	types "github.com/ExocoreNetwork/exocore/x/dogfood/types"
 
 	"github.com/cosmos/cosmos-sdk/client"
@@ -16,6 +18,7 @@ const (
 	FlagMaxValidators       = "max-validators"
 	FlagHistoricalEntries   = "historical-entries"
 	FlagAssetIDs            = "asset-ids"
+	FlagMinSelfDelegation   = "min-self-delegation"
 )
 
 // NewTxCmd returns a root CLI command handler for dogfood commands
@@ -73,6 +76,10 @@ func CmdUpdateParams() *cobra.Command {
 	f.StringArray(
 		FlagAssetIDs, []string{}, "The asset ids to consider for the module",
 	)
+	f.Uint64(
+		FlagMinSelfDelegation, 0, "The minimum self delegation amount (must be supplied even if unchanged)",
+	)
+	cmd.MarkFlagRequired(FlagMinSelfDelegation)
 
 	// transaction level flags from the SDK
 	flags.AddTxFlagsToCmd(cmd)
@@ -94,6 +101,8 @@ func newBuildUpdateParamsMsg(
 	historicalEntries, _ := fs.GetUint32(FlagHistoricalEntries)
 	// #nosec G703 // this only errors if the flag isn't defined.
 	assetIDs, _ := fs.GetStringArray(FlagAssetIDs)
+	// #nosec G703 // this only errors if the flag isn't defined.
+	minSelfDelegation, _ := fs.GetUint64(FlagMinSelfDelegation)
 	msg := &types.MsgUpdateParams{
 		Authority: sender.String(),
 		Params: types.Params{
@@ -102,6 +111,7 @@ func newBuildUpdateParamsMsg(
 			MaxValidators:       maxVals,
 			HistoricalEntries:   historicalEntries,
 			AssetIDs:            assetIDs,
+			MinSelfDelegation:   sdkmath.NewIntFromUint64(minSelfDelegation),
 		},
 	}
 	return msg
