@@ -35,6 +35,12 @@ func (k Keeper) GetAssetIDs(ctx sdk.Context) []string {
 	return k.GetDogfoodParams(ctx).AssetIDs
 }
 
+// GetMinSelfDelegation returns the minimum self-delegation amount for a validator. It is a
+// parameter of the dogfood module.
+func (k Keeper) GetMinSelfDelegation(ctx sdk.Context) sdk.Int {
+	return k.GetDogfoodParams(ctx).MinSelfDelegation
+}
+
 // SetParams sets the params for the dogfood module.
 func (k Keeper) SetParams(ctx sdk.Context, params types.Params) {
 	store := ctx.KVStore(k.storeKey)

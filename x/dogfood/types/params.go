@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	sdkmath "cosmossdk.io/math"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	"gopkg.in/yaml.v2"
 
@@ -32,6 +33,12 @@ const (
 	DefaultAssetIDs = "0xdac17f958d2ee523a2206206994597c13d831ec7_0x65"
 )
 
+var (
+	// DefaultMinSelfDelegation is the default minimum self-delegation amount for a validator.
+	// It is denominated in USD. We do not support cents, since it is an integer.
+	DefaultMinSelfDelegation = sdkmath.ZeroInt() // not a constant, hence var
+)
+
 // NewParams creates a new Params instance.
 func NewParams(
 	epochsUntilUnbonded uint32,
@@ -39,6 +46,7 @@ func NewParams(
 	maxValidators uint32,
 	historicalEntries uint32,
 	assetIDs []string,
+	minSelfDelegation sdkmath.Int,
 ) Params {
 	return Params{
 		EpochsUntilUnbonded: epochsUntilUnbonded,
@@ -46,6 +54,7 @@ func NewParams(
 		MaxValidators:       maxValidators,
 		HistoricalEntries:   historicalEntries,
 		AssetIDs:            assetIDs,
+		MinSelfDelegation:   minSelfDelegation,
 	}
 }
 
@@ -57,6 +66,7 @@ func DefaultParams() Params {
 		DefaultMaxValidators,
 		DefaultHistoricalEntries,
 		strings.Split(DefaultAssetIDs, "|"),
+		DefaultMinSelfDelegation,
 	)
 }
 
@@ -76,6 +86,9 @@ func (p Params) Validate() error {
 	}
 	if err := ValidateAssetIDs(p.AssetIDs); err != nil {
 		return fmt.Errorf("asset IDs: %w", err)
+	}
+	if err := ValidateNonNegativeInt(p.MinSelfDelegation); err != nil {
+		return fmt.Errorf("min self delegation: %w", err)
 	}
 	return nil
 }
@@ -113,6 +126,18 @@ func ValidateAssetIDs(i interface{}) error {
 		if _, _, err := assetstypes.ParseID(assetID); err != nil {
 			return fmt.Errorf("invalid parameter value: %v", val)
 		}
+	}
+	return nil
+}
+
+// ValidateNonNegativeInt checks whether the supplied value is a non-negative integer.
+func ValidateNonNegativeInt(i interface{}) error {
+	if val, ok := i.(sdkmath.Int); !ok {
+		return fmt.Errorf("invalid parameter type: %T", i)
+	} else if val.IsNil() {
+		return fmt.Errorf("nil parameter value: %s", val)
+	} else if val.IsNegative() {
+		return fmt.Errorf("invalid parameter value: %s", val)
 	}
 	return nil
 }
