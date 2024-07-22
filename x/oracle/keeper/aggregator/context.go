@@ -2,6 +2,7 @@ package aggregator
 
 import (
 	"errors"
+	"fmt"
 	"math/big"
 
 	"github.com/ExocoreNetwork/exocore/x/oracle/keeper/cache"
@@ -135,6 +136,14 @@ func (agc *AggregatorContext) checkMsg(msg *types.MsgCreatePrice) error {
 	// check sources rule matches
 	if ok, err := agc.params.CheckRules(msg.FeederID, msg.Prices); !ok {
 		return err
+	}
+
+	for _, pSource := range msg.Prices {
+		for _, pTimeDetID := range pSource.Prices {
+			if ok := agc.params.CheckDecimal(msg.FeederID, pTimeDetID.Decimal); !ok {
+				return fmt.Errorf("decimal not match for source ID %d and price ID %s", pSource.SourceID, pTimeDetID.DetID)
+			}
+		}
 	}
 	return nil
 }
