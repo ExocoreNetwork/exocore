@@ -482,6 +482,7 @@ func getTestExocoreGenesis(
 				dogfoodtypes.DefaultMaxValidators,
 				dogfoodtypes.DefaultHistoricalEntries,
 				[]string{assetID},
+				dogfoodtypes.DefaultMinSelfDelegation,
 			),
 			validators,
 			[]dogfoodtypes.EpochToOperatorAddrs{},

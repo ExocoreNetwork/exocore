@@ -53,9 +53,9 @@ type OperatorKeeper interface {
 	GetActiveOperatorsForChainID(
 		sdk.Context, string,
 	) ([]sdk.AccAddress, []*tmprotocrypto.PublicKey)
-	// get vote power. TODO: replace with vote power call.
-	GetAvgDelegatedValue(
-		sdk.Context, []sdk.AccAddress, string, string,
+	// get vote power
+	GetVotePowerForChainID(
+		sdk.Context, []sdk.AccAddress, string,
 	) ([]int64, error)
 	// prune slashing-related reverse lookup when matured
 	DeleteOperatorAddressForChainIDAndConsAddr(

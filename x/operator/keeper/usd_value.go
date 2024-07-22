@@ -215,8 +215,8 @@ func (k *Keeper) IterateOperatorsForAVS(ctx sdk.Context, avsAddr string, isUpdat
 	return nil
 }
 
-func (k Keeper) GetAvgDelegatedValue(
-	ctx sdk.Context, operators []sdk.AccAddress, chainID, _ string,
+func (k Keeper) GetVotePowerForChainID(
+	ctx sdk.Context, operators []sdk.AccAddress, chainID string,
 ) ([]int64, error) {
 	avsAddr, err := k.avsKeeper.GetAVSAddrByChainID(ctx, chainID)
 	if err != nil {
@@ -224,6 +224,7 @@ func (k Keeper) GetAvgDelegatedValue(
 	}
 	ret := make([]int64, 0)
 	for _, operator := range operators {
+		// this already filters by the required assetIDs
 		usdValue, err := k.GetOperatorUSDValue(ctx, avsAddr, operator.String())
 		if err != nil {
 			return nil, err
