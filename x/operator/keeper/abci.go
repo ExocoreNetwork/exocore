@@ -108,6 +108,7 @@ func (k *Keeper) UpdateVotingPower(ctx sdk.Context, avsAddr string) error {
 	if err != nil {
 		// TODO: when assetID is not registered in oracle module, this error will finally lead to panic
 		if !errors.Is(err, oracletypes.ErrGetPriceRoundNotFound) {
+			ctx.Logger().Error("fail to get price from oracle, since current assetID is ont bonded with oracle token", "details:", err)
 			return err
 		}
 		// TODO: for now, we ignore the error when the price round is not found and set the price to 1 to avoid panic
