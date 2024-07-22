@@ -187,24 +187,28 @@ func (c *Cache) SkipCommit() {
 	c.params.update = false
 }
 
-func (c *Cache) CommitCache(ctx sdk.Context, reset bool, k common.KeeperOracle) {
+func (c *Cache) CommitCache(ctx sdk.Context, reset bool, k common.KeeperOracle) (msgUpdated, validatorsUpdated, paramsUpdated bool) {
 	if len(*(c.msg)) > 0 {
 		c.msg.commit(ctx, k)
 		*(c.msg) = make([]*ItemM, 0)
+		msgUpdated = true
 	}
 
 	if c.validators.update {
 		c.validators.commit(ctx, k)
 		c.validators.update = false
+		validatorsUpdated = true
 	}
 
 	if c.params.update {
 		c.params.commit(ctx, k)
 		c.params.update = false
+		paramsUpdated = true
 	}
 	if reset {
 		c.ResetCaches()
 	}
+	return
 }
 
 func (c *Cache) ResetCaches() {

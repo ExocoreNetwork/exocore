@@ -205,6 +205,11 @@ func (am AppModule) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.Val
 	keeper.ResetAggregatorContextCheckTx()
 
 	// TODO: update params happened during this block for cache, for the case: agc is recached from history and cache'params is set with the latest params by recache, but parmas changed during this block as well. or force agc to be GET first before cache be GET(later approch is better)
-	cs.CommitCache(ctx, false, am.keeper)
+	if _, _, paramsUpdated := cs.CommitCache(ctx, false, am.keeper); paramsUpdated {
+		var p cache.ItemP
+		cs.GetCache(&p)
+		params := types.Params(p)
+		agc.SetParams(&params)
+	}
 	return []abci.ValidatorUpdate{}
 }
