@@ -9,6 +9,12 @@
 				"type": "string"
 			},
 			{
+				"indexed": true,
+				"internalType": "string",
+				"name": "taskId",
+				"type": "string"
+			},
+			{
 				"indexed": false,
 				"internalType": "string",
 				"name": "name",
@@ -19,12 +25,6 @@
 				"internalType": "bytes",
 				"name": "data",
 				"type": "bytes"
-			},
-			{
-				"indexed": true,
-				"internalType": "string",
-				"name": "taskId",
-				"type": "string"
 			},
 			{
 				"indexed": false,

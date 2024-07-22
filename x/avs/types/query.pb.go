@@ -126,7 +126,7 @@ func (m *QueryAVSInfoResponse) GetInfo() *AVSInfo {
 type QueryAVSTaskInfoReq struct {
 	// task_addr is the task contract address,its type should be a sdk.AccAddress
 	TaskAddr string `protobuf:"bytes,1,opt,name=task_addr,json=taskAddr,proto3" json:"task_addr,omitempty"`
-	// task_addr is the task contract address,its type should be a sdk.AccAddress
+	// task_id is the task identifier
 	TaskId string `protobuf:"bytes,2,opt,name=task_id,json=taskId,proto3" json:"task_id,omitempty"`
 }
 

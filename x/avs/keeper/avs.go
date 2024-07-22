@@ -23,7 +23,7 @@ func (k *Keeper) GetAVSSupportedAssets(ctx sdk.Context, avsAddr string) (map[str
 	if err != nil {
 		return nil, errorsmod.Wrap(err, fmt.Sprintf("GetAVSSupportedAssets: key is %s", avsAddr))
 	}
-	assetIDList := avsInfo.Info.AssetId
+	assetIDList := avsInfo.Info.AssetIDs
 	ret := make(map[string]interface{})
 
 	for _, assetID := range assetIDList {
@@ -58,7 +58,7 @@ func (k *Keeper) GetAVSMinimumSelfDelegation(ctx sdk.Context, avsAddr string) (s
 }
 
 // GetEpochEndAVSs returns the AVS list where the current block marks the end of their epoch.
-func (k *Keeper) GetEpochEndAVSs(ctx sdk.Context, epochIdentifier string, epochNumber int64) ([]string, error) {
+func (k *Keeper) GetEpochEndAVSs(ctx sdk.Context, epochIdentifier string, epochNumber int64) []string {
 	var avsList []string
 	k.IterateAVSInfo(ctx, func(_ int64, avsInfo types.AVSInfo) (stop bool) {
 		if epochIdentifier == avsInfo.EpochIdentifier && epochNumber > int64(avsInfo.StartingEpoch) {
@@ -67,11 +67,11 @@ func (k *Keeper) GetEpochEndAVSs(ctx sdk.Context, epochIdentifier string, epochN
 		return false
 	})
 
-	return avsList, nil
+	return avsList
 }
 
 // GetTaskChallengeEpochEndAVSs returns the AVS list where the current block marks the end of their epoch.
-func (k *Keeper) GetTaskChallengeEpochEndAVSs(ctx sdk.Context, epochIdentifier string, epochNumber int64) ([]string, error) {
+func (k *Keeper) GetTaskChallengeEpochEndAVSs(ctx sdk.Context, epochIdentifier string, epochNumber int64) []string {
 	var avsList []string
 	k.IterateAVSInfo(ctx, func(_ int64, avsInfo types.AVSInfo) (stop bool) {
 		if epochIdentifier == avsInfo.EpochIdentifier && epochNumber > int64(avsInfo.StartingEpoch) {
@@ -79,7 +79,7 @@ func (k *Keeper) GetTaskChallengeEpochEndAVSs(ctx sdk.Context, epochIdentifier s
 		}
 		return false
 	})
-	return avsList, nil
+	return avsList
 }
 
 func (k *Keeper) GetAVSAddrByChainID(ctx sdk.Context, chainID string) (string, error) {
@@ -96,11 +96,26 @@ func (k *Keeper) GetAVSAddrByChainID(ctx sdk.Context, chainID string) (string, e
 	return string(avsAddr), nil
 }
 
+func (k *Keeper) GetChainIDByAVSAddr(ctx sdk.Context, avsAddr string) (string, error) {
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefixAVSInfoByChainID)
+	iterator := sdk.KVStorePrefixIterator(store, nil)
+	defer iterator.Close()
+
+	for ; iterator.Valid(); iterator.Next() {
+		chainID := string(iterator.Key())
+		if string(iterator.Value()) == avsAddr {
+			return chainID, nil
+		}
+	}
+
+	return "", errorsmod.Wrap(types.ErrNoKeyInTheStore, fmt.Sprintf("GetChainIDByAVSAddr: key is %s", avsAddr))
+}
+
 // RegisterAVSWithChainID creates an avs address given the chainID
 func (k Keeper) RegisterAVSWithChainID(ctx sdk.Context, chainID string) (err error) {
 	chainID = ChainIDWithoutRevision(chainID)
 	if len(chainID) == 0 {
-		return errorsmod.Wrap(err, "RegisterAVSWithChainID: chainID is null")
+		return errorsmod.Wrap(types.ErrNotNull, "RegisterAVSWithChainID: chainID is null")
 	}
 	avsAddr := common.BytesToAddress(crypto.Keccak256([]byte(chainID))).String()
 

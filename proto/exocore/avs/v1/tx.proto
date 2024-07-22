@@ -24,7 +24,7 @@ message AVSInfo {
   // the owner who has permission for avs
   repeated string avs_owner_address = 7;
   // asset_basic_info is all the basic asset information of the avs.
-  repeated string asset_id = 8;
+  repeated string asset_ids = 8 [(gogoproto.customname) = "AssetIDs"];
   // unbonding duration of avs.
   uint64 avs_unbonding_period = 9;
   // the operator minimum delegation amount.

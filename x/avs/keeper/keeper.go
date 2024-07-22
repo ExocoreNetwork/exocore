@@ -4,10 +4,11 @@ import (
 	"fmt"
 	"slices"
 
-	errorsmod "cosmossdk.io/errors"
+	"github.com/ExocoreNetwork/exocore/utils"
+	"github.com/cosmos/btcutil/bech32"
+	"github.com/ethereum/go-ethereum/common"
 
-	assettypes "github.com/ExocoreNetwork/exocore/x/assets/keeper"
-	operatortypes "github.com/ExocoreNetwork/exocore/x/operator/keeper"
+	errorsmod "cosmossdk.io/errors"
 
 	delegationtypes "github.com/ExocoreNetwork/exocore/x/delegation/types"
 	"github.com/cometbft/cometbft/libs/log"
@@ -23,9 +24,9 @@ type (
 	Keeper struct {
 		cdc            codec.BinaryCodec
 		storeKey       storetypes.StoreKey
-		operatorKeeper operatortypes.Keeper
+		operatorKeeper types.OperatorKeeper
 		// other keepers
-		assetsKeeper assettypes.Keeper
+		assetsKeeper types.AssetsKeeper
 		epochsKeeper types.EpochsKeeper
 		evmKeeper    types.EVMKeeper
 	}
@@ -34,8 +35,8 @@ type (
 func NewKeeper(
 	cdc codec.BinaryCodec,
 	storeKey storetypes.StoreKey,
-	operatorKeeper operatortypes.Keeper,
-	assetKeeper assettypes.Keeper,
+	operatorKeeper types.OperatorKeeper,
+	assetKeeper types.AssetsKeeper,
 	epochsKeeper types.EpochsKeeper,
 	evmKeeper types.EVMKeeper,
 ) Keeper {
@@ -76,7 +77,7 @@ func (k Keeper) AVSInfoUpdate(ctx sdk.Context, params *AVSRegisterOrDeregisterPa
 			RewardAddr:          params.RewardContractAddr,
 			SlashAddr:           params.SlashContractAddr,
 			AvsOwnerAddress:     params.AvsOwnerAddress,
-			AssetId:             params.AssetID,
+			AssetIDs:            params.AssetID,
 			MinSelfDelegation:   params.MinSelfDelegation,
 			AvsUnbondingPeriod:  params.UnbondingPeriod,
 			EpochIdentifier:     epochIdentifier,
@@ -164,7 +165,7 @@ func (k Keeper) AVSInfoUpdate(ctx sdk.Context, params *AVSRegisterOrDeregisterPa
 			avs.AvsUnbondingPeriod = params.UnbondingPeriod
 		}
 		if params.AssetID != nil {
-			avs.AssetId = params.AssetID
+			avs.AssetIDs = params.AssetID
 		}
 		avs.AvsAddress = params.AvsAddress
 		avs.StartingEpoch = uint64(epoch.CurrentEpoch + 1)
@@ -230,11 +231,13 @@ func (k Keeper) OperatorOptAction(ctx sdk.Context, params *OperatorOptParams) er
 		return errorsmod.Wrap(err, fmt.Sprintf("Avs does not exist,this avs address: %s", params.AvsAddress))
 	}
 
+	_, avsaddr, _ := bech32.DecodeToBase256(params.AvsAddress)
+
 	switch params.Action {
 	case RegisterAction:
-		return k.operatorKeeper.OptIn(ctx, sdk.AccAddress(operatorAddress), params.AvsAddress)
+		return k.operatorKeeper.OptIn(ctx, sdk.AccAddress(operatorAddress), common.BytesToAddress(avsaddr).String())
 	case DeRegisterAction:
-		return k.operatorKeeper.OptOut(ctx, sdk.AccAddress(operatorAddress), params.AvsAddress)
+		return k.operatorKeeper.OptOut(ctx, sdk.AccAddress(operatorAddress), common.BytesToAddress(avsaddr).String())
 	default:
 		return errorsmod.Wrap(types.ErrInvalidAction, fmt.Sprintf("Invalid action: %d", params.Action))
 	}
@@ -272,7 +275,12 @@ func (k Keeper) GetAVSInfo(ctx sdk.Context, addr string) (*types.QueryAVSInfoRes
 }
 
 func (k *Keeper) IsAVS(ctx sdk.Context, addr string) (bool, error) {
-	avsAddr, err := sdk.AccAddressFromBech32(addr)
+	pAddr, err := utils.ProcessAddress(addr)
+	if err != nil {
+		return false, errorsmod.Wrap(err, "GetAVSInfo: error occurred when parse acc address from Bech32")
+	}
+
+	avsAddr, err := sdk.AccAddressFromBech32(pAddr)
 	if err != nil {
 		return false, errorsmod.Wrap(err, "GetAVSInfo: error occurred when parse acc address from Bech32")
 	}

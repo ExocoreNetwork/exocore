@@ -330,7 +330,7 @@ func (p Precompile) SubmitProof(
 	method *abi.Method,
 	args []interface{},
 ) ([]byte, error) {
-	if len(args) != 1 {
+	if len(args) != len(p.ABI.Methods[MethodGetOptinOperators].Inputs) {
 		return nil, fmt.Errorf(cmn.ErrInvalidNumberOfArgs, 1, len(args))
 	}
 
@@ -346,8 +346,8 @@ func (p Precompile) SubmitProof(
 	return method.Outputs.Pack(true)
 }
 
-// GetOptinOperators
-func (p Precompile) GetOptinOperators(
+// GetOptedInOperatorAccAddrs
+func (p Precompile) GetOptedInOperatorAccAddrs(
 	ctx sdk.Context,
 	_ *vm.Contract,
 	method *abi.Method,

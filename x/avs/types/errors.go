@@ -45,12 +45,12 @@ var (
 	)
 	ErrNotNull = errorsmod.Register(
 		ModuleName, 9,
-		"Error: this chainID is shouldn't null",
+		"Error: this chainID shouldn't be null",
 	)
 
 	ErrInvalidAddr = errorsmod.Register(
 		ModuleName, 10,
-		"the  address isn't a valid account address",
+		"The address isn't a valid account address",
 	)
 	ErrAlreadyExists = errorsmod.Register(
 		ModuleName, 11,

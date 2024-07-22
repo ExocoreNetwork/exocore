@@ -100,7 +100,7 @@ func (p Precompile) Run(evm *vm.EVM, contract *vm.Contract, readOnly bool) (bz [
 	case MethodRegisterBLSPublicKey:
 		bz, err = p.RegisterBLSPublicKey(ctx, evm.Origin, contract, stateDB, method, args)
 	case MethodGetOptinOperators:
-		bz, err = p.GetOptinOperators(ctx, contract, method, args)
+		bz, err = p.GetOptedInOperatorAccAddrs(ctx, contract, method, args)
 	case MethodSubmitProof:
 		bz, err = p.SubmitProof(ctx, contract, method, args)
 	case MethodGetRegisteredPubkey:
@@ -129,6 +129,8 @@ func (Precompile) IsTransaction(methodID string) bool {
 	case MethodRegisterAVS, MethodDeregisterAVS, MethodUpdateAVS, MethodRegisterOperatorToAVS,
 		MethodDeregisterOperatorFromAVS, MethodCreateAVSTask, MethodRegisterBLSPublicKey, MethodSubmitProof:
 		return true
+	case MethodGetRegisteredPubkey, MethodGetOptinOperators:
+		return false
 	default:
 		return false
 	}

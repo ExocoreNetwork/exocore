@@ -704,7 +704,7 @@ func NewExocoreApp(
 	// remove AVSs.
 	app.AVSManagerKeeper = avsManagerKeeper.NewKeeper(
 		appCodec, keys[avsManagerTypes.StoreKey],
-		app.OperatorKeeper,
+		&app.OperatorKeeper,
 		app.AssetsKeeper,
 		app.EpochsKeeper,
 		app.EvmKeeper,

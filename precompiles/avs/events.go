@@ -12,10 +12,10 @@ import (
 
 const (
 	// EventTypeRegisterAVSTask defines the event type for the avs CreateAVSTask transaction.
-	EventTypeRegisterAVSTask = "CreateAVSTask"
+	EventTypeRegisterAVSTask = "CreateTask"
 )
 
-// EmitCreateAVSTaskEvent creates a new event emitted on a SetWithdrawAddressMethod transaction.
+// EmitCreateAVSTaskEvent creates a new event emitted on a EmitCreateAVSTaskEvent transaction.
 func (p Precompile) EmitCreateAVSTaskEvent(ctx sdk.Context, stateDB vm.StateDB, task *avskeep.TaskParams) error {
 	// Prepare the event topics
 	event := p.ABI.Events[EventTypeRegisterAVSTask]

@@ -22,26 +22,12 @@ func (k *Keeper) EpochsHooks() EpochsHooksWrapper {
 
 // AfterEpochEnd is called after an epoch ends. It is called during the BeginBlock function.
 func (wrapper EpochsHooksWrapper) AfterEpochEnd(
-	ctx sdk.Context, epochIdentifier string, epochNumber int64,
+	_ sdk.Context, _ string, _ int64,
 ) {
 	// get all the avs address bypass the epoch end
-	epochEndAVS, err := wrapper.keeper.GetEpochEndAVSs(ctx, epochIdentifier, epochNumber)
-	if err != nil {
-		wrapper.keeper.Logger(ctx).Error(
-			"epochEndAVS got error",
-			"epochEndAVS", epochEndAVS,
-		)
-		return
-	}
+	// _ = wrapper.keeper.GetEpochEndAVSs(ctx, epochIdentifier, epochNumber)
 
-	taskChallengeEpochEndAVS, err := wrapper.keeper.GetTaskChallengeEpochEndAVSs(ctx, epochIdentifier, epochNumber)
-	if err != nil {
-		wrapper.keeper.Logger(ctx).Error(
-			"epochEndAVS got error",
-			"epochEndAVS", taskChallengeEpochEndAVS,
-		)
-		return
-	}
+	// _ = wrapper.keeper.GetTaskChallengeEpochEndAVSs(ctx, epochIdentifier, epochNumber)
 }
 
 // BeforeEpochStart is called before an epoch starts.

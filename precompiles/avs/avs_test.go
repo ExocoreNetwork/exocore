@@ -541,6 +541,18 @@ func (s *AVSManagerPrecompileSuite) TestRegisterOperatorToAVS() {
 
 func (s *AVSManagerPrecompileSuite) TestDeregisterOperatorFromAVS() {
 	from := s.Address
+	operatorAddress, err := util.ProcessAddress(from.String())
+
+	registerOperator := func() {
+		registerReq := &operatortypes.RegisterOperatorReq{
+			FromAddress: operatorAddress,
+			Info: &operatortypes.OperatorInfo{
+				EarningsAddr: operatorAddress,
+			},
+		}
+		_, err := s.App.OperatorKeeper.RegisterOperator(s.Ctx, registerReq)
+		s.NoError(err)
+	}
 	commonMalleate := func() (common.Address, []byte) {
 		input, err := s.precompile.Pack(
 			avs.MethodDeregisterOperatorFromAVS,
@@ -562,7 +574,8 @@ func (s *AVSManagerPrecompileSuite) TestDeregisterOperatorFromAVS() {
 		{
 			name: "pass for operator opt-out avs",
 			malleate: func() (common.Address, []byte) {
-				s.TestRegisterOperatorToAVS()
+				//s.TestRegisterOperatorToAVS()
+				registerOperator()
 				return commonMalleate()
 			},
 			readOnly:    false,

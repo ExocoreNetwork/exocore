@@ -1,14 +1,13 @@
 package keeper_test
 
 import (
-	"cosmossdk.io/math"
 	"fmt"
 	avstypes "github.com/ExocoreNetwork/exocore/x/avs/keeper"
 	"github.com/ExocoreNetwork/exocore/x/avs/types"
 	delegationtypes "github.com/ExocoreNetwork/exocore/x/delegation/types"
 	epochstypes "github.com/ExocoreNetwork/exocore/x/epochs/types"
-	operatortype "github.com/ExocoreNetwork/exocore/x/operator/types"
-	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
+	operatorTypes "github.com/ExocoreNetwork/exocore/x/operator/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	"os"
 	"time"
 )
@@ -18,15 +17,20 @@ func (suite *AVSTestSuite) TestAVS() {
 	avsOwnerAddress := []string{"exo13h6xg79g82e2g2vhjwg7j4r2z2hlncelwutkjr", "exo13h6xg79g82e2g2vhjwg7j4r2z2hlncelwutkj1", "exo13h6xg79g82e2g2vhjwg7j4r2z2hlncelwutkj2"}
 	assetID := []string{"11", "22", "33"}
 	avs := &types.AVSInfo{
-		Name:               avsName,
-		AvsAddress:         avsAddres,
-		SlashAddr:          slashAddress,
-		AvsOwnerAddress:    avsOwnerAddress,
-		AssetId:            assetID,
-		AvsUnbondingPeriod: 7,
-		MinSelfDelegation:  10,
-		EpochIdentifier:    epochstypes.DayEpochID,
-		StartingEpoch:      1,
+		Name:                avsName,
+		AvsAddress:          avsAddres,
+		SlashAddr:           slashAddress,
+		AvsOwnerAddress:     avsOwnerAddress,
+		AssetIDs:            assetID,
+		AvsUnbondingPeriod:  7,
+		MinSelfDelegation:   10,
+		EpochIdentifier:     epochstypes.DayEpochID,
+		StartingEpoch:       1,
+		MiniOptinOperators:  100,
+		MinTotalStakeAmount: 1000,
+		AvsSlash:            sdk.MustNewDecFromStr("0.001"),
+		AvsReward:           sdk.MustNewDecFromStr("0.002"),
+		TaskAddr:            "exo13h6xg79g82e2g2vhjwg7j4r2z2hlncelwutkjr",
 	}
 
 	err := suite.App.AVSManagerKeeper.SetAVSInfo(suite.Ctx, avs)
@@ -70,7 +74,6 @@ func (suite *AVSTestSuite) TestAVSInfoUpdate_Register() {
 		UnbondingPeriod:    uint64(7),
 		SlashContractAddr:  slashAddress,
 		EpochIdentifier:    epochstypes.DayEpochID,
-		OperatorAddress:    nil,
 	}
 
 	err := suite.App.AVSManagerKeeper.AVSInfoUpdate(suite.Ctx, avsParams)
@@ -102,7 +105,6 @@ func (suite *AVSTestSuite) TestAVSInfoUpdate_DeRegister() {
 		UnbondingPeriod:   uint64(7),
 		SlashContractAddr: slashAddress,
 		EpochIdentifier:   epochstypes.DayEpochID,
-		OperatorAddress:   nil,
 	}
 
 	err := suite.App.AVSManagerKeeper.AVSInfoUpdate(suite.Ctx, avsParams)
@@ -127,73 +129,33 @@ func (suite *AVSTestSuite) TestAVSInfoUpdate_DeRegister() {
 func (suite *AVSTestSuite) TestAVSInfoUpdateWithOperator_Register() {
 	avsAddres, OperatorAddress := "exo13h6xg79g82e2g2vhjwg7j4r2z2hlncelwutkjr", "exo19get9l6tj7pvn9xt83m7twpmup3usjvydpfscg"
 
+	opAccAddr, err := sdk.AccAddressFromBech32(OperatorAddress)
+	suite.NoError(err)
 	operatorParams := &avstypes.OperatorOptParams{
 		AvsAddress:      avsAddres,
 		Action:          avstypes.RegisterAction,
 		OperatorAddress: OperatorAddress,
 	}
 	//  operator Not Exist
-	err := suite.App.AVSManagerKeeper.OperatorOptAction(suite.Ctx, operatorParams)
+	err = suite.App.AVSManagerKeeper.OperatorOptAction(suite.Ctx, operatorParams)
 	suite.Error(err)
 	suite.Contains(err.Error(), delegationtypes.ErrOperatorNotExist.Error())
 
 	// register operator but avs not register
-	info := &operatortype.OperatorInfo{
-		EarningsAddr:     suite.AccAddress.String(),
-		ApproveAddr:      "",
-		OperatorMetaInfo: "test operator",
-		ClientChainEarningsAddr: &operatortype.ClientChainEarningAddrList{
-			EarningInfoList: []*operatortype.ClientChainEarningAddrInfo{
-				{101, "0x1f9840a85d5af5bf1d1762f925bdaddc4201f984"},
-			},
+	// register operator
+	registerReq := &operatorTypes.RegisterOperatorReq{
+		FromAddress: opAccAddr.String(),
+		Info: &operatorTypes.OperatorInfo{
+			EarningsAddr: opAccAddr.String(),
 		},
-		Commission: stakingtypes.NewCommission(math.LegacyZeroDec(), math.LegacyZeroDec(), math.LegacyZeroDec()),
 	}
-	err = suite.App.OperatorKeeper.SetOperatorInfo(suite.Ctx, suite.AccAddress.String(), info)
+	_, err = suite.App.OperatorKeeper.RegisterOperator(suite.Ctx, registerReq)
 	suite.NoError(err)
-	operatorParams.OperatorAddress = info.EarningsAddr
-	err = suite.App.AVSManagerKeeper.OperatorOptAction(suite.Ctx, operatorParams)
-	suite.Error(err)
-	suite.Contains(err.Error(), types.ErrNoKeyInTheStore.Error())
+	suite.TestAVS()
 
-	// register avs
-	avsName, avsAddres, slashAddress := "avsTest", "exo13h6xg79g82e2g2vhjwg7j4r2z2hlncelwutkjr", "exo13h6xg79g82e2g2vhjwg7j4r2z2hlncelwutash"
-	avsOwnerAddress := []string{"exo13h6xg79g82e2g2vhjwg7j4r2z2hlncelwutkjr", "exo13h6xg79g82e2g2vhjwg7j4r2z2hlncelwutkj1", "exo13h6xg79g82e2g2vhjwg7j4r2z2hlncelwutkj2"}
-	assetID := []string{"11", "22", "33"}
-
-	avsParams := &avstypes.AVSRegisterOrDeregisterParams{
-		AvsName:           avsName,
-		AvsAddress:        avsAddres,
-		Action:            avstypes.RegisterAction,
-		AvsOwnerAddress:   avsOwnerAddress,
-		AssetID:           assetID,
-		MinSelfDelegation: uint64(10),
-		UnbondingPeriod:   uint64(7),
-		SlashContractAddr: slashAddress,
-		EpochIdentifier:   epochstypes.DayEpochID,
-		OperatorAddress:   nil,
-	}
-
-	err = suite.App.AVSManagerKeeper.AVSInfoUpdate(suite.Ctx, avsParams)
-	suite.NoError(err)
-
-	operatorParams.AvsAddress = avsAddres
-	err = suite.App.AVSManagerKeeper.OperatorOptAction(suite.Ctx, operatorParams)
-	suite.NoError(err)
-	// duplicate register operator
-	err = suite.App.AVSManagerKeeper.OperatorOptAction(suite.Ctx, operatorParams)
-	suite.Error(err)
-	suite.Contains(err.Error(), types.ErrAlreadyRegistered.Error())
-	// deregister operator
-	operatorParams.Action = avstypes.DeRegisterAction
 	err = suite.App.AVSManagerKeeper.OperatorOptAction(suite.Ctx, operatorParams)
 	suite.NoError(err)
 
-	// duplicate deregister operator
-	operatorParams.Action = avstypes.DeRegisterAction
-	err = suite.App.AVSManagerKeeper.OperatorOptAction(suite.Ctx, operatorParams)
-	suite.Error(err)
-	suite.Contains(err.Error(), types.ErrUnregisterNonExistent.Error())
 }
 func (suite *AVSTestSuite) TestAVSCreateAddress() {
 

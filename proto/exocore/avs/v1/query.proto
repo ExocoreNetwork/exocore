@@ -24,7 +24,7 @@ message QueryAVSInfoResponse {
 message QueryAVSTaskInfoReq {
   // task_addr is the task contract address,its type should be a sdk.AccAddress
   string task_addr = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
-  // task_addr is the task contract address,its type should be a sdk.AccAddress
+  // task_id is the task identifier
   string task_id = 2 [(cosmos_proto.scalar) = "cosmos.AddressString"];
 }
 

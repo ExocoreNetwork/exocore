@@ -24,7 +24,7 @@ func (p Precompile) GetAVSParamsFromInputs(_ sdk.Context, args []interface{}) (*
 	avsParams.AvsName = avsName
 
 	minStakeAmount, ok := args[1].(uint64)
-	if !ok || minStakeAmount == 0 {
+	if !ok {
 		return nil, xerrors.Errorf(exocmn.ErrContractInputParaOrType, 1, "uint64", minStakeAmount)
 	}
 	avsParams.MinStakeAmount = minStakeAmount
@@ -44,7 +44,7 @@ func (p Precompile) GetAVSParamsFromInputs(_ sdk.Context, args []interface{}) (*
 	}
 
 	slashContractAddr, err = util.ProcessAddress(slashContractAddr)
-	if err != nil {
+	if err != nil || slashContractAddr == "" {
 		return nil, xerrors.Errorf(exocmn.ErrContractInputParaOrType, 3, "string", slashContractAddr)
 	}
 	avsParams.SlashContractAddr = slashContractAddr
@@ -77,7 +77,7 @@ func (p Precompile) GetAVSParamsFromInputs(_ sdk.Context, args []interface{}) (*
 	avsParams.AvsOwnerAddress = exoAddresses
 
 	assetID, ok := args[6].([]string)
-	if !ok || assetID == nil {
+	if !ok || assetID == nil || len(assetID) == 0 {
 		return nil, xerrors.Errorf(exocmn.ErrContractInputParaOrType, 6, "[]string", assetID)
 	}
 	avsParams.AssetID = assetID

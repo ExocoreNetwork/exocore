@@ -253,17 +253,17 @@ interface IAVSManager {
 
     /// @dev CreateTask Emitted when `avs` CreateTask.
     /// @param taskContractAddress The contract address of AVSTask.
+    /// @param taskId The task ID of the task.
     /// @param name The name of the task.
     /// @param data The data supplied by the contract, usually ABI-encoded.
-    /// @param taskId The task ID of the task.
     /// @param taskResponsePeriod The deadline for task response.
     /// @param taskChallengePeriod The challenge period for the task.
     /// @param thresholdPercentage The signature threshold percentage.
     event CreateTask(
         string indexed taskContractAddress,
+        string indexed taskId,
         string name,
         bytes data,
-        string indexed taskId,
         uint64 taskResponsePeriod,
         uint64 taskChallengePeriod,
         uint64 thresholdPercentage

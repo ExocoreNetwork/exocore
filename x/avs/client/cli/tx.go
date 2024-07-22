@@ -3,6 +3,9 @@ package cli
 import (
 	"fmt"
 
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	"golang.org/x/xerrors"
+
 	"github.com/ExocoreNetwork/exocore/x/avs/types"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
@@ -36,6 +39,22 @@ func RegisterAVS() *cobra.Command {
 
 			sender := cliCtx.GetFromAddress()
 			fromAddress := sender.String()
+			// Validate parameters
+			_, err = sdk.AccAddressFromBech32(args[1])
+			if err != nil {
+				return xerrors.Errorf("invalid address,err:%s", err.Error())
+			}
+
+			_, err = sdk.AccAddressFromBech32(args[2])
+			if err != nil {
+				return xerrors.Errorf("invalid address,err:%s", err.Error())
+			}
+
+			_, err = sdk.AccAddressFromBech32(args[3])
+			if err != nil {
+				return xerrors.Errorf("invalid address,err:%s", err.Error())
+			}
+
 			msg := &types.RegisterAVSReq{
 				FromAddress: fromAddress,
 				Info: &types.AVSInfo{
@@ -43,7 +62,7 @@ func RegisterAVS() *cobra.Command {
 					AvsAddress:      args[1],
 					SlashAddr:       args[2],
 					AvsOwnerAddress: []string{args[3]},
-					AssetId:         []string{args[4]},
+					AssetIDs:        []string{args[4]},
 				},
 			}
 

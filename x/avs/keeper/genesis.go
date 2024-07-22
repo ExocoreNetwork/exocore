@@ -13,6 +13,10 @@ func (k Keeper) InitGenesis(
 	ctx sdk.Context,
 	_ types.GenesisState,
 ) []abci.ValidatorUpdate {
+	// Generates a pseudo contract address for the dogfood type of AVS registration.
+	// This ensures prevention of address conflicts and allows future transactions
+	// to not modify the content of this address. Hence, it is necessary to set the
+	// contract code in InitGenesis.
 	code := []byte(types.ChainID)
 	codeHash := crypto.Keccak256Hash(code)
 	k.evmKeeper.SetCode(ctx, codeHash.Bytes(), code)
