@@ -18,6 +18,7 @@ var _ = Describe("MsgUpdateParams", Ordered, func() {
 	var patcher *Patches
 	AfterAll(func() {
 		patcher.Reset()
+		ks.Reset()
 	})
 	BeforeEach(func() {
 		ks.Reset()
@@ -130,7 +131,7 @@ var _ = Describe("MsgUpdateParams", Ordered, func() {
 		}
 
 		for i, input := range inputUpdateTokens {
-			It("", func() { //})
+			It("", func() {
 				if startBasedBlocks[i] > 1 {
 					p := defaultParams
 					p.TokenFeeders[1].StartBaseBlock = startBasedBlocks[i]
