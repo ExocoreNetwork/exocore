@@ -5,7 +5,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-// EpochsHooksWrapper is the wrapper structure that implements the epochs hooks for the dogfood
+// EpochsHooksWrapper is the wrapper structure that implements the epochs hooks for the avs
 // keeper.
 type EpochsHooksWrapper struct {
 	keeper *Keeper
