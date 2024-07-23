@@ -7,6 +7,8 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
+var _ IAssets = Keeper{}
+
 type Keeper struct {
 	storeKey storetypes.StoreKey
 	cdc      codec.BinaryCodec
@@ -41,7 +43,7 @@ func (k Keeper) SetOperatorAssetOptedInMiddleWare(sdk.Address, map[string]sdk.Ad
 type IAssets interface {
 	SetClientChainInfo(ctx sdk.Context, info *assetstype.ClientChainInfo) (err error)
 	GetClientChainInfoByIndex(ctx sdk.Context, index uint64) (info *assetstype.ClientChainInfo, err error)
-	GetAllClientChainInfo(ctx sdk.Context) (infos map[uint64]*assetstype.ClientChainInfo, err error)
+	GetAllClientChainInfo(ctx sdk.Context) (infos []assetstype.ClientChainInfo, err error)
 
 	SetStakingAssetInfo(ctx sdk.Context, info *assetstype.StakingAssetInfo) (err error)
 	GetStakingAssetInfo(ctx sdk.Context, assetID string) (info *assetstype.StakingAssetInfo, err error)
@@ -54,4 +56,5 @@ type IAssets interface {
 	GetOperatorAssetInfos(ctx sdk.Context, operatorAddr sdk.Address, assetsFilter map[string]interface{}) (assetsInfo map[string]*assetstype.OperatorAssetInfo, err error)
 	GetOperatorSpecifiedAssetInfo(ctx sdk.Context, operatorAddr sdk.Address, assetID string) (info *assetstype.OperatorAssetInfo, err error)
 	UpdateOperatorAssetState(ctx sdk.Context, operatorAddr sdk.Address, assetID string, changeAmount assetstype.DeltaOperatorSingleAsset) (err error)
+	PerformDepositOrWithdraw(ctx sdk.Context, params *DepositWithdrawParams) error
 }
