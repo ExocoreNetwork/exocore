@@ -70,14 +70,14 @@ func (k Keeper) UpdateParams(
 		nextParams.HistoricalEntries = prevParams.HistoricalEntries
 	}
 	if len(nextParams.AssetIDs) == 0 {
-		logger.Error(
+		logger.Info(
 			"UpdateParams",
 			"overriding AssetIDs with value", prevParams.AssetIDs,
 		)
 		nextParams.AssetIDs = prevParams.AssetIDs
 	}
 	if nextParams.MinSelfDelegation.IsNil() || nextParams.MinSelfDelegation.IsNegative() {
-		logger.Error(
+		logger.Info(
 			"UpdateParams",
 			"overriding MinSelfDelegation with value", prevParams.MinSelfDelegation,
 		)
