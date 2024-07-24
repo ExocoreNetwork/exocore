@@ -8,6 +8,37 @@
         "type": "uint32"
       },
       {
+        "internalType": "bytes",
+        "name": "staker",
+        "type": "bytes"
+      },
+      {
+        "internalType": "bytes",
+        "name": "operator",
+        "type": "bytes"
+      }
+    ],
+    "name": "associateOperatorWithStaker",
+    "outputs":
+    [
+      {
+        "internalType": "bool",
+        "name": "success",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs":
+    [
+      {
+        "internalType": "uint32",
+        "name": "clientChainID",
+        "type": "uint32"
+      },
+      {
         "internalType": "uint64",
         "name": "lzNonce",
         "type": "uint64"
@@ -54,17 +85,12 @@
         "type": "uint32"
       },
       {
-        "internalType": "string",
+        "internalType": "bytes",
         "name": "staker",
-        "type": "string"
-      },
-      {
-        "internalType": "string",
-        "name": "operator",
-        "type": "string"
+        "type": "bytes"
       }
     ],
-    "name": "markSelfDelegatedOperator",
+    "name": "dissociateOperatorFromStaker",
     "outputs":
     [
       {
@@ -111,32 +137,6 @@
       }
     ],
     "name": "undelegateFromThroughClientChain",
-    "outputs":
-    [
-      {
-        "internalType": "bool",
-        "name": "success",
-        "type": "bool"
-      }
-    ],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs":
-    [
-      {
-        "internalType": "uint32",
-        "name": "clientChainID",
-        "type": "uint32"
-      },
-      {
-        "internalType": "string",
-        "name": "staker",
-        "type": "string"
-      }
-    ],
-    "name": "unmarkSelfDelegatedOperator",
     "outputs":
     [
       {

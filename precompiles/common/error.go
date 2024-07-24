@@ -2,7 +2,7 @@ package common
 
 const (
 	ErrContractInputParaOrType = "the contract input parameter type or value error,arg index:%d, expected type is:%s,value:%v"
-	ErrContractCaller          = "the caller doesn't have the permission to call this function"
+	ErrContractCaller          = "the caller doesn't have the permission to call this function, inner error:%s"
 
 	ErrInvalidAddrLength = "invalid length of staker or asset addr, actualLength:%d,min:%d"
 
@@ -14,5 +14,5 @@ const (
 
 	ErrInvalidNameLength = "nil name or too long for chain or token,value:%s,actualLength:%d,max:%d"
 
-	ErrInvalidEVMAddr = "the address isn't an invalid EVM address, addr:%s"
+	ErrInvalidEVMAddr = "the address is an invalid EVM address, addr:%s"
 )

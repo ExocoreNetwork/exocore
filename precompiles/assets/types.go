@@ -1,7 +1,6 @@
 package assets
 
 import (
-	"fmt"
 	"math/big"
 
 	"github.com/ethereum/go-ethereum/common/hexutil"
@@ -16,13 +15,14 @@ import (
 )
 
 func (p Precompile) DepositWithdrawParamsFromInputs(ctx sdk.Context, args []interface{}) (*assetskeeper.DepositWithdrawParams, error) {
-	if len(args) != 4 {
-		return nil, xerrors.Errorf(cmn.ErrInvalidNumberOfArgs, 4, len(args))
+	inputsLen := len(p.ABI.Methods[MethodDepositTo].Inputs)
+	if len(args) != inputsLen {
+		return nil, xerrors.Errorf(cmn.ErrInvalidNumberOfArgs, inputsLen, len(args))
 	}
 	depositWithdrawParams := &assetskeeper.DepositWithdrawParams{}
 	clientChainID, ok := args[0].(uint32)
 	if !ok {
-		return nil, fmt.Errorf(exocmn.ErrContractInputParaOrType, 0, "uint32", args[0])
+		return nil, xerrors.Errorf(exocmn.ErrContractInputParaOrType, 0, "uint32", args[0])
 	}
 	depositWithdrawParams.ClientChainLzID = uint64(clientChainID)
 
@@ -61,19 +61,20 @@ func (p Precompile) DepositWithdrawParamsFromInputs(ctx sdk.Context, args []inte
 }
 
 func (p Precompile) ClientChainInfoFromInputs(_ sdk.Context, args []interface{}) (*types.ClientChainInfo, error) {
-	if len(args) != 5 {
-		return nil, xerrors.Errorf(cmn.ErrInvalidNumberOfArgs, 5, len(args))
+	inputsLen := len(p.ABI.Methods[MethodRegisterClientChain].Inputs)
+	if len(args) != inputsLen {
+		return nil, xerrors.Errorf(cmn.ErrInvalidNumberOfArgs, inputsLen, len(args))
 	}
 	clientChain := types.ClientChainInfo{}
 	clientChainID, ok := args[0].(uint32)
 	if !ok {
-		return nil, fmt.Errorf(exocmn.ErrContractInputParaOrType, 0, "uint32", args[0])
+		return nil, xerrors.Errorf(exocmn.ErrContractInputParaOrType, 0, "uint32", args[0])
 	}
 	clientChain.LayerZeroChainID = uint64(clientChainID)
 
 	addressLength, ok := args[1].(uint8)
 	if !ok || addressLength == 0 {
-		return nil, fmt.Errorf(exocmn.ErrContractInputParaOrType, 1, "uint8", args[1])
+		return nil, xerrors.Errorf(exocmn.ErrContractInputParaOrType, 1, "uint8", args[1])
 	}
 	if addressLength < types.MinClientChainAddrLength {
 		return nil, xerrors.Errorf(exocmn.ErrInvalidAddrLength, addressLength, types.MinClientChainAddrLength)
@@ -108,13 +109,14 @@ func (p Precompile) ClientChainInfoFromInputs(_ sdk.Context, args []interface{})
 }
 
 func (p Precompile) TokenFromInputs(ctx sdk.Context, args []interface{}) (types.AssetInfo, error) {
-	if len(args) != 6 {
-		return types.AssetInfo{}, xerrors.Errorf(cmn.ErrInvalidNumberOfArgs, 6, len(args))
+	inputsLen := len(p.ABI.Methods[MethodRegisterToken].Inputs)
+	if len(args) != inputsLen {
+		return types.AssetInfo{}, xerrors.Errorf(cmn.ErrInvalidNumberOfArgs, inputsLen, len(args))
 	}
 	asset := types.AssetInfo{}
 	clientChainID, ok := args[0].(uint32)
 	if !ok {
-		return types.AssetInfo{}, fmt.Errorf(exocmn.ErrContractInputParaOrType, 0, "uint32", args[0])
+		return types.AssetInfo{}, xerrors.Errorf(exocmn.ErrContractInputParaOrType, 0, "uint32", args[0])
 	}
 	asset.LayerZeroChainID = uint64(clientChainID)
 	info, err := p.assetsKeeper.GetClientChainInfoByIndex(ctx, asset.LayerZeroChainID)
@@ -134,19 +136,19 @@ func (p Precompile) TokenFromInputs(ctx sdk.Context, args []interface{}) (types.
 
 	decimal, ok := args[2].(uint8)
 	if !ok {
-		return types.AssetInfo{}, fmt.Errorf(exocmn.ErrContractInputParaOrType, 2, "uint8", args[2])
+		return types.AssetInfo{}, xerrors.Errorf(exocmn.ErrContractInputParaOrType, 2, "uint8", args[2])
 	}
 	asset.Decimals = uint32(decimal)
 
 	tvlLimit, ok := args[3].(*big.Int)
 	if !ok || tvlLimit == nil || !(tvlLimit.Cmp(big.NewInt(0)) == 1) {
-		return types.AssetInfo{}, fmt.Errorf(exocmn.ErrContractInputParaOrType, 3, "*big.Int", args[3])
+		return types.AssetInfo{}, xerrors.Errorf(exocmn.ErrContractInputParaOrType, 3, "*big.Int", args[3])
 	}
 	asset.TotalSupply = sdkmath.NewIntFromBigInt(tvlLimit)
 
 	name, ok := args[4].(string)
 	if !ok {
-		return types.AssetInfo{}, fmt.Errorf(exocmn.ErrContractInputParaOrType, 4, "string", args[4])
+		return types.AssetInfo{}, xerrors.Errorf(exocmn.ErrContractInputParaOrType, 4, "string", args[4])
 	}
 	if name == "" || len(name) > types.MaxChainTokenNameLength {
 		return types.AssetInfo{}, xerrors.Errorf(exocmn.ErrInvalidNameLength, name, len(name), types.MaxChainTokenNameLength)
@@ -155,7 +157,7 @@ func (p Precompile) TokenFromInputs(ctx sdk.Context, args []interface{}) (types.
 
 	metaInfo, ok := args[5].(string)
 	if !ok {
-		return types.AssetInfo{}, fmt.Errorf(exocmn.ErrContractInputParaOrType, 5, "string", args[5])
+		return types.AssetInfo{}, xerrors.Errorf(exocmn.ErrContractInputParaOrType, 5, "string", args[5])
 	}
 	if metaInfo == "" || len(metaInfo) > types.MaxChainTokenMetaInfoLength {
 		return types.AssetInfo{}, xerrors.Errorf(exocmn.ErrInvalidMetaInfoLength, metaInfo, len(metaInfo), types.MaxChainTokenMetaInfoLength)

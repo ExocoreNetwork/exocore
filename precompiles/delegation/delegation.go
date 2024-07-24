@@ -3,10 +3,10 @@ package delegation
 import (
 	"bytes"
 	"embed"
-	"fmt"
 
 	assetskeeper "github.com/ExocoreNetwork/exocore/x/assets/keeper"
 	delegationKeeper "github.com/ExocoreNetwork/exocore/x/delegation/keeper"
+	"golang.org/x/xerrors"
 
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	authzkeeper "github.com/cosmos/cosmos-sdk/x/authz/keeper"
@@ -39,12 +39,12 @@ func NewPrecompile(
 ) (*Precompile, error) {
 	abiBz, err := f.ReadFile("abi.json")
 	if err != nil {
-		return nil, fmt.Errorf("error loading the deposit ABI %s", err)
+		return nil, xerrors.Errorf("error loading the deposit ABI %s", err)
 	}
 
 	newAbi, err := abi.JSON(bytes.NewReader(abiBz))
 	if err != nil {
-		return nil, fmt.Errorf(cmn.ErrInvalidABI, err)
+		return nil, xerrors.Errorf(cmn.ErrInvalidABI, err)
 	}
 
 	return &Precompile{
@@ -95,12 +95,12 @@ func (p Precompile) Run(evm *vm.EVM, contract *vm.Contract, readOnly bool) (bz [
 		bz, err = p.DelegateToThroughClientChain(ctx, evm.Origin, contract, stateDB, method, args)
 	case MethodUndelegateFromThroughClientChain:
 		bz, err = p.UndelegateFromThroughClientChain(ctx, evm.Origin, contract, stateDB, method, args)
-	case MethodMarkSelfDelegatedOperator:
-		bz, err = p.MarkSelfDelegatedOperator(ctx, evm.Origin, contract, stateDB, method, args)
-	case MethodUnmarkSelfDelegatedOperator:
-		bz, err = p.UnMarkSelfDelegatedOperator(ctx, evm.Origin, contract, stateDB, method, args)
+	case MethodAssociateOperatorWithStaker:
+		bz, err = p.AssociateOperatorWithStaker(ctx, evm.Origin, contract, stateDB, method, args)
+	case MethodDissociateOperatorFromStaker:
+		bz, err = p.DissociateOperatorFromStaker(ctx, evm.Origin, contract, stateDB, method, args)
 	default:
-		return nil, fmt.Errorf(cmn.ErrUnknownMethod, method.Name)
+		return nil, xerrors.Errorf(cmn.ErrUnknownMethod, method.Name)
 	}
 
 	if err != nil {
@@ -135,8 +135,8 @@ func (Precompile) IsTransaction(methodID string) bool {
 	switch methodID {
 	case MethodDelegateToThroughClientChain,
 		MethodUndelegateFromThroughClientChain,
-		MethodMarkSelfDelegatedOperator,
-		MethodUnmarkSelfDelegatedOperator:
+		MethodAssociateOperatorWithStaker,
+		MethodDissociateOperatorFromStaker:
 		return true
 	default:
 		return false

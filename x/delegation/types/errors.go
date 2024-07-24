@@ -89,13 +89,13 @@ var (
 		"invalid hash",
 	)
 
-	ErrOperatorAlreadyMarked = errorsmod.Register(
-		ModuleName, 18,
-		"the operator is already marked by this staker",
+	ErrOperatorAlreadyAssociated = errorsmod.Register(
+		ModuleName, 20,
+		"the operator is already associated by this staker",
 	)
 
-	ErrNoOperatorMarkedByStaker = errorsmod.Register(
-		ModuleName, 19,
+	ErrNoAssociatedOperatorByStaker = errorsmod.Register(
+		ModuleName, 21,
 		"there isn't any operator marked by the staker",
 	)
 )

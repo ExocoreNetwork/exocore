@@ -33,7 +33,6 @@ interface IDelegation {
         uint256 opAmount
     ) external returns (bool success);
 
-/// TRANSACTIONS
 /// @dev undelegate the client chain assets from the operator through client chain, that will change the states in delegation and assets module
 /// Note that this address cannot be a module account.
 /// @param clientChainID is the layerZero chainID if it is supported.
@@ -53,28 +52,26 @@ interface IDelegation {
         uint256 opAmount
     ) external returns (bool success);
 
-    /// TRANSACTIONS
-/// @dev mark the staker as owned by the specified operator
+/// @dev associate the staker as being owned by the specified operator
 /// @param clientChainID is the layerZero chainID if it is supported.
 //  It might be allocated by Exocore when the client chain isn't supported
 //  by layerZero
 /// @param staker is the EVM address of the staker
 /// @param operator is the address that is to be marked as the owner.
-    function markSelfDelegatedOperator(
+    function associateOperatorWithStaker(
         uint32 clientChainID,
-        string memory staker,
-        string memory operator
+        bytes memory staker,
+        bytes memory operator
     ) external returns (bool success);
 
-    /// TRANSACTIONS
-/// @dev unmark the staker as owned by the specified operator
+/// @dev dissociate the operator from staker
 /// @param clientChainID is the layerZero chainID if it is supported.
 //  It might be allocated by Exocore when the client chain isn't supported
 //  by layerZero
 /// @param staker is the EVM address to remove the marking from.
-    function unmarkSelfDelegatedOperator(
+    function dissociateOperatorFromStaker(
         uint32 clientChainID,
-        string memory staker
+        bytes memory staker
     ) external returns (bool success);
 }
 

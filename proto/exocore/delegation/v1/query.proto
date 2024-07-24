@@ -104,14 +104,14 @@ message UndelegationRecordList {
   repeated UndelegationRecord undelegations = 1;
 }
 
-// QueryMarkedOperatorByStakerReq is the request to obtain the operator owner of the specified staker
-message QueryMarkedOperatorByStakerReq {
+// QueryAssociatedOperatorByStakerReq is the request to obtain the associated operator of the specified staker
+message QueryAssociatedOperatorByStakerReq {
   // stake_id is the staker id for which the query is made.
   string staker_id = 1 [(gogoproto.customname) = "StakerID"];
 }
 
-// QueryMarkedOperatorByStakerResponse is the response to QueryMarkedOperatorByStakerReq
-message QueryMarkedOperatorByStakerResponse {
+// QueryAssociatedOperatorByStakerResponse is the response to QueryAssociatedOperatorByStakerReq
+message QueryAssociatedOperatorByStakerResponse {
   // operator is the returned operator owner of the specified staker
   string operator = 1;
 }
@@ -150,10 +150,10 @@ service Query {
     option (google.api.http).get = "/exocore/delegation/v1/QueryUndelegationsByHeight";
   }
 
-  // QueryMarkedOperatorByStaker queries the operator owner of the specified staker
-  rpc QueryMarkedOperatorByStaker(QueryMarkedOperatorByStakerReq) returns (QueryMarkedOperatorByStakerResponse) {
+  // QueryAssociatedOperatorByStaker queries the associated operator for the specified staker
+  rpc QueryAssociatedOperatorByStaker(QueryAssociatedOperatorByStakerReq) returns (QueryAssociatedOperatorByStakerResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/exocore/delegation/v1/QueryMarkedOperatorByStaker";
+    option (google.api.http).get = "/exocore/delegation/v1/QueryAssociatedOperatorByStaker";
   }
 }
 

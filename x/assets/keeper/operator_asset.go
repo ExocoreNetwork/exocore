@@ -49,11 +49,10 @@ func (k Keeper) UpdateOperatorAssetState(ctx sdk.Context, operatorAddr sdk.Addre
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), assetstype.KeyPrefixOperatorAssetInfos)
 	key := assetstype.GetJoinedStoreKey(operatorAddr.String(), assetID)
 	assetState := assetstype.OperatorAssetInfo{
-		TotalAmount:             math.NewInt(0),
-		WaitUnbondingAmount:     math.NewInt(0),
-		OperatorUnbondingAmount: math.NewInt(0),
-		TotalShare:              math.LegacyNewDec(0),
-		OperatorShare:           math.LegacyNewDec(0),
+		TotalAmount:         math.NewInt(0),
+		WaitUnbondingAmount: math.NewInt(0),
+		TotalShare:          math.LegacyNewDec(0),
+		OperatorShare:       math.LegacyNewDec(0),
 	}
 	value := store.Get(key)
 	if value != nil {
@@ -68,10 +67,6 @@ func (k Keeper) UpdateOperatorAssetState(ctx sdk.Context, operatorAddr sdk.Addre
 	err = assetstype.UpdateAssetValue(&assetState.WaitUnbondingAmount, &changeAmount.WaitUnbondingAmount)
 	if err != nil {
 		return errorsmod.Wrap(err, "UpdateOperatorAssetState WaitUndelegationAmountOrWantChangeValue error")
-	}
-	err = assetstype.UpdateAssetValue(&assetState.OperatorUnbondingAmount, &changeAmount.OperatorUnbondingAmount)
-	if err != nil {
-		return errorsmod.Wrap(err, "UpdateOperatorAssetState OperatorUnbondingAmount error")
 	}
 	err = assetstype.UpdateAssetDecValue(&assetState.TotalShare, &changeAmount.TotalShare)
 	if err != nil {

@@ -149,7 +149,6 @@ var _ = Describe("MsgUpdateParams", Ordered, func() {
 				}
 			})
 		}
-
 	})
 
 	Context("", func() {

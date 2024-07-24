@@ -47,13 +47,13 @@ func (k Keeper) QueryUndelegationHoldCount(ctx context.Context, req *delegationt
 	return &delegationtype.UndelegationHoldCountResponse{HoldCount: res}, nil
 }
 
-func (k Keeper) QueryMarkedOperatorByStaker(ctx context.Context, req *delegationtype.QueryMarkedOperatorByStakerReq) (*delegationtype.QueryMarkedOperatorByStakerResponse, error) {
+func (k Keeper) QueryAssociatedOperatorByStaker(ctx context.Context, req *delegationtype.QueryAssociatedOperatorByStakerReq) (*delegationtype.QueryAssociatedOperatorByStakerResponse, error) {
 	c := sdk.UnwrapSDKContext(ctx)
 	operator, err := k.GetSelfDelegatedOperator(c, req.StakerID)
 	if err != nil {
 		return nil, err
 	}
-	return &delegationtype.QueryMarkedOperatorByStakerResponse{
+	return &delegationtype.QueryAssociatedOperatorByStakerResponse{
 		Operator: operator,
 	}, nil
 }

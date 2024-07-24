@@ -1,11 +1,9 @@
 package assets
 
 import (
-	"fmt"
+	"golang.org/x/xerrors"
 
 	sdkmath "cosmossdk.io/math"
-
-	errorsmod "cosmossdk.io/errors"
 
 	exocmn "github.com/ExocoreNetwork/exocore/precompiles/common"
 	assetstypes "github.com/ExocoreNetwork/exocore/x/assets/types"
@@ -42,7 +40,7 @@ func (p Precompile) DepositOrWithdraw(
 	// check the invalidation of caller contract,the caller must be exoCore LzApp contract
 	err := p.assetsKeeper.CheckExocoreGatewayAddr(ctx, contract.CallerAddress)
 	if err != nil {
-		return nil, errorsmod.Wrap(err, exocmn.ErrContractCaller)
+		return nil, xerrors.Errorf(exocmn.ErrContractCaller, err.Error())
 	}
 	// parse the depositTo input params
 	depositWithdrawParams, err := p.DepositWithdrawParamsFromInputs(ctx, args)
@@ -58,7 +56,7 @@ func (p Precompile) DepositOrWithdraw(
 	case MethodWithdraw:
 		depositWithdrawParams.Action = assetstypes.WithdrawPrincipal
 	default:
-		return nil, fmt.Errorf(cmn.ErrUnknownMethod, method.Name)
+		return nil, xerrors.Errorf(cmn.ErrUnknownMethod, method.Name)
 	}
 	err = p.assetsKeeper.PerformDepositOrWithdraw(ctx, depositWithdrawParams)
 	if err != nil {
@@ -82,9 +80,7 @@ func (p Precompile) GetClientChains(
 	if len(args) > 0 {
 		ctx.Logger().Error(
 			"GetClientChains",
-			"err", errorsmod.Wrapf(
-				assetstypes.ErrInvalidInputParameter, "no input is required",
-			),
+			"err", xerrors.New("no input is required"),
 		)
 		return method.Outputs.Pack(false, nil)
 	}
@@ -108,7 +104,7 @@ func (p Precompile) RegisterClientChain(
 	// check the invalidation of caller contract,the caller must be exoCore LzApp contract
 	err := p.assetsKeeper.CheckExocoreGatewayAddr(ctx, contract.CallerAddress)
 	if err != nil {
-		return nil, errorsmod.Wrap(err, exocmn.ErrContractCaller)
+		return nil, xerrors.Errorf(exocmn.ErrContractCaller, err.Error())
 	}
 
 	clientChainInfo, err := p.ClientChainInfoFromInputs(ctx, args)
@@ -131,7 +127,7 @@ func (p Precompile) RegisterToken(
 	// check the invalidation of caller contract,the caller must be exoCore LzApp contract
 	err := p.assetsKeeper.CheckExocoreGatewayAddr(ctx, contract.CallerAddress)
 	if err != nil {
-		return nil, errorsmod.Wrap(err, exocmn.ErrContractCaller)
+		return nil, xerrors.Errorf(exocmn.ErrContractCaller, err.Error())
 	}
 	asset, err := p.TokenFromInputs(ctx, args)
 	if err != nil {

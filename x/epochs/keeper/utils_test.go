@@ -11,5 +11,4 @@ func (suite *KeeperTestSuite) PostSetup() {
 	queryHelper := baseapp.NewQueryServerTestHelper(suite.Ctx, suite.App.InterfaceRegistry())
 	types.RegisterQueryServer(queryHelper, suite.App.EpochsKeeper)
 	suite.queryClient = types.NewQueryClient(queryHelper)
-
 }
