@@ -39,14 +39,6 @@ message KeyValue {
   ValueField value = 2;
 }
 
-// DelegationApproveInfo is the delegation approve info.
-message DelegationApproveInfo {
-  // signature of the delegation approve info.
-  string signature = 1;
-  // salt within the signature.
-  string salt = 2;
-}
-
 // DelegationIncOrDecInfo is the delegation increase or decrease info.
 message DelegationIncOrDecInfo {
   option (cosmos.msg.v1.signer) = "fromAddress";
@@ -68,8 +60,6 @@ message MsgDelegation {
   string asset_id = 1 [(gogoproto.customname) = "AssetID"];
   // base_info is the delegation increase or decrease request container.
   DelegationIncOrDecInfo base_info = 2;
-  // approved_info is the delegation increase or decrease response container.
-  DelegationApproveInfo approved_info = 3;
 }
 
 // UndelegationRecord is the undelegation record, keyed by a RecordKey.

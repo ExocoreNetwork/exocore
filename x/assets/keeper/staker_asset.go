@@ -3,15 +3,14 @@ package keeper
 import (
 	"fmt"
 
-	"github.com/ExocoreNetwork/exocore/x/assets/types"
 	assetstype "github.com/ExocoreNetwork/exocore/x/assets/types"
 	delegationkeeper "github.com/ExocoreNetwork/exocore/x/delegation/keeper"
+	"github.com/ethereum/go-ethereum/common/hexutil"
 
 	errorsmod "cosmossdk.io/errors"
 	"cosmossdk.io/math"
 	"github.com/cosmos/cosmos-sdk/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/ethereum/go-ethereum/common/hexutil"
 )
 
 // AllDeposits
@@ -67,11 +66,11 @@ func (k Keeper) GetStakerAssetInfos(ctx sdk.Context, stakerID string) (assetsInf
 		})
 	}
 	// add exo-native-token info
-	info, err := k.GetStakerSpecifiedAssetInfo(ctx, stakerID, types.NativeAssetID)
+	info, err := k.GetStakerSpecifiedAssetInfo(ctx, stakerID, assetstype.NativeAssetID)
 	if err != nil {
 		return nil, err
 	}
-	ret[types.NativeAssetID] = info
+	ret[assetstype.NativeAssetID] = info
 	return ret, nil
 }
 
@@ -81,7 +80,11 @@ func (k Keeper) GetStakerSpecifiedAssetInfo(ctx sdk.Context, stakerID string, as
 		if err != nil {
 			return nil, err
 		}
-		stakerAcc := sdk.AccAddress(hexutil.MustDecode(stakerAddrStr))
+		stakerAccDecode, err := hexutil.Decode(stakerAddrStr)
+		if err != nil {
+			return nil, err
+		}
+		stakerAcc := sdk.AccAddress(stakerAccDecode)
 		balance := k.bk.GetBalance(ctx, stakerAcc, assetstype.NativeAssetDenom)
 		info := &assetstype.StakerAssetInfo{
 			TotalDepositAmount:  balance.Amount,

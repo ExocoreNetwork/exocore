@@ -25,7 +25,7 @@ func (m *MsgDelegation) ValidateBasic() error {
 }
 
 // new message to delegate asset to operator
-func NewMsgDelegation(assetID, fromAddress, approveSignature, approveSalt string, amountPerOperator []KeyValue) *MsgDelegation {
+func NewMsgDelegation(assetID, fromAddress string, amountPerOperator []KeyValue) *MsgDelegation {
 	baseInfo := &DelegationIncOrDecInfo{
 		FromAddress:        fromAddress,
 		PerOperatorAmounts: make([]KeyValue, 0, 1),
@@ -36,10 +36,6 @@ func NewMsgDelegation(assetID, fromAddress, approveSignature, approveSalt string
 	return &MsgDelegation{
 		AssetID:  assetID,
 		BaseInfo: baseInfo,
-		ApprovedInfo: &DelegationApproveInfo{
-			Signature: approveSignature,
-			Salt:      approveSalt,
-		},
 	}
 }
 
