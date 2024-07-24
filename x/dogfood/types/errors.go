@@ -5,6 +5,6 @@ package types
 import errorsmod "cosmossdk.io/errors"
 
 var ErrInvalidGenesisData = errorsmod.Register(
-	ModuleName, 0,
+	ModuleName, 2,
 	"the genesis data supplied is invalid",
 )

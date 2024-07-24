@@ -11,7 +11,6 @@ import (
 	"github.com/ExocoreNetwork/exocore/x/oracle/keeper/testdata"
 	"github.com/ExocoreNetwork/exocore/x/oracle/types"
 	. "github.com/agiledragon/gomonkey/v2"
-	"github.com/cosmos/cosmos-sdk/testutil/mock"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	. "github.com/onsi/ginkgo/v2"
@@ -21,41 +20,26 @@ import (
 //go:generate mockgen -destination mock_validator_test.go -package keeper_test github.com/cosmos/cosmos-sdk/x/staking/types ValidatorI
 
 var _ = Describe("MsgCreatePrice", func() {
-	//	var operator1, operator2, operator3 sdk.ValAddress
-	var consKey1, consKey2, consKey3 sdk.AccAddress
 	var c *cache.Cache
 	var p *Patches
 	BeforeEach(func() {
 		ks.Reset()
 		Expect(ks.ms).ToNot(BeNil())
 
-		privVal1 := mock.NewPV()
-		pubKey1, _ := privVal1.GetPubKey()
-		//		operator1 = sdk.ValAddress(pubKey1.Address())
-		consKey1 = sdk.AccAddress(pubKey1.Address())
-
-		privVal2 := mock.NewPV()
-		pubKey2, _ := privVal2.GetPubKey()
-		consKey2 = sdk.AccAddress(pubKey2.Address())
-
-		privVal3 := mock.NewPV()
-		pubKey3, _ := privVal3.GetPubKey()
-		consKey3 = sdk.AccAddress(pubKey3.Address())
-
 		// TODO: remove monkey patch for test
 		p = ApplyMethod(reflect.TypeOf(dogfoodkeeper.Keeper{}), "GetLastTotalPower", func(k dogfoodkeeper.Keeper, ctx sdk.Context) math.Int { return math.NewInt(3) })
 		p.ApplyMethod(reflect.TypeOf(dogfoodkeeper.Keeper{}), "GetAllExocoreValidators", func(k dogfoodkeeper.Keeper, ctx sdk.Context) []dogfoodtypes.ExocoreValidator {
 			return []dogfoodtypes.ExocoreValidator{
 				{
-					Address: pubKey1.Address(),
+					Address: ks.mockValAddr1,
 					Power:   1,
 				},
 				{
-					Address: pubKey2.Address(),
+					Address: ks.mockValAddr2,
 					Power:   1,
 				},
 				{
-					Address: pubKey3.Address(),
+					Address: ks.mockValAddr3,
 					Power:   1,
 				},
 			}
@@ -74,8 +58,7 @@ var _ = Describe("MsgCreatePrice", func() {
 	Context("3 validators with 1 voting power each", func() {
 		BeforeEach(func() {
 			ks.ms.CreatePrice(ks.ctx, &types.MsgCreatePrice{
-				// Creator:    operator1.String(),
-				Creator:    consKey1.String(),
+				Creator:    ks.mockConsAddr1.String(),
 				FeederID:   1,
 				Prices:     testdata.PS1,
 				BasedBlock: 1,
@@ -93,10 +76,10 @@ var _ = Describe("MsgCreatePrice", func() {
 		It("success on 3rd message", func() {
 			iRes := make([]*cache.ItemM, 0)
 			c.GetCache(&iRes)
-			Expect(iRes[0].Validator).Should(Equal(consKey1.String()))
+			Expect(iRes[0].Validator).Should(Equal(ks.mockConsAddr1.String()))
 
 			ks.ms.CreatePrice(ks.ctx, &types.MsgCreatePrice{
-				Creator:    consKey2.String(),
+				Creator:    ks.mockConsAddr2.String(),
 				FeederID:   1,
 				Prices:     testdata.PS2,
 				BasedBlock: 1,
@@ -108,7 +91,7 @@ var _ = Describe("MsgCreatePrice", func() {
 			Expect(len(iRes)).Should(Equal(2))
 
 			ks.ms.CreatePrice(ks.ctx, &types.MsgCreatePrice{
-				Creator:    consKey3.String(),
+				Creator:    ks.mockConsAddr3.String(),
 				FeederID:   1,
 				Prices:     testdata.PS4,
 				BasedBlock: 1,
