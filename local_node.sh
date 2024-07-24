@@ -118,6 +118,8 @@ if [[ $overwrite == "y" || $overwrite == "Y" ]]; then
 	jq '.app_state["delegation"]["delegations"][0]["delegations"][0]["asset_id"]="0xdac17f958d2ee523a2206206994597c13d831ec7_0x65"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
 	jq '.app_state["delegation"]["delegations"][0]["delegations"][0]["per_operator_amounts"][0]["key"]="exo18cggcpvwspnd5c6ny8wrqxpffj5zmhklprtnph"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
 	jq '.app_state["delegation"]["delegations"][0]["delegations"][0]["per_operator_amounts"][0]["value"]["amount"]="5000"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
+	jq '.app_state["delegation"]["associations"][0]["staker_id"]="0x3e108c058e8066da635321dc3018294ca82ddedf_0x65"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
+	jq '.app_state["delegation"]["associations"][0]["operator"]="exo18cggcpvwspnd5c6ny8wrqxpffj5zmhklprtnph"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
 
 	# x/dogfood
 	# for easy testing, use an epoch of 1 minute and 5 epochs until unbonded.

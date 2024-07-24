@@ -475,6 +475,7 @@ func getTestExocoreGenesis(
 			consensusKeyRecords,
 		), delegationtypes.NewGenesis(
 			delegationsByStaker,
+			nil,
 		), dogfoodtypes.NewGenesis(
 			dogfoodtypes.NewParams(
 				dogfoodtypes.DefaultEpochsUntilUnbonded,
