@@ -105,7 +105,7 @@ func (k Keeper) GetMultipleAssetsPrices(ctx sdk.Context, assets map[string]inter
 			}
 		}
 	}
-	if len(info) > 0 {
+	if err == nil && len(info) > 0 {
 		err = types.ErrGetPriceRoundNotFound.Wrapf("no valid price for assetIDs=%s", info)
 	}
 	return prices, err
