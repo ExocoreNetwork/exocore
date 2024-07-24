@@ -27,7 +27,7 @@ const (
 	MethodSubmitProof               = "submitProof"
 	MethodRegisterBLSPublicKey      = "registerBLSPublicKey"
 	MethodGetRegisteredPubkey       = "getRegisteredPubkey"
-	MethodGetOptinOperators         = "getOptinOperators"
+	MethodGetOptinOperators         = "getOptInOperators"
 )
 
 // AVSInfoRegister register the avs related information and change the state in avs keeper module.
@@ -61,9 +61,6 @@ func (p Precompile) RegisterAVS(
 	avsParams.AvsAddress = avsAddress
 	avsParams.Action = avskeeper.RegisterAction
 
-	if err != nil {
-		return nil, err
-	}
 	err = p.avsKeeper.AVSInfoUpdate(ctx, avsParams)
 	if err != nil {
 		return nil, err
@@ -104,9 +101,6 @@ func (p Precompile) DeregisterAVS(
 
 	avsParams.Action = avskeeper.DeRegisterAction
 
-	if err != nil {
-		return nil, err
-	}
 	err = p.avsKeeper.AVSInfoUpdate(ctx, avsParams)
 	if err != nil {
 		return nil, err
@@ -141,9 +135,6 @@ func (p Precompile) UpdateAVS(
 
 	avsParams.Action = avskeeper.UpdateAction
 
-	if err != nil {
-		return nil, err
-	}
 	err = p.avsKeeper.AVSInfoUpdate(ctx, avsParams)
 	if err != nil {
 		return nil, err
@@ -225,7 +216,6 @@ func (p Precompile) CreateAVSTask(
 	method *abi.Method,
 	args []interface{},
 ) ([]byte, error) {
-	// check the invalidation of caller contract
 	callerAddress, _ := util.ProcessAddress(contract.CallerAddress.String())
 	params, err := p.GetTaskParamsFromInputs(ctx, args)
 	if err != nil {
@@ -262,7 +252,7 @@ func (p Precompile) RegisterBLSPublicKey(
 	blsParams.Operator = callerAddress
 
 	if len(args) != len(p.ABI.Methods[MethodRegisterBLSPublicKey].Inputs) {
-		return nil, fmt.Errorf(cmn.ErrInvalidNumberOfArgs, 2, len(args))
+		return nil, fmt.Errorf(cmn.ErrInvalidNumberOfArgs, len(p.ABI.Methods[MethodRegisterBLSPublicKey].Inputs), len(args))
 	}
 
 	name, ok := args[1].(string)
@@ -330,8 +320,8 @@ func (p Precompile) SubmitProof(
 	method *abi.Method,
 	args []interface{},
 ) ([]byte, error) {
-	if len(args) != len(p.ABI.Methods[MethodGetOptinOperators].Inputs) {
-		return nil, fmt.Errorf(cmn.ErrInvalidNumberOfArgs, 1, len(args))
+	if len(args) != len(p.ABI.Methods[MethodSubmitProof].Inputs) {
+		return nil, fmt.Errorf(cmn.ErrInvalidNumberOfArgs, len(p.ABI.Methods[MethodSubmitProof].Inputs), len(args))
 	}
 
 	addr, ok := args[0].(string)
@@ -362,7 +352,7 @@ func (p Precompile) GetOptedInOperatorAccAddrs(
 		return nil, xerrors.Errorf(exocmn.ErrContractInputParaOrType, 0, "string", addr)
 	}
 
-	list, err := p.avsKeeper.GetOptinOperators(ctx, addr)
+	list, err := p.avsKeeper.GetOptInOperators(ctx, addr)
 	if err != nil {
 		return nil, err
 	}

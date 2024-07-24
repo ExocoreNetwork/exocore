@@ -4,9 +4,11 @@ import (
 	"github.com/ExocoreNetwork/exocore/app"
 	"github.com/ExocoreNetwork/exocore/precompiles/avs"
 	util "github.com/ExocoreNetwork/exocore/utils"
+	"github.com/ExocoreNetwork/exocore/x/avs/types"
 	epochstypes "github.com/ExocoreNetwork/exocore/x/epochs/types"
 	operatortypes "github.com/ExocoreNetwork/exocore/x/operator/types"
 	"github.com/cometbft/cometbft/libs/rand"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/common"
 	ethtypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/core/vm"
@@ -75,7 +77,7 @@ func (s *AVSManagerPrecompileSuite) TestRegisterAVS() {
 	from := s.Address
 	avsOwnerAddress := []string{"0x3e108c058e8066DA635321Dc3018294cA82ddEdf", "0xDF907c29719154eb9872f021d21CAE6E5025d7aB", from.String()}
 	assetID := []string{"11", "22", "33"}
-	minStakeAmount, taskAddr, miniOptinOperators, minTotalStakeAmount, avsReward, avsSlash := uint64(3), "0xDF907c29719154eb9872f021d21CAE6E5025d7aB", uint64(3), uint64(3), uint64(3), uint64(3)
+	minStakeAmount, taskAddr, miniptInOperators, minTotalStakeAmount, avsReward, avsSlash := uint64(3), "0xDF907c29719154eb9872f021d21CAE6E5025d7aB", uint64(3), uint64(3), uint64(3), uint64(3)
 	avsUnbondingPeriod, minSelfDelegation := uint64(3), uint64(3)
 	epochIdentifier := epochstypes.DayEpochID
 	registerOperator := func() {
@@ -101,7 +103,7 @@ func (s *AVSManagerPrecompileSuite) TestRegisterAVS() {
 			avsUnbondingPeriod,
 			minSelfDelegation,
 			epochIdentifier,
-			miniOptinOperators,
+			miniptInOperators,
 			minTotalStakeAmount,
 			avsReward,
 			avsSlash,
@@ -311,7 +313,7 @@ func (s *AVSManagerPrecompileSuite) TestUpdateAVS() {
 	from := s.Address
 	avsOwnerAddress := []string{"0x3e108c058e8066DA635321Dc3018294cA82ddEdf", "0xDF907c29719154eb9872f021d21CAE6E5025d7aB", from.String()}
 	assetID := []string{"11", "22", "33"}
-	minStakeAmount, taskAddr, miniOptinOperators, minTotalStakeAmount, avsReward, avsSlash := uint64(3), "0xDF907c29719154eb9872f021d21CAE6E5025d7aB", uint64(3), uint64(3), uint64(3), uint64(3)
+	minStakeAmount, taskAddr, minOptInOperators, minTotalStakeAmount, avsReward, avsSlash := uint64(3), "0xDF907c29719154eb9872f021d21CAE6E5025d7aB", uint64(3), uint64(3), uint64(3), uint64(3)
 	avsUnbondingPeriod, minSelfDelegation := uint64(3), uint64(3)
 	epochIdentifier := epochstypes.DayEpochID
 	commonMalleate := func() (common.Address, []byte) {
@@ -327,7 +329,7 @@ func (s *AVSManagerPrecompileSuite) TestUpdateAVS() {
 			avsUnbondingPeriod,
 			minSelfDelegation,
 			epochIdentifier,
-			miniOptinOperators,
+			minOptInOperators,
 			minTotalStakeAmount,
 			avsReward,
 			avsSlash,
@@ -652,6 +654,31 @@ func (s *AVSManagerPrecompileSuite) TestDeregisterOperatorFromAVS() {
 
 // TestRun tests the precompiles Run method reg avstask.
 func (s *AVSManagerPrecompileSuite) TestRunRegTaskinfo() {
+	callerAddress, err := util.ProcessAddress(s.Address.String())
+	registerAVS := func() {
+		avsName, avsAddres, slashAddress := "avsTest", "exo13h6xg79g82e2g2vhjwg7j4r2z2hlncelwutkjr", "exo13h6xg79g82e2g2vhjwg7j4r2z2hlncelwutash"
+		avsOwnerAddress := []string{"exo13h6xg79g82e2g2vhjwg7j4r2z2hlncelwutkjr", callerAddress, "exo13h6xg79g82e2g2vhjwg7j4r2z2hlncelwutkj2"}
+		assetID := []string{"11", "22", "33"}
+		avs := &types.AVSInfo{
+			Name:                avsName,
+			AvsAddress:          avsAddres,
+			SlashAddr:           slashAddress,
+			AvsOwnerAddress:     avsOwnerAddress,
+			AssetIDs:            assetID,
+			AvsUnbondingPeriod:  7,
+			MinSelfDelegation:   10,
+			EpochIdentifier:     epochstypes.DayEpochID,
+			StartingEpoch:       1,
+			MinOptInOperators:   100,
+			MinTotalStakeAmount: 1000,
+			AvsSlash:            sdk.MustNewDecFromStr("0.001"),
+			AvsReward:           sdk.MustNewDecFromStr("0.002"),
+			TaskAddr:            "exo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqzgp3kyh0l",
+		}
+
+		err := s.App.AVSManagerKeeper.SetAVSInfo(s.Ctx, avs)
+		s.NoError(err)
+	}
 	commonMalleate := func() (common.Address, []byte) {
 		input, err := s.precompile.Pack(
 			avs.MethodCreateAVSTask,
@@ -679,7 +706,7 @@ func (s *AVSManagerPrecompileSuite) TestRunRegTaskinfo() {
 			name: "pass - avstask via pre-compiles",
 			malleate: func() (common.Address, []byte) {
 				s.Require().NoError(err)
-				s.TestRegisterAVS()
+				registerAVS()
 				return commonMalleate()
 			},
 			returnBytes: successRet,

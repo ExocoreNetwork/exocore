@@ -3,7 +3,6 @@ package avs
 import (
 	avskeep "github.com/ExocoreNetwork/exocore/x/avs/keeper"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 	ethtypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/core/vm"
@@ -37,7 +36,7 @@ func (p Precompile) EmitCreateAVSTaskEvent(ctx sdk.Context, stateDB vm.StateDB, 
 	}
 
 	// Pack the arguments to be used as the Data field
-	arguments := abi.Arguments{event.Inputs[2], event.Inputs[3], event.Inputs[4], event.Inputs[5], event.Inputs[6]}
+	arguments := event.Inputs[2:7]
 	packed, err := arguments.Pack(task.TaskName, task.Data, task.TaskResponsePeriod, task.TaskChallengePeriod, task.ThresholdPercentage)
 	if err != nil {
 		return err

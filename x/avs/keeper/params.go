@@ -43,7 +43,7 @@ type AVSRegisterOrDeregisterParams struct {
 	UnbondingPeriod     uint64
 	MinSelfDelegation   uint64
 	EpochIdentifier     string
-	MiniOptinOperators  uint64
+	MinOptInOperators   uint64
 	MinTotalStakeAmount uint64
 	StartingEpoch       []string
 	CallerAddress       string

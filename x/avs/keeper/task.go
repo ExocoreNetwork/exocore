@@ -84,3 +84,25 @@ func (k *Keeper) IsExistPubKey(ctx sdk.Context, addr string) bool {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefixOperatePub)
 	return store.Has(opAccAddr)
 }
+
+// IterateTaskAVSInfo iterate through task
+func (k Keeper) IterateTaskAVSInfo(ctx sdk.Context, fn func(index int64, taskInfo types.TaskInfo) (stop bool)) {
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefixAVSTaskInfo)
+
+	iterator := sdk.KVStorePrefixIterator(store, nil)
+	defer iterator.Close()
+
+	i := int64(0)
+
+	for ; iterator.Valid(); iterator.Next() {
+		task := types.TaskInfo{}
+		k.cdc.MustUnmarshal(iterator.Value(), &task)
+
+		stop := fn(i, task)
+
+		if stop {
+			break
+		}
+		i++
+	}
+}

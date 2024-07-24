@@ -9,7 +9,6 @@ import (
 	sdkmath "cosmossdk.io/math"
 
 	"github.com/ExocoreNetwork/exocore/x/avs/types"
-	"github.com/cosmos/cosmos-sdk/store/prefix"
 	ibcclienttypes "github.com/cosmos/ibc-go/v7/modules/core/02-client/types"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
@@ -70,56 +69,66 @@ func (k *Keeper) GetEpochEndAVSs(ctx sdk.Context, epochIdentifier string, epochN
 	return avsList
 }
 
-// GetTaskChallengeEpochEndAVSs returns the AVS list where the current block marks the end of their epoch.
-func (k *Keeper) GetTaskChallengeEpochEndAVSs(ctx sdk.Context, epochIdentifier string, epochNumber int64) []string {
-	var avsList []string
+// GetAVSInfoByTaskAddress returns the AVS  which containing this task address
+func (k *Keeper) GetAVSInfoByTaskAddress(ctx sdk.Context, taskAddr string) types.AVSInfo {
+	avs := types.AVSInfo{}
 	k.IterateAVSInfo(ctx, func(_ int64, avsInfo types.AVSInfo) (stop bool) {
-		if epochIdentifier == avsInfo.EpochIdentifier && epochNumber > int64(avsInfo.StartingEpoch) {
-			avsList = append(avsList, avsInfo.AvsAddress)
+		if taskAddr == avsInfo.GetTaskAddr() {
+			avs = avsInfo
 		}
 		return false
 	})
-	return avsList
+	return avs
 }
 
-func (k *Keeper) GetAVSAddrByChainID(ctx sdk.Context, chainID string) (string, error) {
-	chainID = ChainIDWithoutRevision(chainID)
-	if len(chainID) == 0 {
-		return "", errorsmod.Wrap(types.ErrNotNull, "RegisterAVSWithChainID: chainID is null")
-	}
-	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefixAVSInfoByChainID)
-	if !store.Has([]byte(chainID)) {
-		return "", errorsmod.Wrap(types.ErrNoKeyInTheStore, fmt.Sprintf("GetAVSAddrByChainID: key is %s", chainID))
-	}
-	avsAddr := store.Get([]byte(chainID))
-
-	return string(avsAddr), nil
-}
-
-func (k *Keeper) GetChainIDByAVSAddr(ctx sdk.Context, avsAddr string) (string, error) {
-	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefixAVSInfoByChainID)
-	iterator := sdk.KVStorePrefixIterator(store, nil)
-	defer iterator.Close()
-
-	for ; iterator.Valid(); iterator.Next() {
-		chainID := string(iterator.Key())
-		if string(iterator.Value()) == avsAddr {
-			return chainID, nil
+// GetTaskChallengeEpochEndAVSs returns the task list where the current block marks the end of their challenge period.
+func (k *Keeper) GetTaskChallengeEpochEndAVSs(ctx sdk.Context, epochIdentifier string, epochNumber int64) []types.TaskInfo {
+	var taskList []types.TaskInfo
+	k.IterateTaskAVSInfo(ctx, func(_ int64, taskInfo types.TaskInfo) (stop bool) {
+		avsInfo := k.GetAVSInfoByTaskAddress(ctx, taskInfo.TaskContractAddress)
+		// Determine if the challenge period has passed, the range of the challenge period is the num marked (StartingEpoch) add TaskChallengePeriod
+		if epochIdentifier == avsInfo.EpochIdentifier && epochNumber > int64(taskInfo.TaskChallengePeriod)+int64(taskInfo.StartingEpoch) {
+			taskList = append(taskList, taskInfo)
 		}
-	}
-
-	return "", errorsmod.Wrap(types.ErrNoKeyInTheStore, fmt.Sprintf("GetChainIDByAVSAddr: key is %s", avsAddr))
+		return false
+	})
+	return taskList
 }
 
-// RegisterAVSWithChainID creates an avs address given the chainID
-func (k Keeper) RegisterAVSWithChainID(ctx sdk.Context, chainID string) (err error) {
-	chainID = ChainIDWithoutRevision(chainID)
+func (k *Keeper) GetAVSAddrByChainID(ctx sdk.Context, chainID string) string {
+	avsAddr := ""
+	k.IterateAVSInfo(ctx, func(_ int64, avsInfo types.AVSInfo) (stop bool) {
+		if chainID == avsInfo.GetChainId() {
+			avsAddr = avsInfo.AvsAddress
+		}
+		return false
+	})
+	return avsAddr
+}
+
+func (k *Keeper) GetChainIDByAVSAddr(ctx sdk.Context, avsAddr string) string {
+	chainID := ""
+	k.IterateAVSInfo(ctx, func(_ int64, avsInfo types.AVSInfo) (stop bool) {
+		if avsAddr == avsInfo.GetAvsAddress() {
+			chainID = avsInfo.ChainId
+		}
+		return false
+	})
+	return chainID
+}
+
+// RegisterAVSForDogFood During this registration, the caller should be able to provide
+// AssetIDs, EpochsUntilUnbonded, EpochIdentifier, MinSelfDelegation and StartingEpoch.
+// Other values should be empty / blank, and we should call AVsInfoUpdate.
+// This will ensure compatibility with all of the related AVS functions, like
+// GetEpochEndAVSs, GetAVSSupportedAssets, and GetAVSMinimumSelfDelegation
+func (k Keeper) RegisterAVSForDogFood(ctx sdk.Context, params *AVSRegisterOrDeregisterParams) (err error) {
+	chainID := ChainIDWithoutRevision(params.ChainID)
 	if len(chainID) == 0 {
 		return errorsmod.Wrap(types.ErrNotNull, "RegisterAVSWithChainID: chainID is null")
 	}
+	params.ChainID = chainID
 	avsAddr := common.BytesToAddress(crypto.Keccak256([]byte(chainID))).String()
-
-	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefixAVSInfoByChainID)
 
 	err = k.evmKeeper.SetAccount(ctx, common.HexToAddress(avsAddr), statedb.Account{
 		Balance:  big.NewInt(0),
@@ -129,8 +138,10 @@ func (k Keeper) RegisterAVSWithChainID(ctx sdk.Context, chainID string) (err err
 	if err != nil {
 		return err
 	}
-	store.Set([]byte(chainID), []byte(avsAddr))
-	return nil
+	params.AvsAddress = avsAddr
+	params.Action = RegisterAction
+
+	return k.AVSInfoUpdate(ctx, params)
 }
 
 func ChainIDWithoutRevision(chainID string) string {

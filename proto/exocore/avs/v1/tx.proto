@@ -31,9 +31,9 @@ message AVSInfo {
   uint64 min_self_delegation = 10;
   //avs epoch ,Subsequently  will be handled by the epochs module.
   string epoch_identifier = 11;
-  //Minimum number of optin operators
-  uint64 mini_optin_operators = 12;
-  // the Minimum total amount of stake by all operator
+  //Minimum number of optin operators,When creating tasks in AVS, check the minimum requirements
+  uint64 min_opt_in_operators = 12;
+  // the Minimum total amount of stake by all operator,,When creating tasks in AVS, check the minimum requirements
   uint64 min_total_stake_amount = 13;
   // Effective current epoch, accounting for current_epoch + 1
   // and current_epoch is the integer identifier of the epoch module
@@ -90,6 +90,9 @@ message TaskInfo {
   uint64 task_challenge_period = 6;
   //Signature threshold percentage
   uint64 threshold_percentage = 7;
+  // Effective current epoch, accounting for current_epoch + 1
+  // and current_epoch is the integer identifier of the epoch module
+  uint64 starting_epoch = 8;
 }
 
 // BlsPubKeyInfo is the task info.

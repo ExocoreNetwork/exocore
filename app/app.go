@@ -598,7 +598,7 @@ func NewExocoreApp(
 	// remove AVSs.
 	app.AVSManagerKeeper = avsManagerKeeper.NewKeeper(
 		appCodec, keys[avsManagerTypes.StoreKey],
-		app.OperatorKeeper,
+		&app.OperatorKeeper,
 		app.AssetsKeeper,
 		app.EpochsKeeper,
 		app.EvmKeeper,
@@ -627,6 +627,7 @@ func NewExocoreApp(
 
 	// the evidence module handles any external evidence of misbehavior submitted to it, if such
 	// an evidence is registered in its router. we have not set up any such router, and hence
+
 	// this module cannot handle external evidence. however, by itself, the module is built
 	// to handle evidence received from Tendermint, which is the equivocation evidence.
 	// it is created after the Staking and Slashing keepers have been set up.
@@ -701,7 +702,7 @@ func NewExocoreApp(
 		app.GetSubspace(evmtypes.ModuleName),
 	)
 	// the AVS manager keeper is the AVS registry. it allows registered operators to add or
-	// remove AVSs.
+	// remove AVSs.this avs keeper is initialized after the EVM keeper because it depends on the EVM keeper.
 	app.AVSManagerKeeper = avsManagerKeeper.NewKeeper(
 		appCodec, keys[avsManagerTypes.StoreKey],
 		&app.OperatorKeeper,

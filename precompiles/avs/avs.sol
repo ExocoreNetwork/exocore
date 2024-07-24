@@ -24,7 +24,7 @@ interface IAVSManager {
     /// @param avsUnbondingPeriod The unbonding duration of AVS.
     /// @param minSelfDelegation The minimum delegation amount for an operator.
     /// @param epochIdentifier The AVS epoch identifier.
-    /// @param miniOptinOperators The minimum number of opt-in operators.
+    /// @param miniOptInOperators The minimum number of opt-in operators.
     /// @param minTotalStakeAmount The minimum total amount of stake by all operators.
     /// @param avsReward The proportion of reward for AVS.
     /// @param avsSlash The proportion of slash for AVS.
@@ -39,7 +39,7 @@ interface IAVSManager {
         uint64  avsUnbondingPeriod,
         uint64  minSelfDelegation,
         string memory epochIdentifier,
-        uint64  miniOptinOperators,
+        uint64  miniOptInOperators,
         uint64  minTotalStakeAmount,
         uint64  avsReward,
         uint64  avsSlash
@@ -56,7 +56,7 @@ interface IAVSManager {
     /// @param avsUnbondingPeriod The unbonding duration of AVS.
     /// @param minSelfDelegation The minimum delegation amount for an operator.
     /// @param epochIdentifier The AVS epoch identifier.
-    /// @param miniOptinOperators The minimum number of opt-in operators.
+    /// @param miniOptInOperators The minimum number of opt-in operators.
     /// @param minTotalStakeAmount The minimum total amount of stake by all operators.
     /// @param avsReward The proportion of reward for AVS.
     /// @param avsSlash The proportion of slash for AVS.
@@ -71,7 +71,7 @@ interface IAVSManager {
         uint64  avsUnbondingPeriod,
         uint64  minSelfDelegation,
         string memory epochIdentifier,
-        uint64  miniOptinOperators,
+        uint64  miniOptInOperators,
         uint64  minTotalStakeAmount,
         uint64  avsReward,
         uint64  avsSlash
@@ -145,7 +145,7 @@ interface IAVSManager {
 
     /// @dev Returns the operators of all opt-in in the current avs
     /// @param avsAddress  addresses
-    function getOptinOperators(string memory avsAddress) external returns (string[] calldata operators);
+    function getOptInOperators(string memory avsAddress) external returns (string[] calldata operators);
 
     /// @dev RegisterBLSPublicKey Emitted when `operator` registers with the public keys `pubKey`.
     /// @param operator the address of the delegator
@@ -171,7 +171,7 @@ interface IAVSManager {
     /// @param avsUnbondingPeriod The unbonding duration of AVS.
     /// @param minSelfDelegation The minimum delegation amount for an operator.
     /// @param epochIdentifier The AVS epoch identifier.
-    /// @param miniOptinOperators The minimum number of opt-in operators.
+    /// @param miniOptInOperators The minimum number of opt-in operators.
     /// @param minTotalStakeAmount The minimum total amount of stake by all operators.
     /// @param avsReward The proportion of reward for AVS.
     /// @param avsSlash The proportion of slash for AVS.
@@ -187,7 +187,7 @@ interface IAVSManager {
         uint64 avsUnbondingPeriod,
         uint64 minSelfDelegation,
         string epochIdentifier,
-        uint64 miniOptinOperators,
+        uint64 miniOptInOperators,
         uint64 minTotalStakeAmount,
         uint64 avsReward,
         uint64 avsSlash
@@ -205,7 +205,7 @@ interface IAVSManager {
     /// @param avsUnbondingPeriod The unbonding duration of AVS.
     /// @param minSelfDelegation The minimum delegation amount for an operator.
     /// @param epochIdentifier The AVS epoch identifier.
-    /// @param miniOptinOperators The minimum number of opt-in operators.
+    /// @param miniOptInOperators The minimum number of opt-in operators.
     /// @param minTotalStakeAmount The minimum total amount of stake by all operators.
     /// @param avsReward The proportion of reward for AVS.
     /// @param avsSlash The proportion of slash for AVS.
@@ -221,7 +221,7 @@ interface IAVSManager {
         uint64 avsUnbondingPeriod,
         uint64 minSelfDelegation,
         string epochIdentifier,
-        uint64 miniOptinOperators,
+        uint64 miniOptInOperators,
         uint64 minTotalStakeAmount,
         uint64 avsReward,
         uint64 avsSlash

@@ -22,9 +22,9 @@ func (p Precompile) GetAVSParamsFromInputs(_ sdk.Context, args []interface{}) (*
 		return nil, xerrors.Errorf(exocmn.ErrContractInputParaOrType, 0, "string", avsName)
 	}
 	avsParams.AvsName = avsName
-
+	// When creating tasks in AVS, check the minimum requirements,minStakeAmount at least greater than 0
 	minStakeAmount, ok := args[1].(uint64)
-	if !ok {
+	if !ok || minStakeAmount == 0 {
 		return nil, xerrors.Errorf(exocmn.ErrContractInputParaOrType, 1, "uint64", minStakeAmount)
 	}
 	avsParams.MinStakeAmount = minStakeAmount
@@ -100,13 +100,13 @@ func (p Precompile) GetAVSParamsFromInputs(_ sdk.Context, args []interface{}) (*
 	}
 
 	avsParams.EpochIdentifier = epochIdentifier
-
-	miniOptinOperators, ok := args[10].(uint64)
-	if !ok || miniOptinOperators == 0 {
-		return nil, xerrors.Errorf(exocmn.ErrContractInputParaOrType, 10, "uint64", miniOptinOperators)
+	// When creating tasks in AVS, check the minimum requirements,minOptInOperators at least greater than 0
+	minOptInOperators, ok := args[10].(uint64)
+	if !ok || minOptInOperators == 0 {
+		return nil, xerrors.Errorf(exocmn.ErrContractInputParaOrType, 10, "uint64", minOptInOperators)
 	}
-	avsParams.MiniOptinOperators = miniOptinOperators
-
+	avsParams.MinOptInOperators = minOptInOperators
+	// When creating tasks in AVS, check the minimum requirements,minTotalStakeAmount at least greater than 0
 	minTotalStakeAmount, ok := args[11].(uint64)
 	if !ok || minTotalStakeAmount == 0 {
 		return nil, xerrors.Errorf(exocmn.ErrContractInputParaOrType, 11, "uint64", minTotalStakeAmount)
@@ -188,13 +188,13 @@ func (p Precompile) GetAVSParamsFromUpdateInputs(_ sdk.Context, args []interface
 	avsParams.AssetID = assetID
 
 	minSelfDelegation, ok := args[5].(uint64)
-	if !ok {
+	if !ok || minSelfDelegation == 0 {
 		return nil, xerrors.Errorf(exocmn.ErrContractInputParaOrType, 5, "uint64", minSelfDelegation)
 	}
 	avsParams.MinSelfDelegation = minSelfDelegation
 
 	unbondingPeriod, ok := args[6].(uint64)
-	if !ok {
+	if !ok || unbondingPeriod == 0 {
 		return nil, xerrors.Errorf(exocmn.ErrContractInputParaOrType, 6, "uint64", unbondingPeriod)
 	}
 	avsParams.UnbondingPeriod = unbondingPeriod
