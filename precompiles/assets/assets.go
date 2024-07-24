@@ -3,8 +3,9 @@ package assets
 import (
 	"bytes"
 	"embed"
-	"fmt"
 	"math/big"
+
+	"golang.org/x/xerrors"
 
 	assetskeeper "github.com/ExocoreNetwork/exocore/x/assets/keeper"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
@@ -37,12 +38,12 @@ func NewPrecompile(
 ) (*Precompile, error) {
 	abiBz, err := f.ReadFile("abi.json")
 	if err != nil {
-		return nil, fmt.Errorf("error loading the deposit ABI %s", err)
+		return nil, xerrors.Errorf("error loading the deposit ABI %s", err)
 	}
 
 	newAbi, err := abi.JSON(bytes.NewReader(abiBz))
 	if err != nil {
-		return nil, fmt.Errorf(cmn.ErrInvalidABI, err)
+		return nil, xerrors.Errorf(cmn.ErrInvalidABI, err)
 	}
 
 	return &Precompile{
@@ -122,7 +123,7 @@ func (p Precompile) Run(evm *vm.EVM, contract *vm.Contract, readOnly bool) (bz [
 	case MethodGetClientChains:
 		bz, err = p.GetClientChains(ctx, method, args)
 	default:
-		return nil, fmt.Errorf(cmn.ErrUnknownMethod, method.Name)
+		return nil, xerrors.Errorf(cmn.ErrUnknownMethod, method.Name)
 	}
 
 	if err != nil {
