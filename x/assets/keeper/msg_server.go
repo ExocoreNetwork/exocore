@@ -54,6 +54,18 @@ func (k Keeper) RegisterClientChain(ctx context.Context, req *assetstype.Registe
 
 func (k Keeper) RegisterAsset(ctx context.Context, req *assetstype.RegisterAssetReq) (*assetstype.RegisterAssetResponse, error) {
 	c := sdk.UnwrapSDKContext(ctx)
+	_, assetID := assetstype.GetStakeIDAndAssetIDFromStr(req.Info.LayerZeroChainID, "", req.Info.Address)
+
+	// once an asset is registered, operator will start trying to update ralted power based on this asset's price, so we have to make sure this asset already has price udpated by oracle-module
+	// TODO: there's no gurantee that the corresponding tokenfeeder is running, the latest price is possible to be some history price. But since currently there's no mechanism to remove an asset from assets module, so we just asume corresponding tokenfeeder will never set endblock for now.
+	if _, err := k.oKeeper.GetSpecifiedAssetsPrice(c, assetID); err != nil {
+		return nil, err
+	}
+
+	if asset, _ := k.GetStakingAssetInfo(c, assetID); asset != nil {
+		c.Logger().Error("register asset with duplicated assetID")
+		return nil, assetstype.ErrRegisterDuplicateAssetID
+	}
 	err := k.SetStakingAssetInfo(c, &assetstype.StakingAssetInfo{
 		AssetBasicInfo:     req.Info,
 		StakingTotalAmount: math.NewInt(0),
