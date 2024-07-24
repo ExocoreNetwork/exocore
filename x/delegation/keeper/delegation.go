@@ -149,6 +149,20 @@ func (k *Keeper) UndelegateFrom(ctx sdk.Context, params *delegationtype.Delegati
 	return k.Hooks().AfterUndelegationStarted(ctx, params.OperatorAddress, delegationtype.GetUndelegationRecordKey(r.BlockNumber, r.LzTxNonce, r.TxHash, r.OperatorAddr))
 }
 
+// AssociateOperatorWithStaker marks that a staker is claiming to be associated with an operator.
+// In other words, the staker's delegations will be marked as self-delegations for the operator.
+// Each stakerID can associate, at most, to one operator. To change that operator, the staker must
+// first call DissociateOperatorFromStaker.
+// However, each operator may be associated with multiple stakers.
+// This function is not available for end users to call directly, and such calls must be made
+// via the ExocoreGateway. The gateway associates the `msg.sender` of the call, along with the
+// chain id, with the operator. Since it associates `msg.sender`, we do not need to check that
+// this request is signed by the staker.
+// TODO: It may be possible that an address, which is an EOA staker on a client chain, is a
+// contract on Exocore. When that happens, the contract may be able to call the Gateway to
+// maliciously associate the staker with an operator. The probability of this, however, is
+// infinitesimal (10^-60) so we will not do anything about it for now.
+// The solution could be to require that such associations originate from the client chain.
 func (k *Keeper) AssociateOperatorWithStaker(
 	ctx sdk.Context,
 	clientChainID uint64,
@@ -194,6 +208,9 @@ func (k *Keeper) AssociateOperatorWithStaker(
 	return nil
 }
 
+// DissociateOperatorFromStaker deletes the associative relationship between a staker
+// (address + chain id combination) and an operator. See AssociateOperatorWithStaker for more
+// information on the relationship and restrictions.
 func (k *Keeper) DissociateOperatorFromStaker(
 	ctx sdk.Context,
 	clientChainID uint64,

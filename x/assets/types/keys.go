@@ -114,6 +114,9 @@ func ParseJoinedStoreKey(key []byte, number int) (keys []string, err error) {
 	return stringList, nil
 }
 
+// ParseID parses the key and returns the client address and the ID.
+// It constraints the key to be in the format of "clientAddress_0xid"
+// The 0xid must be in hex.
 func ParseID(key string) (string, uint64, error) {
 	keys := strings.Split(key, "_")
 	if len(keys) != 2 {
@@ -130,6 +133,10 @@ func ParseID(key string) (string, uint64, error) {
 	return keys[0], id, nil
 }
 
+// ValidateID validates the key and returns the client address and the ID
+// The flags used by it are (1) checkLowercase and (2) validateEth.
+// If the former is true, it will check that the provided key is lowercase.
+// If the latter is true, it will check that the parsed address is a valid Ethereum address.
 func ValidateID(key string, checkLowercase bool, validateEth bool) (string, uint64, error) {
 	if checkLowercase && key != strings.ToLower(key) {
 		return "", 0, errorsmod.Wrapf(ErrParseAssetsStateKey, "ID not lowercase: %s", key)
