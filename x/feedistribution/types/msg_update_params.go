@@ -19,3 +19,14 @@ func (m *MsgUpdateParams) ValidateBasic() error {
 
 	return nil
 }
+
+// GetSigners returns the expected signers for a MsgUpdateParams message.
+func (m *MsgUpdateParams) GetSigners() []sdk.AccAddress {
+	addr := sdk.MustAccAddressFromBech32(m.Authority)
+	return []sdk.AccAddress{addr}
+}
+
+// GetSignBytes implements the LegacyMsg interface.
+func (m *MsgUpdateParams) GetSignBytes() []byte {
+	return nil
+}

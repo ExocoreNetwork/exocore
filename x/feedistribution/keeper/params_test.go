@@ -13,6 +13,6 @@ func TestGetParams(t *testing.T) {
 	k, ctx := keepertest.FeedistributeKeeper(t)
 	params := types.DefaultParams()
 
-	require.NoError(t, k.SetParams(ctx, params))
+	k.SetParams(ctx, params)
 	require.EqualValues(t, params, k.GetParams(ctx))
 }

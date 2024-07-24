@@ -2,9 +2,8 @@ package keeper
 
 import (
 	"cosmossdk.io/math"
-	sdk "github.com/cosmos/cosmos-sdk/types"
-
 	"github.com/ExocoreNetwork/exocore/x/feedistribution/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 // GetParams get all parameters as types.Params
@@ -27,5 +26,7 @@ func (k Keeper) SetParams(ctx sdk.Context, params types.Params) {
 
 // GetCommunityTax returns the current distribution community tax.
 func (k Keeper) GetCommunityTax(ctx sdk.Context) (math.LegacyDec, error) {
+	params := k.GetParams(ctx)
 
+	return params.CommunityTax, nil
 }

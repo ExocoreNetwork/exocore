@@ -1,4 +1,3 @@
-
 syntax = "proto3";
 package ethermint.evm.v1;
 
@@ -24,5 +23,8 @@ message GenesisAccount {
   // code defines the hex bytes of the account code.
   string code = 2;
   // storage defines the set of state key values for the account.
-  repeated State storage = 3 [(gogoproto.nullable) = false, (gogoproto.castrepeated) = "Storage"];
+  repeated State storage = 3 [
+    (gogoproto.nullable) = false,
+    (gogoproto.castrepeated) = "Storage"
+  ];
 }

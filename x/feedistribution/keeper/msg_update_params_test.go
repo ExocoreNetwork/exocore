@@ -3,8 +3,9 @@ package keeper_test
 import (
 	"testing"
 
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/require"
+
+	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	"github.com/ExocoreNetwork/exocore/x/feedistribution/types"
 )
@@ -12,7 +13,7 @@ import (
 func TestMsgUpdateParams(t *testing.T) {
 	k, ms, ctx := setupMsgServer(t)
 	params := types.DefaultParams()
-	require.NoError(t, k.SetParams(ctx, params))
+	k.SetParams(sdk.Context{}, params)
 	wctx := sdk.UnwrapSDKContext(ctx)
 
 	// default params

@@ -2,8 +2,8 @@ syntax = "proto3";
 package exocore.feedistribute;
 
 import "amino/amino.proto";
-import "gogoproto/gogo.proto";
 import "exocore/feedistribute/params.proto";
+import "gogoproto/gogo.proto";
 
 option go_package = "github.com/ExocoreNetwork/exocore/x/feedistribution/types";
 

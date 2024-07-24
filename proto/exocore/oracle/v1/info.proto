@@ -6,7 +6,7 @@ import "gogoproto/gogo.proto";
 option go_package = "github.com/ExocoreNetwork/exocore/x/oracle/types";
 
 // Chain represents for the Chain on which token contracts deployed
-message Chain{
+message Chain {
   //eg."bitcoin"
   string name = 1;
   //TODO: metadata
@@ -14,7 +14,7 @@ message Chain{
 }
 
 // Token represents the token info
-message Token{
+message Token {
   // token name
   string name = 1;
   // id refer to chainList's index
@@ -30,13 +30,13 @@ message Token{
 }
 
 // Endpoint tells where to fetch the price info
-message Endpoint{
+message Endpoint {
   //url int refer to TokenList.ID, 0 reprents default for all (as fall back)
   //key refer to tokenID, 1->"https://chainlink.../eth"
-  map<uint64,string> offchain = 1; 
+  map<uint64, string> offchain = 1;
   //url  int refer to TokenList.ID, 0 reprents default for all (as fall back)
   //key refer to tokenID, 1->"eth://0xabc...def"
-  map<uint64,string> onchain = 2; 
+  map<uint64, string> onchain = 2;
 }
 
 // Source represents price data source

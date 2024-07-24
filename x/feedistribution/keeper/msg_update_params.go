@@ -4,6 +4,7 @@ import (
 	"context"
 
 	errorsmod "cosmossdk.io/errors"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	"github.com/ExocoreNetwork/exocore/x/feedistribution/types"
@@ -15,9 +16,7 @@ func (k msgServer) UpdateParams(goCtx context.Context, req *types.MsgUpdateParam
 	}
 
 	ctx := sdk.UnwrapSDKContext(goCtx)
-	if err := k.SetParams(ctx, req.Params); err != nil {
-		return nil, err
-	}
+	k.SetParams(ctx, req.Params)
 
 	return &types.MsgUpdateParamsResponse{}, nil
 }

@@ -1,4 +1,3 @@
-
 syntax = "proto3";
 package evmos.erc20.v1;
 
@@ -17,12 +16,12 @@ service Msg {
   // that is registered on the token mapping.
   rpc ConvertCoin(MsgConvertCoin) returns (MsgConvertCoinResponse) {
     option (google.api.http).get = "/evmos/erc20/v1/tx/convert_coin";
-  };
+  }
   // ConvertERC20 mints a native Cosmos coin representation of the ERC20 token
   // contract that is registered on the token mapping.
   rpc ConvertERC20(MsgConvertERC20) returns (MsgConvertERC20Response) {
     option (google.api.http).get = "/evmos/erc20/v1/tx/convert_erc20";
-  };
+  }
   // UpdateParams defined a governance operation for updating the x/erc20 module parameters.
   // The authority is hard-coded to the Cosmos SDK x/gov module account
   rpc UpdateParams(MsgUpdateParams) returns (MsgUpdateParamsResponse);
@@ -48,7 +47,10 @@ message MsgConvertERC20 {
   // contract_address of an ERC20 token contract, that is registered in a token pair
   string contract_address = 1;
   // amount of ERC20 tokens to convert
-  string amount = 2 [(gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int", (gogoproto.nullable) = false];
+  string amount = 2 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.nullable) = false
+  ];
   // receiver is the bech32 address to receive native Cosmos coins
   string receiver = 3;
   // sender is the hex address from the owner of the given ERC20 tokens

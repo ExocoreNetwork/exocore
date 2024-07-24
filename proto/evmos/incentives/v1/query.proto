@@ -1,4 +1,3 @@
-
 syntax = "proto3";
 package evmos.incentives.v1;
 
@@ -123,8 +122,10 @@ message QueryAllocationMetersRequest {
 // Query/AllocationMeters RPC method.
 message QueryAllocationMetersResponse {
   // allocation_meters is a slice of all allocations
-  repeated cosmos.base.v1beta1.DecCoin allocation_meters = 1
-      [(gogoproto.nullable) = false, (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.DecCoins"];
+  repeated cosmos.base.v1beta1.DecCoin allocation_meters = 1 [
+    (gogoproto.nullable) = false,
+    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.DecCoins"
+  ];
   // pagination defines the pagination in the response.
   cosmos.base.query.v1beta1.PageResponse pagination = 2;
 }
@@ -140,8 +141,10 @@ message QueryAllocationMeterRequest {
 // Query/AllocationMeter RPC method.
 message QueryAllocationMeterResponse {
   // allocation_meter defines the allocation of the queried denom
-  cosmos.base.v1beta1.DecCoin allocation_meter = 1
-      [(gogoproto.nullable) = false, (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.DecCoins"];
+  cosmos.base.v1beta1.DecCoin allocation_meter = 1 [
+    (gogoproto.nullable) = false,
+    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.DecCoins"
+  ];
 }
 
 // QueryParamsRequest is the request type for the Query/Params RPC method.

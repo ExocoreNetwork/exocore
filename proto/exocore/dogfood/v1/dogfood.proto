@@ -2,11 +2,10 @@ syntax = "proto3";
 
 package exocore.dogfood.v1;
 
-import "gogoproto/gogo.proto";
-import "google/protobuf/any.proto";
-
 import "cosmos/staking/v1beta1/staking.proto";
 import "cosmos_proto/cosmos.proto";
+import "gogoproto/gogo.proto";
+import "google/protobuf/any.proto";
 
 option go_package = "github.com/ExocoreNetwork/exocore/x/dogfood/types";
 
@@ -21,9 +20,9 @@ message ExocoreValidator {
   // pubkey is the consensus public key of the validator, as a Protobuf Any.
   // this type is mirrored from the SDK's validator type in x/staking.
   google.protobuf.Any pubkey = 3 [
-        (cosmos_proto.accepts_interface) = "cosmos.crypto.PubKey",
-        (gogoproto.moretags) = "yaml:\"consensus_pubkey\""
-    ];
+    (cosmos_proto.accepts_interface) = "cosmos.crypto.PubKey",
+    (gogoproto.moretags) = "yaml:\"consensus_pubkey\""
+  ];
 }
 
 // AccountAddresses represents a list of account addresses. It is used to store the list of

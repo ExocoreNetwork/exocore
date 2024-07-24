@@ -1,10 +1,8 @@
-
 syntax = "proto3";
 package evmos.inflation.v1;
 
-import "gogoproto/gogo.proto";
-
 import "evmos/inflation/v1/inflation.proto";
+import "gogoproto/gogo.proto";
 
 option go_package = "github.com/evmos/evmos/v14/x/inflation/types";
 

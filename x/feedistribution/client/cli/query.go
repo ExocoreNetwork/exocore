@@ -2,6 +2,7 @@ package cli
 
 import (
 	"fmt"
+
 	"github.com/ExocoreNetwork/exocore/x/feedistribution/types"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
@@ -10,7 +11,7 @@ import (
 
 // GetQueryCmd returns the cli query commands for this module
 func GetQueryCmd(_ string) *cobra.Command {
-	// Group fee distirbution queries under a subcommand
+	// Group fee distribution queries under a subcommand
 	cmd := &cobra.Command{
 		Use:                        types.ModuleName,
 		Short:                      fmt.Sprintf("Querying commands for the %s module", types.ModuleName),
@@ -28,7 +29,7 @@ func QueryDistritbutionInfo() *cobra.Command {
 		Use:   "DistributionInfo query",
 		Short: "DistributionInfo query",
 		Args:  cobra.NoArgs,
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(cmd *cobra.Command, _ []string) error {
 			clientCtx, err := client.GetClientQueryContext(cmd)
 			if err != nil {
 				return err

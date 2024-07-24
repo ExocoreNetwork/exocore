@@ -228,7 +228,7 @@ service Query {
   }
 
   // QueryOperatorUSDValue queries the opted-in USD value for the operator
-  rpc QueryOperatorUSDValue(QueryOperatorUSDValueRequest) returns(QueryOperatorUSDValueResponse){
+  rpc QueryOperatorUSDValue(QueryOperatorUSDValueRequest) returns(DecValueField){
     option (google.api.http).get = "/exocore/operator/v1/QueryOperatorUSDValue";
   }
 

@@ -2,6 +2,7 @@ package cli
 
 import (
 	"fmt"
+
 	"github.com/ExocoreNetwork/exocore/x/feedistribution/types"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/spf13/cobra"

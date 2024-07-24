@@ -10,7 +10,6 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 
-	"github.com/ExocoreNetwork/exocore/utils"
 	"github.com/ExocoreNetwork/exocore/utils/key"
 	assetsKeeper "github.com/ExocoreNetwork/exocore/x/assets/keeper"
 	avsKeeper "github.com/ExocoreNetwork/exocore/x/avs/keeper"
@@ -57,22 +56,23 @@ func (k Keeper) setPool(ctx sdk.Context, pool types.Pool) {
 	store.Set(poolKey.Bytes(), k.cdc.MustMarshal(&pool))
 }
 
-func (k Keeper) getPools(ctx sdk.Context) ([]types.Pool, error) {
-	var pools []types.Pool
-
-	poolNamePrefix := utils.LowerCaseKey(poolNamePrefix)
-	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefixRewardInfo)
-	iter := sdk.KVStorePrefixIterator(store, append(poolNamePrefix.AsKey(), []byte(DefaultDelimiter)...))
-	defer utils.CloseLogError(iter, k.Logger(ctx))
-
-	for ; iter.Valid(); iter.Next() {
-		var pool types.Pool
-		k.cdc.MustUnmarshal(iter.Value(), &pool)
-		pools = append(pools, pool)
-	}
-
-	return pools, nil
-}
+// TODO: to be enabled later by avs
+// func (k Keeper) getPools(ctx sdk.Context) ([]types.Pool, error) {
+//	var pools []types.Pool
+//
+//	poolNamePrefix := utils.LowerCaseKey(poolNamePrefix)
+//	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefixRewardInfo)
+//	iter := sdk.KVStorePrefixIterator(store, append(poolNamePrefix.AsKey(), []byte(DefaultDelimiter)...))
+//	defer utils.CloseLogError(iter, k.Logger(ctx))
+//
+//	for ; iter.Valid(); iter.Next() {
+//		var pool types.Pool
+//		k.cdc.MustUnmarshal(iter.Value(), &pool)
+//		pools = append(pools, pool)
+//	}
+//
+//	return pools, nil
+//}
 
 func (k Keeper) getPool(ctx sdk.Context, name string) *rewardRecord {
 	var pool types.Pool
@@ -82,5 +82,4 @@ func (k Keeper) getPool(ctx sdk.Context, name string) *rewardRecord {
 		return newRewardRecord(ctx, k, k.banker, k.distributor, types.NewPool(name))
 	}
 	return newRewardRecord(ctx, k, k.banker, k.distributor, pool)
-
 }

@@ -1,10 +1,9 @@
 syntax = "proto3";
 package exocore.assets.v1;
 
-import "gogoproto/gogo.proto";
-
 import "exocore/assets/v1/params.proto";
 import "exocore/assets/v1/tx.proto";
+import "gogoproto/gogo.proto";
 
 option go_package = "github.com/ExocoreNetwork/exocore/x/assets/types";
 
@@ -33,7 +32,7 @@ message GenesisState {
 // It is used to store the staker address and its deposits for each asset ID.
 message DepositsByStaker {
   // staker is the address of the staker.
-  string staker = 1 [ (gogoproto.customname) = "StakerID" ];
+  string staker = 1 [(gogoproto.customname) = "StakerID"];
   // deposits is the list of deposits, indexed by the asset id.
   // The struct is the `StakerAssetInfo` which contains deposits,
   // withdrawable and unbonding amount.
@@ -48,7 +47,7 @@ message DepositsByStaker {
 // and not Deposit to prevent conflict with CrossChainOpType.
 message DepositByAsset {
   // asset_id is the id of the asset.
-  string asset_id = 1 [ (gogoproto.customname) = "AssetID" ];
+  string asset_id = 1 [(gogoproto.customname) = "AssetID"];
   // info is the asset info.
   StakerAssetInfo info = 2 [(gogoproto.nullable) = false];
 }

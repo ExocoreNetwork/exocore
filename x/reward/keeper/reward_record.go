@@ -16,7 +16,7 @@ type rewardRecord struct {
 	staker distrtypes.StakingKeeper
 }
 
-func newRewardRecord(ctx sdk.Context, k Keeper, banker bankkeeper.Keeper, distributor types.Distributor, p types.Pool) *rewardRecord {
+func newRewardRecord(ctx sdk.Context, k Keeper, banker bankkeeper.Keeper, distributor types.Distributor, _ types.Pool) *rewardRecord {
 	return &rewardRecord{
 		ctx:         ctx,
 		k:           k,

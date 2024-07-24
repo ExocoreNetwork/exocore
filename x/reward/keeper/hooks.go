@@ -23,14 +23,8 @@ func (k Keeper) AfterEpochEnd(
 	}
 
 	// get all the avs address bypass the epoch end
-	epochEndAVS, err := k.avsKeeper.GetEpochEndAVSs(ctx)
-	if err != nil {
-		k.Logger(ctx).Error(
-			"epochEndAVS got error",
-			"epochEndAVS", epochEndAVS,
-		)
-		return
-	}
+	epochEndAVS := k.avsKeeper.GetEpochEndAVSs(ctx, epochIdentifier, epochNumber)
+
 	pool := k.getPool(ctx, types.ModuleName)
 	// distribute the reward to the avs accordingly
 	ForEach(epochEndAVS, func(p string) {
@@ -42,10 +36,10 @@ func (k Keeper) AfterEpochEnd(
 			)
 			return
 		}
-		assetId := avsInfo.Info.AssetId
-		operatorAddress := avsInfo.Info.OperatorAddress
+		assetID := avsInfo.Info.AssetIDs
+		ownerAddress := avsInfo.Info.AvsOwnerAddress
 
-		for _, operator := range operatorAddress {
+		for _, operator := range ownerAddress {
 			opAddr, err := sdk.AccAddressFromBech32(operator)
 			if err != nil {
 				k.Logger(ctx).Error(
@@ -54,7 +48,7 @@ func (k Keeper) AfterEpochEnd(
 				)
 				return
 			}
-			for _, asset := range assetId {
+			for _, asset := range assetID {
 				assetInfo, err := k.assetsKeeper.GetStakingAssetInfo(ctx, asset)
 				if err != nil {
 					k.Logger(ctx).Error(

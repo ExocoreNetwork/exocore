@@ -1,6 +1,7 @@
 syntax = "proto3";
 
 package exocore.reward;
+
 import "cosmos/msg/v1/msg.proto";
 import "cosmos_proto/cosmos.proto";
 import "exocore/reward/params.proto";

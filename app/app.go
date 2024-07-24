@@ -569,6 +569,7 @@ func NewExocoreApp(
 	// these two modules aren't finalized yet.
 	app.RewardKeeper = rewardKeeper.NewKeeper(
 		appCodec, keys[rewardTypes.StoreKey], app.AssetsKeeper,
+		app.AVSManagerKeeper,
 	)
 	app.ExoSlashKeeper = slashKeeper.NewKeeper(
 		appCodec, keys[exoslashTypes.StoreKey], app.AssetsKeeper,

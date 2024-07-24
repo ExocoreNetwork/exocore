@@ -1,12 +1,11 @@
 package keeper
 
 import (
-	collections "cosmossdk.io/collections"
-	"cosmossdk.io/core/store"
-	"cosmossdk.io/log"
 	"fmt"
+
 	stakingkeeper "github.com/ExocoreNetwork/exocore/x/dogfood/keeper"
 	"github.com/ExocoreNetwork/exocore/x/feedistribution/types"
+	"github.com/cometbft/cometbft/libs/log"
 	"github.com/cosmos/cosmos-sdk/codec"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -14,11 +13,9 @@ import (
 
 type (
 	Keeper struct {
-		cdc          codec.BinaryCodec
-		storeService store.KVStoreService
-		storeKey     storetypes.StoreKey
-		logger       log.Logger
-
+		cdc      codec.BinaryCodec
+		storeKey storetypes.StoreKey
+		logger   log.Logger
 		// the address capable of executing a MsgUpdateParams message. Typically, this
 		// should be the x/gov module account.
 		authority    string
@@ -29,20 +26,19 @@ type (
 
 		feeCollectorName string
 		// FeePool stores decimal tokens that cannot be yet distributed.
-		FeePool       collections.Item[types.FeePool]
+		FeePool       types.FeePool
 		StakingKeeper stakingkeeper.Keeper
 		// ValidatorsAccumulatedCommission key: valAddr | value: ValidatorAccumulatedCommission
-		ValidatorsAccumulatedCommission collections.Map[sdk.ValAddress, types.ValidatorAccumulatedCommission]
+		ValidatorsAccumulatedCommission map[string]types.ValidatorAccumulatedCommission
 		// ValidatorCurrentRewards key: valAddr | value: ValidatorCurrentRewards
-		ValidatorCurrentRewards collections.Map[sdk.ValAddress, types.ValidatorCurrentRewards]
+		ValidatorCurrentRewards map[string]types.ValidatorCurrentRewards
 		// ValidatorOutstandingRewards key: valAddr | value: ValidatorOustandingRewards
-		ValidatorOutstandingRewards collections.Map[sdk.ValAddress, types.ValidatorOutstandingRewards]
+		ValidatorOutstandingRewards map[string]types.ValidatorOutstandingRewards
 	}
 )
 
 func NewKeeper(
 	cdc codec.BinaryCodec,
-	storeService store.KVStoreService,
 	logger log.Logger,
 	authority string,
 	storeKey storetypes.StoreKey,
@@ -53,11 +49,10 @@ func NewKeeper(
 	}
 
 	return Keeper{
-		cdc:          cdc,
-		storeService: storeService,
-		authority:    authority,
-		storeKey:     storeKey,
-		logger:       logger,
+		cdc:       cdc,
+		authority: authority,
+		storeKey:  storeKey,
+		logger:    logger,
 
 		bankKeeper: bankKeeper,
 	}

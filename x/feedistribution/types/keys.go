@@ -29,14 +29,15 @@ func init() {
 
 const (
 	// EpochIdentifier defines the epoch identifier for fee distribution module
-	prefixParams = iota + 1
-	prefixEpochIdentifier
+	prefixParams          = "feedistributionPrefixParams"
+	prefixEpochIdentifier = "feedistrEpochPrefixEpochIdentifier"
 )
 
 var (
 	KeyPrefixParams          = KeyPrefix(prefixParams)
 	KeyPrefixEpochIdentifier = KeyPrefix(prefixEpochIdentifier)
 )
+
 var (
 	EventTypeCommission         = "commission"
 	EventTypeSetWithdrawAddress = "set_withdraw_address"
@@ -50,6 +51,6 @@ var (
 	AttributeKeyDelegator       = "delegator"
 )
 
-func KeyPrefix(p uint64) []byte {
+func KeyPrefix(p string) []byte {
 	return []byte(p)
 }

@@ -12,7 +12,7 @@ import (
 func TestParamsQuery(t *testing.T) {
 	keeper, ctx := keepertest.FeedistributeKeeper(t)
 	params := types.DefaultParams()
-	require.NoError(t, keeper.SetParams(ctx, params))
+	keeper.SetParams(ctx, params)
 
 	response, err := keeper.Params(ctx, &types.QueryParamsRequest{})
 	require.NoError(t, err)
