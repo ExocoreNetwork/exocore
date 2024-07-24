@@ -10,7 +10,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/client/tx"
 	"github.com/spf13/cobra"
 
-	assetstypes "github.com/ExocoreNetwork/exocore/x/assets/types"
 	"github.com/ExocoreNetwork/exocore/x/delegation/types"
 )
 
@@ -25,25 +24,12 @@ func CmdDelegate() *cobra.Command {
 			if err != nil {
 				return err
 			}
-
-			assetID := args[0]
-			approveSignature, approveSalt := "", ""
-			if assetID != assetstypes.NativeAssetID {
-				approveSignature = args[3]
-				approveSalt = args[4]
-			}
-
-			operatorAddrStr := args[1]
-
-			amount, ok := sdkmath.NewIntFromString(args[2])
-			if !ok || amount.LTE(sdkmath.ZeroInt()) {
-				return errors.New("amount invalid")
-			}
-			msg := types.NewMsgDelegation(assetID, clientCtx.GetFromAddress().String(), approveSignature, approveSalt, []types.KeyValue{{Key: operatorAddrStr, Value: &types.ValueField{Amount: amount}}})
-
-			if err := msg.ValidateBasic(); err != nil {
+			assetID, operatorAddrStr, amount, err := parseArgs(args)
+			if err != nil {
 				return err
 			}
+			msg := types.NewMsgDelegation(assetID, clientCtx.GetFromAddress().String(), []types.KeyValue{{Key: operatorAddrStr, Value: &types.ValueField{Amount: amount}}})
+
 			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), msg)
 		},
 	}
@@ -64,23 +50,33 @@ func CmdUndelegate() *cobra.Command {
 				return err
 			}
 
-			assetID := args[0]
-
-			operatorAddrStr := args[1]
-
-			amount, ok := sdkmath.NewIntFromString(args[2])
-			if !ok || amount.LTE(sdkmath.ZeroInt()) {
-				return errors.New("amount invalid")
-			}
-			msg := types.NewMsgUndelegation(assetID, clientCtx.GetFromAddress().String(), []types.KeyValue{{Key: operatorAddrStr, Value: &types.ValueField{Amount: amount}}})
-
-			if err := msg.ValidateBasic(); err != nil {
+			assetID, operatorAddrStr, amount, err := parseArgs(args)
+			if err != nil {
 				return err
 			}
+
+			msg := types.NewMsgUndelegation(assetID, clientCtx.GetFromAddress().String(), []types.KeyValue{{Key: operatorAddrStr, Value: &types.ValueField{Amount: amount}}})
+
 			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), msg)
 		},
 	}
 
 	flags.AddTxFlagsToCmd(cmd)
 	return cmd
+}
+
+func parseArgs(args []string) (string, string, sdkmath.Int, error) {
+	if len(args) < 3 {
+		return "", "", sdkmath.ZeroInt(), errors.New("not enough arguments")
+	}
+
+	assetID := args[0]
+	operatorAddrStr := args[1]
+
+	amount, ok := sdkmath.NewIntFromString(args[2])
+	if !ok || amount.LTE(sdkmath.ZeroInt()) {
+		return "", "", sdkmath.ZeroInt(), errors.New("amount invalid")
+	}
+
+	return assetID, operatorAddrStr, amount, nil
 }

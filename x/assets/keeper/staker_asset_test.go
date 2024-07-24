@@ -81,7 +81,7 @@ func (suite *StakingAssetsTestSuite) TestUpdateStakerAssetsState() {
 }
 
 func (suite *StakingAssetsTestSuite) TestGetStakerAssetInfos() {
-	stakerID := fmt.Sprintf("%s_%s", suite.Address, "0")
+	stakerID := fmt.Sprintf("%s_%s", suite.Address, "0x0")
 	ethUniAssetID := fmt.Sprintf("%s_%s", "0x1f9840a85d5af5bf1d1762f925bdaddc4201f984", "101")
 	ethUsdtAssetID := fmt.Sprintf("%s_%s", "0xdac17f958d2ee523a2206206994597c13d831ec7", "101")
 	ethUniInitialChangeValue := assetstype.DeltaStakerSingleAsset{

@@ -186,7 +186,7 @@ func (k Keeper) Slash(ctx sdk.Context, event *SlashParams) error {
 		return errorsmod.Wrap(rtypes.ErrSlashAmountIsNegative, fmt.Sprintf("the amount is:%s", event.OpAmount))
 	}
 	stakeID, assetID := getStakeIDAndAssetID(event)
-	// check is asset exist
+	// check if asset exists
 	if !k.assetsKeeper.IsStakingAsset(ctx, assetID) {
 		return errorsmod.Wrap(rtypes.ErrSlashAssetNotExist, fmt.Sprintf("the assetID is:%s", assetID))
 	}
@@ -196,7 +196,9 @@ func (k Keeper) Slash(ctx sdk.Context, event *SlashParams) error {
 	if assetID != assetstypes.NativeAssetID {
 		changeAmount := assetstypes.DeltaStakerSingleAsset{
 			TotalDepositAmount: event.OpAmount.Neg(),
+			WithdrawableAmount: event.OpAmount.Neg(),
 		}
+
 		err := k.assetsKeeper.UpdateStakerAssetState(ctx, stakeID, assetID, changeAmount)
 		if err != nil {
 			return err
