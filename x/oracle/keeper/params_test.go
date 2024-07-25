@@ -17,7 +17,7 @@ func TestGetParams(t *testing.T) {
 	require.EqualValues(t, params, k.GetParams(ctx))
 }
 
-func TestUpdateTokenFeeder(t *testing.T) {
+func TestUpdateTokenFeederUpdate(t *testing.T) {
 	tests := []struct {
 		name        string
 		tokenFeeder types.TokenFeeder
@@ -221,4 +221,76 @@ func TestParamsValidate(t *testing.T) {
 	p.MaxSizePrices = 0
 	err := p.Validate()
 	require.ErrorIs(t, err, types.ErrInvalidParams.Wrap("invalid MaxSizePrices"))
+}
+
+func TestTokenFeederValidate(t *testing.T) {
+	p := types.DefaultParams()
+	cases := []struct {
+		name         string
+		prevEndBlock uint64
+		feeder       *types.TokenFeeder
+		err          error
+	}{
+		{
+			name:         "invalid case, endblock==0",
+			prevEndBlock: 0,
+			feeder: &types.TokenFeeder{
+				TokenID:        1,
+				RuleID:         1,
+				StartRoundID:   1,
+				StartBaseBlock: 1000000,
+				Interval:       10,
+			},
+			err: types.ErrInvalidParams.Wrap("invalid tokenFeeder, for the same token at most one running or future tokenFeeder without endblock set"),
+		},
+		{
+			name:         "invalid case, overlap",
+			prevEndBlock: 1000015,
+			feeder: &types.TokenFeeder{
+				TokenID:        1,
+				RuleID:         1,
+				StartRoundID:   1,
+				StartBaseBlock: 1000000,
+				Interval:       10,
+			},
+			err: types.ErrInvalidParams.Wrap("invalid tokenFeeder overlap with previous feeder"),
+		},
+		{
+			name:         "invalid case, roundID not continuous",
+			prevEndBlock: 1000015,
+			feeder: &types.TokenFeeder{
+				TokenID:        1,
+				RuleID:         1,
+				StartRoundID:   2,
+				StartBaseBlock: 1000020,
+				Interval:       10,
+			},
+			err: types.ErrInvalidParams.Wrap("invalid tokenFeeder no continuos roundID"),
+		},
+		{
+			name:         "valid case with two feeders",
+			prevEndBlock: 1000015,
+			feeder: &types.TokenFeeder{
+				TokenID:        1,
+				RuleID:         1,
+				StartRoundID:   3,
+				StartBaseBlock: 1000020,
+				Interval:       10,
+			},
+			err: nil,
+		},
+	}
+	for _, testCase := range cases {
+		t.Run(testCase.name, func(t *testing.T) {
+			p = types.DefaultParams()
+			p.TokenFeeders[1].EndBlock = testCase.prevEndBlock
+			p.TokenFeeders = append(p.TokenFeeders, testCase.feeder)
+			err := p.Validate()
+			if testCase.err != nil {
+				require.ErrorIs(t, err, testCase.err)
+			} else {
+				require.NoError(t, err)
+			}
+		})
+	}
 }
