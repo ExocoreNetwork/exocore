@@ -33,7 +33,7 @@ const (
 // AVSInfoRegister register the avs related information and change the state in avs keeper module.
 func (p Precompile) RegisterAVS(
 	ctx sdk.Context,
-	_ common.Address,
+	origin common.Address,
 	contract *vm.Contract,
 	_ vm.StateDB,
 	method *abi.Method,
@@ -44,12 +44,12 @@ func (p Precompile) RegisterAVS(
 	if err != nil {
 		return nil, errorsmod.Wrap(err, "parse args error")
 	}
-	avsAddress, err := util.ProcessAddress(contract.Address().String())
+	avsAddress, err := util.ProcessAddress(contract.CallerAddress.String())
 	if err != nil {
 		return nil, errorsmod.Wrap(err, "parse avsAddress error")
 	}
 
-	callerAddress, err := util.ProcessAddress(contract.CallerAddress.String())
+	callerAddress, err := util.ProcessAddress(origin.String())
 	if err != nil {
 		return nil, errorsmod.Wrap(err, "parse callerAddress error")
 	}
@@ -70,7 +70,7 @@ func (p Precompile) RegisterAVS(
 
 func (p Precompile) DeregisterAVS(
 	ctx sdk.Context,
-	_ common.Address,
+	origin common.Address,
 	contract *vm.Contract,
 	_ vm.StateDB,
 	method *abi.Method,
@@ -87,13 +87,13 @@ func (p Precompile) DeregisterAVS(
 	}
 	avsParams.AvsName = avsName
 
-	avsAddress, err := util.ProcessAddress(contract.Address().String())
+	avsAddress, err := util.ProcessAddress(contract.CallerAddress.String())
 	if err != nil {
 		return nil, errorsmod.Wrap(err, "parse avsAddress error")
 	}
 	avsParams.AvsAddress = avsAddress
 
-	callerAddress, err := util.ProcessAddress(contract.CallerAddress.String())
+	callerAddress, err := util.ProcessAddress(origin.String())
 	if err != nil {
 		return nil, errorsmod.Wrap(err, "parse callerAddress error")
 	}
@@ -110,7 +110,7 @@ func (p Precompile) DeregisterAVS(
 
 func (p Precompile) UpdateAVS(
 	ctx sdk.Context,
-	_ common.Address,
+	origin common.Address,
 	contract *vm.Contract,
 	_ vm.StateDB,
 	method *abi.Method,
@@ -121,13 +121,13 @@ func (p Precompile) UpdateAVS(
 	if err != nil {
 		return nil, errorsmod.Wrap(err, "parse args error")
 	}
-	avsAddress, err := util.ProcessAddress(contract.Address().String())
+	avsAddress, err := util.ProcessAddress(contract.CallerAddress.String())
 	if err != nil {
 		return nil, errorsmod.Wrap(err, "parse avsAddress error")
 	}
 	avsParams.AvsAddress = avsAddress
 
-	callerAddress, err := util.ProcessAddress(contract.CallerAddress.String())
+	callerAddress, err := util.ProcessAddress(origin.String())
 	if err != nil {
 		return nil, errorsmod.Wrap(err, "parse callerAddress error")
 	}
@@ -144,7 +144,7 @@ func (p Precompile) UpdateAVS(
 
 func (p Precompile) BindOperatorToAVS(
 	ctx sdk.Context,
-	_ common.Address,
+	origin common.Address,
 	contract *vm.Contract,
 	_ vm.StateDB,
 	method *abi.Method,
@@ -152,14 +152,14 @@ func (p Precompile) BindOperatorToAVS(
 ) ([]byte, error) {
 	operatorParams := &avskeeper.OperatorOptParams{}
 
-	callerAddress, err := util.ProcessAddress(contract.CallerAddress.String())
+	callerAddress, err := util.ProcessAddress(origin.String())
 	if err != nil {
 		return nil, errorsmod.Wrap(err, "parse callerAddress error")
 	}
 
 	operatorParams.OperatorAddress = callerAddress
 
-	avsAddress, err := util.ProcessAddress(contract.Address().String())
+	avsAddress, err := util.ProcessAddress(contract.CallerAddress.String())
 	if err != nil {
 		return nil, errorsmod.Wrap(err, "parse avsAddress error")
 	}
@@ -175,21 +175,21 @@ func (p Precompile) BindOperatorToAVS(
 
 func (p Precompile) UnbindOperatorToAVS(
 	ctx sdk.Context,
-	_ common.Address,
+	origin common.Address,
 	contract *vm.Contract,
 	_ vm.StateDB,
 	method *abi.Method,
 	_ []interface{},
 ) ([]byte, error) {
 	operatorParams := &avskeeper.OperatorOptParams{}
-	callerAddress, err := util.ProcessAddress(contract.CallerAddress.String())
+	callerAddress, err := util.ProcessAddress(origin.String())
 	if err != nil {
 		return nil, errorsmod.Wrap(err, "parse callerAddress error")
 	}
 
 	operatorParams.OperatorAddress = callerAddress
 
-	avsAddress, err := util.ProcessAddress(contract.Address().String())
+	avsAddress, err := util.ProcessAddress(contract.CallerAddress.String())
 	if err != nil {
 		return nil, errorsmod.Wrap(err, "parse avsAddress error")
 	}
@@ -210,18 +210,21 @@ func (p Precompile) UnbindOperatorToAVS(
 // CreateAVSTask Middleware uses exocore's default avstask template to create tasks in avstask module.
 func (p Precompile) CreateAVSTask(
 	ctx sdk.Context,
-	_ common.Address,
+	origin common.Address,
 	contract *vm.Contract,
 	stateDB vm.StateDB,
 	method *abi.Method,
 	args []interface{},
 ) ([]byte, error) {
-	callerAddress, _ := util.ProcessAddress(contract.CallerAddress.String())
+	callerAddress, err := util.ProcessAddress(origin.String())
+	if err != nil {
+		return nil, err
+	}
 	params, err := p.GetTaskParamsFromInputs(ctx, args)
 	if err != nil {
 		return nil, err
 	}
-	taskAddress, err := util.ProcessAddress(contract.Address().String())
+	taskAddress, err := util.ProcessAddress(contract.CallerAddress.String())
 	if err != nil {
 		return nil, errorsmod.Wrap(err, "parse taskAddress error")
 	}
@@ -241,14 +244,18 @@ func (p Precompile) CreateAVSTask(
 // RegisterBLSPublicKey
 func (p Precompile) RegisterBLSPublicKey(
 	ctx sdk.Context,
-	_ common.Address,
-	contract *vm.Contract,
+	origin common.Address,
+	_ *vm.Contract,
 	_ vm.StateDB,
 	method *abi.Method,
 	args []interface{},
 ) ([]byte, error) {
 	blsParams := &avskeeper.BlsParams{}
-	callerAddress, _ := util.ProcessAddress(contract.CallerAddress.String())
+	callerAddress, err := util.ProcessAddress(origin.String())
+	if err != nil {
+		return nil, err
+	}
+
 	blsParams.Operator = callerAddress
 
 	if len(args) != len(p.ABI.Methods[MethodRegisterBLSPublicKey].Inputs) {
@@ -279,7 +286,7 @@ func (p Precompile) RegisterBLSPublicKey(
 	}
 	blsParams.PubkeyRegistrationMessageHash = pubkeyRegistrationMessageHash
 
-	err := p.avsKeeper.RegisterBLSPublicKey(ctx, blsParams)
+	err = p.avsKeeper.RegisterBLSPublicKey(ctx, blsParams)
 	if err != nil {
 		return nil, err
 	}
@@ -316,7 +323,9 @@ func (p Precompile) GetRegisteredPubkey(
 // SubmitProof
 func (p Precompile) SubmitProof(
 	_ sdk.Context,
+	_ common.Address,
 	_ *vm.Contract,
+	_ vm.StateDB,
 	method *abi.Method,
 	args []interface{},
 ) ([]byte, error) {

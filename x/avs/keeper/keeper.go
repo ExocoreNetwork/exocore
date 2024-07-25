@@ -179,7 +179,9 @@ func (k Keeper) AVSInfoUpdate(ctx sdk.Context, params *AVSRegisterOrDeregisterPa
 
 func (k Keeper) CreateAVSTask(ctx sdk.Context, params *TaskParams) error {
 	avsInfo := k.GetAVSInfoByTaskAddress(ctx, params.TaskContractAddress)
-
+	if avsInfo.AvsAddress == "" {
+		return errorsmod.Wrap(types.ErrUnregisterNonExistent, fmt.Sprintf("the taskaddr is :%s", params.TaskContractAddress))
+	}
 	// If avs CreateAVSTask check CallerAddress
 	if !slices.Contains(avsInfo.AvsOwnerAddress, params.CallerAddress) {
 		return errorsmod.Wrap(types.ErrCallerAddressUnauthorized, fmt.Sprintf("this caller not qualified to CreateAVSTask %s", params.CallerAddress))

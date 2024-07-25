@@ -102,7 +102,7 @@ func (p Precompile) Run(evm *vm.EVM, contract *vm.Contract, readOnly bool) (bz [
 	case MethodGetOptinOperators:
 		bz, err = p.GetOptedInOperatorAccAddrs(ctx, contract, method, args)
 	case MethodSubmitProof:
-		bz, err = p.SubmitProof(ctx, contract, method, args)
+		bz, err = p.SubmitProof(ctx, evm.Origin, contract, stateDB, method, args)
 	case MethodGetRegisteredPubkey:
 		bz, err = p.GetRegisteredPubkey(ctx, contract, method, args)
 	}

@@ -74,8 +74,7 @@ func (s *AVSManagerPrecompileSuite) TestIsTransaction() {
 
 func (s *AVSManagerPrecompileSuite) TestRegisterAVS() {
 	avsName, operatorAddress, slashAddress, rewardAddress := "avsTest", "exo18cggcpvwspnd5c6ny8wrqxpffj5zmhklprtnph", "0xDF907c29719154eb9872f021d21CAE6E5025d7aB", "0xDF907c29719154eb9872f021d21CAE6E5025d7aB"
-	from := s.Address
-	avsOwnerAddress := []string{"0x3e108c058e8066DA635321Dc3018294cA82ddEdf", "0xDF907c29719154eb9872f021d21CAE6E5025d7aB", from.String()}
+	avsOwnerAddress := []string{"0x3e108c058e8066DA635321Dc3018294cA82ddEdf", "0xDF907c29719154eb9872f021d21CAE6E5025d7aB", s.Address.String()}
 	assetID := []string{"11", "22", "33"}
 	minStakeAmount, taskAddr, miniptInOperators, minTotalStakeAmount, avsReward, avsSlash := uint64(3), "0xDF907c29719154eb9872f021d21CAE6E5025d7aB", uint64(3), uint64(3), uint64(3), uint64(3)
 	avsUnbondingPeriod, minSelfDelegation := uint64(3), uint64(3)
@@ -109,7 +108,7 @@ func (s *AVSManagerPrecompileSuite) TestRegisterAVS() {
 			avsSlash,
 		)
 		s.Require().NoError(err, "failed to pack input")
-		return s.Address, input
+		return common.HexToAddress("0x3e108c058e8066DA635321Dc3018294cA82ddEdf"), input
 	}
 
 	successRet, err := s.precompile.Methods[avs.MethodRegisterAVS].Outputs.Pack(true)
@@ -138,16 +137,14 @@ func (s *AVSManagerPrecompileSuite) TestRegisterAVS() {
 	for _, tc := range testcases {
 		tc := tc
 		s.Run(tc.name, func() {
-			// setup basic test suite
-			s.SetupTest()
 
 			baseFee := s.App.FeeMarketKeeper.GetBaseFee(s.Ctx)
 
 			// malleate testcase
 			caller, input := tc.malleate()
+
 			contract := vm.NewPrecompile(vm.AccountRef(caller), s.precompile, big.NewInt(0), uint64(1e6))
 			contract.Input = input
-			contract.CallerAddress = from
 
 			contractAddr := contract.Address()
 			// Build and sign Ethereum transaction
@@ -206,7 +203,6 @@ func (s *AVSManagerPrecompileSuite) TestRegisterAVS() {
 
 func (s *AVSManagerPrecompileSuite) TestDeregisterAVS() {
 	avsName := "avsTest"
-	from := s.Address
 	commonMalleate := func() (common.Address, []byte) {
 		// prepare the call input for delegation test
 		input, err := s.precompile.Pack(
@@ -214,7 +210,7 @@ func (s *AVSManagerPrecompileSuite) TestDeregisterAVS() {
 			avsName,
 		)
 		s.Require().NoError(err, "failed to pack input")
-		return s.Address, input
+		return common.HexToAddress("0x3e108c058e8066DA635321Dc3018294cA82ddEdf"), input
 	}
 	successRet, err := s.precompile.Methods[avs.MethodDeregisterAVS].Outputs.Pack(true)
 	s.Require().NoError(err)
@@ -242,16 +238,13 @@ func (s *AVSManagerPrecompileSuite) TestDeregisterAVS() {
 	for _, tc := range testcases {
 		tc := tc
 		s.Run(tc.name, func() {
-			// setup basic test suite
-			//s.SetupTest()
-
 			baseFee := s.App.FeeMarketKeeper.GetBaseFee(s.Ctx)
 
 			// malleate testcase
 			caller, input := tc.malleate()
+
 			contract := vm.NewPrecompile(vm.AccountRef(caller), s.precompile, big.NewInt(0), uint64(1e6))
 			contract.Input = input
-			contract.CallerAddress = from
 
 			contractAddr := contract.Address()
 			// Build and sign Ethereum transaction
@@ -310,8 +303,7 @@ func (s *AVSManagerPrecompileSuite) TestDeregisterAVS() {
 
 func (s *AVSManagerPrecompileSuite) TestUpdateAVS() {
 	avsName, slashAddress, rewardAddress := "avsTest", "0xDF907c29719154eb9872f021d21CAE6E5025d7aB", "0xDF907c29719154eb9872f021d21CAE6E5025d7aB"
-	from := s.Address
-	avsOwnerAddress := []string{"0x3e108c058e8066DA635321Dc3018294cA82ddEdf", "0xDF907c29719154eb9872f021d21CAE6E5025d7aB", from.String()}
+	avsOwnerAddress := []string{"0x3e108c058e8066DA635321Dc3018294cA82ddEdf", "0xDF907c29719154eb9872f021d21CAE6E5025d7aB", s.Address.String()}
 	assetID := []string{"11", "22", "33"}
 	minStakeAmount, taskAddr, minOptInOperators, minTotalStakeAmount, avsReward, avsSlash := uint64(3), "0xDF907c29719154eb9872f021d21CAE6E5025d7aB", uint64(3), uint64(3), uint64(3), uint64(3)
 	avsUnbondingPeriod, minSelfDelegation := uint64(3), uint64(3)
@@ -335,7 +327,7 @@ func (s *AVSManagerPrecompileSuite) TestUpdateAVS() {
 			avsSlash,
 		)
 		s.Require().NoError(err, "failed to pack input")
-		return s.Address, input
+		return common.HexToAddress("0x3e108c058e8066DA635321Dc3018294cA82ddEdf"), input
 	}
 
 	successRet, err := s.precompile.Methods[avs.MethodUpdateAVS].Outputs.Pack(true)
@@ -364,16 +356,13 @@ func (s *AVSManagerPrecompileSuite) TestUpdateAVS() {
 	for _, tc := range testcases {
 		tc := tc
 		s.Run(tc.name, func() {
-			// setup basic test suite
-			//s.SetupTest()
-
 			baseFee := s.App.FeeMarketKeeper.GetBaseFee(s.Ctx)
 
 			// malleate testcase
 			caller, input := tc.malleate()
+
 			contract := vm.NewPrecompile(vm.AccountRef(caller), s.precompile, big.NewInt(0), uint64(1e6))
 			contract.Input = input
-			contract.CallerAddress = from
 
 			contractAddr := contract.Address()
 			// Build and sign Ethereum transaction
@@ -449,7 +438,7 @@ func (s *AVSManagerPrecompileSuite) TestRegisterOperatorToAVS() {
 			avs.MethodRegisterOperatorToAVS,
 		)
 		s.Require().NoError(err, "failed to pack input")
-		return s.Address, input
+		return common.HexToAddress("0x3e108c058e8066DA635321Dc3018294cA82ddEdf"), input
 	}
 	successRet, err := s.precompile.Methods[avs.MethodRegisterAVS].Outputs.Pack(true)
 	s.Require().NoError(err)
@@ -654,10 +643,10 @@ func (s *AVSManagerPrecompileSuite) TestDeregisterOperatorFromAVS() {
 
 // TestRun tests the precompiles Run method reg avstask.
 func (s *AVSManagerPrecompileSuite) TestRunRegTaskinfo() {
-	callerAddress, err := util.ProcessAddress(s.Address.String())
 	registerAVS := func() {
 		avsName, avsAddres, slashAddress := "avsTest", "exo13h6xg79g82e2g2vhjwg7j4r2z2hlncelwutkjr", "exo13h6xg79g82e2g2vhjwg7j4r2z2hlncelwutash"
-		avsOwnerAddress := []string{"exo13h6xg79g82e2g2vhjwg7j4r2z2hlncelwutkjr", callerAddress, "exo13h6xg79g82e2g2vhjwg7j4r2z2hlncelwutkj2"}
+		addr, _ := util.ProcessAddress(s.Address.String())
+		avsOwnerAddress := []string{"exo13h6xg79g82e2g2vhjwg7j4r2z2hlncelwutkjr", addr, "exo13h6xg79g82e2g2vhjwg7j4r2z2hlncelwutkj2"}
 		assetID := []string{"11", "22", "33"}
 		avs := &types.AVSInfo{
 			Name:                avsName,
@@ -673,7 +662,7 @@ func (s *AVSManagerPrecompileSuite) TestRunRegTaskinfo() {
 			MinTotalStakeAmount: 1000,
 			AvsSlash:            sdk.MustNewDecFromStr("0.001"),
 			AvsReward:           sdk.MustNewDecFromStr("0.002"),
-			TaskAddr:            "exo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqzgp3kyh0l",
+			TaskAddr:            addr,
 		}
 
 		err := s.App.AVSManagerKeeper.SetAVSInfo(s.Ctx, avs)

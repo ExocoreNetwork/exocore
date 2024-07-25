@@ -4,7 +4,10 @@ import (
 	"encoding/hex"
 	"strings"
 
+	"github.com/ExocoreNetwork/exocore/cmd/config"
+
 	"github.com/cosmos/btcutil/bech32"
+	"github.com/ethereum/go-ethereum/common"
 
 	"github.com/evmos/evmos/v14/crypto/ethsecp256k1"
 
@@ -102,17 +105,14 @@ func DecodeHexString(hexString string) ([]byte, error) {
 
 func ProcessAddress(address string) (string, error) {
 	switch {
-	case strings.HasPrefix(address, "0x"):
-		avsAddressHex, err := DecodeHexString(address)
-		if err != nil {
-			return "", errorsmod.Wrapf(errortypes.ErrInvalidAddress, "invalid input address: %s", address)
-		}
-		encodedAddress, err := bech32.EncodeFromBase256("exo", avsAddressHex)
+	case common.IsHexAddress(address):
+		b := common.FromHex(address)
+		encodedAddress, err := bech32.EncodeFromBase256(config.Bech32Prefix, b)
 		if err != nil {
 			return "", err
 		}
 		return encodedAddress, nil
-	case strings.HasPrefix(address, "exo"):
+	case strings.HasPrefix(address, config.Bech32Prefix):
 		return address, nil
 	default:
 		return "", errorsmod.Wrapf(errortypes.ErrInvalidAddress, "invalid input address: %s", address)
