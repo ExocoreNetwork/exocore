@@ -220,5 +220,5 @@ func TestParamsValidate(t *testing.T) {
 	p := types.DefaultParams()
 	p.MaxSizePrices = 0
 	err := p.Validate()
-	require.ErrorIs(t, err, types.ErrInvalidParams.Wrap("invalid MaxValidators"))
+	require.ErrorIs(t, err, types.ErrInvalidParams.Wrap("invalid MaxSizePrices"))
 }
