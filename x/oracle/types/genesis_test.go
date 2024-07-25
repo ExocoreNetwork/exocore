@@ -49,11 +49,12 @@ func TestGenesisState_Validate(t *testing.T) {
 					},
 				},
 				Params: types.Params{
-					MaxNonce:   3,
-					ThresholdA: 2,
-					ThresholdB: 3,
-					Mode:       1,
-					MaxDetId:   5,
+					MaxNonce:      3,
+					ThresholdA:    2,
+					ThresholdB:    3,
+					Mode:          1,
+					MaxDetId:      5,
+					MaxSizePrices: 100,
 				},
 				// this line is used by starport scaffolding # types/genesis/validField
 			},

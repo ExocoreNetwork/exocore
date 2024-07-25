@@ -99,8 +99,9 @@ func DefaultParams() Params {
 		ThresholdA: 2,
 		ThresholdB: 3,
 		// V1 set mode to 1
-		Mode:     1,
-		MaxDetId: 5,
+		Mode:          1,
+		MaxDetId:      5,
+		MaxSizePrices: 100,
 	}
 }
 
@@ -123,8 +124,8 @@ func (p Params) Validate() error {
 	// MaxDetID: This only works for DS, to tell how many continuous roundID_from_DS could be accept at most for one round of exorcore_oracle
 	// ThresholdA/ThresholdB: represents the threshold of voting power to confirm a price as final price
 	// Mode: tells how and when to confirm a final price, expect for voting power threshold, v1 set this value to 1 means final price will be confirmed as soon as it has reached the threshold of total voting power, and just ignore any remaining transactions followed for current round.
-	if p.MaxNonce < 1 || p.MaxDetId < 1 || p.ThresholdA < 1 || p.ThresholdB < p.ThresholdA || p.Mode != 1 {
-		return ErrInvalidParams.Wrapf("invalid maxNonce/maxDetID/Threshold/Mode: %d, %d, %d, %d, %d", p.MaxNonce, p.MaxDetId, p.ThresholdA, p.ThresholdB, p.Mode)
+	if p.MaxNonce < 1 || p.MaxDetId < 1 || p.ThresholdA < 1 || p.ThresholdB < p.ThresholdA || p.Mode != 1 || p.MaxSizePrices < 1 {
+		return ErrInvalidParams.Wrapf("invalid maxNonce/maxDetID/Threshold/Mode/MaxSizePrices: %d, %d, %d, %d, %d, %d", p.MaxNonce, p.MaxDetId, p.ThresholdA, p.ThresholdB, p.Mode, p.MaxSizePrices)
 	}
 
 	// validate tokenFeeders
@@ -299,6 +300,16 @@ func (p Params) TokenStarted(tokenID, height uint64) bool {
 // AddRules adds a new RuleSource defining which sources and how many of the defined source are needed to be valid for a price to be provided
 func (p Params) AddRules(rules ...*RuleSource) (Params, error) {
 	p.Rules = append(p.Rules, rules...)
+	return p, nil
+}
+
+func (p Params) UpdateMaxPriceCount(count int32) (Params, error) {
+	if count < 0 {
+		return p, ErrInvalidParams.Wrap("invalid maxPriceCount")
+	}
+	if count > 0 {
+		p.MaxSizePrices = count
+	}
 	return p, nil
 }
 

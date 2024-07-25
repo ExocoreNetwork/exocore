@@ -317,6 +317,10 @@ func (agc *AggregatorContext) GetParams() types.Params {
 	return *agc.params
 }
 
+func (agc *AggregatorContext) GetParamsMaxSizePrices() uint64 {
+	return uint64(agc.params.MaxSizePrices)
+}
+
 // NewAggregatorContext returns a new instance of AggregatorContext
 func NewAggregatorContext() *AggregatorContext {
 	return &AggregatorContext{
