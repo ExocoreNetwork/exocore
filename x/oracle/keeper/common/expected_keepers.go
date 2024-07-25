@@ -39,7 +39,8 @@ type KeeperOracle interface {
 	RemoveRecentParams(sdk.Context, uint64)
 	RemoveRecentMsg(sdk.Context, uint64)
 
-	GetMultipleAssetsPrices(ctx sdk.Context, assets map[string]interface{}) (map[string]types.Price, error)
+	GetSpecifiedAssetsPrice(ctx sdk.Context, assetID string) (types.Price, error)
+	GetMultipleAssetsPrices(ctx sdk.Context, assetIDs map[string]interface{}) (map[string]types.Price, error)
 }
 
 var _ KeeperDogfood = dogfoodkeeper.Keeper{}

@@ -10,15 +10,18 @@ import (
 type Keeper struct {
 	storeKey storetypes.StoreKey
 	cdc      codec.BinaryCodec
+	assetstype.OracleKeeper
 }
 
 func NewKeeper(
 	storeKey storetypes.StoreKey,
 	cdc codec.BinaryCodec,
+	oracleKeeper assetstype.OracleKeeper,
 ) Keeper {
 	return Keeper{
-		storeKey: storeKey,
-		cdc:      cdc,
+		storeKey:     storeKey,
+		cdc:          cdc,
+		OracleKeeper: oracleKeeper,
 	}
 }
 

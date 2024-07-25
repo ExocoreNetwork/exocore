@@ -138,6 +138,11 @@ func (p Precompile) RegisterToken(
 		return nil, err
 	}
 
+	_, assetID := assetstypes.GetStakeIDAndAssetIDFromStr(asset.LayerZeroChainID, "", asset.Address)
+	if _, err := p.assetsKeeper.GetSpecifiedAssetsPrice(ctx, assetID); err != nil {
+		return nil, err
+	}
+
 	err = p.assetsKeeper.SetStakingAssetInfo(ctx, &assetstypes.StakingAssetInfo{
 		AssetBasicInfo:     &asset,
 		StakingTotalAmount: sdkmath.NewInt(0),

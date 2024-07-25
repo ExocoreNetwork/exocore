@@ -550,7 +550,7 @@ func NewExocoreApp(
 	)
 
 	// asset and client chain registry.
-	app.AssetsKeeper = assetsKeeper.NewKeeper(keys[assetsTypes.StoreKey], appCodec)
+	app.AssetsKeeper = assetsKeeper.NewKeeper(keys[assetsTypes.StoreKey], appCodec, &app.OracleKeeper)
 
 	// operator registry, which handles vote power (and this requires delegation keeper).
 	app.OperatorKeeper = operatorKeeper.NewKeeper(
