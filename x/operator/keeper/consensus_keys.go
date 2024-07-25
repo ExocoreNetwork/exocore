@@ -426,10 +426,12 @@ func (k Keeper) ValidatorByConsAddrForChainID(
 		// TODO(mm): create unit tests for the case where a validator
 		// changes their pub key in the middle of an epoch, resulting
 		// in a different key. work around that issue here.
+		ctx.Logger().Error("ValidatorByConsAddrForChainID the operator isn't found by the chainID and consensus address", "consAddress", consAddr, "chainID", chainID)
 		return stakingtypes.Validator{}, false
 	}
 	found, tmKey, err := k.GetOperatorConsKeyForChainID(ctx, operatorAddr, chainID)
 	if !found || err != nil {
+		ctx.Logger().Error("ValidatorByConsAddrForChainID the consensus key isn't found by the chainID and operator address", "operatorAddr", operatorAddr, "chainID", chainID, "err", err)
 		return stakingtypes.Validator{}, false
 	}
 	// since we are sending the address, we have to send the consensus key as well.
@@ -437,12 +439,14 @@ func (k Keeper) ValidatorByConsAddrForChainID(
 	// which triggers a call to fetch the consensus key, in the slashing module.
 	key, err := cryptocodec.FromTmProtoPublicKey(*tmKey)
 	if err != nil {
+		ctx.Logger().Error("ValidatorByConsAddrForChainID error when decoding the consensus key", "err", err)
 		return stakingtypes.Validator{}, false
 	}
 	val, err := stakingtypes.NewValidator(
 		sdk.ValAddress(operatorAddr), key, stakingtypes.Description{},
 	)
 	if err != nil {
+		ctx.Logger().Error("ValidatorByConsAddrForChainID new validator error", "err", err)
 		return stakingtypes.Validator{}, false
 	}
 	val.Jailed = k.IsOperatorJailedForChainID(ctx, consAddr, chainID)
@@ -450,10 +454,12 @@ func (k Keeper) ValidatorByConsAddrForChainID(
 	// set the tokens, delegated shares and minimum self delegation for unjail
 	avsAddr, err := k.avsKeeper.GetAVSAddrByChainID(ctx, chainID)
 	if err != nil {
+		ctx.Logger().Error("ValidatorByConsAddrForChainID get AVS address from chainId error", "chainID", chainID, "err", err)
 		return stakingtypes.Validator{}, false
 	}
 	minSelfDelegation, err := k.avsKeeper.GetAVSMinimumSelfDelegation(ctx, avsAddr)
 	if err != nil {
+		ctx.Logger().Error("ValidatorByConsAddrForChainID get minimum self delegation for AVS error", "avsAddr", avsAddr, "err", err)
 		return stakingtypes.Validator{}, false
 	}
 	val.MinSelfDelegation = sdk.TokensFromConsensusPower(minSelfDelegation.TruncateInt64(), sdk.DefaultPowerReduction)
@@ -463,6 +469,7 @@ func (k Keeper) ValidatorByConsAddrForChainID(
 	// a multi-token staking system. The tokens and shares are always balanced.
 	operatorUSDValues, err := k.GetOrCalculateOperatorUSDValues(ctx, operatorAddr, chainID)
 	if err != nil {
+		ctx.Logger().Error("ValidatorByConsAddrForChainID get or calculate the operator USD values error", "operatorAddr", operatorAddr, "chainID", chainID, "err", err)
 		return stakingtypes.Validator{}, false
 	}
 	power := operatorUSDValues.TotalUSDValue.TruncateInt64()

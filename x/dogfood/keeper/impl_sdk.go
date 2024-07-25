@@ -145,6 +145,7 @@ func (k Keeper) Delegation(
 	operator := delegator
 	operatorUSDValues, err := k.operatorKeeper.GetOrCalculateOperatorUSDValues(ctx, operator, ctx.ChainID())
 	if err != nil {
+		k.Logger(ctx).Error("Delegation: failed to get or calculate the operator USD values", "operator", operator.String(), "chainID", ctx.ChainID(), "error", err)
 		return nil
 	}
 	return stakingtypes.Delegation{
