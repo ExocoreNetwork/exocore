@@ -169,6 +169,9 @@ func (k *Keeper) AssociateOperatorWithStaker(
 	operatorAddress sdk.AccAddress,
 	stakerAddress common.Address,
 ) error {
+	if !k.assetsKeeper.ClientChainExists(ctx, clientChainID) {
+		return delegationtype.ErrClientChainNotExist
+	}
 	if !k.operatorKeeper.IsOperator(ctx, operatorAddress) {
 		return delegationtype.ErrOperatorNotExist
 	}

@@ -98,4 +98,9 @@ var (
 		ModuleName, 21,
 		"there isn't any operator marked by the staker",
 	)
+
+	ErrClientChainNotExist = errorsmod.Register(
+		ModuleName, 22,
+		"the client chain has not been registered",
+	)
 )
