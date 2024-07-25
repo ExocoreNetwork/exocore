@@ -58,7 +58,7 @@ func (k Keeper) RegisterAsset(ctx context.Context, req *assetstype.RegisterAsset
 
 	// once an asset is registered, operator will start trying to update related power based on this asset's price, so we have to make sure this asset already has price updated by oracle-module
 	// TODO: there's no guarantee that the corresponding tokenfeeder is running, the latest price is possible to be some history price. But since currently there's no mechanism to remove an asset from assets module, so we just assume corresponding tokenfeeder will never set endblock for now.
-	if _, err := k.oKeeper.GetSpecifiedAssetsPrice(c, assetID); err != nil {
+	if _, err := k.GetSpecifiedAssetsPrice(c, assetID); err != nil {
 		return nil, err
 	}
 
