@@ -152,7 +152,7 @@ var _ = Describe("MsgUpdateParams", Ordered, func() {
 
 	})
 
-	Context("udpate maxSizePrices", func() {
+	Context("update maxSizePrices", func() {
 		It("update maxSizePrices", func() {
 			_, err := ks.ms.UpdateParams(ks.ctx, &types.MsgUpdateParams{
 				Params: types.Params{
