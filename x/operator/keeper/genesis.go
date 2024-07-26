@@ -25,7 +25,7 @@ func (k Keeper) InitGenesis(ctx sdk.Context, state types.GenesisState) []abci.Va
 				panic("unknown chain id")
 			}
 			// opt into the specified chain (TODO: avs address format)
-			if err := k.OptIn(ctx, operatorAddr, chainID); err != nil {
+			if err := k.OptIn(ctx, operatorAddr, k.avsKeeper.GetAVSAddrByChainID(ctx, chainID)); err != nil {
 				panic(err)
 			}
 			// #nosec G703 // already validated
