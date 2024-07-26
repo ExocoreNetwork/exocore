@@ -131,7 +131,7 @@ func (p Precompile) AssociateOperatorWithStaker(
 	}
 	operatorAccAddr, err := sdk.AccAddressFromBech32(string(operator))
 	if err != nil {
-		return nil, fmt.Errorf("error occurred when parse the operator address from Bech32,the operator is:%s, error:%s ", operator, err.Error())
+		return nil, fmt.Errorf("failed to parse the operator address from Bech32, operator:%s, error:%s ", operator, err.Error())
 	}
 	err = p.delegationKeeper.AssociateOperatorWithStaker(ctx, uint64(clientChainID), operatorAccAddr, common.Address(staker))
 	if err != nil {
