@@ -69,7 +69,7 @@ func UpdateParams() *cobra.Command {
 // todo: this function should be controlled by governance in the future
 func RegisterClientChain() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "RegisterClientChain Name MetaInfo LZChainId AddressLength",
+		Use:   "RegisterClientChain <Name> <MetaInfo> <clientChainID> <AddressLength>",
 		Short: "register client chain",
 		Args:  cobra.MinimumNArgs(4),
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -86,7 +86,7 @@ func RegisterClientChain() *cobra.Command {
 					MetaInfo: args[1],
 				},
 			}
-			lzChainID, err := strconv.ParseUint(args[2], 10, 64)
+			clientChainID, err := strconv.ParseUint(args[2], 10, 64)
 			if err != nil {
 				return errorsmod.Wrap(assetstype.ErrInvalidCliCmdArg, fmt.Sprintf("error arg is:%v", args[2]))
 			}
@@ -94,7 +94,7 @@ func RegisterClientChain() *cobra.Command {
 			if err != nil {
 				return errorsmod.Wrap(assetstype.ErrInvalidCliCmdArg, fmt.Sprintf("error arg is:%v", args[3]))
 			}
-			msg.Info.LayerZeroChainID = lzChainID
+			msg.Info.LayerZeroChainID = clientChainID
 			msg.Info.AddressLength = uint32(addressLength)
 			if err := msg.ValidateBasic(); err != nil {
 				return err
@@ -111,7 +111,7 @@ func RegisterClientChain() *cobra.Command {
 // todo: this function should be controlled by governance in the future
 func RegisterAsset() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "RegisterAsset Name Symbol Address MetaInfo TotalSupply LZChainId Decimals",
+		Use:   "RegisterAsset <Name> <Symbol> <Address> <MetaInfo> <TotalSupply> <clientChainID> <Decimals>",
 		Short: "register asset",
 		Args:  cobra.MinimumNArgs(7),
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -135,7 +135,7 @@ func RegisterAsset() *cobra.Command {
 				return errorsmod.Wrap(assetstype.ErrInvalidCliCmdArg, fmt.Sprintf("error arg is:%v", args[4]))
 			}
 
-			lzChainID, err := strconv.ParseUint(args[5], 10, 64)
+			clientChainID, err := strconv.ParseUint(args[5], 10, 64)
 			if err != nil {
 				return errorsmod.Wrap(assetstype.ErrInvalidCliCmdArg, fmt.Sprintf("error arg is:%v", args[5]))
 			}
@@ -145,7 +145,7 @@ func RegisterAsset() *cobra.Command {
 			}
 
 			msg.Info.TotalSupply = totalSupply
-			msg.Info.LayerZeroChainID = lzChainID
+			msg.Info.LayerZeroChainID = clientChainID
 			msg.Info.Decimals = uint32(decimal)
 			if err := msg.ValidateBasic(); err != nil {
 				return err

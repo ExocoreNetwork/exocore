@@ -55,7 +55,7 @@ func TestPricesGetMultiAssets(t *testing.T) {
 	prices, err := keeper.GetMultipleAssetsPrices(ctx, assets)
 	expectedPrices := make(map[string]types.Price)
 	v, _ := sdkmath.NewIntFromString(testdata.PTR5.Price)
-	//v, _ := sdkmath.NewIntFromString(testdata.PTR5.Price)
+	// v, _ := sdkmath.NewIntFromString(testdata.PTR5.Price)
 	expectedPrices["0x0b34c4d876cd569129cf56bafabb3f9e97a4ff42_0x9ce1"] = types.Price{
 		Value:   v,
 		Decimal: uint8(testdata.PTR5.Decimal),

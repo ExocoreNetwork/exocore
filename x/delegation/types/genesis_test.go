@@ -67,12 +67,12 @@ func (suite *GenesisTestSuite) TestValidateGenesis() {
 		},
 		{
 			name:     "base, should pass",
-			genState: types.NewGenesis(delegations),
+			genState: types.NewGenesis(delegations, nil),
 			expPass:  true,
 		},
 		{
 			name:     "invalid staker id",
-			genState: types.NewGenesis(delegations),
+			genState: types.NewGenesis(delegations, nil),
 			expPass:  false,
 			malleate: func(gs *types.GenesisState) {
 				gs.Delegations[0].StakerID = "invalid"
@@ -83,7 +83,7 @@ func (suite *GenesisTestSuite) TestValidateGenesis() {
 		},
 		{
 			name:     "duplicate staker id",
-			genState: types.NewGenesis(delegations),
+			genState: types.NewGenesis(delegations, nil),
 			expPass:  false,
 			malleate: func(gs *types.GenesisState) {
 				gs.Delegations = append(gs.Delegations, gs.Delegations[0])
@@ -94,7 +94,7 @@ func (suite *GenesisTestSuite) TestValidateGenesis() {
 		},
 		{
 			name:     "duplicate asset id",
-			genState: types.NewGenesis(delegations),
+			genState: types.NewGenesis(delegations, nil),
 			expPass:  false,
 			malleate: func(gs *types.GenesisState) {
 				gs.Delegations[0].Delegations = append(
@@ -108,7 +108,7 @@ func (suite *GenesisTestSuite) TestValidateGenesis() {
 		},
 		{
 			name:     "invalid asset id",
-			genState: types.NewGenesis(delegations),
+			genState: types.NewGenesis(delegations, nil),
 			expPass:  false,
 			malleate: func(gs *types.GenesisState) {
 				gs.Delegations[0].Delegations[0].AssetID = "invalid"
@@ -119,7 +119,7 @@ func (suite *GenesisTestSuite) TestValidateGenesis() {
 		},
 		{
 			name:     "asset id mismatch",
-			genState: types.NewGenesis(delegations),
+			genState: types.NewGenesis(delegations, nil),
 			expPass:  false,
 			malleate: func(gs *types.GenesisState) {
 				stakerID, _ := assetstypes.GetStakeIDAndAssetID(
@@ -133,7 +133,7 @@ func (suite *GenesisTestSuite) TestValidateGenesis() {
 		},
 		{
 			name:     "nil wrapped amount",
-			genState: types.NewGenesis(delegations),
+			genState: types.NewGenesis(delegations, nil),
 			expPass:  false,
 			malleate: func(gs *types.GenesisState) {
 				gs.Delegations[0].Delegations[0].PerOperatorAmounts[0].Value = nil
@@ -144,7 +144,7 @@ func (suite *GenesisTestSuite) TestValidateGenesis() {
 		},
 		{
 			name:     "nil unwrapped amount",
-			genState: types.NewGenesis(delegations),
+			genState: types.NewGenesis(delegations, nil),
 			expPass:  false,
 			malleate: func(gs *types.GenesisState) {
 				gs.Delegations[0].Delegations[0].PerOperatorAmounts[0].Value = &types.ValueField{}
@@ -155,7 +155,7 @@ func (suite *GenesisTestSuite) TestValidateGenesis() {
 		},
 		{
 			name:     "negative unwrapped amount",
-			genState: types.NewGenesis(delegations),
+			genState: types.NewGenesis(delegations, nil),
 			expPass:  false,
 			malleate: func(gs *types.GenesisState) {
 				gs.Delegations[0].Delegations[0].PerOperatorAmounts[0].Value = &types.ValueField{Amount: math.NewInt(-1)}
@@ -166,13 +166,41 @@ func (suite *GenesisTestSuite) TestValidateGenesis() {
 		},
 		{
 			name:     "invalid operator address",
-			genState: types.NewGenesis(delegations),
+			genState: types.NewGenesis(delegations, nil),
 			expPass:  false,
 			malleate: func(gs *types.GenesisState) {
 				gs.Delegations[0].Delegations[0].PerOperatorAmounts[0].Key = "invalid"
 			},
 			unmalleate: func(gs *types.GenesisState) {
 				gs.Delegations[0].Delegations[0].PerOperatorAmounts[0].Key = operatorAddress.String()
+			},
+		},
+		{
+			name:     "duplicate stakerID in associations",
+			genState: types.NewGenesis(delegations, nil),
+			expPass:  false,
+			malleate: func(gs *types.GenesisState) {
+				gs.Associations = make([]types.StakerToOperator, 2)
+				gs.Associations[0].StakerID = stakerID
+				gs.Associations[0].Operator = operatorAddress.String()
+				gs.Associations[1].StakerID = stakerID
+				gs.Associations[1].Operator = operatorAddress.String()
+			},
+			unmalleate: func(gs *types.GenesisState) {
+				gs.Associations = nil
+			},
+		},
+		{
+			name:     "one stakerID in associations",
+			genState: types.NewGenesis(delegations, nil),
+			expPass:  true,
+			malleate: func(gs *types.GenesisState) {
+				gs.Associations = make([]types.StakerToOperator, 1)
+				gs.Associations[0].StakerID = stakerID
+				gs.Associations[0].Operator = operatorAddress.String()
+			},
+			unmalleate: func(gs *types.GenesisState) {
+				gs.Associations = nil
 			},
 		},
 	}

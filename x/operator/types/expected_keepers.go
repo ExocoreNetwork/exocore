@@ -92,7 +92,12 @@ func (MockOracle) GetMultipleAssetsPrices(_ sdk.Context, assets map[string]inter
 }
 
 type MockAVS struct {
-	AssetsKeeper AssetsKeeper
+	AssetsKeeper  AssetsKeeper
+	DogfoodKeeper dogfoodKeeper
+}
+
+type dogfoodKeeper interface {
+	GetMinSelfDelegation(ctx sdk.Context) sdkmath.Int
 }
 
 func (a MockAVS) GetAVSSupportedAssets(ctx sdk.Context, _ string) (map[string]interface{}, error) {
@@ -116,7 +121,10 @@ func (a MockAVS) GetAVSAddrByChainID(_ sdk.Context, chainID string) (string, err
 	return chainID, nil
 }
 
-func (a MockAVS) GetAVSMinimumSelfDelegation(_ sdk.Context, _ string) (sdkmath.LegacyDec, error) {
+func (a MockAVS) GetAVSMinimumSelfDelegation(ctx sdk.Context, avsAddr string) (sdkmath.LegacyDec, error) {
+	if avsAddr == ctx.ChainID() {
+		return sdkmath.LegacyNewDec(a.DogfoodKeeper.GetMinSelfDelegation(ctx).Int64()), nil
+	}
 	return sdkmath.LegacyNewDec(0), nil
 }
 

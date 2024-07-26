@@ -7,7 +7,6 @@ import (
 
 	assetskeeper "github.com/ExocoreNetwork/exocore/x/assets/keeper"
 	delegationKeeper "github.com/ExocoreNetwork/exocore/x/delegation/keeper"
-
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	authzkeeper "github.com/cosmos/cosmos-sdk/x/authz/keeper"
 	"github.com/ethereum/go-ethereum/accounts/abi"
@@ -95,17 +94,24 @@ func (p Precompile) Run(evm *vm.EVM, contract *vm.Contract, readOnly bool) (bz [
 		bz, err = p.DelegateToThroughClientChain(ctx, evm.Origin, contract, stateDB, method, args)
 	case MethodUndelegateFromThroughClientChain:
 		bz, err = p.UndelegateFromThroughClientChain(ctx, evm.Origin, contract, stateDB, method, args)
+	case MethodAssociateOperatorWithStaker:
+		bz, err = p.AssociateOperatorWithStaker(ctx, evm.Origin, contract, stateDB, method, args)
+	case MethodDissociateOperatorFromStaker:
+		bz, err = p.DissociateOperatorFromStaker(ctx, evm.Origin, contract, stateDB, method, args)
 	default:
 		return nil, fmt.Errorf(cmn.ErrUnknownMethod, method.Name)
 	}
 
 	if err != nil {
-		ctx.Logger().Error("call delegation precompile error", "module", "delegation precompile", "err", err)
+		ctx.Logger().Error("internal error when calling delegation precompile error", "module", "delegation precompile", "err", err)
 		// for failed cases we expect it returns bool value instead of error
 		// this is a workaround because the error returned by precompile can not be caught in EVM
 		// see https://github.com/ExocoreNetwork/exocore/issues/70
 		// TODO: we should figure out root cause and fix this issue to make precompiles work normally
-		return method.Outputs.Pack(false)
+		bz, err = method.Outputs.Pack(false)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	cost := ctx.GasMeter().GasConsumed() - initialGas
@@ -122,10 +128,14 @@ func (p Precompile) Run(evm *vm.EVM, contract *vm.Contract, readOnly bool) (bz [
 // Available deposit transactions are:
 //   - delegateToThroughClientChain
 //   - undelegateFromThroughClientChain
+//   - markSelfDelegatedOperator
+//   - unmarkSelfDelegatedOperator
 func (Precompile) IsTransaction(methodID string) bool {
 	switch methodID {
 	case MethodDelegateToThroughClientChain,
-		MethodUndelegateFromThroughClientChain:
+		MethodUndelegateFromThroughClientChain,
+		MethodAssociateOperatorWithStaker,
+		MethodDissociateOperatorFromStaker:
 		return true
 	default:
 		return false

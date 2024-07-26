@@ -7,16 +7,14 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 
 	"github.com/ExocoreNetwork/exocore/x/dogfood/types"
 )
 
 type (
 	Keeper struct {
-		cdc        codec.BinaryCodec
-		storeKey   storetypes.StoreKey
-		paramstore paramtypes.Subspace
+		cdc      codec.BinaryCodec
+		storeKey storetypes.StoreKey
 
 		// internal hooks to allow other modules to subscriber to our events
 		dogfoodHooks types.DogfoodHooks
@@ -26,6 +24,9 @@ type (
 		operatorKeeper   types.OperatorKeeper
 		delegationKeeper types.DelegationKeeper
 		restakingKeeper  types.AssetsKeeper
+
+		// edit params
+		authority string
 	}
 )
 
@@ -33,25 +34,20 @@ type (
 func NewKeeper(
 	cdc codec.BinaryCodec,
 	storeKey storetypes.StoreKey,
-	ps paramtypes.Subspace,
 	epochsKeeper types.EpochsKeeper,
 	operatorKeeper types.OperatorKeeper,
 	delegationKeeper types.DelegationKeeper,
 	restakingKeeper types.AssetsKeeper,
+	authority string,
 ) Keeper {
-	// set KeyTable if it has not already been set
-	if !ps.HasKeyTable() {
-		ps = ps.WithKeyTable(types.ParamKeyTable())
-	}
-
 	k := Keeper{
 		cdc:              cdc,
 		storeKey:         storeKey,
-		paramstore:       ps,
 		epochsKeeper:     epochsKeeper,
 		operatorKeeper:   operatorKeeper,
 		delegationKeeper: delegationKeeper,
 		restakingKeeper:  restakingKeeper,
+		authority:        authority,
 	}
 	k.mustValidateFields()
 
@@ -110,7 +106,6 @@ func (k Keeper) ClearEpochEnd(ctx sdk.Context) {
 func (k Keeper) mustValidateFields() {
 	types.PanicIfNil(k.storeKey, "storeKey")
 	types.PanicIfNil(k.cdc, "cdc")
-	types.PanicIfNil(k.paramstore, "paramstore")
 	types.PanicIfNil(k.epochsKeeper, "epochsKeeper")
 	types.PanicIfNil(k.operatorKeeper, "operatorKeeper")
 	types.PanicIfNil(k.delegationKeeper, "delegationKeeper")

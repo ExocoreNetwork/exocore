@@ -88,4 +88,19 @@ var (
 		ModuleName, 19,
 		"invalid hash",
 	)
+
+	ErrOperatorAlreadyAssociated = errorsmod.Register(
+		ModuleName, 20,
+		"the operator is already associated by this staker",
+	)
+
+	ErrNoAssociatedOperatorByStaker = errorsmod.Register(
+		ModuleName, 21,
+		"there isn't any operator marked by the staker",
+	)
+
+	ErrClientChainNotExist = errorsmod.Register(
+		ModuleName, 22,
+		"the client chain has not been registered",
+	)
 )

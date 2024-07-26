@@ -4,15 +4,13 @@ import (
 	"fmt"
 	"strings"
 
-	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
+	sdkmath "cosmossdk.io/math"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	"gopkg.in/yaml.v2"
 
 	assetstypes "github.com/ExocoreNetwork/exocore/x/assets/types"
 	epochstypes "github.com/ExocoreNetwork/exocore/x/epochs/types"
 )
-
-var _ paramtypes.ParamSet = (*Params)(nil)
 
 const (
 	// DefaultEpochsUntilUnbonded is the default number of epochs after which an unbonding entry
@@ -35,17 +33,9 @@ const (
 	DefaultAssetIDs = "0xdac17f958d2ee523a2206206994597c13d831ec7_0x65"
 )
 
-// Reflection based keys for params subspace.
-var (
-	KeyEpochsUntilUnbonded = []byte("EpochsUntilUnbonded")
-	KeyEpochIdentifier     = []byte("EpochIdentifier")
-	KeyAssetIDs            = []byte("AssetIDs")
-)
-
-// ParamKeyTable returns a key table with the necessary registered params.
-func ParamKeyTable() paramtypes.KeyTable {
-	return paramtypes.NewKeyTable().RegisterParamSet(&Params{})
-}
+// DefaultMinSelfDelegation is the default minimum self-delegation amount for a validator.
+// It is denominated in USD. We do not support cents, since it is an integer.
+var DefaultMinSelfDelegation = sdkmath.ZeroInt() // not a constant, hence var
 
 // NewParams creates a new Params instance.
 func NewParams(
@@ -54,6 +44,7 @@ func NewParams(
 	maxValidators uint32,
 	historicalEntries uint32,
 	assetIDs []string,
+	minSelfDelegation sdkmath.Int,
 ) Params {
 	return Params{
 		EpochsUntilUnbonded: epochsUntilUnbonded,
@@ -61,6 +52,7 @@ func NewParams(
 		MaxValidators:       maxValidators,
 		HistoricalEntries:   historicalEntries,
 		AssetIDs:            assetIDs,
+		MinSelfDelegation:   minSelfDelegation,
 	}
 }
 
@@ -72,38 +64,8 @@ func DefaultParams() Params {
 		DefaultMaxValidators,
 		DefaultHistoricalEntries,
 		strings.Split(DefaultAssetIDs, "|"),
+		DefaultMinSelfDelegation,
 	)
-}
-
-// ParamSetPairs implements params.ParamSet
-func (p *Params) ParamSetPairs() paramtypes.ParamSetPairs {
-	return paramtypes.ParamSetPairs{
-		paramtypes.NewParamSetPair(
-			KeyEpochsUntilUnbonded,
-			&p.EpochsUntilUnbonded,
-			ValidatePositiveUint32,
-		),
-		paramtypes.NewParamSetPair(
-			KeyEpochIdentifier,
-			&p.EpochIdentifier,
-			epochstypes.ValidateEpochIdentifierInterface,
-		),
-		paramtypes.NewParamSetPair(
-			stakingtypes.KeyMaxValidators,
-			&p.MaxValidators,
-			ValidatePositiveUint32,
-		),
-		paramtypes.NewParamSetPair(
-			stakingtypes.KeyHistoricalEntries,
-			&p.HistoricalEntries,
-			ValidatePositiveUint32,
-		),
-		paramtypes.NewParamSetPair(
-			KeyAssetIDs,
-			&p.AssetIDs,
-			ValidateAssetIDs,
-		),
-	}
 }
 
 // Validate validates the set of params.
@@ -122,6 +84,9 @@ func (p Params) Validate() error {
 	}
 	if err := ValidateAssetIDs(p.AssetIDs); err != nil {
 		return fmt.Errorf("asset IDs: %w", err)
+	}
+	if err := ValidateNonNegativeInt(p.MinSelfDelegation); err != nil {
+		return fmt.Errorf("min self delegation: %w", err)
 	}
 	return nil
 }
@@ -159,6 +124,18 @@ func ValidateAssetIDs(i interface{}) error {
 		if _, _, err := assetstypes.ParseID(assetID); err != nil {
 			return fmt.Errorf("invalid parameter value: %v", val)
 		}
+	}
+	return nil
+}
+
+// ValidateNonNegativeInt checks whether the supplied value is a non-negative integer.
+func ValidateNonNegativeInt(i interface{}) error {
+	if val, ok := i.(sdkmath.Int); !ok {
+		return fmt.Errorf("invalid parameter type: %T", i)
+	} else if val.IsNil() {
+		return fmt.Errorf("nil parameter value: %s", val)
+	} else if val.IsNegative() {
+		return fmt.Errorf("invalid parameter value: %s", val)
 	}
 	return nil
 }

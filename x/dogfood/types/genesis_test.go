@@ -177,7 +177,7 @@ func (suite *GenesisTestSuite) TestValidateGenesis() {
 				LastTotalPower: math.NewInt(1),
 			},
 			expPass:  false,
-			expError: "invalid power",
+			expError: "less than min self delegation",
 		},
 		{
 			name: "valid genesis with one validator",

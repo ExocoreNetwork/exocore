@@ -15,6 +15,8 @@ option go_package = "github.com/ExocoreNetwork/exocore/x/delegation/types";
 message GenesisState {
   // delegations is a list of all delegations in the system.
   repeated DelegationsByStaker delegations = 1 [(gogoproto.nullable) = false];
+  // associations represents the association between a staker and an operator.
+  repeated StakerToOperator associations = 2 [(gogoproto.nullable) = false];
 }
 
 // DelegationsByStaker is a list of delegations for a single staker.
@@ -24,4 +26,12 @@ message DelegationsByStaker {
   // delegations is the list of delegations for the staker, indexed by the
   // asset_id. 
   repeated DelegatedSingleAssetInfo delegations = 2 [(gogoproto.nullable) = false];
+}
+
+// StakerToOperator is the association between a staker and an operator.
+message StakerToOperator {
+  // staker_id is the staker's account address + _ + l0 chain id (hex).
+  string staker_id = 1 [(gogoproto.customname) = "StakerID"];
+  // operator is the bech32 address of the operator.
+  string operator = 2;
 }

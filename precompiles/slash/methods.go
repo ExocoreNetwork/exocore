@@ -1,7 +1,8 @@
 package slash
 
 import (
-	errorsmod "cosmossdk.io/errors"
+	"fmt"
+
 	exocmn "github.com/ExocoreNetwork/exocore/precompiles/common"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/accounts/abi"
@@ -27,7 +28,7 @@ func (p Precompile) SubmitSlash(
 	// check the invalidation of caller contract
 	err := p.assetsKeeper.CheckExocoreGatewayAddr(ctx, contract.CallerAddress)
 	if err != nil {
-		return nil, errorsmod.Wrap(err, exocmn.ErrContractCaller)
+		return nil, fmt.Errorf(exocmn.ErrContractCaller, err.Error())
 	}
 
 	slashParam, err := p.GetSlashParamsFromInputs(ctx, args)

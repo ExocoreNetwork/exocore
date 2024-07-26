@@ -44,6 +44,15 @@ func DefaultGenesis() *GenesisState {
 // Validate performs basic genesis state validation returning an error upon any
 // failure.
 func (gs GenesisState) Validate() error {
+	// we validate the Params first so that we know the
+	// minSelfDelegation is set.
+	if err := gs.Params.Validate(); err != nil {
+		return errorsmod.Wrapf(
+			ErrInvalidGenesisData,
+			"params: %s", err,
+		)
+	}
+	minSelfDelegation := gs.Params.MinSelfDelegation
 	// #nosec G701 // ok on 64-bit systems.
 	maxValidators := int(gs.Params.MaxValidators)
 	if len(gs.ValSet) > maxValidators {
@@ -78,11 +87,15 @@ func (gs GenesisState) Validate() error {
 			)
 		}
 		power := val.Power
-		if power <= 0 {
+		// minSelfDelegation is non negative per Params.Validate, so we don't need to check if power is.
+		// simply checking that power is greater than oe equal to minSelfDelegation is enough.
+		if sdk.NewInt(power).LT(minSelfDelegation) {
 			return errorsmod.Wrapf(
 				ErrInvalidGenesisData,
-				"invalid power %d",
+				"power %d less than min self delegation %s",
 				power,
+				// convert to string so that the error message is more readable.
+				minSelfDelegation.String(),
 			)
 		}
 		totalPower += power
@@ -251,5 +264,5 @@ func (gs GenesisState) Validate() error {
 		)
 	}
 
-	return gs.Params.Validate()
+	return nil
 }

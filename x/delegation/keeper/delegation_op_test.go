@@ -42,7 +42,7 @@ func (suite *DelegationTestSuite) prepareDeposit() *assetskeeper.DepositWithdraw
 
 func (suite *DelegationTestSuite) prepareDelegation() *delegationtype.DelegationOrUndelegationParams {
 	delegationEvent := &delegationtype.DelegationOrUndelegationParams{
-		ClientChainLzID: suite.clientChainLzID,
+		ClientChainID:   suite.clientChainLzID,
 		Action:          types.DelegateTo,
 		AssetsAddress:   suite.assetAddr.Bytes(),
 		OperatorAddress: suite.opAccAddr,
@@ -70,7 +70,7 @@ func (suite *DelegationTestSuite) TestDelegateTo() {
 	opAccAddr, err := sdk.AccAddressFromBech32("exo13h6xg79g82e2g2vhjwg7j4r2z2hlncelwutkjr")
 	suite.NoError(err)
 	delegationParams := &delegationtype.DelegationOrUndelegationParams{
-		ClientChainLzID: suite.clientChainLzID,
+		ClientChainID:   suite.clientChainLzID,
 		Action:          types.DelegateTo,
 		AssetsAddress:   suite.assetAddr.Bytes(),
 		OperatorAddress: opAccAddr,
@@ -95,7 +95,7 @@ func (suite *DelegationTestSuite) TestDelegateTo() {
 	suite.NoError(err)
 
 	// check delegation states
-	stakerID, assetID := types.GetStakeIDAndAssetID(delegationParams.ClientChainLzID, delegationParams.StakerAddress, delegationParams.AssetsAddress)
+	stakerID, assetID := types.GetStakeIDAndAssetID(delegationParams.ClientChainID, delegationParams.StakerAddress, delegationParams.AssetsAddress)
 	restakerState, err := suite.App.AssetsKeeper.GetStakerSpecifiedAssetInfo(suite.Ctx, stakerID, assetID)
 	suite.NoError(err)
 	suite.Equal(types.StakerAssetInfo{
@@ -107,12 +107,10 @@ func (suite *DelegationTestSuite) TestDelegateTo() {
 	operatorState, err := suite.App.AssetsKeeper.GetOperatorSpecifiedAssetInfo(suite.Ctx, opAccAddr, assetID)
 	suite.NoError(err)
 	suite.Equal(types.OperatorAssetInfo{
-		TotalAmount:             delegationParams.OpAmount,
-		OperatorAmount:          sdkmath.NewInt(0),
-		WaitUnbondingAmount:     sdkmath.NewInt(0),
-		OperatorUnbondingAmount: sdkmath.NewInt(0),
-		TotalShare:              sdkmath.LegacyNewDecFromBigInt(delegationParams.OpAmount.BigInt()),
-		OperatorShare:           sdkmath.LegacyNewDec(0),
+		TotalAmount:         delegationParams.OpAmount,
+		WaitUnbondingAmount: sdkmath.NewInt(0),
+		TotalShare:          sdkmath.LegacyNewDecFromBigInt(delegationParams.OpAmount.BigInt()),
+		OperatorShare:       sdkmath.LegacyNewDec(0),
 	}, *operatorState)
 
 	specifiedDelegationAmount, err := suite.App.DelegationKeeper.GetSingleDelegationInfo(suite.Ctx, stakerID, assetID, opAccAddr.String())
@@ -136,7 +134,7 @@ func (suite *DelegationTestSuite) TestUndelegateFrom() {
 	suite.NoError(err)
 
 	// check state
-	stakerID, assetID := types.GetStakeIDAndAssetID(delegationEvent.ClientChainLzID, delegationEvent.StakerAddress, delegationEvent.AssetsAddress)
+	stakerID, assetID := types.GetStakeIDAndAssetID(delegationEvent.ClientChainID, delegationEvent.StakerAddress, delegationEvent.AssetsAddress)
 	restakerState, err := suite.App.AssetsKeeper.GetStakerSpecifiedAssetInfo(suite.Ctx, stakerID, assetID)
 	suite.NoError(err)
 	suite.Equal(types.StakerAssetInfo{
@@ -148,12 +146,10 @@ func (suite *DelegationTestSuite) TestUndelegateFrom() {
 	operatorState, err := suite.App.AssetsKeeper.GetOperatorSpecifiedAssetInfo(suite.Ctx, delegationEvent.OperatorAddress, assetID)
 	suite.NoError(err)
 	suite.Equal(types.OperatorAssetInfo{
-		TotalAmount:             sdkmath.NewInt(0),
-		OperatorAmount:          sdkmath.NewInt(0),
-		WaitUnbondingAmount:     delegationEvent.OpAmount,
-		OperatorUnbondingAmount: sdkmath.NewInt(0),
-		TotalShare:              sdkmath.LegacyNewDec(0),
-		OperatorShare:           sdkmath.LegacyNewDec(0),
+		TotalAmount:         sdkmath.NewInt(0),
+		WaitUnbondingAmount: delegationEvent.OpAmount,
+		TotalShare:          sdkmath.LegacyNewDec(0),
+		OperatorShare:       sdkmath.LegacyNewDec(0),
 	}, *operatorState)
 
 	specifiedDelegationAmount, err := suite.App.DelegationKeeper.GetSingleDelegationInfo(suite.Ctx, stakerID, assetID, delegationEvent.OperatorAddress.String())
@@ -207,7 +203,7 @@ func (suite *DelegationTestSuite) TestCompleteUndelegation() {
 	suite.App.DelegationKeeper.EndBlock(suite.Ctx, abci.RequestEndBlock{})
 
 	// check state
-	stakerID, assetID := types.GetStakeIDAndAssetID(delegationEvent.ClientChainLzID, delegationEvent.StakerAddress, delegationEvent.AssetsAddress)
+	stakerID, assetID := types.GetStakeIDAndAssetID(delegationEvent.ClientChainID, delegationEvent.StakerAddress, delegationEvent.AssetsAddress)
 	restakerState, err := suite.App.AssetsKeeper.GetStakerSpecifiedAssetInfo(suite.Ctx, stakerID, assetID)
 	suite.NoError(err)
 	suite.Equal(types.StakerAssetInfo{
@@ -219,12 +215,10 @@ func (suite *DelegationTestSuite) TestCompleteUndelegation() {
 	operatorState, err := suite.App.AssetsKeeper.GetOperatorSpecifiedAssetInfo(suite.Ctx, delegationEvent.OperatorAddress, assetID)
 	suite.NoError(err)
 	suite.Equal(types.OperatorAssetInfo{
-		TotalAmount:             sdkmath.NewInt(0),
-		OperatorAmount:          sdkmath.NewInt(0),
-		WaitUnbondingAmount:     sdkmath.NewInt(0),
-		OperatorUnbondingAmount: sdkmath.NewInt(0),
-		TotalShare:              sdkmath.LegacyNewDec(0),
-		OperatorShare:           sdkmath.LegacyNewDec(0),
+		TotalAmount:         sdkmath.NewInt(0),
+		WaitUnbondingAmount: sdkmath.NewInt(0),
+		TotalShare:          sdkmath.LegacyNewDec(0),
+		OperatorShare:       sdkmath.LegacyNewDec(0),
 	}, *operatorState)
 
 	specifiedDelegationAmount, err := suite.App.DelegationKeeper.GetSingleDelegationInfo(suite.Ctx, stakerID, assetID, delegationEvent.OperatorAddress.String())

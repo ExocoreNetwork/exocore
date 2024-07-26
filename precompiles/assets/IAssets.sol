@@ -11,7 +11,6 @@ IAssets constant ASSETS_CONTRACT = IAssets(ASSETS_PRECOMPILE_ADDRESS);
 /// @dev The interface through which solidity contracts will interact with assets module
 /// @custom:address 0x0000000000000000000000000000000000000804
 interface IAssets {
-
     /// TRANSACTIONS
     /// @dev deposit the client chain assets for the staker,
     /// that will change the state in deposit module
@@ -29,7 +28,6 @@ interface IAssets {
         uint256 opAmount) external
     returns (bool success, uint256 latestAssetState);
 
-    /// TRANSACTIONS
     /// @dev withdraw To the staker, that will change the state in withdraw module
     /// Note that this address cannot be a module account.
     /// @param clientChainID is the layerZero chainID if it is supported.
@@ -45,7 +43,6 @@ interface IAssets {
         uint256 opAmount
     ) external returns (bool success, uint256 latestAssetState);
 
-    /// TRANSACTIONS
     /// @dev register some client chain to allow token registration from that chain, staking
     /// from that chain, and other operations from that chain.
     /// @param clientChainID is the layerZero chainID if it is supported.
@@ -59,7 +56,6 @@ interface IAssets {
         string calldata signatureType
     ) external returns (bool success);
 
-    /// TRANSACTIONS
     /// @dev register unwhitelisted token addresses to exocore
     /// @param clientChainID is the layerZero chainID if it is supported.
     //  It might be allocated by Exocore when the client chain isn't supported

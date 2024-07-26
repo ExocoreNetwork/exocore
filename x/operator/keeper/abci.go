@@ -90,6 +90,7 @@ func (k *Keeper) CalculateUSDValueForOperator(
 // the end of epoch.
 func (k *Keeper) UpdateVotingPower(ctx sdk.Context, avsAddr string) error {
 	// get assets supported by the AVS
+	// the mock keeper returns all registered assets.
 	assets, err := k.avsKeeper.GetAVSSupportedAssets(ctx, avsAddr)
 	if err != nil {
 		return err

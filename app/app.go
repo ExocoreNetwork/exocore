@@ -552,7 +552,7 @@ func NewExocoreApp(
 		app.AssetsKeeper,
 		&app.DelegationKeeper, // intentionally a pointer, since not yet initialized.
 		&app.OracleKeeper,
-		operatorTypes.MockAVS{AssetsKeeper: app.AssetsKeeper},
+		operatorTypes.MockAVS{AssetsKeeper: app.AssetsKeeper, DogfoodKeeper: &app.StakingKeeper},
 		delegationTypes.VirtualSlashKeeper{},
 	)
 
@@ -567,11 +567,12 @@ func NewExocoreApp(
 	// the dogfood module is the first AVS. it receives slashing calls from either x/slashing
 	// or x/evidence and forwards them to the operator module which handles it.
 	app.StakingKeeper = stakingkeeper.NewKeeper(
-		appCodec, keys[stakingtypes.StoreKey], app.GetSubspace(stakingtypes.ModuleName),
+		appCodec, keys[stakingtypes.StoreKey],
 		app.EpochsKeeper,     // epoch hook to be registered separately
 		app.OperatorKeeper,   // operator registration / opt in
 		app.DelegationKeeper, // undelegation response
 		app.AssetsKeeper,     // assets for vote power
+		authAddrString,       // authority to edit params
 	)
 
 	(&app.OperatorKeeper).SetHooks(
@@ -1343,7 +1344,6 @@ func initParamsKeeper(
 	// SDK subspaces
 	paramsKeeper.Subspace(authtypes.ModuleName)
 	paramsKeeper.Subspace(banktypes.ModuleName)
-	paramsKeeper.Subspace(stakingtypes.ModuleName)
 	paramsKeeper.Subspace(slashingtypes.ModuleName)
 	paramsKeeper.Subspace(govtypes.ModuleName).
 		// nolint: staticcheck

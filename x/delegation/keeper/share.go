@@ -151,7 +151,7 @@ func (k Keeper) CalculateSlashShare(
 // RemoveShareFromOperator is used to remove the share from an operator when an undelegation
 // is submitted, it will return the token amount that should be removed.
 func (k Keeper) RemoveShareFromOperator(
-	ctx sdk.Context, isUndelegation bool, operator sdk.AccAddress, assetID string, share sdkmath.LegacyDec,
+	ctx sdk.Context, isUndelegation bool, operator sdk.AccAddress, stakerID, assetID string, share sdkmath.LegacyDec,
 ) (token sdkmath.Int, err error) {
 	if !share.IsPositive() {
 		return token, delegationtypes.ErrAmountIsNotPositive
@@ -181,6 +181,14 @@ func (k Keeper) RemoveShareFromOperator(
 		TotalAmount: removedToken.Neg(),
 		TotalShare:  share.Neg(),
 	}
+	// Check if the staker belongs to the delegated operator. Increase the operator's share if yes.
+	getOperator, err := k.GetSelfDelegatedOperator(ctx, stakerID)
+	if err != nil {
+		return token, err
+	}
+	if getOperator != "" && getOperator == operator.String() {
+		delta.OperatorShare = share.Neg()
+	}
 	if isUndelegation {
 		delta.WaitUnbondingAmount = removedToken
 	}
@@ -202,7 +210,7 @@ func (k Keeper) RemoveShare(
 		return removeToken, delegationtypes.ErrAmountIsNotPositive
 	}
 	// remove share from operator
-	removeToken, err = k.RemoveShareFromOperator(ctx, isUndelegation, operator, assetID, share)
+	removeToken, err = k.RemoveShareFromOperator(ctx, isUndelegation, operator, stakerID, assetID, share)
 	if err != nil {
 		return removeToken, err
 	}

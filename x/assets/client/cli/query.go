@@ -72,22 +72,22 @@ func GetParamsCmd() *cobra.Command {
 // QueClientChainInfoByIndex queries the client chain info by index
 func QueClientChainInfoByIndex() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "QueClientChainInfoByIndex clientChainLzID",
-		Short: "Get client chain info by layerZero Id",
-		Long:  "Get client chain info by layerZero Id",
+		Use:   "QueClientChainInfoByIndex <clientChainID>",
+		Short: "Get client chain info by client chain Id",
+		Long:  "Get client chain info by client chain Id",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx, err := client.GetClientQueryContext(cmd)
 			if err != nil {
 				return err
 			}
-			clientChainLzID, err := strconv.ParseUint(args[0], 10, 64)
+			clientChainID, err := strconv.ParseUint(args[0], 10, 64)
 			if err != nil {
 				return errorsmod.Wrap(types.ErrInvalidCliCmdArg, err.Error())
 			}
 			queryClient := types.NewQueryClient(clientCtx)
 			req := &types.QueryClientChainInfo{
-				ChainIndex: clientChainLzID,
+				ChainIndex: clientChainID,
 			}
 			res, err := queryClient.QueClientChainInfoByIndex(context.Background(), req)
 			if err != nil {
@@ -131,7 +131,7 @@ func QueAllClientChainInfo() *cobra.Command {
 // QueStakingAssetInfo queries staking asset info
 func QueStakingAssetInfo() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "QueStakingAssetInfo assetAddr clientChainLzID",
+		Use:   "QueStakingAssetInfo <assetAddr> <clientChainID>",
 		Short: "Get staking asset info",
 		Long:  "Get staking asset info",
 		Args:  cobra.ExactArgs(2),
@@ -141,12 +141,12 @@ func QueStakingAssetInfo() *cobra.Command {
 				return err
 			}
 
-			clientChainLzID, err := strconv.ParseUint(args[1], 10, 64)
+			clientChainID, err := strconv.ParseUint(args[1], 10, 64)
 			if err != nil {
 				return errorsmod.Wrap(types.ErrInvalidCliCmdArg, fmt.Sprintf("error arg is:%v", args[1]))
 			}
 
-			_, assetID := types.GetStakeIDAndAssetIDFromStr(clientChainLzID, "", args[0])
+			_, assetID := types.GetStakeIDAndAssetIDFromStr(clientChainID, "", args[0])
 			queryClient := types.NewQueryClient(clientCtx)
 			req := &types.QueryStakingAssetInfo{
 				AssetID: assetID, // already lowercase
@@ -193,7 +193,7 @@ func QueAllStakingAssetsInfo() *cobra.Command {
 // QueStakerAssetInfos queries staker asset info
 func QueStakerAssetInfos() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "QueStakerAssetInfos stakerID",
+		Use:   "QueStakerAssetInfos <stakerID>",
 		Short: "Get staker asset state",
 		Long:  "Get staker asset state",
 		Args:  cobra.ExactArgs(1),
@@ -227,7 +227,7 @@ func QueStakerAssetInfos() *cobra.Command {
 // QueStakerSpecifiedAssetAmount queries staker specified asset info
 func QueStakerSpecifiedAssetAmount() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "QueStakerSpecifiedAssetAmount clientChainID stakerAddr assetAddr",
+		Use:   "QueStakerSpecifiedAssetAmount <clientChainID> <stakerAddr> <assetAddr>",
 		Short: "Get staker specified asset state",
 		Long:  "Get staker specified asset state",
 		Args:  cobra.ExactArgs(3),
@@ -262,7 +262,7 @@ func QueStakerSpecifiedAssetAmount() *cobra.Command {
 // QueOperatorAssetInfos queries operator asset info
 func QueOperatorAssetInfos() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "QueOperatorAssetInfos operatorAddr",
+		Use:   "QueOperatorAssetInfos <operatorAddr>",
 		Short: "Get operator asset state",
 		Long:  "Get operator asset state",
 		Args:  cobra.ExactArgs(1),
@@ -295,7 +295,7 @@ func QueOperatorAssetInfos() *cobra.Command {
 // QueOperatorSpecifiedAssetAmount queries specified operator asset info
 func QueOperatorSpecifiedAssetAmount() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "QueOperatorSpecifiedAssetAmount operatorAddr clientChainID assetAddr",
+		Use:   "QueOperatorSpecifiedAssetAmount <operatorAddr> <clientChainID> <assetAddr>",
 		Short: "Get operator specified asset state",
 		Long:  "Get operator specified asset state",
 		Args:  cobra.ExactArgs(3),

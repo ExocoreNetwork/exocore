@@ -65,7 +65,7 @@ func (suite *OperatorTestSuite) prepareDeposit(assetAddr common.Address, amount 
 func (suite *OperatorTestSuite) prepareDelegation(isDelegation bool, assetAddr common.Address, amount sdkmath.Int) {
 	suite.delegationAmount = amount
 	param := &delegationtype.DelegationOrUndelegationParams{
-		ClientChainLzID: suite.clientChainLzID,
+		ClientChainID:   suite.clientChainLzID,
 		AssetsAddress:   assetAddr[:],
 		OperatorAddress: suite.operatorAddr,
 		StakerAddress:   suite.Address[:],

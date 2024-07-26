@@ -4,9 +4,6 @@ import (
 	"fmt"
 	"math/big"
 
-	"golang.org/x/xerrors"
-
-	errorsmod "cosmossdk.io/errors"
 	sdkmath "cosmossdk.io/math"
 
 	exocmn "github.com/ExocoreNetwork/exocore/precompiles/common"
@@ -17,17 +14,19 @@ import (
 )
 
 func (p Precompile) GetDelegationParamsFromInputs(ctx sdk.Context, args []interface{}) (*delegationtypes.DelegationOrUndelegationParams, error) {
-	if len(args) != 6 {
-		return nil, fmt.Errorf(cmn.ErrInvalidNumberOfArgs, 6, len(args))
+	inputsLen := len(p.ABI.Methods[MethodDelegateToThroughClientChain].Inputs)
+	if len(args) != inputsLen {
+		return nil, fmt.Errorf(cmn.ErrInvalidNumberOfArgs, inputsLen, len(args))
 	}
+
 	delegationParams := &delegationtypes.DelegationOrUndelegationParams{}
-	clientChainLzID, ok := args[0].(uint32)
+	clientChainID, ok := args[0].(uint32)
 	if !ok {
 		return nil, fmt.Errorf(exocmn.ErrContractInputParaOrType, 0, "uint32", args[0])
 	}
-	delegationParams.ClientChainLzID = uint64(clientChainLzID)
+	delegationParams.ClientChainID = uint64(clientChainID)
 
-	info, err := p.assetsKeeper.GetClientChainInfoByIndex(ctx, delegationParams.ClientChainLzID)
+	info, err := p.assetsKeeper.GetClientChainInfoByIndex(ctx, delegationParams.ClientChainID)
 	if err != nil {
 		return nil, err
 	}
@@ -45,7 +44,7 @@ func (p Precompile) GetDelegationParamsFromInputs(ctx sdk.Context, args []interf
 		return nil, fmt.Errorf(exocmn.ErrContractInputParaOrType, 2, "[]byte", args[2])
 	}
 	if uint32(len(assetAddr)) < clientChainAddrLength {
-		return nil, xerrors.Errorf(exocmn.ErrInvalidAddrLength, len(assetAddr), clientChainAddrLength)
+		return nil, fmt.Errorf(exocmn.ErrInvalidAddrLength, len(assetAddr), clientChainAddrLength)
 	}
 	delegationParams.AssetsAddress = assetAddr[:clientChainAddrLength]
 
@@ -54,7 +53,7 @@ func (p Precompile) GetDelegationParamsFromInputs(ctx sdk.Context, args []interf
 		return nil, fmt.Errorf(exocmn.ErrContractInputParaOrType, 3, "[]byte", args[3])
 	}
 	if uint32(len(stakerAddr)) < clientChainAddrLength {
-		return nil, xerrors.Errorf(exocmn.ErrInvalidAddrLength, len(stakerAddr), clientChainAddrLength)
+		return nil, fmt.Errorf(exocmn.ErrInvalidAddrLength, len(stakerAddr), clientChainAddrLength)
 	}
 	delegationParams.StakerAddress = stakerAddr[:clientChainAddrLength]
 
@@ -69,7 +68,7 @@ func (p Precompile) GetDelegationParamsFromInputs(ctx sdk.Context, args []interf
 
 	opAccAddr, err := sdk.AccAddressFromBech32(string(operatorAddr))
 	if err != nil {
-		return nil, errorsmod.Wrap(err, fmt.Sprintf("error occurred when parse acc address from Bech32,the addr is:%s", string(operatorAddr)))
+		return nil, fmt.Errorf("error occurred when parse acc address from Bech32,the addr is:%s, error:%s", string(operatorAddr), err.Error())
 	}
 	delegationParams.OperatorAddress = opAccAddr
 

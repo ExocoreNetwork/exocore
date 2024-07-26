@@ -8,6 +8,37 @@
         "type": "uint32"
       },
       {
+        "internalType": "bytes",
+        "name": "staker",
+        "type": "bytes"
+      },
+      {
+        "internalType": "bytes",
+        "name": "operator",
+        "type": "bytes"
+      }
+    ],
+    "name": "associateOperatorWithStaker",
+    "outputs":
+    [
+      {
+        "internalType": "bool",
+        "name": "success",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs":
+    [
+      {
+        "internalType": "uint32",
+        "name": "clientChainID",
+        "type": "uint32"
+      },
+      {
         "internalType": "uint64",
         "name": "lzNonce",
         "type": "uint64"
@@ -34,6 +65,32 @@
       }
     ],
     "name": "delegateToThroughClientChain",
+    "outputs":
+    [
+      {
+        "internalType": "bool",
+        "name": "success",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs":
+    [
+      {
+        "internalType": "uint32",
+        "name": "clientChainID",
+        "type": "uint32"
+      },
+      {
+        "internalType": "bytes",
+        "name": "staker",
+        "type": "bytes"
+      }
+    ],
+    "name": "dissociateOperatorFromStaker",
     "outputs":
     [
       {

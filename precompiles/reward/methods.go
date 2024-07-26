@@ -1,7 +1,8 @@
 package reward
 
 import (
-	errorsmod "cosmossdk.io/errors"
+	"fmt"
+
 	exocmn "github.com/ExocoreNetwork/exocore/precompiles/common"
 	"github.com/ExocoreNetwork/exocore/x/assets/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -28,7 +29,7 @@ func (p Precompile) Reward(
 	// check the invalidation of caller contract
 	err := p.assetsKeeper.CheckExocoreGatewayAddr(ctx, contract.CallerAddress)
 	if err != nil {
-		return nil, errorsmod.Wrap(err, exocmn.ErrContractCaller)
+		return nil, fmt.Errorf(exocmn.ErrContractCaller, err.Error())
 	}
 
 	rewardParam, err := p.GetRewardParamsFromInputs(ctx, args)

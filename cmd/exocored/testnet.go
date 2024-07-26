@@ -475,6 +475,7 @@ func getTestExocoreGenesis(
 			consensusKeyRecords,
 		), delegationtypes.NewGenesis(
 			delegationsByStaker,
+			nil,
 		), dogfoodtypes.NewGenesis(
 			dogfoodtypes.NewParams(
 				dogfoodtypes.DefaultEpochsUntilUnbonded,
@@ -482,6 +483,7 @@ func getTestExocoreGenesis(
 				dogfoodtypes.DefaultMaxValidators,
 				dogfoodtypes.DefaultHistoricalEntries,
 				[]string{assetID},
+				dogfoodtypes.DefaultMinSelfDelegation,
 			),
 			validators,
 			[]dogfoodtypes.EpochToOperatorAddrs{},
