@@ -4,9 +4,12 @@ import (
 	"fmt"
 	"slices"
 
+	"github.com/ExocoreNetwork/exocore/utils"
+	"github.com/cosmos/btcutil/bech32"
+	"github.com/ethereum/go-ethereum/common"
+
 	errorsmod "cosmossdk.io/errors"
 
-	assettypes "github.com/ExocoreNetwork/exocore/x/assets/keeper"
 	delegationtypes "github.com/ExocoreNetwork/exocore/x/delegation/types"
 	"github.com/cometbft/cometbft/libs/log"
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -21,19 +24,21 @@ type (
 	Keeper struct {
 		cdc            codec.BinaryCodec
 		storeKey       storetypes.StoreKey
-		operatorKeeper delegationtypes.OperatorKeeper
+		operatorKeeper types.OperatorKeeper
 		// other keepers
-		assetsKeeper assettypes.Keeper
+		assetsKeeper types.AssetsKeeper
 		epochsKeeper types.EpochsKeeper
+		evmKeeper    types.EVMKeeper
 	}
 )
 
 func NewKeeper(
 	cdc codec.BinaryCodec,
 	storeKey storetypes.StoreKey,
-	operatorKeeper delegationtypes.OperatorKeeper,
-	assetKeeper assettypes.Keeper,
+	operatorKeeper types.OperatorKeeper,
+	assetKeeper types.AssetsKeeper,
 	epochsKeeper types.EpochsKeeper,
+	evmKeeper types.EVMKeeper,
 ) Keeper {
 	return Keeper{
 		cdc:            cdc,
@@ -41,6 +46,7 @@ func NewKeeper(
 		operatorKeeper: operatorKeeper,
 		assetsKeeper:   assetKeeper,
 		epochsKeeper:   epochsKeeper,
+		evmKeeper:      evmKeeper,
 	}
 }
 
@@ -50,9 +56,11 @@ func (k Keeper) Logger(ctx sdk.Context) log.Logger {
 
 func (k Keeper) AVSInfoUpdate(ctx sdk.Context, params *AVSRegisterOrDeregisterParams) error {
 	avsInfo, _ := k.GetAVSInfo(ctx, params.AvsAddress)
-
 	action := params.Action
 	epochIdentifier := params.EpochIdentifier
+	if avsInfo != nil && avsInfo.Info.EpochIdentifier != "" {
+		epochIdentifier = avsInfo.Info.EpochIdentifier
+	}
 	epoch, found := k.epochsKeeper.GetEpochInfo(ctx, epochIdentifier)
 	if !found {
 		return errorsmod.Wrap(types.ErrEpochNotFound, fmt.Sprintf("epoch info not found %s", epochIdentifier))
@@ -64,33 +72,163 @@ func (k Keeper) AVSInfoUpdate(ctx sdk.Context, params *AVSRegisterOrDeregisterPa
 		}
 
 		avs := &types.AVSInfo{
-			Name:               params.AvsName,
-			AvsAddress:         params.AvsAddress,
-			SlashAddr:          params.SlashContractAddr,
-			AvsOwnerAddress:    params.AvsOwnerAddress,
-			AssetId:            params.AssetID,
-			MinSelfDelegation:  sdk.NewIntFromUint64(params.MinSelfDelegation),
-			AvsUnbondingPeriod: uint32(params.UnbondingPeriod),
-			EpochIdentifier:    epochIdentifier,
-			OperatorAddress:    nil,
-			StartingEpoch:      epoch.CurrentEpoch + 1, // Effective at CurrentEpoch+1, avoid immediate effects and ensure that the first epoch time of avs is equal to a normal identifier
+			Name:                params.AvsName,
+			AvsAddress:          params.AvsAddress,
+			RewardAddr:          params.RewardContractAddr,
+			SlashAddr:           params.SlashContractAddr,
+			AvsOwnerAddress:     params.AvsOwnerAddress,
+			AssetIDs:            params.AssetID,
+			MinSelfDelegation:   params.MinSelfDelegation,
+			AvsUnbondingPeriod:  params.UnbondingPeriod,
+			EpochIdentifier:     epochIdentifier,
+			StartingEpoch:       uint64(epoch.CurrentEpoch + 1),
+			MinOptInOperators:   params.MinOptInOperators,
+			TaskAddr:            params.TaskAddr,
+			MinStakeAmount:      params.MinStakeAmount, // Effective at CurrentEpoch+1, avoid immediate effects and ensure that the first epoch time of avs is equal to a normal identifier
+			MinTotalStakeAmount: params.MinTotalStakeAmount,
+			AvsSlash:            sdk.NewDecWithPrec(int64(params.AvsSlash), 2),
+			AvsReward:           sdk.NewDecWithPrec(int64(params.AvsReward), 2),
 		}
+
 		return k.SetAVSInfo(ctx, avs)
 	case DeRegisterAction:
 		if avsInfo == nil {
 			return errorsmod.Wrap(types.ErrUnregisterNonExistent, fmt.Sprintf("the avsaddress is :%s", params.AvsAddress))
 		}
+		// If avs DeRegisterAction check CallerAddress
+		if !slices.Contains(avsInfo.Info.AvsOwnerAddress, params.CallerAddress) {
+			return errorsmod.Wrap(types.ErrCallerAddressUnauthorized, fmt.Sprintf("this caller not qualified to deregister %s", params.CallerAddress))
+		}
+
 		// If avs DeRegisterAction check UnbondingPeriod
-		if int64(avsInfo.Info.AvsUnbondingPeriod) < (epoch.CurrentEpoch - avsInfo.GetInfo().StartingEpoch) {
+		if epoch.CurrentEpoch-int64(avsInfo.GetInfo().StartingEpoch) > int64(avsInfo.Info.AvsUnbondingPeriod) {
 			return errorsmod.Wrap(types.ErrUnbondingPeriod, fmt.Sprintf("not qualified to deregister %s", avsInfo))
 		}
+
+		// If avs DeRegisterAction check avsname
+		if avsInfo.Info.Name != params.AvsName {
+			return errorsmod.Wrap(types.ErrAvsNameMismatch, fmt.Sprintf("Unregistered AVS name is incorrect %s", params.AvsName))
+		}
 		return k.DeleteAVSInfo(ctx, params.AvsAddress)
+	case UpdateAction:
+		if avsInfo == nil {
+			return errorsmod.Wrap(types.ErrUnregisterNonExistent, fmt.Sprintf("the avsaddress is :%s", params.AvsAddress))
+		}
+		// If avs UpdateAction check UnbondingPeriod
+		if int64(avsInfo.Info.AvsUnbondingPeriod) < (epoch.CurrentEpoch - int64(avsInfo.GetInfo().StartingEpoch)) {
+			return errorsmod.Wrap(types.ErrUnbondingPeriod, fmt.Sprintf("not qualified to deregister %s", avsInfo))
+		}
+		// If avs UpdateAction check CallerAddress
+		if !slices.Contains(avsInfo.Info.AvsOwnerAddress, params.CallerAddress) {
+			return errorsmod.Wrap(types.ErrCallerAddressUnauthorized, fmt.Sprintf("this caller not qualified to update %s", params.CallerAddress))
+		}
+		avs := avsInfo.Info
+
+		if params.AvsName != "" {
+			avs.Name = params.AvsName
+		}
+		if params.MinStakeAmount > 0 {
+			avs.MinStakeAmount = params.MinStakeAmount
+		}
+		if params.TaskAddr != "" {
+			avs.TaskAddr = params.TaskAddr
+		}
+		if params.SlashContractAddr != "" {
+			avs.SlashAddr = params.SlashContractAddr
+		}
+		if params.RewardContractAddr != "" {
+			avs.RewardAddr = params.RewardContractAddr
+		}
+		if params.AvsOwnerAddress != nil {
+			avs.AvsOwnerAddress = params.AvsOwnerAddress
+		}
+		if params.AssetID != nil {
+			avs.AssetIDs = params.AssetID
+		}
+
+		if params.UnbondingPeriod > 0 {
+			avs.AvsUnbondingPeriod = params.UnbondingPeriod
+		}
+		if params.MinSelfDelegation > 0 {
+			avs.MinSelfDelegation = params.MinSelfDelegation
+		}
+		if params.EpochIdentifier != "" {
+			avs.EpochIdentifier = params.EpochIdentifier
+		}
+
+		if params.MinOptInOperators > 0 {
+			avs.MinOptInOperators = params.MinOptInOperators
+		}
+		if params.MinTotalStakeAmount > 0 {
+			avs.MinTotalStakeAmount = params.MinTotalStakeAmount
+		}
+		if params.AvsSlash > 0 {
+			avs.AvsSlash = sdk.NewDecWithPrec(int64(params.AvsSlash), 2)
+		}
+		if params.AvsReward > 0 {
+			avs.AvsReward = sdk.NewDecWithPrec(int64(params.AvsReward), 2)
+		}
+		avs.AvsAddress = params.AvsAddress
+		avs.StartingEpoch = uint64(epoch.CurrentEpoch + 1)
+
+		return k.SetAVSInfo(ctx, avs)
 	default:
 		return errorsmod.Wrap(types.ErrInvalidAction, fmt.Sprintf("Invalid action: %d", action))
 	}
 }
 
-func (k Keeper) AVSInfoUpdateWithOperator(ctx sdk.Context, params *OperatorOptParams) error {
+func (k Keeper) CreateAVSTask(ctx sdk.Context, params *TaskParams) error {
+	avsInfo := k.GetAVSInfoByTaskAddress(ctx, params.TaskContractAddress)
+	if avsInfo.AvsAddress == "" {
+		return errorsmod.Wrap(types.ErrUnregisterNonExistent, fmt.Sprintf("the taskaddr is :%s", params.TaskContractAddress))
+	}
+	// If avs CreateAVSTask check CallerAddress
+	if !slices.Contains(avsInfo.AvsOwnerAddress, params.CallerAddress) {
+		return errorsmod.Wrap(types.ErrCallerAddressUnauthorized, fmt.Sprintf("this caller not qualified to CreateAVSTask %s", params.CallerAddress))
+	}
+
+	epoch, found := k.epochsKeeper.GetEpochInfo(ctx, avsInfo.EpochIdentifier)
+	if !found {
+		return errorsmod.Wrap(types.ErrEpochNotFound, fmt.Sprintf("epoch info not found %s", avsInfo.EpochIdentifier))
+	}
+
+	if k.IsExistTask(ctx, params.TaskID, params.TaskContractAddress) {
+		return errorsmod.Wrap(types.ErrAlreadyExists, fmt.Sprintf("the task is :%s", params.TaskID))
+	}
+	task := &types.TaskInfo{
+		Name:                params.TaskName,
+		Data:                params.Data,
+		TaskContractAddress: params.TaskContractAddress,
+		TaskId:              params.TaskID,
+		TaskChallengePeriod: params.TaskChallengePeriod,
+		ThresholdPercentage: params.ThresholdPercentage,
+		TaskResponsePeriod:  params.TaskResponsePeriod,
+		StartingEpoch:       uint64(epoch.CurrentEpoch + 1),
+	}
+	return k.SetTaskInfo(ctx, task)
+}
+
+func (k Keeper) RegisterBLSPublicKey(ctx sdk.Context, params *BlsParams) error {
+	// TODO:check bls signature
+	// params.pubkeyRegistrationSignature == key.sig(params.pubkeyRegistrationMessageHash)
+	if k.IsExistPubKey(ctx, params.Operator) {
+		return errorsmod.Wrap(types.ErrAlreadyExists, fmt.Sprintf("the operator is :%s", params.Operator))
+	}
+	bls := &types.BlsPubKeyInfo{
+		Name:     params.Name,
+		Operator: params.Operator,
+		PubKey:   params.PubKey,
+	}
+	return k.SetOperatorPubKey(ctx, bls)
+}
+
+func (k Keeper) GetOptInOperators(_ sdk.Context, _ string) ([]string, error) {
+	// TODO:expected operator Implement querying all operators that have been optin based on the avs address
+
+	return nil, nil
+}
+
+func (k Keeper) OperatorOptAction(ctx sdk.Context, params *OperatorOptParams) error {
 	operatorAddress := params.OperatorAddress
 	opAccAddr, err := sdk.AccAddressFromBech32(operatorAddress)
 	if err != nil {
@@ -101,28 +239,21 @@ func (k Keeper) AVSInfoUpdateWithOperator(ctx sdk.Context, params *OperatorOptPa
 		return errorsmod.Wrap(delegationtypes.ErrOperatorNotExist, fmt.Sprintf("AVSInfoUpdate: invalid operator address:%s", operatorAddress))
 	}
 
-	avsInfo, err := k.GetAVSInfo(ctx, params.AvsAddress)
-	if err != nil || avsInfo == nil {
+	f, err := k.IsAVS(ctx, params.AvsAddress)
+	if err != nil {
 		return errorsmod.Wrap(err, fmt.Sprintf("error occurred when get avs info,this avs address: %s", params.AvsAddress))
 	}
+	if !f {
+		return errorsmod.Wrap(err, fmt.Sprintf("Avs does not exist,this avs address: %s", params.AvsAddress))
+	}
 
-	avs := avsInfo.GetInfo()
-	operatorAddrList := avs.OperatorAddress
+	_, avsaddr, _ := bech32.DecodeToBase256(params.AvsAddress)
 
 	switch params.Action {
 	case RegisterAction:
-		if slices.Contains(operatorAddrList, operatorAddress) {
-			return errorsmod.Wrap(types.ErrAlreadyRegistered, fmt.Sprintf("Error: Already registered, operatorAddress %s", operatorAddress))
-		}
-		operatorAddrList = append(operatorAddrList, operatorAddress)
-		avs.OperatorAddress = operatorAddrList
-		return k.SetAVSInfo(ctx, avs)
+		return k.operatorKeeper.OptIn(ctx, sdk.AccAddress(operatorAddress), common.BytesToAddress(avsaddr).String())
 	case DeRegisterAction:
-		if !slices.Contains(operatorAddrList, operatorAddress) {
-			return errorsmod.Wrap(types.ErrUnregisterNonExistent, fmt.Sprintf("No available operatorAddress to DeRegisterAction, operatorAddress: %s", operatorAddress))
-		}
-		avs.OperatorAddress = types.RemoveOperatorAddress(operatorAddrList, operatorAddress)
-		return k.SetAVSInfo(ctx, avs)
+		return k.operatorKeeper.OptOut(ctx, sdk.AccAddress(operatorAddress), common.BytesToAddress(avsaddr).String())
 	default:
 		return errorsmod.Wrap(types.ErrInvalidAction, fmt.Sprintf("Invalid action: %d", params.Action))
 	}
@@ -157,6 +288,20 @@ func (k Keeper) GetAVSInfo(ctx sdk.Context, addr string) (*types.QueryAVSInfoRes
 		Info: &ret,
 	}
 	return res, nil
+}
+
+func (k *Keeper) IsAVS(ctx sdk.Context, addr string) (bool, error) {
+	pAddr, err := utils.ProcessAddress(addr)
+	if err != nil {
+		return false, errorsmod.Wrap(err, "GetAVSInfo: error occurred when parse acc address from Bech32")
+	}
+
+	avsAddr, err := sdk.AccAddressFromBech32(pAddr)
+	if err != nil {
+		return false, errorsmod.Wrap(err, "GetAVSInfo: error occurred when parse acc address from Bech32")
+	}
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefixAVSInfo)
+	return store.Has(avsAddr), nil
 }
 
 func (k Keeper) DeleteAVSInfo(ctx sdk.Context, addr string) error {

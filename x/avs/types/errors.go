@@ -31,4 +31,29 @@ var (
 		ModuleName, 7,
 		"Error: epoch info not found",
 	)
+	ErrCallerAddressUnauthorized = errorsmod.Register(
+		ModuleName, 8,
+		"Error: caller address is not authorized",
+	)
+	ErrAvsNameMismatch = errorsmod.Register(
+		ModuleName, 9,
+		"Error: avs Name mismatch",
+	)
+	ErrNotYetRegistered = errorsmod.Register(
+		ModuleName, 10,
+		"Error: this AVS has not been registered yet",
+	)
+	ErrNotNull = errorsmod.Register(
+		ModuleName, 11,
+		"Error: this chainID shouldn't be null",
+	)
+
+	ErrInvalidAddr = errorsmod.Register(
+		ModuleName, 12,
+		"The address isn't a valid account address",
+	)
+	ErrAlreadyExists = errorsmod.Register(
+		ModuleName, 13,
+		"The task already exists",
+	)
 )

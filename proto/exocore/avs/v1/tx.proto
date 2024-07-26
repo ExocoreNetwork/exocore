@@ -1,0 +1,176 @@
+syntax = "proto3";
+package exocore.avs.v1;
+import "amino/amino.proto";
+import "cosmos/msg/v1/msg.proto";
+import "cosmos_proto/cosmos.proto";
+import "gogoproto/gogo.proto";
+
+option go_package = "github.com/ExocoreNetwork/exocore/x/avs/types";
+
+// AVSinfo represent the information of avs
+message AVSInfo {
+  // name of avs
+  string name = 1;
+  // address of avs
+  string avs_address = 2;
+  // Minimum amount of funds stake by each operator
+  uint64 min_stake_amount = 3;
+  //  task address of avs
+  string task_addr = 4;
+  //  slash address of avs
+  string slash_addr = 5;
+  //  reward address of avs
+  string reward_addr = 6;
+  // the owner who has permission for avs
+  repeated string avs_owner_address = 7;
+  // asset_basic_info is all the basic asset information of the avs.
+  repeated string asset_ids = 8 [(gogoproto.customname) = "AssetIDs"];
+  // unbonding duration of avs.
+  uint64 avs_unbonding_period = 9;
+  // the operator minimum delegation amount.
+  uint64 min_self_delegation = 10;
+  //avs epoch ,Subsequently  will be handled by the epochs module.
+  string epoch_identifier = 11;
+  //Minimum number of optin operators,When creating tasks in AVS, check the minimum requirements
+  uint64 min_opt_in_operators = 12;
+  // the Minimum total amount of stake by all operator,,When creating tasks in AVS, check the minimum requirements
+  uint64 min_total_stake_amount = 13;
+  // Effective current epoch, accounting for current_epoch + 1
+  // and current_epoch is the integer identifier of the epoch module
+  uint64 starting_epoch = 14;
+  //chain-id for dogfood-avs
+  string chain_id = 15;
+
+  // avs_reward defines the proportion of reward
+  string avs_reward = 16
+  [(gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec", (gogoproto.nullable) = false];
+
+  // avs_slash defines the proportion of slash
+  string avs_slash = 17
+  [(gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec", (gogoproto.nullable) = false];
+}
+
+//Status and proof of each operator
+message OperatorStatus {
+  // operator address
+  string operator_address = 1;
+  //Status of the operator,(slash,reward,no)
+  string status = 2;
+  // proof data which is supplied by the contract, usually ABI-encoded
+  bytes proof_data = 3;
+
+}
+//RewardSlashProof is the task info.
+message RewardSlashProof {
+  // task_id of task
+  string task_id = 1;
+  // contract address of avstask
+  string task_contract_address = 2;
+  //aggregator  address
+  string aggregator = 3;
+  // address of avs
+  string avs_address = 4;
+  // Status and proof of  operators
+  repeated OperatorStatus operator_status = 5;
+}
+
+// TaskContractInfo is the task info.
+message TaskInfo {
+  // contract address of avstask
+  string task_contract_address = 1;
+  // name of task
+  string name = 2;
+  // data which is supplied by the contract, usually ABI-encoded
+  bytes data = 3;
+  // task_id of task
+  string task_id = 4;
+  // Deadline for task response
+  uint64 task_response_period = 5;
+  //challenge period for  task
+  uint64 task_challenge_period = 6;
+  //Signature threshold percentage
+  uint64 threshold_percentage = 7;
+  // Effective current epoch, accounting for current_epoch + 1
+  // and current_epoch is the integer identifier of the epoch module
+  uint64 starting_epoch = 8;
+}
+
+// BlsPubKeyInfo is the task info.
+message BlsPubKeyInfo {
+  // operator address
+  string operator = 1;
+  //the name of public keys
+  string name = 2;
+  // the bls public keys of the operator
+  bytes pub_key = 3;
+
+}
+// RegisterAVSTaskReq is the request to register a new task for avs.
+message RegisterAVSTaskReq {
+  option (cosmos.msg.v1.signer) = "FromAddress";
+  option (amino.name) = "cosmos-sdk/TaskContractInfo";
+  option (gogoproto.equal) = false;
+  option (gogoproto.goproto_getters) = false;
+
+  // from_address is the address of the avs (sdk.AccAddress).
+  string from_address = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+  // info is the task info.
+  TaskInfo task = 2;
+}
+
+// RegisterAVSTaskResponse is the response for register avs task
+message RegisterAVSTaskResponse {}
+
+// RegisterAVSReq is requst to register avs
+message RegisterAVSReq {
+  // from_address is the source
+  option (cosmos.msg.v1.signer) = "FromAddress";
+  // from_address is the source
+  string from_address = 1
+  [(cosmos_proto.scalar) = "cosmos.AddressString"];
+  // avs information
+  AVSInfo info = 2;
+}
+
+// RegisterAVSResponse is the response for register avs
+message RegisterAVSResponse {
+  // from_address is the source
+  option (cosmos.msg.v1.signer) = "FromAddress";
+  // from_address is the source
+  string from_address = 1
+  [(cosmos_proto.scalar) = "cosmos.AddressString"];
+  // avs information
+  AVSInfo info = 2;
+}
+
+// DeRegisterAVSReq is requst to deregister avs
+message DeRegisterAVSReq {
+  option (cosmos.msg.v1.signer) = "FromAddress";
+  // from_address is the source address
+  string from_address = 1
+  [(cosmos_proto.scalar) = "cosmos.AddressString"];
+  // avs information
+  AVSInfo info = 2;
+}
+
+// DeRegisterAVSResponse is requst to register avs
+message DeRegisterAVSResponse {
+  // from_address is the source address
+  option (cosmos.msg.v1.signer) = "FromAddress";
+  // from_address is the source address
+  string from_address = 1
+  [(cosmos_proto.scalar) = "cosmos.AddressString"];
+  // avs information
+  AVSInfo info = 2;
+}
+
+// Msg defines the AVS related Msg service.
+service Msg {
+  option (cosmos.msg.v1.service) = true;
+  // RegisterAVS registers a new AVS with corresponding operator.
+  rpc RegisterAVS (RegisterAVSReq) returns (RegisterAVSResponse);
+  // DelegateAssetToOperator delegates asset to operator.
+  rpc DeRegisterAVS (DeRegisterAVSReq) returns (DeRegisterAVSResponse);
+  // RegisterAVSTask registers a new task.
+  rpc RegisterAVSTask(RegisterAVSTaskReq) returns (RegisterAVSTaskResponse);
+}

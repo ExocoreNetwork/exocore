@@ -10,10 +10,6 @@ import (
 	"path/filepath"
 	"sort"
 
-	"github.com/ExocoreNetwork/exocore/x/avstask"
-	avsTaskKeeper "github.com/ExocoreNetwork/exocore/x/avstask/keeper"
-	avsTaskTypes "github.com/ExocoreNetwork/exocore/x/avstask/types"
-
 	"github.com/ExocoreNetwork/exocore/x/oracle"
 	oracleKeeper "github.com/ExocoreNetwork/exocore/x/oracle/keeper"
 	oracleTypes "github.com/ExocoreNetwork/exocore/x/oracle/types"
@@ -277,7 +273,6 @@ var (
 		reward.AppModuleBasic{},
 		exoslash.AppModuleBasic{},
 		avs.AppModuleBasic{},
-		avstask.AppModuleBasic{},
 		oracle.AppModuleBasic{},
 	)
 
@@ -361,7 +356,6 @@ type ExocoreApp struct {
 	OperatorKeeper   operatorKeeper.Keeper
 	ExoSlashKeeper   slashKeeper.Keeper
 	AVSManagerKeeper avsManagerKeeper.Keeper
-	TaskKeeper       avsTaskKeeper.Keeper
 	OracleKeeper     oracleKeeper.Keeper
 	ExomintKeeper    exomintkeeper.Keeper
 
@@ -446,7 +440,6 @@ func NewExocoreApp(
 		exoslashTypes.StoreKey,
 		operatorTypes.StoreKey,
 		avsManagerTypes.StoreKey,
-		avsTaskTypes.StoreKey,
 		oracleTypes.StoreKey,
 		exominttypes.StoreKey,
 	)
@@ -589,6 +582,7 @@ func NewExocoreApp(
 		epochstypes.NewMultiEpochHooks(
 			app.StakingKeeper.EpochsHooks(), // at this point, the order is irrelevant.
 			app.ExomintKeeper.EpochsHooks(), // however, this may change once we have distribution
+			app.AVSManagerKeeper.EpochsHooks(),
 		),
 	)
 
@@ -603,13 +597,13 @@ func NewExocoreApp(
 	// the AVS manager keeper is the AVS registry. it allows registered operators to add or
 	// remove AVSs.
 	app.AVSManagerKeeper = avsManagerKeeper.NewKeeper(
-		appCodec, keys[avsManagerTypes.StoreKey], &app.OperatorKeeper, app.AssetsKeeper, app.EpochsKeeper,
+		appCodec, keys[avsManagerTypes.StoreKey],
+		&app.OperatorKeeper,
+		app.AssetsKeeper,
+		app.EpochsKeeper,
+		app.EvmKeeper,
 	)
-	// the task keeper allows the registration of AVS tasks. it uses the AVS keeper to check
-	// the status of the AVS.
-	app.TaskKeeper = avsTaskKeeper.NewKeeper(
-		appCodec, keys[avsTaskTypes.StoreKey], app.AVSManagerKeeper,
-	)
+
 	// x/oracle is not fully integrated (or enabled) but allows for exchange rates to be added.
 	app.OracleKeeper = oracleKeeper.NewKeeper(
 		appCodec, keys[oracleTypes.StoreKey], memKeys[oracleTypes.MemStoreKey],
@@ -633,6 +627,7 @@ func NewExocoreApp(
 
 	// the evidence module handles any external evidence of misbehavior submitted to it, if such
 	// an evidence is registered in its router. we have not set up any such router, and hence
+
 	// this module cannot handle external evidence. however, by itself, the module is built
 	// to handle evidence received from Tendermint, which is the equivocation evidence.
 	// it is created after the Staking and Slashing keepers have been set up.
@@ -706,6 +701,15 @@ func NewExocoreApp(
 		cast.ToString(appOpts.Get(srvflags.EVMTracer)),
 		app.GetSubspace(evmtypes.ModuleName),
 	)
+	// the AVS manager keeper is the AVS registry. it allows registered operators to add or
+	// remove AVSs.this avs keeper is initialized after the EVM keeper because it depends on the EVM keeper.
+	app.AVSManagerKeeper = avsManagerKeeper.NewKeeper(
+		appCodec, keys[avsManagerTypes.StoreKey],
+		&app.OperatorKeeper,
+		app.AssetsKeeper,
+		app.EpochsKeeper,
+		app.EvmKeeper,
+	)
 
 	app.EvmKeeper.WithPrecompiles(
 		evmkeeper.AvailablePrecompiles(
@@ -717,7 +721,6 @@ func NewExocoreApp(
 			app.ExoSlashKeeper,
 			app.RewardKeeper,
 			app.AVSManagerKeeper,
-			app.TaskKeeper,
 		),
 	)
 
@@ -888,7 +891,6 @@ func NewExocoreApp(
 		reward.NewAppModule(appCodec, app.RewardKeeper),
 		exoslash.NewAppModule(appCodec, app.ExoSlashKeeper),
 		avs.NewAppModule(appCodec, app.AVSManagerKeeper),
-		avstask.NewAppModule(appCodec, app.TaskKeeper),
 		oracle.NewAppModule(appCodec, app.OracleKeeper, app.AccountKeeper, app.BankKeeper),
 	)
 
@@ -926,7 +928,6 @@ func NewExocoreApp(
 		rewardTypes.ModuleName,
 		exoslashTypes.ModuleName,
 		avsManagerTypes.ModuleName,
-		avsTaskTypes.ModuleName,
 		oracleTypes.ModuleName,
 	)
 
@@ -961,7 +962,6 @@ func NewExocoreApp(
 		rewardTypes.ModuleName,
 		exoslashTypes.ModuleName,
 		avsManagerTypes.ModuleName,
-		avsTaskTypes.ModuleName,
 		// op module
 		feemarkettypes.ModuleName, // last in order to retrieve the block gas used
 	)
@@ -1003,7 +1003,6 @@ func NewExocoreApp(
 		rewardTypes.ModuleName,   // not fully implemented yet
 		exoslashTypes.ModuleName, // not fully implemented yet
 		avsManagerTypes.ModuleName,
-		avsTaskTypes.ModuleName,
 		// must be the last module after others have been set up, so that it can check
 		// the invariants (if configured to do so).
 		crisistypes.ModuleName,

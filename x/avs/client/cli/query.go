@@ -4,17 +4,13 @@ import (
 	"context"
 	"fmt"
 
-	// "strings"
-
-	"github.com/spf13/cobra"
-
-	"github.com/cosmos/cosmos-sdk/client"
-	"github.com/cosmos/cosmos-sdk/client/flags"
-
-	// "github.com/cosmos/cosmos-sdk/client/flags"
-	// sdk "github.com/cosmos/cosmos-sdk/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	"golang.org/x/xerrors"
 
 	"github.com/ExocoreNetwork/exocore/x/avs/types"
+	"github.com/cosmos/cosmos-sdk/client"
+	"github.com/cosmos/cosmos-sdk/client/flags"
+	"github.com/spf13/cobra"
 )
 
 // GetQueryCmd returns the cli query commands for this module
@@ -39,6 +35,10 @@ func QueryAVSInfo() *cobra.Command {
 		Long:  "AVSInfo query for current registered AVS",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
+			_, err := sdk.AccAddressFromBech32(args[0])
+			if err != nil {
+				return xerrors.Errorf("invalid  address,err:%s", err.Error())
+			}
 			clientCtx, err := client.GetClientQueryContext(cmd)
 			if err != nil {
 				return err
@@ -46,7 +46,7 @@ func QueryAVSInfo() *cobra.Command {
 
 			queryClient := types.NewQueryClient(clientCtx)
 			req := &types.QueryAVSInfoReq{
-				AVSAddres: args[0],
+				AVSAddress: args[0],
 			}
 			res, err := queryClient.QueryAVSInfo(context.Background(), req)
 			if err != nil {
@@ -55,6 +55,38 @@ func QueryAVSInfo() *cobra.Command {
 			return clientCtx.PrintProto(res)
 		},
 	}
+	flags.AddQueryFlagsToCmd(cmd)
+	return cmd
+}
+
+func GetTaskInfo() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "GetTaskInfo avstask info",
+		Short: "Get avstask info",
+		Long:  "Get avstask info",
+		Args:  cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			_, err := sdk.AccAddressFromBech32(args[0])
+			if err != nil {
+				return xerrors.Errorf("invalid operator address,err:%s", err.Error())
+			}
+			clientCtx, err := client.GetClientQueryContext(cmd)
+			if err != nil {
+				return err
+			}
+
+			queryClient := types.NewQueryClient(clientCtx)
+			req := types.QueryAVSTaskInfoReq{
+				TaskAddr: args[0],
+			}
+			res, err := queryClient.QueryAVSTaskInfo(context.Background(), &req)
+			if err != nil {
+				return err
+			}
+			return clientCtx.PrintProto(res)
+		},
+	}
+
 	flags.AddQueryFlagsToCmd(cmd)
 	return cmd
 }

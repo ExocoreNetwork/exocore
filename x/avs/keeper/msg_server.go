@@ -33,3 +33,7 @@ func (k Keeper) DeRegisterAVS(_ context.Context, _ *types.DeRegisterAVSReq) (*ty
 
 	return nil, nil
 }
+
+func (k Keeper) RegisterAVSTask(_ context.Context, _ *types.RegisterAVSTaskReq) (*types.RegisterAVSTaskResponse, error) {
+	return nil, nil
+}

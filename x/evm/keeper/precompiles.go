@@ -5,14 +5,12 @@ import (
 
 	assetsprecompile "github.com/ExocoreNetwork/exocore/precompiles/assets"
 	avsManagerPrecompile "github.com/ExocoreNetwork/exocore/precompiles/avs"
-	taskPrecompile "github.com/ExocoreNetwork/exocore/precompiles/avsTask"
 	blsPrecompile "github.com/ExocoreNetwork/exocore/precompiles/bls"
 	delegationprecompile "github.com/ExocoreNetwork/exocore/precompiles/delegation"
 	rewardPrecompile "github.com/ExocoreNetwork/exocore/precompiles/reward"
 	slashPrecompile "github.com/ExocoreNetwork/exocore/precompiles/slash"
 	stakingStateKeeper "github.com/ExocoreNetwork/exocore/x/assets/keeper"
 	avsManagerKeeper "github.com/ExocoreNetwork/exocore/x/avs/keeper"
-	taskKeeper "github.com/ExocoreNetwork/exocore/x/avstask/keeper"
 	delegationKeeper "github.com/ExocoreNetwork/exocore/x/delegation/keeper"
 	rewardKeeper "github.com/ExocoreNetwork/exocore/x/reward/keeper"
 	exoslashKeeper "github.com/ExocoreNetwork/exocore/x/slash/keeper"
@@ -40,7 +38,6 @@ func AvailablePrecompiles(
 	slashKeeper exoslashKeeper.Keeper,
 	rewardKeeper rewardKeeper.Keeper,
 	avsManagerKeeper avsManagerKeeper.Keeper,
-	taskKeeper taskKeeper.Keeper,
 ) map[common.Address]vm.PrecompiledContract {
 	// Clone the mapping from the latest EVM fork.
 	precompiles := maps.Clone(vm.PrecompiledContractsBerlin)
@@ -90,10 +87,6 @@ func AvailablePrecompiles(
 	if err != nil {
 		panic(fmt.Errorf("failed to load avsManager precompile: %w", err))
 	}
-	taskPrecompile, err := taskPrecompile.NewPrecompile(authzKeeper, taskKeeper, avsManagerKeeper)
-	if err != nil {
-		panic(fmt.Errorf("failed to load  reward precompile: %w", err))
-	}
 	blsPrecompile, err := blsPrecompile.NewPrecompile(BaseGas)
 	if err != nil {
 		panic(fmt.Errorf("failed to load bls precompile: %v", err))
@@ -103,7 +96,6 @@ func AvailablePrecompiles(
 	precompiles[assetsPrecompile.Address()] = assetsPrecompile
 	precompiles[delegationPrecompile.Address()] = delegationPrecompile
 	precompiles[avsManagerPrecompile.Address()] = avsManagerPrecompile
-	precompiles[taskPrecompile.Address()] = taskPrecompile
 	precompiles[ibcTransferPrecompile.Address()] = ibcTransferPrecompile
 	precompiles[blsPrecompile.Address()] = blsPrecompile
 	return precompiles

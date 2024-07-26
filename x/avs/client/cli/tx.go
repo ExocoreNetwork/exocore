@@ -3,14 +3,14 @@ package cli
 import (
 	"fmt"
 
-	"github.com/spf13/cobra"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	"golang.org/x/xerrors"
 
+	"github.com/ExocoreNetwork/exocore/x/avs/types"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/client/tx"
-
-	// "github.com/cosmos/cosmos-sdk/client/flags"
-	"github.com/ExocoreNetwork/exocore/x/avs/types"
+	"github.com/spf13/cobra"
 )
 
 // GetTxCmd returns the transaction commands for this module
@@ -39,14 +39,30 @@ func RegisterAVS() *cobra.Command {
 
 			sender := cliCtx.GetFromAddress()
 			fromAddress := sender.String()
+			// Validate parameters
+			_, err = sdk.AccAddressFromBech32(args[1])
+			if err != nil {
+				return xerrors.Errorf("invalid address,err:%s", err.Error())
+			}
+
+			_, err = sdk.AccAddressFromBech32(args[2])
+			if err != nil {
+				return xerrors.Errorf("invalid address,err:%s", err.Error())
+			}
+
+			_, err = sdk.AccAddressFromBech32(args[3])
+			if err != nil {
+				return xerrors.Errorf("invalid address,err:%s", err.Error())
+			}
+
 			msg := &types.RegisterAVSReq{
 				FromAddress: fromAddress,
 				Info: &types.AVSInfo{
 					Name:            args[0],
 					AvsAddress:      args[1],
-					OperatorAddress: []string{args[2]},
+					SlashAddr:       args[2],
 					AvsOwnerAddress: []string{args[3]},
-					AssetId:         []string{args[4]},
+					AssetIDs:        []string{args[4]},
 				},
 			}
 
