@@ -178,11 +178,7 @@ func (k Keeper) SlashWithInfractionReason(
 	slashFactor sdk.Dec, infraction stakingtypes.Infraction,
 ) sdkmath.Int {
 	chainID := ctx.ChainID()
-	avsAddr, err := k.avsKeeper.GetAVSAddrByChainID(ctx, chainID)
-	if err != nil {
-		k.Logger(ctx).Error(err.Error(), chainID)
-		return sdkmath.NewInt(0)
-	}
+	avsAddr := k.avsKeeper.GetAVSAddrByChainID(ctx, chainID)
 	slashID := GetSlashIDForDogfood(infraction, infractionHeight)
 	slashParam := &types.SlashInputInfo{
 		IsDogFood:        true,
@@ -194,7 +190,7 @@ func (k Keeper) SlashWithInfractionReason(
 		SlashEventHeight: infractionHeight,
 		SlashProportion:  slashFactor,
 	}
-	err = k.Slash(ctx, slashParam)
+	err := k.Slash(ctx, slashParam)
 	if err != nil {
 		k.Logger(ctx).Error(err.Error(), avsAddr)
 		return sdkmath.NewInt(0)
@@ -212,12 +208,7 @@ func (k Keeper) IsOperatorJailedForChainID(ctx sdk.Context, consAddr sdk.ConsAdd
 		return false
 	}
 
-	avsAddr, err := k.avsKeeper.GetAVSAddrByChainID(ctx, chainID)
-	if err != nil {
-		k.Logger(ctx).Error(err.Error(), chainID)
-		return false
-	}
-
+	avsAddr := k.avsKeeper.GetAVSAddrByChainID(ctx, chainID)
 	optInfo, err := k.GetOptedInfo(ctx, operatorAddr.String(), avsAddr)
 	if err != nil {
 		k.Logger(ctx).Error(err.Error(), operatorAddr, avsAddr)
@@ -233,16 +224,12 @@ func (k *Keeper) SetJailedState(ctx sdk.Context, consAddr sdk.ConsAddress, chain
 		return
 	}
 
-	avsAddr, err := k.avsKeeper.GetAVSAddrByChainID(ctx, chainID)
-	if err != nil {
-		k.Logger(ctx).Error(err.Error(), chainID)
-		return
-	}
+	avsAddr := k.avsKeeper.GetAVSAddrByChainID(ctx, chainID)
 
 	handleFunc := func(info *types.OptedInfo) {
 		info.Jailed = jailed
 	}
-	err = k.HandleOptedInfo(ctx, operatorAddr.String(), avsAddr, handleFunc)
+	err := k.HandleOptedInfo(ctx, operatorAddr.String(), avsAddr, handleFunc)
 	if err != nil {
 		k.Logger(ctx).Error(err.Error(), chainID)
 	}

@@ -545,17 +545,6 @@ func NewExocoreApp(
 	// asset and client chain registry.
 	app.AssetsKeeper = assetsKeeper.NewKeeper(keys[assetsTypes.StoreKey], appCodec, &app.OracleKeeper)
 
-	// operator registry, which handles vote power (and this requires delegation keeper).
-	app.OperatorKeeper = operatorKeeper.NewKeeper(
-		keys[operatorTypes.StoreKey], appCodec,
-		bApp.CreateQueryContext,
-		app.AssetsKeeper,
-		&app.DelegationKeeper, // intentionally a pointer, since not yet initialized.
-		&app.OracleKeeper,
-		operatorTypes.MockAVS{AssetsKeeper: app.AssetsKeeper, DogfoodKeeper: &app.StakingKeeper},
-		delegationTypes.VirtualSlashKeeper{},
-	)
-
 	// handles delegations by stakers, and must know if the delegatee operator is registered.
 	app.DelegationKeeper = delegationKeeper.NewKeeper(
 		keys[delegationTypes.StoreKey], appCodec,
@@ -584,6 +573,7 @@ func NewExocoreApp(
 			app.StakingKeeper.EpochsHooks(), // at this point, the order is irrelevant.
 			app.ExomintKeeper.EpochsHooks(), // however, this may change once we have distribution
 			app.AVSManagerKeeper.EpochsHooks(),
+			app.OperatorKeeper.EpochsHooks(),
 		),
 	)
 
@@ -593,16 +583,6 @@ func NewExocoreApp(
 	)
 	app.ExoSlashKeeper = slashKeeper.NewKeeper(
 		appCodec, keys[exoslashTypes.StoreKey], app.AssetsKeeper,
-	)
-
-	// the AVS manager keeper is the AVS registry. it allows registered operators to add or
-	// remove AVSs.
-	app.AVSManagerKeeper = avsManagerKeeper.NewKeeper(
-		appCodec, keys[avsManagerTypes.StoreKey],
-		&app.OperatorKeeper,
-		app.AssetsKeeper,
-		app.EpochsKeeper,
-		app.EvmKeeper,
 	)
 
 	// x/oracle is not fully integrated (or enabled) but allows for exchange rates to be added.
@@ -702,6 +682,7 @@ func NewExocoreApp(
 		cast.ToString(appOpts.Get(srvflags.EVMTracer)),
 		app.GetSubspace(evmtypes.ModuleName),
 	)
+
 	// the AVS manager keeper is the AVS registry. it allows registered operators to add or
 	// remove AVSs.this avs keeper is initialized after the EVM keeper because it depends on the EVM keeper.
 	app.AVSManagerKeeper = avsManagerKeeper.NewKeeper(
@@ -710,6 +691,17 @@ func NewExocoreApp(
 		app.AssetsKeeper,
 		app.EpochsKeeper,
 		app.EvmKeeper,
+	)
+	// operator registry, which handles vote power (and this requires delegation keeper).
+	// this operator keeper is initialized after the avs keeper because it depends on the avs keeper.
+	app.OperatorKeeper = operatorKeeper.NewKeeper(
+		keys[operatorTypes.StoreKey], appCodec,
+		bApp.CreateQueryContext,
+		app.AssetsKeeper,
+		&app.DelegationKeeper, // intentionally a pointer, since not yet initialized.
+		&app.OracleKeeper,
+		&app.AVSManagerKeeper,
+		delegationTypes.VirtualSlashKeeper{},
 	)
 
 	app.EvmKeeper.WithPrecompiles(

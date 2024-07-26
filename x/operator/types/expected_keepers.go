@@ -117,8 +117,8 @@ func (a MockAVS) GetAVSSlashContract(_ sdk.Context, _ string) (string, error) {
 	return "", nil
 }
 
-func (a MockAVS) GetAVSAddrByChainID(_ sdk.Context, chainID string) (string, error) {
-	return chainID, nil
+func (a MockAVS) GetAVSAddrByChainID(_ sdk.Context, chainID string) string {
+	return chainID
 }
 
 func (a MockAVS) GetAVSMinimumSelfDelegation(ctx sdk.Context, avsAddr string) (sdkmath.LegacyDec, error) {
@@ -128,11 +128,11 @@ func (a MockAVS) GetAVSMinimumSelfDelegation(ctx sdk.Context, avsAddr string) (s
 	return sdkmath.LegacyNewDec(0), nil
 }
 
-func (a MockAVS) GetEpochEndAVSs(ctx sdk.Context) ([]string, error) {
+func (a MockAVS) GetEpochEndAVSs(ctx sdk.Context, _ string, _ int64) []string {
 	return []string{
 		ctx.ChainID(),
 		common.BytesToAddress([]byte("avsTestAddr")).String(),
-	}, nil
+	}
 }
 
 func (a MockAVS) GetHeightForVotingPower(_ sdk.Context, _ string, height int64) (int64, error) {
@@ -147,14 +147,14 @@ type AVSKeeper interface {
 	GetAVSSupportedAssets(ctx sdk.Context, avsAddr string) (map[string]interface{}, error)
 	GetAVSSlashContract(ctx sdk.Context, avsAddr string) (string, error)
 	// GetAVSAddrByChainID converts the chainID to a general EVM-compatible hex address.
-	GetAVSAddrByChainID(ctx sdk.Context, chainID string) (string, error)
+	GetAVSAddrByChainID(ctx sdk.Context, chainID string) string
 	// GetAVSMinimumSelfDelegation returns the USD value of minimum self delegation, which
 	// is set for operator
 	GetAVSMinimumSelfDelegation(ctx sdk.Context, avsAddr string) (sdkmath.LegacyDec, error)
 	// GetEpochEndAVSs returns the AVS list where the current block marks the end of their epoch.
 	// todo: maybe the epoch of different AVSs should be implemented in the AVS module,then
 	// the other modules implement the EpochsHooks to trigger state updating.
-	GetEpochEndAVSs(ctx sdk.Context) ([]string, error)
+	GetEpochEndAVSs(ctx sdk.Context, epochIdentifier string, epochNumber int64) []string
 }
 
 type SlashKeeper interface {

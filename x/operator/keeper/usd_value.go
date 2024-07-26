@@ -218,10 +218,7 @@ func (k *Keeper) IterateOperatorsForAVS(ctx sdk.Context, avsAddr string, isUpdat
 func (k Keeper) GetVotePowerForChainID(
 	ctx sdk.Context, operators []sdk.AccAddress, chainID string,
 ) ([]int64, error) {
-	avsAddr, err := k.avsKeeper.GetAVSAddrByChainID(ctx, chainID)
-	if err != nil {
-		return nil, err
-	}
+	avsAddr := k.avsKeeper.GetAVSAddrByChainID(ctx, chainID)
 	ret := make([]int64, 0)
 	for _, operator := range operators {
 		// this already filters by the required assetIDs
@@ -237,10 +234,7 @@ func (k Keeper) GetVotePowerForChainID(
 }
 
 func (k *Keeper) GetOperatorAssetValue(ctx sdk.Context, operator sdk.AccAddress, chainID string) (int64, error) {
-	avsAddr, err := k.avsKeeper.GetAVSAddrByChainID(ctx, chainID)
-	if err != nil {
-		return 0, err
-	}
+	avsAddr := k.avsKeeper.GetAVSAddrByChainID(ctx, chainID)
 	share, err := k.GetOperatorUSDValue(ctx, operator.String(), avsAddr)
 	if err != nil {
 		return 0, err
