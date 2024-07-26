@@ -2,27 +2,27 @@ package types
 
 import (
 	"context"
+	epochsTypes "github.com/ExocoreNetwork/exocore/x/epochs/types"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/auth/types"
-	epochsTypes "github.com/evmos/evmos/v14/x/epochs/types"
 )
 
 // EpochsKeeper represents the expected keeper interface for the epochs module.
 type EpochsKeeper interface {
-	GetEpochInfo(sdk.Context, string) (epochsTypes.EpochInfo, bool)
+	GetEpochInfo(ctx sdk.Context, identifier string) (epochsTypes.EpochInfo, bool)
 }
 
 type FeeDistributionHooks interface{}
 
 // AccountKeeper defines the expected interface for the Account module.
 type AccountKeeper interface {
-	GetAccount(context.Context, sdk.AccAddress) types.AccountI // only used for simulation
+	GetAccount(sdk.Context, sdk.AccAddress) types.AccountI // only used for simulation
 	// Methods imported from account should be defined here
 	GetModuleAddress(name string) sdk.AccAddress
-	GetModuleAccount(ctx context.Context, name string) types.ModuleAccountI
+	GetModuleAccount(ctx sdk.Context, name string) types.ModuleAccountI
 	// TODO remove with genesis 2-phases refactor https://github.com/cosmos/cosmos-sdk/issues/2862
-	SetModuleAccount(context.Context, types.ModuleAccountI)
+	SetModuleAccount(sdk.Context, types.ModuleAccountI)
 }
 
 // BankKeeper defines the expected interface for the Bank module.

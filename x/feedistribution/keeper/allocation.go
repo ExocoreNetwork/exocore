@@ -1,8 +1,6 @@
 package keeper
 
 import (
-	"log"
-
 	"cosmossdk.io/math"
 
 	"github.com/ExocoreNetwork/exocore/x/feedistribution/types"
@@ -16,16 +14,19 @@ func (k Keeper) AllocateTokens(ctx sdk.Context, totalPreviousPower int64) error 
 	feeCollector := k.authKeeper.GetModuleAccount(ctx, k.feeCollectorName)
 	feesCollectedInt := k.bankKeeper.GetAllBalances(ctx, feeCollector.GetAddress())
 	feesCollected := sdk.NewDecCoinsFromCoins(feesCollectedInt...)
+
 	// transfer collected fees to the distribution module account
 	if err := k.bankKeeper.SendCoinsFromModuleToModule(ctx, k.feeCollectorName, types.ModuleName, feesCollectedInt); err != nil {
 		return err
 	}
-	feePool := k.FeePool
+
+	feePool := k.GetFeePool(ctx)
 	if totalPreviousPower == 0 {
-		k.FeePool = types.FeePool{
-			CommunityPool: feePool.CommunityPool.Add(feesCollected...),
-		}
+		feePool.CommunityPool = feePool.CommunityPool.Add(feesCollected...)
+		k.SetFeePool(ctx, feePool)
+		return nil
 	}
+
 	// calculate fraction allocated to exocore validators
 	remaining := feesCollected
 	communityTax, err := k.GetCommunityTax(ctx)
@@ -33,7 +34,10 @@ func (k Keeper) AllocateTokens(ctx sdk.Context, totalPreviousPower int64) error 
 		return err
 	}
 	feeMultiplier := feesCollected.MulDecTruncate(math.LegacyOneDec().Sub(communityTax))
+
 	// allocate tokens proportionally to voting power of different validators
+	//
+	// TODO: Consider parallelizing later
 	validatorUpdates := k.StakingKeeper.GetValidatorUpdates(ctx)
 	for _, vu := range validatorUpdates {
 		powerFraction := math.LegacyNewDec(vu.Power).QuoTruncate(math.LegacyNewDec(totalPreviousPower))
@@ -41,34 +45,24 @@ func (k Keeper) AllocateTokens(ctx sdk.Context, totalPreviousPower int64) error 
 		pubKey, _ := cryptocodec.FromTmProtoPublicKey(vu.PubKey)
 		consAddr := sdk.ConsAddress(pubKey.Address().String())
 		validator := k.StakingKeeper.ValidatorByConsAddr(ctx, consAddr)
-		if err = k.AllocateTokensToValidator(ctx, validator, reward); err != nil {
-			return err
-		}
+		k.AllocateTokensToValidator(ctx, validator, reward)
 		remaining = remaining.Sub(reward)
 	}
-	// send to community pool and set remainder in fee pool
-	amt, re := remaining.TruncateDecimal()
-	if err := k.bankKeeper.SendCoinsFromModuleToModule(ctx, types.ModuleName, types.ProtocolPoolModuleName, amt); err != nil {
-		return err
-	}
 
-	// set ToDistribute in protocolpool to keep track of continuous funds distribution
-	if err := k.poolKeeper.SetToDistribute(ctx, amt, k.GetAuthority()); err != nil { // TODO: this should be distribution module account
-		return err
-	}
-	//	k.FeePool = types.FeePool{DecimalPool: k.FeePool.DecimalPool.Add(re...)}
-	k.FeePool.DecimalPool = k.FeePool.DecimalPool.Add(re...)
+	// allocate community funding
+	feePool.CommunityPool = feePool.CommunityPool.Add(remaining...)
+	k.SetFeePool(ctx, feePool)
 	return nil
 }
 
 // AllocateTokensToValidator allocate tokens to a particular validator,
 // splitting according to commission.
-func (k Keeper) AllocateTokensToValidator(ctx sdk.Context, val stakingtypes.ValidatorI, tokens sdk.DecCoins) error {
+func (k Keeper) AllocateTokensToValidator(ctx sdk.Context, val stakingtypes.ValidatorI, tokens sdk.DecCoins) {
 	// split tokens between validator and delegators according to commission
 	rate := val.GetCommission()
 	commission := tokens.MulDec(rate)
 	shared := tokens.Sub(commission)
-	valBz := val.GetOperator().String()
+	valBz := val.GetOperator()
 
 	// update current commission
 	ctx.EventManager().EmitEvent(sdk.NewEvent(
@@ -76,20 +70,14 @@ func (k Keeper) AllocateTokensToValidator(ctx sdk.Context, val stakingtypes.Vali
 		sdk.NewAttribute(sdk.AttributeKeyAmount, commission.String()),
 		sdk.NewAttribute(types.EventTypeCommission, val.GetOperator().String()),
 	))
-	if currentCommission, ok := k.ValidatorsAccumulatedCommission[valBz]; ok {
-		currentCommission.Commission = currentCommission.Commission.Add(commission...)
-		k.ValidatorsAccumulatedCommission[valBz] = currentCommission
-	} else {
-		log.Printf("currentCommission %s didn't exist", currentCommission)
-		// No need to return here
-	}
-
+	currentCommission := k.GetValidatorAccumulatedCommission(ctx, valBz)
+	currentCommission.Commission = currentCommission.Commission.Add(commission...)
+	k.SetValidatorAccumulatedCommission(ctx, valBz, currentCommission)
 	// update current rewards
 	// if the rewards do not exist it's fine, we will just add to zero.
-	if currentRewards, ok := k.ValidatorCurrentRewards[valBz]; ok {
-		currentRewards.Rewards = currentRewards.Rewards.Add(shared...)
-		k.ValidatorCurrentRewards[valBz] = currentRewards
-	}
+	currentRewards := k.GetValidatorCurrentRewards(ctx, valBz)
+	currentRewards.Rewards = currentRewards.Rewards.Add(shared...)
+	k.SetValidatorCurrentRewards(ctx, valBz, currentRewards)
 
 	// update outstanding rewards
 	ctx.EventManager().EmitEvent(sdk.NewEvent(
@@ -98,11 +86,7 @@ func (k Keeper) AllocateTokensToValidator(ctx sdk.Context, val stakingtypes.Vali
 		sdk.NewAttribute(types.AttributeKeyValidator, val.GetOperator().String()),
 	))
 
-	if outstanding, ok := k.ValidatorOutstandingRewards[valBz]; ok {
-		outstanding.Rewards = outstanding.Rewards.Add(tokens...)
-		k.ValidatorOutstandingRewards[valBz] = outstanding
-	} else {
-		log.Printf("ValidatorOutstandingRewards for %s didn't exist", valBz)
-	}
-	return nil
+	outstanding := k.GetValidatorOutstandingRewards(ctx, valBz)
+	outstanding.Rewards = outstanding.Rewards.Add(tokens...)
+	k.SetValidatorOutstandingRewards(ctx, valBz, outstanding)
 }

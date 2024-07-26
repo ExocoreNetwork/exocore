@@ -1,6 +1,8 @@
 package keeper
 
 import (
+	stakingkeeper "github.com/ExocoreNetwork/exocore/x/dogfood/keeper"
+	epochskeeper "github.com/ExocoreNetwork/exocore/x/epochs/keeper"
 	"testing"
 
 	distrkeeper "github.com/ExocoreNetwork/exocore/x/feedistribution/keeper"
@@ -42,16 +44,20 @@ func FeedistributeKeeper(t testing.TB) (distrkeeper.Keeper, sdk.Context) {
 		accountkeeper.AccountKeeper{}.GetAuthority(): false,
 	}
 	authority := authtypes.NewModuleAddress(types.ModuleName)
-	bankkeeper := bankkeeper.NewBaseKeeper(
+	bank := bankkeeper.NewBaseKeeper(
 		encCfg.Codec, key, accountkeeper.AccountKeeper{},
-		blockedAddresses, authority.String(),
-	)
+		blockedAddresses, authority.String())
+
 	k := distrkeeper.NewKeeper(
 		cdc,
 		log.NewNopLogger(),
+		"fee_collector",
 		authority.String(),
 		storeKey,
-		bankkeeper,
+		bank,
+		accountkeeper.AccountKeeper{},
+		stakingkeeper.Keeper{},
+		epochskeeper.Keeper{},
 	)
 
 	ctx := sdk.NewContext(stateStore, cmtproto.Header{}, false, log.NewNopLogger())

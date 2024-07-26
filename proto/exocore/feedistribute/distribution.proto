@@ -77,10 +77,4 @@ message FeePool {
     (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.DecCoins",
     deprecated = true
   ];
-
-  // decimal_pool holds the decimal coins
-  repeated cosmos.base.v1beta1.DecCoin decimal_pool = 2 [
-    (gogoproto.nullable) = false,
-    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.DecCoins"
-  ];
 }
