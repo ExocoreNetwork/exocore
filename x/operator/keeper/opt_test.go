@@ -144,6 +144,22 @@ func (suite *OperatorTestSuite) TestOptIn() {
 	suite.CheckState(expectedState)
 }
 
+func (suite *OperatorTestSuite) TestOptInList() {
+	suite.prepare()
+	err := suite.App.OperatorKeeper.OptIn(suite.Ctx, suite.operatorAddr, suite.avsAddr)
+	suite.NoError(err)
+	// check if the related state is correct
+	operatorList, err := suite.App.OperatorKeeper.GetOptedInOperatorListByAVS(suite.Ctx, suite.avsAddr)
+	suite.NoError(err)
+	suite.Contains(operatorList, suite.operatorAddr.String())
+
+	avsList, err := suite.App.OperatorKeeper.GetOptedInAVSForOperator(suite.Ctx, suite.operatorAddr.String())
+	suite.NoError(err)
+
+	suite.Contains(avsList, suite.avsAddr)
+
+}
+
 func (suite *OperatorTestSuite) TestOptOut() {
 	suite.prepare()
 	err := suite.App.OperatorKeeper.OptOut(suite.Ctx, suite.operatorAddr, suite.avsAddr)
