@@ -193,3 +193,22 @@ func (k *Keeper) GetOptedInAVSForOperator(ctx sdk.Context, operatorAddr string) 
 	}
 	return avsList, nil
 }
+
+func (k *Keeper) GetOptedInOperatorListByAVS(ctx sdk.Context, avsAddr string) ([]string, error) {
+	// get all opted-in info
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), operatortypes.KeyPrefixOperatorOptedAVSInfo)
+	iterator := sdk.KVStorePrefixIterator(store, nil)
+	defer iterator.Close()
+
+	operatorList := make([]string, 0)
+	for ; iterator.Valid(); iterator.Next() {
+		keys, err := assetstype.ParseJoinedStoreKey(iterator.Key(), 2)
+		if err != nil {
+			return nil, err
+		}
+		if avsAddr == keys[1] {
+			operatorList = append(operatorList, keys[0])
+		}
+	}
+	return operatorList, nil
+}
