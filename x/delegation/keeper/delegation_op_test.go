@@ -2,6 +2,7 @@ package keeper_test
 
 import (
 	"fmt"
+	"github.com/ethereum/go-ethereum/log"
 
 	assetskeeper "github.com/ExocoreNetwork/exocore/x/assets/keeper"
 
@@ -145,13 +146,15 @@ func (suite *DelegationTestSuite) TestUndelegateFrom() {
 
 	operatorState, err := suite.App.AssetsKeeper.GetOperatorSpecifiedAssetInfo(suite.Ctx, delegationEvent.OperatorAddress, assetID)
 	suite.NoError(err)
-	suite.Equal(types.OperatorAssetInfo{
+	ok := suite.Equal(types.OperatorAssetInfo{
 		TotalAmount:         sdkmath.NewInt(0),
 		WaitUnbondingAmount: delegationEvent.OpAmount,
 		TotalShare:          sdkmath.LegacyNewDec(0),
 		OperatorShare:       sdkmath.LegacyNewDec(0),
 	}, *operatorState)
-
+	if !ok {
+		log.Error("not ok")
+	}
 	specifiedDelegationAmount, err := suite.App.DelegationKeeper.GetSingleDelegationInfo(suite.Ctx, stakerID, assetID, delegationEvent.OperatorAddress.String())
 	suite.NoError(err)
 	suite.Equal(delegationtype.DelegationAmounts{

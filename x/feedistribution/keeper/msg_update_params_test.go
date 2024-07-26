@@ -13,7 +13,6 @@ import (
 func TestMsgUpdateParams(t *testing.T) {
 	k, ms, ctx := setupMsgServer(t)
 	params := types.DefaultParams()
-	k.SetParams(sdk.Context{}, params)
 	wctx := sdk.UnwrapSDKContext(ctx)
 
 	// default params
