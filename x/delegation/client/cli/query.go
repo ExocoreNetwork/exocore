@@ -39,7 +39,7 @@ func GetQueryCmd() *cobra.Command {
 // QuerySingleDelegationInfo queries the single delegation info
 func QuerySingleDelegationInfo() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "QuerySingleDelegationInfo clientChainID stakerAddr assetAddr operatorAddr",
+		Use:   "QuerySingleDelegationInfo <clientChainID> <stakerAddr> <assetAddr> <operatorAddr>",
 		Short: "Get single delegation info",
 		Long:  "Get single delegation info",
 		Args:  cobra.ExactArgs(4),
@@ -79,7 +79,7 @@ func QuerySingleDelegationInfo() *cobra.Command {
 // QueryDelegationInfo queries delegation info
 func QueryDelegationInfo() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "QueryDelegationInfo stakerID assetID",
+		Use:   "QueryDelegationInfo <stakerID> <assetID>",
 		Short: "Get delegation info",
 		Long:  "Get delegation info",
 		Args:  cobra.ExactArgs(2),
@@ -116,7 +116,7 @@ func QueryDelegationInfo() *cobra.Command {
 // QueryUndelegations queries all undelegations for staker and asset
 func QueryUndelegations() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "QueryUndelegations stakerID assetID",
+		Use:   "QueryUndelegations <stakerID> <assetID>",
 		Short: "Get undelegations",
 		Long:  "Get undelegations",
 		Args:  cobra.ExactArgs(2),
@@ -154,7 +154,7 @@ func QueryUndelegations() *cobra.Command {
 // QueryUndelegationsByHeight queries all undelegations waiting to be completed by height
 func QueryUndelegationsByHeight() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "QueryUndelegationsByHeight height",
+		Use:   "QueryUndelegationsByHeight <height>",
 		Short: "Get undelegations waiting to be completed",
 		Long:  "Get undelegations waiting to be completed",
 		Args:  cobra.ExactArgs(1),
@@ -186,7 +186,7 @@ func QueryUndelegationsByHeight() *cobra.Command {
 // QueryUndelegationHoldCount queries undelegation hold count for a record key.
 func QueryUndelegationHoldCount() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "QueryUndelegationHoldCount recordKey",
+		Use:   "QueryUndelegationHoldCount <recordKey>",
 		Short: "Get undelegation hold count",
 		Long:  "Get undelegation hold count",
 		Args:  cobra.ExactArgs(1),
@@ -215,7 +215,7 @@ func QueryUndelegationHoldCount() *cobra.Command {
 // QueryAssociatedOperatorByStaker queries the operator owner of the specified staker
 func QueryAssociatedOperatorByStaker() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "QueryAssociatedOperatorByStaker stakerID",
+		Use:   "QueryAssociatedOperatorByStaker <stakerID>",
 		Short: "Get the associated operator for the specified staker",
 		Long:  "Get the associated operator for the specified staker",
 		Args:  cobra.ExactArgs(1),

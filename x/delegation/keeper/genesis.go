@@ -54,14 +54,14 @@ func (k Keeper) InitGenesis(
 		stakerID := association.StakerID
 		operatorAddress := association.Operator
 		// #nosec G703 // already validated
-		stakerAddress, lzID, _ := assetstype.ParseID(stakerID)
+		stakerAddress, clientChainID, _ := assetstype.ParseID(stakerID)
 		// we have checked IsHexAddress already
 		stakerAddressBytes := common.HexToAddress(stakerAddress)
 		// #nosec G703 // already validated
 		accAddress, _ := sdk.AccAddressFromBech32(operatorAddress)
 		// this can only fail if the operator is not registered
 		if err := k.AssociateOperatorWithStaker(
-			ctx, lzID, accAddress, stakerAddressBytes,
+			ctx, clientChainID, accAddress, stakerAddressBytes,
 		); err != nil {
 			panic(errorsmod.Wrap(err, "failed to associate operator with staker"))
 		}

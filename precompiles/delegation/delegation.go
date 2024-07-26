@@ -3,11 +3,10 @@ package delegation
 import (
 	"bytes"
 	"embed"
+	"fmt"
 
 	assetskeeper "github.com/ExocoreNetwork/exocore/x/assets/keeper"
 	delegationKeeper "github.com/ExocoreNetwork/exocore/x/delegation/keeper"
-	"golang.org/x/xerrors"
-
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	authzkeeper "github.com/cosmos/cosmos-sdk/x/authz/keeper"
 	"github.com/ethereum/go-ethereum/accounts/abi"
@@ -39,12 +38,12 @@ func NewPrecompile(
 ) (*Precompile, error) {
 	abiBz, err := f.ReadFile("abi.json")
 	if err != nil {
-		return nil, xerrors.Errorf("error loading the deposit ABI %s", err)
+		return nil, fmt.Errorf("error loading the deposit ABI %s", err)
 	}
 
 	newAbi, err := abi.JSON(bytes.NewReader(abiBz))
 	if err != nil {
-		return nil, xerrors.Errorf(cmn.ErrInvalidABI, err)
+		return nil, fmt.Errorf(cmn.ErrInvalidABI, err)
 	}
 
 	return &Precompile{
@@ -100,7 +99,7 @@ func (p Precompile) Run(evm *vm.EVM, contract *vm.Contract, readOnly bool) (bz [
 	case MethodDissociateOperatorFromStaker:
 		bz, err = p.DissociateOperatorFromStaker(ctx, evm.Origin, contract, stateDB, method, args)
 	default:
-		return nil, xerrors.Errorf(cmn.ErrUnknownMethod, method.Name)
+		return nil, fmt.Errorf(cmn.ErrUnknownMethod, method.Name)
 	}
 
 	if err != nil {

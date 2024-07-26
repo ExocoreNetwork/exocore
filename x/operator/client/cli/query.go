@@ -40,7 +40,7 @@ func GetQueryCmd() *cobra.Command {
 // GetOperatorInfo queries operator info
 func GetOperatorInfo() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "get-operator-info operatorAddr",
+		Use:   "get-operator-info <operatorAddr>",
 		Short: "Get operator info",
 		Long:  "Get operator info",
 		Args:  cobra.ExactArgs(1),
@@ -247,7 +247,7 @@ func GetAllOperatorConsAddrs() *cobra.Command {
 // QueryOperatorUSDValue queries the opted-in USD value for the operator
 func QueryOperatorUSDValue() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "QueryOperatorUSDValue operatorAddr avsAddr",
+		Use:   "QueryOperatorUSDValue <operatorAddr> <avsAddr>",
 		Short: "Get the opted-in USD value for the operator",
 		Long:  "Get the opted-in USD value for the operator",
 		Args:  cobra.ExactArgs(2),
@@ -282,7 +282,7 @@ func QueryOperatorUSDValue() *cobra.Command {
 // QueryAVSUSDValue queries the USD value for the avs
 func QueryAVSUSDValue() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "QueryAVSUSDValue avsAddr",
+		Use:   "QueryAVSUSDValue <avsAddr>",
 		Short: "Get the USD value for the avs",
 		Long:  "Get the USD value for the avs",
 		Args:  cobra.ExactArgs(1),
@@ -310,7 +310,7 @@ func QueryAVSUSDValue() *cobra.Command {
 // QueryOperatorSlashInfo queries the slash information for the specified operator and AVS
 func QueryOperatorSlashInfo() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "QueryOperatorSlashInfo operatorAddr avsAddr",
+		Use:   "QueryOperatorSlashInfo <operatorAddr> <avsAddr>",
 		Short: "Get the the slash information for the operator",
 		Long:  "Get the the slash information for the operator",
 		Args:  cobra.ExactArgs(2),

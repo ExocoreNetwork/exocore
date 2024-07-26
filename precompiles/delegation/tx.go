@@ -1,12 +1,11 @@
 package delegation
 
 import (
+	"fmt"
 	"reflect"
 
-	cmn "github.com/evmos/evmos/v14/precompiles/common"
-	"golang.org/x/xerrors"
-
 	exocmn "github.com/ExocoreNetwork/exocore/precompiles/common"
+	cmn "github.com/evmos/evmos/v14/precompiles/common"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/accounts/abi"
@@ -46,7 +45,7 @@ func (p Precompile) DelegateToThroughClientChain(
 	// check the invalidation of caller contract
 	err := p.assetsKeeper.CheckExocoreGatewayAddr(ctx, contract.CallerAddress)
 	if err != nil {
-		return nil, xerrors.Errorf(exocmn.ErrContractCaller, err.Error())
+		return nil, fmt.Errorf(exocmn.ErrContractCaller, err.Error())
 	}
 
 	delegationParams, err := p.GetDelegationParamsFromInputs(ctx, args)
@@ -73,7 +72,7 @@ func (p Precompile) UndelegateFromThroughClientChain(
 	// check the invalidation of caller contract
 	err := p.assetsKeeper.CheckExocoreGatewayAddr(ctx, contract.CallerAddress)
 	if err != nil {
-		return nil, xerrors.Errorf(exocmn.ErrContractCaller, err.Error())
+		return nil, fmt.Errorf(exocmn.ErrContractCaller, err.Error())
 	}
 
 	undelegationParams, err := p.GetDelegationParamsFromInputs(ctx, args)
@@ -83,7 +82,7 @@ func (p Precompile) UndelegateFromThroughClientChain(
 
 	txHash, ok := ctx.Value(CtxKeyTxHash).(common.Hash)
 	if !ok || txHash.Bytes() == nil {
-		return nil, xerrors.Errorf(ErrCtxTxHash, reflect.TypeOf(ctx.Value(CtxKeyTxHash)), txHash)
+		return nil, fmt.Errorf(ErrCtxTxHash, reflect.TypeOf(ctx.Value(CtxKeyTxHash)), txHash)
 	}
 	undelegationParams.TxHash = txHash
 
@@ -105,34 +104,34 @@ func (p Precompile) AssociateOperatorWithStaker(
 	// check the invalidation of caller contract
 	err := p.assetsKeeper.CheckExocoreGatewayAddr(ctx, contract.CallerAddress)
 	if err != nil {
-		return nil, xerrors.Errorf(exocmn.ErrContractCaller, err.Error())
+		return nil, fmt.Errorf(exocmn.ErrContractCaller, err.Error())
 	}
 
 	inputsLen := len(p.ABI.Methods[MethodAssociateOperatorWithStaker].Inputs)
 	if len(args) != inputsLen {
-		return nil, xerrors.Errorf(cmn.ErrInvalidNumberOfArgs, inputsLen, len(args))
+		return nil, fmt.Errorf(cmn.ErrInvalidNumberOfArgs, inputsLen, len(args))
 	}
 	clientChainID, ok := args[0].(uint32)
 	if !ok {
-		return nil, xerrors.Errorf(exocmn.ErrContractInputParaOrType, 0, "uint32", args[0])
+		return nil, fmt.Errorf(exocmn.ErrContractInputParaOrType, 0, "uint32", args[0])
 	}
 	staker, ok := args[1].([]byte)
 	if !ok || staker == nil {
-		return nil, xerrors.Errorf(exocmn.ErrContractInputParaOrType, 1, "[]byte", args[1])
+		return nil, fmt.Errorf(exocmn.ErrContractInputParaOrType, 1, "[]byte", args[1])
 	}
 	// TODO: In the future, the check should be the same as it is in delegation if using LayerZero to route the
 	// message for non-EVM client chains, such as Solana.
 	if len(staker) != common.AddressLength {
-		return nil, xerrors.Errorf(exocmn.ErrInvalidEVMAddr, staker)
+		return nil, fmt.Errorf(exocmn.ErrInvalidEVMAddr, staker)
 	}
 
 	operator, ok := args[2].([]byte)
 	if !ok || operator == nil {
-		return nil, xerrors.Errorf(exocmn.ErrContractInputParaOrType, 2, "[]byte", args[2])
+		return nil, fmt.Errorf(exocmn.ErrContractInputParaOrType, 2, "[]byte", args[2])
 	}
 	operatorAccAddr, err := sdk.AccAddressFromBech32(string(operator))
 	if err != nil {
-		return nil, xerrors.Errorf("error occurred when parse the operator address from Bech32,the operator is:%s, error:%s ", operator, err.Error())
+		return nil, fmt.Errorf("error occurred when parse the operator address from Bech32,the operator is:%s, error:%s ", operator, err.Error())
 	}
 	err = p.delegationKeeper.AssociateOperatorWithStaker(ctx, uint64(clientChainID), operatorAccAddr, common.Address(staker))
 	if err != nil {
@@ -152,24 +151,24 @@ func (p Precompile) DissociateOperatorFromStaker(
 	// check the invalidation of caller contract
 	err := p.assetsKeeper.CheckExocoreGatewayAddr(ctx, contract.CallerAddress)
 	if err != nil {
-		return nil, xerrors.Errorf(exocmn.ErrContractCaller, err.Error())
+		return nil, fmt.Errorf(exocmn.ErrContractCaller, err.Error())
 	}
 	inputsLen := len(p.ABI.Methods[MethodDissociateOperatorFromStaker].Inputs)
 	if len(args) != inputsLen {
-		return nil, xerrors.Errorf(cmn.ErrInvalidNumberOfArgs, inputsLen, len(args))
+		return nil, fmt.Errorf(cmn.ErrInvalidNumberOfArgs, inputsLen, len(args))
 	}
 	clientChainID, ok := args[0].(uint32)
 	if !ok {
-		return nil, xerrors.Errorf(exocmn.ErrContractInputParaOrType, 0, "uint32", args[0])
+		return nil, fmt.Errorf(exocmn.ErrContractInputParaOrType, 0, "uint32", args[0])
 	}
 	staker, ok := args[1].([]byte)
 	if !ok || staker == nil {
-		return nil, xerrors.Errorf(exocmn.ErrContractInputParaOrType, 1, "[]byte", args[1])
+		return nil, fmt.Errorf(exocmn.ErrContractInputParaOrType, 1, "[]byte", args[1])
 	}
 	// TODO: In the future, the check should be the same as it is in delegation if using LayerZero to route the
 	// message for non-EVM client chains, such as Solana.
 	if len(staker) != common.AddressLength {
-		return nil, xerrors.Errorf(exocmn.ErrInvalidEVMAddr, staker)
+		return nil, fmt.Errorf(exocmn.ErrInvalidEVMAddr, staker)
 	}
 
 	err = p.delegationKeeper.DissociateOperatorFromStaker(ctx, uint64(clientChainID), common.Address(staker))

@@ -1,13 +1,14 @@
 package reward
 
 import (
+	"fmt"
+
 	exocmn "github.com/ExocoreNetwork/exocore/precompiles/common"
 	"github.com/ExocoreNetwork/exocore/x/assets/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/vm"
-	"golang.org/x/xerrors"
 )
 
 const (
@@ -28,7 +29,7 @@ func (p Precompile) Reward(
 	// check the invalidation of caller contract
 	err := p.assetsKeeper.CheckExocoreGatewayAddr(ctx, contract.CallerAddress)
 	if err != nil {
-		return nil, xerrors.Errorf(exocmn.ErrContractCaller, err.Error())
+		return nil, fmt.Errorf(exocmn.ErrContractCaller, err.Error())
 	}
 
 	rewardParam, err := p.GetRewardParamsFromInputs(ctx, args)
