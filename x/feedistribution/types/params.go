@@ -1,6 +1,7 @@
 package types
 
 import (
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 )
 
@@ -13,7 +14,9 @@ func ParamKeyTable() paramtypes.KeyTable {
 
 // NewParams creates a new Params instance
 func NewParams() Params {
-	return Params{}
+	return Params{
+		CommunityTax: sdk.NewDecWithPrec(0, 0),
+	}
 }
 
 // DefaultParams returns a default set of parameters

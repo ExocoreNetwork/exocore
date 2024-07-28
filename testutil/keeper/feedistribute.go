@@ -1,10 +1,10 @@
 package keeper
 
 import (
-	stakingkeeper "github.com/ExocoreNetwork/exocore/x/dogfood/keeper"
-	epochskeeper "github.com/ExocoreNetwork/exocore/x/epochs/keeper"
 	"testing"
 
+	stakingkeeper "github.com/ExocoreNetwork/exocore/x/dogfood/keeper"
+	epochskeeper "github.com/ExocoreNetwork/exocore/x/epochs/keeper"
 	distrkeeper "github.com/ExocoreNetwork/exocore/x/feedistribution/keeper"
 	"github.com/ExocoreNetwork/exocore/x/feedistribution/types"
 	tmdb "github.com/cometbft/cometbft-db"
@@ -15,14 +15,9 @@ import (
 	"github.com/cosmos/cosmos-sdk/store"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	moduletestutil "github.com/cosmos/cosmos-sdk/types/module/testutil"
-	"github.com/cosmos/cosmos-sdk/x/auth"
-	accountkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
-	"github.com/cosmos/cosmos-sdk/x/bank"
-	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
-	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
-	"github.com/cosmos/cosmos-sdk/x/distribution"
+	distrtestutil "github.com/cosmos/cosmos-sdk/x/distribution/testutil"
+	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/require"
 )
 
@@ -35,18 +30,14 @@ func FeedistributeKeeper(t testing.TB) (distrkeeper.Keeper, sdk.Context) {
 	stateStore.MountStoreWithDB(storeKey, storetypes.StoreTypeIAVL, db)
 	stateStore.MountStoreWithDB(memStoreKey, storetypes.StoreTypeMemory, nil)
 	require.NoError(t, stateStore.LoadLatestVersion())
-
+	distrAcc := authtypes.NewEmptyModuleAccount(types.ModuleName)
 	registry := codectypes.NewInterfaceRegistry()
 	cdc := codec.NewProtoCodec(registry)
-	encCfg := moduletestutil.MakeTestEncodingConfig(auth.AppModule{}, bank.AppModule{}, distribution.AppModule{})
-	key := sdk.NewKVStoreKey(banktypes.StoreKey)
-	blockedAddresses := map[string]bool{
-		accountkeeper.AccountKeeper{}.GetAuthority(): false,
-	}
 	authority := authtypes.NewModuleAddress(types.ModuleName)
-	bank := bankkeeper.NewBaseKeeper(
-		encCfg.Codec, key, accountkeeper.AccountKeeper{},
-		blockedAddresses, authority.String())
+	ctrl := gomock.NewController(t)
+	accountKeeper := distrtestutil.NewMockAccountKeeper(ctrl)
+	accountKeeper.EXPECT().GetModuleAddress("distribution").Return(distrAcc.GetAddress())
+	bankKeeper := distrtestutil.NewMockBankKeeper(ctrl)
 
 	k := distrkeeper.NewKeeper(
 		cdc,
@@ -54,8 +45,8 @@ func FeedistributeKeeper(t testing.TB) (distrkeeper.Keeper, sdk.Context) {
 		"fee_collector",
 		authority.String(),
 		storeKey,
-		bank,
-		accountkeeper.AccountKeeper{},
+		bankKeeper,
+		accountKeeper,
 		stakingkeeper.Keeper{},
 		epochskeeper.Keeper{},
 	)

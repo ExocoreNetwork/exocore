@@ -2,6 +2,7 @@ package types
 
 import (
 	"context"
+
 	epochsTypes "github.com/ExocoreNetwork/exocore/x/epochs/types"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -27,7 +28,7 @@ type AccountKeeper interface {
 
 // BankKeeper defines the expected interface for the Bank module.
 type BankKeeper interface {
-	MintCoins(ctx sdk.Context, moduleName string, amt sdk.Coins) error
+	// MintCoins(ctx sdk.Context, moduleName string, amt sdk.Coins) error
 	GetAllBalances(ctx sdk.Context, addr sdk.AccAddress) sdk.Coins
 
 	SpendableCoins(ctx sdk.Context, addr sdk.AccAddress) sdk.Coins
@@ -37,7 +38,7 @@ type BankKeeper interface {
 	SendCoinsFromAccountToModule(ctx sdk.Context, senderAddr sdk.AccAddress, recipientModule string, amt sdk.Coins) error
 
 	BlockedAddr(addr sdk.AccAddress) bool
-	IsSendEnabledDenom(ctx sdk.Context, denom string) bool
+	// IsSendEnabledDenom(ctx sdk.Context, denom string) bool
 }
 
 // ParamSubspace defines the expected Subspace interface for parameters.

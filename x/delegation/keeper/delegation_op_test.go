@@ -2,6 +2,7 @@ package keeper_test
 
 import (
 	"fmt"
+
 	"github.com/ethereum/go-ethereum/log"
 
 	assetskeeper "github.com/ExocoreNetwork/exocore/x/assets/keeper"

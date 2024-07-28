@@ -9,7 +9,7 @@ import (
 
 const (
 	// ModuleName defines the module name
-	ModuleName = "feedistribution"
+	ModuleName = "distribution"
 
 	// StoreKey defines the primary module store key
 	StoreKey = ModuleName
