@@ -112,13 +112,13 @@ func (k *Keeper) GetTaskChallengeEpochEndAVSs(ctx sdk.Context, epochIdentifier s
 // GetEpochEndAVSs, GetAVSSupportedAssets, and GetAVSMinimumSelfDelegation.
 func (k Keeper) RegisterAVSWithChainID(
 	oCtx sdk.Context, params *types.AVSRegisterOrDeregisterParams,
-) (avsAddr string, err error) {
+) (avsAddr common.Address, err error) {
 	// guard against errors
 	ctx, writeFunc := oCtx.CacheContext()
 	// remove the version number and validate
 	params.ChainID = types.ChainIDWithoutRevision(params.ChainID)
 	if len(params.ChainID) == 0 {
-		return "", errorsmod.Wrap(types.ErrNotNull, "RegisterAVSWithChainID: chainID is null")
+		return common.Address{}, errorsmod.Wrap(types.ErrNotNull, "RegisterAVSWithChainID: chainID is null")
 	}
 	avsAddr = types.GenerateAVSAddr(params.ChainID)
 	defer func() {
@@ -135,37 +135,29 @@ func (k Keeper) RegisterAVSWithChainID(
 	// from it are rejected in `state_transition.go`. This protects us against the very
 	// rare case of address collision.
 	if err := k.evmKeeper.SetAccount(
-		ctx, common.HexToAddress(avsAddr),
+		ctx, avsAddr,
 		statedb.Account{
 			Balance:  big.NewInt(0),
 			CodeHash: types.ChainIDCodeHash[:],
 			Nonce:    1,
 		},
 	); err != nil {
-		return "", err
+		return common.Address{}, err
 	}
-	// SetAVSInfo expects sdk.AccAddress not HexAddress
-	params.AvsAddress = avsAddr
+	// SetAVSInfo expects HexAddress for the AvsAddress
+	params.AvsAddress = avsAddr.String()
 	params.Action = RegisterAction
 
 	if err := k.AVSInfoUpdate(ctx, params); err != nil {
-		return "", err
+		return common.Address{}, err
 	}
 	return avsAddr, nil
 }
 
 // SetAVSAddressToChainID stores a lookup from the generated AVS address to the chainID.
-func (k Keeper) SetAVSAddrToChainID(ctx sdk.Context, avsAddr, chainID string) {
+func (k Keeper) SetAVSAddrToChainID(ctx sdk.Context, avsAddr common.Address, chainID string) {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefixAVSAddressToChainID)
-	store.Set([]byte(avsAddr), []byte(chainID))
-}
-
-// GetAVSAddrByChainID returns the AVS address for a given chainID. It is a stateless
-// function, even though it is implemented as a method on the keeper.
-func (k Keeper) GetAVSAddrByChainID(_ sdk.Context, chainID string) string {
-	return types.GenerateAVSAddr(
-		types.ChainIDWithoutRevision(chainID),
-	)
+	store.Set(avsAddr[:], []byte(chainID))
 }
 
 // GetChainIDByAVSAddr returns the chainID for a given AVS address. It is a stateful
@@ -173,7 +165,7 @@ func (k Keeper) GetAVSAddrByChainID(_ sdk.Context, chainID string) string {
 // registered.
 func (k Keeper) GetChainIDByAVSAddr(ctx sdk.Context, avsAddr string) (string, bool) {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefixAVSAddressToChainID)
-	bz := store.Get([]byte(avsAddr))
+	bz := store.Get(common.HexToAddress(avsAddr).Bytes())
 	if bz == nil {
 		return "", false
 	}
