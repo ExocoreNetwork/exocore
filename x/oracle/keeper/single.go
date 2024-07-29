@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"math/big"
+	"strconv"
 
 	"github.com/ExocoreNetwork/exocore/x/oracle/keeper/aggregator"
 	"github.com/ExocoreNetwork/exocore/x/oracle/keeper/cache"
@@ -9,6 +10,8 @@ import (
 	"github.com/ExocoreNetwork/exocore/x/oracle/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
+
+var updatedFeederIDs []string
 
 var cs *cache.Cache
 
@@ -191,4 +194,18 @@ func setCommonParams(p *types.Params) {
 	common.ThresholdB = p.ThresholdB
 	common.MaxDetID = p.MaxDetId
 	common.Mode = p.Mode
+}
+
+func ResetUpdatedFeederIDs() {
+	if updatedFeederIDs != nil {
+		updatedFeederIDs = nil
+	}
+}
+
+func GetUpdatedFeederIDs() []string {
+	return updatedFeederIDs
+}
+
+func AppendUpdatedFeederIDs(id uint64) {
+	updatedFeederIDs = append(updatedFeederIDs, strconv.FormatUint(id, 10))
 }

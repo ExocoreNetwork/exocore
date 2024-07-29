@@ -11,8 +11,8 @@ const (
 	AttributeKeyFinalPrice    = "final_price"
 	AttributeKeyPriceUpdated  = "price_update"
 	AttributeKeyParamsUpdated = "params_update"
+	AttributeKeyFeederIDs     = "feeder_ids"
 
 	AttributeValuePriceUpdatedSuccess  = "success"
-	AttributeValuePriceUpdatedFail     = "fail"
 	AttributeValueParamsUpdatedSuccess = "success"
 )

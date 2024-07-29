@@ -62,6 +62,7 @@ func (ms msgServer) CreatePrice(goCtx context.Context, msg *types.MsgCreatePrice
 		if !ctx.IsCheckTx() {
 			cs.RemoveCache(caches)
 		}
+		AppendUpdatedFeederIDs(msg.FeederID)
 	} else if !ctx.IsCheckTx() {
 		cs.AddCache(caches)
 	}
