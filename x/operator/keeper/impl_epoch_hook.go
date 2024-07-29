@@ -5,7 +5,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-// EpochsHooksWrapper is the wrapper structure that implements the epochs hooks for the avs
+// EpochsHooksWrapper is the wrapper structure that implements the epochs hooks for the operator
 // keeper.
 type EpochsHooksWrapper struct {
 	keeper *Keeper
@@ -32,7 +32,9 @@ func (wrapper EpochsHooksWrapper) AfterEpochEnd(
 		// avs address should be hex
 		err := wrapper.keeper.UpdateVotingPower(ctx, avs)
 		if err != nil {
-			panic(err)
+			ctx.Logger().Error("Failed to update voting power", "avs", avs, "error", err)
+			// Handle the error gracefully, continue to the next AVS
+			continue
 		}
 	}
 }
