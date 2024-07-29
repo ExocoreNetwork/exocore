@@ -1,17 +1,16 @@
 syntax = "proto3";
-
-package exocore.reward;
+package exocore.slash.v1;
 
 import "cosmos/msg/v1/msg.proto";
 import "cosmos_proto/cosmos.proto";
-import "exocore/reward/params.proto";
+import "exocore/slash/v1/params.proto";
 import "gogoproto/gogo.proto";
 
-option go_package = "github.com/ExocoreNetwork/exocore/x/reward/types";
+option go_package = "github.com/ExocoreNetwork/exocore/x/slash/types";
 
 // Msg defines the Msg service.
 service Msg {
-  // UpdateParams updates the parameters for this module.
+  // UpdateParams updates the parameters of this module.
   rpc UpdateParams(MsgUpdateParams) returns (MsgUpdateParamsResponse);
 }
 

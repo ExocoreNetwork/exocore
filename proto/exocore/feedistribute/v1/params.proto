@@ -1,5 +1,5 @@
 syntax = "proto3";
-package exocore.feedistribute;
+package exocore.feedistribute.v1;
 
 import "amino/amino.proto";
 import "cosmos_proto/cosmos.proto";
@@ -10,8 +10,6 @@ option go_package = "github.com/ExocoreNetwork/exocore/x/feedistribution/types";
 // Params defines the parameters for the module.
 message Params {
   option (amino.name) = "exocore/x/feedistribution/Params";
-  // period is the amount of past periods, based on the epochs per period param
-  uint64 period = 1;
   // epoch_identifier for fee distribution
   string epoch_identifier = 2;
   // community_tax is the tax defined for allocation

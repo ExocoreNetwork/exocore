@@ -10,6 +10,10 @@ import (
 	"path/filepath"
 	"sort"
 
+	distr "github.com/ExocoreNetwork/exocore/x/feedistribution"
+	distrkeeper "github.com/ExocoreNetwork/exocore/x/feedistribution/keeper"
+	distrtypes "github.com/cosmos/cosmos-sdk/x/distribution/types"
+
 	"github.com/ExocoreNetwork/exocore/x/oracle"
 	oracleKeeper "github.com/ExocoreNetwork/exocore/x/oracle/keeper"
 	oracleTypes "github.com/ExocoreNetwork/exocore/x/oracle/types"
@@ -274,6 +278,7 @@ var (
 		exoslash.AppModuleBasic{},
 		avs.AppModuleBasic{},
 		oracle.AppModuleBasic{},
+		distr.AppModuleBasic{},
 	)
 
 	// module account permissions
@@ -288,6 +293,7 @@ var (
 		}, // used for secure addition and subtraction of balance using module account
 		erc20types.ModuleName:   {authtypes.Minter, authtypes.Burner},
 		exominttypes.ModuleName: {authtypes.Minter},
+		distrtypes.ModuleName:   nil,
 	}
 
 	// module accounts that are allowed to receive tokens
@@ -358,6 +364,7 @@ type ExocoreApp struct {
 	AVSManagerKeeper avsManagerKeeper.Keeper
 	OracleKeeper     oracleKeeper.Keeper
 	ExomintKeeper    exomintkeeper.Keeper
+	DistrKeeper      distrkeeper.Keeper
 
 	// the module manager
 	mm *module.Manager
@@ -442,6 +449,7 @@ func NewExocoreApp(
 		avsManagerTypes.StoreKey,
 		oracleTypes.StoreKey,
 		exominttypes.StoreKey,
+		distrtypes.StoreKey,
 	)
 
 	tkeys := sdk.NewTransientStoreKeys(paramstypes.TStoreKey, evmtypes.TransientKey, feemarkettypes.TransientKey)
@@ -540,6 +548,19 @@ func NewExocoreApp(
 		appCodec, keys[exominttypes.StoreKey],
 		app.AccountKeeper, app.BankKeeper, app.EpochsKeeper, authtypes.FeeCollectorName,
 		authAddrString,
+	)
+
+	// the fee distribution keeper is used to allocate reward to exocore validators on epoch-basis,
+	// and it'll interact with other modules, like delegation for voting power, mint and inflation and etc.
+	app.DistrKeeper = distrkeeper.NewKeeper(
+		appCodec, logger,
+		authtypes.FeeCollectorName,
+		authAddrString,
+		keys[distrtypes.StoreKey],
+		app.BankKeeper,
+		app.AccountKeeper,
+		app.StakingKeeper,
+		app.EpochsKeeper,
 	)
 
 	// asset and client chain registry.
@@ -895,6 +916,7 @@ func NewExocoreApp(
 		exoslash.NewAppModule(appCodec, app.ExoSlashKeeper),
 		avs.NewAppModule(appCodec, app.AVSManagerKeeper),
 		oracle.NewAppModule(appCodec, app.OracleKeeper, app.AccountKeeper, app.BankKeeper),
+		distr.NewAppModule(appCodec, app.DistrKeeper),
 	)
 
 	// During begin block slashing happens after reward.BeginBlocker so that
@@ -932,6 +954,7 @@ func NewExocoreApp(
 		exoslashTypes.ModuleName,
 		avsManagerTypes.ModuleName,
 		oracleTypes.ModuleName,
+		distrtypes.ModuleName,
 	)
 
 	app.mm.SetOrderEndBlockers(
@@ -967,6 +990,7 @@ func NewExocoreApp(
 		avsManagerTypes.ModuleName,
 		// op module
 		feemarkettypes.ModuleName, // last in order to retrieve the block gas used
+		distrtypes.ModuleName,
 	)
 
 	app.mm.SetOrderInitGenesis(
@@ -1009,6 +1033,7 @@ func NewExocoreApp(
 		// must be the last module after others have been set up, so that it can check
 		// the invariants (if configured to do so).
 		crisistypes.ModuleName,
+		distrtypes.ModuleName,
 	)
 
 	app.mm.RegisterInvariants(&app.CrisisKeeper)

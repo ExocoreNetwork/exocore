@@ -1,4 +1,4 @@
-package feedistribute
+package feedistribution
 
 import (
 	"context"

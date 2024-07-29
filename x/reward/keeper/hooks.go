@@ -1,21 +1,37 @@
 package keeper
 
 import (
+	epochstypes "github.com/ExocoreNetwork/exocore/x/epochs/types"
 	"github.com/ExocoreNetwork/exocore/x/reward/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
+// EpochsHooksWrapper is the wrapper structure that implements the epochs hooks for the avs
+// keeper.
+type EpochsHooksWrapper struct {
+	keeper *Keeper
+}
+
+// Interface guard
+var _ epochstypes.EpochHooks = EpochsHooksWrapper{}
+
+// EpochsHooks returns the epochs hooks wrapper. It follows the "accept interfaces, return
+// concretes" pattern.
+func (k *Keeper) EpochsHooks() EpochsHooksWrapper {
+	return EpochsHooksWrapper{k}
+}
+
 // BeforeEpochStart: noop, We don't need to do anything here
-func (k Keeper) BeforeEpochStart(_ sdk.Context, _ string, _ int64) {
+func (wrapper EpochsHooksWrapper) BeforeEpochStart(_ sdk.Context, _ string, _ int64) {
 }
 
 // AfterEpochEnd distribute the reward at the end of each epoch end
-func (k Keeper) AfterEpochEnd(
+func (wrapper EpochsHooksWrapper) AfterEpochEnd(
 	ctx sdk.Context, epochIdentifier string, epochNumber int64,
 ) {
-	expEpochIdentifier := k.GetEpochIdentifier(ctx)
+	expEpochIdentifier := wrapper.keeper.GetEpochIdentifier(ctx)
 	if epochIdentifier != expEpochIdentifier {
-		k.Logger(ctx).Error(
+		wrapper.keeper.Logger(ctx).Error(
 			"epochIdentifier didn't equal to expEpochIdentifier",
 			"epochIdentifier", epochIdentifier,
 		)
@@ -23,14 +39,14 @@ func (k Keeper) AfterEpochEnd(
 	}
 
 	// get all the avs address bypass the epoch end
-	epochEndAVS := k.avsKeeper.GetEpochEndAVSs(ctx, epochIdentifier, epochNumber)
+	epochEndAVS := wrapper.keeper.avsKeeper.GetEpochEndAVSs(ctx, epochIdentifier, epochNumber)
 
-	pool := k.getPool(ctx, types.ModuleName)
+	pool := wrapper.keeper.getPool(ctx, types.ModuleName)
 	// distribute the reward to the avs accordingly
 	ForEach(epochEndAVS, func(p string) {
 		avsInfo, err := pool.k.avsKeeper.GetAVSInfo(ctx, p)
 		if err != nil {
-			k.Logger(ctx).Error(
+			wrapper.keeper.Logger(ctx).Error(
 				"get avsInfo error",
 				"avsInfo err", err,
 			)
@@ -42,22 +58,22 @@ func (k Keeper) AfterEpochEnd(
 		for _, operator := range ownerAddress {
 			opAddr, err := sdk.AccAddressFromBech32(operator)
 			if err != nil {
-				k.Logger(ctx).Error(
+				wrapper.keeper.Logger(ctx).Error(
 					"get operatorInfo error",
 					"operatorInfo err", err,
 				)
 				return
 			}
 			for _, asset := range assetID {
-				assetInfo, err := k.assetsKeeper.GetStakingAssetInfo(ctx, asset)
+				assetInfo, err := wrapper.keeper.assetsKeeper.GetStakingAssetInfo(ctx, asset)
 				if err != nil {
-					k.Logger(ctx).Error(
+					wrapper.keeper.Logger(ctx).Error(
 						"get assetInfo error",
 						"assetInfo err", err,
 					)
 					return
 				}
-				if k.assetsKeeper.IsOperatorAssetExist(ctx, opAddr, asset) {
+				if wrapper.keeper.assetsKeeper.IsOperatorAssetExist(ctx, opAddr, asset) {
 					coin := sdk.Coin{
 						Denom:  assetInfo.AssetBasicInfo.Symbol,
 						Amount: sdk.NewInt(avsInfo.Info.AssetRewardAmountEpochBasis[asset]),
