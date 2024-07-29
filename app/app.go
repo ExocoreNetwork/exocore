@@ -786,6 +786,10 @@ func NewExocoreApp(
 		app.StakingKeeper.OperatorHooks(),
 	)
 
+	(&app.DelegationKeeper).SetHooks(
+		app.StakingKeeper.DelegationHooks(),
+	)
+
 	(&app.EpochsKeeper).SetHooks(
 		epochstypes.NewMultiEpochHooks(
 			app.OperatorKeeper.EpochsHooks(),   // must come before staking keeper so it can set the USD value
