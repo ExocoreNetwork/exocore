@@ -1,7 +1,7 @@
 syntax = "proto3";
-package exocore.oracle;
+package exocore.oracle.v1;
 
-import "exocore/oracle/price.proto";
+import "exocore/oracle/v1/price.proto";
 import "gogoproto/gogo.proto";
 
 option go_package = "github.com/ExocoreNetwork/exocore/x/oracle/types";
