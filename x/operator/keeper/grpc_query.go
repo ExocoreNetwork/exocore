@@ -175,14 +175,14 @@ func (k Keeper) QueryAllOperatorConsAddrsByChainID(
 	}, nil
 }
 
-func (k *Keeper) QueryOperatorUSDValue(ctx context.Context, req *operatortypes.QueryOperatorUSDValueRequest) (*operatortypes.DecValueField, error) {
+func (k *Keeper) QueryOperatorUSDValue(ctx context.Context, req *operatortypes.QueryOperatorUSDValueRequest) (*operatortypes.QueryOperatorUSDValueResponse, error) {
 	c := sdk.UnwrapSDKContext(ctx)
-	usdValue, err := k.GetOperatorUSDValue(c, req.Details.AVSAddress, req.Details.OperatorAddr)
+	optedUSDValues, err := k.GetOperatorOptedUSDValue(c, req.Details.AVSAddress, req.Details.OperatorAddr)
 	if err != nil {
 		return nil, err
 	}
-	return &operatortypes.DecValueField{
-		Amount: usdValue,
+	return &operatortypes.QueryOperatorUSDValueResponse{
+		USDValues: &optedUSDValues,
 	}, nil
 }
 

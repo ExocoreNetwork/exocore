@@ -74,8 +74,9 @@ func (k *Keeper) OptOut(ctx sdk.Context, operatorAddress sdk.AccAddress, avsAddr
 	if !k.IsOperator(ctx, operatorAddress) {
 		return delegationtypes.ErrOperatorNotExist
 	}
-	// check optedIn info
-	if !k.IsOptedIn(ctx, operatorAddress.String(), avsAddr) {
+	// check if the operator is active. It's not allowed to opt-out if the operator
+	// isn't opted-in or is jailed.
+	if !k.IsActive(ctx, operatorAddress, avsAddr) {
 		return types.ErrNotOptedIn
 	}
 	// do not allow frozen operators to do anything meaningful

@@ -128,8 +128,8 @@ func (p Precompile) Run(evm *vm.EVM, contract *vm.Contract, readOnly bool) (bz [
 // Available deposit transactions are:
 //   - delegateToThroughClientChain
 //   - undelegateFromThroughClientChain
-//   - markSelfDelegatedOperator
-//   - unmarkSelfDelegatedOperator
+//   - associateOperatorWithStaker
+//   - dissociateOperatorFromStaker
 func (Precompile) IsTransaction(methodID string) bool {
 	switch methodID {
 	case MethodDelegateToThroughClientChain,
