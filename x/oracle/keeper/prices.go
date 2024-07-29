@@ -168,6 +168,9 @@ func (k Keeper) AppendPriceTR(ctx sdk.Context, tokenID uint64, priceTR types.Pri
 	store := k.getPriceTRStore(ctx, tokenID)
 	b := k.cdc.MustMarshal(&priceTR)
 	store.Set(types.PricesRoundKey(nextRoundID), b)
+	if expiredRoundID := nextRoundID - agc.GetParamsMaxSizePrices(); expiredRoundID > 0 {
+		store.Delete(types.PricesRoundKey(expiredRoundID))
+	}
 	k.IncreaseNextRoundID(ctx, tokenID)
 	return true
 }
