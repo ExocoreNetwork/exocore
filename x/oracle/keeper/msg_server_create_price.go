@@ -50,16 +50,19 @@ func (ms msgServer) CreatePrice(goCtx context.Context, msg *types.MsgCreatePrice
 			logger.Info("final price aggregation done", "feederID", msg.FeederID, "roundID", newItem.PriceTR.RoundID, "price", newItem.PriceTR.Price)
 		}
 
+		decimalStr := strconv.FormatInt(int64(newItem.PriceTR.Decimal), 10)
+		tokenIDStr := strconv.FormatUint(newItem.TokenID, 10)
+		roundIDStr := strconv.FormatUint(newItem.PriceTR.RoundID, 10)
 		ctx.EventManager().EmitEvent(sdk.NewEvent(
 			types.EventTypeCreatePrice,
-			sdk.NewAttribute(types.AttributeKeyFeederID, strconv.FormatUint(msg.FeederID, 10)),
-			sdk.NewAttribute(types.AttributeKeyRoundID, strconv.FormatUint(newItem.PriceTR.RoundID, 10)),
-			sdk.NewAttribute(types.AttributeKeyFinalPrice, newItem.PriceTR.Price),
+			sdk.NewAttribute(types.AttributeKeyRoundID, roundIDStr),
+			sdk.NewAttribute(types.AttributeKeyFinalPrice, tokenIDStr+"_"+roundIDStr+"_"+newItem.PriceTR.Price+"_"+decimalStr),
 			sdk.NewAttribute(types.AttributeKeyPriceUpdated, types.AttributeValuePriceUpdatedSuccess)),
 		)
 		if !ctx.IsCheckTx() {
 			cs.RemoveCache(caches)
 		}
+		AppendUpdatedFeederIDs(msg.FeederID)
 	} else if !ctx.IsCheckTx() {
 		cs.AddCache(caches)
 	}

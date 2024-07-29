@@ -141,9 +141,21 @@ func (k Keeper) Unjail(ctx sdk.Context, addr sdk.ConsAddress) {
 // before unjailing it. If the slashing module's unjail function is never called, this
 // function will never be called either.
 func (k Keeper) Delegation(
-	sdk.Context, sdk.AccAddress, sdk.ValAddress,
+	ctx sdk.Context, delegator sdk.AccAddress, validator sdk.ValAddress,
 ) stakingtypes.DelegationI {
-	panic("unimplemented on this keeper")
+	// This interface is only used for unjail to retrieve the self delegation value,
+	// so the delegator and validator are the same.
+	operator := delegator
+	operatorUSDValues, err := k.operatorKeeper.GetOrCalculateOperatorUSDValues(ctx, operator, ctx.ChainID())
+	if err != nil {
+		k.Logger(ctx).Error("Delegation: failed to get or calculate the operator USD values", "operator", operator.String(), "chainID", ctx.ChainID(), "error", err)
+		return nil
+	}
+	return stakingtypes.Delegation{
+		DelegatorAddress: delegator.String(),
+		ValidatorAddress: validator.String(),
+		Shares:           sdk.TokensFromConsensusPower(operatorUSDValues.SelfUSDValue.TruncateInt64(), sdk.DefaultPowerReduction).ToLegacyDec(),
+	}
 }
 
 // MaxValidators is an implementation of the staking interface expected by the SDK's slashing

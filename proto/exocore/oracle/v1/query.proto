@@ -1,16 +1,16 @@
 syntax = "proto3";
 
-package exocore.oracle;
+package exocore.oracle.v1;
 
 import "cosmos/base/query/v1beta1/pagination.proto";
-import "exocore/oracle/index_recent_msg.proto";
-import "exocore/oracle/index_recent_params.proto";
-import "exocore/oracle/params.proto";
-import "exocore/oracle/price.proto";
-import "exocore/oracle/prices.proto";
-import "exocore/oracle/recent_msg.proto";
-import "exocore/oracle/recent_params.proto";
-import "exocore/oracle/validator_update_block.proto";
+import "exocore/oracle/v1/index_recent_msg.proto";
+import "exocore/oracle/v1/index_recent_params.proto";
+import "exocore/oracle/v1/params.proto";
+import "exocore/oracle/v1/price.proto";
+import "exocore/oracle/v1/prices.proto";
+import "exocore/oracle/v1/recent_msg.proto";
+import "exocore/oracle/v1/recent_params.proto";
+import "exocore/oracle/v1/validator_update_block.proto";
 import "gogoproto/gogo.proto";
 import "google/api/annotations.proto";
 

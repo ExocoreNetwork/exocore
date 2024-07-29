@@ -68,9 +68,12 @@ type OperatorKeeper interface {
 	GetOperatorConsKeyForChainID(
 		sdk.Context, sdk.AccAddress, string,
 	) (bool, operatortypes.WrappedConsKey, error)
+	// OptInWithConsKey is used at genesis to opt in with a consensus key
 	OptInWithConsKey(
 		sdk.Context, sdk.AccAddress, string, operatortypes.WrappedConsKey,
 	) error
+	// GetOrCalculateOperatorUSDValues is used to get the self staking value for the operator
+	GetOrCalculateOperatorUSDValues(sdk.Context, sdk.AccAddress, string) (operatortypes.OperatorOptedUSDValue, error)
 }
 
 // DelegationKeeper represents the expected keeper interface for the delegation module.

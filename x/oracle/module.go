@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"math/big"
-	"strconv"
+	"strings"
 
 	// this line is used by starport scaffolding # 1
 
@@ -191,25 +191,30 @@ func (am AppModule) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.Val
 	for _, tokenID := range failed {
 		prevPrice, nextRoundID := am.keeper.GrowRoundID(ctx, tokenID)
 		logger.Info("add new round with previous price under fail aggregation", "tokenID", tokenID, "roundID", nextRoundID, "price", prevPrice)
-		ctx.EventManager().EmitEvent(sdk.NewEvent(
-			types.EventTypeCreatePrice,
-			sdk.NewAttribute(types.AttributeKeyTokenID, strconv.FormatUint(tokenID, 10)),
-			sdk.NewAttribute(types.AttributeKeyPriceUpdated, types.AttributeValuePriceUpdatedFail),
-			sdk.NewAttribute(types.AttributeKeyRoundID, strconv.FormatUint(nextRoundID, 10)),
-			sdk.NewAttribute(types.AttributeKeyFinalPrice, prevPrice),
-		),
-		)
 	}
-	// TODO: emit events for success sealed rounds(could ignore for v1)
 
 	keeper.ResetAggregatorContextCheckTx()
 
-	// TODO: update params happened during this block for cache, for the case: agc is recached from history and cache'params is set with the latest params by recache, but parmas changed during this block as well. or force agc to be GET first before cache be GET(later approch is better)
 	if _, _, paramsUpdated := cs.CommitCache(ctx, false, am.keeper); paramsUpdated {
 		var p cache.ItemP
 		cs.GetCache(&p)
 		params := types.Params(p)
 		agc.SetParams(&params)
+		ctx.EventManager().EmitEvent(sdk.NewEvent(
+			types.EventTypeCreatePrice,
+			sdk.NewAttribute(types.AttributeKeyParamsUpdated, types.AttributeValueParamsUpdatedSuccess),
+		))
 	}
+
+	if feederIDs := keeper.GetUpdatedFeederIDs(); len(feederIDs) > 0 {
+		feederIDsStr := strings.Join(feederIDs, "_")
+		ctx.EventManager().EmitEvent(sdk.NewEvent(
+			types.EventTypeCreatePrice,
+			sdk.NewAttribute(types.AttributeKeyPriceUpdated, types.AttributeValuePriceUpdatedSuccess),
+			sdk.NewAttribute(types.AttributeKeyFeederIDs, feederIDsStr),
+		))
+		keeper.ResetUpdatedFeederIDs()
+	}
+
 	return []abci.ValidatorUpdate{}
 }

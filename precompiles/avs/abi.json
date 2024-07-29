@@ -81,8 +81,8 @@
 	  "inputs": [
 		{
 		  "name": "avsAddress",
-		  "type": "string",
-		  "internalType": "string"
+		  "type": "address",
+		  "internalType": "address"
 		}
 	  ],
 	  "outputs": [

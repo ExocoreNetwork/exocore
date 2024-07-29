@@ -269,8 +269,7 @@ func (k Keeper) CompleteOperatorKeyRemovalForChainID(
 		return delegationtypes.ErrOperatorNotExist
 	}
 	// validate chain id
-	avsAddr := k.avsKeeper.GetAVSAddrByChainID(ctx, chainID)
-	if isAvs, _ := k.avsKeeper.IsAVS(ctx, avsAddr); !isAvs {
+	if isAvs, _ := k.avsKeeper.IsAVSByChainID(ctx, chainID); !isAvs {
 		return types.ErrUnknownChainID
 	}
 	// check if the operator is opting out as we speak
@@ -294,8 +293,7 @@ func (k Keeper) CompleteOperatorKeyRemovalForChainID(
 func (k *Keeper) GetOperatorsForChainID(
 	ctx sdk.Context, chainID string,
 ) ([]sdk.AccAddress, []types.WrappedConsKey) {
-	avsAddr := k.avsKeeper.GetAVSAddrByChainID(ctx, chainID)
-	if isAvs, _ := k.avsKeeper.IsAVS(ctx, avsAddr); !isAvs {
+	if isAvs, _ := k.avsKeeper.IsAVSByChainID(ctx, chainID); !isAvs {
 		return nil, nil
 	}
 	// prefix is the byte prefix and then chainID with length
@@ -331,12 +329,10 @@ func (k Keeper) GetActiveOperatorsForChainID(
 	ctx sdk.Context, chainID string,
 ) ([]sdk.AccAddress, []types.WrappedConsKey) {
 	operatorsAddr, pks := k.GetOperatorsForChainID(ctx, chainID)
-	avsAddr := k.avsKeeper.GetAVSAddrByChainID(ctx, chainID)
-	if avsAddr == "" {
-		// ctx.Logger().With("GetAVSAddrByChainID", fmt.Sprintf("x/%s", chainID))
+	if isAvs, _ := k.avsKeeper.IsAVSByChainID(ctx, chainID); !isAvs {
 		return nil, nil
 	}
-
+	avsAddr := k.avsKeeper.GetAVSAddrByChainID(ctx, chainID)
 	activeOperator := make([]sdk.AccAddress, 0)
 	activePks := make([]types.WrappedConsKey, 0)
 	// check if the operator is active
@@ -349,11 +345,58 @@ func (k Keeper) GetActiveOperatorsForChainID(
 	return activeOperator, activePks
 }
 
+func (k Keeper) GetOrCalculateOperatorUSDValues(
+	ctx sdk.Context,
+	operator sdk.AccAddress,
+	chainID string,
+) (optedUSDValues types.OperatorOptedUSDValue, err error) {
+	if isAvs, _ := k.avsKeeper.IsAVSByChainID(ctx, chainID); !isAvs {
+		return types.OperatorOptedUSDValue{}, types.ErrUnknownChainID
+	}
+	avsAddr := k.avsKeeper.GetAVSAddrByChainID(ctx, chainID)
+	// the usd values will be deleted if the operator opts out, so recalculate the
+	// voting power to set the tokens and shares for this case.
+	if !k.IsOptedIn(ctx, operator.String(), avsAddr) {
+		// get assets supported by the AVS
+		assets, err := k.avsKeeper.GetAVSSupportedAssets(ctx, avsAddr)
+		if err != nil {
+			return types.OperatorOptedUSDValue{}, err
+		}
+		if assets == nil {
+			return types.OperatorOptedUSDValue{}, err
+		}
+		// get the prices and decimals of assets
+		decimals, err := k.assetsKeeper.GetAssetsDecimal(ctx, assets)
+		if err != nil {
+			return types.OperatorOptedUSDValue{}, err
+		}
+		prices, err := k.oracleKeeper.GetMultipleAssetsPrices(ctx, assets)
+		if err != nil {
+			return types.OperatorOptedUSDValue{}, err
+		}
+		stakingInfo, err := k.CalculateUSDValueForOperator(ctx, false, operator.String(), assets, decimals, prices)
+		if err != nil {
+			return types.OperatorOptedUSDValue{}, err
+		}
+		optedUSDValues.SelfUSDValue = stakingInfo.SelfStaking
+		optedUSDValues.TotalUSDValue = stakingInfo.Staking
+	} else {
+		optedUSDValues, err = k.GetOperatorOptedUSDValue(ctx, avsAddr, operator.String())
+		if err != nil {
+			return types.OperatorOptedUSDValue{}, err
+		}
+	}
+	return optedUSDValues, nil
+}
+
 // ValidatorByConsAddrForChainID returns a stakingtypes.ValidatorI for the given consensus
 // address and chain id.
 func (k Keeper) ValidatorByConsAddrForChainID(
 	ctx sdk.Context, consAddr sdk.ConsAddress, chainID string,
 ) (stakingtypes.Validator, bool) {
+	if isAvs, _ := k.avsKeeper.IsAVSByChainID(ctx, chainID); !isAvs {
+		return stakingtypes.Validator{}, false
+	}
 	found, operatorAddr := k.GetOperatorAddressForChainIDAndConsAddr(
 		ctx, chainID, consAddr,
 	)
@@ -361,10 +404,12 @@ func (k Keeper) ValidatorByConsAddrForChainID(
 		// TODO(mm): create tests for the case where a validator
 		// changes their pub key in the middle of an epoch, resulting
 		// in a different key. work around that issue here.
+		ctx.Logger().Error("ValidatorByConsAddrForChainID the operator isn't found by the chainID and consensus address", "consAddress", consAddr, "chainID", chainID)
 		return stakingtypes.Validator{}, false
 	}
 	found, wrappedKey, err := k.GetOperatorConsKeyForChainID(ctx, operatorAddr, chainID)
 	if !found || err != nil {
+		ctx.Logger().Error("ValidatorByConsAddrForChainID the consensus key isn't found by the chainID and operator address", "operatorAddr", operatorAddr, "chainID", chainID, "err", err)
 		return stakingtypes.Validator{}, false
 	}
 	// since we are sending the address, we have to send the consensus key as well.
@@ -374,9 +419,31 @@ func (k Keeper) ValidatorByConsAddrForChainID(
 		sdk.ValAddress(operatorAddr), wrappedKey.ToSdkKey(), stakingtypes.Description{},
 	)
 	if err != nil {
+		ctx.Logger().Error("ValidatorByConsAddrForChainID new validator error", "err", err)
 		return stakingtypes.Validator{}, false
 	}
 	val.Jailed = k.IsOperatorJailedForChainID(ctx, consAddr, chainID)
+
+	// set the tokens, delegated shares and minimum self delegation for unjail
+	avsAddr := k.avsKeeper.GetAVSAddrByChainID(ctx, chainID)
+	minSelfDelegation, err := k.avsKeeper.GetAVSMinimumSelfDelegation(ctx, avsAddr)
+	if err != nil {
+		ctx.Logger().Error("ValidatorByConsAddrForChainID get minimum self delegation for AVS error", "avsAddr", avsAddr, "err", err)
+		return stakingtypes.Validator{}, false
+	}
+	val.MinSelfDelegation = sdk.TokensFromConsensusPower(minSelfDelegation.TruncateInt64(), sdk.DefaultPowerReduction)
+
+	// get opted usd values, then use the total usd value as the virtual tokens and shares
+	// we use USD to simulate the staking token for the cosmos-SDK because the Exocore is
+	// a multi-token staking system. The tokens and shares are always balanced.
+	operatorUSDValues, err := k.GetOrCalculateOperatorUSDValues(ctx, operatorAddr, chainID)
+	if err != nil {
+		ctx.Logger().Error("ValidatorByConsAddrForChainID get or calculate the operator USD values error", "operatorAddr", operatorAddr, "chainID", chainID, "err", err)
+		return stakingtypes.Validator{}, false
+	}
+	power := operatorUSDValues.TotalUSDValue.TruncateInt64()
+	val.Tokens = sdk.TokensFromConsensusPower(power, sdk.DefaultPowerReduction)
+	val.DelegatorShares = val.Tokens.ToLegacyDec()
 	return val, true
 }
 

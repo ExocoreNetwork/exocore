@@ -187,6 +187,7 @@ func (c *Cache) SkipCommit() {
 	c.params.update = false
 }
 
+// CommitCache commits the cache to the KVStore
 func (c *Cache) CommitCache(ctx sdk.Context, reset bool, k common.KeeperOracle) (msgUpdated, validatorsUpdated, paramsUpdated bool) {
 	if len(*(c.msg)) > 0 {
 		c.msg.commit(ctx, k)

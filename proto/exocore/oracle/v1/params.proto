@@ -1,8 +1,8 @@
 syntax = "proto3";
-package exocore.oracle;
+package exocore.oracle.v1;
 
-import "exocore/oracle/info.proto";
-import "exocore/oracle/token_feeder.proto";
+import "exocore/oracle/v1/info.proto";
+import "exocore/oracle/v1/token_feeder.proto";
 import "gogoproto/gogo.proto";
 
 option go_package = "github.com/ExocoreNetwork/exocore/x/oracle/types";
@@ -30,4 +30,6 @@ message Params {
   int32 mode = 9;
   // for each round, a validator only allowed to provide at most max_det_id continuos rounds of prices for DS
   int32 max_det_id = 10;
+  // for each token, only keep max_size_prices round of prices
+  int32 max_size_prices = 11;
 }

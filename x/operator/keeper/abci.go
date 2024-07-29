@@ -34,9 +34,9 @@ func (k *Keeper) CalculateUSDValueForOperator(
 	assetsFilter map[string]interface{},
 	decimals map[string]uint32,
 	prices map[string]oracletypes.Price,
-) (operatortypes.OperatorUSDValue, error) {
+) (operatortypes.OperatorStakingInfo, error) {
 	var err error
-	ret := operatortypes.OperatorUSDValue{
+	ret := operatortypes.OperatorStakingInfo{
 		Staking:                 sdkmath.LegacyNewDec(0),
 		SelfStaking:             sdkmath.LegacyNewDec(0),
 		StakingAndWaitUnbonding: sdkmath.LegacyNewDec(0),
@@ -121,16 +121,22 @@ func (k *Keeper) UpdateVotingPower(ctx sdk.Context, avsAddr string) error {
 	if err != nil {
 		return err
 	}
-	opFunc := func(operator string, votingPower *sdkmath.LegacyDec) error {
+	opFunc := func(operator string, optedUSDValues *operatortypes.OperatorOptedUSDValue) error {
 		// clear the old voting power for the operator
-		*votingPower = sdkmath.LegacyNewDec(0)
-		usdValues, err := k.CalculateUSDValueForOperator(ctx, false, operator, assets, decimals, prices)
+		*optedUSDValues = operatortypes.OperatorOptedUSDValue{
+			TotalUSDValue:  sdkmath.LegacyNewDec(0),
+			SelfUSDValue:   sdkmath.LegacyNewDec(0),
+			ActiveUSDValue: sdkmath.LegacyNewDec(0),
+		}
+		stakingInfo, err := k.CalculateUSDValueForOperator(ctx, false, operator, assets, decimals, prices)
 		if err != nil {
 			return err
 		}
-		if usdValues.SelfStaking.GTE(minimumSelfDelegation) {
-			*votingPower = votingPower.Add(usdValues.Staking)
-			avsVotingPower = avsVotingPower.Add(*votingPower)
+		optedUSDValues.SelfUSDValue = stakingInfo.SelfStaking
+		optedUSDValues.TotalUSDValue = stakingInfo.Staking
+		if stakingInfo.SelfStaking.GTE(minimumSelfDelegation) {
+			optedUSDValues.ActiveUSDValue = stakingInfo.Staking
+			avsVotingPower = avsVotingPower.Add(optedUSDValues.TotalUSDValue)
 		}
 		return nil
 	}

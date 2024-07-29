@@ -40,6 +40,10 @@ func (ms msgServer) UpdateParams(goCtx context.Context, msg *types.MsgUpdatePara
 	if p, err = p.AddRules(msg.Params.Rules...); err != nil {
 		return nil, err
 	}
+	// update max size of price
+	if p, err = p.UpdateMaxPriceCount(msg.Params.MaxSizePrices); err != nil {
+		return nil, err
+	}
 	// udpate tokenFeeders
 	for _, tokenFeeder := range msg.Params.TokenFeeders {
 		if p, err = p.UpdateTokenFeeder(tokenFeeder, height); err != nil {

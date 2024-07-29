@@ -144,8 +144,8 @@ interface IAVSManager {
     function getRegisteredPubkey(string memory operator) external returns (bytes calldata pubkey);
 
     /// @dev Returns the operators of all opt-in in the current avs
-    /// @param avsAddress addresses
-    function getOptInOperators(string memory avsAddress) external returns (string[] calldata operators);
+    /// @param avsAddress avs address
+    function getOptInOperators(address avsAddress) external returns (string[] calldata operators);
 
     /// @dev RegisterBLSPublicKey Emitted when `operator` registers with the public keys `pubKey`.
     /// @param operator the address of the delegator

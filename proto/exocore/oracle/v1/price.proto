@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package exocore.oracle;
+package exocore.oracle.v1;
 
 import "gogoproto/gogo.proto";
 

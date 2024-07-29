@@ -151,7 +151,20 @@ var _ = Describe("MsgUpdateParams", Ordered, func() {
 		}
 	})
 
-	Context("", func() {
+	Context("update maxSizePrices", func() {
+		It("update maxSizePrices", func() {
+			_, err := ks.ms.UpdateParams(ks.ctx, &types.MsgUpdateParams{
+				Params: types.Params{
+					MaxSizePrices: 100,
+				},
+			})
+			Expect(err).Should(BeNil())
+			p := ks.k.GetParams(ks.ctx)
+			Expect(p.MaxSizePrices).Should(BeEquivalentTo(100))
+		})
+	})
+
+	Context("update TokenFeeders", func() {
 		It("update StartBaseBlock for TokenFeeder", func() {
 			p := defaultParams
 			p.TokenFeeders[1].StartBaseBlock = 10

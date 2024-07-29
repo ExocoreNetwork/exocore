@@ -14,7 +14,6 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/vm"
 	cmn "github.com/evmos/evmos/v14/precompiles/common"
-	"golang.org/x/xerrors"
 )
 
 const (
@@ -69,13 +68,13 @@ func (p Precompile) DeregisterAVS(
 	args []interface{},
 ) ([]byte, error) {
 	if len(args) != len(p.ABI.Methods[MethodDeregisterAVS].Inputs) {
-		return nil, xerrors.Errorf(cmn.ErrInvalidNumberOfArgs, len(p.ABI.Methods[MethodDeregisterAVS].Inputs), len(args))
+		return nil, fmt.Errorf(cmn.ErrInvalidNumberOfArgs, len(p.ABI.Methods[MethodDeregisterAVS].Inputs), len(args))
 	}
 	avsParams := &avstypes.AVSRegisterOrDeregisterParams{}
 
 	avsName, ok := args[0].(string)
 	if !ok || avsName == "" {
-		return nil, xerrors.Errorf(exocmn.ErrContractInputParaOrType, 0, "string", avsName)
+		return nil, fmt.Errorf(exocmn.ErrContractInputParaOrType, 0, "string", avsName)
 	}
 	avsParams.AvsName = avsName
 
@@ -195,25 +194,25 @@ func (p Precompile) RegisterBLSPublicKey(
 	blsParams.Operator = sdk.AccAddress(origin[:]).String()
 	name, ok := args[1].(string)
 	if !ok || name == "" {
-		return nil, xerrors.Errorf(exocmn.ErrContractInputParaOrType, 1, "string", name)
+		return nil, fmt.Errorf(exocmn.ErrContractInputParaOrType, 1, "string", name)
 	}
 	blsParams.Name = name
 
 	pubkeyBz, ok := args[2].([]byte)
 	if !ok {
-		return nil, xerrors.Errorf(exocmn.ErrContractInputParaOrType, 2, "[]byte", pubkeyBz)
+		return nil, fmt.Errorf(exocmn.ErrContractInputParaOrType, 2, "[]byte", pubkeyBz)
 	}
 	blsParams.PubKey = pubkeyBz
 
 	pubkeyRegistrationSignature, ok := args[3].([]byte)
 	if !ok {
-		return nil, xerrors.Errorf(exocmn.ErrContractInputParaOrType, 3, "[]byte", pubkeyRegistrationSignature)
+		return nil, fmt.Errorf(exocmn.ErrContractInputParaOrType, 3, "[]byte", pubkeyRegistrationSignature)
 	}
 	blsParams.PubkeyRegistrationSignature = pubkeyRegistrationSignature
 
 	pubkeyRegistrationMessageHash, ok := args[4].([]byte)
 	if !ok {
-		return nil, xerrors.Errorf(exocmn.ErrContractInputParaOrType, 4, "[]byte", pubkeyRegistrationMessageHash)
+		return nil, fmt.Errorf(exocmn.ErrContractInputParaOrType, 4, "[]byte", pubkeyRegistrationMessageHash)
 	}
 	blsParams.PubkeyRegistrationMessageHash = pubkeyRegistrationMessageHash
 
@@ -238,7 +237,7 @@ func (p Precompile) GetRegisteredPubkey(
 	// the key is set using the operator's acc address so the same logic should apply here
 	addr, ok := args[0].(string)
 	if !ok {
-		return nil, xerrors.Errorf(exocmn.ErrContractInputParaOrType, 0, "string", addr)
+		return nil, fmt.Errorf(exocmn.ErrContractInputParaOrType, 0, "string", addr)
 	}
 	pubkey, err := p.avsKeeper.GetOperatorPubKey(ctx, addr)
 	if err != nil {
@@ -262,7 +261,7 @@ func (p Precompile) SubmitProof(
 	// TODO: check whether this address is acc or hex and decide the type accordingly
 	addr, ok := args[0].(string)
 	if !ok {
-		return nil, xerrors.Errorf(exocmn.ErrContractInputParaOrType, 0, "string", addr)
+		return nil, fmt.Errorf(exocmn.ErrContractInputParaOrType, 0, "string", addr)
 	}
 	// TODO implement SubmitProof
 	// err := p.avsKeeper.SubmitProof(ctx, addr)
@@ -285,7 +284,7 @@ func (p Precompile) GetOptedInOperatorAccAddrs(
 
 	addr, ok := args[0].(common.Address)
 	if !ok || addr == (common.Address{}) {
-		return nil, xerrors.Errorf(exocmn.ErrContractInputParaOrType, 0, "string", addr)
+		return nil, fmt.Errorf(exocmn.ErrContractInputParaOrType, 0, "string", addr)
 	}
 
 	list, err := p.avsKeeper.GetOptInOperators(ctx, addr.String())

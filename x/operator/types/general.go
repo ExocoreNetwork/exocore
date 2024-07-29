@@ -6,9 +6,12 @@ import (
 )
 
 // DeltaOptedInAssetState This is a struct to describe the desired change that matches with the OptedInAssetState
-type DeltaOptedInAssetState OptedInAssetState
+type (
+	DeltaOptedInAssetState OptedInAssetState
+	DeltaOperatorUSDInfo   OperatorOptedUSDValue
+)
 
-type OperatorUSDValue struct {
+type OperatorStakingInfo struct {
 	Staking                 sdkmath.LegacyDec
 	SelfStaking             sdkmath.LegacyDec
 	StakingAndWaitUnbonding sdkmath.LegacyDec
