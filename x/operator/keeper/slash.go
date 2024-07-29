@@ -178,21 +178,25 @@ func (k Keeper) SlashWithInfractionReason(
 	slashFactor sdk.Dec, infraction stakingtypes.Infraction,
 ) sdkmath.Int {
 	chainID := ctx.ChainID()
-	avsAddr := k.avsKeeper.GetAVSAddrByChainID(ctx, chainID)
+	isAvs, avsAddr := k.avsKeeper.IsAVSByChainID(ctx, chainID)
+	if !isAvs {
+		k.Logger(ctx).Error("the chainID is not supported by AVS", chainID)
+		return sdkmath.NewInt(0)
+	}
 	slashID := GetSlashIDForDogfood(infraction, infractionHeight)
 	slashParam := &types.SlashInputInfo{
 		IsDogFood:        true,
 		Power:            power,
 		SlashType:        uint32(infraction),
 		Operator:         addr,
-		AVSAddr:          avsAddr,
+		AVSAddr:          avsAddr.Hex(),
 		SlashID:          slashID,
 		SlashEventHeight: infractionHeight,
 		SlashProportion:  slashFactor,
 	}
 	err := k.Slash(ctx, slashParam)
 	if err != nil {
-		k.Logger(ctx).Error(err.Error(), avsAddr)
+		k.Logger(ctx).Error(err.Error(), avsAddr.Hex())
 		return sdkmath.NewInt(0)
 	}
 	// todo: The returned value should be the amount of burned Exo if we considering a slash from the reward
@@ -208,10 +212,14 @@ func (k Keeper) IsOperatorJailedForChainID(ctx sdk.Context, consAddr sdk.ConsAdd
 		return false
 	}
 
-	avsAddr := k.avsKeeper.GetAVSAddrByChainID(ctx, chainID)
-	optInfo, err := k.GetOptedInfo(ctx, operatorAddr.String(), avsAddr)
+	isAvs, avsAddr := k.avsKeeper.IsAVSByChainID(ctx, chainID)
+	if !isAvs {
+		k.Logger(ctx).Error("the chainID is not supported by AVS", chainID)
+		return false
+	}
+	optInfo, err := k.GetOptedInfo(ctx, operatorAddr.String(), avsAddr.Hex())
 	if err != nil {
-		k.Logger(ctx).Error(err.Error(), operatorAddr, avsAddr)
+		k.Logger(ctx).Error(err.Error(), operatorAddr, avsAddr.Hex())
 		return false
 	}
 	return optInfo.Jailed
@@ -224,12 +232,16 @@ func (k *Keeper) SetJailedState(ctx sdk.Context, consAddr sdk.ConsAddress, chain
 		return
 	}
 
-	avsAddr := k.avsKeeper.GetAVSAddrByChainID(ctx, chainID)
+	isAvs, avsAddr := k.avsKeeper.IsAVSByChainID(ctx, chainID)
+	if !isAvs {
+		k.Logger(ctx).Error("the chainID is not supported by AVS", chainID)
+		return
+	}
 
 	handleFunc := func(info *types.OptedInfo) {
 		info.Jailed = jailed
 	}
-	err := k.HandleOptedInfo(ctx, operatorAddr.String(), avsAddr, handleFunc)
+	err := k.HandleOptedInfo(ctx, operatorAddr.String(), avsAddr.Hex(), handleFunc)
 	if err != nil {
 		k.Logger(ctx).Error(err.Error(), chainID)
 	}

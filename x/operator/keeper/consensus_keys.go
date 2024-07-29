@@ -3,6 +3,7 @@ package keeper
 import (
 	"fmt"
 
+	errorsmod "cosmossdk.io/errors"
 	"github.com/cometbft/cometbft/libs/log"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -293,7 +294,9 @@ func (k Keeper) CompleteOperatorKeyRemovalForChainID(
 func (k *Keeper) GetOperatorsForChainID(
 	ctx sdk.Context, chainID string,
 ) ([]sdk.AccAddress, []types.WrappedConsKey) {
+	k.Logger(ctx).Info("GetOperatorsForChainID", "chainID", chainID)
 	if isAvs, _ := k.avsKeeper.IsAVSByChainID(ctx, chainID); !isAvs {
+		k.Logger(ctx).Info("GetOperatorsForChainID the chainID is not supported by AVS", "chainID", chainID)
 		return nil, nil
 	}
 	// prefix is the byte prefix and then chainID with length
@@ -328,18 +331,23 @@ func (k *Keeper) GetOperatorsForChainID(
 func (k Keeper) GetActiveOperatorsForChainID(
 	ctx sdk.Context, chainID string,
 ) ([]sdk.AccAddress, []types.WrappedConsKey) {
-	operatorsAddr, pks := k.GetOperatorsForChainID(ctx, chainID)
-	if isAvs, _ := k.avsKeeper.IsAVSByChainID(ctx, chainID); !isAvs {
+	isAvs, avsAddr := k.avsKeeper.IsAVSByChainID(ctx, chainID)
+	if !isAvs {
+		k.Logger(ctx).Error("GetActiveOperatorsForChainID the chainID is not supported by AVS", "chainID", chainID)
 		return nil, nil
 	}
-	avsAddr := k.avsKeeper.GetAVSAddrByChainID(ctx, chainID)
+	operatorsAddr, pks := k.GetOperatorsForChainID(ctx, chainID)
+	k.Logger(ctx).Info("GetActiveOperatorsForChainID all operators", "operators", len(operatorsAddr), "pks", len(pks))
+	avsAddrString := avsAddr.String()
 	activeOperator := make([]sdk.AccAddress, 0)
 	activePks := make([]types.WrappedConsKey, 0)
 	// check if the operator is active
 	for i, operator := range operatorsAddr {
-		if k.IsActive(ctx, operator, avsAddr) {
+		if k.IsActive(ctx, operator, avsAddrString) {
 			activeOperator = append(activeOperator, operator)
 			activePks = append(activePks, pks[i])
+		} else {
+			k.Logger(ctx).Info("GetActiveOperatorsForChainID operator is not active", "operator", operator.String())
 		}
 	}
 	return activeOperator, activePks
@@ -350,15 +358,16 @@ func (k Keeper) GetOrCalculateOperatorUSDValues(
 	operator sdk.AccAddress,
 	chainID string,
 ) (optedUSDValues types.OperatorOptedUSDValue, err error) {
-	if isAvs, _ := k.avsKeeper.IsAVSByChainID(ctx, chainID); !isAvs {
-		return types.OperatorOptedUSDValue{}, types.ErrUnknownChainID
+	isAvs, avsAddr := k.avsKeeper.IsAVSByChainID(ctx, chainID)
+	if !isAvs {
+		return types.OperatorOptedUSDValue{}, errorsmod.Wrap(types.ErrUnknownChainID, fmt.Sprintf("GetOrCalculateOperatorUSDValues: chainID is %s", chainID))
 	}
-	avsAddr := k.avsKeeper.GetAVSAddrByChainID(ctx, chainID)
+	avsAddrString := avsAddr.String()
 	// the usd values will be deleted if the operator opts out, so recalculate the
 	// voting power to set the tokens and shares for this case.
-	if !k.IsOptedIn(ctx, operator.String(), avsAddr) {
+	if !k.IsOptedIn(ctx, operator.String(), avsAddrString) {
 		// get assets supported by the AVS
-		assets, err := k.avsKeeper.GetAVSSupportedAssets(ctx, avsAddr)
+		assets, err := k.avsKeeper.GetAVSSupportedAssets(ctx, avsAddrString)
 		if err != nil {
 			return types.OperatorOptedUSDValue{}, err
 		}
@@ -381,7 +390,7 @@ func (k Keeper) GetOrCalculateOperatorUSDValues(
 		optedUSDValues.SelfUSDValue = stakingInfo.SelfStaking
 		optedUSDValues.TotalUSDValue = stakingInfo.Staking
 	} else {
-		optedUSDValues, err = k.GetOperatorOptedUSDValue(ctx, avsAddr, operator.String())
+		optedUSDValues, err = k.GetOperatorOptedUSDValue(ctx, avsAddrString, operator.String())
 		if err != nil {
 			return types.OperatorOptedUSDValue{}, err
 		}
@@ -394,7 +403,9 @@ func (k Keeper) GetOrCalculateOperatorUSDValues(
 func (k Keeper) ValidatorByConsAddrForChainID(
 	ctx sdk.Context, consAddr sdk.ConsAddress, chainID string,
 ) (stakingtypes.Validator, bool) {
-	if isAvs, _ := k.avsKeeper.IsAVSByChainID(ctx, chainID); !isAvs {
+	isAvs, avsAddr := k.avsKeeper.IsAVSByChainID(ctx, chainID)
+	if !isAvs {
+		ctx.Logger().Error("ValidatorByConsAddrForChainID the chainID is not supported by AVS", "chainID", chainID)
 		return stakingtypes.Validator{}, false
 	}
 	found, operatorAddr := k.GetOperatorAddressForChainIDAndConsAddr(
@@ -425,10 +436,9 @@ func (k Keeper) ValidatorByConsAddrForChainID(
 	val.Jailed = k.IsOperatorJailedForChainID(ctx, consAddr, chainID)
 
 	// set the tokens, delegated shares and minimum self delegation for unjail
-	avsAddr := k.avsKeeper.GetAVSAddrByChainID(ctx, chainID)
-	minSelfDelegation, err := k.avsKeeper.GetAVSMinimumSelfDelegation(ctx, avsAddr)
+	minSelfDelegation, err := k.avsKeeper.GetAVSMinimumSelfDelegation(ctx, avsAddr.String())
 	if err != nil {
-		ctx.Logger().Error("ValidatorByConsAddrForChainID get minimum self delegation for AVS error", "avsAddr", avsAddr, "err", err)
+		ctx.Logger().Error("ValidatorByConsAddrForChainID get minimum self delegation for AVS error", "avsAddr", avsAddr.String(), "err", err)
 		return stakingtypes.Validator{}, false
 	}
 	val.MinSelfDelegation = sdk.TokensFromConsensusPower(minSelfDelegation.TruncateInt64(), sdk.DefaultPowerReduction)

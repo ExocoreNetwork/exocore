@@ -32,7 +32,7 @@ func (k Keeper) EndBlock(ctx sdk.Context) []abci.ValidatorUpdate {
 	for _, undelegation := range undelegations.GetList() {
 		err := k.delegationKeeper.DecrementUndelegationHoldCount(ctx, undelegation)
 		if err != nil {
-			panic(err)
+			k.Logger(ctx).Error("error decrementing undelegation hold count", "error", err)
 		}
 		k.ClearUndelegationMaturityEpoch(ctx, undelegation)
 	}
@@ -40,8 +40,10 @@ func (k Keeper) EndBlock(ctx sdk.Context) []abci.ValidatorUpdate {
 	// then, let the operator module know that the opt out has finished.
 	optOuts := k.GetPendingOptOuts(ctx)
 	for _, addr := range optOuts.GetList() {
-		// TODO log the error
-		_ = k.operatorKeeper.CompleteOperatorKeyRemovalForChainID(ctx, addr, chainIDWithoutRevision)
+		err := k.operatorKeeper.CompleteOperatorKeyRemovalForChainID(ctx, addr, chainIDWithoutRevision)
+		if err != nil {
+			k.Logger(ctx).Error("error decrementing undelegation hold count", "error", err)
+		}
 	}
 	k.ClearPendingOptOuts(ctx)
 	// for slashing, the operator module is required to store a mapping of chain id + cons addr
@@ -71,6 +73,7 @@ func (k Keeper) EndBlock(ctx sdk.Context) []abci.ValidatorUpdate {
 		pubKey, err := validator.ConsPubKey()
 		if err != nil {
 			// indicates an error in deserialization, and should never happen.
+			k.Logger(ctx).Error("error deserializing consensus public key", "error", err)
 			continue
 		}
 		addressString := sdk.GetConsAddress(pubKey).String()
@@ -81,10 +84,12 @@ func (k Keeper) EndBlock(ctx sdk.Context) []abci.ValidatorUpdate {
 		ctx, operators, chainIDWithoutRevision,
 	)
 	if err != nil {
+		k.Logger(ctx).Error("error getting vote power for chain", "error", err)
 		return []abci.ValidatorUpdate{}
 	}
 	operators, keys, powers = sortByPower(operators, keys, powers)
 	maxVals := k.GetMaxValidators(ctx)
+	k.Logger(ctx).Info("max validators", "maxVals", maxVals, "len(operators)", len(operators))
 	// the capacity of this list is twice the maximum number of validators.
 	// this is because we can have a maximum of maxVals validators, and we can also have
 	// a maximum of maxVals validators that are removed.
@@ -130,6 +135,7 @@ func (k Keeper) EndBlock(ctx sdk.Context) []abci.ValidatorUpdate {
 		}
 		totalPower = totalPower.Add(sdk.NewInt(power))
 	}
+	k.Logger(ctx).Info("total power", "totalPower", totalPower, "len(res)", len(res))
 	// the remaining validators in prevMap have been removed.
 	// we need to queue a change in power to 0 for them.
 	for _, validator := range prevList { // O(N)
@@ -150,6 +156,7 @@ func (k Keeper) EndBlock(ctx sdk.Context) []abci.ValidatorUpdate {
 			// so the previous power of these validators does not need to be subtracted.
 		}
 	}
+	k.Logger(ctx).Info("total power", "totalPower", totalPower, "len(res)", len(res))
 	// if there are any updates, set total power on lookup index.
 	if len(res) > 0 {
 		k.SetLastTotalPower(ctx, totalPower)

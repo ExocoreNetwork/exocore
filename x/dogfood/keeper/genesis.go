@@ -10,6 +10,7 @@ import (
 	cryptocodec "github.com/cosmos/cosmos-sdk/crypto/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 )
 
@@ -36,7 +37,7 @@ func (k Keeper) InitGenesis(
 	}
 	k.SetParams(ctx, genState.Params)
 	// create the AVS
-	var avsAddr string
+	var avsAddr common.Address
 	var err error
 	// the avs module will remove the revision by itself
 	if avsAddr, err = k.avsKeeper.RegisterAVSWithChainID(ctx, &avstypes.AVSRegisterOrDeregisterParams{
@@ -49,6 +50,8 @@ func (k Keeper) InitGenesis(
 	}); err != nil {
 		panic(fmt.Errorf("could not create the dogfood AVS: %s", err))
 	}
+	avsAddrString := avsAddr.String()
+	ctx.Logger().With(types.ModuleName).Info(fmt.Sprintf("created dogfood avs %s %s", avsAddrString, ctx.ChainID()))
 	// create the validators
 	out := make([]abci.ValidatorUpdate, 0, len(genState.ValSet))
 	for _, val := range genState.ValSet {
@@ -58,7 +61,7 @@ func (k Keeper) InitGenesis(
 		operatorAddr, _ := sdk.AccAddressFromBech32(val.OperatorAccAddr)
 		// OptIntoAVS checks that the operator exists and will error if it does not.
 		if err := k.operatorKeeper.OptInWithConsKey(
-			ctx, operatorAddr, avsAddr, wrappedKey,
+			ctx, operatorAddr, avsAddrString, wrappedKey,
 		); err != nil {
 			panic(fmt.Errorf("failed to opt into avs: %s", err))
 		}

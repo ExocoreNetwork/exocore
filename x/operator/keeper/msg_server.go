@@ -38,7 +38,7 @@ func (msgServer *MsgServerImpl) OptIntoAVS(goCtx context.Context, req *types.Opt
 		}
 	}()
 	// check if the AVS is a chain-type of AVS
-	isChainAvs, _ := msgServer.keeper.avsKeeper.IsAVSByChainID(ctx, req.AvsAddress)
+	_, isChainAvs := msgServer.keeper.avsKeeper.GetChainIDByAVSAddr(ctx, req.AvsAddress)
 	// #nosec G703 // already validated
 	accAddr, _ := sdk.AccAddressFromBech32(req.FromAddress)
 	if !isChainAvs {

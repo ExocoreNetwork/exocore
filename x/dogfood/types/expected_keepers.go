@@ -7,6 +7,7 @@ import (
 	operatortypes "github.com/ExocoreNetwork/exocore/x/operator/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
+	"github.com/ethereum/go-ethereum/common"
 )
 
 // EpochsKeeper represents the expected keeper interface for the epochs module.
@@ -88,5 +89,5 @@ type AssetsKeeper interface {
 }
 
 type AVSKeeper interface {
-	RegisterAVSWithChainID(sdk.Context, *avstypes.AVSRegisterOrDeregisterParams) (string, error)
+	RegisterAVSWithChainID(sdk.Context, *avstypes.AVSRegisterOrDeregisterParams) (common.Address, error)
 }

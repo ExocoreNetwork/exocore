@@ -71,6 +71,7 @@ func (k Keeper) OptInWithConsKey(
 		return err
 	}
 	chainID, _ := k.avsKeeper.GetChainIDByAVSAddr(ctx, avsAddr)
+	k.Logger(ctx).Info("OptInWithConsKey", "chainID", chainID)
 	return k.SetOperatorConsKeyForChainID(ctx, operatorAddress, chainID, key)
 }
 

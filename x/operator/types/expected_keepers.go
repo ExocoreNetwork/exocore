@@ -7,6 +7,7 @@ import (
 	delegationtype "github.com/ExocoreNetwork/exocore/x/delegation/types"
 	oracletype "github.com/ExocoreNetwork/exocore/x/oracle/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/ethereum/go-ethereum/common"
 )
 
 var _ OracleKeeper = MockOracle{}
@@ -93,8 +94,6 @@ type AVSKeeper interface {
 	// `ContextForHistoricalState` implemented in x/assets/types/general.go
 	GetAVSSupportedAssets(ctx sdk.Context, avsAddr string) (map[string]interface{}, error)
 	GetAVSSlashContract(ctx sdk.Context, avsAddr string) (string, error)
-	// GetAVSAddrByChainID converts the chainID to a general EVM-compatible hex address.
-	GetAVSAddrByChainID(ctx sdk.Context, chainID string) string
 	// GetChainIDByAVSAddr converts the hex AVS address to the chainID.
 	GetChainIDByAVSAddr(ctx sdk.Context, avsAddr string) (string, bool)
 	// GetAVSMinimumSelfDelegation returns the USD value of minimum self delegation, which
@@ -106,7 +105,7 @@ type AVSKeeper interface {
 	GetEpochEndAVSs(ctx sdk.Context, epochIdentifier string, epochNumber int64) []string
 	// IsAVS returns true if the address is a registered AVS address.
 	IsAVS(ctx sdk.Context, addr string) (bool, error)
-	IsAVSByChainID(ctx sdk.Context, chainID string) (bool, error)
+	IsAVSByChainID(ctx sdk.Context, chainID string) (bool, common.Address)
 }
 
 type SlashKeeper interface {

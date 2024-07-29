@@ -6,6 +6,7 @@ import (
 
 	assetstype "github.com/ExocoreNetwork/exocore/x/assets/types"
 
+	avstypes "github.com/ExocoreNetwork/exocore/x/avs/types"
 	"github.com/ExocoreNetwork/exocore/x/operator/types"
 	tmprotocrypto "github.com/cometbft/cometbft/proto/tendermint/crypto"
 	"github.com/cosmos/cosmos-sdk/store/prefix"
@@ -54,8 +55,9 @@ func (k *Keeper) QueryOperatorConsKeyForChainID(
 	if err != nil {
 		return nil, err
 	}
+	chainIDWithoutRevision := avstypes.ChainIDWithoutRevision(req.Chain)
 	found, key, err := k.GetOperatorConsKeyForChainID(
-		ctx, addr, req.Chain,
+		ctx, addr, chainIDWithoutRevision,
 	)
 	if err != nil {
 		return nil, err
@@ -65,7 +67,7 @@ func (k *Keeper) QueryOperatorConsKeyForChainID(
 	}
 	return &types.QueryOperatorConsKeyResponse{
 		PublicKey: *key.ToTmKey(),
-		OptingOut: k.IsOperatorRemovingKeyFromChainID(ctx, addr, req.Chain),
+		OptingOut: k.IsOperatorRemovingKeyFromChainID(ctx, addr, chainIDWithoutRevision),
 	}, nil
 }
 
@@ -80,8 +82,9 @@ func (k Keeper) QueryOperatorConsAddressForChainID(
 	if err != nil {
 		return nil, err
 	}
+	chainIDWithoutRevision := avstypes.ChainIDWithoutRevision(req.Chain)
 	found, wrappedKey, err := k.GetOperatorConsKeyForChainID(
-		ctx, addr, req.Chain,
+		ctx, addr, chainIDWithoutRevision,
 	)
 	if err != nil {
 		return nil, err
@@ -91,7 +94,7 @@ func (k Keeper) QueryOperatorConsAddressForChainID(
 	}
 	return &types.QueryOperatorConsAddressResponse{
 		ConsAddr:  wrappedKey.ToConsAddr().String(),
-		OptingOut: k.IsOperatorRemovingKeyFromChainID(ctx, addr, req.Chain),
+		OptingOut: k.IsOperatorRemovingKeyFromChainID(ctx, addr, chainIDWithoutRevision),
 	}, nil
 }
 
@@ -103,9 +106,10 @@ func (k Keeper) QueryAllOperatorConsKeysByChainID(
 ) (*types.QueryAllOperatorConsKeysByChainIDResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 	res := make([]*types.OperatorConsKeyPair, 0)
+	chainIDWithoutRevision := avstypes.ChainIDWithoutRevision(req.Chain)
 	chainPrefix := types.ChainIDAndAddrKey(
 		types.BytePrefixForChainIDAndOperatorToConsKey,
-		req.Chain, nil,
+		chainIDWithoutRevision, nil,
 	)
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), chainPrefix)
 	pageRes, err := query.Paginate(store, req.Pagination, func(key []byte, value []byte) error {
@@ -118,7 +122,7 @@ func (k Keeper) QueryAllOperatorConsKeysByChainID(
 		res = append(res, &types.OperatorConsKeyPair{
 			OperatorAccAddr: addr.String(),
 			PublicKey:       ret,
-			OptingOut:       k.IsOperatorRemovingKeyFromChainID(ctx, addr, req.Chain),
+			OptingOut:       k.IsOperatorRemovingKeyFromChainID(ctx, addr, chainIDWithoutRevision),
 		})
 		return nil
 	})
@@ -139,9 +143,10 @@ func (k Keeper) QueryAllOperatorConsAddrsByChainID(
 ) (*types.QueryAllOperatorConsAddrsByChainIDResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 	res := make([]*types.OperatorConsAddrPair, 0)
+	chainIDWithoutRevision := avstypes.ChainIDWithoutRevision(req.Chain)
 	chainPrefix := types.ChainIDAndAddrKey(
 		types.BytePrefixForChainIDAndOperatorToConsKey,
-		req.Chain, nil,
+		chainIDWithoutRevision, nil,
 	)
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), chainPrefix)
 	pageRes, err := query.Paginate(store, req.Pagination, func(key []byte, value []byte) error {
@@ -158,7 +163,7 @@ func (k Keeper) QueryAllOperatorConsAddrsByChainID(
 		res = append(res, &types.OperatorConsAddrPair{
 			OperatorAccAddr: addr.String(),
 			ConsAddr:        wrappedKey.ToConsAddr().String(),
-			OptingOut:       k.IsOperatorRemovingKeyFromChainID(ctx, addr, req.Chain),
+			OptingOut:       k.IsOperatorRemovingKeyFromChainID(ctx, addr, chainIDWithoutRevision),
 		})
 		return nil
 	})

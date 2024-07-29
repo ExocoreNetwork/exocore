@@ -209,11 +209,15 @@ func (k *Keeper) IterateOperatorsForAVS(ctx sdk.Context, avsAddr string, isUpdat
 func (k Keeper) GetVotePowerForChainID(
 	ctx sdk.Context, operators []sdk.AccAddress, chainID string,
 ) ([]int64, error) {
-	avsAddr := k.avsKeeper.GetAVSAddrByChainID(ctx, chainID)
+	isAvs, avsAddr := k.avsKeeper.IsAVSByChainID(ctx, chainID)
+	if !isAvs {
+		return nil, errorsmod.Wrap(operatortypes.ErrUnknownChainID, fmt.Sprintf("GetVotePowerForChainID: chainID is %s", chainID))
+	}
 	ret := make([]int64, 0)
+	avsAddrString := avsAddr.String()
 	for _, operator := range operators {
 		// this already filters by the required assetIDs
-		optedUSDValues, err := k.GetOperatorOptedUSDValue(ctx, avsAddr, operator.String())
+		optedUSDValues, err := k.GetOperatorOptedUSDValue(ctx, avsAddrString, operator.String())
 		if err != nil {
 			return nil, err
 		}
@@ -225,8 +229,11 @@ func (k Keeper) GetVotePowerForChainID(
 }
 
 func (k *Keeper) GetOperatorAssetValue(ctx sdk.Context, operator sdk.AccAddress, chainID string) (int64, error) {
-	avsAddr := k.avsKeeper.GetAVSAddrByChainID(ctx, chainID)
-	optedUSDValues, err := k.GetOperatorOptedUSDValue(ctx, operator.String(), avsAddr)
+	isAvs, avsAddr := k.avsKeeper.IsAVSByChainID(ctx, chainID)
+	if !isAvs {
+		return 0, errorsmod.Wrap(operatortypes.ErrUnknownChainID, fmt.Sprintf("GetOperatorAssetValue: chainID is %s", chainID))
+	}
+	optedUSDValues, err := k.GetOperatorOptedUSDValue(ctx, operator.String(), avsAddr.String())
 	if err != nil {
 		return 0, err
 	}
