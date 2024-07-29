@@ -123,7 +123,7 @@ func (suite *OperatorTestSuite) TestVotingPowerForDogFood() {
 	}
 
 	chainIDWithoutRevision := avstypes.ChainIDWithoutRevision(suite.Ctx.ChainID())
-	avsAddress := suite.App.AVSManagerKeeper.GetAVSAddrByChainID(suite.Ctx, chainIDWithoutRevision)
+	avsAddress := avstypes.GenerateAVSAddr(avstypes.ChainIDWithoutRevision(suite.Ctx.ChainID())).String()
 	operators, _ := suite.App.OperatorKeeper.GetActiveOperatorsForChainID(suite.Ctx, chainIDWithoutRevision)
 	suite.Require().GreaterOrEqual(len(operators), 1)
 	allAssets, err := suite.App.AssetsKeeper.GetAllStakingAssetsInfo(suite.Ctx)

@@ -90,4 +90,5 @@ type AssetsKeeper interface {
 
 type AVSKeeper interface {
 	RegisterAVSWithChainID(sdk.Context, *avstypes.AVSRegisterOrDeregisterParams) (common.Address, error)
+	IsAVSByChainID(ctx sdk.Context, chainID string) (bool, common.Address)
 }

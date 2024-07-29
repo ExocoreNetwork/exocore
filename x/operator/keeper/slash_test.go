@@ -4,6 +4,7 @@ import (
 	"time"
 
 	sdkmath "cosmossdk.io/math"
+	avstypes "github.com/ExocoreNetwork/exocore/x/avs/types"
 	"github.com/ExocoreNetwork/exocore/x/operator/keeper"
 	"github.com/ExocoreNetwork/exocore/x/operator/types"
 	abci "github.com/cometbft/cometbft/abci/types"
@@ -22,7 +23,7 @@ func (suite *OperatorTestSuite) TestSlashWithInfractionReason() {
 	suite.prepareDelegation(true, suite.assetAddr, delegationAmount)
 
 	// opt into the AVS
-	avsAddr := suite.App.AVSManagerKeeper.GetAVSAddrByChainID(suite.Ctx, suite.Ctx.ChainID())
+	avsAddr := avstypes.GenerateAVSAddr(avstypes.ChainIDWithoutRevision(suite.Ctx.ChainID())).String()
 	err := suite.App.OperatorKeeper.OptIn(suite.Ctx, suite.operatorAddr, avsAddr)
 	suite.NoError(err)
 	// call the EndBlock to update the voting power
