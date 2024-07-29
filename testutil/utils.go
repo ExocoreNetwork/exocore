@@ -23,6 +23,7 @@ import (
 	assetstypes "github.com/ExocoreNetwork/exocore/x/assets/types"
 	delegationtypes "github.com/ExocoreNetwork/exocore/x/delegation/types"
 	dogfoodtypes "github.com/ExocoreNetwork/exocore/x/dogfood/types"
+	operatorkeeper "github.com/ExocoreNetwork/exocore/x/operator/keeper"
 	operatortypes "github.com/ExocoreNetwork/exocore/x/operator/types"
 	abci "github.com/cometbft/cometbft/abci/types"
 	"github.com/cometbft/cometbft/crypto/tmhash"
@@ -65,7 +66,8 @@ type BaseTestSuite struct {
 	StateDB        *statedb.StateDB
 	QueryClientEVM evmtypes.QueryClient
 
-	InitTime time.Time
+	InitTime          time.Time
+	OperatorMsgServer operatortypes.MsgServer
 }
 
 func (suite *BaseTestSuite) SetupTest() {
@@ -187,28 +189,7 @@ func (suite *BaseTestSuite) SetupWithGenesisValSet(genAccs []authtypes.GenesisAc
 	privVal2 := mock.NewPV()
 	pubKey2, err := privVal2.GetPubKey()
 	suite.Require().NoError(err)
-	// operator consensus keys
-	consensusKeyRecords := []operatortypes.OperatorConsKeyRecord{
-		{
-			OperatorAddress: operatorInfos[0].EarningsAddr,
-			Chains: []operatortypes.ChainDetails{
-				{
-					ChainID:      utils.DefaultChainID,
-					ConsensusKey: hexutil.Encode(pubKey.Bytes()),
-				},
-			},
-		},
-		{
-			OperatorAddress: operatorInfos[1].EarningsAddr,
-			Chains: []operatortypes.ChainDetails{
-				{
-					ChainID:      utils.DefaultChainID,
-					ConsensusKey: hexutil.Encode(pubKey2.Bytes()),
-				},
-			},
-		},
-	}
-	operatorGenesis := operatortypes.NewGenesisState(operatorInfos, consensusKeyRecords)
+	operatorGenesis := operatortypes.NewGenesisState(operatorInfos)
 	genesisState[operatortypes.ModuleName] = app.AppCodec().MustMarshalJSON(operatorGenesis)
 
 	// x/delegation
@@ -254,12 +235,14 @@ func (suite *BaseTestSuite) SetupWithGenesisValSet(genAccs []authtypes.GenesisAc
 	dogfoodGenesis := dogfoodtypes.NewGenesis(
 		dogfoodtypes.DefaultParams(), []dogfoodtypes.GenesisValidator{
 			{
-				PublicKey: hexutil.Encode(pubKey.Bytes()),
-				Power:     1,
+				PublicKey:       hexutil.Encode(pubKey.Bytes()),
+				Power:           1,
+				OperatorAccAddr: operator1.String(),
 			},
 			{
-				PublicKey: hexutil.Encode(pubKey2.Bytes()),
-				Power:     1,
+				PublicKey:       hexutil.Encode(pubKey2.Bytes()),
+				Power:           1,
+				OperatorAccAddr: operator2.String(),
 			},
 		},
 		[]dogfoodtypes.EpochToOperatorAddrs{},
@@ -319,6 +302,7 @@ func (suite *BaseTestSuite) SetupWithGenesisValSet(genAccs []authtypes.GenesisAc
 
 	suite.Ctx = app.BaseApp.NewContext(false, header)
 	suite.App = app
+	suite.OperatorMsgServer = operatorkeeper.NewMsgServerImpl(app.OperatorKeeper)
 
 	// at this point, we have reached the genesis state and we are in the middle of the first block.
 	// BeginBlock of block 1 has been done, and we can process txs.

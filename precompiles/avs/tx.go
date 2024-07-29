@@ -7,8 +7,8 @@ import (
 	errorsmod "cosmossdk.io/errors"
 
 	exocmn "github.com/ExocoreNetwork/exocore/precompiles/common"
-	util "github.com/ExocoreNetwork/exocore/utils"
 	avskeeper "github.com/ExocoreNetwork/exocore/x/avs/keeper"
+	avstypes "github.com/ExocoreNetwork/exocore/x/avs/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
@@ -44,27 +44,19 @@ func (p Precompile) RegisterAVS(
 	if err != nil {
 		return nil, errorsmod.Wrap(err, "parse args error")
 	}
-	avsAddress, err := util.ProcessAddress(contract.CallerAddress.String())
-	if err != nil {
-		return nil, errorsmod.Wrap(err, "parse avsAddress error")
-	}
-
-	callerAddress, err := util.ProcessAddress(origin.String())
-	if err != nil {
-		return nil, errorsmod.Wrap(err, "parse callerAddress error")
-	}
-
-	if !slices.Contains(avsParams.AvsOwnerAddress, callerAddress) {
+	if !slices.Contains(avsParams.AvsOwnerAddress, sdk.AccAddress(origin.Bytes()).String()) {
 		return nil, errorsmod.Wrap(err, "not qualified to registerOrDeregister")
 	}
-
-	avsParams.AvsAddress = avsAddress
+	// The AVS registration is done by the calling contract.
+	avsParams.AvsAddress = contract.CallerAddress.String()
 	avsParams.Action = avskeeper.RegisterAction
-
+	// Finally, update the AVS information in the keeper.
 	err = p.avsKeeper.AVSInfoUpdate(ctx, avsParams)
 	if err != nil {
+		fmt.Println("Failed to update AVS info", err)
 		return nil, err
 	}
+
 	return method.Outputs.Pack(true)
 }
 
@@ -79,7 +71,7 @@ func (p Precompile) DeregisterAVS(
 	if len(args) != len(p.ABI.Methods[MethodDeregisterAVS].Inputs) {
 		return nil, xerrors.Errorf(cmn.ErrInvalidNumberOfArgs, len(p.ABI.Methods[MethodDeregisterAVS].Inputs), len(args))
 	}
-	avsParams := &avskeeper.AVSRegisterOrDeregisterParams{}
+	avsParams := &avstypes.AVSRegisterOrDeregisterParams{}
 
 	avsName, ok := args[0].(string)
 	if !ok || avsName == "" {
@@ -87,21 +79,12 @@ func (p Precompile) DeregisterAVS(
 	}
 	avsParams.AvsName = avsName
 
-	avsAddress, err := util.ProcessAddress(contract.CallerAddress.String())
-	if err != nil {
-		return nil, errorsmod.Wrap(err, "parse avsAddress error")
-	}
-	avsParams.AvsAddress = avsAddress
-
-	callerAddress, err := util.ProcessAddress(origin.String())
-	if err != nil {
-		return nil, errorsmod.Wrap(err, "parse callerAddress error")
-	}
-	avsParams.CallerAddress = callerAddress
-
+	avsParams.AvsAddress = contract.CallerAddress.String()
 	avsParams.Action = avskeeper.DeRegisterAction
+	// validates that this is owner
+	avsParams.CallerAddress = sdk.AccAddress(origin[:]).String()
 
-	err = p.avsKeeper.AVSInfoUpdate(ctx, avsParams)
+	err := p.avsKeeper.AVSInfoUpdate(ctx, avsParams)
 	if err != nil {
 		return nil, err
 	}
@@ -121,24 +104,15 @@ func (p Precompile) UpdateAVS(
 	if err != nil {
 		return nil, errorsmod.Wrap(err, "parse args error")
 	}
-	avsAddress, err := util.ProcessAddress(contract.CallerAddress.String())
-	if err != nil {
-		return nil, errorsmod.Wrap(err, "parse avsAddress error")
-	}
-	avsParams.AvsAddress = avsAddress
 
-	callerAddress, err := util.ProcessAddress(origin.String())
-	if err != nil {
-		return nil, errorsmod.Wrap(err, "parse callerAddress error")
-	}
-	avsParams.CallerAddress = callerAddress
-
+	avsParams.AvsAddress = contract.CallerAddress.String()
+	avsParams.CallerAddress = sdk.AccAddress(origin[:]).String()
 	avsParams.Action = avskeeper.UpdateAction
-
 	err = p.avsKeeper.AVSInfoUpdate(ctx, avsParams)
 	if err != nil {
 		return nil, err
 	}
+
 	return method.Outputs.Pack(true)
 }
 
@@ -151,25 +125,13 @@ func (p Precompile) BindOperatorToAVS(
 	_ []interface{},
 ) ([]byte, error) {
 	operatorParams := &avskeeper.OperatorOptParams{}
-
-	callerAddress, err := util.ProcessAddress(origin.String())
-	if err != nil {
-		return nil, errorsmod.Wrap(err, "parse callerAddress error")
-	}
-
-	operatorParams.OperatorAddress = callerAddress
-
-	avsAddress, err := util.ProcessAddress(contract.CallerAddress.String())
-	if err != nil {
-		return nil, errorsmod.Wrap(err, "parse avsAddress error")
-	}
-	operatorParams.AvsAddress = avsAddress
+	operatorParams.OperatorAddress = sdk.AccAddress(origin[:]).String()
+	operatorParams.AvsAddress = contract.CallerAddress.String()
 	operatorParams.Action = avskeeper.RegisterAction
-	err = p.avsKeeper.OperatorOptAction(ctx, operatorParams)
+	err := p.avsKeeper.OperatorOptAction(ctx, operatorParams)
 	if err != nil {
 		return nil, err
 	}
-
 	return method.Outputs.Pack(true)
 }
 
@@ -182,28 +144,13 @@ func (p Precompile) UnbindOperatorToAVS(
 	_ []interface{},
 ) ([]byte, error) {
 	operatorParams := &avskeeper.OperatorOptParams{}
-	callerAddress, err := util.ProcessAddress(origin.String())
-	if err != nil {
-		return nil, errorsmod.Wrap(err, "parse callerAddress error")
-	}
-
-	operatorParams.OperatorAddress = callerAddress
-
-	avsAddress, err := util.ProcessAddress(contract.CallerAddress.String())
-	if err != nil {
-		return nil, errorsmod.Wrap(err, "parse avsAddress error")
-	}
-	operatorParams.AvsAddress = avsAddress
+	operatorParams.OperatorAddress = sdk.AccAddress(origin[:]).String()
+	operatorParams.AvsAddress = contract.CallerAddress.String()
 	operatorParams.Action = avskeeper.DeRegisterAction
-
+	err := p.avsKeeper.OperatorOptAction(ctx, operatorParams)
 	if err != nil {
 		return nil, err
 	}
-	err = p.avsKeeper.OperatorOptAction(ctx, operatorParams)
-	if err != nil {
-		return nil, err
-	}
-
 	return method.Outputs.Pack(true)
 }
 
@@ -216,21 +163,12 @@ func (p Precompile) CreateAVSTask(
 	method *abi.Method,
 	args []interface{},
 ) ([]byte, error) {
-	callerAddress, err := util.ProcessAddress(origin.String())
-	if err != nil {
-		return nil, err
-	}
 	params, err := p.GetTaskParamsFromInputs(ctx, args)
 	if err != nil {
 		return nil, err
 	}
-	taskAddress, err := util.ProcessAddress(contract.CallerAddress.String())
-	if err != nil {
-		return nil, errorsmod.Wrap(err, "parse taskAddress error")
-	}
-
-	params.TaskContractAddress = taskAddress
-	params.CallerAddress = callerAddress
+	params.TaskContractAddress = contract.CallerAddress.String()
+	params.CallerAddress = sdk.AccAddress(origin[:]).String()
 	err = p.avsKeeper.CreateAVSTask(ctx, params)
 	if err != nil {
 		return nil, err
@@ -250,18 +188,11 @@ func (p Precompile) RegisterBLSPublicKey(
 	method *abi.Method,
 	args []interface{},
 ) ([]byte, error) {
-	blsParams := &avskeeper.BlsParams{}
-	callerAddress, err := util.ProcessAddress(origin.String())
-	if err != nil {
-		return nil, err
-	}
-
-	blsParams.Operator = callerAddress
-
 	if len(args) != len(p.ABI.Methods[MethodRegisterBLSPublicKey].Inputs) {
 		return nil, fmt.Errorf(cmn.ErrInvalidNumberOfArgs, len(p.ABI.Methods[MethodRegisterBLSPublicKey].Inputs), len(args))
 	}
-
+	blsParams := &avskeeper.BlsParams{}
+	blsParams.Operator = sdk.AccAddress(origin[:]).String()
 	name, ok := args[1].(string)
 	if !ok || name == "" {
 		return nil, xerrors.Errorf(exocmn.ErrContractInputParaOrType, 1, "string", name)
@@ -286,14 +217,11 @@ func (p Precompile) RegisterBLSPublicKey(
 	}
 	blsParams.PubkeyRegistrationMessageHash = pubkeyRegistrationMessageHash
 
-	err = p.avsKeeper.RegisterBLSPublicKey(ctx, blsParams)
+	err := p.avsKeeper.RegisterBLSPublicKey(ctx, blsParams)
 	if err != nil {
 		return nil, err
 	}
 
-	if err != nil {
-		return nil, err
-	}
 	return method.Outputs.Pack(true)
 }
 
@@ -307,12 +235,11 @@ func (p Precompile) GetRegisteredPubkey(
 	if len(args) != len(p.ABI.Methods[MethodGetRegisteredPubkey].Inputs) {
 		return nil, fmt.Errorf(cmn.ErrInvalidNumberOfArgs, 1, len(args))
 	}
-
+	// the key is set using the operator's acc address so the same logic should apply here
 	addr, ok := args[0].(string)
 	if !ok {
 		return nil, xerrors.Errorf(exocmn.ErrContractInputParaOrType, 0, "string", addr)
 	}
-
 	pubkey, err := p.avsKeeper.GetOperatorPubKey(ctx, addr)
 	if err != nil {
 		return nil, err
@@ -332,7 +259,7 @@ func (p Precompile) SubmitProof(
 	if len(args) != len(p.ABI.Methods[MethodSubmitProof].Inputs) {
 		return nil, fmt.Errorf(cmn.ErrInvalidNumberOfArgs, len(p.ABI.Methods[MethodSubmitProof].Inputs), len(args))
 	}
-
+	// TODO: check whether this address is acc or hex and decide the type accordingly
 	addr, ok := args[0].(string)
 	if !ok {
 		return nil, xerrors.Errorf(exocmn.ErrContractInputParaOrType, 0, "string", addr)
@@ -356,12 +283,12 @@ func (p Precompile) GetOptedInOperatorAccAddrs(
 		return nil, fmt.Errorf(cmn.ErrInvalidNumberOfArgs, 1, len(args))
 	}
 
-	addr, ok := args[0].(string)
-	if !ok {
+	addr, ok := args[0].(common.Address)
+	if !ok || addr == (common.Address{}) {
 		return nil, xerrors.Errorf(exocmn.ErrContractInputParaOrType, 0, "string", addr)
 	}
 
-	list, err := p.avsKeeper.GetOptInOperators(ctx, addr)
+	list, err := p.avsKeeper.GetOptInOperators(ctx, addr.String())
 	if err != nil {
 		return nil, err
 	}

@@ -9,8 +9,8 @@ import (
 	"time"
 
 	"cosmossdk.io/math"
+	avstypes "github.com/ExocoreNetwork/exocore/x/avs/types"
 	"github.com/ExocoreNetwork/exocore/x/dogfood/types"
-	operatortypes "github.com/ExocoreNetwork/exocore/x/operator/types"
 	abci "github.com/cometbft/cometbft/abci/types"
 	cryptocodec "github.com/cosmos/cosmos-sdk/crypto/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -82,7 +82,7 @@ func (k Keeper) ApplyValidatorChanges(
 				// via stakingkeeeper.Validator(ctx, valAddr)
 				// then it fetches the cons pub key from said validator to generate the lookup
 				found, accAddress := k.operatorKeeper.GetOperatorAddressForChainIDAndConsAddr(
-					ctx, ctx.ChainID(), sdk.ConsAddress(addr),
+					ctx, avstypes.ChainIDWithoutRevision(ctx.ChainID()), sdk.ConsAddress(addr),
 				)
 				if !found {
 					// should never happen
@@ -348,18 +348,14 @@ func (k Keeper) GetValidator(
 	ctx sdk.Context, valAddr sdk.ValAddress,
 ) (stakingtypes.Validator, bool) {
 	accAddr := sdk.AccAddress(valAddr)
-	found, consPubKey, err := k.operatorKeeper.GetOperatorConsKeyForChainID(
-		ctx, accAddr, ctx.ChainID(),
+	found, wrappedKey, err := k.operatorKeeper.GetOperatorConsKeyForChainID(
+		ctx, accAddr, avstypes.ChainIDWithoutRevision(ctx.ChainID()),
 	)
-	if !found || err != nil {
-		return stakingtypes.Validator{}, false
-	}
-	consAddr, err := operatortypes.TMCryptoPublicKeyToConsAddr(consPubKey)
-	if err != nil {
+	if !found || err != nil || wrappedKey == nil {
 		return stakingtypes.Validator{}, false
 	}
 	val, found := k.operatorKeeper.ValidatorByConsAddrForChainID(
-		ctx, consAddr, ctx.ChainID(),
+		ctx, wrappedKey.ToConsAddr(), avstypes.ChainIDWithoutRevision(ctx.ChainID()),
 	)
 	if !found {
 		return stakingtypes.Validator{}, false

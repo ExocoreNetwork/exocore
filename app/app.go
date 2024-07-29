@@ -550,7 +550,7 @@ func NewExocoreApp(
 		keys[delegationTypes.StoreKey], appCodec,
 		app.AssetsKeeper,
 		delegationTypes.VirtualSlashKeeper{},
-		app.OperatorKeeper,
+		&app.OperatorKeeper,
 	)
 
 	// the dogfood module is the first AVS. it receives slashing calls from either x/slashing
@@ -558,23 +558,12 @@ func NewExocoreApp(
 	app.StakingKeeper = stakingkeeper.NewKeeper(
 		appCodec, keys[stakingtypes.StoreKey],
 		app.EpochsKeeper,     // epoch hook to be registered separately
-		app.OperatorKeeper,   // operator registration / opt in
+		&app.OperatorKeeper,  // operator registration / opt in
 		app.DelegationKeeper, // undelegation response
 		app.AssetsKeeper,     // assets for vote power
-		authAddrString,       // authority to edit params
-	)
-
-	(&app.OperatorKeeper).SetHooks(
-		app.StakingKeeper.OperatorHooks(),
-	)
-
-	(&app.EpochsKeeper).SetHooks(
-		epochstypes.NewMultiEpochHooks(
-			app.StakingKeeper.EpochsHooks(), // at this point, the order is irrelevant.
-			app.ExomintKeeper.EpochsHooks(), // however, this may change once we have distribution
-			app.AVSManagerKeeper.EpochsHooks(),
-			app.OperatorKeeper.EpochsHooks(),
-		),
+		// intentionally a pointer since it is not yet initialized
+		&app.AVSManagerKeeper, // used to create the AVS from the chainID
+		authAddrString,        // authority to edit params
 	)
 
 	// these two modules aren't finalized yet.
@@ -598,12 +587,6 @@ func NewExocoreApp(
 	app.SlashingKeeper = slashingkeeper.NewKeeper(
 		appCodec, app.LegacyAmino(), keys[slashingtypes.StoreKey],
 		app.StakingKeeper, authAddrString,
-	)
-
-	(&app.StakingKeeper).SetHooks(
-		stakingtypes.NewMultiDogfoodHooks(
-			app.SlashingKeeper.Hooks(),
-		),
 	)
 
 	// the evidence module handles any external evidence of misbehavior submitted to it, if such
@@ -684,7 +667,8 @@ func NewExocoreApp(
 	)
 
 	// the AVS manager keeper is the AVS registry. it allows registered operators to add or
-	// remove AVSs.this avs keeper is initialized after the EVM keeper because it depends on the EVM keeper.
+	// remove AVSs. this keeper is initialized after the EVM keeper because it depends on the EVM keeper
+	// to set a lookup from codeHash to code, at genesis.
 	app.AVSManagerKeeper = avsManagerKeeper.NewKeeper(
 		appCodec, keys[avsManagerTypes.StoreKey],
 		&app.OperatorKeeper,
@@ -693,7 +677,8 @@ func NewExocoreApp(
 		app.EvmKeeper,
 	)
 	// operator registry, which handles vote power (and this requires delegation keeper).
-	// this operator keeper is initialized after the avs keeper because it depends on the avs keeper.
+	// this keeper is initialized after the avs keeper because it depends on the avs keeper
+	// to determine whether an AVS is registered or not.
 	app.OperatorKeeper = operatorKeeper.NewKeeper(
 		keys[operatorTypes.StoreKey], appCodec,
 		bApp.CreateQueryContext,
@@ -733,12 +718,6 @@ func NewExocoreApp(
 	app.Erc20Keeper = erc20keeper.NewKeeper(
 		keys[erc20types.StoreKey], appCodec, authtypes.NewModuleAddress(govtypes.ModuleName),
 		app.AccountKeeper, app.BankKeeper, app.EvmKeeper, app.StakingKeeper, app.RecoveryKeeper,
-	)
-
-	app.EvmKeeper.SetHooks(
-		evmkeeper.NewMultiEvmHooks(
-			app.Erc20Keeper.Hooks(),
-		),
 	)
 
 	// remaining bits of the IBC stack: transfer stack and interchain accounts.
@@ -801,6 +780,32 @@ func NewExocoreApp(
 		AddRoute(ibctransfertypes.ModuleName, transferStack)
 
 	app.IBCKeeper.SetRouter(ibcRouter)
+
+	// set the hooks at the end, after all modules are instantiated.
+	(&app.OperatorKeeper).SetHooks(
+		app.StakingKeeper.OperatorHooks(),
+	)
+
+	(&app.EpochsKeeper).SetHooks(
+		epochstypes.NewMultiEpochHooks(
+			app.OperatorKeeper.EpochsHooks(),   // must come before staking keeper so it can set the USD value
+			app.StakingKeeper.EpochsHooks(),    // at this point, the order is irrelevant.
+			app.ExomintKeeper.EpochsHooks(),    // however, this may change once we have distribution
+			app.AVSManagerKeeper.EpochsHooks(), // no-op for now
+		),
+	)
+
+	(&app.StakingKeeper).SetHooks(
+		stakingtypes.NewMultiDogfoodHooks(
+			app.SlashingKeeper.Hooks(),
+		),
+	)
+
+	app.EvmKeeper.SetHooks(
+		evmkeeper.NewMultiEvmHooks(
+			app.Erc20Keeper.Hooks(),
+		),
+	)
 
 	/****  Module Options ****/
 
@@ -973,16 +978,17 @@ func NewExocoreApp(
 		feemarkettypes.ModuleName,
 		genutiltypes.ModuleName, // after feemarket
 		epochstypes.ModuleName,  // must be before dogfood and exomint
+		evmtypes.ModuleName,     // must be before avs, since dogfood calls avs which calls this
 		exominttypes.ModuleName,
 		assetsTypes.ModuleName,
-		operatorTypes.ModuleName, // must be before delegation
+		avsManagerTypes.ModuleName, // before dogfood, since dogfood registers itself as an AVS
+		operatorTypes.ModuleName,   // must be before delegation
 		delegationTypes.ModuleName,
 		stakingtypes.ModuleName, // must be after delegation
 		// must be after staking to `IterateValidators` but it is not implemented anyway
 		slashingtypes.ModuleName,
 		evidencetypes.ModuleName,
-		govtypes.ModuleName, // can be anywhere after bank
-		evmtypes.ModuleName,
+		govtypes.ModuleName,      // can be anywhere after bank
 		recoverytypes.ModuleName, // just params
 		erc20types.ModuleName,
 		ibcexported.ModuleName,
@@ -995,7 +1001,6 @@ func NewExocoreApp(
 		upgradetypes.ModuleName,  // no-op since we don't call SetInitVersionMap
 		rewardTypes.ModuleName,   // not fully implemented yet
 		exoslashTypes.ModuleName, // not fully implemented yet
-		avsManagerTypes.ModuleName,
 		// must be the last module after others have been set up, so that it can check
 		// the invariants (if configured to do so).
 		crisistypes.ModuleName,

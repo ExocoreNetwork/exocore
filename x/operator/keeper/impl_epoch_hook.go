@@ -29,6 +29,7 @@ func (wrapper EpochsHooksWrapper) AfterEpochEnd(
 	// todo: need to consider the calling order
 	avsList := wrapper.keeper.avsKeeper.GetEpochEndAVSs(ctx, epochIdentifier, epochNumber)
 	for _, avs := range avsList {
+		// avs address should be hex
 		err := wrapper.keeper.UpdateVotingPower(ctx, avs)
 		if err != nil {
 			panic(err)

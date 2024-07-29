@@ -23,6 +23,7 @@ const (
 	prefixParams
 	prefixAVSTaskInfo = iota + 1
 	prefixOperatePub
+	prefixAVSAddressToChainID
 )
 
 // ModuleAddress is the native module address for EVM
@@ -33,6 +34,8 @@ var (
 	ParamsKey            = []byte("Params")
 	KeyPrefixAVSTaskInfo = []byte{prefixAVSTaskInfo}
 	KeyPrefixOperatePub  = []byte{prefixOperatePub}
+	// KeyPrefixAVSAddressToChainID is used to store the reverse lookup from AVS address to chainID.
+	KeyPrefixAVSAddressToChainID = []byte{prefixAVSAddressToChainID}
 )
 
 func init() {

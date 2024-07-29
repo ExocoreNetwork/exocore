@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"slices"
 
-	"github.com/ExocoreNetwork/exocore/utils"
-	"github.com/cosmos/btcutil/bech32"
 	"github.com/ethereum/go-ethereum/common"
 
 	errorsmod "cosmossdk.io/errors"
@@ -54,7 +52,7 @@ func (k Keeper) Logger(ctx sdk.Context) log.Logger {
 	return ctx.Logger().With("module", fmt.Sprintf("x/%s", types.ModuleName))
 }
 
-func (k Keeper) AVSInfoUpdate(ctx sdk.Context, params *AVSRegisterOrDeregisterParams) error {
+func (k Keeper) AVSInfoUpdate(ctx sdk.Context, params *types.AVSRegisterOrDeregisterParams) error {
 	avsInfo, _ := k.GetAVSInfo(ctx, params.AvsAddress)
 	action := params.Action
 	epochIdentifier := params.EpochIdentifier
@@ -70,7 +68,12 @@ func (k Keeper) AVSInfoUpdate(ctx sdk.Context, params *AVSRegisterOrDeregisterPa
 		if avsInfo != nil {
 			return errorsmod.Wrap(types.ErrAlreadyRegistered, fmt.Sprintf("the avsaddress is :%s", params.AvsAddress))
 		}
-
+		startingEpoch := uint64(epoch.CurrentEpoch + 1)
+		if params.ChainID == types.ChainIDWithoutRevision(ctx.ChainID()) {
+			// TODO: handle this better
+			startingEpoch = uint64(epoch.CurrentEpoch)
+		}
+		// The caller must ensure that the relevant addresses are set to be the appropriate format (hex/bech32)
 		avs := &types.AVSInfo{
 			Name:                params.AvsName,
 			AvsAddress:          params.AvsAddress,
@@ -81,7 +84,7 @@ func (k Keeper) AVSInfoUpdate(ctx sdk.Context, params *AVSRegisterOrDeregisterPa
 			MinSelfDelegation:   params.MinSelfDelegation,
 			AvsUnbondingPeriod:  params.UnbondingPeriod,
 			EpochIdentifier:     epochIdentifier,
-			StartingEpoch:       uint64(epoch.CurrentEpoch + 1),
+			StartingEpoch:       startingEpoch,
 			MinOptInOperators:   params.MinOptInOperators,
 			TaskAddr:            params.TaskAddr,
 			MinStakeAmount:      params.MinStakeAmount, // Effective at CurrentEpoch+1, avoid immediate effects and ensure that the first epoch time of avs is equal to a normal identifier
@@ -209,7 +212,7 @@ func (k Keeper) CreateAVSTask(ctx sdk.Context, params *TaskParams) error {
 }
 
 func (k Keeper) RegisterBLSPublicKey(ctx sdk.Context, params *BlsParams) error {
-	// TODO:check bls signature
+	// TODO:check bls signature to prevent rogue key attacks
 	// params.pubkeyRegistrationSignature == key.sig(params.pubkeyRegistrationMessageHash)
 	if k.IsExistPubKey(ctx, params.Operator) {
 		return errorsmod.Wrap(types.ErrAlreadyExists, fmt.Sprintf("the operator is :%s", params.Operator))
@@ -244,44 +247,33 @@ func (k Keeper) OperatorOptAction(ctx sdk.Context, params *OperatorOptParams) er
 		return errorsmod.Wrap(err, fmt.Sprintf("error occurred when get avs info,this avs address: %s", params.AvsAddress))
 	}
 	if !f {
-		return errorsmod.Wrap(err, fmt.Sprintf("Avs does not exist,this avs address: %s", params.AvsAddress))
+		return fmt.Errorf("avs does not exist,this avs address: %s", params.AvsAddress)
 	}
-
-	_, avsaddr, _ := bech32.DecodeToBase256(params.AvsAddress)
 
 	switch params.Action {
 	case RegisterAction:
-		return k.operatorKeeper.OptIn(ctx, sdk.AccAddress(operatorAddress), common.BytesToAddress(avsaddr).String())
+		return k.operatorKeeper.OptIn(ctx, opAccAddr, params.AvsAddress)
 	case DeRegisterAction:
-		return k.operatorKeeper.OptOut(ctx, sdk.AccAddress(operatorAddress), common.BytesToAddress(avsaddr).String())
+		return k.operatorKeeper.OptOut(ctx, opAccAddr, params.AvsAddress)
 	default:
 		return errorsmod.Wrap(types.ErrInvalidAction, fmt.Sprintf("Invalid action: %d", params.Action))
 	}
 }
 
+// SetAVSInfo sets the avs info. The caller must ensure that avs.AvsAddress is hex.
 func (k Keeper) SetAVSInfo(ctx sdk.Context, avs *types.AVSInfo) (err error) {
-	avsAddr, err := sdk.AccAddressFromBech32(avs.AvsAddress)
-	if err != nil {
-		return errorsmod.Wrap(err, "SetAVSInfo: error occurred when parse acc address from Bech32")
-	}
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefixAVSInfo)
-
 	bz := k.cdc.MustMarshal(avs)
-	store.Set(avsAddr, bz)
+	store.Set(common.HexToAddress(avs.AvsAddress).Bytes(), bz)
 	return nil
 }
 
 func (k Keeper) GetAVSInfo(ctx sdk.Context, addr string) (*types.QueryAVSInfoResponse, error) {
-	avsAddr, err := sdk.AccAddressFromBech32(addr)
-	if err != nil {
-		return nil, errorsmod.Wrap(err, "GetAVSInfo: error occurred when parse acc address from Bech32")
-	}
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefixAVSInfo)
-	if !store.Has(avsAddr) {
-		return nil, errorsmod.Wrap(types.ErrNoKeyInTheStore, fmt.Sprintf("GetAVSInfo: key is %s", avsAddr))
+	value := store.Get(common.HexToAddress(addr).Bytes())
+	if value == nil {
+		return nil, errorsmod.Wrap(types.ErrNoKeyInTheStore, fmt.Sprintf("GetAVSInfo: key is %s", addr))
 	}
-
-	value := store.Get(avsAddr)
 	ret := types.AVSInfo{}
 	k.cdc.MustUnmarshal(value, &ret)
 	res := &types.QueryAVSInfoResponse{
@@ -291,29 +283,22 @@ func (k Keeper) GetAVSInfo(ctx sdk.Context, addr string) (*types.QueryAVSInfoRes
 }
 
 func (k *Keeper) IsAVS(ctx sdk.Context, addr string) (bool, error) {
-	pAddr, err := utils.ProcessAddress(addr)
-	if err != nil {
-		return false, errorsmod.Wrap(err, "GetAVSInfo: error occurred when parse acc address from Bech32")
-	}
-
-	avsAddr, err := sdk.AccAddressFromBech32(pAddr)
-	if err != nil {
-		return false, errorsmod.Wrap(err, "GetAVSInfo: error occurred when parse acc address from Bech32")
-	}
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefixAVSInfo)
-	return store.Has(avsAddr), nil
+	return store.Has(common.HexToAddress(addr).Bytes()), nil
+}
+
+func (k Keeper) IsAVSByChainID(ctx sdk.Context, chainID string) (bool, error) {
+	address := k.GetAVSAddrByChainID(ctx, chainID)
+	return k.IsAVS(ctx, address)
 }
 
 func (k Keeper) DeleteAVSInfo(ctx sdk.Context, addr string) error {
-	avsAddr, err := sdk.AccAddressFromBech32(addr)
-	if err != nil {
-		return errorsmod.Wrap(err, "AVSInfo: error occurred when parse acc address from Bech32")
-	}
+	hexAddr := common.HexToAddress(addr)
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefixAVSInfo)
-	if !store.Has(avsAddr) {
-		return errorsmod.Wrap(types.ErrNoKeyInTheStore, fmt.Sprintf("AVSInfo didn't exist: key is %s", avsAddr))
+	if !store.Has(hexAddr.Bytes()) {
+		return errorsmod.Wrap(types.ErrNoKeyInTheStore, fmt.Sprintf("AVSInfo didn't exist: key is %s", addr))
 	}
-	store.Delete(avsAddr)
+	store.Delete(hexAddr[:])
 	return nil
 }
 

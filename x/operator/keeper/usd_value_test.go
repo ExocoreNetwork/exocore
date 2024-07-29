@@ -1,10 +1,12 @@
 package keeper_test
 
 import (
+	"time"
+
 	sdkmath "cosmossdk.io/math"
 	assetstype "github.com/ExocoreNetwork/exocore/x/assets/types"
+	avstypes "github.com/ExocoreNetwork/exocore/x/avs/types"
 	operatorKeeper "github.com/ExocoreNetwork/exocore/x/operator/keeper"
-	abci "github.com/cometbft/cometbft/abci/types"
 	"github.com/ethereum/go-ethereum/common"
 )
 
@@ -58,12 +60,7 @@ func (suite *OperatorTestSuite) TestCalculatedUSDValueOverflow() {
 
 func (suite *OperatorTestSuite) TestAVSUSDValue() {
 	suite.prepare()
-	err := suite.App.OperatorKeeper.OptIn(suite.Ctx, suite.operatorAddr, suite.avsAddr)
-	suite.NoError(err)
-	usdtPrice, err := suite.App.OperatorKeeper.OracleInterface().GetSpecifiedAssetsPrice(suite.Ctx, suite.assetID)
-	suite.NoError(err)
-	usdtValue := operatorKeeper.CalculateUSDValue(suite.delegationAmount, usdtPrice.Value, suite.assetDecimal, usdtPrice.Decimal)
-	// deposit and delegate another asset to the operator
+	// register the new token
 	usdcAddr := common.HexToAddress("0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48")
 	usdcClientChainAsset := assetstype.AssetInfo{
 		Name:             "USD coin",
@@ -74,12 +71,22 @@ func (suite *OperatorTestSuite) TestAVSUSDValue() {
 		LayerZeroChainID: 101,
 		MetaInfo:         "USDC",
 	}
-	_, err = suite.App.AssetsKeeper.RegisterAsset(
+	_, err := suite.App.AssetsKeeper.RegisterAsset(
 		suite.Ctx,
 		&assetstype.RegisterAssetReq{
 			FromAddress: suite.AccAddress.String(),
 			Info:        &usdcClientChainAsset,
 		})
+	suite.NoError(err)
+	// register the new AVS
+	suite.prepareAvs([]string{"0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48_0x65", "0xdac17f958d2ee523a2206206994597c13d831ec7_0x65"})
+	// opt in
+	err = suite.App.OperatorKeeper.OptIn(suite.Ctx, suite.operatorAddr, suite.avsAddr)
+	suite.NoError(err)
+	usdtPrice, err := suite.App.OperatorKeeper.OracleInterface().GetSpecifiedAssetsPrice(suite.Ctx, suite.assetID)
+	suite.NoError(err)
+	usdtValue := operatorKeeper.CalculateUSDValue(suite.delegationAmount, usdtPrice.Value, suite.assetDecimal, usdtPrice.Decimal)
+	// deposit and delegate another asset to the operator
 	suite.NoError(err)
 	suite.prepareDeposit(usdcAddr, sdkmath.NewInt(1e8))
 	usdcPrice, err := suite.App.OperatorKeeper.OracleInterface().GetSpecifiedAssetsPrice(suite.Ctx, suite.assetID)
@@ -88,10 +95,11 @@ func (suite *OperatorTestSuite) TestAVSUSDValue() {
 	suite.prepareDelegation(true, usdcAddr, delegatedAmount)
 
 	// updating the new voting power
-	suite.NoError(err)
 	usdcValue := operatorKeeper.CalculateUSDValue(suite.delegationAmount, usdcPrice.Value, suite.assetDecimal, usdcPrice.Decimal)
 	expectedUSDvalue := usdcValue.Add(usdtValue)
-	suite.App.OperatorKeeper.EndBlock(suite.Ctx, abci.RequestEndBlock{})
+	suite.CommitAfter(time.Hour*1 + time.Nanosecond)
+	suite.CommitAfter(time.Hour*1 + time.Nanosecond)
+	suite.CommitAfter(time.Hour*1 + time.Nanosecond)
 	avsUSDValue, err := suite.App.OperatorKeeper.GetAVSUSDValue(suite.Ctx, suite.avsAddr)
 	suite.NoError(err)
 	suite.Equal(expectedUSDvalue, avsUSDValue)
@@ -114,7 +122,10 @@ func (suite *OperatorTestSuite) TestVotingPowerForDogFood() {
 		suite.Equal(initialPower, validator.Power)
 	}
 
-	operators, _ := suite.App.OperatorKeeper.GetActiveOperatorsForChainID(suite.Ctx, suite.Ctx.ChainID())
+	chainIDWithoutRevision := avstypes.ChainIDWithoutRevision(suite.Ctx.ChainID())
+	avsAddress := suite.App.AVSManagerKeeper.GetAVSAddrByChainID(suite.Ctx, chainIDWithoutRevision)
+	operators, _ := suite.App.OperatorKeeper.GetActiveOperatorsForChainID(suite.Ctx, chainIDWithoutRevision)
+	suite.Require().GreaterOrEqual(len(operators), 1)
 	allAssets, err := suite.App.AssetsKeeper.GetAllStakingAssetsInfo(suite.Ctx)
 	suite.NoError(err)
 	suite.Equal(1, len(allAssets))
@@ -130,15 +141,15 @@ func (suite *OperatorTestSuite) TestVotingPowerForDogFood() {
 	suite.operatorAddr = operators[0]
 	suite.prepareDelegation(true, assetAddr, delegationAmount)
 
-	suite.App.OperatorKeeper.EndBlock(suite.Ctx, abci.RequestEndBlock{})
-	avsUSDValue, err := suite.App.OperatorKeeper.GetAVSUSDValue(suite.Ctx, suite.Ctx.ChainID())
+	suite.CommitAfter(time.Hour*24 + time.Nanosecond)
+	avsUSDValue, err := suite.App.OperatorKeeper.GetAVSUSDValue(suite.Ctx, avsAddress)
 	suite.NoError(err)
 	suite.Equal(initialAVSUSDValue.Add(addUSDValue), avsUSDValue)
-	operatorUSDValue, err := suite.App.OperatorKeeper.GetOperatorUSDValue(suite.Ctx, suite.Ctx.ChainID(), suite.operatorAddr.String())
+	operatorUSDValue, err := suite.App.OperatorKeeper.GetOperatorUSDValue(suite.Ctx, avsAddress, suite.operatorAddr.String())
 	suite.NoError(err)
 	suite.Equal(initialOperatorUSDValue.Add(addUSDValue), operatorUSDValue)
 
-	found, consensusKey, err := suite.App.OperatorKeeper.GetOperatorConsKeyForChainID(suite.Ctx, suite.operatorAddr, suite.Ctx.ChainID())
+	found, consensusKey, err := suite.App.OperatorKeeper.GetOperatorConsKeyForChainID(suite.Ctx, suite.operatorAddr, chainIDWithoutRevision)
 	suite.NoError(err)
 	suite.True(found)
 
@@ -146,7 +157,7 @@ func (suite *OperatorTestSuite) TestVotingPowerForDogFood() {
 	validatorUpdates := suite.App.StakingKeeper.EndBlock(suite.Ctx)
 	suite.Equal(1, len(validatorUpdates))
 	for _, update := range validatorUpdates {
-		suite.Equal(*consensusKey, update.PubKey)
+		suite.Equal(*consensusKey.ToTmKey(), update.PubKey)
 		suite.Equal(initialPower+int64(addPower), update.Power)
 	}
 }

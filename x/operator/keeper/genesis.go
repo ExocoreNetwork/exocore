@@ -13,31 +13,6 @@ func (k Keeper) InitGenesis(ctx sdk.Context, state types.GenesisState) []abci.Va
 			panic(err)
 		}
 	}
-	for _, record := range state.OperatorRecords {
-		addr := record.OperatorAddress
-		// #nosec G703 // already validated
-		operatorAddr, _ := sdk.AccAddressFromBech32(addr)
-		for _, detail := range record.Chains {
-			chainID := detail.ChainID
-			// validate that the chain exists
-			// TODO: move this check to the avs keeper when implemented.
-			if chainID != ctx.ChainID() {
-				panic("unknown chain id")
-			}
-			// opt into the specified chain (TODO: avs address format)
-			if err := k.OptIn(ctx, operatorAddr, k.avsKeeper.GetAVSAddrByChainID(ctx, chainID)); err != nil {
-				panic(err)
-			}
-			// #nosec G703 // already validated
-			key, _ := types.HexStringToPubKey(detail.ConsensusKey)
-			// then set pub key
-			if err := k.setOperatorConsKeyForChainID(
-				ctx, operatorAddr, chainID, key, true,
-			); err != nil {
-				panic(err)
-			}
-		}
-	}
 	return []abci.ValidatorUpdate{}
 }
 

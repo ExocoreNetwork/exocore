@@ -4,7 +4,6 @@ import (
 	"github.com/ExocoreNetwork/exocore/x/avs/types"
 	abci "github.com/cometbft/cometbft/abci/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/ethereum/go-ethereum/crypto"
 )
 
 // InitGenesis initializes the module's state from a provided genesis state.
@@ -13,13 +12,9 @@ func (k Keeper) InitGenesis(
 	ctx sdk.Context,
 	_ types.GenesisState,
 ) []abci.ValidatorUpdate {
-	// Generates a pseudo contract address for the dogfood type of AVS registration.
-	// This ensures prevention of address conflicts and allows future transactions
-	// to not modify the content of this address. Hence, it is necessary to set the
-	// contract code in InitGenesis.
-	code := []byte(types.ChainID)
-	codeHash := crypto.Keccak256Hash(code)
-	k.evmKeeper.SetCode(ctx, codeHash.Bytes(), code)
+	// Store a lookup from codeHash to code. Since these are static parameters,
+	// such a lookup is stored at genesis and never updated.
+	k.evmKeeper.SetCode(ctx, types.ChainIDCodeHash.Bytes(), types.ChainIDCode)
 	return []abci.ValidatorUpdate{}
 }
 

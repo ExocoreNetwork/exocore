@@ -235,18 +235,7 @@ func GenesisStateWithValSet(app *ExocoreApp, genesisState simapp.GenesisState,
 			Commission:       stakingtypes.NewCommission(sdk.ZeroDec(), sdk.ZeroDec(), sdk.ZeroDec()),
 		},
 	}
-	consensusKeyRecords := []operatortypes.OperatorConsKeyRecord{
-		{
-			OperatorAddress: operatorInfos[0].EarningsAddr,
-			Chains: []operatortypes.ChainDetails{
-				{
-					ChainID:      utils.DefaultChainID,
-					ConsensusKey: hexutil.Encode(valSet.Validators[0].PubKey.Bytes()),
-				},
-			},
-		},
-	}
-	operatorGenesis := operatortypes.NewGenesisState(operatorInfos, consensusKeyRecords)
+	operatorGenesis := operatortypes.NewGenesisState(operatorInfos)
 	genesisState[operatortypes.ModuleName] = app.AppCodec().MustMarshalJSON(operatorGenesis)
 	// x/delegation
 	delegationsByStaker := []delegationtypes.DelegationsByStaker{
@@ -275,8 +264,9 @@ func GenesisStateWithValSet(app *ExocoreApp, genesisState simapp.GenesisState,
 	dogfoodGenesis := dogfoodtypes.NewGenesis(
 		dogfoodtypes.DefaultParams(), []dogfoodtypes.GenesisValidator{
 			{
-				PublicKey: consensusKeyRecords[0].Chains[0].ConsensusKey,
-				Power:     1,
+				Power:           1,
+				PublicKey:       hexutil.Encode(valSet.Validators[0].PubKey.Bytes()),
+				OperatorAccAddr: operatorInfos[0].EarningsAddr,
 			},
 		},
 		[]dogfoodtypes.EpochToOperatorAddrs{}, []dogfoodtypes.EpochToConsensusAddrs{},

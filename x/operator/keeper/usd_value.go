@@ -71,8 +71,8 @@ func (k *Keeper) DeleteOperatorUSDValue(ctx sdk.Context, avsAddr, operatorAddr s
 		return errorsmod.Wrap(operatortypes.ErrParameterInvalid, "UpdateOperatorUSDValue the operatorAddr is empty")
 	}
 	key = assetstype.GetJoinedStoreKey(avsAddr, operatorAddr)
-
 	store.Delete(key)
+
 	return nil
 }
 

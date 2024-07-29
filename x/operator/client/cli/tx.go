@@ -193,9 +193,10 @@ func buildCommission(rateStr, maxRateStr, maxChangeRateStr string) (
 // CmdOptIntoAVS returns a CLI command handler for creating a OptIntoAVSReq transaction.
 func CmdOptIntoAVS() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:     "opt-into-avs <avs-address> <public-key>",
-		Short:   "opt into an AVS by specifying its address or the chain id, with an optional public key",
-		Example: "exocore tx operator opt-into-avs exocoretestnet_233-1 $(exocored tendermint show-validator)",
+		// square brackets are optional while angle brackets are required arguments.
+		Use:     "opt-into-avs <avs-address> [public-key-in-JSON-format]",
+		Short:   "opt into an AVS by specifying its address, with an optional public key",
+		Example: "exocore tx operator opt-into-avs 0x0000000000000000000000000000000000000000 $(exocored tendermint show-validator)",
 		Args:    cobra.RangeArgs(1, 2),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx, err := client.GetClientTxContext(cmd)
@@ -207,7 +208,7 @@ func CmdOptIntoAVS() *cobra.Command {
 				AvsAddress:  args[0],
 			}
 			if len(args) == 2 {
-				msg.PublicKey = args[1]
+				msg.PublicKeyJSON = args[1]
 			}
 			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), msg)
 		},
@@ -219,7 +220,7 @@ func CmdOptIntoAVS() *cobra.Command {
 func CmdOptOutOfAVS() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "opt-out-of-avs <avs-address>",
-		Short: "opt out of an AVS by specifying its address or the chain id",
+		Short: "opt out of an AVS by specifying its address",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx, err := client.GetClientTxContext(cmd)
@@ -248,9 +249,9 @@ func CmdSetConsKey() *cobra.Command {
 				return err
 			}
 			msg := &types.SetConsKeyReq{
-				Address:   clientCtx.GetFromAddress().String(),
-				ChainID:   args[0],
-				PublicKey: args[1],
+				Address:       clientCtx.GetFromAddress().String(),
+				AvsAddress:    args[0],
+				PublicKeyJSON: args[1],
 			}
 			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), msg)
 		},

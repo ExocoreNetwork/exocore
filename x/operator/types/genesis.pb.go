@@ -30,10 +30,6 @@ type GenesisState struct {
 	// there are no params for this module.
 	// operators is a list of the registered operators.
 	Operators []OperatorInfo `protobuf:"bytes,1,rep,name=operators,proto3" json:"operators"`
-	// operator_records refers to a list of operator records. each record
-	// contains an operator address and a list of chain id +
-	// cons key combination.
-	OperatorRecords []OperatorConsKeyRecord `protobuf:"bytes,2,rep,name=operator_records,json=operatorRecords,proto3" json:"operator_records"`
 }
 
 func (m *GenesisState) Reset()         { *m = GenesisState{} }
@@ -76,128 +72,6 @@ func (m *GenesisState) GetOperators() []OperatorInfo {
 	return nil
 }
 
-func (m *GenesisState) GetOperatorRecords() []OperatorConsKeyRecord {
-	if m != nil {
-		return m.OperatorRecords
-	}
-	return nil
-}
-
-// OperatorConsKeyRecord is a helper structure for the genesis state. Each record
-// contains an operator address and a list of chain id + cons key combination.
-type OperatorConsKeyRecord struct {
-	// operator_address is the address of the operator as the bech32
-	// encoded version of sdk.AccAddress.
-	OperatorAddress string `protobuf:"bytes,1,opt,name=operator_address,json=operatorAddress,proto3" json:"operator_address,omitempty"`
-	// chains is a list of chain id + consensus key combination.
-	Chains []ChainDetails `protobuf:"bytes,2,rep,name=chains,proto3" json:"chains"`
-}
-
-func (m *OperatorConsKeyRecord) Reset()         { *m = OperatorConsKeyRecord{} }
-func (m *OperatorConsKeyRecord) String() string { return proto.CompactTextString(m) }
-func (*OperatorConsKeyRecord) ProtoMessage()    {}
-func (*OperatorConsKeyRecord) Descriptor() ([]byte, []int) {
-	return fileDescriptor_bb7040bc6ae6ddee, []int{1}
-}
-func (m *OperatorConsKeyRecord) XXX_Unmarshal(b []byte) error {
-	return m.Unmarshal(b)
-}
-func (m *OperatorConsKeyRecord) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	if deterministic {
-		return xxx_messageInfo_OperatorConsKeyRecord.Marshal(b, m, deterministic)
-	} else {
-		b = b[:cap(b)]
-		n, err := m.MarshalToSizedBuffer(b)
-		if err != nil {
-			return nil, err
-		}
-		return b[:n], nil
-	}
-}
-func (m *OperatorConsKeyRecord) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_OperatorConsKeyRecord.Merge(m, src)
-}
-func (m *OperatorConsKeyRecord) XXX_Size() int {
-	return m.Size()
-}
-func (m *OperatorConsKeyRecord) XXX_DiscardUnknown() {
-	xxx_messageInfo_OperatorConsKeyRecord.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_OperatorConsKeyRecord proto.InternalMessageInfo
-
-func (m *OperatorConsKeyRecord) GetOperatorAddress() string {
-	if m != nil {
-		return m.OperatorAddress
-	}
-	return ""
-}
-
-func (m *OperatorConsKeyRecord) GetChains() []ChainDetails {
-	if m != nil {
-		return m.Chains
-	}
-	return nil
-}
-
-// ChainDetails is a helper structure for the genesis state. Each record
-// contains a chain id and a consensus key.
-type ChainDetails struct {
-	// chain_id is the unique identifier of the chain.
-	ChainID string `protobuf:"bytes,1,opt,name=chain_id,json=chainId,proto3" json:"chain_id,omitempty"`
-	// consensus_key is the consensus key of the operator on the chain.
-	// the length of this key should be exactly 32 bytes, and must be enforced
-	// outside of protobuf.
-	ConsensusKey string `protobuf:"bytes,2,opt,name=consensus_key,json=consensusKey,proto3" json:"consensus_key,omitempty"`
-}
-
-func (m *ChainDetails) Reset()         { *m = ChainDetails{} }
-func (m *ChainDetails) String() string { return proto.CompactTextString(m) }
-func (*ChainDetails) ProtoMessage()    {}
-func (*ChainDetails) Descriptor() ([]byte, []int) {
-	return fileDescriptor_bb7040bc6ae6ddee, []int{2}
-}
-func (m *ChainDetails) XXX_Unmarshal(b []byte) error {
-	return m.Unmarshal(b)
-}
-func (m *ChainDetails) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	if deterministic {
-		return xxx_messageInfo_ChainDetails.Marshal(b, m, deterministic)
-	} else {
-		b = b[:cap(b)]
-		n, err := m.MarshalToSizedBuffer(b)
-		if err != nil {
-			return nil, err
-		}
-		return b[:n], nil
-	}
-}
-func (m *ChainDetails) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_ChainDetails.Merge(m, src)
-}
-func (m *ChainDetails) XXX_Size() int {
-	return m.Size()
-}
-func (m *ChainDetails) XXX_DiscardUnknown() {
-	xxx_messageInfo_ChainDetails.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_ChainDetails proto.InternalMessageInfo
-
-func (m *ChainDetails) GetChainID() string {
-	if m != nil {
-		return m.ChainID
-	}
-	return ""
-}
-
-func (m *ChainDetails) GetConsensusKey() string {
-	if m != nil {
-		return m.ConsensusKey
-	}
-	return ""
-}
-
 // StakerRecord is a helper structure for the genesis state. Each record
 // contains a staker address and a list of asset IDs with their operator +
 // amount combination.
@@ -212,7 +86,7 @@ func (m *StakerRecord) Reset()         { *m = StakerRecord{} }
 func (m *StakerRecord) String() string { return proto.CompactTextString(m) }
 func (*StakerRecord) ProtoMessage()    {}
 func (*StakerRecord) Descriptor() ([]byte, []int) {
-	return fileDescriptor_bb7040bc6ae6ddee, []int{3}
+	return fileDescriptor_bb7040bc6ae6ddee, []int{1}
 }
 func (m *StakerRecord) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -268,7 +142,7 @@ func (m *StakerDetails) Reset()         { *m = StakerDetails{} }
 func (m *StakerDetails) String() string { return proto.CompactTextString(m) }
 func (*StakerDetails) ProtoMessage()    {}
 func (*StakerDetails) Descriptor() ([]byte, []int) {
-	return fileDescriptor_bb7040bc6ae6ddee, []int{4}
+	return fileDescriptor_bb7040bc6ae6ddee, []int{2}
 }
 func (m *StakerDetails) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -326,7 +200,7 @@ func (m *AssetDetails) Reset()         { *m = AssetDetails{} }
 func (m *AssetDetails) String() string { return proto.CompactTextString(m) }
 func (*AssetDetails) ProtoMessage()    {}
 func (*AssetDetails) Descriptor() ([]byte, []int) {
-	return fileDescriptor_bb7040bc6ae6ddee, []int{5}
+	return fileDescriptor_bb7040bc6ae6ddee, []int{3}
 }
 func (m *AssetDetails) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -364,8 +238,6 @@ func (m *AssetDetails) GetOperatorAddress() string {
 
 func init() {
 	proto.RegisterType((*GenesisState)(nil), "exocore.operator.v1.GenesisState")
-	proto.RegisterType((*OperatorConsKeyRecord)(nil), "exocore.operator.v1.OperatorConsKeyRecord")
-	proto.RegisterType((*ChainDetails)(nil), "exocore.operator.v1.ChainDetails")
 	proto.RegisterType((*StakerRecord)(nil), "exocore.operator.v1.StakerRecord")
 	proto.RegisterType((*StakerDetails)(nil), "exocore.operator.v1.StakerDetails")
 	proto.RegisterType((*AssetDetails)(nil), "exocore.operator.v1.AssetDetails")
@@ -374,40 +246,34 @@ func init() {
 func init() { proto.RegisterFile("exocore/operator/v1/genesis.proto", fileDescriptor_bb7040bc6ae6ddee) }
 
 var fileDescriptor_bb7040bc6ae6ddee = []byte{
-	// 513 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x94, 0x53, 0xcf, 0x6b, 0x13, 0x41,
-	0x14, 0xce, 0x56, 0xc9, 0x8f, 0xe9, 0x46, 0x65, 0x54, 0x88, 0x45, 0x36, 0x76, 0x85, 0x52, 0x85,
-	0xee, 0xd2, 0x7a, 0x15, 0x24, 0x69, 0x8a, 0x2c, 0x15, 0x0b, 0x5b, 0x4f, 0xf6, 0x10, 0xb6, 0x3b,
-	0x63, 0xba, 0xc4, 0xcc, 0x84, 0x79, 0x93, 0x9a, 0x78, 0xf5, 0xe6, 0x45, 0xff, 0x16, 0xf1, 0x8f,
-	0xe8, 0xb1, 0x78, 0x12, 0x0f, 0x41, 0x36, 0xff, 0x88, 0xec, 0xcc, 0x6c, 0xb2, 0x91, 0x45, 0xf0,
-	0xb4, 0x33, 0xef, 0xfb, 0xde, 0xf7, 0xbe, 0x6f, 0x96, 0x87, 0xb6, 0xe9, 0x94, 0xc7, 0x5c, 0x50,
-	0x9f, 0x8f, 0xa9, 0x88, 0x24, 0x17, 0xfe, 0xe5, 0xbe, 0x3f, 0xa0, 0x8c, 0x42, 0x02, 0xde, 0x58,
-	0x70, 0xc9, 0xf1, 0x5d, 0x43, 0xf1, 0x72, 0x8a, 0x77, 0xb9, 0xbf, 0xf5, 0x20, 0xe6, 0x30, 0xe2,
-	0xd0, 0x57, 0x14, 0x5f, 0x5f, 0x34, 0x7f, 0xeb, 0xde, 0x80, 0x0f, 0xb8, 0xae, 0x67, 0x27, 0x53,
-	0x7d, 0x58, 0x36, 0x48, 0x4e, 0x35, 0xea, 0x7e, 0xb3, 0x90, 0xfd, 0x52, 0x4f, 0x3d, 0x95, 0x91,
-	0xa4, 0xf8, 0x08, 0x35, 0x72, 0x22, 0xb4, 0xac, 0x47, 0x37, 0x76, 0x37, 0x0f, 0xb6, 0xbd, 0x12,
-	0x23, 0xde, 0x89, 0x39, 0x07, 0xec, 0x1d, 0xef, 0xde, 0xbc, 0x9a, 0xb7, 0x2b, 0xe1, 0xaa, 0x13,
-	0x9f, 0xa1, 0x3b, 0xf9, 0xa5, 0x2f, 0x68, 0xcc, 0x05, 0x81, 0xd6, 0x86, 0x52, 0x7b, 0xfa, 0x4f,
-	0xb5, 0x43, 0xce, 0xe0, 0x98, 0xce, 0x42, 0xd5, 0x62, 0x64, 0x6f, 0xe7, 0x44, 0x5d, 0x05, 0xf7,
-	0x93, 0x85, 0xee, 0x97, 0x36, 0xe0, 0x27, 0x85, 0xb1, 0x11, 0x21, 0x82, 0x42, 0x16, 0xc2, 0xda,
-	0x6d, 0xac, 0x44, 0x3a, 0xba, 0x8c, 0x5f, 0xa0, 0x6a, 0x7c, 0x11, 0x25, 0x2c, 0xf7, 0x55, 0x9e,
-	0xf2, 0x30, 0xa3, 0xf4, 0xa8, 0x8c, 0x92, 0xf7, 0x60, 0xec, 0x98, 0x36, 0xf7, 0x0c, 0xd9, 0x45,
-	0x14, 0xef, 0xa0, 0xba, 0x42, 0xfa, 0x09, 0xd1, 0x33, 0xbb, 0x9b, 0xe9, 0xbc, 0x5d, 0x53, 0x9c,
-	0xa0, 0x17, 0xd6, 0x14, 0x18, 0x10, 0xfc, 0x18, 0x35, 0x63, 0xce, 0x80, 0x32, 0x98, 0x40, 0x7f,
-	0x48, 0x67, 0xad, 0x0d, 0x65, 0xd0, 0x5e, 0x16, 0x8f, 0xe9, 0xcc, 0xfd, 0x6c, 0x21, 0xfb, 0x54,
-	0x46, 0x43, 0x2a, 0x96, 0xc9, 0x1a, 0xa0, 0xee, 0x2b, 0x79, 0x3b, 0x9d, 0xb7, 0xeb, 0x9a, 0x14,
-	0xf4, 0xc2, 0xba, 0x86, 0x03, 0x82, 0x4f, 0xd0, 0x2d, 0x43, 0x25, 0xda, 0x9a, 0x49, 0xe8, 0x96,
-	0x26, 0xd4, 0x02, 0xeb, 0x11, 0x9b, 0x50, 0x2c, 0xba, 0x1f, 0x51, 0x73, 0x8d, 0x95, 0x45, 0x8d,
-	0x00, 0xa8, 0xfc, 0x2b, 0x6a, 0x27, 0xab, 0x65, 0x51, 0x15, 0x18, 0x10, 0xdc, 0x41, 0xb5, 0x75,
-	0x0b, 0xe5, 0x8f, 0xac, 0xfa, 0xd6, 0x1d, 0xe4, 0x7d, 0xee, 0x17, 0x0b, 0xd9, 0x45, 0xfc, 0x7f,
-	0x7e, 0xf1, 0x1b, 0x54, 0x8d, 0x46, 0x7c, 0xc2, 0xa4, 0x7e, 0xe2, 0xee, 0xf3, 0x4c, 0xfa, 0xd7,
-	0xbc, 0xbd, 0x33, 0x48, 0xe4, 0xc5, 0xe4, 0xdc, 0x8b, 0xf9, 0xc8, 0x6c, 0x90, 0xf9, 0xec, 0x01,
-	0x19, 0xfa, 0x72, 0x36, 0xa6, 0xe0, 0x05, 0x4c, 0xfe, 0xf8, 0xbe, 0x87, 0xcc, 0x82, 0x05, 0x4c,
-	0x86, 0x46, 0xab, 0xfb, 0xea, 0x2a, 0x75, 0xac, 0xeb, 0xd4, 0xb1, 0x7e, 0xa7, 0x8e, 0xf5, 0x75,
-	0xe1, 0x54, 0xae, 0x17, 0x4e, 0xe5, 0xe7, 0xc2, 0xa9, 0xbc, 0x3d, 0x28, 0xe8, 0x1e, 0xe9, 0x9c,
-	0xaf, 0xa9, 0xfc, 0xc0, 0xc5, 0xd0, 0xcf, 0x97, 0x70, 0xba, 0x5a, 0x43, 0x35, 0xe7, 0xbc, 0xaa,
-	0xf6, 0xf0, 0xd9, 0x9f, 0x00, 0x00, 0x00, 0xff, 0xff, 0xa9, 0xbb, 0x29, 0x6e, 0x10, 0x04, 0x00,
-	0x00,
+	// 420 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x6c, 0x92, 0xc1, 0xae, 0xd2, 0x40,
+	0x14, 0x86, 0x3b, 0x57, 0x73, 0x81, 0xb9, 0xbd, 0x6a, 0x46, 0x17, 0xf5, 0xc6, 0xb4, 0x97, 0x2e,
+	0x08, 0x2c, 0x68, 0x03, 0x6e, 0xdd, 0x40, 0x20, 0xa6, 0x89, 0x91, 0xa4, 0xe8, 0xc6, 0x0d, 0x29,
+	0x9d, 0xb1, 0x36, 0x48, 0x87, 0xcc, 0x0c, 0x88, 0x3e, 0x82, 0x1b, 0x7d, 0x18, 0x1f, 0x82, 0x25,
+	0x71, 0x65, 0x5c, 0x34, 0xa6, 0xbc, 0x88, 0x61, 0x66, 0x1a, 0x20, 0xe9, 0xaa, 0x33, 0xff, 0xf9,
+	0xcf, 0x39, 0x5f, 0x27, 0x3f, 0x6c, 0x92, 0x2d, 0x8d, 0x29, 0x23, 0x3e, 0x5d, 0x11, 0x16, 0x09,
+	0xca, 0xfc, 0x4d, 0xcf, 0x4f, 0x48, 0x46, 0x78, 0xca, 0xbd, 0x15, 0xa3, 0x82, 0xa2, 0xa7, 0xda,
+	0xe2, 0x95, 0x16, 0x6f, 0xd3, 0xbb, 0x7b, 0x1e, 0x53, 0xbe, 0xa4, 0x7c, 0x26, 0x2d, 0xbe, 0xba,
+	0x28, 0xff, 0xdd, 0xb3, 0x84, 0x26, 0x54, 0xe9, 0xc7, 0x93, 0x56, 0x5f, 0x54, 0x2d, 0x12, 0x5b,
+	0x55, 0x75, 0xdf, 0x43, 0xf3, 0xb5, 0x5a, 0x3a, 0x15, 0x91, 0x20, 0x68, 0x0c, 0x1b, 0xa5, 0x8f,
+	0x5b, 0xe0, 0xfe, 0x41, 0xfb, 0xa6, 0xdf, 0xf4, 0x2a, 0x38, 0xbc, 0x89, 0x3e, 0x07, 0xd9, 0x47,
+	0x3a, 0x7c, 0xb8, 0xcb, 0x1d, 0x23, 0x3c, 0x75, 0xba, 0xdf, 0x01, 0x34, 0xa7, 0x22, 0x5a, 0x10,
+	0x16, 0x92, 0x98, 0x32, 0x8c, 0x3a, 0xb0, 0xc1, 0xe5, 0x7d, 0x96, 0x62, 0x0b, 0xdc, 0x83, 0x76,
+	0x63, 0x68, 0x16, 0xb9, 0x53, 0x57, 0xa6, 0x60, 0x14, 0xd6, 0x55, 0x39, 0xc0, 0x68, 0x02, 0x1f,
+	0x69, 0x2b, 0x26, 0x22, 0x4a, 0x3f, 0x73, 0xeb, 0x4a, 0x72, 0xb8, 0x95, 0x1c, 0x6a, 0xc0, 0x48,
+	0x39, 0x35, 0xc8, 0x2d, 0x3f, 0x17, 0xdd, 0x6f, 0xf0, 0xf6, 0xc2, 0x85, 0x5a, 0xb0, 0x1e, 0x71,
+	0x4e, 0xc4, 0x89, 0xe5, 0xa6, 0xc8, 0x9d, 0xda, 0xe0, 0xa8, 0x05, 0xa3, 0xb0, 0x26, 0x8b, 0x01,
+	0x46, 0x03, 0x58, 0xbb, 0x44, 0xa8, 0x7e, 0x0a, 0xd9, 0x77, 0x49, 0x50, 0xf6, 0xb9, 0x3f, 0x00,
+	0x34, 0xcf, 0xeb, 0xa8, 0x03, 0x9f, 0x94, 0xbd, 0xb3, 0x08, 0x63, 0x46, 0x38, 0x57, 0x0c, 0xe1,
+	0xe3, 0x52, 0x1f, 0x28, 0x19, 0xbd, 0x83, 0xd7, 0xd1, 0x92, 0xae, 0x33, 0x61, 0x5d, 0x49, 0xc8,
+	0x57, 0xc7, 0xd1, 0x7f, 0x73, 0xa7, 0x95, 0xa4, 0xe2, 0xd3, 0x7a, 0xee, 0xc5, 0x74, 0xa9, 0x03,
+	0xa0, 0x3f, 0x5d, 0x8e, 0x17, 0xbe, 0xf8, 0xba, 0x22, 0xdc, 0x0b, 0x32, 0xf1, 0xfb, 0x57, 0x17,
+	0xea, 0x7c, 0x04, 0x99, 0x08, 0xf5, 0xac, 0xe1, 0x9b, 0x5d, 0x61, 0x83, 0x7d, 0x61, 0x83, 0x7f,
+	0x85, 0x0d, 0x7e, 0x1e, 0x6c, 0x63, 0x7f, 0xb0, 0x8d, 0x3f, 0x07, 0xdb, 0xf8, 0xd0, 0x3f, 0x9b,
+	0x3b, 0x56, 0xff, 0xf9, 0x96, 0x88, 0x2f, 0x94, 0x2d, 0xfc, 0x32, 0x43, 0xdb, 0x53, 0x8a, 0xe4,
+	0x9e, 0xf9, 0xb5, 0x8c, 0xd1, 0xcb, 0xff, 0x01, 0x00, 0x00, 0xff, 0xff, 0xdc, 0x40, 0x9d, 0xcc,
+	0xcf, 0x02, 0x00, 0x00,
 }
 
 func (m *GenesisState) Marshal() (dAtA []byte, err error) {
@@ -430,20 +296,6 @@ func (m *GenesisState) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	_ = i
 	var l int
 	_ = l
-	if len(m.OperatorRecords) > 0 {
-		for iNdEx := len(m.OperatorRecords) - 1; iNdEx >= 0; iNdEx-- {
-			{
-				size, err := m.OperatorRecords[iNdEx].MarshalToSizedBuffer(dAtA[:i])
-				if err != nil {
-					return 0, err
-				}
-				i -= size
-				i = encodeVarintGenesis(dAtA, i, uint64(size))
-			}
-			i--
-			dAtA[i] = 0x12
-		}
-	}
 	if len(m.Operators) > 0 {
 		for iNdEx := len(m.Operators) - 1; iNdEx >= 0; iNdEx-- {
 			{
@@ -457,87 +309,6 @@ func (m *GenesisState) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 			i--
 			dAtA[i] = 0xa
 		}
-	}
-	return len(dAtA) - i, nil
-}
-
-func (m *OperatorConsKeyRecord) Marshal() (dAtA []byte, err error) {
-	size := m.Size()
-	dAtA = make([]byte, size)
-	n, err := m.MarshalToSizedBuffer(dAtA[:size])
-	if err != nil {
-		return nil, err
-	}
-	return dAtA[:n], nil
-}
-
-func (m *OperatorConsKeyRecord) MarshalTo(dAtA []byte) (int, error) {
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
-}
-
-func (m *OperatorConsKeyRecord) MarshalToSizedBuffer(dAtA []byte) (int, error) {
-	i := len(dAtA)
-	_ = i
-	var l int
-	_ = l
-	if len(m.Chains) > 0 {
-		for iNdEx := len(m.Chains) - 1; iNdEx >= 0; iNdEx-- {
-			{
-				size, err := m.Chains[iNdEx].MarshalToSizedBuffer(dAtA[:i])
-				if err != nil {
-					return 0, err
-				}
-				i -= size
-				i = encodeVarintGenesis(dAtA, i, uint64(size))
-			}
-			i--
-			dAtA[i] = 0x12
-		}
-	}
-	if len(m.OperatorAddress) > 0 {
-		i -= len(m.OperatorAddress)
-		copy(dAtA[i:], m.OperatorAddress)
-		i = encodeVarintGenesis(dAtA, i, uint64(len(m.OperatorAddress)))
-		i--
-		dAtA[i] = 0xa
-	}
-	return len(dAtA) - i, nil
-}
-
-func (m *ChainDetails) Marshal() (dAtA []byte, err error) {
-	size := m.Size()
-	dAtA = make([]byte, size)
-	n, err := m.MarshalToSizedBuffer(dAtA[:size])
-	if err != nil {
-		return nil, err
-	}
-	return dAtA[:n], nil
-}
-
-func (m *ChainDetails) MarshalTo(dAtA []byte) (int, error) {
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
-}
-
-func (m *ChainDetails) MarshalToSizedBuffer(dAtA []byte) (int, error) {
-	i := len(dAtA)
-	_ = i
-	var l int
-	_ = l
-	if len(m.ConsensusKey) > 0 {
-		i -= len(m.ConsensusKey)
-		copy(dAtA[i:], m.ConsensusKey)
-		i = encodeVarintGenesis(dAtA, i, uint64(len(m.ConsensusKey)))
-		i--
-		dAtA[i] = 0x12
-	}
-	if len(m.ChainID) > 0 {
-		i -= len(m.ChainID)
-		copy(dAtA[i:], m.ChainID)
-		i = encodeVarintGenesis(dAtA, i, uint64(len(m.ChainID)))
-		i--
-		dAtA[i] = 0xa
 	}
 	return len(dAtA) - i, nil
 }
@@ -693,48 +464,6 @@ func (m *GenesisState) Size() (n int) {
 			n += 1 + l + sovGenesis(uint64(l))
 		}
 	}
-	if len(m.OperatorRecords) > 0 {
-		for _, e := range m.OperatorRecords {
-			l = e.Size()
-			n += 1 + l + sovGenesis(uint64(l))
-		}
-	}
-	return n
-}
-
-func (m *OperatorConsKeyRecord) Size() (n int) {
-	if m == nil {
-		return 0
-	}
-	var l int
-	_ = l
-	l = len(m.OperatorAddress)
-	if l > 0 {
-		n += 1 + l + sovGenesis(uint64(l))
-	}
-	if len(m.Chains) > 0 {
-		for _, e := range m.Chains {
-			l = e.Size()
-			n += 1 + l + sovGenesis(uint64(l))
-		}
-	}
-	return n
-}
-
-func (m *ChainDetails) Size() (n int) {
-	if m == nil {
-		return 0
-	}
-	var l int
-	_ = l
-	l = len(m.ChainID)
-	if l > 0 {
-		n += 1 + l + sovGenesis(uint64(l))
-	}
-	l = len(m.ConsensusKey)
-	if l > 0 {
-		n += 1 + l + sovGenesis(uint64(l))
-	}
 	return n
 }
 
@@ -859,270 +588,6 @@ func (m *GenesisState) Unmarshal(dAtA []byte) error {
 			if err := m.Operators[len(m.Operators)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
-			iNdEx = postIndex
-		case 2:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field OperatorRecords", wireType)
-			}
-			var msglen int
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowGenesis
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				msglen |= int(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			if msglen < 0 {
-				return ErrInvalidLengthGenesis
-			}
-			postIndex := iNdEx + msglen
-			if postIndex < 0 {
-				return ErrInvalidLengthGenesis
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.OperatorRecords = append(m.OperatorRecords, OperatorConsKeyRecord{})
-			if err := m.OperatorRecords[len(m.OperatorRecords)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
-				return err
-			}
-			iNdEx = postIndex
-		default:
-			iNdEx = preIndex
-			skippy, err := skipGenesis(dAtA[iNdEx:])
-			if err != nil {
-				return err
-			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
-				return ErrInvalidLengthGenesis
-			}
-			if (iNdEx + skippy) > l {
-				return io.ErrUnexpectedEOF
-			}
-			iNdEx += skippy
-		}
-	}
-
-	if iNdEx > l {
-		return io.ErrUnexpectedEOF
-	}
-	return nil
-}
-func (m *OperatorConsKeyRecord) Unmarshal(dAtA []byte) error {
-	l := len(dAtA)
-	iNdEx := 0
-	for iNdEx < l {
-		preIndex := iNdEx
-		var wire uint64
-		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
-				return ErrIntOverflowGenesis
-			}
-			if iNdEx >= l {
-				return io.ErrUnexpectedEOF
-			}
-			b := dAtA[iNdEx]
-			iNdEx++
-			wire |= uint64(b&0x7F) << shift
-			if b < 0x80 {
-				break
-			}
-		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
-		if wireType == 4 {
-			return fmt.Errorf("proto: OperatorConsKeyRecord: wiretype end group for non-group")
-		}
-		if fieldNum <= 0 {
-			return fmt.Errorf("proto: OperatorConsKeyRecord: illegal tag %d (wire type %d)", fieldNum, wire)
-		}
-		switch fieldNum {
-		case 1:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field OperatorAddress", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowGenesis
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthGenesis
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLengthGenesis
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.OperatorAddress = string(dAtA[iNdEx:postIndex])
-			iNdEx = postIndex
-		case 2:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Chains", wireType)
-			}
-			var msglen int
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowGenesis
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				msglen |= int(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			if msglen < 0 {
-				return ErrInvalidLengthGenesis
-			}
-			postIndex := iNdEx + msglen
-			if postIndex < 0 {
-				return ErrInvalidLengthGenesis
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.Chains = append(m.Chains, ChainDetails{})
-			if err := m.Chains[len(m.Chains)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
-				return err
-			}
-			iNdEx = postIndex
-		default:
-			iNdEx = preIndex
-			skippy, err := skipGenesis(dAtA[iNdEx:])
-			if err != nil {
-				return err
-			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
-				return ErrInvalidLengthGenesis
-			}
-			if (iNdEx + skippy) > l {
-				return io.ErrUnexpectedEOF
-			}
-			iNdEx += skippy
-		}
-	}
-
-	if iNdEx > l {
-		return io.ErrUnexpectedEOF
-	}
-	return nil
-}
-func (m *ChainDetails) Unmarshal(dAtA []byte) error {
-	l := len(dAtA)
-	iNdEx := 0
-	for iNdEx < l {
-		preIndex := iNdEx
-		var wire uint64
-		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
-				return ErrIntOverflowGenesis
-			}
-			if iNdEx >= l {
-				return io.ErrUnexpectedEOF
-			}
-			b := dAtA[iNdEx]
-			iNdEx++
-			wire |= uint64(b&0x7F) << shift
-			if b < 0x80 {
-				break
-			}
-		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
-		if wireType == 4 {
-			return fmt.Errorf("proto: ChainDetails: wiretype end group for non-group")
-		}
-		if fieldNum <= 0 {
-			return fmt.Errorf("proto: ChainDetails: illegal tag %d (wire type %d)", fieldNum, wire)
-		}
-		switch fieldNum {
-		case 1:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field ChainID", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowGenesis
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthGenesis
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLengthGenesis
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.ChainID = string(dAtA[iNdEx:postIndex])
-			iNdEx = postIndex
-		case 2:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field ConsensusKey", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowGenesis
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthGenesis
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLengthGenesis
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.ConsensusKey = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
 		default:
 			iNdEx = preIndex

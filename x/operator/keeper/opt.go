@@ -1,8 +1,6 @@
 package keeper
 
 import (
-	"github.com/ethereum/go-ethereum/common"
-
 	sdkmath "cosmossdk.io/math"
 
 	delegationtypes "github.com/ExocoreNetwork/exocore/x/delegation/types"
@@ -16,17 +14,24 @@ type AssetPriceAndDecimal struct {
 	Decimal      uint32
 }
 
-// OptIn call this function to opt in AVS
+// OptIn call this function to opt in to an AVS.
+// The caller must ensure that the operatorAddress passed is valid.
 func (k *Keeper) OptIn(ctx sdk.Context, operatorAddress sdk.AccAddress, avsAddr string) error {
-	// avsAddr should be an evm contract address or a chain id.
-	if !common.IsHexAddress(avsAddr) {
-		if avsAddr != ctx.ChainID() { // TODO: other chain ids besides this chain's.
-			return types.ErrInvalidAvsAddr
-		}
+	// check that the operator is registered
+	if !k.IsOperator(ctx, operatorAddress) {
+		return delegationtypes.ErrOperatorNotExist
+	}
+	// check that the AVS is registered
+	if isAvs, _ := k.avsKeeper.IsAVS(ctx, avsAddr); !isAvs {
+		return types.ErrNoSuchAvs.Wrapf("AVS not found %s", avsAddr)
 	}
 	// check optedIn info
 	if k.IsOptedIn(ctx, operatorAddress.String(), avsAddr) {
 		return types.ErrAlreadyOptedIn
+	}
+	// do not allow frozen operators to do anything meaningful
+	if k.slashKeeper.IsOperatorFrozen(ctx, operatorAddress) {
+		return delegationtypes.ErrOperatorIsFrozen
 	}
 
 	// call InitOperatorUSDValue to mark the operator has been opted into the AVS
@@ -56,23 +61,28 @@ func (k *Keeper) OptIn(ctx sdk.Context, operatorAddress sdk.AccAddress, avsAddr 
 	return nil
 }
 
+// OptInWithConsKey is a wrapper function to call OptIn and then SetOperatorConsKeyForChainID.
+// The caller must ensure that the operatorAddress passed is valid and that the AVS is a chain-type AVS.
+func (k Keeper) OptInWithConsKey(
+	ctx sdk.Context, operatorAddress sdk.AccAddress, avsAddr string, key types.WrappedConsKey,
+) error {
+	err := k.OptIn(ctx, operatorAddress, avsAddr)
+	if err != nil {
+		return err
+	}
+	chainID, _ := k.avsKeeper.GetChainIDByAVSAddr(ctx, avsAddr)
+	return k.SetOperatorConsKeyForChainID(ctx, operatorAddress, chainID, key)
+}
+
 // OptOut call this function to opt out of AVS
 func (k *Keeper) OptOut(ctx sdk.Context, operatorAddress sdk.AccAddress, avsAddr string) (err error) {
-	// avsAddr should be an evm contract address or a chain id.
-	if !common.IsHexAddress(avsAddr) {
-		if avsAddr != ctx.ChainID() { // TODO: other chain ids besides this chain's.
-			return types.ErrInvalidAvsAddr
-		}
-		defer func() {
-			if err == nil {
-				// does not fail, because it performs no validations, just stores a key-value pair.
-				// all validations are instead performed by this function.
-				k.InitiateOperatorKeyRemovalForChainID(ctx, operatorAddress, avsAddr)
-			}
-		}()
-	}
+	// check that the operator is registered
 	if !k.IsOperator(ctx, operatorAddress) {
 		return delegationtypes.ErrOperatorNotExist
+	}
+	// check that the AVS is registered
+	if isAvs, _ := k.avsKeeper.IsAVS(ctx, avsAddr); !isAvs {
+		return types.ErrNoSuchAvs.Wrapf("AVS not found %s", avsAddr)
 	}
 	// check optedIn info
 	if !k.IsOptedIn(ctx, operatorAddress.String(), avsAddr) {
@@ -82,12 +92,22 @@ func (k *Keeper) OptOut(ctx sdk.Context, operatorAddress sdk.AccAddress, avsAddr
 	if k.slashKeeper.IsOperatorFrozen(ctx, operatorAddress) {
 		return delegationtypes.ErrOperatorIsFrozen
 	}
+	// check if it is the chain-type AVS
+	chainIDWithoutRevision, isChainAvs := k.avsKeeper.GetChainIDByAVSAddr(ctx, avsAddr)
+	// set up the deferred function to remove key and write cache
+	defer func() {
+		if err == nil && isChainAvs {
+			// store.Delete... doesn't fail
+			k.InitiateOperatorKeyRemovalForChainID(ctx, operatorAddress, chainIDWithoutRevision)
+		}
+	}()
 
 	// DeleteOperatorUSDValue, delete the operator voting power, it can facilitate to
 	// update the voting powers of all opted-in operators at the end of epoch.
 	// There might still be a reward for the operator in this opted-out epoch,
 	// which is determined by the reward logic.
-	err = k.DeleteOperatorUSDValue(ctx, avsAddr, operatorAddress.String())
+	// #nosec G703 // already validated that operatorAddress is not ""
+	_ = k.DeleteOperatorUSDValue(ctx, avsAddr, operatorAddress.String())
 	if err != nil {
 		return err
 	}

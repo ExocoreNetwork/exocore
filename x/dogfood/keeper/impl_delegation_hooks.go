@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	avstypes "github.com/ExocoreNetwork/exocore/x/avs/types"
 	delegationtypes "github.com/ExocoreNetwork/exocore/x/delegation/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -35,7 +36,7 @@ func (wrapper DelegationHooksWrapper) AfterUndelegationStarted(
 ) error {
 	var unbondingCompletionEpoch int64
 	if wrapper.keeper.operatorKeeper.IsOperatorRemovingKeyFromChainID(
-		ctx, operator, ctx.ChainID(),
+		ctx, operator, avstypes.ChainIDWithoutRevision(ctx.ChainID()),
 	) {
 		// if the operator is opting out, we need to use the finish epoch of the opt out.
 		unbondingCompletionEpoch = wrapper.keeper.GetOperatorOptOutFinishEpoch(ctx, operator)

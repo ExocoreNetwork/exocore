@@ -2,8 +2,9 @@ package types
 
 import (
 	"cosmossdk.io/math"
+	avstypes "github.com/ExocoreNetwork/exocore/x/avs/types"
 	epochsTypes "github.com/ExocoreNetwork/exocore/x/epochs/types"
-	tmprotocrypto "github.com/cometbft/cometbft/proto/tendermint/crypto"
+	operatortypes "github.com/ExocoreNetwork/exocore/x/operator/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 )
@@ -52,7 +53,7 @@ type OperatorKeeper interface {
 	// at each epoch, get the list and create validator update
 	GetActiveOperatorsForChainID(
 		sdk.Context, string,
-	) ([]sdk.AccAddress, []*tmprotocrypto.PublicKey)
+	) ([]sdk.AccAddress, []operatortypes.WrappedConsKey)
 	// get vote power
 	GetVotePowerForChainID(
 		sdk.Context, []sdk.AccAddress, string,
@@ -66,7 +67,10 @@ type OperatorKeeper interface {
 	ClearPreviousConsensusKeys(ctx sdk.Context, chainID string)
 	GetOperatorConsKeyForChainID(
 		sdk.Context, sdk.AccAddress, string,
-	) (bool, *tmprotocrypto.PublicKey, error)
+	) (bool, operatortypes.WrappedConsKey, error)
+	OptInWithConsKey(
+		sdk.Context, sdk.AccAddress, string, operatortypes.WrappedConsKey,
+	) error
 }
 
 // DelegationKeeper represents the expected keeper interface for the delegation module.
@@ -78,4 +82,8 @@ type DelegationKeeper interface {
 // AssetsKeeper represents the expected keeper interface for the assets module.
 type AssetsKeeper interface {
 	IsStakingAsset(sdk.Context, string) bool
+}
+
+type AVSKeeper interface {
+	RegisterAVSWithChainID(sdk.Context, *avstypes.AVSRegisterOrDeregisterParams) (string, error)
 }
