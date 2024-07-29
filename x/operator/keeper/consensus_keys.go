@@ -353,6 +353,11 @@ func (k Keeper) GetActiveOperatorsForChainID(
 ) ([]sdk.AccAddress, []*tmprotocrypto.PublicKey) {
 	operatorsAddr, pks := k.GetOperatorsForChainID(ctx, chainID)
 	avsAddr := k.avsKeeper.GetAVSAddrByChainID(ctx, chainID)
+	if avsAddr == "" {
+		// ctx.Logger().With("GetAVSAddrByChainID", fmt.Sprintf("x/%s", chainID))
+		return nil, nil
+	}
+
 	activeOperator := make([]sdk.AccAddress, 0)
 	activePks := make([]*tmprotocrypto.PublicKey, 0)
 	// check if the operator is active

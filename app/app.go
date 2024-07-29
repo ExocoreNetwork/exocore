@@ -568,15 +568,6 @@ func NewExocoreApp(
 		app.StakingKeeper.OperatorHooks(),
 	)
 
-	(&app.EpochsKeeper).SetHooks(
-		epochstypes.NewMultiEpochHooks(
-			app.StakingKeeper.EpochsHooks(), // at this point, the order is irrelevant.
-			app.ExomintKeeper.EpochsHooks(), // however, this may change once we have distribution
-			app.AVSManagerKeeper.EpochsHooks(),
-			app.OperatorKeeper.EpochsHooks(),
-		),
-	)
-
 	// these two modules aren't finalized yet.
 	app.RewardKeeper = rewardKeeper.NewKeeper(
 		appCodec, keys[rewardTypes.StoreKey], app.AssetsKeeper,
@@ -740,7 +731,15 @@ func NewExocoreApp(
 			app.Erc20Keeper.Hooks(),
 		),
 	)
-
+	// avoid nil objects in hooks，this hooks is initialized after the OperatorKeeper  because it depends on the OperatorKeeper.
+	(&app.EpochsKeeper).SetHooks(
+		epochstypes.NewMultiEpochHooks(
+			app.StakingKeeper.EpochsHooks(), // at this point, the order is irrelevant.
+			app.ExomintKeeper.EpochsHooks(), // however, this may change once we have distribution
+			app.AVSManagerKeeper.EpochsHooks(),
+			app.OperatorKeeper.EpochsHooks(),
+		),
+	)
 	// remaining bits of the IBC stack: transfer stack and interchain accounts.
 
 	// transfer assets across chains
