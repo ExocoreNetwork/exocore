@@ -99,7 +99,7 @@ func (p Precompile) UpdateAVS(
 	args []interface{},
 ) ([]byte, error) {
 	// parse the avs input params first.
-	avsParams, err := p.GetAVSParamsFromInputs(ctx, args)
+	avsParams, err := p.GetAVSParamsFromUpdateInputs(ctx, args)
 	if err != nil {
 		return nil, errorsmod.Wrap(err, "parse args error")
 	}
