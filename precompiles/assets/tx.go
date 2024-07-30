@@ -21,6 +21,7 @@ const (
 	MethodGetClientChains             = "getClientChains"
 	MethodRegisterOrUpdateClientChain = "registerOrUpdateClientChain"
 	MethodRegisterOrUpdateTokens      = "registerOrUpdateTokens"
+	MethodIsRegisteredClientChain     = "isRegisteredClientChain"
 )
 
 // DepositOrWithdraw deposit and withdraw the client chain assets for the staker,
@@ -149,4 +150,17 @@ func (p Precompile) RegisterOrUpdateTokens(
 	}
 
 	return method.Outputs.Pack(true, updated)
+}
+
+func (p Precompile) IsRegisteredClientChain(
+	ctx sdk.Context,
+	method *abi.Method,
+	args []interface{},
+) ([]byte, error) {
+	clientChainID, err := p.ClientChainIDFromInputs(ctx, args)
+	if err != nil {
+		return nil, err
+	}
+	exists := p.assetsKeeper.ClientChainExists(ctx, uint64(clientChainID))
+	return method.Outputs.Pack(true, exists)
 }

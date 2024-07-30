@@ -121,6 +121,8 @@ func (p Precompile) Run(evm *vm.EVM, contract *vm.Contract, readOnly bool) (bz [
 	// queries
 	case MethodGetClientChains:
 		bz, err = p.GetClientChains(ctx, method, args)
+	case MethodIsRegisteredClientChain:
+		bz, err = p.IsRegisteredClientChain(ctx, method, args)
 	default:
 		return nil, fmt.Errorf(cmn.ErrUnknownMethod, method.Name)
 	}
@@ -144,7 +146,7 @@ func (Precompile) IsTransaction(methodID string) bool {
 	switch methodID {
 	case MethodDepositTo, MethodWithdraw, MethodRegisterOrUpdateClientChain, MethodRegisterOrUpdateTokens:
 		return true
-	case MethodGetClientChains:
+	case MethodGetClientChains, MethodIsRegisteredClientChain:
 		return false
 	default:
 		return false

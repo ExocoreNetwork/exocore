@@ -166,3 +166,15 @@ func (p Precompile) TokenFromInputs(ctx sdk.Context, args []interface{}) (types.
 
 	return asset, nil
 }
+
+func (p Precompile) ClientChainIDFromInputs(ctx sdk.Context, args []interface{}) (uint32, error) {
+	inputsLen := len(p.ABI.Methods[MethodIsRegisteredClientChain].Inputs)
+	if len(args) != inputsLen {
+		return 0, fmt.Errorf(cmn.ErrInvalidNumberOfArgs, inputsLen, len(args))
+	}
+	clientChainID, ok := args[0].(uint32)
+	if !ok {
+		return 0, fmt.Errorf(exocmn.ErrContractInputParaOrType, 0, "uint32", args[0])
+	}
+	return clientChainID, nil
+}

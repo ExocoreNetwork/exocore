@@ -58,6 +58,30 @@
   },
   {
     "type": "function",
+    "name": "isRegisteredClientChain",
+    "inputs": [
+      {
+        "name": "clientChainID",
+        "type": "uint32",
+        "internalType": "uint32"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "success",
+        "type": "bool",
+        "internalType": "bool"
+      },
+      {
+        "name": "isRegistered",
+        "type": "bool",
+        "internalType": "bool"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
     "name": "registerOrUpdateClientChain",
     "inputs": [
       {

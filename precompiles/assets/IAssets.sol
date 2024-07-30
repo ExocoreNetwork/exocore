@@ -80,4 +80,10 @@ interface IAssets {
     /// @dev Returns the chain indices of the client chains.
     function getClientChains() external view returns (bool, uint32[] memory);
 
+    /// @dev Checks if the client chain is registered, given the chain ID.
+    /// @param clientChainID is the layerZero chainID if it is supported.
+    /// @return success true if the query is successful
+    /// @return isRegistered true if the client chain is registered
+    function isRegisteredClientChain(uint32 clientChainID) external view returns (bool success, bool isRegistered);
+
 }
