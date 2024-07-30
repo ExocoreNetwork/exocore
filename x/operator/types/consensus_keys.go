@@ -208,10 +208,7 @@ func (w *wrappedConsKeyImpl) ToConsAddr() sdk.ConsAddress {
 // EqualsWrapped returns true if the public key is the same as the other public key.
 func (w *wrappedConsKeyImpl) EqualsWrapped(other WrappedConsKey) bool {
 	if w == nil {
-		if other == nil {
-			return true
-		}
-		return false
+		return other == nil
 	}
 	// use ToTmProtoKey to compare since it is always initialized
 	return w.ToTmProtoKey().Equal(other.ToTmProtoKey())

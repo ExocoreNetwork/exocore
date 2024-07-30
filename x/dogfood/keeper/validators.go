@@ -66,7 +66,7 @@ func (k Keeper) ApplyValidatorChanges(
 				k.DeleteExocoreValidator(cc, addr)
 				// sdk slashing.AfterValidatorRemoved deletes the lookup from cons address to
 				// cons pub key
-				err = k.Hooks().AfterValidatorRemoved(cc, sdk.ConsAddress(addr), nil)
+				err = k.Hooks().AfterValidatorRemoved(cc, addr, nil)
 				if err != nil {
 					logger.Error("error in AfterValidatorRemoved", "error", err)
 					continue
@@ -82,7 +82,7 @@ func (k Keeper) ApplyValidatorChanges(
 				// via stakingkeeeper.Validator(ctx, valAddr)
 				// then it fetches the cons pub key from said validator to generate the lookup
 				found, accAddress := k.operatorKeeper.GetOperatorAddressForChainIDAndConsAddr(
-					ctx, avstypes.ChainIDWithoutRevision(ctx.ChainID()), sdk.ConsAddress(addr),
+					ctx, avstypes.ChainIDWithoutRevision(ctx.ChainID()), addr,
 				)
 				if !found {
 					// should never happen
@@ -107,7 +107,7 @@ func (k Keeper) ApplyValidatorChanges(
 				// guard for errors within the hooks.
 				cc, writeFunc := ctx.CacheContext()
 				k.SetExocoreValidator(cc, ocVal)
-				err = k.Hooks().AfterValidatorBonded(cc, sdk.ConsAddress(addr), nil)
+				err = k.Hooks().AfterValidatorBonded(cc, addr, nil)
 				if err != nil {
 					logger.Error("error in AfterValidatorBonded", "error", err)
 					// If an error is returned, the validator is not added to the `ret` slice.

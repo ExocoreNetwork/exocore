@@ -14,7 +14,6 @@ import (
 	"github.com/stretchr/testify/suite"
 	"golang.org/x/exp/rand"
 
-	"github.com/ExocoreNetwork/exocore/testutil/tx"
 	testutiltx "github.com/ExocoreNetwork/exocore/testutil/tx"
 	oracletypes "github.com/ExocoreNetwork/exocore/x/oracle/types"
 
@@ -186,9 +185,9 @@ func (suite *BaseTestSuite) SetupWithGenesisValSet(genAccs []authtypes.GenesisAc
 		},
 	}
 	// generate validator private/public key
-	pubKey := tx.GenerateConsensusKey()
+	pubKey := testutiltx.GenerateConsensusKey()
 	suite.Require().NotNil(pubKey)
-	pubKey2 := tx.GenerateConsensusKey()
+	pubKey2 := testutiltx.GenerateConsensusKey()
 	suite.Require().NotNil(pubKey2)
 	operatorGenesis := operatortypes.NewGenesisState(operatorInfos)
 	genesisState[operatortypes.ModuleName] = app.AppCodec().MustMarshalJSON(operatorGenesis)
