@@ -83,13 +83,20 @@ func (msgServer *MsgServerImpl) OptOutOfAVS(goCtx context.Context, req *types.Op
 // SetConsKey is an implementation of the msg server for the operator module.
 func (msgServer *MsgServerImpl) SetConsKey(goCtx context.Context, req *types.SetConsKeyReq) (*types.SetConsKeyResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
+	chainID, isAvs := msgServer.keeper.avsKeeper.GetChainIDByAVSAddr(ctx, req.AvsAddress)
+	if !isAvs {
+		return nil, errorsmod.Wrap(types.ErrNoSuchAvs, "AVS not found")
+	}
 	// #nosec G703 // already validated
 	accAddr, _ := sdk.AccAddressFromBech32(req.Address)
+	if !msgServer.keeper.IsActive(ctx, accAddr, req.AvsAddress) {
+		return nil, errorsmod.Wrap(types.ErrNotOptedIn, "operator is not active")
+	}
 	wrappedKey := types.NewWrappedConsKeyFromJSON(req.PublicKeyJSON)
 	if wrappedKey == nil {
 		return nil, errorsmod.Wrap(types.ErrInvalidPubKey, "invalid public key")
 	}
-	if err := msgServer.keeper.SetOperatorConsKeyForChainID(ctx, accAddr, req.AvsAddress, wrappedKey); err != nil {
+	if err := msgServer.keeper.SetOperatorConsKeyForChainID(ctx, accAddr, chainID, wrappedKey); err != nil {
 		return nil, err
 	}
 	return &types.SetConsKeyResponse{}, nil

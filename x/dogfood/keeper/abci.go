@@ -119,7 +119,7 @@ func (k Keeper) EndBlock(ctx sdk.Context) []abci.ValidatorUpdate {
 			// if the power has changed, queue an update.
 			if prevPower != power {
 				res = append(res, abci.ValidatorUpdate{
-					PubKey: *wrappedKey.ToTmKey(),
+					PubKey: *wrappedKey.ToTmProtoKey(),
 					Power:  power,
 				})
 			}
@@ -129,7 +129,7 @@ func (k Keeper) EndBlock(ctx sdk.Context) []abci.ValidatorUpdate {
 		} else {
 			// new consensus key, queue an update.
 			res = append(res, abci.ValidatorUpdate{
-				PubKey: *wrappedKey.ToTmKey(),
+				PubKey: *wrappedKey.ToTmProtoKey(),
 				Power:  power,
 			})
 		}

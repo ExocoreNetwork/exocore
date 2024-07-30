@@ -69,6 +69,9 @@ type OperatorKeeper interface {
 	GetOperatorConsKeyForChainID(
 		sdk.Context, sdk.AccAddress, string,
 	) (bool, operatortypes.WrappedConsKey, error)
+	GetOperatorPrevConsKeyForChainID(
+		sdk.Context, sdk.AccAddress, string,
+	) (bool, operatortypes.WrappedConsKey, error)
 	// OptInWithConsKey is used at genesis to opt in with a consensus key
 	OptInWithConsKey(
 		sdk.Context, sdk.AccAddress, string, operatortypes.WrappedConsKey,

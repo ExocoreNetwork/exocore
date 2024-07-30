@@ -46,27 +46,47 @@ func (h OperatorHooksWrapper) AfterOperatorKeyReplaced(
 	// EndBlock.
 	// 3. X epochs later, the reverse lookup of old cons addr + chain id -> operator addr
 	// should be cleared.
+	consAddr := oldKey.ToConsAddr()
 	if chainID == avstypes.ChainIDWithoutRevision(ctx.ChainID()) {
-		unbondingEpoch := h.keeper.GetUnbondingCompletionEpoch(ctx)
-		// nb: if operator sets key, it is not "at stake" till the end of the epoch.
-		// before that time, any key replacement will store a superfluous entry for pruning
-		// since the old key will not be in use.
-		// this technically gives an operator the opportunity to spam the pruning queue
-		// but it is not a security risk or a DOS vector given the cost charged.
-		h.keeper.AppendConsensusAddrToPrune(ctx, unbondingEpoch, oldKey.ToConsAddr())
+		// is the oldKey already active? if not, we should not do anything.
+		// this can happen if we opt in with a key, then replace it with another key
+		// during the same epoch.
+		_, found := h.keeper.GetExocoreValidator(ctx, consAddr)
+		if found {
+			unbondingEpoch := h.keeper.GetUnbondingCompletionEpoch(ctx)
+			// nb: if operator sets key, it is not "at stake" till the end of the epoch.
+			// before that time, any key replacement will store a superfluous entry for pruning
+			// since the old key will not be in use.
+			// this technically gives an operator the opportunity to spam the pruning queue
+			// but it is not a security risk or a DOS vector given the cost charged.
+			h.keeper.AppendConsensusAddrToPrune(ctx, unbondingEpoch, consAddr)
+		} else {
+			// since this consAddr isn't active, we can remove it immediately.
+			h.keeper.operatorKeeper.DeleteOperatorAddressForChainIDAndConsAddr(
+				ctx, chainID, consAddr,
+			)
+		}
 	}
 }
 
 // AfterOperatorKeyRemovalInitiated is the implementation of the operator hooks.
 func (h OperatorHooksWrapper) AfterOperatorKeyRemovalInitiated(
-	ctx sdk.Context, operator sdk.AccAddress, chainID string, _ operatortypes.WrappedConsKey,
+	ctx sdk.Context, operator sdk.AccAddress, chainID string, key operatortypes.WrappedConsKey,
 ) {
 	// the impact of key removal is:
 	// 1. vote power of the operator is 0, which happens automatically at epoch end in EndBlock.
 	// this is because GetActiveOperatorsForChainID filters operators who are removing their
 	// keys from the chain.
 	// 2. X epochs later, the removal is marked complete in the operator module.
+	consAddr := key.ToConsAddr()
 	if chainID == avstypes.ChainIDWithoutRevision(ctx.ChainID()) {
-		h.keeper.SetOptOutInformation(ctx, operator)
+		_, found := h.keeper.GetExocoreValidator(ctx, consAddr)
+		if found {
+			h.keeper.SetOptOutInformation(ctx, operator)
+		} else {
+			h.keeper.operatorKeeper.DeleteOperatorAddressForChainIDAndConsAddr(
+				ctx, chainID, consAddr,
+			)
+		}
 	}
 }

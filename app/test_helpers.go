@@ -256,7 +256,13 @@ func GenesisStateWithValSet(app *ExocoreApp, genesisState simapp.GenesisState,
 			},
 		},
 	}
-	delegationGenesis := delegationtypes.NewGenesis(delegationsByStaker, nil)
+	associations := []delegationtypes.StakerToOperator{
+		{
+			Operator: operator.String(),
+			StakerID: stakerID,
+		},
+	}
+	delegationGenesis := delegationtypes.NewGenesis(delegationsByStaker, associations)
 	genesisState[delegationtypes.ModuleName] = app.AppCodec().MustMarshalJSON(delegationGenesis)
 
 	// create a dogfood genesis with just the validator set, that is, the bare

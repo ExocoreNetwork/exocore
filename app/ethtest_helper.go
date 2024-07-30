@@ -232,7 +232,13 @@ func genesisStateWithValSet(codec codec.Codec, genesisState simapp.GenesisState,
 			},
 		},
 	}
-	delegationGenesis := delegationtypes.NewGenesis(delegationsByStaker, nil)
+	associations := []delegationtypes.StakerToOperator{
+		{
+			Operator: operator.String(),
+			StakerID: stakerID,
+		},
+	}
+	delegationGenesis := delegationtypes.NewGenesis(delegationsByStaker, associations)
 	genesisState[delegationtypes.ModuleName] = codec.MustMarshalJSON(delegationGenesis)
 
 	dogfoodGenesis := dogfoodtypes.NewGenesis(

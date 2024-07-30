@@ -57,7 +57,7 @@ func (k *Keeper) setOperatorConsKeyForChainID(
 		return types.ErrAlreadyRemovingKey
 	}
 	// convert to bytes
-	bz := k.cdc.MustMarshal(wrappedKey.ToTmKey())
+	bz := k.cdc.MustMarshal(wrappedKey.ToTmProtoKey())
 	consAddr := wrappedKey.ToConsAddr()
 	// check if the provided key is already in use by another operator. such use
 	// also includes whether it was replaced by the same operator. this check ensures
@@ -72,7 +72,7 @@ func (k *Keeper) setOperatorConsKeyForChainID(
 	var alreadyRecorded bool
 	if found {
 		// ultimately performs bytes.Equal
-		if prevKey.Equals(wrappedKey) {
+		if prevKey.EqualsWrapped(wrappedKey) {
 			// no-op
 			return nil
 		}
@@ -139,7 +139,7 @@ func (k *Keeper) setOperatorPrevConsKeyForChainID(
 	chainID string,
 	prevKey types.WrappedConsKey,
 ) {
-	bz := k.cdc.MustMarshal(prevKey.ToTmKey())
+	bz := k.cdc.MustMarshal(prevKey.ToTmProtoKey())
 	store := ctx.KVStore(k.storeKey)
 	store.Set(types.KeyForChainIDAndOperatorToPrevConsKey(chainID, opAccAddr), bz)
 }
@@ -177,7 +177,7 @@ func (k *Keeper) getOperatorPrevConsKeyForChainID(
 	}
 	key := &tmprotocrypto.PublicKey{}
 	k.cdc.MustUnmarshal(res, key)
-	return true, types.NewWrappedConsKeyFromTmKey(key)
+	return true, types.NewWrappedConsKeyFromTmProtoKey(key)
 }
 
 // GetOperatorConsKeyForChainID gets the (consensus) public key for the given operator address
@@ -214,7 +214,7 @@ func (k *Keeper) getOperatorConsKeyForChainID(
 	}
 	key := &tmprotocrypto.PublicKey{}
 	k.cdc.MustUnmarshal(res, key)
-	return true, types.NewWrappedConsKeyFromTmKey(key)
+	return true, types.NewWrappedConsKeyFromTmProtoKey(key)
 }
 
 // GetOperatorAddressForChainIDAndConsAddr returns the operator address for the given chain id
@@ -320,7 +320,7 @@ func (k *Keeper) GetOperatorsForChainID(
 		ret := &tmprotocrypto.PublicKey{}
 		k.cdc.MustUnmarshal(res, ret)
 		addrs = append(addrs, addr)
-		pubKeys = append(pubKeys, types.NewWrappedConsKeyFromTmKey(ret))
+		pubKeys = append(pubKeys, types.NewWrappedConsKeyFromTmProtoKey(ret))
 	}
 	return addrs, pubKeys
 }
@@ -408,13 +408,13 @@ func (k Keeper) ValidatorByConsAddrForChainID(
 		ctx.Logger().Error("ValidatorByConsAddrForChainID the chainID is not supported by AVS", "chainID", chainID)
 		return stakingtypes.Validator{}, false
 	}
+	// this value is stored using chainID + consAddr and only deleted when
+	// advised by the dogfood module to delete. hence, even if the consensus key
+	// changes, this lookup is available.
 	found, operatorAddr := k.GetOperatorAddressForChainIDAndConsAddr(
 		ctx, chainID, consAddr,
 	)
 	if !found {
-		// TODO(mm): create tests for the case where a validator
-		// changes their pub key in the middle of an epoch, resulting
-		// in a different key. work around that issue here.
 		ctx.Logger().Error("ValidatorByConsAddrForChainID the operator isn't found by the chainID and consensus address", "consAddress", consAddr, "chainID", chainID)
 		return stakingtypes.Validator{}, false
 	}

@@ -6,6 +6,8 @@ import (
 
 	errorsmod "cosmossdk.io/errors"
 
+	tmcrypto "github.com/cometbft/cometbft/crypto"
+	"github.com/cometbft/cometbft/crypto/encoding"
 	tmprotocrypto "github.com/cometbft/cometbft/proto/tendermint/crypto"
 	cryptocodec "github.com/cosmos/cosmos-sdk/crypto/codec"
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
@@ -24,14 +26,16 @@ type WrappedConsKey interface {
 	ToJSON() string
 	// ToHex returns the 32-byte string representation of the public key. It is used in the Bootstrap contract.
 	ToHex() string
-	// ToTmKey returns the tmprotocrypto (Tendermint format) of the public key.
-	ToTmKey() *tmprotocrypto.PublicKey
+	// ToTmProtoKey returns the tmprotocrypto (Tendermint format) of the public key.
+	ToTmProtoKey() *tmprotocrypto.PublicKey
+	// ToTmKey returns the rarely used Tendermint (non-proto) format.
+	ToTmKey() tmcrypto.PubKey
 	// ToSdkKey returns the cryptotypes.PubKey (SDK format) of the public key.
 	ToSdkKey() cryptotypes.PubKey
 	// ToConsAddr returns the consensus address of the public key.
 	ToConsAddr() sdk.ConsAddress
-	// Equals returns true if the public key is the same as the other public key.
-	Equals(WrappedConsKey) bool
+	// EqualsWrapped returns true if the public key is the same as the other public key.
+	EqualsWrapped(WrappedConsKey) bool
 }
 
 // interface guard
@@ -64,73 +68,93 @@ type wrappedConsKeyImpl struct {
 	// bytes32String is the 32-byte string representation of the public key, used in the Bootstrap contract
 	// exocored keys consensus-pubkey-to-bytes
 	bytes32String string
-	// tmKey is the format used for storage by x/operator and forwarding to Tendermint
-	tmKey *tmprotocrypto.PublicKey
+	// tmProtoKey is the format used for storage by x/operator and forwarding to Tendermint
+	tmProtoKey *tmprotocrypto.PublicKey
+	// tmKey is the format that is rarely used, particularly when instantiating the system
+	tmKey tmcrypto.PubKey
 	// sdkKey is the format used by all other modules, particularly x/dogfood
 	sdkKey cryptotypes.PubKey
 	// consAddress cannot be converted back to the public key.
 	consAddress sdk.ConsAddress
 }
 
-// NewPublicConsKeyFromJSON takes a JSON string and returns a PublicConsKey.
+// NewWrappedConsKeyFromJSON takes a JSON string and returns a WrappedConsKey.
 // It validates the jsonStr, and as a side effect, it sets the TmKey field.
 // No other fields are set. It only accepts ed25519 keys.
 func NewWrappedConsKeyFromJSON(jsonStr string) WrappedConsKey {
-	tmKey, err := tmKeyFromJSON(jsonStr)
+	tmProtoKey, err := tmKeyFromJSON(jsonStr)
 	if err != nil {
 		return nil
 	}
 	return &wrappedConsKeyImpl{
-		tmKey:      tmKey,
+		tmProtoKey: tmProtoKey,
 		jsonString: jsonStr,
 	}
 }
 
-// NewPublicConsKeyFromHex takes a hex string and returns a PublicConsKey.
+// NewWrappedConsKeyFromHex takes a hex string and returns a WrappedConsKey.
 // It validates the key, and as a side effect, it sets the TmKey field.
 // No other fields are set. It only accepts ed25519 keys.
-func NewWrappedConsKeyFromHex(key string) WrappedConsKey {
-	tmKey, err := tmKeyFromHex(key)
+func NewWrappedConsKeyFromHex(hex string) WrappedConsKey {
+	tmProtoKey, err := tmKeyFromHex(hex)
 	if err != nil {
 		return nil
 	}
 	return &wrappedConsKeyImpl{
-		tmKey:         tmKey,
-		bytes32String: key,
+		tmProtoKey:    tmProtoKey,
+		bytes32String: hex,
 	}
 }
 
-// NewPublicConsKeyFromTmKey takes a tendermint public key and returns a PublicConsKey.
-// It only accepts ed25519 keys.
-func NewWrappedConsKeyFromTmKey(tmKey *tmprotocrypto.PublicKey) WrappedConsKey {
-	if tmKey == nil {
+// NewWrappedConsKeyFromTmProtoKey takes a tendermint proto public key and returns a
+// WrappedConsKey. It only accepts ed25519 keys.
+func NewWrappedConsKeyFromTmProtoKey(tmProtoKey *tmprotocrypto.PublicKey) WrappedConsKey {
+	if tmProtoKey == nil {
 		return nil
 	}
-	switch tmKey.Sum.(type) {
+	switch tmProtoKey.Sum.(type) {
 	case *tmprotocrypto.PublicKey_Ed25519:
 		return &wrappedConsKeyImpl{
-			tmKey: tmKey,
+			tmProtoKey: tmProtoKey,
 		}
 	default:
 		return nil
 	}
 }
 
-// NewPublicConsKeyFromSdkKey takes an SDK public key and returns a PublicConsKey.
+// NewWrappedConsKeyFromTmKey takes the rarely used Tendermint (non-proto) format and
+// returns a WrappedConsKey.
+func NewWrappedConsKeyFromTmKey(tmKey tmcrypto.PubKey) WrappedConsKey {
+	tmProtoKey, err := encoding.PubKeyToProto(tmKey)
+	if err != nil {
+		return nil
+	}
+	switch tmProtoKey.Sum.(type) {
+	case *tmprotocrypto.PublicKey_Ed25519:
+		return &wrappedConsKeyImpl{
+			tmProtoKey: &tmProtoKey,
+			tmKey:      tmKey,
+		}
+	default:
+		return nil
+	}
+}
+
+// NewWrappedConsKeyFromSdkKey takes an SDK public key and returns a WrappedConsKey.
 // It validates the key, and as a side effect, it sets the TmKey field.
 // No other fields are set. It only accepts ed25519 keys.
 func NewWrappedConsKeyFromSdkKey(sdkKey cryptotypes.PubKey) WrappedConsKey {
 	// Convert the public key to a tendermint public key.
-	tmKey, err := cryptocodec.ToTmProtoPublicKey(sdkKey)
+	tmProtoKey, err := cryptocodec.ToTmProtoPublicKey(sdkKey)
 	if err != nil {
 		return nil
 	}
 	// Check if the tmKey so created is an ed25519 key.
-	switch tmKey.Sum.(type) {
+	switch tmProtoKey.Sum.(type) {
 	case *tmprotocrypto.PublicKey_Ed25519:
 		return &wrappedConsKeyImpl{
-			tmKey:  &tmKey,
-			sdkKey: sdkKey,
+			tmProtoKey: &tmProtoKey,
+			sdkKey:     sdkKey,
 		}
 	default:
 		return nil
@@ -140,7 +164,7 @@ func NewWrappedConsKeyFromSdkKey(sdkKey cryptotypes.PubKey) WrappedConsKey {
 // ToJSON returns the JSON string representation of the public key.
 func (w *wrappedConsKeyImpl) ToJSON() string {
 	if w.jsonString == "" {
-		w.jsonString = tmKeyToJSON(w.tmKey)
+		w.jsonString = tmProtoKeyToJSON(w.tmProtoKey)
 	}
 	return w.jsonString
 }
@@ -148,15 +172,15 @@ func (w *wrappedConsKeyImpl) ToJSON() string {
 // ToHex returns the 32-byte string representation of the public key.
 func (w *wrappedConsKeyImpl) ToHex() string {
 	if w.bytes32String == "" {
-		w.bytes32String = hexutil.Encode(w.tmKey.GetEd25519())
+		w.bytes32String = hexutil.Encode(w.tmProtoKey.GetEd25519())
 	}
 	return w.bytes32String
 }
 
-// ToTmKey returns the tendermint public key.
-func (w *wrappedConsKeyImpl) ToTmKey() *tmprotocrypto.PublicKey {
+// ToTmProtoKey returns the tendermint proto public key.
+func (w *wrappedConsKeyImpl) ToTmProtoKey() *tmprotocrypto.PublicKey {
 	// always initialized, but we return a copy to prevent modification
-	cpy := *w.tmKey
+	cpy := *w.tmProtoKey
 	return &cpy
 }
 
@@ -164,7 +188,7 @@ func (w *wrappedConsKeyImpl) ToTmKey() *tmprotocrypto.PublicKey {
 func (w *wrappedConsKeyImpl) ToSdkKey() cryptotypes.PubKey {
 	if w.sdkKey == nil {
 		// #nosec G703 // only errors if key type is unknown, which cannot happen
-		sdkKey, _ := cryptocodec.FromTmProtoPublicKey(*w.tmKey)
+		sdkKey, _ := cryptocodec.FromTmProtoPublicKey(*w.tmProtoKey)
 		w.sdkKey = sdkKey
 	}
 	return w.sdkKey
@@ -181,13 +205,23 @@ func (w *wrappedConsKeyImpl) ToConsAddr() sdk.ConsAddress {
 	return w.consAddress
 }
 
-// Equals returns true if the public key is the same as the other public key.
-func (w *wrappedConsKeyImpl) Equals(other WrappedConsKey) bool {
-	if w == nil || other == nil {
+// EqualsWrapped returns true if the public key is the same as the other public key.
+func (w *wrappedConsKeyImpl) EqualsWrapped(other WrappedConsKey) bool {
+	if w == nil {
+		if other == nil {
+			return true
+		}
 		return false
 	}
-	// use ToTmKey to compare since it is always initialized
-	return w.ToTmKey().Equal(other.ToTmKey())
+	// use ToTmProtoKey to compare since it is always initialized
+	return w.ToTmProtoKey().Equal(other.ToTmProtoKey())
+}
+
+// ToTmKey returns the rarely used Tendermint (non-proto) format.
+func (w *wrappedConsKeyImpl) ToTmKey() tmcrypto.PubKey {
+	// #nosec G703 // only errors if key type is unknown, which cannot happen
+	res, _ := cryptocodec.ToTmPubKeyInterface(w.ToSdkKey())
+	return res
 }
 
 // validateConsensusKey checks that the key is a JSON with `@type` and `key` keys
@@ -259,7 +293,7 @@ func tmKeyFromHex(key string) (*tmprotocrypto.PublicKey, error) {
 
 // consensusKeyToJSON converts a tendermint public key to a JSON string.
 // It only supports ed25519 keys. It is the reverse of tmKeyFromJSON
-func tmKeyToJSON(key *tmprotocrypto.PublicKey) string {
+func tmProtoKeyToJSON(key *tmprotocrypto.PublicKey) string {
 	pubKey := &jsonPubKey{
 		Type: supportedKeyType,
 		Key:  base64.StdEncoding.EncodeToString(key.GetEd25519()),

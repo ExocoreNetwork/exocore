@@ -66,7 +66,7 @@ func (k Keeper) InitGenesis(
 			panic(fmt.Errorf("failed to opt into avs: %s", err))
 		}
 		out = append(out, abci.ValidatorUpdate{
-			PubKey: *wrappedKey.ToTmKey(),
+			PubKey: *wrappedKey.ToTmProtoKey(),
 			Power:  val.Power,
 		})
 	}

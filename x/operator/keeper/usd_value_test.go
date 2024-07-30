@@ -109,23 +109,23 @@ func (suite *OperatorTestSuite) TestAVSUSDValue() {
 }
 
 func (suite *OperatorTestSuite) TestVotingPowerForDogFood() {
-	initialPower := int64(1)
-	initialAVSUSDValue := sdkmath.LegacyNewDec(2)
-	initialOperatorUSDValue := sdkmath.LegacyNewDec(1)
+	initialPowers := suite.Powers
 	addPower := 1
 	addUSDValue := sdkmath.LegacyNewDec(1)
 
-	validators := suite.App.StakingKeeper.GetAllExocoreValidators(suite.Ctx)
-	for _, validator := range validators {
-		_, isFound := suite.App.StakingKeeper.GetValidatorByConsAddr(suite.Ctx, validator.Address)
-		suite.True(isFound)
-		suite.Equal(initialPower, validator.Power)
-	}
-
 	chainIDWithoutRevision := avstypes.ChainIDWithoutRevision(suite.Ctx.ChainID())
 	avsAddress := avstypes.GenerateAVSAddr(avstypes.ChainIDWithoutRevision(suite.Ctx.ChainID())).String()
+	// CommitAfter causes the epoch hook to be triggered, and results in writing
+	// of the AVS usd value to the store.
+	suite.CommitAfter(time.Hour*24 + time.Nanosecond)
+	initialAVSUSDValue, err := suite.App.OperatorKeeper.GetAVSUSDValue(suite.Ctx, avsAddress)
+	suite.NoError(err)
 	operators, _ := suite.App.OperatorKeeper.GetActiveOperatorsForChainID(suite.Ctx, chainIDWithoutRevision)
 	suite.Require().GreaterOrEqual(len(operators), 1)
+	powers, err := suite.App.OperatorKeeper.GetVotePowerForChainID(
+		suite.Ctx, operators, chainIDWithoutRevision,
+	)
+	suite.NoError(err)
 	allAssets, err := suite.App.AssetsKeeper.GetAllStakingAssetsInfo(suite.Ctx)
 	suite.NoError(err)
 	suite.Equal(1, len(allAssets))
@@ -138,14 +138,22 @@ func (suite *OperatorTestSuite) TestVotingPowerForDogFood() {
 	depositAmount := sdkmath.NewIntWithDecimal(2, int(asset.Decimals))
 	delegationAmount := sdkmath.NewIntWithDecimal(int64(addPower), int(asset.Decimals))
 	suite.prepareDeposit(assetAddr, depositAmount)
-	suite.operatorAddr = operators[0]
+	// the order here is unknown, so we need to check which operator has the highest power
+	if powers[0] > powers[1] {
+		suite.operatorAddr = operators[0]
+	} else {
+		suite.operatorAddr = operators[1]
+	}
 	suite.prepareDelegation(true, assetAddr, delegationAmount)
+	optedUSDValues, err := suite.App.OperatorKeeper.GetOperatorOptedUSDValue(suite.Ctx, avsAddress, suite.operatorAddr.String())
+	suite.NoError(err)
+	initialOperatorUSDValue := optedUSDValues.TotalUSDValue
 
 	suite.CommitAfter(time.Hour*24 + time.Nanosecond)
 	avsUSDValue, err := suite.App.OperatorKeeper.GetAVSUSDValue(suite.Ctx, avsAddress)
 	suite.NoError(err)
 	suite.Equal(initialAVSUSDValue.Add(addUSDValue), avsUSDValue)
-	optedUSDValues, err := suite.App.OperatorKeeper.GetOperatorOptedUSDValue(suite.Ctx, avsAddress, suite.operatorAddr.String())
+	optedUSDValues, err = suite.App.OperatorKeeper.GetOperatorOptedUSDValue(suite.Ctx, avsAddress, suite.operatorAddr.String())
 	suite.NoError(err)
 	suite.Equal(initialOperatorUSDValue.Add(addUSDValue), optedUSDValues.TotalUSDValue)
 
@@ -156,8 +164,9 @@ func (suite *OperatorTestSuite) TestVotingPowerForDogFood() {
 	suite.App.StakingKeeper.MarkEpochEnd(suite.Ctx)
 	validatorUpdates := suite.App.StakingKeeper.EndBlock(suite.Ctx)
 	suite.Equal(1, len(validatorUpdates))
-	for _, update := range validatorUpdates {
-		suite.Equal(*consensusKey.ToTmKey(), update.PubKey)
-		suite.Equal(initialPower+int64(addPower), update.Power)
+	for i, update := range validatorUpdates {
+		suite.Equal(*consensusKey.ToTmProtoKey(), update.PubKey)
+		// since initialPowers is sorted by power, we picked the operator with the highest power
+		suite.Equal(initialPowers[i]+int64(addPower), update.Power)
 	}
 }

@@ -54,7 +54,7 @@ func (k Keeper) ApplyValidatorChanges(
 		}
 		// the address is just derived from the public key and
 		// has no correlation with the operator address on Exocore.
-		addr := pubkey.Address()
+		addr := sdk.GetConsAddress(pubkey)
 		val, found := k.GetExocoreValidator(ctx, addr)
 		switch found {
 		case true:
@@ -150,10 +150,10 @@ func (k Keeper) SetExocoreValidator(ctx sdk.Context, validator types.ExocoreVali
 
 // GetExocoreValidator gets a validator based on the pub key derived (consensus) address.
 func (k Keeper) GetExocoreValidator(
-	ctx sdk.Context, addr []byte,
+	ctx sdk.Context, addr sdk.ConsAddress,
 ) (validator types.ExocoreValidator, found bool) {
 	store := ctx.KVStore(k.storeKey)
-	v := store.Get(types.ExocoreValidatorKey(addr))
+	v := store.Get(types.ExocoreValidatorKey(addr.Bytes()))
 	if v == nil {
 		return
 	}
@@ -164,9 +164,9 @@ func (k Keeper) GetExocoreValidator(
 }
 
 // DeleteExocoreValidator deletes a validator based on the pub key derived address.
-func (k Keeper) DeleteExocoreValidator(ctx sdk.Context, addr []byte) {
+func (k Keeper) DeleteExocoreValidator(ctx sdk.Context, addr sdk.ConsAddress) {
 	store := ctx.KVStore(k.storeKey)
-	store.Delete(types.ExocoreValidatorKey(addr))
+	store.Delete(types.ExocoreValidatorKey(addr.Bytes()))
 }
 
 // GetAllExocoreValidators returns all validators in the store.

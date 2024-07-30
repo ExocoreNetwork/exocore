@@ -60,23 +60,23 @@ func (suite *ConsKeyTestSuite) TestNewWrappedConsKeyFromHex() {
 	suite.Nil(key)
 }
 
-func (suite *ConsKeyTestSuite) TestNewWrappedConsKeyFromTmKey() {
+func (suite *ConsKeyTestSuite) TestNewWrappedConsKeyFromTmProtoKey() {
 	// success
 	tmKey := &tmprotocrypto.PublicKey{
 		Sum: &tmprotocrypto.PublicKey_Ed25519{
 			Ed25519: ed25519.GenPrivKey().PubKey().Bytes(),
 		},
 	}
-	key := types.NewWrappedConsKeyFromTmKey(tmKey)
+	key := types.NewWrappedConsKeyFromTmProtoKey(tmKey)
 	suite.NotNil(key)
-	suite.Equal(tmKey, key.ToTmKey())
+	suite.Equal(tmKey, key.ToTmProtoKey())
 	// different type failure
 	tmKey = &tmprotocrypto.PublicKey{
 		Sum: &tmprotocrypto.PublicKey_Secp256K1{
 			Secp256K1: secp256k1.GenPrivKey().PubKey().Bytes(),
 		},
 	}
-	key = types.NewWrappedConsKeyFromTmKey(tmKey)
+	key = types.NewWrappedConsKeyFromTmProtoKey(tmKey)
 	suite.Nil(key)
 }
 

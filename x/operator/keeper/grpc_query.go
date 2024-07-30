@@ -66,7 +66,7 @@ func (k *Keeper) QueryOperatorConsKeyForChainID(
 		return nil, errors.New("no key assigned")
 	}
 	return &types.QueryOperatorConsKeyResponse{
-		PublicKey: *key.ToTmKey(),
+		PublicKey: *key.ToTmProtoKey(),
 		OptingOut: k.IsOperatorRemovingKeyFromChainID(ctx, addr, chainIDWithoutRevision),
 	}, nil
 }
@@ -156,7 +156,7 @@ func (k Keeper) QueryAllOperatorConsAddrsByChainID(
 		if err := ret.Unmarshal(value); err != nil {
 			return err
 		}
-		wrappedKey := types.NewWrappedConsKeyFromTmKey(ret)
+		wrappedKey := types.NewWrappedConsKeyFromTmProtoKey(ret)
 		if wrappedKey == nil {
 			return types.ErrInvalidConsKey
 		}
