@@ -167,7 +167,7 @@ func (p Precompile) TokenFromInputs(ctx sdk.Context, args []interface{}) (types.
 	return asset, nil
 }
 
-func (p Precompile) ClientChainIDFromInputs(ctx sdk.Context, args []interface{}) (uint32, error) {
+func (p Precompile) ClientChainIDFromInputs(_ sdk.Context, args []interface{}) (uint32, error) {
 	inputsLen := len(p.ABI.Methods[MethodIsRegisteredClientChain].Inputs)
 	if len(args) != inputsLen {
 		return 0, fmt.Errorf(cmn.ErrInvalidNumberOfArgs, inputsLen, len(args))
