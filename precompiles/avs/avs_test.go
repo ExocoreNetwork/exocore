@@ -81,9 +81,11 @@ func (s *AVSManagerPrecompileSuite) TestRegisterAVS() {
 		sdk.AccAddress(utiltx.GenerateAddress().Bytes()).String(),
 	}
 	assetID := []string{"11", "22", "33"}
-	minStakeAmount, taskAddr, miniptInOperators, minTotalStakeAmount, avsReward, avsSlash := uint64(3), "0xDF907c29719154eb9872f021d21CAE6E5025d7aB", uint64(3), uint64(3), uint64(3), uint64(3)
+	minStakeAmount, taskAddr := uint64(3), "0xDF907c29719154eb9872f021d21CAE6E5025d7aB"
 	avsUnbondingPeriod, minSelfDelegation := uint64(3), uint64(3)
 	epochIdentifier := epochstypes.DayEpochID
+	params := []uint64{2, 3, 4, 4}
+
 	registerOperator := func() {
 		registerReq := &operatortypes.RegisterOperatorReq{
 			FromAddress: operatorAddress,
@@ -107,10 +109,7 @@ func (s *AVSManagerPrecompileSuite) TestRegisterAVS() {
 			avsUnbondingPeriod,
 			minSelfDelegation,
 			epochIdentifier,
-			miniptInOperators,
-			minTotalStakeAmount,
-			avsReward,
-			avsSlash,
+			params,
 		)
 		s.Require().NoError(err, "failed to pack input")
 		return common.HexToAddress("0x3e108c058e8066DA635321Dc3018294cA82ddEdf"), input
@@ -314,9 +313,10 @@ func (s *AVSManagerPrecompileSuite) TestUpdateAVS() {
 		sdk.AccAddress(utiltx.GenerateAddress().Bytes()).String(),
 	}
 	assetID := []string{"11", "22", "33"}
-	minStakeAmount, taskAddr, minOptInOperators, minTotalStakeAmount, avsReward, avsSlash := uint64(3), "0xDF907c29719154eb9872f021d21CAE6E5025d7aB", uint64(3), uint64(3), uint64(3), uint64(3)
+	minStakeAmount, taskAddr := uint64(3), "0xDF907c29719154eb9872f021d21CAE6E5025d7aB"
 	avsUnbondingPeriod, minSelfDelegation := uint64(3), uint64(3)
 	epochIdentifier := epochstypes.DayEpochID
+	params := []uint64{2, 3, 4, 4}
 	commonMalleate := func() (common.Address, []byte) {
 		input, err := s.precompile.Pack(
 			avs.MethodUpdateAVS,
@@ -330,10 +330,7 @@ func (s *AVSManagerPrecompileSuite) TestUpdateAVS() {
 			avsUnbondingPeriod,
 			minSelfDelegation,
 			epochIdentifier,
-			minOptInOperators,
-			minTotalStakeAmount,
-			avsReward,
-			avsSlash,
+			params,
 		)
 		s.Require().NoError(err, "failed to pack input")
 		return common.HexToAddress("0x3e108c058e8066DA635321Dc3018294cA82ddEdf"), input

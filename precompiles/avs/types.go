@@ -90,28 +90,20 @@ func (p Precompile) GetAVSParamsFromInputs(_ sdk.Context, args []interface{}) (*
 	// The parameters below are used when creating tasks, to ensure that the minimum criteria are met by the set
 	// of operators.
 
-	minOptInOperators, ok := args[10].(uint64)
-	if !ok || minOptInOperators == 0 {
-		return nil, fmt.Errorf(exocmn.ErrContractInputParaOrType, 10, "uint64", minOptInOperators)
+	taskParam, ok := args[10].([]uint64)
+	if !ok || taskParam == nil || len(taskParam) != 4 {
+		return nil, fmt.Errorf(exocmn.ErrContractInputParaOrType, 10, "[]string", taskParam)
 	}
+	minOptInOperators := taskParam[0]
 	avsParams.MinOptInOperators = minOptInOperators
 
-	minTotalStakeAmount, ok := args[11].(uint64)
-	if !ok || minTotalStakeAmount == 0 {
-		return nil, fmt.Errorf(exocmn.ErrContractInputParaOrType, 11, "uint64", minTotalStakeAmount)
-	}
+	minTotalStakeAmount := taskParam[1]
 	avsParams.MinTotalStakeAmount = minTotalStakeAmount
 
-	avsReward, ok := args[12].(uint64)
-	if !ok || avsReward == 0 {
-		return nil, fmt.Errorf(exocmn.ErrContractInputParaOrType, 12, "uint64", avsReward)
-	}
+	avsReward := taskParam[2]
 	avsParams.AvsReward = avsReward
 
-	avsSlash, ok := args[13].(uint64)
-	if !ok || avsSlash == 0 {
-		return nil, fmt.Errorf(exocmn.ErrContractInputParaOrType, 13, "uint64", avsSlash)
-	}
+	avsSlash := taskParam[3]
 	avsParams.AvsSlash = avsSlash
 
 	return avsParams, nil

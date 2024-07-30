@@ -56,6 +56,7 @@ type AVSRegisterOrDeregisterParams struct {
 	AvsOwnerAddress []string
 	// AssetID is the list of asset IDs that the AVS is allowed to use.
 	AssetID             []string
+	Params              []string
 	UnbondingPeriod     uint64
 	MinSelfDelegation   uint64
 	EpochIdentifier     string

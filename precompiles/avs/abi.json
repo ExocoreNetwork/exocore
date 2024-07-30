@@ -1,750 +1,687 @@
 [
 	{
-	  "type": "function",
-	  "name": "createTask",
-	  "inputs": [
-		{
-		  "name": "name",
-		  "type": "string",
-		  "internalType": "string"
-		},
-		{
-		  "name": "data",
-		  "type": "bytes",
-		  "internalType": "bytes"
-		},
-		{
-		  "name": "taskId",
-		  "type": "string",
-		  "internalType": "string"
-		},
-		{
-		  "name": "taskResponsePeriod",
-		  "type": "uint64",
-		  "internalType": "uint64"
-		},
-		{
-		  "name": "taskChallengePeriod",
-		  "type": "uint64",
-		  "internalType": "uint64"
-		},
-		{
-		  "name": "thresholdPercentage",
-		  "type": "uint64",
-		  "internalType": "uint64"
-		}
-	  ],
-	  "outputs": [
-		{
-		  "name": "success",
-		  "type": "bool",
-		  "internalType": "bool"
-		}
-	  ],
-	  "stateMutability": "nonpayable"
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "string",
+				"name": "taskContractAddress",
+				"type": "string"
+			},
+			{
+				"indexed": true,
+				"internalType": "string",
+				"name": "taskId",
+				"type": "string"
+			},
+			{
+				"indexed": false,
+				"internalType": "string",
+				"name": "name",
+				"type": "string"
+			},
+			{
+				"indexed": false,
+				"internalType": "bytes",
+				"name": "data",
+				"type": "bytes"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint64",
+				"name": "taskResponsePeriod",
+				"type": "uint64"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint64",
+				"name": "taskChallengePeriod",
+				"type": "uint64"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint64",
+				"name": "thresholdPercentage",
+				"type": "uint64"
+			}
+		],
+		"name": "CreateTask",
+		"type": "event"
 	},
 	{
-	  "type": "function",
-	  "name": "deregisterAVS",
-	  "inputs": [
-		{
-		  "name": "avsName",
-		  "type": "string",
-		  "internalType": "string"
-		}
-	  ],
-	  "outputs": [
-		{
-		  "name": "success",
-		  "type": "bool",
-		  "internalType": "bool"
-		}
-	  ],
-	  "stateMutability": "nonpayable"
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "string",
+				"name": "avsAddress",
+				"type": "string"
+			},
+			{
+				"indexed": false,
+				"internalType": "string",
+				"name": "avsName",
+				"type": "string"
+			}
+		],
+		"name": "DeregisterAVS",
+		"type": "event"
 	},
 	{
-	  "type": "function",
-	  "name": "deregisterOperatorFromAVS",
-	  "inputs": [],
-	  "outputs": [
-		{
-		  "name": "success",
-		  "type": "bool",
-		  "internalType": "bool"
-		}
-	  ],
-	  "stateMutability": "nonpayable"
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "string",
+				"name": "operator",
+				"type": "string"
+			},
+			{
+				"indexed": true,
+				"internalType": "string",
+				"name": "avsAddress",
+				"type": "string"
+			}
+		],
+		"name": "DeregisterOperatorFromAVS",
+		"type": "event"
 	},
 	{
-	  "type": "function",
-	  "name": "getOptInOperators",
-	  "inputs": [
-		{
-		  "name": "avsAddress",
-		  "type": "address",
-		  "internalType": "address"
-		}
-	  ],
-	  "outputs": [
-		{
-		  "name": "operators",
-		  "type": "string[]",
-		  "internalType": "string[]"
-		}
-	  ],
-	  "stateMutability": "nonpayable"
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "string",
+				"name": "avsAddress",
+				"type": "string"
+			},
+			{
+				"indexed": false,
+				"internalType": "string",
+				"name": "avsName",
+				"type": "string"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint64",
+				"name": "minStakeAmount",
+				"type": "uint64"
+			},
+			{
+				"indexed": false,
+				"internalType": "address",
+				"name": "taskAddr",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"internalType": "address",
+				"name": "slashAddr",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"internalType": "address",
+				"name": "rewardAddr",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"internalType": "address[]",
+				"name": "avsOwnerAddress",
+				"type": "address[]"
+			},
+			{
+				"indexed": false,
+				"internalType": "string[]",
+				"name": "assetIds",
+				"type": "string[]"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint64",
+				"name": "avsUnbondingPeriod",
+				"type": "uint64"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint64",
+				"name": "minSelfDelegation",
+				"type": "uint64"
+			},
+			{
+				"indexed": false,
+				"internalType": "string",
+				"name": "epochIdentifier",
+				"type": "string"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint64[]",
+				"name": "params",
+				"type": "uint64[]"
+			}
+		],
+		"name": "RegisterAVS",
+		"type": "event"
 	},
 	{
-	  "type": "function",
-	  "name": "getRegisteredPubkey",
-	  "inputs": [
-		{
-		  "name": "operator",
-		  "type": "string",
-		  "internalType": "string"
-		}
-	  ],
-	  "outputs": [
-		{
-		  "name": "pubkey",
-		  "type": "bytes",
-		  "internalType": "bytes"
-		}
-	  ],
-	  "stateMutability": "nonpayable"
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "string",
+				"name": "operator",
+				"type": "string"
+			},
+			{
+				"indexed": false,
+				"internalType": "string",
+				"name": "name",
+				"type": "string"
+			},
+			{
+				"indexed": false,
+				"internalType": "bytes",
+				"name": "pubKey",
+				"type": "bytes"
+			},
+			{
+				"indexed": false,
+				"internalType": "bytes",
+				"name": "pubkeyRegistrationSignature",
+				"type": "bytes"
+			},
+			{
+				"indexed": false,
+				"internalType": "bytes",
+				"name": "pubkeyRegistrationMessageHash",
+				"type": "bytes"
+			}
+		],
+		"name": "RegisterBLSPublicKey",
+		"type": "event"
 	},
 	{
-	  "type": "function",
-	  "name": "registerAVS",
-	  "inputs": [
-		{
-		  "name": "avsName",
-		  "type": "string",
-		  "internalType": "string"
-		},
-		{
-		  "name": "minStakeAmount",
-		  "type": "uint64",
-		  "internalType": "uint64"
-		},
-		{
-		  "name": "taskAddr",
-		  "type": "address",
-		  "internalType": "address"
-		},
-		{
-		  "name": "slashAddr",
-		  "type": "address",
-		  "internalType": "address"
-		},
-		{
-		  "name": "rewardAddr",
-		  "type": "address",
-		  "internalType": "address"
-		},
-		{
-		  "name": "avsOwnerAddress",
-		  "type": "string[]",
-		  "internalType": "string[]"
-		},
-		{
-		  "name": "assetIds",
-		  "type": "string[]",
-		  "internalType": "string[]"
-		},
-		{
-		  "name": "avsUnbondingPeriod",
-		  "type": "uint64",
-		  "internalType": "uint64"
-		},
-		{
-		  "name": "minSelfDelegation",
-		  "type": "uint64",
-		  "internalType": "uint64"
-		},
-		{
-		  "name": "epochIdentifier",
-		  "type": "string",
-		  "internalType": "string"
-		},
-		{
-		  "name": "miniOptInOperators",
-		  "type": "uint64",
-		  "internalType": "uint64"
-		},
-		{
-		  "name": "minTotalStakeAmount",
-		  "type": "uint64",
-		  "internalType": "uint64"
-		},
-		{
-		  "name": "avsReward",
-		  "type": "uint64",
-		  "internalType": "uint64"
-		},
-		{
-		  "name": "avsSlash",
-		  "type": "uint64",
-		  "internalType": "uint64"
-		}
-	  ],
-	  "outputs": [
-		{
-		  "name": "success",
-		  "type": "bool",
-		  "internalType": "bool"
-		}
-	  ],
-	  "stateMutability": "nonpayable"
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "string",
+				"name": "operator",
+				"type": "string"
+			},
+			{
+				"indexed": true,
+				"internalType": "string",
+				"name": "avsAddress",
+				"type": "string"
+			}
+		],
+		"name": "RegisterOperatorToAVS",
+		"type": "event"
 	},
 	{
-	  "type": "function",
-	  "name": "registerBLSPublicKey",
-	  "inputs": [
-		{
-		  "name": "operator",
-		  "type": "string",
-		  "internalType": "string"
-		},
-		{
-		  "name": "name",
-		  "type": "string",
-		  "internalType": "string"
-		},
-		{
-		  "name": "pubKey",
-		  "type": "bytes",
-		  "internalType": "bytes"
-		},
-		{
-		  "name": "pubkeyRegistrationSignature",
-		  "type": "bytes",
-		  "internalType": "bytes"
-		},
-		{
-		  "name": "pubkeyRegistrationMessageHash",
-		  "type": "bytes",
-		  "internalType": "bytes"
-		}
-	  ],
-	  "outputs": [
-		{
-		  "name": "success",
-		  "type": "bool",
-		  "internalType": "bool"
-		}
-	  ],
-	  "stateMutability": "nonpayable"
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "string",
+				"name": "taskContractAddress",
+				"type": "string"
+			},
+			{
+				"indexed": true,
+				"internalType": "string",
+				"name": "taskId",
+				"type": "string"
+			},
+			{
+				"indexed": false,
+				"internalType": "string",
+				"name": "aggregator",
+				"type": "string"
+			},
+			{
+				"indexed": false,
+				"internalType": "string",
+				"name": "avsAddress",
+				"type": "string"
+			},
+			{
+				"indexed": false,
+				"internalType": "bytes",
+				"name": "operatorStatuses",
+				"type": "bytes"
+			}
+		],
+		"name": "SubmitProof",
+		"type": "event"
 	},
 	{
-	  "type": "function",
-	  "name": "registerOperatorToAVS",
-	  "inputs": [],
-	  "outputs": [
-		{
-		  "name": "success",
-		  "type": "bool",
-		  "internalType": "bool"
-		}
-	  ],
-	  "stateMutability": "nonpayable"
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "string",
+				"name": "avsAddress",
+				"type": "string"
+			},
+			{
+				"indexed": false,
+				"internalType": "string",
+				"name": "avsName",
+				"type": "string"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint64",
+				"name": "minStakeAmount",
+				"type": "uint64"
+			},
+			{
+				"indexed": false,
+				"internalType": "address",
+				"name": "taskAddr",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"internalType": "address",
+				"name": "slashAddr",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"internalType": "address",
+				"name": "rewardAddr",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"internalType": "address[]",
+				"name": "avsOwnerAddress",
+				"type": "address[]"
+			},
+			{
+				"indexed": false,
+				"internalType": "string[]",
+				"name": "assetIds",
+				"type": "string[]"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint64",
+				"name": "avsUnbondingPeriod",
+				"type": "uint64"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint64",
+				"name": "minSelfDelegation",
+				"type": "uint64"
+			},
+			{
+				"indexed": false,
+				"internalType": "string",
+				"name": "epochIdentifier",
+				"type": "string"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint64[]",
+				"name": "params",
+				"type": "uint64[]"
+			}
+		],
+		"name": "UpdateAVS",
+		"type": "event"
 	},
 	{
-	  "type": "function",
-	  "name": "submitProof",
-	  "inputs": [
-		{
-		  "name": "taskId",
-		  "type": "string",
-		  "internalType": "string"
-		},
-		{
-		  "name": "taskContractAddress",
-		  "type": "string",
-		  "internalType": "string"
-		},
-		{
-		  "name": "aggregator",
-		  "type": "string",
-		  "internalType": "string"
-		},
-		{
-		  "name": "avsAddress",
-		  "type": "string",
-		  "internalType": "string"
-		},
-		{
-		  "name": "operatorStatus",
-		  "type": "bytes",
-		  "internalType": "bytes"
-		}
-	  ],
-	  "outputs": [
-		{
-		  "name": "success",
-		  "type": "bool",
-		  "internalType": "bool"
-		}
-	  ],
-	  "stateMutability": "nonpayable"
+		"inputs": [
+			{
+				"internalType": "string",
+				"name": "name",
+				"type": "string"
+			},
+			{
+				"internalType": "bytes",
+				"name": "data",
+				"type": "bytes"
+			},
+			{
+				"internalType": "string",
+				"name": "taskId",
+				"type": "string"
+			},
+			{
+				"internalType": "uint64",
+				"name": "taskResponsePeriod",
+				"type": "uint64"
+			},
+			{
+				"internalType": "uint64",
+				"name": "taskChallengePeriod",
+				"type": "uint64"
+			},
+			{
+				"internalType": "uint64",
+				"name": "thresholdPercentage",
+				"type": "uint64"
+			}
+		],
+		"name": "createTask",
+		"outputs": [
+			{
+				"internalType": "bool",
+				"name": "success",
+				"type": "bool"
+			}
+		],
+		"stateMutability": "nonpayable",
+		"type": "function"
 	},
 	{
-	  "type": "function",
-	  "name": "updateAVS",
-	  "inputs": [
-		{
-		  "name": "avsName",
-		  "type": "string",
-		  "internalType": "string"
-		},
-		{
-		  "name": "minStakeAmount",
-		  "type": "uint64",
-		  "internalType": "uint64"
-		},
-		{
-		  "name": "taskAddr",
-		  "type": "address",
-		  "internalType": "address"
-		},
-		{
-		  "name": "slashAddr",
-		  "type": "address",
-		  "internalType": "address"
-		},
-		{
-		  "name": "rewardAddr",
-		  "type": "address",
-		  "internalType": "address"
-		},
-		{
-		  "name": "avsOwnerAddress",
-		  "type": "string[]",
-		  "internalType": "string[]"
-		},
-		{
-		  "name": "assetIds",
-		  "type": "string[]",
-		  "internalType": "string[]"
-		},
-		{
-		  "name": "avsUnbondingPeriod",
-		  "type": "uint64",
-		  "internalType": "uint64"
-		},
-		{
-		  "name": "minSelfDelegation",
-		  "type": "uint64",
-		  "internalType": "uint64"
-		},
-		{
-		  "name": "epochIdentifier",
-		  "type": "string",
-		  "internalType": "string"
-		},
-		{
-		  "name": "miniOptInOperators",
-		  "type": "uint64",
-		  "internalType": "uint64"
-		},
-		{
-		  "name": "minTotalStakeAmount",
-		  "type": "uint64",
-		  "internalType": "uint64"
-		},
-		{
-		  "name": "avsReward",
-		  "type": "uint64",
-		  "internalType": "uint64"
-		},
-		{
-		  "name": "avsSlash",
-		  "type": "uint64",
-		  "internalType": "uint64"
-		}
-	  ],
-	  "outputs": [
-		{
-		  "name": "success",
-		  "type": "bool",
-		  "internalType": "bool"
-		}
-	  ],
-	  "stateMutability": "nonpayable"
+		"inputs": [
+			{
+				"internalType": "string",
+				"name": "avsName",
+				"type": "string"
+			}
+		],
+		"name": "deregisterAVS",
+		"outputs": [
+			{
+				"internalType": "bool",
+				"name": "success",
+				"type": "bool"
+			}
+		],
+		"stateMutability": "nonpayable",
+		"type": "function"
 	},
 	{
-	  "type": "event",
-	  "name": "CreateTask",
-	  "inputs": [
-		{
-		  "name": "taskContractAddress",
-		  "type": "string",
-		  "indexed": true,
-		  "internalType": "string"
-		},
-		{
-		  "name": "taskId",
-		  "type": "string",
-		  "indexed": true,
-		  "internalType": "string"
-		},
-		{
-		  "name": "name",
-		  "type": "string",
-		  "indexed": false,
-		  "internalType": "string"
-		},
-		{
-		  "name": "data",
-		  "type": "bytes",
-		  "indexed": false,
-		  "internalType": "bytes"
-		},
-		{
-		  "name": "taskResponsePeriod",
-		  "type": "uint64",
-		  "indexed": false,
-		  "internalType": "uint64"
-		},
-		{
-		  "name": "taskChallengePeriod",
-		  "type": "uint64",
-		  "indexed": false,
-		  "internalType": "uint64"
-		},
-		{
-		  "name": "thresholdPercentage",
-		  "type": "uint64",
-		  "indexed": false,
-		  "internalType": "uint64"
-		}
-	  ],
-	  "anonymous": false
+		"inputs": [
+
+		],
+		"name": "deregisterOperatorFromAVS",
+		"outputs": [
+			{
+				"internalType": "bool",
+				"name": "success",
+				"type": "bool"
+			}
+		],
+		"stateMutability": "nonpayable",
+		"type": "function"
 	},
 	{
-	  "type": "event",
-	  "name": "DeregisterAVS",
-	  "inputs": [
-		{
-		  "name": "avsAddress",
-		  "type": "string",
-		  "indexed": true,
-		  "internalType": "string"
-		},
-		{
-		  "name": "avsName",
-		  "type": "string",
-		  "indexed": false,
-		  "internalType": "string"
-		}
-	  ],
-	  "anonymous": false
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "avsAddress",
+				"type": "address"
+			}
+		],
+		"name": "getOptInOperators",
+		"outputs": [
+			{
+				"internalType": "string[]",
+				"name": "operators",
+				"type": "string[]"
+			}
+		],
+		"stateMutability": "nonpayable",
+		"type": "function"
 	},
 	{
-	  "type": "event",
-	  "name": "DeregisterOperatorFromAVS",
-	  "inputs": [
-		{
-		  "name": "operator",
-		  "type": "string",
-		  "indexed": true,
-		  "internalType": "string"
-		},
-		{
-		  "name": "avsAddress",
-		  "type": "string",
-		  "indexed": true,
-		  "internalType": "string"
-		}
-	  ],
-	  "anonymous": false
+		"inputs": [
+			{
+				"internalType": "string",
+				"name": "operator",
+				"type": "string"
+			}
+		],
+		"name": "getRegisteredPubkey",
+		"outputs": [
+			{
+				"internalType": "bytes",
+				"name": "pubkey",
+				"type": "bytes"
+			}
+		],
+		"stateMutability": "nonpayable",
+		"type": "function"
 	},
 	{
-	  "type": "event",
-	  "name": "RegisterAVS",
-	  "inputs": [
-		{
-		  "name": "avsAddress",
-		  "type": "string",
-		  "indexed": true,
-		  "internalType": "string"
-		},
-		{
-		  "name": "avsName",
-		  "type": "string",
-		  "indexed": false,
-		  "internalType": "string"
-		},
-		{
-		  "name": "minStakeAmount",
-		  "type": "uint64",
-		  "indexed": false,
-		  "internalType": "uint64"
-		},
-		{
-		  "name": "taskAddr",
-		  "type": "address",
-		  "indexed": false,
-		  "internalType": "address"
-		},
-		{
-		  "name": "slashAddr",
-		  "type": "address",
-		  "indexed": false,
-		  "internalType": "address"
-		},
-		{
-		  "name": "rewardAddr",
-		  "type": "address",
-		  "indexed": false,
-		  "internalType": "address"
-		},
-		{
-		  "name": "avsOwnerAddress",
-		  "type": "address[]",
-		  "indexed": false,
-		  "internalType": "address[]"
-		},
-		{
-		  "name": "assetIds",
-		  "type": "string[]",
-		  "indexed": false,
-		  "internalType": "string[]"
-		},
-		{
-		  "name": "avsUnbondingPeriod",
-		  "type": "uint64",
-		  "indexed": false,
-		  "internalType": "uint64"
-		},
-		{
-		  "name": "minSelfDelegation",
-		  "type": "uint64",
-		  "indexed": false,
-		  "internalType": "uint64"
-		},
-		{
-		  "name": "epochIdentifier",
-		  "type": "string",
-		  "indexed": false,
-		  "internalType": "string"
-		},
-		{
-		  "name": "miniOptInOperators",
-		  "type": "uint64",
-		  "indexed": false,
-		  "internalType": "uint64"
-		},
-		{
-		  "name": "minTotalStakeAmount",
-		  "type": "uint64",
-		  "indexed": false,
-		  "internalType": "uint64"
-		},
-		{
-		  "name": "avsReward",
-		  "type": "uint64",
-		  "indexed": false,
-		  "internalType": "uint64"
-		},
-		{
-		  "name": "avsSlash",
-		  "type": "uint64",
-		  "indexed": false,
-		  "internalType": "uint64"
-		}
-	  ],
-	  "anonymous": false
+		"inputs": [
+			{
+				"internalType": "string",
+				"name": "avsName",
+				"type": "string"
+			},
+			{
+				"internalType": "uint64",
+				"name": "minStakeAmount",
+				"type": "uint64"
+			},
+			{
+				"internalType": "address",
+				"name": "taskAddr",
+				"type": "address"
+			},
+			{
+				"internalType": "address",
+				"name": "slashAddr",
+				"type": "address"
+			},
+			{
+				"internalType": "address",
+				"name": "rewardAddr",
+				"type": "address"
+			},
+			{
+				"internalType": "string[]",
+				"name": "avsOwnerAddress",
+				"type": "string[]"
+			},
+			{
+				"internalType": "string[]",
+				"name": "assetIds",
+				"type": "string[]"
+			},
+			{
+				"internalType": "uint64",
+				"name": "avsUnbondingPeriod",
+				"type": "uint64"
+			},
+			{
+				"internalType": "uint64",
+				"name": "minSelfDelegation",
+				"type": "uint64"
+			},
+			{
+				"internalType": "string",
+				"name": "epochIdentifier",
+				"type": "string"
+			},
+			{
+				"internalType": "uint64[]",
+				"name": "params",
+				"type": "uint64[]"
+			}
+		],
+		"name": "registerAVS",
+		"outputs": [
+			{
+				"internalType": "bool",
+				"name": "success",
+				"type": "bool"
+			}
+		],
+		"stateMutability": "nonpayable",
+		"type": "function"
 	},
 	{
-	  "type": "event",
-	  "name": "RegisterBLSPublicKey",
-	  "inputs": [
-		{
-		  "name": "operator",
-		  "type": "string",
-		  "indexed": true,
-		  "internalType": "string"
-		},
-		{
-		  "name": "name",
-		  "type": "string",
-		  "indexed": false,
-		  "internalType": "string"
-		},
-		{
-		  "name": "pubKey",
-		  "type": "bytes",
-		  "indexed": false,
-		  "internalType": "bytes"
-		},
-		{
-		  "name": "pubkeyRegistrationSignature",
-		  "type": "bytes",
-		  "indexed": false,
-		  "internalType": "bytes"
-		},
-		{
-		  "name": "pubkeyRegistrationMessageHash",
-		  "type": "bytes",
-		  "indexed": false,
-		  "internalType": "bytes"
-		}
-	  ],
-	  "anonymous": false
+		"inputs": [
+			{
+				"internalType": "string",
+				"name": "operator",
+				"type": "string"
+			},
+			{
+				"internalType": "string",
+				"name": "name",
+				"type": "string"
+			},
+			{
+				"internalType": "bytes",
+				"name": "pubKey",
+				"type": "bytes"
+			},
+			{
+				"internalType": "bytes",
+				"name": "pubkeyRegistrationSignature",
+				"type": "bytes"
+			},
+			{
+				"internalType": "bytes",
+				"name": "pubkeyRegistrationMessageHash",
+				"type": "bytes"
+			}
+		],
+		"name": "registerBLSPublicKey",
+		"outputs": [
+			{
+				"internalType": "bool",
+				"name": "success",
+				"type": "bool"
+			}
+		],
+		"stateMutability": "nonpayable",
+		"type": "function"
 	},
 	{
-	  "type": "event",
-	  "name": "RegisterOperatorToAVS",
-	  "inputs": [
-		{
-		  "name": "operator",
-		  "type": "string",
-		  "indexed": true,
-		  "internalType": "string"
-		},
-		{
-		  "name": "avsAddress",
-		  "type": "string",
-		  "indexed": true,
-		  "internalType": "string"
-		}
-	  ],
-	  "anonymous": false
+		"inputs": [
+
+		],
+		"name": "registerOperatorToAVS",
+		"outputs": [
+			{
+				"internalType": "bool",
+				"name": "success",
+				"type": "bool"
+			}
+		],
+		"stateMutability": "nonpayable",
+		"type": "function"
 	},
 	{
-	  "type": "event",
-	  "name": "SubmitProof",
-	  "inputs": [
-		{
-		  "name": "taskContractAddress",
-		  "type": "string",
-		  "indexed": true,
-		  "internalType": "string"
-		},
-		{
-		  "name": "taskId",
-		  "type": "string",
-		  "indexed": true,
-		  "internalType": "string"
-		},
-		{
-		  "name": "aggregator",
-		  "type": "string",
-		  "indexed": false,
-		  "internalType": "string"
-		},
-		{
-		  "name": "avsAddress",
-		  "type": "string",
-		  "indexed": false,
-		  "internalType": "string"
-		},
-		{
-		  "name": "operatorStatuses",
-		  "type": "bytes",
-		  "indexed": false,
-		  "internalType": "bytes"
-		}
-	  ],
-	  "anonymous": false
+		"inputs": [
+			{
+				"internalType": "string",
+				"name": "taskId",
+				"type": "string"
+			},
+			{
+				"internalType": "string",
+				"name": "taskContractAddress",
+				"type": "string"
+			},
+			{
+				"internalType": "string",
+				"name": "aggregator",
+				"type": "string"
+			},
+			{
+				"internalType": "string",
+				"name": "avsAddress",
+				"type": "string"
+			},
+			{
+				"internalType": "bytes",
+				"name": "operatorStatus",
+				"type": "bytes"
+			}
+		],
+		"name": "submitProof",
+		"outputs": [
+			{
+				"internalType": "bool",
+				"name": "success",
+				"type": "bool"
+			}
+		],
+		"stateMutability": "nonpayable",
+		"type": "function"
 	},
 	{
-	  "type": "event",
-	  "name": "UpdateAVS",
-	  "inputs": [
-		{
-		  "name": "avsAddress",
-		  "type": "string",
-		  "indexed": true,
-		  "internalType": "string"
-		},
-		{
-		  "name": "avsName",
-		  "type": "string",
-		  "indexed": false,
-		  "internalType": "string"
-		},
-		{
-		  "name": "minStakeAmount",
-		  "type": "uint64",
-		  "indexed": false,
-		  "internalType": "uint64"
-		},
-		{
-		  "name": "taskAddr",
-		  "type": "address",
-		  "indexed": false,
-		  "internalType": "address"
-		},
-		{
-		  "name": "slashAddr",
-		  "type": "address",
-		  "indexed": false,
-		  "internalType": "address"
-		},
-		{
-		  "name": "rewardAddr",
-		  "type": "address",
-		  "indexed": false,
-		  "internalType": "address"
-		},
-		{
-		  "name": "avsOwnerAddress",
-		  "type": "address[]",
-		  "indexed": false,
-		  "internalType": "address[]"
-		},
-		{
-		  "name": "assetIds",
-		  "type": "string[]",
-		  "indexed": false,
-		  "internalType": "string[]"
-		},
-		{
-		  "name": "avsUnbondingPeriod",
-		  "type": "uint64",
-		  "indexed": false,
-		  "internalType": "uint64"
-		},
-		{
-		  "name": "minSelfDelegation",
-		  "type": "uint64",
-		  "indexed": false,
-		  "internalType": "uint64"
-		},
-		{
-		  "name": "epochIdentifier",
-		  "type": "string",
-		  "indexed": false,
-		  "internalType": "string"
-		},
-		{
-		  "name": "miniOptInOperators",
-		  "type": "uint64",
-		  "indexed": false,
-		  "internalType": "uint64"
-		},
-		{
-		  "name": "minTotalStakeAmount",
-		  "type": "uint64",
-		  "indexed": false,
-		  "internalType": "uint64"
-		},
-		{
-		  "name": "avsReward",
-		  "type": "uint64",
-		  "indexed": false,
-		  "internalType": "uint64"
-		},
-		{
-		  "name": "avsSlash",
-		  "type": "uint64",
-		  "indexed": false,
-		  "internalType": "uint64"
-		}
-	  ],
-	  "anonymous": false
+		"inputs": [
+			{
+				"internalType": "string",
+				"name": "avsName",
+				"type": "string"
+			},
+			{
+				"internalType": "uint64",
+				"name": "minStakeAmount",
+				"type": "uint64"
+			},
+			{
+				"internalType": "address",
+				"name": "taskAddr",
+				"type": "address"
+			},
+			{
+				"internalType": "address",
+				"name": "slashAddr",
+				"type": "address"
+			},
+			{
+				"internalType": "address",
+				"name": "rewardAddr",
+				"type": "address"
+			},
+			{
+				"internalType": "string[]",
+				"name": "avsOwnerAddress",
+				"type": "string[]"
+			},
+			{
+				"internalType": "string[]",
+				"name": "assetIds",
+				"type": "string[]"
+			},
+			{
+				"internalType": "uint64",
+				"name": "avsUnbondingPeriod",
+				"type": "uint64"
+			},
+			{
+				"internalType": "uint64",
+				"name": "minSelfDelegation",
+				"type": "uint64"
+			},
+			{
+				"internalType": "string",
+				"name": "epochIdentifier",
+				"type": "string"
+			},
+			{
+				"internalType": "uint64[]",
+				"name": "params",
+				"type": "uint64[]"
+			}
+		],
+		"name": "updateAVS",
+		"outputs": [
+			{
+				"internalType": "bool",
+				"name": "success",
+				"type": "bool"
+			}
+		],
+		"stateMutability": "nonpayable",
+		"type": "function"
 	}
-  ]
-  
+]

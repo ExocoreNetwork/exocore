@@ -24,10 +24,10 @@ interface IAVSManager {
     /// @param avsUnbondingPeriod The unbonding duration of AVS.
     /// @param minSelfDelegation The minimum delegation amount for an operator.
     /// @param epochIdentifier The AVS epoch identifier.
-    /// @param miniOptInOperators The minimum number of opt-in operators.
-    /// @param minTotalStakeAmount The minimum total amount of stake by all operators.
-    /// @param avsReward The proportion of reward for AVS.
-    /// @param avsSlash The proportion of slash for AVS.
+    /// @param params 1.miniOptInOperators The minimum number of opt-in operators.
+    ///2.minTotalStakeAmount The minimum total amount of stake by all operators.
+    ///3.avsReward The proportion of reward for AVS.
+    ///4.avsSlash The proportion of slash for AVS.
     function registerAVS(
         string memory avsName,
         uint64 minStakeAmount,
@@ -39,10 +39,7 @@ interface IAVSManager {
         uint64 avsUnbondingPeriod,
         uint64 minSelfDelegation,
         string memory epochIdentifier,
-        uint64 miniOptInOperators,
-        uint64 minTotalStakeAmount,
-        uint64 avsReward,
-        uint64 avsSlash
+        uint64[] memory params
     ) external returns (bool success);
 
     /// @dev Update AVS info to EXO.
@@ -56,10 +53,10 @@ interface IAVSManager {
     /// @param avsUnbondingPeriod The unbonding duration of AVS.
     /// @param minSelfDelegation The minimum delegation amount for an operator.
     /// @param epochIdentifier The AVS epoch identifier.
-    /// @param miniOptInOperators The minimum number of opt-in operators.
-    /// @param minTotalStakeAmount The minimum total amount of stake by all operators.
-    /// @param avsReward The proportion of reward for AVS.
-    /// @param avsSlash The proportion of slash for AVS.
+    /// @param params 1.miniOptInOperators The minimum number of opt-in operators.
+    ///2.minTotalStakeAmount The minimum total amount of stake by all operators.
+    ///3.avsReward The proportion of reward for AVS.
+    ///4.avsSlash The proportion of slash for AVS.
     function updateAVS(
         string memory avsName,
         uint64 minStakeAmount,
@@ -71,10 +68,7 @@ interface IAVSManager {
         uint64 avsUnbondingPeriod,
         uint64 minSelfDelegation,
         string memory epochIdentifier,
-        uint64 miniOptInOperators,
-        uint64 minTotalStakeAmount,
-        uint64 avsReward,
-        uint64 avsSlash
+        uint64[] memory params
     ) external returns (bool success);
 
     /// @dev Deregister avs from exo
@@ -171,10 +165,10 @@ interface IAVSManager {
     /// @param avsUnbondingPeriod The unbonding duration of AVS.
     /// @param minSelfDelegation The minimum delegation amount for an operator.
     /// @param epochIdentifier The AVS epoch identifier.
-    /// @param miniOptInOperators The minimum number of opt-in operators.
-    /// @param minTotalStakeAmount The minimum total amount of stake by all operators.
-    /// @param avsReward The proportion of reward for AVS.
-    /// @param avsSlash The proportion of slash for AVS.
+    /// @param params 1.miniOptInOperators The minimum number of opt-in operators.
+    ///2.minTotalStakeAmount The minimum total amount of stake by all operators.
+    ///3.avsReward The proportion of reward for AVS.
+    ///4.avsSlash The proportion of slash for AVS.
     event RegisterAVS(
         string indexed avsAddress,
         string avsName,
@@ -187,10 +181,7 @@ interface IAVSManager {
         uint64 avsUnbondingPeriod,
         uint64 minSelfDelegation,
         string epochIdentifier,
-        uint64 miniOptInOperators,
-        uint64 minTotalStakeAmount,
-        uint64 avsReward,
-        uint64 avsSlash
+        uint64[] params
     );
 
     /// @dev UpdateAVS Emitted when `avs` update to exocore.
@@ -205,10 +196,10 @@ interface IAVSManager {
     /// @param avsUnbondingPeriod The unbonding duration of AVS.
     /// @param minSelfDelegation The minimum delegation amount for an operator.
     /// @param epochIdentifier The AVS epoch identifier.
-    /// @param miniOptInOperators The minimum number of opt-in operators.
-    /// @param minTotalStakeAmount The minimum total amount of stake by all operators.
-    /// @param avsReward The proportion of reward for AVS.
-    /// @param avsSlash The proportion of slash for AVS.
+    /// @param params 1.miniOptInOperators The minimum number of opt-in operators.
+    ///2.minTotalStakeAmount The minimum total amount of stake by all operators.
+    ///3.avsReward The proportion of reward for AVS.
+    ///4.avsSlash The proportion of slash for AVS.
     event UpdateAVS(
         string indexed avsAddress,
         string avsName,
@@ -221,10 +212,7 @@ interface IAVSManager {
         uint64 avsUnbondingPeriod,
         uint64 minSelfDelegation,
         string epochIdentifier,
-        uint64 miniOptInOperators,
-        uint64 minTotalStakeAmount,
-        uint64 avsReward,
-        uint64 avsSlash
+        uint64[]  params
     );
 
     /// @dev DeregisterAVS Emitted when `avs` Deregister to exocore.
