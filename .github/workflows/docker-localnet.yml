@@ -1,13 +1,7 @@
 name: Docker build for localnet
 on:
   pull_request:
-    paths:
-      - networks/local/exocore/Dockerfile
-      - networks/Makefile
   push:
-    paths:
-      - networks/local/exocore/Dockerfile
-      - networks/Makefile
     branches:
       - develop
       - main
