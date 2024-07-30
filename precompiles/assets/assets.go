@@ -98,8 +98,8 @@ func (p Precompile) Run(evm *vm.EVM, contract *vm.Contract, readOnly bool) (bz [
 			// TODO: we should figure out root cause and fix this issue to make precompiles work normally
 			bz, err = method.Outputs.Pack(false, new(big.Int))
 		}
-	case MethodRegisterClientChain:
-		bz, err = p.RegisterClientChain(ctx, contract, method, args)
+	case MethodRegisterOrUpdateClientChain:
+		bz, err = p.RegisterOrUpdateClientChain(ctx, contract, method, args)
 		if err != nil {
 			ctx.Logger().Error("internal error when calling assets precompile", "module", "assets precompile", "method", method.Name, "err", err)
 			// for failed cases we expect it returns bool value instead of error
@@ -108,8 +108,8 @@ func (p Precompile) Run(evm *vm.EVM, contract *vm.Contract, readOnly bool) (bz [
 			// TODO: we should figure out root cause and fix this issue to make precompiles work normally
 			bz, err = method.Outputs.Pack(false) // Adjust based on actual needs
 		}
-	case MethodRegisterToken:
-		bz, err = p.RegisterToken(ctx, contract, method, args)
+	case MethodRegisterOrUpdateToken:
+		bz, err = p.RegisterOrUpdateToken(ctx, contract, method, args)
 		if err != nil {
 			ctx.Logger().Error("internal error when calling assets precompile", "module", "assets precompile", "method", method.Name, "err", err)
 			// for failed cases we expect it returns bool value instead of error
@@ -140,14 +140,12 @@ func (p Precompile) Run(evm *vm.EVM, contract *vm.Contract, readOnly bool) (bz [
 }
 
 // IsTransaction checks if the given methodID corresponds to a transaction or query.
-//
-// Available assets transactions are:
-//   - depositTo
-//   - withdrawPrincipal
 func (Precompile) IsTransaction(methodID string) bool {
 	switch methodID {
-	case MethodDepositTo, MethodWithdraw:
+	case MethodDepositTo, MethodWithdraw, MethodRegisterOrUpdateClientChain, MethodRegisterOrUpdateToken:
 		return true
+	case MethodGetClientChains:
+		return false
 	default:
 		return false
 	}

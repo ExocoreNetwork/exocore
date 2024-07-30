@@ -16,16 +16,11 @@ import (
 )
 
 const (
-	// MethodDepositTo defines the ABI method name for the deposit
-	// DepositOrWithdraw transaction.
-	MethodDepositTo = "depositTo"
-	MethodWithdraw  = "withdrawPrincipal"
-
-	MethodGetClientChains = "getClientChains"
-
-	MethodRegisterClientChain = "registerClientChain"
-
-	MethodRegisterToken = "registerToken"
+	MethodDepositTo                   = "depositTo"
+	MethodWithdraw                    = "withdrawPrincipal"
+	MethodGetClientChains             = "getClientChains"
+	MethodRegisterOrUpdateClientChain = "registerOrUpdateClientChain"
+	MethodRegisterOrUpdateToken       = "registerOrUpdateToken"
 )
 
 // DepositOrWithdraw deposit and withdraw the client chain assets for the staker,
@@ -96,7 +91,7 @@ func (p Precompile) GetClientChains(
 	return method.Outputs.Pack(true, ids)
 }
 
-func (p Precompile) RegisterClientChain(
+func (p Precompile) RegisterOrUpdateClientChain(
 	ctx sdk.Context,
 	contract *vm.Contract,
 	method *abi.Method,
@@ -112,41 +107,46 @@ func (p Precompile) RegisterClientChain(
 	if err != nil {
 		return nil, err
 	}
+	updated := p.assetsKeeper.ClientChainExists(ctx, clientChainInfo.LayerZeroChainID)
 	err = p.assetsKeeper.SetClientChainInfo(ctx, clientChainInfo)
 	if err != nil {
 		return nil, err
 	}
-	return method.Outputs.Pack(true)
+	return method.Outputs.Pack(true, updated)
 }
 
-func (p Precompile) RegisterToken(
+func (p Precompile) RegisterOrUpdateToken(
 	ctx sdk.Context,
 	contract *vm.Contract,
 	method *abi.Method,
 	args []interface{},
 ) ([]byte, error) {
-	// check the invalidation of caller contract,the caller must be exoCore LzApp contract
+	// the caller must be the ExocoreGateway contract
 	err := p.assetsKeeper.CheckExocoreGatewayAddr(ctx, contract.CallerAddress)
 	if err != nil {
 		return nil, fmt.Errorf(exocmn.ErrContractCaller, err.Error())
 	}
+
+	// parse inputs
 	asset, err := p.TokenFromInputs(ctx, args)
 	if err != nil {
 		return nil, err
 	}
 
+	// the price feed must exist
 	_, assetID := assetstypes.GetStakeIDAndAssetIDFromStr(asset.LayerZeroChainID, "", asset.Address)
 	if _, err := p.assetsKeeper.GetSpecifiedAssetsPrice(ctx, assetID); err != nil {
 		return nil, err
 	}
 
-	err = p.assetsKeeper.SetStakingAssetInfo(ctx, &assetstypes.StakingAssetInfo{
+	updated := p.assetsKeeper.IsStakingAsset(ctx, assetID)
+	// this is where the magic happens
+	if err := p.assetsKeeper.SetStakingAssetInfo(ctx, &assetstypes.StakingAssetInfo{
 		AssetBasicInfo:     &asset,
 		StakingTotalAmount: sdkmath.NewInt(0),
-	})
-	if err != nil {
+	}); err != nil {
 		return nil, err
 	}
 
-	return method.Outputs.Pack(true)
+	return method.Outputs.Pack(true, updated)
 }

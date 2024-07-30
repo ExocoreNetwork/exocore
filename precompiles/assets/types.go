@@ -61,7 +61,7 @@ func (p Precompile) DepositWithdrawParamsFromInputs(ctx sdk.Context, args []inte
 }
 
 func (p Precompile) ClientChainInfoFromInputs(_ sdk.Context, args []interface{}) (*types.ClientChainInfo, error) {
-	inputsLen := len(p.ABI.Methods[MethodRegisterClientChain].Inputs)
+	inputsLen := len(p.ABI.Methods[MethodRegisterOrUpdateClientChain].Inputs)
 	if len(args) != inputsLen {
 		return nil, fmt.Errorf(cmn.ErrInvalidNumberOfArgs, inputsLen, len(args))
 	}
@@ -109,7 +109,7 @@ func (p Precompile) ClientChainInfoFromInputs(_ sdk.Context, args []interface{})
 }
 
 func (p Precompile) TokenFromInputs(ctx sdk.Context, args []interface{}) (types.AssetInfo, error) {
-	inputsLen := len(p.ABI.Methods[MethodRegisterToken].Inputs)
+	inputsLen := len(p.ABI.Methods[MethodRegisterOrUpdateToken].Inputs)
 	if len(args) != inputsLen {
 		return types.AssetInfo{}, fmt.Errorf(cmn.ErrInvalidNumberOfArgs, inputsLen, len(args))
 	}
