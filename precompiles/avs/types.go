@@ -110,67 +110,98 @@ func (p Precompile) GetAVSParamsFromInputs(_ sdk.Context, args []interface{}) (*
 }
 
 func (p Precompile) GetAVSParamsFromUpdateInputs(_ sdk.Context, args []interface{}) (*avstypes.AVSRegisterOrDeregisterParams, error) {
-	if len(args) != len(p.ABI.Methods[MethodUpdateAVS].Inputs) {
-		return nil, fmt.Errorf(cmn.ErrInvalidNumberOfArgs, len(p.ABI.Methods[MethodUpdateAVS].Inputs), len(args))
+	if len(args) != len(p.ABI.Methods[MethodRegisterAVS].Inputs) {
+		return nil, fmt.Errorf(cmn.ErrInvalidNumberOfArgs, len(p.ABI.Methods[MethodRegisterAVS].Inputs), len(args))
 	}
 	avsParams := &avstypes.AVSRegisterOrDeregisterParams{}
-	avsOwnerAddress, ok := args[0].([]string)
+	avsName, ok := args[0].(string)
 	if !ok {
-		return nil, fmt.Errorf(exocmn.ErrContractInputParaOrType, 0, "[]string", avsOwnerAddress)
-	}
-	if length := len(avsOwnerAddress); length > 0 {
-		exoAddresses := make([]string, length)
-		for i, addr := range avsOwnerAddress {
-			accAddr, err := sdk.AccAddressFromBech32(addr)
-			if err != nil {
-				return nil, fmt.Errorf(exocmn.ErrContractInputParaOrType, 0, "[]string", avsOwnerAddress)
-			}
-			exoAddresses[i] = accAddr.String()
-		}
-		avsParams.AvsOwnerAddress = exoAddresses
-	}
-
-	avsName, ok := args[1].(string)
-	if !ok {
-		return nil, fmt.Errorf(exocmn.ErrContractInputParaOrType, 1, "string", avsName)
+		return nil, fmt.Errorf(exocmn.ErrContractInputParaOrType, 0, "string", avsName)
 	}
 	avsParams.AvsName = avsName
-
-	rewardContractAddr, ok := args[2].(common.Address)
-	if !ok || rewardContractAddr == (common.Address{}) {
-		return nil, fmt.Errorf(exocmn.ErrContractInputParaOrType, 2, "common.Address", rewardContractAddr)
+	// When creating tasks in AVS, check the minimum requirements,minStakeAmount at least greater than 0
+	minStakeAmount, ok := args[1].(uint64)
+	if !ok {
+		return nil, fmt.Errorf(exocmn.ErrContractInputParaOrType, 1, "uint64", minStakeAmount)
 	}
-	avsParams.RewardContractAddr = rewardContractAddr.String()
+	avsParams.MinStakeAmount = minStakeAmount
+
+	taskAddr, ok := args[2].(common.Address)
+	if !ok || taskAddr == (common.Address{}) {
+		return nil, xerrors.Errorf(exocmn.ErrContractInputParaOrType, 2, "common.Address", taskAddr)
+	}
+	avsParams.TaskAddr = taskAddr.String()
 
 	slashContractAddr, ok := args[3].(common.Address)
-	if !ok || slashContractAddr == (common.Address{}) {
-		return nil, fmt.Errorf(exocmn.ErrContractInputParaOrType, 3, "common.Address", slashContractAddr)
+	if !ok {
+		return nil, xerrors.Errorf(exocmn.ErrContractInputParaOrType, 3, "common.Address", slashContractAddr)
 	}
 	avsParams.SlashContractAddr = slashContractAddr.String()
 
-	assetID, ok := args[4].([]string)
+	rewardContractAddr, ok := args[4].(common.Address)
 	if !ok {
-		return nil, fmt.Errorf(exocmn.ErrContractInputParaOrType, 4, "[]string", assetID)
+		return nil, xerrors.Errorf(exocmn.ErrContractInputParaOrType, 4, "common.Address", rewardContractAddr)
+	}
+	avsParams.RewardContractAddr = rewardContractAddr.String()
+
+	// bech32
+	avsOwnerAddress, ok := args[5].([]string)
+	if !ok {
+		return nil, fmt.Errorf(exocmn.ErrContractInputParaOrType, 5, "[]string", avsOwnerAddress)
+	}
+	exoAddresses := make([]string, len(avsOwnerAddress))
+	for i, addr := range avsOwnerAddress {
+		accAddr, err := sdk.AccAddressFromBech32(addr)
+		if err != nil {
+			return nil, fmt.Errorf(exocmn.ErrContractInputParaOrType, 5, "[]string", avsOwnerAddress)
+		}
+		exoAddresses[i] = accAddr.String()
+	}
+	avsParams.AvsOwnerAddress = exoAddresses
+
+	// string, since it is the address_id representation
+	assetID, ok := args[6].([]string)
+	if !ok {
+		return nil, fmt.Errorf(exocmn.ErrContractInputParaOrType, 6, "[]string", assetID)
 	}
 	avsParams.AssetID = assetID
 
-	minSelfDelegation, ok := args[5].(uint64)
-	if !ok || minSelfDelegation == 0 {
-		return nil, fmt.Errorf(exocmn.ErrContractInputParaOrType, 5, "uint64", minSelfDelegation)
-	}
-	avsParams.MinSelfDelegation = minSelfDelegation
-
-	unbondingPeriod, ok := args[6].(uint64)
-	if !ok || unbondingPeriod == 0 {
-		return nil, fmt.Errorf(exocmn.ErrContractInputParaOrType, 6, "uint64", unbondingPeriod)
+	unbondingPeriod, ok := args[7].(uint64)
+	if !ok {
+		return nil, fmt.Errorf(exocmn.ErrContractInputParaOrType, 7, "uint64", unbondingPeriod)
 	}
 	avsParams.UnbondingPeriod = unbondingPeriod
 
-	epochIdentifier, ok := args[7].(string)
+	minSelfDelegation, ok := args[8].(uint64)
 	if !ok {
-		return nil, fmt.Errorf(exocmn.ErrContractInputParaOrType, 7, "string", epochIdentifier)
+		return nil, fmt.Errorf(exocmn.ErrContractInputParaOrType, 8, "uint64", minSelfDelegation)
+	}
+	avsParams.MinSelfDelegation = minSelfDelegation
+
+	epochIdentifier, ok := args[9].(string)
+	if !ok {
+		return nil, fmt.Errorf(exocmn.ErrContractInputParaOrType, 9, "string", epochIdentifier)
 	}
 	avsParams.EpochIdentifier = epochIdentifier
+
+	// The parameters below are used when creating tasks, to ensure that the minimum criteria are met by the set
+	// of operators.
+
+	taskParam, ok := args[10].([]uint64)
+	if !ok || taskParam == nil || len(taskParam) != 4 {
+		return nil, fmt.Errorf(exocmn.ErrContractInputParaOrType, 10, "[]string", taskParam)
+	}
+	minOptInOperators := taskParam[0]
+	avsParams.MinOptInOperators = minOptInOperators
+
+	minTotalStakeAmount := taskParam[1]
+	avsParams.MinTotalStakeAmount = minTotalStakeAmount
+
+	avsReward := taskParam[2]
+	avsParams.AvsReward = avsReward
+
+	avsSlash := taskParam[3]
+	avsParams.AvsSlash = avsSlash
 
 	return avsParams, nil
 }

@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/ethereum/go-ethereum/common"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"golang.org/x/xerrors"
 
@@ -36,9 +38,8 @@ func QueryAVSInfo() *cobra.Command {
 		Long:  "AVSInfo query for current registered AVS",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			_, err := sdk.AccAddressFromBech32(args[0])
-			if err != nil {
-				return xerrors.Errorf("invalid  address,err:%s", err.Error())
+			if !common.IsHexAddress(args[0]) {
+				return xerrors.Errorf("invalid  address,err:%s", types.ErrInvalidAddr)
 			}
 			clientCtx, err := client.GetClientQueryContext(cmd)
 			if err != nil {
