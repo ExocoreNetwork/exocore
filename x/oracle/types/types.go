@@ -13,7 +13,7 @@ type Price struct {
 
 const (
 	DefaultPriceValue   = 1
-	DefaultPriceDecimal = 8
+	DefaultPriceDecimal = 0
 )
 
 func Uint64Bytes(value uint64) []byte {
