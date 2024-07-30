@@ -20,7 +20,7 @@ const (
 	MethodWithdraw                    = "withdrawPrincipal"
 	MethodGetClientChains             = "getClientChains"
 	MethodRegisterOrUpdateClientChain = "registerOrUpdateClientChain"
-	MethodRegisterOrUpdateToken       = "registerOrUpdateToken"
+	MethodRegisterOrUpdateTokens      = "registerOrUpdateTokens"
 )
 
 // DepositOrWithdraw deposit and withdraw the client chain assets for the staker,
@@ -115,7 +115,7 @@ func (p Precompile) RegisterOrUpdateClientChain(
 	return method.Outputs.Pack(true, updated)
 }
 
-func (p Precompile) RegisterOrUpdateToken(
+func (p Precompile) RegisterOrUpdateTokens(
 	ctx sdk.Context,
 	contract *vm.Contract,
 	method *abi.Method,

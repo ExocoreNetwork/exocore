@@ -102,7 +102,7 @@
   },
   {
     "type": "function",
-    "name": "registerOrUpdateToken",
+    "name": "registerOrUpdateTokens",
     "inputs": [
       {
         "name": "clientChainID",

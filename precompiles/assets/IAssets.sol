@@ -67,7 +67,7 @@ interface IAssets {
     /// @param metaData is the arbitrary metadata of the token
     /// @return success if the token registration is successful
     /// @return updated whether the token was added or updated
-    function registerOrUpdateToken(
+    function registerOrUpdateTokens(
         uint32 clientChainID,
         bytes calldata token,
         uint8 decimals,
