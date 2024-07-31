@@ -129,6 +129,7 @@ func (p Params) Validate() error {
 	}
 
 	// validate tokenFeeders
+	feeders := make(map[uint64]*TokenFeeder)
 	for fID, feeder := range p.TokenFeeders {
 		// id==0 is reserved
 		if fID == 0 {
@@ -153,8 +154,26 @@ func (p Params) Validate() error {
 		if feeder.RuleID >= uint64(len(p.Rules)) {
 			return ErrInvalidParams.Wrap("invalid tokenFeeder, non-exist ruleID referred")
 		}
+		// at most on running or future tokenfeeder
+		//	if feederPrev, exists := feeders[feeder.TokenID]; exists {
+		// prev.endBlock > current.startBasedBlock, 1. current.endBlock.]>prev.endBlock invalid. 2. current.endBlock < prev.startBasedBlock invalid:in this case if we want to set an earlier feeder, we should just modify the previous one's startBaseddBlock
+		if prev, exists := feeders[feeder.TokenID]; exists {
+			if prev.EndBlock == 0 {
+				return ErrInvalidParams.Wrap("invalid tokenFeeder, for the same token at most one running or future tokenFeeder without endblock set")
+			}
+			if prev.EndBlock >= feeder.StartBaseBlock {
+				// if one token has more than one feeders including stopped feeders, they should be in order of startBaseBlock
+				return ErrInvalidParams.Wrap("invalid tokenFeeder, for the same token the range of token feeder can't overlap")
+			}
+			// this is one feeder that succeeded the previous one, so we should check the roundID is continuoslly increased
+			prevEndRoundID := prev.StartRoundID + (prev.EndBlock-prev.StartBaseBlock)/prev.Interval
+			if feeder.StartRoundID != prevEndRoundID+1 {
+				return ErrInvalidParams.Wrap("invalid tokenFeeder, for the same token the roundID should be continuous")
+			}
+		}
+		feeders[feeder.TokenID] = feeder
 	}
-
+	//}
 	// validate chain
 	for cID, chain := range p.Chains {
 		// id==0 is reserved
