@@ -106,4 +106,14 @@ var (
 		ModuleName, 22,
 		"the value is nil or zero",
 	)
+
+	ErrNoSuchAvs = errorsmod.Register(
+		ModuleName, 23,
+		"no such avs",
+	)
+
+	ErrInvalidConsKey = errorsmod.Register(
+		ModuleName, 24,
+		"invalid consensus key",
+	)
 )

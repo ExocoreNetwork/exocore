@@ -1,10 +1,13 @@
 package keeper_test
 
-import types "github.com/ExocoreNetwork/exocore/x/avs/types"
+import (
+	types "github.com/ExocoreNetwork/exocore/x/avs/types"
+	"github.com/ethereum/go-ethereum/common"
+)
 
 func (suite *AVSTestSuite) TestTaskInfo() {
 	info := &types.TaskInfo{
-		TaskContractAddress: suite.AccAddress.String(),
+		TaskContractAddress: common.Address(suite.AccAddress.Bytes()).String(),
 		Name:                "test-avstask-01",
 		TaskId:              "avstask01",
 		Data:                []byte("active"),
@@ -15,7 +18,7 @@ func (suite *AVSTestSuite) TestTaskInfo() {
 	err := suite.App.AVSManagerKeeper.SetTaskInfo(suite.Ctx, info)
 	suite.NoError(err)
 
-	getTaskInfo, err := suite.App.AVSManagerKeeper.GetTaskInfo(suite.Ctx, "avstask01", suite.AccAddress.String())
+	getTaskInfo, err := suite.App.AVSManagerKeeper.GetTaskInfo(suite.Ctx, "avstask01", common.Address(suite.AccAddress.Bytes()).String())
 	suite.NoError(err)
 	suite.Equal(*info, *getTaskInfo)
 }

@@ -6,30 +6,31 @@ import (
 
 	assetstype "github.com/ExocoreNetwork/exocore/x/assets/types"
 
-	operatortypes "github.com/ExocoreNetwork/exocore/x/operator/types"
+	avstypes "github.com/ExocoreNetwork/exocore/x/avs/types"
+	"github.com/ExocoreNetwork/exocore/x/operator/types"
 	tmprotocrypto "github.com/cometbft/cometbft/proto/tendermint/crypto"
 	"github.com/cosmos/cosmos-sdk/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/query"
 )
 
-var _ operatortypes.QueryServer = &Keeper{}
+var _ types.QueryServer = &Keeper{}
 
 // QueryOperatorInfo queries the operator information for the given address.
 func (k *Keeper) QueryOperatorInfo(
-	ctx context.Context, req *operatortypes.GetOperatorInfoReq,
-) (*operatortypes.OperatorInfo, error) {
+	ctx context.Context, req *types.GetOperatorInfoReq,
+) (*types.OperatorInfo, error) {
 	c := sdk.UnwrapSDKContext(ctx)
 	return k.OperatorInfo(c, req.OperatorAddr)
 }
 
 // QueryAllOperators queries all operators on the chain.
 func (k *Keeper) QueryAllOperators(
-	goCtx context.Context, req *operatortypes.QueryAllOperatorsRequest,
-) (*operatortypes.QueryAllOperatorsResponse, error) {
+	goCtx context.Context, req *types.QueryAllOperatorsRequest,
+) (*types.QueryAllOperatorsResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 	res := make([]string, 0)
-	store := prefix.NewStore(ctx.KVStore(k.storeKey), operatortypes.KeyPrefixOperatorInfo)
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefixOperatorInfo)
 	pageRes, err := query.Paginate(store, req.Pagination, func(key []byte, _ []byte) error {
 		addr := sdk.AccAddress(key)
 		res = append(res, addr.String())
@@ -38,7 +39,7 @@ func (k *Keeper) QueryAllOperators(
 	if err != nil {
 		return nil, err
 	}
-	return &operatortypes.QueryAllOperatorsResponse{
+	return &types.QueryAllOperatorsResponse{
 		OperatorAccAddrs: res,
 		Pagination:       pageRes,
 	}, nil
@@ -47,15 +48,16 @@ func (k *Keeper) QueryAllOperators(
 // QueryOperatorConsKeyForChainID queries the consensus key for the operator on the given chain.
 func (k *Keeper) QueryOperatorConsKeyForChainID(
 	goCtx context.Context,
-	req *operatortypes.QueryOperatorConsKeyRequest,
-) (*operatortypes.QueryOperatorConsKeyResponse, error) {
+	req *types.QueryOperatorConsKeyRequest,
+) (*types.QueryOperatorConsKeyResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 	addr, err := sdk.AccAddressFromBech32(req.OperatorAccAddr)
 	if err != nil {
 		return nil, err
 	}
+	chainIDWithoutRevision := avstypes.ChainIDWithoutRevision(req.Chain)
 	found, key, err := k.GetOperatorConsKeyForChainID(
-		ctx, addr, req.Chain,
+		ctx, addr, chainIDWithoutRevision,
 	)
 	if err != nil {
 		return nil, err
@@ -63,9 +65,9 @@ func (k *Keeper) QueryOperatorConsKeyForChainID(
 	if !found {
 		return nil, errors.New("no key assigned")
 	}
-	return &operatortypes.QueryOperatorConsKeyResponse{
-		PublicKey: *key,
-		OptingOut: k.IsOperatorRemovingKeyFromChainID(ctx, addr, req.Chain),
+	return &types.QueryOperatorConsKeyResponse{
+		PublicKey: *key.ToTmProtoKey(),
+		OptingOut: k.IsOperatorRemovingKeyFromChainID(ctx, addr, chainIDWithoutRevision),
 	}, nil
 }
 
@@ -73,15 +75,16 @@ func (k *Keeper) QueryOperatorConsKeyForChainID(
 // the given chain.
 func (k Keeper) QueryOperatorConsAddressForChainID(
 	goCtx context.Context,
-	req *operatortypes.QueryOperatorConsAddressRequest,
-) (*operatortypes.QueryOperatorConsAddressResponse, error) {
+	req *types.QueryOperatorConsAddressRequest,
+) (*types.QueryOperatorConsAddressResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 	addr, err := sdk.AccAddressFromBech32(req.OperatorAccAddr)
 	if err != nil {
 		return nil, err
 	}
-	found, key, err := k.GetOperatorConsKeyForChainID(
-		ctx, addr, req.Chain,
+	chainIDWithoutRevision := avstypes.ChainIDWithoutRevision(req.Chain)
+	found, wrappedKey, err := k.GetOperatorConsKeyForChainID(
+		ctx, addr, chainIDWithoutRevision,
 	)
 	if err != nil {
 		return nil, err
@@ -89,13 +92,9 @@ func (k Keeper) QueryOperatorConsAddressForChainID(
 	if !found {
 		return nil, errors.New("no key assigned")
 	}
-	consAddr, err := operatortypes.TMCryptoPublicKeyToConsAddr(key)
-	if err != nil {
-		return nil, err
-	}
-	return &operatortypes.QueryOperatorConsAddressResponse{
-		ConsAddr:  consAddr.String(),
-		OptingOut: k.IsOperatorRemovingKeyFromChainID(ctx, addr, req.Chain),
+	return &types.QueryOperatorConsAddressResponse{
+		ConsAddr:  wrappedKey.ToConsAddr().String(),
+		OptingOut: k.IsOperatorRemovingKeyFromChainID(ctx, addr, chainIDWithoutRevision),
 	}, nil
 }
 
@@ -103,13 +102,14 @@ func (k Keeper) QueryOperatorConsAddressForChainID(
 // their consensus keys.
 func (k Keeper) QueryAllOperatorConsKeysByChainID(
 	goCtx context.Context,
-	req *operatortypes.QueryAllOperatorConsKeysByChainIDRequest,
-) (*operatortypes.QueryAllOperatorConsKeysByChainIDResponse, error) {
+	req *types.QueryAllOperatorConsKeysByChainIDRequest,
+) (*types.QueryAllOperatorConsKeysByChainIDResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
-	res := make([]*operatortypes.OperatorConsKeyPair, 0)
-	chainPrefix := operatortypes.ChainIDAndAddrKey(
-		operatortypes.BytePrefixForChainIDAndOperatorToConsKey,
-		req.Chain, nil,
+	res := make([]*types.OperatorConsKeyPair, 0)
+	chainIDWithoutRevision := avstypes.ChainIDWithoutRevision(req.Chain)
+	chainPrefix := types.ChainIDAndAddrKey(
+		types.BytePrefixForChainIDAndOperatorToConsKey,
+		chainIDWithoutRevision, nil,
 	)
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), chainPrefix)
 	pageRes, err := query.Paginate(store, req.Pagination, func(key []byte, value []byte) error {
@@ -119,17 +119,17 @@ func (k Keeper) QueryAllOperatorConsKeysByChainID(
 		if err := ret.Unmarshal(value); err != nil {
 			return err
 		}
-		res = append(res, &operatortypes.OperatorConsKeyPair{
+		res = append(res, &types.OperatorConsKeyPair{
 			OperatorAccAddr: addr.String(),
 			PublicKey:       ret,
-			OptingOut:       k.IsOperatorRemovingKeyFromChainID(ctx, addr, req.Chain),
+			OptingOut:       k.IsOperatorRemovingKeyFromChainID(ctx, addr, chainIDWithoutRevision),
 		})
 		return nil
 	})
 	if err != nil {
 		return nil, err
 	}
-	return &operatortypes.QueryAllOperatorConsKeysByChainIDResponse{
+	return &types.QueryAllOperatorConsKeysByChainIDResponse{
 		OperatorConsKeys: res,
 		Pagination:       pageRes,
 	}, nil
@@ -139,13 +139,14 @@ func (k Keeper) QueryAllOperatorConsKeysByChainID(
 // their consensus addresses.
 func (k Keeper) QueryAllOperatorConsAddrsByChainID(
 	goCtx context.Context,
-	req *operatortypes.QueryAllOperatorConsAddrsByChainIDRequest,
-) (*operatortypes.QueryAllOperatorConsAddrsByChainIDResponse, error) {
+	req *types.QueryAllOperatorConsAddrsByChainIDRequest,
+) (*types.QueryAllOperatorConsAddrsByChainIDResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
-	res := make([]*operatortypes.OperatorConsAddrPair, 0)
-	chainPrefix := operatortypes.ChainIDAndAddrKey(
-		operatortypes.BytePrefixForChainIDAndOperatorToConsKey,
-		req.Chain, nil,
+	res := make([]*types.OperatorConsAddrPair, 0)
+	chainIDWithoutRevision := avstypes.ChainIDWithoutRevision(req.Chain)
+	chainPrefix := types.ChainIDAndAddrKey(
+		types.BytePrefixForChainIDAndOperatorToConsKey,
+		chainIDWithoutRevision, nil,
 	)
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), chainPrefix)
 	pageRes, err := query.Paginate(store, req.Pagination, func(key []byte, value []byte) error {
@@ -155,62 +156,62 @@ func (k Keeper) QueryAllOperatorConsAddrsByChainID(
 		if err := ret.Unmarshal(value); err != nil {
 			return err
 		}
-		consAddr, err := operatortypes.TMCryptoPublicKeyToConsAddr(ret)
-		if err != nil {
-			return err
+		wrappedKey := types.NewWrappedConsKeyFromTmProtoKey(ret)
+		if wrappedKey == nil {
+			return types.ErrInvalidConsKey
 		}
-		res = append(res, &operatortypes.OperatorConsAddrPair{
+		res = append(res, &types.OperatorConsAddrPair{
 			OperatorAccAddr: addr.String(),
-			ConsAddr:        consAddr.String(),
-			OptingOut:       k.IsOperatorRemovingKeyFromChainID(ctx, addr, req.Chain),
+			ConsAddr:        wrappedKey.ToConsAddr().String(),
+			OptingOut:       k.IsOperatorRemovingKeyFromChainID(ctx, addr, chainIDWithoutRevision),
 		})
 		return nil
 	})
 	if err != nil {
 		return nil, err
 	}
-	return &operatortypes.QueryAllOperatorConsAddrsByChainIDResponse{
+	return &types.QueryAllOperatorConsAddrsByChainIDResponse{
 		OperatorConsAddrs: res,
 		Pagination:        pageRes,
 	}, nil
 }
 
-func (k *Keeper) QueryOperatorUSDValue(ctx context.Context, req *operatortypes.QueryOperatorUSDValueRequest) (*operatortypes.QueryOperatorUSDValueResponse, error) {
+func (k *Keeper) QueryOperatorUSDValue(ctx context.Context, req *types.QueryOperatorUSDValueRequest) (*types.QueryOperatorUSDValueResponse, error) {
 	c := sdk.UnwrapSDKContext(ctx)
 	optedUSDValues, err := k.GetOperatorOptedUSDValue(c, req.Details.AVSAddress, req.Details.OperatorAddr)
 	if err != nil {
 		return nil, err
 	}
-	return &operatortypes.QueryOperatorUSDValueResponse{
+	return &types.QueryOperatorUSDValueResponse{
 		USDValues: &optedUSDValues,
 	}, nil
 }
 
-func (k *Keeper) QueryAVSUSDValue(ctx context.Context, req *operatortypes.QueryAVSUSDValueRequest) (*operatortypes.DecValueField, error) {
+func (k *Keeper) QueryAVSUSDValue(ctx context.Context, req *types.QueryAVSUSDValueRequest) (*types.DecValueField, error) {
 	c := sdk.UnwrapSDKContext(ctx)
 	usdValue, err := k.GetAVSUSDValue(c, req.AVSAddress)
 	if err != nil {
 		return nil, err
 	}
-	return &operatortypes.DecValueField{
+	return &types.DecValueField{
 		Amount: usdValue,
 	}, nil
 }
 
-func (k *Keeper) QueryOperatorSlashInfo(goCtx context.Context, req *operatortypes.QueryOperatorSlashInfoRequest) (*operatortypes.QueryOperatorSlashInfoResponse, error) {
+func (k *Keeper) QueryOperatorSlashInfo(goCtx context.Context, req *types.QueryOperatorSlashInfoRequest) (*types.QueryOperatorSlashInfoResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
-	res := make([]*operatortypes.OperatorSlashInfoByID, 0)
+	res := make([]*types.OperatorSlashInfoByID, 0)
 
-	slashPrefix := operatortypes.AppendMany(operatortypes.KeyPrefixOperatorSlashInfo, assetstype.GetJoinedStoreKeyForPrefix(req.Details.OperatorAddr, req.Details.AVSAddress))
+	slashPrefix := types.AppendMany(types.KeyPrefixOperatorSlashInfo, assetstype.GetJoinedStoreKeyForPrefix(req.Details.OperatorAddr, req.Details.AVSAddress))
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), slashPrefix)
 	pageRes, err := query.Paginate(store, req.Pagination, func(key []byte, value []byte) error {
-		ret := &operatortypes.OperatorSlashInfo{}
+		ret := &types.OperatorSlashInfo{}
 		// don't use MustUnmarshal to not panic for queries
 		if err := ret.Unmarshal(value); err != nil {
 			return err
 		}
 
-		res = append(res, &operatortypes.OperatorSlashInfoByID{
+		res = append(res, &types.OperatorSlashInfoByID{
 			SlashID: string(key),
 			Info:    ret,
 		})
@@ -219,7 +220,7 @@ func (k *Keeper) QueryOperatorSlashInfo(goCtx context.Context, req *operatortype
 	if err != nil {
 		return nil, err
 	}
-	return &operatortypes.QueryOperatorSlashInfoResponse{
+	return &types.QueryOperatorSlashInfoResponse{
 		AllSlashInfo: res,
 		Pagination:   pageRes,
 	}, nil

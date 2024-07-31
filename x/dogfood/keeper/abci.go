@@ -4,9 +4,9 @@ import (
 	"sort"
 
 	"cosmossdk.io/math"
+	avstypes "github.com/ExocoreNetwork/exocore/x/avs/types"
 	operatortypes "github.com/ExocoreNetwork/exocore/x/operator/types"
 	abci "github.com/cometbft/cometbft/abci/types"
-	tmprotocrypto "github.com/cometbft/cometbft/proto/tendermint/crypto"
 	cryptocodec "github.com/cosmos/cosmos-sdk/crypto/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -22,16 +22,17 @@ func (k Keeper) EndBlock(ctx sdk.Context) []abci.ValidatorUpdate {
 		return []abci.ValidatorUpdate{}
 	}
 	defer k.ClearEpochEnd(ctx)
+	chainIDWithoutRevision := avstypes.ChainIDWithoutRevision(ctx.ChainID())
 	// start by clearing the previous consensus keys for the chain.
 	// each AVS can have a separate epoch and hence this function is a part of this module
 	// and not the operator module.
-	k.operatorKeeper.ClearPreviousConsensusKeys(ctx, ctx.ChainID())
+	k.operatorKeeper.ClearPreviousConsensusKeys(ctx, chainIDWithoutRevision)
 	// clear the hold on the pending undelegations.
 	undelegations := k.GetPendingUndelegations(ctx)
 	for _, undelegation := range undelegations.GetList() {
 		err := k.delegationKeeper.DecrementUndelegationHoldCount(ctx, undelegation)
 		if err != nil {
-			panic(err)
+			k.Logger(ctx).Error("error decrementing undelegation hold count", "error", err)
 		}
 		k.ClearUndelegationMaturityEpoch(ctx, undelegation)
 	}
@@ -39,8 +40,10 @@ func (k Keeper) EndBlock(ctx sdk.Context) []abci.ValidatorUpdate {
 	// then, let the operator module know that the opt out has finished.
 	optOuts := k.GetPendingOptOuts(ctx)
 	for _, addr := range optOuts.GetList() {
-		// TODO log the error
-		_ = k.operatorKeeper.CompleteOperatorKeyRemovalForChainID(ctx, addr, ctx.ChainID())
+		err := k.operatorKeeper.CompleteOperatorKeyRemovalForChainID(ctx, addr, chainIDWithoutRevision)
+		if err != nil {
+			k.Logger(ctx).Error("error decrementing undelegation hold count", "error", err)
+		}
 	}
 	k.ClearPendingOptOuts(ctx)
 	// for slashing, the operator module is required to store a mapping of chain id + cons addr
@@ -49,7 +52,7 @@ func (k Keeper) EndBlock(ctx sdk.Context) []abci.ValidatorUpdate {
 	consensusAddrs := k.GetPendingConsensusAddrs(ctx)
 	for _, consensusAddr := range consensusAddrs.GetList() {
 		k.operatorKeeper.DeleteOperatorAddressForChainIDAndConsAddr(
-			ctx, ctx.ChainID(), consensusAddr,
+			ctx, chainIDWithoutRevision, consensusAddr,
 		)
 	}
 	k.ClearPendingConsensusAddrs(ctx)
@@ -70,20 +73,23 @@ func (k Keeper) EndBlock(ctx sdk.Context) []abci.ValidatorUpdate {
 		pubKey, err := validator.ConsPubKey()
 		if err != nil {
 			// indicates an error in deserialization, and should never happen.
+			k.Logger(ctx).Error("error deserializing consensus public key", "error", err)
 			continue
 		}
 		addressString := sdk.GetConsAddress(pubKey).String()
 		prevMap[addressString] = validator.Power
 	}
-	operators, keys := k.operatorKeeper.GetActiveOperatorsForChainID(ctx, ctx.ChainID())
+	operators, keys := k.operatorKeeper.GetActiveOperatorsForChainID(ctx, chainIDWithoutRevision)
 	powers, err := k.operatorKeeper.GetVotePowerForChainID(
-		ctx, operators, ctx.ChainID(),
+		ctx, operators, chainIDWithoutRevision,
 	)
 	if err != nil {
+		k.Logger(ctx).Error("error getting vote power for chain", "error", err)
 		return []abci.ValidatorUpdate{}
 	}
 	operators, keys, powers = sortByPower(operators, keys, powers)
 	maxVals := k.GetMaxValidators(ctx)
+	k.Logger(ctx).Info("max validators", "maxVals", maxVals, "len(operators)", len(operators))
 	// the capacity of this list is twice the maximum number of validators.
 	// this is because we can have a maximum of maxVals validators, and we can also have
 	// a maximum of maxVals validators that are removed.
@@ -105,19 +111,15 @@ func (k Keeper) EndBlock(ctx sdk.Context) []abci.ValidatorUpdate {
 			break
 		}
 		// find the previous power.
-		key := keys[i]
-		address, err := operatortypes.TMCryptoPublicKeyToConsAddr(key)
-		if err != nil {
-			// indicates an error in deserialization, and should never happen.
-			continue
-		}
+		wrappedKey := keys[i]
+		address := wrappedKey.ToConsAddr()
 		addressString := address.String()
 		prevPower, found := prevMap[addressString]
 		if found {
 			// if the power has changed, queue an update.
 			if prevPower != power {
 				res = append(res, abci.ValidatorUpdate{
-					PubKey: *key,
+					PubKey: *wrappedKey.ToTmProtoKey(),
 					Power:  power,
 				})
 			}
@@ -127,12 +129,13 @@ func (k Keeper) EndBlock(ctx sdk.Context) []abci.ValidatorUpdate {
 		} else {
 			// new consensus key, queue an update.
 			res = append(res, abci.ValidatorUpdate{
-				PubKey: *key,
+				PubKey: *wrappedKey.ToTmProtoKey(),
 				Power:  power,
 			})
 		}
 		totalPower = totalPower.Add(sdk.NewInt(power))
 	}
+	k.Logger(ctx).Info("total power", "totalPower", totalPower, "len(res)", len(res))
 	// the remaining validators in prevMap have been removed.
 	// we need to queue a change in power to 0 for them.
 	for _, validator := range prevList { // O(N)
@@ -153,6 +156,7 @@ func (k Keeper) EndBlock(ctx sdk.Context) []abci.ValidatorUpdate {
 			// so the previous power of these validators does not need to be subtracted.
 		}
 	}
+	k.Logger(ctx).Info("total power", "totalPower", totalPower, "len(res)", len(res))
 	// if there are any updates, set total power on lookup index.
 	if len(res) > 0 {
 		k.SetLastTotalPower(ctx, totalPower)
@@ -166,9 +170,9 @@ func (k Keeper) EndBlock(ctx sdk.Context) []abci.ValidatorUpdate {
 // the sorting is descending, so the highest power is first.
 func sortByPower(
 	operatorAddrs []sdk.AccAddress,
-	pubKeys []*tmprotocrypto.PublicKey,
+	pubKeys []operatortypes.WrappedConsKey,
 	powers []int64,
-) ([]sdk.AccAddress, []*tmprotocrypto.PublicKey, []int64) {
+) ([]sdk.AccAddress, []operatortypes.WrappedConsKey, []int64) {
 	// Create a slice of indices
 	indices := make([]int, len(powers))
 	for i := range indices {
@@ -182,7 +186,7 @@ func sortByPower(
 
 	// Reorder all slices using the sorted indices
 	sortedOperatorAddrs := make([]sdk.AccAddress, len(operatorAddrs))
-	sortedPubKeys := make([]*tmprotocrypto.PublicKey, len(pubKeys))
+	sortedPubKeys := make([]operatortypes.WrappedConsKey, len(pubKeys))
 	sortedPowers := make([]int64, len(powers))
 	for i, idx := range indices {
 		sortedOperatorAddrs[i] = operatorAddrs[idx]

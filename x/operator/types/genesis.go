@@ -8,17 +8,15 @@ import (
 
 func NewGenesisState(
 	operators []OperatorInfo,
-	records []OperatorConsKeyRecord,
 ) *GenesisState {
 	return &GenesisState{
-		Operators:       operators,
-		OperatorRecords: records,
+		Operators: operators,
 	}
 }
 
 // DefaultGenesis returns the default genesis state
 func DefaultGenesis() *GenesisState {
-	return NewGenesisState([]OperatorInfo{}, []OperatorConsKeyRecord{})
+	return NewGenesisState(nil)
 }
 
 // Validate performs basic genesis state validation returning an error upon any
@@ -81,62 +79,5 @@ func (gs GenesisState) Validate() error {
 			)
 		}
 	}
-	// - correct bech32 format for each address in `gs.OperatorRecords`.
-	// - no duplicate addresses in `gs.OperatorRecords`.
-	// - no operator that is in `gs.OperatorRecords` but not in `gs.Operators`.
-	// - validity of consensus key format for each entry in `gs.OperatorRecords`.
-	// - within each chainID, no duplicate consensus keys.
-	operatorRecords := make(map[string]struct{}, len(gs.OperatorRecords))
-	keysByChainID := make(map[string]map[string]struct{})
-	for _, record := range gs.OperatorRecords {
-		addr := record.OperatorAddress
-		if _, err := sdk.AccAddressFromBech32(addr); err != nil {
-			return errorsmod.Wrapf(
-				ErrInvalidGenesisData,
-				"invalid operator address %s: %s", record.OperatorAddress, err,
-			)
-		}
-		if _, found := operatorRecords[addr]; found {
-			return errorsmod.Wrapf(
-				ErrInvalidGenesisData,
-				"duplicate operator record for operator %s", addr,
-			)
-		}
-		operatorRecords[addr] = struct{}{}
-		if _, opFound := operators[addr]; !opFound {
-			return errorsmod.Wrapf(
-				ErrInvalidGenesisData,
-				"operator record for un-registered operator %s", addr,
-			)
-		}
-		for _, chain := range record.Chains {
-			consensusKeyString := chain.ConsensusKey
-			chainID := chain.ChainID
-			// Cosmos does not describe a specific `chainID` format, so can't validate it.
-			if _, found := keysByChainID[chainID]; !found {
-				keysByChainID[chainID] = make(map[string]struct{})
-			}
-			if _, err := HexStringToPubKey(consensusKeyString); err != nil {
-				return errorsmod.Wrapf(
-					ErrInvalidGenesisData,
-					"invalid consensus key for operator %s: %s", addr, err,
-				)
-			}
-			// within a chain id, there should not be duplicate consensus keys
-			if _, found := keysByChainID[chainID][consensusKeyString]; found {
-				return errorsmod.Wrapf(
-					ErrInvalidGenesisData,
-					"duplicate consensus key for operator %s on chain %s", addr, chainID,
-				)
-			}
-			keysByChainID[chainID][consensusKeyString] = struct{}{}
-		}
-	}
-	// rationale for the validations above:
-	// 1. since this function should support chain restarts and upgrades, we cannot require
-	//    the format of the earnings address be EVM only.
-	// 2. since the operator module is not meant to handle dogfooding, we should not check
-	//    whether an operator has keys defined for our chainID. this is left for the dogfood
-	//    module.
 	return nil
 }

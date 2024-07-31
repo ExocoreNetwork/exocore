@@ -20,6 +20,18 @@ message QueryAVSInfoResponse {
   AVSInfo info = 1;
 }
 
+// QueryAVSAddrByChainID is the request to query avs address by chain id
+message QueryAVSAddrByChainIDReq {
+  // chain_id is the chain id of the chain
+  string chain_id = 1 [(gogoproto.customname) = "ChainID"];
+}
+
+// QueryAVSAddrByChainIDResponse is the response of avs address by chain id
+message QueryAVSAddrByChainIDResponse {
+  // avs_address is the hex address of avs
+  string avs_address = 1 [(gogoproto.customname) = "AVSAddress"];
+}
+
 // QueryAVSTaskInfoReq is the request to obtain the task information.
 message QueryAVSTaskInfoReq {
   // task_addr is the task contract address,its type should be a sdk.AccAddress
@@ -37,5 +49,9 @@ service Query {
   // TaskInfo queries the task information.
   rpc QueryAVSTaskInfo(QueryAVSTaskInfoReq) returns (TaskInfo) {
     option (google.api.http).get = "/exocore/avstask/v1/GetAVSTaskInfoReq";
+  }
+  // QueryAVSAddrByChainID queries the avs address by chain id
+  rpc QueryAVSAddrByChainID(QueryAVSAddrByChainIDReq) returns (QueryAVSAddrByChainIDResponse) {
+    option (google.api.http).get = "/exocore/avs/QueryAVSAddrByChainID";
   }
 }

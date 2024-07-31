@@ -57,7 +57,7 @@ func (suite *DelegationTestSuite) prepareDelegation() *delegationtype.Delegation
 			EarningsAddr: suite.opAccAddr.String(),
 		},
 	}
-	_, err := suite.App.OperatorKeeper.RegisterOperator(suite.Ctx, registerReq)
+	_, err := s.OperatorMsgServer.RegisterOperator(s.Ctx, registerReq)
 	suite.NoError(err)
 
 	err = suite.App.DelegationKeeper.DelegateTo(suite.Ctx, delegationEvent)
@@ -88,7 +88,7 @@ func (suite *DelegationTestSuite) TestDelegateTo() {
 			EarningsAddr: opAccAddr.String(),
 		},
 	}
-	_, err = suite.App.OperatorKeeper.RegisterOperator(suite.Ctx, registerReq)
+	_, err = s.OperatorMsgServer.RegisterOperator(s.Ctx, registerReq)
 	suite.NoError(err)
 
 	err = suite.App.DelegationKeeper.DelegateTo(suite.Ctx, delegationParams)

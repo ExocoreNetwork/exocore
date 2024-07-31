@@ -1,7 +1,11 @@
 package keeper
 
 import (
+	"fmt"
+
+	avstypes "github.com/ExocoreNetwork/exocore/x/avs/types"
 	delegationtypes "github.com/ExocoreNetwork/exocore/x/delegation/types"
+	operatortypes "github.com/ExocoreNetwork/exocore/x/operator/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
@@ -26,16 +30,17 @@ func (wrapper DelegationHooksWrapper) AfterDelegation(
 ) {
 	// we do nothing here, since the vote power for all operators is calculated
 	// in the end separately. even if we knew the amount of the delegation, the
-	// average exchange rate for the epoch is unknown.
+	// exchange rate at the end of the epoch is unknown.
 }
 
 // AfterUndelegationStarted is called after an undelegation is started.
 func (wrapper DelegationHooksWrapper) AfterUndelegationStarted(
 	ctx sdk.Context, operator sdk.AccAddress, recordKey []byte,
 ) error {
+	chainIDWithoutRevision := avstypes.ChainIDWithoutRevision(ctx.ChainID())
 	var unbondingCompletionEpoch int64
 	if wrapper.keeper.operatorKeeper.IsOperatorRemovingKeyFromChainID(
-		ctx, operator, ctx.ChainID(),
+		ctx, operator, chainIDWithoutRevision,
 	) {
 		// if the operator is opting out, we need to use the finish epoch of the opt out.
 		unbondingCompletionEpoch = wrapper.keeper.GetOperatorOptOutFinishEpoch(ctx, operator)
@@ -43,6 +48,47 @@ func (wrapper DelegationHooksWrapper) AfterUndelegationStarted(
 		// in the picture. slashable events between undelegation and opt in cannot occur
 		// because the operator is not in the validator set.
 	} else {
+		var found bool
+		var wrappedKey operatortypes.WrappedConsKey
+		if found, wrappedKey, _ = wrapper.keeper.operatorKeeper.GetOperatorConsKeyForChainID(
+			ctx, operator, chainIDWithoutRevision,
+		); !found {
+			wrapper.keeper.Logger(ctx).Debug(
+				"AfterUndelegationStarted: operator is not opted in; ignoring",
+				"operator", operator,
+				"recordKey", fmt.Sprintf("%x", recordKey),
+			)
+			// if the operator has no key set, they are not opted in to this AVS. hence,
+			// we do not need to track the undelegation.
+			return nil
+		}
+		// check if the key is active yet
+		isValidator := false
+		_, isValidator = wrapper.keeper.GetExocoreValidator(
+			ctx, wrappedKey.ToConsAddr(),
+		)
+		if !isValidator {
+			// maybe they changed the key. check the previous key.
+			hasOldKey, prevKey, _ := wrapper.keeper.operatorKeeper.GetOperatorPrevConsKeyForChainID(
+				ctx, operator, chainIDWithoutRevision,
+			)
+			if hasOldKey {
+				_, isValidator = wrapper.keeper.GetExocoreValidator(
+					ctx, prevKey.ToConsAddr(),
+				)
+			}
+		}
+		if !isValidator {
+			wrapper.keeper.Logger(ctx).Debug(
+				"AfterUndelegationStarted: operator not yet a validator; ignoring",
+				"operator", operator,
+				"recordKey", fmt.Sprintf("%x", recordKey),
+			)
+			// if the key is not active, we do not need to track the undelegation.
+			// this can happen, for example, if the operator just opted into
+			// the AVS and the epoch hasn't yet ended.
+			return nil
+		}
 		// otherwise, we use the default unbonding completion epoch.
 		unbondingCompletionEpoch = wrapper.keeper.GetUnbondingCompletionEpoch(ctx)
 		// if the operator opts out after this, the undelegation will mature before the opt out.

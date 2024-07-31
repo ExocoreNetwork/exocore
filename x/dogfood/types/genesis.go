@@ -63,32 +63,47 @@ func (gs GenesisState) Validate() error {
 		)
 	}
 	// do not complain about 0 validators, let Tendermint do that.
-	vals := make(map[string]struct{}, len(gs.ValSet))
+	pubkeys := make(map[string]struct{}, len(gs.ValSet))
+	operatorAccAddrs := make(map[string]struct{}, len(gs.ValSet))
 	totalPower := int64(0)
 	for _, val := range gs.ValSet {
-		// check for duplicates
-		if _, ok := vals[val.PublicKey]; ok {
+		// check for duplicates in puyb keys
+		if _, ok := pubkeys[val.PublicKey]; ok {
 			return errorsmod.Wrapf(
 				ErrInvalidGenesisData,
 				"duplicate public key %s", val.PublicKey,
 			)
 		}
-		vals[val.PublicKey] = struct{}{}
-		// HexStringToPubKey checks the size and returns a tmprotocrypto type.
-		// and since its specific type (ed25519) is already set, it converts
-		// easily to the sdk Key format as well.
-		if _, err := operatortypes.HexStringToPubKey(
+		// check for validity of the public key
+		if wrappedKey := operatortypes.NewWrappedConsKeyFromHex(
 			val.PublicKey,
-		); err != nil {
+		); wrappedKey == nil {
 			return errorsmod.Wrapf(
 				ErrInvalidGenesisData,
-				"invalid public key %s: %s",
-				val.PublicKey, err,
+				"invalid public key %s",
+				val.PublicKey,
 			)
 		}
+		pubkeys[val.PublicKey] = struct{}{}
+		// check for duplicates in operator addresses
+		if _, ok := operatorAccAddrs[val.OperatorAccAddr]; ok {
+			return errorsmod.Wrapf(
+				ErrInvalidGenesisData,
+				"duplicate operator address %s", val.OperatorAccAddr,
+			)
+		}
+		// check for validity of the operator address
+		if _, err := sdk.AccAddressFromBech32(val.OperatorAccAddr); err != nil {
+			return errorsmod.Wrapf(
+				ErrInvalidGenesisData,
+				"invalid operator address %s: %s",
+				val.OperatorAccAddr, err,
+			)
+		}
+		operatorAccAddrs[val.OperatorAccAddr] = struct{}{}
 		power := val.Power
 		// minSelfDelegation is non negative per Params.Validate, so we don't need to check if power is.
-		// simply checking that power is greater than oe equal to minSelfDelegation is enough.
+		// simply checking that power is greater than or equal to minSelfDelegation is enough.
 		if sdk.NewInt(power).LT(minSelfDelegation) {
 			return errorsmod.Wrapf(
 				ErrInvalidGenesisData,

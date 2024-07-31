@@ -92,7 +92,7 @@ func (s *DelegationPrecompileSuite) TestRunDelegateToThroughClientChain() {
 				EarningsAddr: opAccAddr,
 			},
 		}
-		_, err := s.App.OperatorKeeper.RegisterOperator(s.Ctx, registerReq)
+		_, err := s.OperatorMsgServer.RegisterOperator(s.Ctx, registerReq)
 		s.NoError(err)
 	}
 	commonMalleate := func() (common.Address, []byte) {
@@ -335,7 +335,7 @@ func (s *DelegationPrecompileSuite) TestRunUnDelegateFromThroughClientChain() {
 				EarningsAddr: operatorAddr,
 			},
 		}
-		_, err := s.App.OperatorKeeper.RegisterOperator(s.Ctx, registerReq)
+		_, err := s.OperatorMsgServer.RegisterOperator(s.Ctx, registerReq)
 		s.NoError(err)
 	}
 	commonMalleate := func() (common.Address, []byte) {

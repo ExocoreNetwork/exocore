@@ -3,12 +3,14 @@ package keeper
 import (
 	"fmt"
 
+	avstypes "github.com/ExocoreNetwork/exocore/x/avs/types"
 	"github.com/ExocoreNetwork/exocore/x/dogfood/types"
 	operatortypes "github.com/ExocoreNetwork/exocore/x/operator/types"
 	abci "github.com/cometbft/cometbft/abci/types"
 	cryptocodec "github.com/cosmos/cosmos-sdk/crypto/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 )
 
@@ -17,7 +19,6 @@ func (k Keeper) InitGenesis(
 	ctx sdk.Context,
 	genState types.GenesisState,
 ) []abci.ValidatorUpdate {
-	k.SetParams(ctx, genState.Params)
 	// the `params` validator is not super useful to validate state level information
 	// so, it must be done here. by extension, the `InitGenesis` of the epochs module
 	// should be called before that of this module.
@@ -34,27 +35,38 @@ func (k Keeper) InitGenesis(
 			panic(fmt.Errorf("staking param %s not found in assets module", assetID))
 		}
 	}
-	// at genesis, not chain restarts, each operator may not necessarily be an initial
-	// validator. this is because the operator may not have enough minimum self delegation
-	// to be considered, or may not be in the top N operators. so checking that count here
-	// is meaningless as well.
+	k.SetParams(ctx, genState.Params)
+	// create the AVS
+	var avsAddr common.Address
+	var err error
+	// the avs module will remove the revision by itself
+	if avsAddr, err = k.avsKeeper.RegisterAVSWithChainID(ctx, &avstypes.AVSRegisterOrDeregisterParams{
+		AvsName:           ctx.ChainID(),
+		AssetID:           genState.Params.AssetIDs,
+		UnbondingPeriod:   uint64(genState.Params.EpochsUntilUnbonded),
+		MinSelfDelegation: genState.Params.MinSelfDelegation.Uint64(),
+		EpochIdentifier:   epochID,
+		ChainID:           ctx.ChainID(),
+	}); err != nil {
+		panic(fmt.Errorf("could not create the dogfood AVS: %s", err))
+	}
+	avsAddrString := avsAddr.String()
+	ctx.Logger().With(types.ModuleName).Info(fmt.Sprintf("created dogfood avs %s %s", avsAddrString, ctx.ChainID()))
+	// create the validators
 	out := make([]abci.ValidatorUpdate, 0, len(genState.ValSet))
 	for _, val := range genState.ValSet {
+		// wrappedKey can never be nil
+		wrappedKey := operatortypes.NewWrappedConsKeyFromHex(val.PublicKey)
 		// #nosec G703 // already validated
-		consKey, _ := operatortypes.HexStringToPubKey(val.PublicKey)
-		// #nosec G703 // this only fails if the key is of a type not already defined.
-		consAddr, _ := operatortypes.TMCryptoPublicKeyToConsAddr(consKey)
-		// if GetOperatorAddressForChainIDAndConsAddr returns found, it means
-		// that the operator is registered and also (TODO) that it has opted into
-		// the dogfood AVS.
-		found, _ := k.operatorKeeper.GetOperatorAddressForChainIDAndConsAddr(
-			ctx, ctx.ChainID(), consAddr,
-		)
-		if !found {
-			panic(fmt.Sprintf("operator not found: %s", consAddr))
+		operatorAddr, _ := sdk.AccAddressFromBech32(val.OperatorAccAddr)
+		// OptIntoAVS checks that the operator exists and will error if it does not.
+		if err := k.operatorKeeper.OptInWithConsKey(
+			ctx, operatorAddr, avsAddrString, wrappedKey,
+		); err != nil {
+			panic(fmt.Errorf("failed to opt into avs: %s", err))
 		}
 		out = append(out, abci.ValidatorUpdate{
-			PubKey: *consKey,
+			PubKey: *wrappedKey.ToTmProtoKey(),
 			Power:  val.Power,
 		})
 	}

@@ -10,7 +10,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/crypto/keyring"
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
 	pruningtypes "github.com/cosmos/cosmos-sdk/store/pruning/types"
-	"github.com/cosmos/cosmos-sdk/testutil/mock"
 	"github.com/evmos/evmos/v14/testutil"
 	"github.com/stretchr/testify/suite"
 	"golang.org/x/exp/rand"
@@ -23,6 +22,7 @@ import (
 	assetstypes "github.com/ExocoreNetwork/exocore/x/assets/types"
 	delegationtypes "github.com/ExocoreNetwork/exocore/x/delegation/types"
 	dogfoodtypes "github.com/ExocoreNetwork/exocore/x/dogfood/types"
+	operatorkeeper "github.com/ExocoreNetwork/exocore/x/operator/keeper"
 	operatortypes "github.com/ExocoreNetwork/exocore/x/operator/types"
 	abci "github.com/cometbft/cometbft/abci/types"
 	"github.com/cometbft/cometbft/crypto/tmhash"
@@ -33,13 +33,10 @@ import (
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/common/hexutil"
 	ethtypes "github.com/ethereum/go-ethereum/core/types"
 	evmostypes "github.com/evmos/evmos/v14/types"
 	"github.com/evmos/evmos/v14/x/evm/statedb"
 	evmtypes "github.com/evmos/evmos/v14/x/evm/types"
-
-	cryptocodec "github.com/cosmos/cosmos-sdk/crypto/codec"
 )
 
 type BaseTestSuite struct {
@@ -61,11 +58,13 @@ type BaseTestSuite struct {
 	// for tracking validator across blocks
 	ValSet    *tmtypes.ValidatorSet
 	Operators []sdk.AccAddress
+	Powers    []int64
 
 	StateDB        *statedb.StateDB
 	QueryClientEVM evmtypes.QueryClient
 
-	InitTime time.Time
+	InitTime          time.Time
+	OperatorMsgServer operatortypes.MsgServer
 }
 
 func (suite *BaseTestSuite) SetupTest() {
@@ -87,6 +86,7 @@ func (suite *BaseTestSuite) SetupWithGenesisValSet(genAccs []authtypes.GenesisAc
 	// x/operator initialization - address only
 	operator1 := sdk.AccAddress(testutiltx.GenerateAddress().Bytes())
 	operator2 := sdk.AccAddress(testutiltx.GenerateAddress().Bytes())
+	suite.Operators = []sdk.AccAddress{operator1, operator2}
 	stakerID1, _ := assetstypes.GetStakeIDAndAssetIDFromStr(
 		suite.ClientChains[0].LayerZeroChainID,
 		common.Address(operator1.Bytes()).String(), "",
@@ -100,7 +100,11 @@ func (suite *BaseTestSuite) SetupWithGenesisValSet(genAccs []authtypes.GenesisAc
 		"", suite.Assets[0].Address,
 	)
 	// x/assets initialization - deposits (client chains and tokens are from caller)
-	depositAmount := math.NewIntWithDecimal(1, 6)
+	power := int64(101)
+	power2 := int64(100)
+	suite.Powers = []int64{power, power2}
+	depositAmount := math.NewIntWithDecimal(power, 6)
+	depositAmount2 := math.NewIntWithDecimal(power2, 6)
 	depositsByStaker := []assetstypes.DepositsByStaker{
 		{
 			StakerID: stakerID1,
@@ -121,8 +125,8 @@ func (suite *BaseTestSuite) SetupWithGenesisValSet(genAccs []authtypes.GenesisAc
 				{
 					AssetID: assetID,
 					Info: assetstypes.StakerAssetInfo{
-						TotalDepositAmount:  depositAmount,
-						WithdrawableAmount:  depositAmount,
+						TotalDepositAmount:  depositAmount2,
+						WithdrawableAmount:  depositAmount2,
 						WaitUnbondingAmount: sdk.ZeroInt(),
 					},
 				},
@@ -181,34 +185,11 @@ func (suite *BaseTestSuite) SetupWithGenesisValSet(genAccs []authtypes.GenesisAc
 		},
 	}
 	// generate validator private/public key
-	privVal := mock.NewPV()
-	pubKey, err := privVal.GetPubKey()
-	suite.Require().NoError(err)
-	privVal2 := mock.NewPV()
-	pubKey2, err := privVal2.GetPubKey()
-	suite.Require().NoError(err)
-	// operator consensus keys
-	consensusKeyRecords := []operatortypes.OperatorConsKeyRecord{
-		{
-			OperatorAddress: operatorInfos[0].EarningsAddr,
-			Chains: []operatortypes.ChainDetails{
-				{
-					ChainID:      utils.DefaultChainID,
-					ConsensusKey: hexutil.Encode(pubKey.Bytes()),
-				},
-			},
-		},
-		{
-			OperatorAddress: operatorInfos[1].EarningsAddr,
-			Chains: []operatortypes.ChainDetails{
-				{
-					ChainID:      utils.DefaultChainID,
-					ConsensusKey: hexutil.Encode(pubKey2.Bytes()),
-				},
-			},
-		},
-	}
-	operatorGenesis := operatortypes.NewGenesisState(operatorInfos, consensusKeyRecords)
+	pubKey := testutiltx.GenerateConsensusKey()
+	suite.Require().NotNil(pubKey)
+	pubKey2 := testutiltx.GenerateConsensusKey()
+	suite.Require().NotNil(pubKey2)
+	operatorGenesis := operatortypes.NewGenesisState(operatorInfos)
 	genesisState[operatortypes.ModuleName] = app.AppCodec().MustMarshalJSON(operatorGenesis)
 
 	// x/delegation
@@ -238,7 +219,7 @@ func (suite *BaseTestSuite) SetupWithGenesisValSet(genAccs []authtypes.GenesisAc
 						{
 							Key: operator2.String(),
 							Value: &delegationtypes.ValueField{
-								Amount: depositAmount,
+								Amount: depositAmount2,
 							},
 						},
 					},
@@ -246,7 +227,17 @@ func (suite *BaseTestSuite) SetupWithGenesisValSet(genAccs []authtypes.GenesisAc
 			},
 		},
 	}
-	delegationGenesis := delegationtypes.NewGenesis(delegationsByStaker, nil)
+	associations := []delegationtypes.StakerToOperator{
+		{
+			Operator: operator1.String(),
+			StakerID: stakerID1,
+		},
+		{
+			Operator: operator2.String(),
+			StakerID: stakerID2,
+		},
+	}
+	delegationGenesis := delegationtypes.NewGenesis(delegationsByStaker, associations)
 	genesisState[delegationtypes.ModuleName] = app.AppCodec().MustMarshalJSON(delegationGenesis)
 
 	// create a dogfood genesis with just the validator set, that is, the bare
@@ -254,24 +245,27 @@ func (suite *BaseTestSuite) SetupWithGenesisValSet(genAccs []authtypes.GenesisAc
 	dogfoodGenesis := dogfoodtypes.NewGenesis(
 		dogfoodtypes.DefaultParams(), []dogfoodtypes.GenesisValidator{
 			{
-				PublicKey: hexutil.Encode(pubKey.Bytes()),
-				Power:     1,
+				PublicKey:       pubKey.ToHex(),
+				Power:           power,
+				OperatorAccAddr: operator1.String(),
 			},
 			{
-				PublicKey: hexutil.Encode(pubKey2.Bytes()),
-				Power:     1,
+				PublicKey:       pubKey2.ToHex(),
+				Power:           power2,
+				OperatorAccAddr: operator2.String(),
 			},
 		},
 		[]dogfoodtypes.EpochToOperatorAddrs{},
 		[]dogfoodtypes.EpochToConsensusAddrs{},
 		[]dogfoodtypes.EpochToUndelegationRecordKeys{},
-		math.NewInt(2), // must match total vote power
+		math.NewInt(power+power2), // must match total vote power
 	)
+	dogfoodGenesis.Params.MinSelfDelegation = math.NewInt(100)
 	genesisState[dogfoodtypes.ModuleName] = app.AppCodec().MustMarshalJSON(dogfoodGenesis)
 
 	suite.ValSet = tmtypes.NewValidatorSet([]*tmtypes.Validator{
-		tmtypes.NewValidator(pubKey, 1),
-		tmtypes.NewValidator(pubKey2, 1),
+		tmtypes.NewValidator(pubKey.ToTmKey(), 1),
+		tmtypes.NewValidator(pubKey2.ToTmKey(), 1),
 	})
 
 	totalSupply := sdk.NewCoins()
@@ -302,13 +296,11 @@ func (suite *BaseTestSuite) SetupWithGenesisValSet(genAccs []authtypes.GenesisAc
 	// committing the chain now is not required. doing so will skip the first block.
 
 	// instantiate new header
-	convKey, err := cryptocodec.FromTmPubKeyInterface(pubKey)
-	suite.Require().NoError(err)
 	header := testutil.NewHeader(
 		1,
 		suite.InitTime.Add(time.Second),
 		utils.DefaultChainID,
-		sdk.GetConsAddress(convKey),
+		pubKey.ToConsAddr(),
 		tmhash.Sum([]byte("App")),
 		tmhash.Sum([]byte("Validators")),
 	)
@@ -319,6 +311,7 @@ func (suite *BaseTestSuite) SetupWithGenesisValSet(genAccs []authtypes.GenesisAc
 
 	suite.Ctx = app.BaseApp.NewContext(false, header)
 	suite.App = app
+	suite.OperatorMsgServer = operatorkeeper.NewMsgServerImpl(app.OperatorKeeper)
 
 	// at this point, we have reached the genesis state and we are in the middle of the first block.
 	// BeginBlock of block 1 has been done, and we can process txs.
@@ -418,6 +411,6 @@ func (suite *BaseTestSuite) Commit() {
 func (suite *BaseTestSuite) CommitAfter(d time.Duration) {
 	var err error
 	// do not use an uncached ctx here
-	suite.Ctx, err = CommitAndCreateNewCtx(suite.Ctx, suite.App, d, suite.ValSet, false)
+	suite.Ctx, err = CommitAndCreateNewCtx(suite.Ctx, suite.App, d, nil, false)
 	suite.Require().NoError(err)
 }

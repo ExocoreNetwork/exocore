@@ -3,11 +3,14 @@ package tx
 import (
 	"fmt"
 
+	operatortypes "github.com/ExocoreNetwork/exocore/x/operator/types"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/crypto"
 
 	"github.com/cosmos/cosmos-sdk/crypto/keyring"
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
+	"github.com/cosmos/cosmos-sdk/testutil/mock"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	"github.com/evmos/evmos/v14/crypto/ethsecp256k1"
@@ -37,6 +40,16 @@ func NewAccAddressAndKey() (sdk.AccAddress, *ethsecp256k1.PrivKey) {
 func GenerateAddress() common.Address {
 	addr, _ := NewAddrKey()
 	return addr
+}
+
+// GenerateConsensusKey generates a consensus key.
+func GenerateConsensusKey() operatortypes.WrappedConsKey {
+	privVal := mock.NewPV()
+	pubKey, err := privVal.GetPubKey()
+	if err != nil {
+		return nil
+	}
+	return operatortypes.NewWrappedConsKeyFromHex(hexutil.Encode(pubKey.Bytes()))
 }
 
 var _ keyring.Signer = &Signer{}

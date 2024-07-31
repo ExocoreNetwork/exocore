@@ -1,7 +1,10 @@
 package keeper_test
 
 import (
+	"time"
+
 	sdkmath "cosmossdk.io/math"
+	avstypes "github.com/ExocoreNetwork/exocore/x/avs/types"
 	"github.com/ExocoreNetwork/exocore/x/operator/keeper"
 	"github.com/ExocoreNetwork/exocore/x/operator/types"
 	abci "github.com/cometbft/cometbft/abci/types"
@@ -20,11 +23,11 @@ func (suite *OperatorTestSuite) TestSlashWithInfractionReason() {
 	suite.prepareDelegation(true, suite.assetAddr, delegationAmount)
 
 	// opt into the AVS
-	avsAddr := suite.Ctx.ChainID()
+	avsAddr := avstypes.GenerateAVSAddr(avstypes.ChainIDWithoutRevision(suite.Ctx.ChainID())).String()
 	err := suite.App.OperatorKeeper.OptIn(suite.Ctx, suite.operatorAddr, avsAddr)
 	suite.NoError(err)
 	// call the EndBlock to update the voting power
-	suite.App.OperatorKeeper.EndBlock(suite.Ctx, abci.RequestEndBlock{})
+	suite.CommitAfter(time.Hour*24 + time.Nanosecond)
 	infractionHeight := suite.Ctx.BlockHeight()
 	optedUSDValues, err := suite.App.OperatorKeeper.GetOperatorOptedUSDValue(suite.Ctx, avsAddr, suite.operatorAddr.String())
 	suite.NoError(err)
@@ -37,7 +40,7 @@ func (suite *OperatorTestSuite) TestSlashWithInfractionReason() {
 	newDelegateAmount := sdkmath.NewIntWithDecimal(20, assetDecimal)
 	suite.prepareDelegation(true, suite.assetAddr, newDelegateAmount)
 	// updating the voting power
-	suite.App.OperatorKeeper.EndBlock(suite.Ctx, abci.RequestEndBlock{})
+	suite.CommitAfter(time.Hour*24 + time.Nanosecond)
 	newOptedUSDValues, err := suite.App.OperatorKeeper.GetOperatorOptedUSDValue(suite.Ctx, avsAddr, suite.operatorAddr.String())
 	suite.NoError(err)
 	// submits an undelegation to test the slashFromUndelegation

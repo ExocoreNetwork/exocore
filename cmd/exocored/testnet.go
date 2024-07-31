@@ -336,12 +336,10 @@ func initTestnetFiles(
 		sort.Strings(ithPeers)
 		persistentPeers = append(persistentPeers, strings.Join(ithPeers, ","))
 	}
-	fmt.Println("Here1", persistentPeers)
 
 	if err := initGenFiles(clientCtx, mbm, args.chainID, cmdcfg.BaseDenom, genAccounts, genBalances, genFiles, args.numValidators, addrs, valPubKeys); err != nil {
 		return err
 	}
-	fmt.Println("Here2")
 
 	err := collectGenFiles(
 		nodeConfig, args.chainID, args.numValidators,
@@ -351,14 +349,12 @@ func initTestnetFiles(
 	if err != nil {
 		return err
 	}
-	fmt.Println("Here3")
 
 	cmd.PrintErrf("Successfully initialized %d node directories\n", args.numValidators)
 	return nil
 }
 
 func getTestExocoreGenesis(
-	chainID string,
 	operatorAddrs []sdk.AccAddress, // self delegated
 	pubKeys []cryptotypes.PubKey,
 ) (
@@ -400,7 +396,6 @@ func getTestExocoreGenesis(
 	depositAmount := sdk.TokensFromConsensusPower(power, evmostypes.PowerReduction)
 	depositsByStaker := []assetstypes.DepositsByStaker{}
 	operatorInfos := []operatortypes.OperatorInfo{}
-	consensusKeyRecords := []operatortypes.OperatorConsKeyRecord{}
 	delegationsByStaker := []delegationtypes.DelegationsByStaker{}
 	validators := []dogfoodtypes.GenesisValidator{}
 	for i := range operatorAddrs {
@@ -429,15 +424,6 @@ func getTestExocoreGenesis(
 			Commission: stakingtypes.NewCommission(
 				sdk.ZeroDec(), sdk.ZeroDec(), sdk.ZeroDec(),
 			),
-		})
-		consensusKeyRecords = append(consensusKeyRecords, operatortypes.OperatorConsKeyRecord{
-			OperatorAddress: operator.String(),
-			Chains: []operatortypes.ChainDetails{
-				{
-					ChainID:      chainID,
-					ConsensusKey: pubKeyHex,
-				},
-			},
 		})
 		delegationsByStaker = append(delegationsByStaker, delegationtypes.DelegationsByStaker{
 			StakerID: stakerID,
@@ -472,7 +458,6 @@ func getTestExocoreGenesis(
 			}, depositsByStaker,
 		), operatortypes.NewGenesisState(
 			operatorInfos,
-			consensusKeyRecords,
 		), delegationtypes.NewGenesis(
 			delegationsByStaker,
 			nil,
@@ -544,7 +529,7 @@ func initGenFiles(
 	evmGenState.Params.EvmDenom = coinDenom
 	appGenState[evmtypes.ModuleName] = clientCtx.Codec.MustMarshalJSON(&evmGenState)
 
-	assets, operator, delegation, dogfood := getTestExocoreGenesis(chainID, addrs, pubKeys)
+	assets, operator, delegation, dogfood := getTestExocoreGenesis(addrs, pubKeys)
 	appGenState[assetstypes.ModuleName] = clientCtx.Codec.MustMarshalJSON(assets)
 	appGenState[operatortypes.ModuleName] = clientCtx.Codec.MustMarshalJSON(operator)
 	appGenState[delegationtypes.ModuleName] = clientCtx.Codec.MustMarshalJSON(delegation)

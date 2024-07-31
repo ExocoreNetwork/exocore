@@ -1,7 +1,6 @@
 package types
 
 import (
-	tmprotocrypto "github.com/cometbft/cometbft/proto/tendermint/crypto"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
@@ -17,7 +16,7 @@ func (hooks MultiOperatorHooks) AfterOperatorKeySet(
 	ctx sdk.Context,
 	addr sdk.AccAddress,
 	chainID string,
-	pubKey *tmprotocrypto.PublicKey,
+	pubKey WrappedConsKey,
 ) {
 	for _, hook := range hooks {
 		hook.AfterOperatorKeySet(ctx, addr, chainID, pubKey)
@@ -27,8 +26,8 @@ func (hooks MultiOperatorHooks) AfterOperatorKeySet(
 func (hooks MultiOperatorHooks) AfterOperatorKeyReplaced(
 	ctx sdk.Context,
 	addr sdk.AccAddress,
-	oldKey *tmprotocrypto.PublicKey,
-	newAddr *tmprotocrypto.PublicKey,
+	oldKey WrappedConsKey,
+	newAddr WrappedConsKey,
 	chainID string,
 ) {
 	for _, hook := range hooks {
@@ -37,7 +36,7 @@ func (hooks MultiOperatorHooks) AfterOperatorKeyReplaced(
 }
 
 func (hooks MultiOperatorHooks) AfterOperatorKeyRemovalInitiated(
-	ctx sdk.Context, addr sdk.AccAddress, chainID string, key *tmprotocrypto.PublicKey,
+	ctx sdk.Context, addr sdk.AccAddress, chainID string, key WrappedConsKey,
 ) {
 	for _, hook := range hooks {
 		hook.AfterOperatorKeyRemovalInitiated(ctx, addr, chainID, key)

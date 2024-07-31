@@ -53,7 +53,8 @@ func (wrapper EpochsHooksWrapper) AfterEpochEnd(
 		wrapper.keeper.SetPendingUndelegations(
 			ctx, types.UndelegationRecordKeys{
 				List: undelegations,
-			})
+			},
+		)
 		wrapper.keeper.ClearUndelegationsToMature(ctx, epoch)
 	}
 }

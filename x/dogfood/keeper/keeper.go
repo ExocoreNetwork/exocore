@@ -24,6 +24,7 @@ type (
 		operatorKeeper   types.OperatorKeeper
 		delegationKeeper types.DelegationKeeper
 		restakingKeeper  types.AssetsKeeper
+		avsKeeper        types.AVSKeeper
 
 		// edit params
 		authority string
@@ -38,6 +39,7 @@ func NewKeeper(
 	operatorKeeper types.OperatorKeeper,
 	delegationKeeper types.DelegationKeeper,
 	restakingKeeper types.AssetsKeeper,
+	avsKeeper types.AVSKeeper,
 	authority string,
 ) Keeper {
 	k := Keeper{
@@ -47,6 +49,7 @@ func NewKeeper(
 		operatorKeeper:   operatorKeeper,
 		delegationKeeper: delegationKeeper,
 		restakingKeeper:  restakingKeeper,
+		avsKeeper:        avsKeeper,
 		authority:        authority,
 	}
 	k.mustValidateFields()

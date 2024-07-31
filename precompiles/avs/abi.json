@@ -157,27 +157,9 @@
 			},
 			{
 				"indexed": false,
-				"internalType": "uint64",
-				"name": "miniOptInOperators",
-				"type": "uint64"
-			},
-			{
-				"indexed": false,
-				"internalType": "uint64",
-				"name": "minTotalStakeAmount",
-				"type": "uint64"
-			},
-			{
-				"indexed": false,
-				"internalType": "uint64",
-				"name": "avsReward",
-				"type": "uint64"
-			},
-			{
-				"indexed": false,
-				"internalType": "uint64",
-				"name": "avsSlash",
-				"type": "uint64"
+				"internalType": "uint64[]",
+				"name": "params",
+				"type": "uint64[]"
 			}
 		],
 		"name": "RegisterAVS",
@@ -347,27 +329,9 @@
 			},
 			{
 				"indexed": false,
-				"internalType": "uint64",
-				"name": "miniOptInOperators",
-				"type": "uint64"
-			},
-			{
-				"indexed": false,
-				"internalType": "uint64",
-				"name": "minTotalStakeAmount",
-				"type": "uint64"
-			},
-			{
-				"indexed": false,
-				"internalType": "uint64",
-				"name": "avsReward",
-				"type": "uint64"
-			},
-			{
-				"indexed": false,
-				"internalType": "uint64",
-				"name": "avsSlash",
-				"type": "uint64"
+				"internalType": "uint64[]",
+				"name": "params",
+				"type": "uint64[]"
 			}
 		],
 		"name": "UpdateAVS",
@@ -454,9 +418,9 @@
 	{
 		"inputs": [
 			{
-				"internalType": "string",
+				"internalType": "address",
 				"name": "avsAddress",
-				"type": "string"
+				"type": "address"
 			}
 		],
 		"name": "getOptInOperators",
@@ -502,19 +466,19 @@
 				"type": "uint64"
 			},
 			{
-				"internalType": "string",
+				"internalType": "address",
 				"name": "taskAddr",
-				"type": "string"
+				"type": "address"
 			},
 			{
-				"internalType": "string",
+				"internalType": "address",
 				"name": "slashAddr",
-				"type": "string"
+				"type": "address"
 			},
 			{
-				"internalType": "string",
+				"internalType": "address",
 				"name": "rewardAddr",
-				"type": "string"
+				"type": "address"
 			},
 			{
 				"internalType": "string[]",
@@ -542,24 +506,9 @@
 				"type": "string"
 			},
 			{
-				"internalType": "uint64",
-				"name": "miniOptInOperators",
-				"type": "uint64"
-			},
-			{
-				"internalType": "uint64",
-				"name": "minTotalStakeAmount",
-				"type": "uint64"
-			},
-			{
-				"internalType": "uint64",
-				"name": "avsReward",
-				"type": "uint64"
-			},
-			{
-				"internalType": "uint64",
-				"name": "avsSlash",
-				"type": "uint64"
+				"internalType": "uint64[]",
+				"name": "params",
+				"type": "uint64[]"
 			}
 		],
 		"name": "registerAVS",
@@ -679,19 +628,19 @@
 				"type": "uint64"
 			},
 			{
-				"internalType": "string",
+				"internalType": "address",
 				"name": "taskAddr",
-				"type": "string"
+				"type": "address"
 			},
 			{
-				"internalType": "string",
+				"internalType": "address",
 				"name": "slashAddr",
-				"type": "string"
+				"type": "address"
 			},
 			{
-				"internalType": "string",
+				"internalType": "address",
 				"name": "rewardAddr",
-				"type": "string"
+				"type": "address"
 			},
 			{
 				"internalType": "string[]",
@@ -719,24 +668,9 @@
 				"type": "string"
 			},
 			{
-				"internalType": "uint64",
-				"name": "miniOptInOperators",
-				"type": "uint64"
-			},
-			{
-				"internalType": "uint64",
-				"name": "minTotalStakeAmount",
-				"type": "uint64"
-			},
-			{
-				"internalType": "uint64",
-				"name": "avsReward",
-				"type": "uint64"
-			},
-			{
-				"internalType": "uint64",
-				"name": "avsSlash",
-				"type": "uint64"
+				"internalType": "uint64[]",
+				"name": "params",
+				"type": "uint64[]"
 			}
 		],
 		"name": "updateAVS",

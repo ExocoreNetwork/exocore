@@ -24,25 +24,22 @@ interface IAVSManager {
     /// @param avsUnbondingPeriod The unbonding duration of AVS.
     /// @param minSelfDelegation The minimum delegation amount for an operator.
     /// @param epochIdentifier The AVS epoch identifier.
-    /// @param miniOptInOperators The minimum number of opt-in operators.
-    /// @param minTotalStakeAmount The minimum total amount of stake by all operators.
-    /// @param avsReward The proportion of reward for AVS.
-    /// @param avsSlash The proportion of slash for AVS.
+    /// @param params 1.miniOptInOperators The minimum number of opt-in operators.
+    ///2.minTotalStakeAmount The minimum total amount of stake by all operators.
+    ///3.avsReward The proportion of reward for AVS.
+    ///4.avsSlash The proportion of slash for AVS.
     function registerAVS(
         string memory avsName,
-        uint64  minStakeAmount,
-        string memory taskAddr,
-        string memory slashAddr,
-        string memory rewardAddr,
+        uint64 minStakeAmount,
+        address taskAddr,
+        address slashAddr,
+        address rewardAddr,
         string[] memory avsOwnerAddress,
         string[] memory assetIds,
-        uint64  avsUnbondingPeriod,
-        uint64  minSelfDelegation,
+        uint64 avsUnbondingPeriod,
+        uint64 minSelfDelegation,
         string memory epochIdentifier,
-        uint64  miniOptInOperators,
-        uint64  minTotalStakeAmount,
-        uint64  avsReward,
-        uint64  avsSlash
+        uint64[] memory params
     ) external returns (bool success);
 
     /// @dev Update AVS info to EXO.
@@ -56,25 +53,22 @@ interface IAVSManager {
     /// @param avsUnbondingPeriod The unbonding duration of AVS.
     /// @param minSelfDelegation The minimum delegation amount for an operator.
     /// @param epochIdentifier The AVS epoch identifier.
-    /// @param miniOptInOperators The minimum number of opt-in operators.
-    /// @param minTotalStakeAmount The minimum total amount of stake by all operators.
-    /// @param avsReward The proportion of reward for AVS.
-    /// @param avsSlash The proportion of slash for AVS.
+    /// @param params 1.miniOptInOperators The minimum number of opt-in operators.
+    ///2.minTotalStakeAmount The minimum total amount of stake by all operators.
+    ///3.avsReward The proportion of reward for AVS.
+    ///4.avsSlash The proportion of slash for AVS.
     function updateAVS(
         string memory avsName,
-        uint64  minStakeAmount,
-        string memory taskAddr,
-        string memory slashAddr,
-        string memory rewardAddr,
+        uint64 minStakeAmount,
+        address taskAddr,
+        address slashAddr,
+        address rewardAddr,
         string[] memory avsOwnerAddress,
         string[] memory assetIds,
-        uint64  avsUnbondingPeriod,
-        uint64  minSelfDelegation,
+        uint64 avsUnbondingPeriod,
+        uint64 minSelfDelegation,
         string memory epochIdentifier,
-        uint64  miniOptInOperators,
-        uint64  minTotalStakeAmount,
-        uint64  avsReward,
-        uint64  avsSlash
+        uint64[] memory params
     ) external returns (bool success);
 
     /// @dev Deregister avs from exo
@@ -83,11 +77,11 @@ interface IAVSManager {
         string memory avsName
     ) external returns (bool success);
 
-    /// @dev RegisterOperatorToAVS  operator opt in current avs
+    /// @dev RegisterOperatorToAVS operator opt in current avs
     function registerOperatorToAVS(
     ) external returns (bool success);
 
-    /// @dev DeregisterOperatorFromAVS  operator opt out current avs
+    /// @dev DeregisterOperatorFromAVS operator opt out current avs
     function deregisterOperatorFromAVS(
     ) external returns (bool success);
 
@@ -116,19 +110,19 @@ interface IAVSManager {
     /// @param operatorStatus The status and proof of operators.
     function submitProof(
         string memory taskId,
-        string memory taskContractAddress ,
-        string memory aggregator ,
-        string memory avsAddress ,
+        string memory taskContractAddress,
+        string memory aggregator,
+        string memory avsAddress,
         bytes calldata operatorStatus
     ) external returns (bool success);
 
 
     /// @dev Called by the avs manager service register an operator as the owner of a BLS public key.
     /// @param operator is the operator for whom the key is being registered
-    /// @param name  the name of public keys
-    /// @param pubKey  the public keys of the operator
-    /// @param pubkeyRegistrationSignature  the public keys of the operator
-    /// @param pubkeyRegistrationMessageHash  the public keys of the operator
+    /// @param name the name of public keys
+    /// @param pubKey the public keys of the operator
+    /// @param pubkeyRegistrationSignature the public keys of the operator
+    /// @param pubkeyRegistrationMessageHash the public keys of the operator
     function registerBLSPublicKey(
         string memory operator,
         string calldata name,
@@ -144,18 +138,18 @@ interface IAVSManager {
     function getRegisteredPubkey(string memory operator) external returns (bytes calldata pubkey);
 
     /// @dev Returns the operators of all opt-in in the current avs
-    /// @param avsAddress  addresses
-    function getOptInOperators(string memory avsAddress) external returns (string[] calldata operators);
+    /// @param avsAddress avs address
+    function getOptInOperators(address avsAddress) external returns (string[] calldata operators);
 
     /// @dev RegisterBLSPublicKey Emitted when `operator` registers with the public keys `pubKey`.
     /// @param operator the address of the delegator
     /// @param pubKey the address of the validator
     event RegisterBLSPublicKey(
         string indexed operator,
-        string  name,
-        bytes  pubKey,
-        bytes  pubkeyRegistrationSignature,
-        bytes  pubkeyRegistrationMessageHash
+        string name,
+        bytes pubKey,
+        bytes pubkeyRegistrationSignature,
+        bytes pubkeyRegistrationMessageHash
     );
 
     /// @dev RegisterAVS Emitted when `avs` register to exocore.
@@ -171,10 +165,10 @@ interface IAVSManager {
     /// @param avsUnbondingPeriod The unbonding duration of AVS.
     /// @param minSelfDelegation The minimum delegation amount for an operator.
     /// @param epochIdentifier The AVS epoch identifier.
-    /// @param miniOptInOperators The minimum number of opt-in operators.
-    /// @param minTotalStakeAmount The minimum total amount of stake by all operators.
-    /// @param avsReward The proportion of reward for AVS.
-    /// @param avsSlash The proportion of slash for AVS.
+    /// @param params 1.miniOptInOperators The minimum number of opt-in operators.
+    ///2.minTotalStakeAmount The minimum total amount of stake by all operators.
+    ///3.avsReward The proportion of reward for AVS.
+    ///4.avsSlash The proportion of slash for AVS.
     event RegisterAVS(
         string indexed avsAddress,
         string avsName,
@@ -187,10 +181,7 @@ interface IAVSManager {
         uint64 avsUnbondingPeriod,
         uint64 minSelfDelegation,
         string epochIdentifier,
-        uint64 miniOptInOperators,
-        uint64 minTotalStakeAmount,
-        uint64 avsReward,
-        uint64 avsSlash
+        uint64[] params
     );
 
     /// @dev UpdateAVS Emitted when `avs` update to exocore.
@@ -205,10 +196,10 @@ interface IAVSManager {
     /// @param avsUnbondingPeriod The unbonding duration of AVS.
     /// @param minSelfDelegation The minimum delegation amount for an operator.
     /// @param epochIdentifier The AVS epoch identifier.
-    /// @param miniOptInOperators The minimum number of opt-in operators.
-    /// @param minTotalStakeAmount The minimum total amount of stake by all operators.
-    /// @param avsReward The proportion of reward for AVS.
-    /// @param avsSlash The proportion of slash for AVS.
+    /// @param params 1.miniOptInOperators The minimum number of opt-in operators.
+    ///2.minTotalStakeAmount The minimum total amount of stake by all operators.
+    ///3.avsReward The proportion of reward for AVS.
+    ///4.avsSlash The proportion of slash for AVS.
     event UpdateAVS(
         string indexed avsAddress,
         string avsName,
@@ -221,10 +212,7 @@ interface IAVSManager {
         uint64 avsUnbondingPeriod,
         uint64 minSelfDelegation,
         string epochIdentifier,
-        uint64 miniOptInOperators,
-        uint64 minTotalStakeAmount,
-        uint64 avsReward,
-        uint64 avsSlash
+        uint64[]  params
     );
 
     /// @dev DeregisterAVS Emitted when `avs` Deregister to exocore.
@@ -240,7 +228,7 @@ interface IAVSManager {
     /// @param avsAddress The address of AVS.
     event RegisterOperatorToAVS(
         string indexed operator,
-        string  indexed avsAddress
+        string indexed avsAddress
     );
 
     /// @dev DeregisterOperatorFromAVS Emitted when `operator` opt-out to avs.
@@ -248,7 +236,7 @@ interface IAVSManager {
     /// @param avsAddress The address of AVS.
     event DeregisterOperatorFromAVS(
         string indexed operator,
-        string  indexed avsAddress
+        string indexed avsAddress
     );
 
     /// @dev CreateTask Emitted when `avs` CreateTask.
@@ -275,10 +263,10 @@ interface IAVSManager {
     /// @param avsAddress The address of AVS.
     /// @param operatorStatuses The status and proof of operators.
     event SubmitProof(
-        string indexed taskContractAddress ,
+        string indexed taskContractAddress,
         string indexed taskId,
-        string   aggregator ,
-        string   avsAddress ,
-        bytes   operatorStatuses
+        string aggregator,
+        string avsAddress,
+        bytes operatorStatuses
     );
 }

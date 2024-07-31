@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	assetstype "github.com/ExocoreNetwork/exocore/x/assets/types"
+	"github.com/ethereum/go-ethereum/common"
 
 	errorsmod "cosmossdk.io/errors"
 
@@ -13,23 +14,18 @@ import (
 )
 
 func (k Keeper) SetTaskInfo(ctx sdk.Context, task *types.TaskInfo) (err error) {
-	taskContractAddress := task.TaskContractAddress
-	// check operator address validation
-	_, err = sdk.AccAddressFromBech32(taskContractAddress)
-	if err != nil {
+	if !common.IsHexAddress(task.TaskContractAddress) {
 		return types.ErrInvalidAddr
 	}
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefixAVSTaskInfo)
-	infoKey := assetstype.GetJoinedStoreKey(taskContractAddress, task.TaskId)
+	infoKey := assetstype.GetJoinedStoreKey(task.TaskContractAddress, task.TaskId)
 	bz := k.cdc.MustMarshal(task)
 	store.Set(infoKey, bz)
 	return nil
 }
 
 func (k *Keeper) GetTaskInfo(ctx sdk.Context, taskID, taskContractAddress string) (info *types.TaskInfo, err error) {
-	// check task address validation
-	_, err = sdk.AccAddressFromBech32(taskContractAddress)
-	if err != nil {
+	if !common.IsHexAddress(taskContractAddress) {
 		return nil, types.ErrInvalidAddr
 	}
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefixAVSTaskInfo)

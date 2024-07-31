@@ -3,10 +3,12 @@ package keeper_test
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	assetskeeper "github.com/ExocoreNetwork/exocore/x/assets/keeper"
-
-	abci "github.com/cometbft/cometbft/abci/types"
+	avskeeper "github.com/ExocoreNetwork/exocore/x/avs/keeper"
+	avstypes "github.com/ExocoreNetwork/exocore/x/avs/types"
+	epochstypes "github.com/ExocoreNetwork/exocore/x/epochs/types"
 
 	sdkmath "cosmossdk.io/math"
 	assetstypes "github.com/ExocoreNetwork/exocore/x/assets/types"
@@ -37,7 +39,7 @@ func (suite *OperatorTestSuite) prepareOperator() {
 			EarningsAddr: suite.operatorAddr.String(),
 		},
 	}
-	_, err = suite.App.OperatorKeeper.RegisterOperator(suite.Ctx, registerReq)
+	_, err = s.OperatorMsgServer.RegisterOperator(s.Ctx, registerReq)
 	suite.NoError(err)
 }
 
@@ -91,6 +93,16 @@ func (suite *OperatorTestSuite) prepare() {
 	suite.prepareDelegation(true, usdtAddress, delegationAmount)
 }
 
+func (suite *OperatorTestSuite) prepareAvs(assetIDs []string) {
+	err := suite.App.AVSManagerKeeper.AVSInfoUpdate(suite.Ctx, &avstypes.AVSRegisterOrDeregisterParams{
+		Action:          avskeeper.RegisterAction,
+		EpochIdentifier: epochstypes.HourEpochID,
+		AvsAddress:      suite.avsAddr,
+		AssetID:         assetIDs,
+	})
+	suite.NoError(err)
+}
+
 func (suite *OperatorTestSuite) CheckState(expectedState *StateForCheck) {
 	// check opted info
 	optInfo, err := suite.App.OperatorKeeper.GetOptedInfo(suite.Ctx, suite.operatorAddr.String(), suite.avsAddr)
@@ -121,10 +133,12 @@ func (suite *OperatorTestSuite) CheckState(expectedState *StateForCheck) {
 
 func (suite *OperatorTestSuite) TestOptIn() {
 	suite.prepare()
+	suite.prepareAvs([]string{"0xdac17f958d2ee523a2206206994597c13d831ec7_0x65"})
 	err := suite.App.OperatorKeeper.OptIn(suite.Ctx, suite.operatorAddr, suite.avsAddr)
 	suite.NoError(err)
 	// check if the related state is correct
 	price, err := suite.App.OperatorKeeper.OracleInterface().GetSpecifiedAssetsPrice(suite.Ctx, suite.assetID)
+	suite.NoError(err)
 	usdValue := operatorKeeper.CalculateUSDValue(suite.delegationAmount, price.Value, suite.assetDecimal, price.Decimal)
 	expectedState := &StateForCheck{
 		OptedInfo: &operatorTypes.OptedInfo{
@@ -140,12 +154,14 @@ func (suite *OperatorTestSuite) TestOptIn() {
 		OperatorShare: sdkmath.LegacyDec{},
 		StakerShare:   usdValue,
 	}
-	suite.App.OperatorKeeper.EndBlock(suite.Ctx, abci.RequestEndBlock{})
+	suite.CommitAfter(time.Hour*1 + time.Nanosecond)
+	suite.CommitAfter(time.Hour*2 + time.Nanosecond)
 	suite.CheckState(expectedState)
 }
 
 func (suite *OperatorTestSuite) TestOptInList() {
 	suite.prepare()
+	suite.prepareAvs([]string{"0xdac17f958d2ee523a2206206994597c13d831ec7_0x65"})
 	err := suite.App.OperatorKeeper.OptIn(suite.Ctx, suite.operatorAddr, suite.avsAddr)
 	suite.NoError(err)
 	// check if the related state is correct
@@ -162,6 +178,7 @@ func (suite *OperatorTestSuite) TestOptInList() {
 
 func (suite *OperatorTestSuite) TestOptOut() {
 	suite.prepare()
+	suite.prepareAvs([]string{"0xdac17f958d2ee523a2206206994597c13d831ec7_0x65"})
 	err := suite.App.OperatorKeeper.OptOut(suite.Ctx, suite.operatorAddr, suite.avsAddr)
 	suite.EqualError(err, operatorTypes.ErrNotOptedIn.Error())
 
@@ -184,6 +201,7 @@ func (suite *OperatorTestSuite) TestOptOut() {
 		OperatorShare:    sdkmath.LegacyDec{},
 		StakerShare:      sdkmath.LegacyDec{},
 	}
-	suite.App.OperatorKeeper.EndBlock(suite.Ctx, abci.RequestEndBlock{})
+	suite.CommitAfter(time.Hour*1 + time.Nanosecond)
+	suite.CommitAfter(time.Hour*2 + time.Nanosecond)
 	suite.CheckState(expectedState)
 }

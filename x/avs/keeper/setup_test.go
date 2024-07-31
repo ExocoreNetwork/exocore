@@ -4,7 +4,9 @@ import (
 	"testing"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/evmos/evmos/v14/app"
+	utiltx "github.com/evmos/evmos/v14/testutil/tx"
 	evm "github.com/evmos/evmos/v14/x/evm/types"
 
 	"github.com/ExocoreNetwork/exocore/testutil"
@@ -20,6 +22,7 @@ type AVSTestSuite struct {
 	app            *app.Evmos
 	queryClientEvm evm.QueryClient
 	consAddress    sdk.ConsAddress
+	avsAddress     common.Address
 }
 
 var s *AVSTestSuite
@@ -35,4 +38,5 @@ func TestKeeperTestSuite(t *testing.T) {
 
 func (suite *AVSTestSuite) SetupTest() {
 	suite.DoSetupTest()
+	suite.avsAddress = utiltx.GenerateAddress()
 }

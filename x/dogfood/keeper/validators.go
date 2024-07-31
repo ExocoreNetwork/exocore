@@ -9,8 +9,8 @@ import (
 	"time"
 
 	"cosmossdk.io/math"
+	avstypes "github.com/ExocoreNetwork/exocore/x/avs/types"
 	"github.com/ExocoreNetwork/exocore/x/dogfood/types"
-	operatortypes "github.com/ExocoreNetwork/exocore/x/operator/types"
 	abci "github.com/cometbft/cometbft/abci/types"
 	cryptocodec "github.com/cosmos/cosmos-sdk/crypto/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -54,7 +54,7 @@ func (k Keeper) ApplyValidatorChanges(
 		}
 		// the address is just derived from the public key and
 		// has no correlation with the operator address on Exocore.
-		addr := pubkey.Address()
+		addr := sdk.GetConsAddress(pubkey)
 		val, found := k.GetExocoreValidator(ctx, addr)
 		switch found {
 		case true:
@@ -66,7 +66,7 @@ func (k Keeper) ApplyValidatorChanges(
 				k.DeleteExocoreValidator(cc, addr)
 				// sdk slashing.AfterValidatorRemoved deletes the lookup from cons address to
 				// cons pub key
-				err = k.Hooks().AfterValidatorRemoved(cc, sdk.ConsAddress(addr), nil)
+				err = k.Hooks().AfterValidatorRemoved(cc, addr, nil)
 				if err != nil {
 					logger.Error("error in AfterValidatorRemoved", "error", err)
 					continue
@@ -82,7 +82,7 @@ func (k Keeper) ApplyValidatorChanges(
 				// via stakingkeeeper.Validator(ctx, valAddr)
 				// then it fetches the cons pub key from said validator to generate the lookup
 				found, accAddress := k.operatorKeeper.GetOperatorAddressForChainIDAndConsAddr(
-					ctx, ctx.ChainID(), sdk.ConsAddress(addr),
+					ctx, avstypes.ChainIDWithoutRevision(ctx.ChainID()), addr,
 				)
 				if !found {
 					// should never happen
@@ -107,7 +107,7 @@ func (k Keeper) ApplyValidatorChanges(
 				// guard for errors within the hooks.
 				cc, writeFunc := ctx.CacheContext()
 				k.SetExocoreValidator(cc, ocVal)
-				err = k.Hooks().AfterValidatorBonded(cc, sdk.ConsAddress(addr), nil)
+				err = k.Hooks().AfterValidatorBonded(cc, addr, nil)
 				if err != nil {
 					logger.Error("error in AfterValidatorBonded", "error", err)
 					// If an error is returned, the validator is not added to the `ret` slice.
@@ -150,10 +150,10 @@ func (k Keeper) SetExocoreValidator(ctx sdk.Context, validator types.ExocoreVali
 
 // GetExocoreValidator gets a validator based on the pub key derived (consensus) address.
 func (k Keeper) GetExocoreValidator(
-	ctx sdk.Context, addr []byte,
+	ctx sdk.Context, addr sdk.ConsAddress,
 ) (validator types.ExocoreValidator, found bool) {
 	store := ctx.KVStore(k.storeKey)
-	v := store.Get(types.ExocoreValidatorKey(addr))
+	v := store.Get(types.ExocoreValidatorKey(addr.Bytes()))
 	if v == nil {
 		return
 	}
@@ -164,9 +164,9 @@ func (k Keeper) GetExocoreValidator(
 }
 
 // DeleteExocoreValidator deletes a validator based on the pub key derived address.
-func (k Keeper) DeleteExocoreValidator(ctx sdk.Context, addr []byte) {
+func (k Keeper) DeleteExocoreValidator(ctx sdk.Context, addr sdk.ConsAddress) {
 	store := ctx.KVStore(k.storeKey)
-	store.Delete(types.ExocoreValidatorKey(addr))
+	store.Delete(types.ExocoreValidatorKey(addr.Bytes()))
 }
 
 // GetAllExocoreValidators returns all validators in the store.
@@ -348,18 +348,14 @@ func (k Keeper) GetValidator(
 	ctx sdk.Context, valAddr sdk.ValAddress,
 ) (stakingtypes.Validator, bool) {
 	accAddr := sdk.AccAddress(valAddr)
-	found, consPubKey, err := k.operatorKeeper.GetOperatorConsKeyForChainID(
-		ctx, accAddr, ctx.ChainID(),
+	found, wrappedKey, err := k.operatorKeeper.GetOperatorConsKeyForChainID(
+		ctx, accAddr, avstypes.ChainIDWithoutRevision(ctx.ChainID()),
 	)
-	if !found || err != nil {
-		return stakingtypes.Validator{}, false
-	}
-	consAddr, err := operatortypes.TMCryptoPublicKeyToConsAddr(consPubKey)
-	if err != nil {
+	if !found || err != nil || wrappedKey == nil {
 		return stakingtypes.Validator{}, false
 	}
 	val, found := k.operatorKeeper.ValidatorByConsAddrForChainID(
-		ctx, consAddr, ctx.ChainID(),
+		ctx, wrappedKey.ToConsAddr(), avstypes.ChainIDWithoutRevision(ctx.ChainID()),
 	)
 	if !found {
 		return stakingtypes.Validator{}, false

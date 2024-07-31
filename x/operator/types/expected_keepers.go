@@ -6,15 +6,11 @@ import (
 	"github.com/ExocoreNetwork/exocore/x/delegation/keeper"
 	delegationtype "github.com/ExocoreNetwork/exocore/x/delegation/types"
 	oracletype "github.com/ExocoreNetwork/exocore/x/oracle/types"
-	tmprotocrypto "github.com/cometbft/cometbft/proto/tendermint/crypto"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/common"
 )
 
-var (
-	_ OracleKeeper = MockOracle{}
-	_ AVSKeeper    = MockAVS{}
-)
+var _ OracleKeeper = MockOracle{}
 
 type AssetsKeeper interface {
 	GetStakingAssetInfo(
@@ -91,54 +87,6 @@ func (MockOracle) GetMultipleAssetsPrices(_ sdk.Context, assets map[string]inter
 	return ret, nil
 }
 
-type MockAVS struct {
-	AssetsKeeper  AssetsKeeper
-	DogfoodKeeper dogfoodKeeper
-}
-
-type dogfoodKeeper interface {
-	GetMinSelfDelegation(ctx sdk.Context) sdkmath.Int
-}
-
-func (a MockAVS) GetAVSSupportedAssets(ctx sdk.Context, _ string) (map[string]interface{}, error) {
-	// set all registered assets as the default asset supported by mock AVS
-	ret := make(map[string]interface{})
-	allAssets, err := a.AssetsKeeper.GetAllStakingAssetsInfo(ctx)
-	if err != nil {
-		return nil, err
-	}
-	for assetID := range allAssets {
-		ret[assetID] = nil
-	}
-	return ret, nil
-}
-
-func (a MockAVS) GetAVSSlashContract(_ sdk.Context, _ string) (string, error) {
-	return "", nil
-}
-
-func (a MockAVS) GetAVSAddrByChainID(_ sdk.Context, chainID string) (string, error) {
-	return chainID, nil
-}
-
-func (a MockAVS) GetAVSMinimumSelfDelegation(ctx sdk.Context, avsAddr string) (sdkmath.LegacyDec, error) {
-	if avsAddr == ctx.ChainID() {
-		return sdkmath.LegacyNewDec(a.DogfoodKeeper.GetMinSelfDelegation(ctx).Int64()), nil
-	}
-	return sdkmath.LegacyNewDec(0), nil
-}
-
-func (a MockAVS) GetEpochEndAVSs(ctx sdk.Context) ([]string, error) {
-	return []string{
-		ctx.ChainID(),
-		common.BytesToAddress([]byte("avsTestAddr")).String(),
-	}, nil
-}
-
-func (a MockAVS) GetHeightForVotingPower(_ sdk.Context, _ string, height int64) (int64, error) {
-	return height, nil
-}
-
 type AVSKeeper interface {
 	// GetAVSSupportedAssets The ctx can be historical or current, depending on the state you
 	// wish to retrieve. If the caller want to retrieve a historical assets info supported by
@@ -146,15 +94,18 @@ type AVSKeeper interface {
 	// `ContextForHistoricalState` implemented in x/assets/types/general.go
 	GetAVSSupportedAssets(ctx sdk.Context, avsAddr string) (map[string]interface{}, error)
 	GetAVSSlashContract(ctx sdk.Context, avsAddr string) (string, error)
-	// GetAVSAddrByChainID converts the chainID to a general EVM-compatible hex address.
-	GetAVSAddrByChainID(ctx sdk.Context, chainID string) (string, error)
+	// GetChainIDByAVSAddr converts the hex AVS address to the chainID.
+	GetChainIDByAVSAddr(ctx sdk.Context, avsAddr string) (string, bool)
 	// GetAVSMinimumSelfDelegation returns the USD value of minimum self delegation, which
 	// is set for operator
 	GetAVSMinimumSelfDelegation(ctx sdk.Context, avsAddr string) (sdkmath.LegacyDec, error)
 	// GetEpochEndAVSs returns the AVS list where the current block marks the end of their epoch.
 	// todo: maybe the epoch of different AVSs should be implemented in the AVS module,then
 	// the other modules implement the EpochsHooks to trigger state updating.
-	GetEpochEndAVSs(ctx sdk.Context) ([]string, error)
+	GetEpochEndAVSs(ctx sdk.Context, epochIdentifier string, epochNumber int64) []string
+	// IsAVS returns true if the address is a registered AVS address.
+	IsAVS(ctx sdk.Context, addr string) (bool, error)
+	IsAVSByChainID(ctx sdk.Context, chainID string) (bool, common.Address)
 }
 
 type SlashKeeper interface {
@@ -165,16 +116,16 @@ type OperatorHooks interface {
 	// This hook is called when an operator declares the consensus key for the provided chain.
 	AfterOperatorKeySet(
 		ctx sdk.Context, addr sdk.AccAddress, chainID string,
-		pubKey *tmprotocrypto.PublicKey,
+		pubKey WrappedConsKey,
 	)
 	// This hook is called when an operator's consensus key is replaced for a chain.
 	AfterOperatorKeyReplaced(
-		ctx sdk.Context, addr sdk.AccAddress, oldKey *tmprotocrypto.PublicKey,
-		newKey *tmprotocrypto.PublicKey, chainID string,
+		ctx sdk.Context, addr sdk.AccAddress, oldKey WrappedConsKey,
+		newKey WrappedConsKey, chainID string,
 	)
 	// This hook is called when an operator initiates the removal of a consensus key for a
 	// chain.
 	AfterOperatorKeyRemovalInitiated(
-		ctx sdk.Context, addr sdk.AccAddress, chainID string, key *tmprotocrypto.PublicKey,
+		ctx sdk.Context, addr sdk.AccAddress, chainID string, key WrappedConsKey,
 	)
 }

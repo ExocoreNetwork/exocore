@@ -1,22 +1,13 @@
 package utils
 
 import (
-	"encoding/hex"
 	"strings"
-
-	"github.com/ExocoreNetwork/exocore/cmd/config"
-
-	"github.com/cosmos/btcutil/bech32"
-	"github.com/ethereum/go-ethereum/common"
 
 	"github.com/evmos/evmos/v14/crypto/ethsecp256k1"
 
-	errorsmod "cosmossdk.io/errors"
 	"github.com/cosmos/cosmos-sdk/crypto/keys/ed25519"
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
 	"github.com/cosmos/cosmos-sdk/crypto/types/multisig"
-	sdk "github.com/cosmos/cosmos-sdk/types"
-	errortypes "github.com/cosmos/cosmos-sdk/types/errors"
 )
 
 const (
@@ -70,51 +61,53 @@ func IsSupportedKey(pubkey cryptotypes.PubKey) bool {
 	}
 }
 
-// GetExocoreAddressFromBech32 returns the sdk.Account address of given address,
-// while also changing bech32 human readable prefix (HRP) to the value set on
-// the global sdk.Config (eg: `evmos`).
-// The function fails if the provided bech32 address is invalid.
-func GetExocoreAddressFromBech32(address string) (sdk.AccAddress, error) {
-	bech32Prefix := strings.SplitN(address, "1", 2)[0]
-	if bech32Prefix == address {
-		return nil, errorsmod.Wrapf(errortypes.ErrInvalidAddress, "invalid bech32 address: %s", address)
-	}
+// // GetExocoreAddressFromBech32 returns the sdk.Account address of given address,
+// // while also changing bech32 human readable prefix (HRP) to the value set on
+// // the global sdk.Config (eg: `evmos`).
+// // The function fails if the provided bech32 address is invalid.
+// func GetExocoreAddressFromBech32(address string) (sdk.AccAddress, error) {
+// 	bech32Prefix := strings.SplitN(address, "1", 2)[0]
+// 	if bech32Prefix == address {
+// 		return nil, errorsmod.Wrapf(errortypes.ErrInvalidAddress, "invalid bech32 address: %s", address)
+// 	}
 
-	addressBz, err := sdk.GetFromBech32(address, bech32Prefix)
-	if err != nil {
-		return nil, errorsmod.Wrapf(errortypes.ErrInvalidAddress, "invalid address %s, %s", address, err.Error())
-	}
+// 	addressBz, err := sdk.GetFromBech32(address, bech32Prefix)
+// 	if err != nil {
+// 		return nil, errorsmod.Wrapf(errortypes.ErrInvalidAddress, "invalid address %s, %s", address, err.Error())
+// 	}
 
-	// safety check: shouldn't happen
-	if err := sdk.VerifyAddressFormat(addressBz); err != nil {
-		return nil, err
-	}
+// 	// safety check: shouldn't happen
+// 	if err := sdk.VerifyAddressFormat(addressBz); err != nil {
+// 		return nil, err
+// 	}
 
-	return sdk.AccAddress(addressBz), nil
-}
+// 	return sdk.AccAddress(addressBz), nil
+// }
 
-func DecodeHexString(hexString string) ([]byte, error) {
-	if strings.HasPrefix(hexString, "0x") || strings.HasPrefix(hexString, "0X") {
-		hexString = hexString[2:]
-	}
-	if len(hexString)%2 != 0 {
-		hexString = "0" + hexString
-	}
-	return hex.DecodeString(hexString)
-}
+// func DecodeHexString(hexString string) ([]byte, error) {
+// 	if strings.HasPrefix(hexString, "0x") || strings.HasPrefix(hexString, "0X") {
+// 		hexString = hexString[2:]
+// 	}
+// 	if len(hexString)%2 != 0 {
+// 		hexString = "0" + hexString
+// 	}
+// 	return hex.DecodeString(hexString)
+// }
 
-func ProcessAddress(address string) (string, error) {
-	switch {
-	case common.IsHexAddress(address):
-		b := common.FromHex(address)
-		encodedAddress, err := bech32.EncodeFromBase256(config.Bech32Prefix, b)
-		if err != nil {
-			return "", err
-		}
-		return encodedAddress, nil
-	case strings.HasPrefix(address, config.Bech32Prefix):
-		return address, nil
-	default:
-		return "", errorsmod.Wrapf(errortypes.ErrInvalidAddress, "invalid input address: %s", address)
-	}
-}
+// // ProcessAddress converts a hex address into the bech32 address format.
+// // If the input address is already in bech32 format, it returns the same address.
+// func ProcessAddress(address string) (string, error) {
+// 	switch {
+// 	case common.IsHexAddress(address):
+// 		b := common.FromHex(address)
+// 		encodedAddress, err := bech32.EncodeFromBase256(config.Bech32Prefix, b)
+// 		if err != nil {
+// 			return "", err
+// 		}
+// 		return encodedAddress, nil
+// 	case strings.HasPrefix(address, config.Bech32Prefix):
+// 		return address, nil
+// 	default:
+// 		return "", errorsmod.Wrapf(errortypes.ErrInvalidAddress, "invalid input address: %s", address)
+// 	}
+// }

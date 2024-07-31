@@ -1,23 +1,26 @@
 package keeper_test
 
 import (
+	"time"
+
 	avstypes "github.com/ExocoreNetwork/exocore/x/avs/keeper"
 	"github.com/ExocoreNetwork/exocore/x/avs/types"
 	delegationtypes "github.com/ExocoreNetwork/exocore/x/delegation/types"
 	epochstypes "github.com/ExocoreNetwork/exocore/x/epochs/types"
 	operatorTypes "github.com/ExocoreNetwork/exocore/x/operator/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"time"
+	utiltx "github.com/evmos/evmos/v14/testutil/tx"
 )
 
 func (suite *AVSTestSuite) TestAVS() {
-	avsName, avsAddres, slashAddress := "avsTest", "exo13h6xg79g82e2g2vhjwg7j4r2z2hlncelwutkjr", "exo13h6xg79g82e2g2vhjwg7j4r2z2hlncelwutash"
+	avsName := "avsTest"
+	avsAddress := suite.avsAddress
 	avsOwnerAddress := []string{"exo13h6xg79g82e2g2vhjwg7j4r2z2hlncelwutkjr", "exo13h6xg79g82e2g2vhjwg7j4r2z2hlncelwutkj1", "exo13h6xg79g82e2g2vhjwg7j4r2z2hlncelwutkj2"}
-	assetID := []string{"11", "22", "33"}
+	assetID := []string{"0xdac17f958d2ee523a2206206994597c13d831ec7_0x65"}
 	avs := &types.AVSInfo{
 		Name:                avsName,
-		AvsAddress:          avsAddres,
-		SlashAddr:           slashAddress,
+		AvsAddress:          avsAddress.String(),
+		SlashAddr:           utiltx.GenerateAddress().String(),
 		AvsOwnerAddress:     avsOwnerAddress,
 		AssetIDs:            assetID,
 		AvsUnbondingPeriod:  7,
@@ -34,17 +37,17 @@ func (suite *AVSTestSuite) TestAVS() {
 	err := suite.App.AVSManagerKeeper.SetAVSInfo(suite.Ctx, avs)
 	suite.NoError(err)
 
-	info, err := suite.App.AVSManagerKeeper.GetAVSInfo(suite.Ctx, avsAddres)
+	info, err := suite.App.AVSManagerKeeper.GetAVSInfo(suite.Ctx, avsAddress.String())
 
 	suite.NoError(err)
-	suite.Equal(avsAddres, info.GetInfo().AvsAddress)
+	suite.Equal(avsAddress.String(), info.GetInfo().AvsAddress)
 
 	var avsList []types.AVSInfo
 	suite.App.AVSManagerKeeper.IterateAVSInfo(suite.Ctx, func(_ int64, epochEndAVSInfo types.AVSInfo) (stop bool) {
 		avsList = append(avsList, epochEndAVSInfo)
 		return false
 	})
-	suite.Equal(len(avsList), 1)
+	suite.Equal(len(avsList), 2) // + dogfood avs
 	suite.CommitAfter(48*time.Hour + time.Nanosecond)
 	// commit will run the EndBlockers for the current block, call app.Commit
 	// and then run the BeginBlockers for the next block with the new time.
@@ -61,7 +64,7 @@ func (suite *AVSTestSuite) TestAVSInfoUpdate_Register() {
 	avsOwnerAddress := []string{"exo13h6xg79g82e2g2vhjwg7j4r2z2hlncelwutkjr", "exo13h6xg79g82e2g2vhjwg7j4r2z2hlncelwutkj1", "exo13h6xg79g82e2g2vhjwg7j4r2z2hlncelwutkj2"}
 	assetID := []string{"11", "22", "33"}
 
-	avsParams := &avstypes.AVSRegisterOrDeregisterParams{
+	avsParams := &types.AVSRegisterOrDeregisterParams{
 		AvsName:            avsName,
 		AvsAddress:         avsAddres,
 		Action:             avstypes.RegisterAction,
@@ -89,11 +92,11 @@ func (suite *AVSTestSuite) TestAVSInfoUpdate_Register() {
 
 func (suite *AVSTestSuite) TestAVSInfoUpdate_DeRegister() {
 	// Test case setup
-	avsName, avsAddres, slashAddress := "avsTest", "exo13h6xg79g82e2g2vhjwg7j4r2z2hlncelwutkjr", "exo13h6xg79g82e2g2vhjwg7j4r2z2hlncelwutash"
+	avsName, avsAddres, slashAddress := "avsTest", suite.avsAddress.String(), "exo13h6xg79g82e2g2vhjwg7j4r2z2hlncelwutash"
 	avsOwnerAddress := []string{"exo13h6xg79g82e2g2vhjwg7j4r2z2hlncelwutkjr", "exo13h6xg79g82e2g2vhjwg7j4r2z2hlncelwutkj1", "exo13h6xg79g82e2g2vhjwg7j4r2z2hlncelwutkj2"}
 	assetID := []string{"11", "22", "33", "44", "55"} // Multiple assets
 
-	avsParams := &avstypes.AVSRegisterOrDeregisterParams{
+	avsParams := &types.AVSRegisterOrDeregisterParams{
 		AvsName:           avsName,
 		AvsAddress:        avsAddres,
 		Action:            avstypes.DeRegisterAction,
@@ -125,14 +128,15 @@ func (suite *AVSTestSuite) TestAVSInfoUpdate_DeRegister() {
 }
 
 func (suite *AVSTestSuite) TestAVSInfoUpdateWithOperator_Register() {
-	avsAddres, OperatorAddress := "exo13h6xg79g82e2g2vhjwg7j4r2z2hlncelwutkjr", "exo19get9l6tj7pvn9xt83m7twpmup3usjvydpfscg"
+	avsAddress := suite.avsAddress
+	operatorAddress := sdk.AccAddress(utiltx.GenerateAddress().Bytes()).String()
 
-	opAccAddr, err := sdk.AccAddressFromBech32(OperatorAddress)
+	opAccAddr, err := sdk.AccAddressFromBech32(operatorAddress)
 	suite.NoError(err)
 	operatorParams := &avstypes.OperatorOptParams{
-		AvsAddress:      avsAddres,
+		AvsAddress:      avsAddress.String(),
 		Action:          avstypes.RegisterAction,
-		OperatorAddress: OperatorAddress,
+		OperatorAddress: operatorAddress,
 	}
 	//  operator Not Exist
 	err = suite.App.AVSManagerKeeper.OperatorOptAction(suite.Ctx, operatorParams)
@@ -147,9 +151,9 @@ func (suite *AVSTestSuite) TestAVSInfoUpdateWithOperator_Register() {
 			EarningsAddr: opAccAddr.String(),
 		},
 	}
-	_, err = suite.App.OperatorKeeper.RegisterOperator(suite.Ctx, registerReq)
+	_, err = suite.OperatorMsgServer.RegisterOperator(sdk.WrapSDKContext(suite.Ctx), registerReq)
 	suite.NoError(err)
-	suite.TestAVS()
+	suite.TestAVS() // registers the AVS
 
 	err = suite.App.AVSManagerKeeper.OperatorOptAction(suite.Ctx, operatorParams)
 	suite.NoError(err)

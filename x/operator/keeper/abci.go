@@ -155,17 +155,6 @@ func (k *Keeper) UpdateVotingPower(ctx sdk.Context, avsAddr string) error {
 }
 
 // EndBlock : update the assets' share when their prices change
-func (k *Keeper) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.ValidatorUpdate {
-	// todo: need to consider the calling order
-	avsList, err := k.avsKeeper.GetEpochEndAVSs(ctx)
-	if err != nil {
-		panic(err)
-	}
-	for _, avs := range avsList {
-		err = k.UpdateVotingPower(ctx, avs)
-		if err != nil {
-			panic(err)
-		}
-	}
+func (k *Keeper) EndBlock(_ sdk.Context, _ abci.RequestEndBlock) []abci.ValidatorUpdate {
 	return []abci.ValidatorUpdate{}
 }

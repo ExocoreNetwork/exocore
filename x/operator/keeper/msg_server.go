@@ -8,49 +8,54 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-var _ types.MsgServer = &Keeper{}
+type MsgServerImpl struct {
+	keeper Keeper
+}
+
+func NewMsgServerImpl(keeper Keeper) *MsgServerImpl {
+	return &MsgServerImpl{keeper: keeper}
+}
+
+var _ types.MsgServer = &MsgServerImpl{}
 
 // RegisterOperator is an implementation of the msg server for the operator module.
-func (k *Keeper) RegisterOperator(ctx context.Context, req *types.RegisterOperatorReq) (*types.RegisterOperatorResponse, error) {
-	c := sdk.UnwrapSDKContext(ctx)
-	err := k.SetOperatorInfo(c, req.FromAddress, req.Info)
-	if err != nil {
+func (msgServer *MsgServerImpl) RegisterOperator(goCtx context.Context, req *types.RegisterOperatorReq) (*types.RegisterOperatorResponse, error) {
+	ctx := sdk.UnwrapSDKContext(goCtx)
+	if err := msgServer.keeper.SetOperatorInfo(ctx, req.FromAddress, req.Info); err != nil {
 		return nil, err
 	}
 	return &types.RegisterOperatorResponse{}, nil
 }
 
 // OptIntoAVS is an implementation of the msg server for the operator module.
-func (k Keeper) OptIntoAVS(ctx context.Context, req *types.OptIntoAVSReq) (res *types.OptIntoAVSResponse, err error) {
-	uncachedCtx := sdk.UnwrapSDKContext(ctx)
+func (msgServer *MsgServerImpl) OptIntoAVS(goCtx context.Context, req *types.OptIntoAVSReq) (res *types.OptIntoAVSResponse, err error) {
+	uncachedCtx := sdk.UnwrapSDKContext(goCtx)
 	// only write if both calls succeed
-	c, writeFunc := uncachedCtx.CacheContext()
+	ctx, writeFunc := uncachedCtx.CacheContext()
 	defer func() {
 		if err == nil {
 			writeFunc()
 		}
 	}()
-	// TODO: use some form of an AVS to key-type registry here, possibly from within the AVS module to determine
-	// if a key is required and that it is appropriately supplied.
-	if req.AvsAddress == c.ChainID() {
-		if len(req.PublicKey) == 0 {
-			return nil, errorsmod.Wrap(types.ErrInvalidPubKey, "a key is required but was not supplied")
-		}
-	} else {
-		if len(req.PublicKey) > 0 {
-			return nil, errorsmod.Wrap(types.ErrInvalidPubKey, "a key is not required but was supplied")
-		}
-	}
+	// check if the AVS is a chain-type of AVS
+	_, isChainAvs := msgServer.keeper.avsKeeper.GetChainIDByAVSAddr(ctx, req.AvsAddress)
 	// #nosec G703 // already validated
 	accAddr, _ := sdk.AccAddressFromBech32(req.FromAddress)
-	err = k.OptIn(c, accAddr, req.AvsAddress)
-	if err != nil {
-		return nil, err
-	}
-	if len(req.PublicKey) > 0 {
-		// we have to validate just the key; we previously validated that ctx.ChainID() == req.AvsAddress
-		keyObj, _ := types.ValidateConsensusKeyJSON(req.PublicKey)
-		if err := k.SetOperatorConsKeyForChainID(c, accAddr, req.AvsAddress, keyObj); err != nil {
+	if !isChainAvs {
+		if len(req.PublicKeyJSON) > 0 {
+			return nil, errorsmod.Wrap(types.ErrInvalidPubKey, "public key is not required for non-chain AVS")
+		}
+		err = msgServer.keeper.OptIn(ctx, accAddr, req.AvsAddress)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		key := types.NewWrappedConsKeyFromJSON(req.PublicKeyJSON)
+		if key == nil {
+			return nil, errorsmod.Wrap(types.ErrInvalidPubKey, "invalid public key")
+		}
+		err = msgServer.keeper.OptInWithConsKey(ctx, accAddr, req.AvsAddress, key)
+		if err != nil {
 			return nil, err
 		}
 	}
@@ -58,10 +63,9 @@ func (k Keeper) OptIntoAVS(ctx context.Context, req *types.OptIntoAVSReq) (res *
 }
 
 // OptOutOfAVS is an implementation of the msg server for the operator module.
-func (k Keeper) OptOutOfAVS(ctx context.Context, req *types.OptOutOfAVSReq) (res *types.OptOutOfAVSResponse, err error) {
-	uncachedCtx := sdk.UnwrapSDKContext(ctx)
-	// only write if both calls succeed
-	c, writeFunc := uncachedCtx.CacheContext()
+func (msgServer *MsgServerImpl) OptOutOfAVS(goCtx context.Context, req *types.OptOutOfAVSReq) (res *types.OptOutOfAVSResponse, err error) {
+	uncachedCtx := sdk.UnwrapSDKContext(goCtx)
+	ctx, writeFunc := uncachedCtx.CacheContext()
 	defer func() {
 		if err == nil {
 			writeFunc()
@@ -69,7 +73,7 @@ func (k Keeper) OptOutOfAVS(ctx context.Context, req *types.OptOutOfAVSReq) (res
 	}()
 	// #nosec G703 // already validated
 	accAddr, _ := sdk.AccAddressFromBech32(req.FromAddress)
-	err = k.OptOut(c, accAddr, req.AvsAddress)
+	err = msgServer.keeper.OptOut(ctx, accAddr, req.AvsAddress)
 	if err != nil {
 		return nil, err
 	}
@@ -77,13 +81,22 @@ func (k Keeper) OptOutOfAVS(ctx context.Context, req *types.OptOutOfAVSReq) (res
 }
 
 // SetConsKey is an implementation of the msg server for the operator module.
-func (k Keeper) SetConsKey(ctx context.Context, req *types.SetConsKeyReq) (*types.SetConsKeyResponse, error) {
-	c := sdk.UnwrapSDKContext(ctx)
+func (msgServer *MsgServerImpl) SetConsKey(goCtx context.Context, req *types.SetConsKeyReq) (*types.SetConsKeyResponse, error) {
+	ctx := sdk.UnwrapSDKContext(goCtx)
+	chainID, isAvs := msgServer.keeper.avsKeeper.GetChainIDByAVSAddr(ctx, req.AvsAddress)
+	if !isAvs {
+		return nil, errorsmod.Wrap(types.ErrNoSuchAvs, "AVS not found")
+	}
 	// #nosec G703 // already validated
 	accAddr, _ := sdk.AccAddressFromBech32(req.Address)
-	// #nosec G703 // already validated
-	keyObj, _ := types.ValidateConsensusKeyJSON(req.PublicKey)
-	if err := k.SetOperatorConsKeyForChainID(c, accAddr, req.ChainID, keyObj); err != nil {
+	if !msgServer.keeper.IsActive(ctx, accAddr, req.AvsAddress) {
+		return nil, errorsmod.Wrap(types.ErrNotOptedIn, "operator is not active")
+	}
+	wrappedKey := types.NewWrappedConsKeyFromJSON(req.PublicKeyJSON)
+	if wrappedKey == nil {
+		return nil, errorsmod.Wrap(types.ErrInvalidPubKey, "invalid public key")
+	}
+	if err := msgServer.keeper.SetOperatorConsKeyForChainID(ctx, accAddr, chainID, wrappedKey); err != nil {
 		return nil, err
 	}
 	return &types.SetConsKeyResponse{}, nil

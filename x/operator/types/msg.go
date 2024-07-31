@@ -4,7 +4,6 @@ import (
 	errorsmod "cosmossdk.io/errors"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/evmos/evmos/v14/types"
 )
 
 const (
@@ -66,11 +65,11 @@ func (m *SetConsKeyReq) ValidateBasic() error {
 	if _, err := sdk.AccAddressFromBech32(m.Address); err != nil {
 		return errorsmod.Wrap(err, "invalid from address")
 	}
-	if !types.IsValidChainID(m.ChainID) {
-		return errorsmod.Wrap(ErrParameterInvalid, "invalid chain id")
+	if !common.IsHexAddress(m.AvsAddress) {
+		return errorsmod.Wrap(ErrParameterInvalid, "invalid AVS address")
 	}
-	if _, err := ValidateConsensusKeyJSON(m.PublicKey); err != nil {
-		return errorsmod.Wrapf(ErrParameterInvalid, "invalid public key because %s", err)
+	if wrappedKey := NewWrappedConsKeyFromJSON(m.PublicKeyJSON); wrappedKey == nil {
+		return errorsmod.Wrapf(ErrParameterInvalid, "invalid public key")
 	}
 	return nil
 }
@@ -101,15 +100,15 @@ func (m *OptIntoAVSReq) ValidateBasic() error {
 	if _, err := sdk.AccAddressFromBech32(m.FromAddress); err != nil {
 		return errorsmod.Wrap(err, "invalid from address")
 	}
-	if m.AvsAddress == "" {
-		return errorsmod.Wrap(ErrParameterInvalid, "AVS address is empty")
+	if !common.IsHexAddress(m.AvsAddress) {
+		return errorsmod.Wrap(ErrParameterInvalid, "invalid AVS address")
 	}
-	// TODO: there is no specific restriction applied on ChainID in Cosmos, so this check
-	// could potentially be removed.
-	if !common.IsHexAddress(m.AvsAddress) && !types.IsValidChainID(m.AvsAddress) {
-		return errorsmod.Wrap(
-			ErrParameterInvalid, "AVS address is not a valid hex address or chain id",
-		)
+	// cannot check whether a public key is required or not,
+	// since that is a stateful check
+	if key := m.PublicKeyJSON; len(key) > 0 {
+		if wrappedKey := NewWrappedConsKeyFromJSON(key); wrappedKey == nil {
+			return errorsmod.Wrapf(ErrParameterInvalid, "invalid public key")
+		}
 	}
 	return nil
 }
@@ -143,7 +142,7 @@ func (m *OptOutOfAVSReq) ValidateBasic() error {
 	if m.AvsAddress == "" {
 		return errorsmod.Wrap(ErrParameterInvalid, "AVS address is empty")
 	}
-	if !common.IsHexAddress(m.AvsAddress) && !types.IsValidChainID(m.AvsAddress) {
+	if !common.IsHexAddress(m.AvsAddress) {
 		return errorsmod.Wrap(
 			ErrParameterInvalid, "AVS address is not a valid hex address or chain id",
 		)
