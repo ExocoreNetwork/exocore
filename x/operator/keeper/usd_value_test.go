@@ -71,12 +71,13 @@ func (suite *OperatorTestSuite) TestAVSUSDValue() {
 		LayerZeroChainID: 101,
 		MetaInfo:         "USDC",
 	}
-	_, err := suite.App.AssetsKeeper.RegisterAsset(
+	err := suite.App.AssetsKeeper.SetStakingAssetInfo(
 		suite.Ctx,
-		&assetstype.RegisterAssetReq{
-			FromAddress: suite.AccAddress.String(),
-			Info:        &usdcClientChainAsset,
-		})
+		&assetstype.StakingAssetInfo{
+			AssetBasicInfo:     &usdcClientChainAsset,
+			StakingTotalAmount: sdkmath.NewInt(0),
+		},
+	)
 	suite.NoError(err)
 	// register the new AVS
 	suite.prepareAvs([]string{"0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48_0x65", "0xdac17f958d2ee523a2206206994597c13d831ec7_0x65"})
