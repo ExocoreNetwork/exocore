@@ -61,7 +61,7 @@ func (p Precompile) DepositWithdrawParamsFromInputs(ctx sdk.Context, args []inte
 }
 
 func (p Precompile) ClientChainInfoFromInputs(_ sdk.Context, args []interface{}) (*types.ClientChainInfo, error) {
-	inputsLen := len(p.ABI.Methods[MethodRegisterClientChain].Inputs)
+	inputsLen := len(p.ABI.Methods[MethodRegisterOrUpdateClientChain].Inputs)
 	if len(args) != inputsLen {
 		return nil, fmt.Errorf(cmn.ErrInvalidNumberOfArgs, inputsLen, len(args))
 	}
@@ -109,7 +109,7 @@ func (p Precompile) ClientChainInfoFromInputs(_ sdk.Context, args []interface{})
 }
 
 func (p Precompile) TokenFromInputs(ctx sdk.Context, args []interface{}) (types.AssetInfo, error) {
-	inputsLen := len(p.ABI.Methods[MethodRegisterToken].Inputs)
+	inputsLen := len(p.ABI.Methods[MethodRegisterOrUpdateTokens].Inputs)
 	if len(args) != inputsLen {
 		return types.AssetInfo{}, fmt.Errorf(cmn.ErrInvalidNumberOfArgs, inputsLen, len(args))
 	}
@@ -165,4 +165,16 @@ func (p Precompile) TokenFromInputs(ctx sdk.Context, args []interface{}) (types.
 	asset.MetaInfo = metaInfo
 
 	return asset, nil
+}
+
+func (p Precompile) ClientChainIDFromInputs(_ sdk.Context, args []interface{}) (uint32, error) {
+	inputsLen := len(p.ABI.Methods[MethodIsRegisteredClientChain].Inputs)
+	if len(args) != inputsLen {
+		return 0, fmt.Errorf(cmn.ErrInvalidNumberOfArgs, inputsLen, len(args))
+	}
+	clientChainID, ok := args[0].(uint32)
+	if !ok {
+		return 0, fmt.Errorf(exocmn.ErrContractInputParaOrType, 0, "uint32", args[0])
+	}
+	return clientChainID, nil
 }

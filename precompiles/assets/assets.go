@@ -98,8 +98,8 @@ func (p Precompile) Run(evm *vm.EVM, contract *vm.Contract, readOnly bool) (bz [
 			// TODO: we should figure out root cause and fix this issue to make precompiles work normally
 			bz, err = method.Outputs.Pack(false, new(big.Int))
 		}
-	case MethodRegisterClientChain:
-		bz, err = p.RegisterClientChain(ctx, contract, method, args)
+	case MethodRegisterOrUpdateClientChain:
+		bz, err = p.RegisterOrUpdateClientChain(ctx, contract, method, args)
 		if err != nil {
 			ctx.Logger().Error("internal error when calling assets precompile", "module", "assets precompile", "method", method.Name, "err", err)
 			// for failed cases we expect it returns bool value instead of error
@@ -108,8 +108,8 @@ func (p Precompile) Run(evm *vm.EVM, contract *vm.Contract, readOnly bool) (bz [
 			// TODO: we should figure out root cause and fix this issue to make precompiles work normally
 			bz, err = method.Outputs.Pack(false) // Adjust based on actual needs
 		}
-	case MethodRegisterToken:
-		bz, err = p.RegisterToken(ctx, contract, method, args)
+	case MethodRegisterOrUpdateTokens:
+		bz, err = p.RegisterOrUpdateTokens(ctx, contract, method, args)
 		if err != nil {
 			ctx.Logger().Error("internal error when calling assets precompile", "module", "assets precompile", "method", method.Name, "err", err)
 			// for failed cases we expect it returns bool value instead of error
@@ -121,6 +121,8 @@ func (p Precompile) Run(evm *vm.EVM, contract *vm.Contract, readOnly bool) (bz [
 	// queries
 	case MethodGetClientChains:
 		bz, err = p.GetClientChains(ctx, method, args)
+	case MethodIsRegisteredClientChain:
+		bz, err = p.IsRegisteredClientChain(ctx, method, args)
 	default:
 		return nil, fmt.Errorf(cmn.ErrUnknownMethod, method.Name)
 	}
@@ -140,14 +142,12 @@ func (p Precompile) Run(evm *vm.EVM, contract *vm.Contract, readOnly bool) (bz [
 }
 
 // IsTransaction checks if the given methodID corresponds to a transaction or query.
-//
-// Available assets transactions are:
-//   - depositTo
-//   - withdrawPrincipal
 func (Precompile) IsTransaction(methodID string) bool {
 	switch methodID {
-	case MethodDepositTo, MethodWithdraw:
+	case MethodDepositTo, MethodWithdraw, MethodRegisterOrUpdateClientChain, MethodRegisterOrUpdateTokens:
 		return true
+	case MethodGetClientChains, MethodIsRegisteredClientChain:
+		return false
 	default:
 		return false
 	}
