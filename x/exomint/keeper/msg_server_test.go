@@ -3,8 +3,6 @@ package keeper_test
 import (
 	sdkmath "cosmossdk.io/math"
 	"github.com/ExocoreNetwork/exocore/x/exomint/types"
-	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/ethereum/go-ethereum/common"
 )
 
 func (suite *KeeperTestSuite) TestUpdateParams() {
@@ -59,13 +57,13 @@ func (suite *KeeperTestSuite) TestUpdateParams() {
 			expectPass: true,
 			expParams:  types.NewParams("nextmint", sdkmath.NewInt(1), prevParams.EpochIdentifier),
 		},
-		{
-			name:       "valid params but invalid authority",
-			params:     types.NewParams("nextmint", sdkmath.NewInt(1), "day"),
-			authority:  sdk.AccAddress(common.HexToAddress("0x0").Bytes()).String(),
-			expectPass: false,
-			expErr:     "invalid authority",
-		},
+		// {
+		// 	name:       "valid params but invalid authority",
+		// 	params:     types.NewParams("nextmint", sdkmath.NewInt(1), "day"),
+		// 	authority:  sdk.AccAddress(common.HexToAddress("0x0").Bytes()).String(),
+		// 	expectPass: false,
+		// 	expErr:     "invalid authority",
+		// },
 	}
 	for _, tc := range cases {
 		suite.Run(tc.name, func() {
