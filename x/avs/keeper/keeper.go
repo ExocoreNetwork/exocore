@@ -225,10 +225,8 @@ func (k Keeper) RegisterBLSPublicKey(ctx sdk.Context, params *BlsParams) error {
 	return k.SetOperatorPubKey(ctx, bls)
 }
 
-func (k Keeper) GetOptInOperators(_ sdk.Context, _ string) ([]string, error) {
-	// TODO:expected operator Implement querying all operators that have been optin based on the avs address
-
-	return nil, nil
+func (k Keeper) GetOptInOperators(ctx sdk.Context, avsAddr string) ([]string, error) {
+	return k.operatorKeeper.GetOptedInOperatorListByAVS(ctx, avsAddr)
 }
 
 func (k Keeper) OperatorOptAction(ctx sdk.Context, params *OperatorOptParams) error {
