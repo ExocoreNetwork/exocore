@@ -6,7 +6,6 @@ import (
 
 	"github.com/ethereum/go-ethereum/common"
 
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	"golang.org/x/xerrors"
 
 	"github.com/ExocoreNetwork/exocore/x/avs/types"
@@ -28,6 +27,7 @@ func GetQueryCmd(_ string) *cobra.Command {
 
 	cmd.AddCommand(QueryAVSInfo())
 	cmd.AddCommand(QueryAVSAddrByChainID())
+	cmd.AddCommand(QueryTaskInfo())
 	return cmd
 }
 
@@ -39,7 +39,7 @@ func QueryAVSInfo() *cobra.Command {
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if !common.IsHexAddress(args[0]) {
-				return xerrors.Errorf("invalid  address,err:%s", types.ErrInvalidAddr)
+				return xerrors.Errorf("invalid avs  address,err:%s", types.ErrInvalidAddr)
 			}
 			clientCtx, err := client.GetClientQueryContext(cmd)
 			if err != nil {
@@ -90,16 +90,15 @@ func QueryAVSAddrByChainID() *cobra.Command {
 	return cmd
 }
 
-func GetTaskInfo() *cobra.Command {
+func QueryTaskInfo() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "GetTaskInfo avstask info",
-		Short: "Get avstask info",
-		Long:  "Get avstask info",
-		Args:  cobra.ExactArgs(1),
+		Use:   "TaskInfo query",
+		Short: "TaskInfo query",
+		Long:  "TaskInfo query for current registered task",
+		Args:  cobra.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			_, err := sdk.AccAddressFromBech32(args[0])
-			if err != nil {
-				return xerrors.Errorf("invalid operator address,err:%s", err.Error())
+			if !common.IsHexAddress(args[0]) {
+				return xerrors.Errorf("invalid task  address,err:%s", types.ErrInvalidAddr)
 			}
 			clientCtx, err := client.GetClientQueryContext(cmd)
 			if err != nil {
@@ -109,6 +108,7 @@ func GetTaskInfo() *cobra.Command {
 			queryClient := types.NewQueryClient(clientCtx)
 			req := types.QueryAVSTaskInfoReq{
 				TaskAddr: args[0],
+				TaskId:   args[1],
 			}
 			res, err := queryClient.QueryAVSTaskInfo(context.Background(), &req)
 			if err != nil {
@@ -117,7 +117,6 @@ func GetTaskInfo() *cobra.Command {
 			return clientCtx.PrintProto(res)
 		},
 	}
-
 	flags.AddQueryFlagsToCmd(cmd)
 	return cmd
 }
