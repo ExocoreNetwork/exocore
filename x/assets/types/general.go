@@ -23,7 +23,7 @@ const (
 	// during the calculation of share and usd value.
 	MaxDecimal                  = 18
 	MaxDecForTotalSupply        = 38
-	MaxChainTokenNameLength     = 20
+	MaxChainTokenNameLength     = 50
 	MaxChainTokenMetaInfoLength = 200
 
 	MinClientChainAddrLength = 20
