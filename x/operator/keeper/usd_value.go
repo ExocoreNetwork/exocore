@@ -317,8 +317,14 @@ func (k *Keeper) CalculateUSDValueForOperator(
 			if prices == nil {
 				return errorsmod.Wrap(operatortypes.ErrValueIsNilOrZero, "CalculateUSDValueForOperator prices map is nil")
 			}
-			price = prices[assetID]
-			decimal = decimals[assetID]
+			price, ok := prices[assetID]
+			if !ok {
+				return errorsmod.Wrap(operatortypes.ErrKeyNotExistInMap, "CalculateUSDValueForOperator map: prices, key: assetID")
+			}
+			decimal, ok := decimals[assetID]
+			if !ok {
+				return errorsmod.Wrap(operatortypes.ErrKeyNotExistInMap, "CalculateUSDValueForOperator map: decimals, key: assetID")
+			}
 			ret.Staking = ret.Staking.Add(CalculateUSDValue(state.TotalAmount, price.Value, decimal, price.Decimal))
 			// calculate the token amount from the share for the operator
 			selfAmount, err := delegationkeeper.TokensFromShares(state.OperatorShare, state.TotalShare, state.TotalAmount)
@@ -341,15 +347,16 @@ func (k Keeper) GetOrCalculateOperatorUSDValues(
 	operator sdk.AccAddress,
 	chainID string,
 ) (optedUSDValues operatortypes.OperatorOptedUSDValue, err error) {
-	avsAddr, err := k.avsKeeper.GetAVSAddrByChainID(ctx, chainID)
-	if err != nil {
-		return operatortypes.OperatorOptedUSDValue{}, err
+	isAvs, avsAddr := k.avsKeeper.IsAVSByChainID(ctx, chainID)
+	if !isAvs {
+		return operatortypes.OperatorOptedUSDValue{}, errorsmod.Wrap(operatortypes.ErrUnknownChainID, fmt.Sprintf("GetOrCalculateOperatorUSDValues: chainID is %s", chainID))
 	}
+	avsAddrString := avsAddr.String()
 	// the usd values will be deleted if the operator opts out, so recalculate the
 	// voting power to set the tokens and shares for this case.
-	if !k.IsOptedIn(ctx, operator.String(), avsAddr) {
+	if !k.IsOptedIn(ctx, operator.String(), avsAddrString) {
 		// get assets supported by the AVS
-		assets, err := k.avsKeeper.GetAVSSupportedAssets(ctx, avsAddr)
+		assets, err := k.avsKeeper.GetAVSSupportedAssets(ctx, avsAddrString)
 		if err != nil {
 			return operatortypes.OperatorOptedUSDValue{}, err
 		}
@@ -372,7 +379,7 @@ func (k Keeper) GetOrCalculateOperatorUSDValues(
 		optedUSDValues.SelfUSDValue = stakingInfo.SelfStaking
 		optedUSDValues.TotalUSDValue = stakingInfo.Staking
 	} else {
-		optedUSDValues, err = k.GetOperatorOptedUSDValue(ctx, avsAddr, operator.String())
+		optedUSDValues, err = k.GetOperatorOptedUSDValue(ctx, avsAddrString, operator.String())
 		if err != nil {
 			return operatortypes.OperatorOptedUSDValue{}, err
 		}
