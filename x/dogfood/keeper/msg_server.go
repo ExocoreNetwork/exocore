@@ -4,11 +4,8 @@ import (
 	"context"
 	"strings"
 
-	errorsmod "cosmossdk.io/errors"
-
 	"github.com/ExocoreNetwork/exocore/x/dogfood/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 	epochstypes "github.com/evmos/evmos/v14/x/epochs/types"
 )
 
@@ -24,18 +21,19 @@ func NewMsgServerImpl(keeper Keeper) types.MsgServer {
 
 var _ types.MsgServer = msgServer{}
 
-// UpdateParams is used to trigger a params update. It must be signed by the authority.
+// UpdateParams is used to trigger a params update.
+// TODO: It must be signed by the authority.
 func (k Keeper) UpdateParams(
 	ctx context.Context, msg *types.MsgUpdateParams,
 ) (*types.MsgUpdateParamsResponse, error) {
 	c := sdk.UnwrapSDKContext(ctx)
-	if k.authority != msg.Authority {
-		return nil, errorsmod.Wrapf(
-			govtypes.ErrInvalidSigner,
-			"invalid authority; expected %s, got %s",
-			k.authority, msg.Authority,
-		)
-	}
+	// if k.authority != msg.Authority {
+	// 	return nil, errorsmod.Wrapf(
+	// 		govtypes.ErrInvalidSigner,
+	// 		"invalid authority; expected %s, got %s",
+	// 		k.authority, msg.Authority,
+	// 	)
+	// }
 	prevParams := k.GetDogfoodParams(c)
 	nextParams := msg.Params
 	logger := k.Logger(c)

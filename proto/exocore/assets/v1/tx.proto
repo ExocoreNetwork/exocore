@@ -6,6 +6,7 @@ import "cosmos/msg/v1/msg.proto";
 import "cosmos_proto/cosmos.proto";
 import "exocore/assets/v1/params.proto";
 import "gogoproto/gogo.proto";
+import "google/api/annotations.proto";
 
 option go_package = "github.com/ExocoreNetwork/exocore/x/assets/types";
 
@@ -241,11 +242,17 @@ message MsgUpdateParamsResponse {}
 service Msg {
   option (cosmos.msg.v1.service) = true;
   // UpdateParams updates the parameters of the assets module.
-  rpc UpdateParams(MsgUpdateParams) returns (MsgUpdateParamsResponse);
-  // SetStakerExoCoreAddr sets the exocore address of the staker
-  rpc SetStakerExoCoreAddr(MsgSetExoCoreAddr) returns (MsgSetExoCoreAddrResponse);
-  // RegisterClientChain registers the client chain
-  rpc RegisterClientChain(RegisterClientChainReq) returns (RegisterClientChainResponse);
+  rpc UpdateParams(MsgUpdateParams) returns (MsgUpdateParamsResponse) {
+    option (google.api.http).post = "/exocore/assets/v1/tx/MsgUpdateParams";
+  }
+  // // SetStakerExoCoreAddr sets the exocore address of the staker
+  // rpc SetStakerExoCoreAddr(MsgSetExoCoreAddr) returns (MsgSetExoCoreAddrResponse) {
+  //   option (google.api.http).post = "/exocore/assets/v1/tx/SetStakerExoCoreAddr";
+  // }
+  // // RegisterClientChain registers the client chain
+  // rpc RegisterClientChain(RegisterClientChainReq) returns (RegisterClientChainResponse) {
+  //   option (google.api.http).post = "/exocore/assets/v1/tx/RegisterClientChain";
+  // }
   // RegisterAsset registers the asset on the client chain
-  rpc RegisterAsset(RegisterAssetReq) returns (RegisterAssetResponse);
+  // rpc RegisterAsset(RegisterAssetReq) returns (RegisterAssetResponse);
 }
