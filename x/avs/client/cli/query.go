@@ -92,9 +92,9 @@ func QueryAVSAddrByChainID() *cobra.Command {
 
 func QueryTaskInfo() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "TaskInfo query",
-		Short: "TaskInfo query",
-		Long:  "TaskInfo query for current registered task",
+		Use:   "TaskInfo <task-address-in-hex> <task-id>",
+		Short: "Query the TaskInfo by its address and ID",
+		Long:  "Query the currently registered tasks for an AVS by the task's address and ID",
 		Args:  cobra.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if !common.IsHexAddress(args[0]) {
