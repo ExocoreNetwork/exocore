@@ -37,6 +37,7 @@ type OperatorKeeper interface {
 	IsOperator(ctx sdk.Context, addr sdk.AccAddress) bool
 	OptIn(ctx sdk.Context, operatorAddress sdk.AccAddress, avsAddr string) error
 	OptOut(ctx sdk.Context, operatorAddress sdk.AccAddress, avsAddr string) (err error)
+	GetOptedInOperatorListByAVS(ctx sdk.Context, avsAddr string) ([]string, error)
 }
 
 // AssetsKeeper represents the expected keeper interface for the assets module.

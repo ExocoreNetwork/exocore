@@ -25,8 +25,6 @@ const (
 	MethodCreateAVSTask             = "createTask"
 	MethodSubmitProof               = "submitProof"
 	MethodRegisterBLSPublicKey      = "registerBLSPublicKey"
-	MethodGetRegisteredPubkey       = "getRegisteredPubkey"
-	MethodGetOptinOperators         = "getOptInOperators"
 )
 
 // AVSInfoRegister register the avs related information and change the state in avs keeper module.
@@ -224,28 +222,6 @@ func (p Precompile) RegisterBLSPublicKey(
 	return method.Outputs.Pack(true)
 }
 
-// GetRegisteredPubkey
-func (p Precompile) GetRegisteredPubkey(
-	ctx sdk.Context,
-	_ *vm.Contract,
-	method *abi.Method,
-	args []interface{},
-) ([]byte, error) {
-	if len(args) != len(p.ABI.Methods[MethodGetRegisteredPubkey].Inputs) {
-		return nil, fmt.Errorf(cmn.ErrInvalidNumberOfArgs, 1, len(args))
-	}
-	// the key is set using the operator's acc address so the same logic should apply here
-	addr, ok := args[0].(string)
-	if !ok {
-		return nil, fmt.Errorf(exocmn.ErrContractInputParaOrType, 0, "string", addr)
-	}
-	pubkey, err := p.avsKeeper.GetOperatorPubKey(ctx, addr)
-	if err != nil {
-		return nil, err
-	}
-	return method.Outputs.Pack(pubkey)
-}
-
 // SubmitProof
 func (p Precompile) SubmitProof(
 	_ sdk.Context,
@@ -269,27 +245,4 @@ func (p Precompile) SubmitProof(
 	//	return nil, err
 	//}
 	return method.Outputs.Pack(true)
-}
-
-// GetOptedInOperatorAccAddrs
-func (p Precompile) GetOptedInOperatorAccAddrs(
-	ctx sdk.Context,
-	_ *vm.Contract,
-	method *abi.Method,
-	args []interface{},
-) ([]byte, error) {
-	if len(args) != len(p.ABI.Methods[MethodGetOptinOperators].Inputs) {
-		return nil, fmt.Errorf(cmn.ErrInvalidNumberOfArgs, 1, len(args))
-	}
-
-	addr, ok := args[0].(common.Address)
-	if !ok || addr == (common.Address{}) {
-		return nil, fmt.Errorf(exocmn.ErrContractInputParaOrType, 0, "string", addr)
-	}
-
-	list, err := p.avsKeeper.GetOptInOperators(ctx, addr.String())
-	if err != nil {
-		return nil, err
-	}
-	return method.Outputs.Pack(list)
 }
