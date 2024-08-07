@@ -1,8 +1,8 @@
 package keeper
 
 import (
+	types "github.com/ExocoreNetwork/exocore/x/feedistribution/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/evmos/evmos/v14/x/inflation/types"
 )
 
 // GetEpochIdentifier gets the epoch identifier

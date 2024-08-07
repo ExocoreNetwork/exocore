@@ -12,7 +12,7 @@ import (
 
 	distr "github.com/ExocoreNetwork/exocore/x/feedistribution"
 	distrkeeper "github.com/ExocoreNetwork/exocore/x/feedistribution/keeper"
-	distrtypes "github.com/cosmos/cosmos-sdk/x/distribution/types"
+	distrtypes "github.com/ExocoreNetwork/exocore/x/feedistribution/types"
 
 	"github.com/ExocoreNetwork/exocore/x/oracle"
 	oracleKeeper "github.com/ExocoreNetwork/exocore/x/oracle/keeper"
