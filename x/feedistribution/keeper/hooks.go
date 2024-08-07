@@ -14,13 +14,18 @@ type EpochsHooksWrapper struct {
 // Interface guard
 var _ epochstypes.EpochHooks = EpochsHooksWrapper{}
 
+// EpochsHooks returns the epochs hooks wrapper.
+func (k *Keeper) EpochsHooks() EpochsHooksWrapper {
+	return EpochsHooksWrapper{k}
+}
+
 // BeforeEpochStart: noop, We don't need to do anything here
 func (wrapper EpochsHooksWrapper) BeforeEpochStart(_ sdk.Context, _ string, _ int64) {
 }
 
 // AfterEpochEnd mints and allocates coins at the end of each epoch end
 func (wrapper EpochsHooksWrapper) AfterEpochEnd(ctx sdk.Context, epochIdentifier string, _ int64) {
-	expEpochID := wrapper.keeper.GetEpochIdentifier(ctx)
+	expEpochID := wrapper.keeper.GetParams(ctx).EpochIdentifier
 	if epochIdentifier != expEpochID {
 		return
 	}

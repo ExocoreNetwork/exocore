@@ -818,6 +818,7 @@ func NewExocoreApp(
 			app.StakingKeeper.EpochsHooks(),    // at this point, the order is irrelevant.
 			app.ExomintKeeper.EpochsHooks(),    // however, this may change once we have distribution
 			app.AVSManagerKeeper.EpochsHooks(), // no-op for now
+			app.DistrKeeper.EpochsHooks(),
 		),
 	)
 

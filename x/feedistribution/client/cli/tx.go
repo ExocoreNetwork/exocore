@@ -29,7 +29,7 @@ func GetTxCmd() *cobra.Command {
 // CmdUpdateParams is to update Params for distribution module
 func CmdUpdateParams() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "update-params",
+		Use:   types.ModuleName,
 		Short: "update params-update msg of the module",
 		Args:  cobra.ExactArgs(3),
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -38,9 +38,6 @@ func CmdUpdateParams() *cobra.Command {
 				return err
 			}
 
-			if err != nil {
-				return err
-			}
 			sender := cliCtx.GetFromAddress()
 			communityInteger, err := strconv.ParseInt(args[1], 10, 64)
 			if err != nil {
