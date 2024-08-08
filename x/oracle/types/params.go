@@ -2,6 +2,7 @@ package types
 
 import (
 	"errors"
+	"strings"
 
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	"gopkg.in/yaml.v2"
@@ -484,8 +485,11 @@ func (f TokenFeeder) validate() error {
 
 func (p Params) GetTokenIDFromAssetID(assetID string) int {
 	for id, token := range p.Tokens {
-		if token.AssetID == assetID {
-			return id
+		assetIDs := strings.Split(token.AssetID, ",")
+		for _, aID := range assetIDs {
+			if aID == assetID {
+				return id
+			}
 		}
 	}
 	return 0

@@ -3,6 +3,7 @@ package assets
 import (
 	"errors"
 	"fmt"
+	"regexp"
 
 	sdkmath "cosmossdk.io/math"
 
@@ -23,6 +24,8 @@ const (
 	MethodRegisterOrUpdateTokens      = "registerOrUpdateTokens"
 	MethodIsRegisteredClientChain     = "isRegisteredClientChain"
 )
+
+var oracleInfoMatcher = regexp.MustCompile(`oracle_info:{chain:(.+),\s*token:(.+),\s*decimal:(\d+)(,\s*interval:(.+))?(,\s*contract:(.+))?}`)
 
 // DepositOrWithdraw deposit and withdraw the client chain assets for the staker,
 // that will change the state in assets module.
@@ -136,16 +139,38 @@ func (p Precompile) RegisterOrUpdateTokens(
 
 	// the price feed must exist
 	_, assetID := assetstypes.GetStakeIDAndAssetIDFromStr(asset.LayerZeroChainID, "", asset.Address)
-	if _, err := p.assetsKeeper.GetSpecifiedAssetsPrice(ctx, assetID); err != nil {
-		return nil, err
+
+	updated := false
+	stakingAsset, _ := p.assetsKeeper.GetStakingAssetInfo(ctx, assetID)
+	if stakingAsset != nil {
+		// this is for update
+		if asset.TotalSupply.IsPositive() {
+			stakingAsset.AssetBasicInfo.TotalSupply = asset.TotalSupply
+		}
+		if len(asset.MetaInfo) > 0 {
+			stakingAsset.AssetBasicInfo.MetaInfo = asset.MetaInfo
+		}
+		updated = true
+	} else {
+		stakingAsset = &assetstypes.StakingAssetInfo{
+			AssetBasicInfo:     &asset,
+			StakingTotalAmount: sdkmath.NewInt(0),
+		}
+
+		// parse oracle info from metaInfo
+		// MetaInfo: `...oracle_info:{chain:Bitcoin,token:BTC,decimal:8,interval:50,contract:0x}...`
+		oracleInfo := oracleInfoMatcher.FindStringSubmatch(asset.MetaInfo)
+		if len(oracleInfo) != 5 {
+			return nil, errors.New("register new asset fail, oracle_info must be described in meta_info")
+		}
+		// register new token for oracle module
+		if err := p.assetsKeeper.RegisterNewTokenAndSetTokenFeeder(ctx, oracleInfo[1], oracleInfo[2], oracleInfo[3], oracleInfo[5], oracleInfo[7], assetID); err != nil {
+			return nil, err
+		}
 	}
 
-	updated := p.assetsKeeper.IsStakingAsset(ctx, assetID)
 	// this is where the magic happens
-	if err := p.assetsKeeper.SetStakingAssetInfo(ctx, &assetstypes.StakingAssetInfo{
-		AssetBasicInfo:     &asset,
-		StakingTotalAmount: sdkmath.NewInt(0),
-	}); err != nil {
+	if err := p.assetsKeeper.SetStakingAssetInfo(ctx, stakingAsset); err != nil {
 		return nil, err
 	}
 
