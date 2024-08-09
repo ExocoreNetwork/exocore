@@ -20,6 +20,8 @@ import (
 	exocoreapp "github.com/ExocoreNetwork/exocore/app"
 	"github.com/ExocoreNetwork/exocore/utils"
 	assetstypes "github.com/ExocoreNetwork/exocore/x/assets/types"
+	distributiontypes "github.com/ExocoreNetwork/exocore/x/feedistribution/types"
+
 	delegationtypes "github.com/ExocoreNetwork/exocore/x/delegation/types"
 	dogfoodtypes "github.com/ExocoreNetwork/exocore/x/dogfood/types"
 	operatorkeeper "github.com/ExocoreNetwork/exocore/x/operator/keeper"
@@ -262,6 +264,10 @@ func (suite *BaseTestSuite) SetupWithGenesisValSet(genAccs []authtypes.GenesisAc
 	)
 	dogfoodGenesis.Params.MinSelfDelegation = math.NewInt(100)
 	genesisState[dogfoodtypes.ModuleName] = app.AppCodec().MustMarshalJSON(dogfoodGenesis)
+	distributionGenesis := distributiontypes.NewGenesisState(
+		distributiontypes.DefaultParams(),
+	)
+	genesisState[distributiontypes.ModuleName] = app.AppCodec().MustMarshalJSON(distributionGenesis)
 
 	suite.ValSet = tmtypes.NewValidatorSet([]*tmtypes.Validator{
 		tmtypes.NewValidator(pubKey.ToTmKey(), 1),

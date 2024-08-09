@@ -1,8 +1,16 @@
 package types
 
 import (
+	epochstypes "github.com/ExocoreNetwork/exocore/x/epochs/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
+)
+
+const (
+
+	// DefaultEpochIdentifier is the epoch identifier which is used, by default, to identify the
+	// epoch. Note that the options in the default genesis include minute, week, hour or day.
+	DefaultEpochIdentifier = epochstypes.DayEpochID
 )
 
 var _ paramtypes.ParamSet = (*Params)(nil)
@@ -15,7 +23,8 @@ func ParamKeyTable() paramtypes.KeyTable {
 // NewParams creates a new Params instance
 func NewParams() Params {
 	return Params{
-		CommunityTax: sdk.NewDecWithPrec(0, 0),
+		EpochIdentifier: DefaultEpochIdentifier,
+		CommunityTax:    sdk.NewDecWithPrec(0, 0),
 	}
 }
 

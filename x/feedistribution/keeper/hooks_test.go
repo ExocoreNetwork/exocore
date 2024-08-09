@@ -28,8 +28,8 @@ func (suite *KeeperTestSuite) TestEpochHooks() {
 		consAddr := operatortypes.NewWrappedConsKeyFromHex(hexutil.Encode(pubKey.Bytes()))
 		validator := suite.App.StakingKeeper.ValidatorByConsAddr(suite.Ctx, consAddr.ToConsAddr())
 		fmt.Print(validator)
-		//currentRewards := suite.App.DistrKeeper.GetValidatorCurrentRewards(suite.Ctx, validator.GetOperator())
-		//fmt.Print(currentRewards)
+		currentRewards := suite.App.DistrKeeper.GetValidatorCurrentRewards(suite.Ctx, validator.GetOperator())
+		fmt.Print(currentRewards)
 	}
 	epsilon := time.Nanosecond // negligible amount of buffer duration
 	// default is day, we start by committing after 1 minute
