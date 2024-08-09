@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	errorsmod "cosmossdk.io/errors"
 	"github.com/ExocoreNetwork/exocore/x/operator/types"
 	abci "github.com/cometbft/cometbft/abci/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -13,7 +14,7 @@ func (k Keeper) InitGenesis(ctx sdk.Context, state types.GenesisState) []abci.Va
 			op.OperatorInfo.EarningsAddr = op.OperatorAddress
 		}
 		if err := k.SetOperatorInfo(ctx, op.OperatorAddress, &op.OperatorInfo); err != nil {
-			panic(err)
+			panic(errorsmod.Wrap(err, "failed to set operator info"))
 		}
 	}
 	for _, record := range state.OperatorRecords {
@@ -29,27 +30,27 @@ func (k Keeper) InitGenesis(ctx sdk.Context, state types.GenesisState) []abci.Va
 	// init the state from the general exporting genesis file
 	err := k.SetAllOptedInfo(ctx, state.OptStates)
 	if err != nil {
-		panic(err)
+		panic(errorsmod.Wrap(err, "failed to set all opted info"))
 	}
 	err = k.SetAllOperatorUSDValues(ctx, state.OperatorUSDValues)
 	if err != nil {
-		panic(err)
+		panic(errorsmod.Wrap(err, "failed to set all operator USD values"))
 	}
 	err = k.SetAllAVSUSDValues(ctx, state.AVSUSDValues)
 	if err != nil {
-		panic(err)
+		panic(errorsmod.Wrap(err, "failed to set all AVS USD values"))
 	}
-	err = k.SetAllSlashInfo(ctx, state.SlashStates)
+	err = k.SetAllSlashStates(ctx, state.SlashStates)
 	if err != nil {
-		panic(err)
+		panic(errorsmod.Wrap(err, "failed to set all slash info"))
 	}
 	err = k.SetAllPrevConsKeys(ctx, state.PreConsKeys)
 	if err != nil {
-		panic(err)
+		panic(errorsmod.Wrap(err, "failed to set all previous consensus keys"))
 	}
 	err = k.SetAllOperatorKeyRemovals(ctx, state.OperatorKeyRemovals)
 	if err != nil {
-		panic(err)
+		panic(errorsmod.Wrap(err, "failed to set all key removals for operators"))
 	}
 	return []abci.ValidatorUpdate{}
 }
@@ -60,43 +61,43 @@ func (k Keeper) ExportGenesis(ctx sdk.Context) *types.GenesisState {
 
 	operatorRecords, err := k.GetAllOperatorConsKeyRecords(ctx)
 	if err != nil {
-		panic(err)
+		ctx.Logger().Error(errorsmod.Wrap(err, "failed to get all consensus keys for operators").Error())
 	}
 	res.OperatorRecords = operatorRecords
 
 	optedInfos, err := k.GetAllOptedInfo(ctx)
 	if err != nil {
-		panic(err)
+		ctx.Logger().Error(errorsmod.Wrap(err, "failed to get all opted info").Error())
 	}
 	res.OptStates = optedInfos
 
 	allAVSUSDValues, err := k.GetAllAVSUSDValues(ctx)
 	if err != nil {
-		panic(err)
+		ctx.Logger().Error(errorsmod.Wrap(err, "failed to get all AVS USD values").Error())
 	}
 	res.AVSUSDValues = allAVSUSDValues
 
 	allOperatorUSDValues, err := k.GetAllOperatorUSDValues(ctx)
 	if err != nil {
-		panic(err)
+		ctx.Logger().Error(errorsmod.Wrap(err, "failed to get all operator USD values").Error())
 	}
 	res.OperatorUSDValues = allOperatorUSDValues
 
-	slashingInfos, err := k.GetAllSlashInfo(ctx)
+	slashingInfos, err := k.GetAllSlashStates(ctx)
 	if err != nil {
-		panic(err)
+		ctx.Logger().Error(errorsmod.Wrap(err, "failed to set all slashing info").Error())
 	}
 	res.SlashStates = slashingInfos
 
 	prevConsKeys, err := k.GetAllPrevConsKeys(ctx)
 	if err != nil {
-		panic(err)
+		ctx.Logger().Error(errorsmod.Wrap(err, "failed to get all previous consensus keys").Error())
 	}
 	res.PreConsKeys = prevConsKeys
 
 	operatorKeyRemovals, err := k.GetAllOperatorKeyRemovals(ctx)
 	if err != nil {
-		panic(err)
+		ctx.Logger().Error(errorsmod.Wrap(err, "failed to get all key removals for operators").Error())
 	}
 	res.OperatorKeyRemovals = operatorKeyRemovals
 

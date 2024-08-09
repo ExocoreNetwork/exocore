@@ -18,7 +18,7 @@ message GenesisState {
   // params refers to the parameters of the module.
   Params params = 1 [(gogoproto.nullable) = false];
 
-  // val_set is the initial validator set. it onyl represents the active
+  // val_set is the initial validator set. it only represents the active
   // validators.
   repeated GenesisValidator val_set = 2
   [ (gogoproto.nullable) = false ];

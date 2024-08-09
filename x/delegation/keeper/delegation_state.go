@@ -381,7 +381,7 @@ func (k *Keeper) GetAssociatedOperator(ctx sdk.Context, stakerID string) (string
 }
 
 func (k *Keeper) GetAllAssociations(ctx sdk.Context) ([]delegationtype.StakerToOperator, error) {
-	store := prefix.NewStore(ctx.KVStore(k.storeKey), delegationtype.KeyPrefixSelfDelegateOperatorByStaker)
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), delegationtype.KeyPrefixAssociatedOperatorByStaker)
 	iterator := sdk.KVStorePrefixIterator(store, []byte{})
 	defer iterator.Close()
 

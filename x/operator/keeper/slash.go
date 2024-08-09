@@ -43,7 +43,7 @@ func SlashFromUndelegation(undelegation *delegationtype.UndelegationRecord, slas
 
 func (k *Keeper) CheckSlashParameter(ctx sdk.Context, parameter *types.SlashInputInfo) error {
 	if parameter.SlashProportion.IsNil() || parameter.SlashProportion.IsNegative() {
-		return errorsmod.Wrapf(types.ErrValueIsNilOrZero, "SlashProportion: %+v", parameter.SlashProportion)
+		return errorsmod.Wrapf(types.ErrValueIsNilOrZero, "Invalid SlashProportion; expected non-nil and non-negative, got: %+v", parameter.SlashProportion)
 	}
 	height := ctx.BlockHeight()
 	if parameter.SlashEventHeight > height {

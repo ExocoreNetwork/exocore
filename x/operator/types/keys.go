@@ -133,6 +133,9 @@ func KeyForOperatorAndChainIDToConsKey(addr sdk.AccAddress, chainID string) []by
 }
 
 func ParseKeyForOperatorAndChainIDToConsKey(key []byte) (addr sdk.AccAddress, chainID string, err error) {
+	if len(key) < AccAddressLength+8 {
+		return nil, "", xerrors.New("key length is too short to contain address and chainID length")
+	}
 	// Extract the address
 	addr = key[0:AccAddressLength]
 	if len(addr) == 0 {
@@ -160,29 +163,23 @@ func KeyForChainIDAndOperatorToPrevConsKey(chainID string, addr sdk.AccAddress) 
 }
 
 func ParsePrevConsKey(key []byte) (chainID string, addr sdk.AccAddress, err error) {
-	// Check if the key has at least one byte for the prefix and one byte for the chainID length
-	if len(key) < 2 {
-		return "", nil, xerrors.New("key too short")
-	}
-
-	// Extract and validate the prefix
-	prefix := key[0]
-	if prefix != BytePrefixForOperatorAndChainIDToPrevConsKey {
-		return "", nil, xerrors.Errorf("invalid prefix: expected %x, got %x", BytePrefixForOperatorAndChainIDToPrevConsKey, prefix)
+	// Check if the key has at least eight byte for the chainID length
+	if len(key) < 8 {
+		return "", nil, xerrors.New("key length is too short to contain chainID length")
 	}
 
 	// Extract the chainID length
-	chainIDLen := sdk.BigEndianToUint64(key[1:9])
-	if len(key) < int(9+chainIDLen) {
+	chainIDLen := sdk.BigEndianToUint64(key[0:8])
+	if len(key) < int(8+chainIDLen) {
 		return "", nil, xerrors.New("key too short for chainID length")
 	}
 
 	// Extract the chainID
-	chainIDBytes := key[9 : 9+chainIDLen]
+	chainIDBytes := key[8 : 8+chainIDLen]
 	chainID = string(chainIDBytes)
 
 	// Extract the address
-	addr = key[9+chainIDLen:]
+	addr = key[8+chainIDLen:]
 	if len(addr) == 0 {
 		return "", nil, xerrors.New("missing address")
 	}
@@ -213,31 +210,25 @@ func KeyForOperatorKeyRemovalForChainID(addr sdk.AccAddress, chainID string) []b
 }
 
 func ParseKeyForOperatorKeyRemoval(key []byte) (addr sdk.AccAddress, chainID string, err error) {
-	// Check if the key has at least one byte for the prefix and one byte for the chainID length
-	if len(key) < 2 {
-		return nil, "", xerrors.New("key too short")
-	}
-
-	// Extract and validate the prefix
-	prefix := key[0]
-	if prefix != BytePrefixForOperatorKeyRemovalForChainID {
-		return nil, "", xerrors.Errorf("invalid prefix: expected %x, got %x", BytePrefixForOperatorKeyRemovalForChainID, prefix)
+	// Check if the key has at least 20 byte for the operator and eight byte for the chainID length
+	if len(key) < AccAddressLength+8 {
+		return nil, "", xerrors.New("key length is too short to contain operator address and chainID length")
 	}
 
 	// Extract the address
-	addr = key[1 : AccAddressLength+1]
+	addr = key[0:AccAddressLength]
 	if len(addr) == 0 {
 		return nil, "", xerrors.New("missing address")
 	}
 
 	// Extract the chainID length
-	chainIDLen := sdk.BigEndianToUint64(key[AccAddressLength+1 : AccAddressLength+9])
-	if len(key) != int(AccAddressLength+9+chainIDLen) {
-		return nil, "", xerrors.Errorf("invalid key length,expected:%d,got:%d", AccAddressLength+9+chainIDLen, len(key))
+	chainIDLen := sdk.BigEndianToUint64(key[AccAddressLength : AccAddressLength+8])
+	if len(key) != int(AccAddressLength+8+chainIDLen) {
+		return nil, "", xerrors.Errorf("invalid key length,expected:%d,got:%d", AccAddressLength+8+chainIDLen, len(key))
 	}
 
 	// Extract the chainID
-	chainIDBytes := key[AccAddressLength+9 : AccAddressLength+9+chainIDLen]
+	chainIDBytes := key[AccAddressLength+8 : AccAddressLength+8+chainIDLen]
 	chainID = string(chainIDBytes)
 
 	return addr, chainID, nil

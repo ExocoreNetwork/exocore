@@ -2,8 +2,10 @@ package types
 
 import (
 	errorsmod "cosmossdk.io/errors"
+	"cosmossdk.io/math"
+	"github.com/ExocoreNetwork/exocore/utils"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/common"
-	"golang.org/x/exp/constraints"
 )
 
 type TotalSupplyAndStaking struct {
@@ -34,34 +36,6 @@ func DefaultGenesis() *GenesisState {
 	return NewGenesis(
 		DefaultParams(), []ClientChainInfo{}, []StakingAssetInfo{}, []DepositsByStaker{}, []AssetsByOperator{},
 	)
-}
-
-// CommonValidation is used to check for duplicates in the input list
-// and validate the input information simultaneously.
-// It might be used for validating most genesis states.
-func CommonValidation[T any, V constraints.Ordered, D any](
-	slice []T,
-	seenFieldValue func(T) (V, D),
-	validation func(int, T) error,
-) (map[V]D, error) {
-	seen := make(map[V]D)
-	for i, v := range slice {
-		field, value := seenFieldValue(v)
-		// check for no duplicated element
-		if _, ok := seen[field]; ok {
-			return nil, errorsmod.Wrapf(
-				ErrInvalidGenesisData,
-				"duplicate element: %v",
-				field,
-			)
-		}
-		// perform the validation
-		if err := validation(i, v); err != nil {
-			return nil, err
-		}
-		seen[field] = value
-	}
-	return seen, nil
 }
 
 // ValidateClientChains performs basic client chains validation
@@ -95,16 +69,17 @@ func (gs GenesisState) ValidateClientChains() (map[uint64]struct{}, error) {
 	seenFieldValueFunc := func(info ClientChainInfo) (uint64, struct{}) {
 		return info.LayerZeroChainID, struct{}{}
 	}
-	lzIDs, err := CommonValidation(gs.ClientChains, seenFieldValueFunc, validationFunc)
+	lzIDs, err := utils.CommonValidation(gs.ClientChains, seenFieldValueFunc, validationFunc)
 	if err != nil {
-		return nil, err
+		return nil, errorsmod.Wrap(ErrInvalidGenesisData, err.Error())
 	}
+
 	return lzIDs, nil
 }
 
 // ValidateTokens performs basic client chain assets validation
 func (gs GenesisState) ValidateTokens(lzIDs map[uint64]struct{}) (map[string]TotalSupplyAndStaking, error) {
-	validationFunc := func(i int, info StakingAssetInfo) error {
+	validationFunc := func(_ int, info StakingAssetInfo) error {
 		id := info.AssetBasicInfo.LayerZeroChainID
 		// check that the chain is registered
 		if _, ok := lzIDs[id]; !ok {
@@ -169,16 +144,16 @@ func (gs GenesisState) ValidateTokens(lzIDs map[uint64]struct{}) (map[string]Tot
 			TotalStaking: info.StakingTotalAmount,
 		}
 	}
-	totalSupplyAndStaking, err := CommonValidation(gs.Tokens, seenFieldValueFunc, validationFunc)
+	totalSupplyAndStaking, err := utils.CommonValidation(gs.Tokens, seenFieldValueFunc, validationFunc)
 	if err != nil {
-		return nil, err
+		return nil, errorsmod.Wrap(ErrInvalidGenesisData, err.Error())
 	}
 	return totalSupplyAndStaking, nil
 }
 
 // ValidateDeposits performs basic deposits validation
 func (gs GenesisState) ValidateDeposits(lzIDs map[uint64]struct{}, tokenStates map[string]TotalSupplyAndStaking) error {
-	validationFunc := func(i int, depositByStaker DepositsByStaker) error {
+	validationFunc := func(_ int, depositByStaker DepositsByStaker) error {
 		stakerID := depositByStaker.StakerID
 		// validate the stakerID
 		var stakerClientChainID uint64
@@ -200,7 +175,7 @@ func (gs GenesisState) ValidateDeposits(lzIDs map[uint64]struct{}, tokenStates m
 		}
 
 		// validate the deposits
-		depositValidationF := func(i int, deposit DepositByAsset) error {
+		depositValidationF := func(_ int, deposit DepositByAsset) error {
 			assetID := deposit.AssetID
 			// check that the asset is registered
 			// no need to check for the validity of the assetID, since
@@ -229,7 +204,7 @@ func (gs GenesisState) ValidateDeposits(lzIDs map[uint64]struct{}, tokenStates m
 			info := deposit.Info
 			// check that there is no nil value provided.
 			if info.TotalDepositAmount.IsNil() || info.WithdrawableAmount.IsNil() ||
-				info.WaitUnbondingAmount.IsNil() {
+				info.PendingUndelegationAmount.IsNil() {
 				return errorsmod.Wrapf(
 					ErrInvalidGenesisData,
 					"nil deposit info for %s: %+v",
@@ -239,7 +214,7 @@ func (gs GenesisState) ValidateDeposits(lzIDs map[uint64]struct{}, tokenStates m
 
 			// check for negative values.
 			if info.TotalDepositAmount.IsNegative() || info.WithdrawableAmount.IsNegative() ||
-				info.WaitUnbondingAmount.IsNegative() {
+				info.PendingUndelegationAmount.IsNegative() {
 				return errorsmod.Wrapf(
 					ErrInvalidGenesisData,
 					"negative deposit amount for %s: %+v",
@@ -255,10 +230,10 @@ func (gs GenesisState) ValidateDeposits(lzIDs map[uint64]struct{}, tokenStates m
 				)
 			}
 
-			if info.WaitUnbondingAmount.Add(info.WithdrawableAmount).GT(info.TotalDepositAmount) {
+			if info.PendingUndelegationAmount.Add(info.WithdrawableAmount).GT(info.TotalDepositAmount) {
 				return errorsmod.Wrapf(
 					ErrInvalidGenesisData,
-					"the sum of WaitUnbondingAmount and WithdrawableAmount is greater than the TotalDepositAmount, assetID: %s: %+v",
+					"the sum of PendingUndelegationAmount and WithdrawableAmount is greater than the TotalDepositAmount, assetID: %s: %+v",
 					assetID, info,
 				)
 			}
@@ -267,25 +242,25 @@ func (gs GenesisState) ValidateDeposits(lzIDs map[uint64]struct{}, tokenStates m
 		depositFieldValueF := func(deposit DepositByAsset) (string, struct{}) {
 			return deposit.AssetID, struct{}{}
 		}
-		_, err = CommonValidation(depositByStaker.Deposits, depositFieldValueF, depositValidationF)
+		_, err = utils.CommonValidation(depositByStaker.Deposits, depositFieldValueF, depositValidationF)
 		if err != nil {
-			return err
+			return errorsmod.Wrap(ErrInvalidGenesisData, err.Error())
 		}
 		return nil
 	}
 	seenFieldValueFunc := func(deposits DepositsByStaker) (string, struct{}) {
 		return deposits.StakerID, struct{}{}
 	}
-	_, err := CommonValidation(gs.Deposits, seenFieldValueFunc, validationFunc)
+	_, err := utils.CommonValidation(gs.Deposits, seenFieldValueFunc, validationFunc)
 	if err != nil {
-		return err
+		return errorsmod.Wrap(ErrInvalidGenesisData, err.Error())
 	}
 	return nil
 }
 
 // ValidateOperatorAssets performs basic operator assets validation
 func (gs GenesisState) ValidateOperatorAssets(tokenState map[string]TotalSupplyAndStaking) error {
-	validationFunc := func(i int, assets AssetsByOperator) error {
+	validationFunc := func(_ int, assets AssetsByOperator) error {
 		_, err := sdk.AccAddressFromBech32(assets.Operator)
 		if err != nil {
 			return errorsmod.Wrapf(
@@ -295,7 +270,7 @@ func (gs GenesisState) ValidateOperatorAssets(tokenState map[string]TotalSupplyA
 		}
 
 		// validate the assets list for the specified operator
-		assetValidationFunc := func(i int, asset AssetByID) error {
+		assetValidationFunc := func(_ int, asset AssetByID) error {
 			// check that the asset is registered
 			// no need to check for the validity of the assetID, since
 			// an invalid assetID cannot be in the tokens map.
@@ -307,7 +282,7 @@ func (gs GenesisState) ValidateOperatorAssets(tokenState map[string]TotalSupplyA
 				)
 			}
 			// the sum amount of operators shouldn't be greater than the total staking amount of this asset
-			if asset.Info.TotalAmount.Add(asset.Info.WaitUnbondingAmount).GT(tokenState[asset.AssetID].TotalStaking) {
+			if asset.Info.TotalAmount.Add(asset.Info.PendingUndelegationAmount).GT(tokenState[asset.AssetID].TotalStaking) {
 				return errorsmod.Wrapf(
 					ErrInvalidGenesisData,
 					"operator's sum amount exceeds the total staking amount for %s: %+v",
@@ -327,18 +302,18 @@ func (gs GenesisState) ValidateOperatorAssets(tokenState map[string]TotalSupplyA
 		assetFieldValueFunc := func(asset AssetByID) (string, struct{}) {
 			return asset.AssetID, struct{}{}
 		}
-		_, err = CommonValidation(assets.AssetsState, assetFieldValueFunc, assetValidationFunc)
+		_, err = utils.CommonValidation(assets.AssetsState, assetFieldValueFunc, assetValidationFunc)
 		if err != nil {
-			return err
+			return errorsmod.Wrap(ErrInvalidGenesisData, err.Error())
 		}
 		return nil
 	}
 	seenFieldValueFunc := func(assets AssetsByOperator) (string, struct{}) {
 		return assets.Operator, struct{}{}
 	}
-	_, err := CommonValidation(gs.OperatorAssets, seenFieldValueFunc, validationFunc)
+	_, err := utils.CommonValidation(gs.OperatorAssets, seenFieldValueFunc, validationFunc)
 	if err != nil {
-		return err
+		return errorsmod.Wrap(ErrInvalidGenesisData, err.Error())
 	}
 	return nil
 }

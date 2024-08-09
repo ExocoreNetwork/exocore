@@ -35,15 +35,15 @@ func (k Keeper) InitGenesis(
 	// init the state from the general exporting genesis file
 	err := k.SetAllDelegationStates(ctx, gs.DelegationStates)
 	if err != nil {
-		panic(err)
+		panic(errorsmod.Wrap(err, "failed to set all delegation states"))
 	}
 	err = k.SetAllStakerList(ctx, gs.StakersByOperator)
 	if err != nil {
-		panic(err)
+		panic(errorsmod.Wrap(err, "failed to set all staker list"))
 	}
 	err = k.SetUndelegationRecords(ctx, gs.Undelegations)
 	if err != nil {
-		panic(err)
+		panic(errorsmod.Wrap(err, "failed to set all undelegation records"))
 	}
 	return []abci.ValidatorUpdate{}
 }
@@ -53,25 +53,25 @@ func (k Keeper) ExportGenesis(ctx sdk.Context) *delegationtype.GenesisState {
 	res := delegationtype.GenesisState{}
 	associations, err := k.GetAllAssociations(ctx)
 	if err != nil {
-		panic(err)
+		ctx.Logger().Error(errorsmod.Wrap(err, "failed to get all associations").Error())
 	}
 	res.Associations = associations
 
 	delegationStates, err := k.AllDelegationStates(ctx)
 	if err != nil {
-		panic(err)
+		ctx.Logger().Error(errorsmod.Wrap(err, "failed to get all delegation states").Error())
 	}
 	res.DelegationStates = delegationStates
 
 	stakerList, err := k.AllStakerList(ctx)
 	if err != nil {
-		panic(err)
+		ctx.Logger().Error(errorsmod.Wrap(err, "failed to get all staker list").Error())
 	}
 	res.StakersByOperator = stakerList
 
 	undelegations, err := k.AllUndelegations(ctx)
 	if err != nil {
-		panic(err)
+		ctx.Logger().Error(errorsmod.Wrap(err, "failed to get all undelegations").Error())
 	}
 	res.Undelegations = undelegations
 	return &res

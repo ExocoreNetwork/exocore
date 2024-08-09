@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"time"
 
+	avstypes "github.com/ExocoreNetwork/exocore/x/avs/types"
+
 	"cosmossdk.io/math"
 
 	"github.com/cosmos/cosmos-sdk/baseapp"
@@ -75,7 +77,7 @@ func (suite *BaseTestSuite) SetupTest() {
 // that also act as delegators.
 func (suite *BaseTestSuite) SetupWithGenesisValSet(genAccs []authtypes.GenesisAccount, balances ...banktypes.Balance) {
 	pruneOpts := pruningtypes.NewPruningOptionsFromString(pruningtypes.PruningOptionDefault)
-	appI, genesisState := exocoreapp.SetupTestingApp(utils.DefaultChainID, &pruneOpts, false)()
+	appI, genesisState := exocoreapp.SetupTestingApp(utils.DefaultChainID, &pruneOpts, true)()
 	app, ok := appI.(*exocoreapp.ExocoreApp)
 	suite.Require().True(ok)
 
@@ -105,6 +107,8 @@ func (suite *BaseTestSuite) SetupWithGenesisValSet(genAccs []authtypes.GenesisAc
 	suite.Powers = []int64{power, power2}
 	depositAmount := math.NewIntWithDecimal(power, 6)
 	depositAmount2 := math.NewIntWithDecimal(power2, 6)
+	usdValue := math.LegacyNewDec(power)
+	usdValue2 := math.LegacyNewDec(power2)
 	depositsByStaker := []assetstypes.DepositsByStaker{
 		{
 			StakerID: stakerID1,
@@ -140,10 +144,10 @@ func (suite *BaseTestSuite) SetupWithGenesisValSet(genAccs []authtypes.GenesisAc
 				{
 					AssetID: assetID,
 					Info: assetstypes.OperatorAssetInfo{
-						TotalAmount:         depositAmount,
-						WaitUnbondingAmount: sdk.ZeroInt(),
-						TotalShare:          sdk.NewDecFromBigInt(depositAmount.BigInt()),
-						OperatorShare:       sdk.NewDecFromBigInt(depositAmount.BigInt()),
+						TotalAmount:               depositAmount,
+						PendingUndelegationAmount: sdk.ZeroInt(),
+						TotalShare:                sdk.NewDecFromBigInt(depositAmount.BigInt()),
+						OperatorShare:             sdk.NewDecFromBigInt(depositAmount.BigInt()),
 					},
 				},
 			},
@@ -154,10 +158,10 @@ func (suite *BaseTestSuite) SetupWithGenesisValSet(genAccs []authtypes.GenesisAc
 				{
 					AssetID: assetID,
 					Info: assetstypes.OperatorAssetInfo{
-						TotalAmount:         depositAmount2,
-						WaitUnbondingAmount: sdk.ZeroInt(),
-						TotalShare:          sdk.NewDecFromBigInt(depositAmount2.BigInt()),
-						OperatorShare:       sdk.NewDecFromBigInt(depositAmount2.BigInt()),
+						TotalAmount:               depositAmount2,
+						PendingUndelegationAmount: sdk.ZeroInt(),
+						TotalShare:                sdk.NewDecFromBigInt(depositAmount2.BigInt()),
+						OperatorShare:             sdk.NewDecFromBigInt(depositAmount2.BigInt()),
 					},
 				},
 			},
@@ -224,7 +228,71 @@ func (suite *BaseTestSuite) SetupWithGenesisValSet(genAccs []authtypes.GenesisAc
 	suite.Require().NotNil(pubKey)
 	pubKey2 := testutiltx.GenerateConsensusKey()
 	suite.Require().NotNil(pubKey2)
-	operatorGenesis := operatortypes.NewGenesisState(operatorInfos, nil, nil, nil, nil, nil, nil)
+	chainIDWithoutRevision := avstypes.ChainIDWithoutRevision(utils.DefaultChainID)
+	operatorConsKeys := []operatortypes.OperatorConsKeyRecord{
+		{
+			OperatorAddress: operator1.String(),
+			Chains: []operatortypes.ChainDetails{
+				{
+					ChainID:      chainIDWithoutRevision,
+					ConsensusKey: pubKey.ToHex(),
+				},
+			},
+		},
+		{
+			OperatorAddress: operator2.String(),
+			Chains: []operatortypes.ChainDetails{
+				{
+					ChainID:      chainIDWithoutRevision,
+					ConsensusKey: pubKey2.ToHex(),
+				},
+			},
+		},
+	}
+	avsAddr := avstypes.GenerateAVSAddr(chainIDWithoutRevision).String()
+	optStates := []operatortypes.OptedState{
+		{
+			Key: string(assetstypes.GetJoinedStoreKey(operator1.String(), avsAddr)),
+			OptInfo: operatortypes.OptedInfo{
+				OptedInHeight:  1,
+				OptedOutHeight: operatortypes.DefaultOptedOutHeight,
+			},
+		},
+		{
+			Key: string(assetstypes.GetJoinedStoreKey(operator2.String(), avsAddr)),
+			OptInfo: operatortypes.OptedInfo{
+				OptedInHeight:  1,
+				OptedOutHeight: operatortypes.DefaultOptedOutHeight,
+			},
+		},
+	}
+	operatorUSDValues := []operatortypes.OperatorUSDValue{
+		{
+			Key: string(assetstypes.GetJoinedStoreKey(avsAddr, operator1.String())),
+			OptedUSDValue: operatortypes.OperatorOptedUSDValue{
+				SelfUSDValue:   usdValue,
+				TotalUSDValue:  usdValue,
+				ActiveUSDValue: usdValue,
+			},
+		},
+		{
+			Key: string(assetstypes.GetJoinedStoreKey(avsAddr, operator2.String())),
+			OptedUSDValue: operatortypes.OperatorOptedUSDValue{
+				SelfUSDValue:   usdValue2,
+				TotalUSDValue:  usdValue2,
+				ActiveUSDValue: usdValue2,
+			},
+		},
+	}
+	avsUSDValues := []operatortypes.AVSUSDValue{
+		{
+			AVSAddr: avsAddr,
+			Value: operatortypes.DecValueField{
+				Amount: usdValue.Add(usdValue2),
+			},
+		},
+	}
+	operatorGenesis := operatortypes.NewGenesisState(operatorInfos, operatorConsKeys, optStates, operatorUSDValues, avsUSDValues, nil, nil, nil)
 	genesisState[operatortypes.ModuleName] = app.AppCodec().MustMarshalJSON(operatorGenesis)
 
 	// x/delegation

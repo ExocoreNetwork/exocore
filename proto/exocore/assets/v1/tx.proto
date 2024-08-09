@@ -111,7 +111,9 @@ message StakerAllAssetsInfo {
 // for an operator.
 message OperatorAssetInfo {
   // total_amount is the total amount of the asset deposited, which excludes the
-  // wait_unbonding_amount
+  // pending_undelegation_amount. It represent the total delegated amount of asset pool,
+  // it will be used to calculate the asset amount of a specified staker from its
+  // delegated share.
   string total_amount = 1
   [
     (cosmos_proto.scalar) = "cosmos.Int",

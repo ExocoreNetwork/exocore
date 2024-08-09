@@ -22,7 +22,10 @@ func (k *Keeper) SetOperatorInfo(
 	ctx sdk.Context, addr string, info *operatortypes.OperatorInfo,
 ) (err error) {
 	// #nosec G703 // already validated in `ValidateBasic`
-	opAccAddr, _ := sdk.AccAddressFromBech32(addr)
+	opAccAddr, err := sdk.AccAddressFromBech32(addr)
+	if err != nil {
+		return errorsmod.Wrap(err, "SetOperatorInfo: error occurred when parse acc address from Bech32")
+	}
 	// if already registered, this request should go to EditOperator.
 	if k.IsOperator(ctx, opAccAddr) {
 		return errorsmod.Wrap(
@@ -196,7 +199,7 @@ func (k *Keeper) SetAllOptedInfo(ctx sdk.Context, optedStates []operatortypes.Op
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), operatortypes.KeyPrefixOperatorOptedAVSInfo)
 	for i := range optedStates {
 		state := optedStates[i]
-		bz := k.cdc.MustMarshal(&state)
+		bz := k.cdc.MustMarshal(&state.OptInfo)
 		store.Set([]byte(state.Key), bz)
 	}
 	return nil

@@ -58,13 +58,13 @@ func (k Keeper) InitGenesis(
 		// wrappedKey can never be nil
 		wrappedKey := operatortypes.NewWrappedConsKeyFromHex(val.PublicKey)
 		// #nosec G703 // already validated
-		operatorAddr, _ := sdk.AccAddressFromBech32(val.OperatorAccAddr)
-		// OptIntoAVS checks that the operator exists and will error if it does not.
-		if err := k.operatorKeeper.OptInWithConsKey(
-			ctx, operatorAddr, avsAddrString, wrappedKey,
-		); err != nil {
-			panic(fmt.Errorf("failed to opt into avs: %s", err))
-		}
+		/*		operatorAddr, _ := sdk.AccAddressFromBech32(val.OperatorAccAddr)
+				// OptIntoAVS checks that the operator exists and will error if it does not.
+				if err := k.operatorKeeper.OptInWithConsKey(
+					ctx, operatorAddr, avsAddrString, wrappedKey,
+				); err != nil {
+					panic(fmt.Errorf("failed to opt into avs: %s", err))
+				}*/
 		out = append(out, abci.ValidatorUpdate{
 			PubKey: *wrappedKey.ToTmProtoKey(),
 			Power:  val.Power,

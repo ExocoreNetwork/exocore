@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	errorsmod "cosmossdk.io/errors"
 	"github.com/ExocoreNetwork/exocore/x/assets/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -15,14 +16,14 @@ func (k Keeper) InitGenesis(ctx sdk.Context, data *types.GenesisState) {
 	for i := range data.ClientChains {
 		info := data.ClientChains[i]
 		if err := k.SetClientChainInfo(ctx, &info); err != nil {
-			panic(err)
+			panic(errorsmod.Wrap(err, "failed to set client chain info"))
 		}
 	}
 	// client_chain_asset.go
 	for i := range data.Tokens {
 		info := data.Tokens[i]
 		if err := k.SetStakingAssetInfo(ctx, &info); err != nil {
-			panic(err)
+			panic(errorsmod.Wrap(err, "failed to set staking asset info"))
 		}
 	}
 	// staker_asset.go (deposits)
@@ -40,7 +41,7 @@ func (k Keeper) InitGenesis(ctx sdk.Context, data *types.GenesisState) {
 			if err := k.UpdateStakerAssetState(
 				ctx, stakerID, assetID, infoAsChange,
 			); err != nil {
-				panic(err)
+				panic(errorsmod.Wrap(err, "failed to set deposit info"))
 			}
 		}
 	}
@@ -52,7 +53,7 @@ func (k Keeper) InitGenesis(ctx sdk.Context, data *types.GenesisState) {
 			infoAsChange := types.DeltaOperatorSingleAsset(assetInfo.Info)
 			err := k.UpdateOperatorAssetState(ctx, accAddress, assetInfo.AssetID, infoAsChange)
 			if err != nil {
-				panic(err)
+				panic(errorsmod.Wrap(err, "failed to set operator asset info"))
 			}
 		}
 	}
@@ -63,31 +64,31 @@ func (k Keeper) ExportGenesis(ctx sdk.Context) *types.GenesisState {
 	res := types.GenesisState{}
 	params, err := k.GetParams(ctx)
 	if err != nil {
-		panic(err)
+		ctx.Logger().Error(errorsmod.Wrap(err, "failed to get parameter").Error())
 	}
 	res.Params = *params
 
 	allClientChains, err := k.GetAllClientChainInfo(ctx)
 	if err != nil {
-		panic(err)
+		ctx.Logger().Error(errorsmod.Wrap(err, "failed to get all client chains").Error())
 	}
 	res.ClientChains = allClientChains
 
 	allAssets, err := k.GetAllStakingAssetsInfo(ctx)
 	if err != nil {
-		panic(err)
+		ctx.Logger().Error(errorsmod.Wrap(err, "failed to get all staking assets info").Error())
 	}
 	res.Tokens = allAssets
 
 	allDeposits, err := k.AllDeposits(ctx)
 	if err != nil {
-		panic(err)
+		ctx.Logger().Error(errorsmod.Wrap(err, "failed to get all deposits").Error())
 	}
 	res.Deposits = allDeposits
 
 	operatorAssets, err := k.AllOperatorAssets(ctx)
 	if err != nil {
-		panic(err)
+		ctx.Logger().Error(errorsmod.Wrap(err, "failed to get all assets info for the operators").Error())
 	}
 	res.OperatorAssets = operatorAssets
 	return &res

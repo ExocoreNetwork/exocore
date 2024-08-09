@@ -228,10 +228,10 @@ func GenesisStateWithValSet(app *ExocoreApp, genesisState simapp.GenesisState,
 					{
 						AssetID: assetID,
 						Info: assetstypes.OperatorAssetInfo{
-							TotalAmount:         depositAmount,
-							WaitUnbondingAmount: math.NewInt(0),
-							TotalShare:          math.LegacyNewDecFromBigInt(depositAmount.BigInt()),
-							OperatorShare:       math.LegacyNewDec(0),
+							TotalAmount:               depositAmount,
+							PendingUndelegationAmount: math.NewInt(0),
+							TotalShare:                math.LegacyNewDecFromBigInt(depositAmount.BigInt()),
+							OperatorShare:             math.LegacyNewDec(0),
 						},
 					},
 				},
@@ -250,7 +250,7 @@ func GenesisStateWithValSet(app *ExocoreApp, genesisState simapp.GenesisState,
 			},
 		},
 	}
-	operatorGenesis := operatortypes.NewGenesisState(operatorInfos, nil, nil, nil, nil, nil, nil)
+	operatorGenesis := operatortypes.NewGenesisState(operatorInfos, nil, nil, nil, nil, nil, nil, nil)
 	genesisState[operatortypes.ModuleName] = app.AppCodec().MustMarshalJSON(operatorGenesis)
 	// x/delegation
 	singleStateKey := assetstypes.GetJoinedStoreKey(stakerID, assetID, operator.String())

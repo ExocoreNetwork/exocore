@@ -100,7 +100,7 @@ message OperatorSlashState {
 // it's corresponding to the kvStore `BytePrefixForOperatorAndChainIDToPrevConsKey`
 message PrevConsKey {
   // key is used for storing the previous consensus key,
-  // which is the combination of keystore prefix,chainID, and operator address.
+  // which is the combination of chainID and operator address.
   string key = 1;
   // consensus_key is the consensus key of the operator on the chain.
   // the length of this key should be exactly 32 bytes, and must be enforced
@@ -112,7 +112,7 @@ message PrevConsKey {
 // is in the process of unbonding their key for the given chainID.
 // it's corresponding to the kvStore `BytePrefixForOperatorKeyRemovalForChainID`
 message OperatorKeyRemoval {
-  // key is the combination of keystore prefix, operator address, and chainID.
+  // key is the combination of operator address and chainID.
   string key = 1;
 }
 

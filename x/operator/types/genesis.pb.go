@@ -430,7 +430,7 @@ func (m *OperatorSlashState) GetInfo() OperatorSlashInfo {
 // it's corresponding to the kvStore `BytePrefixForOperatorAndChainIDToPrevConsKey`
 type PrevConsKey struct {
 	// key is used for storing the previous consensus key,
-	// which is the combination of keystore prefix,chainID, and operator address.
+	// which is the combination of chainID and operator address.
 	Key string `protobuf:"bytes,1,opt,name=key,proto3" json:"key,omitempty"`
 	// consensus_key is the consensus key of the operator on the chain.
 	// the length of this key should be exactly 32 bytes, and must be enforced
@@ -489,7 +489,7 @@ func (m *PrevConsKey) GetConsensusKey() string {
 // is in the process of unbonding their key for the given chainID.
 // it's corresponding to the kvStore `BytePrefixForOperatorKeyRemovalForChainID`
 type OperatorKeyRemoval struct {
-	// key is the combination of keystore prefix, operator address, and chainID.
+	// key is the combination of operator address and chainID.
 	Key string `protobuf:"bytes,1,opt,name=key,proto3" json:"key,omitempty"`
 }
 

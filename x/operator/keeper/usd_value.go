@@ -94,7 +94,7 @@ func (k *Keeper) DeleteOperatorUSDValue(ctx sdk.Context, avsAddr, operatorAddr s
 }
 
 func (k *Keeper) DeleteAllOperatorsUSDValueForAVS(ctx sdk.Context, avsAddr string) error {
-	store := prefix.NewStore(ctx.KVStore(k.storeKey), operatortypes.KeyPrefixVotingPowerForOperator)
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), operatortypes.KeyPrefixUSDValueForOperator)
 	iterator := sdk.KVStorePrefixIterator(store, operatortypes.IterateOperatorsForAVSPrefix(avsAddr))
 	defer iterator.Close()
 
@@ -177,7 +177,7 @@ func (k *Keeper) SetAVSUSDValue(ctx sdk.Context, avsAddr string, amount sdkmath.
 }
 
 func (k *Keeper) DeleteAVSUSDValue(ctx sdk.Context, avsAddr string) error {
-	store := prefix.NewStore(ctx.KVStore(k.storeKey), operatortypes.KeyPrefixVotingPowerForAVS)
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), operatortypes.KeyPrefixUSDValueForAVS)
 	key := []byte(avsAddr)
 	store.Delete(key)
 	return nil
@@ -267,7 +267,7 @@ func (k *Keeper) SetAllOperatorUSDValues(ctx sdk.Context, usdValues []operatorty
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), operatortypes.KeyPrefixUSDValueForOperator)
 	for i := range usdValues {
 		usdValue := usdValues[i]
-		bz := k.cdc.MustMarshal(&usdValue)
+		bz := k.cdc.MustMarshal(&usdValue.OptedUSDValue)
 		store.Set([]byte(usdValue.Key), bz)
 	}
 	return nil

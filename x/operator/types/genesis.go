@@ -3,14 +3,15 @@ package types
 import (
 	errorsmod "cosmossdk.io/errors"
 	sdkmath "cosmossdk.io/math"
+	"github.com/ExocoreNetwork/exocore/utils"
 	assetstypes "github.com/ExocoreNetwork/exocore/x/assets/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/common/hexutil"
 )
 
 func NewGenesisState(
 	operators []OperatorDetail,
+	operatorConsKeys []OperatorConsKeyRecord,
 	optStates []OptedState,
 	operatorUSDValues []OperatorUSDValue,
 	avsUSDValues []AVSUSDValue,
@@ -20,6 +21,7 @@ func NewGenesisState(
 ) *GenesisState {
 	return &GenesisState{
 		Operators:           operators,
+		OperatorRecords:     operatorConsKeys,
 		OptStates:           optStates,
 		OperatorUSDValues:   operatorUSDValues,
 		AVSUSDValues:        avsUSDValues,
@@ -31,7 +33,7 @@ func NewGenesisState(
 
 // DefaultGenesis returns the default genesis state
 func DefaultGenesis() *GenesisState {
-	return NewGenesisState(nil, nil, nil, nil, nil, nil, nil)
+	return NewGenesisState(nil, nil, nil, nil, nil, nil, nil, nil)
 }
 
 // ValidateOperators rationale for the validation:
@@ -171,7 +173,7 @@ func (gs GenesisState) ValidateOperatorConsKeyRecords(operators map[string]struc
 
 func (gs GenesisState) ValidateOptedStates(operators map[string]struct{}) (map[string]struct{}, error) {
 	avs := make(map[string]struct{})
-	validationFunc := func(i int, state OptedState) error {
+	validationFunc := func(_ int, state OptedState) error {
 		stringList, err := assetstypes.ParseJoinedStoreKey([]byte(state.Key), 3)
 		if err != nil {
 			return errorsmod.Wrap(ErrInvalidGenesisData, err.Error())
@@ -205,16 +207,16 @@ func (gs GenesisState) ValidateOptedStates(operators map[string]struct{}) (map[s
 	seenFieldValueFunc := func(state OptedState) (string, struct{}) {
 		return state.Key, struct{}{}
 	}
-	_, err := assetstypes.CommonValidation(gs.OptStates, seenFieldValueFunc, validationFunc)
+	_, err := utils.CommonValidation(gs.OptStates, seenFieldValueFunc, validationFunc)
 	if err != nil {
-		return nil, err
+		return nil, errorsmod.Wrap(ErrInvalidGenesisData, err.Error())
 	}
 	return avs, nil
 }
 
 func (gs GenesisState) ValidateAVSUSDValues(optedAVS map[string]struct{}) (map[string]DecValueField, error) {
 	avsUSDValueMap := make(map[string]DecValueField, 0)
-	validationFunc := func(i int, avsUSDValue AVSUSDValue) error {
+	validationFunc := func(_ int, avsUSDValue AVSUSDValue) error {
 		if !common.IsHexAddress(avsUSDValue.AVSAddr) {
 			return errorsmod.Wrapf(
 				ErrInvalidGenesisData,
@@ -241,15 +243,15 @@ func (gs GenesisState) ValidateAVSUSDValues(optedAVS map[string]struct{}) (map[s
 	seenFieldValueFunc := func(usdValue AVSUSDValue) (string, struct{}) {
 		return usdValue.AVSAddr, struct{}{}
 	}
-	_, err := assetstypes.CommonValidation(gs.AVSUSDValues, seenFieldValueFunc, validationFunc)
+	_, err := utils.CommonValidation(gs.AVSUSDValues, seenFieldValueFunc, validationFunc)
 	if err != nil {
-		return nil, err
+		return nil, errorsmod.Wrap(ErrInvalidGenesisData, err.Error())
 	}
 	return avsUSDValueMap, nil
 }
 
 func (gs GenesisState) ValidateOperatorUSDValues(operators map[string]struct{}, avsUSDValues map[string]DecValueField) error {
-	validationFunc := func(i int, operatorUSDValue OperatorUSDValue) error {
+	validationFunc := func(_ int, operatorUSDValue OperatorUSDValue) error {
 		if operatorUSDValue.OptedUSDValue.SelfUSDValue.IsNil() ||
 			operatorUSDValue.OptedUSDValue.TotalUSDValue.IsNil() ||
 			operatorUSDValue.OptedUSDValue.ActiveUSDValue.IsNil() {
@@ -272,7 +274,7 @@ func (gs GenesisState) ValidateOperatorUSDValues(operators map[string]struct{}, 
 		if err != nil {
 			return errorsmod.Wrap(ErrInvalidGenesisData, err.Error())
 		}
-		operator, avsAddress := stringList[0], stringList[1]
+		avsAddress, operator := stringList[0], stringList[1]
 		// check that the operator is registered
 		if _, ok := operators[operator]; !ok {
 			return errorsmod.Wrapf(
@@ -316,15 +318,15 @@ func (gs GenesisState) ValidateOperatorUSDValues(operators map[string]struct{}, 
 	seenFieldValueFunc := func(vp OperatorUSDValue) (string, struct{}) {
 		return vp.Key, struct{}{}
 	}
-	_, err := assetstypes.CommonValidation(gs.OperatorUSDValues, seenFieldValueFunc, validationFunc)
+	_, err := utils.CommonValidation(gs.OperatorUSDValues, seenFieldValueFunc, validationFunc)
 	if err != nil {
-		return err
+		return errorsmod.Wrap(ErrInvalidGenesisData, err.Error())
 	}
 	return nil
 }
 
 func (gs GenesisState) ValidateSlashStates(operators, avs map[string]struct{}) error {
-	validationFunc := func(i int, slash OperatorSlashState) error {
+	validationFunc := func(_ int, slash OperatorSlashState) error {
 		stringList, err := assetstypes.ParseJoinedStoreKey([]byte(slash.Key), 3)
 		if err != nil {
 			return errorsmod.Wrap(ErrInvalidGenesisData, err.Error())
@@ -380,7 +382,7 @@ func (gs GenesisState) ValidateSlashStates(operators, avs map[string]struct{}) e
 			)
 		}
 		// validate the slashing record regarding undelegation
-		SlashFromUndelegationVal := func(i int, slashFromUndelegation SlashFromUndelegation) error {
+		SlashFromUndelegationVal := func(_ int, slashFromUndelegation SlashFromUndelegation) error {
 			if slashFromUndelegation.Amount.IsNil() || slashFromUndelegation.Amount.LTE(sdkmath.NewInt(0)) {
 				return errorsmod.Wrapf(
 					ErrInvalidGenesisData,
@@ -394,12 +396,12 @@ func (gs GenesisState) ValidateSlashStates(operators, avs map[string]struct{}) e
 			key := assetstypes.GetJoinedStoreKey(slashFromUndelegation.StakerID, slashFromUndelegation.AssetID)
 			return string(key), struct{}{}
 		}
-		_, err = assetstypes.CommonValidation(slash.Info.ExecutionInfo.SlashUndelegations, seenFieldValueFunc, SlashFromUndelegationVal)
+		_, err = utils.CommonValidation(slash.Info.ExecutionInfo.SlashUndelegations, seenFieldValueFunc, SlashFromUndelegationVal)
 		if err != nil {
-			return err
+			return errorsmod.Wrap(ErrInvalidGenesisData, err.Error())
 		}
 		// validate the slashing record regarding assets pool
-		SlashFromAssetsPoolVal := func(i int, slashFromAssetsPool SlashFromAssetsPool) error {
+		SlashFromAssetsPoolVal := func(_ int, slashFromAssetsPool SlashFromAssetsPool) error {
 			if slashFromAssetsPool.Amount.IsNil() || slashFromAssetsPool.Amount.LTE(sdkmath.NewInt(0)) {
 				return errorsmod.Wrapf(
 					ErrInvalidGenesisData,
@@ -412,42 +414,35 @@ func (gs GenesisState) ValidateSlashStates(operators, avs map[string]struct{}) e
 		SlashFromAssetsPooLSeenFunc := func(slashFromAssetsPool SlashFromAssetsPool) (string, struct{}) {
 			return slashFromAssetsPool.AssetID, struct{}{}
 		}
-		_, err = assetstypes.CommonValidation(slash.Info.ExecutionInfo.SlashAssetsPool, SlashFromAssetsPooLSeenFunc, SlashFromAssetsPoolVal)
+		_, err = utils.CommonValidation(slash.Info.ExecutionInfo.SlashAssetsPool, SlashFromAssetsPooLSeenFunc, SlashFromAssetsPoolVal)
 		if err != nil {
-			return err
+			return errorsmod.Wrap(ErrInvalidGenesisData, err.Error())
 		}
 		return nil
 	}
 	seenFieldValueFunc := func(slash OperatorSlashState) (string, struct{}) {
 		return slash.Key, struct{}{}
 	}
-	_, err := assetstypes.CommonValidation(gs.SlashStates, seenFieldValueFunc, validationFunc)
+	_, err := utils.CommonValidation(gs.SlashStates, seenFieldValueFunc, validationFunc)
 	if err != nil {
-		return err
+		return errorsmod.Wrap(ErrInvalidGenesisData, err.Error())
 	}
 	return nil
 }
 
 func (gs GenesisState) ValidatePrevConsKeys(operators map[string]struct{}) error {
-	validationFunc := func(i int, prevConsKey PrevConsKey) error {
-		keyBytes, err := hexutil.Decode(prevConsKey.Key)
+	validationFunc := func(_ int, prevConsKey PrevConsKey) error {
+		keys, err := assetstypes.ParseJoinedStoreKey([]byte(prevConsKey.Key), 2)
 		if err != nil {
 			return errorsmod.Wrapf(
 				ErrInvalidGenesisData,
-				"ValidatePrevConsKeys can't decode the key with hexutil.Decode, %+v",
+				"ValidatePrevConsKeys can't parse the combined key, %+v",
 				prevConsKey,
 			)
 		}
-		_, operatorAddr, err := ParsePrevConsKey(keyBytes)
-		if err != nil {
-			return errorsmod.Wrapf(
-				ErrInvalidGenesisData,
-				"ValidatePrevConsKeys can't parse the key, %+v",
-				prevConsKey,
-			)
-		}
+		operator := keys[1]
 		// check that the operator is registered
-		if _, ok := operators[operatorAddr.String()]; !ok {
+		if _, ok := operators[operator]; !ok {
 			return errorsmod.Wrapf(
 				ErrInvalidGenesisData,
 				"unknown operator address for the previous consensus key, %+v",
@@ -468,33 +463,22 @@ func (gs GenesisState) ValidatePrevConsKeys(operators map[string]struct{}) error
 	seenFieldValueFunc := func(prevConsKey PrevConsKey) (string, struct{}) {
 		return prevConsKey.Key, struct{}{}
 	}
-	_, err := assetstypes.CommonValidation(gs.PreConsKeys, seenFieldValueFunc, validationFunc)
+	_, err := utils.CommonValidation(gs.PreConsKeys, seenFieldValueFunc, validationFunc)
 	if err != nil {
-		return err
+		return errorsmod.Wrap(ErrInvalidGenesisData, err.Error())
 	}
 	return nil
 }
 
 func (gs GenesisState) ValidateOperatorKeyRemovals(operators map[string]struct{}) error {
-	validationFunc := func(i int, operatorKeyRemoval OperatorKeyRemoval) error {
-		keyBytes, err := hexutil.Decode(operatorKeyRemoval.Key)
+	validationFunc := func(_ int, operatorKeyRemoval OperatorKeyRemoval) error {
+		keys, err := assetstypes.ParseJoinedStoreKey([]byte(operatorKeyRemoval.Key), 2)
 		if err != nil {
-			return errorsmod.Wrapf(
-				ErrInvalidGenesisData,
-				"ValidateOperatorKeyRemovals can't decode the key with hexutil.Decode, %+v",
-				operatorKeyRemoval,
-			)
+			return err
 		}
-		operatorAddr, _, err := ParseKeyForOperatorKeyRemoval(keyBytes)
-		if err != nil {
-			return errorsmod.Wrapf(
-				ErrInvalidGenesisData,
-				"ValidateOperatorKeyRemovals can't parse the key, %+v",
-				operatorKeyRemoval,
-			)
-		}
+		operator := keys[0]
 		// check that the operator is registered
-		if _, ok := operators[operatorAddr.String()]; !ok {
+		if _, ok := operators[operator]; !ok {
 			return errorsmod.Wrapf(
 				ErrInvalidGenesisData,
 				"unknown operator address for the operator key removal, %+v",
@@ -506,9 +490,9 @@ func (gs GenesisState) ValidateOperatorKeyRemovals(operators map[string]struct{}
 	seenFieldValueFunc := func(operatorKeyRemoval OperatorKeyRemoval) (string, struct{}) {
 		return operatorKeyRemoval.Key, struct{}{}
 	}
-	_, err := assetstypes.CommonValidation(gs.OperatorKeyRemovals, seenFieldValueFunc, validationFunc)
+	_, err := utils.CommonValidation(gs.OperatorKeyRemovals, seenFieldValueFunc, validationFunc)
 	if err != nil {
-		return err
+		return errorsmod.Wrap(ErrInvalidGenesisData, err.Error())
 	}
 	return nil
 }

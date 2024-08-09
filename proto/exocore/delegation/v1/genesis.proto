@@ -2,10 +2,9 @@ syntax = "proto3";
 
 package exocore.delegation.v1;
 
-import "gogoproto/gogo.proto";
-
-import "exocore/delegation/v1/tx.proto";
 import "exocore/delegation/v1/query.proto";
+import "exocore/delegation/v1/tx.proto";
+import "gogoproto/gogo.proto";
 
 option go_package = "github.com/ExocoreNetwork/exocore/x/delegation/types";
 
@@ -16,17 +15,16 @@ option go_package = "github.com/ExocoreNetwork/exocore/x/delegation/types";
 message GenesisState {
   // associations represents the association between a staker and an operator.
   repeated StakerToOperator associations = 1 [(gogoproto.nullable) = false];
-
-  // it's only used to initialize the node from the general exported genesis file
   // delegation_states is a list of all delegation states.
   repeated DelegationStates delegation_states = 2 [(gogoproto.nullable) = false];
   // stakers_by_operator is a staker list for the operators
   repeated StakersByOperator stakers_by_operator = 3 [(gogoproto.nullable) = false];
-
   // undelegations is a list of all undelegations
   repeated UndelegationRecord undelegations = 4 [(gogoproto.nullable) = false];
 }
 
+// DelegationStates is a helper struct for the delegation state
+// used to construct the genesis state
 message DelegationStates {
   // key is used for storing the delegation states,
   // which is a combination of the staker ID, asset ID, and operator address.
@@ -35,6 +33,8 @@ message DelegationStates {
   DelegationAmounts states = 2 [(gogoproto.nullable) = false] ;
 }
 
+// StakersByOperator is a helper struct for an operator's staker list
+// used to construct the genesis state
 message StakersByOperator {
   // key is used for storing the staker list,
   // which is a combination of the operator address and the asset ID.

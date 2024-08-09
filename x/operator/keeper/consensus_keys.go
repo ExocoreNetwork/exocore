@@ -3,6 +3,8 @@ package keeper
 import (
 	"fmt"
 
+	assetstypes "github.com/ExocoreNetwork/exocore/x/assets/types"
+
 	"github.com/cosmos/cosmos-sdk/store/prefix"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 
@@ -446,29 +448,40 @@ func (k *Keeper) SetAllPrevConsKeys(ctx sdk.Context, prevConsKeys []types.PrevCo
 	store := ctx.KVStore(k.storeKey)
 	for i := range prevConsKeys {
 		prevKey := prevConsKeys[i]
-		keyBytes, err := hexutil.Decode(prevKey.Key)
+		keys, err := assetstypes.ParseJoinedStoreKey([]byte(prevKey.Key), 2)
 		if err != nil {
-			return nil
+			return err
+		}
+		chainID := keys[0]
+		opAccAddr, err := sdk.AccAddressFromBech32(keys[1])
+		if err != nil {
+			return err
 		}
 		wrappedKey := types.NewWrappedConsKeyFromHex(prevKey.ConsensusKey)
 		bz := k.cdc.MustMarshal(wrappedKey.ToTmProtoKey())
-		store.Set(keyBytes, bz)
+
+		store.Set(types.KeyForChainIDAndOperatorToPrevConsKey(chainID, opAccAddr), bz)
 	}
 	return nil
 }
 
 func (k *Keeper) GetAllPrevConsKeys(ctx sdk.Context) ([]types.PrevConsKey, error) {
-	store := ctx.KVStore(k.storeKey)
-	iterator := sdk.KVStorePrefixIterator(store, []byte{types.BytePrefixForOperatorAndChainIDToPrevConsKey})
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), []byte{types.BytePrefixForOperatorAndChainIDToPrevConsKey})
+	iterator := sdk.KVStorePrefixIterator(store, []byte{})
 	defer iterator.Close()
 
 	ret := make([]types.PrevConsKey, 0)
 	for ; iterator.Valid(); iterator.Next() {
 		var consKey tmprotocrypto.PublicKey
 		k.cdc.MustUnmarshal(iterator.Value(), &consKey)
+		chainID, operatorAddr, err := types.ParsePrevConsKey(iterator.Key())
+		if err != nil {
+			return nil, err
+		}
+		wrappedConsKey := types.NewWrappedConsKeyFromTmProtoKey(&consKey)
 		ret = append(ret, types.PrevConsKey{
-			Key:          hexutil.Encode(iterator.Key()),
-			ConsensusKey: hexutil.Encode(consKey.GetEd25519()),
+			Key:          string(assetstypes.GetJoinedStoreKey(chainID, operatorAddr.String())),
+			ConsensusKey: wrappedConsKey.ToHex(),
 		})
 	}
 	return ret, nil
@@ -478,24 +491,34 @@ func (k *Keeper) SetAllOperatorKeyRemovals(ctx sdk.Context, operatorKeyRemoval [
 	store := ctx.KVStore(k.storeKey)
 	for i := range operatorKeyRemoval {
 		keyRemoval := operatorKeyRemoval[i]
-		keyBytes, err := hexutil.Decode(keyRemoval.Key)
+		keys, err := assetstypes.ParseJoinedStoreKey([]byte(keyRemoval.Key), 2)
 		if err != nil {
-			return nil
+			return err
 		}
-		store.Set(keyBytes, []byte{})
+		chainID := keys[1]
+		opAccAddr, err := sdk.AccAddressFromBech32(keys[0])
+		if err != nil {
+			return err
+		}
+		store.Set(types.KeyForOperatorKeyRemovalForChainID(opAccAddr, chainID), []byte{})
 	}
 	return nil
 }
 
 func (k *Keeper) GetAllOperatorKeyRemovals(ctx sdk.Context) ([]types.OperatorKeyRemoval, error) {
-	store := ctx.KVStore(k.storeKey)
-	iterator := sdk.KVStorePrefixIterator(store, []byte{types.BytePrefixForOperatorKeyRemovalForChainID})
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), []byte{types.BytePrefixForOperatorKeyRemovalForChainID})
+	iterator := sdk.KVStorePrefixIterator(store, []byte{})
 	defer iterator.Close()
 
 	ret := make([]types.OperatorKeyRemoval, 0)
 	for ; iterator.Valid(); iterator.Next() {
+		operatorAddr, chainID, err := types.ParseKeyForOperatorKeyRemoval(iterator.Key())
+		if err != nil {
+			return nil, err
+		}
+
 		ret = append(ret, types.OperatorKeyRemoval{
-			Key: hexutil.Encode(iterator.Key()),
+			Key: string(assetstypes.GetJoinedStoreKey(operatorAddr.String(), chainID)),
 		})
 	}
 	return ret, nil

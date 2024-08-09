@@ -1,10 +1,11 @@
 package types_test
 
 import (
+	"testing"
+
 	"github.com/ExocoreNetwork/exocore/utils"
 	"github.com/cosmos/cosmos-sdk/crypto/keys/ed25519"
 	"github.com/ethereum/go-ethereum/common/hexutil"
-	"testing"
 
 	utiltx "github.com/ExocoreNetwork/exocore/testutil/tx"
 	"github.com/ExocoreNetwork/exocore/x/operator/types"
