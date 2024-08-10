@@ -550,19 +550,6 @@ func NewExocoreApp(
 		authAddrString,
 	)
 
-	// the fee distribution keeper is used to allocate reward to exocore validators on epoch-basis,
-	// and it'll interact with other modules, like delegation for voting power, mint and inflation and etc.
-	app.DistrKeeper = distrkeeper.NewKeeper(
-		appCodec, logger,
-		authtypes.FeeCollectorName,
-		authAddrString,
-		keys[distrtypes.StoreKey],
-		app.BankKeeper,
-		app.AccountKeeper,
-		app.StakingKeeper,
-		app.EpochsKeeper,
-	)
-
 	// asset and client chain registry.
 	app.AssetsKeeper = assetsKeeper.NewKeeper(keys[assetsTypes.StoreKey], appCodec, &app.OracleKeeper)
 
@@ -709,6 +696,19 @@ func NewExocoreApp(
 		&app.OracleKeeper,
 		&app.AVSManagerKeeper,
 		delegationTypes.VirtualSlashKeeper{},
+	)
+	// the fee distribution keeper is used to allocate reward to exocore validators on epoch-basis,
+	// and it'll interact with other modules, like delegation for voting power, mint and inflation and etc.
+	// this keeper is initialized after the StakingKeeper  because it depends on the StakingKeeper
+	app.DistrKeeper = distrkeeper.NewKeeper(
+		appCodec, logger,
+		authtypes.FeeCollectorName,
+		authAddrString,
+		keys[distrtypes.StoreKey],
+		app.BankKeeper,
+		app.AccountKeeper,
+		app.StakingKeeper,
+		app.EpochsKeeper,
 	)
 
 	app.EvmKeeper.WithPrecompiles(
