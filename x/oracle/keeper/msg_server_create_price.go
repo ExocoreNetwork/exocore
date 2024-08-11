@@ -24,7 +24,7 @@ func (ms msgServer) CreatePrice(goCtx context.Context, msg *types.MsgCreatePrice
 
 	newItem, caches, err := GetAggregatorContext(ctx, ms.Keeper).NewCreatePrice(ctx, msg)
 	if err != nil {
-		logger.Info("price proposal failed", "error", err, "height", ctx.BlockHeight())
+		logger.Info("price proposal failed", "error", err, "height", ctx.BlockHeight(), "feederID", msg.FeederID)
 		return nil, err
 	}
 

@@ -40,6 +40,10 @@ type AggregatorContext struct {
 
 	// each roundInfo has a worker
 	aggregators map[uint64]*worker
+
+	// record nonce used
+	// feederID->{sender->nonce}
+	nonceRecords map[uint64]map[string]int
 }
 
 func (agc *AggregatorContext) Copy4CheckTx() *AggregatorContext {
@@ -85,10 +89,6 @@ func (agc *AggregatorContext) sanityCheck(msg *types.MsgCreatePrice) error {
 		return errors.New("signer is not validator")
 	}
 
-	if msg.Nonce < 1 || msg.Nonce > common.MaxNonce {
-		return errors.New("nonce invalid")
-	}
-
 	// TODO: sanity check for price(no more than maxDetId count for each source, this should be take care in anteHandler)
 	if len(msg.Prices) == 0 {
 		return errors.New("msg should provide at least one price")
@@ -128,6 +128,13 @@ func (agc *AggregatorContext) checkMsg(msg *types.MsgCreatePrice) error {
 		// feederId does not exist or not alive
 		return errors.New("context not exist or not available")
 	}
+	// check nonce
+	nonce := agc.nonceRecords[msg.FeederID][msg.Creator]
+	if nonce >= int(common.MaxNonce) || nonce+1 != int(msg.Nonce) {
+		return fmt.Errorf("nonce not match, expect %d, got %d", nonce+1, msg.Nonce)
+	}
+
+	agc.nonceRecords[msg.FeederID][msg.Creator]++
 	// senity check on basedBlock
 	if msg.BasedBlock != feederContext.basedBlock {
 		return errors.New("baseblock not match")
@@ -164,6 +171,7 @@ func (agc *AggregatorContext) FillPrice(msg *types.MsgCreatePrice) (*PriceItemKV
 		if finalPrice := feederWorker.aggregate(); finalPrice != nil {
 			agc.rounds[msg.FeederID].status = 2
 			feederWorker.seal()
+			delete(agc.nonceRecords, msg.FeederID)
 			return &PriceItemKV{agc.params.GetTokenFeeder(msg.FeederID).TokenID, types.PriceTimeRound{
 				Price:   finalPrice.String(),
 				Decimal: agc.params.GetTokenInfo(msg.FeederID).Decimal,
@@ -210,12 +218,11 @@ func (agc *AggregatorContext) SealRound(ctx sdk.Context, force bool) (success []
 					failed = append(failed, feeder.TokenID)
 					if expired {
 						delete(agc.rounds, feederID)
-						delete(agc.aggregators, feederID)
 					} else {
 						round.status = 2
-						// agc.aggregators[feederID] = nil
-						delete(agc.aggregators, feederID)
 					}
+					delete(agc.aggregators, feederID)
+					delete(agc.nonceRecords, feederID)
 				}
 			default:
 				ctx.Logger().Info("mode other than 1 is not support now")
@@ -225,6 +232,7 @@ func (agc *AggregatorContext) SealRound(ctx sdk.Context, force bool) (success []
 		if agc.aggregators[feederID] != nil && agc.aggregators[feederID].sealed {
 			// agc.aggregators[feederID] = nil
 			delete(agc.aggregators, feederID)
+			delete(agc.nonceRecords, feederID)
 		}
 	}
 	return success, failed
@@ -262,8 +270,12 @@ func (agc *AggregatorContext) PrepareRoundBeginBlock(ctx sdk.Context, block uint
 			}
 			if left >= uint64(common.MaxNonce) {
 				round.status = 2
+				delete(agc.nonceRecords, feederIDUint64)
 			} else {
 				round.status = 1
+				if agc.nonceRecords[feederIDUint64] == nil {
+					agc.nonceRecords[feederIDUint64] = make(map[string]int)
+				}
 			}
 			agc.rounds[feederIDUint64] = round
 		} else {
@@ -272,9 +284,12 @@ func (agc *AggregatorContext) PrepareRoundBeginBlock(ctx sdk.Context, block uint
 				round.basedBlock = latestBasedblock
 				round.nextRoundID = latestNextRoundID
 				round.status = 1
+				// set nonceRecords to empty
+				agc.nonceRecords[feederIDUint64] = make(map[string]int)
 				// drop previous worker
 				delete(agc.aggregators, feederIDUint64)
 			} else if round.status == 1 && left >= uint64(common.MaxNonce) {
+				delete(agc.nonceRecords, feederIDUint64)
 				// this shouldn't happen, if do sealround properly before prepareRound, basically for test only
 				round.status = 2
 				// TODO: just modify the status here, since sealRound should do all the related seal actios already when parepare invoked
@@ -328,5 +343,6 @@ func NewAggregatorContext() *AggregatorContext {
 		totalPower:      big.NewInt(0),
 		rounds:          make(map[uint64]*roundInfo),
 		aggregators:     make(map[uint64]*worker),
+		nonceRecords:    make(map[uint64]map[string]int),
 	}
 }
