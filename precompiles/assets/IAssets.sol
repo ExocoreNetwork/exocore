@@ -73,7 +73,8 @@ interface IAssets {
         uint8 decimals,
         uint256 tvlLimit,
         string calldata name,
-        string calldata metaData
+        string calldata metaData,
+		string calldata oracleInfo
     ) external returns (bool success, bool updated);
 
     /// QUERIES

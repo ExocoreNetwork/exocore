@@ -15,4 +15,6 @@ const (
 	ErrInvalidNameLength = "nil name or too long for chain or token,value:%s,actualLength:%d,max:%d"
 
 	ErrInvalidEVMAddr = "the address is an invalid EVM address, addr:%s"
+
+	ErrInvalidOracleInfo = "oracle info is invalid, need at least three fields not empty: token.Name, token.Chain.Name, token.Decimal"
 )

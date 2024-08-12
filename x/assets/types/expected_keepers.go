@@ -7,5 +7,5 @@ import (
 
 type OracleKeeper interface {
 	GetSpecifiedAssetsPrice(ctx sdk.Context, assetID string) (oracletypes.Price, error)
-	RegisterNewTokenAndSetTokenFeeder(ctx sdk.Context, chain, token, decimal, interval, contract, assetID string) error
+	RegisterNewTokenAndSetTokenFeeder(ctx sdk.Context, oInfo *oracletypes.OracleInfo) error
 }

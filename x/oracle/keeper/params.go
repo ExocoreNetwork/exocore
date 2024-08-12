@@ -31,14 +31,14 @@ func (k Keeper) SetParams(ctx sdk.Context, params types.Params) {
 	store.Set(types.ParamsKey, bz)
 }
 
-func (k Keeper) RegisterNewTokenAndSetTokenFeeder(ctx sdk.Context, chain, token, decimal, interval, contract, assetID string) error {
+func (k Keeper) RegisterNewTokenAndSetTokenFeeder(ctx sdk.Context, oInfo *types.OracleInfo) error {
 	p := k.GetParams(ctx)
-	if p.GetTokenIDFromAssetID(assetID) > 0 {
-		return fmt.Errorf("assetID exists:%s", assetID)
+	if p.GetTokenIDFromAssetID(oInfo.AssetID) > 0 {
+		return fmt.Errorf("assetID exists:%s", oInfo.AssetID)
 	}
 	chainID := uint64(0)
 	for id, c := range p.Chains {
-		if c.Name == chain {
+		if c.Name == oInfo.Token.Chain.Name {
 			chainID = uint64(id)
 			break
 		}
@@ -46,19 +46,19 @@ func (k Keeper) RegisterNewTokenAndSetTokenFeeder(ctx sdk.Context, chain, token,
 	if chainID == 0 {
 		// add new chain
 		p.Chains = append(p.Chains, &types.Chain{
-			Name: chain,
-			Desc: "registered through assets module",
+			Name: oInfo.Token.Chain.Name,
+			Desc: oInfo.Token.Chain.Desc,
 		})
 		chainID = uint64(len(p.Chains) - 1)
 	}
-	decimalInt, err := strconv.ParseInt(decimal, 10, 32)
+	decimalInt, err := strconv.ParseInt(oInfo.Token.Decimal, 10, 32)
 	if err != nil {
 		return err
 	}
 	if decimalInt < 0 {
 		return fmt.Errorf("decimal can't be negative:%d", decimalInt)
 	}
-	intervalInt, err := strconv.ParseUint(interval, 10, 64)
+	intervalInt, err := strconv.ParseUint(oInfo.Feeder.Interval, 10, 64)
 	if err != nil {
 		return err
 	}
@@ -69,8 +69,8 @@ func (k Keeper) RegisterNewTokenAndSetTokenFeeder(ctx sdk.Context, chain, token,
 	for _, t := range p.Tokens {
 		// token exists, bind assetID for this token
 		// it's possible for  one price bonded with multiple assetID, like ETHUSDT from sepolia/mainnet
-		if t.Name == token && t.ChainID == chainID {
-			t.AssetID = strings.Join([]string{t.AssetID, assetID}, ",")
+		if t.Name == oInfo.Token.Name && t.ChainID == chainID {
+			t.AssetID = strings.Join([]string{t.AssetID, oInfo.AssetID}, ",")
 			k.SetParams(ctx, p)
 			// there should have been existing tokenFeeder running(currently we register tokens from assets-module and with infinite endBlock)
 			return nil
@@ -79,22 +79,32 @@ func (k Keeper) RegisterNewTokenAndSetTokenFeeder(ctx sdk.Context, chain, token,
 
 	// add a new token
 	p.Tokens = append(p.Tokens, &types.Token{
-		Name:            token,
+		Name:            oInfo.Token.Name,
 		ChainID:         chainID,
-		ContractAddress: contract,
+		ContractAddress: oInfo.Token.Contract,
 		Decimal:         int32(decimalInt),
 		Active:          true,
-		AssetID:         assetID,
+		AssetID:         oInfo.AssetID,
 	})
+
+	startInt, err := strconv.ParseUint(oInfo.Feeder.Start, 10, 64)
+	if err != nil {
+		return err
+	}
+	if startInt == 0 {
+		startInt = uint64(ctx.BlockHeight() + startAfterBlocks)
+	}
+
 	// set a tokenFeeder for the new token
 	p.TokenFeeders = append(p.TokenFeeders, &types.TokenFeeder{
 		TokenID: uint64(len(p.Tokens) - 1),
-		// we support rule_1 for v1
+		// we only support rule_1 for v1
 		RuleID:         1,
 		StartRoundID:   1,
-		StartBaseBlock: uint64(ctx.BlockHeight() + startAfterBlocks),
+		StartBaseBlock: startInt,
 		Interval:       intervalInt,
-		EndBlock:       0,
+		// we don't end feeders for v1
+		EndBlock: 0,
 	})
 
 	k.SetParams(ctx, p)

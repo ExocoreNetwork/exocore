@@ -156,60 +156,65 @@
       {
         "name": "metaData",
         "type": "string",
-        "internalType": "string"
-      }
-    ],
-    "outputs": [
-      {
-        "name": "success",
-        "type": "bool",
-        "internalType": "bool"
-      },
-      {
-        "name": "updated",
-        "type": "bool",
-        "internalType": "bool"
-      }
-    ],
-    "stateMutability": "nonpayable"
+		"internalType": "string"
+	  },
+	  {
+		  "name": "oracleInfo",
+		  "type": "string",
+		  "internalType": "string"
+	  }
+	],
+	"outputs": [
+		{
+			"name": "success",
+			"type": "bool",
+			"internalType": "bool"
+		},
+		{
+			"name": "updated",
+			"type": "bool",
+			"internalType": "bool"
+		}
+	],
+	"stateMutability": "nonpayable"
   },
   {
-    "type": "function",
-    "name": "withdrawPrincipal",
-    "inputs": [
-      {
-        "name": "clientChainID",
-        "type": "uint32",
-        "internalType": "uint32"
-      },
-      {
-        "name": "assetsAddress",
-        "type": "bytes",
-        "internalType": "bytes"
-      },
-      {
-        "name": "withdrawAddress",
-        "type": "bytes",
-        "internalType": "bytes"
-      },
-      {
-        "name": "opAmount",
-        "type": "uint256",
-        "internalType": "uint256"
-      }
-    ],
-    "outputs": [
-      {
-        "name": "success",
-        "type": "bool",
-        "internalType": "bool"
-      },
-      {
-        "name": "latestAssetState",
-        "type": "uint256",
-        "internalType": "uint256"
-      }
-    ],
-    "stateMutability": "nonpayable"
+	  "type": "function",
+	  "name": "withdrawPrincipal",
+	  "inputs": [
+		  {
+			  "name": "clientChainID",
+			  "type": "uint32",
+			  "internalType": "uint32"
+		  },
+		  {
+			  "name": "assetsAddress",
+			  "type": "bytes",
+			  "internalType": "bytes"
+		  },
+		  {
+			  "name": "withdrawAddress",
+			  "type": "bytes",
+			  "internalType": "bytes"
+		  },
+		  {
+			  "name": "opAmount",
+			  "type": "uint256",
+			  "internalType": "uint256"
+		  }
+	  ],
+	  "outputs": [
+		  {
+			  "name": "success",
+			  "type": "bool",
+			  "internalType": "bool"
+		  },
+		  {
+			  "name": "latestAssetState",
+			  "type": "uint256",
+			  "internalType": "uint256"
+		  }
+	  ],
+	  "stateMutability": "nonpayable"
   }
 ]
