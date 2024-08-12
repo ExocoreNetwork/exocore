@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	avsKeeper "github.com/ExocoreNetwork/exocore/x/avs/keeper"
+	operatorKeeper "github.com/ExocoreNetwork/exocore/x/operator/keeper"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	authzkeeper "github.com/cosmos/cosmos-sdk/x/authz/keeper"
 	"github.com/ethereum/go-ethereum/accounts/abi"
@@ -24,13 +25,15 @@ var f embed.FS
 // Precompile defines the precompiled contract for avs.
 type Precompile struct {
 	cmn.Precompile
-	avsKeeper avsKeeper.Keeper
+	avsKeeper      avsKeeper.Keeper
+	operatorKeeper operatorKeeper.Keeper
 }
 
 // NewPrecompile creates a new avs Precompile instance as a
 // PrecompiledContract interface.
 func NewPrecompile(
 	avsKeeper avsKeeper.Keeper,
+	operatorKeeper operatorKeeper.Keeper,
 	authzKeeper authzkeeper.Keeper,
 ) (*Precompile, error) {
 	abiBz, err := f.ReadFile("abi.json")
@@ -51,7 +54,8 @@ func NewPrecompile(
 			TransientKVGasConfig: storetypes.TransientGasConfig(),
 			ApprovalExpiration:   cmn.DefaultExpirationDuration,
 		},
-		avsKeeper: avsKeeper,
+		avsKeeper:      avsKeeper,
+		operatorKeeper: operatorKeeper,
 	}, nil
 }
 
@@ -105,6 +109,10 @@ func (p Precompile) Run(evm *vm.EVM, contract *vm.Contract, readOnly bool) (bz [
 		bz, err = p.SubmitProof(ctx, evm.Origin, contract, stateDB, method, args)
 	case MethodGetRegisteredPubkey:
 		bz, err = p.GetRegisteredPubkey(ctx, contract, method, args)
+	case MethodGetAVSUSDValue:
+		bz, err = p.GetAVSUSDValue(ctx, contract, method, args)
+	case MethodGetOperatorOptedUSDValue:
+		bz, err = p.GetOperatorOptedUSDValue(ctx, contract, method, args)
 	}
 
 	if err != nil {
@@ -129,7 +137,7 @@ func (Precompile) IsTransaction(methodID string) bool {
 	case MethodRegisterAVS, MethodDeregisterAVS, MethodUpdateAVS, MethodRegisterOperatorToAVS,
 		MethodDeregisterOperatorFromAVS, MethodCreateAVSTask, MethodRegisterBLSPublicKey, MethodSubmitProof:
 		return true
-	case MethodGetRegisteredPubkey, MethodGetOptinOperators:
+	case MethodGetRegisteredPubkey, MethodGetOptinOperators, MethodGetAVSUSDValue, MethodGetOperatorOptedUSDValue:
 		return false
 	default:
 		return false

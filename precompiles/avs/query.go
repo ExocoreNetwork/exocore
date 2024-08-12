@@ -12,8 +12,10 @@ import (
 )
 
 const (
-	MethodGetRegisteredPubkey = "getRegisteredPubkey"
-	MethodGetOptinOperators   = "getOptInOperators"
+	MethodGetRegisteredPubkey      = "getRegisteredPubkey"
+	MethodGetOptinOperators        = "getOptInOperators"
+	MethodGetAVSUSDValue           = "getAVSUSDValue"
+	MethodGetOperatorOptedUSDValue = "getOperatorOptedUSDValue"
 )
 
 // GetRegisteredPubkey
@@ -59,4 +61,50 @@ func (p Precompile) GetOptedInOperatorAccAddrs(
 		return nil, err
 	}
 	return method.Outputs.Pack(list)
+}
+
+// GetAVSUSDValue is a function to retrieve the USD share of specified Avs,
+func (p Precompile) GetAVSUSDValue(
+	ctx sdk.Context,
+	_ *vm.Contract,
+	method *abi.Method,
+	args []interface{},
+) ([]byte, error) {
+	if len(args) != len(p.ABI.Methods[MethodGetAVSUSDValue].Inputs) {
+		return nil, fmt.Errorf(cmn.ErrInvalidNumberOfArgs, 1, len(args))
+	}
+	addr, ok := args[0].(string)
+	if !ok {
+		return nil, fmt.Errorf(exocmn.ErrContractInputParaOrType, 0, "string", addr)
+	}
+	amount, err := p.operatorKeeper.GetAVSUSDValue(ctx, addr)
+	if err != nil {
+		return nil, err
+	}
+	return method.Outputs.Pack(amount)
+}
+
+// GetOperatorOptedUSDValue is a function to retrieve the USD share of specified operator and Avs,
+func (p Precompile) GetOperatorOptedUSDValue(
+	ctx sdk.Context,
+	_ *vm.Contract,
+	method *abi.Method,
+	args []interface{},
+) ([]byte, error) {
+	if len(args) != len(p.ABI.Methods[MethodGetOperatorOptedUSDValue].Inputs) {
+		return nil, fmt.Errorf(cmn.ErrInvalidNumberOfArgs, 1, len(args))
+	}
+	avsAddr, ok := args[0].(string)
+	if !ok {
+		return nil, fmt.Errorf(exocmn.ErrContractInputParaOrType, 0, "string", avsAddr)
+	}
+	operatorAddr, ok := args[1].(string)
+	if !ok {
+		return nil, fmt.Errorf(exocmn.ErrContractInputParaOrType, 1, "string", operatorAddr)
+	}
+	amount, err := p.operatorKeeper.GetOperatorOptedUSDValue(ctx, avsAddr, operatorAddr)
+	if err != nil {
+		return nil, err
+	}
+	return method.Outputs.Pack(amount)
 }
