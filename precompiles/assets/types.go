@@ -1,11 +1,10 @@
 package assets
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"math/big"
-
-	"encoding/json"
 
 	"github.com/ethereum/go-ethereum/common/hexutil"
 

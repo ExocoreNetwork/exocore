@@ -21,7 +21,7 @@ type OracleInfo struct {
 		Start    string `json:"start"`
 		End      string `json:"end"`
 		Interval string `json:"interval"`
-		RuleID   string `json:rule_id"`
+		RuleID   string `json:"rule_id"`
 	} `json:"feeder"`
 	AssetID string `json:"asset_id"`
 }
