@@ -18,24 +18,26 @@ import (
 )
 
 func (suite *KeeperTestSuite) TestEpochHooks() {
+	suite.SetupTest()
 	suite.prepare()
-	//chainIDWithoutRevision := avstypes.ChainIDWithoutRevision(suite.Ctx.ChainID())
-	//suite.Commit()
-	validatorUpdates := suite.App.StakingKeeper.GetValidatorUpdates(suite.Ctx)
+	epoch, _ := suite.App.EpochsKeeper.GetEpochInfo(suite.Ctx, suite.App.StakingKeeper.GetEpochIdentifier(suite.Ctx))
+	currentEpoch := epoch.CurrentEpoch
+	suite.Assert().Equal(currentEpoch, epoch.CurrentEpoch)
 
+	validatorUpdates := suite.App.StakingKeeper.GetValidatorUpdates(suite.Ctx)
 	for _, vu := range validatorUpdates {
 		pubKey, _ := cryptocodec.FromTmProtoPublicKey(vu.PubKey)
 		consAddr := operatortypes.NewWrappedConsKeyFromHex(hexutil.Encode(pubKey.Bytes()))
 		validator := suite.App.StakingKeeper.ValidatorByConsAddr(suite.Ctx, consAddr.ToConsAddr())
-		fmt.Print(validator)
 		currentRewards := suite.App.DistrKeeper.GetValidatorCurrentRewards(suite.Ctx, validator.GetOperator())
 		fmt.Print(currentRewards)
 	}
 	epsilon := time.Nanosecond // negligible amount of buffer duration
 	// default is day, we start by committing after 1 minute
-	suite.SetupTest() // reset
-	suite.CommitAfter(time.Minute + epsilon)
+	//suite.SetupTest() // reset
+	//suite.CommitAfter(time.Minute + epsilon)
 	// now go to one day
+	suite.Commit()
 	suite.CommitAfter(time.Hour*24 + epsilon - time.Minute)
 	// check balance
 	//suite.Require().True(
@@ -156,6 +158,9 @@ func (suite *KeeperTestSuite) prepare() {
 	suite.CheckLengthOfValidatorUpdates(
 		1, []int64{totalAmountInUSD.TruncateInt64()}, "delegate above min",
 	)
+	epoch, _ := suite.App.EpochsKeeper.GetEpochInfo(suite.Ctx, suite.App.StakingKeeper.GetEpochIdentifier(suite.Ctx))
+	currentEpoch := epoch.CurrentEpoch
+	suite.Assert().Equal(currentEpoch, epoch.CurrentEpoch)
 	suite.CheckValidatorFound(key, true, chainIDWithoutRevision, operatorAddress)
 }
 func (suite *KeeperTestSuite) CheckValidatorFound(

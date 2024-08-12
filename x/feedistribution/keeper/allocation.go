@@ -20,7 +20,8 @@ func (k Keeper) AllocateTokens(ctx sdk.Context, totalPreviousPower int64) error 
 		return err
 	}
 
-	feePool := k.GetFeePool(ctx)
+	// feePool := k.GetFeePool(ctx)
+	feePool := types.FeePool{}
 	if totalPreviousPower == 0 {
 		feePool.CommunityPool = feePool.CommunityPool.Add(feesCollected...)
 		k.SetFeePool(ctx, feePool)
@@ -38,6 +39,7 @@ func (k Keeper) AllocateTokens(ctx sdk.Context, totalPreviousPower int64) error 
 	// allocate tokens proportionally to voting power of different validators
 	//
 	// TODO: Consider parallelizing later
+
 	validatorUpdates := k.StakingKeeper.GetValidatorUpdates(ctx)
 	for _, vu := range validatorUpdates {
 		powerFraction := math.LegacyNewDec(vu.Power).QuoTruncate(math.LegacyNewDec(totalPreviousPower))
