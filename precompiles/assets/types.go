@@ -19,8 +19,10 @@ import (
 )
 
 // oracleInfo: '[tokenName],[chainName],[tokenDecimal](,[interval],[contract](,[ChainDesc:{...}],[TokenDesc:{...}]))'
-var tokenDescMatcher = regexp.MustCompile(`TokenDesc:{(.+?)}`)
-var chainDescMatcher = regexp.MustCompile(`ChainDesc:{(.+?)}`)
+var (
+	tokenDescMatcher = regexp.MustCompile(`TokenDesc:{(.+?)}`)
+	chainDescMatcher = regexp.MustCompile(`ChainDesc:{(.+?)}`)
+)
 
 func (p Precompile) DepositWithdrawParamsFromInputs(ctx sdk.Context, args []interface{}) (*assetskeeper.DepositWithdrawParams, error) {
 	inputsLen := len(p.ABI.Methods[MethodDepositTo].Inputs)
