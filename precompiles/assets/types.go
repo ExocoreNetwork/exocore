@@ -122,7 +122,7 @@ func (p Precompile) TokenFromInputs(ctx sdk.Context, args []interface{}) (types.
 		return types.AssetInfo{}, oracletypes.OracleInfo{}, fmt.Errorf(cmn.ErrInvalidNumberOfArgs, inputsLen, len(args))
 	}
 	asset := types.AssetInfo{}
-	oracleInfo := types.OracleInfo{}
+	oracleInfo := oracletypes.OracleInfo{}
 
 	clientChainID, ok := args[0].(uint32)
 	if !ok {
