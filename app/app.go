@@ -699,6 +699,7 @@ func NewExocoreApp(
 			app.ExoSlashKeeper,
 			app.RewardKeeper,
 			app.AVSManagerKeeper,
+			app.OperatorKeeper,
 		),
 	)
 
