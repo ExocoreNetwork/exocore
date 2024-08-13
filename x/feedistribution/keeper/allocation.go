@@ -2,11 +2,10 @@ package keeper
 
 import (
 	"cosmossdk.io/math"
+	dogfoodtypes "github.com/ExocoreNetwork/exocore/x/dogfood/types"
 
 	"github.com/ExocoreNetwork/exocore/x/feedistribution/types"
-	cryptocodec "github.com/cosmos/cosmos-sdk/crypto/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 )
 
 // Based on the epoch, AllocateTokens performs reward and fee distribution to all validators.
@@ -40,14 +39,16 @@ func (k Keeper) AllocateTokens(ctx sdk.Context, totalPreviousPower int64) error 
 	//
 	// TODO: Consider parallelizing later
 
-	validatorUpdates := k.StakingKeeper.GetValidatorUpdates(ctx)
-	for _, vu := range validatorUpdates {
-		powerFraction := math.LegacyNewDec(vu.Power).QuoTruncate(math.LegacyNewDec(totalPreviousPower))
+	//	validatorUpdates := k.StakingKeeper.GetValidatorUpdates(ctx)
+	allValidators := k.StakingKeeper.GetAllExocoreValidators(ctx) //GetAllValidators(suite.Ctx)
+	for _, val := range allValidators {
+		powerFraction := math.LegacyNewDec(val.Power).QuoTruncate(math.LegacyNewDec(totalPreviousPower))
 		reward := feeMultiplier.MulDecTruncate(powerFraction)
-		pubKey, _ := cryptocodec.FromTmProtoPublicKey(vu.PubKey)
-		consAddr := sdk.ConsAddress(pubKey.Address().String())
-		validator := k.StakingKeeper.ValidatorByConsAddr(ctx, consAddr)
-		k.AllocateTokensToValidator(ctx, validator, reward)
+		//pubKey, _ := cryptocodec.FromTmProtoPublicKey(val.Pubkey)
+		//pubKey := val.Pubkey.String()
+		//consAddr := sdk.ConsAddress(pubKey)
+		//validator := k.StakingKeeper.ValidatorByConsAddr(ctx, consAddr)
+		k.AllocateTokensToValidator(ctx, val, reward)
 		remaining = remaining.Sub(reward)
 	}
 
@@ -59,19 +60,19 @@ func (k Keeper) AllocateTokens(ctx sdk.Context, totalPreviousPower int64) error 
 
 // AllocateTokensToValidator allocate tokens to a particular validator,
 // splitting according to commission.
-func (k Keeper) AllocateTokensToValidator(ctx sdk.Context, val stakingtypes.ValidatorI, tokens sdk.DecCoins) {
-	// split tokens between validator and delegators according to commission
-	rate := val.GetCommission()
-	commission := tokens.MulDec(rate)
-	shared := tokens.Sub(commission)
-	valBz := val.GetOperator()
+func (k Keeper) AllocateTokensToValidator(ctx sdk.Context, val dogfoodtypes.ExocoreValidator, tokens sdk.DecCoins) {
+	// TODO: split tokens between validator and delegators according to commission
+	//rate := val.GetCommission()
+	//commission := tokens.MulDec(rate)
+	//shared := tokens.Sub(commission)
+	//valBz := val.GetOperator()
 
-	// update current commission
-	ctx.EventManager().EmitEvent(sdk.NewEvent(
-		types.EventTypeCommission,
-		sdk.NewAttribute(sdk.AttributeKeyAmount, commission.String()),
-		sdk.NewAttribute(types.EventTypeCommission, val.GetOperator().String()),
-	))
+	//// update current commission
+	//ctx.EventManager().EmitEvent(sdk.NewEvent(
+	//	types.EventTypeCommission,
+	//	sdk.NewAttribute(sdk.AttributeKeyAmount, commission.String()),
+	//	sdk.NewAttribute(types.EventTypeCommission, val.GetOperator().String()),
+	//))
 	currentCommission := k.GetValidatorAccumulatedCommission(ctx, valBz)
 	currentCommission.Commission = currentCommission.Commission.Add(commission...)
 	k.SetValidatorAccumulatedCommission(ctx, valBz, currentCommission)

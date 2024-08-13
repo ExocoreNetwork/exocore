@@ -10,10 +10,8 @@ import (
 	delegationtypes "github.com/ExocoreNetwork/exocore/x/delegation/types"
 	operatorkeeper "github.com/ExocoreNetwork/exocore/x/operator/keeper"
 	operatortypes "github.com/ExocoreNetwork/exocore/x/operator/types"
-	cryptocodec "github.com/cosmos/cosmos-sdk/crypto/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/common/hexutil"
 	"time"
 )
 
@@ -24,35 +22,12 @@ func (suite *KeeperTestSuite) TestEpochHooks() {
 	currentEpoch := epoch.CurrentEpoch
 	suite.Assert().Equal(currentEpoch, epoch.CurrentEpoch)
 
-	validatorUpdates := suite.App.StakingKeeper.GetValidatorUpdates(suite.Ctx)
-	for _, vu := range validatorUpdates {
-		pubKey, _ := cryptocodec.FromTmProtoPublicKey(vu.PubKey)
-		consAddr := operatortypes.NewWrappedConsKeyFromHex(hexutil.Encode(pubKey.Bytes()))
-		validator := suite.App.StakingKeeper.ValidatorByConsAddr(suite.Ctx, consAddr.ToConsAddr())
-		currentRewards := suite.App.DistrKeeper.GetValidatorCurrentRewards(suite.Ctx, validator.GetOperator())
-		fmt.Print(currentRewards)
-	}
 	epsilon := time.Nanosecond // negligible amount of buffer duration
-	// default is day, we start by committing after 1 minute
-	//suite.SetupTest() // reset
-	//suite.CommitAfter(time.Minute + epsilon)
-	// now go to one day
 	suite.Commit()
 	suite.CommitAfter(time.Hour*24 + epsilon - time.Minute)
-	// check balance
-	//suite.Require().True(
-	//	suite.App.BankKeeper.GetBalance(
-	//		suite.Ctx,
-	//		feeCollector,
-	//		params.MintDenom,
-	//	).Amount.Equal(params.EpochReward),
-	//)
-
-	for _, vu := range validatorUpdates {
-		pubKey, _ := cryptocodec.FromTmProtoPublicKey(vu.PubKey)
-		consAddr := sdk.ConsAddress(pubKey.Address().String())
-		validator := suite.App.StakingKeeper.ValidatorByConsAddr(suite.Ctx, consAddr)
-		currentRewards := suite.App.DistrKeeper.GetValidatorCurrentRewards(suite.Ctx, validator.GetOperator())
+	allValidators := suite.App.StakingKeeper.GetAllExocoreValidators(suite.Ctx) //GetAllValidators(suite.Ctx)
+	for _, val := range allValidators {
+		currentRewards := suite.App.DistrKeeper.GetValidatorCurrentRewards(suite.Ctx, val.Address)
 		fmt.Print(currentRewards)
 	}
 }
