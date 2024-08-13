@@ -3,7 +3,7 @@ package types
 import (
 	sdkmath "cosmossdk.io/math"
 	assetstype "github.com/ExocoreNetwork/exocore/x/assets/types"
-	"github.com/ExocoreNetwork/exocore/x/delegation/keeper"
+	delegationkeeper "github.com/ExocoreNetwork/exocore/x/delegation/keeper"
 	delegationtype "github.com/ExocoreNetwork/exocore/x/delegation/types"
 	oracletype "github.com/ExocoreNetwork/exocore/x/oracle/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -25,9 +25,10 @@ type AssetsKeeper interface {
 	) error
 	ClientChainExists(ctx sdk.Context, index uint64) bool
 	GetAllStakingAssetsInfo(ctx sdk.Context) (allAssets map[string]*assetstype.StakingAssetInfo, err error)
+	GetOperatorSpecifiedAssetInfo(ctx sdk.Context, operatorAddr sdk.Address, assetID string) (info *assetstype.OperatorAssetInfo, err error)
 }
 
-var _ DelegationKeeper = &keeper.Keeper{}
+var _ DelegationKeeper = &delegationkeeper.Keeper{}
 
 type DelegationKeeper interface {
 	IterateUndelegationsByOperator(
@@ -40,6 +41,8 @@ type DelegationKeeper interface {
 		ctx sdk.Context, operator, assetID string, stakerList delegationtype.StakerList,
 	) error
 	DeleteStakersListForOperator(ctx sdk.Context, operator, assetID string) error
+
+	IterateDelegationsForStaker(ctx sdk.Context, stakerID string, opFunc delegationkeeper.DelegationOpFunc) error
 }
 
 type PriceChange struct {

@@ -1,9 +1,13 @@
 package keeper
 
 import (
+	"errors"
 	"fmt"
 
 	assetstype "github.com/ExocoreNetwork/exocore/x/assets/types"
+	delegationkeeper "github.com/ExocoreNetwork/exocore/x/delegation/keeper"
+	delegationtype "github.com/ExocoreNetwork/exocore/x/delegation/types"
+	oracletypes "github.com/ExocoreNetwork/exocore/x/oracle/types"
 
 	errorsmod "cosmossdk.io/errors"
 	sdkmath "cosmossdk.io/math"
@@ -89,6 +93,17 @@ func (k *Keeper) DeleteOperatorUSDValue(ctx sdk.Context, avsAddr, operatorAddr s
 	return nil
 }
 
+func (k *Keeper) DeleteAllOperatorsUSDValueForAVS(ctx sdk.Context, avsAddr string) error {
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), operatortypes.KeyPrefixVotingPowerForOperator)
+	iterator := sdk.KVStorePrefixIterator(store, operatortypes.IterateOperatorsForAVSPrefix(avsAddr))
+	defer iterator.Close()
+
+	for ; iterator.Valid(); iterator.Next() {
+		store.Delete(iterator.Key())
+	}
+	return nil
+}
+
 // GetOperatorOptedUSDValue is a function to retrieve the USD share of specified operator and Avs,
 // The key and value to retrieve is:
 // AVSAddr + '/' + operatorAddr -> types.OperatorOptedUSDValue (the total USD share of specified operator and Avs)
@@ -158,6 +173,13 @@ func (k *Keeper) SetAVSUSDValue(ctx sdk.Context, avsAddr string, amount sdkmath.
 	setValue := operatortypes.DecValueField{Amount: amount}
 	bz := k.cdc.MustMarshal(&setValue)
 	store.Set(key, bz)
+	return nil
+}
+
+func (k *Keeper) DeleteAVSUSDValue(ctx sdk.Context, avsAddr string) error {
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), operatortypes.KeyPrefixVotingPowerForAVS)
+	key := []byte(avsAddr)
+	store.Delete(key)
 	return nil
 }
 
@@ -239,4 +261,190 @@ func (k *Keeper) GetOperatorAssetValue(ctx sdk.Context, operator sdk.AccAddress,
 	}
 	// truncate the USD value to int64
 	return optedUSDValues.ActiveUSDValue.TruncateInt64(), nil
+}
+
+// CalculateUSDValueForOperator calculates the total and self usd value for the
+// operator according to the input assets filter and prices.
+// This function will be used in slashing calculations and voting power updates per epoch.
+// The inputs/outputs and calculation logic for these two cases are different,
+// so an `isForSlash` flag is used to distinguish between them.
+// When it's called by the voting power update, the needed outputs are the current total
+// staking amount and the self-staking amount of the operator. The current total
+// staking amount excludes the pending unbonding amount, so it's used to calculate the voting power.
+// The self-staking amount is also needed to check if the operator's self-staking is sufficient.
+// At the same time, the prices of all assets have been retrieved in the caller's function, so they
+// are inputted as a parameter.
+// When it's called by the slash execution, the needed output is the sum of the current total amount and
+// the pending unbonding amount, because the undelegation also needs to be slashed. And the prices of
+// all assets haven't been prepared by the caller, so the prices should be retrieved in this function.
+func (k *Keeper) CalculateUSDValueForOperator(
+	ctx sdk.Context,
+	isForSlash bool,
+	operator string,
+	assetsFilter map[string]interface{},
+	decimals map[string]uint32,
+	prices map[string]oracletypes.Price,
+) (operatortypes.OperatorStakingInfo, error) {
+	var err error
+	ret := operatortypes.OperatorStakingInfo{
+		Staking:                 sdkmath.LegacyNewDec(0),
+		SelfStaking:             sdkmath.LegacyNewDec(0),
+		StakingAndWaitUnbonding: sdkmath.LegacyNewDec(0),
+	}
+	// iterate all assets owned by the operator to calculate its voting power
+	opFuncToIterateAssets := func(assetID string, state *assetstype.OperatorAssetInfo) error {
+		//		var price operatortypes.Price
+		var price oracletypes.Price
+		var decimal uint32
+		if isForSlash {
+			// when calculated the USD value for slashing, the input prices map is null
+			// so the price needs to be retrieved here
+			price, err = k.oracleKeeper.GetSpecifiedAssetsPrice(ctx, assetID)
+			if err != nil {
+				// TODO: when assetID is not registered in oracle module, this error will finally lead to panic
+				if !errors.Is(err, oracletypes.ErrGetPriceRoundNotFound) {
+					return err
+				}
+				// TODO: for now, we ignore the error when the price round is not found and set the price to 1 to avoid panic
+			}
+			assetInfo, err := k.assetsKeeper.GetStakingAssetInfo(ctx, assetID)
+			if err != nil {
+				return err
+			}
+			decimal = assetInfo.AssetBasicInfo.Decimals
+			ret.StakingAndWaitUnbonding = ret.StakingAndWaitUnbonding.Add(CalculateUSDValue(state.TotalAmount.Add(state.WaitUnbondingAmount), price.Value, decimal, price.Decimal))
+		} else {
+			if prices == nil {
+				return errorsmod.Wrap(operatortypes.ErrValueIsNilOrZero, "CalculateUSDValueForOperator prices map is nil")
+			}
+			price, ok := prices[assetID]
+			if !ok {
+				return errorsmod.Wrap(operatortypes.ErrKeyNotExistInMap, "CalculateUSDValueForOperator map: prices, key: assetID")
+			}
+			decimal, ok := decimals[assetID]
+			if !ok {
+				return errorsmod.Wrap(operatortypes.ErrKeyNotExistInMap, "CalculateUSDValueForOperator map: decimals, key: assetID")
+			}
+			ret.Staking = ret.Staking.Add(CalculateUSDValue(state.TotalAmount, price.Value, decimal, price.Decimal))
+			// calculate the token amount from the share for the operator
+			selfAmount, err := delegationkeeper.TokensFromShares(state.OperatorShare, state.TotalShare, state.TotalAmount)
+			if err != nil {
+				return err
+			}
+			ret.SelfStaking = ret.SelfStaking.Add(CalculateUSDValue(selfAmount, price.Value, decimal, price.Decimal))
+		}
+		return nil
+	}
+	err = k.assetsKeeper.IterateAssetsForOperator(ctx, false, operator, assetsFilter, opFuncToIterateAssets)
+	if err != nil {
+		return ret, err
+	}
+	return ret, nil
+}
+
+func (k Keeper) GetOrCalculateOperatorUSDValues(
+	ctx sdk.Context,
+	operator sdk.AccAddress,
+	chainID string,
+) (optedUSDValues operatortypes.OperatorOptedUSDValue, err error) {
+	isAvs, avsAddr := k.avsKeeper.IsAVSByChainID(ctx, chainID)
+	if !isAvs {
+		return operatortypes.OperatorOptedUSDValue{}, errorsmod.Wrap(operatortypes.ErrUnknownChainID, fmt.Sprintf("GetOrCalculateOperatorUSDValues: chainID is %s", chainID))
+	}
+	avsAddrString := avsAddr.String()
+	// the usd values will be deleted if the operator opts out, so recalculate the
+	// voting power to set the tokens and shares for this case.
+	if !k.IsOptedIn(ctx, operator.String(), avsAddrString) {
+		// get assets supported by the AVS
+		assets, err := k.avsKeeper.GetAVSSupportedAssets(ctx, avsAddrString)
+		if err != nil {
+			return operatortypes.OperatorOptedUSDValue{}, err
+		}
+		if assets == nil {
+			return operatortypes.OperatorOptedUSDValue{}, err
+		}
+		// get the prices and decimals of assets
+		decimals, err := k.assetsKeeper.GetAssetsDecimal(ctx, assets)
+		if err != nil {
+			return operatortypes.OperatorOptedUSDValue{}, err
+		}
+		prices, err := k.oracleKeeper.GetMultipleAssetsPrices(ctx, assets)
+		if err != nil {
+			return operatortypes.OperatorOptedUSDValue{}, err
+		}
+		stakingInfo, err := k.CalculateUSDValueForOperator(ctx, false, operator.String(), assets, decimals, prices)
+		if err != nil {
+			return operatortypes.OperatorOptedUSDValue{}, err
+		}
+		optedUSDValues.SelfUSDValue = stakingInfo.SelfStaking
+		optedUSDValues.TotalUSDValue = stakingInfo.Staking
+	} else {
+		optedUSDValues, err = k.GetOperatorOptedUSDValue(ctx, avsAddrString, operator.String())
+		if err != nil {
+			return operatortypes.OperatorOptedUSDValue{}, err
+		}
+	}
+	return optedUSDValues, nil
+}
+
+func (k *Keeper) CalculateUSDValueForStaker(ctx sdk.Context, stakerID, avsAddr string, operator sdk.AccAddress) (sdkmath.LegacyDec, error) {
+	if !k.IsActive(ctx, operator, avsAddr) {
+		return sdkmath.LegacyNewDec(0), nil
+	}
+	optedUSDValues, err := k.GetOperatorOptedUSDValue(ctx, avsAddr, operator.String())
+	if err != nil {
+		return sdkmath.LegacyDec{}, err
+	}
+	if optedUSDValues.ActiveUSDValue.IsZero() {
+		return sdkmath.LegacyNewDec(0), err
+	}
+
+	// calculate the active voting power for staker
+	assets, err := k.avsKeeper.GetAVSSupportedAssets(ctx, avsAddr)
+	if err != nil {
+		return sdkmath.LegacyDec{}, err
+	}
+	if assets == nil {
+		return sdkmath.LegacyNewDec(0), nil
+	}
+	prices, err := k.oracleKeeper.GetMultipleAssetsPrices(ctx, assets)
+	// we don't ignore the error regarding the price round not found here, because it's used to
+	// distribute the reward.
+	if err != nil {
+		return sdkmath.LegacyDec{}, err
+	}
+	if prices == nil {
+		return sdkmath.LegacyDec{}, errorsmod.Wrap(operatortypes.ErrValueIsNilOrZero, "CalculateUSDValueForStaker prices map is nil")
+	}
+	totalUSDValue := sdkmath.LegacyNewDec(0)
+	opFunc := func(keys *delegationtype.SingleDelegationInfoReq, amounts *delegationtype.DelegationAmounts) error {
+		if keys.OperatorAddr == operator.String() {
+			if _, ok := assets[keys.AssetID]; ok {
+				price, ok := prices[keys.AssetID]
+				if !ok {
+					return errorsmod.Wrapf(operatortypes.ErrKeyNotExistInMap, "CalculateUSDValueForStaker assetID doesn't exist, assetID:%s", keys.AssetID)
+				}
+				operatorAsset, err := k.assetsKeeper.GetOperatorSpecifiedAssetInfo(ctx, operator, keys.AssetID)
+				if err != nil {
+					return err
+				}
+				amount, err := delegationkeeper.TokensFromShares(amounts.UndelegatableShare, operatorAsset.TotalShare, operatorAsset.TotalAmount)
+				if err != nil {
+					return err
+				}
+				assetInfo, err := k.assetsKeeper.GetStakingAssetInfo(ctx, keys.AssetID)
+				if err != nil {
+					return err
+				}
+				usdValue := CalculateUSDValue(amount, price.Value, assetInfo.AssetBasicInfo.Decimals, price.Decimal)
+				totalUSDValue = totalUSDValue.Add(usdValue)
+			}
+		}
+		return nil
+	}
+	err = k.delegationKeeper.IterateDelegationsForStaker(ctx, stakerID, opFunc)
+	if err != nil {
+		return sdkmath.LegacyDec{}, err
+	}
+	return totalUSDValue, nil
 }

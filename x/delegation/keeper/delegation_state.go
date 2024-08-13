@@ -301,24 +301,24 @@ func (k Keeper) DelegationStateByOperatorAssets(ctx sdk.Context, operatorAddr st
 	return ret, nil
 }
 
-func (k *Keeper) SetSelfDelegatedOperator(ctx sdk.Context, stakerID, operatorAddr string) error {
+func (k *Keeper) SetAssociatedOperator(ctx sdk.Context, stakerID, operatorAddr string) error {
 	_, err := sdk.AccAddressFromBech32(operatorAddr)
 	if err != nil {
 		return delegationtype.OperatorAddrIsNotAccAddr
 	}
-	store := prefix.NewStore(ctx.KVStore(k.storeKey), delegationtype.KeyPrefixSelfDelegateOperatorByStaker)
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), delegationtype.KeyPrefixAssociatedOperatorByStaker)
 	store.Set([]byte(stakerID), []byte(operatorAddr))
 	return nil
 }
 
-func (k *Keeper) DeleteSelfDelegatedOperator(ctx sdk.Context, stakerID string) error {
-	store := prefix.NewStore(ctx.KVStore(k.storeKey), delegationtype.KeyPrefixSelfDelegateOperatorByStaker)
+func (k *Keeper) DeleteAssociatedOperator(ctx sdk.Context, stakerID string) error {
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), delegationtype.KeyPrefixAssociatedOperatorByStaker)
 	store.Delete([]byte(stakerID))
 	return nil
 }
 
-func (k *Keeper) GetSelfDelegatedOperator(ctx sdk.Context, stakerID string) (string, error) {
-	store := prefix.NewStore(ctx.KVStore(k.storeKey), delegationtype.KeyPrefixSelfDelegateOperatorByStaker)
+func (k *Keeper) GetAssociatedOperator(ctx sdk.Context, stakerID string) (string, error) {
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), delegationtype.KeyPrefixAssociatedOperatorByStaker)
 	value := store.Get([]byte(stakerID))
 	if value != nil {
 		return string(value), nil

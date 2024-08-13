@@ -3,7 +3,6 @@ package keeper
 import (
 	"fmt"
 
-	errorsmod "cosmossdk.io/errors"
 	"github.com/cometbft/cometbft/libs/log"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -337,7 +336,6 @@ func (k Keeper) GetActiveOperatorsForChainID(
 		return nil, nil
 	}
 	operatorsAddr, pks := k.GetOperatorsForChainID(ctx, chainID)
-	k.Logger(ctx).Info("GetActiveOperatorsForChainID all operators", "operators", len(operatorsAddr), "pks", len(pks))
 	avsAddrString := avsAddr.String()
 	activeOperator := make([]sdk.AccAddress, 0)
 	activePks := make([]types.WrappedConsKey, 0)
@@ -351,51 +349,6 @@ func (k Keeper) GetActiveOperatorsForChainID(
 		}
 	}
 	return activeOperator, activePks
-}
-
-func (k Keeper) GetOrCalculateOperatorUSDValues(
-	ctx sdk.Context,
-	operator sdk.AccAddress,
-	chainID string,
-) (optedUSDValues types.OperatorOptedUSDValue, err error) {
-	isAvs, avsAddr := k.avsKeeper.IsAVSByChainID(ctx, chainID)
-	if !isAvs {
-		return types.OperatorOptedUSDValue{}, errorsmod.Wrap(types.ErrUnknownChainID, fmt.Sprintf("GetOrCalculateOperatorUSDValues: chainID is %s", chainID))
-	}
-	avsAddrString := avsAddr.String()
-	// the usd values will be deleted if the operator opts out, so recalculate the
-	// voting power to set the tokens and shares for this case.
-	if !k.IsOptedIn(ctx, operator.String(), avsAddrString) {
-		// get assets supported by the AVS
-		assets, err := k.avsKeeper.GetAVSSupportedAssets(ctx, avsAddrString)
-		if err != nil {
-			return types.OperatorOptedUSDValue{}, err
-		}
-		if assets == nil {
-			return types.OperatorOptedUSDValue{}, err
-		}
-		// get the prices and decimals of assets
-		decimals, err := k.assetsKeeper.GetAssetsDecimal(ctx, assets)
-		if err != nil {
-			return types.OperatorOptedUSDValue{}, err
-		}
-		prices, err := k.oracleKeeper.GetMultipleAssetsPrices(ctx, assets)
-		if err != nil {
-			return types.OperatorOptedUSDValue{}, err
-		}
-		stakingInfo, err := k.CalculateUSDValueForOperator(ctx, false, operator.String(), assets, decimals, prices)
-		if err != nil {
-			return types.OperatorOptedUSDValue{}, err
-		}
-		optedUSDValues.SelfUSDValue = stakingInfo.SelfStaking
-		optedUSDValues.TotalUSDValue = stakingInfo.Staking
-	} else {
-		optedUSDValues, err = k.GetOperatorOptedUSDValue(ctx, avsAddrString, operator.String())
-		if err != nil {
-			return types.OperatorOptedUSDValue{}, err
-		}
-	}
-	return optedUSDValues, nil
 }
 
 // ValidatorByConsAddrForChainID returns a stakingtypes.ValidatorI for the given consensus

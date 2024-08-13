@@ -24,7 +24,6 @@ func (suite *AVSTestSuite) TestTaskInfo() {
 }
 
 func (suite *AVSTestSuite) TestOperator_pubkey() {
-
 	blsPub := &types.BlsPubKeyInfo{
 		Operator: "exo1j9ly7f0jynscjgvct0enevaa659te58k3xztc8",
 		PubKey:   []byte("pubkey"),

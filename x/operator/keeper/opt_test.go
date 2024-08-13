@@ -173,7 +173,6 @@ func (suite *OperatorTestSuite) TestOptInList() {
 	suite.NoError(err)
 
 	suite.Contains(avsList, suite.avsAddr)
-
 }
 
 func (suite *OperatorTestSuite) TestOptOut() {

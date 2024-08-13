@@ -70,7 +70,7 @@ func (k *Keeper) delegateTo(
 		TotalShare:  share,
 	}
 	// Check if the staker belongs to the delegated operator. Increase the operator's share if yes.
-	operator, err := k.GetSelfDelegatedOperator(ctx, stakerID)
+	operator, err := k.GetAssociatedOperator(ctx, stakerID)
 	if err != nil {
 		return err
 	}
@@ -177,7 +177,7 @@ func (k *Keeper) AssociateOperatorWithStaker(
 	}
 
 	stakerID, _ := assetstype.GetStakeIDAndAssetID(clientChainID, stakerAddress[:], nil)
-	associatedOperator, err := k.GetSelfDelegatedOperator(ctx, stakerID)
+	associatedOperator, err := k.GetAssociatedOperator(ctx, stakerID)
 	if err != nil {
 		return err
 	}
@@ -203,7 +203,7 @@ func (k *Keeper) AssociateOperatorWithStaker(
 	}
 
 	// update the marking information
-	err = k.SetSelfDelegatedOperator(ctx, stakerID, operatorAddress.String())
+	err = k.SetAssociatedOperator(ctx, stakerID, operatorAddress.String())
 	if err != nil {
 		return err
 	}
@@ -220,7 +220,7 @@ func (k *Keeper) DissociateOperatorFromStaker(
 	stakerAddress common.Address,
 ) error {
 	stakerID, _ := assetstype.GetStakeIDAndAssetID(clientChainID, stakerAddress[:], nil)
-	associatedOperator, err := k.GetSelfDelegatedOperator(ctx, stakerID)
+	associatedOperator, err := k.GetAssociatedOperator(ctx, stakerID)
 	if err != nil {
 		return err
 	}
@@ -250,7 +250,7 @@ func (k *Keeper) DissociateOperatorFromStaker(
 	}
 
 	// delete the marking information
-	err = k.DeleteSelfDelegatedOperator(ctx, stakerID)
+	err = k.DeleteAssociatedOperator(ctx, stakerID)
 	if err != nil {
 		return err
 	}

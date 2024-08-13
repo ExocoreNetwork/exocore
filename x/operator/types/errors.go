@@ -38,82 +38,77 @@ var (
 		"the operator hasn't opted in the avs",
 	)
 
-	ErrTheValueIsNegative = errorsmod.Register(
-		ModuleName, 9,
-		"the value is negative",
-	)
-
-	ErrSlashContractNotMatch = errorsmod.Register(
-		ModuleName, 10,
-		"the slash contract isn't the slash contract address saved in the opted-in info",
-	)
-
 	ErrSlashOccurredHeight = errorsmod.Register(
-		ModuleName, 11,
+		ModuleName, 9,
 		"the occurred height of slash event is error",
 	)
 
 	ErrConsKeyAlreadyInUse = errorsmod.Register(
-		ModuleName, 12,
+		ModuleName, 10,
 		"consensus key already in use by another operator",
 	)
 
 	ErrAlreadyRemovingKey = errorsmod.Register(
-		ModuleName, 13, "operator already removing consensus key",
+		ModuleName, 11, "operator already removing consensus key",
 	)
 
 	ErrInvalidPubKey = errorsmod.Register(
-		ModuleName, 14,
+		ModuleName, 12,
 		"invalid public key",
 	)
 
 	ErrInvalidGenesisData = errorsmod.Register(
-		ModuleName, 15,
+		ModuleName, 13,
 		"the genesis data supplied is invalid",
 	)
 
 	ErrInvalidAvsAddr = errorsmod.Register(
-		ModuleName, 16,
+		ModuleName, 14,
 		"avs address should be a hex evm contract address",
 	)
 
 	ErrOperatorAlreadyExists = errorsmod.Register(
-		ModuleName, 17,
+		ModuleName, 15,
 		"operator already exists",
 	)
 
 	ErrUnknownChainID = errorsmod.Register(
-		ModuleName, 18,
+		ModuleName, 16,
 		"unknown chain id",
 	)
 
 	ErrOperatorNotRemovingKey = errorsmod.Register(
-		ModuleName, 19,
+		ModuleName, 17,
 		"operator not removing key",
 	)
 
 	ErrInvalidSlashPower = errorsmod.Register(
-		ModuleName, 20,
+		ModuleName, 18,
 		"the slash power is invalid",
 	)
 
 	ErrKeyAlreadyExist = errorsmod.Register(
-		ModuleName, 21,
+		ModuleName, 19,
 		"the key already exists",
 	)
 
 	ErrValueIsNilOrZero = errorsmod.Register(
-		ModuleName, 22,
+		ModuleName, 20,
 		"the value is nil or zero",
 	)
 
+	ErrKeyNotExistInMap = errorsmod.Register(
+		ModuleName, 21,
+		"the key doesn't exist in the map",
+	)
+
 	ErrNoSuchAvs = errorsmod.Register(
-		ModuleName, 23,
+		ModuleName, 22,
 		"no such avs",
 	)
 
 	ErrInvalidConsKey = errorsmod.Register(
-		ModuleName, 24,
+		ModuleName, 23,
 		"invalid consensus key",
 	)
 )
