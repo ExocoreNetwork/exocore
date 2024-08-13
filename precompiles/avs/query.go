@@ -81,7 +81,7 @@ func (p Precompile) GetAVSUSDValue(
 	if err != nil {
 		return nil, err
 	}
-	return method.Outputs.Pack(amount)
+	return method.Outputs.Pack(amount.String())
 }
 
 // GetOperatorOptedUSDValue is a function to retrieve the USD share of specified operator and Avs,
@@ -106,5 +106,5 @@ func (p Precompile) GetOperatorOptedUSDValue(
 	if err != nil {
 		return nil, err
 	}
-	return method.Outputs.Pack(amount)
+	return method.Outputs.Pack(amount.ActiveUSDValue.String())
 }
