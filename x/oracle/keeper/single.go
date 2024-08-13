@@ -88,10 +88,6 @@ func recacheAggregatorContext(ctx sdk.Context, agc *aggregator.AggregatorContext
 		totalPower = new(big.Int).Add(totalPower, big.NewInt(v.Power))
 	}
 	agc.SetValidatorPowers(validatorPowers)
-	// TODO: test only
-	if k.GetLastTotalPower(ctx).BigInt().Cmp(totalPower) != 0 {
-		ctx.Logger().Error("something wrong when get validatorsPower from dogfood module")
-	}
 
 	// reset validators
 	c.AddCache(cache.ItemV(validatorPowers))
@@ -111,18 +107,21 @@ func recacheAggregatorContext(ctx sdk.Context, agc *aggregator.AggregatorContext
 		agc.SetParams(p)
 		setCommonParams(p)
 	} else {
+		prev := int64(0)
 		for ; from < to; from++ {
 			// fill params
-			prev := int64(0)
+			//			prev := int64(0)
 			for b, p = range recentParamsMap {
-				if b <= from && b > prev {
+				// find the params which is the latest one before the replayed block height since prepareRoundEndBlock will use it and it should be the latest one before current block
+				if b < from && b > prev {
 					agc.SetParams(p)
 					prev = b
 					setCommonParams(p)
+					delete(recentParamsMap, b)
 				}
 			}
 
-			agc.PrepareRoundBeginBlock(ctx, uint64(from))
+			agc.PrepareRoundEndBlock(uint64(from - 1))
 
 			if msgs := recentMsgs[from]; msgs != nil {
 				for _, msg := range msgs {
@@ -138,6 +137,17 @@ func recacheAggregatorContext(ctx sdk.Context, agc *aggregator.AggregatorContext
 			ctxReplay := ctx.WithBlockHeight(from)
 			agc.SealRound(ctxReplay, false)
 		}
+
+		for b, p = range recentParamsMap {
+			// use the latest params before the current block height
+			if b < to && b > prev {
+				agc.SetParams(p)
+				prev = b
+				setCommonParams(p)
+			}
+		}
+
+		agc.PrepareRoundEndBlock(uint64(to - 1))
 	}
 
 	var pRet cache.ItemP
@@ -166,14 +176,10 @@ func initAggregatorContext(ctx sdk.Context, agc *aggregator.AggregatorContext, k
 	}
 
 	agc.SetValidatorPowers(validatorPowers)
-	// // TODO: test only
-	// if k.GetLastTotalPower(ctx).BigInt().Cmp(totalPower) != 0 {
-	// 	ctx.Logger().Error("something wrong when get validatorsPower from dogfood module")
-	// }
 	// set validatorPower cache
 	c.AddCache(cache.ItemV(validatorPowers))
 
-	agc.PrepareRoundBeginBlock(ctx, uint64(ctx.BlockHeight()))
+	agc.PrepareRoundEndBlock(uint64(ctx.BlockHeight()) - 1)
 }
 
 func ResetAggregatorContext() {

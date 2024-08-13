@@ -238,27 +238,26 @@ func (agc *AggregatorContext) SealRound(ctx sdk.Context, force bool) (success []
 	return success, failed
 }
 
-// PrepareBeginBlock is called at BeginBlock stage, to prepare the roundInfo for the current block
-func (agc *AggregatorContext) PrepareRoundBeginBlock(ctx sdk.Context, block uint64) {
-	// block>0 means recache initialization, all roundInfo is empty
-	if block == 0 {
-		block = uint64(ctx.BlockHeight())
+// PrepareEndBlock is called at EndBlock stage, to prepare the roundInfo for the next block(of input block)
+// func (agc *AggregatorContext) PrepareRoundEndBlock(ctx sdk.Context, block uint64) {
+func (agc *AggregatorContext) PrepareRoundEndBlock(block uint64) {
+	if block < 1 {
+		return
 	}
 
 	for feederID, feeder := range agc.params.GetTokenFeeders() {
 		if feederID == 0 {
 			continue
 		}
-		if (feeder.EndBlock > 0 && feeder.EndBlock < block) || feeder.StartBaseBlock >= block {
+		if (feeder.EndBlock > 0 && feeder.EndBlock <= block) || feeder.StartBaseBlock > block {
 			// this feeder is inactive
 			continue
 		}
 
-		baseBlock := block - 1
-		delta := baseBlock - feeder.StartBaseBlock
+		delta := block - feeder.StartBaseBlock
 		left := delta % feeder.Interval
 		count := delta / feeder.Interval
-		latestBasedblock := baseBlock - left
+		latestBasedblock := block - left
 		latestNextRoundID := feeder.StartRoundID + count
 
 		feederIDUint64 := uint64(feederID)
@@ -270,9 +269,11 @@ func (agc *AggregatorContext) PrepareRoundBeginBlock(ctx sdk.Context, block uint
 			}
 			if left >= uint64(common.MaxNonce) {
 				round.status = 2
+				// TODO: nonce should be tracked in KVStore, so that it can be recovered after crash
 				delete(agc.nonceRecords, feederIDUint64)
 			} else {
 				round.status = 1
+				// TODO: nonce should be tracked in KVStore, so that it can be recovered after crash
 				if agc.nonceRecords[feederIDUint64] == nil {
 					agc.nonceRecords[feederIDUint64] = make(map[string]int)
 				}
@@ -285,14 +286,16 @@ func (agc *AggregatorContext) PrepareRoundBeginBlock(ctx sdk.Context, block uint
 				round.nextRoundID = latestNextRoundID
 				round.status = 1
 				// set nonceRecords to empty
+				// TODO: nonce should be tracked in KVStore, so that it can be recovered after crash
 				agc.nonceRecords[feederIDUint64] = make(map[string]int)
 				// drop previous worker
 				delete(agc.aggregators, feederIDUint64)
 			} else if round.status == 1 && left >= uint64(common.MaxNonce) {
+				// TODO: nonce should be tracked in KVStore, so that it can be recovered after crash
 				delete(agc.nonceRecords, feederIDUint64)
 				// this shouldn't happen, if do sealround properly before prepareRound, basically for test only
 				round.status = 2
-				// TODO: just modify the status here, since sealRound should do all the related seal actios already when parepare invoked
+				// TODO: just modify the status here, since sealRound should do all the related seal actions already when parepare invoked
 			}
 		}
 	}
