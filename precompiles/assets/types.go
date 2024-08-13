@@ -1,10 +1,11 @@
 package assets
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"math/big"
+	"regexp"
+	"strings"
 
 	"github.com/ethereum/go-ethereum/common/hexutil"
 
@@ -16,6 +17,10 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	cmn "github.com/evmos/evmos/v14/precompiles/common"
 )
+
+// oracleInfo: '[tokenName],[chainName],[tokenDecimal](,[interval],[contract](,[ChainDesc:{...}],[TokenDesc:{...}]))'
+var tokenDescMatcher = regexp.MustCompile(`TokenDesc:{(.+?)}`)
+var chainDescMatcher = regexp.MustCompile(`ChainDesc:{(.+?)}`)
 
 func (p Precompile) DepositWithdrawParamsFromInputs(ctx sdk.Context, args []interface{}) (*assetskeeper.DepositWithdrawParams, error) {
 	inputsLen := len(p.ABI.Methods[MethodDepositTo].Inputs)
@@ -111,88 +116,96 @@ func (p Precompile) ClientChainInfoFromInputs(_ sdk.Context, args []interface{})
 	return &clientChain, nil
 }
 
-func (p Precompile) TokenFromInputs(ctx sdk.Context, args []interface{}) (asset types.AssetInfo, oInfo oracletypes.OracleInfo, err error) {
+func (p Precompile) TokenFromInputs(ctx sdk.Context, args []interface{}) (types.AssetInfo, oracletypes.OracleInfo, error) {
 	inputsLen := len(p.ABI.Methods[MethodRegisterOrUpdateTokens].Inputs)
 	if len(args) != inputsLen {
-		err = fmt.Errorf(cmn.ErrInvalidNumberOfArgs, inputsLen, len(args))
-		return asset, oInfo, err
+		return types.AssetInfo{}, oracletypes.OracleInfo{}, fmt.Errorf(cmn.ErrInvalidNumberOfArgs, inputsLen, len(args))
 	}
+	asset := types.AssetInfo{}
+	oracleInfo := types.OracleInfo{}
+
 	clientChainID, ok := args[0].(uint32)
 	if !ok {
-		err = fmt.Errorf(exocmn.ErrContractInputParaOrType, 0, "uint32", args[0])
-		return asset, oInfo, err
+		return types.AssetInfo{}, oracletypes.OracleInfo{}, fmt.Errorf(exocmn.ErrContractInputParaOrType, 0, "uint32", args[0])
 	}
 	asset.LayerZeroChainID = uint64(clientChainID)
 	info, err := p.assetsKeeper.GetClientChainInfoByIndex(ctx, asset.LayerZeroChainID)
 	if err != nil {
-		return asset, oInfo, err
+		return types.AssetInfo{}, oracletypes.OracleInfo{}, err
 	}
 	clientChainAddrLength := info.AddressLength
 
 	assetAddr, ok := args[1].([]byte)
 	if !ok || assetAddr == nil {
-		err = fmt.Errorf(exocmn.ErrContractInputParaOrType, 1, "[]byte", args[1])
-		return asset, oInfo, err
+		return types.AssetInfo{}, oracletypes.OracleInfo{}, fmt.Errorf(exocmn.ErrContractInputParaOrType, 1, "[]byte", args[1])
 	}
 	if uint32(len(assetAddr)) < clientChainAddrLength {
-		err = fmt.Errorf(exocmn.ErrInvalidAddrLength, len(assetAddr), clientChainAddrLength)
-		return asset, oInfo, err
+		return types.AssetInfo{}, oracletypes.OracleInfo{}, fmt.Errorf(exocmn.ErrInvalidAddrLength, len(assetAddr), clientChainAddrLength)
 	}
 	asset.Address = hexutil.Encode(assetAddr[:clientChainAddrLength])
 
 	decimal, ok := args[2].(uint8)
 	if !ok {
-		err = fmt.Errorf(exocmn.ErrContractInputParaOrType, 2, "uint8", args[2])
-		return asset, oInfo, err
+		return types.AssetInfo{}, oracletypes.OracleInfo{}, fmt.Errorf(exocmn.ErrContractInputParaOrType, 2, "uint8", args[2])
 	}
 	asset.Decimals = uint32(decimal)
 
 	tvlLimit, ok := args[3].(*big.Int)
 	if !ok || tvlLimit == nil || !(tvlLimit.Cmp(big.NewInt(0)) == 1) {
-		err = fmt.Errorf(exocmn.ErrContractInputParaOrType, 3, "*big.Int", args[3])
-		return asset, oInfo, err
+		return types.AssetInfo{}, oracletypes.OracleInfo{}, fmt.Errorf(exocmn.ErrContractInputParaOrType, 3, "*big.Int", args[3])
 	}
 	asset.TotalSupply = sdkmath.NewIntFromBigInt(tvlLimit)
 
 	name, ok := args[4].(string)
 	if !ok {
-		err = fmt.Errorf(exocmn.ErrContractInputParaOrType, 4, "string", args[4])
-		return asset, oInfo, err
+		return types.AssetInfo{}, oracletypes.OracleInfo{}, fmt.Errorf(exocmn.ErrContractInputParaOrType, 4, "string", args[4])
 	}
 	if name == "" || len(name) > types.MaxChainTokenNameLength {
-		err = fmt.Errorf(exocmn.ErrInvalidNameLength, name, len(name), types.MaxChainTokenNameLength)
-		return asset, oInfo, err
+		return types.AssetInfo{}, oracletypes.OracleInfo{}, fmt.Errorf(exocmn.ErrInvalidNameLength, name, len(name), types.MaxChainTokenNameLength)
 	}
 	asset.Name = name
 
 	metaInfo, ok := args[5].(string)
 	if !ok {
-		err = fmt.Errorf(exocmn.ErrContractInputParaOrType, 5, "string", args[5])
-		return asset, oInfo, err
+		return types.AssetInfo{}, oracletypes.OracleInfo{}, fmt.Errorf(exocmn.ErrContractInputParaOrType, 5, "string", args[5])
 	}
 	if metaInfo == "" || len(metaInfo) > types.MaxChainTokenMetaInfoLength {
-		err = fmt.Errorf(exocmn.ErrInvalidMetaInfoLength, metaInfo, len(metaInfo), types.MaxChainTokenMetaInfoLength)
-		return asset, oInfo, err
+		return types.AssetInfo{}, oracletypes.OracleInfo{}, fmt.Errorf(exocmn.ErrInvalidMetaInfoLength, metaInfo, len(metaInfo), types.MaxChainTokenMetaInfoLength)
 	}
 	asset.MetaInfo = metaInfo
 
-	oInfoStr, ok := args[6].(string)
+	oracleInfoStr, ok := args[6].(string)
 	if !ok {
-		err = fmt.Errorf(exocmn.ErrContractInputParaOrType, 6, "string", args[6])
-		return asset, oInfo, err
+		return types.AssetInfo{}, oracletypes.OracleInfo{}, fmt.Errorf(exocmn.ErrContractInputParaOrType, 6, "string", args[6])
+	}
+	parsed := strings.Split(oracleInfoStr, ",")
+	l := len(parsed)
+	switch {
+	case l > 5:
+		joined := strings.Join(parsed[5:], "")
+		tokenDesc := tokenDescMatcher.FindStringSubmatch(joined)
+		chainDesc := chainDescMatcher.FindStringSubmatch(joined)
+		if len(tokenDesc) == 2 {
+			oracleInfo.Token.Desc = tokenDesc[1]
+		}
+		if len(chainDesc) == 2 {
+			oracleInfo.Chain.Desc = chainDesc[1]
+		}
+	case l >= 5:
+		oracleInfo.Token.Contract = parsed[4]
+		fallthrough
+	case l >= 4:
+		oracleInfo.Feeder.Interval = parsed[3]
+		fallthrough
+	case l >= 3:
+		oracleInfo.Token.Name = parsed[0]
+		oracleInfo.Chain.Name = parsed[1]
+		oracleInfo.Token.Decimal = parsed[2]
+	default:
+		return types.AssetInfo{}, oracletypes.OracleInfo{}, errors.New(exocmn.ErrInvalidOracleInfo)
 	}
 
-	if err = json.Unmarshal([]byte(oInfoStr), &oInfo); err != nil {
-		return asset, oInfo, err
-	}
-	if len(oInfo.Token.Name) == 0 ||
-		len(oInfo.Token.Chain.Name) == 0 ||
-		len(oInfo.Token.Decimal) == 0 {
-		err = errors.New(exocmn.ErrInvalidOracleInfo)
-		return asset, oInfo, err
-	}
-
-	return asset, oInfo, err
+	return asset, oracleInfo, nil
 }
 
 func (p Precompile) ClientChainIDFromInputs(_ sdk.Context, args []interface{}) (uint32, error) {

@@ -38,7 +38,7 @@ func (k Keeper) RegisterNewTokenAndSetTokenFeeder(ctx sdk.Context, oInfo *types.
 	}
 	chainID := uint64(0)
 	for id, c := range p.Chains {
-		if c.Name == oInfo.Token.Chain.Name {
+		if c.Name == oInfo.Chain.Name {
 			chainID = uint64(id)
 			break
 		}
@@ -46,8 +46,8 @@ func (k Keeper) RegisterNewTokenAndSetTokenFeeder(ctx sdk.Context, oInfo *types.
 	if chainID == 0 {
 		// add new chain
 		p.Chains = append(p.Chains, &types.Chain{
-			Name: oInfo.Token.Chain.Name,
-			Desc: oInfo.Token.Chain.Desc,
+			Name: oInfo.Chain.Name,
+			Desc: oInfo.Chain.Desc,
 		})
 		chainID = uint64(len(p.Chains) - 1)
 	}
@@ -87,21 +87,13 @@ func (k Keeper) RegisterNewTokenAndSetTokenFeeder(ctx sdk.Context, oInfo *types.
 		AssetID:         oInfo.AssetID,
 	})
 
-	startInt, err := strconv.ParseUint(oInfo.Feeder.Start, 10, 64)
-	if err != nil {
-		return err
-	}
-	if startInt == 0 {
-		startInt = uint64(ctx.BlockHeight() + startAfterBlocks)
-	}
-
 	// set a tokenFeeder for the new token
 	p.TokenFeeders = append(p.TokenFeeders, &types.TokenFeeder{
 		TokenID: uint64(len(p.Tokens) - 1),
 		// we only support rule_1 for v1
 		RuleID:         1,
 		StartRoundID:   1,
-		StartBaseBlock: startInt,
+		StartBaseBlock: uint64(ctx.BlockHeight() + startAfterBlocks),
 		Interval:       intervalInt,
 		// we don't end feeders for v1
 		EndBlock: 0,

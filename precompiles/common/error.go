@@ -16,5 +16,5 @@ const (
 
 	ErrInvalidEVMAddr = "the address is an invalid EVM address, addr:%s"
 
-	ErrInvalidOracleInfo = "oracle info is invalid, need at least three fields not empty: token.Name, token.Chain.Name, token.Decimal"
+	ErrInvalidOracleInfo = "oracle info is invalid, need at least three fields not empty: token.Name, Chain.Name, token.Decimal"
 )

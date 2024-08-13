@@ -24,8 +24,6 @@ const (
 	MethodIsRegisteredClientChain     = "isRegisteredClientChain"
 )
 
-// var oracleInfoMatcher = regexp.MustCompile(`oracle_info:{chain:(.+),\s*token:(.+),\s*decimal:(\d+)(,\s*interval:(.+))?(,\s*contract:(.+))?}`)
-
 // DepositOrWithdraw deposit and withdraw the client chain assets for the staker,
 // that will change the state in assets module.
 func (p Precompile) DepositOrWithdraw(
