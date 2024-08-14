@@ -141,7 +141,6 @@ func (s *AVSManagerPrecompileSuite) TestRegisterAVS() {
 	for _, tc := range testcases {
 		tc := tc
 		s.Run(tc.name, func() {
-
 			baseFee := s.App.FeeMarketKeeper.GetBaseFee(s.Ctx)
 
 			// malleate testcase

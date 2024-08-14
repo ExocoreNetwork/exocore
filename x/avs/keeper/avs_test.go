@@ -56,7 +56,6 @@ func (suite *AVSTestSuite) TestAVS() {
 	suite.Equal(found, true)
 	suite.Equal(epoch.CurrentEpoch, int64(2))
 	suite.CommitAfter(48*time.Hour + time.Nanosecond)
-
 }
 
 func (suite *AVSTestSuite) TestAVSInfoUpdate_Register() {
@@ -157,5 +156,4 @@ func (suite *AVSTestSuite) TestAVSInfoUpdateWithOperator_Register() {
 
 	err = suite.App.AVSManagerKeeper.OperatorOptAction(suite.Ctx, operatorParams)
 	suite.NoError(err)
-
 }

@@ -43,6 +43,7 @@ var (
 	ValidatorAccumulatedCommissionPrefix = []byte{0x00} // key for accumulated validator commission
 	ValidatorCurrentRewardsPrefix        = []byte{0x01} // key for current validator rewards
 	ValidatorOutstandingRewardsPrefix    = []byte{0x02} // key for outstanding rewards
+	StakerOutstandingRewardsPrefix       = []byte{0x03} // key for outstanding rewards of staker
 )
 
 var (
@@ -75,4 +76,9 @@ func GetValidatorCurrentRewardsKey(v sdk.ValAddress) []byte {
 // GetValidatorOutstandingRewardsKey creates the outstanding rewards key for a validator.
 func GetValidatorOutstandingRewardsKey(valAddr sdk.ValAddress) []byte {
 	return append(ValidatorOutstandingRewardsPrefix, address.MustLengthPrefix(valAddr.Bytes())...)
+}
+
+// GetStakerOutstandingRewardsKey creates the outstanding rewards key for the staker.
+func GetStakerOutstandingRewardsKey(staker string) []byte {
+	return append(StakerOutstandingRewardsPrefix, address.MustLengthPrefix([]byte(staker))...)
 }

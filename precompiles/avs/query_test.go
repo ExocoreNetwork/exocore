@@ -2,10 +2,11 @@ package avs_test
 
 import (
 	"fmt"
+	"math/big"
+
 	avsManagerPrecompile "github.com/ExocoreNetwork/exocore/precompiles/avs"
 	exocmn "github.com/ExocoreNetwork/exocore/precompiles/common"
 	"github.com/ExocoreNetwork/exocore/x/operator/types"
-	"math/big"
 
 	"github.com/ethereum/go-ethereum/core/vm"
 )
@@ -102,7 +103,6 @@ func (s *AVSManagerPrecompileSuite) TestGetOptedInOperatorAccAddrs() {
 				s.Require().NoError(err, "failed to unpack output", err)
 				s.Require().Equal(1, len(out))
 				s.Require().Equal(operatorAddress, out[0])
-
 			},
 			100000,
 			false,

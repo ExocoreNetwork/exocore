@@ -525,7 +525,7 @@ func (p Params) CheckRules(feederID uint64, prices []*PriceSource) (bool, error)
 	feeder := p.TokenFeeders[feederID]
 	rule := p.Rules[feeder.RuleID]
 	// specified sources set, v1 use this rule to set `chainlink` as official source
-	if rule.SourceIDs != nil && len(rule.SourceIDs) > 0 {
+	if len(rule.SourceIDs) > 0 {
 		if len(rule.SourceIDs) != len(prices) {
 			return false, errors.New("count prices should match rule")
 		}

@@ -67,6 +67,17 @@ message ValidatorOutstandingRewards {
   ];
 }
 
+// StakerOutstandingRewards represents outstanding (un-withdrawn) rewards
+// for a staker inexpensive to track, allows simple sanity checks.
+message StakerOutstandingRewards {
+  // rewards represents the rewards for the operator
+  repeated cosmos.base.v1beta1.DecCoin rewards = 1 [
+    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.DecCoins",
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
+}
+
 // FeePool is the global fee pool for distribution.
 // It holds decimal coins. Once whole those coins can be burned or distributed to the community pool.
 message FeePool {

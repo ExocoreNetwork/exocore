@@ -49,7 +49,7 @@ func NewKeeper(
 		panic(fmt.Sprintf("invalid authority address: %s", authority))
 	}
 
-	return Keeper{
+	k := &Keeper{
 		cdc:              cdc,
 		storeKey:         storeKey,
 		logger:           logger,
@@ -60,6 +60,8 @@ func NewKeeper(
 		feeCollectorName: feeCollectorName,
 		StakingKeeper:    stakingkeeper,
 	}
+
+	return *k
 }
 
 // GetAuthority returns the module's authority.
@@ -73,21 +75,26 @@ func (k Keeper) Logger() log.Logger {
 }
 
 // set the global fee pool distribution info
-func (k Keeper) SetFeePool(ctx sdk.Context, feePool types.FeePool) {
+func (k Keeper) SetFeePool(ctx sdk.Context, feePool *types.FeePool) {
 	store := ctx.KVStore(k.storeKey)
-	b := k.cdc.MustMarshal(&feePool)
+	b := k.cdc.MustMarshal(feePool)
 	store.Set(types.FeePoolKey, b)
 }
 
 // get the global fee pool distribution info
-func (k Keeper) GetFeePool(ctx sdk.Context) (feePool types.FeePool) {
+func (k Keeper) GetFeePool(ctx sdk.Context) (feePool *types.FeePool) {
 	store := ctx.KVStore(k.storeKey)
 	b := store.Get(types.FeePoolKey)
 	if b == nil {
-		panic("Stored fee pool should not have been nil")
+		feePool := &types.FeePool{}
+		store := ctx.KVStore(k.storeKey)
+		b := k.cdc.MustMarshal(feePool)
+		store.Set(types.FeePoolKey, b)
+		return feePool
 	}
-	k.cdc.MustUnmarshal(b, &feePool)
-	return
+	fp := &types.FeePool{}
+	k.cdc.MustUnmarshal(b, fp)
+	return fp
 }
 
 // get accumulated commission for a validator
@@ -143,4 +150,19 @@ func (k Keeper) SetValidatorOutstandingRewards(ctx sdk.Context, val sdk.ValAddre
 	store := ctx.KVStore(k.storeKey)
 	b := k.cdc.MustMarshal(&rewards)
 	store.Set(types.GetValidatorOutstandingRewardsKey(val), b)
+}
+
+// set the reward to delegator
+func (k Keeper) SetStakerRewards(ctx sdk.Context, stakerAddress string, rewards types.StakerOutstandingRewards) {
+	store := ctx.KVStore(k.storeKey)
+	b := k.cdc.MustMarshal(&rewards)
+	store.Set(types.GetStakerOutstandingRewardsKey(stakerAddress), b)
+}
+
+// get the reward of delegator
+func (k Keeper) GetStakerRewards(ctx sdk.Context, stakerAddress string) (rewards types.StakerOutstandingRewards) {
+	store := ctx.KVStore(k.storeKey)
+	bz := store.Get(types.GetStakerOutstandingRewardsKey(stakerAddress))
+	k.cdc.MustUnmarshal(bz, &rewards)
+	return
 }

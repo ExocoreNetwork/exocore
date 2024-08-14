@@ -10,6 +10,7 @@ func DefaultGenesis() *GenesisState {
 		Params: DefaultParams(),
 	}
 }
+
 func NewGenesisState(p Params) *GenesisState {
 	return &GenesisState{
 		Params: p,

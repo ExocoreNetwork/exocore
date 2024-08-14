@@ -1,8 +1,11 @@
 package keeper_test
 
 import (
-	sdkmath "cosmossdk.io/math"
 	"fmt"
+	"time"
+
+	sdkmath "cosmossdk.io/math"
+
 	utiltx "github.com/ExocoreNetwork/exocore/testutil/tx"
 	assetskeeper "github.com/ExocoreNetwork/exocore/x/assets/keeper"
 	assetstypes "github.com/ExocoreNetwork/exocore/x/assets/types"
@@ -12,7 +15,6 @@ import (
 	operatortypes "github.com/ExocoreNetwork/exocore/x/operator/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/common"
-	"time"
 )
 
 func (suite *KeeperTestSuite) TestEpochHooks() {
@@ -25,12 +27,13 @@ func (suite *KeeperTestSuite) TestEpochHooks() {
 	epsilon := time.Nanosecond // negligible amount of buffer duration
 	suite.Commit()
 	suite.CommitAfter(time.Hour*24 + epsilon - time.Minute)
-	allValidators := suite.App.StakingKeeper.GetAllExocoreValidators(suite.Ctx) //GetAllValidators(suite.Ctx)
+	allValidators := suite.App.StakingKeeper.GetAllExocoreValidators(suite.Ctx) // GetAllValidators(suite.Ctx)
 	for _, val := range allValidators {
-		currentRewards := suite.App.DistrKeeper.GetValidatorCurrentRewards(suite.Ctx, val.Address)
+		currentRewards := suite.App.DistrKeeper.GetValidatorOutstandingRewards(suite.Ctx, val.Address)
 		fmt.Print(currentRewards)
 	}
 }
+
 func (suite *KeeperTestSuite) prepare() {
 	// registration and associated checks
 	operatorAddress := sdk.AccAddress(utiltx.GenerateAddress().Bytes())
@@ -138,6 +141,7 @@ func (suite *KeeperTestSuite) prepare() {
 	suite.Assert().Equal(currentEpoch, epoch.CurrentEpoch)
 	suite.CheckValidatorFound(key, true, chainIDWithoutRevision, operatorAddress)
 }
+
 func (suite *KeeperTestSuite) CheckValidatorFound(
 	key operatortypes.WrappedConsKey, expected bool,
 	chainIDWithoutRevision string,
