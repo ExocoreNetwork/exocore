@@ -6,7 +6,7 @@ import (
 	"encoding/hex"
 	"fmt"
 
-	oracletypes "github.com/ExocoreNetwork/exocore/x/oracle/types"
+	"github.com/ExocoreNetwork/exocore/app/ante/utils"
 	"github.com/cosmos/cosmos-sdk/crypto/keys/ed25519"
 	kmultisig "github.com/cosmos/cosmos-sdk/crypto/keys/multisig"
 	"github.com/cosmos/cosmos-sdk/crypto/keys/secp256k1"
@@ -56,7 +56,7 @@ func NewSetPubKeyDecorator(ak authante.AccountKeeper) SetPubKeyDecorator {
 
 func (spkd SetPubKeyDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bool, next sdk.AnteHandler) (sdk.Context, error) {
 	// skip publickkey set for oracle create-price message
-	if isOracleCreatePriceTx(tx) {
+	if utils.IsOracleCreatePriceTx(tx) {
 		sigTx, ok := tx.(authsigning.SigVerifiableTx)
 		if !ok {
 			return ctx, sdkerrors.ErrTxDecode.Wrap("invalid transaction type, expected SigVerifiableTx")
@@ -166,7 +166,7 @@ func NewSigGasConsumeDecorator(ak authante.AccountKeeper, sigGasConsumer Signatu
 }
 
 func (sgcd SigGasConsumeDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bool, next sdk.AnteHandler) (newCtx sdk.Context, err error) {
-	if isOracleCreatePriceTx(tx) {
+	if utils.IsOracleCreatePriceTx(tx) {
 		// TODO: update gasConsume for create-price message,(actually not necessaray since this message dont actually consume no gas, to be confirmed)
 		return next(ctx, tx, simulate)
 	}
@@ -257,7 +257,7 @@ func OnlyLegacyAminoSigners(sigData signing.SignatureData) bool {
 }
 
 func (svd SigVerificationDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bool, next sdk.AnteHandler) (newCtx sdk.Context, err error) {
-	if isOracleCreatePriceTx(tx) {
+	if utils.IsOracleCreatePriceTx(tx) {
 		// TODO: verify ed25519 signature for create-price message which is signed by consensusKey
 		sigTx, ok := tx.(authsigning.SigVerifiableTx)
 		if !ok {
@@ -384,7 +384,7 @@ func NewIncrementSequenceDecorator(ak authante.AccountKeeper) IncrementSequenceD
 
 func (isd IncrementSequenceDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bool, next sdk.AnteHandler) (sdk.Context, error) {
 	// oracle create-price message don't need to update sequence
-	if isOracleCreatePriceTx(tx) {
+	if utils.IsOracleCreatePriceTx(tx) {
 		return next(ctx, tx, simulate)
 	}
 	sigTx, ok := tx.(authsigning.SigVerifiableTx)
@@ -569,16 +569,16 @@ func signatureDataToBz(data signing.SignatureData) ([][]byte, error) {
 	}
 }
 
-func isOracleCreatePriceTx(tx sdk.Tx) bool {
-	msgs := tx.GetMsgs()
-	if len(msgs) == 0 {
-		return false
-	}
-	for _, msg := range msgs {
-		if _, ok := msg.(*oracletypes.MsgCreatePrice); ok {
-			continue
-		}
-		return false
-	}
-	return true
-}
+// func isOracleCreatePriceTx(tx sdk.Tx) bool {
+// 	msgs := tx.GetMsgs()
+// 	if len(msgs) == 0 {
+// 		return false
+// 	}
+// 	for _, msg := range msgs {
+// 		if _, ok := msg.(*oracletypes.MsgCreatePrice); ok {
+// 			continue
+// 		}
+// 		return false
+// 	}
+// 	return true
+// }
