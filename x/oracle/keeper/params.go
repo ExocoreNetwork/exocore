@@ -16,7 +16,7 @@ const (
 
 func (k Keeper) GetParams(ctx sdk.Context) (params types.Params) {
 	store := ctx.KVStore(k.storeKey)
-	bz := store.Get(types.ParamsKey) // return types.NewParams()
+	bz := store.Get(types.ParamsKey)
 	if bz != nil {
 		k.cdc.MustUnmarshal(bz, &params)
 	}
@@ -55,12 +55,12 @@ func (k Keeper) RegisterNewTokenAndSetTokenFeeder(ctx sdk.Context, oInfo *types.
 	if err != nil {
 		return err
 	}
-	if decimalInt < 0 {
-		return fmt.Errorf("decimal can't be negative:%d", decimalInt)
-	}
-	intervalInt, err := strconv.ParseUint(oInfo.Feeder.Interval, 10, 64)
-	if err != nil {
-		return err
+	intervalInt := uint64(0)
+	if len(oInfo.Feeder.Interval) > 0 {
+		intervalInt, err = strconv.ParseUint(oInfo.Feeder.Interval, 10, 64)
+		if err != nil {
+			return err
+		}
 	}
 	if intervalInt == 0 {
 		intervalInt = defaultInterval

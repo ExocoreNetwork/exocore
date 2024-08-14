@@ -193,6 +193,7 @@ func (p Precompile) TokenFromInputs(ctx sdk.Context, args []interface{}) (types.
 		if len(chainDesc) == 2 {
 			oracleInfo.Chain.Desc = chainDesc[1]
 		}
+		fallthrough
 	case l >= 5:
 		oracleInfo.Token.Contract = parsed[4]
 		fallthrough
