@@ -189,14 +189,14 @@ func (suite *AVSManagerPrecompileSuite) TestAVSUSDValue() {
 			func() []interface{} {
 				setUp()
 				return []interface{}{
-					suite.avsAddr,
+					common.HexToAddress(suite.avsAddr),
 				}
 			},
 			func(bz []byte) {
-				var out string
+				var out *big.Int
 				err := s.precompile.UnpackIntoInterface(&out, avsManagerPrecompile.MethodGetAVSUSDValue, bz)
 				s.Require().NoError(err, "failed to unpack output", err)
-				s.Require().Equal(expectedUSDvalue.String(), out)
+				s.Require().Equal(expectedUSDvalue.BigInt(), out)
 
 			},
 			100000,
@@ -279,15 +279,15 @@ func (suite *AVSManagerPrecompileSuite) TestGetOperatorOptedUSDValue() {
 			func() []interface{} {
 				setUp()
 				return []interface{}{
-					suite.avsAddr,
+					common.HexToAddress(suite.avsAddr),
 					suite.operatorAddr.String(),
 				}
 			},
 			func(bz []byte) {
-				var out string
+				var out *big.Int
 				err := s.precompile.UnpackIntoInterface(&out, avsManagerPrecompile.MethodGetOperatorOptedUSDValue, bz)
 				s.Require().NoError(err, "failed to unpack output", err)
-				s.Require().Equal(expectedUSDvalue.String(), out)
+				s.Require().Equal(expectedUSDvalue.BigInt(), out)
 
 			},
 			100000,

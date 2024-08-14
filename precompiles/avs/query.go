@@ -73,15 +73,15 @@ func (p Precompile) GetAVSUSDValue(
 	if len(args) != len(p.ABI.Methods[MethodGetAVSUSDValue].Inputs) {
 		return nil, fmt.Errorf(cmn.ErrInvalidNumberOfArgs, 1, len(args))
 	}
-	addr, ok := args[0].(string)
+	addr, ok := args[0].(common.Address)
 	if !ok {
 		return nil, fmt.Errorf(exocmn.ErrContractInputParaOrType, 0, "string", addr)
 	}
-	amount, err := p.operatorKeeper.GetAVSUSDValue(ctx, addr)
+	amount, err := p.operatorKeeper.GetAVSUSDValue(ctx, addr.String())
 	if err != nil {
 		return nil, err
 	}
-	return method.Outputs.Pack(amount.String())
+	return method.Outputs.Pack(amount.BigInt())
 }
 
 // GetOperatorOptedUSDValue is a function to retrieve the USD share of specified operator and Avs,
@@ -94,7 +94,7 @@ func (p Precompile) GetOperatorOptedUSDValue(
 	if len(args) != len(p.ABI.Methods[MethodGetOperatorOptedUSDValue].Inputs) {
 		return nil, fmt.Errorf(cmn.ErrInvalidNumberOfArgs, 1, len(args))
 	}
-	avsAddr, ok := args[0].(string)
+	avsAddr, ok := args[0].(common.Address)
 	if !ok {
 		return nil, fmt.Errorf(exocmn.ErrContractInputParaOrType, 0, "string", avsAddr)
 	}
@@ -102,9 +102,9 @@ func (p Precompile) GetOperatorOptedUSDValue(
 	if !ok {
 		return nil, fmt.Errorf(exocmn.ErrContractInputParaOrType, 1, "string", operatorAddr)
 	}
-	amount, err := p.operatorKeeper.GetOperatorOptedUSDValue(ctx, avsAddr, operatorAddr)
+	amount, err := p.operatorKeeper.GetOperatorOptedUSDValue(ctx, avsAddr.String(), operatorAddr)
 	if err != nil {
 		return nil, err
 	}
-	return method.Outputs.Pack(amount.ActiveUSDValue.String())
+	return method.Outputs.Pack(amount.ActiveUSDValue.BigInt())
 }

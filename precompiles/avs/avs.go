@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"embed"
 	"fmt"
+	"math/big"
 
 	avsKeeper "github.com/ExocoreNetwork/exocore/x/avs/keeper"
 	operatorKeeper "github.com/ExocoreNetwork/exocore/x/operator/keeper"
@@ -91,28 +92,68 @@ func (p Precompile) Run(evm *vm.EVM, contract *vm.Contract, readOnly bool) (bz [
 	switch method.Name {
 	case MethodRegisterAVS:
 		bz, err = p.RegisterAVS(ctx, evm.Origin, contract, stateDB, method, args)
+		if err != nil {
+			ctx.Logger().Error("internal error when calling avs precompile", "module", "avs precompile", "method", method.Name, "err", err)
+			bz, err = method.Outputs.Pack(false)
+		}
 	case MethodDeregisterAVS:
 		bz, err = p.DeregisterAVS(ctx, evm.Origin, contract, stateDB, method, args)
+		if err != nil {
+			ctx.Logger().Error("internal error when calling avs precompile", "module", "avs precompile", "method", method.Name, "err", err)
+			bz, err = method.Outputs.Pack(false, new(big.Int))
+		}
 	case MethodUpdateAVS:
 		bz, err = p.UpdateAVS(ctx, evm.Origin, contract, stateDB, method, args)
+		if err != nil {
+			ctx.Logger().Error("internal error when calling avs precompile", "module", "avs precompile", "method", method.Name, "err", err)
+			bz, err = method.Outputs.Pack(false, new(big.Int))
+		}
 	case MethodRegisterOperatorToAVS:
 		bz, err = p.BindOperatorToAVS(ctx, evm.Origin, contract, stateDB, method, args)
+		if err != nil {
+			ctx.Logger().Error("internal error when calling avs precompile", "module", "avs precompile", "method", method.Name, "err", err)
+			bz, err = method.Outputs.Pack(false, new(big.Int))
+		}
 	case MethodDeregisterOperatorFromAVS:
 		bz, err = p.UnbindOperatorToAVS(ctx, evm.Origin, contract, stateDB, method, args)
+		if err != nil {
+			ctx.Logger().Error("internal error when calling avs precompile", "module", "avs precompile", "method", method.Name, "err", err)
+			bz, err = method.Outputs.Pack(false, new(big.Int))
+		}
 	case MethodCreateAVSTask:
 		bz, err = p.CreateAVSTask(ctx, evm.Origin, contract, stateDB, method, args)
+		if err != nil {
+			ctx.Logger().Error("internal error when calling avs precompile", "module", "avs precompile", "method", method.Name, "err", err)
+			bz, err = method.Outputs.Pack(false, new(big.Int))
+		}
 	case MethodRegisterBLSPublicKey:
 		bz, err = p.RegisterBLSPublicKey(ctx, evm.Origin, contract, stateDB, method, args)
+		if err != nil {
+			ctx.Logger().Error("internal error when calling avs precompile", "module", "avs precompile", "method", method.Name, "err", err)
+			bz, err = method.Outputs.Pack(false, new(big.Int))
+		}
 	case MethodGetOptinOperators:
 		bz, err = p.GetOptedInOperatorAccAddrs(ctx, contract, method, args)
 	case MethodSubmitProof:
 		bz, err = p.SubmitProof(ctx, evm.Origin, contract, stateDB, method, args)
+		if err != nil {
+			ctx.Logger().Error("internal error when calling avs precompile", "module", "avs precompile", "method", method.Name, "err", err)
+			bz, err = method.Outputs.Pack(false, new(big.Int))
+		}
 	case MethodGetRegisteredPubkey:
 		bz, err = p.GetRegisteredPubkey(ctx, contract, method, args)
 	case MethodGetAVSUSDValue:
 		bz, err = p.GetAVSUSDValue(ctx, contract, method, args)
+		if err != nil {
+			ctx.Logger().Error("internal error when calling avs precompile", "module", "avs precompile", "method", method.Name, "err", err)
+			bz, err = method.Outputs.Pack(false, new(big.Int))
+		}
 	case MethodGetOperatorOptedUSDValue:
 		bz, err = p.GetOperatorOptedUSDValue(ctx, contract, method, args)
+		if err != nil {
+			ctx.Logger().Error("internal error when calling avs precompile", "module", "avs precompile", "method", method.Name, "err", err)
+			bz, err = method.Outputs.Pack(false, new(big.Int))
+		}
 	}
 
 	if err != nil {

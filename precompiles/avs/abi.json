@@ -426,9 +426,9 @@
 		"name": "getAVSUSDValue",
 		"outputs": [
 			{
-				"internalType": "string",
+				"internalType": "uint256",
 				"name": "amount",
-				"type": "string"
+				"type": "uint256"
 			}
 		],
 		"stateMutability": "view",
@@ -450,9 +450,9 @@
 		"name": "getOperatorOptedUSDValue",
 		"outputs": [
 			{
-				"internalType": "string",
+				"internalType": "uint256",
 				"name": "amount",
-				"type": "string"
+				"type": "uint256"
 			}
 		],
 		"stateMutability": "view",

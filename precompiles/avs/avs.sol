@@ -146,7 +146,7 @@ interface IAVSManager {
     /// @return amount The total USD share of specified operator and Avs.
     function getAVSUSDValue(
         address avsAddr
-    ) external view returns (string calldata amount);
+    ) external view returns (uint256 amount);
 
     /// @dev getOperatorOptedUSDValue  is a function to retrieve the USD share of specified operator and Avs.
     /// @param avsAddr The address of the avs
@@ -155,7 +155,7 @@ interface IAVSManager {
     function getOperatorOptedUSDValue(
         address avsAddr,
         string memory operatorAddr
-    ) external view returns (string calldata amount);
+    ) external view returns (uint256 amount);
 
     /// @dev RegisterBLSPublicKey Emitted when `operator` registers with the public keys `pubKey`.
     /// @param operator the address of the delegator
