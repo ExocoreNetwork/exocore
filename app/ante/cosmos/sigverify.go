@@ -4,9 +4,11 @@ import (
 	"bytes"
 	"encoding/base64"
 	"encoding/hex"
+	"errors"
 	"fmt"
 
 	"github.com/ExocoreNetwork/exocore/app/ante/utils"
+	oracletypes "github.com/ExocoreNetwork/exocore/x/oracle/types"
 	"github.com/cosmos/cosmos-sdk/crypto/keys/ed25519"
 	kmultisig "github.com/cosmos/cosmos-sdk/crypto/keys/multisig"
 	"github.com/cosmos/cosmos-sdk/crypto/keys/secp256k1"
@@ -373,20 +375,31 @@ func (svd SigVerificationDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simul
 // a reliable way unless sequence numbers are managed and tracked manually by a
 // client. It is recommended to instead use multiple messages in a tx.
 type IncrementSequenceDecorator struct {
-	ak authante.AccountKeeper
+	ak           authante.AccountKeeper
+	oracleKeeper utils.OracleKeeper
 }
 
-func NewIncrementSequenceDecorator(ak authante.AccountKeeper) IncrementSequenceDecorator {
+func NewIncrementSequenceDecorator(ak authante.AccountKeeper, oracleKeeper utils.OracleKeeper) IncrementSequenceDecorator {
 	return IncrementSequenceDecorator{
-		ak: ak,
+		ak:           ak,
+		oracleKeeper: oracleKeeper,
 	}
 }
 
 func (isd IncrementSequenceDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bool, next sdk.AnteHandler) (sdk.Context, error) {
-	// oracle create-price message don't need to update sequence
+	// oracle create-price message dont need to increment sequence, check its nonce instead
 	if utils.IsOracleCreatePriceTx(tx) {
+		for _, msg := range tx.GetMsgs() {
+			msg := msg.(*oracletypes.MsgCreatePrice)
+			if accAddress, err := sdk.AccAddressFromBech32(msg.Creator); err != nil {
+				return ctx, errors.New("invalid address")
+			} else if _, err := isd.oracleKeeper.CheckAndIncreaseNonce(ctx, sdk.ConsAddress(accAddress).String(), msg.FeederID, uint32(msg.Nonce)); err != nil {
+				return ctx, err
+			}
+		}
 		return next(ctx, tx, simulate)
 	}
+
 	sigTx, ok := tx.(authsigning.SigVerifiableTx)
 	if !ok {
 		return ctx, sdkerrors.ErrTxDecode.Wrap("invalid transaction type, expected SigVerifiableTx")

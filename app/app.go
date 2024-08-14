@@ -1104,6 +1104,7 @@ func (app *ExocoreApp) setAnteHandler(txConfig client.TxConfig, maxGasWanted uin
 		FeeMarketKeeper:        app.FeeMarketKeeper,
 		EvmKeeper:              app.EvmKeeper,
 		TxFeeChecker:           ethante.NewDynamicFeeChecker(app.EvmKeeper),
+		OracleKeeper:           app.OracleKeeper,
 	}
 
 	if err := options.Validate(); err != nil {

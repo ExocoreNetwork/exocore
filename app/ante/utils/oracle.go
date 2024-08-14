@@ -5,6 +5,8 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
+const CreatePriceGas = 20000
+
 func IsOracleCreatePriceTx(tx sdk.Tx) bool {
 	msgs := tx.GetMsgs()
 	if len(msgs) == 0 {

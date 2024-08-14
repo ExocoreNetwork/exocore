@@ -35,6 +35,7 @@ type HandlerOptions struct {
 	SigGasConsumer         func(meter sdk.GasMeter, sig signing.SignatureV2, params authtypes.Params) error
 	MaxTxGasWanted         uint64
 	TxFeeChecker           anteutils.TxFeeChecker
+	OracleKeeper           anteutils.OracleKeeper
 }
 
 // Validate checks if the keepers are defined
@@ -116,7 +117,7 @@ func newCosmosAnteHandler(options HandlerOptions) sdk.AnteHandler {
 		ante.NewValidateSigCountDecorator(options.AccountKeeper),
 		cosmosante.NewSigGasConsumeDecorator(options.AccountKeeper, options.SigGasConsumer),
 		cosmosante.NewSigVerificationDecorator(options.AccountKeeper, options.SignModeHandler),
-		cosmosante.NewIncrementSequenceDecorator(options.AccountKeeper),
+		cosmosante.NewIncrementSequenceDecorator(options.AccountKeeper, options.OracleKeeper),
 		ibcante.NewRedundantRelayDecorator(options.IBCKeeper),
 		evmante.NewGasWantedDecorator(options.EvmKeeper, options.FeeMarketKeeper),
 	)

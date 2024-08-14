@@ -4,6 +4,7 @@ import (
 	"math/big"
 
 	errorsmod "cosmossdk.io/errors"
+	anteutils "github.com/ExocoreNetwork/exocore/app/ante/utils"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	errortypes "github.com/cosmos/cosmos-sdk/types/errors"
 	evmante "github.com/evmos/evmos/v14/app/ante/evm"
@@ -48,6 +49,10 @@ func (mpd MinGasPriceDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate 
 
 	feeCoins := feeTx.GetFee()
 	gas := feeTx.GetGas()
+	// limit gas for oracle create price tx
+	if anteutils.IsOracleCreatePriceTx(tx) && gas > anteutils.CreatePriceGas {
+		return ctx, errorsmod.Wrapf(errortypes.ErrInvalidGasLimit, "gas limit is too high for oracle create price tx, max gas limit is %d, got %d", anteutils.CreatePriceGas, gas)
+	}
 
 	requiredFees := make(sdk.Coins, 0)
 
