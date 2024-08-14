@@ -187,7 +187,10 @@ func (am AppModule) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.Val
 	}
 
 	// TODO: for v1 use mode==1, just check the failed feeders
-	_, failed := agc.SealRound(ctx, forceSeal)
+	_, failed, sealed := agc.SealRound(ctx, forceSeal)
+	for _, feederID := range sealed {
+		am.keeper.RemoveNonceWithFeederIDForValidators(ctx, feederID, agc.GetValidators())
+	}
 	// append new round with previous price for fail-seal token
 	for _, tokenID := range failed {
 		prevPrice, nextRoundID := am.keeper.GrowRoundID(ctx, tokenID)
@@ -217,7 +220,9 @@ func (am AppModule) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.Val
 		keeper.ResetUpdatedFeederIDs()
 	}
 
-	agc.PrepareRoundEndBlock(uint64(ctx.BlockHeight()))
-
+	newRoundFeederIDs := agc.PrepareRoundEndBlock(uint64(ctx.BlockHeight()))
+	for _, feederID := range newRoundFeederIDs {
+		am.keeper.AddZeroNonceItemWithFeederIDForValidators(ctx, feederID, agc.GetValidators())
+	}
 	return []abci.ValidatorUpdate{}
 }

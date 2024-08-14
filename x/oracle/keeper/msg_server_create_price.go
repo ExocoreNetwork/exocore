@@ -22,7 +22,8 @@ func (ms msgServer) CreatePrice(goCtx context.Context, msg *types.MsgCreatePrice
 		return nil, types.ErrPriceProposalFormatInvalid.Wrap(err.Error())
 	}
 
-	newItem, caches, err := GetAggregatorContext(ctx, ms.Keeper).NewCreatePrice(ctx, msg)
+	agc := GetAggregatorContext(ctx, ms.Keeper)
+	newItem, caches, err := agc.NewCreatePrice(ctx, msg)
 	if err != nil {
 		logger.Info("price proposal failed", "error", err, "height", ctx.BlockHeight(), "feederID", msg.FeederID)
 		return nil, err
@@ -49,6 +50,7 @@ func (ms msgServer) CreatePrice(goCtx context.Context, msg *types.MsgCreatePrice
 		} else {
 			logger.Info("final price aggregation done", "feederID", msg.FeederID, "roundID", newItem.PriceTR.RoundID, "price", newItem.PriceTR.Price)
 		}
+		ms.Keeper.RemoveNonceWithFeederIDForValidators(ctx, msg.FeederID, agc.GetValidators())
 
 		decimalStr := strconv.FormatInt(int64(newItem.PriceTR.Decimal), 10)
 		tokenIDStr := strconv.FormatUint(newItem.TokenID, 10)

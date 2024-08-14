@@ -40,10 +40,6 @@ type AggregatorContext struct {
 
 	// each roundInfo has a worker
 	aggregators map[uint64]*worker
-
-	// record nonce used
-	// feederID->{sender->nonce}
-	nonceRecords map[uint64]map[string]int
 }
 
 func (agc *AggregatorContext) Copy4CheckTx() *AggregatorContext {
@@ -128,13 +124,6 @@ func (agc *AggregatorContext) checkMsg(msg *types.MsgCreatePrice) error {
 		// feederId does not exist or not alive
 		return errors.New("context not exist or not available")
 	}
-	// check nonce
-	nonce := agc.nonceRecords[msg.FeederID][msg.Creator]
-	if nonce >= int(common.MaxNonce) || nonce+1 != int(msg.Nonce) {
-		return fmt.Errorf("nonce not match, expect %d, got %d", nonce+1, msg.Nonce)
-	}
-
-	agc.nonceRecords[msg.FeederID][msg.Creator]++
 	// senity check on basedBlock
 	if msg.BasedBlock != feederContext.basedBlock {
 		return errors.New("baseblock not match")
@@ -171,7 +160,6 @@ func (agc *AggregatorContext) FillPrice(msg *types.MsgCreatePrice) (*PriceItemKV
 		if finalPrice := feederWorker.aggregate(); finalPrice != nil {
 			agc.rounds[msg.FeederID].status = 2
 			feederWorker.seal()
-			delete(agc.nonceRecords, msg.FeederID)
 			return &PriceItemKV{agc.params.GetTokenFeeder(msg.FeederID).TokenID, types.PriceTimeRound{
 				Price:   finalPrice.String(),
 				Decimal: agc.params.GetTokenInfo(msg.FeederID).Decimal,
@@ -201,10 +189,7 @@ func (agc *AggregatorContext) NewCreatePrice(_ sdk.Context, msg *types.MsgCreate
 // including possible aggregation and state update
 // when validatorSet update, set force to true, to seal all alive round
 // returns: 1st successful sealed, need to be written to KVStore, 2nd: failed sealed tokenID, use previous price to write to KVStore
-func (agc *AggregatorContext) SealRound(ctx sdk.Context, force bool) (success []*PriceItemKV, failed []uint64) {
-	// 1. check validatorSet udpate
-	// TODO: if validatoSet has been updated in current block, just seal all active rounds and return
-	// 1. for sealed worker, the KVStore has been updated
+func (agc *AggregatorContext) SealRound(ctx sdk.Context, force bool) (success []*PriceItemKV, failed []uint64, sealed []uint64) {
 	for feederID, round := range agc.rounds {
 		if round.status == 1 {
 			feeder := agc.params.GetTokenFeeder(feederID)
@@ -221,8 +206,9 @@ func (agc *AggregatorContext) SealRound(ctx sdk.Context, force bool) (success []
 					} else {
 						round.status = 2
 					}
+					// TODO: optimize operformance
+					sealed = append(sealed, feederID)
 					delete(agc.aggregators, feederID)
-					delete(agc.nonceRecords, feederID)
 				}
 			default:
 				ctx.Logger().Info("mode other than 1 is not support now")
@@ -230,17 +216,16 @@ func (agc *AggregatorContext) SealRound(ctx sdk.Context, force bool) (success []
 		}
 		// all status: 1->2, remove its aggregator
 		if agc.aggregators[feederID] != nil && agc.aggregators[feederID].sealed {
-			// agc.aggregators[feederID] = nil
 			delete(agc.aggregators, feederID)
-			delete(agc.nonceRecords, feederID)
+			sealed = append(sealed, feederID)
 		}
 	}
-	return success, failed
+	return success, failed, sealed
 }
 
 // PrepareEndBlock is called at EndBlock stage, to prepare the roundInfo for the next block(of input block)
 // func (agc *AggregatorContext) PrepareRoundEndBlock(ctx sdk.Context, block uint64) {
-func (agc *AggregatorContext) PrepareRoundEndBlock(block uint64) {
+func (agc *AggregatorContext) PrepareRoundEndBlock(block uint64) (newRoundFeederIDs []uint64) {
 	if block < 1 {
 		return
 	}
@@ -268,14 +253,13 @@ func (agc *AggregatorContext) PrepareRoundEndBlock(block uint64) {
 				nextRoundID: latestNextRoundID,
 			}
 			if left >= uint64(common.MaxNonce) {
+				// since do sealround properly before prepareRound, this only possible happens in node restart, and nonce has been taken care of in kvStore
 				round.status = 2
-				// TODO: nonce should be tracked in KVStore, so that it can be recovered after crash
-				delete(agc.nonceRecords, feederIDUint64)
 			} else {
 				round.status = 1
-				// TODO: nonce should be tracked in KVStore, so that it can be recovered after crash
-				if agc.nonceRecords[feederIDUint64] == nil {
-					agc.nonceRecords[feederIDUint64] = make(map[string]int)
+				if left == 0 {
+					//set nonce for corresponding feederID for new roud start
+					newRoundFeederIDs = append(newRoundFeederIDs, feederIDUint64)
 				}
 			}
 			agc.rounds[feederIDUint64] = round
@@ -285,20 +269,18 @@ func (agc *AggregatorContext) PrepareRoundEndBlock(block uint64) {
 				round.basedBlock = latestBasedblock
 				round.nextRoundID = latestNextRoundID
 				round.status = 1
-				// set nonceRecords to empty
-				// TODO: nonce should be tracked in KVStore, so that it can be recovered after crash
-				agc.nonceRecords[feederIDUint64] = make(map[string]int)
+				//set nonce for corresponding feederID for new roud start
+				newRoundFeederIDs = append(newRoundFeederIDs, feederIDUint64)
 				// drop previous worker
 				delete(agc.aggregators, feederIDUint64)
 			} else if round.status == 1 && left >= uint64(common.MaxNonce) {
-				// TODO: nonce should be tracked in KVStore, so that it can be recovered after crash
-				delete(agc.nonceRecords, feederIDUint64)
 				// this shouldn't happen, if do sealround properly before prepareRound, basically for test only
 				round.status = 2
 				// TODO: just modify the status here, since sealRound should do all the related seal actions already when parepare invoked
 			}
 		}
 	}
+	return
 }
 
 // SetParams sets the params field of aggregatorContext“
@@ -320,6 +302,13 @@ func (agc *AggregatorContext) SetValidatorPowers(vp map[string]*big.Int) {
 // GetValidatorPowers returns the map of validator's power stored in aggregatorContext
 func (agc *AggregatorContext) GetValidatorPowers() (vp map[string]*big.Int) {
 	return agc.validatorsPower
+}
+
+func (agc *AggregatorContext) GetValidators() (validators []string) {
+	for k := range agc.validatorsPower {
+		validators = append(validators, k)
+	}
+	return
 }
 
 // GetTokenIDFromAssetID returns tokenID for corresponding tokenID, it returns 0 if agc.params is nil or assetID not found in agc.params
@@ -346,6 +335,5 @@ func NewAggregatorContext() *AggregatorContext {
 		totalPower:      big.NewInt(0),
 		rounds:          make(map[uint64]*roundInfo),
 		aggregators:     make(map[uint64]*worker),
-		nonceRecords:    make(map[uint64]map[string]int),
 	}
 }

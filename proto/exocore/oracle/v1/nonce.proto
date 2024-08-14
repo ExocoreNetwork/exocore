@@ -1,0 +1,18 @@
+syntax = "proto3";
+package exocore.oracle.v1;
+
+import "gogoproto/gogo.proto";
+
+option go_package = "github.com/ExocoreNetwork/exocore/x/oracle/types";
+
+// Nonce is a message that contains a nonce for a feeder
+message Nonce {
+	uint64 feeder_id = 1 [(gogoproto.customname) = "FeederID"];
+	uint32 value = 2;
+}
+
+// ValidatorNonce is a message that contains the nonces for a validator
+message ValidatorNonce {
+	string validator = 1;
+	repeated Nonce nonce_list = 2;
+}
