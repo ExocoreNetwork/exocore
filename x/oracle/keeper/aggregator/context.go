@@ -227,7 +227,7 @@ func (agc *AggregatorContext) SealRound(ctx sdk.Context, force bool) (success []
 // func (agc *AggregatorContext) PrepareRoundEndBlock(ctx sdk.Context, block uint64) {
 func (agc *AggregatorContext) PrepareRoundEndBlock(block uint64) (newRoundFeederIDs []uint64) {
 	if block < 1 {
-		return
+		return newRoundFeederIDs
 	}
 
 	for feederID, feeder := range agc.params.GetTokenFeeders() {
@@ -258,7 +258,7 @@ func (agc *AggregatorContext) PrepareRoundEndBlock(block uint64) (newRoundFeeder
 			} else {
 				round.status = 1
 				if left == 0 {
-					//set nonce for corresponding feederID for new roud start
+					// set nonce for corresponding feederID for new roud start
 					newRoundFeederIDs = append(newRoundFeederIDs, feederIDUint64)
 				}
 			}
@@ -269,7 +269,7 @@ func (agc *AggregatorContext) PrepareRoundEndBlock(block uint64) (newRoundFeeder
 				round.basedBlock = latestBasedblock
 				round.nextRoundID = latestNextRoundID
 				round.status = 1
-				//set nonce for corresponding feederID for new roud start
+				// set nonce for corresponding feederID for new roud start
 				newRoundFeederIDs = append(newRoundFeederIDs, feederIDUint64)
 				// drop previous worker
 				delete(agc.aggregators, feederIDUint64)
@@ -280,7 +280,7 @@ func (agc *AggregatorContext) PrepareRoundEndBlock(block uint64) (newRoundFeeder
 			}
 		}
 	}
-	return
+	return newRoundFeederIDs
 }
 
 // SetParams sets the params field of aggregatorContext“
