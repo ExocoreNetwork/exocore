@@ -41,9 +41,9 @@ func TestPrecompileTestSuite(t *testing.T) {
 	RunSpecs(t, "AVSManager Precompile Suite")
 }
 
-func (s *AVSManagerPrecompileSuite) SetupTest() {
-	s.DoSetupTest()
-	precompile, err := avs.NewPrecompile(s.App.AVSManagerKeeper, s.App.AuthzKeeper)
-	s.Require().NoError(err)
-	s.precompile = precompile
+func (suite *AVSManagerPrecompileSuite) SetupTest() {
+	suite.DoSetupTest()
+	precompile, err := avs.NewPrecompile(suite.App.AVSManagerKeeper, suite.App.AuthzKeeper)
+	suite.Require().NoError(err)
+	suite.precompile = precompile
 }

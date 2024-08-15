@@ -18,7 +18,6 @@ const (
 	MethodGetOperatorOptedUSDValue = "getOperatorOptedUSDValue"
 )
 
-// GetRegisteredPubkey
 func (p Precompile) GetRegisteredPubkey(
 	ctx sdk.Context,
 	_ *vm.Contract,
@@ -26,7 +25,7 @@ func (p Precompile) GetRegisteredPubkey(
 	args []interface{},
 ) ([]byte, error) {
 	if len(args) != len(p.ABI.Methods[MethodGetRegisteredPubkey].Inputs) {
-		return nil, fmt.Errorf(cmn.ErrInvalidNumberOfArgs, 1, len(args))
+		return nil, fmt.Errorf(cmn.ErrInvalidNumberOfArgs, len(p.ABI.Methods[MethodRegisterAVS].Inputs), len(args))
 	}
 	// the key is set using the operator's acc address so the same logic should apply here
 	addr, ok := args[0].(string)
@@ -40,7 +39,6 @@ func (p Precompile) GetRegisteredPubkey(
 	return method.Outputs.Pack(pubkey)
 }
 
-// GetOptedInOperatorAccAddrs
 func (p Precompile) GetOptedInOperatorAccAddrs(
 	ctx sdk.Context,
 	_ *vm.Contract,
@@ -48,7 +46,7 @@ func (p Precompile) GetOptedInOperatorAccAddrs(
 	args []interface{},
 ) ([]byte, error) {
 	if len(args) != len(p.ABI.Methods[MethodGetOptinOperators].Inputs) {
-		return nil, fmt.Errorf(cmn.ErrInvalidNumberOfArgs, 1, len(args))
+		return nil, fmt.Errorf(cmn.ErrInvalidNumberOfArgs, len(p.ABI.Methods[MethodRegisterAVS].Inputs), len(args))
 	}
 
 	addr, ok := args[0].(common.Address)
@@ -71,7 +69,7 @@ func (p Precompile) GetAVSUSDValue(
 	args []interface{},
 ) ([]byte, error) {
 	if len(args) != len(p.ABI.Methods[MethodGetAVSUSDValue].Inputs) {
-		return nil, fmt.Errorf(cmn.ErrInvalidNumberOfArgs, 1, len(args))
+		return nil, fmt.Errorf(cmn.ErrInvalidNumberOfArgs, len(p.ABI.Methods[MethodRegisterAVS].Inputs), len(args))
 	}
 	addr, ok := args[0].(common.Address)
 	if !ok {
@@ -92,7 +90,7 @@ func (p Precompile) GetOperatorOptedUSDValue(
 	args []interface{},
 ) ([]byte, error) {
 	if len(args) != len(p.ABI.Methods[MethodGetOperatorOptedUSDValue].Inputs) {
-		return nil, fmt.Errorf(cmn.ErrInvalidNumberOfArgs, 1, len(args))
+		return nil, fmt.Errorf(cmn.ErrInvalidNumberOfArgs, len(p.ABI.Methods[MethodRegisterAVS].Inputs), len(args))
 	}
 	avsAddr, ok := args[0].(common.Address)
 	if !ok {

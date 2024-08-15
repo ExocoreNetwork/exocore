@@ -26,68 +26,68 @@ type avsTestCases struct {
 
 var baseTestCases = []avsTestCases{
 	{
-		"fail - empty input args",
-		func() []interface{} {
+		name: "fail - empty input args",
+		malleate: func() []interface{} {
 			return []interface{}{}
 		},
-		func(bz []byte) {},
-		100000,
-		true,
-		"invalid number of arguments",
+		postCheck:   func(bz []byte) {},
+		gas:         100000,
+		expErr:      true,
+		errContains: "invalid number of arguments",
 	},
 	{
-		"fail - invalid  address",
-		func() []interface{} {
+		name: "fail - invalid  address",
+		malleate: func() []interface{} {
 			return []interface{}{
 				"invalid",
 			}
 		},
-		func(bz []byte) {},
-		100000,
-		true,
-		"invalid bech32 string",
+		postCheck:   func(bz []byte) {},
+		gas:         100000,
+		expErr:      true,
+		errContains: "invalid bech32 string",
 	},
 }
 
-func (s *AVSManagerPrecompileSuite) TestGetOptedInOperatorAccAddrs() {
-	method := s.precompile.Methods[avsManagerPrecompile.MethodGetOptinOperators]
-	operatorAddress, avsAddr, slashContract := "exo18cggcpvwspnd5c6ny8wrqxpffj5zmhklprtnph", s.Address, "0xDF907c29719154eb9872f021d21CAE6E5025d7aB"
+func (suite *AVSManagerPrecompileSuite) TestGetOptedInOperatorAccAddrs() {
+	method := suite.precompile.Methods[avsManagerPrecompile.MethodGetOptinOperators]
+	operatorAddress, avsAddr, slashContract := "exo18cggcpvwspnd5c6ny8wrqxpffj5zmhklprtnph", suite.Address, "0xDF907c29719154eb9872f021d21CAE6E5025d7aB"
 
 	operatorOptIn := func() {
 		optedInfo := &types.OptedInfo{
 			SlashContract: slashContract,
 			// #nosec G701
-			OptedInHeight:  uint64(s.Ctx.BlockHeight()),
+			OptedInHeight:  uint64(suite.Ctx.BlockHeight()),
 			OptedOutHeight: types.DefaultOptedOutHeight,
 		}
-		err := s.App.OperatorKeeper.SetOptedInfo(s.Ctx, operatorAddress, avsAddr.String(), optedInfo)
-		s.NoError(err)
+		err := suite.App.OperatorKeeper.SetOptedInfo(suite.Ctx, operatorAddress, avsAddr.String(), optedInfo)
+		suite.NoError(err)
 	}
 	testCases := []avsTestCases{
 		{
-			"fail - invalid avs address",
-			func() []interface{} {
+			name: "fail - invalid avs address",
+			malleate: func() []interface{} {
 				return []interface{}{
 					"invalid",
 				}
 			},
-			func(bz []byte) {},
-			100000,
-			true,
-			fmt.Sprintf(exocmn.ErrContractInputParaOrType, 0, "string", "0x0000000000000000000000000000000000000000"),
+			postCheck:   func(bz []byte) {},
+			gas:         100000,
+			expErr:      true,
+			errContains: fmt.Sprintf(exocmn.ErrContractInputParaOrType, 0, "string", "0x0000000000000000000000000000000000000000"),
 		},
 		{
 			"success - no operators",
 			func() []interface{} {
 				return []interface{}{
-					s.Address,
+					suite.Address,
 				}
 			},
 			func(bz []byte) {
 				var out []string
-				err := s.precompile.UnpackIntoInterface(&out, avsManagerPrecompile.MethodGetOptinOperators, bz)
-				s.Require().NoError(err, "failed to unpack output", err)
-				s.Require().Equal(0, len(out))
+				err := suite.precompile.UnpackIntoInterface(&out, avsManagerPrecompile.MethodGetOptinOperators, bz)
+				suite.Require().NoError(err, "failed to unpack output", err)
+				suite.Require().Equal(0, len(out))
 			},
 			100000,
 			false,
@@ -98,15 +98,15 @@ func (s *AVSManagerPrecompileSuite) TestGetOptedInOperatorAccAddrs() {
 			func() []interface{} {
 				operatorOptIn()
 				return []interface{}{
-					s.Address,
+					suite.Address,
 				}
 			},
 			func(bz []byte) {
 				var out []string
-				err := s.precompile.UnpackIntoInterface(&out, avsManagerPrecompile.MethodGetOptinOperators, bz)
-				s.Require().NoError(err, "failed to unpack output", err)
-				s.Require().Equal(1, len(out))
-				s.Require().Equal(operatorAddress, out[0])
+				err := suite.precompile.UnpackIntoInterface(&out, avsManagerPrecompile.MethodGetOptinOperators, bz)
+				suite.Require().NoError(err, "failed to unpack output", err)
+				suite.Require().Equal(1, len(out))
+				suite.Require().Equal(operatorAddress, out[0])
 
 			},
 			100000,
@@ -117,17 +117,17 @@ func (s *AVSManagerPrecompileSuite) TestGetOptedInOperatorAccAddrs() {
 	testCases = append(testCases, baseTestCases[0])
 
 	for _, tc := range testCases {
-		s.Run(tc.name, func() {
-			contract := vm.NewContract(vm.AccountRef(s.Address), s.precompile, big.NewInt(0), tc.gas)
+		suite.Run(tc.name, func() {
+			contract := vm.NewContract(vm.AccountRef(suite.Address), suite.precompile, big.NewInt(0), tc.gas)
 
-			bz, err := s.precompile.GetOptedInOperatorAccAddrs(s.Ctx, contract, &method, tc.malleate())
+			bz, err := suite.precompile.GetOptedInOperatorAccAddrs(suite.Ctx, contract, &method, tc.malleate())
 
 			if tc.expErr {
-				s.Require().Error(err)
-				s.Require().Contains(err.Error(), tc.errContains)
+				suite.Require().Error(err)
+				suite.Require().Contains(err.Error(), tc.errContains)
 			} else {
-				s.Require().NoError(err)
-				s.Require().NotEmpty(bz)
+				suite.Require().NoError(err)
+				suite.Require().NotEmpty(bz)
 				tc.postCheck(bz)
 			}
 		})
@@ -288,7 +288,6 @@ func (suite *AVSManagerPrecompileSuite) TestGetOperatorOptedUSDValue() {
 				err := s.precompile.UnpackIntoInterface(&out, avsManagerPrecompile.MethodGetOperatorOptedUSDValue, bz)
 				s.Require().NoError(err, "failed to unpack output", err)
 				s.Require().Equal(expectedUSDvalue.BigInt(), out)
-
 			},
 			100000,
 			false,

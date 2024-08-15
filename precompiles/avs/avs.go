@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"embed"
 	"fmt"
-	"math/big"
 
 	avsKeeper "github.com/ExocoreNetwork/exocore/x/avs/keeper"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
@@ -142,13 +141,13 @@ func (p Precompile) Run(evm *vm.EVM, contract *vm.Contract, readOnly bool) (bz [
 		bz, err = p.GetAVSUSDValue(ctx, contract, method, args)
 		if err != nil {
 			ctx.Logger().Error("internal error when calling avs precompile", "module", "avs precompile", "method", method.Name, "err", err)
-			bz, err = method.Outputs.Pack(false, new(big.Int))
+			bz, err = method.Outputs.Pack(false, common.Big0.Bytes())
 		}
 	case MethodGetOperatorOptedUSDValue:
 		bz, err = p.GetOperatorOptedUSDValue(ctx, contract, method, args)
 		if err != nil {
 			ctx.Logger().Error("internal error when calling avs precompile", "module", "avs precompile", "method", method.Name, "err", err)
-			bz, err = method.Outputs.Pack(false, new(big.Int))
+			bz, err = method.Outputs.Pack(false, common.Big0.Bytes())
 		}
 	}
 
