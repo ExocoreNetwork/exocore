@@ -52,6 +52,10 @@ func (k Keeper) Logger(ctx sdk.Context) log.Logger {
 	return ctx.Logger().With("module", fmt.Sprintf("x/%s", types.ModuleName))
 }
 
+// GetOperatorKeeper returns the operatorKeeper from the Keeper struct.
+func (k Keeper) GetOperatorKeeper() types.OperatorKeeper {
+	return k.operatorKeeper
+}
 func (k Keeper) AVSInfoUpdate(ctx sdk.Context, params *types.AVSRegisterOrDeregisterParams) error {
 	avsInfo, _ := k.GetAVSInfo(ctx, params.AvsAddress)
 	action := params.Action

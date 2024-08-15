@@ -2,7 +2,6 @@ package keeper
 
 import (
 	"fmt"
-
 	assetsprecompile "github.com/ExocoreNetwork/exocore/precompiles/assets"
 	avsManagerPrecompile "github.com/ExocoreNetwork/exocore/precompiles/avs"
 	blsPrecompile "github.com/ExocoreNetwork/exocore/precompiles/bls"
@@ -12,7 +11,6 @@ import (
 	stakingStateKeeper "github.com/ExocoreNetwork/exocore/x/assets/keeper"
 	avsManagerKeeper "github.com/ExocoreNetwork/exocore/x/avs/keeper"
 	delegationKeeper "github.com/ExocoreNetwork/exocore/x/delegation/keeper"
-	operatorKeeper "github.com/ExocoreNetwork/exocore/x/operator/keeper"
 	rewardKeeper "github.com/ExocoreNetwork/exocore/x/reward/keeper"
 	exoslashKeeper "github.com/ExocoreNetwork/exocore/x/slash/keeper"
 	authzkeeper "github.com/cosmos/cosmos-sdk/x/authz/keeper"
@@ -39,7 +37,6 @@ func AvailablePrecompiles(
 	slashKeeper exoslashKeeper.Keeper,
 	rewardKeeper rewardKeeper.Keeper,
 	avsManagerKeeper avsManagerKeeper.Keeper,
-	operatorKeeper operatorKeeper.Keeper,
 ) map[common.Address]vm.PrecompiledContract {
 	// Clone the mapping from the latest EVM fork.
 	precompiles := maps.Clone(vm.PrecompiledContractsBerlin)
@@ -85,7 +82,7 @@ func AvailablePrecompiles(
 	if err != nil {
 		panic(fmt.Errorf("failed to load reward precompile: %w", err))
 	}
-	avsManagerPrecompile, err := avsManagerPrecompile.NewPrecompile(avsManagerKeeper, operatorKeeper, authzKeeper)
+	avsManagerPrecompile, err := avsManagerPrecompile.NewPrecompile(avsManagerKeeper, authzKeeper)
 	if err != nil {
 		panic(fmt.Errorf("failed to load avsManager precompile: %w", err))
 	}

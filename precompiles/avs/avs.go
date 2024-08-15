@@ -7,7 +7,6 @@ import (
 	"math/big"
 
 	avsKeeper "github.com/ExocoreNetwork/exocore/x/avs/keeper"
-	operatorKeeper "github.com/ExocoreNetwork/exocore/x/operator/keeper"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	authzkeeper "github.com/cosmos/cosmos-sdk/x/authz/keeper"
 	"github.com/ethereum/go-ethereum/accounts/abi"
@@ -26,15 +25,13 @@ var f embed.FS
 // Precompile defines the precompiled contract for avs.
 type Precompile struct {
 	cmn.Precompile
-	avsKeeper      avsKeeper.Keeper
-	operatorKeeper operatorKeeper.Keeper
+	avsKeeper avsKeeper.Keeper
 }
 
 // NewPrecompile creates a new avs Precompile instance as a
 // PrecompiledContract interface.
 func NewPrecompile(
 	avsKeeper avsKeeper.Keeper,
-	operatorKeeper operatorKeeper.Keeper,
 	authzKeeper authzkeeper.Keeper,
 ) (*Precompile, error) {
 	abiBz, err := f.ReadFile("abi.json")
@@ -55,8 +52,7 @@ func NewPrecompile(
 			TransientKVGasConfig: storetypes.TransientGasConfig(),
 			ApprovalExpiration:   cmn.DefaultExpirationDuration,
 		},
-		avsKeeper:      avsKeeper,
-		operatorKeeper: operatorKeeper,
+		avsKeeper: avsKeeper,
 	}, nil
 }
 

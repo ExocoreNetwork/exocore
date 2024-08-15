@@ -77,7 +77,7 @@ func (p Precompile) GetAVSUSDValue(
 	if !ok {
 		return nil, fmt.Errorf(exocmn.ErrContractInputParaOrType, 0, "string", addr)
 	}
-	amount, err := p.operatorKeeper.GetAVSUSDValue(ctx, addr.String())
+	amount, err := p.avsKeeper.GetOperatorKeeper().GetAVSUSDValue(ctx, addr.String())
 	if err != nil {
 		return nil, err
 	}
@@ -102,7 +102,7 @@ func (p Precompile) GetOperatorOptedUSDValue(
 	if !ok {
 		return nil, fmt.Errorf(exocmn.ErrContractInputParaOrType, 1, "string", operatorAddr)
 	}
-	amount, err := p.operatorKeeper.GetOperatorOptedUSDValue(ctx, avsAddr.String(), operatorAddr)
+	amount, err := p.avsKeeper.GetOperatorKeeper().GetOperatorOptedUSDValue(ctx, avsAddr.String(), operatorAddr)
 	if err != nil {
 		return nil, err
 	}
