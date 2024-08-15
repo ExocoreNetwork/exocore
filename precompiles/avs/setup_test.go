@@ -43,7 +43,7 @@ func TestPrecompileTestSuite(t *testing.T) {
 
 func (s *AVSManagerPrecompileSuite) SetupTest() {
 	s.DoSetupTest()
-	precompile, err := avs.NewPrecompile(s.App.AVSManagerKeeper, s.App.OperatorKeeper, s.App.AuthzKeeper)
+	precompile, err := avs.NewPrecompile(s.App.AVSManagerKeeper, s.App.AuthzKeeper)
 	s.Require().NoError(err)
 	s.precompile = precompile
 }

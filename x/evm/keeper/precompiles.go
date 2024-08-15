@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"fmt"
+
 	assetsprecompile "github.com/ExocoreNetwork/exocore/precompiles/assets"
 	avsManagerPrecompile "github.com/ExocoreNetwork/exocore/precompiles/avs"
 	blsPrecompile "github.com/ExocoreNetwork/exocore/precompiles/bls"
