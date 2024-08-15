@@ -16,6 +16,11 @@ const layout = "2006-01-02 15:04:05"
 func (ms msgServer) CreatePrice(goCtx context.Context, msg *types.MsgCreatePrice) (*types.MsgCreatePriceResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
+	gasMeter := ctx.GasMeter()
+	ctx = ctx.WithGasMeter(sdk.NewInfiniteGasMeter())
+	defer func() {
+		ctx = ctx.WithGasMeter(gasMeter)
+	}()
 	logger := ms.Keeper.Logger(ctx)
 	if err := checkTimestamp(ctx, msg); err != nil {
 		logger.Info("price proposal timestamp check failed", "error", err, "height", ctx.BlockHeight())

@@ -69,7 +69,8 @@ func (dfd DeductFeeDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bo
 	)
 
 	if anteutils.IsOracleCreatePriceTx(tx) {
-		return next(ctx, tx, simulate)
+		newCtx := ctx.WithPriority(math.MaxInt64)
+		return next(newCtx, tx, simulate)
 	}
 
 	fee := feeTx.GetFee()
