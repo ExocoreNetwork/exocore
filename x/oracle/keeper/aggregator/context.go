@@ -90,12 +90,12 @@ func (agc *AggregatorContext) sanityCheck(msg *types.MsgCreatePrice) error {
 	}
 
 	// TODO: sanity check for price(no more than maxDetId count for each source, this should be take care in anteHandler)
-	if msg.Prices == nil || len(msg.Prices) == 0 {
+	if len(msg.Prices) == 0 {
 		return errors.New("msg should provide at least one price")
 	}
 
 	for _, pSource := range msg.Prices {
-		if pSource.Prices == nil || len(pSource.Prices) == 0 || len(pSource.Prices) > int(common.MaxDetID) || !agc.params.IsValidSource(pSource.SourceID) {
+		if len(pSource.Prices) == 0 || len(pSource.Prices) > int(common.MaxDetID) || !agc.params.IsValidSource(pSource.SourceID) {
 			return errors.New("source should be valid and provide at least one price")
 		}
 		// check with params is coressponding source is deteministic

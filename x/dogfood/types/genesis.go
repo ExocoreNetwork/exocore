@@ -257,7 +257,7 @@ func (gs GenesisState) Validate() error {
 	}
 
 	if gs.LastTotalPower.IsNil() {
-		return errorsmod.Wrapf(
+		return errorsmod.Wrap(
 			ErrInvalidGenesisData,
 			"nil last total power",
 		)
