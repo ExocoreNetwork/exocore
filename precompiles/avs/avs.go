@@ -141,13 +141,13 @@ func (p Precompile) Run(evm *vm.EVM, contract *vm.Contract, readOnly bool) (bz [
 		bz, err = p.GetAVSUSDValue(ctx, contract, method, args)
 		if err != nil {
 			ctx.Logger().Error("internal error when calling avs precompile", "module", "avs precompile", "method", method.Name, "err", err)
-			bz, err = method.Outputs.Pack(false, common.Big0.Bytes())
+			bz, err = method.Outputs.Pack(common.Big0)
 		}
 	case MethodGetOperatorOptedUSDValue:
 		bz, err = p.GetOperatorOptedUSDValue(ctx, contract, method, args)
 		if err != nil {
 			ctx.Logger().Error("internal error when calling avs precompile", "module", "avs precompile", "method", method.Name, "err", err)
-			bz, err = method.Outputs.Pack(false, common.Big0.Bytes())
+			bz, err = method.Outputs.Pack(common.Big0)
 		}
 	}
 
