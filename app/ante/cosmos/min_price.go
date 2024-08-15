@@ -32,6 +32,10 @@ func (mpd MinGasPriceDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate 
 		return ctx, errorsmod.Wrapf(errortypes.ErrInvalidType, "invalid transaction type %T, expected sdk.FeeTx", tx)
 	}
 
+	if anteutils.IsOracleCreatePriceTx(tx) {
+		return next(ctx, tx, simulate)
+	}
+
 	minGasPrice := mpd.feesKeeper.GetParams(ctx).MinGasPrice
 
 	// Short-circuit if min gas price is 0 or if simulating
@@ -49,10 +53,6 @@ func (mpd MinGasPriceDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate 
 
 	feeCoins := feeTx.GetFee()
 	gas := feeTx.GetGas()
-	// limit gas for oracle create price tx
-	if anteutils.IsOracleCreatePriceTx(tx) && gas > anteutils.CreatePriceGas {
-		return ctx, errorsmod.Wrapf(errortypes.ErrInvalidGasLimit, "gas limit is too high for oracle create price tx, max gas limit is %d, got %d", anteutils.CreatePriceGas, gas)
-	}
 
 	requiredFees := make(sdk.Coins, 0)
 

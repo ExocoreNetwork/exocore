@@ -169,14 +169,13 @@ func NewSigGasConsumeDecorator(ak authante.AccountKeeper, sigGasConsumer Signatu
 }
 
 func (sgcd SigGasConsumeDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bool, next sdk.AnteHandler) (newCtx sdk.Context, err error) {
-	if utils.IsOracleCreatePriceTx(tx) {
-		// TODO: update gasConsume for create-price message,(actually not necessaray since this message dont actually consume no gas, to be confirmed)
-		return next(ctx, tx, simulate)
-	}
-
 	sigTx, ok := tx.(authsigning.SigVerifiableTx)
 	if !ok {
 		return ctx, sdkerrors.ErrTxDecode.Wrap("invalid transaction type, expected SigVerifiableTx")
+	}
+
+	if utils.IsOracleCreatePriceTx(tx) {
+		return next(ctx, tx, simulate)
 	}
 
 	params := sgcd.ak.GetParams(ctx)
