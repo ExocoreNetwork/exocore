@@ -1,7 +1,6 @@
 package keeper_test
 
 import (
-	"fmt"
 	"time"
 
 	sdkmath "cosmossdk.io/math"
@@ -28,9 +27,22 @@ func (suite *KeeperTestSuite) TestEpochHooks() {
 	suite.Commit()
 	suite.CommitAfter(time.Hour*24 + epsilon - time.Minute)
 	allValidators := suite.App.StakingKeeper.GetAllExocoreValidators(suite.Ctx) // GetAllValidators(suite.Ctx)
-	for _, val := range allValidators {
-		currentRewards := suite.App.DistrKeeper.GetValidatorOutstandingRewards(suite.Ctx, val.Address)
-		fmt.Print(currentRewards)
+	for i, val := range allValidators {
+		pk, err := val.ConsPubKey()
+		if err != nil {
+			suite.Ctx.Logger().Error("Failed to deserialize public key; skipping", "error", err, "i", i)
+			continue
+		}
+		validatorDetail, found := suite.App.StakingKeeper.ValidatorByConsAddrForChainID(
+			suite.Ctx, sdk.GetConsAddress(pk), avstypes.ChainIDWithoutRevision(suite.Ctx.ChainID()),
+		)
+		if !found {
+			suite.Ctx.Logger().Error("Operator address not found; skipping", "consAddress", sdk.GetConsAddress(pk), "i", i)
+			continue
+		}
+		valBz := validatorDetail.GetOperator()
+		currentRewards := suite.App.DistrKeeper.GetValidatorOutstandingRewards(suite.Ctx, valBz)
+		suite.Require().NotNil(currentRewards)
 	}
 }
 

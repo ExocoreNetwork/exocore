@@ -29,7 +29,7 @@ func GetTxCmd() *cobra.Command {
 // CmdUpdateParams is to update Params for distribution module
 func CmdUpdateParams() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   types.ModuleName,
+		Use:   "update-params",
 		Short: "update params-update msg of the module",
 		Args:  cobra.ExactArgs(3),
 		RunE: func(cmd *cobra.Command, args []string) error {
