@@ -37,7 +37,7 @@ func CheckLogs(logArgs LogCheckArgs) error {
 			int64(float64(logArgs.Res.GasUsed)/float64(logArgs.Res.GasWanted)*100),
 		)
 	}
-
+	// nolint
 	if err := CheckVMError(logArgs.Res, logArgs.ErrContains); err != nil {
 		return err
 	}
