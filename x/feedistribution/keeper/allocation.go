@@ -3,14 +3,14 @@ package keeper
 import (
 	"cosmossdk.io/math"
 	avstypes "github.com/ExocoreNetwork/exocore/x/avs/types"
-	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
-
 	"github.com/ExocoreNetwork/exocore/x/feedistribution/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 )
 
 // Based on the epoch, AllocateTokens performs reward and fee distribution to all validators.
 func (k Keeper) AllocateTokens(ctx sdk.Context, totalPreviousPower int64) error {
+	logger := k.Logger()
 	feeCollector := k.authKeeper.GetModuleAccount(ctx, k.feeCollectorName)
 	feesCollectedInt := k.bankKeeper.GetAllBalances(ctx, feeCollector.GetAddress())
 	feesCollected := sdk.NewDecCoinsFromCoins(feesCollectedInt...)
@@ -26,7 +26,7 @@ func (k Keeper) AllocateTokens(ctx sdk.Context, totalPreviousPower int64) error 
 		k.SetFeePool(ctx, feePool)
 		return nil
 	}
-
+	logger.Info("Allocate tokens to all validators", "feesCollected amount is ", feesCollected)
 	// calculate fraction allocated to exocore validators
 	remaining := feesCollected
 	communityTax, err := k.GetCommunityTax(ctx)
@@ -60,12 +60,14 @@ func (k Keeper) AllocateTokens(ctx sdk.Context, totalPreviousPower int64) error 
 	// allocate community funding
 	feePool.CommunityPool = feePool.CommunityPool.Add(remaining...)
 	k.SetFeePool(ctx, feePool)
+
 	return nil
 }
 
 // AllocateTokensToValidator allocate tokens to a particular validator,
 // splitting according to commission.
 func (k Keeper) AllocateTokensToValidator(ctx sdk.Context, val stakingtypes.ValidatorI, tokens sdk.DecCoins, feePool *types.FeePool) {
+	logger := k.Logger()
 	rate := val.GetCommission()
 	commission := tokens.MulDec(rate)
 	shared := tokens.Sub(commission)
@@ -96,9 +98,11 @@ func (k Keeper) AllocateTokensToValidator(ctx sdk.Context, val stakingtypes.Vali
 	outstanding := k.GetValidatorOutstandingRewards(ctx, valBz)
 	outstanding.Rewards = outstanding.Rewards.Add(tokens...)
 	k.SetValidatorOutstandingRewards(ctx, valBz, outstanding)
+	logger.Info("Allocate tokens to validator successfully", "allocated amount is", outstanding.Rewards.String())
 }
 
 func (k Keeper) AllocateTokensToStakers(ctx sdk.Context, operatorAddress sdk.ValAddress, rewardToAllStakers sdk.DecCoins, feePool *types.FeePool) {
+	logger := k.Logger()
 	avsList, err := k.StakingKeeper.GetOptedInAVSForOperator(ctx, operatorAddress.String())
 	if err != nil {
 		ctx.Logger().Error("avs address lists not found; skipping")
@@ -132,10 +136,13 @@ func (k Keeper) AllocateTokensToStakers(ctx sdk.Context, operatorAddress sdk.Val
 		rewardToAllStakers = rewardToAllStakers.Sub(rewardToSingleStaker)
 	}
 	feePool.CommunityPool = feePool.CommunityPool.Add(rewardToAllStakers...)
+	logger.Info("allocate tokens to stakers successfully", "allocated amount is", rewardToAllStakers.String())
 }
 
 func (k Keeper) AllocateTokensToSingleStaker(ctx sdk.Context, stakerAddress string, reward sdk.DecCoins) {
+	logger := k.Logger()
 	currentStakerRewards := k.GetStakerRewards(ctx, stakerAddress)
 	currentStakerRewards.Rewards = currentStakerRewards.Rewards.Add(reward...)
 	k.SetStakerRewards(ctx, stakerAddress, currentStakerRewards)
+	logger.Info("allocate tokens to single staker successfully", "allocated amount is", currentStakerRewards.Rewards.String())
 }

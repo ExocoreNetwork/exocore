@@ -10,7 +10,7 @@ const (
 
 	// DefaultEpochIdentifier is the epoch identifier which is used, by default, to identify the
 	// epoch. Note that the options in the default genesis include minute, week, hour or day.
-	DefaultEpochIdentifier = epochstypes.DayEpochID
+	DefaultEpochIdentifier = epochstypes.MinuteEpochID
 )
 
 var _ paramtypes.ParamSet = (*Params)(nil)
@@ -24,7 +24,7 @@ func ParamKeyTable() paramtypes.KeyTable {
 func NewParams() Params {
 	return Params{
 		EpochIdentifier: DefaultEpochIdentifier,
-		CommunityTax:    sdk.NewDecWithPrec(0, 0),
+		CommunityTax:    sdk.NewDecWithPrec(3, 2),
 	}
 }
 
