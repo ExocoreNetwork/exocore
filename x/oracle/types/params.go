@@ -2,6 +2,7 @@ package types
 
 import (
 	"errors"
+	"strings"
 
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	"gopkg.in/yaml.v2"
@@ -277,6 +278,7 @@ func (p Params) UpdateTokens(currentHeight uint64, tokens ...*Token) (Params, er
 		update := false
 		for tokenID := 1; tokenID < len(p.Tokens); tokenID++ {
 			token := p.Tokens[tokenID]
+			token.AssetID = strings.ToLower(token.AssetID)
 			if token.ChainID == t.ChainID && token.Name == t.Name {
 				// modify existing token
 				update = true
