@@ -7,7 +7,7 @@ require (
 	cosmossdk.io/math v1.2.0
 	cosmossdk.io/simapp v0.0.0-20230608160436-666c345ad23d
 	cosmossdk.io/tools/rosetta v0.2.1
-	github.com/ExocoreNetwork/price-feeder v0.0.0-20240804171932-9ca244b6618d
+	github.com/ExocoreNetwork/price-feeder v0.1.4
 	github.com/agiledragon/gomonkey/v2 v2.11.0
 	github.com/armon/go-metrics v0.4.1
 	github.com/cometbft/cometbft v0.37.4
@@ -18,7 +18,7 @@ require (
 	github.com/cosmos/go-bip39 v1.0.0
 	github.com/cosmos/gogoproto v1.4.11
 	github.com/cosmos/ibc-go/v7 v7.4.0
-	github.com/ethereum/go-ethereum v1.13.15
+	github.com/ethereum/go-ethereum v1.13.5-0.20231027145059-2d7dba024d76
 	github.com/evmos/evmos/v14 v14.0.0-rc4
 	github.com/golang/protobuf v1.5.4
 	github.com/gorilla/mux v1.8.0
