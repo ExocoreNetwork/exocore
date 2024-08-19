@@ -419,6 +419,49 @@
 		"inputs": [
 			{
 				"internalType": "address",
+				"name": "avsAddr",
+				"type": "address"
+			}
+		],
+		"name": "getAVSUSDValue",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "amount",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "avsAddr",
+				"type": "address"
+			},
+			{
+				"internalType": "string",
+				"name": "operatorAddr",
+				"type": "string"
+			}
+		],
+		"name": "getOperatorOptedUSDValue",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "amount",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
 				"name": "avsAddress",
 				"type": "address"
 			}

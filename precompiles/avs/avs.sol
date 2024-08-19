@@ -141,6 +141,22 @@ interface IAVSManager {
     /// @param avsAddress avs address
     function getOptInOperators(address avsAddress) external returns (string[] calldata operators);
 
+    /// @dev getAVSUSDValue is a function to retrieve the USD share of specified Avs.
+    /// @param avsAddr The address of the avs
+    /// @return amount The total USD share of specified operator and Avs.
+    function getAVSUSDValue(
+        address avsAddr
+    ) external view returns (uint256 amount);
+
+    /// @dev getOperatorOptedUSDValue  is a function to retrieve the USD share of specified operator and Avs.
+    /// @param avsAddr The address of the avs
+    /// @param operatorAddr The address of the operator
+    /// @return amount The total USD share of specified operator and Avs.
+    function getOperatorOptedUSDValue(
+        address avsAddr,
+        string memory operatorAddr
+    ) external view returns (uint256 amount);
+
     /// @dev RegisterBLSPublicKey Emitted when `operator` registers with the public keys `pubKey`.
     /// @param operator the address of the delegator
     /// @param pubKey the address of the validator
