@@ -102,3 +102,18 @@ func (k Keeper) IterateTaskAVSInfo(ctx sdk.Context, fn func(index int64, taskInf
 		i++
 	}
 }
+
+// GetTaskId Increase the task ID by 1 each time.
+func (k Keeper) GetTaskId(ctx sdk.Context, taskaddr common.Address) (taskId uint64, err error) {
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefixLatestTaskNum)
+	var id uint64
+	if store.Has(taskaddr.Bytes()) {
+		bz := store.Get(taskaddr.Bytes())
+		id = sdk.BigEndianToUint64(bz)
+		id++
+	} else {
+		id = 1
+	}
+	store.Set(taskaddr.Bytes(), sdk.Uint64ToBigEndian(id))
+	return id, nil
+}

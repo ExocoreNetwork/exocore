@@ -205,7 +205,7 @@ func (k Keeper) CreateAVSTask(ctx sdk.Context, params *TaskParams) error {
 	}
 	task := &types.TaskInfo{
 		Name:                params.TaskName,
-		Data:                params.Data,
+		Hash:                params.Hash,
 		TaskContractAddress: params.TaskContractAddress,
 		TaskId:              params.TaskID,
 		TaskChallengePeriod: params.TaskChallengePeriod,

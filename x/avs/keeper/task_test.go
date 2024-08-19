@@ -10,7 +10,7 @@ func (suite *AVSTestSuite) TestTaskInfo() {
 		TaskContractAddress: common.Address(suite.AccAddress.Bytes()).String(),
 		Name:                "test-avstask-01",
 		TaskId:              "avstask01",
-		Data:                []byte("active"),
+		Hash:                []byte("active"),
 		TaskResponsePeriod:  10000,
 		TaskChallengePeriod: 5000,
 		ThresholdPercentage: 60,
@@ -36,4 +36,28 @@ func (suite *AVSTestSuite) TestOperator_pubkey() {
 	pub, err := suite.App.AVSManagerKeeper.GetOperatorPubKey(suite.Ctx, "exo1j9ly7f0jynscjgvct0enevaa659te58k3xztc8")
 	suite.NoError(err)
 	suite.Equal([]byte("pubkey"), pub.PubKey)
+}
+func (suite *AVSTestSuite) TestGetTaskId() {
+	addr := common.Address(suite.AccAddress.Bytes())
+
+	taskId, err := suite.App.AVSManagerKeeper.GetTaskId(suite.Ctx, addr)
+	suite.NoError(err)
+	suite.Equal(uint64(1), taskId)
+
+	taskId, err = suite.App.AVSManagerKeeper.GetTaskId(suite.Ctx, addr)
+	suite.NoError(err)
+	suite.Equal(uint64(2), taskId)
+	taskId, err = suite.App.AVSManagerKeeper.GetTaskId(suite.Ctx, addr)
+	suite.NoError(err)
+	suite.Equal(uint64(3), taskId)
+
+	addr = common.Address(suite.avsAddress.Bytes())
+
+	taskId, err = suite.App.AVSManagerKeeper.GetTaskId(suite.Ctx, addr)
+	suite.NoError(err)
+	suite.Equal(uint64(1), taskId)
+
+	taskId, err = suite.App.AVSManagerKeeper.GetTaskId(suite.Ctx, addr)
+	suite.NoError(err)
+	suite.Equal(uint64(2), taskId)
 }

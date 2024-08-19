@@ -45,7 +45,7 @@ type TaskParams struct {
 	TaskContractAddress string
 	TaskName            string
 	StartingEpoch       string
-	Data                []byte
+	Hash                []byte
 	TaskID              string
 	TaskResponsePeriod  uint64
 	TaskChallengePeriod uint64

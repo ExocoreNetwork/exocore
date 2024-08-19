@@ -222,7 +222,7 @@ func (p Precompile) GetTaskParamsFromInputs(_ sdk.Context, args []interface{}) (
 	if !ok {
 		return nil, fmt.Errorf(exocmn.ErrContractInputParaOrType, 1, "[]byte", data)
 	}
-	taskParams.Data = data
+	taskParams.Hash = data
 
 	taskID, ok := args[2].(string)
 	if !ok || taskID == "" {
