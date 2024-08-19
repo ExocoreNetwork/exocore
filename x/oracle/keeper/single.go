@@ -110,7 +110,6 @@ func recacheAggregatorContext(ctx sdk.Context, agc *aggregator.AggregatorContext
 		prev := int64(0)
 		for ; from < to; from++ {
 			// fill params
-			//			prev := int64(0)
 			for b, p = range recentParamsMap {
 				// find the params which is the latest one before the replayed block height since prepareRoundEndBlock will use it and it should be the latest one before current block
 				if b < from && b > prev {

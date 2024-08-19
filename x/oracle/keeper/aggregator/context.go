@@ -74,10 +74,8 @@ func (agc *AggregatorContext) Copy4CheckTx() *AggregatorContext {
 // sanity check for the msgCreatePrice
 func (agc *AggregatorContext) sanityCheck(msg *types.MsgCreatePrice) error {
 	// sanity check
-	// TODO: check nonce [1,3] in anteHandler, related to params, may not able
 	// TODO: check the msgCreatePrice's Decimal is correct with params setting
 	// TODO: check len(price.prices)>0, len(price.prices._range_eachPriceSource.Prices)>0, at least has one source, and for each source has at least one price
-	// TODO: check for each source, at most maxDetId count price (now in filter, ->anteHandler)
 
 	if accAddress, err := sdk.AccAddressFromBech32(msg.Creator); err != nil {
 		return errors.New("invalid address")
@@ -85,7 +83,6 @@ func (agc *AggregatorContext) sanityCheck(msg *types.MsgCreatePrice) error {
 		return errors.New("signer is not validator")
 	}
 
-	// TODO: sanity check for price(no more than maxDetId count for each source, this should be take care in anteHandler)
 	if len(msg.Prices) == 0 {
 		return errors.New("msg should provide at least one price")
 	}
