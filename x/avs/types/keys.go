@@ -25,6 +25,7 @@ const (
 	prefixOperatePub
 	prefixAVSAddressToChainID
 	LatestTaskNum
+	TaskResult
 )
 
 // ModuleAddress is the native module address for EVM
@@ -38,6 +39,7 @@ var (
 	// KeyPrefixAVSAddressToChainID is used to store the reverse lookup from AVS address to chainID.
 	KeyPrefixAVSAddressToChainID = []byte{prefixAVSAddressToChainID}
 	KeyPrefixLatestTaskNum       = []byte{LatestTaskNum}
+	KeyPrefixTaskResult          = []byte{TaskResult}
 )
 
 func init() {

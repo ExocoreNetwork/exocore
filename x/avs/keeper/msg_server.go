@@ -2,38 +2,39 @@ package keeper
 
 import (
 	"context"
-
 	"github.com/ExocoreNetwork/exocore/x/avs/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-var _ types.MsgServer = &Keeper{}
-
-func (k Keeper) RegisterAVS(_ context.Context, _ *types.RegisterAVSReq) (*types.RegisterAVSResponse, error) {
-	// Disable cosmos transaction temporarily
-	// c := sdk.UnwrapSDKContext(ctx)
-	// fromAddress := req.FromAddress
-	// operatorAddress := req.Info.OperatorAddress
-	// for _, opAddr := range operatorAddress {
-	// 	if fromAddress == opAddr {
-	// 		// Set purely for AVS itself information.
-	// 		if err := k.SetAVSInfo(c, req.Info); err != nil {
-	// 			return nil, err
-	// 		}
-	// 	}
-	// }
-	return nil, nil
+type MsgServerImpl struct {
+	keeper Keeper
 }
 
-func (k Keeper) DeRegisterAVS(_ context.Context, _ *types.DeRegisterAVSReq) (*types.DeRegisterAVSResponse, error) {
-	// Disable cosmos transaction temporarily
-	// c := sdk.UnwrapSDKContext(ctx)
-	// if err := k.DeleteAVSInfo(c, req.Info); err != nil {
-	// 	return nil, err
-	// }
-
-	return nil, nil
+func NewMsgServerImpl(keeper Keeper) *MsgServerImpl {
+	return &MsgServerImpl{keeper: keeper}
 }
 
-func (k Keeper) RegisterAVSTask(_ context.Context, _ *types.RegisterAVSTaskReq) (*types.RegisterAVSTaskResponse, error) {
-	return nil, nil
+var _ types.MsgServer = &MsgServerImpl{}
+
+func (m MsgServerImpl) SubmitTaskResult(goCtx context.Context, req *types.SubmitTaskResultReq) (*types.SubmitTaskResultResponse, error) {
+	ctx := sdk.UnwrapSDKContext(goCtx)
+	if err := m.keeper.SetTaskResultInfo(ctx, req.FromAddress, req.Info); err != nil {
+		return nil, err
+	}
+	return &types.SubmitTaskResultResponse{}, nil
+}
+
+func (m MsgServerImpl) RegisterAVS(ctx context.Context, req *types.RegisterAVSReq) (*types.RegisterAVSResponse, error) {
+	// TODO implement me
+	panic("implement me")
+}
+
+func (m MsgServerImpl) DeRegisterAVS(ctx context.Context, req *types.DeRegisterAVSReq) (*types.DeRegisterAVSResponse, error) {
+	// TODO implement me
+	panic("implement me")
+}
+
+func (m MsgServerImpl) RegisterAVSTask(ctx context.Context, req *types.RegisterAVSTaskReq) (*types.RegisterAVSTaskResponse, error) {
+	// TODO implement me
+	panic("implement me")
 }

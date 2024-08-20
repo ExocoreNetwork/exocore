@@ -166,6 +166,41 @@ message DeRegisterAVSResponse {
   AVSInfo info = 2;
 }
 
+// TaskResultInfo is the operator sign task info result.
+message TaskResultInfo {
+  // operator_address operator address
+  string operator_address = 1;
+  // task_response_hash is the task_response msg hash.
+  string task_response_hash = 2;
+  // task_response is the task response data.
+  bytes task_response = 3;
+  // bls_signature is the operator meta info.
+  bytes bls_signature = 4;
+  // task_contract_address is contract address of task
+  string task_contract_address = 5;
+  // task_id is the  task id
+  uint64 task_id = 6;
+  // stage this field is used to solve the problem of task results being copied by other operators.
+  // It is a two-stage submission with two values, 1 and 2
+  string stage = 7;
+
+}
+
+// SubmitTaskResultReq is the request to submit task results.
+message SubmitTaskResultReq {
+  option (cosmos.msg.v1.signer) = "FromAddress";
+  option (amino.name) = "cosmos-sdk/OperatorInfo";
+  option (gogoproto.equal) = false;
+  option (gogoproto.goproto_getters) = false;
+
+  // from_address is the address of the operator (sdk.AccAddress).
+  string from_address = 1
+  [(cosmos_proto.scalar) = "cosmos.AddressString"];
+  // info is the operator info.
+  TaskResultInfo info = 2;
+}
+// SubmitTaskResultResponse is the response to submit task results.
+message SubmitTaskResultResponse {}
 // Msg defines the AVS related Msg service.
 service Msg {
   option (cosmos.msg.v1.service) = true;
@@ -180,5 +215,9 @@ service Msg {
   // RegisterAVSTask registers a new task.
   rpc RegisterAVSTask(RegisterAVSTaskReq) returns (RegisterAVSTaskResponse) {
     option (google.api.http).post = "/exocore/avs/v1/tx/RegisterAVSTask";
+  };
+  // SubmitTaskResult operator submit task results .
+  rpc SubmitTaskResult (SubmitTaskResultReq) returns (SubmitTaskResultResponse) {
+    option (google.api.http).post = "/exocore/avs/v1/tx/SubmitTaskResult";
   };
 }

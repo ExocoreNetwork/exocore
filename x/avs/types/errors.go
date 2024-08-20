@@ -45,7 +45,7 @@ var (
 	)
 	ErrNotNull = errorsmod.Register(
 		ModuleName, 11,
-		"Error: this chainID shouldn't be null",
+		"Error: param shouldn't be null",
 	)
 
 	ErrInvalidAddr = errorsmod.Register(
@@ -55,5 +55,40 @@ var (
 	ErrAlreadyExists = errorsmod.Register(
 		ModuleName, 13,
 		"The task already exists",
+	)
+	ErrTaskIsNotExists = errorsmod.Register(
+		ModuleName, 14,
+		"The task is not exists",
+	)
+	ErrHashValue = errorsmod.Register(
+		ModuleName, 15,
+		"The task response hash is not equal",
+	)
+
+	ErrPubKeyIsNotExists = errorsmod.Register(
+		ModuleName, 16,
+		"The pubKey is not exists",
+	)
+	ErrSigVerifyError = errorsmod.Register(
+		ModuleName, 17,
+		"Signature verification error",
+	)
+
+	ErrParamError = errorsmod.Register(
+		ModuleName, 18,
+		"The parameter must be 1 or 2",
+	)
+
+	ErrParamNotEmptyError = errorsmod.Register(
+		ModuleName, 19,
+		"in the first stage the parameter must be empty",
+	)
+	ErrSubmitTooLateError = errorsmod.Register(
+		ModuleName, 20,
+		" responded result too late",
+	)
+	ErrResAlreadyExists = errorsmod.Register(
+		ModuleName, 21,
+		"The submit result already exists",
 	)
 )
