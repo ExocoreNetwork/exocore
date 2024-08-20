@@ -206,11 +206,11 @@ func (p Precompile) GetAVSParamsFromUpdateInputs(_ sdk.Context, args []interface
 	return avsParams, nil
 }
 
-func (p Precompile) GetTaskParamsFromInputs(_ sdk.Context, args []interface{}) (*avskeep.TaskParams, error) {
+func (p Precompile) GetTaskParamsFromInputs(_ sdk.Context, args []interface{}) (*avskeep.TaskInfoParams, error) {
 	if len(args) != len(p.ABI.Methods[MethodCreateAVSTask].Inputs) {
 		return nil, fmt.Errorf(cmn.ErrInvalidNumberOfArgs, 3, len(args))
 	}
-	taskParams := &avskeep.TaskParams{}
+	taskParams := &avskeep.TaskInfoParams{}
 
 	name, ok := args[0].(string)
 	if !ok || name == "" {

@@ -186,7 +186,7 @@ func (k Keeper) AVSInfoUpdate(ctx sdk.Context, params *types.AVSRegisterOrDeregi
 	}
 }
 
-func (k Keeper) CreateAVSTask(ctx sdk.Context, params *TaskParams) error {
+func (k Keeper) CreateAVSTask(ctx sdk.Context, params *TaskInfoParams) error {
 	avsInfo := k.GetAVSInfoByTaskAddress(ctx, params.TaskContractAddress)
 	if avsInfo.AvsAddress == "" {
 		return errorsmod.Wrap(types.ErrUnregisterNonExistent, fmt.Sprintf("the taskaddr is :%s", params.TaskContractAddress))

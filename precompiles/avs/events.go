@@ -15,7 +15,7 @@ const (
 )
 
 // EmitCreateAVSTaskEvent creates a new event emitted on a EmitCreateAVSTaskEvent transaction.
-func (p Precompile) EmitCreateAVSTaskEvent(ctx sdk.Context, stateDB vm.StateDB, task *avskeep.TaskParams) error {
+func (p Precompile) EmitCreateAVSTaskEvent(ctx sdk.Context, stateDB vm.StateDB, task *avskeep.TaskInfoParams) error {
 	// Prepare the event topics
 	event := p.ABI.Events[EventTypeRegisterAVSTask]
 

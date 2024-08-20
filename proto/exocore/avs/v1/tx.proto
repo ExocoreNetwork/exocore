@@ -95,6 +95,28 @@ message TaskInfo {
   // Effective current epoch, accounting for current_epoch + 1
   // and current_epoch is the integer identifier of the epoch module
   uint64 starting_epoch = 9;
+
+  // operator_address operator address
+  string operator_address = 10;
+  // task_response_hash is the task_response msg hash.
+  string task_response_hash = 11;
+  // task_response is the task response data.
+  bytes task_response = 12;
+  // bls_signature is the operator bls sig info.
+  bytes bls_signature = 13;
+  // stage this field is used to solve the problem of task results being copied by other operators.
+  // It is a two-stage submission with two values, 1 and 2
+  string stage = 14;
+  // actual_threshold is the Actual threshold
+  uint64 actual_threshold = 15;
+  // opt_in_count when creating a task, the actual opt-in operator counts at this moment
+  uint64 opt_in_count = 16;
+  // signed_count is Actual number of signatures already signed
+  uint64 signed_count = 17;
+  // no_signed_count is the final number of unsigned operators
+  uint64 no_signed_count = 18;
+  // err_signed_count is the number of operators with final incorrect signatures
+  uint64 err_signed_count = 19;
 }
 
 // BlsPubKeyInfo is the task info.
@@ -174,7 +196,7 @@ message TaskResultInfo {
   string task_response_hash = 2;
   // task_response is the task response data.
   bytes task_response = 3;
-  // bls_signature is the operator meta info.
+  // bls_signature is the operator bls sig info.
   bytes bls_signature = 4;
   // task_contract_address is contract address of task
   string task_contract_address = 5;
@@ -183,7 +205,16 @@ message TaskResultInfo {
   // stage this field is used to solve the problem of task results being copied by other operators.
   // It is a two-stage submission with two values, 1 and 2
   string stage = 7;
-
+  // actual_threshold is the Actual threshold
+  uint64 actual_threshold = 8;
+  // opt_in_count when creating a task, the actual opt-in operator counts at this moment
+  uint64 opt_in_count = 9;
+  // signed_count is Actual number of signatures already signed
+  uint64 signed_count = 10;
+  // no_signed_count is the final number of unsigned operators
+  uint64 no_signed_count = 11;
+  // err_signed_count is the number of operators with final incorrect signatures
+  uint64 err_signed_count = 12;
 }
 
 // SubmitTaskResultReq is the request to submit task results.

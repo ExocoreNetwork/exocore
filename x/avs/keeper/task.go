@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	"bytes"
 	errorsmod "cosmossdk.io/errors"
 	"encoding/hex"
 	"fmt"
@@ -173,17 +174,17 @@ func (k *Keeper) SetTaskResultInfo(
 		return errorsmod.Wrap(types.ErrEpochNotFound, fmt.Sprintf("epoch info not found %s",
 			avsInfo.EpochIdentifier))
 	}
-	if k.IsExistTaskResultInfo(ctx, info.OperatorAddress, info.TaskContractAddress, info.TaskId) {
-		return errorsmod.Wrap(
-			types.ErrResAlreadyExists,
-			fmt.Sprintf("SetTaskResultInfo: task result is already exists, "+
-				"OperatorAddress: %s (TaskContractAddress: %s),(Task ID: %d)",
-				info.OperatorAddress, info.TaskContractAddress, info.TaskId),
-		)
-	}
 
 	switch info.Stage {
 	case types.TwoPhaseCommit_One:
+		if k.IsExistTaskResultInfo(ctx, info.OperatorAddress, info.TaskContractAddress, info.TaskId) {
+			return errorsmod.Wrap(
+				types.ErrResAlreadyExists,
+				fmt.Sprintf("SetTaskResultInfo: task result is already exists, "+
+					"OperatorAddress: %s (TaskContractAddress: %s),(Task ID: %d)",
+					info.OperatorAddress, info.TaskContractAddress, info.TaskId),
+			)
+		}
 		if info.TaskResponseHash != "" || info.TaskResponse != nil {
 			return errorsmod.Wrap(
 				types.ErrParamNotEmptyError,
@@ -213,6 +214,19 @@ func (k *Keeper) SetTaskResultInfo(
 					info.TaskResponseHash, info.TaskResponse),
 			)
 		}
+		// check parameters
+		res, err := k.GetTaskResultInfo(ctx, info.OperatorAddress, info.TaskContractAddress, info.TaskId)
+		if err != nil || res.OperatorAddress != info.OperatorAddress ||
+			res.TaskContractAddress != info.TaskContractAddress ||
+			res.TaskId != info.TaskId || !bytes.Equal(res.BlsSignature, info.BlsSignature) {
+			return errorsmod.Wrap(
+				types.ErrInconsistentParams,
+				fmt.Sprintf("SetTaskResultInfo: invalid param OperatorAddress: %s ,(TaskContractAddress: %s)"+
+					",(TaskId: %d),(BlsSignature: %s)",
+					info.OperatorAddress, info.TaskContractAddress, info.TaskId, info.BlsSignature),
+			)
+		}
+
 		if epoch.CurrentEpoch <= int64(task.StartingEpoch)+int64(task.TaskResponsePeriod) ||
 			epoch.CurrentEpoch >= int64(task.StartingEpoch)+int64(task.TaskResponsePeriod)+int64(task.TaskStatisticalPeriod) {
 			return errorsmod.Wrap(
@@ -261,4 +275,22 @@ func (k *Keeper) IsExistTaskResultInfo(ctx sdk.Context, OperatorAddress, taskCon
 		strconv.FormatUint(taskID, 10))
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefixTaskResult)
 	return store.Has(infoKey)
+}
+
+func (k *Keeper) GetTaskResultInfo(ctx sdk.Context, OperatorAddress, taskContractAddress string, taskID uint64) (info *types.TaskResultInfo, err error) {
+	if !common.IsHexAddress(taskContractAddress) {
+		return nil, types.ErrInvalidAddr
+	}
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefixTaskResult)
+	infoKey := assetstype.GetJoinedStoreKey(OperatorAddress, taskContractAddress,
+		strconv.FormatUint(taskID, 10))
+	value := store.Get(infoKey)
+	if value == nil {
+		return nil, errorsmod.Wrap(types.ErrNoKeyInTheStore,
+			fmt.Sprintf("GetTaskResultInfo: key is %s", infoKey))
+	}
+
+	ret := types.TaskResultInfo{}
+	k.cdc.MustUnmarshal(value, &ret)
+	return &ret, nil
 }

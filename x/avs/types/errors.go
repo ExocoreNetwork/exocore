@@ -91,4 +91,8 @@ var (
 		ModuleName, 21,
 		"The submit result already exists",
 	)
+	ErrInconsistentParams = errorsmod.Register(
+		ModuleName, 22,
+		"Inconsistent parameters",
+	)
 )
