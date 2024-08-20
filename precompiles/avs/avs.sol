@@ -88,18 +88,18 @@ interface IAVSManager {
 
     /// @dev CreateTask , avs owner create a new task
     /// @param name The name of the task.
-    /// @param data The data supplied by the contract, usually ABI-encoded.
-    /// @param taskId The task ID of the task.
+    /// @param hash The data supplied by the contract, usually ABI-encoded.
     /// @param taskResponsePeriod The deadline for task response.
     /// @param taskChallengePeriod The challenge period for the task.
     /// @param thresholdPercentage The signature threshold percentage.
+    /// @param taskStatisticalPeriod The statistical period for the task.
     function createTask(
         string memory name,
-        bytes calldata data,
-        string memory taskId,
+        bytes calldata hash,
         uint64 taskResponsePeriod,
         uint64 taskChallengePeriod,
-        uint64 thresholdPercentage
+        uint64 thresholdPercentage,
+        uint64 taskStatisticalPeriod
     ) external returns (bool success);
 
     /// @dev SubmitProof ,After processing the task contract, aggregate the signature and submit the processed proof
@@ -259,18 +259,21 @@ interface IAVSManager {
     /// @param taskContractAddress The contract address of AVSTask.
     /// @param taskId The task ID of the task.
     /// @param name The name of the task.
-    /// @param data The data supplied by the contract, usually ABI-encoded.
+    /// @param hash The data supplied by the contract, usually ABI-encoded.
     /// @param taskResponsePeriod The deadline for task response.
     /// @param taskChallengePeriod The challenge period for the task.
     /// @param thresholdPercentage The signature threshold percentage.
+    /// @param taskStatisticalPeriod The statistical period for the task.
+
     event CreateTask(
         string indexed taskContractAddress,
         string indexed taskId,
         string name,
-        bytes data,
+        bytes hash,
         uint64 taskResponsePeriod,
         uint64 taskChallengePeriod,
-        uint64 thresholdPercentage
+        uint64 thresholdPercentage,
+        uint64 taskStatisticalPeriod
     );
     /// @dev SubmitProof Emitted when task contract submit proof.
     /// @param taskContractAddress The contract address of AVSTask.

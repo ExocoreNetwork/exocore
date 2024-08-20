@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"fmt"
+	"strconv"
 
 	assetstype "github.com/ExocoreNetwork/exocore/x/assets/types"
 	"github.com/ethereum/go-ethereum/common"
@@ -18,7 +19,7 @@ func (k Keeper) SetTaskInfo(ctx sdk.Context, task *types.TaskInfo) (err error) {
 		return types.ErrInvalidAddr
 	}
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefixAVSTaskInfo)
-	infoKey := assetstype.GetJoinedStoreKey(task.TaskContractAddress, task.TaskId)
+	infoKey := assetstype.GetJoinedStoreKey(task.TaskContractAddress, strconv.FormatUint(task.TaskId, 10))
 	bz := k.cdc.MustMarshal(task)
 	store.Set(infoKey, bz)
 	return nil
@@ -104,7 +105,7 @@ func (k Keeper) IterateTaskAVSInfo(ctx sdk.Context, fn func(index int64, taskInf
 }
 
 // GetTaskId Increase the task ID by 1 each time.
-func (k Keeper) GetTaskId(ctx sdk.Context, taskaddr common.Address) (taskId uint64, err error) {
+func (k Keeper) GetTaskId(ctx sdk.Context, taskaddr common.Address) uint64 {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefixLatestTaskNum)
 	var id uint64
 	if store.Has(taskaddr.Bytes()) {
@@ -115,5 +116,5 @@ func (k Keeper) GetTaskId(ctx sdk.Context, taskaddr common.Address) (taskId uint
 		id = 1
 	}
 	store.Set(taskaddr.Bytes(), sdk.Uint64ToBigEndian(id))
-	return id, nil
+	return id
 }

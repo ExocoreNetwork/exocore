@@ -3,6 +3,7 @@ package keeper
 import (
 	"fmt"
 	"slices"
+	"strconv"
 
 	"github.com/ethereum/go-ethereum/common"
 
@@ -200,18 +201,20 @@ func (k Keeper) CreateAVSTask(ctx sdk.Context, params *TaskParams) error {
 		return errorsmod.Wrap(types.ErrEpochNotFound, fmt.Sprintf("epoch info not found %s", avsInfo.EpochIdentifier))
 	}
 
-	if k.IsExistTask(ctx, params.TaskID, params.TaskContractAddress) {
-		return errorsmod.Wrap(types.ErrAlreadyExists, fmt.Sprintf("the task is :%s", params.TaskID))
+	if k.IsExistTask(ctx, strconv.FormatUint(params.TaskID, 10), params.TaskContractAddress) {
+		return errorsmod.Wrap(types.ErrAlreadyExists, fmt.Sprintf("the task is :%s", strconv.FormatUint(params.TaskID, 10)))
 	}
+
 	task := &types.TaskInfo{
-		Name:                params.TaskName,
-		Hash:                params.Hash,
-		TaskContractAddress: params.TaskContractAddress,
-		TaskId:              params.TaskID,
-		TaskChallengePeriod: params.TaskChallengePeriod,
-		ThresholdPercentage: params.ThresholdPercentage,
-		TaskResponsePeriod:  params.TaskResponsePeriod,
-		StartingEpoch:       uint64(epoch.CurrentEpoch + 1),
+		Name:                  params.TaskName,
+		Hash:                  params.Hash,
+		TaskContractAddress:   params.TaskContractAddress,
+		TaskId:                params.TaskID,
+		TaskChallengePeriod:   params.TaskChallengePeriod,
+		ThresholdPercentage:   params.ThresholdPercentage,
+		TaskResponsePeriod:    params.TaskResponsePeriod,
+		TaskStatisticalPeriod: params.TaskStatisticalPeriod,
+		StartingEpoch:         uint64(epoch.CurrentEpoch + 1),
 	}
 	return k.SetTaskInfo(ctx, task)
 }

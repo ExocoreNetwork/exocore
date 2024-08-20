@@ -218,35 +218,34 @@ func (p Precompile) GetTaskParamsFromInputs(_ sdk.Context, args []interface{}) (
 	}
 	taskParams.TaskName = name
 
-	data, ok := args[1].([]byte)
+	hash, ok := args[1].([]byte)
 	if !ok {
-		return nil, fmt.Errorf(exocmn.ErrContractInputParaOrType, 1, "[]byte", data)
+		return nil, fmt.Errorf(exocmn.ErrContractInputParaOrType, 1, "[]byte", hash)
 	}
-	taskParams.Hash = data
-
-	taskID, ok := args[2].(string)
-	if !ok || taskID == "" {
-		return nil, fmt.Errorf(exocmn.ErrContractInputParaOrType, 2, "string", taskID)
-	}
-	taskParams.TaskID = taskID
+	taskParams.Hash = hash
 
 	taskResponsePeriod, ok := args[3].(uint64)
 	if !ok {
-		return nil, fmt.Errorf(exocmn.ErrContractInputParaOrType, 3, "uint64", taskResponsePeriod)
+		return nil, fmt.Errorf(exocmn.ErrContractInputParaOrType, 2, "uint64", taskResponsePeriod)
 	}
 	taskParams.TaskResponsePeriod = taskResponsePeriod
 
 	taskChallengePeriod, ok := args[4].(uint64)
 	if !ok {
-		return nil, fmt.Errorf(exocmn.ErrContractInputParaOrType, 4, "uint64", taskChallengePeriod)
+		return nil, fmt.Errorf(exocmn.ErrContractInputParaOrType, 3, "uint64", taskChallengePeriod)
 	}
 	taskParams.TaskChallengePeriod = taskChallengePeriod
 
 	thresholdPercentage, ok := args[5].(uint64)
 	if !ok {
-		return nil, fmt.Errorf(exocmn.ErrContractInputParaOrType, 5, "uint64", thresholdPercentage)
+		return nil, fmt.Errorf(exocmn.ErrContractInputParaOrType, 4, "uint64", thresholdPercentage)
 	}
 	taskParams.ThresholdPercentage = thresholdPercentage
 
+	taskStatisticalPeriod, ok := args[5].(uint64)
+	if !ok {
+		return nil, fmt.Errorf(exocmn.ErrContractInputParaOrType, 5, "uint64", taskStatisticalPeriod)
+	}
+	taskParams.TaskStatisticalPeriod = taskStatisticalPeriod
 	return taskParams, nil
 }

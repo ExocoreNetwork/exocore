@@ -83,7 +83,7 @@ message TaskInfo {
   // data which is supplied by the contract, usually ABI-encoded
   bytes hash = 3;
   // task_id of task
-  string task_id = 4;
+  uint64 task_id = 4;
   // Deadline for task response
   uint64 task_response_period = 5;
   // Statistical period: threshold calculation, signature verification, nosig quantity statistics, operator submits messages corresponding to signatures

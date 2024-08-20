@@ -42,15 +42,16 @@ type OperatorOptParams struct {
 }
 
 type TaskParams struct {
-	TaskContractAddress string
-	TaskName            string
-	StartingEpoch       string
-	Hash                []byte
-	TaskID              string
-	TaskResponsePeriod  uint64
-	TaskChallengePeriod uint64
-	ThresholdPercentage uint64
-	CallerAddress       string
+	TaskContractAddress   string
+	TaskName              string
+	StartingEpoch         string
+	Hash                  []byte
+	TaskID                uint64
+	TaskResponsePeriod    uint64
+	TaskChallengePeriod   uint64
+	ThresholdPercentage   uint64
+	TaskStatisticalPeriod uint64
+	CallerAddress         string
 }
 type BlsParams struct {
 	Operator                      string

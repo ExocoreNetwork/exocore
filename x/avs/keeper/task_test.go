@@ -9,7 +9,7 @@ func (suite *AVSTestSuite) TestTaskInfo() {
 	info := &types.TaskInfo{
 		TaskContractAddress: common.Address(suite.AccAddress.Bytes()).String(),
 		Name:                "test-avstask-01",
-		TaskId:              "avstask01",
+		TaskId:              3,
 		Hash:                []byte("active"),
 		TaskResponsePeriod:  10000,
 		TaskChallengePeriod: 5000,
@@ -40,24 +40,19 @@ func (suite *AVSTestSuite) TestOperator_pubkey() {
 func (suite *AVSTestSuite) TestGetTaskId() {
 	addr := common.Address(suite.AccAddress.Bytes())
 
-	taskId, err := suite.App.AVSManagerKeeper.GetTaskId(suite.Ctx, addr)
-	suite.NoError(err)
+	taskId := suite.App.AVSManagerKeeper.GetTaskId(suite.Ctx, addr)
 	suite.Equal(uint64(1), taskId)
 
-	taskId, err = suite.App.AVSManagerKeeper.GetTaskId(suite.Ctx, addr)
-	suite.NoError(err)
+	taskId = suite.App.AVSManagerKeeper.GetTaskId(suite.Ctx, addr)
 	suite.Equal(uint64(2), taskId)
-	taskId, err = suite.App.AVSManagerKeeper.GetTaskId(suite.Ctx, addr)
-	suite.NoError(err)
+	taskId = suite.App.AVSManagerKeeper.GetTaskId(suite.Ctx, addr)
 	suite.Equal(uint64(3), taskId)
 
 	addr = common.Address(suite.avsAddress.Bytes())
 
-	taskId, err = suite.App.AVSManagerKeeper.GetTaskId(suite.Ctx, addr)
-	suite.NoError(err)
+	taskId = suite.App.AVSManagerKeeper.GetTaskId(suite.Ctx, addr)
 	suite.Equal(uint64(1), taskId)
 
-	taskId, err = suite.App.AVSManagerKeeper.GetTaskId(suite.Ctx, addr)
-	suite.NoError(err)
+	taskId = suite.App.AVSManagerKeeper.GetTaskId(suite.Ctx, addr)
 	suite.Equal(uint64(2), taskId)
 }

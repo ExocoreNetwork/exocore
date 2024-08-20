@@ -90,13 +90,13 @@ func (k *Keeper) GetAVSInfoByTaskAddress(ctx sdk.Context, taskAddr string) types
 	return avs
 }
 
-// GetTaskChallengeEpochEndAVSs returns the task list where the current block marks the end of their challenge period.
-func (k *Keeper) GetTaskChallengeEpochEndAVSs(ctx sdk.Context, epochIdentifier string, epochNumber int64) []types.TaskInfo {
+// GetTaskStatisticalEpochEndAVSs returns the task list where the current block marks the end of their statistical period.
+func (k *Keeper) GetTaskStatisticalEpochEndAVSs(ctx sdk.Context, epochIdentifier string, epochNumber int64) []types.TaskInfo {
 	var taskList []types.TaskInfo
 	k.IterateTaskAVSInfo(ctx, func(_ int64, taskInfo types.TaskInfo) (stop bool) {
 		avsInfo := k.GetAVSInfoByTaskAddress(ctx, taskInfo.TaskContractAddress)
-		// Determine if the challenge period has passed, the range of the challenge period is the num marked (StartingEpoch) add TaskChallengePeriod
-		if epochIdentifier == avsInfo.EpochIdentifier && epochNumber > int64(taskInfo.TaskChallengePeriod)+int64(taskInfo.StartingEpoch) {
+		// Determine if the statistical period has passed, the range of the statistical period is the num marked (StartingEpoch) add TaskStatisticalPeriod
+		if epochIdentifier == avsInfo.EpochIdentifier && epochNumber == int64(taskInfo.StartingEpoch)+int64(taskInfo.TaskResponsePeriod)+int64(taskInfo.TaskStatisticalPeriod) {
 			taskList = append(taskList, taskInfo)
 		}
 		return false

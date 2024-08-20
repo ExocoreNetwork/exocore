@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	"fmt"
 	epochstypes "github.com/ExocoreNetwork/exocore/x/epochs/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -22,12 +23,22 @@ func (k *Keeper) EpochsHooks() EpochsHooksWrapper {
 
 // AfterEpochEnd is called after an epoch ends. It is called during the BeginBlock function.
 func (wrapper EpochsHooksWrapper) AfterEpochEnd(
-	_ sdk.Context, _ string, _ int64,
+	ctx sdk.Context, epochIdentifier string, epochNumber int64,
 ) {
-	// get all the avs address bypass the epoch end
-	// _ = wrapper.keeper.GetEpochEndAVSs(ctx, epochIdentifier, epochNumber)
-
-	// _ = wrapper.keeper.GetTaskChallengeEpochEndAVSs(ctx, epochIdentifier, epochNumber)
+	// get all the task info bypass the epoch end
+	// threshold calculation, signature verification, nosig quantity statistics
+	// todo: need to consider the calling order
+	taskList := wrapper.keeper.GetTaskStatisticalEpochEndAVSs(ctx, epochIdentifier, epochNumber)
+	for _, task := range taskList {
+		fmt.Print(task)
+		// task address should be hex
+		//err := wrapper.keeper.UpdateVotingPower(ctx, task)
+		//if err != nil {
+		//	ctx.Logger().Error("Failed to update voting power", "task", task, "error", err)
+		//	// Handle the error gracefully, continue to the next AVS
+		//	continue
+		//}
+	}
 }
 
 // BeforeEpochStart is called before an epoch starts.
