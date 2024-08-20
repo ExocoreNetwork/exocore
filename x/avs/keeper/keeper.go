@@ -204,7 +204,10 @@ func (k Keeper) CreateAVSTask(ctx sdk.Context, params *TaskInfoParams) error {
 	if k.IsExistTask(ctx, strconv.FormatUint(params.TaskID, 10), params.TaskContractAddress) {
 		return errorsmod.Wrap(types.ErrAlreadyExists, fmt.Sprintf("the task is :%s", strconv.FormatUint(params.TaskID, 10)))
 	}
-
+	operatorList, err := k.GetOptInOperators(ctx, avsInfo.AvsAddress)
+	if err != nil {
+		return err
+	}
 	task := &types.TaskInfo{
 		Name:                  params.TaskName,
 		Hash:                  params.Hash,
@@ -215,6 +218,8 @@ func (k Keeper) CreateAVSTask(ctx sdk.Context, params *TaskInfoParams) error {
 		TaskResponsePeriod:    params.TaskResponsePeriod,
 		TaskStatisticalPeriod: params.TaskStatisticalPeriod,
 		StartingEpoch:         uint64(epoch.CurrentEpoch + 1),
+		ActualThreshold:       0,
+		OptInOperators:        operatorList,
 	}
 	return k.SetTaskInfo(ctx, task)
 }

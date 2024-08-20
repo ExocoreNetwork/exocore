@@ -1,7 +1,11 @@
 package keeper
 
 import (
-	"fmt"
+	"strconv"
+
+	sdkmath "cosmossdk.io/math"
+	assetstype "github.com/ExocoreNetwork/exocore/x/assets/types"
+	"github.com/ExocoreNetwork/exocore/x/avs/types"
 	epochstypes "github.com/ExocoreNetwork/exocore/x/epochs/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -28,16 +32,78 @@ func (wrapper EpochsHooksWrapper) AfterEpochEnd(
 	// get all the task info bypass the epoch end
 	// threshold calculation, signature verification, nosig quantity statistics
 	// todo: need to consider the calling order
-	taskList := wrapper.keeper.GetTaskStatisticalEpochEndAVSs(ctx, epochIdentifier, epochNumber)
-	for _, task := range taskList {
-		fmt.Print(task)
-		// task address should be hex
-		//err := wrapper.keeper.UpdateVotingPower(ctx, task)
-		//if err != nil {
-		//	ctx.Logger().Error("Failed to update voting power", "task", task, "error", err)
-		//	// Handle the error gracefully, continue to the next AVS
-		//	continue
-		//}
+	taskResList := wrapper.keeper.GetTaskStatisticalEpochEndAVSs(ctx, epochIdentifier, epochNumber)
+
+	taskResMap := make(map[string][]types.TaskResultInfo)
+
+	for _, res := range taskResList {
+		var resList []types.TaskResultInfo
+		infoKey := string(assetstype.GetJoinedStoreKey(res.TaskContractAddress, strconv.FormatUint(res.TaskId, 10)))
+		for key, value := range taskResMap {
+			if infoKey == key {
+				_ = append(value, res)
+			} else {
+				taskResMap[infoKey] = append(resList, res)
+			}
+		}
+	}
+	for _, value := range taskResMap {
+		var signedOperatorList []string
+		var taskID uint64
+		var taskAddr string
+		var avsAddr string
+		var totalPower sdkmath.LegacyDec
+		for _, res := range value {
+			// Find signed operators
+			if res.BlsSignature != nil {
+				signedOperatorList = append(signedOperatorList, res.OperatorAddress)
+				if avsAddr == "" {
+					avsInfo := wrapper.keeper.GetAVSInfoByTaskAddress(ctx, res.TaskContractAddress)
+					avsAddr = avsInfo.AvsAddress
+				}
+				if taskID == 0 {
+					taskID = res.TaskId
+				}
+				if taskAddr == "" {
+					taskAddr = res.TaskContractAddress
+				}
+				usd, err := wrapper.keeper.operatorKeeper.GetOperatorOptedUSDValue(ctx, avsAddr, res.OperatorAddress)
+				if err != nil {
+					ctx.Logger().Error("Failed to update task result statistics", "task result", taskAddr, "error", err)
+					// Handle the error gracefully, continue to the next
+					continue
+				}
+				totalPower = totalPower.Add(usd.ActiveUSDValue)
+			}
+		}
+		taskInfo, err := wrapper.keeper.GetTaskInfo(ctx, strconv.FormatUint(taskID, 10), taskAddr)
+		if err != nil {
+			ctx.Logger().Error("Failed to update task result statistics", "task result", taskAddr, "error", err)
+			// Handle the error gracefully, continue to the next
+			continue
+		}
+		diff := Difference(taskInfo.OptInOperators, signedOperatorList)
+		taskInfo.SignedOperators = signedOperatorList
+		taskInfo.NoSignedOperators = diff
+
+		// Calculate actual threshold
+
+		actualThreshold, err := wrapper.keeper.CalculateActualThreshold(ctx, totalPower, avsAddr)
+		if err != nil {
+			ctx.Logger().Error("Failed to update task result statistics", "task result", taskAddr, "error", err)
+			// Handle the error gracefully, continue to the next
+			continue
+		}
+
+		taskInfo.ActualThreshold = actualThreshold.BigInt().Uint64()
+
+		// Update the taskInfo in the state
+		err = wrapper.keeper.SetTaskInfo(ctx, taskInfo)
+		if err != nil {
+			ctx.Logger().Error("Failed to update task result statistics", "task result", taskAddr, "error", err)
+			// Handle the error gracefully, continue to the next
+			continue
+		}
 	}
 }
 

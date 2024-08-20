@@ -2,15 +2,17 @@ package keeper
 
 import (
 	"bytes"
-	errorsmod "cosmossdk.io/errors"
 	"encoding/hex"
 	"fmt"
+	"strconv"
+
+	errorsmod "cosmossdk.io/errors"
+
 	assetstype "github.com/ExocoreNetwork/exocore/x/assets/types"
 	delegationtypes "github.com/ExocoreNetwork/exocore/x/delegation/types"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/prysmaticlabs/prysm/v4/crypto/bls/blst"
 	"golang.org/x/crypto/sha3"
-	"strconv"
 
 	"github.com/ExocoreNetwork/exocore/x/avs/types"
 	"github.com/cosmos/cosmos-sdk/store/prefix"
@@ -110,8 +112,8 @@ func (k Keeper) IterateTaskAVSInfo(ctx sdk.Context, fn func(index int64, taskInf
 	}
 }
 
-// GetTaskId Increase the task ID by 1 each time.
-func (k Keeper) GetTaskId(ctx sdk.Context, taskaddr common.Address) uint64 {
+// GetTaskID Increase the task ID by 1 each time.
+func (k Keeper) GetTaskID(ctx sdk.Context, taskaddr common.Address) uint64 {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefixLatestTaskNum)
 	var id uint64
 	if store.Has(taskaddr.Bytes()) {
@@ -129,7 +131,6 @@ func (k Keeper) GetTaskId(ctx sdk.Context, taskaddr common.Address) uint64 {
 func (k *Keeper) SetTaskResultInfo(
 	ctx sdk.Context, addr string, info *types.TaskResultInfo,
 ) (err error) {
-
 	// the operator's `addr` must match the from address.
 	if addr != info.OperatorAddress {
 		return errorsmod.Wrap(
@@ -176,7 +177,7 @@ func (k *Keeper) SetTaskResultInfo(
 	}
 
 	switch info.Stage {
-	case types.TwoPhaseCommit_One:
+	case types.TwoPhaseCommitOne:
 		if k.IsExistTaskResultInfo(ctx, info.OperatorAddress, info.TaskContractAddress, info.TaskId) {
 			return errorsmod.Wrap(
 				types.ErrResAlreadyExists,
@@ -205,7 +206,7 @@ func (k *Keeper) SetTaskResultInfo(
 		store.Set(infoKey, bz)
 		return nil
 
-	case types.TwoPhaseCommit_Two:
+	case types.TwoPhaseCommitTwo:
 		// check task response
 		if info.TaskResponseHash == "" || info.TaskResponse == nil {
 			return errorsmod.Wrap(
@@ -249,7 +250,6 @@ func (k *Keeper) SetTaskResultInfo(
 		// check bls sig
 		flag, err := blst.VerifySignature(info.BlsSignature, taskResponseDigest, pubKey)
 		if !flag || err != nil {
-
 			return errorsmod.Wrap(
 				types.ErrSigVerifyError,
 				fmt.Sprintf("SetTaskResultInfo: invalid task address: %s (Task ID: %d)", info.TaskContractAddress, info.TaskId),
@@ -268,21 +268,21 @@ func (k *Keeper) SetTaskResultInfo(
 			fmt.Sprintf("SetTaskResultInfo: invalid param value:%s", info.Stage),
 		)
 	}
-
 }
-func (k *Keeper) IsExistTaskResultInfo(ctx sdk.Context, OperatorAddress, taskContractAddress string, taskID uint64) bool {
-	infoKey := assetstype.GetJoinedStoreKey(OperatorAddress, taskContractAddress,
+
+func (k *Keeper) IsExistTaskResultInfo(ctx sdk.Context, operatorAddress, taskContractAddress string, taskID uint64) bool {
+	infoKey := assetstype.GetJoinedStoreKey(operatorAddress, taskContractAddress,
 		strconv.FormatUint(taskID, 10))
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefixTaskResult)
 	return store.Has(infoKey)
 }
 
-func (k *Keeper) GetTaskResultInfo(ctx sdk.Context, OperatorAddress, taskContractAddress string, taskID uint64) (info *types.TaskResultInfo, err error) {
+func (k *Keeper) GetTaskResultInfo(ctx sdk.Context, operatorAddress, taskContractAddress string, taskID uint64) (info *types.TaskResultInfo, err error) {
 	if !common.IsHexAddress(taskContractAddress) {
 		return nil, types.ErrInvalidAddr
 	}
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefixTaskResult)
-	infoKey := assetstype.GetJoinedStoreKey(OperatorAddress, taskContractAddress,
+	infoKey := assetstype.GetJoinedStoreKey(operatorAddress, taskContractAddress,
 		strconv.FormatUint(taskID, 10))
 	value := store.Get(infoKey)
 	if value == nil {
@@ -293,4 +293,26 @@ func (k *Keeper) GetTaskResultInfo(ctx sdk.Context, OperatorAddress, taskContrac
 	ret := types.TaskResultInfo{}
 	k.cdc.MustUnmarshal(value, &ret)
 	return &ret, nil
+}
+
+// IterateResultInfo iterate through task result info
+func (k Keeper) IterateResultInfo(ctx sdk.Context, fn func(index int64, info types.TaskResultInfo) (stop bool)) {
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefixTaskResult)
+
+	iterator := sdk.KVStorePrefixIterator(store, nil)
+	defer iterator.Close()
+
+	i := int64(0)
+
+	for ; iterator.Valid(); iterator.Next() {
+		task := types.TaskResultInfo{}
+		k.cdc.MustUnmarshal(iterator.Value(), &task)
+
+		stop := fn(i, task)
+
+		if stop {
+			break
+		}
+		i++
+	}
 }

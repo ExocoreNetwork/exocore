@@ -2,6 +2,8 @@ package keeper_test
 
 import (
 	"fmt"
+	"github.com/ExocoreNetwork/exocore/x/avs/keeper"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
@@ -39,4 +41,23 @@ func TestReceiptMarshalBinary(t *testing.T) {
 	}
 	b, _ := args.Unpack(packed)
 	fmt.Println("unpacked", b)
+}
+
+func Test_difference(t *testing.T) {
+	arr1 := []string{"apple", "banana", "cherry"}
+	arr2 := []string{"apple", "cherry", "date"}
+
+	diff := keeper.Difference(arr1, arr2)
+	fmt.Println("Differences:", diff)
+	num1 := sdk.MustNewDecFromStr("1.3")
+	num2 := sdk.MustNewDecFromStr("12.3")
+
+	// Perform division
+	result := num1.Quo(num2)
+
+	// Convert result to percentage
+	percentage := result.Mul(sdk.NewDec(100))
+
+	// Print the result
+	fmt.Print(percentage)
 }

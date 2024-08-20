@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"context"
+
 	"github.com/ExocoreNetwork/exocore/x/avs/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -24,17 +25,17 @@ func (m MsgServerImpl) SubmitTaskResult(goCtx context.Context, req *types.Submit
 	return &types.SubmitTaskResultResponse{}, nil
 }
 
-func (m MsgServerImpl) RegisterAVS(ctx context.Context, req *types.RegisterAVSReq) (*types.RegisterAVSResponse, error) {
+func (m MsgServerImpl) RegisterAVS(_ context.Context, _ *types.RegisterAVSReq) (*types.RegisterAVSResponse, error) {
 	// TODO implement me
 	panic("implement me")
 }
 
-func (m MsgServerImpl) DeRegisterAVS(ctx context.Context, req *types.DeRegisterAVSReq) (*types.DeRegisterAVSResponse, error) {
+func (m MsgServerImpl) DeRegisterAVS(_ context.Context, _ *types.DeRegisterAVSReq) (*types.DeRegisterAVSResponse, error) {
 	// TODO implement me
 	panic("implement me")
 }
 
-func (m MsgServerImpl) RegisterAVSTask(ctx context.Context, req *types.RegisterAVSTaskReq) (*types.RegisterAVSTaskResponse, error) {
+func (m MsgServerImpl) RegisterAVSTask(_ context.Context, _ *types.RegisterAVSTaskReq) (*types.RegisterAVSTaskResponse, error) {
 	// TODO implement me
 	panic("implement me")
 }

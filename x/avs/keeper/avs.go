@@ -3,6 +3,7 @@ package keeper
 import (
 	"fmt"
 	"math/big"
+	"strconv"
 
 	errorsmod "cosmossdk.io/errors"
 	sdkmath "cosmossdk.io/math"
@@ -91,17 +92,22 @@ func (k *Keeper) GetAVSInfoByTaskAddress(ctx sdk.Context, taskAddr string) types
 }
 
 // GetTaskStatisticalEpochEndAVSs returns the task list where the current block marks the end of their statistical period.
-func (k *Keeper) GetTaskStatisticalEpochEndAVSs(ctx sdk.Context, epochIdentifier string, epochNumber int64) []types.TaskInfo {
-	var taskList []types.TaskInfo
-	k.IterateTaskAVSInfo(ctx, func(_ int64, taskInfo types.TaskInfo) (stop bool) {
-		avsInfo := k.GetAVSInfoByTaskAddress(ctx, taskInfo.TaskContractAddress)
+func (k *Keeper) GetTaskStatisticalEpochEndAVSs(ctx sdk.Context, epochIdentifier string, epochNumber int64) []types.TaskResultInfo {
+	var taskResList []types.TaskResultInfo
+	k.IterateResultInfo(ctx, func(_ int64, info types.TaskResultInfo) (stop bool) {
+		avsInfo := k.GetAVSInfoByTaskAddress(ctx, info.TaskContractAddress)
+		taskInfo, err := k.GetTaskInfo(ctx, strconv.FormatUint(info.TaskId, 10), info.TaskContractAddress)
+		if err != nil {
+			return false
+		}
 		// Determine if the statistical period has passed, the range of the statistical period is the num marked (StartingEpoch) add TaskStatisticalPeriod
-		if epochIdentifier == avsInfo.EpochIdentifier && epochNumber == int64(taskInfo.StartingEpoch)+int64(taskInfo.TaskResponsePeriod)+int64(taskInfo.TaskStatisticalPeriod) {
-			taskList = append(taskList, taskInfo)
+		if epochIdentifier == avsInfo.EpochIdentifier && epochNumber ==
+			int64(taskInfo.StartingEpoch)+int64(taskInfo.TaskResponsePeriod)+int64(taskInfo.TaskStatisticalPeriod) {
+			taskResList = append(taskResList, info)
 		}
 		return false
 	})
-	return taskList
+	return taskResList
 }
 
 // RegisterAVSWithChainID registers an AVS by its chainID.

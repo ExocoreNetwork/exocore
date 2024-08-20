@@ -40,19 +40,19 @@ func (suite *AVSTestSuite) TestOperator_pubkey() {
 func (suite *AVSTestSuite) TestGetTaskId() {
 	addr := common.Address(suite.AccAddress.Bytes())
 
-	taskId := suite.App.AVSManagerKeeper.GetTaskId(suite.Ctx, addr)
+	taskId := suite.App.AVSManagerKeeper.GetTaskID(suite.Ctx, addr)
 	suite.Equal(uint64(1), taskId)
 
-	taskId = suite.App.AVSManagerKeeper.GetTaskId(suite.Ctx, addr)
+	taskId = suite.App.AVSManagerKeeper.GetTaskID(suite.Ctx, addr)
 	suite.Equal(uint64(2), taskId)
-	taskId = suite.App.AVSManagerKeeper.GetTaskId(suite.Ctx, addr)
+	taskId = suite.App.AVSManagerKeeper.GetTaskID(suite.Ctx, addr)
 	suite.Equal(uint64(3), taskId)
 
 	addr = common.Address(suite.avsAddress.Bytes())
 
-	taskId = suite.App.AVSManagerKeeper.GetTaskId(suite.Ctx, addr)
+	taskId = suite.App.AVSManagerKeeper.GetTaskID(suite.Ctx, addr)
 	suite.Equal(uint64(1), taskId)
 
-	taskId = suite.App.AVSManagerKeeper.GetTaskId(suite.Ctx, addr)
+	taskId = suite.App.AVSManagerKeeper.GetTaskID(suite.Ctx, addr)
 	suite.Equal(uint64(2), taskId)
 }
