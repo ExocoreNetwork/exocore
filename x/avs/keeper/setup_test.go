@@ -2,6 +2,7 @@ package keeper_test
 
 import (
 	sdkmath "cosmossdk.io/math"
+	blscommon "github.com/prysmaticlabs/prysm/v4/crypto/bls/common"
 	"testing"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -36,6 +37,9 @@ type AVSTestSuite struct {
 	queryClientEvm evm.QueryClient
 	consAddress    sdk.ConsAddress
 	avsAddress     common.Address
+	taskAddress    common.Address
+	taskId         uint64
+	blsKey         blscommon.SecretKey
 }
 
 var s *AVSTestSuite
@@ -52,4 +56,6 @@ func TestKeeperTestSuite(t *testing.T) {
 func (suite *AVSTestSuite) SetupTest() {
 	suite.DoSetupTest()
 	suite.avsAddress = utiltx.GenerateAddress()
+	suite.taskAddress = utiltx.GenerateAddress()
+
 }

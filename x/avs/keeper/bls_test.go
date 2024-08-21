@@ -26,9 +26,9 @@ func (suite *AVSTestSuite) TestOperator_pubkey() {
 	suite.NoError(err)
 	suite.Equal(publicKey.Marshal(), pub.PubKey)
 
-	taskres := types.TaskResponse{TaskId: 1, NumberSum: big.NewInt(100)}
+	taskRes := types.TaskResponse{TaskId: 1, NumberSum: big.NewInt(100)}
 
-	msg, _ := types.GetTaskResponseDigest(taskres)
+	msg, _ := types.GetTaskResponseDigest(taskRes)
 	msgBytes := msg[:]
 	sig := privateKey.Sign(msgBytes)
 

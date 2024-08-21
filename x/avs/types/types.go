@@ -2,7 +2,6 @@ package types
 
 import (
 	"encoding/json"
-	"golang.org/x/crypto/sha3"
 	"math/big"
 	"strings"
 
@@ -120,10 +119,6 @@ func GetTaskResponseDigest(h TaskResponse) ([32]byte, error) {
 	if err != nil {
 		return [32]byte{}, err
 	}
-	var taskResponseDigest [32]byte
-	hasher := sha3.NewLegacyKeccak256()
-	hasher.Write(jsonData)
-	copy(taskResponseDigest[:], hasher.Sum(nil)[:32])
-
+	taskResponseDigest := crypto.Keccak256Hash(jsonData)
 	return taskResponseDigest, nil
 }

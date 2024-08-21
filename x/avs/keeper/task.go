@@ -4,19 +4,18 @@ import (
 	"bytes"
 	"encoding/hex"
 	"fmt"
+	"github.com/ethereum/go-ethereum/crypto"
 	"strconv"
 
 	errorsmod "cosmossdk.io/errors"
 
 	assetstype "github.com/ExocoreNetwork/exocore/x/assets/types"
-	delegationtypes "github.com/ExocoreNetwork/exocore/x/delegation/types"
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/prysmaticlabs/prysm/v4/crypto/bls/blst"
-	"golang.org/x/crypto/sha3"
-
 	"github.com/ExocoreNetwork/exocore/x/avs/types"
+	delegationtypes "github.com/ExocoreNetwork/exocore/x/delegation/types"
 	"github.com/cosmos/cosmos-sdk/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/prysmaticlabs/prysm/v4/crypto/bls/blst"
 )
 
 func (k Keeper) SetTaskInfo(ctx sdk.Context, task *types.TaskInfo) (err error) {
@@ -237,10 +236,7 @@ func (k *Keeper) SetTaskResultInfo(
 		}
 
 		// check hash
-		var taskResponseDigest [32]byte
-		hasher := sha3.NewLegacyKeccak256()
-		hasher.Write(info.TaskResponse)
-		copy(taskResponseDigest[:], hasher.Sum(nil)[:32])
+		taskResponseDigest := crypto.Keccak256Hash(info.TaskResponse)
 		if hex.EncodeToString(taskResponseDigest[:]) != info.TaskResponseHash {
 			return errorsmod.Wrap(
 				types.ErrHashValue,

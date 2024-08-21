@@ -3,6 +3,7 @@ package keeper_test
 import (
 	types "github.com/ExocoreNetwork/exocore/x/avs/types"
 	"github.com/ethereum/go-ethereum/common"
+	"strconv"
 )
 
 func (suite *AVSTestSuite) TestTaskInfo() {
@@ -18,7 +19,7 @@ func (suite *AVSTestSuite) TestTaskInfo() {
 	err := suite.App.AVSManagerKeeper.SetTaskInfo(suite.Ctx, info)
 	suite.NoError(err)
 
-	getTaskInfo, err := suite.App.AVSManagerKeeper.GetTaskInfo(suite.Ctx, "avstask01", common.Address(suite.AccAddress.Bytes()).String())
+	getTaskInfo, err := suite.App.AVSManagerKeeper.GetTaskInfo(suite.Ctx, strconv.Itoa(3), common.Address(suite.AccAddress.Bytes()).String())
 	suite.NoError(err)
 	suite.Equal(*info, *getTaskInfo)
 }

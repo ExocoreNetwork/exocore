@@ -12,6 +12,10 @@ import (
 	operatorTypes "github.com/ExocoreNetwork/exocore/x/operator/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/prysmaticlabs/prysm/v4/crypto/bls/blst"
+	"math/big"
+	"strconv"
 	"time"
 )
 
@@ -72,18 +76,71 @@ func (suite *AVSTestSuite) prepareDelegation(isDelegation bool, assetAddr common
 }
 func (suite *AVSTestSuite) prepareAvs(assetIDs []string) {
 	err := suite.App.AVSManagerKeeper.AVSInfoUpdate(suite.Ctx, &avstypes.AVSRegisterOrDeregisterParams{
-		Action:          avskeeper.RegisterAction,
-		EpochIdentifier: epochstypes.HourEpochID,
-		AvsAddress:      suite.avsAddr,
-		AssetID:         assetIDs,
+		AvsName:             "avs01",
+		Action:              avskeeper.RegisterAction,
+		EpochIdentifier:     epochstypes.HourEpochID,
+		AvsAddress:          suite.avsAddr,
+		AssetID:             assetIDs,
+		TaskAddr:            suite.taskAddress.String(),
+		SlashContractAddr:   "",
+		RewardContractAddr:  "",
+		MinSelfDelegation:   3,
+		AvsOwnerAddress:     nil,
+		UnbondingPeriod:     7,
+		MinOptInOperators:   3,
+		MinStakeAmount:      2,
+		MinTotalStakeAmount: 2,
+		AvsSlash:            2,
+		AvsReward:           3,
 	})
+
 	suite.NoError(err)
 }
 func (suite *AVSTestSuite) prepareOptIn() {
 	err := suite.App.OperatorKeeper.OptIn(suite.Ctx, suite.operatorAddr, suite.avsAddr)
 	suite.NoError(err)
+	suite.CommitAfter(time.Hour*1 + time.Nanosecond)
+	suite.CommitAfter(time.Hour*1 + time.Nanosecond)
+	suite.CommitAfter(time.Hour*1 + time.Nanosecond)
 }
+func (suite *AVSTestSuite) prepareOperatorubkey() {
+	privateKey, err := blst.RandKey()
+	suite.blsKey = privateKey
+	publicKey := privateKey.PublicKey()
+	blsPub := &avstypes.BlsPubKeyInfo{
+		Operator: suite.operatorAddr.String(),
+		PubKey:   publicKey.Marshal(),
+		Name:     "",
+	}
 
+	err = suite.App.AVSManagerKeeper.SetOperatorPubKey(suite.Ctx, blsPub)
+	suite.NoError(err)
+}
+func (suite *AVSTestSuite) prepareTaskInfo() {
+	suite.taskId = suite.App.AVSManagerKeeper.GetTaskID(suite.Ctx, suite.taskAddress)
+	epoch, _ := suite.App.EpochsKeeper.GetEpochInfo(suite.Ctx, epochstypes.HourEpochID)
+	operatorList, err := suite.App.OperatorKeeper.GetOptedInOperatorListByAVS(suite.Ctx, suite.avsAddr)
+
+	info := &avstypes.TaskInfo{
+		TaskContractAddress:   suite.taskAddress.String(),
+		Name:                  "test-avsTask",
+		TaskId:                suite.taskId,
+		Hash:                  []byte("req-struct"),
+		TaskResponsePeriod:    2,
+		TaskStatisticalPeriod: 1,
+		TaskChallengePeriod:   2,
+		ThresholdPercentage:   60,
+		StartingEpoch:         uint64(epoch.CurrentEpoch + 1),
+		ActualThreshold:       0,
+		OptInOperators:        operatorList,
+	}
+	err = suite.App.AVSManagerKeeper.SetTaskInfo(suite.Ctx, info)
+	suite.NoError(err)
+
+	getTaskInfo, err := suite.App.AVSManagerKeeper.GetTaskInfo(suite.Ctx, strconv.FormatUint(suite.taskId, 10), common.Address(suite.taskAddress.Bytes()).String())
+	suite.NoError(err)
+	suite.Equal(*info, *getTaskInfo)
+}
 func (suite *AVSTestSuite) prepare() {
 	usdtAddress := common.HexToAddress("0xdAC17F958D2ee523a2206206994597C13D831ec7")
 	depositAmount := sdkmath.NewInt(100)
@@ -93,11 +150,40 @@ func (suite *AVSTestSuite) prepare() {
 	suite.prepareDelegation(true, usdtAddress, delegationAmount)
 	suite.prepareAvs([]string{"0xdac17f958d2ee523a2206206994597c13d831ec7_0x65"})
 	suite.prepareOptIn()
+	suite.prepareOperatorubkey()
+	suite.prepareTaskInfo()
 	suite.CommitAfter(time.Hour*1 + time.Nanosecond)
 	suite.CommitAfter(time.Hour*1 + time.Nanosecond)
 	suite.CommitAfter(time.Hour*1 + time.Nanosecond)
 }
 
+func (suite *AVSTestSuite) TestSubmitTask() {
+	suite.prepare()
+	taskRes := avstypes.TaskResponse{TaskId: 1, NumberSum: big.NewInt(100)}
+	jsonData, err := avstypes.MarshalTaskResponse(taskRes)
+	suite.NoError(err)
+	_ = crypto.Keccak256Hash(jsonData)
+
+	// pub, err := suite.App.AVSManagerKeeper.GetOperatorPubKey(suite.Ctx, suite.operatorAddr.String())
+	suite.NoError(err)
+
+	msg, _ := avstypes.GetTaskResponseDigest(taskRes)
+	msgBytes := msg[:]
+	sig := suite.blsKey.Sign(msgBytes)
+
+	info := &avstypes.TaskResultInfo{
+		TaskContractAddress: suite.taskAddress.String(),
+		OperatorAddress:     suite.operatorAddr.String(),
+		TaskId:              suite.taskId,
+		TaskResponseHash:    "",
+		TaskResponse:        nil,
+		BlsSignature:        sig.Marshal(),
+		Stage:               avstypes.TwoPhaseCommitOne,
+	}
+	err = suite.App.AVSManagerKeeper.SetTaskResultInfo(suite.Ctx, suite.operatorAddr.String(), info)
+	suite.NoError(err)
+
+}
 func (suite *AVSTestSuite) TestOptInList() {
 	suite.prepare()
 	operatorList, err := suite.App.OperatorKeeper.GetOptedInOperatorListByAVS(suite.Ctx, suite.avsAddr)
