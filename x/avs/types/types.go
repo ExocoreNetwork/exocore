@@ -96,7 +96,7 @@ func GenerateAVSAddr(chainID string) common.Address {
 }
 
 type TaskResponse struct {
-	TaskId    uint64
+	TaskID    uint64
 	NumberSum *big.Int
 }
 

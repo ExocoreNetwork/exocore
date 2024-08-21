@@ -159,7 +159,7 @@ func (suite *AVSTestSuite) prepare() {
 
 func (suite *AVSTestSuite) TestSubmitTask() {
 	suite.prepare()
-	taskRes := avstypes.TaskResponse{TaskId: 1, NumberSum: big.NewInt(100)}
+	taskRes := avstypes.TaskResponse{TaskID: 1, NumberSum: big.NewInt(100)}
 	jsonData, err := avstypes.MarshalTaskResponse(taskRes)
 	suite.NoError(err)
 	_ = crypto.Keccak256Hash(jsonData)

@@ -4,8 +4,9 @@ import (
 	"bytes"
 	"encoding/hex"
 	"fmt"
-	"github.com/ethereum/go-ethereum/crypto"
 	"strconv"
+
+	"github.com/ethereum/go-ethereum/crypto"
 
 	errorsmod "cosmossdk.io/errors"
 

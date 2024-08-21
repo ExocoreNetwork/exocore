@@ -26,7 +26,7 @@ func (suite *AVSTestSuite) TestOperator_pubkey() {
 	suite.NoError(err)
 	suite.Equal(publicKey.Marshal(), pub.PubKey)
 
-	taskRes := types.TaskResponse{TaskId: 1, NumberSum: big.NewInt(100)}
+	taskRes := types.TaskResponse{TaskID: 1, NumberSum: big.NewInt(100)}
 
 	msg, _ := types.GetTaskResponseDigest(taskRes)
 	msgBytes := msg[:]
@@ -43,7 +43,7 @@ func (suite *AVSTestSuite) TestOperator_pubkey() {
 }
 
 func (suite *AVSTestSuite) Test_hash() {
-	taskres := types.TaskResponse{TaskId: 1, NumberSum: big.NewInt(100)}
+	taskres := types.TaskResponse{TaskID: 1, NumberSum: big.NewInt(100)}
 	jsonData, err := types.MarshalTaskResponse(taskres)
 	suite.NoError(err)
 
@@ -54,7 +54,7 @@ func (suite *AVSTestSuite) Test_hash() {
 
 // For deterministic result（msg）, aggregate signatures and verify them
 func (suite *AVSTestSuite) Test_bls_agg() {
-	taskres := types.TaskResponse{TaskId: 1, NumberSum: big.NewInt(100)}
+	taskres := types.TaskResponse{TaskID: 1, NumberSum: big.NewInt(100)}
 	jsonData, _ := types.MarshalTaskResponse(taskres)
 	msg := crypto.Keccak256Hash(jsonData)
 	privateKeys := make([]blscommon.SecretKey, 4)
