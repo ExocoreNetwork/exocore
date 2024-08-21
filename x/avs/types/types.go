@@ -1,6 +1,9 @@
 package types
 
 import (
+	"encoding/json"
+	"golang.org/x/crypto/sha3"
+	"math/big"
 	"strings"
 
 	ibcclienttypes "github.com/cosmos/ibc-go/v7/modules/core/02-client/types"
@@ -91,4 +94,36 @@ func GenerateAVSAddr(chainID string) common.Address {
 			),
 		),
 	)
+}
+
+type TaskResponse struct {
+	TaskId    uint64
+	NumberSum *big.Int
+}
+
+// GetTaskResponseDigest returns the hash of the TaskResponse, which is what operators sign over
+// MarshalTaskResponse marshals the TaskResponse struct into JSON bytes.
+func MarshalTaskResponse(h TaskResponse) ([]byte, error) {
+	return json.Marshal(h)
+}
+
+// UnmarshalTaskResponse unmarshals the JSON bytes into a TaskResponse struct.
+func UnmarshalTaskResponse(jsonData []byte) (TaskResponse, error) {
+	var taskResponse TaskResponse
+	err := json.Unmarshal(jsonData, &taskResponse)
+	return taskResponse, err
+}
+
+// GetTaskResponseDigest returns the hash of the TaskResponse, which is what operators sign over.
+func GetTaskResponseDigest(h TaskResponse) ([32]byte, error) {
+	jsonData, err := MarshalTaskResponse(h)
+	if err != nil {
+		return [32]byte{}, err
+	}
+	var taskResponseDigest [32]byte
+	hasher := sha3.NewLegacyKeccak256()
+	hasher.Write(jsonData)
+	copy(taskResponseDigest[:], hasher.Sum(nil)[:32])
+
+	return taskResponseDigest, nil
 }

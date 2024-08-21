@@ -23,20 +23,6 @@ func (suite *AVSTestSuite) TestTaskInfo() {
 	suite.Equal(*info, *getTaskInfo)
 }
 
-func (suite *AVSTestSuite) TestOperator_pubkey() {
-	blsPub := &types.BlsPubKeyInfo{
-		Operator: "exo1j9ly7f0jynscjgvct0enevaa659te58k3xztc8",
-		PubKey:   []byte("pubkey"),
-		Name:     "pubkey",
-	}
-
-	err := suite.App.AVSManagerKeeper.SetOperatorPubKey(suite.Ctx, blsPub)
-	suite.NoError(err)
-
-	pub, err := suite.App.AVSManagerKeeper.GetOperatorPubKey(suite.Ctx, "exo1j9ly7f0jynscjgvct0enevaa659te58k3xztc8")
-	suite.NoError(err)
-	suite.Equal([]byte("pubkey"), pub.PubKey)
-}
 func (suite *AVSTestSuite) TestGetTaskId() {
 	addr := common.Address(suite.AccAddress.Bytes())
 

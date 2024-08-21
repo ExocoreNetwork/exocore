@@ -1,6 +1,7 @@
 package keeper_test
 
 import (
+	sdkmath "cosmossdk.io/math"
 	"testing"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -19,8 +20,17 @@ type AVSTestSuite struct {
 	testutil.BaseTestSuite
 
 	// needed by test
-	avsAddr        string
-	operatorAddr   sdk.AccAddress
+	operatorAddr          sdk.AccAddress
+	avsAddr               string
+	assetID               string
+	stakerID              string
+	assetAddr             common.Address
+	assetDecimal          uint32
+	clientChainLzID       uint64
+	depositAmount         sdkmath.Int
+	delegationAmount      sdkmath.Int
+	updatedAmountForOptIn sdkmath.Int
+
 	ctx            sdk.Context
 	app            *app.Evmos
 	queryClientEvm evm.QueryClient
