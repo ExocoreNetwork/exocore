@@ -18,6 +18,9 @@ import (
 type AVSTestSuite struct {
 	testutil.BaseTestSuite
 
+	// needed by test
+	avsAddr        string
+	operatorAddr   sdk.AccAddress
 	ctx            sdk.Context
 	app            *app.Evmos
 	queryClientEvm evm.QueryClient
