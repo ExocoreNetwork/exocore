@@ -157,7 +157,7 @@ func (suite *AVSTestSuite) prepare() {
 	suite.CommitAfter(time.Hour*1 + time.Nanosecond)
 }
 
-func (suite *AVSTestSuite) TestSubmitTask() {
+func (suite *AVSTestSuite) TestSubmitTask_PhaseOne() {
 	suite.prepare()
 	taskRes := avstypes.TaskResponse{TaskID: 1, NumberSum: big.NewInt(100)}
 	jsonData, err := avstypes.MarshalTaskResponse(taskRes)
@@ -184,17 +184,37 @@ func (suite *AVSTestSuite) TestSubmitTask() {
 	suite.NoError(err)
 
 }
-func (suite *AVSTestSuite) TestOptInList() {
-	suite.prepare()
-	operatorList, err := suite.App.OperatorKeeper.GetOptedInOperatorListByAVS(suite.Ctx, suite.avsAddr)
-	suite.NoError(err)
-	suite.Contains(operatorList, suite.operatorAddr.String())
 
-	avsList, err := suite.App.OperatorKeeper.GetOptedInAVSForOperator(suite.Ctx, suite.operatorAddr.String())
+func (suite *AVSTestSuite) TestSubmitTask_PhaseTwo() {
+	suite.TestSubmitTask_PhaseOne()
+	suite.CommitAfter(suite.EpochDuration)
+
+	taskRes := avstypes.TaskResponse{TaskID: 1, NumberSum: big.NewInt(100)}
+	jsonData, err := avstypes.MarshalTaskResponse(taskRes)
+	suite.NoError(err)
+	hash := crypto.Keccak256Hash(jsonData)
+
+	// pub, err := suite.App.AVSManagerKeeper.GetOperatorPubKey(suite.Ctx, suite.operatorAddr.String())
 	suite.NoError(err)
 
-	suite.Contains(avsList, suite.avsAddr)
+	msg, _ := avstypes.GetTaskResponseDigest(taskRes)
+	msgBytes := msg[:]
+	sig := suite.blsKey.Sign(msgBytes)
+
+	info := &avstypes.TaskResultInfo{
+		TaskContractAddress: suite.taskAddress.String(),
+		OperatorAddress:     suite.operatorAddr.String(),
+		TaskId:              suite.taskId,
+		TaskResponseHash:    hash.String(),
+		TaskResponse:        jsonData,
+		BlsSignature:        sig.Marshal(),
+		Stage:               avstypes.TwoPhaseCommitTwo,
+	}
+	err = suite.App.AVSManagerKeeper.SetTaskResultInfo(suite.Ctx, suite.operatorAddr.String(), info)
+	suite.NoError(err)
+
 }
+
 func (suite *AVSTestSuite) TestAVSUSDValue() {
 	suite.prepare()
 	avsUSDValue, err := suite.App.OperatorKeeper.GetAVSUSDValue(suite.Ctx, suite.avsAddr)

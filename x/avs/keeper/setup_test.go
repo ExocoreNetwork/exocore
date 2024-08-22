@@ -4,6 +4,7 @@ import (
 	sdkmath "cosmossdk.io/math"
 	blscommon "github.com/prysmaticlabs/prysm/v4/crypto/bls/common"
 	"testing"
+	"time"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/common"
@@ -40,6 +41,7 @@ type AVSTestSuite struct {
 	taskAddress    common.Address
 	taskId         uint64
 	blsKey         blscommon.SecretKey
+	EpochDuration  time.Duration
 }
 
 var s *AVSTestSuite
@@ -57,5 +59,8 @@ func (suite *AVSTestSuite) SetupTest() {
 	suite.DoSetupTest()
 	suite.avsAddress = utiltx.GenerateAddress()
 	suite.taskAddress = utiltx.GenerateAddress()
+	epochID := suite.App.StakingKeeper.GetEpochIdentifier(suite.Ctx)
+	epochInfo, _ := suite.App.EpochsKeeper.GetEpochInfo(suite.Ctx, epochID)
+	suite.EpochDuration = epochInfo.Duration + time.Nanosecond // extra buffer
 
 }

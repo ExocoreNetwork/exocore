@@ -2,7 +2,6 @@ package keeper
 
 import (
 	"bytes"
-	"encoding/hex"
 	"fmt"
 	"strconv"
 
@@ -193,6 +192,7 @@ func (k *Keeper) SetTaskResultInfo(
 					info.TaskResponseHash, info.TaskResponse),
 			)
 		}
+		// check epoch，The first stage submission must be within the response window period
 		if epoch.CurrentEpoch > int64(task.StartingEpoch)+int64(task.TaskResponsePeriod) {
 			return errorsmod.Wrap(
 				types.ErrSubmitTooLateError,
@@ -227,9 +227,9 @@ func (k *Keeper) SetTaskResultInfo(
 					info.OperatorAddress, info.TaskContractAddress, info.TaskId, info.BlsSignature),
 			)
 		}
-
+		//  check epoch，The second stage submission must be within the statistical window period
 		if epoch.CurrentEpoch <= int64(task.StartingEpoch)+int64(task.TaskResponsePeriod) ||
-			epoch.CurrentEpoch >= int64(task.StartingEpoch)+int64(task.TaskResponsePeriod)+int64(task.TaskStatisticalPeriod) {
+			epoch.CurrentEpoch > int64(task.StartingEpoch)+int64(task.TaskResponsePeriod)+int64(task.TaskStatisticalPeriod) {
 			return errorsmod.Wrap(
 				types.ErrSubmitTooLateError,
 				fmt.Sprintf("SetTaskResultInfo:submit  too late, CurrentEpoch:%d", epoch.CurrentEpoch),
@@ -238,7 +238,7 @@ func (k *Keeper) SetTaskResultInfo(
 
 		// check hash
 		taskResponseDigest := crypto.Keccak256Hash(info.TaskResponse)
-		if hex.EncodeToString(taskResponseDigest[:]) != info.TaskResponseHash {
+		if taskResponseDigest.String() != info.TaskResponseHash {
 			return errorsmod.Wrap(
 				types.ErrHashValue,
 				"SetTaskResultInfo: task response is nil",
