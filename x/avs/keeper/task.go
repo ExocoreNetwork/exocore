@@ -313,3 +313,12 @@ func (k Keeper) IterateResultInfo(ctx sdk.Context, fn func(index int64, info typ
 		i++
 	}
 }
+
+func (k Keeper) GroupTasksByIDAndAddress(tasks []types.TaskResultInfo) map[string][]types.TaskResultInfo {
+	taskMap := make(map[string][]types.TaskResultInfo)
+	for _, task := range tasks {
+		key := task.TaskContractAddress + "_" + strconv.FormatUint(task.TaskId, 10)
+		taskMap[key] = append(taskMap[key], task)
+	}
+	return taskMap
+}

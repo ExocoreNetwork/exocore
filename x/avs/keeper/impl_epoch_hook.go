@@ -4,8 +4,6 @@ import (
 	"strconv"
 
 	sdkmath "cosmossdk.io/math"
-	assetstype "github.com/ExocoreNetwork/exocore/x/assets/types"
-	"github.com/ExocoreNetwork/exocore/x/avs/types"
 	epochstypes "github.com/ExocoreNetwork/exocore/x/epochs/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -34,75 +32,65 @@ func (wrapper EpochsHooksWrapper) AfterEpochEnd(
 	// todo: need to consider the calling order
 	taskResList := wrapper.keeper.GetTaskStatisticalEpochEndAVSs(ctx, epochIdentifier, epochNumber)
 
-	taskResMap := make(map[string][]types.TaskResultInfo)
-
-	for _, res := range taskResList {
-		var resList []types.TaskResultInfo
-		infoKey := string(assetstype.GetJoinedStoreKey(res.TaskContractAddress, strconv.FormatUint(res.TaskId, 10)))
-		for key, value := range taskResMap {
-			if infoKey == key {
-				_ = append(value, res)
-			} else {
-				taskResMap[infoKey] = append(resList, res)
+	if len(taskResList) != 0 {
+		groupedTasks := wrapper.keeper.GroupTasksByIDAndAddress(taskResList)
+		for _, value := range groupedTasks {
+			var signedOperatorList []string
+			var taskID uint64
+			var taskAddr string
+			var avsAddr string
+			totalPower := sdkmath.LegacyNewDec(0)
+			for _, res := range value {
+				// Find signed operators
+				if res.BlsSignature != nil {
+					signedOperatorList = append(signedOperatorList, res.OperatorAddress)
+					if avsAddr == "" {
+						avsInfo := wrapper.keeper.GetAVSInfoByTaskAddress(ctx, res.TaskContractAddress)
+						avsAddr = avsInfo.AvsAddress
+					}
+					if taskID == 0 {
+						taskID = res.TaskId
+					}
+					if taskAddr == "" {
+						taskAddr = res.TaskContractAddress
+					}
+					usd, err := wrapper.keeper.operatorKeeper.GetOperatorOptedUSDValue(ctx, avsAddr, res.OperatorAddress)
+					if err != nil {
+						ctx.Logger().Error("Failed to update task result statistics", "task result", taskAddr, "error", err)
+						// Handle the error gracefully, continue to the next
+						continue
+					}
+					if usd.ActiveUSDValue.IsNegative() {
+						ctx.Logger().Error("Failed to update task result statistics", "task result", taskAddr, "error", err)
+						// Handle the error gracefully, continue to the next
+						continue
+					}
+					totalPower = totalPower.Add(usd.ActiveUSDValue)
+				}
 			}
-		}
-	}
-	for _, value := range taskResMap {
-		var signedOperatorList []string
-		var taskID uint64
-		var taskAddr string
-		var avsAddr string
-		var totalPower sdkmath.LegacyDec
-		for _, res := range value {
-			// Find signed operators
-			if res.BlsSignature != nil {
-				signedOperatorList = append(signedOperatorList, res.OperatorAddress)
-				if avsAddr == "" {
-					avsInfo := wrapper.keeper.GetAVSInfoByTaskAddress(ctx, res.TaskContractAddress)
-					avsAddr = avsInfo.AvsAddress
-				}
-				if taskID == 0 {
-					taskID = res.TaskId
-				}
-				if taskAddr == "" {
-					taskAddr = res.TaskContractAddress
-				}
-				usd, err := wrapper.keeper.operatorKeeper.GetOperatorOptedUSDValue(ctx, avsAddr, res.OperatorAddress)
-				if err != nil {
-					ctx.Logger().Error("Failed to update task result statistics", "task result", taskAddr, "error", err)
-					// Handle the error gracefully, continue to the next
-					continue
-				}
-				totalPower = totalPower.Add(usd.ActiveUSDValue)
+			taskInfo, err := wrapper.keeper.GetTaskInfo(ctx, strconv.FormatUint(taskID, 10), taskAddr)
+			if err != nil {
+				ctx.Logger().Error("Failed to update task result statistics", "task result", taskAddr, "error", err)
+				// Handle the error gracefully, continue to the next
+				continue
 			}
-		}
-		taskInfo, err := wrapper.keeper.GetTaskInfo(ctx, strconv.FormatUint(taskID, 10), taskAddr)
-		if err != nil {
-			ctx.Logger().Error("Failed to update task result statistics", "task result", taskAddr, "error", err)
-			// Handle the error gracefully, continue to the next
-			continue
-		}
-		diff := Difference(taskInfo.OptInOperators, signedOperatorList)
-		taskInfo.SignedOperators = signedOperatorList
-		taskInfo.NoSignedOperators = diff
+			diff := Difference(taskInfo.OptInOperators, signedOperatorList)
+			taskInfo.SignedOperators = signedOperatorList
+			taskInfo.NoSignedOperators = diff
 
-		// Calculate actual threshold
+			// Calculate actual threshold
 
-		actualThreshold, err := wrapper.keeper.CalculateActualThreshold(ctx, totalPower, avsAddr)
-		if err != nil {
-			ctx.Logger().Error("Failed to update task result statistics", "task result", taskAddr, "error", err)
-			// Handle the error gracefully, continue to the next
-			continue
-		}
+			actualThreshold := wrapper.keeper.CalculateActualThreshold(ctx, totalPower, avsAddr)
 
-		taskInfo.ActualThreshold = actualThreshold.BigInt().Uint64()
+			taskInfo.ActualThreshold = actualThreshold.BigInt().Uint64()
 
-		// Update the taskInfo in the state
-		err = wrapper.keeper.SetTaskInfo(ctx, taskInfo)
-		if err != nil {
-			ctx.Logger().Error("Failed to update task result statistics", "task result", taskAddr, "error", err)
-			// Handle the error gracefully, continue to the next
-			continue
+			// Update the taskInfo in the state
+			err = wrapper.keeper.SetTaskInfo(ctx, taskInfo)
+			if err != nil {
+				ctx.Logger().Error("Failed to update task result statistics", "task result", taskAddr, "error", err)
+				// Handle the error gracefully, continue to the next
+				continue
+			}
 		}
 	}
 }

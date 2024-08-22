@@ -5,12 +5,15 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-func (k *Keeper) CalculateActualThreshold(ctx sdk.Context, total sdkmath.LegacyDec, avs string) (t sdkmath.LegacyDec, err error) {
+func (k *Keeper) CalculateActualThreshold(ctx sdk.Context, total sdkmath.LegacyDec, avs string) (t sdkmath.LegacyDec) {
 	usd, err := k.operatorKeeper.GetAVSUSDValue(ctx, avs)
 	if err != nil {
-		return sdkmath.LegacyZeroDec(), err
+		return sdkmath.LegacyZeroDec()
 	}
-	return total.Quo(usd).Mul(sdk.NewDec(100)), nil
+	if usd.IsZero() || total.IsZero() {
+		return sdkmath.LegacyZeroDec()
+	}
+	return total.Quo(usd).Mul(sdk.NewDec(100))
 }
 
 func Difference(a, b []string) []string {
