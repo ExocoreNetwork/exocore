@@ -1,16 +1,18 @@
 package avs_test
 
 import (
-	sdkmath "cosmossdk.io/math"
 	"fmt"
+	"math/big"
+	"time"
+
+	sdkmath "cosmossdk.io/math"
+
 	avsManagerPrecompile "github.com/ExocoreNetwork/exocore/precompiles/avs"
 	exocmn "github.com/ExocoreNetwork/exocore/precompiles/common"
 	assetstype "github.com/ExocoreNetwork/exocore/x/assets/types"
 	operatorKeeper "github.com/ExocoreNetwork/exocore/x/operator/keeper"
 	"github.com/ExocoreNetwork/exocore/x/operator/types"
 	"github.com/ethereum/go-ethereum/common"
-	"math/big"
-	"time"
 
 	"github.com/ethereum/go-ethereum/core/vm"
 )
@@ -107,7 +109,6 @@ func (suite *AVSManagerPrecompileSuite) TestGetOptedInOperatorAccAddrs() {
 				suite.Require().NoError(err, "failed to unpack output", err)
 				suite.Require().Equal(1, len(out))
 				suite.Require().Equal(operatorAddress, out[0])
-
 			},
 			100000,
 			false,
@@ -197,7 +198,6 @@ func (suite *AVSManagerPrecompileSuite) TestAVSUSDValue() {
 				err := s.precompile.UnpackIntoInterface(&out, avsManagerPrecompile.MethodGetAVSUSDValue, bz)
 				s.Require().NoError(err, "failed to unpack output", err)
 				s.Require().Equal(expectedUSDvalue.BigInt(), out)
-
 			},
 			100000,
 			false,

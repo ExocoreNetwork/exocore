@@ -4,6 +4,10 @@ import (
 	"context"
 	"strings"
 
+	"cosmossdk.io/errors"
+	avskeeper "github.com/ExocoreNetwork/exocore/x/avs/keeper"
+	avstypes "github.com/ExocoreNetwork/exocore/x/avs/types"
+
 	"github.com/ExocoreNetwork/exocore/x/dogfood/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	epochstypes "github.com/evmos/evmos/v14/x/epochs/types"
@@ -104,5 +108,24 @@ func (k Keeper) UpdateParams(
 		nextParams.AssetIDs = prevParams.AssetIDs
 	}
 	k.SetParams(c, nextParams)
+
+	// update the related info in the AVS module
+	isAVS, avsAddr := k.avsKeeper.IsAVSByChainID(c, avstypes.ChainIDWithoutRevision(c.ChainID()))
+	if !isAVS {
+		return nil, errors.Wrapf(types.ErrNotAVSByChainID, "chainID:%s avsAddr:%s", c.ChainID(), avsAddr)
+	}
+	err := k.avsKeeper.UpdateAVSInfo(c, &avstypes.AVSRegisterOrDeregisterParams{
+		AvsName:           c.ChainID(),
+		AvsAddress:        avsAddr.String(),
+		AssetID:           nextParams.AssetIDs,
+		UnbondingPeriod:   uint64(nextParams.EpochsUntilUnbonded),
+		MinSelfDelegation: nextParams.MinSelfDelegation.Uint64(),
+		EpochIdentifier:   nextParams.EpochIdentifier,
+		ChainID:           c.ChainID(),
+		Action:            avskeeper.UpdateAction,
+	})
+	if err != nil {
+		return nil, err
+	}
 	return &types.MsgUpdateParamsResponse{}, nil
 }

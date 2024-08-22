@@ -48,7 +48,7 @@ func (p Precompile) RegisterAVS(
 	avsParams.AvsAddress = contract.CallerAddress.String()
 	avsParams.Action = avskeeper.RegisterAction
 	// Finally, update the AVS information in the keeper.
-	err = p.avsKeeper.AVSInfoUpdate(ctx, avsParams)
+	err = p.avsKeeper.UpdateAVSInfo(ctx, avsParams)
 	if err != nil {
 		fmt.Println("Failed to update AVS info", err)
 		return nil, err
@@ -81,7 +81,7 @@ func (p Precompile) DeregisterAVS(
 	// validates that this is owner
 	avsParams.CallerAddress = sdk.AccAddress(origin[:]).String()
 
-	err := p.avsKeeper.AVSInfoUpdate(ctx, avsParams)
+	err := p.avsKeeper.UpdateAVSInfo(ctx, avsParams)
 	if err != nil {
 		return nil, err
 	}
@@ -105,7 +105,15 @@ func (p Precompile) UpdateAVS(
 	avsParams.AvsAddress = contract.CallerAddress.String()
 	avsParams.CallerAddress = sdk.AccAddress(origin[:]).String()
 	avsParams.Action = avskeeper.UpdateAction
-	err = p.avsKeeper.AVSInfoUpdate(ctx, avsParams)
+	previousAVSInfo, err := p.avsKeeper.GetAVSInfo(ctx, avsParams.AvsAddress)
+	if err != nil {
+		return nil, err
+	}
+	// If avs UpdateAction check CallerAddress
+	if !slices.Contains(previousAVSInfo.Info.AvsOwnerAddress, avsParams.CallerAddress) {
+		return nil, fmt.Errorf("this caller not qualified to update %s", avsParams.CallerAddress)
+	}
+	err = p.avsKeeper.UpdateAVSInfo(ctx, avsParams)
 	if err != nil {
 		return nil, err
 	}
