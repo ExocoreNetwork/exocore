@@ -46,7 +46,6 @@ func (suite *AVSTestSuite) Test_hash() {
 	taskres := types.TaskResponse{TaskID: 1, NumberSum: big.NewInt(100)}
 	jsonData, err := types.MarshalTaskResponse(taskres)
 	suite.NoError(err)
-
 	hash := crypto.Keccak256Hash(jsonData)
 	taskResponseDigest := hash.Bytes()
 	suite.Equal(len(taskResponseDigest), 32)
