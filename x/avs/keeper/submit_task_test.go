@@ -2,7 +2,6 @@ package keeper_test
 
 import (
 	sdkmath "cosmossdk.io/math"
-	"fmt"
 	assetskeeper "github.com/ExocoreNetwork/exocore/x/assets/keeper"
 	assetstypes "github.com/ExocoreNetwork/exocore/x/assets/types"
 	avskeeper "github.com/ExocoreNetwork/exocore/x/avs/keeper"
@@ -157,7 +156,7 @@ func (suite *AVSTestSuite) prepare() {
 	suite.CommitAfter(time.Hour*1 + time.Nanosecond)
 }
 
-func (suite *AVSTestSuite) TestSubmitTask_PhaseOne() {
+func (suite *AVSTestSuite) TestSubmitTask_OnlyPhaseOne() {
 	suite.prepare()
 	taskRes := avstypes.TaskResponse{TaskID: 1, NumberSum: big.NewInt(100)}
 	jsonData, err := avstypes.MarshalTaskResponse(taskRes)
@@ -185,8 +184,8 @@ func (suite *AVSTestSuite) TestSubmitTask_PhaseOne() {
 
 }
 
-func (suite *AVSTestSuite) TestSubmitTask_PhaseTwo() {
-	suite.TestSubmitTask_PhaseOne()
+func (suite *AVSTestSuite) TestSubmitTask_OnlyPhaseTwo() {
+	suite.TestSubmitTask_OnlyPhaseOne()
 	suite.CommitAfter(suite.EpochDuration)
 
 	taskRes := avstypes.TaskResponse{TaskID: 1, NumberSum: big.NewInt(100)}
@@ -212,16 +211,5 @@ func (suite *AVSTestSuite) TestSubmitTask_PhaseTwo() {
 	}
 	err = suite.App.AVSManagerKeeper.SetTaskResultInfo(suite.Ctx, suite.operatorAddr.String(), info)
 	suite.NoError(err)
-
-}
-
-func (suite *AVSTestSuite) TestAVSUSDValue() {
-	suite.prepare()
-	avsUSDValue, err := suite.App.OperatorKeeper.GetAVSUSDValue(suite.Ctx, suite.avsAddr)
-	suite.NoError(err)
-	optedUSDValues, err := suite.App.OperatorKeeper.GetOperatorOptedUSDValue(suite.Ctx, suite.avsAddr, suite.operatorAddr.String())
-	suite.NoError(err)
-	fmt.Println(avsUSDValue)
-	fmt.Println(optedUSDValues)
 
 }

@@ -2,6 +2,7 @@ package keeper_test
 
 import (
 	"fmt"
+	utiltx "github.com/ExocoreNetwork/exocore/testutil/tx"
 	"github.com/ExocoreNetwork/exocore/x/avs/keeper"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/accounts/abi"
@@ -60,4 +61,19 @@ func Test_difference(t *testing.T) {
 
 	// Print the result
 	fmt.Print(percentage)
+}
+
+func Test_genKey(t *testing.T) {
+	addresses := make([]string, 5)
+
+	for i := 0; i < 5; i++ {
+		address := utiltx.GenerateAddress()
+		exoAddress := sdk.AccAddress(address.Bytes()).String()
+		addresses[i] = exoAddress
+	}
+
+	fmt.Println("Generated EXO addresses:")
+	for _, address := range addresses {
+		fmt.Println(address)
+	}
 }

@@ -33,15 +33,17 @@ type AVSTestSuite struct {
 	delegationAmount      sdkmath.Int
 	updatedAmountForOptIn sdkmath.Int
 
-	ctx            sdk.Context
-	app            *app.Evmos
-	queryClientEvm evm.QueryClient
-	consAddress    sdk.ConsAddress
-	avsAddress     common.Address
-	taskAddress    common.Address
-	taskId         uint64
-	blsKey         blscommon.SecretKey
-	EpochDuration  time.Duration
+	ctx               sdk.Context
+	app               *app.Evmos
+	queryClientEvm    evm.QueryClient
+	consAddress       sdk.ConsAddress
+	avsAddress        common.Address
+	taskAddress       common.Address
+	taskId            uint64
+	blsKey            blscommon.SecretKey
+	EpochDuration     time.Duration
+	operatorAddresses []string
+	blsKeys           []blscommon.SecretKey
 }
 
 var s *AVSTestSuite
@@ -62,5 +64,12 @@ func (suite *AVSTestSuite) SetupTest() {
 	epochID := suite.App.StakingKeeper.GetEpochIdentifier(suite.Ctx)
 	epochInfo, _ := suite.App.EpochsKeeper.GetEpochInfo(suite.Ctx, epochID)
 	suite.EpochDuration = epochInfo.Duration + time.Nanosecond // extra buffer
+	suite.operatorAddresses = []string{
+		"exo1ve9s2u8c7u44la93pen79hwdd4zse2zku73cjp",
+		"exo1edwpx7243z5ls7qehmzwwsnnvtm8ms0dgr6ukq",
+		"exo1x28fd5v0mxjpevll60j5lf2jz4ksrpsdvck43r",
+		"exo1pkeqsekm0wsu4d5wqntf32t9l0sn35xquk65kz",
+		"exo1wsqzfdkmv5a4wu7788uw7zjaqfj6rcrm7q69dg",
+	}
 
 }
