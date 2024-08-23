@@ -110,7 +110,7 @@ func (k Keeper) AllocateTokensToStakers(ctx sdk.Context, operatorAddress sdk.Acc
 	if err != nil {
 		ctx.Logger().Error("avs address lists not found; skipping")
 	}
-	stakersPowerMap, curTotoalStakersPowers := make(map[string]math.LegacyDec), math.LegacyNewDec(1)
+	stakersPowerMap, curTotalStakersPowers := make(map[string]math.LegacyDec), math.LegacyNewDec(1)
 	for _, avsAddress := range avsList {
 		avsAssets, err := k.StakingKeeper.GetAVSSupportedAssets(ctx, avsAddress)
 		if err != nil {
@@ -126,14 +126,14 @@ func (k Keeper) AllocateTokensToStakers(ctx sdk.Context, operatorAddress sdk.Acc
 					ctx.Logger().Error("curStakerPower error", err)
 				} else {
 					stakersPowerMap[staker] = curStakerPower
-					curTotoalStakersPowers.Add(curStakerPower)
+					curTotalStakersPowers.Add(curStakerPower)
 				}
 			}
 		}
 	}
 
 	for staker, stakerPower := range stakersPowerMap {
-		powerFraction := stakerPower.QuoTruncate(curTotoalStakersPowers)
+		powerFraction := stakerPower.QuoTruncate(curTotalStakersPowers)
 		rewardToSingleStaker := rewardToAllStakers.MulDecTruncate(powerFraction)
 		k.AllocateTokensToSingleStaker(ctx, staker, rewardToSingleStaker)
 		rewardToAllStakers = rewardToAllStakers.Sub(rewardToSingleStaker)

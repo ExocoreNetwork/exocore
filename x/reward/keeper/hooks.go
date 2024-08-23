@@ -31,7 +31,7 @@ func (wrapper EpochsHooksWrapper) AfterEpochEnd(
 ) {
 	expEpochIdentifier := wrapper.keeper.GetEpochIdentifier(ctx)
 	if epochIdentifier != expEpochIdentifier {
-		wrapper.keeper.Logger(ctx).Error(
+		wrapper.keeper.Logger(ctx).Debug(
 			"epochIdentifier didn't equal to expEpochIdentifier",
 			"epochIdentifier", epochIdentifier,
 		)
