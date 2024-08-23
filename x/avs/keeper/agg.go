@@ -10,6 +10,7 @@ func (k *Keeper) CalculateActualThreshold(ctx sdk.Context, total sdkmath.LegacyD
 	if err != nil {
 		return sdkmath.LegacyZeroDec()
 	}
+
 	if usd.IsZero() || total.IsZero() {
 		return sdkmath.LegacyZeroDec()
 	}

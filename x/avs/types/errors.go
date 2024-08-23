@@ -58,7 +58,7 @@ var (
 	)
 	ErrTaskIsNotExists = errorsmod.Register(
 		ModuleName, 14,
-		"The task is not exists",
+		"The task does not exists",
 	)
 	ErrHashValue = errorsmod.Register(
 		ModuleName, 15,
@@ -67,7 +67,7 @@ var (
 
 	ErrPubKeyIsNotExists = errorsmod.Register(
 		ModuleName, 16,
-		"The pubKey is not exists",
+		"The pubKey does not exists",
 	)
 	ErrSigVerifyError = errorsmod.Register(
 		ModuleName, 17,

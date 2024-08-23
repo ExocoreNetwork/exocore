@@ -207,7 +207,7 @@ func (k Keeper) CreateAVSTask(ctx sdk.Context, params *TaskInfoParams) error {
 	}
 	operatorList, err := k.GetOptInOperators(ctx, avsInfo.AvsAddress)
 	if err != nil {
-		return err
+		return errorsmod.Wrap(err, "CreateAVSTask: failed to get opt-in operators")
 	}
 	task := &types.TaskInfo{
 		Name:                  params.TaskName,

@@ -296,7 +296,9 @@ func (k *Keeper) GetTaskResultInfo(ctx sdk.Context, operatorAddress, taskContrac
 	}
 
 	ret := types.TaskResultInfo{}
-	k.cdc.MustUnmarshal(value, &ret)
+	if err := k.cdc.Unmarshal(value, &ret); err != nil {
+		return nil, errorsmod.Wrap(err, "GetTaskResultInfo: failed to unmarshal task result info")
+	}
 	return &ret, nil
 }
 
