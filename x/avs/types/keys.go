@@ -26,6 +26,7 @@ const (
 	prefixAVSAddressToChainID
 	LatestTaskNum
 	TaskResult
+	TaskChallengeResult
 )
 
 // ModuleAddress is the native module address for EVM
@@ -40,6 +41,7 @@ var (
 	KeyPrefixAVSAddressToChainID = []byte{prefixAVSAddressToChainID}
 	KeyPrefixLatestTaskNum       = []byte{LatestTaskNum}
 	KeyPrefixTaskResult          = []byte{TaskResult}
+	KeyPrefixTaskChallengeResult = []byte{TaskChallengeResult}
 )
 
 func init() {

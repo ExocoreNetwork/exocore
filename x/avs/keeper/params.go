@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"fmt"
+	"github.com/ethereum/go-ethereum/common"
 
 	"github.com/ExocoreNetwork/exocore/x/avs/types"
 	"github.com/cosmos/cosmos-sdk/store/prefix"
@@ -90,3 +91,12 @@ const (
 	DeRegisterAction = 2
 	UpdateAction     = 3
 )
+
+type ChallengeParams struct {
+	TaskContractAddress common.Address `json:"task_contract_address"`
+	TaskHash            []byte         `json:"hash"`
+	TaskID              uint64         `json:"task_id"`
+	OperatorAddress     sdk.AccAddress `json:"operator_address"`
+	TaskResponseHash    []byte         `json:"task_response_hash"`
+	CallerAddress       common.Address `json:"caller_address"`
+}

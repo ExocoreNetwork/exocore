@@ -54,7 +54,7 @@ var (
 	)
 	ErrAlreadyExists = errorsmod.Register(
 		ModuleName, 13,
-		"The task already exists",
+		"The record already exists",
 	)
 	ErrTaskIsNotExists = errorsmod.Register(
 		ModuleName, 14,

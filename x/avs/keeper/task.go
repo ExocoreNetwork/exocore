@@ -112,17 +112,17 @@ func (k Keeper) IterateTaskAVSInfo(ctx sdk.Context, fn func(index int64, taskInf
 }
 
 // GetTaskID Increase the task ID by 1 each time.
-func (k Keeper) GetTaskID(ctx sdk.Context, taskaddr common.Address) uint64 {
+func (k Keeper) GetTaskID(ctx sdk.Context, taskAddr common.Address) uint64 {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefixLatestTaskNum)
 	var id uint64
-	if store.Has(taskaddr.Bytes()) {
-		bz := store.Get(taskaddr.Bytes())
+	if store.Has(taskAddr.Bytes()) {
+		bz := store.Get(taskAddr.Bytes())
 		id = sdk.BigEndianToUint64(bz)
 		id++
 	} else {
 		id = 1
 	}
-	store.Set(taskaddr.Bytes(), sdk.Uint64ToBigEndian(id))
+	store.Set(taskAddr.Bytes(), sdk.Uint64ToBigEndian(id))
 	return id
 }
 
@@ -244,6 +244,14 @@ func (k *Keeper) SetTaskResultInfo(
 				"SetTaskResultInfo: task response is nil",
 			)
 		}
+		// check taskID
+		resp, err := types.UnmarshalTaskResponse(info.TaskResponse)
+		if err != nil || info.TaskId != resp.TaskID {
+			return errorsmod.Wrap(
+				types.ErrParamError,
+				fmt.Sprintf("SetTaskResultInfo: invalid param value:%s", info.Stage),
+			)
+		}
 		// check bls sig
 		flag, err := blst.VerifySignature(info.BlsSignature, taskResponseDigest, pubKey)
 		if !flag || err != nil {
@@ -321,4 +329,24 @@ func (k Keeper) GroupTasksByIDAndAddress(tasks []types.TaskResultInfo) map[strin
 		taskMap[key] = append(taskMap[key], task)
 	}
 	return taskMap
+}
+
+// SetTaskChallengedInfo is used to store the challenger's challenge information.
+func (k *Keeper) SetTaskChallengedInfo(
+	ctx sdk.Context, taskID uint64, operatorAddress string,
+	taskAddr, challengeAddr common.Address,
+) (err error) {
+	infoKey := assetstype.GetJoinedStoreKey(operatorAddress, taskAddr.String(),
+		strconv.FormatUint(taskID, 10))
+
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefixTaskChallengeResult)
+	store.Set(infoKey, challengeAddr.Bytes())
+	return nil
+}
+
+func (k *Keeper) IsExistTaskChallengedInfo(ctx sdk.Context, operatorAddress, taskContractAddress string, taskID uint64) bool {
+	infoKey := assetstype.GetJoinedStoreKey(operatorAddress, taskContractAddress,
+		strconv.FormatUint(taskID, 10))
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefixTaskChallengeResult)
+	return store.Has(infoKey)
 }

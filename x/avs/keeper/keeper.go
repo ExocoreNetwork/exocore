@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	"encoding/hex"
 	"fmt"
 	"slices"
 	"strconv"
@@ -336,4 +337,55 @@ func (k Keeper) IterateAVSInfo(ctx sdk.Context, fn func(index int64, avsInfo typ
 		}
 		i++
 	}
+}
+func (k Keeper) RaiseAndResolveChallenge(ctx sdk.Context, params *ChallengeParams) error {
+
+	taskInfo, err := k.GetTaskInfo(ctx, strconv.FormatUint(params.TaskID, 10), params.TaskContractAddress.String())
+	if err != nil {
+		return fmt.Errorf("task does not exist,this task address: %s", params.TaskContractAddress)
+	}
+	// check Task
+	if taskInfo.TaskContractAddress != params.TaskContractAddress.String() || taskInfo.TaskId != params.TaskID ||
+		hex.EncodeToString(taskInfo.Hash) != hex.EncodeToString(params.TaskHash) {
+		return errorsmod.Wrap(err, fmt.Sprintf("error Task hasn't been responded to yet: %s", params.TaskContractAddress))
+
+	}
+	// check Task result
+	res, err := k.GetTaskResultInfo(ctx, params.OperatorAddress.String(), params.TaskContractAddress.String(),
+		params.TaskID)
+	if err != nil || res.OperatorAddress != params.OperatorAddress.String() ||
+		res.TaskContractAddress != params.TaskContractAddress.String() ||
+		res.TaskId != params.TaskID || res.TaskResponseHash != hex.EncodeToString(params.TaskResponseHash) {
+		return errorsmod.Wrap(
+			types.ErrInconsistentParams,
+			fmt.Sprintf("Task response does not match the one recorded,task addr: %s ,(TaskContractAddress: %s)"+
+				",(TaskId: %d),(TaskResponseHash: %s)",
+				params.OperatorAddress, params.TaskContractAddress, params.TaskID, params.TaskResponseHash),
+		)
+	}
+	// check challenge record
+	if k.IsExistTaskChallengedInfo(ctx, params.OperatorAddress.String(),
+		params.TaskContractAddress.String(), params.TaskID) {
+		return errorsmod.Wrap(types.ErrAlreadyExists, fmt.Sprintf("the challenge has been raised: %s", params.TaskContractAddress))
+	}
+
+	// check challenge period
+	//  check epoch，The challenge must be within the challenge window period
+	avsInfo := k.GetAVSInfoByTaskAddress(ctx, taskInfo.TaskContractAddress)
+	epoch, found := k.epochsKeeper.GetEpochInfo(ctx, avsInfo.EpochIdentifier)
+	if !found {
+		return errorsmod.Wrap(types.ErrEpochNotFound, fmt.Sprintf("epoch info not found %s",
+			avsInfo.EpochIdentifier))
+	}
+	if epoch.CurrentEpoch <= int64(taskInfo.StartingEpoch)+int64(taskInfo.TaskResponsePeriod)+int64(taskInfo.TaskStatisticalPeriod) || //nolint:gosec
+		epoch.CurrentEpoch > int64(taskInfo.StartingEpoch)+int64(taskInfo.TaskResponsePeriod)+int64(taskInfo.TaskStatisticalPeriod)+int64(taskInfo.TaskChallengePeriod) { //nolint:gosec
+		return errorsmod.Wrap(
+			types.ErrSubmitTooLateError,
+			fmt.Sprintf("SetTaskResultInfo:submit  too late, CurrentEpoch:%d", epoch.CurrentEpoch),
+		)
+	}
+
+	return k.SetTaskChallengedInfo(ctx, params.TaskID, params.OperatorAddress.String(),
+		params.TaskContractAddress, params.CallerAddress)
+
 }
