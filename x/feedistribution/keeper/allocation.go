@@ -53,6 +53,7 @@ func (k Keeper) AllocateTokens(ctx sdk.Context, totalPreviousPower int64) error 
 		}
 		powerFraction := math.LegacyNewDec(val.Power).QuoTruncate(math.LegacyNewDec(totalPreviousPower))
 		reward := feeMultiplier.MulDecTruncate(powerFraction)
+
 		k.AllocateTokensToValidator(ctx, validatorDetail, reward, feePool)
 		remaining = remaining.Sub(reward)
 	}
@@ -85,7 +86,8 @@ func (k Keeper) AllocateTokensToValidator(ctx sdk.Context, val stakingtypes.Vali
 	// update current rewards, i.e. the rewards to stakers
 	// if the rewards do not exist it's fine, we will just add to zero.
 	// allocate share tokens to all stakers of this operator.
-	k.AllocateTokensToStakers(ctx, val.GetOperator(), shared, feePool)
+	operatorAccAddress := sdk.AccAddress(valBz)
+	k.AllocateTokensToStakers(ctx, operatorAccAddress, shared, feePool)
 
 	// update outstanding rewards
 	ctx.EventManager().EmitEvent(sdk.NewEvent(
@@ -101,8 +103,9 @@ func (k Keeper) AllocateTokensToValidator(ctx sdk.Context, val stakingtypes.Vali
 	logger.Info("Allocate tokens to validator successfully", "allocated amount is", outstanding.Rewards.String())
 }
 
-func (k Keeper) AllocateTokensToStakers(ctx sdk.Context, operatorAddress sdk.ValAddress, rewardToAllStakers sdk.DecCoins, feePool *types.FeePool) {
+func (k Keeper) AllocateTokensToStakers(ctx sdk.Context, operatorAddress sdk.AccAddress, rewardToAllStakers sdk.DecCoins, feePool *types.FeePool) {
 	logger := k.Logger()
+	logger.Info("Allocate to stakers of operatorAddress:", operatorAddress.String())
 	avsList, err := k.StakingKeeper.GetOptedInAVSForOperator(ctx, operatorAddress.String())
 	if err != nil {
 		ctx.Logger().Error("avs address lists not found; skipping")
