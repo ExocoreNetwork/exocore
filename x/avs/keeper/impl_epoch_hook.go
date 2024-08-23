@@ -3,6 +3,8 @@ package keeper
 import (
 	"strconv"
 
+	"github.com/ExocoreNetwork/exocore/x/avs/types"
+
 	sdkmath "cosmossdk.io/math"
 	epochstypes "github.com/ExocoreNetwork/exocore/x/epochs/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -39,7 +41,8 @@ func (wrapper EpochsHooksWrapper) AfterEpochEnd(
 			var taskID uint64
 			var taskAddr string
 			var avsAddr string
-			totalPower := sdkmath.LegacyNewDec(0)
+			operatorPowers := []*types.OperatorActivePowerInfo{{}}
+			operatorPowerTotal := sdkmath.LegacyNewDec(0)
 			for _, res := range value {
 				// Find signed operators
 				if res.BlsSignature != nil {
@@ -54,18 +57,19 @@ func (wrapper EpochsHooksWrapper) AfterEpochEnd(
 					if taskAddr == "" {
 						taskAddr = res.TaskContractAddress
 					}
-					usd, err := wrapper.keeper.operatorKeeper.GetOperatorOptedUSDValue(ctx, avsAddr, res.OperatorAddress)
-					if err != nil {
+					power, err := wrapper.keeper.operatorKeeper.GetOperatorOptedUSDValue(ctx, avsAddr, res.OperatorAddress)
+					if err != nil || power.ActiveUSDValue.IsNegative() {
 						ctx.Logger().Error("Failed to update task result statistics", "task result", taskAddr, "error", err)
 						// Handle the error gracefully, continue to the next
 						continue
 					}
-					if usd.ActiveUSDValue.IsNegative() {
-						ctx.Logger().Error("Failed to update task result statistics", "task result", taskAddr, "error", err)
-						// Handle the error gracefully, continue to the next
-						continue
+
+					operatorSelfPower := &types.OperatorActivePowerInfo{
+						OperatorAddr:    res.OperatorAddress,
+						SelfActivePower: power.ActiveUSDValue,
 					}
-					totalPower = totalPower.Add(usd.ActiveUSDValue)
+					operatorPowers = append(operatorPowers, operatorSelfPower)
+					operatorPowerTotal = operatorPowerTotal.Add(power.ActiveUSDValue)
 				}
 			}
 			taskInfo, err := wrapper.keeper.GetTaskInfo(ctx, strconv.FormatUint(taskID, 10), taskAddr)
@@ -77,11 +81,17 @@ func (wrapper EpochsHooksWrapper) AfterEpochEnd(
 			diff := Difference(taskInfo.OptInOperators, signedOperatorList)
 			taskInfo.SignedOperators = signedOperatorList
 			taskInfo.NoSignedOperators = diff
-
+			taskInfo.OperatorActivePower = &types.OperatorActivePowerList{OperatorPowerList: operatorPowers}
 			// Calculate actual threshold
+			taskPowerTotal, err := wrapper.keeper.operatorKeeper.GetAVSUSDValue(ctx, avsAddr)
 
-			actualThreshold := wrapper.keeper.CalculateActualThreshold(ctx, totalPower, avsAddr)
-
+			actualThreshold := taskPowerTotal.Quo(operatorPowerTotal).Mul(sdk.NewDec(100))
+			if err != nil {
+				ctx.Logger().Error("Failed to update task result statistics", "task result", taskAddr, "error", err)
+				// Handle the error gracefully, continue to the next
+				continue
+			}
+			taskInfo.TaskTotalPower = taskPowerTotal
 			taskInfo.ActualThreshold = actualThreshold.BigInt().Uint64()
 
 			// Update the taskInfo in the state

@@ -338,8 +338,8 @@ func (k Keeper) IterateAVSInfo(ctx sdk.Context, fn func(index int64, avsInfo typ
 		i++
 	}
 }
-func (k Keeper) RaiseAndResolveChallenge(ctx sdk.Context, params *ChallengeParams) error {
 
+func (k Keeper) RaiseAndResolveChallenge(ctx sdk.Context, params *ChallengeParams) error {
 	taskInfo, err := k.GetTaskInfo(ctx, strconv.FormatUint(params.TaskID, 10), params.TaskContractAddress.String())
 	if err != nil {
 		return fmt.Errorf("task does not exist,this task address: %s", params.TaskContractAddress)
@@ -348,7 +348,6 @@ func (k Keeper) RaiseAndResolveChallenge(ctx sdk.Context, params *ChallengeParam
 	if taskInfo.TaskContractAddress != params.TaskContractAddress.String() || taskInfo.TaskId != params.TaskID ||
 		hex.EncodeToString(taskInfo.Hash) != hex.EncodeToString(params.TaskHash) {
 		return errorsmod.Wrap(err, fmt.Sprintf("error Task hasn't been responded to yet: %s", params.TaskContractAddress))
-
 	}
 	// check Task result
 	res, err := k.GetTaskResultInfo(ctx, params.OperatorAddress.String(), params.TaskContractAddress.String(),
@@ -387,5 +386,4 @@ func (k Keeper) RaiseAndResolveChallenge(ctx sdk.Context, params *ChallengeParam
 
 	return k.SetTaskChallengedInfo(ctx, params.TaskID, params.OperatorAddress.String(),
 		params.TaskContractAddress, params.CallerAddress)
-
 }

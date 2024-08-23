@@ -108,9 +108,38 @@ message TaskInfo {
   repeated string no_signed_operators = 13;
   // err_signed_count is the number of operators with final incorrect signatures
   repeated string err_signed_operators = 14;
-
+  // task_total_power is the USD value owned by the avs task itself.
+  string task_total_power = 15
+  [
+    (cosmos_proto.scalar) = "cosmos.Dec",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+    (gogoproto.nullable) = false,
+    (gogoproto.customname) = "TaskTotalPower"
+  ];
+  // operator_active_power_list is a power list of operators opt-in to the current task
+  OperatorActivePowerList operator_active_power= 16;
+}
+// OperatorActivePowerList is the power list of operators opt-in to the current task.
+// Because power is always changing, record the power of all operators
+// who have completed tasks and submitted results by the task deadline
+message OperatorActivePowerList {
+  // operator_power_list is a power list of operators.
+  repeated OperatorActivePowerInfo operator_power_list = 1;
 }
 
+// OperatorActivePowerInfo is the operator power info.
+message OperatorActivePowerInfo {
+  // operator_addr is the operator  address.
+  string operator_addr = 1;
+  // active_power is the USD value owned by the operator itself.
+  string active_power = 2
+  [
+    (cosmos_proto.scalar) = "cosmos.Dec",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+    (gogoproto.nullable) = false,
+    (gogoproto.customname) = "SelfActivePower"
+  ];
+}
 // BlsPubKeyInfo is the task info.
 message BlsPubKeyInfo {
   // operator address
