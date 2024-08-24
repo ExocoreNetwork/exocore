@@ -2,7 +2,6 @@ package keeper_test
 
 import (
 	sdkmath "cosmossdk.io/math"
-	"github.com/ExocoreNetwork/exocore/x/avs/keeper"
 	avstypes "github.com/ExocoreNetwork/exocore/x/avs/types"
 	operatortypes "github.com/ExocoreNetwork/exocore/x/operator/types"
 	"github.com/ethereum/go-ethereum/common"
@@ -51,7 +50,7 @@ func (suite *AVSTestSuite) TestEpochEnd_TaskCalculation() {
 		SignedOperators:       suite.operatorAddresses,
 		ActualThreshold:       0,
 	}
-	diff := keeper.Difference(expectInfo.SignedOperators, info.SignedOperators)
+	diff := avstypes.Difference(expectInfo.SignedOperators, info.SignedOperators)
 
 	suite.Equal(0, len(diff))
 	suite.Equal(expectInfo.NoSignedOperators, info.NoSignedOperators)

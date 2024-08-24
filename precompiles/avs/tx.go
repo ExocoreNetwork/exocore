@@ -25,6 +25,7 @@ const (
 	MethodCreateAVSTask             = "createTask"
 	MethodSubmitProof               = "submitProof"
 	MethodRegisterBLSPublicKey      = "registerBLSPublicKey"
+	MethodChallenge                 = "challenge"
 )
 
 // AVSInfoRegister register the avs related information and change the state in avs keeper module.
@@ -174,6 +175,53 @@ func (p Precompile) CreateAVSTask(
 	if err = p.EmitCreateAVSTaskEvent(ctx, stateDB, params); err != nil {
 		return nil, err
 	}
+	return method.Outputs.Pack(true)
+}
+
+// Challenge Middleware uses exocore's default avstask template to create tasks in avstask module.
+func (p Precompile) Challenge(
+	ctx sdk.Context,
+	origin common.Address,
+	contract *vm.Contract,
+	_ vm.StateDB,
+	method *abi.Method,
+	args []interface{},
+) ([]byte, error) {
+	if len(args) != len(p.ABI.Methods[MethodChallenge].Inputs) {
+		return nil, fmt.Errorf(cmn.ErrInvalidNumberOfArgs, len(p.ABI.Methods[MethodChallenge].Inputs), len(args))
+	}
+	challengeParams := &avskeeper.ChallengeParams{}
+	challengeParams.TaskContractAddress = contract.CallerAddress
+	challengeParams.CallerAddress = origin
+
+	taskHash, ok := args[0].([]byte)
+	if !ok {
+		return nil, fmt.Errorf(exocmn.ErrContractInputParaOrType, 0, "[]byte", taskHash)
+	}
+	challengeParams.TaskHash = taskHash
+
+	taskID, ok := args[1].(uint64)
+	if !ok {
+		return nil, fmt.Errorf(exocmn.ErrContractInputParaOrType, 1, "uint64", taskID)
+	}
+	challengeParams.TaskID = taskID
+
+	taskResponseHash, ok := args[2].([]byte)
+	if !ok {
+		return nil, fmt.Errorf(exocmn.ErrContractInputParaOrType, 2, "[]byte", taskResponseHash)
+	}
+	challengeParams.TaskResponseHash = taskResponseHash
+
+	operatorAddress, ok := args[3].(string)
+	if !ok || operatorAddress == "" {
+		return nil, fmt.Errorf(exocmn.ErrContractInputParaOrType, 3, "string", operatorAddress)
+	}
+	challengeParams.OperatorAddress = sdk.AccAddress(operatorAddress)
+	err := p.avsKeeper.RaiseAndResolveChallenge(ctx, challengeParams)
+	if err != nil {
+		return nil, err
+	}
+
 	return method.Outputs.Pack(true)
 }
 

@@ -184,8 +184,8 @@ func checkTxFeeWithValidatorMinGasPrices(ctx sdk.Context, feeTx sdk.FeeTx) (sdk.
 		}
 	}
 
-	priority := getTxPriority(feeCoins, int64(gas)) //#nosec G701 -- gosec warning about integer overflow is not relevant here
-	return feeCoins, priority, nil
+	priority := getTxPriority(feeCoins, gas)
+	return feeCoins, int64(priority), nil
 }
 
 // checkFeeCoinsAgainstMinGasPrices checks if the provided fee coins are greater than or equal to the
@@ -200,7 +200,7 @@ func checkFeeCoinsAgainstMinGasPrices(ctx sdk.Context, feeCoins sdk.Coins, gas u
 
 	// Determine the required fees by multiplying each required minimum gas
 	// price by the gas limit, where fee = ceil(minGasPrice * gasLimit).
-	glDec := sdk.NewDec(int64(gas)) //#nosec G701 -- gosec warning about integer overflow is not relevant here
+	glDec := sdk.NewDec(int64(gas))
 	for i, gp := range minGasPrices {
 		fee := gp.Amount.Mul(glDec)
 		requiredFees[i] = sdk.NewCoin(gp.Denom, fee.Ceil().RoundInt())
@@ -217,13 +217,17 @@ func checkFeeCoinsAgainstMinGasPrices(ctx sdk.Context, feeCoins sdk.Coins, gas u
 // provided in a transaction.
 // NOTE: This implementation should be used with a great consideration as it opens potential attack vectors
 // where txs with multiple coins could not be prioritized as expected.
-func getTxPriority(fees sdk.Coins, gas int64) int64 {
-	var priority int64
+// getTxPriority returns a naive tx priority based on the amount of the smallest denomination of the gas price
+// provided in a transaction.
+// NOTE: This implementation should be used with a great consideration as it opens potential attack vectors
+// where txs with multiple coins could not be prioritized as expected.
+func getTxPriority(fees sdk.Coins, gas uint64) uint64 {
+	var priority uint64
 	for _, c := range fees {
-		p := int64(math.MaxInt64)
-		gasPrice := c.Amount.QuoRaw(gas)
-		if gasPrice.IsInt64() {
-			p = gasPrice.Int64()
+		p := uint64(math.MaxUint64)
+		gasPrice := c.Amount.QuoRaw(int64(gas))
+		if gasPrice.IsUint64() {
+			p = gasPrice.Uint64()
 		}
 		if priority == 0 || p < priority {
 			priority = p

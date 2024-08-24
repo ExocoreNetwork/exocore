@@ -3,7 +3,7 @@ package keeper_test
 import (
 	"fmt"
 	utiltx "github.com/ExocoreNetwork/exocore/testutil/tx"
-	"github.com/ExocoreNetwork/exocore/x/avs/keeper"
+	"github.com/ExocoreNetwork/exocore/x/avs/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
@@ -48,7 +48,7 @@ func Test_difference(t *testing.T) {
 	arr1 := []string{"apple", "banana", "cherry"}
 	arr2 := []string{"apple", "cherry", "date"}
 
-	diff := keeper.Difference(arr1, arr2)
+	diff := types.Difference(arr1, arr2)
 	fmt.Println("Differences:", diff)
 	num1 := sdk.MustNewDecFromStr("1.3")
 	num2 := sdk.MustNewDecFromStr("12.3")

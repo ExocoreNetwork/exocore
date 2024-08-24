@@ -102,6 +102,20 @@ interface IAVSManager {
         uint64 taskStatisticalPeriod
     ) external returns (bool success);
 
+    /// @dev challenge ,  this function enables a challenger to raise and resolve a challenge.
+    /// @param taskHash The data supplied by the contract, usually ABI-encoded.
+    /// @param taskID The id of task.
+    /// @param taskResponseHash The hash of task response.
+    /// @param operatorAddress operator address.
+    function challenge(
+        bytes calldata taskHash,
+        uint64 taskID,
+        bytes calldata taskResponseHash,
+        string memory operatorAddress
+    ) external returns (bool success);
+
+
+
     /// @dev SubmitProof ,After processing the task contract, aggregate the signature and submit the processed proof
     /// @param taskId The task ID of the task.
     /// @param taskContractAddress The contract address of AVSTask.

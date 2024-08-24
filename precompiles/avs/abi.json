@@ -23,7 +23,7 @@
 			{
 				"indexed": false,
 				"internalType": "bytes",
-				"name": "data",
+				"name": "hash",
 				"type": "bytes"
 			},
 			{
@@ -42,6 +42,12 @@
 				"indexed": false,
 				"internalType": "uint64",
 				"name": "thresholdPercentage",
+				"type": "uint64"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint64",
+				"name": "taskStatisticalPeriod",
 				"type": "uint64"
 			}
 		],
@@ -340,19 +346,48 @@
 	{
 		"inputs": [
 			{
+				"internalType": "bytes",
+				"name": "taskHash",
+				"type": "bytes"
+			},
+			{
+				"internalType": "uint64",
+				"name": "taskID",
+				"type": "uint64"
+			},
+			{
+				"internalType": "bytes",
+				"name": "taskResponseHash",
+				"type": "bytes"
+			},
+			{
+				"internalType": "string",
+				"name": "operatorAddress",
+				"type": "string"
+			}
+		],
+		"name": "challenge",
+		"outputs": [
+			{
+				"internalType": "bool",
+				"name": "success",
+				"type": "bool"
+			}
+		],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
 				"internalType": "string",
 				"name": "name",
 				"type": "string"
 			},
 			{
 				"internalType": "bytes",
-				"name": "data",
+				"name": "hash",
 				"type": "bytes"
-			},
-			{
-				"internalType": "string",
-				"name": "taskId",
-				"type": "string"
 			},
 			{
 				"internalType": "uint64",
@@ -367,6 +402,11 @@
 			{
 				"internalType": "uint64",
 				"name": "thresholdPercentage",
+				"type": "uint64"
+			},
+			{
+				"internalType": "uint64",
+				"name": "taskStatisticalPeriod",
 				"type": "uint64"
 			}
 		],

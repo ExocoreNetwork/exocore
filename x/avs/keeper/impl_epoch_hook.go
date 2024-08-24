@@ -31,7 +31,6 @@ func (wrapper EpochsHooksWrapper) AfterEpochEnd(
 ) {
 	// get all the task info bypass the epoch end
 	// threshold calculation, signature verification, nosig quantity statistics
-	// todo: need to consider the calling order
 	taskResList := wrapper.keeper.GetTaskStatisticalEpochEndAVSs(ctx, epochIdentifier, epochNumber)
 
 	if len(taskResList) != 0 {
@@ -78,7 +77,7 @@ func (wrapper EpochsHooksWrapper) AfterEpochEnd(
 				// Handle the error gracefully, continue to the next
 				continue
 			}
-			diff := Difference(taskInfo.OptInOperators, signedOperatorList)
+			diff := types.Difference(taskInfo.OptInOperators, signedOperatorList)
 			taskInfo.SignedOperators = signedOperatorList
 			taskInfo.NoSignedOperators = diff
 			taskInfo.OperatorActivePower = &types.OperatorActivePowerList{OperatorPowerList: operatorPowers}
