@@ -132,13 +132,11 @@ interface IAVSManager {
 
 
     /// @dev Called by the avs manager service register an operator as the owner of a BLS public key.
-    /// @param operator is the operator for whom the key is being registered
     /// @param name the name of public keys
     /// @param pubKey the public keys of the operator
     /// @param pubkeyRegistrationSignature the public keys of the operator
     /// @param pubkeyRegistrationMessageHash the public keys of the operator
     function registerBLSPublicKey(
-        string memory operator,
         string calldata name,
         bytes calldata pubKey,
         bytes calldata pubkeyRegistrationSignature,
@@ -175,7 +173,6 @@ interface IAVSManager {
     /// @param operator the address of the delegator
     /// @param pubKey the address of the validator
     event RegisterBLSPublicKey(
-        string indexed operator,
         string name,
         bytes pubKey,
         bytes pubkeyRegistrationSignature,

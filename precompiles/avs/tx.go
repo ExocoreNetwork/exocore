@@ -216,8 +216,13 @@ func (p Precompile) Challenge(
 	if !ok || operatorAddress == "" {
 		return nil, fmt.Errorf(exocmn.ErrContractInputParaOrType, 3, "string", operatorAddress)
 	}
-	challengeParams.OperatorAddress = sdk.AccAddress(operatorAddress)
-	err := p.avsKeeper.RaiseAndResolveChallenge(ctx, challengeParams)
+	operator, err := sdk.AccAddressFromBech32(operatorAddress)
+	if err != nil {
+		return nil, err
+	}
+
+	challengeParams.OperatorAddress = operator
+	err = p.avsKeeper.RaiseAndResolveChallenge(ctx, challengeParams)
 	if err != nil {
 		return nil, err
 	}
@@ -239,27 +244,27 @@ func (p Precompile) RegisterBLSPublicKey(
 	}
 	blsParams := &avskeeper.BlsParams{}
 	blsParams.Operator = sdk.AccAddress(origin[:]).String()
-	name, ok := args[1].(string)
+	name, ok := args[0].(string)
 	if !ok || name == "" {
-		return nil, fmt.Errorf(exocmn.ErrContractInputParaOrType, 1, "string", name)
+		return nil, fmt.Errorf(exocmn.ErrContractInputParaOrType, 0, "string", name)
 	}
 	blsParams.Name = name
 
-	pubkeyBz, ok := args[2].([]byte)
+	pubkeyBz, ok := args[1].([]byte)
 	if !ok {
-		return nil, fmt.Errorf(exocmn.ErrContractInputParaOrType, 2, "[]byte", pubkeyBz)
+		return nil, fmt.Errorf(exocmn.ErrContractInputParaOrType, 1, "[]byte", pubkeyBz)
 	}
 	blsParams.PubKey = pubkeyBz
 
-	pubkeyRegistrationSignature, ok := args[3].([]byte)
+	pubkeyRegistrationSignature, ok := args[2].([]byte)
 	if !ok {
-		return nil, fmt.Errorf(exocmn.ErrContractInputParaOrType, 3, "[]byte", pubkeyRegistrationSignature)
+		return nil, fmt.Errorf(exocmn.ErrContractInputParaOrType, 2, "[]byte", pubkeyRegistrationSignature)
 	}
 	blsParams.PubkeyRegistrationSignature = pubkeyRegistrationSignature
 
-	pubkeyRegistrationMessageHash, ok := args[4].([]byte)
+	pubkeyRegistrationMessageHash, ok := args[3].([]byte)
 	if !ok {
-		return nil, fmt.Errorf(exocmn.ErrContractInputParaOrType, 4, "[]byte", pubkeyRegistrationMessageHash)
+		return nil, fmt.Errorf(exocmn.ErrContractInputParaOrType, 3, "[]byte", pubkeyRegistrationMessageHash)
 	}
 	blsParams.PubkeyRegistrationMessageHash = pubkeyRegistrationMessageHash
 
