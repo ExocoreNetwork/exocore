@@ -185,6 +185,34 @@ message OperatorConsAddrPair {
   bool opting_out = 3;
 }
 
+
+// QueryAllOperatorsWithOptInAVSRequest is the request to obtain all opt-in operator addresses
+//  for a specific avs with pagination.
+message QueryAllOperatorsWithOptInAVSRequest {
+  // avs address
+  string avs = 1;
+}
+
+// QueryAllOperatorsWithOptInAVSResponse is the response that includes a list of all avs
+//   for a specified operator address.
+message QueryAllOperatorsWithOptInAVSResponse {
+  // operator_list is a list of operator addresses.
+  repeated string operator_list = 1;
+}
+
+// QueryAllAVSsByOperatorRequest is the request to obtain all operator addresses
+// and consensus keys for a specific chain ID, with pagination.
+message QueryAllAVSsByOperatorRequest {
+  // operator address.
+  string operator = 1;
+}
+
+// QueryAllAVSsByOperatorResponse is the response that includes a list of all operators
+// and their consensus keys for a specified chain ID.
+message QueryAllAVSsByOperatorResponse {
+  // avs_list is a list of avs addresses  .
+  repeated string avs_list = 1;
+}
 // Query defines the gRPC querier service.
 service Query {
   // QueryOperatorInfo queries the operator information.
@@ -249,6 +277,20 @@ service Query {
       ) {
     option (google.api.http) = {
       get: "/exocore/operator/v1/all_operator_cons_addrs/{chain}"
+    };
+  }
+
+  // QueryAllOperatorsWithOptInAVS queries  operator list by avs.
+  rpc QueryAllOperatorsWithOptInAVS(QueryAllOperatorsWithOptInAVSRequest) returns (QueryAllOperatorsWithOptInAVSResponse) {
+    option (google.api.http) = {
+      get: "/exocore/operator/v1/opt/operator_list/{avs}"
+    };
+  }
+
+  // QueryAllAVSsByOperator queries avs list.
+  rpc QueryAllAVSsByOperator(QueryAllAVSsByOperatorRequest) returns (QueryAllAVSsByOperatorResponse) {
+    option (google.api.http) = {
+      get: "/exocore/operator/v1/opt/avs_list/{operator}"
     };
   }
 }

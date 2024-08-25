@@ -1094,7 +1094,7 @@ func (m *TaskResultInfo) GetStage() string {
 type SubmitTaskResultReq struct {
 	// from_address is the address of the operator (sdk.AccAddress).
 	FromAddress string `protobuf:"bytes,1,opt,name=from_address,json=fromAddress,proto3" json:"from_address,omitempty"`
-	// info is the operator info.
+	// info is the taskResult.
 	Info *TaskResultInfo `protobuf:"bytes,2,opt,name=info,proto3" json:"info,omitempty"`
 }
 

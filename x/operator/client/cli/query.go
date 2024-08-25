@@ -2,8 +2,9 @@ package cli
 
 import (
 	"context"
-
+	"github.com/ExocoreNetwork/exocore/x/avs/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/ethereum/go-ethereum/common"
 	"golang.org/x/xerrors"
 
 	operatortypes "github.com/ExocoreNetwork/exocore/x/operator/types"
@@ -33,6 +34,8 @@ func GetQueryCmd() *cobra.Command {
 		QueryOperatorUSDValue(),
 		QueryAVSUSDValue(),
 		QueryOperatorSlashInfo(),
+		QueryAllOperatorsWithOptInAVS(),
+		QueryAllAVSsByOperator(),
 	)
 	return cmd
 }
@@ -343,6 +346,69 @@ func QueryOperatorSlashInfo() *cobra.Command {
 		},
 	}
 
+	flags.AddQueryFlagsToCmd(cmd)
+	return cmd
+}
+
+// QueryAllOperatorsWithOptInAVS queries all operators
+func QueryAllOperatorsWithOptInAVS() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "get-operatorList",
+		Short: "get-operatorList",
+		Long:  "Get  operator list by avs",
+		Args:  cobra.NoArgs,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			if !common.IsHexAddress(args[0]) {
+				return xerrors.Errorf("invalid  address,err:%s", types.ErrInvalidAddr)
+			}
+			clientCtx, err := client.GetClientQueryContext(cmd)
+			if err != nil {
+				return err
+			}
+
+			queryClient := operatortypes.NewQueryClient(clientCtx)
+			req := operatortypes.QueryAllOperatorsWithOptInAVSRequest{
+				Avs: args[0],
+			}
+			res, err := queryClient.QueryAllOperatorsWithOptInAVS(context.Background(), &req)
+			if err != nil {
+				return err
+			}
+			return clientCtx.PrintProto(res)
+		},
+	}
+	flags.AddQueryFlagsToCmd(cmd)
+	return cmd
+}
+
+// QueryAllAVSsByOperator queries all avs
+func QueryAllAVSsByOperator() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "get-avsList",
+		Short: "get-avsList",
+		Long:  "get-avsList by operator",
+		Args:  cobra.NoArgs,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			addr, err := sdk.AccAddressFromBech32(args[0])
+			if err != nil {
+				return xerrors.Errorf("invalid  address,err:%s", types.ErrInvalidAddr)
+			}
+			clientCtx, err := client.GetClientQueryContext(cmd)
+			if err != nil {
+				return err
+			}
+
+			queryClient := operatortypes.NewQueryClient(clientCtx)
+			req := operatortypes.QueryAllAVSsByOperatorRequest{
+				Operator: addr.String(),
+			}
+			res, err := queryClient.QueryAllAVSsByOperator(context.Background(), &req)
+			if err != nil {
+				return err
+			}
+			return clientCtx.PrintProto(res)
+		},
+	}
 	flags.AddQueryFlagsToCmd(cmd)
 	return cmd
 }

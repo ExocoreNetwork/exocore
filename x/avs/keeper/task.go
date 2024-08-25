@@ -352,3 +352,19 @@ func (k *Keeper) IsExistTaskChallengedInfo(ctx sdk.Context, operatorAddress, tas
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefixTaskChallengeResult)
 	return store.Has(infoKey)
 }
+
+func (k *Keeper) GetTaskChallengedInfo(ctx sdk.Context, operatorAddress, taskContractAddress string, taskID uint64) (addr string, err error) {
+	if !common.IsHexAddress(taskContractAddress) {
+		return "", types.ErrInvalidAddr
+	}
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefixTaskChallengeResult)
+	infoKey := assetstype.GetJoinedStoreKey(operatorAddress, taskContractAddress,
+		strconv.FormatUint(taskID, 10))
+	value := store.Get(infoKey)
+	if value == nil {
+		return "", errorsmod.Wrap(types.ErrNoKeyInTheStore,
+			fmt.Sprintf("GetTaskChallengedInfo: key is %s", infoKey))
+	}
+
+	return common.Bytes2Hex(value), nil
+}
