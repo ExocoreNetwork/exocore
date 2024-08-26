@@ -27,7 +27,15 @@ const (
 	MaxChainTokenMetaInfoLength = 200
 
 	MinClientChainAddrLength = 20
+
+	// TODO: update before merge
+	NativeETHAssetID = "0x01_0x01"
+	ETHAssetID       = "0x02_0x01"
 )
+
+var NativeTokenBaseMap = map[string]string{
+	NativeETHAssetID: ETHAssetID,
+}
 
 const (
 	Deposit CrossChainOpType = iota
@@ -161,4 +169,18 @@ func UpdateAssetDecValue(valueToUpdate *math.LegacyDec, changeValue *math.Legacy
 		}
 	}
 	return nil
+}
+
+func IsNativeToken(assetID string) bool {
+	// TODO: native token should be a list which able to config, we currently only support ETH, so it's fine for now
+	return assetID == NativeETHAssetID
+}
+
+func GetNativeTokenAssetIDs() []string {
+	// TODO: we currently have native_eth only
+	return []string{NativeETHAssetID}
+}
+
+func GetBaseTokenForNativeToken(assetID string) string {
+	return NativeTokenBaseMap[assetID]
 }

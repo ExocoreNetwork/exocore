@@ -3,6 +3,7 @@ package keeper
 import (
 	"errors"
 	"fmt"
+	"strings"
 
 	assetstype "github.com/ExocoreNetwork/exocore/x/assets/types"
 	delegationkeeper "github.com/ExocoreNetwork/exocore/x/delegation/keeper"
@@ -299,6 +300,9 @@ func (k *Keeper) CalculateUSDValueForOperator(
 		if isForSlash {
 			// when calculated the USD value for slashing, the input prices map is null
 			// so the price needs to be retrieved here
+			if assetstype.IsNativeToken(assetID) {
+				assetID = strings.Join([]string{assetID, operator}, "_")
+			}
 			price, err = k.oracleKeeper.GetSpecifiedAssetsPrice(ctx, assetID)
 			if err != nil {
 				// TODO: when assetID is not registered in oracle module, this error will finally lead to panic

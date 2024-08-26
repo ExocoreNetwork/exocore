@@ -2,8 +2,10 @@ package keeper
 
 import (
 	"encoding/binary"
+	"strings"
 
 	sdkmath "cosmossdk.io/math"
+	assetstypes "github.com/ExocoreNetwork/exocore/x/assets/types"
 	"github.com/ExocoreNetwork/exocore/x/oracle/types"
 	"github.com/cosmos/cosmos-sdk/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -52,6 +54,10 @@ func (k Keeper) GetSpecifiedAssetsPrice(ctx sdk.Context, assetID string) (types.
 		p = agc.GetParams()
 	} else {
 		p = k.GetParams(ctx)
+	}
+	// if this asset represents for native token fetch price identified by operator
+	if parsedAssetID := strings.Split(assetID, "_"); len(parsedAssetID) == 3 && assetstypes.IsNativeToken(strings.Join([]string{parsedAssetID[0], parsedAssetID[1]}, "_")) {
+		return k.GetNativeTokenPriceUSDForOperator(ctx, assetID)
 	}
 	tokenID := p.GetTokenIDFromAssetID(assetID)
 	if tokenID == 0 {
@@ -187,7 +193,24 @@ func (k Keeper) AppendPriceTR(ctx sdk.Context, tokenID uint64, priceTR types.Pri
 	if expiredRoundID := nextRoundID - agc.GetParamsMaxSizePrices(); expiredRoundID > 0 {
 		store.Delete(types.PricesRoundKey(expiredRoundID))
 	}
-	k.IncreaseNextRoundID(ctx, tokenID)
+	roundID := k.IncreaseNextRoundID(ctx, tokenID)
+
+	// update for native tokens
+	// TODO: set hooks as a genral approach
+	var p types.Params
+	// get params from cache if exists
+	if agc != nil {
+		p = agc.GetParams()
+	} else {
+		p = k.GetParams(ctx)
+	}
+	assetIDs := p.GetAssetIDsFromTokenID(tokenID)
+	for _, assetID := range assetIDs {
+		if assetstypes.IsNativeToken(assetID) {
+			k.UpdateNativeTokenByBalanceChange(ctx, assetID, []byte(priceTR.Price), roundID)
+		}
+	}
+
 	return true
 }
 
@@ -259,12 +282,13 @@ func (k Keeper) GetNextRoundID(ctx sdk.Context, tokenID uint64) (nextRoundID uin
 }
 
 // IncreaseNextRoundID increases nextRoundID persisted by 1 of a token
-func (k Keeper) IncreaseNextRoundID(ctx sdk.Context, tokenID uint64) {
+func (k Keeper) IncreaseNextRoundID(ctx sdk.Context, tokenID uint64) uint64 {
 	store := k.getPriceTRStore(ctx, tokenID)
 	nextRoundID := k.GetNextRoundID(ctx, tokenID)
 	b := make([]byte, 8)
 	binary.BigEndian.PutUint64(b, nextRoundID+1)
 	store.Set(types.PricesNextRoundIDKey, b)
+	return nextRoundID
 }
 
 func (k Keeper) getPriceTRStore(ctx sdk.Context, tokenID uint64) prefix.Store {

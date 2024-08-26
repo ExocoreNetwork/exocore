@@ -493,6 +493,13 @@ func (p Params) GetTokenIDFromAssetID(assetID string) int {
 	return 0
 }
 
+func (p Params) GetAssetIDsFromTokenID(tokenID uint64) []string {
+	if tokenID >= uint64(len(p.Tokens)) {
+		return nil
+	}
+	return strings.Split(p.Tokens[tokenID].AssetID, ",")
+}
+
 func (p Params) IsDeterministicSource(sourceID uint64) bool {
 	return p.Sources[sourceID].Deterministic
 }

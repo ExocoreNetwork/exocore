@@ -2,8 +2,10 @@ package keeper
 
 import (
 	"errors"
+	"strings"
 
 	sdkmath "cosmossdk.io/math"
+	assetstypes "github.com/ExocoreNetwork/exocore/x/assets/types"
 	operatortypes "github.com/ExocoreNetwork/exocore/x/operator/types"
 	oracletypes "github.com/ExocoreNetwork/exocore/x/oracle/types"
 	abci "github.com/cometbft/cometbft/abci/types"
@@ -61,6 +63,11 @@ func (k *Keeper) UpdateVotingPower(ctx sdk.Context, avsAddr string) error {
 			TotalUSDValue:  sdkmath.LegacyNewDec(0),
 			SelfUSDValue:   sdkmath.LegacyNewDec(0),
 			ActiveUSDValue: sdkmath.LegacyNewDec(0),
+		}
+		for _, assetID := range assetstypes.GetNativeTokenAssetIDs() {
+			if _, ok := prices[assetID]; ok {
+				prices[assetID], err = k.oracleKeeper.GetSpecifiedAssetsPrice(ctx, strings.Join([]string{assetID, operator}, "_"))
+			}
 		}
 		stakingInfo, err := k.CalculateUSDValueForOperator(ctx, false, operator, assets, decimals, prices)
 		if err != nil {

@@ -6,8 +6,11 @@ import (
 	errorsmod "cosmossdk.io/errors"
 	sdkmath "cosmossdk.io/math"
 
+	"github.com/ExocoreNetwork/exocore/x/assets/types"
 	assetstypes "github.com/ExocoreNetwork/exocore/x/assets/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+
+	"github.com/ethereum/go-ethereum/common/hexutil"
 )
 
 type DepositWithdrawParams struct {
@@ -41,6 +44,11 @@ func (k Keeper) PerformDepositOrWithdraw(ctx sdk.Context, params *DepositWithdra
 		actualOpAmount = actualOpAmount.Neg()
 	default:
 		return errorsmod.Wrapf(assetstypes.ErrInvalidOperationType, "the operation type is: %v", params.Action)
+	}
+
+	if types.IsNativeToken(assetID) {
+		// TODO: we skip check for case like withdraw amount>withdrawable is fine since it will fail for later check and the state will be rollback
+		actualOpAmount = sdkmath.NewIntFromBigInt(k.UpdateNativeTokenByDepositOrWithdraw(ctx, assetID, hexutil.Encode(params.StakerAddress), params.OpAmount.String()))
 	}
 
 	changeAmount := assetstypes.DeltaStakerSingleAsset{
