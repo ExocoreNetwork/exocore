@@ -1,6 +1,8 @@
 package types
 
 import (
+	"math/big"
+
 	sdkmath "cosmossdk.io/math"
 	assetstype "github.com/ExocoreNetwork/exocore/x/assets/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -62,4 +64,8 @@ type BankKeeper interface {
 
 type AccountKeeper interface {
 	GetSequence(ctx sdk.Context, addr sdk.AccAddress) (uint64, error)
+}
+
+type OracleKeeper interface {
+	UpdateNativeTokenByDelegation(ctx sdk.Context, assetID, operatorAddr, stakerAddr, amountOriginal string) (amount *big.Int)
 }

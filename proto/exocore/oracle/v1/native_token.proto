@@ -1,0 +1,44 @@
+syntax = "proto3";
+
+package exocore.oracle.v1;
+
+import "gogoproto/gogo.proto";
+
+option go_package = "github.com/ExocoreNetwork/exocore/x/oracle/types";
+
+message PriceInfo {
+  string price = 1;
+  uint64 block = 2;
+  uint64 round_id = 3 [(gogoproto.customname)="RoundID"];
+}
+
+message OperatorInfo {
+  string operator_addr = 1;
+  string total_amount = 2;
+  repeated PriceInfo price_list = 3;
+}
+
+message StakerInfo {
+  string staker_addr = 1;
+  int64 staker_index = 2;
+  repeated uint64 validator_indexs = 3;
+  string total_deposit = 4;
+  repeated PriceInfo price_list = 5;
+}
+
+message NativeTokenPrice {
+  string token = 1;
+  repeated PriceInfo prece_list = 2;
+}
+
+message StakerList {
+  repeated string staker_addrs = 1;
+}
+
+message DelegationInfo {
+  string operator_addr = 1;
+  string amount = 2;
+}
+message StakerDelegationInfo {
+  repeated DelegationInfo delegations = 1;
+}

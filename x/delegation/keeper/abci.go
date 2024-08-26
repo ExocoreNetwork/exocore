@@ -50,6 +50,7 @@ func (k *Keeper) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.Valida
 			}
 			// and the other is the fact that it matures at the next block
 			err = k.StorePendingUndelegationRecord(ctx, recordKey, record)
+			//TODO: remove previous index with currentHeight for pendingUndelegationRecord
 			if err != nil {
 				panic(err)
 			}
