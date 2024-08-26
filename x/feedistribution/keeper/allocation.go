@@ -6,6 +6,7 @@ import (
 	"github.com/ExocoreNetwork/exocore/x/feedistribution/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
+	"sort"
 )
 
 // Based on the epoch, AllocateTokens performs reward and fee distribution to all validators.
@@ -111,6 +112,7 @@ func (k Keeper) AllocateTokensToStakers(ctx sdk.Context, operatorAddress sdk.Acc
 		ctx.Logger().Error("avs address lists not found; skipping")
 	}
 	stakersPowerMap, curTotalStakersPowers := make(map[string]math.LegacyDec), math.LegacyNewDec(1)
+	globalStakerAddressList := make([]string, 0)
 	for _, avsAddress := range avsList {
 		avsAssets, err := k.StakingKeeper.GetAVSSupportedAssets(ctx, avsAddress)
 		if err != nil {
@@ -126,17 +128,28 @@ func (k Keeper) AllocateTokensToStakers(ctx sdk.Context, operatorAddress sdk.Acc
 					ctx.Logger().Error("curStakerPower error", err)
 				} else {
 					stakersPowerMap[staker] = curStakerPower
+					globalStakerAddressList = append(globalStakerAddressList, staker)
 					curTotalStakersPowers.Add(curStakerPower)
 				}
 			}
 		}
 	}
+	sort.Slice(globalStakerAddressList, func(i, j int) bool {
+		return stakersPowerMap[globalStakerAddressList[i]].GT(stakersPowerMap[globalStakerAddressList[j]])
+	})
 
-	for staker, stakerPower := range stakersPowerMap {
+	// allocate to stakers in voting power descending order
+	for _, staker := range globalStakerAddressList {
+		stakerPower := stakersPowerMap[staker]
 		powerFraction := stakerPower.QuoTruncate(curTotalStakersPowers)
 		rewardToSingleStaker := rewardToAllStakers.MulDecTruncate(powerFraction)
-		k.AllocateTokensToSingleStaker(ctx, staker, rewardToSingleStaker)
-		rewardToAllStakers = rewardToAllStakers.Sub(rewardToSingleStaker)
+		if rw := rewardToAllStakers.Sub(rewardToSingleStaker); rw.IsValid() {
+			rewardToAllStakers = rw
+			k.AllocateTokensToSingleStaker(ctx, staker, rewardToSingleStaker)
+		} else {
+			// it's negative, don't allocate to stakers anymore.
+			break
+		}
 	}
 	feePool.CommunityPool = feePool.CommunityPool.Add(rewardToAllStakers...)
 	logger.Info("allocate tokens to stakers successfully", "allocated amount is", rewardToAllStakers.String())
