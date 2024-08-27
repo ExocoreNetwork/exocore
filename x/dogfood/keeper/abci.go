@@ -1,11 +1,9 @@
 package keeper
 
 import (
-	"sort"
-
 	"cosmossdk.io/math"
+	"github.com/ExocoreNetwork/exocore/utils"
 	avstypes "github.com/ExocoreNetwork/exocore/x/avs/types"
-	operatortypes "github.com/ExocoreNetwork/exocore/x/operator/types"
 	abci "github.com/cometbft/cometbft/abci/types"
 	cryptocodec "github.com/cosmos/cosmos-sdk/crypto/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -87,7 +85,7 @@ func (k Keeper) EndBlock(ctx sdk.Context) []abci.ValidatorUpdate {
 		k.Logger(ctx).Error("error getting vote power for chain", "error", err)
 		return []abci.ValidatorUpdate{}
 	}
-	operators, keys, powers = sortByPower(operators, keys, powers)
+	operators, keys, powers = utils.SortByPower(operators, keys, powers)
 	maxVals := k.GetMaxValidators(ctx)
 	k.Logger(ctx).Info("max validators", "maxVals", maxVals, "len(operators)", len(operators))
 	// the capacity of this list is twice the maximum number of validators.
@@ -164,35 +162,4 @@ func (k Keeper) EndBlock(ctx sdk.Context) []abci.ValidatorUpdate {
 
 	// call via wrapper function so that validator info is stored.
 	return k.ApplyValidatorChanges(ctx, res)
-}
-
-// sortByPower sorts operators, their pubkeys, and their powers by the powers.
-// the sorting is descending, so the highest power is first.
-func sortByPower(
-	operatorAddrs []sdk.AccAddress,
-	pubKeys []operatortypes.WrappedConsKey,
-	powers []int64,
-) ([]sdk.AccAddress, []operatortypes.WrappedConsKey, []int64) {
-	// Create a slice of indices
-	indices := make([]int, len(powers))
-	for i := range indices {
-		indices[i] = i
-	}
-
-	// Sort the indices slice based on the powers slice
-	sort.SliceStable(indices, func(i, j int) bool {
-		return powers[indices[i]] > powers[indices[j]]
-	})
-
-	// Reorder all slices using the sorted indices
-	sortedOperatorAddrs := make([]sdk.AccAddress, len(operatorAddrs))
-	sortedPubKeys := make([]operatortypes.WrappedConsKey, len(pubKeys))
-	sortedPowers := make([]int64, len(powers))
-	for i, idx := range indices {
-		sortedOperatorAddrs[i] = operatorAddrs[idx]
-		sortedPubKeys[i] = pubKeys[idx]
-		sortedPowers[i] = powers[idx]
-	}
-
-	return sortedOperatorAddrs, sortedPubKeys, sortedPowers
 }
