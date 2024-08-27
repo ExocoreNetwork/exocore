@@ -111,7 +111,7 @@ func (k Keeper) AllocateTokensToStakers(ctx sdk.Context, operatorAddress sdk.Acc
 	if err != nil {
 		ctx.Logger().Error("avs address lists not found; skipping")
 	}
-	stakersPowerMap, curTotalStakersPowers := make(map[string]math.LegacyDec), math.LegacyNewDec(1)
+	stakersPowerMap, curTotalStakersPowers := make(map[string]math.LegacyDec), math.LegacyNewDec(0)
 	globalStakerAddressList := make([]string, 0)
 	for _, avsAddress := range avsList {
 		avsAssets, err := k.StakingKeeper.GetAVSSupportedAssets(ctx, avsAddress)
@@ -129,7 +129,7 @@ func (k Keeper) AllocateTokensToStakers(ctx sdk.Context, operatorAddress sdk.Acc
 				} else {
 					stakersPowerMap[staker] = curStakerPower
 					globalStakerAddressList = append(globalStakerAddressList, staker)
-					curTotalStakersPowers.Add(curStakerPower)
+					curTotalStakersPowers = curTotalStakersPowers.Add(curStakerPower)
 				}
 			}
 		}
@@ -138,19 +138,22 @@ func (k Keeper) AllocateTokensToStakers(ctx sdk.Context, operatorAddress sdk.Acc
 		return stakersPowerMap[globalStakerAddressList[i]].GT(stakersPowerMap[globalStakerAddressList[j]])
 	})
 
-	// allocate to stakers in voting power descending order
-	for _, staker := range globalStakerAddressList {
-		stakerPower := stakersPowerMap[staker]
-		powerFraction := stakerPower.QuoTruncate(curTotalStakersPowers)
-		rewardToSingleStaker := rewardToAllStakers.MulDecTruncate(powerFraction)
-		if rw := rewardToAllStakers.Sub(rewardToSingleStaker); rw.IsValid() {
-			rewardToAllStakers = rw
-			k.AllocateTokensToSingleStaker(ctx, staker, rewardToSingleStaker)
-		} else {
-			// it's negative, don't allocate to stakers anymore.
-			break
+	if curTotalStakersPowers.IsPositive() {
+		// allocate to stakers in voting power descending order if the curTotalStakersPower is positive
+		for _, staker := range globalStakerAddressList {
+			stakerPower := stakersPowerMap[staker]
+			powerFraction := stakerPower.QuoTruncate(curTotalStakersPowers)
+			rewardToSingleStaker := rewardToAllStakers.MulDecTruncate(powerFraction)
+			if rw := rewardToAllStakers.Sub(rewardToSingleStaker); rw.IsValid() {
+				rewardToAllStakers = rw
+				k.AllocateTokensToSingleStaker(ctx, staker, rewardToSingleStaker)
+			} else {
+				// it's negative, don't allocate to stakers anymore.
+				break
+			}
 		}
 	}
+
 	feePool.CommunityPool = feePool.CommunityPool.Add(rewardToAllStakers...)
 	logger.Info("allocate tokens to stakers successfully", "allocated amount is", rewardToAllStakers.String())
 }
