@@ -29,12 +29,7 @@ func (k Keeper) InitGenesis(
 		// is not running. it means that the genesis file is malformed.
 		panic(fmt.Sprintf("epoch info not found %s", epochID))
 	}
-	// apply the same logic to the staking assets.
-	for _, assetID := range genState.Params.AssetIDs {
-		if !k.restakingKeeper.IsStakingAsset(ctx, assetID) {
-			panic(fmt.Errorf("staking param %s not found in assets module", assetID))
-		}
-	}
+	// the staking assets are validated during AVS registration so we skip it here
 	k.SetParams(ctx, genState.Params)
 	// create the AVS
 	var avsAddr common.Address
