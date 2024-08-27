@@ -74,7 +74,7 @@ func recacheAggregatorContext(ctx sdk.Context, agc *aggregator.AggregatorContext
 		// no cache, this is the very first running, so go to initial process instead
 		return false
 	}
-
+	// #nosec G115
 	if int64(h.Block) >= from {
 		from = int64(h.Block) + 1
 	}

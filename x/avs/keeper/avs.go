@@ -56,7 +56,7 @@ func (k *Keeper) GetAVSMinimumSelfDelegation(ctx sdk.Context, avsAddr string) (s
 	if err != nil {
 		return sdkmath.LegacyNewDec(0), errorsmod.Wrap(err, fmt.Sprintf("GetAVSMinimumSelfDelegation: key is %s", avsAddr))
 	}
-
+	// #nosec G115
 	return sdkmath.LegacyNewDec(int64(avsInfo.Info.MinSelfDelegation)), nil
 }
 
@@ -69,6 +69,7 @@ func (k *Keeper) GetEpochEndAVSs(ctx sdk.Context, epochIdentifier string, ending
 		// the currentEpoch is 1, so we will return it.
 		// consider another AVS which will start at epoch 5. the current epoch is 4.
 		// it should be returned here, since the operator module should start tracking this.
+		// #nosec G115
 		if epochIdentifier == avsInfo.EpochIdentifier && endingEpochNumber >= int64(avsInfo.StartingEpoch)-1 {
 			avsList = append(avsList, avsInfo.AvsAddress)
 		}
@@ -96,6 +97,7 @@ func (k *Keeper) GetTaskChallengeEpochEndAVSs(ctx sdk.Context, epochIdentifier s
 	k.IterateTaskAVSInfo(ctx, func(_ int64, taskInfo types.TaskInfo) (stop bool) {
 		avsInfo := k.GetAVSInfoByTaskAddress(ctx, taskInfo.TaskContractAddress)
 		// Determine if the challenge period has passed, the range of the challenge period is the num marked (StartingEpoch) add TaskChallengePeriod
+		// #nosec G115
 		if epochIdentifier == avsInfo.EpochIdentifier && epochNumber > int64(taskInfo.TaskChallengePeriod)+int64(taskInfo.StartingEpoch) {
 			taskList = append(taskList, taskInfo)
 		}

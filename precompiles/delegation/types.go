@@ -43,6 +43,7 @@ func (p Precompile) GetDelegationParamsFromInputs(ctx sdk.Context, args []interf
 	if !ok || assetAddr == nil {
 		return nil, fmt.Errorf(exocmn.ErrContractInputParaOrType, 2, "[]byte", args[2])
 	}
+	// #nosec G115
 	if uint32(len(assetAddr)) < clientChainAddrLength {
 		return nil, fmt.Errorf(exocmn.ErrInvalidAddrLength, len(assetAddr), clientChainAddrLength)
 	}
@@ -52,6 +53,7 @@ func (p Precompile) GetDelegationParamsFromInputs(ctx sdk.Context, args []interf
 	if !ok || stakerAddr == nil {
 		return nil, fmt.Errorf(exocmn.ErrContractInputParaOrType, 3, "[]byte", args[3])
 	}
+	// #nosec G115
 	if uint32(len(stakerAddr)) < clientChainAddrLength {
 		return nil, fmt.Errorf(exocmn.ErrInvalidAddrLength, len(stakerAddr), clientChainAddrLength)
 	}
