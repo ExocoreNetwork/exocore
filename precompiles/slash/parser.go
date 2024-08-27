@@ -34,6 +34,7 @@ func (p Precompile) GetSlashParamsFromInputs(ctx sdk.Context, args []interface{}
 	if !ok || assetAddr == nil {
 		return nil, fmt.Errorf(exocmn.ErrContractInputParaOrType, 1, "[]byte", assetAddr)
 	}
+	// #nosec G115
 	if uint32(len(assetAddr)) < clientChainAddrLength {
 		return nil, fmt.Errorf(exocmn.ErrInvalidAddrLength, len(assetAddr), clientChainAddrLength)
 	}
@@ -43,6 +44,7 @@ func (p Precompile) GetSlashParamsFromInputs(ctx sdk.Context, args []interface{}
 	if !ok || stakerAddr == nil {
 		return nil, fmt.Errorf(exocmn.ErrContractInputParaOrType, 2, "[]byte", stakerAddr)
 	}
+	// #nosec G115
 	if uint32(len(stakerAddr)) < clientChainAddrLength {
 		return nil, fmt.Errorf(exocmn.ErrInvalidAddrLength, len(stakerAddr), clientChainAddrLength)
 	}

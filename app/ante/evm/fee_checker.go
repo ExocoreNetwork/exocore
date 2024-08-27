@@ -95,6 +95,7 @@ func NewDynamicFeeChecker(k DynamicFeeEVMKeeper) anteutils.TxFeeChecker {
 func checkTxFeeWithValidatorMinGasPrices(ctx sdk.Context, tx sdk.FeeTx) (sdk.Coins, int64, error) {
 	feeCoins := tx.GetFee()
 	minGasPrices := ctx.MinGasPrices()
+	// #nosec G115
 	gas := int64(tx.GetGas()) //#nosec G701 -- checked for int overflow on ValidateBasic()
 
 	// Ensure that the provided fees meet a minimum threshold for the validator,
