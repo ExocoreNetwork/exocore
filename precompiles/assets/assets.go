@@ -106,7 +106,7 @@ func (p Precompile) Run(evm *vm.EVM, contract *vm.Contract, readOnly bool) (bz [
 			// this is a workaround because the error returned by precompile can not be caught in EVM
 			// see https://github.com/ExocoreNetwork/exocore/issues/70
 			// TODO: we should figure out root cause and fix this issue to make precompiles work normally
-			bz, err = method.Outputs.Pack(false) // Adjust based on actual needs
+			bz, err = method.Outputs.Pack(false, false) // Adjust based on actual needs
 		}
 	case MethodRegisterOrUpdateTokens:
 		bz, err = p.RegisterOrUpdateTokens(ctx, contract, method, args)
@@ -116,7 +116,7 @@ func (p Precompile) Run(evm *vm.EVM, contract *vm.Contract, readOnly bool) (bz [
 			// this is a workaround because the error returned by precompile can not be caught in EVM
 			// see https://github.com/ExocoreNetwork/exocore/issues/70
 			// TODO: we should figure out root cause and fix this issue to make precompiles work normally
-			bz, err = method.Outputs.Pack(false) // Adjust based on actual needs
+			bz, err = method.Outputs.Pack(false, false) // Adjust based on actual needs
 		}
 	// queries
 	case MethodGetClientChains:
