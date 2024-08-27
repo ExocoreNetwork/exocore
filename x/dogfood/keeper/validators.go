@@ -27,7 +27,12 @@ func (k Keeper) UnbondingTime(ctx sdk.Context) time.Duration {
 	// no need to check for found, as the epoch info is validated at genesis.
 	epoch, _ := k.epochsKeeper.GetEpochInfo(ctx, params.EpochIdentifier)
 	durationPerEpoch := epoch.Duration
-	return time.Duration(params.EpochsUntilUnbonded) * durationPerEpoch
+	// the extra 1 is added to account for the current epoch. this is,
+	// therefore, the maximum time it takes for unbonding. if the tx
+	// is sent towards the end of the current epoch, the actual time
+	// will be closer to 7 days; if it is sent towards the beginning,
+	// the actual time will be closer to 8 days.
+	return time.Duration(params.EpochsUntilUnbonded+1) * durationPerEpoch
 }
 
 // ApplyValidatorChanges returns the validator set as is. However, it also
