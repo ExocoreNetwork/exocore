@@ -407,9 +407,9 @@ func getTestExocoreGenesis(
 				{
 					AssetID: assetID,
 					Info: assetstypes.StakerAssetInfo{
-						TotalDepositAmount:  depositAmount,
-						WithdrawableAmount:  depositAmount,
-						WaitUnbondingAmount: sdk.ZeroInt(),
+						TotalDepositAmount:        depositAmount,
+						WithdrawableAmount:        depositAmount,
+						PendingUndelegationAmount: sdk.ZeroInt(),
 					},
 				},
 			},

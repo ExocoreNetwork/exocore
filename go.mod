@@ -264,7 +264,7 @@ replace (
 	// use Evmos geth fork
 	github.com/ethereum/go-ethereum => github.com/evmos/go-ethereum v1.10.26-evmos-rc2
 	// use exocore fork of evmos TODO
-	github.com/evmos/evmos/v16 => github.com/ExocoreNetwork/evmos/v16 v16.0.3-0.20240827023534-9fc0e4d55229
+	github.com/evmos/evmos/v16 => github.com/ExocoreNetwork/evmos/v16 v16.0.3-0.20240828081344-d5cfcd34a812
 	// Security Advisory https://github.com/advisories/GHSA-h395-qcrw-5vmq
 	github.com/gin-gonic/gin => github.com/gin-gonic/gin v1.9.1
 	// replace broken goleveldb

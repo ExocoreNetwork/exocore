@@ -91,8 +91,8 @@ message StakerAssetInfo {
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
     (gogoproto.nullable) = false
   ];
-  // wait_unbonding_amount is the amount that is waiting for undelegation.
-  string wait_unbonding_amount = 3
+  // pending_undelegation_amount is the amount that is waiting for undelegation.
+  string pending_undelegation_amount = 3
   [
     (cosmos_proto.scalar) = "cosmos.Int",
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
@@ -118,8 +118,8 @@ message OperatorAssetInfo {
     (gogoproto.nullable) = false
   ];
 
-  // wait_unbonding_amount is the amount that is waiting for unbonding.
-  string wait_unbonding_amount = 2
+  // pending_undelegation_amount is the amount that is waiting for unbonding.
+  string pending_undelegation_amount = 2
   [
     (cosmos_proto.scalar) = "cosmos.Int",
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",

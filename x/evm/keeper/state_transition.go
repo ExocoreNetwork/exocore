@@ -1,9 +1,10 @@
 package keeper
 
 import (
+	"math/big"
+
 	"github.com/ExocoreNetwork/exocore/precompiles/delegation"
 	"golang.org/x/exp/slices"
-	"math/big"
 
 	tmtypes "github.com/cometbft/cometbft/types"
 

@@ -3,6 +3,8 @@ package keeper
 import (
 	"bytes"
 	"fmt"
+	"sort"
+
 	assetsprecompile "github.com/ExocoreNetwork/exocore/precompiles/assets"
 	avsManagerPrecompile "github.com/ExocoreNetwork/exocore/precompiles/avs"
 	blsPrecompile "github.com/ExocoreNetwork/exocore/precompiles/bls"
@@ -19,10 +21,8 @@ import (
 	channelkeeper "github.com/cosmos/ibc-go/v7/modules/core/04-channel/keeper"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/vm"
-	ics20precompile "github.com/evmos/evmos/v16/precompiles/ics20"
 	transferkeeper "github.com/evmos/evmos/v16/x/ibc/transfer/keeper"
 	"golang.org/x/exp/maps"
-	"sort"
 )
 
 const (
@@ -33,8 +33,8 @@ const (
 // NOTE: this should only be used during initialization of the Keeper.
 func AvailablePrecompiles(
 	authzKeeper authzkeeper.Keeper,
-	transferKeeper transferkeeper.Keeper,
-	channelKeeper channelkeeper.Keeper,
+	_ transferkeeper.Keeper,
+	_ channelkeeper.Keeper,
 	delegationKeeper delegationKeeper.Keeper,
 	assetskeeper stakingStateKeeper.Keeper,
 	slashKeeper exoslashKeeper.Keeper,
@@ -44,14 +44,14 @@ func AvailablePrecompiles(
 	// Clone the mapping from the latest EVM fork.
 	precompiles := maps.Clone(vm.PrecompiledContractsBerlin)
 
-	ibcTransferPrecompile, err := ics20precompile.NewPrecompile(
-		transferKeeper,
-		channelKeeper,
-		authzKeeper,
-	)
-	if err != nil {
-		panic(fmt.Errorf("failed to load ICS20 precompile: %w", err))
-	}
+	/*	ibcTransferPrecompile, err := ics20precompile.NewPrecompile(
+			transferKeeper,
+			channelKeeper,
+			authzKeeper,
+		)
+		if err != nil {
+			panic(fmt.Errorf("failed to load ICS20 precompile: %w", err))
+		}*/
 
 	assetsPrecompile, err := assetsprecompile.NewPrecompile(
 		assetskeeper,
@@ -98,7 +98,7 @@ func AvailablePrecompiles(
 	precompiles[assetsPrecompile.Address()] = assetsPrecompile
 	precompiles[delegationPrecompile.Address()] = delegationPrecompile
 	precompiles[avsManagerPrecompile.Address()] = avsManagerPrecompile
-	precompiles[ibcTransferPrecompile.Address()] = ibcTransferPrecompile
+	// precompiles[ibcTransferPrecompile.Address()] = ibcTransferPrecompile
 	precompiles[blsPrecompile.Address()] = blsPrecompile
 	return precompiles
 }

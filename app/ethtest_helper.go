@@ -173,9 +173,9 @@ func genesisStateWithValSet(codec codec.Codec, genesisState simapp.GenesisState,
 				{
 					AssetID: assetID,
 					Info: assetstypes.StakerAssetInfo{
-						TotalDepositAmount:  depositAmount,
-						WithdrawableAmount:  depositAmount,
-						WaitUnbondingAmount: sdk.ZeroInt(),
+						TotalDepositAmount:        depositAmount,
+						WithdrawableAmount:        depositAmount,
+						PendingUndelegationAmount: sdk.ZeroInt(),
 					},
 				},
 			},

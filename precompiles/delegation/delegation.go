@@ -88,6 +88,11 @@ func (p Precompile) Run(evm *vm.EVM, contract *vm.Contract, readOnly bool) (bz [
 	// This handles any out of gas errors that may occur during the execution of a precompile tx or query.
 	// It avoids panics and returns the out of gas error so the EVM can continue gracefully.
 	defer cmn.HandleGasError(ctx, contract, initialGas, &err)()
+
+	if err := stateDB.Commit(); err != nil {
+		return nil, err
+	}
+
 	switch method.Name {
 	// delegation transactions
 	case MethodDelegateToThroughClientChain:

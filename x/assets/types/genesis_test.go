@@ -63,9 +63,9 @@ func (suite *GenesisTestSuite) TestValidateGenesis() {
 			{
 				AssetID: assetID,
 				Info: types.StakerAssetInfo{
-					TotalDepositAmount:  math.NewInt(100),
-					WithdrawableAmount:  math.NewInt(100),
-					WaitUnbondingAmount: math.NewInt(0),
+					TotalDepositAmount:        math.NewInt(100),
+					WithdrawableAmount:        math.NewInt(100),
+					PendingUndelegationAmount: math.NewInt(0),
 				},
 			},
 		},
@@ -403,9 +403,9 @@ func (suite *GenesisTestSuite) TestValidateGenesis() {
 			},
 			unmalleate: func(gs *types.GenesisState) {
 				genesisDeposit.Deposits[0].Info = types.StakerAssetInfo{
-					TotalDepositAmount:  math.NewInt(100),
-					WithdrawableAmount:  math.NewInt(0),
-					WaitUnbondingAmount: math.NewInt(0),
+					TotalDepositAmount:        math.NewInt(100),
+					WithdrawableAmount:        math.NewInt(0),
+					PendingUndelegationAmount: math.NewInt(0),
 				}
 				gs.Deposits[0].Deposits[0].Info = genesisDeposit.Deposits[0].Info
 			},
@@ -424,13 +424,13 @@ func (suite *GenesisTestSuite) TestValidateGenesis() {
 			},
 			expPass: false,
 			malleate: func(gs *types.GenesisState) {
-				gs.Deposits[0].Deposits[0].Info.WaitUnbondingAmount = math.NewInt(1)
+				gs.Deposits[0].Deposits[0].Info.PendingUndelegationAmount = math.NewInt(1)
 			},
 			unmalleate: func(gs *types.GenesisState) {
 				genesisDeposit.Deposits[0].Info = types.StakerAssetInfo{
-					TotalDepositAmount:  math.NewInt(100),
-					WithdrawableAmount:  math.NewInt(0),
-					WaitUnbondingAmount: math.NewInt(0),
+					TotalDepositAmount:        math.NewInt(100),
+					WithdrawableAmount:        math.NewInt(0),
+					PendingUndelegationAmount: math.NewInt(0),
 				}
 				gs.Deposits[0].Deposits[0].Info = genesisDeposit.Deposits[0].Info
 			},
@@ -453,9 +453,9 @@ func (suite *GenesisTestSuite) TestValidateGenesis() {
 			},
 			unmalleate: func(gs *types.GenesisState) {
 				genesisDeposit.Deposits[0].Info = types.StakerAssetInfo{
-					TotalDepositAmount:  math.NewInt(100),
-					WithdrawableAmount:  math.NewInt(0),
-					WaitUnbondingAmount: math.NewInt(0),
+					TotalDepositAmount:        math.NewInt(100),
+					WithdrawableAmount:        math.NewInt(0),
+					PendingUndelegationAmount: math.NewInt(0),
 				}
 				gs.Deposits[0].Deposits[0].Info = genesisDeposit.Deposits[0].Info
 			},
@@ -479,9 +479,9 @@ func (suite *GenesisTestSuite) TestValidateGenesis() {
 			},
 			unmalleate: func(gs *types.GenesisState) {
 				genesisDeposit.Deposits[0].Info = types.StakerAssetInfo{
-					TotalDepositAmount:  math.NewInt(100),
-					WithdrawableAmount:  math.NewInt(100),
-					WaitUnbondingAmount: math.NewInt(0),
+					TotalDepositAmount:        math.NewInt(100),
+					WithdrawableAmount:        math.NewInt(0),
+					PendingUndelegationAmount: math.NewInt(0),
 				}
 				gs.Deposits[0].Deposits[0].Info = genesisDeposit.Deposits[0].Info
 			},

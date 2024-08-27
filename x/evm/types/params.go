@@ -11,7 +11,7 @@ var (
 	DefaultEVMDenom               = utils.BaseDenom
 	ExocoreAvailableEVMExtensions = []string{
 		// 0x0000000000000000000000000000000000000801 client chains precompile has been merged to assets.
-		"0x0000000000000000000000000000000000000802", // ICS20 transfer precompile
+		// "0x0000000000000000000000000000000000000802", // ICS20 transfer precompile
 		"0x0000000000000000000000000000000000000804", // assets precompile
 		"0x0000000000000000000000000000000000000805", // delegation precompile
 		"0x0000000000000000000000000000000000000806", // reward precompile
