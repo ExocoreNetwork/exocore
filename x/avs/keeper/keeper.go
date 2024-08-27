@@ -57,6 +57,15 @@ func (k Keeper) GetOperatorKeeper() types.OperatorKeeper {
 	return k.operatorKeeper
 }
 
+func (k Keeper) ValidateAssetIDs(ctx sdk.Context, assetIDs []string) error {
+	for _, assetID := range assetIDs {
+		if !k.assetsKeeper.IsStakingAsset(ctx, assetID) {
+			return errorsmod.Wrap(types.ErrInvalidAssetID, fmt.Sprintf("Invalid assetID: %s", assetID))
+		}
+	}
+	return nil
+}
+
 func (k Keeper) AVSInfoUpdate(ctx sdk.Context, params *types.AVSRegisterOrDeregisterParams) error {
 	avsInfo, _ := k.GetAVSInfo(ctx, params.AvsAddress)
 	action := params.Action
@@ -77,6 +86,9 @@ func (k Keeper) AVSInfoUpdate(ctx sdk.Context, params *types.AVSRegisterOrDeregi
 		if params.ChainID == types.ChainIDWithoutRevision(ctx.ChainID()) {
 			// TODO: handle this better
 			startingEpoch = uint64(epoch.CurrentEpoch)
+		}
+		if err := k.ValidateAssetIDs(ctx, params.AssetID); err != nil {
+			return err
 		}
 		// The caller must ensure that the relevant addresses are set to be the appropriate format (hex/bech32)
 		avs := &types.AVSInfo{
@@ -152,6 +164,9 @@ func (k Keeper) AVSInfoUpdate(ctx sdk.Context, params *types.AVSRegisterOrDeregi
 		}
 		if params.AssetID != nil {
 			avs.AssetIDs = params.AssetID
+			if err := k.ValidateAssetIDs(ctx, params.AssetID); err != nil {
+				return err
+			}
 		}
 
 		if params.UnbondingPeriod > 0 {

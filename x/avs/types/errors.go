@@ -56,4 +56,8 @@ var (
 		ModuleName, 13,
 		"The task already exists",
 	)
+	ErrInvalidAssetID = errorsmod.Register(
+		ModuleName, 14,
+		"Invalid asset ID",
+	)
 )
