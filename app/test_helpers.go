@@ -30,10 +30,10 @@ import (
 
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 
-	"github.com/evmos/evmos/v14/crypto/ethsecp256k1"
-	"github.com/evmos/evmos/v14/encoding"
-	evmostypes "github.com/evmos/evmos/v14/types"
-	feemarkettypes "github.com/evmos/evmos/v14/x/feemarket/types"
+	"github.com/evmos/evmos/v16/crypto/ethsecp256k1"
+	"github.com/evmos/evmos/v16/encoding"
+	evmostypes "github.com/evmos/evmos/v16/types"
+	feemarkettypes "github.com/evmos/evmos/v16/x/feemarket/types"
 
 	"github.com/ExocoreNetwork/exocore/cmd/config"
 	"github.com/ExocoreNetwork/exocore/utils"

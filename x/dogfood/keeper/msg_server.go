@@ -10,7 +10,7 @@ import (
 
 	"github.com/ExocoreNetwork/exocore/x/dogfood/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	epochstypes "github.com/evmos/evmos/v14/x/epochs/types"
+	epochstypes "github.com/evmos/evmos/v16/x/epochs/types"
 )
 
 type msgServer struct {

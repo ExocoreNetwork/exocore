@@ -2,7 +2,7 @@ package types
 
 import (
 	"github.com/ExocoreNetwork/exocore/utils"
-	evmtype "github.com/evmos/evmos/v14/x/evm/types"
+	evmtype "github.com/evmos/evmos/v16/x/evm/types"
 )
 
 // ExocoreAvailableEVMExtensions defines the default active precompiles

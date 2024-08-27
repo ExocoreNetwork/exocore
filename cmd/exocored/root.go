@@ -43,15 +43,15 @@ import (
 	app "github.com/ExocoreNetwork/exocore/app"
 	evmosclient "github.com/ExocoreNetwork/exocore/client"
 	"github.com/ExocoreNetwork/exocore/client/debug"
-	"github.com/evmos/evmos/v14/encoding"
-	"github.com/evmos/evmos/v14/ethereum/eip712"
-	evmosserver "github.com/evmos/evmos/v14/server"
-	servercfg "github.com/evmos/evmos/v14/server/config"
-	srvflags "github.com/evmos/evmos/v14/server/flags"
+	"github.com/evmos/evmos/v16/encoding"
+	"github.com/evmos/evmos/v16/ethereum/eip712"
+	evmosserver "github.com/evmos/evmos/v16/server"
+	servercfg "github.com/evmos/evmos/v16/server/config"
+	srvflags "github.com/evmos/evmos/v16/server/flags"
 
 	cmdcfg "github.com/ExocoreNetwork/exocore/cmd/config"
+	evmoskr "github.com/evmos/evmos/v16/crypto/keyring"
 	pricefeeder "github.com/ExocoreNetwork/price-feeder/external"
-	evmoskr "github.com/evmos/evmos/v14/crypto/keyring"
 )
 
 const (
