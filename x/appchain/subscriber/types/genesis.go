@@ -1,13 +1,17 @@
 package types
 
+import (
+	commontypes "github.com/ExocoreNetwork/exocore/x/appchain/common/types"
+)
+
 // DefaultGenesis returns the default genesis state.
 func DefaultGenesis() *GenesisState {
-	return NewGenesis(DefaultParams())
+	return NewGenesis(commontypes.DefaultSubscriberParams())
 }
 
 // NewGenesis creates a new genesis state with the provided parameters and
 // data.
-func NewGenesis(params Params) *GenesisState {
+func NewGenesis(params commontypes.SubscriberParams) *GenesisState {
 	return &GenesisState{Params: params}
 }
 

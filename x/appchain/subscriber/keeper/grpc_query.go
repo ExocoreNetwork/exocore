@@ -12,7 +12,7 @@ import (
 
 var _ types.QueryServer = Keeper{}
 
-func (k Keeper) Params(
+func (k Keeper) QueryParams(
 	goCtx context.Context,
 	req *types.QueryParamsRequest,
 ) (*types.QueryParamsResponse, error) {

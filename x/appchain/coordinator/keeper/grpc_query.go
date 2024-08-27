@@ -12,7 +12,8 @@ import (
 
 var _ types.QueryServer = Keeper{}
 
-func (k Keeper) Params(
+// QueryParams is the implementation of the QueryServer method
+func (k Keeper) QueryParams(
 	goCtx context.Context,
 	req *types.QueryParamsRequest,
 ) (*types.QueryParamsResponse, error) {
@@ -20,6 +21,19 @@ func (k Keeper) Params(
 		return nil, status.Error(codes.InvalidArgument, "invalid request")
 	}
 	ctx := sdk.UnwrapSDKContext(goCtx)
-
 	return &types.QueryParamsResponse{Params: k.GetParams(ctx)}, nil
+}
+
+// QuerySubscriberGenesis is the implementation of the QueryServer method
+func (k Keeper) QuerySubscriberGenesis(
+	goCtx context.Context,
+	req *types.QuerySubscriberGenesisRequest,
+) (*types.QuerySubscriberGenesisResponse, error) {
+	if req == nil {
+		return nil, status.Error(codes.InvalidArgument, "invalid request")
+	}
+	ctx := sdk.UnwrapSDKContext(goCtx)
+	return &types.QuerySubscriberGenesisResponse{
+		SubscriberGenesis: k.GetSubscriberGenesis(ctx, req.Chain),
+	}, nil
 }

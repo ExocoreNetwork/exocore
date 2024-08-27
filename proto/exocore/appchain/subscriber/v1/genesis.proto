@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package exocore.appchain.subscriber.v1;
 
-import "exocore/appchain/subscriber/v1/params.proto";
+import "exocore/appchain/common/v1/common.proto";
 import "gogoproto/gogo.proto";
 
 option go_package = "github.com/ExocoreNetwork/exocore/x/appchain/subscriber/types";
@@ -10,5 +10,5 @@ option go_package = "github.com/ExocoreNetwork/exocore/x/appchain/subscriber/typ
 // GenesisState is the genesis state for the appchain subscriber module.
 message GenesisState {
     // Params is the parameters for the appchain subscriber module.
-    Params params = 1 [(gogoproto.nullable) = false];
+    exocore.appchain.common.v1.SubscriberParams params = 1 [(gogoproto.nullable) = false];
 }

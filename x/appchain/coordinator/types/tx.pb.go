@@ -6,10 +6,19 @@ package types
 import (
 	context "context"
 	fmt "fmt"
+	types "github.com/ExocoreNetwork/exocore/x/appchain/common/types"
+	_ "github.com/cosmos/cosmos-proto"
+	_ "github.com/cosmos/cosmos-sdk/types/msgservice"
+	_ "github.com/cosmos/gogoproto/gogoproto"
 	grpc1 "github.com/cosmos/gogoproto/grpc"
 	proto "github.com/cosmos/gogoproto/proto"
+	_ "google.golang.org/genproto/googleapis/api/annotations"
 	grpc "google.golang.org/grpc"
+	codes "google.golang.org/grpc/codes"
+	status "google.golang.org/grpc/status"
+	io "io"
 	math "math"
+	math_bits "math/bits"
 )
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -23,22 +32,198 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
+// RegisterSubscriberChainRequest is the request type for the RegisterSubscriberChain message.
+type RegisterSubscriberChainRequest struct {
+	// from_address is the address of the transaction signer. any transactions
+	// originating from this address may be used to edit the chain. at some point
+	// in the future this will be offloaded to the governance module on the
+	// subscriber chain. (TODO)
+	FromAddress string `protobuf:"bytes,1,opt,name=from_address,json=fromAddress,proto3" json:"from_address,omitempty"`
+	// chain_id is the unique identifier for the chain, serving as the primary key.
+	ChainID string `protobuf:"bytes,2,opt,name=chain_id,json=chainId,proto3" json:"chain_id,omitempty"`
+	// epoch_identifier specifies the unit of epoch (week, hour, day). It must be registered in the x/epochs module.
+	// This epoch is the identifier used by the coordinator to send validator set updates to the subscriber at the
+	// end of each epoch. The subscriber chain's genesis is made available at the end of the current epoch
+	// (marked by this identifier).
+	EpochIdentifier string `protobuf:"bytes,3,opt,name=epoch_identifier,json=epochIdentifier,proto3" json:"epoch_identifier,omitempty"`
+	// asset_ids lists the IDs of assets accepted by the subscriber chain.
+	AssetIDs []string `protobuf:"bytes,4,rep,name=asset_ids,json=assetIds,proto3" json:"asset_ids,omitempty"`
+	// min_self_delegation_usd is the minimum self-delegation in USD required to be a validator on the chain.
+	MinSelfDelegationUsd uint64 `protobuf:"varint,5,opt,name=min_self_delegation_usd,json=minSelfDelegationUsd,proto3" json:"min_self_delegation_usd,omitempty"`
+	// max_validators is the maximum number of validators allowed on the chain.
+	MaxValidators uint32 `protobuf:"varint,6,opt,name=max_validators,json=maxValidators,proto3" json:"max_validators,omitempty"`
+	// subscriber_params are the parameters used by the subscriber module
+	// on the subscriber chain.
+	SubscriberParams types.SubscriberParams `protobuf:"bytes,7,opt,name=subscriber_params,json=subscriberParams,proto3" json:"subscriber_params"`
+}
+
+func (m *RegisterSubscriberChainRequest) Reset()         { *m = RegisterSubscriberChainRequest{} }
+func (m *RegisterSubscriberChainRequest) String() string { return proto.CompactTextString(m) }
+func (*RegisterSubscriberChainRequest) ProtoMessage()    {}
+func (*RegisterSubscriberChainRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_23c4660f55e25cbc, []int{0}
+}
+func (m *RegisterSubscriberChainRequest) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *RegisterSubscriberChainRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_RegisterSubscriberChainRequest.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *RegisterSubscriberChainRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_RegisterSubscriberChainRequest.Merge(m, src)
+}
+func (m *RegisterSubscriberChainRequest) XXX_Size() int {
+	return m.Size()
+}
+func (m *RegisterSubscriberChainRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_RegisterSubscriberChainRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_RegisterSubscriberChainRequest proto.InternalMessageInfo
+
+func (m *RegisterSubscriberChainRequest) GetFromAddress() string {
+	if m != nil {
+		return m.FromAddress
+	}
+	return ""
+}
+
+func (m *RegisterSubscriberChainRequest) GetChainID() string {
+	if m != nil {
+		return m.ChainID
+	}
+	return ""
+}
+
+func (m *RegisterSubscriberChainRequest) GetEpochIdentifier() string {
+	if m != nil {
+		return m.EpochIdentifier
+	}
+	return ""
+}
+
+func (m *RegisterSubscriberChainRequest) GetAssetIDs() []string {
+	if m != nil {
+		return m.AssetIDs
+	}
+	return nil
+}
+
+func (m *RegisterSubscriberChainRequest) GetMinSelfDelegationUsd() uint64 {
+	if m != nil {
+		return m.MinSelfDelegationUsd
+	}
+	return 0
+}
+
+func (m *RegisterSubscriberChainRequest) GetMaxValidators() uint32 {
+	if m != nil {
+		return m.MaxValidators
+	}
+	return 0
+}
+
+func (m *RegisterSubscriberChainRequest) GetSubscriberParams() types.SubscriberParams {
+	if m != nil {
+		return m.SubscriberParams
+	}
+	return types.SubscriberParams{}
+}
+
+// RegisterSubscriberChainResponse defines the response structure for executing a
+// RegisterSubscriberChain message.
+type RegisterSubscriberChainResponse struct {
+}
+
+func (m *RegisterSubscriberChainResponse) Reset()         { *m = RegisterSubscriberChainResponse{} }
+func (m *RegisterSubscriberChainResponse) String() string { return proto.CompactTextString(m) }
+func (*RegisterSubscriberChainResponse) ProtoMessage()    {}
+func (*RegisterSubscriberChainResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_23c4660f55e25cbc, []int{1}
+}
+func (m *RegisterSubscriberChainResponse) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *RegisterSubscriberChainResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_RegisterSubscriberChainResponse.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *RegisterSubscriberChainResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_RegisterSubscriberChainResponse.Merge(m, src)
+}
+func (m *RegisterSubscriberChainResponse) XXX_Size() int {
+	return m.Size()
+}
+func (m *RegisterSubscriberChainResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_RegisterSubscriberChainResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_RegisterSubscriberChainResponse proto.InternalMessageInfo
+
+func init() {
+	proto.RegisterType((*RegisterSubscriberChainRequest)(nil), "exocore.appchain.coordinator.v1.RegisterSubscriberChainRequest")
+	proto.RegisterType((*RegisterSubscriberChainResponse)(nil), "exocore.appchain.coordinator.v1.RegisterSubscriberChainResponse")
+}
+
 func init() {
 	proto.RegisterFile("exocore/appchain/coordinator/v1/tx.proto", fileDescriptor_23c4660f55e25cbc)
 }
 
 var fileDescriptor_23c4660f55e25cbc = []byte{
-	// 154 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xe2, 0xd2, 0x48, 0xad, 0xc8, 0x4f,
-	0xce, 0x2f, 0x4a, 0xd5, 0x4f, 0x2c, 0x28, 0x48, 0xce, 0x48, 0xcc, 0xcc, 0xd3, 0x4f, 0xce, 0xcf,
-	0x2f, 0x4a, 0xc9, 0xcc, 0x4b, 0x2c, 0xc9, 0x2f, 0xd2, 0x2f, 0x33, 0xd4, 0x2f, 0xa9, 0xd0, 0x2b,
-	0x28, 0xca, 0x2f, 0xc9, 0x17, 0x92, 0x87, 0xaa, 0xd4, 0x83, 0xa9, 0xd4, 0x43, 0x52, 0xa9, 0x57,
-	0x66, 0x68, 0xc4, 0xca, 0xc5, 0xec, 0x5b, 0x9c, 0xee, 0x14, 0x71, 0xe2, 0x91, 0x1c, 0xe3, 0x85,
-	0x47, 0x72, 0x8c, 0x0f, 0x1e, 0xc9, 0x31, 0x4e, 0x78, 0x2c, 0xc7, 0x70, 0xe1, 0xb1, 0x1c, 0xc3,
-	0x8d, 0xc7, 0x72, 0x0c, 0x51, 0x76, 0xe9, 0x99, 0x25, 0x19, 0xa5, 0x49, 0x7a, 0xc9, 0xf9, 0xb9,
-	0xfa, 0xae, 0x10, 0xc3, 0xfc, 0x52, 0x4b, 0xca, 0xf3, 0x8b, 0xb2, 0xf5, 0x61, 0xae, 0xa8, 0xc0,
-	0xee, 0x8e, 0x92, 0xca, 0x82, 0xd4, 0xe2, 0x24, 0x36, 0xb0, 0x43, 0x8c, 0x01, 0x01, 0x00, 0x00,
-	0xff, 0xff, 0x5e, 0x8c, 0x36, 0x21, 0xb4, 0x00, 0x00, 0x00,
+	// 571 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x9c, 0x53, 0xcf, 0x6a, 0x13, 0x41,
+	0x1c, 0xce, 0x36, 0x6d, 0x93, 0x4c, 0x5a, 0x8d, 0x4b, 0x20, 0x6b, 0x90, 0x4d, 0x0c, 0xa8, 0xdb,
+	0xa2, 0xbb, 0xa4, 0xe2, 0xc5, 0xe2, 0x9f, 0xa6, 0x51, 0xc8, 0x41, 0x91, 0x0d, 0x8a, 0x78, 0x59,
+	0x26, 0x3b, 0x93, 0xcd, 0x60, 0x76, 0x67, 0x9d, 0xdf, 0x24, 0xc6, 0x9b, 0xf4, 0x09, 0x04, 0x5f,
+	0xc3, 0x43, 0x0f, 0x3e, 0x44, 0x8f, 0x45, 0x2f, 0x9e, 0x82, 0x26, 0x42, 0xaf, 0x3e, 0x82, 0xec,
+	0x6e, 0x9a, 0x8a, 0x24, 0x16, 0xbc, 0xcd, 0x7c, 0x7f, 0xe6, 0xfb, 0xf1, 0xcd, 0x0c, 0x32, 0xe8,
+	0x88, 0xbb, 0x5c, 0x50, 0x0b, 0x87, 0xa1, 0xdb, 0xc3, 0x2c, 0xb0, 0x5c, 0xce, 0x05, 0x61, 0x01,
+	0x96, 0x5c, 0x58, 0xc3, 0xba, 0x25, 0x47, 0x66, 0x28, 0xb8, 0xe4, 0x6a, 0x65, 0xa6, 0x34, 0x4f,
+	0x95, 0xe6, 0x1f, 0x4a, 0x73, 0x58, 0x2f, 0x97, 0x5c, 0x0e, 0x3e, 0x07, 0xcb, 0x07, 0x2f, 0x32,
+	0xfa, 0xe0, 0x25, 0xce, 0xf2, 0xe5, 0x84, 0x70, 0xe2, 0x9d, 0x95, 0x6c, 0x66, 0x54, 0xd1, 0xe3,
+	0x1e, 0x4f, 0xf0, 0x68, 0x35, 0x43, 0xaf, 0x78, 0x9c, 0x7b, 0xfd, 0x68, 0x26, 0x66, 0xe1, 0x20,
+	0xe0, 0x12, 0x4b, 0xc6, 0x83, 0x53, 0xcf, 0x8d, 0x05, 0x23, 0xfb, 0x3e, 0x0f, 0xa2, 0xd0, 0x64,
+	0x95, 0x08, 0x6b, 0x9f, 0xd2, 0x48, 0xb7, 0xa9, 0xc7, 0x40, 0x52, 0xd1, 0x1e, 0x74, 0xc0, 0x15,
+	0xac, 0x43, 0xc5, 0x7e, 0x64, 0xb1, 0xe9, 0x9b, 0x01, 0x05, 0xa9, 0xee, 0xa2, 0x8d, 0xae, 0xe0,
+	0xbe, 0x83, 0x09, 0x11, 0x14, 0x40, 0x53, 0xaa, 0x8a, 0x91, 0x6b, 0x68, 0x5f, 0x3e, 0xdf, 0x2a,
+	0xce, 0xe6, 0xdc, 0x4b, 0x98, 0xb6, 0x14, 0x2c, 0xf0, 0xec, 0x7c, 0xa4, 0x9e, 0x41, 0xea, 0x75,
+	0x94, 0x8d, 0xf3, 0x1d, 0x46, 0xb4, 0x95, 0xd8, 0x98, 0x9f, 0x8c, 0x2b, 0x99, 0x38, 0xa0, 0xd5,
+	0xb4, 0x33, 0x31, 0xd9, 0x22, 0xea, 0x16, 0x2a, 0xd0, 0x90, 0xbb, 0x3d, 0x87, 0x11, 0x1a, 0x48,
+	0xd6, 0x65, 0x54, 0x68, 0xe9, 0x48, 0x6f, 0x5f, 0x8c, 0xf1, 0xd6, 0x1c, 0x56, 0xb7, 0x50, 0x0e,
+	0x03, 0x50, 0xe9, 0x30, 0x02, 0xda, 0x6a, 0x35, 0x6d, 0xe4, 0x1a, 0x1b, 0x93, 0x71, 0x25, 0xbb,
+	0x17, 0x81, 0xad, 0x26, 0xd8, 0xd9, 0x98, 0x6e, 0x11, 0x50, 0xef, 0xa0, 0x92, 0xcf, 0x02, 0x07,
+	0x68, 0xbf, 0xeb, 0x10, 0xda, 0xa7, 0x5e, 0x5c, 0x92, 0x33, 0x00, 0xa2, 0xad, 0x55, 0x15, 0x63,
+	0xd5, 0x2e, 0xfa, 0x2c, 0x68, 0xd3, 0x7e, 0xb7, 0x39, 0x27, 0x9f, 0x03, 0x51, 0xaf, 0xa1, 0x0b,
+	0x3e, 0x1e, 0x39, 0x43, 0xdc, 0x67, 0x24, 0xba, 0x39, 0xd0, 0xd6, 0xab, 0x8a, 0xb1, 0x69, 0x6f,
+	0xfa, 0x78, 0xf4, 0x62, 0x0e, 0xaa, 0x0e, 0xba, 0x04, 0xf3, 0xca, 0x9c, 0x10, 0x0b, 0xec, 0x83,
+	0x96, 0xa9, 0x2a, 0x46, 0x7e, 0xe7, 0xa6, 0xb9, 0xe0, 0x25, 0xc4, 0xb5, 0x0f, 0xeb, 0xe6, 0x59,
+	0xcf, 0xcf, 0x62, 0x4f, 0x63, 0xf5, 0x68, 0x5c, 0x49, 0xd9, 0x05, 0xf8, 0x0b, 0xbf, 0x5b, 0x38,
+	0x38, 0x39, 0xdc, 0xce, 0x3f, 0x3e, 0xab, 0xb3, 0x76, 0x15, 0x55, 0x96, 0xde, 0x16, 0x84, 0x3c,
+	0x00, 0xba, 0xf3, 0x4b, 0x41, 0xe9, 0x27, 0xe0, 0xa9, 0x3f, 0x14, 0x54, 0x5a, 0xa2, 0x55, 0x1f,
+	0x98, 0xe7, 0x3c, 0x54, 0xf3, 0xdf, 0x6f, 0xa2, 0xfc, 0xf0, 0xff, 0x0f, 0x48, 0xc6, 0xac, 0xed,
+	0x1f, 0x7c, 0xfd, 0xf9, 0x71, 0xe5, 0x5e, 0x6d, 0xd7, 0x3a, 0xff, 0x77, 0x59, 0x4b, 0x0e, 0x2b,
+	0xaf, 0xbd, 0x3f, 0x39, 0xdc, 0x56, 0x1a, 0x2f, 0x8f, 0x26, 0xba, 0x72, 0x3c, 0xd1, 0x95, 0xef,
+	0x13, 0x5d, 0xf9, 0x30, 0xd5, 0x53, 0xc7, 0x53, 0x3d, 0xf5, 0x6d, 0xaa, 0xa7, 0x5e, 0xdd, 0xf7,
+	0x98, 0xec, 0x0d, 0x3a, 0x51, 0xf9, 0xd6, 0xa3, 0x24, 0xe7, 0x29, 0x95, 0x6f, 0xb9, 0x78, 0x3d,
+	0x8f, 0x1d, 0x2d, 0x0e, 0x96, 0xef, 0x42, 0x0a, 0x9d, 0xf5, 0xf8, 0x97, 0xdc, 0xfe, 0x1d, 0x00,
+	0x00, 0xff, 0xff, 0x7e, 0x3b, 0xf2, 0xe0, 0x03, 0x04, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -53,6 +238,8 @@ const _ = grpc.SupportPackageIsVersion4
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
 type MsgClient interface {
+	// RegisterSubscriberChain registers a subscriber chain with the coordinator. By default, it is activated at the next epoch.
+	RegisterSubscriberChain(ctx context.Context, in *RegisterSubscriberChainRequest, opts ...grpc.CallOption) (*RegisterSubscriberChainResponse, error)
 }
 
 type msgClient struct {
@@ -63,22 +250,601 @@ func NewMsgClient(cc grpc1.ClientConn) MsgClient {
 	return &msgClient{cc}
 }
 
+func (c *msgClient) RegisterSubscriberChain(ctx context.Context, in *RegisterSubscriberChainRequest, opts ...grpc.CallOption) (*RegisterSubscriberChainResponse, error) {
+	out := new(RegisterSubscriberChainResponse)
+	err := c.cc.Invoke(ctx, "/exocore.appchain.coordinator.v1.Msg/RegisterSubscriberChain", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // MsgServer is the server API for Msg service.
 type MsgServer interface {
+	// RegisterSubscriberChain registers a subscriber chain with the coordinator. By default, it is activated at the next epoch.
+	RegisterSubscriberChain(context.Context, *RegisterSubscriberChainRequest) (*RegisterSubscriberChainResponse, error)
 }
 
 // UnimplementedMsgServer can be embedded to have forward compatible implementations.
 type UnimplementedMsgServer struct {
 }
 
+func (*UnimplementedMsgServer) RegisterSubscriberChain(ctx context.Context, req *RegisterSubscriberChainRequest) (*RegisterSubscriberChainResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RegisterSubscriberChain not implemented")
+}
+
 func RegisterMsgServer(s grpc1.Server, srv MsgServer) {
 	s.RegisterService(&_Msg_serviceDesc, srv)
+}
+
+func _Msg_RegisterSubscriberChain_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RegisterSubscriberChainRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MsgServer).RegisterSubscriberChain(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/exocore.appchain.coordinator.v1.Msg/RegisterSubscriberChain",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MsgServer).RegisterSubscriberChain(ctx, req.(*RegisterSubscriberChainRequest))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
 var _Msg_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "exocore.appchain.coordinator.v1.Msg",
 	HandlerType: (*MsgServer)(nil),
-	Methods:     []grpc.MethodDesc{},
-	Streams:     []grpc.StreamDesc{},
-	Metadata:    "exocore/appchain/coordinator/v1/tx.proto",
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "RegisterSubscriberChain",
+			Handler:    _Msg_RegisterSubscriberChain_Handler,
+		},
+	},
+	Streams:  []grpc.StreamDesc{},
+	Metadata: "exocore/appchain/coordinator/v1/tx.proto",
 }
+
+func (m *RegisterSubscriberChainRequest) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *RegisterSubscriberChainRequest) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *RegisterSubscriberChainRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	{
+		size, err := m.SubscriberParams.MarshalToSizedBuffer(dAtA[:i])
+		if err != nil {
+			return 0, err
+		}
+		i -= size
+		i = encodeVarintTx(dAtA, i, uint64(size))
+	}
+	i--
+	dAtA[i] = 0x3a
+	if m.MaxValidators != 0 {
+		i = encodeVarintTx(dAtA, i, uint64(m.MaxValidators))
+		i--
+		dAtA[i] = 0x30
+	}
+	if m.MinSelfDelegationUsd != 0 {
+		i = encodeVarintTx(dAtA, i, uint64(m.MinSelfDelegationUsd))
+		i--
+		dAtA[i] = 0x28
+	}
+	if len(m.AssetIDs) > 0 {
+		for iNdEx := len(m.AssetIDs) - 1; iNdEx >= 0; iNdEx-- {
+			i -= len(m.AssetIDs[iNdEx])
+			copy(dAtA[i:], m.AssetIDs[iNdEx])
+			i = encodeVarintTx(dAtA, i, uint64(len(m.AssetIDs[iNdEx])))
+			i--
+			dAtA[i] = 0x22
+		}
+	}
+	if len(m.EpochIdentifier) > 0 {
+		i -= len(m.EpochIdentifier)
+		copy(dAtA[i:], m.EpochIdentifier)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.EpochIdentifier)))
+		i--
+		dAtA[i] = 0x1a
+	}
+	if len(m.ChainID) > 0 {
+		i -= len(m.ChainID)
+		copy(dAtA[i:], m.ChainID)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.ChainID)))
+		i--
+		dAtA[i] = 0x12
+	}
+	if len(m.FromAddress) > 0 {
+		i -= len(m.FromAddress)
+		copy(dAtA[i:], m.FromAddress)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.FromAddress)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *RegisterSubscriberChainResponse) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *RegisterSubscriberChainResponse) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *RegisterSubscriberChainResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	return len(dAtA) - i, nil
+}
+
+func encodeVarintTx(dAtA []byte, offset int, v uint64) int {
+	offset -= sovTx(v)
+	base := offset
+	for v >= 1<<7 {
+		dAtA[offset] = uint8(v&0x7f | 0x80)
+		v >>= 7
+		offset++
+	}
+	dAtA[offset] = uint8(v)
+	return base
+}
+func (m *RegisterSubscriberChainRequest) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.FromAddress)
+	if l > 0 {
+		n += 1 + l + sovTx(uint64(l))
+	}
+	l = len(m.ChainID)
+	if l > 0 {
+		n += 1 + l + sovTx(uint64(l))
+	}
+	l = len(m.EpochIdentifier)
+	if l > 0 {
+		n += 1 + l + sovTx(uint64(l))
+	}
+	if len(m.AssetIDs) > 0 {
+		for _, s := range m.AssetIDs {
+			l = len(s)
+			n += 1 + l + sovTx(uint64(l))
+		}
+	}
+	if m.MinSelfDelegationUsd != 0 {
+		n += 1 + sovTx(uint64(m.MinSelfDelegationUsd))
+	}
+	if m.MaxValidators != 0 {
+		n += 1 + sovTx(uint64(m.MaxValidators))
+	}
+	l = m.SubscriberParams.Size()
+	n += 1 + l + sovTx(uint64(l))
+	return n
+}
+
+func (m *RegisterSubscriberChainResponse) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	return n
+}
+
+func sovTx(x uint64) (n int) {
+	return (math_bits.Len64(x|1) + 6) / 7
+}
+func sozTx(x uint64) (n int) {
+	return sovTx(uint64((x << 1) ^ uint64((int64(x) >> 63))))
+}
+func (m *RegisterSubscriberChainRequest) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowTx
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: RegisterSubscriberChainRequest: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: RegisterSubscriberChainRequest: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field FromAddress", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.FromAddress = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field ChainID", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.ChainID = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 3:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field EpochIdentifier", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.EpochIdentifier = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 4:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field AssetIDs", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.AssetIDs = append(m.AssetIDs, string(dAtA[iNdEx:postIndex]))
+			iNdEx = postIndex
+		case 5:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field MinSelfDelegationUsd", wireType)
+			}
+			m.MinSelfDelegationUsd = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.MinSelfDelegationUsd |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 6:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field MaxValidators", wireType)
+			}
+			m.MaxValidators = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.MaxValidators |= uint32(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 7:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field SubscriberParams", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.SubscriberParams.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipTx(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthTx
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *RegisterSubscriberChainResponse) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowTx
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: RegisterSubscriberChainResponse: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: RegisterSubscriberChainResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		default:
+			iNdEx = preIndex
+			skippy, err := skipTx(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthTx
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func skipTx(dAtA []byte) (n int, err error) {
+	l := len(dAtA)
+	iNdEx := 0
+	depth := 0
+	for iNdEx < l {
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return 0, ErrIntOverflowTx
+			}
+			if iNdEx >= l {
+				return 0, io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= (uint64(b) & 0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		wireType := int(wire & 0x7)
+		switch wireType {
+		case 0:
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return 0, ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return 0, io.ErrUnexpectedEOF
+				}
+				iNdEx++
+				if dAtA[iNdEx-1] < 0x80 {
+					break
+				}
+			}
+		case 1:
+			iNdEx += 8
+		case 2:
+			var length int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return 0, ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return 0, io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				length |= (int(b) & 0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if length < 0 {
+				return 0, ErrInvalidLengthTx
+			}
+			iNdEx += length
+		case 3:
+			depth++
+		case 4:
+			if depth == 0 {
+				return 0, ErrUnexpectedEndOfGroupTx
+			}
+			depth--
+		case 5:
+			iNdEx += 4
+		default:
+			return 0, fmt.Errorf("proto: illegal wireType %d", wireType)
+		}
+		if iNdEx < 0 {
+			return 0, ErrInvalidLengthTx
+		}
+		if depth == 0 {
+			return iNdEx, nil
+		}
+	}
+	return 0, io.ErrUnexpectedEOF
+}
+
+var (
+	ErrInvalidLengthTx        = fmt.Errorf("proto: negative length found during unmarshaling")
+	ErrIntOverflowTx          = fmt.Errorf("proto: integer overflow")
+	ErrUnexpectedEndOfGroupTx = fmt.Errorf("proto: unexpected end of group")
+)

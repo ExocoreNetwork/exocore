@@ -5,6 +5,4 @@ import (
 	cdctypes "github.com/cosmos/cosmos-sdk/codec/types"
 )
 
-var (
-	ModuleCdc = codec.NewProtoCodec(cdctypes.NewInterfaceRegistry())
-)
+var ModuleCdc = codec.NewProtoCodec(cdctypes.NewInterfaceRegistry())

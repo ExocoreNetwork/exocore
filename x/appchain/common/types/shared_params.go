@@ -23,11 +23,7 @@ func CalculateTrustPeriod(unbondingPeriod time.Duration, trustPeriodFraction str
 }
 
 // ValidateStringFraction validates that the given string is a valid fraction in the range [0, 1].
-func ValidateStringFraction(i interface{}) error {
-	str, ok := i.(string)
-	if !ok {
-		return fmt.Errorf("invalid parameter type: %T", i)
-	}
+func ValidateStringFraction(str string) error {
 	dec, err := sdk.NewDecFromStr(str)
 	if err != nil {
 		return err
@@ -42,11 +38,7 @@ func ValidateStringFraction(i interface{}) error {
 }
 
 // ValidateDuration validates that the given duration is positive.
-func ValidateDuration(i interface{}) error {
-	period, ok := i.(time.Duration)
-	if !ok {
-		return fmt.Errorf("invalid parameter type: %T", i)
-	}
+func ValidateDuration(period time.Duration) error {
 	if period <= time.Duration(0) {
 		return fmt.Errorf("duration must be positive")
 	}

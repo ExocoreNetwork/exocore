@@ -17,5 +17,6 @@ func (gs GenesisState) Validate() error {
 	if err := gs.Params.Validate(); err != nil {
 		return err
 	}
+	// TODO: validate anything else added here
 	return nil
 }
