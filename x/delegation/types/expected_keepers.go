@@ -1,8 +1,6 @@
 package types
 
 import (
-	"math/big"
-
 	sdkmath "cosmossdk.io/math"
 	assetstype "github.com/ExocoreNetwork/exocore/x/assets/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -57,5 +55,5 @@ type AssetsKeeper interface {
 }
 
 type OracleKeeper interface {
-	UpdateNativeTokenByDelegation(ctx sdk.Context, assetID, operatorAddr, stakerAddr, amountOriginal string) (amount *big.Int)
+	UpdateNativeTokenByDelegation(ctx sdk.Context, assetID, operatorAddr, stakerAddr string, amountOriginal sdkmath.Int) (amount sdkmath.Int)
 }

@@ -10,7 +10,6 @@ import (
 	delegationtype "github.com/ExocoreNetwork/exocore/x/delegation/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	sdkmath "cosmossdk.io/math"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 )
 
@@ -50,7 +49,7 @@ func (k *Keeper) delegateTo(
 		return err
 	}
 	if assetstype.IsNativeToken(assetID) {
-		params.OpAmount = sdkmath.NewIntFromBigInt(k.oracleKeeper.UpdateNativeTokenByDelegation(ctx, assetID, params.OperatorAddress.String(), hexutil.Encode(params.StakerAddress), params.OpAmount.String()))
+		params.OpAmount = k.oracleKeeper.UpdateNativeTokenByDelegation(ctx, assetID, params.OperatorAddress.String(), hexutil.Encode(params.StakerAddress), params.OpAmount)
 	}
 	if info.WithdrawableAmount.LT(params.OpAmount) {
 		return errorsmod.Wrap(delegationtype.ErrDelegationAmountTooBig, fmt.Sprintf("the opAmount is:%s the WithdrawableAmount amount is:%s", params.OpAmount, info.WithdrawableAmount))
@@ -122,7 +121,7 @@ func (k *Keeper) UndelegateFrom(ctx sdk.Context, params *delegationtype.Delegati
 	stakerID, assetID := assetstype.GetStakeIDAndAssetID(params.ClientChainID, params.StakerAddress, params.AssetsAddress)
 
 	if assetstype.IsNativeToken(assetID) {
-		params.OpAmount = sdkmath.NewIntFromBigInt(k.oracleKeeper.UpdateNativeTokenByDelegation(ctx, assetID, params.OperatorAddress.String(), hexutil.Encode(params.StakerAddress), params.OpAmount.Neg().String())).Neg()
+		params.OpAmount = k.oracleKeeper.UpdateNativeTokenByDelegation(ctx, assetID, params.OperatorAddress.String(), hexutil.Encode(params.StakerAddress), params.OpAmount.Neg()).Neg()
 	}
 
 	// verify the undelegation amount
