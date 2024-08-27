@@ -584,6 +584,8 @@ func NewExocoreApp(
 	// the validator signature rate and informs the staking keeper to perform the requisite
 	// slashing. all its other operations are offloaded to Exocore keepers via the dogfood or
 	// the operator module.
+	// NOTE: the slashing keeper stores the parameters (slash rate) for the dogfood
+	// keeper, since all slashing (for this chain) begins within this keeper.
 	app.SlashingKeeper = slashingkeeper.NewKeeper(
 		appCodec, app.LegacyAmino(), keys[slashingtypes.StoreKey],
 		app.StakingKeeper, authAddrString,
