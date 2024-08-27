@@ -7,14 +7,14 @@ import "gogoproto/gogo.proto";
 option go_package = "github.com/ExocoreNetwork/exocore/x/oracle/types";
 
 message PriceInfo {
-  string price = 1;
+  string price = 1[(gogoproto.customtype)="cosmossdk.io/math.LegacyDec",(gogoproto.nullable) = false ];
   uint64 block = 2;
   uint64 round_id = 3 [(gogoproto.customname)="RoundID"];
 }
 
 message OperatorInfo {
   string operator_addr = 1;
-  string total_amount = 2;
+  string total_amount = 2[(gogoproto.customtype)="cosmossdk.io/math.Int",(gogoproto.nullable) = false];
   repeated PriceInfo price_list = 3;
 }
 
@@ -22,7 +22,7 @@ message StakerInfo {
   string staker_addr = 1;
   int64 staker_index = 2;
   repeated uint64 validator_indexs = 3;
-  string total_deposit = 4;
+  string total_deposit = 4[(gogoproto.customtype)="cosmossdk.io/math.Int",(gogoproto.nullable) = false];
   repeated PriceInfo price_list = 5;
 }
 
@@ -37,7 +37,7 @@ message StakerList {
 
 message DelegationInfo {
   string operator_addr = 1;
-  string amount = 2;
+  string amount = 2[(gogoproto.customtype)="cosmossdk.io/math.Int",(gogoproto.nullable) = false];
 }
 message StakerDelegationInfo {
   repeated DelegationInfo delegations = 1;

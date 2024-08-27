@@ -12,7 +12,8 @@ const (
 	NativeTokenStakerDelegationKeyPrefix = NativeTokenKeyPrefix + "stakerDelegation/value/"
 )
 
-func NativeTokenStakerDelegationKey(assetID, stakerAddr, operatorAddr string) []byte {
+func NativeTokenStakerDelegationKey(assetID, stakerAddr string) []byte {
+	assetID = strings.Join([]string{assetID, stakerAddr}, "/")
 	return append([]byte(NativeTokenStakerDelegationKeyPrefix), []byte(assetID)...)
 }
 

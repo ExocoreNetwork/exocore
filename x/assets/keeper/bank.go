@@ -41,7 +41,7 @@ func (k Keeper) PerformDepositOrWithdraw(ctx sdk.Context, params *DepositWithdra
 
 	if types.IsNativeToken(assetID) {
 		// TODO: we skip check for case like withdraw amount>withdrawable is fine since it will fail for later check and the state will be rollback
-		actualOpAmount = sdkmath.NewIntFromBigInt(k.UpdateNativeTokenByDepositOrWithdraw(ctx, assetID, hexutil.Encode(params.StakerAddress), params.OpAmount.String()))
+		actualOpAmount = k.UpdateNativeTokenByDepositOrWithdraw(ctx, assetID, hexutil.Encode(params.StakerAddress), params.OpAmount)
 	}
 
 	changeAmount := assetstypes.DeltaStakerSingleAsset{

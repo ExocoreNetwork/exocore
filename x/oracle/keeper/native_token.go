@@ -2,7 +2,6 @@ package keeper
 
 import (
 	"errors"
-	"math/big"
 	"strings"
 
 	sdkmath "cosmossdk.io/math"
@@ -22,7 +21,7 @@ var stakerList types.StakerList
 // TODO, NOTE: price changes will effect reward/slash calculation, every time one staker's price changed, it's reward/slash amount(LST) should be cleaned or recalculated immediately
 // TODO: validatorIndex
 // amount: represents for originalToken
-func (k Keeper) UpdateNativeTokenByDepositOrWithdraw(ctx sdk.Context, assetID, stakerAddr, amount string) *big.Int {
+func (k Keeper) UpdateNativeTokenByDepositOrWithdraw(ctx sdk.Context, assetID, stakerAddr string, amount sdkmath.Int) sdkmath.Int {
 	// TODO: just convert the number for assets module, and don't store state in oracleModule, can use cache only here
 	// TODO: we havn't included validatorIndex here, need the bridge info
 	store := ctx.KVStore(k.storeKey)
@@ -36,12 +35,9 @@ func (k Keeper) UpdateNativeTokenByDepositOrWithdraw(ctx sdk.Context, assetID, s
 	}
 	latestIndex := len(stakerInfo.PriceList) - 1
 	// calculate amount of virtual LST from nativetoken with price
-	// amountVirtualLST := convertNativeAmountStringToVirtualLSTAmount(amount, stakerInfo.PriceList[latestIndex].Price)
-	amountFloat := convertAmountOriginalStringToAmountFloat(amount, stakerInfo.PriceList[latestIndex].Price)
-	amountInt, _ := amountFloat.Int(nil)
-	prevTotalDeposit, _ := new(big.Int).SetString(stakerInfo.TotalDeposit, 10)
+	amountInt := convertAmountOriginalIntToAmountFloat(amount, stakerInfo.PriceList[latestIndex].Price).RoundInt()
+	stakerInfo.TotalDeposit = stakerInfo.TotalDeposit.Add(amountInt)
 	// update totalDeposit of staker, and price won't change on either deposit or withdraw
-	stakerInfo.TotalDeposit = prevTotalDeposit.Add(prevTotalDeposit, amountInt).String()
 	bz := k.cdc.MustMarshal(stakerInfo)
 	store.Set(key, bz)
 	return amountInt
@@ -49,7 +45,7 @@ func (k Keeper) UpdateNativeTokenByDepositOrWithdraw(ctx sdk.Context, assetID, s
 
 // UpdateNativeTokenByDelegation update operator's price, operator's totalAmount, operator's totalShare, staker's share bsed on either delegation or undelegation
 // this amount passed in from delegation hooks represent originalToken(not virtualLST)
-func (k Keeper) UpdateNativeTokenByDelegation(ctx sdk.Context, assetID, operatorAddr, stakerAddr, amountOriginal string) *big.Int {
+func (k Keeper) UpdateNativeTokenByDelegation(ctx sdk.Context, assetID, operatorAddr, stakerAddr string, amountOriginal sdkmath.Int) sdkmath.Int {
 	store := ctx.KVStore(k.storeKey)
 	keyOperator := types.NativeTokenOperatorKey(assetID, operatorAddr)
 	operatorInfo := &types.OperatorInfo{}
@@ -67,40 +63,38 @@ func (k Keeper) UpdateNativeTokenByDelegation(ctx sdk.Context, assetID, operator
 	k.cdc.MustUnmarshal(value, stakerInfo)
 
 	operatorAmountFloat, operatorAmountOriginalFloat := getOperatorAmountFloat(operatorInfo)
-	amountFloat, amountOriginalFloat := parseStakerAmountOriginal(amountOriginal, stakerInfo)
+	amountFloat, amountOriginalFloat := parseStakerAmountOriginalInt(amountOriginal, stakerInfo)
 
-	operatorAmountOriginalFloat = operatorAmountOriginalFloat.Add(operatorAmountOriginalFloat, amountOriginalFloat)
-	operatorAmountFloat = operatorAmountFloat.Add(operatorAmountFloat, amountFloat)
+	operatorAmountOriginalFloat = operatorAmountOriginalFloat.Add(amountOriginalFloat)
+	operatorAmountFloat = operatorAmountFloat.Add(amountFloat)
 
 	// update operator's price for native token base on new delegation
 	operatorInfo.PriceList = append(operatorInfo.PriceList, &types.PriceInfo{
-		Price: operatorAmountOriginalFloat.Quo(operatorAmountOriginalFloat, operatorAmountFloat).String(),
+		Price: operatorAmountOriginalFloat.Quo(operatorAmountFloat),
 		Block: uint64(ctx.BlockHeight()),
 	})
-	tmpAmountInt, _ := operatorAmountFloat.Int(nil)
+
 	// update operator's total amount for native token, for this 'amount' we don't disginguish different tokens from different stakers. That difference reflects in 'operator price'
-	operatorInfo.TotalAmount = tmpAmountInt.String()
+	operatorInfo.TotalAmount = operatorAmountFloat.RoundInt()
 	bz := k.cdc.MustMarshal(operatorInfo)
 	store.Set(keyOperator, bz)
-	amountInt, _ := amountFloat.Int(nil)
-	keyDelegation := types.NativeTokenStakerDelegationKey(assetID, stakerAddr, operatorAddr)
+	amountInt := amountFloat.RoundInt()
+	// update staker's related operator list
+	keyDelegation := types.NativeTokenStakerDelegationKey(assetID, stakerAddr)
 	stakerDelegation := &types.StakerDelegationInfo{}
 	if value = store.Get(keyDelegation); value == nil {
 		stakerDelegation.Delegations = []*types.DelegationInfo{
 			{
 				OperatorAddr: operatorAddr,
-				Amount:       amountInt.String(),
+				Amount:       amountInt,
 			},
 		}
 	} else {
 		k.cdc.MustUnmarshal(value, stakerDelegation)
 		for idx, delegationInfo := range stakerDelegation.Delegations {
 			if delegationInfo.OperatorAddr == operatorAddr {
-				prevAmount, _ := new(big.Int).SetString(delegationInfo.Amount, 10)
-				if prevAmount = prevAmount.Add(prevAmount, amountInt); prevAmount.Cmp(big.NewInt(0)) <= 0 {
+				if delegationInfo.Amount = delegationInfo.Amount.Add(amountInt); !delegationInfo.Amount.IsPositive() {
 					stakerDelegation.Delegations = append(stakerDelegation.Delegations[0:idx], stakerDelegation.Delegations[idx:]...)
-				} else {
-					delegationInfo.Amount = prevAmount.Add(prevAmount, amountInt).String()
 				}
 				value = k.cdc.MustMarshal(stakerDelegation)
 				store.Set(keyDelegation, value)
@@ -109,7 +103,7 @@ func (k Keeper) UpdateNativeTokenByDelegation(ctx sdk.Context, assetID, operator
 		}
 		stakerDelegation.Delegations = append(stakerDelegation.Delegations, &types.DelegationInfo{
 			OperatorAddr: operatorAddr,
-			Amount:       amountInt.String(),
+			Amount:       amountInt,
 		})
 	}
 	// update staker delegation infos for related operators
@@ -139,10 +133,7 @@ func (k Keeper) GetNativeTokenPriceUSDForOperator(ctx sdk.Context, assetID strin
 			return types.Price{}, types.ErrGetPriceAssetNotFound
 		}
 		operatorPriceFloat := getLatestOperatorPriceFloat(operatorInfo)
-		priceValueFloat := new(big.Float).SetInt(baseTokenUSDPrice.Value.BigInt())
-		priceValueFloat = priceValueFloat.Mul(priceValueFloat, operatorPriceFloat)
-		tmpValue, _ := priceValueFloat.Int(nil)
-		baseTokenUSDPrice.Value = sdkmath.NewIntFromBigInt(tmpValue)
+		baseTokenUSDPrice.Value = (baseTokenUSDPrice.Value.ToLegacyDec().Mul(operatorPriceFloat)).RoundInt()
 		return baseTokenUSDPrice, nil
 	}
 }
@@ -169,22 +160,53 @@ func (k Keeper) UpdateNativeTokenByBalanceChange(ctx sdk.Context, assetID string
 	}
 	store := ctx.KVStore(k.storeKey)
 	for stakerAddr, change := range stakerChanges {
-		value := store.Get(types.NativeTokenStakerKey(assetID, stakerAddr))
+		key := types.NativeTokenStakerKey(assetID, stakerAddr)
+		value := store.Get(key)
 		if value == nil {
 			return errors.New("stakerInfo does not exist")
 		}
 		stakerInfo := &types.StakerInfo{}
 		k.cdc.MustUnmarshal(value, stakerInfo)
-		changeOriginalFloat := big.NewFloat(float64(change))
-		totalAmountFloat, totalAmountOriginalFloat := parseStakerAmount(stakerInfo.TotalDeposit, stakerInfo)
-		totalAmountOriginalFloat = totalAmountOriginalFloat.Add(totalAmountOriginalFloat, changeOriginalFloat)
+		changeOriginalFloat := sdkmath.LegacyNewDec(int64(change))
+		totalAmountFloat, totalAmountOriginalFloat := parseStakerAmountInt(stakerInfo.TotalDeposit, stakerInfo)
+		totalAmountOriginalFloat = totalAmountOriginalFloat.Add(changeOriginalFloat)
+		prevStakerPrice := getLatestStakerPriceFloat(stakerInfo)
 		// update staker price based on beacon chain effective balance change
+		stakerPrice := totalAmountOriginalFloat.Quo(totalAmountFloat)
 		stakerInfo.PriceList = append(stakerInfo.PriceList, &types.PriceInfo{
-			Price:   totalAmountOriginalFloat.Quo(totalAmountOriginalFloat, totalAmountFloat).String(),
+			Price:   stakerPrice,
 			Block:   uint64(ctx.BlockHeight()),
 			RoundID: roundID,
 		})
+		bz := k.cdc.MustMarshal(stakerInfo)
+		store.Set(key, bz)
 		// update related operator's price
+		keyStakerDelegations := types.NativeTokenStakerDelegationKey(assetID, stakerAddr)
+		value = store.Get(keyStakerDelegations)
+		if value != nil {
+			delegationInfo := &types.StakerDelegationInfo{}
+			k.cdc.MustUnmarshal(value, delegationInfo)
+			for _, delegation := range delegationInfo.Delegations {
+				keyOperator := types.NativeTokenOperatorKey(assetID, delegation.OperatorAddr)
+				value = store.Get(keyOperator)
+				if value == nil {
+					panic("staker delegation related to operator not exists")
+				}
+				operatorInfo := &types.OperatorInfo{}
+				k.cdc.MustUnmarshal(value, operatorInfo)
+				AmountFloat, prevAmountOriginalFloat := getOperatorAmountFloat(operatorInfo)
+				delta := delegation.Amount.ToLegacyDec().Mul(stakerPrice.Sub(prevStakerPrice))
+				operatorInfo.PriceList = append(operatorInfo.PriceList, &types.PriceInfo{
+					Price:   prevAmountOriginalFloat.Add(delta).Quo(AmountFloat),
+					Block:   uint64(ctx.BlockHeight()),
+					RoundID: roundID,
+				})
+				bz := k.cdc.MustMarshal(operatorInfo)
+				store.Set(keyOperator, bz)
+			}
+
+		}
+
 	}
 	return nil
 }
@@ -241,40 +263,41 @@ func parseBalanceChange(rawData []byte, sl types.StakerList) (map[string]int, er
 	return stakerChanges, nil
 }
 
-func getLatestOperatorPriceFloat(operatorInfo *types.OperatorInfo) *big.Float {
+func getLatestOperatorPriceFloat(operatorInfo *types.OperatorInfo) sdkmath.LegacyDec {
 	latestIndex := len(operatorInfo.PriceList) - 1
-	operatorPriceStr := operatorInfo.PriceList[latestIndex].Price
-	operatorPriceFloat, _, _ := new(big.Float).Parse(operatorPriceStr, 10)
-	return operatorPriceFloat
+	return operatorInfo.PriceList[latestIndex].Price
 }
 
-func convertAmountOriginalStringToAmountFloat(amountStr string, price string) *big.Float {
-	priceFloat, _, _ := new(big.Float).Parse(price, 10)
-	amountFloat, _, _ := new(big.Float).Parse(amountStr, 10)
-	amountFloat = amountFloat.Quo(amountFloat, priceFloat)
-	return amountFloat.Quo(amountFloat, priceFloat)
+func getLatestStakerPriceFloat(stakerInfo *types.StakerInfo) sdkmath.LegacyDec {
+	latestIndex := len(stakerInfo.PriceList) - 1
+	return stakerInfo.PriceList[latestIndex].Price
 }
 
-func getOperatorAmountFloat(operatorInfo *types.OperatorInfo) (amountFloat, amountOriginalFloat *big.Float) {
+func convertAmountOriginalIntToAmountFloat(amount sdkmath.Int, price sdkmath.LegacyDec) sdkmath.LegacyDec {
+	amountFloat := amount.ToLegacyDec()
+	return amountFloat.Quo(price)
+}
+
+func getOperatorAmountFloat(operatorInfo *types.OperatorInfo) (amountFloat, amountOriginalFloat sdkmath.LegacyDec) {
 	latestIndexOperator := len(operatorInfo.PriceList) - 1
-	amountFloat, _, _ = new(big.Float).Parse(operatorInfo.TotalAmount, 10)
-	operatorPrice, _, _ := new(big.Float).Parse(operatorInfo.PriceList[latestIndexOperator].Price, 10)
-	amountOriginalFloat = amountFloat.Mul(amountFloat, operatorPrice)
+	price := operatorInfo.PriceList[latestIndexOperator].Price
+	amountFloat = operatorInfo.TotalAmount.ToLegacyDec()
+	amountOriginalFloat = amountFloat.Mul(price)
 	return
 }
 
-func parseStakerAmount(amountStr string, stakerInfo *types.StakerInfo) (amountFloat, amountOriginalFloat *big.Float) {
+func parseStakerAmountInt(amount sdkmath.Int, stakerInfo *types.StakerInfo) (amountFloat, amountOriginalFloat sdkmath.LegacyDec) {
 	latestIndex := len(stakerInfo.PriceList) - 1
-	priceFloat, _, _ := new(big.Float).Parse(stakerInfo.PriceList[latestIndex].Price, 10)
-	amountFloat, _, _ = new(big.Float).Parse(amountStr, 10)
-	amountOriginalFloat = amountFloat.Mul(amountFloat, priceFloat)
+	price := stakerInfo.PriceList[latestIndex].Price
+	amountFloat = amount.ToLegacyDec()
+	amountOriginalFloat = amountFloat.Mul(price)
 	return
 }
 
-func parseStakerAmountOriginal(amountOriginalStr string, stakerInfo *types.StakerInfo) (amountFloat, amountOriginalFloat *big.Float) {
+func parseStakerAmountOriginalInt(amountOriginalInt sdkmath.Int, stakerInfo *types.StakerInfo) (amountFloat, amountOriginalFloat sdkmath.LegacyDec) {
 	latestIndex := len(stakerInfo.PriceList) - 1
-	priceFloat, _, _ := new(big.Float).Parse(stakerInfo.PriceList[latestIndex].Price, 10)
-	amountOriginalFloat, _, _ = new(big.Float).Parse(amountOriginalStr, 10)
-	amountFloat = amountOriginalFloat.Quo(amountOriginalFloat, priceFloat)
+	price := stakerInfo.PriceList[latestIndex].Price
+	amountOriginalFloat = amountOriginalInt.ToLegacyDec()
+	amountFloat = amountOriginalFloat.Quo(price)
 	return
 }
