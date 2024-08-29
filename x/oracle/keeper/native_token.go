@@ -206,19 +206,19 @@ func (k Keeper) GetNativeTokenPriceUSDForOperator(ctx sdk.Context, assetID strin
 
 	store := ctx.KVStore(k.storeKey)
 	key := types.NativeTokenOperatorKey(assetID, operatorAddr)
-	if value := store.Get(key); value == nil {
+	value := store.Get(key)
+	if value == nil {
 		return types.Price{}, types.ErrGetPriceAssetNotFound
-	} else {
-		operatorInfo := &types.OperatorInfo{}
-		k.cdc.MustUnmarshal(value, operatorInfo)
-		baseTokenUSDPrice, err := k.GetSpecifiedAssetsPrice(ctx, assetstypes.GetBaseTokenForNativeToken(assetID))
-		if err != nil {
-			return types.Price{}, types.ErrGetPriceAssetNotFound
-		}
-		operatorPriceFloat := getLatestOperatorPriceFloat(operatorInfo)
-		baseTokenUSDPrice.Value = (baseTokenUSDPrice.Value.ToLegacyDec().Mul(operatorPriceFloat)).RoundInt()
-		return baseTokenUSDPrice, nil
 	}
+	operatorInfo := &types.OperatorInfo{}
+	k.cdc.MustUnmarshal(value, operatorInfo)
+	baseTokenUSDPrice, err := k.GetSpecifiedAssetsPrice(ctx, assetstypes.GetBaseTokenForNativeToken(assetID))
+	if err != nil {
+		return types.Price{}, types.ErrGetPriceAssetNotFound
+	}
+	operatorPriceFloat := getLatestOperatorPriceFloat(operatorInfo)
+	baseTokenUSDPrice.Value = (baseTokenUSDPrice.Value.ToLegacyDec().Mul(operatorPriceFloat)).RoundInt()
+	return baseTokenUSDPrice, nil
 }
 
 func (k Keeper) GetStakerList(ctx sdk.Context, assetID string) types.StakerList {
@@ -340,7 +340,7 @@ func parseBalanceChange(rawData []byte, sl types.StakerList) (map[string]int, er
 
 				bitsExtracted := 0
 				stakerChange := 0
-				for bitsExtracted < int(lenValue) { //0<8, offset:
+				for bitsExtracted < int(lenValue) {
 					bitsLeft := 8 - bitOffset
 					byteValue := changes[byteIndex] << bitOffset
 					if (int(lenValue) - bitsExtracted) < bitsLeft {
