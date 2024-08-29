@@ -20,11 +20,11 @@ func GetQueryCmd(_ string) *cobra.Command {
 		RunE:                       client.ValidateCmd,
 	}
 
-	cmd.AddCommand(QueryDistritbutionInfo())
+	cmd.AddCommand(QueryDistributionInfo())
 	return cmd
 }
 
-func QueryDistritbutionInfo() *cobra.Command {
+func QueryDistributionInfo() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "DistributionInfo query",
 		Short: "DistributionInfo query",

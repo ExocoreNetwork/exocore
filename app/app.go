@@ -989,9 +989,9 @@ func NewExocoreApp(
 		rewardTypes.ModuleName,
 		exoslashTypes.ModuleName,
 		avsManagerTypes.ModuleName,
+		distrtypes.ModuleName,
 		// op module
 		feemarkettypes.ModuleName, // last in order to retrieve the block gas used
-		distrtypes.ModuleName,
 	)
 
 	app.mm.SetOrderInitGenesis(
@@ -1031,10 +1031,10 @@ func NewExocoreApp(
 		upgradetypes.ModuleName,  // no-op since we don't call SetInitVersionMap
 		rewardTypes.ModuleName,   // not fully implemented yet
 		exoslashTypes.ModuleName, // not fully implemented yet
+		distrtypes.ModuleName,
 		// must be the last module after others have been set up, so that it can check
 		// the invariants (if configured to do so).
 		crisistypes.ModuleName,
-		distrtypes.ModuleName,
 	)
 
 	app.mm.RegisterInvariants(&app.CrisisKeeper)
