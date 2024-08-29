@@ -260,7 +260,6 @@ func OnlyLegacyAminoSigners(sigData signing.SignatureData) bool {
 
 func (svd SigVerificationDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bool, next sdk.AnteHandler) (newCtx sdk.Context, err error) {
 	if utils.IsOracleCreatePriceTx(tx) {
-		// TODO: verify ed25519 signature for create-price message which is signed by consensusKey
 		sigTx, ok := tx.(authsigning.SigVerifiableTx)
 		if !ok {
 			return ctx, sdkerrors.ErrTxDecode.Wrap("invalid transaction type, expected SigVerifiableTx")

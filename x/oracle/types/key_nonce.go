@@ -1,7 +1,7 @@
 package types
 
 const (
-	// NonceKeyPrefix is the prefix to retrieve all KeyNonce
+	// NonceKeyPrefix is used as a prefix for storing key nonces.
 	NonceKeyPrefix = "KeyNonce/value/"
 )
 

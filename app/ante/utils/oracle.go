@@ -5,7 +5,8 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-const CreatePriceGas = 20000
+// TxSizeLimit limits max size of a create-price tx, this is calculated based on one nativeTokenbalance message of worst case(max size), which will need 576 bytes for balance update
+const TxSizeLimit = 1000
 
 func IsOracleCreatePriceTx(tx sdk.Tx) bool {
 	msgs := tx.GetMsgs()
@@ -13,10 +14,9 @@ func IsOracleCreatePriceTx(tx sdk.Tx) bool {
 		return false
 	}
 	for _, msg := range msgs {
-		if _, ok := msg.(*oracletypes.MsgCreatePrice); ok {
-			continue
+		if _, ok := msg.(*oracletypes.MsgCreatePrice); !ok {
+			return false
 		}
-		return false
 	}
 	return true
 }

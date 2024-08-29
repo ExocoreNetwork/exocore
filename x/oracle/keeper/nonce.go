@@ -42,9 +42,9 @@ func (k Keeper) AddNonceItem(ctx sdk.Context, nonce types.ValidatorNonce) {
 }
 
 // AddZeroNonceItemForValidators init the nonce of a specific feederID for a set of validators
-func (k Keeper) AddZeroNonceItemWithFeederIDForValidators(ctx sdk.Context, feederID uint64, valdiators []string) {
+func (k Keeper) AddZeroNonceItemWithFeederIDForValidators(ctx sdk.Context, feederID uint64, validators []string) {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefix(types.NonceKeyPrefix))
-	for _, validator := range valdiators {
+	for _, validator := range validators {
 		if n, found := k.getNonce(store, validator); found {
 			found := false
 			for _, v := range n.NonceList {
