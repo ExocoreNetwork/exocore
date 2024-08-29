@@ -207,7 +207,10 @@ func (k Keeper) AppendPriceTR(ctx sdk.Context, tokenID uint64, priceTR types.Pri
 	assetIDs := p.GetAssetIDsFromTokenID(tokenID)
 	for _, assetID := range assetIDs {
 		if assetstypes.IsNativeToken(assetID) {
-			k.UpdateNativeTokenByBalanceChange(ctx, assetID, []byte(priceTR.Price), roundID)
+			if err := k.UpdateNativeTokenByBalanceChange(ctx, assetID, []byte(priceTR.Price), roundID); err != nil {
+				// we just report this error in log to notify validators
+				k.Logger(ctx).Error(types.ErrUpdateNativeTokenVirtualPriceFail.Error(), "error", err)
+			}
 		}
 	}
 
@@ -216,7 +219,6 @@ func (k Keeper) AppendPriceTR(ctx sdk.Context, tokenID uint64, priceTR types.Pri
 
 // GrowRoundID Increases roundID with the previous price
 func (k Keeper) GrowRoundID(ctx sdk.Context, tokenID uint64) (price string, roundID uint64) {
-	//	logInfo := fmt.Sprintf("add new round with previous price under fail aggregation, tokenID:%d", tokenID)
 	if pTR, ok := k.GetPriceTRLatest(ctx, tokenID); ok {
 		pTR.RoundID++
 		k.AppendPriceTR(ctx, tokenID, pTR)

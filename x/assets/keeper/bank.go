@@ -6,7 +6,6 @@ import (
 	errorsmod "cosmossdk.io/errors"
 	sdkmath "cosmossdk.io/math"
 
-	"github.com/ExocoreNetwork/exocore/x/assets/types"
 	assetstypes "github.com/ExocoreNetwork/exocore/x/assets/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
@@ -46,7 +45,7 @@ func (k Keeper) PerformDepositOrWithdraw(ctx sdk.Context, params *DepositWithdra
 		return errorsmod.Wrapf(assetstypes.ErrInvalidOperationType, "the operation type is: %v", params.Action)
 	}
 
-	if types.IsNativeToken(assetID) {
+	if assetstypes.IsNativeToken(assetID) {
 		// TODO: we skip check for case like withdraw amount>withdrawable is fine since it will fail for later check and the state will be rollback
 		actualOpAmount = k.UpdateNativeTokenByDepositOrWithdraw(ctx, assetID, hexutil.Encode(params.StakerAddress), params.OpAmount)
 	}
