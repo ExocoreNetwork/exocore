@@ -6,6 +6,7 @@ import "cosmos/msg/v1/msg.proto";
 import "cosmos_proto/cosmos.proto";
 import "exocore/feedistribute/v1/params.proto";
 import "gogoproto/gogo.proto";
+import "google/api/annotations.proto";
 
 option go_package = "github.com/ExocoreNetwork/exocore/x/feedistribution/types";
 
