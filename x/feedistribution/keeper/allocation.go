@@ -109,23 +109,26 @@ func (k Keeper) AllocateTokensToStakers(ctx sdk.Context, operatorAddress sdk.Acc
 	logger.Info("Allocate to stakers of operatorAddress:", operatorAddress.String())
 	avsList, err := k.StakingKeeper.GetOptedInAVSForOperator(ctx, operatorAddress.String())
 	if err != nil {
-		ctx.Logger().Error("avs address lists not found; skipping")
+		logger.Debug("avs address lists not found; skipping")
+		return
 	}
 	stakersPowerMap, curTotalStakersPowers := make(map[string]math.LegacyDec), math.LegacyNewDec(0)
 	globalStakerAddressList := make([]string, 0)
 	for _, avsAddress := range avsList {
 		avsAssets, err := k.StakingKeeper.GetAVSSupportedAssets(ctx, avsAddress)
 		if err != nil {
-			ctx.Logger().Error("avs address lists not found; skipping")
+			logger.Debug("avs address lists not found; skipping")
+			continue
 		}
 		for assetID := range avsAssets {
 			stakerList, err := k.StakingKeeper.GetStakersByOperator(ctx, operatorAddress.String(), assetID)
 			if err != nil {
-				ctx.Logger().Error("staker lists not found; skipping")
+				logger.Debug("staker lists not found; skipping")
+				continue
 			}
 			for _, staker := range stakerList.Stakers {
 				if curStakerPower, err := k.StakingKeeper.CalculateUSDValueForStaker(ctx, staker, avsAddress, operatorAddress.Bytes()); err != nil {
-					ctx.Logger().Error("curStakerPower error", err)
+					logger.Error("curStakerPower error", err)
 				} else {
 					stakersPowerMap[staker] = curStakerPower
 					globalStakerAddressList = append(globalStakerAddressList, staker)
