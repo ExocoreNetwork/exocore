@@ -173,7 +173,6 @@ func (suite *AVSManagerPrecompileSuite) TestOptInList() {
 	suite.NoError(err)
 
 	suite.Contains(avsList, suite.avsAddr)
-
 }
 
 func (suite *AVSManagerPrecompileSuite) TestOptOut() {

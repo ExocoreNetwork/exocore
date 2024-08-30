@@ -111,7 +111,7 @@ func (suite *KeeperTestSuite) prepare() {
 	suite.CheckLengthOfValidatorUpdates(0, nil, "delegate but not self delegate")
 	// mark it as self delegation
 	err = suite.App.DelegationKeeper.AssociateOperatorWithStaker(
-		suite.Ctx, lzID, operatorAddress, staker,
+		suite.Ctx, lzID, operatorAddress, staker.Bytes(),
 	)
 	suite.NoError(err)
 	suite.CheckLengthOfValidatorUpdates(0, nil, "self delegate but below min")

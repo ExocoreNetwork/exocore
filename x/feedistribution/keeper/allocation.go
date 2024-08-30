@@ -1,12 +1,13 @@
 package keeper
 
 import (
+	"sort"
+
 	"cosmossdk.io/math"
 	avstypes "github.com/ExocoreNetwork/exocore/x/avs/types"
 	"github.com/ExocoreNetwork/exocore/x/feedistribution/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
-	"sort"
 )
 
 // Based on the epoch, AllocateTokens performs reward and fee distribution to all validators.
