@@ -62,7 +62,7 @@ func (suite *KeeperTestSuite) TestUndelegations() {
 	suite.NoError(err)
 	// self delegate
 	err = suite.App.DelegationKeeper.AssociateOperatorWithStaker(
-		suite.Ctx, lzID, operatorAddress, staker,
+		suite.Ctx, lzID, operatorAddress, staker.Bytes(),
 	)
 	suite.NoError(err)
 	// opt in
@@ -202,7 +202,7 @@ func (suite *KeeperTestSuite) TestUndelegationEdgeCases() {
 	suite.NoError(err)
 	// mark as self delegation
 	err = suite.App.DelegationKeeper.AssociateOperatorWithStaker(
-		suite.Ctx, lzID, operatorAddress, staker,
+		suite.Ctx, lzID, operatorAddress, staker.Bytes(),
 	)
 	suite.NoError(err)
 	suite.CheckLengthOfValidatorUpdates(0, []int64{}, "delegate without opt in")

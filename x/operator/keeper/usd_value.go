@@ -7,7 +7,7 @@ import (
 	assetstype "github.com/ExocoreNetwork/exocore/x/assets/types"
 	delegationkeeper "github.com/ExocoreNetwork/exocore/x/delegation/keeper"
 	delegationtype "github.com/ExocoreNetwork/exocore/x/delegation/types"
-	oracletypes "github.com/ExocoreNetwork/exocore/x/oracle/types"
+	oracletype "github.com/ExocoreNetwork/exocore/x/oracle/types"
 
 	errorsmod "cosmossdk.io/errors"
 	sdkmath "cosmossdk.io/math"
@@ -283,7 +283,7 @@ func (k *Keeper) CalculateUSDValueForOperator(
 	operator string,
 	assetsFilter map[string]interface{},
 	decimals map[string]uint32,
-	prices map[string]oracletypes.Price,
+	prices map[string]oracletype.Price,
 ) (operatortypes.OperatorStakingInfo, error) {
 	var err error
 	ret := operatortypes.OperatorStakingInfo{
@@ -294,7 +294,7 @@ func (k *Keeper) CalculateUSDValueForOperator(
 	// iterate all assets owned by the operator to calculate its voting power
 	opFuncToIterateAssets := func(assetID string, state *assetstype.OperatorAssetInfo) error {
 		//		var price operatortypes.Price
-		var price oracletypes.Price
+		var price oracletype.Price
 		var decimal uint32
 		if isForSlash {
 			// when calculated the USD value for slashing, the input prices map is null
@@ -302,7 +302,7 @@ func (k *Keeper) CalculateUSDValueForOperator(
 			price, err = k.oracleKeeper.GetSpecifiedAssetsPrice(ctx, assetID)
 			if err != nil {
 				// TODO: when assetID is not registered in oracle module, this error will finally lead to panic
-				if !errors.Is(err, oracletypes.ErrGetPriceRoundNotFound) {
+				if !errors.Is(err, oracletype.ErrGetPriceRoundNotFound) {
 					return err
 				}
 				// TODO: for now, we ignore the error when the price round is not found and set the price to 1 to avoid panic

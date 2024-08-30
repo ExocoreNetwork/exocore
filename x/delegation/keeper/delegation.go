@@ -3,8 +3,6 @@ package keeper
 import (
 	"fmt"
 
-	"github.com/ethereum/go-ethereum/common"
-
 	errorsmod "cosmossdk.io/errors"
 	assetstype "github.com/ExocoreNetwork/exocore/x/assets/types"
 	delegationtype "github.com/ExocoreNetwork/exocore/x/delegation/types"
@@ -167,7 +165,7 @@ func (k *Keeper) AssociateOperatorWithStaker(
 	ctx sdk.Context,
 	clientChainID uint64,
 	operatorAddress sdk.AccAddress,
-	stakerAddress common.Address,
+	stakerAddress []byte,
 ) error {
 	if !k.assetsKeeper.ClientChainExists(ctx, clientChainID) {
 		return delegationtype.ErrClientChainNotExist
@@ -176,7 +174,7 @@ func (k *Keeper) AssociateOperatorWithStaker(
 		return delegationtype.ErrOperatorNotExist
 	}
 
-	stakerID, _ := assetstype.GetStakeIDAndAssetID(clientChainID, stakerAddress[:], nil)
+	stakerID, _ := assetstype.GetStakeIDAndAssetID(clientChainID, stakerAddress, nil)
 	associatedOperator, err := k.GetAssociatedOperator(ctx, stakerID)
 	if err != nil {
 		return err
@@ -217,9 +215,9 @@ func (k *Keeper) AssociateOperatorWithStaker(
 func (k *Keeper) DissociateOperatorFromStaker(
 	ctx sdk.Context,
 	clientChainID uint64,
-	stakerAddress common.Address,
+	stakerAddress []byte,
 ) error {
-	stakerID, _ := assetstype.GetStakeIDAndAssetID(clientChainID, stakerAddress[:], nil)
+	stakerID, _ := assetstype.GetStakeIDAndAssetID(clientChainID, stakerAddress, nil)
 	associatedOperator, err := k.GetAssociatedOperator(ctx, stakerID)
 	if err != nil {
 		return err

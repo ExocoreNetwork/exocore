@@ -54,6 +54,7 @@ func (f *filter) addPSource(pSources []*types.PriceSource, validator string) (li
 	for _, pSource := range pSources {
 		// check conflicts or duplicate data for the same roundID within the same source
 		if len(pSource.Prices[0].DetID) > 0 {
+			// #nosec G115
 			k := validator + strconv.Itoa(int(pSource.SourceID))
 			detIDs := f.validatorSource[k]
 			if detIDs == nil {

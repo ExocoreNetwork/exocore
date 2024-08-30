@@ -1,8 +1,10 @@
 package types
 
 import (
+	sdkmath "cosmossdk.io/math"
 	assetstype "github.com/ExocoreNetwork/exocore/x/assets/types"
 	epochstypes "github.com/ExocoreNetwork/exocore/x/epochs/types"
+	operatortypes "github.com/ExocoreNetwork/exocore/x/operator/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/auth/types"
 	"github.com/ethereum/go-ethereum/common"
@@ -38,6 +40,8 @@ type OperatorKeeper interface {
 	OptIn(ctx sdk.Context, operatorAddress sdk.AccAddress, avsAddr string) error
 	OptOut(ctx sdk.Context, operatorAddress sdk.AccAddress, avsAddr string) (err error)
 	GetOptedInOperatorListByAVS(ctx sdk.Context, avsAddr string) ([]string, error)
+	GetOperatorOptedUSDValue(ctx sdk.Context, avsAddr, operatorAddr string) (operatortypes.OperatorOptedUSDValue, error)
+	GetAVSUSDValue(ctx sdk.Context, avsAddr string) (sdkmath.LegacyDec, error)
 }
 
 // AssetsKeeper represents the expected keeper interface for the assets module.

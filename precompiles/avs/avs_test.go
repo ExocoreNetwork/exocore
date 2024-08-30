@@ -18,7 +18,7 @@ import (
 	evmtypes "github.com/evmos/evmos/v14/x/evm/types"
 )
 
-func (s *AVSManagerPrecompileSuite) TestIsTransaction() {
+func (suite *AVSManagerPrecompileSuite) TestIsTransaction() {
 	testCases := []struct {
 		name   string
 		method string
@@ -26,57 +26,57 @@ func (s *AVSManagerPrecompileSuite) TestIsTransaction() {
 	}{
 		{
 			avs.MethodRegisterAVS,
-			s.precompile.Methods[avs.MethodRegisterAVS].Name,
+			suite.precompile.Methods[avs.MethodRegisterAVS].Name,
 			true,
 		},
 		{
 			avs.MethodDeregisterAVS,
-			s.precompile.Methods[avs.MethodDeregisterAVS].Name,
+			suite.precompile.Methods[avs.MethodDeregisterAVS].Name,
 			true,
 		},
 		{
 			avs.MethodUpdateAVS,
-			s.precompile.Methods[avs.MethodUpdateAVS].Name,
+			suite.precompile.Methods[avs.MethodUpdateAVS].Name,
 			true,
 		},
 		{
 			avs.MethodRegisterOperatorToAVS,
-			s.precompile.Methods[avs.MethodRegisterOperatorToAVS].Name,
+			suite.precompile.Methods[avs.MethodRegisterOperatorToAVS].Name,
 			true,
 		},
 		{
 			avs.MethodDeregisterOperatorFromAVS,
-			s.precompile.Methods[avs.MethodDeregisterOperatorFromAVS].Name,
+			suite.precompile.Methods[avs.MethodDeregisterOperatorFromAVS].Name,
 			true,
 		},
 		{
 			avs.MethodSubmitProof,
-			s.precompile.Methods[avs.MethodSubmitProof].Name,
+			suite.precompile.Methods[avs.MethodSubmitProof].Name,
 			true,
 		},
 		{
 			avs.MethodCreateAVSTask,
-			s.precompile.Methods[avs.MethodCreateAVSTask].Name,
+			suite.precompile.Methods[avs.MethodCreateAVSTask].Name,
 			true,
 		},
 		{
 			avs.MethodRegisterBLSPublicKey,
-			s.precompile.Methods[avs.MethodRegisterBLSPublicKey].Name,
+			suite.precompile.Methods[avs.MethodRegisterBLSPublicKey].Name,
 			true,
 		},
 	}
 
 	for _, tc := range testCases {
-		s.Run(tc.name, func() {
-			s.Require().Equal(s.precompile.IsTransaction(tc.method), tc.isTx)
+		suite.Run(tc.name, func() {
+			suite.Require().Equal(suite.precompile.IsTransaction(tc.method), tc.isTx)
 		})
 	}
 }
 
-func (s *AVSManagerPrecompileSuite) TestRegisterAVS() {
+func (suite *AVSManagerPrecompileSuite) TestRegisterAVS() {
 	avsName, operatorAddress, slashAddress, rewardAddress := "avsTest", "exo18cggcpvwspnd5c6ny8wrqxpffj5zmhklprtnph", "0xDF907c29719154eb9872f021d21CAE6E5025d7aB", "0xDF907c29719154eb9872f021d21CAE6E5025d7aB"
 	avsOwnerAddress := []string{
-		sdk.AccAddress(s.Address.Bytes()).String(),
+		sdk.AccAddress(suite.Address.Bytes()).String(),
 		sdk.AccAddress(utiltx.GenerateAddress().Bytes()).String(),
 		sdk.AccAddress(utiltx.GenerateAddress().Bytes()).String(),
 	}
@@ -93,11 +93,11 @@ func (s *AVSManagerPrecompileSuite) TestRegisterAVS() {
 				EarningsAddr: operatorAddress,
 			},
 		}
-		_, err := s.OperatorMsgServer.RegisterOperator(sdk.WrapSDKContext(s.Ctx), registerReq)
-		s.NoError(err)
+		_, err := suite.OperatorMsgServer.RegisterOperator(sdk.WrapSDKContext(suite.Ctx), registerReq)
+		suite.NoError(err)
 	}
 	commonMalleate := func() (common.Address, []byte) {
-		input, err := s.precompile.Pack(
+		input, err := suite.precompile.Pack(
 			avs.MethodRegisterAVS,
 			avsName,
 			minStakeAmount,
@@ -111,12 +111,12 @@ func (s *AVSManagerPrecompileSuite) TestRegisterAVS() {
 			epochIdentifier,
 			params,
 		)
-		s.Require().NoError(err, "failed to pack input")
+		suite.Require().NoError(err, "failed to pack input")
 		return common.HexToAddress("0x3e108c058e8066DA635321Dc3018294cA82ddEdf"), input
 	}
 
-	successRet, err := s.precompile.Methods[avs.MethodRegisterAVS].Outputs.Pack(true)
-	s.Require().NoError(err)
+	successRet, err := suite.precompile.Methods[avs.MethodRegisterAVS].Outputs.Pack(true)
+	suite.Require().NoError(err)
 
 	testcases := []struct {
 		name        string
@@ -140,19 +140,20 @@ func (s *AVSManagerPrecompileSuite) TestRegisterAVS() {
 
 	for _, tc := range testcases {
 		tc := tc
-		s.Run(tc.name, func() {
-			baseFee := s.App.FeeMarketKeeper.GetBaseFee(s.Ctx)
+		suite.Run(tc.name, func() {
+
+			baseFee := suite.App.FeeMarketKeeper.GetBaseFee(suite.Ctx)
 
 			// malleate testcase
 			caller, input := tc.malleate()
 
-			contract := vm.NewPrecompile(vm.AccountRef(caller), s.precompile, big.NewInt(0), uint64(1e6))
+			contract := vm.NewPrecompile(vm.AccountRef(caller), suite.precompile, big.NewInt(0), uint64(1e6))
 			contract.Input = input
 
 			contractAddr := contract.Address()
 			// Build and sign Ethereum transaction
 			txArgs := evmtypes.EvmTxArgs{
-				ChainID:   s.App.EvmKeeper.ChainID(),
+				ChainID:   suite.App.EvmKeeper.ChainID(),
 				Nonce:     0,
 				To:        &contractAddr,
 				Amount:    nil,
@@ -164,59 +165,59 @@ func (s *AVSManagerPrecompileSuite) TestRegisterAVS() {
 			}
 			msgEthereumTx := evmtypes.NewTx(&txArgs)
 
-			msgEthereumTx.From = s.Address.String()
-			err := msgEthereumTx.Sign(s.EthSigner, s.Signer)
-			s.Require().NoError(err, "failed to sign Ethereum message")
+			msgEthereumTx.From = suite.Address.String()
+			err := msgEthereumTx.Sign(suite.EthSigner, suite.Signer)
+			suite.Require().NoError(err, "failed to sign Ethereum message")
 
 			// Instantiate config
-			proposerAddress := s.Ctx.BlockHeader().ProposerAddress
-			cfg, err := s.App.EvmKeeper.EVMConfig(s.Ctx, proposerAddress, s.App.EvmKeeper.ChainID())
-			s.Require().NoError(err, "failed to instantiate EVM config")
+			proposerAddress := suite.Ctx.BlockHeader().ProposerAddress
+			cfg, err := suite.App.EvmKeeper.EVMConfig(suite.Ctx, proposerAddress, suite.App.EvmKeeper.ChainID())
+			suite.Require().NoError(err, "failed to instantiate EVM config")
 
-			msg, err := msgEthereumTx.AsMessage(s.EthSigner, baseFee)
-			s.Require().NoError(err, "failed to instantiate Ethereum message")
+			msg, err := msgEthereumTx.AsMessage(suite.EthSigner, baseFee)
+			suite.Require().NoError(err, "failed to instantiate Ethereum message")
 
 			// Instantiate EVM
-			evm := s.App.EvmKeeper.NewEVM(
-				s.Ctx, msg, cfg, nil, s.StateDB,
+			evm := suite.App.EvmKeeper.NewEVM(
+				suite.Ctx, msg, cfg, nil, suite.StateDB,
 			)
 
-			params := s.App.EvmKeeper.GetParams(s.Ctx)
+			params := suite.App.EvmKeeper.GetParams(suite.Ctx)
 			activePrecompiles := params.GetActivePrecompilesAddrs()
-			precompileMap := s.App.EvmKeeper.Precompiles(activePrecompiles...)
+			precompileMap := suite.App.EvmKeeper.Precompiles(activePrecompiles...)
 			err = vm.ValidatePrecompiles(precompileMap, activePrecompiles)
-			s.Require().NoError(err, "invalid precompiles", activePrecompiles)
+			suite.Require().NoError(err, "invalid precompiles", activePrecompiles)
 			evm.WithPrecompiles(precompileMap, activePrecompiles)
 
 			// Run precompiled contract
-			bz, err := s.precompile.Run(evm, contract, tc.readOnly)
+			bz, err := suite.precompile.Run(evm, contract, tc.readOnly)
 
 			// Check results
 			if tc.expPass {
-				s.Require().NoError(err, "expected no error when running the precompile")
-				s.Require().Equal(tc.returnBytes, bz, "the return doesn't match the expected result")
+				suite.Require().NoError(err, "expected no error when running the precompile")
+				suite.Require().Equal(tc.returnBytes, bz, "the return doesn't match the expected result")
 			} else {
-				s.Require().Error(err, "expected error to be returned when running the precompile")
-				s.Require().Nil(bz, "expected returned bytes to be nil")
-				s.Require().ErrorContains(err, tc.errContains)
+				suite.Require().Error(err, "expected error to be returned when running the precompile")
+				suite.Require().Nil(bz, "expected returned bytes to be nil")
+				suite.Require().ErrorContains(err, tc.errContains)
 			}
 		})
 	}
 }
 
-func (s *AVSManagerPrecompileSuite) TestDeregisterAVS() {
+func (suite *AVSManagerPrecompileSuite) TestDeregisterAVS() {
 	avsName := "avsTest"
 	commonMalleate := func() (common.Address, []byte) {
 		// prepare the call input for delegation test
-		input, err := s.precompile.Pack(
+		input, err := suite.precompile.Pack(
 			avs.MethodDeregisterAVS,
 			avsName,
 		)
-		s.Require().NoError(err, "failed to pack input")
+		suite.Require().NoError(err, "failed to pack input")
 		return common.HexToAddress("0x3e108c058e8066DA635321Dc3018294cA82ddEdf"), input
 	}
-	successRet, err := s.precompile.Methods[avs.MethodDeregisterAVS].Outputs.Pack(true)
-	s.Require().NoError(err)
+	successRet, err := suite.precompile.Methods[avs.MethodDeregisterAVS].Outputs.Pack(true)
+	suite.Require().NoError(err)
 
 	testcases := []struct {
 		name        string
@@ -229,7 +230,7 @@ func (s *AVSManagerPrecompileSuite) TestDeregisterAVS() {
 		{
 			name: "pass for avs-deregister",
 			malleate: func() (common.Address, []byte) {
-				s.TestRegisterAVS()
+				suite.TestRegisterAVS()
 				return commonMalleate()
 			},
 			readOnly:    false,
@@ -240,19 +241,19 @@ func (s *AVSManagerPrecompileSuite) TestDeregisterAVS() {
 
 	for _, tc := range testcases {
 		tc := tc
-		s.Run(tc.name, func() {
-			baseFee := s.App.FeeMarketKeeper.GetBaseFee(s.Ctx)
+		suite.Run(tc.name, func() {
+			baseFee := suite.App.FeeMarketKeeper.GetBaseFee(suite.Ctx)
 
 			// malleate testcase
 			caller, input := tc.malleate()
 
-			contract := vm.NewPrecompile(vm.AccountRef(caller), s.precompile, big.NewInt(0), uint64(1e6))
+			contract := vm.NewPrecompile(vm.AccountRef(caller), suite.precompile, big.NewInt(0), uint64(1e6))
 			contract.Input = input
 
 			contractAddr := contract.Address()
 			// Build and sign Ethereum transaction
 			txArgs := evmtypes.EvmTxArgs{
-				ChainID:   s.App.EvmKeeper.ChainID(),
+				ChainID:   suite.App.EvmKeeper.ChainID(),
 				Nonce:     0,
 				To:        &contractAddr,
 				Amount:    nil,
@@ -264,50 +265,50 @@ func (s *AVSManagerPrecompileSuite) TestDeregisterAVS() {
 			}
 			msgEthereumTx := evmtypes.NewTx(&txArgs)
 
-			msgEthereumTx.From = s.Address.String()
-			err := msgEthereumTx.Sign(s.EthSigner, s.Signer)
-			s.Require().NoError(err, "failed to sign Ethereum message")
+			msgEthereumTx.From = suite.Address.String()
+			err := msgEthereumTx.Sign(suite.EthSigner, suite.Signer)
+			suite.Require().NoError(err, "failed to sign Ethereum message")
 
 			// Instantiate config
-			proposerAddress := s.Ctx.BlockHeader().ProposerAddress
-			cfg, err := s.App.EvmKeeper.EVMConfig(s.Ctx, proposerAddress, s.App.EvmKeeper.ChainID())
-			s.Require().NoError(err, "failed to instantiate EVM config")
+			proposerAddress := suite.Ctx.BlockHeader().ProposerAddress
+			cfg, err := suite.App.EvmKeeper.EVMConfig(suite.Ctx, proposerAddress, suite.App.EvmKeeper.ChainID())
+			suite.Require().NoError(err, "failed to instantiate EVM config")
 
-			msg, err := msgEthereumTx.AsMessage(s.EthSigner, baseFee)
-			s.Require().NoError(err, "failed to instantiate Ethereum message")
+			msg, err := msgEthereumTx.AsMessage(suite.EthSigner, baseFee)
+			suite.Require().NoError(err, "failed to instantiate Ethereum message")
 
 			// Instantiate EVM
-			evm := s.App.EvmKeeper.NewEVM(
-				s.Ctx, msg, cfg, nil, s.StateDB,
+			evm := suite.App.EvmKeeper.NewEVM(
+				suite.Ctx, msg, cfg, nil, suite.StateDB,
 			)
 
-			params := s.App.EvmKeeper.GetParams(s.Ctx)
+			params := suite.App.EvmKeeper.GetParams(suite.Ctx)
 			activePrecompiles := params.GetActivePrecompilesAddrs()
-			precompileMap := s.App.EvmKeeper.Precompiles(activePrecompiles...)
+			precompileMap := suite.App.EvmKeeper.Precompiles(activePrecompiles...)
 			err = vm.ValidatePrecompiles(precompileMap, activePrecompiles)
-			s.Require().NoError(err, "invalid precompiles", activePrecompiles)
+			suite.Require().NoError(err, "invalid precompiles", activePrecompiles)
 			evm.WithPrecompiles(precompileMap, activePrecompiles)
 
 			// Run precompiled contract
-			bz, err := s.precompile.Run(evm, contract, tc.readOnly)
+			bz, err := suite.precompile.Run(evm, contract, tc.readOnly)
 
 			// Check results
 			if tc.expPass {
-				s.Require().NoError(err, "expected no error when running the precompile")
-				s.Require().Equal(tc.returnBytes, bz, "the return doesn't match the expected result")
+				suite.Require().NoError(err, "expected no error when running the precompile")
+				suite.Require().Equal(tc.returnBytes, bz, "the return doesn't match the expected result")
 			} else {
-				s.Require().Error(err, "expected error to be returned when running the precompile")
-				s.Require().Nil(bz, "expected returned bytes to be nil")
-				s.Require().ErrorContains(err, tc.errContains)
+				suite.Require().Error(err, "expected error to be returned when running the precompile")
+				suite.Require().Nil(bz, "expected returned bytes to be nil")
+				suite.Require().ErrorContains(err, tc.errContains)
 			}
 		})
 	}
 }
 
-func (s *AVSManagerPrecompileSuite) TestUpdateAVS() {
+func (suite *AVSManagerPrecompileSuite) TestUpdateAVS() {
 	avsName, slashAddress, rewardAddress := "avsTest", "0xDF907c29719154eb9872f021d21CAE6E5025d7aB", "0xDF907c29719154eb9872f021d21CAE6E5025d7aB"
 	avsOwnerAddress := []string{
-		sdk.AccAddress(s.Address.Bytes()).String(),
+		sdk.AccAddress(suite.Address.Bytes()).String(),
 		sdk.AccAddress(utiltx.GenerateAddress().Bytes()).String(),
 		sdk.AccAddress(utiltx.GenerateAddress().Bytes()).String(),
 	}
@@ -317,7 +318,7 @@ func (s *AVSManagerPrecompileSuite) TestUpdateAVS() {
 	epochIdentifier := epochstypes.DayEpochID
 	params := []uint64{2, 3, 4, 4}
 	commonMalleate := func() (common.Address, []byte) {
-		input, err := s.precompile.Pack(
+		input, err := suite.precompile.Pack(
 			avs.MethodUpdateAVS,
 			avsName,
 			minStakeAmount,
@@ -331,12 +332,12 @@ func (s *AVSManagerPrecompileSuite) TestUpdateAVS() {
 			epochIdentifier,
 			params,
 		)
-		s.Require().NoError(err, "failed to pack input")
+		suite.Require().NoError(err, "failed to pack input")
 		return common.HexToAddress("0x3e108c058e8066DA635321Dc3018294cA82ddEdf"), input
 	}
 
-	successRet, err := s.precompile.Methods[avs.MethodUpdateAVS].Outputs.Pack(true)
-	s.Require().NoError(err)
+	successRet, err := suite.precompile.Methods[avs.MethodUpdateAVS].Outputs.Pack(true)
+	suite.Require().NoError(err)
 
 	testcases := []struct {
 		name        string
@@ -349,7 +350,7 @@ func (s *AVSManagerPrecompileSuite) TestUpdateAVS() {
 		{
 			name: "pass for avs-update",
 			malleate: func() (common.Address, []byte) {
-				s.TestRegisterAVS()
+				suite.TestRegisterAVS()
 				return commonMalleate()
 			},
 			readOnly:    false,
@@ -360,19 +361,19 @@ func (s *AVSManagerPrecompileSuite) TestUpdateAVS() {
 
 	for _, tc := range testcases {
 		tc := tc
-		s.Run(tc.name, func() {
-			baseFee := s.App.FeeMarketKeeper.GetBaseFee(s.Ctx)
+		suite.Run(tc.name, func() {
+			baseFee := suite.App.FeeMarketKeeper.GetBaseFee(suite.Ctx)
 
 			// malleate testcase
 			caller, input := tc.malleate()
 
-			contract := vm.NewPrecompile(vm.AccountRef(caller), s.precompile, big.NewInt(0), uint64(1e6))
+			contract := vm.NewPrecompile(vm.AccountRef(caller), suite.precompile, big.NewInt(0), uint64(1e6))
 			contract.Input = input
 
 			contractAddr := contract.Address()
 			// Build and sign Ethereum transaction
 			txArgs := evmtypes.EvmTxArgs{
-				ChainID:   s.App.EvmKeeper.ChainID(),
+				ChainID:   suite.App.EvmKeeper.ChainID(),
 				Nonce:     0,
 				To:        &contractAddr,
 				Amount:    nil,
@@ -384,49 +385,49 @@ func (s *AVSManagerPrecompileSuite) TestUpdateAVS() {
 			}
 			msgEthereumTx := evmtypes.NewTx(&txArgs)
 
-			msgEthereumTx.From = s.Address.String()
-			err := msgEthereumTx.Sign(s.EthSigner, s.Signer)
-			s.Require().NoError(err, "failed to sign Ethereum message")
+			msgEthereumTx.From = suite.Address.String()
+			err := msgEthereumTx.Sign(suite.EthSigner, suite.Signer)
+			suite.Require().NoError(err, "failed to sign Ethereum message")
 
 			// Instantiate config
-			proposerAddress := s.Ctx.BlockHeader().ProposerAddress
-			cfg, err := s.App.EvmKeeper.EVMConfig(s.Ctx, proposerAddress, s.App.EvmKeeper.ChainID())
-			s.Require().NoError(err, "failed to instantiate EVM config")
+			proposerAddress := suite.Ctx.BlockHeader().ProposerAddress
+			cfg, err := suite.App.EvmKeeper.EVMConfig(suite.Ctx, proposerAddress, suite.App.EvmKeeper.ChainID())
+			suite.Require().NoError(err, "failed to instantiate EVM config")
 
-			msg, err := msgEthereumTx.AsMessage(s.EthSigner, baseFee)
-			s.Require().NoError(err, "failed to instantiate Ethereum message")
+			msg, err := msgEthereumTx.AsMessage(suite.EthSigner, baseFee)
+			suite.Require().NoError(err, "failed to instantiate Ethereum message")
 
 			// Instantiate EVM
-			evm := s.App.EvmKeeper.NewEVM(
-				s.Ctx, msg, cfg, nil, s.StateDB,
+			evm := suite.App.EvmKeeper.NewEVM(
+				suite.Ctx, msg, cfg, nil, suite.StateDB,
 			)
 
-			params := s.App.EvmKeeper.GetParams(s.Ctx)
+			params := suite.App.EvmKeeper.GetParams(suite.Ctx)
 			activePrecompiles := params.GetActivePrecompilesAddrs()
-			precompileMap := s.App.EvmKeeper.Precompiles(activePrecompiles...)
+			precompileMap := suite.App.EvmKeeper.Precompiles(activePrecompiles...)
 			err = vm.ValidatePrecompiles(precompileMap, activePrecompiles)
-			s.Require().NoError(err, "invalid precompiles", activePrecompiles)
+			suite.Require().NoError(err, "invalid precompiles", activePrecompiles)
 			evm.WithPrecompiles(precompileMap, activePrecompiles)
 
 			// Run precompiled contract
-			bz, err := s.precompile.Run(evm, contract, tc.readOnly)
+			bz, err := suite.precompile.Run(evm, contract, tc.readOnly)
 
 			// Check results
 			if tc.expPass {
-				s.Require().NoError(err, "expected no error when running the precompile")
-				s.Require().Equal(tc.returnBytes, bz, "the return doesn't match the expected result")
+				suite.Require().NoError(err, "expected no error when running the precompile")
+				suite.Require().Equal(tc.returnBytes, bz, "the return doesn't match the expected result")
 			} else {
-				s.Require().Error(err, "expected error to be returned when running the precompile")
-				s.Require().Nil(bz, "expected returned bytes to be nil")
-				s.Require().ErrorContains(err, tc.errContains)
+				suite.Require().Error(err, "expected error to be returned when running the precompile")
+				suite.Require().Nil(bz, "expected returned bytes to be nil")
+				suite.Require().ErrorContains(err, tc.errContains)
 			}
 		})
 	}
 }
 
-func (s *AVSManagerPrecompileSuite) TestRegisterOperatorToAVS() {
+func (suite *AVSManagerPrecompileSuite) TestRegisterOperatorToAVS() {
 	// from := s.Address
-	operatorAddress := sdk.AccAddress(s.Address.Bytes()).String()
+	operatorAddress := sdk.AccAddress(suite.Address.Bytes()).String()
 
 	registerOperator := func() {
 		registerReq := &operatortypes.RegisterOperatorReq{
@@ -435,18 +436,18 @@ func (s *AVSManagerPrecompileSuite) TestRegisterOperatorToAVS() {
 				EarningsAddr: operatorAddress,
 			},
 		}
-		_, err := s.OperatorMsgServer.RegisterOperator(sdk.WrapSDKContext(s.Ctx), registerReq)
-		s.NoError(err)
+		_, err := suite.OperatorMsgServer.RegisterOperator(sdk.WrapSDKContext(suite.Ctx), registerReq)
+		suite.NoError(err)
 	}
 	commonMalleate := func() (common.Address, []byte) {
-		input, err := s.precompile.Pack(
+		input, err := suite.precompile.Pack(
 			avs.MethodRegisterOperatorToAVS,
 		)
-		s.Require().NoError(err, "failed to pack input")
+		suite.Require().NoError(err, "failed to pack input")
 		return common.HexToAddress("0x3e108c058e8066DA635321Dc3018294cA82ddEdf"), input
 	}
-	successRet, err := s.precompile.Methods[avs.MethodRegisterAVS].Outputs.Pack(true)
-	s.Require().NoError(err)
+	successRet, err := suite.precompile.Methods[avs.MethodRegisterAVS].Outputs.Pack(true)
+	suite.Require().NoError(err)
 
 	testcases := []struct {
 		name        string
@@ -459,7 +460,7 @@ func (s *AVSManagerPrecompileSuite) TestRegisterOperatorToAVS() {
 		{
 			name: "pass for operator opt-in avs",
 			malleate: func() (common.Address, []byte) {
-				s.TestRegisterAVS()
+				suite.TestRegisterAVS()
 				registerOperator()
 				return commonMalleate()
 			},
@@ -471,19 +472,19 @@ func (s *AVSManagerPrecompileSuite) TestRegisterOperatorToAVS() {
 
 	for _, tc := range testcases {
 		tc := tc
-		s.Run(tc.name, func() {
-			baseFee := s.App.FeeMarketKeeper.GetBaseFee(s.Ctx)
+		suite.Run(tc.name, func() {
+			baseFee := suite.App.FeeMarketKeeper.GetBaseFee(suite.Ctx)
 
 			// malleate testcase
 			caller, input := tc.malleate()
-			contract := vm.NewPrecompile(vm.AccountRef(caller), s.precompile, big.NewInt(0), uint64(1e6))
+			contract := vm.NewPrecompile(vm.AccountRef(caller), suite.precompile, big.NewInt(0), uint64(1e6))
 			contract.Input = input
 			contract.CallerAddress = caller
 
 			contractAddr := contract.Address()
 			// Build and sign Ethereum transaction
 			txArgs := evmtypes.EvmTxArgs{
-				ChainID:   s.App.EvmKeeper.ChainID(),
+				ChainID:   suite.App.EvmKeeper.ChainID(),
 				Nonce:     0,
 				To:        &contractAddr,
 				Amount:    nil,
@@ -495,47 +496,47 @@ func (s *AVSManagerPrecompileSuite) TestRegisterOperatorToAVS() {
 			}
 			msgEthereumTx := evmtypes.NewTx(&txArgs)
 
-			msgEthereumTx.From = s.Address.String()
-			err := msgEthereumTx.Sign(s.EthSigner, s.Signer)
-			s.Require().NoError(err, "failed to sign Ethereum message")
+			msgEthereumTx.From = suite.Address.String()
+			err := msgEthereumTx.Sign(suite.EthSigner, suite.Signer)
+			suite.Require().NoError(err, "failed to sign Ethereum message")
 
 			// Instantiate config
-			proposerAddress := s.Ctx.BlockHeader().ProposerAddress
-			cfg, err := s.App.EvmKeeper.EVMConfig(s.Ctx, proposerAddress, s.App.EvmKeeper.ChainID())
-			s.Require().NoError(err, "failed to instantiate EVM config")
+			proposerAddress := suite.Ctx.BlockHeader().ProposerAddress
+			cfg, err := suite.App.EvmKeeper.EVMConfig(suite.Ctx, proposerAddress, suite.App.EvmKeeper.ChainID())
+			suite.Require().NoError(err, "failed to instantiate EVM config")
 
-			msg, err := msgEthereumTx.AsMessage(s.EthSigner, baseFee)
-			s.Require().NoError(err, "failed to instantiate Ethereum message")
+			msg, err := msgEthereumTx.AsMessage(suite.EthSigner, baseFee)
+			suite.Require().NoError(err, "failed to instantiate Ethereum message")
 
 			// Instantiate EVM
-			evm := s.App.EvmKeeper.NewEVM(
-				s.Ctx, msg, cfg, nil, s.StateDB,
+			evm := suite.App.EvmKeeper.NewEVM(
+				suite.Ctx, msg, cfg, nil, suite.StateDB,
 			)
 
-			params := s.App.EvmKeeper.GetParams(s.Ctx)
+			params := suite.App.EvmKeeper.GetParams(suite.Ctx)
 			activePrecompiles := params.GetActivePrecompilesAddrs()
-			precompileMap := s.App.EvmKeeper.Precompiles(activePrecompiles...)
+			precompileMap := suite.App.EvmKeeper.Precompiles(activePrecompiles...)
 			err = vm.ValidatePrecompiles(precompileMap, activePrecompiles)
-			s.Require().NoError(err, "invalid precompiles", activePrecompiles)
+			suite.Require().NoError(err, "invalid precompiles", activePrecompiles)
 			evm.WithPrecompiles(precompileMap, activePrecompiles)
 
 			// Run precompiled contract
-			bz, err := s.precompile.Run(evm, contract, tc.readOnly)
+			bz, err := suite.precompile.Run(evm, contract, tc.readOnly)
 
 			// Check results
 			if tc.expPass {
-				s.Require().NoError(err, "expected no error when running the precompile")
-				s.Require().Equal(tc.returnBytes, bz, "the return doesn't match the expected result")
+				suite.Require().NoError(err, "expected no error when running the precompile")
+				suite.Require().Equal(tc.returnBytes, bz, "the return doesn't match the expected result")
 			} else {
-				s.Require().Error(err, "expected error to be returned when running the precompile")
-				s.Require().Nil(bz, "expected returned bytes to be nil")
-				s.Require().ErrorContains(err, tc.errContains)
+				suite.Require().Error(err, "expected error to be returned when running the precompile")
+				suite.Require().Nil(bz, "expected returned bytes to be nil")
+				suite.Require().ErrorContains(err, tc.errContains)
 			}
 		})
 	}
 }
 
-func (s *AVSManagerPrecompileSuite) TestDeregisterOperatorFromAVS() {
+func (suite *AVSManagerPrecompileSuite) TestDeregisterOperatorFromAVS() {
 	// from := s.Address
 	// operatorAddress, err := util.ProcessAddress(from.String())
 
@@ -550,14 +551,14 @@ func (s *AVSManagerPrecompileSuite) TestDeregisterOperatorFromAVS() {
 	// 	s.NoError(err)
 	// }
 	commonMalleate := func() (common.Address, []byte) {
-		input, err := s.precompile.Pack(
+		input, err := suite.precompile.Pack(
 			avs.MethodDeregisterOperatorFromAVS,
 		)
-		s.Require().NoError(err, "failed to pack input")
+		suite.Require().NoError(err, "failed to pack input")
 		return common.HexToAddress("0x3e108c058e8066DA635321Dc3018294cA82ddEdf"), input
 	}
-	successRet, err := s.precompile.Methods[avs.MethodDeregisterOperatorFromAVS].Outputs.Pack(true)
-	s.Require().NoError(err)
+	successRet, err := suite.precompile.Methods[avs.MethodDeregisterOperatorFromAVS].Outputs.Pack(true)
+	suite.Require().NoError(err)
 
 	testcases := []struct {
 		name        string
@@ -570,7 +571,7 @@ func (s *AVSManagerPrecompileSuite) TestDeregisterOperatorFromAVS() {
 		{
 			name: "pass for operator opt-out avs",
 			malleate: func() (common.Address, []byte) {
-				s.TestRegisterOperatorToAVS()
+				suite.TestRegisterOperatorToAVS()
 				// registerOperator()
 				return commonMalleate()
 			},
@@ -582,19 +583,19 @@ func (s *AVSManagerPrecompileSuite) TestDeregisterOperatorFromAVS() {
 
 	for _, tc := range testcases {
 		tc := tc
-		s.Run(tc.name, func() {
-			baseFee := s.App.FeeMarketKeeper.GetBaseFee(s.Ctx)
+		suite.Run(tc.name, func() {
+			baseFee := suite.App.FeeMarketKeeper.GetBaseFee(suite.Ctx)
 
 			// malleate testcase
 			caller, input := tc.malleate()
-			contract := vm.NewPrecompile(vm.AccountRef(caller), s.precompile, big.NewInt(0), uint64(1e6))
+			contract := vm.NewPrecompile(vm.AccountRef(caller), suite.precompile, big.NewInt(0), uint64(1e6))
 			contract.Input = input
 			contract.CallerAddress = caller
 
 			contractAddr := contract.Address()
 			// Build and sign Ethereum transaction
 			txArgs := evmtypes.EvmTxArgs{
-				ChainID:   s.App.EvmKeeper.ChainID(),
+				ChainID:   suite.App.EvmKeeper.ChainID(),
 				Nonce:     0,
 				To:        &contractAddr,
 				Amount:    nil,
@@ -606,58 +607,58 @@ func (s *AVSManagerPrecompileSuite) TestDeregisterOperatorFromAVS() {
 			}
 			msgEthereumTx := evmtypes.NewTx(&txArgs)
 
-			msgEthereumTx.From = s.Address.String()
-			err := msgEthereumTx.Sign(s.EthSigner, s.Signer)
-			s.Require().NoError(err, "failed to sign Ethereum message")
+			msgEthereumTx.From = suite.Address.String()
+			err := msgEthereumTx.Sign(suite.EthSigner, suite.Signer)
+			suite.Require().NoError(err, "failed to sign Ethereum message")
 
 			// Instantiate config
-			proposerAddress := s.Ctx.BlockHeader().ProposerAddress
-			cfg, err := s.App.EvmKeeper.EVMConfig(s.Ctx, proposerAddress, s.App.EvmKeeper.ChainID())
-			s.Require().NoError(err, "failed to instantiate EVM config")
+			proposerAddress := suite.Ctx.BlockHeader().ProposerAddress
+			cfg, err := suite.App.EvmKeeper.EVMConfig(suite.Ctx, proposerAddress, suite.App.EvmKeeper.ChainID())
+			suite.Require().NoError(err, "failed to instantiate EVM config")
 
-			msg, err := msgEthereumTx.AsMessage(s.EthSigner, baseFee)
-			s.Require().NoError(err, "failed to instantiate Ethereum message")
+			msg, err := msgEthereumTx.AsMessage(suite.EthSigner, baseFee)
+			suite.Require().NoError(err, "failed to instantiate Ethereum message")
 
 			// Instantiate EVM
-			evm := s.App.EvmKeeper.NewEVM(
-				s.Ctx, msg, cfg, nil, s.StateDB,
+			evm := suite.App.EvmKeeper.NewEVM(
+				suite.Ctx, msg, cfg, nil, suite.StateDB,
 			)
 
-			params := s.App.EvmKeeper.GetParams(s.Ctx)
+			params := suite.App.EvmKeeper.GetParams(suite.Ctx)
 			activePrecompiles := params.GetActivePrecompilesAddrs()
-			precompileMap := s.App.EvmKeeper.Precompiles(activePrecompiles...)
+			precompileMap := suite.App.EvmKeeper.Precompiles(activePrecompiles...)
 			err = vm.ValidatePrecompiles(precompileMap, activePrecompiles)
-			s.Require().NoError(err, "invalid precompiles", activePrecompiles)
+			suite.Require().NoError(err, "invalid precompiles", activePrecompiles)
 			evm.WithPrecompiles(precompileMap, activePrecompiles)
 
 			// Run precompiled contract
-			bz, err := s.precompile.Run(evm, contract, tc.readOnly)
+			bz, err := suite.precompile.Run(evm, contract, tc.readOnly)
 
 			// Check results
 			if tc.expPass {
-				s.Require().NoError(err, "expected no error when running the precompile")
-				s.Require().Equal(tc.returnBytes, bz, "the return doesn't match the expected result")
+				suite.Require().NoError(err, "expected no error when running the precompile")
+				suite.Require().Equal(tc.returnBytes, bz, "the return doesn't match the expected result")
 			} else {
-				s.Require().Error(err, "expected error to be returned when running the precompile")
-				s.Require().Nil(bz, "expected returned bytes to be nil")
-				s.Require().ErrorContains(err, tc.errContains)
+				suite.Require().Error(err, "expected error to be returned when running the precompile")
+				suite.Require().Nil(bz, "expected returned bytes to be nil")
+				suite.Require().ErrorContains(err, tc.errContains)
 			}
 		})
 	}
 }
 
 // TestRun tests the precompiles Run method reg avstask.
-func (s *AVSManagerPrecompileSuite) TestRunRegTaskinfo() {
+func (suite *AVSManagerPrecompileSuite) TestRunRegTaskInfo() {
 	taskAddr := utiltx.GenerateAddress()
 	registerAVS := func() {
 		avsName := "avsTest"
 		avsOwnerAddress := []string{
-			sdk.AccAddress(s.Address.Bytes()).String(),
+			sdk.AccAddress(suite.Address.Bytes()).String(),
 			"exo13h6xg79g82e2g2vhjwg7j4r2z2hlncelwutkjr",
 			"exo13h6xg79g82e2g2vhjwg7j4r2z2hlncelwutkj2",
 		}
 		assetID := []string{"11", "22", "33"}
-		avs := &types.AVSInfo{
+		avsInfo := &types.AVSInfo{
 			Name:                avsName,
 			AvsAddress:          utiltx.GenerateAddress().String(),
 			SlashAddr:           utiltx.GenerateAddress().String(),
@@ -674,11 +675,11 @@ func (s *AVSManagerPrecompileSuite) TestRunRegTaskinfo() {
 			TaskAddr:            taskAddr.String(),
 		}
 
-		err := s.App.AVSManagerKeeper.SetAVSInfo(s.Ctx, avs)
-		s.NoError(err)
+		err := suite.App.AVSManagerKeeper.SetAVSInfo(suite.Ctx, avsInfo)
+		suite.NoError(err)
 	}
 	commonMalleate := func() (common.Address, []byte) {
-		input, err := s.precompile.Pack(
+		input, err := suite.precompile.Pack(
 			avs.MethodCreateAVSTask,
 			"test-avstask",
 			rand.Bytes(3),
@@ -687,11 +688,11 @@ func (s *AVSManagerPrecompileSuite) TestRunRegTaskinfo() {
 			uint64(3),
 			uint64(3),
 		)
-		s.Require().NoError(err, "failed to pack input")
-		return s.Address, input
+		suite.Require().NoError(err, "failed to pack input")
+		return suite.Address, input
 	}
-	successRet, err := s.precompile.Methods[avs.MethodCreateAVSTask].Outputs.Pack(true)
-	s.Require().NoError(err)
+	successRet, err := suite.precompile.Methods[avs.MethodCreateAVSTask].Outputs.Pack(true)
+	suite.Require().NoError(err)
 	testcases := []struct {
 		name        string
 		malleate    func() (common.Address, []byte)
@@ -703,7 +704,7 @@ func (s *AVSManagerPrecompileSuite) TestRunRegTaskinfo() {
 		{
 			name: "pass - avstask via pre-compiles",
 			malleate: func() (common.Address, []byte) {
-				s.Require().NoError(err)
+				suite.Require().NoError(err)
 				registerAVS()
 				return commonMalleate()
 			},
@@ -714,20 +715,20 @@ func (s *AVSManagerPrecompileSuite) TestRunRegTaskinfo() {
 	}
 	for _, tc := range testcases {
 		tc := tc
-		s.Run(tc.name, func() {
-			baseFee := s.App.FeeMarketKeeper.GetBaseFee(s.Ctx)
+		suite.Run(tc.name, func() {
+			baseFee := suite.App.FeeMarketKeeper.GetBaseFee(suite.Ctx)
 
 			// malleate testcase
 			caller, input := tc.malleate()
 
-			contract := vm.NewPrecompile(vm.AccountRef(caller), s.precompile, big.NewInt(0), uint64(1e6))
+			contract := vm.NewPrecompile(vm.AccountRef(caller), suite.precompile, big.NewInt(0), uint64(1e6))
 			contract.Input = input
 			contract.CallerAddress = taskAddr
 
 			contractAddr := contract.Address()
 			// Build and sign Ethereum transaction
 			txArgs := evmtypes.EvmTxArgs{
-				ChainID:   s.App.EvmKeeper.ChainID(),
+				ChainID:   suite.App.EvmKeeper.ChainID(),
 				Nonce:     0,
 				To:        &contractAddr,
 				Amount:    nil,
@@ -739,42 +740,42 @@ func (s *AVSManagerPrecompileSuite) TestRunRegTaskinfo() {
 			}
 			msgEthereumTx := evmtypes.NewTx(&txArgs)
 
-			msgEthereumTx.From = s.Address.String()
-			err := msgEthereumTx.Sign(s.EthSigner, s.Signer)
-			s.Require().NoError(err, "failed to sign Ethereum message")
+			msgEthereumTx.From = suite.Address.String()
+			err := msgEthereumTx.Sign(suite.EthSigner, suite.Signer)
+			suite.Require().NoError(err, "failed to sign Ethereum message")
 
 			// Instantiate config
-			proposerAddress := s.Ctx.BlockHeader().ProposerAddress
-			cfg, err := s.App.EvmKeeper.EVMConfig(s.Ctx, proposerAddress, s.App.EvmKeeper.ChainID())
-			s.Require().NoError(err, "failed to instantiate EVM config")
+			proposerAddress := suite.Ctx.BlockHeader().ProposerAddress
+			cfg, err := suite.App.EvmKeeper.EVMConfig(suite.Ctx, proposerAddress, suite.App.EvmKeeper.ChainID())
+			suite.Require().NoError(err, "failed to instantiate EVM config")
 
-			msg, err := msgEthereumTx.AsMessage(s.EthSigner, baseFee)
-			s.Require().NoError(err, "failed to instantiate Ethereum message")
+			msg, err := msgEthereumTx.AsMessage(suite.EthSigner, baseFee)
+			suite.Require().NoError(err, "failed to instantiate Ethereum message")
 
 			// Create StateDB
-			s.StateDB = statedb.New(s.Ctx, s.App.EvmKeeper, statedb.NewEmptyTxConfig(common.BytesToHash(s.Ctx.HeaderHash().Bytes())))
+			suite.StateDB = statedb.New(suite.Ctx, suite.App.EvmKeeper, statedb.NewEmptyTxConfig(common.BytesToHash(suite.Ctx.HeaderHash().Bytes())))
 			// Instantiate EVM
-			evm := s.App.EvmKeeper.NewEVM(
-				s.Ctx, msg, cfg, nil, s.StateDB,
+			evm := suite.App.EvmKeeper.NewEVM(
+				suite.Ctx, msg, cfg, nil, suite.StateDB,
 			)
-			params := s.App.EvmKeeper.GetParams(s.Ctx)
+			params := suite.App.EvmKeeper.GetParams(suite.Ctx)
 			activePrecompiles := params.GetActivePrecompilesAddrs()
-			precompileMap := s.App.EvmKeeper.Precompiles(activePrecompiles...)
+			precompileMap := suite.App.EvmKeeper.Precompiles(activePrecompiles...)
 			err = vm.ValidatePrecompiles(precompileMap, activePrecompiles)
-			s.Require().NoError(err, "invalid precompiles", activePrecompiles)
+			suite.Require().NoError(err, "invalid precompiles", activePrecompiles)
 			evm.WithPrecompiles(precompileMap, activePrecompiles)
 
 			// Run precompiled contract
-			bz, err := s.precompile.Run(evm, contract, tc.readOnly)
+			bz, err := suite.precompile.Run(evm, contract, tc.readOnly)
 
 			// Check results
 			if tc.expPass {
-				s.Require().NoError(err, "expected no error when running the precompile")
-				s.Require().Equal(tc.returnBytes, bz, "the return doesn't match the expected result")
+				suite.Require().NoError(err, "expected no error when running the precompile")
+				suite.Require().Equal(tc.returnBytes, bz, "the return doesn't match the expected result")
 			} else {
-				s.Require().Error(err, "expected error to be returned when running the precompile")
-				s.Require().Nil(bz, "expected returned bytes to be nil")
-				s.Require().ErrorContains(err, tc.errContains)
+				suite.Require().Error(err, "expected error to be returned when running the precompile")
+				suite.Require().Nil(bz, "expected returned bytes to be nil")
+				suite.Require().ErrorContains(err, tc.errContains)
 			}
 		})
 	}

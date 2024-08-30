@@ -37,6 +37,7 @@ func (p Precompile) DepositWithdrawParamsFromInputs(ctx sdk.Context, args []inte
 	if !ok || assetAddr == nil {
 		return nil, fmt.Errorf(exocmn.ErrContractInputParaOrType, 1, "[]byte", args[1])
 	}
+	// #nosec G115
 	if uint32(len(assetAddr)) < clientChainAddrLength {
 		return nil, fmt.Errorf(exocmn.ErrInvalidAddrLength, len(assetAddr), clientChainAddrLength)
 	}
@@ -46,6 +47,7 @@ func (p Precompile) DepositWithdrawParamsFromInputs(ctx sdk.Context, args []inte
 	if !ok || stakerAddr == nil {
 		return nil, fmt.Errorf(exocmn.ErrContractInputParaOrType, 2, "[]byte", args[2])
 	}
+	// #nosec G115
 	if uint32(len(stakerAddr)) < clientChainAddrLength {
 		return nil, fmt.Errorf(exocmn.ErrInvalidAddrLength, len(stakerAddr), clientChainAddrLength)
 	}
@@ -79,6 +81,7 @@ func (p Precompile) ClientChainInfoFromInputs(_ sdk.Context, args []interface{})
 	if addressLength < types.MinClientChainAddrLength {
 		return nil, fmt.Errorf(exocmn.ErrInvalidAddrLength, addressLength, types.MinClientChainAddrLength)
 	}
+	// #nosec G115
 	clientChain.AddressLength = uint32(addressLength)
 
 	name, ok := args[2].(string)
@@ -129,6 +132,7 @@ func (p Precompile) TokenFromInputs(ctx sdk.Context, args []interface{}) (types.
 	if !ok || assetAddr == nil {
 		return types.AssetInfo{}, fmt.Errorf(exocmn.ErrContractInputParaOrType, 1, "[]byte", args[1])
 	}
+	// #nosec G115
 	if uint32(len(assetAddr)) < clientChainAddrLength {
 		return types.AssetInfo{}, fmt.Errorf(exocmn.ErrInvalidAddrLength, len(assetAddr), clientChainAddrLength)
 	}
@@ -138,6 +142,7 @@ func (p Precompile) TokenFromInputs(ctx sdk.Context, args []interface{}) (types.
 	if !ok {
 		return types.AssetInfo{}, fmt.Errorf(exocmn.ErrContractInputParaOrType, 2, "uint8", args[2])
 	}
+	// #nosec G115
 	asset.Decimals = uint32(decimal)
 
 	tvlLimit, ok := args[3].(*big.Int)

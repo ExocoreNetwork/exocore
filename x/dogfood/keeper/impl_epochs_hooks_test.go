@@ -64,7 +64,7 @@ func (suite *KeeperTestSuite) TestSameEpochOperations() {
 		suite.NoError(err)
 		// self delegate
 		err = suite.App.DelegationKeeper.AssociateOperatorWithStaker(
-			suite.Ctx, lzID, operatorAddress, staker,
+			suite.Ctx, lzID, operatorAddress, staker.Bytes(),
 		)
 		suite.NoError(err)
 	}
@@ -244,7 +244,7 @@ func (suite *KeeperTestSuite) TestDifferentEpochOperations() {
 		suite.NoError(err)
 		// self delegate
 		err = suite.App.DelegationKeeper.AssociateOperatorWithStaker(
-			suite.Ctx, lzID, operatorAddress, staker,
+			suite.Ctx, lzID, operatorAddress, staker.Bytes(),
 		)
 		suite.NoError(err)
 	}
