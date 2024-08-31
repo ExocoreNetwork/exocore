@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"encoding/json"
 	"fmt"
 
 	"github.com/spf13/cobra"
@@ -40,6 +41,10 @@ func CmdRegisterSubscriberChain() *cobra.Command {
 			clientCtx, err := client.GetClientTxContext(cmd)
 			if err != nil {
 				return err
+			}
+
+			if !json.Valid([]byte(args[0])) {
+				return fmt.Errorf("invalid JSON argument: %s", args[0])
 			}
 
 			msg := types.NewRegisterSubscriberChainRequest(clientCtx.GetFromAddress().String(), args[0])
