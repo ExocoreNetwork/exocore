@@ -40,10 +40,19 @@ func (wrapper EpochsHooksWrapper) AfterEpochEnd(
 				"chainID", subscriber,
 				"error", err,
 			)
-			// clear the registered AVS
+			// clear the registered AVS. remember that this module stores
+			// the chainID with the revision but the AVS module stores it without.
 			chainID := avstypes.ChainIDWithoutRevision(subscriber.ChainID)
+			// always guaranteed to exist
 			_, addr := wrapper.keeper.avsKeeper.IsAVSByChainID(ctx, chainID)
-			wrapper.keeper.avsKeeper.DeleteAVSInfo(ctx, addr)
+			if err := wrapper.keeper.avsKeeper.DeleteAVSInfo(ctx, addr); err != nil {
+				// should never happen
+				ctx.Logger().Error(
+					"subscriber AVS not deleted",
+					"chainID", subscriber,
+					"error", err,
+				)
+			}
 			continue
 		}
 		// copy over the events from the cached ctx

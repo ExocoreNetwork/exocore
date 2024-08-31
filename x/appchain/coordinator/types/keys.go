@@ -73,31 +73,31 @@ func PendingSubscriberChainKey(epochIdentifier string, epochNumber uint64) []byt
 }
 
 // ClientForChainKey returns the key under which the clientId for the given chainId is stored.
-func ClientForChainKey(chainId string) []byte {
-	return append([]byte{ClientForChainBytePrefix}, []byte(chainId)...)
+func ClientForChainKey(chainID string) []byte {
+	return append([]byte{ClientForChainBytePrefix}, []byte(chainID)...)
 }
 
 // SubSlashFractionDowntimeKey returns the key under which the slashing fraction for downtime
 // against a particular chain is stored.
-func SubSlashFractionDowntimeKey(chainId string) []byte {
-	return append([]byte{SubSlashFractionDowntimeBytePrefix}, []byte(chainId)...)
+func SubSlashFractionDowntimeKey(chainID string) []byte {
+	return append([]byte{SubSlashFractionDowntimeBytePrefix}, []byte(chainID)...)
 }
 
 // SubSlashFractionDoubleSignKey returns the key under which the slashing fraction for double sign
 // against a particular chain is stored.
-func SubSlashFractionDoubleSignKey(chainId string) []byte {
-	return append([]byte{SubSlashFractionDoubleSignBytePrefix}, []byte(chainId)...)
+func SubSlashFractionDoubleSignKey(chainID string) []byte {
+	return append([]byte{SubSlashFractionDoubleSignBytePrefix}, []byte(chainID)...)
 }
 
 // SubDowntimeJailDurationKey returns the key under which the downtime jail duration for a chain
 // is stored.
-func SubDowntimeJailDurationKey(chainId string) []byte {
-	return append([]byte{SubDowntimeJailDurationBytePrefix}, []byte(chainId)...)
+func SubDowntimeJailDurationKey(chainID string) []byte {
+	return append([]byte{SubDowntimeJailDurationBytePrefix}, []byte(chainID)...)
 }
 
 // SubscriberGenesisKey returns the key under which the genesis state for a subscriber chain is stored.
-func SubscriberGenesisKey(chainId string) []byte {
-	return append([]byte{SubscriberGenesisBytePrefix}, []byte(chainId)...)
+func SubscriberGenesisKey(chainID string) []byte {
+	return append([]byte{SubscriberGenesisBytePrefix}, []byte(chainID)...)
 }
 
 // InitTimeoutEpochKey returns the key under which the list of chains which will timeout (if not

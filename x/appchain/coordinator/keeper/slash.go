@@ -12,7 +12,7 @@ import (
 // SetSubSlashFractionDowntime sets the sub slash fraction downtime for a chain
 func (k Keeper) SetSubSlashFractionDowntime(ctx sdk.Context, chainID string, fraction string) {
 	store := ctx.KVStore(k.storeKey)
-	store.Set([]byte(types.SubSlashFractionDowntimeKey(chainID)), []byte(fraction))
+	store.Set(types.SubSlashFractionDowntimeKey(chainID), []byte(fraction))
 }
 
 // GetSubSlashFractionDowntime gets the sub slash fraction downtime for a chain
