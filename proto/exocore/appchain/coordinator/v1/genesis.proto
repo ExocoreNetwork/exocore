@@ -9,6 +9,6 @@ option go_package = "github.com/ExocoreNetwork/exocore/x/appchain/coordinator/ty
 
 // GenesisState is the genesis state for the appchain coordinator module.
 message GenesisState {
-    // Params is the parameters for the appchain coordinator module.
-    Params params = 1 [(gogoproto.nullable) = false];
+  // Params is the parameters for the appchain coordinator module.
+  Params params = 1 [(gogoproto.nullable) = false];
 }
