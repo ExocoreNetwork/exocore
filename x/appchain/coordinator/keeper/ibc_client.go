@@ -33,6 +33,7 @@ func (k Keeper) CreateClientForSubscriber(
 	req types.RegisterSubscriberChainRequest,
 ) error {
 	chainID := req.ChainID
+	k.Logger(ctx).Info("Creating client for subscriber chain", "chainID", chainID)
 	subscriberParams := req.SubscriberParams
 	// we always deploy a new client for the subscriber chain for our module
 	// technically, the below can never happen but it is guarded in ICS-20 and therefore, here.
@@ -129,6 +130,7 @@ func (k Keeper) MakeSubscriberGenesis(
 ) (*commontypes.SubscriberGenesisState, []byte, error) {
 	params := k.GetParams(ctx)
 	chainID := req.ChainID
+	k.Logger(ctx).Info("Creating genesis state for subscriber chain", "chainID", chainID)
 	chainIDWithoutRevision := avstypes.ChainIDWithoutRevision(chainID)
 	coordinatorUnbondingPeriod := k.stakingKeeper.UnbondingTime(ctx)
 	// client state
