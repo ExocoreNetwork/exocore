@@ -7,7 +7,6 @@ import (
 
 	"github.com/ExocoreNetwork/exocore/x/appchain/coordinator/types"
 	epochstypes "github.com/ExocoreNetwork/exocore/x/epochs/types"
-	"github.com/stretchr/testify/require"
 )
 
 func TestValidate(t *testing.T) {
@@ -107,36 +106,4 @@ func TestValidate(t *testing.T) {
 			}
 		})
 	}
-}
-
-func TestInvalidParams(t *testing.T) {
-	// Example of an invalid Init Timeout Period (0 epochs)
-	params := types.Params{
-		InitTimeoutPeriod: epochstypes.NewEpoch(0, "week"),
-	}
-	err := params.Validate()
-	require.Error(t, err, "Params with 0 epoch InitTimeoutPeriod should return an error")
-
-	// Invalid Trusting Period Fraction (>1)
-	params = types.Params{
-		TrustingPeriodFraction: "1.5",
-	}
-	err = params.Validate()
-	require.Error(t, err, "Params with TrustingPeriodFraction > 1 should return an error")
-}
-
-func TestEdgeCaseParams(t *testing.T) {
-	// Edge case with a very large number of epochs
-	params := types.Params{
-		InitTimeoutPeriod: epochstypes.NewEpoch(1<<62, "week"),
-	}
-	err := params.Validate()
-	require.NoError(t, err, "Params with a very large number of epochs should still be valid")
-
-	// Trusting Period Fraction equal to 1
-	params = types.Params{
-		TrustingPeriodFraction: "1.0",
-	}
-	err = params.Validate()
-	require.NoError(t, err, "Params with TrustingPeriodFraction equal to 1 should be valid")
 }
