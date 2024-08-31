@@ -7,6 +7,7 @@ import (
 )
 
 // SetParams sets the appchain coordinator parameters.
+// The caller must ensure that the params are valid.
 func (k Keeper) SetParams(ctx sdk.Context, params commontypes.SubscriberParams) {
 	store := ctx.KVStore(k.storeKey)
 	bz := k.cdc.MustMarshal(&params)
