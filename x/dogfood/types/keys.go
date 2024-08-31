@@ -170,7 +170,7 @@ func SafeUint64ToInt64(id uint64) (int64, bool) {
 	if id > math.MaxInt64 {
 		return 0, false
 	}
-	return int64(id), true // #nosec G701 // already checked.
+	return int64(id), true // #nosec G115 // already checked.
 }
 
 // HistoricalInfoKey returns the key to historical info to a given block height

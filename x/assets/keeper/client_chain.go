@@ -74,7 +74,7 @@ func (k Keeper) GetAllClientChainInfo(ctx sdk.Context) (infos []assetstype.Clien
 func (k Keeper) GetAllClientChainID(ctx sdk.Context) ([]uint32, error) {
 	ret := make([]uint32, 0)
 	opFunc := func(clientChain *assetstype.ClientChainInfo) error {
-		// #nosec G701 // already checked
+		// #nosec G115
 		ret = append(ret, uint32(clientChain.LayerZeroChainID))
 		return nil
 	}

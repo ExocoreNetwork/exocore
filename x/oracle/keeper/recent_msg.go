@@ -71,6 +71,7 @@ func (k Keeper) GetAllRecentMsgAsMap(ctx sdk.Context) (result map[int64][]*types
 		var val types.RecentMsg
 		k.cdc.MustUnmarshal(iterator.Value(), &val)
 		//		list = append(list, val)
+		// #nosec G115
 		result[int64(val.Block)] = val.Msgs
 	}
 
