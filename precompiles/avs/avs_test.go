@@ -80,7 +80,7 @@ func (suite *AVSManagerPrecompileSuite) TestRegisterAVS() {
 		sdk.AccAddress(utiltx.GenerateAddress().Bytes()).String(),
 		sdk.AccAddress(utiltx.GenerateAddress().Bytes()).String(),
 	}
-	assetID := []string{"11", "22", "33"}
+	assetID := suite.AssetIDs
 	minStakeAmount, taskAddr := uint64(3), "0xDF907c29719154eb9872f021d21CAE6E5025d7aB"
 	avsUnbondingPeriod, minSelfDelegation := uint64(3), uint64(3)
 	epochIdentifier := epochstypes.DayEpochID
@@ -312,7 +312,7 @@ func (suite *AVSManagerPrecompileSuite) TestUpdateAVS() {
 		sdk.AccAddress(utiltx.GenerateAddress().Bytes()).String(),
 		sdk.AccAddress(utiltx.GenerateAddress().Bytes()).String(),
 	}
-	assetID := []string{"11", "22", "33"}
+	assetID := suite.AssetIDs
 	minStakeAmount, taskAddr := uint64(3), "0xDF907c29719154eb9872f021d21CAE6E5025d7aB"
 	avsUnbondingPeriod, minSelfDelegation := uint64(3), uint64(3)
 	epochIdentifier := epochstypes.DayEpochID
@@ -657,7 +657,7 @@ func (suite *AVSManagerPrecompileSuite) TestRunRegTaskInfo() {
 			"exo13h6xg79g82e2g2vhjwg7j4r2z2hlncelwutkjr",
 			"exo13h6xg79g82e2g2vhjwg7j4r2z2hlncelwutkj2",
 		}
-		assetID := []string{"11", "22", "33"}
+		assetID := suite.AssetIDs
 		avsInfo := &types.AVSInfo{
 			Name:                avsName,
 			AvsAddress:          utiltx.GenerateAddress().String(),
