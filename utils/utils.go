@@ -133,7 +133,8 @@ func SortByPower(
 	}
 
 	// Sort the indices slice based on the powers slice
-	sort.SliceStable(indices, func(i, j int) bool {
+	// Since the operator address is unique, SliceStable is not needed
+	sort.Slice(indices, func(i, j int) bool {
 		if powers[indices[i]] == powers[indices[j]] {
 			// ascending order of operator address as tiebreaker
 			return bytes.Compare(operatorAddrs[indices[i]], operatorAddrs[indices[j]]) < 0
