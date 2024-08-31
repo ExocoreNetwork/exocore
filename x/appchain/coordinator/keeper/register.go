@@ -1,8 +1,6 @@
 package keeper
 
 import (
-	"math"
-
 	"github.com/ExocoreNetwork/exocore/x/appchain/coordinator/types"
 	avstypes "github.com/ExocoreNetwork/exocore/x/avs/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -34,7 +32,7 @@ func (k Keeper) AddSubscriberChain(
 	}
 	// this value is required by the AVS module when making edits or deleting the AVS. as always, we round it up for the
 	// current epoch. it can never be 0, because both the durations are positive.
-	unbondingEpochs := math.Ceil(float64(req.SubscriberParams.UnbondingPeriod) / float64(epochInfo.Duration))
+	unbondingEpochs := 1 + req.SubscriberParams.UnbondingPeriod/epochInfo.Duration
 	if _, err := k.avsKeeper.RegisterAVSWithChainID(ctx, &avstypes.AVSRegisterOrDeregisterParams{
 		AvsName:           req.ChainID,
 		AssetID:           req.AssetIDs,
