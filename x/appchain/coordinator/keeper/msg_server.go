@@ -2,7 +2,6 @@ package keeper
 
 import (
 	"context"
-	"fmt"
 
 	errorsmod "cosmossdk.io/errors"
 
@@ -29,7 +28,7 @@ func (m msgServer) RegisterSubscriberChain(
 ) (res *types.RegisterSubscriberChainResponse, err error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 	if res, err = m.Keeper.AddSubscriberChain(ctx, req); err != nil {
-		return nil, errorsmod.Wrapf(err, fmt.Sprintf("RegisterSubscriberChain: key is %s", req.ChainID))
+		return nil, errorsmod.Wrapf(err, "RegisterSubscriberChain: key is %s", req.ChainID)
 	}
 	return res, nil
 }
