@@ -31,5 +31,4 @@ message Params {
   // must respond to a VSC request, after it is sent.
   exocore.epochs.v1.Epoch vsc_timeout_period = 5
   [ (gogoproto.nullable) = false, (gogoproto.customname) = "VSCTimeoutPeriod" ];
-  // TODO: slashing and reward related parameters
 }
