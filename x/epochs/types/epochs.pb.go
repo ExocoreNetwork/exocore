@@ -22,11 +22,15 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
-// Epoch represents a specific epoch with its number and associated identifier. It is not used within this module; rather, it is designed by other modules to replace a time.Duration object. Modules are free to choose whether such a structure represents the beginning or the end of an epoch.
+// Epoch represents a specific epoch with its number and associated identifier.
+// It is not used within this module; rather, it is designed by other modules
+// to replace a time.Duration object. Modules are free to choose whether such
+// a structure represents the beginning or the end of an epoch.
 type Epoch struct {
 	// epoch_number is the sequential number of the epoch.
 	EpochNumber uint64 `protobuf:"varint,1,opt,name=epoch_number,json=epochNumber,proto3" json:"epoch_number,omitempty"`
-	// epoch_identifier is a descriptive or unique identifier for the epoch (e.g., 'week', 'day', 'hour').
+	// epoch_identifier is a descriptive or unique identifier for the epoch
+	// (e.g., 'week', 'day', 'hour').
 	EpochIdentifier string `protobuf:"bytes,2,opt,name=epoch_identifier,json=epochIdentifier,proto3" json:"epoch_identifier,omitempty"`
 }
 
