@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	exocoretypes "github.com/ExocoreNetwork/exocore/types"
 	avstypes "github.com/ExocoreNetwork/exocore/x/avs/types"
 	operatortypes "github.com/ExocoreNetwork/exocore/x/operator/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -22,7 +23,7 @@ func (k *Keeper) OperatorHooks() OperatorHooksWrapper {
 // AfterOperatorKeySet is the implementation of the operator hooks.
 // CONTRACT: an operator cannot set their key if they are already in the process of removing it.
 func (h OperatorHooksWrapper) AfterOperatorKeySet(
-	sdk.Context, sdk.AccAddress, string, operatortypes.WrappedConsKey,
+	sdk.Context, sdk.AccAddress, string, exocoretypes.WrappedConsKey,
 ) {
 	// an operator opting in does not meaningfully affect this module, since
 	// this information will be fetched at the end of the epoch
@@ -35,8 +36,8 @@ func (h OperatorHooksWrapper) AfterOperatorKeySet(
 // CONTRACT: key replacement from newKey to oldKey is not allowed, after a replacement from
 // oldKey to newKey.
 func (h OperatorHooksWrapper) AfterOperatorKeyReplaced(
-	ctx sdk.Context, _ sdk.AccAddress, oldKey operatortypes.WrappedConsKey,
-	_ operatortypes.WrappedConsKey, chainID string,
+	ctx sdk.Context, _ sdk.AccAddress, oldKey exocoretypes.WrappedConsKey,
+	_ exocoretypes.WrappedConsKey, chainID string,
 ) {
 	// the impact of key replacement is:
 	// 1. vote power of old key is 0, which happens automatically at epoch end in EndBlock. this
@@ -71,7 +72,7 @@ func (h OperatorHooksWrapper) AfterOperatorKeyReplaced(
 
 // AfterOperatorKeyRemovalInitiated is the implementation of the operator hooks.
 func (h OperatorHooksWrapper) AfterOperatorKeyRemovalInitiated(
-	ctx sdk.Context, operator sdk.AccAddress, chainID string, key operatortypes.WrappedConsKey,
+	ctx sdk.Context, operator sdk.AccAddress, chainID string, key exocoretypes.WrappedConsKey,
 ) {
 	// the impact of key removal is:
 	// 1. vote power of the operator is 0, which happens automatically at epoch end in EndBlock.

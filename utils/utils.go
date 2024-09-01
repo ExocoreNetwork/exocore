@@ -5,13 +5,12 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/evmos/evmos/v14/crypto/ethsecp256k1"
-
-	operatortypes "github.com/ExocoreNetwork/exocore/x/operator/types"
+	"github.com/ExocoreNetwork/exocore/types"
 	"github.com/cosmos/cosmos-sdk/crypto/keys/ed25519"
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
 	"github.com/cosmos/cosmos-sdk/crypto/types/multisig"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/evmos/evmos/v14/crypto/ethsecp256k1"
 )
 
 const (
@@ -123,9 +122,9 @@ func IsSupportedKey(pubkey cryptotypes.PubKey) bool {
 // the bytes.
 func SortByPower(
 	operatorAddrs []sdk.AccAddress,
-	pubKeys []operatortypes.WrappedConsKey,
+	pubKeys []types.WrappedConsKey,
 	powers []int64,
-) ([]sdk.AccAddress, []operatortypes.WrappedConsKey, []int64) {
+) ([]sdk.AccAddress, []types.WrappedConsKey, []int64) {
 	// Create a slice of indices
 	indices := make([]int, len(powers))
 	for i := range indices {
@@ -145,7 +144,7 @@ func SortByPower(
 
 	// Reorder all slices using the sorted indices
 	sortedOperatorAddrs := make([]sdk.AccAddress, len(operatorAddrs))
-	sortedPubKeys := make([]operatortypes.WrappedConsKey, len(pubKeys))
+	sortedPubKeys := make([]types.WrappedConsKey, len(pubKeys))
 	sortedPowers := make([]int64, len(powers))
 	for i, idx := range indices {
 		sortedOperatorAddrs[i] = operatorAddrs[idx]

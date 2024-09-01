@@ -8,6 +8,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 
+	exocoretypes "github.com/ExocoreNetwork/exocore/types"
 	delegationtypes "github.com/ExocoreNetwork/exocore/x/delegation/types"
 	"github.com/ExocoreNetwork/exocore/x/operator/types"
 
@@ -32,7 +33,7 @@ func (k *Keeper) SetOperatorConsKeyForChainID(
 	ctx sdk.Context,
 	opAccAddr sdk.AccAddress,
 	chainID string,
-	wrappedKey types.WrappedConsKey,
+	wrappedKey exocoretypes.WrappedConsKey,
 ) error {
 	return k.setOperatorConsKeyForChainID(ctx, opAccAddr, chainID, wrappedKey, false /* genesis */)
 }
@@ -44,7 +45,7 @@ func (k *Keeper) setOperatorConsKeyForChainID(
 	ctx sdk.Context,
 	opAccAddr sdk.AccAddress,
 	chainID string,
-	wrappedKey types.WrappedConsKey,
+	wrappedKey exocoretypes.WrappedConsKey,
 	genesis bool,
 ) error {
 	// check for slashing
@@ -136,7 +137,7 @@ func (k *Keeper) setOperatorPrevConsKeyForChainID(
 	ctx sdk.Context,
 	opAccAddr sdk.AccAddress,
 	chainID string,
-	prevKey types.WrappedConsKey,
+	prevKey exocoretypes.WrappedConsKey,
 ) {
 	bz := k.cdc.MustMarshal(prevKey.ToTmProtoKey())
 	store := ctx.KVStore(k.storeKey)
@@ -149,7 +150,7 @@ func (k *Keeper) setOperatorPrevConsKeyForChainID(
 // and whether the operator is registered in this module.
 func (k *Keeper) GetOperatorPrevConsKeyForChainID(
 	ctx sdk.Context, opAccAddr sdk.AccAddress, chainID string,
-) (bool, types.WrappedConsKey, error) {
+) (bool, exocoretypes.WrappedConsKey, error) {
 	// check if we are an operator
 	if !k.IsOperator(ctx, opAccAddr) {
 		return false, nil, delegationtypes.ErrOperatorNotExist
@@ -168,7 +169,7 @@ func (k *Keeper) getOperatorPrevConsKeyForChainID(
 	ctx sdk.Context,
 	opAccAddr sdk.AccAddress,
 	chainID string,
-) (bool, types.WrappedConsKey) {
+) (bool, exocoretypes.WrappedConsKey) {
 	store := ctx.KVStore(k.storeKey)
 	res := store.Get(types.KeyForChainIDAndOperatorToPrevConsKey(chainID, opAccAddr))
 	if res == nil {
@@ -176,7 +177,7 @@ func (k *Keeper) getOperatorPrevConsKeyForChainID(
 	}
 	key := &tmprotocrypto.PublicKey{}
 	k.cdc.MustUnmarshal(res, key)
-	return true, types.NewWrappedConsKeyFromTmProtoKey(key)
+	return true, exocoretypes.NewWrappedConsKeyFromTmProtoKey(key)
 }
 
 // GetOperatorConsKeyForChainID gets the (consensus) public key for the given operator address
@@ -186,7 +187,7 @@ func (k Keeper) GetOperatorConsKeyForChainID(
 	ctx sdk.Context,
 	opAccAddr sdk.AccAddress,
 	chainID string,
-) (bool, types.WrappedConsKey, error) {
+) (bool, exocoretypes.WrappedConsKey, error) {
 	// check if we are an operator
 	if !k.IsOperator(ctx, opAccAddr) {
 		return false, nil, delegationtypes.ErrOperatorNotExist
@@ -205,7 +206,7 @@ func (k *Keeper) getOperatorConsKeyForChainID(
 	ctx sdk.Context,
 	opAccAddr sdk.AccAddress,
 	chainID string,
-) (bool, types.WrappedConsKey) {
+) (bool, exocoretypes.WrappedConsKey) {
 	store := ctx.KVStore(k.storeKey)
 	res := store.Get(types.KeyForOperatorAndChainIDToConsKey(opAccAddr, chainID))
 	if res == nil {
@@ -213,7 +214,7 @@ func (k *Keeper) getOperatorConsKeyForChainID(
 	}
 	key := &tmprotocrypto.PublicKey{}
 	k.cdc.MustUnmarshal(res, key)
-	return true, types.NewWrappedConsKeyFromTmProtoKey(key)
+	return true, exocoretypes.NewWrappedConsKeyFromTmProtoKey(key)
 }
 
 // GetOperatorAddressForChainIDAndConsAddr returns the operator address for the given chain id
@@ -292,7 +293,7 @@ func (k Keeper) CompleteOperatorKeyRemovalForChainID(
 // jailed operators, frozen operators and those in the process of opting out.
 func (k *Keeper) GetOperatorsForChainID(
 	ctx sdk.Context, chainID string,
-) ([]sdk.AccAddress, []types.WrappedConsKey) {
+) ([]sdk.AccAddress, []exocoretypes.WrappedConsKey) {
 	k.Logger(ctx).Info("GetOperatorsForChainID", "chainID", chainID)
 	if isAvs, _ := k.avsKeeper.IsAVSByChainID(ctx, chainID); !isAvs {
 		k.Logger(ctx).Info("GetOperatorsForChainID the chainID is not supported by AVS", "chainID", chainID)
@@ -309,7 +310,7 @@ func (k *Keeper) GetOperatorsForChainID(
 	)
 	defer iterator.Close()
 	var addrs []sdk.AccAddress
-	var pubKeys []types.WrappedConsKey
+	var pubKeys []exocoretypes.WrappedConsKey
 	for ; iterator.Valid(); iterator.Next() {
 		// this key is of the format prefix | len | chainID | addr
 		// and our prefix is of the format prefix | len | chainID
@@ -318,8 +319,11 @@ func (k *Keeper) GetOperatorsForChainID(
 		res := iterator.Value()
 		ret := &tmprotocrypto.PublicKey{}
 		k.cdc.MustUnmarshal(res, ret)
-		addrs = append(addrs, addr)
-		pubKeys = append(pubKeys, types.NewWrappedConsKeyFromTmProtoKey(ret))
+		wrappedKey := exocoretypes.NewWrappedConsKeyFromTmProtoKey(ret)
+		if wrappedKey != nil {
+			addrs = append(addrs, addr)
+			pubKeys = append(pubKeys, wrappedKey)
+		}
 	}
 	return addrs, pubKeys
 }
@@ -329,7 +333,7 @@ func (k *Keeper) GetOperatorsForChainID(
 // of doing so.
 func (k Keeper) GetActiveOperatorsForChainID(
 	ctx sdk.Context, chainID string,
-) ([]sdk.AccAddress, []types.WrappedConsKey) {
+) ([]sdk.AccAddress, []exocoretypes.WrappedConsKey) {
 	isAvs, avsAddr := k.avsKeeper.IsAVSByChainID(ctx, chainID)
 	if !isAvs {
 		k.Logger(ctx).Error("GetActiveOperatorsForChainID the chainID is not supported by AVS", "chainID", chainID)
@@ -338,7 +342,7 @@ func (k Keeper) GetActiveOperatorsForChainID(
 	operatorsAddr, pks := k.GetOperatorsForChainID(ctx, chainID)
 	avsAddrString := avsAddr.String()
 	activeOperator := make([]sdk.AccAddress, 0)
-	activePks := make([]types.WrappedConsKey, 0)
+	activePks := make([]exocoretypes.WrappedConsKey, 0)
 	// check if the operator is active
 	for i, operator := range operatorsAddr {
 		if k.IsActive(ctx, operator, avsAddrString) {
