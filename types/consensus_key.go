@@ -3,6 +3,7 @@ package types
 import (
 	"encoding/base64"
 	"encoding/json"
+	fmt "fmt"
 
 	errorsmod "cosmossdk.io/errors"
 
@@ -36,6 +37,14 @@ type WrappedConsKey interface {
 	ToConsAddr() sdk.ConsAddress
 	// EqualsWrapped returns true if the public key is the same as the other public key.
 	EqualsWrapped(WrappedConsKey) bool
+}
+
+// KeyWithPower is a key with its associated power. This helper structure
+// is used for passing within the keeper functions and is not stored since
+// serialization for this structure is not implemented.
+type WrappedConsKeyWithPower struct {
+	Key   WrappedConsKey
+	Power int64
 }
 
 // interface guard
@@ -228,7 +237,7 @@ func tmKeyFromJSON(key string) (res *tmprotocrypto.PublicKey, err error) {
 	if keyType, keyString, err := base64KeyFromJSON(key); err != nil {
 		return nil, errorsmod.Wrap(err, "invalid public key")
 	} else if keyType != supportedKeyType {
-		return nil, errorsmod.Wrap(ErrParameterInvalid, "invalid public key type")
+		return nil, fmt.Errorf("unsupported key type: %s", keyType)
 	} else if res, err = tmKeyFromBase64Key(keyString); err != nil {
 		return nil, errorsmod.Wrap(err, "invalid public key")
 	}
@@ -267,19 +276,11 @@ func tmKeyFromBase64Key(pubKey string) (*tmprotocrypto.PublicKey, error) {
 // `exocored keys consensus-pubkey-to-bytes`
 func tmKeyFromHex(key string) (*tmprotocrypto.PublicKey, error) {
 	if len(key) != 66 {
-		return nil, errorsmod.Wrapf(
-			ErrInvalidPubKey,
-			"expected 66 length string, got %d",
-			len(key),
-		)
+		return nil, fmt.Errorf("expected 66 length string, got %d", len(key))
 	}
 	keyBytes, err := hexutil.Decode(key)
 	if err != nil {
-		return nil, errorsmod.Wrapf(
-			ErrInvalidPubKey,
-			"failed to decode hex string: %s",
-			err,
-		)
+		return nil, fmt.Errorf("failed to decode hex string: %s", err)
 	}
 	return &tmprotocrypto.PublicKey{
 		Sum: &tmprotocrypto.PublicKey_Ed25519{

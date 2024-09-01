@@ -2,6 +2,7 @@ package keeper
 
 import (
 	errorsmod "cosmossdk.io/errors"
+	exocoretypes "github.com/ExocoreNetwork/exocore/types"
 	"github.com/ExocoreNetwork/exocore/x/operator/types"
 	abci "github.com/cometbft/cometbft/abci/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -22,7 +23,7 @@ func (k Keeper) InitGenesis(ctx sdk.Context, state types.GenesisState) []abci.Va
 		// #nosec G703 // already validated
 		operatorAddr, _ := sdk.AccAddressFromBech32(addr)
 		for _, detail := range record.Chains {
-			wrappedKey := types.NewWrappedConsKeyFromHex(detail.ConsensusKey)
+			wrappedKey := exocoretypes.NewWrappedConsKeyFromHex(detail.ConsensusKey)
 			bz := k.cdc.MustMarshal(wrappedKey.ToTmProtoKey())
 			k.setOperatorConsKeyForChainIDUnchecked(ctx, operatorAddr, wrappedKey.ToConsAddr(), detail.ChainID, bz)
 		}

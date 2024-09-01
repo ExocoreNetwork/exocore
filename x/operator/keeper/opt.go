@@ -4,6 +4,7 @@ import (
 	errorsmod "cosmossdk.io/errors"
 	sdkmath "cosmossdk.io/math"
 
+	exocoretypes "github.com/ExocoreNetwork/exocore/types"
 	delegationtypes "github.com/ExocoreNetwork/exocore/x/delegation/types"
 	"github.com/ExocoreNetwork/exocore/x/operator/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -17,7 +18,9 @@ type AssetPriceAndDecimal struct {
 
 // OptIn call this function to opt in to an AVS.
 // The caller must ensure that the operatorAddress passed is valid.
-func (k *Keeper) OptIn(ctx sdk.Context, operatorAddress sdk.AccAddress, avsAddr string) error {
+func (k *Keeper) OptIn(
+	ctx sdk.Context, operatorAddress sdk.AccAddress, avsAddr string,
+) error {
 	// check that the operator is registered
 	if !k.IsOperator(ctx, operatorAddress) {
 		return errorsmod.Wrapf(delegationtypes.ErrOperatorNotExist, "operator is :%s", operatorAddress)
@@ -65,7 +68,7 @@ func (k *Keeper) OptIn(ctx sdk.Context, operatorAddress sdk.AccAddress, avsAddr 
 // OptInWithConsKey is a wrapper function to call OptIn and then SetOperatorConsKeyForChainID.
 // The caller must ensure that the operatorAddress passed is valid and that the AVS is a chain-type AVS.
 func (k Keeper) OptInWithConsKey(
-	ctx sdk.Context, operatorAddress sdk.AccAddress, avsAddr string, key types.WrappedConsKey,
+	ctx sdk.Context, operatorAddress sdk.AccAddress, avsAddr string, key exocoretypes.WrappedConsKey,
 ) error {
 	err := k.OptIn(ctx, operatorAddress, avsAddr)
 	if err != nil {

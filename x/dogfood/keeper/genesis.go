@@ -3,9 +3,9 @@ package keeper
 import (
 	"fmt"
 
+	exocoretypes "github.com/ExocoreNetwork/exocore/types"
 	avstypes "github.com/ExocoreNetwork/exocore/x/avs/types"
 	"github.com/ExocoreNetwork/exocore/x/dogfood/types"
-	operatortypes "github.com/ExocoreNetwork/exocore/x/operator/types"
 	abci "github.com/cometbft/cometbft/abci/types"
 	cryptocodec "github.com/cosmos/cosmos-sdk/crypto/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -48,21 +48,13 @@ func (k Keeper) InitGenesis(
 	avsAddrString := avsAddr.String()
 	ctx.Logger().With(types.ModuleName).Info(fmt.Sprintf("created dogfood avs %s %s", avsAddrString, ctx.ChainID()))
 	// create the validators
-	out := make([]abci.ValidatorUpdate, 0, len(genState.ValSet))
+	out := make([]exocoretypes.WrappedConsKeyWithPower, 0, len(genState.ValSet))
 	for _, val := range genState.ValSet {
-		// wrappedKey can never be nil
-		wrappedKey := operatortypes.NewWrappedConsKeyFromHex(val.PublicKey)
-		// #nosec G703 // already validated
-		/*		operatorAddr, _ := sdk.AccAddressFromBech32(val.OperatorAccAddr)
-				// OptIntoAVS checks that the operator exists and will error if it does not.
-				if err := k.operatorKeeper.OptInWithConsKey(
-					ctx, operatorAddr, avsAddrString, wrappedKey,
-				); err != nil {
-					panic(fmt.Errorf("failed to opt into avs: %s", err))
-				}*/
-		out = append(out, abci.ValidatorUpdate{
-			PubKey: *wrappedKey.ToTmProtoKey(),
-			Power:  val.Power,
+		// we have already checked in gs.Validate() that wrappedKey is not nil
+		wrappedKey := exocoretypes.NewWrappedConsKeyFromHex(val.PublicKey)
+		out = append(out, exocoretypes.WrappedConsKeyWithPower{
+			Power: val.Power,
+			Key:   wrappedKey,
 		})
 	}
 	for i := range genState.OptOutExpiries {
