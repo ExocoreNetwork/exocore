@@ -3,9 +3,9 @@ package types
 import (
 	time "time"
 
+	"github.com/ExocoreNetwork/exocore/types"
 	avstypes "github.com/ExocoreNetwork/exocore/x/avs/types"
 	epochstypes "github.com/ExocoreNetwork/exocore/x/epochs/types"
-	operatortypes "github.com/ExocoreNetwork/exocore/x/operator/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/common"
 )
@@ -29,6 +29,6 @@ type StakingKeeper interface {
 
 // OperatorKeeper represents the expected keeper interface for the operator module.
 type OperatorKeeper interface {
-	GetActiveOperatorsForChainID(sdk.Context, string) ([]sdk.AccAddress, []operatortypes.WrappedConsKey)
+	GetActiveOperatorsForChainID(sdk.Context, string) ([]sdk.AccAddress, []types.WrappedConsKey)
 	GetVotePowerForChainID(sdk.Context, []sdk.AccAddress, string) ([]int64, error)
 }

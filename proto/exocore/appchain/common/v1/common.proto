@@ -100,7 +100,7 @@ message CoordinatorInfo {
   ibc.lightclients.tendermint.v1.ClientState client_state = 1;
   // consensus_state is the consensus state of the coordinator chain.
   ibc.lightclients.tendermint.v1.ConsensusState consensus_state = 2;
-  // initial_val_set is the initial validator set of the coordinator chain.
+  // initial_val_set is the initial validator set of the subscriber chain.
   repeated .tendermint.abci.ValidatorUpdate initial_val_set = 3
     [ (gogoproto.nullable) = false ];
 }

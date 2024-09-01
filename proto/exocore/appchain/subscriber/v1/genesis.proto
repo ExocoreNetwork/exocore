@@ -9,6 +9,16 @@ option go_package = "github.com/ExocoreNetwork/exocore/x/appchain/subscriber/typ
 
 // GenesisState is the genesis state for the appchain subscriber module.
 message GenesisState {
-  // Params is the parameters for the appchain subscriber module.
+  // The first two fields are word-for-word pulled from `common.proto`, to be
+  // filled by the coordinator module (or an export).
+  // params is the parameters for the appchain subscriber module.
   exocore.appchain.common.v1.SubscriberParams params = 1 [(gogoproto.nullable) = false];
+  // coordinator is the coordinator information for the subscriber.
+  exocore.appchain.common.v1.CoordinatorInfo coordinator = 2 [ (gogoproto.nullable) = false ];
+  // Below are the IBC parameters
+  // coordinator_client_id is the client id of the coordinator chain.
+  string coordinator_client_id = 3 [ (gogoproto.customname) = "CoordinatorClientID" ];
+  // coordinator_channel_id is the channel id of the coordinator chain.
+  string coordinator_channel_id = 4 [ (gogoproto.customname) = "CoordinatorChannelID" ];
+  // operational parameters that are to be exported can go here.
 }

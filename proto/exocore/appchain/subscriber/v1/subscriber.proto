@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+package exocore.appchain.subscriber.v1;
+
+import "google/protobuf/any.proto";
+import "gogoproto/gogo.proto";
+import "cosmos_proto/cosmos.proto";
+
+option go_package = "github.com/ExocoreNetwork/exocore/x/appchain/subscriber/types";
+
+message OmniChainValidator {
+  // The address is derived from the consenus key. It has no relation with the operator
+  // address on Exocore.
+  bytes address = 1;
+  // Last known
+  int64 power = 2;
+  // pubkey is the consensus public key of the validator, as a Protobuf Any.
+  google.protobuf.Any pubkey = 3 [
+    (cosmos_proto.accepts_interface) = "cosmos.crypto.PubKey",
+    (gogoproto.moretags) = "yaml:\"consensus_pubkey\""
+  ];
+}
+
