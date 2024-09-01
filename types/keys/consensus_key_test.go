@@ -1,9 +1,9 @@
-package types_test
+package keys_test
 
 import (
 	"testing"
 
-	"github.com/ExocoreNetwork/exocore/types"
+	types "github.com/ExocoreNetwork/exocore/types/keys"
 	"github.com/cometbft/cometbft/crypto/ed25519"
 	"github.com/cometbft/cometbft/crypto/secp256k1"
 	tmprotocrypto "github.com/cometbft/cometbft/proto/tendermint/crypto"

@@ -1,7 +1,7 @@
 package types
 
 import (
-	exocoretypes "github.com/ExocoreNetwork/exocore/types"
+	exocoretypes "github.com/ExocoreNetwork/exocore/types/keys"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 

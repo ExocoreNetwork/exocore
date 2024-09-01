@@ -3,7 +3,7 @@ package types
 import (
 	errorsmod "cosmossdk.io/errors"
 	"cosmossdk.io/math"
-	exocoretypes "github.com/ExocoreNetwork/exocore/types"
+	exocoretypes "github.com/ExocoreNetwork/exocore/types/keys"
 	delegationtypes "github.com/ExocoreNetwork/exocore/x/delegation/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/common/hexutil"

@@ -3,7 +3,7 @@ package types
 import (
 	time "time"
 
-	"github.com/ExocoreNetwork/exocore/types"
+	types "github.com/ExocoreNetwork/exocore/types/keys"
 	avstypes "github.com/ExocoreNetwork/exocore/x/avs/types"
 	epochstypes "github.com/ExocoreNetwork/exocore/x/epochs/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"

@@ -4,7 +4,7 @@ import (
 	context "context"
 
 	errorsmod "cosmossdk.io/errors"
-	exocoretypes "github.com/ExocoreNetwork/exocore/types"
+	exocoretypes "github.com/ExocoreNetwork/exocore/types/keys"
 	"github.com/ExocoreNetwork/exocore/x/operator/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )

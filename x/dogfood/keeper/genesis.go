@@ -3,7 +3,7 @@ package keeper
 import (
 	"fmt"
 
-	exocoretypes "github.com/ExocoreNetwork/exocore/types"
+	exocoretypes "github.com/ExocoreNetwork/exocore/types/keys"
 	avstypes "github.com/ExocoreNetwork/exocore/x/avs/types"
 	"github.com/ExocoreNetwork/exocore/x/dogfood/types"
 	abci "github.com/cometbft/cometbft/abci/types"

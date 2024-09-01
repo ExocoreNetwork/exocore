@@ -2,7 +2,7 @@ package types
 
 import (
 	"cosmossdk.io/math"
-	exocoretypes "github.com/ExocoreNetwork/exocore/types"
+	exocoretypes "github.com/ExocoreNetwork/exocore/types/keys"
 	avstypes "github.com/ExocoreNetwork/exocore/x/avs/types"
 	epochsTypes "github.com/ExocoreNetwork/exocore/x/epochs/types"
 	operatortypes "github.com/ExocoreNetwork/exocore/x/operator/types"
