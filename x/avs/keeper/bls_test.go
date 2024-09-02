@@ -1,6 +1,8 @@
 package keeper_test
 
 import (
+	"encoding/hex"
+	"fmt"
 	"github.com/ExocoreNetwork/exocore/x/avs/types"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/prysmaticlabs/prysm/v4/crypto/bls/blst"
@@ -18,7 +20,7 @@ func (suite *AVSTestSuite) TestOperator_pubkey() {
 		PubKey:   publicKey.Marshal(),
 		Name:     "",
 	}
-
+	fmt.Println("pubkey:", hex.EncodeToString(publicKey.Marshal()))
 	err = suite.App.AVSManagerKeeper.SetOperatorPubKey(suite.Ctx, blsPub)
 	suite.NoError(err)
 
@@ -31,6 +33,13 @@ func (suite *AVSTestSuite) TestOperator_pubkey() {
 	msg, _ := types.GetTaskResponseDigest(taskRes)
 	msgBytes := msg[:]
 	sig := privateKey.Sign(msgBytes)
+	fmt.Println("sig:", hex.EncodeToString(sig.Marshal()))
+	jsonData, err := types.MarshalTaskResponse(taskRes)
+	hash := crypto.Keccak256Hash(jsonData)
+	fmt.Println("res:", hex.EncodeToString(jsonData))
+	fmt.Println("hash:", hash.String())
+	sig1, _ := hex.DecodeString("af22f968871395eca62fdb91bc39c2d93569b50678ed73f00c3a6e054512bdc6cb73da7972c9553931aec25bce4973cf15227d2d596492642baaaf2ac1a1a9605b5cf1312fc1e3532aa43a22460e5ce7c081d643dce806f95f26a2df84bdfc66")
+	fmt.Println(sig1)
 
 	valid := sig.Verify(publicKey, msgBytes)
 	suite.True(valid)

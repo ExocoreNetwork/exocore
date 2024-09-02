@@ -356,7 +356,7 @@ func QueryAllOperatorsWithOptInAVS() *cobra.Command {
 		Use:   "get-operatorList",
 		Short: "get-operatorList",
 		Long:  "Get  operator list by avs",
-		Args:  cobra.NoArgs,
+		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if !common.IsHexAddress(args[0]) {
 				return xerrors.Errorf("invalid  address,err:%s", types.ErrInvalidAddr)
@@ -387,7 +387,7 @@ func QueryAllAVSsByOperator() *cobra.Command {
 		Use:   "get-avsList",
 		Short: "get-avsList",
 		Long:  "get-avsList by operator",
-		Args:  cobra.NoArgs,
+		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			addr, err := sdk.AccAddressFromBech32(args[0])
 			if err != nil {
