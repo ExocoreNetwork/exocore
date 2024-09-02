@@ -102,27 +102,33 @@ func (p Precompile) Run(evm *vm.EVM, contract *vm.Contract, readOnly bool) (bz [
 		bz, err = p.RegisterOrUpdateClientChain(ctx, contract, method, args)
 		if err != nil {
 			ctx.Logger().Error("internal error when calling assets precompile", "module", "assets precompile", "method", method.Name, "err", err)
-			// for failed cases we expect it returns bool value instead of error
-			// this is a workaround because the error returned by precompile can not be caught in EVM
-			// see https://github.com/ExocoreNetwork/exocore/issues/70
-			// TODO: we should figure out root cause and fix this issue to make precompiles work normally
-			bz, err = method.Outputs.Pack(false) // Adjust based on actual needs
+			bz, err = method.Outputs.Pack(false, false)
 		}
-	case MethodRegisterOrUpdateTokens:
-		bz, err = p.RegisterOrUpdateTokens(ctx, contract, method, args)
+	case MethodRegisterToken:
+		bz, err = p.RegisterToken(ctx, contract, method, args)
 		if err != nil {
 			ctx.Logger().Error("internal error when calling assets precompile", "module", "assets precompile", "method", method.Name, "err", err)
-			// for failed cases we expect it returns bool value instead of error
-			// this is a workaround because the error returned by precompile can not be caught in EVM
-			// see https://github.com/ExocoreNetwork/exocore/issues/70
-			// TODO: we should figure out root cause and fix this issue to make precompiles work normally
-			bz, err = method.Outputs.Pack(false) // Adjust based on actual needs
+			bz, err = method.Outputs.Pack(false)
+		}
+	case MethodUpdateToken:
+		bz, err = p.UpdateToken(ctx, contract, method, args)
+		if err != nil {
+			ctx.Logger().Error("internal error when calling assets precompile", "module", "assets precompile", "method", method.Name, "err", err)
+			bz, err = method.Outputs.Pack(false)
 		}
 	// queries
 	case MethodGetClientChains:
 		bz, err = p.GetClientChains(ctx, method, args)
+		if err != nil {
+			ctx.Logger().Error("internal error when calling assets precompile", "module", "assets precompile", "method", method.Name, "err", err)
+			bz, err = method.Outputs.Pack(false, []uint32{})
+		}
 	case MethodIsRegisteredClientChain:
 		bz, err = p.IsRegisteredClientChain(ctx, method, args)
+		if err != nil {
+			ctx.Logger().Error("internal error when calling assets precompile", "module", "assets precompile", "method", method.Name, "err", err)
+			bz, err = method.Outputs.Pack(false, false)
+		}
 	default:
 		return nil, fmt.Errorf(cmn.ErrUnknownMethod, method.Name)
 	}
@@ -144,7 +150,7 @@ func (p Precompile) Run(evm *vm.EVM, contract *vm.Contract, readOnly bool) (bz [
 // IsTransaction checks if the given methodID corresponds to a transaction or query.
 func (Precompile) IsTransaction(methodID string) bool {
 	switch methodID {
-	case MethodDepositTo, MethodWithdraw, MethodRegisterOrUpdateClientChain, MethodRegisterOrUpdateTokens:
+	case MethodDepositTo, MethodWithdraw, MethodRegisterOrUpdateClientChain, MethodRegisterToken, MethodUpdateToken:
 		return true
 	case MethodGetClientChains, MethodIsRegisteredClientChain:
 		return false

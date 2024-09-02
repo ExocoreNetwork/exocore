@@ -20,7 +20,8 @@ const (
 	MethodWithdraw                    = "withdrawPrincipal"
 	MethodGetClientChains             = "getClientChains"
 	MethodRegisterOrUpdateClientChain = "registerOrUpdateClientChain"
-	MethodRegisterOrUpdateTokens      = "registerOrUpdateTokens"
+	MethodRegisterToken               = "registerToken"
+	MethodUpdateToken                 = "updateToken"
 	MethodIsRegisteredClientChain     = "isRegisteredClientChain"
 )
 
@@ -116,7 +117,7 @@ func (p Precompile) RegisterOrUpdateClientChain(
 	return method.Outputs.Pack(true, updated)
 }
 
-func (p Precompile) RegisterOrUpdateTokens(
+func (p Precompile) RegisterToken(
 	ctx sdk.Context,
 	contract *vm.Contract,
 	method *abi.Method,
@@ -134,29 +135,20 @@ func (p Precompile) RegisterOrUpdateTokens(
 		return nil, err
 	}
 
-	// the price feed must exist
 	_, assetID := assetstypes.GetStakeIDAndAssetIDFromStr(asset.LayerZeroChainID, "", asset.Address)
 	oInfo.AssetID = assetID
-	updated := false
-	stakingAsset, _ := p.assetsKeeper.GetStakingAssetInfo(ctx, assetID)
-	if stakingAsset != nil {
-		// this is for update
-		if asset.TotalSupply.IsPositive() {
-			stakingAsset.AssetBasicInfo.TotalSupply = asset.TotalSupply
-		}
-		if len(asset.MetaInfo) > 0 {
-			stakingAsset.AssetBasicInfo.MetaInfo = asset.MetaInfo
-		}
-		updated = true
-	} else {
-		stakingAsset = &assetstypes.StakingAssetInfo{
-			AssetBasicInfo:     &asset,
-			StakingTotalAmount: sdkmath.NewInt(0),
-		}
 
-		if err := p.assetsKeeper.RegisterNewTokenAndSetTokenFeeder(ctx, &oInfo); err != nil {
-			return nil, err
-		}
+	if p.assetsKeeper.IsStakingAsset(ctx, assetID) {
+		return nil, fmt.Errorf("asset %s already exists", assetID)
+	}
+
+	stakingAsset := &assetstypes.StakingAssetInfo{
+		AssetBasicInfo:     &asset,
+		StakingTotalAmount: sdkmath.NewInt(0),
+	}
+
+	if err := p.assetsKeeper.RegisterNewTokenAndSetTokenFeeder(ctx, &oInfo); err != nil {
+		return nil, err
 	}
 
 	// this is where the magic happens
@@ -164,7 +156,48 @@ func (p Precompile) RegisterOrUpdateTokens(
 		return nil, err
 	}
 
-	return method.Outputs.Pack(true, updated)
+	return method.Outputs.Pack(true)
+}
+
+func (p Precompile) UpdateToken(
+	ctx sdk.Context,
+	contract *vm.Contract,
+	method *abi.Method,
+	args []interface{},
+) ([]byte, error) {
+	// the caller must be the ExocoreGateway contract
+	err := p.assetsKeeper.CheckExocoreGatewayAddr(ctx, contract.CallerAddress)
+	if err != nil {
+		return nil, fmt.Errorf(exocmn.ErrContractCaller, err.Error())
+	}
+
+	// parse inputs
+	clientChainID, hexAssetAddr, tvlLimit, metadata, err := p.UpdateTokenFromInputs(ctx, args)
+	if err != nil {
+		return nil, err
+	}
+
+	// check that the asset being updated actually exists
+	_, assetID := assetstypes.GetStakeIDAndAssetIDFromStr(uint64(clientChainID), "", hexAssetAddr)
+	assetInfo, err := p.assetsKeeper.GetStakingAssetInfo(ctx, assetID)
+	if err != nil {
+		// fails if asset does not exist with ErrNoClientChainAssetKey
+		return nil, err
+	}
+
+	// finally, execute the update
+	if len(metadata) > 0 {
+		// if metadata is not empty, update it
+		assetInfo.AssetBasicInfo.MetaInfo = metadata
+	}
+	// always update TVL, since a value of 0 is used to reject deposits
+	assetInfo.AssetBasicInfo.TotalSupply = tvlLimit
+
+	if err := p.assetsKeeper.SetStakingAssetInfo(ctx, assetInfo); err != nil {
+		return nil, err
+	}
+
+	return method.Outputs.Pack(true)
 }
 
 func (p Precompile) IsRegisteredClientChain(

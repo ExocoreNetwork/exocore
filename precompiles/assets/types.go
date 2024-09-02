@@ -119,7 +119,7 @@ func (p Precompile) ClientChainInfoFromInputs(_ sdk.Context, args []interface{})
 }
 
 func (p Precompile) TokenFromInputs(ctx sdk.Context, args []interface{}) (types.AssetInfo, oracletypes.OracleInfo, error) {
-	inputsLen := len(p.ABI.Methods[MethodRegisterOrUpdateTokens].Inputs)
+	inputsLen := len(p.ABI.Methods[MethodRegisterToken].Inputs)
 	if len(args) != inputsLen {
 		return types.AssetInfo{}, oracletypes.OracleInfo{}, fmt.Errorf(cmn.ErrInvalidNumberOfArgs, inputsLen, len(args))
 	}
@@ -209,6 +209,52 @@ func (p Precompile) TokenFromInputs(ctx sdk.Context, args []interface{}) (types.
 	}
 
 	return asset, oracleInfo, nil
+}
+
+func (p Precompile) UpdateTokenFromInputs(
+	ctx sdk.Context, args []interface{},
+) (clientChainID uint32, hexAssetAddr string, tvlLimit sdkmath.Int, metadata string, err error) {
+	inputsLen := len(p.ABI.Methods[MethodUpdateToken].Inputs)
+	if len(args) != inputsLen {
+		return 0, "", sdkmath.NewInt(0), "", fmt.Errorf(cmn.ErrInvalidNumberOfArgs, inputsLen, len(args))
+	}
+
+	clientChainID, ok := args[0].(uint32)
+	if !ok {
+		return 0, "", sdkmath.NewInt(0), "", fmt.Errorf(exocmn.ErrContractInputParaOrType, 0, "uint32", args[0])
+	}
+
+	info, err := p.assetsKeeper.GetClientChainInfoByIndex(ctx, uint64(clientChainID))
+	if err != nil {
+		return 0, "", sdkmath.NewInt(0), "", err
+	}
+	clientChainAddrLength := info.AddressLength
+	assetAddr, ok := args[1].([]byte)
+	if !ok || assetAddr == nil {
+		return 0, "", sdkmath.NewInt(0), "", fmt.Errorf(exocmn.ErrContractInputParaOrType, 1, "[]byte", args[1])
+	}
+	if uint32(len(assetAddr)) < clientChainAddrLength {
+		return 0, "", sdkmath.NewInt(0), "", fmt.Errorf(exocmn.ErrInvalidAddrLength, len(assetAddr), clientChainAddrLength)
+	}
+	hexAssetAddr = hexutil.Encode(assetAddr[:clientChainAddrLength])
+
+	tvlLimitLocal, ok := args[2].(*big.Int)
+	// tvlLimit can be 0 to block the token deposits
+	if !ok || tvlLimitLocal == nil {
+		return 0, "", sdkmath.NewInt(0), "", fmt.Errorf(exocmn.ErrContractInputParaOrType, 2, "*big.Int", args[2])
+	}
+	tvlLimit = sdkmath.NewIntFromBigInt(tvlLimitLocal)
+
+	metadata, ok = args[3].(string)
+	if !ok {
+		return 0, "", sdkmath.NewInt(0), "", fmt.Errorf(exocmn.ErrContractInputParaOrType, 3, "string", args[3])
+	}
+	// metadata can be blank here to indicate no update necessary
+	if len(metadata) > types.MaxChainTokenMetaInfoLength {
+		return 0, "", sdkmath.NewInt(0), "", fmt.Errorf(exocmn.ErrInvalidMetaInfoLength, metadata, len(metadata), types.MaxChainTokenMetaInfoLength)
+	}
+
+	return clientChainID, hexAssetAddr, tvlLimit, metadata, nil
 }
 
 func (p Precompile) ClientChainIDFromInputs(_ sdk.Context, args []interface{}) (uint32, error) {
