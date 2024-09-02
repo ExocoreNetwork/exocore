@@ -39,6 +39,12 @@ type KeeperOracle interface {
 	RemoveRecentParams(sdk.Context, uint64)
 	RemoveRecentMsg(sdk.Context, uint64)
 
+	RemoveNonceWithValidator(ctx sdk.Context, validator string)
+	RemoveNonceWithValidatorAndFeederID(ctx sdk.Context, validator string, feederID uint64) bool
+	RemoveNonceWithFeederIDForValidators(ctx sdk.Context, feederID uint64, validators []string)
+	RemoveNonceWithFeederIDForAll(ctx sdk.Context, feederID uint64)
+
+	SetNonce(ctx sdk.Context, nonce types.ValidatorNonce)
 	GetSpecifiedAssetsPrice(ctx sdk.Context, assetID string) (types.Price, error)
 	GetMultipleAssetsPrices(ctx sdk.Context, assetIDs map[string]interface{}) (map[string]types.Price, error)
 }
