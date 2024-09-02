@@ -37,8 +37,7 @@ jobs:
       # Now, the actual golangci-lint configuration
       - uses: golangci/golangci-lint-action@v4
         with:
-          # Required parameter
-          version: latest
+          version: "v1.59.1"
           args: --timeout 10m
           github-token: ${{ secrets.github_token }}
         # Check only if there are differences in the source code
