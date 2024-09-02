@@ -56,7 +56,7 @@ func (k Keeper) InitGenesis(
 		// #nosec G703 // already validated
 		stakerAddress, clientChainID, _ := assetstype.ParseID(stakerID)
 		// we have checked IsHexAddress already
-		stakerAddressBytes := common.HexToAddress(stakerAddress)
+		stakerAddressBytes := common.FromHex(stakerAddress)
 		// #nosec G703 // already validated
 		accAddress, _ := sdk.AccAddressFromBech32(operatorAddress)
 		// this can only fail if the operator is not registered

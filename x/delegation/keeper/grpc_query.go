@@ -49,7 +49,7 @@ func (k Keeper) QueryUndelegationHoldCount(ctx context.Context, req *delegationt
 
 func (k Keeper) QueryAssociatedOperatorByStaker(ctx context.Context, req *delegationtype.QueryAssociatedOperatorByStakerReq) (*delegationtype.QueryAssociatedOperatorByStakerResponse, error) {
 	c := sdk.UnwrapSDKContext(ctx)
-	operator, err := k.GetSelfDelegatedOperator(c, req.StakerID)
+	operator, err := k.GetAssociatedOperator(c, req.StakerID)
 	if err != nil {
 		return nil, err
 	}

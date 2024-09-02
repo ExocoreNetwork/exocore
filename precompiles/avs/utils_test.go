@@ -1,4 +1,4 @@
-package keeper_test
+package avs_test
 
 import (
 	"fmt"
@@ -28,7 +28,7 @@ type StateForCheck struct {
 	StakerShare      sdkmath.LegacyDec
 }
 
-func (suite *OperatorTestSuite) prepareOperator() {
+func (suite *AVSManagerPrecompileSuite) prepareOperator() {
 	opAccAddr, err := sdk.AccAddressFromBech32("exo13h6xg79g82e2g2vhjwg7j4r2z2hlncelwutkjr")
 	suite.operatorAddr = opAccAddr
 	suite.NoError(err)
@@ -43,7 +43,7 @@ func (suite *OperatorTestSuite) prepareOperator() {
 	suite.NoError(err)
 }
 
-func (suite *OperatorTestSuite) prepareDeposit(assetAddr common.Address, amount sdkmath.Int) {
+func (suite *AVSManagerPrecompileSuite) prepareDeposit(assetAddr common.Address, amount sdkmath.Int) {
 	clientChainLzID := uint64(101)
 	suite.avsAddr = common.BytesToAddress([]byte("avsTestAddr")).String()
 	suite.assetAddr = assetAddr
@@ -64,7 +64,7 @@ func (suite *OperatorTestSuite) prepareDeposit(assetAddr common.Address, amount 
 	suite.NoError(err)
 }
 
-func (suite *OperatorTestSuite) prepareDelegation(isDelegation bool, assetAddr common.Address, amount sdkmath.Int) {
+func (suite *AVSManagerPrecompileSuite) prepareDelegation(isDelegation bool, assetAddr common.Address, amount sdkmath.Int) {
 	suite.delegationAmount = amount
 	param := &delegationtype.DelegationOrUndelegationParams{
 		ClientChainID:   suite.clientChainLzID,
@@ -84,7 +84,7 @@ func (suite *OperatorTestSuite) prepareDelegation(isDelegation bool, assetAddr c
 	suite.NoError(err)
 }
 
-func (suite *OperatorTestSuite) prepare() {
+func (suite *AVSManagerPrecompileSuite) prepare() {
 	usdtAddress := common.HexToAddress("0xdAC17F958D2ee523a2206206994597C13D831ec7")
 	depositAmount := sdkmath.NewInt(100)
 	delegationAmount := sdkmath.NewInt(50)
@@ -93,7 +93,7 @@ func (suite *OperatorTestSuite) prepare() {
 	suite.prepareDelegation(true, usdtAddress, delegationAmount)
 }
 
-func (suite *OperatorTestSuite) prepareAvs(assetIDs []string) {
+func (suite *AVSManagerPrecompileSuite) prepareAvs(assetIDs []string) {
 	err := suite.App.AVSManagerKeeper.AVSInfoUpdate(suite.Ctx, &avstypes.AVSRegisterOrDeregisterParams{
 		Action:          avskeeper.RegisterAction,
 		EpochIdentifier: epochstypes.HourEpochID,
@@ -103,7 +103,7 @@ func (suite *OperatorTestSuite) prepareAvs(assetIDs []string) {
 	suite.NoError(err)
 }
 
-func (suite *OperatorTestSuite) CheckState(expectedState *StateForCheck) {
+func (suite *AVSManagerPrecompileSuite) CheckState(expectedState *StateForCheck) {
 	// check opted info
 	optInfo, err := suite.App.OperatorKeeper.GetOptedInfo(suite.Ctx, suite.operatorAddr.String(), suite.avsAddr)
 	if expectedState.OptedInfo == nil {
@@ -131,7 +131,7 @@ func (suite *OperatorTestSuite) CheckState(expectedState *StateForCheck) {
 	}
 }
 
-func (suite *OperatorTestSuite) TestOptIn() {
+func (suite *AVSManagerPrecompileSuite) TestOptIn() {
 	suite.prepare()
 	suite.prepareAvs([]string{"0xdac17f958d2ee523a2206206994597c13d831ec7_0x65"})
 	err := suite.App.OperatorKeeper.OptIn(suite.Ctx, suite.operatorAddr, suite.avsAddr)
@@ -159,7 +159,7 @@ func (suite *OperatorTestSuite) TestOptIn() {
 	suite.CheckState(expectedState)
 }
 
-func (suite *OperatorTestSuite) TestOptInList() {
+func (suite *AVSManagerPrecompileSuite) TestOptInList() {
 	suite.prepare()
 	suite.prepareAvs([]string{"0xdac17f958d2ee523a2206206994597c13d831ec7_0x65"})
 	err := suite.App.OperatorKeeper.OptIn(suite.Ctx, suite.operatorAddr, suite.avsAddr)
@@ -173,9 +173,10 @@ func (suite *OperatorTestSuite) TestOptInList() {
 	suite.NoError(err)
 
 	suite.Contains(avsList, suite.avsAddr)
+
 }
 
-func (suite *OperatorTestSuite) TestOptOut() {
+func (suite *AVSManagerPrecompileSuite) TestOptOut() {
 	suite.prepare()
 	suite.prepareAvs([]string{"0xdac17f958d2ee523a2206206994597c13d831ec7_0x65"})
 	err := suite.App.OperatorKeeper.OptOut(suite.Ctx, suite.operatorAddr, suite.avsAddr)

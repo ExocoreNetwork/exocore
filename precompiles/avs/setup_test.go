@@ -1,6 +1,9 @@
 package avs_test
 
 import (
+	sdkmath "cosmossdk.io/math"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/ethereum/go-ethereum/common"
 	"testing"
 
 	"github.com/ExocoreNetwork/exocore/precompiles/avs"
@@ -16,6 +19,17 @@ var s *AVSManagerPrecompileSuite
 type AVSManagerPrecompileSuite struct {
 	testutil.BaseTestSuite
 	precompile *avs.Precompile
+	// needed by test
+	operatorAddr          sdk.AccAddress
+	avsAddr               string
+	assetID               string
+	stakerID              string
+	assetAddr             common.Address
+	assetDecimal          uint32
+	clientChainLzID       uint64
+	depositAmount         sdkmath.Int
+	delegationAmount      sdkmath.Int
+	updatedAmountForOptIn sdkmath.Int
 }
 
 func TestPrecompileTestSuite(t *testing.T) {
@@ -27,9 +41,9 @@ func TestPrecompileTestSuite(t *testing.T) {
 	RunSpecs(t, "AVSManager Precompile Suite")
 }
 
-func (s *AVSManagerPrecompileSuite) SetupTest() {
-	s.DoSetupTest()
-	precompile, err := avs.NewPrecompile(s.App.AVSManagerKeeper, s.App.AuthzKeeper)
-	s.Require().NoError(err)
-	s.precompile = precompile
+func (suite *AVSManagerPrecompileSuite) SetupTest() {
+	suite.DoSetupTest()
+	precompile, err := avs.NewPrecompile(suite.App.AVSManagerKeeper, suite.App.AuthzKeeper)
+	suite.Require().NoError(err)
+	suite.precompile = precompile
 }

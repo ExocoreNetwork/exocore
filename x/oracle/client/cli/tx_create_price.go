@@ -60,7 +60,8 @@ func CmdCreatePrice() *cobra.Command {
 				argLength -= 3
 				i += 3
 				prices[0].Prices = append(prices[0].Prices, &types.PriceTimeDetID{
-					Price:     price,
+					Price: price,
+					// #nosec G115
 					Decimal:   int32(decimal),
 					Timestamp: timestamp,
 					DetID:     detID,
@@ -75,6 +76,7 @@ func CmdCreatePrice() *cobra.Command {
 				feederID,
 				prices,
 				basedBlock,
+				// #nosec G115
 				int32(nonce),
 			)
 			if err := msg.ValidateBasic(); err != nil {

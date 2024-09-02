@@ -25,7 +25,7 @@ func (p Precompile) EmitCreateAVSTaskEvent(ctx sdk.Context, stateDB vm.StateDB, 
 	topics[0] = event.ID
 
 	var err error
-	topics[1], err = cmn.MakeTopic(task.TaskContractAddress)
+	topics[1], err = cmn.MakeTopic(common.HexToAddress(task.TaskContractAddress))
 	if err != nil {
 		return err
 	}

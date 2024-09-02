@@ -118,7 +118,7 @@ func (k Keeper) GetOperatorOptOutFinishEpoch(
 	}
 	// max int64 is 9 quintillion, and max uint64 is double of that.
 	// it is too far in the future to be a concern.
-	return int64(sdk.BigEndianToUint64(bz)) // #nosec G701 // see above.
+	return int64(sdk.BigEndianToUint64(bz)) // #nosec G115
 }
 
 // DeleteOperatorOptOutFinishEpoch deletes the epoch at which an operator's opt out will be
