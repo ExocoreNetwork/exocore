@@ -354,7 +354,7 @@ func QueryOperatorSlashInfo() *cobra.Command {
 // QueryAllOperatorsWithOptInAVS queries all operators
 func QueryAllOperatorsWithOptInAVS() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "get-operatorList",
+		Use:   "get-operator-list <avsAddr>",
 		Short: "Get list of operators by AVS",
 		Long:  "Get the list of operators who have opted in to the specified AVS",
 		Args:  cobra.ExactArgs(1),
