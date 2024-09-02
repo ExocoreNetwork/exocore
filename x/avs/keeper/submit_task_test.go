@@ -132,6 +132,7 @@ func (suite *AVSTestSuite) prepareTaskInfo() {
 		StartingEpoch:         uint64(epoch.CurrentEpoch + 1),
 		ActualThreshold:       0,
 		OptInOperators:        operatorList,
+		TaskTotalPower:        sdk.Dec(sdkmath.NewInt(0)),
 	}
 	err = suite.App.AVSManagerKeeper.SetTaskInfo(suite.Ctx, info)
 	suite.NoError(err)

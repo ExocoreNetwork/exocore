@@ -683,7 +683,7 @@ func (suite *AVSManagerPrecompileSuite) TestRunRegTaskInfo() {
 			avs.MethodCreateAVSTask,
 			"test-avstask",
 			rand.Bytes(3),
-			"3",
+			uint64(3),
 			uint64(3),
 			uint64(3),
 			uint64(3),
