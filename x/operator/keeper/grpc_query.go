@@ -226,13 +226,13 @@ func (k *Keeper) QueryOperatorSlashInfo(goCtx context.Context, req *types.QueryO
 	}, nil
 }
 
-func (k *Keeper) QueryAllOperatorsWithOptInAVS(goCtx context.Context, req *types.QueryAllOperatorsWithOptInAVSRequest) (*types.QueryAllOperatorsWithOptInAVSResponse, error) {
+func (k *Keeper) QueryAllOperatorsWithOptInAVS(goCtx context.Context, req *types.QueryAllOperatorsByOptInAVSRequest) (*types.QueryAllOperatorsByOptInAVSResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 	operatorList, err := k.GetOptedInOperatorListByAVS(ctx, req.Avs)
 	if err != nil {
 		return nil, err
 	}
-	return &types.QueryAllOperatorsWithOptInAVSResponse{
+	return &types.QueryAllOperatorsByOptInAVSResponse{
 		OperatorList: operatorList,
 	}, nil
 }

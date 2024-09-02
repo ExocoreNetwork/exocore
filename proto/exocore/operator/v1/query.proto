@@ -188,14 +188,14 @@ message OperatorConsAddrPair {
 
 // QueryAllOperatorsWithOptInAVSRequest is the request to obtain all opt-in operator addresses
 //  for a specific avs with pagination.
-message QueryAllOperatorsWithOptInAVSRequest {
+message QueryAllOperatorsByOptInAVSRequest {
   // avs address
   string avs = 1;
 }
 
 // QueryAllOperatorsWithOptInAVSResponse is the response that includes a list of all avs
 //   for a specified operator address.
-message QueryAllOperatorsWithOptInAVSResponse {
+message QueryAllOperatorsByOptInAVSResponse {
   // operator_list is a list of operator addresses.
   repeated string operator_list = 1;
 }
@@ -281,7 +281,8 @@ service Query {
   }
 
   // QueryAllOperatorsWithOptInAVS queries  operator list by avs.
-  rpc QueryAllOperatorsWithOptInAVS(QueryAllOperatorsWithOptInAVSRequest) returns (QueryAllOperatorsWithOptInAVSResponse) {
+  rpc QueryAllOperatorsWithOptInAVS(QueryAllOperatorsByOptInAVSRequest) returns (
+      QueryAllOperatorsByOptInAVSResponse) {
     option (google.api.http) = {
       get: "/exocore/operator/v1/opt/operator_list/{avs}"
     };

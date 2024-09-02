@@ -528,7 +528,7 @@ func local_request_Query_QueryAllOperatorConsAddrsByChainID_0(ctx context.Contex
 }
 
 func request_Query_QueryAllOperatorsWithOptInAVS_0(ctx context.Context, marshaler runtime.Marshaler, client QueryClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq QueryAllOperatorsWithOptInAVSRequest
+	var protoReq QueryAllOperatorsByOptInAVSRequest
 	var metadata runtime.ServerMetadata
 
 	var (
@@ -555,7 +555,7 @@ func request_Query_QueryAllOperatorsWithOptInAVS_0(ctx context.Context, marshale
 }
 
 func local_request_Query_QueryAllOperatorsWithOptInAVS_0(ctx context.Context, marshaler runtime.Marshaler, server QueryServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq QueryAllOperatorsWithOptInAVSRequest
+	var protoReq QueryAllOperatorsByOptInAVSRequest
 	var metadata runtime.ServerMetadata
 
 	var (

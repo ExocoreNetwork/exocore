@@ -74,7 +74,7 @@ func (suite *AVSTestSuite) prepareDelegation(isDelegation bool, assetAddr common
 	suite.NoError(err)
 }
 func (suite *AVSTestSuite) prepareAvs(assetIDs []string) {
-	err := suite.App.AVSManagerKeeper.AVSInfoUpdate(suite.Ctx, &avstypes.AVSRegisterOrDeregisterParams{
+	err := suite.App.AVSManagerKeeper.UpdateAVSInfo(suite.Ctx, &avstypes.AVSRegisterOrDeregisterParams{
 		AvsName:             "avs01",
 		Action:              avskeeper.RegisterAction,
 		EpochIdentifier:     epochstypes.HourEpochID,

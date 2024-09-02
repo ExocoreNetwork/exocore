@@ -354,9 +354,9 @@ func QueryOperatorSlashInfo() *cobra.Command {
 // QueryAllOperatorsWithOptInAVS queries all operators
 func QueryAllOperatorsWithOptInAVS() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "get-operator-list-by-avs <avsAddr>",
-		Short: "get-operatorList",
-		Long:  "Get  operator list by avs",
+		Use:   "get-operatorList",
+		Short: "Get list of operators by AVS",
+		Long:  "Get the list of operators who have opted in to the specified AVS",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if !common.IsHexAddress(args[0]) {
@@ -368,7 +368,7 @@ func QueryAllOperatorsWithOptInAVS() *cobra.Command {
 			}
 
 			queryClient := operatortypes.NewQueryClient(clientCtx)
-			req := operatortypes.QueryAllOperatorsWithOptInAVSRequest{
+			req := operatortypes.QueryAllOperatorsByOptInAVSRequest{
 				Avs: args[0],
 			}
 			res, err := queryClient.QueryAllOperatorsWithOptInAVS(context.Background(), &req)
@@ -385,9 +385,9 @@ func QueryAllOperatorsWithOptInAVS() *cobra.Command {
 // QueryAllAVSsByOperator queries all avs
 func QueryAllAVSsByOperator() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "get-avsList",
-		Short: "get-avsList",
-		Long:  "get-avsList by operator",
+		Use:   "get-avs-list <operatorAddr>",
+		Short: "Get list of AVSs by operator",
+		Long:  "Get a list of AVSs to which an operator has opted in",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			addr, err := sdk.AccAddressFromBech32(args[0])

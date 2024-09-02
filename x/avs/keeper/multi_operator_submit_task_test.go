@@ -83,7 +83,7 @@ func (suite *AVSTestSuite) prepareMulDelegation(operatorAddress sdk.AccAddress, 
 }
 
 func (suite *AVSTestSuite) prepareMulAvs(assetIDs []string) {
-	err := suite.App.AVSManagerKeeper.AVSInfoUpdate(suite.Ctx, &avstypes.AVSRegisterOrDeregisterParams{
+	err := suite.App.AVSManagerKeeper.UpdateAVSInfo(suite.Ctx, &avstypes.AVSRegisterOrDeregisterParams{
 		AvsName:             "avs01",
 		Action:              avskeeper.RegisterAction,
 		EpochIdentifier:     epochstypes.HourEpochID,

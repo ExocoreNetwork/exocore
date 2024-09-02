@@ -130,7 +130,7 @@ func QuerySubmitTaskResult() *cobra.Command {
 		Use:   "SubmitTaskResult <task-address-in-hex> <task-id> <operator-addreess>",
 		Short: "Query the SubmitTaskResult by taskAddr  taskID operatorAddr",
 		Long:  "Query the currently submitted Task Result",
-		Args:  cobra.ExactArgs(2),
+		Args:  cobra.ExactArgs(3),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if !common.IsHexAddress(args[0]) {
 				return xerrors.Errorf("invalid   address,err:%s", types.ErrInvalidAddr)
@@ -162,7 +162,7 @@ func QueryChallengeInfo() *cobra.Command {
 		Use:   "ChallengeInfo <task-address-in-hex> <task-id> <operator-addreess>",
 		Short: "Query the ChallengeInfo by taskAddr  taskID operatorAddr",
 		Long:  "Query the currently Challenge Info  ",
-		Args:  cobra.ExactArgs(2),
+		Args:  cobra.ExactArgs(3),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if !common.IsHexAddress(args[0]) {
 				return xerrors.Errorf("invalid task  address,err:%s", types.ErrInvalidAddr)

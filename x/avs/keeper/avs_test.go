@@ -77,7 +77,7 @@ func (suite *AVSTestSuite) TestAVSInfoUpdate_Register() {
 		EpochIdentifier:    epochstypes.DayEpochID,
 	}
 
-	err := suite.App.AVSManagerKeeper.AVSInfoUpdate(suite.Ctx, avsParams)
+	err := suite.App.AVSManagerKeeper.UpdateAVSInfo(suite.Ctx, avsParams)
 	suite.NoError(err)
 
 	info, err := suite.App.AVSManagerKeeper.GetAVSInfo(suite.Ctx, avsAddres)
@@ -85,7 +85,7 @@ func (suite *AVSTestSuite) TestAVSInfoUpdate_Register() {
 	suite.NoError(err)
 	suite.Equal(avsAddres, info.GetInfo().AvsAddress)
 
-	err = suite.App.AVSManagerKeeper.AVSInfoUpdate(suite.Ctx, avsParams)
+	err = suite.App.AVSManagerKeeper.UpdateAVSInfo(suite.Ctx, avsParams)
 	suite.Error(err)
 	suite.Contains(err.Error(), types.ErrAlreadyRegistered.Error())
 }
@@ -108,19 +108,19 @@ func (suite *AVSTestSuite) TestAVSInfoUpdate_DeRegister() {
 		EpochIdentifier:   epochstypes.DayEpochID,
 	}
 
-	err := suite.App.AVSManagerKeeper.AVSInfoUpdate(suite.Ctx, avsParams)
+	err := suite.App.AVSManagerKeeper.UpdateAVSInfo(suite.Ctx, avsParams)
 	suite.Error(err)
 	suite.Contains(err.Error(), types.ErrUnregisterNonExistent.Error())
 
 	avsParams.Action = avstypes.RegisterAction
-	err = suite.App.AVSManagerKeeper.AVSInfoUpdate(suite.Ctx, avsParams)
+	err = suite.App.AVSManagerKeeper.UpdateAVSInfo(suite.Ctx, avsParams)
 	suite.NoError(err)
 	info, err := suite.App.AVSManagerKeeper.GetAVSInfo(suite.Ctx, avsAddres)
 	suite.Equal(avsAddres, info.GetInfo().AvsAddress)
 
 	avsParams.Action = avstypes.DeRegisterAction
 	avsParams.CallerAddress = "exo13h6xg79g82e2g2vhjwg7j4r2z2hlncelwutkjr"
-	err = suite.App.AVSManagerKeeper.AVSInfoUpdate(suite.Ctx, avsParams)
+	err = suite.App.AVSManagerKeeper.UpdateAVSInfo(suite.Ctx, avsParams)
 	suite.NoError(err)
 	info, err = suite.App.AVSManagerKeeper.GetAVSInfo(suite.Ctx, avsAddres)
 	suite.Error(err)

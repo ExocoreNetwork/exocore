@@ -156,7 +156,7 @@ func (k Keeper) RegisterAVSWithChainID(
 	params.AvsAddress = avsAddr.String()
 	params.Action = RegisterAction
 
-	if err := k.AVSInfoUpdate(ctx, params); err != nil {
+	if err := k.UpdateAVSInfo(ctx, params); err != nil {
 		return common.Address{}, err
 	}
 	return avsAddr, nil

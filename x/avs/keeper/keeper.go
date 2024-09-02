@@ -59,7 +59,7 @@ func (k Keeper) GetOperatorKeeper() types.OperatorKeeper {
 	return k.operatorKeeper
 }
 
-func (k Keeper) AVSInfoUpdate(ctx sdk.Context, params *types.AVSRegisterOrDeregisterParams) error {
+func (k Keeper) UpdateAVSInfo(ctx sdk.Context, params *types.AVSRegisterOrDeregisterParams) error {
 	avsInfo, _ := k.GetAVSInfo(ctx, params.AvsAddress)
 	action := params.Action
 	epochIdentifier := params.EpochIdentifier
