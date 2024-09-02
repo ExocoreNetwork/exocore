@@ -153,6 +153,7 @@ func (k Keeper) removeNonceWithValidator(store prefix.Store, validator string) {
 
 func (k Keeper) removeNonceWithValidatorAndFeederID(store prefix.Store, validator string, feederID uint64) bool {
 	if nonce, found := k.getNonce(store, validator); found {
+		// TODO: performance. key-value: validator_feederID:nonce
 		for i, n := range nonce.NonceList {
 			if n.FeederID == feederID {
 				nonce.NonceList = append(nonce.NonceList[:i], nonce.NonceList[i+1:]...)
