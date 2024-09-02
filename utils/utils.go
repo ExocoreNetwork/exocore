@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/ExocoreNetwork/exocore/types/keys"
+	abci "github.com/cometbft/cometbft/abci/types"
 	"github.com/cosmos/cosmos-sdk/crypto/keys/ed25519"
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
 	"github.com/cosmos/cosmos-sdk/crypto/types/multisig"
@@ -152,4 +153,45 @@ func SortByPower(
 		sortedPowers[i] = powers[idx]
 	}
 	return sortedOperatorAddrs, sortedPubKeys, sortedPowers
+}
+
+// AccumulateChanges accumulates the current and new validator updates and returns
+// a list of unique validator updates. The list is sorted by power in descending order.
+func AccumulateChanges(
+	currentChanges, newChanges []abci.ValidatorUpdate,
+) []abci.ValidatorUpdate {
+	// get only unieque updates
+	m := make(map[string]abci.ValidatorUpdate)
+	for i := 0; i < len(currentChanges); i++ {
+		m[currentChanges[i].PubKey.String()] = currentChanges[i]
+	}
+	for i := 0; i < len(newChanges); i++ {
+		// overwrite with new power
+		m[newChanges[i].PubKey.String()] = newChanges[i]
+	}
+
+	// convert to list
+	var out []abci.ValidatorUpdate
+	for _, update := range m {
+		out = append(out, update)
+	}
+
+	// The list of tendermint updates should hash the same across all consensus nodes
+	// that means it is necessary to sort for determinism.
+	sort.Slice(out, func(i, j int) bool {
+		if out[i].Power != out[j].Power {
+			return out[i].Power > out[j].Power
+		}
+		return out[i].PubKey.String() > out[j].PubKey.String()
+	})
+
+	return out
+}
+
+// AppendMany appends a variable number of byte slices together
+func AppendMany(byteses ...[]byte) (out []byte) {
+	for _, bytes := range byteses {
+		out = append(out, bytes...)
+	}
+	return out
 }

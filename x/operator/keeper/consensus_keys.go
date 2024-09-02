@@ -9,9 +9,9 @@ import (
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 
 	exocoretypes "github.com/ExocoreNetwork/exocore/types/keys"
+	"github.com/ExocoreNetwork/exocore/utils"
 	delegationtypes "github.com/ExocoreNetwork/exocore/x/delegation/types"
 	"github.com/ExocoreNetwork/exocore/x/operator/types"
-
 	tmprotocrypto "github.com/cometbft/cometbft/proto/tendermint/crypto"
 )
 
@@ -431,7 +431,7 @@ func (k Keeper) ClearPreviousConsensusKeys(ctx sdk.Context, chainID string) {
 	store := ctx.KVStore(k.storeKey)
 	iterator := sdk.KVStorePrefixIterator(
 		store,
-		types.AppendMany(
+		utils.AppendMany(
 			[]byte{types.BytePrefixForOperatorAndChainIDToPrevConsKey},
 			partialKey,
 		),

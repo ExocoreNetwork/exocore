@@ -7,6 +7,7 @@ import (
 	assetstype "github.com/ExocoreNetwork/exocore/x/assets/types"
 
 	exocoretypes "github.com/ExocoreNetwork/exocore/types/keys"
+	"github.com/ExocoreNetwork/exocore/utils"
 	avstypes "github.com/ExocoreNetwork/exocore/x/avs/types"
 	"github.com/ExocoreNetwork/exocore/x/operator/types"
 	tmprotocrypto "github.com/cometbft/cometbft/proto/tendermint/crypto"
@@ -203,7 +204,7 @@ func (k *Keeper) QueryOperatorSlashInfo(goCtx context.Context, req *types.QueryO
 	ctx := sdk.UnwrapSDKContext(goCtx)
 	res := make([]*types.OperatorSlashInfoByID, 0)
 
-	slashPrefix := types.AppendMany(types.KeyPrefixOperatorSlashInfo, assetstype.GetJoinedStoreKeyForPrefix(req.Details.OperatorAddr, req.Details.AVSAddress))
+	slashPrefix := utils.AppendMany(types.KeyPrefixOperatorSlashInfo, assetstype.GetJoinedStoreKeyForPrefix(req.Details.OperatorAddr, req.Details.AVSAddress))
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), slashPrefix)
 	pageRes, err := query.Paginate(store, req.Pagination, func(key []byte, value []byte) error {
 		ret := &types.OperatorSlashInfo{}
