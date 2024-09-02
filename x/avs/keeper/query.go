@@ -29,6 +29,7 @@ func (k Keeper) QueryAVSAddrByChainID(ctx context.Context, req *types.QueryAVSAd
 	}
 	return &types.QueryAVSAddrByChainIDResponse{AVSAddress: avsAddr.String()}, nil
 }
+
 func (k Keeper) QuerySubmitTaskResult(ctx context.Context, req *types.QuerySubmitTaskResultReq) (*types.QuerySubmitTaskResultResponse, error) {
 	c := sdk.UnwrapSDKContext(ctx)
 	id, err := strconv.ParseUint(req.TaskId, 10, 64)

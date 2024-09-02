@@ -225,6 +225,7 @@ func (k *Keeper) QueryOperatorSlashInfo(goCtx context.Context, req *types.QueryO
 		Pagination:   pageRes,
 	}, nil
 }
+
 func (k *Keeper) QueryAllOperatorsWithOptInAVS(goCtx context.Context, req *types.QueryAllOperatorsWithOptInAVSRequest) (*types.QueryAllOperatorsWithOptInAVSResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 	operatorList, err := k.GetOptedInOperatorListByAVS(ctx, req.Avs)

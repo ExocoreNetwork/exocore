@@ -111,6 +111,7 @@ func (k *Keeper) GetTaskStatisticalEpochEndAVSs(ctx sdk.Context, epochIdentifier
 	})
 	return taskResList
 }
+
 // RegisterAVSWithChainID registers an AVS by its chainID.
 // It is responsible for generating an AVS address based on the chainID.
 // The following bare minimum parameters must be supplied:

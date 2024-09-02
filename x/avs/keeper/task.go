@@ -193,6 +193,7 @@ func (k *Keeper) SetTaskResultInfo(
 			)
 		}
 		// check epoch，The first stage submission must be within the response window period
+		// #nosec G115
 		if epoch.CurrentEpoch > int64(task.StartingEpoch)+int64(task.TaskResponsePeriod) {
 			return errorsmod.Wrap(
 				types.ErrSubmitTooLateError,
@@ -228,6 +229,7 @@ func (k *Keeper) SetTaskResultInfo(
 			)
 		}
 		//  check epoch，The second stage submission must be within the statistical window period
+		// #nosec G115
 		if epoch.CurrentEpoch <= int64(task.StartingEpoch)+int64(task.TaskResponsePeriod) ||
 			epoch.CurrentEpoch > int64(task.StartingEpoch)+int64(task.TaskResponsePeriod)+int64(task.TaskStatisticalPeriod) {
 			return errorsmod.Wrap(

@@ -156,6 +156,7 @@ func QuerySubmitTaskResult() *cobra.Command {
 	flags.AddQueryFlagsToCmd(cmd)
 	return cmd
 }
+
 func QueryChallengeInfo() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "ChallengeInfo <task-address-in-hex> <task-id> <operator-addreess>",
