@@ -74,10 +74,8 @@ func (agc *AggregatorContext) Copy4CheckTx() *AggregatorContext {
 // sanity check for the msgCreatePrice
 func (agc *AggregatorContext) sanityCheck(msg *types.MsgCreatePrice) error {
 	// sanity check
-	// TODO: check nonce [1,3] in anteHandler, related to params, may not able
 	// TODO: check the msgCreatePrice's Decimal is correct with params setting
 	// TODO: check len(price.prices)>0, len(price.prices._range_eachPriceSource.Prices)>0, at least has one source, and for each source has at least one price
-	// TODO: check for each source, at most maxDetId count price (now in filter, ->anteHandler)
 
 	if accAddress, err := sdk.AccAddressFromBech32(msg.Creator); err != nil {
 		return errors.New("invalid address")
@@ -85,11 +83,6 @@ func (agc *AggregatorContext) sanityCheck(msg *types.MsgCreatePrice) error {
 		return errors.New("signer is not validator")
 	}
 
-	if msg.Nonce < 1 || msg.Nonce > common.MaxNonce {
-		return errors.New("nonce invalid")
-	}
-
-	// TODO: sanity check for price(no more than maxDetId count for each source, this should be take care in anteHandler)
 	if len(msg.Prices) == 0 {
 		return errors.New("msg should provide at least one price")
 	}
@@ -193,10 +186,7 @@ func (agc *AggregatorContext) NewCreatePrice(_ sdk.Context, msg *types.MsgCreate
 // including possible aggregation and state update
 // when validatorSet update, set force to true, to seal all alive round
 // returns: 1st successful sealed, need to be written to KVStore, 2nd: failed sealed tokenID, use previous price to write to KVStore
-func (agc *AggregatorContext) SealRound(ctx sdk.Context, force bool) (success []*PriceItemKV, failed []uint64) {
-	// 1. check validatorSet udpate
-	// TODO: if validatoSet has been updated in current block, just seal all active rounds and return
-	// 1. for sealed worker, the KVStore has been updated
+func (agc *AggregatorContext) SealRound(ctx sdk.Context, force bool) (success []*PriceItemKV, failed []uint64, sealed []uint64) {
 	for feederID, round := range agc.rounds {
 		if round.status == 1 {
 			feeder := agc.params.GetTokenFeeder(feederID)
@@ -210,12 +200,12 @@ func (agc *AggregatorContext) SealRound(ctx sdk.Context, force bool) (success []
 					failed = append(failed, feeder.TokenID)
 					if expired {
 						delete(agc.rounds, feederID)
-						delete(agc.aggregators, feederID)
 					} else {
 						round.status = 2
-						// agc.aggregators[feederID] = nil
-						delete(agc.aggregators, feederID)
 					}
+					// TODO: optimize operformance
+					sealed = append(sealed, feederID)
+					delete(agc.aggregators, feederID)
 				}
 			default:
 				ctx.Logger().Info("mode other than 1 is not support now")
@@ -223,34 +213,33 @@ func (agc *AggregatorContext) SealRound(ctx sdk.Context, force bool) (success []
 		}
 		// all status: 1->2, remove its aggregator
 		if agc.aggregators[feederID] != nil && agc.aggregators[feederID].sealed {
-			// agc.aggregators[feederID] = nil
 			delete(agc.aggregators, feederID)
+			sealed = append(sealed, feederID)
 		}
 	}
-	return success, failed
+	return success, failed, sealed
 }
 
-// PrepareBeginBlock is called at BeginBlock stage, to prepare the roundInfo for the current block
-func (agc *AggregatorContext) PrepareRoundBeginBlock(ctx sdk.Context, block uint64) {
-	// block>0 means recache initialization, all roundInfo is empty
-	if block == 0 {
-		block = uint64(ctx.BlockHeight())
+// PrepareEndBlock is called at EndBlock stage, to prepare the roundInfo for the next block(of input block)
+// func (agc *AggregatorContext) PrepareRoundEndBlock(ctx sdk.Context, block uint64) {
+func (agc *AggregatorContext) PrepareRoundEndBlock(block uint64) (newRoundFeederIDs []uint64) {
+	if block < 1 {
+		return newRoundFeederIDs
 	}
 
 	for feederID, feeder := range agc.params.GetTokenFeeders() {
 		if feederID == 0 {
 			continue
 		}
-		if (feeder.EndBlock > 0 && feeder.EndBlock < block) || feeder.StartBaseBlock >= block {
+		if (feeder.EndBlock > 0 && feeder.EndBlock <= block) || feeder.StartBaseBlock > block {
 			// this feeder is inactive
 			continue
 		}
 
-		baseBlock := block - 1
-		delta := baseBlock - feeder.StartBaseBlock
+		delta := block - feeder.StartBaseBlock
 		left := delta % feeder.Interval
 		count := delta / feeder.Interval
-		latestBasedblock := baseBlock - left
+		latestBasedblock := block - left
 		latestNextRoundID := feeder.StartRoundID + count
 
 		feederIDUint64 := uint64(feederID)
@@ -261,9 +250,14 @@ func (agc *AggregatorContext) PrepareRoundBeginBlock(ctx sdk.Context, block uint
 				nextRoundID: latestNextRoundID,
 			}
 			if left >= uint64(common.MaxNonce) {
+				// since do sealround properly before prepareRound, this only possible happens in node restart, and nonce has been taken care of in kvStore
 				round.status = 2
 			} else {
 				round.status = 1
+				if left == 0 {
+					// set nonce for corresponding feederID for new roud start
+					newRoundFeederIDs = append(newRoundFeederIDs, feederIDUint64)
+				}
 			}
 			agc.rounds[feederIDUint64] = round
 		} else {
@@ -272,15 +266,18 @@ func (agc *AggregatorContext) PrepareRoundBeginBlock(ctx sdk.Context, block uint
 				round.basedBlock = latestBasedblock
 				round.nextRoundID = latestNextRoundID
 				round.status = 1
+				// set nonce for corresponding feederID for new roud start
+				newRoundFeederIDs = append(newRoundFeederIDs, feederIDUint64)
 				// drop previous worker
 				delete(agc.aggregators, feederIDUint64)
 			} else if round.status == 1 && left >= uint64(common.MaxNonce) {
 				// this shouldn't happen, if do sealround properly before prepareRound, basically for test only
 				round.status = 2
-				// TODO: just modify the status here, since sealRound should do all the related seal actios already when parepare invoked
+				// TODO: just modify the status here, since sealRound should do all the related seal actions already when parepare invoked
 			}
 		}
 	}
+	return newRoundFeederIDs
 }
 
 // SetParams sets the params field of aggregatorContext“
@@ -302,6 +299,13 @@ func (agc *AggregatorContext) SetValidatorPowers(vp map[string]*big.Int) {
 // GetValidatorPowers returns the map of validator's power stored in aggregatorContext
 func (agc *AggregatorContext) GetValidatorPowers() (vp map[string]*big.Int) {
 	return agc.validatorsPower
+}
+
+func (agc *AggregatorContext) GetValidators() (validators []string) {
+	for k := range agc.validatorsPower {
+		validators = append(validators, k)
+	}
+	return
 }
 
 // GetTokenIDFromAssetID returns tokenID for corresponding tokenID, it returns 0 if agc.params is nil or assetID not found in agc.params
