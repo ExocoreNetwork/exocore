@@ -64,7 +64,7 @@ func CmdSubmitTaskResult() *cobra.Command {
 
 	f := cmd.Flags()
 	f.String(
-		FlagOperatorAddress, "", "The address which is used to opt in avs "+
+		FlagOperatorAddress, "", "The address of the operator being queried "+
 			" If not provided, it will default to the sender's address.",
 	)
 	f.String(
