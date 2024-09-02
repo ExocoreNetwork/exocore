@@ -1,6 +1,7 @@
 package types
 
 import (
+	"github.com/ExocoreNetwork/exocore/utils"
 	epochstypes "github.com/ExocoreNetwork/exocore/x/epochs/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -47,16 +48,15 @@ const (
 	SubscriberGenesisBytePrefix
 	// InitTimeoutBytePrefix is the prefix for the init timeout key
 	InitTimeoutBytePrefix
+	// PortBytePrefix is the prefix for the port key
+	PortBytePrefix
+	// ChannelForChainBytePrefix is the prefix for the channel for chain key
+	ChannelForChainBytePrefix
+	// ChainForChannelBytePrefix is the prefix for the chain for channel key
+	ChainForChannelBytePrefix
 )
 
-// AppendMany appends a variable number of byte slices together
-func AppendMany(byteses ...[]byte) (out []byte) {
-	for _, bytes := range byteses {
-		out = append(out, bytes...)
-	}
-	return out
-}
-
+// ParamsKey returns the key under which the coordinator module's parameters are stored.
 func ParamsKey() []byte {
 	return []byte{ParamsBytePrefix}
 }
@@ -65,7 +65,7 @@ func ParamsKey() []byte {
 // to begin with the starting of the epoch with identifier and number. Since the data
 // is stored alphabetically, this key structure is apt.
 func PendingSubscriberChainKey(epochIdentifier string, epochNumber uint64) []byte {
-	return AppendMany(
+	return utils.AppendMany(
 		[]byte{PendingSubscriberChainBytePrefix},
 		[]byte(epochIdentifier),
 		sdk.Uint64ToBigEndian(epochNumber),
@@ -103,9 +103,26 @@ func SubscriberGenesisKey(chainID string) []byte {
 // InitTimeoutEpochKey returns the key under which the list of chains which will timeout (if not
 // initialized by then) at the beginning of the epoch is stored.
 func InitTimeoutEpochKey(epoch epochstypes.Epoch) []byte {
-	return AppendMany(
+	return utils.AppendMany(
 		[]byte{InitTimeoutBytePrefix},
 		[]byte(epoch.EpochIdentifier),
 		sdk.Uint64ToBigEndian(epoch.EpochNumber),
 	)
+}
+
+// PortKey returns the key for the port (hello Harry Potter!)
+func PortKey() []byte {
+	return []byte{PortBytePrefix}
+}
+
+// ChannelForChainKey returns the key under which the ibc channel id
+// for the given chainId is stored.
+func ChannelForChainKey(chainID string) []byte {
+	return append([]byte{ChannelForChainBytePrefix}, []byte(chainID)...)
+}
+
+// ChainForChannelKey returns the key under which the chainId
+// for the given channelId is stored.
+func ChainForChannelKey(channelID string) []byte {
+	return append([]byte{ChainForChannelBytePrefix}, []byte(channelID)...)
 }

@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"fmt"
+	"time"
 
 	commontypes "github.com/ExocoreNetwork/exocore/x/appchain/common/types"
 	"github.com/ExocoreNetwork/exocore/x/appchain/subscriber/types"
@@ -14,11 +15,14 @@ import (
 )
 
 type Keeper struct {
-	cdc          codec.BinaryCodec
-	storeKey     storetypes.StoreKey
-	scopedKeeper commontypes.ScopedKeeper
-	portKeeper   commontypes.PortKeeper
-	clientKeeper commontypes.ClientKeeper
+	cdc              codec.BinaryCodec
+	storeKey         storetypes.StoreKey
+	scopedKeeper     commontypes.ScopedKeeper
+	portKeeper       commontypes.PortKeeper
+	clientKeeper     commontypes.ClientKeeper
+	connectionKeeper commontypes.ConnectionKeeper
+	channelKeeper    commontypes.ChannelKeeper
+	ibcCoreKeeper    commontypes.IBCCoreKeeper
 }
 
 // NewKeeper creates a new subscriber keeper.
@@ -28,13 +32,18 @@ func NewKeeper(
 	scopedKeeper commontypes.ScopedKeeper,
 	portKeeper commontypes.PortKeeper,
 	clientKeeper commontypes.ClientKeeper,
+	connectionKeeper commontypes.ConnectionKeeper,
+	channelKeeper commontypes.ChannelKeeper,
+	ibcCoreKeeper commontypes.IBCCoreKeeper,
 ) Keeper {
 	return Keeper{
-		cdc:          cdc,
-		storeKey:     storeKey,
-		scopedKeeper: scopedKeeper,
-		portKeeper:   portKeeper,
-		clientKeeper: clientKeeper,
+		cdc:              cdc,
+		storeKey:         storeKey,
+		scopedKeeper:     scopedKeeper,
+		portKeeper:       portKeeper,
+		clientKeeper:     clientKeeper,
+		connectionKeeper: connectionKeeper,
+		channelKeeper:    channelKeeper,
 	}
 }
 
@@ -76,4 +85,54 @@ func (k Keeper) ClaimCapability(
 	name string,
 ) error {
 	return k.scopedKeeper.ClaimCapability(ctx, cap, name)
+}
+
+// GetPendingChanges gets the pending validator set changes that will be applied
+// at the end of this block.
+func (k Keeper) GetPendingChanges(
+	ctx sdk.Context,
+) (*commontypes.ValidatorSetChangePacketData, bool) {
+	store := ctx.KVStore(k.storeKey)
+	bz := store.Get(types.PendingChangesKey())
+	if bz == nil {
+		return nil, false
+	}
+	var res *commontypes.ValidatorSetChangePacketData
+	k.cdc.MustUnmarshal(bz, res)
+	return res, true
+}
+
+// SetPendingChanges sets the pending validator set changes that will be applied
+// at the end of this block.
+func (k Keeper) SetPendingChanges(
+	ctx sdk.Context,
+	data *commontypes.ValidatorSetChangePacketData,
+) {
+	store := ctx.KVStore(k.storeKey)
+	bz := k.cdc.MustMarshal(data)
+	store.Set(types.PendingChangesKey(), bz)
+}
+
+// SetPacketMaturityTime sets the maturity time for a given received VSC packet id
+func (k Keeper) SetPacketMaturityTime(
+	ctx sdk.Context, vscId uint64, maturityTime time.Time,
+) {
+	store := ctx.KVStore(k.storeKey)
+	maturingVSCPacket := &types.MaturingVSCPacket{
+		ID:           vscId,
+		MaturityTime: maturityTime,
+	}
+	store.Set(
+		types.PacketMaturityTimeKey(vscId, maturityTime),
+		k.cdc.MustMarshal(maturingVSCPacket),
+	)
+}
+
+// DeleteOutstandingDowntime deletes the outstanding downtime flag for the given validator
+// consensus address
+func (k Keeper) DeleteOutstandingDowntime(
+	ctx sdk.Context, consAddress sdk.ConsAddress,
+) {
+	store := ctx.KVStore(k.storeKey)
+	store.Delete(types.OutstandingDowntimeKey(consAddress))
 }

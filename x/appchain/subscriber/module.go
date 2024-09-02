@@ -1,4 +1,4 @@
-package dogfood
+package subscriber
 
 import (
 	"context"

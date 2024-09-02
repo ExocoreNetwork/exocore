@@ -1,6 +1,9 @@
 package types
 
 import (
+	time "time"
+
+	"github.com/ExocoreNetwork/exocore/utils"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
@@ -45,6 +48,14 @@ const (
 	ValsetUpdateIDBytePrefix
 	// OmniChainValidatorBytePrefix is the prefix for the omni chain validator key
 	OmniChainValidatorBytePrefix
+	// CoordinatorChannelBytePrefix is the prefix for the coordinator channel key
+	CoordinatorChannelBytePrefix
+	// PendingChangesBytePrefix is the prefix for the pending changes key
+	PendingChangesBytePrefix
+	// PacketMaturityTimeBytePrefix is the prefix for the packet maturity time key
+	PacketMaturityTimeBytePrefix
+	// OutstandingDowntimeBytePrefix is the prefix for the outstanding downtime key
+	OutstandingDowntimeBytePrefix
 )
 
 // ParamsKey returns the key for the params
@@ -73,4 +84,29 @@ func ValsetUpdateIDKey(height int64) []byte {
 // OmniChainValidatorKey returns the key for the omni chain validator against the provided address.
 func OmniChainValidatorKey(address sdk.ConsAddress) []byte {
 	return append([]byte{OmniChainValidatorBytePrefix}, address...)
+}
+
+// CoordinatorChannelKey returns the key for which the ibc channel id to the coordinator chain
+// is stored.
+func CoordinatorChannelKey() []byte {
+	return []byte{CoordinatorChannelBytePrefix}
+}
+
+// PendingChangesKey returns the key for the pending changes
+func PendingChangesKey() []byte {
+	return []byte{PendingChangesBytePrefix}
+}
+
+// PacketMaturityTimeKey returns the key for the packet maturity time
+func PacketMaturityTimeKey(vscID uint64, maturityTime time.Time) []byte {
+	return utils.AppendMany(
+		[]byte{PacketMaturityTimeBytePrefix},
+		sdk.FormatTimeBytes(maturityTime),
+		sdk.Uint64ToBigEndian(vscID),
+	)
+}
+
+// OutstandingDowntimeKey returns the key for the outstanding downtime
+func OutstandingDowntimeKey(consAddress sdk.ConsAddress) []byte {
+	return append([]byte{OutstandingDowntimeBytePrefix}, consAddress.Bytes()...)
 }
