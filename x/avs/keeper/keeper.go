@@ -96,8 +96,8 @@ func (k Keeper) AVSInfoUpdate(ctx sdk.Context, params *types.AVSRegisterOrDeregi
 			TaskAddr:            params.TaskAddr,
 			MinStakeAmount:      params.MinStakeAmount, // Effective at CurrentEpoch+1, avoid immediate effects and ensure that the first epoch time of avs is equal to a normal identifier
 			MinTotalStakeAmount: params.MinTotalStakeAmount,
-			AvsSlash:            sdk.NewDecWithPrec(int64(params.AvsSlash), 2),
-			AvsReward:           sdk.NewDecWithPrec(int64(params.AvsReward), 2),
+			AvsSlash:            sdk.NewDecWithPrec(int64(params.AvsSlash), 2),  // #nosec G115
+			AvsReward:           sdk.NewDecWithPrec(int64(params.AvsReward), 2), // #nosec G115
 		}
 
 		return k.SetAVSInfo(ctx, avs)
@@ -111,6 +111,7 @@ func (k Keeper) AVSInfoUpdate(ctx sdk.Context, params *types.AVSRegisterOrDeregi
 		}
 
 		// If avs DeRegisterAction check UnbondingPeriod
+		// #nosec G115
 		if epoch.CurrentEpoch-int64(avsInfo.GetInfo().StartingEpoch) > int64(avsInfo.Info.AvsUnbondingPeriod) {
 			return errorsmod.Wrap(types.ErrUnbondingPeriod, fmt.Sprintf("not qualified to deregister %s", avsInfo))
 		}
@@ -125,9 +126,11 @@ func (k Keeper) AVSInfoUpdate(ctx sdk.Context, params *types.AVSRegisterOrDeregi
 			return errorsmod.Wrap(types.ErrUnregisterNonExistent, fmt.Sprintf("the avsaddress is :%s", params.AvsAddress))
 		}
 		// If avs UpdateAction check UnbondingPeriod
+		// #nosec G115
 		//	if int64(avsInfo.Info.AvsUnbondingPeriod) < (epoch.CurrentEpoch - int64(avsInfo.GetInfo().StartingEpoch)) {
 		//	return errorsmod.Wrap(types.ErrUnbondingPeriod, fmt.Sprintf("not qualified to deregister %s", avsInfo))
 		//}
+
 		// If avs UpdateAction check CallerAddress
 		if !slices.Contains(avsInfo.Info.AvsOwnerAddress, params.CallerAddress) {
 			return errorsmod.Wrap(types.ErrCallerAddressUnauthorized, fmt.Sprintf("this caller not qualified to update %s", params.CallerAddress))
@@ -173,10 +176,10 @@ func (k Keeper) AVSInfoUpdate(ctx sdk.Context, params *types.AVSRegisterOrDeregi
 			avs.MinTotalStakeAmount = params.MinTotalStakeAmount
 		}
 		if params.AvsSlash > 0 {
-			avs.AvsSlash = sdk.NewDecWithPrec(int64(params.AvsSlash), 2)
+			avs.AvsSlash = sdk.NewDecWithPrec(int64(params.AvsSlash), 2) // #nosec G115
 		}
 		if params.AvsReward > 0 {
-			avs.AvsReward = sdk.NewDecWithPrec(int64(params.AvsReward), 2)
+			avs.AvsReward = sdk.NewDecWithPrec(int64(params.AvsReward), 2) // #nosec G115
 		}
 		avs.AvsAddress = params.AvsAddress
 		avs.StartingEpoch = uint64(epoch.CurrentEpoch + 1)

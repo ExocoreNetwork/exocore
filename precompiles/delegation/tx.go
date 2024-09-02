@@ -115,15 +115,20 @@ func (p Precompile) AssociateOperatorWithStaker(
 	if !ok {
 		return nil, fmt.Errorf(exocmn.ErrContractInputParaOrType, 0, "uint32", args[0])
 	}
+
+	info, err := p.assetsKeeper.GetClientChainInfoByIndex(ctx, uint64(clientChainID))
+	if err != nil {
+		return nil, err
+	}
+	clientChainAddrLength := info.AddressLength
 	staker, ok := args[1].([]byte)
 	if !ok || staker == nil {
 		return nil, fmt.Errorf(exocmn.ErrContractInputParaOrType, 1, "[]byte", args[1])
 	}
-	// TODO: In the future, the check should be the same as it is in delegation if using LayerZero to route the
-	// message for non-EVM client chains, such as Solana.
-	if len(staker) != common.AddressLength {
-		return nil, fmt.Errorf(exocmn.ErrInvalidEVMAddr, staker)
+	if uint32(len(staker)) < clientChainAddrLength {
+		return nil, fmt.Errorf(exocmn.ErrInvalidAddrLength, len(staker), clientChainAddrLength)
 	}
+	staker = staker[:clientChainAddrLength]
 
 	operator, ok := args[2].([]byte)
 	if !ok || operator == nil {
@@ -133,7 +138,7 @@ func (p Precompile) AssociateOperatorWithStaker(
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse the operator address from Bech32, operator:%s, error:%s ", operator, err.Error())
 	}
-	err = p.delegationKeeper.AssociateOperatorWithStaker(ctx, uint64(clientChainID), operatorAccAddr, common.Address(staker))
+	err = p.delegationKeeper.AssociateOperatorWithStaker(ctx, uint64(clientChainID), operatorAccAddr, staker)
 	if err != nil {
 		return nil, err
 	}
@@ -161,17 +166,22 @@ func (p Precompile) DissociateOperatorFromStaker(
 	if !ok {
 		return nil, fmt.Errorf(exocmn.ErrContractInputParaOrType, 0, "uint32", args[0])
 	}
+	info, err := p.assetsKeeper.GetClientChainInfoByIndex(ctx, uint64(clientChainID))
+	if err != nil {
+		return nil, err
+	}
+	clientChainAddrLength := info.AddressLength
+
 	staker, ok := args[1].([]byte)
 	if !ok || staker == nil {
 		return nil, fmt.Errorf(exocmn.ErrContractInputParaOrType, 1, "[]byte", args[1])
 	}
-	// TODO: In the future, the check should be the same as it is in delegation if using LayerZero to route the
-	// message for non-EVM client chains, such as Solana.
-	if len(staker) != common.AddressLength {
-		return nil, fmt.Errorf(exocmn.ErrInvalidEVMAddr, staker)
+	if uint32(len(staker)) < clientChainAddrLength {
+		return nil, fmt.Errorf(exocmn.ErrInvalidAddrLength, len(staker), clientChainAddrLength)
 	}
+	staker = staker[:clientChainAddrLength]
 
-	err = p.delegationKeeper.DissociateOperatorFromStaker(ctx, uint64(clientChainID), common.Address(staker))
+	err = p.delegationKeeper.DissociateOperatorFromStaker(ctx, uint64(clientChainID), staker)
 	if err != nil {
 		return nil, err
 	}

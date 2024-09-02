@@ -74,7 +74,7 @@ func (k Keeper) GetSpecifiedAssetsPrice(ctx sdk.Context, assetID string) (types.
 	}
 	return types.Price{
 		Value:   v,
-		Decimal: uint8(price.Decimal),
+		Decimal: uint8(price.Decimal), // #nosec G115
 	}, nil
 }
 
@@ -117,7 +117,7 @@ func (k Keeper) GetMultipleAssetsPrices(ctx sdk.Context, assets map[string]inter
 			}
 			prices[assetID] = types.Price{
 				Value:   v,
-				Decimal: uint8(price.Decimal),
+				Decimal: uint8(price.Decimal), // #nosec G115
 			}
 		}
 	}

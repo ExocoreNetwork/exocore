@@ -183,9 +183,9 @@ func checkTxFeeWithValidatorMinGasPrices(ctx sdk.Context, feeTx sdk.FeeTx) (sdk.
 			return nil, 0, err
 		}
 	}
-
-	priority := getTxPriority(feeCoins, gas)
-	return feeCoins, int64(priority), nil
+	// #nosec G115 -- gosec warning about integer overflow is not relevant here
+	priority := getTxPriority(feeCoins, int64(gas))
+	return feeCoins, priority, nil
 }
 
 // checkFeeCoinsAgainstMinGasPrices checks if the provided fee coins are greater than or equal to the
@@ -200,7 +200,7 @@ func checkFeeCoinsAgainstMinGasPrices(ctx sdk.Context, feeCoins sdk.Coins, gas u
 
 	// Determine the required fees by multiplying each required minimum gas
 	// price by the gas limit, where fee = ceil(minGasPrice * gasLimit).
-	glDec := sdk.NewDec(int64(gas))
+	glDec := sdk.NewDec(int64(gas)) // #nosec G115 -- gosec warning about integer overflow is not relevant here
 	for i, gp := range minGasPrices {
 		fee := gp.Amount.Mul(glDec)
 		requiredFees[i] = sdk.NewCoin(gp.Denom, fee.Ceil().RoundInt())
