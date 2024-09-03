@@ -57,7 +57,7 @@ func (k Keeper) GetOperatorKeeper() types.OperatorKeeper {
 	return k.operatorKeeper
 }
 
-func (k Keeper) AVSInfoUpdate(ctx sdk.Context, params *types.AVSRegisterOrDeregisterParams) error {
+func (k Keeper) UpdateAVSInfo(ctx sdk.Context, params *types.AVSRegisterOrDeregisterParams) error {
 	avsInfo, _ := k.GetAVSInfo(ctx, params.AvsAddress)
 	action := params.Action
 	epochIdentifier := params.EpochIdentifier
@@ -123,15 +123,11 @@ func (k Keeper) AVSInfoUpdate(ctx sdk.Context, params *types.AVSRegisterOrDeregi
 		if avsInfo == nil {
 			return errorsmod.Wrap(types.ErrUnregisterNonExistent, fmt.Sprintf("the avsaddress is :%s", params.AvsAddress))
 		}
+		// TODO: The AvsUnbondingPeriod is used for undelegation, but this check currently blocks updates to AVS information. Remove this check to allow AVS updates, while detailed control mechanisms for updates should be considered and implemented in the future.
 		// If avs UpdateAction check UnbondingPeriod
-		// #nosec G115
-		if int64(avsInfo.Info.AvsUnbondingPeriod) < (epoch.CurrentEpoch - int64(avsInfo.GetInfo().StartingEpoch)) {
-			return errorsmod.Wrap(types.ErrUnbondingPeriod, fmt.Sprintf("not qualified to deregister %s", avsInfo))
-		}
-		// If avs UpdateAction check CallerAddress
-		if !slices.Contains(avsInfo.Info.AvsOwnerAddress, params.CallerAddress) {
-			return errorsmod.Wrap(types.ErrCallerAddressUnauthorized, fmt.Sprintf("this caller not qualified to update %s", params.CallerAddress))
-		}
+		/*		if int64(avsInfo.Info.AvsUnbondingPeriod) < (epoch.CurrentEpoch - int64(avsInfo.GetInfo().StartingEpoch)) {
+				return errorsmod.Wrap(types.ErrUnbondingPeriod, fmt.Sprintf("not qualified to update %s", avsInfo))
+			}*/
 		avs := avsInfo.Info
 
 		if params.AvsName != "" {
@@ -244,7 +240,7 @@ func (k Keeper) OperatorOptAction(ctx sdk.Context, params *OperatorOptParams) er
 	}
 
 	if !k.operatorKeeper.IsOperator(ctx, opAccAddr) {
-		return errorsmod.Wrap(delegationtypes.ErrOperatorNotExist, fmt.Sprintf("AVSInfoUpdate: invalid operator address:%s", operatorAddress))
+		return errorsmod.Wrap(delegationtypes.ErrOperatorNotExist, fmt.Sprintf("UpdateAVSInfo: invalid operator address:%s", operatorAddress))
 	}
 
 	f, err := k.IsAVS(ctx, params.AvsAddress)

@@ -35,6 +35,7 @@ type HandlerOptions struct {
 	SigGasConsumer         func(meter sdk.GasMeter, sig signing.SignatureV2, params authtypes.Params) error
 	MaxTxGasWanted         uint64
 	TxFeeChecker           anteutils.TxFeeChecker
+	OracleKeeper           anteutils.OracleKeeper
 }
 
 // Validate checks if the keepers are defined
@@ -103,20 +104,20 @@ func newCosmosAnteHandler(options HandlerOptions) sdk.AnteHandler {
 		cosmosante.NewAuthzLimiterDecorator( // disable the Msg types that cannot be included on an authz.MsgExec msgs field
 			sdk.MsgTypeURL(&evmtypes.MsgEthereumTx{}),
 		),
-		ante.NewSetUpContextDecorator(),
+		cosmosante.NewSetUpContextDecorator(),
 		ante.NewExtensionOptionsDecorator(options.ExtensionOptionChecker),
 		ante.NewValidateBasicDecorator(),
 		ante.NewTxTimeoutHeightDecorator(),
 		ante.NewValidateMemoDecorator(options.AccountKeeper),
 		cosmosante.NewMinGasPriceDecorator(options.FeeMarketKeeper, options.EvmKeeper),
-		ante.NewConsumeGasForTxSizeDecorator(options.AccountKeeper),
+		cosmosante.NewConsumeGasForTxSizeDecorator(options.AccountKeeper),
 		cosmosante.NewDeductFeeDecorator(options.AccountKeeper, options.BankKeeper, options.DistributionKeeper, options.FeegrantKeeper, options.StakingKeeper, options.TxFeeChecker),
 		// SetPubKeyDecorator must be called before all signature verification decorators
 		cosmosante.NewSetPubKeyDecorator(options.AccountKeeper),
 		ante.NewValidateSigCountDecorator(options.AccountKeeper),
 		cosmosante.NewSigGasConsumeDecorator(options.AccountKeeper, options.SigGasConsumer),
 		cosmosante.NewSigVerificationDecorator(options.AccountKeeper, options.SignModeHandler),
-		cosmosante.NewIncrementSequenceDecorator(options.AccountKeeper),
+		cosmosante.NewIncrementSequenceDecorator(options.AccountKeeper, options.OracleKeeper),
 		ibcante.NewRedundantRelayDecorator(options.IBCKeeper),
 		evmante.NewGasWantedDecorator(options.EvmKeeper, options.FeeMarketKeeper),
 	)

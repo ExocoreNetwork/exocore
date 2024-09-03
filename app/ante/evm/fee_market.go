@@ -4,6 +4,7 @@ import (
 	"math/big"
 
 	errorsmod "cosmossdk.io/errors"
+	anteutils "github.com/ExocoreNetwork/exocore/app/ante/utils"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	errortypes "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/evmos/evmos/v14/types"
@@ -29,6 +30,9 @@ func NewGasWantedDecorator(
 }
 
 func (gwd GasWantedDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bool, next sdk.AnteHandler) (newCtx sdk.Context, err error) {
+	if anteutils.IsOracleCreatePriceTx(tx) {
+		return next(ctx, tx, simulate)
+	}
 	evmParams := gwd.evmKeeper.GetParams(ctx)
 	chainCfg := evmParams.GetChainConfig()
 	ethCfg := chainCfg.EthereumConfig(gwd.evmKeeper.ChainID())
