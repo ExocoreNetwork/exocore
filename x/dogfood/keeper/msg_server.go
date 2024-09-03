@@ -125,7 +125,7 @@ func (k Keeper) UpdateParams(
 		Action:            avskeeper.UpdateAction,
 	})
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(types.ErrUpdateAVSInfo, err.Error())
 	}
 	return &types.MsgUpdateParamsResponse{}, nil
 }
