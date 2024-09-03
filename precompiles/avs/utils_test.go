@@ -94,7 +94,7 @@ func (suite *AVSManagerPrecompileSuite) prepare() {
 }
 
 func (suite *AVSManagerPrecompileSuite) prepareAvs(assetIDs []string) {
-	err := suite.App.AVSManagerKeeper.AVSInfoUpdate(suite.Ctx, &avstypes.AVSRegisterOrDeregisterParams{
+	err := suite.App.AVSManagerKeeper.UpdateAVSInfo(suite.Ctx, &avstypes.AVSRegisterOrDeregisterParams{
 		Action:          avskeeper.RegisterAction,
 		EpochIdentifier: epochstypes.HourEpochID,
 		AvsAddress:      suite.avsAddr,
@@ -173,7 +173,6 @@ func (suite *AVSManagerPrecompileSuite) TestOptInList() {
 	suite.NoError(err)
 
 	suite.Contains(avsList, suite.avsAddr)
-
 }
 
 func (suite *AVSManagerPrecompileSuite) TestOptOut() {

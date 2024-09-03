@@ -125,6 +125,7 @@ func (p Precompile) AssociateOperatorWithStaker(
 	if !ok || staker == nil {
 		return nil, fmt.Errorf(exocmn.ErrContractInputParaOrType, 1, "[]byte", args[1])
 	}
+	// #nosec G115
 	if uint32(len(staker)) < clientChainAddrLength {
 		return nil, fmt.Errorf(exocmn.ErrInvalidAddrLength, len(staker), clientChainAddrLength)
 	}
@@ -176,6 +177,7 @@ func (p Precompile) DissociateOperatorFromStaker(
 	if !ok || staker == nil {
 		return nil, fmt.Errorf(exocmn.ErrContractInputParaOrType, 1, "[]byte", args[1])
 	}
+	// #nosec G115
 	if uint32(len(staker)) < clientChainAddrLength {
 		return nil, fmt.Errorf(exocmn.ErrInvalidAddrLength, len(staker), clientChainAddrLength)
 	}
