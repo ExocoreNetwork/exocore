@@ -28,26 +28,26 @@ func (suite *AVSTestSuite) TestOperator_pubkey() {
 	suite.NoError(err)
 	suite.Equal(publicKey.Marshal(), pub.PubKey)
 
-	taskRes := types.TaskResponse{TaskID: 1, NumberSum: big.NewInt(100)}
+	taskRes := types.TaskResponse{TaskID: 17, NumberSum: big.NewInt(1000)}
 
-	msg, _ := types.GetTaskResponseDigest(taskRes)
-	msgBytes := msg[:]
+	hashAbi, _ := types.GetTaskResponseDigestEncodeByAbi(taskRes)
+
+	msgBytes := hashAbi[:]
+	fmt.Println("ResHash:", hex.EncodeToString(msgBytes))
+
 	sig := privateKey.Sign(msgBytes)
 	fmt.Println("sig:", hex.EncodeToString(sig.Marshal()))
-	jsonData, err := types.MarshalTaskResponse(taskRes)
-	hash := crypto.Keccak256Hash(jsonData)
-	fmt.Println("res:", hex.EncodeToString(jsonData))
-	fmt.Println("hash:", hash.String())
-	sig1, _ := hex.DecodeString("af22f968871395eca62fdb91bc39c2d93569b50678ed73f00c3a6e054512bdc6cb73da7972c9553931aec25bce4973cf15227d2d596492642baaaf2ac1a1a9605b5cf1312fc1e3532aa43a22460e5ce7c081d643dce806f95f26a2df84bdfc66")
-	fmt.Println(sig1)
 
 	valid := sig.Verify(publicKey, msgBytes)
 	suite.True(valid)
 
-	valid1, _ := blst.VerifySignature(sig.Marshal(), msg, publicKey)
+	valid1, _ := blst.VerifySignature(sig.Marshal(), hashAbi, publicKey)
 	suite.NoError(err)
 
 	suite.True(valid1)
+
+	jsonData, err := types.MarshalTaskResponse(taskRes)
+	fmt.Println("jsondata:", hex.EncodeToString(jsonData))
 
 }
 

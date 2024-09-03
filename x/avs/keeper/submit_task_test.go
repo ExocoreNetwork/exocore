@@ -167,7 +167,7 @@ func (suite *AVSTestSuite) TestSubmitTask_OnlyPhaseOne() {
 	// pub, err := suite.App.AVSManagerKeeper.GetOperatorPubKey(suite.Ctx, suite.operatorAddr.String())
 	suite.NoError(err)
 
-	msg, _ := avstypes.GetTaskResponseDigest(taskRes)
+	msg, _ := avstypes.GetTaskResponseDigestEncodeByAbi(taskRes)
 	msgBytes := msg[:]
 	sig := suite.blsKey.Sign(msgBytes)
 
@@ -197,7 +197,7 @@ func (suite *AVSTestSuite) TestSubmitTask_OnlyPhaseTwo() {
 	// pub, err := suite.App.AVSManagerKeeper.GetOperatorPubKey(suite.Ctx, suite.operatorAddr.String())
 	suite.NoError(err)
 
-	msg, _ := avstypes.GetTaskResponseDigest(taskRes)
+	msg, _ := avstypes.GetTaskResponseDigestEncodeByAbi(taskRes)
 	msgBytes := msg[:]
 	sig := suite.blsKey.Sign(msgBytes)
 

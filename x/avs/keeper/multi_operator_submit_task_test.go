@@ -176,7 +176,7 @@ func (suite *AVSTestSuite) TestSubmitTask_OnlyPhaseOne_Mul() {
 	suite.prepareMul()
 	for index, operatorAddress := range suite.operatorAddresses {
 		taskRes := avstypes.TaskResponse{TaskID: 1, NumberSum: big.NewInt(100)}
-		msg, _ := avstypes.GetTaskResponseDigest(taskRes)
+		msg, _ := avstypes.GetTaskResponseDigestEncodeByAbi(taskRes)
 		msgBytes := msg[:]
 		sig := suite.blsKeys[index].Sign(msgBytes)
 
@@ -205,7 +205,7 @@ func (suite *AVSTestSuite) TestSubmitTask_OnlyPhaseTwo_Mul() {
 		hash := crypto.Keccak256Hash(jsonData)
 		// pub, err := suite.App.AVSManagerKeeper.GetOperatorPubKey(suite.Ctx, suite.operatorAddr.String())
 		suite.NoError(err)
-		msg, _ := avstypes.GetTaskResponseDigest(taskRes)
+		msg, _ := avstypes.GetTaskResponseDigestEncodeByAbi(taskRes)
 		msgBytes := msg[:]
 		sig := suite.blsKeys[index].Sign(msgBytes)
 

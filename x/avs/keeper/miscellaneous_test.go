@@ -5,43 +5,59 @@ import (
 	utiltx "github.com/ExocoreNetwork/exocore/testutil/tx"
 	"github.com/ExocoreNetwork/exocore/x/avs/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/ethereum/go-ethereum/accounts/abi"
-	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
+	"github.com/ethereum/go-ethereum/crypto"
 	"math/big"
 	"testing"
 )
 
-var (
-	structThing, _ = abi.NewType("tuple", "struct", []abi.ArgumentMarshaling{
-		{Name: "field_one", Type: "uint256"},
-		{Name: "field_two", Type: "address"},
-	})
-
-	args = abi.Arguments{
-		{Type: structThing, Name: "param_one"},
-	}
-)
-
 func TestReceiptMarshalBinary(t *testing.T) {
 
-	record := struct {
-		FieldOne *big.Int
-		FieldTwo common.Address
-	}{
-		big.NewInt(2e18),
-		common.HexToAddress("0x0002"),
+	task := types.TaskResponse{
+		TaskID:    10,
+		NumberSum: big.NewInt(1000),
 	}
 
-	packed, err := args.Pack(&record)
+	packed, err := types.Args.Pack(&task)
 	if err != nil {
 		fmt.Println("bad bad ", err)
 		return
 	} else {
 		fmt.Println("abi encoded", hexutil.Encode(packed))
 	}
-	b, _ := args.Unpack(packed)
-	fmt.Println("unpacked", b)
+
+	var args = make(map[string]interface{})
+
+	err = types.Args.UnpackIntoMap(args, packed)
+	result, _ := types.Args.Unpack(packed)
+	fmt.Println("unpacked", result[0])
+	hash := crypto.Keccak256Hash(packed)
+	fmt.Println("hash:", hash.String())
+
+	key := args["TaskResponse"]
+	fmt.Println("key", key)
+	for _, elem := range result {
+		switch v := elem.(type) {
+		case uint64:
+			fmt.Println("Found uint64:", v)
+		case *big.Int:
+			fmt.Println("Found *big.Int:", v)
+		case *types.TaskResponse:
+			fmt.Println("types.TaskResponse type found")
+		default:
+			fmt.Println("Unknown type found")
+		}
+	}
+	taskNew, _ := result[0].(*types.TaskResponse)
+	fmt.Println("hash:", taskNew)
+
+	var taskResponse types.TaskResponse
+
+	if err := types.Args.Copy(&taskResponse, result); err != nil {
+		fmt.Println("unpacked", result)
+	}
+	fmt.Println("taskResponse", taskResponse)
+
 }
 
 func Test_difference(t *testing.T) {

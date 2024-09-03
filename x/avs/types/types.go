@@ -1,7 +1,10 @@
 package types
 
 import (
+	"encoding/hex"
 	"encoding/json"
+	"fmt"
+	"github.com/ethereum/go-ethereum/accounts/abi"
 	"math/big"
 	"strings"
 
@@ -72,6 +75,17 @@ type AVSRegisterOrDeregisterParams struct {
 	Action        uint64
 }
 
+var (
+	taskResponseType, _ = abi.NewType("tuple", "struct", []abi.ArgumentMarshaling{
+		{Name: "TaskID", Type: "uint64"},
+		{Name: "NumberSum", Type: "uint256"},
+	})
+
+	Args = abi.Arguments{
+		{Type: taskResponseType, Name: "TaskResponse"},
+	}
+)
+
 // ChainIDWithoutRevision returns the chainID without the revision number.
 // For example, "exocoretestnet_233-1" returns "exocoretestnet_233".
 func ChainIDWithoutRevision(chainID string) string {
@@ -100,7 +114,7 @@ type TaskResponse struct {
 	NumberSum *big.Int
 }
 
-// GetTaskResponseDigest returns the hash of the TaskResponse, which is what operators sign over
+// GetTaskResponseDigestEncodeByjson returns the hash of the TaskResponse, which is what operators sign over
 // MarshalTaskResponse marshals the TaskResponse struct into JSON bytes.
 func MarshalTaskResponse(h TaskResponse) ([]byte, error) {
 	return json.Marshal(h)
@@ -113,14 +127,25 @@ func UnmarshalTaskResponse(jsonData []byte) (TaskResponse, error) {
 	return taskResponse, err
 }
 
-// GetTaskResponseDigest returns the hash of the TaskResponse, which is what operators sign over.
-func GetTaskResponseDigest(h TaskResponse) ([32]byte, error) {
+// GetTaskResponseDigestEncodeByjson returns the hash of the TaskResponse, which is what operators sign over.
+func GetTaskResponseDigestEncodeByjson(h TaskResponse) ([32]byte, error) {
 	jsonData, err := MarshalTaskResponse(h)
 	if err != nil {
 		return [32]byte{}, err
 	}
 	taskResponseDigest := crypto.Keccak256Hash(jsonData)
 	return taskResponseDigest, nil
+}
+
+// GetTaskResponseDigestEncodeByAbi returns the hash of the TaskResponse, which is what operators sign over.
+func GetTaskResponseDigestEncodeByAbi(h TaskResponse) ([32]byte, error) {
+	packed, err := Args.Pack(&h)
+	if err != nil {
+		return [32]byte{}, err
+	}
+	fmt.Println("Res:", hex.EncodeToString(packed))
+	hashAbi := crypto.Keccak256Hash(packed)
+	return hashAbi, nil
 }
 
 func Difference(a, b []string) []string {

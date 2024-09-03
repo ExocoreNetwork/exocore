@@ -84,6 +84,12 @@ func (wrapper EpochsHooksWrapper) AfterEpochEnd(
 			// Calculate actual threshold
 			taskPowerTotal, err := wrapper.keeper.operatorKeeper.GetAVSUSDValue(ctx, avsAddr)
 
+			if err != nil || taskPowerTotal.IsZero() || operatorPowerTotal.IsZero() {
+				ctx.Logger().Error("Failed to update task result statistics", "task result", taskAddr, "error", err)
+				// Handle the error gracefully, continue to the next
+				continue
+			}
+
 			actualThreshold := taskPowerTotal.Quo(operatorPowerTotal).Mul(sdk.NewDec(100))
 			if err != nil {
 				ctx.Logger().Error("Failed to update task result statistics", "task result", taskAddr, "error", err)

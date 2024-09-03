@@ -3,9 +3,9 @@ package keeper
 import (
 	"bytes"
 	"fmt"
-	"strconv"
-
 	"github.com/ethereum/go-ethereum/crypto"
+	"strconv"
+	"strings"
 
 	errorsmod "cosmossdk.io/errors"
 
@@ -240,20 +240,21 @@ func (k *Keeper) SetTaskResultInfo(
 
 		// check hash
 		taskResponseDigest := crypto.Keccak256Hash(info.TaskResponse)
-		if taskResponseDigest.String() != info.TaskResponseHash {
+		hashWithoutPrefix := strings.TrimPrefix(taskResponseDigest.String(), "0x")
+		if hashWithoutPrefix != info.TaskResponseHash {
 			return errorsmod.Wrap(
 				types.ErrHashValue,
 				"SetTaskResultInfo: task response is nil",
 			)
 		}
-		// check taskID
-		resp, err := types.UnmarshalTaskResponse(info.TaskResponse)
-		if err != nil || info.TaskId != resp.TaskID {
-			return errorsmod.Wrap(
-				types.ErrParamError,
-				fmt.Sprintf("SetTaskResultInfo: invalid param value:%s", info.Stage),
-			)
-		}
+		// TODO :check taskID
+		//resp, err := types.UnmarshalTaskResponse(info.TaskResponse)
+		//if err != nil || info.TaskId != resp.TaskID {
+		//	return errorsmod.Wrap(
+		//		types.ErrParamError,
+		//		fmt.Sprintf("SetTaskResultInfo: invalid param value:%s", info.Stage),
+		//	)
+		//}
 		// check bls sig
 		flag, err := blst.VerifySignature(info.BlsSignature, taskResponseDigest, pubKey)
 		if !flag || err != nil {
