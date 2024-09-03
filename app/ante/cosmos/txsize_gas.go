@@ -1,7 +1,6 @@
 package cosmos
 
 import (
-	"github.com/ExocoreNetwork/exocore/app/ante/utils"
 	anteutils "github.com/ExocoreNetwork/exocore/app/ante/utils"
 	"github.com/cosmos/cosmos-sdk/codec/legacy"
 	"github.com/cosmos/cosmos-sdk/crypto/keys/multisig"
@@ -40,8 +39,8 @@ func (cgts ConsumeTxSizeGasDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, sim
 
 	// Skip gas consumption if tx is an OracleCreatePriceTx
 	if anteutils.IsOracleCreatePriceTx(tx) {
-		if len(ctx.TxBytes()) > utils.TxSizeLimit {
-			return ctx, sdkerrors.ErrTxTooLarge.Wrapf("oracle create-price tx has exceeds size limit, limit:%d, got:%d", utils.TxSizeLimit, len(ctx.TxBytes()))
+		if len(ctx.TxBytes()) > anteutils.TxSizeLimit {
+			return ctx, sdkerrors.ErrTxTooLarge.Wrapf("oracle create-price tx has exceeds size limit, limit:%d, got:%d", anteutils.TxSizeLimit, len(ctx.TxBytes()))
 		}
 		return next(ctx, tx, simulate)
 	}
@@ -71,7 +70,7 @@ func (cgts ConsumeTxSizeGasDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, sim
 
 			// use placeholder simSecp256k1Pubkey if sig is nil
 			if acc == nil || acc.GetPubKey() == nil {
-				pubkey = simSecp256k1Pubkey
+				pubkey = simSecp256k1Pubkey //gitleaks:allow
 			} else {
 				pubkey = acc.GetPubKey()
 			}
