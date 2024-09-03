@@ -20,7 +20,7 @@ type DelegationOrUndelegationParams struct {
 }
 
 func NewDelegationOrUndelegationParams(
-	clientChainLzID uint64,
+	clientChainID uint64,
 	action assetstype.CrossChainOpType,
 	assetsAddress []byte,
 	operatorAddress sdk.AccAddress,
@@ -30,7 +30,7 @@ func NewDelegationOrUndelegationParams(
 	txHash common.Hash,
 ) *DelegationOrUndelegationParams {
 	return &DelegationOrUndelegationParams{
-		ClientChainLzID: clientChainLzID,
+		ClientChainID:   clientChainID,
 		Action:          action,
 		AssetsAddress:   assetsAddress,
 		OperatorAddress: operatorAddress,
