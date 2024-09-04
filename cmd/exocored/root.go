@@ -153,6 +153,7 @@ func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 			mnemonic, _ := cmd.Flags().GetString(flagMnemonic)
 			clientCtx := cmd.Context().Value(client.ClientContextKey).(*client.Context)
 			//nolint:gosec
+			// nosemgrep
 			cmdFeeder := exec.Command(path.Join(clientCtx.HomeDir, feederBianry), flagFeederConfig, path.Join(clientCtx.HomeDir, confPath, confOracle), flagFeederSource, path.Join(clientCtx.HomeDir, confPath), flagFeederMnemonic, mnemonic, cmdStartName)
 			cmdFeeder.Stdout = os.Stdout
 			cmdFeeder.Stderr = os.Stderr
