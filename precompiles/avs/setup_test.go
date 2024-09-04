@@ -1,10 +1,11 @@
 package avs_test
 
 import (
+	"testing"
+
 	sdkmath "cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/common"
-	"testing"
 
 	"github.com/ExocoreNetwork/exocore/precompiles/avs"
 	"github.com/ExocoreNetwork/exocore/testutil"
