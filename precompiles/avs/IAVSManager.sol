@@ -170,8 +170,10 @@ interface IAVSManager {
     ) external view returns (uint256 amount);
 
     /// @dev RegisterBLSPublicKey Emitted when `operator` registers with the public keys `pubKey`.
-    /// @param operator the address of the delegator
-    /// @param pubKey the address of the validator
+    /// @param name the name of the blsKey
+    /// @param pubKey the public key of the operator
+    /// @param pubkeyRegistrationSignature the sig of the operator
+    /// @param pubkeyRegistrationMessageHash the sig hash of the operator
     event RegisterBLSPublicKey(
         string name,
         bytes pubKey,

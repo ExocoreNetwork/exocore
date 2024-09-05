@@ -1,3 +1,4 @@
+//nolint:dupl
 package cli
 
 import (
@@ -169,7 +170,7 @@ func QueryChallengeInfo() *cobra.Command {
 		Args:    cobra.ExactArgs(3),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if !common.IsHexAddress(args[0]) {
-				return xerrors.Errorf("invalid task  address,err:%s", types.ErrInvalidAddr)
+				return xerrors.Errorf("invalid address,err:%s", types.ErrInvalidAddr)
 			}
 			clientCtx, err := client.GetClientQueryContext(cmd)
 			if err != nil {

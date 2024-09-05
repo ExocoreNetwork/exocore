@@ -4,9 +4,10 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"github.com/ethereum/go-ethereum/accounts/abi"
 	"math/big"
 	"strings"
+
+	"github.com/ethereum/go-ethereum/accounts/abi"
 
 	ibcclienttypes "github.com/cosmos/ibc-go/v7/modules/core/02-client/types"
 	"github.com/ethereum/go-ethereum/common"

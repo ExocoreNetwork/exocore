@@ -3,9 +3,10 @@ package keeper
 import (
 	"bytes"
 	"fmt"
-	"github.com/ethereum/go-ethereum/crypto"
 	"strconv"
 	"strings"
+
+	"github.com/ethereum/go-ethereum/crypto"
 
 	errorsmod "cosmossdk.io/errors"
 
@@ -185,6 +186,13 @@ func (k *Keeper) SetTaskResultInfo(
 					info.OperatorAddress, info.TaskContractAddress, info.TaskId),
 			)
 		}
+		// check parameters
+		if info.BlsSignature == nil {
+			return errorsmod.Wrap(
+				types.ErrInconsistentParams,
+				fmt.Sprintf("SetTaskResultInfo: invalid param BlsSignature is not be null (BlsSignature: %s)", info.BlsSignature),
+			)
+		}
 		if info.TaskResponseHash != "" || info.TaskResponse != nil {
 			return errorsmod.Wrap(
 				types.ErrParamNotEmptyError,
@@ -218,9 +226,7 @@ func (k *Keeper) SetTaskResultInfo(
 		}
 		// check parameters
 		res, err := k.GetTaskResultInfo(ctx, info.OperatorAddress, info.TaskContractAddress, info.TaskId)
-		if err != nil || res.OperatorAddress != info.OperatorAddress ||
-			res.TaskContractAddress != info.TaskContractAddress ||
-			res.TaskId != info.TaskId || !bytes.Equal(res.BlsSignature, info.BlsSignature) {
+		if err != nil || !bytes.Equal(res.BlsSignature, info.BlsSignature) {
 			return errorsmod.Wrap(
 				types.ErrInconsistentParams,
 				fmt.Sprintf("SetTaskResultInfo: invalid param OperatorAddress: %s ,(TaskContractAddress: %s)"+
@@ -248,8 +254,8 @@ func (k *Keeper) SetTaskResultInfo(
 			)
 		}
 		// TODO :check taskID
-		//resp, err := types.UnmarshalTaskResponse(info.TaskResponse)
-		//if err != nil || info.TaskId != resp.TaskID {
+		// resp, err := types.UnmarshalTaskResponse(info.TaskResponse)
+		// 	if err != nil || info.TaskId != resp.TaskID {
 		//	return errorsmod.Wrap(
 		//		types.ErrParamError,
 		//		fmt.Sprintf("SetTaskResultInfo: invalid param value:%s", info.Stage),

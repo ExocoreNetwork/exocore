@@ -104,6 +104,7 @@ func (k *Keeper) GetTaskStatisticalEpochEndAVSs(ctx sdk.Context, epochIdentifier
 		// Determine if the statistical period has passed, the range of the statistical period is the num marked (StartingEpoch) add TaskStatisticalPeriod
 		// #nosec G115
 		if epochIdentifier == avsInfo.EpochIdentifier && epochNumber ==
+			// #nosec G115
 			int64(taskInfo.StartingEpoch)+int64(taskInfo.TaskResponsePeriod)+int64(taskInfo.TaskStatisticalPeriod) {
 			taskResList = append(taskResList, info)
 		}
