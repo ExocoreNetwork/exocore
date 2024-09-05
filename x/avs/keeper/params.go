@@ -99,5 +99,5 @@ type ChallengeParams struct {
 	TaskID              uint64         `json:"task_id"`
 	OperatorAddress     sdk.AccAddress `json:"operator_address"`
 	TaskResponseHash    []byte         `json:"task_response_hash"`
-	CallerAddress       common.Address `json:"caller_address"`
+	CallerAddress       string         `json:"caller_address"`
 }

@@ -236,8 +236,13 @@ func (k *Keeper) SetTaskResultInfo(
 		}
 		//  check epoch，The second stage submission must be within the statistical window period
 		// #nosec G115
-		if epoch.CurrentEpoch <= int64(task.StartingEpoch)+int64(task.TaskResponsePeriod) ||
-			epoch.CurrentEpoch > int64(task.StartingEpoch)+int64(task.TaskResponsePeriod)+int64(task.TaskStatisticalPeriod) {
+		if epoch.CurrentEpoch <= int64(task.StartingEpoch)+int64(task.TaskResponsePeriod) {
+			return errorsmod.Wrap(
+				types.ErrSubmitTooLateError,
+				fmt.Sprintf("SetTaskResultInfo:the TaskResponse period has not started , CurrentEpoch:%d", epoch.CurrentEpoch),
+			)
+		}
+		if epoch.CurrentEpoch > int64(task.StartingEpoch)+int64(task.TaskResponsePeriod)+int64(task.TaskStatisticalPeriod) {
 			return errorsmod.Wrap(
 				types.ErrSubmitTooLateError,
 				fmt.Sprintf("SetTaskResultInfo:submit  too late, CurrentEpoch:%d", epoch.CurrentEpoch),
@@ -344,14 +349,19 @@ func (k Keeper) GroupTasksByIDAndAddress(tasks []types.TaskResultInfo) map[strin
 
 // SetTaskChallengedInfo is used to store the challenger's challenge information.
 func (k *Keeper) SetTaskChallengedInfo(
-	ctx sdk.Context, taskID uint64, operatorAddress string,
-	taskAddr, challengeAddr common.Address,
+	ctx sdk.Context, taskID uint64, operatorAddress, challengeAddr string,
+	taskAddr common.Address,
 ) (err error) {
 	infoKey := assetstype.GetJoinedStoreKey(operatorAddress, taskAddr.String(),
 		strconv.FormatUint(taskID, 10))
 
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefixTaskChallengeResult)
-	store.Set(infoKey, challengeAddr.Bytes())
+	key, err := sdk.AccAddressFromBech32(challengeAddr)
+	if err != nil {
+		return err
+	}
+	store.Set(infoKey, key)
+
 	return nil
 }
 

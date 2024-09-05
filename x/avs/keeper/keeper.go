@@ -383,18 +383,18 @@ func (k Keeper) RaiseAndResolveChallenge(ctx sdk.Context, params *ChallengeParam
 		return errorsmod.Wrap(types.ErrEpochNotFound, fmt.Sprintf("epoch info not found %s",
 			avsInfo.EpochIdentifier))
 	}
-	if epoch.CurrentEpoch <= int64(taskInfo.StartingEpoch)+int64(taskInfo.TaskResponsePeriod)+int64(taskInfo.TaskStatisticalPeriod) { //nolint:gosec
+	if epoch.CurrentEpoch <= int64(taskInfo.StartingEpoch)+int64(taskInfo.TaskResponsePeriod)+int64(taskInfo.TaskStatisticalPeriod) {
 		return errorsmod.Wrap(
 			types.ErrSubmitTooLateError,
 			fmt.Sprintf("SetTaskResultInfo:the challenge period has not started , CurrentEpoch:%d", epoch.CurrentEpoch),
 		)
 	}
-	if epoch.CurrentEpoch > int64(taskInfo.StartingEpoch)+int64(taskInfo.TaskResponsePeriod)+int64(taskInfo.TaskStatisticalPeriod)+int64(taskInfo.TaskChallengePeriod) { //nolint:gosec
+	if epoch.CurrentEpoch > int64(taskInfo.StartingEpoch)+int64(taskInfo.TaskResponsePeriod)+int64(taskInfo.TaskStatisticalPeriod)+int64(taskInfo.TaskChallengePeriod) {
 		return errorsmod.Wrap(
 			types.ErrSubmitTooLateError,
 			fmt.Sprintf("SetTaskResultInfo:submit  too late, CurrentEpoch:%d", epoch.CurrentEpoch),
 		)
 	}
-	return k.SetTaskChallengedInfo(ctx, params.TaskID, params.OperatorAddress.String(),
-		params.TaskContractAddress, params.CallerAddress)
+	return k.SetTaskChallengedInfo(ctx, params.TaskID, params.OperatorAddress.String(), params.CallerAddress,
+		params.TaskContractAddress)
 }

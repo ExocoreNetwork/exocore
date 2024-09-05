@@ -175,12 +175,6 @@
 		"anonymous": false,
 		"inputs": [
 			{
-				"indexed": true,
-				"internalType": "string",
-				"name": "operator",
-				"type": "string"
-			},
-			{
 				"indexed": false,
 				"internalType": "string",
 				"name": "name",
@@ -346,6 +340,11 @@
 	{
 		"inputs": [
 			{
+				"internalType": "address",
+				"name": "sender",
+				"type": "address"
+			},
+			{
 				"internalType": "bytes",
 				"name": "taskHash",
 				"type": "bytes"
@@ -379,6 +378,11 @@
 	},
 	{
 		"inputs": [
+			{
+				"internalType": "address",
+				"name": "sender",
+				"type": "address"
+			},
 			{
 				"internalType": "string",
 				"name": "name",
@@ -424,6 +428,11 @@
 	{
 		"inputs": [
 			{
+				"internalType": "address",
+				"name": "sender",
+				"type": "address"
+			},
+			{
 				"internalType": "string",
 				"name": "avsName",
 				"type": "string"
@@ -442,7 +451,11 @@
 	},
 	{
 		"inputs": [
-
+			{
+				"internalType": "address",
+				"name": "sender",
+				"type": "address"
+			}
 		],
 		"name": "deregisterOperatorFromAVS",
 		"outputs": [
@@ -539,6 +552,11 @@
 	{
 		"inputs": [
 			{
+				"internalType": "address",
+				"name": "sender",
+				"type": "address"
+			},
+			{
 				"internalType": "string",
 				"name": "avsName",
 				"type": "string"
@@ -608,9 +626,9 @@
 	{
 		"inputs": [
 			{
-				"internalType": "string",
-				"name": "operator",
-				"type": "string"
+				"internalType": "address",
+				"name": "sender",
+				"type": "address"
 			},
 			{
 				"internalType": "string",
@@ -646,7 +664,11 @@
 	},
 	{
 		"inputs": [
-
+			{
+				"internalType": "address",
+				"name": "sender",
+				"type": "address"
+			}
 		],
 		"name": "registerOperatorToAVS",
 		"outputs": [
@@ -700,6 +722,11 @@
 	},
 	{
 		"inputs": [
+			{
+				"internalType": "address",
+				"name": "sender",
+				"type": "address"
+			},
 			{
 				"internalType": "string",
 				"name": "avsName",
