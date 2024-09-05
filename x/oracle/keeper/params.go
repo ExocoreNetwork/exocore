@@ -83,7 +83,7 @@ func (k Keeper) RegisterNewTokenAndSetTokenFeeder(ctx sdk.Context, oInfo *types.
 		Name:            oInfo.Token.Name,
 		ChainID:         chainID,
 		ContractAddress: oInfo.Token.Contract,
-		Decimal:         int32(decimalInt),
+		Decimal:         int32(decimalInt), // #nosec G115
 		Active:          true,
 		AssetID:         oInfo.AssetID,
 	})
