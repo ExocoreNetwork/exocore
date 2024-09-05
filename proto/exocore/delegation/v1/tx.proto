@@ -109,8 +109,9 @@ message DelegationResponse {}
 
 // MsgUndelegation is the undelegation Msg.
 message MsgUndelegation {
-  // base_info is the delegation increase or decrease request container.
+  // asset_id is the identity of the asset.
   string asset_id = 1 [(gogoproto.customname) = "AssetID"];
+  // base_info is the delegation increase or decrease request container.
   DelegationIncOrDecInfo base_info = 2;
 }
 
