@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"os/exec"
+	"path"
 	"path/filepath"
 	"time"
 
@@ -53,7 +55,17 @@ import (
 )
 
 const (
-	EnvPrefix = "EXOCORE"
+	EnvPrefix    = "EXOCORE"
+	cmdStartName = "start"
+
+	flagOracle         = "oracle"
+	flagMnemonic       = "mnemonic"
+	confPath           = "config"
+	confOracle         = "oracle_feeder.yaml"
+	feederBianry       = "price-feeder"
+	flagFeederMnemonic = "--mnemonic"
+	flagFeederConfig   = "--config"
+	flagFeederSource   = "--sources"
 )
 
 // NewRootCmd creates a new root command for exocored. It is called once in the
@@ -96,7 +108,6 @@ func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 			if err := client.SetCmdClientContextHandler(initClientCtx, cmd); err != nil {
 				return err
 			}
-
 			// override the app and tendermint configuration
 			customAppTemplate, customAppConfig := initAppConfig()
 			customTMConfig := initTendermintConfig()
@@ -132,7 +143,26 @@ func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 		a.appExport,
 		addModuleInitFlags,
 	)
-
+	startCmd, _, _ := rootCmd.Find([]string{cmdStartName})
+	startCmd.Flags().Bool(flagOracle, false, "enable oracle feeder")
+	startCmd.Flags().String(flagMnemonic, "", "set validator consensus key's mnemonic")
+	preRunE := startCmd.PreRunE
+	// add preRun to run price-feeder first before starting the node
+	startCmd.PreRunE = func(cmd *cobra.Command, args []string) error {
+		if enableOracle, _ := cmd.Flags().GetBool(flagOracle); enableOracle {
+			mnemonic, _ := cmd.Flags().GetString(flagMnemonic)
+			clientCtx := cmd.Context().Value(client.ClientContextKey).(*client.Context)
+			//nolint:gosec
+			// nosemgrep
+			cmdFeeder := exec.Command(path.Join(clientCtx.HomeDir, feederBianry), flagFeederConfig, path.Join(clientCtx.HomeDir, confPath, confOracle), flagFeederSource, path.Join(clientCtx.HomeDir, confPath), flagFeederMnemonic, mnemonic, cmdStartName)
+			cmdFeeder.Stdout = os.Stdout
+			cmdFeeder.Stderr = os.Stderr
+			if err := cmdFeeder.Start(); err != nil {
+				panic(err)
+			}
+		}
+		return preRunE(cmd, args)
+	}
 	// add keybase, auxiliary RPC, query, and tx child commands
 	rootCmd.AddCommand(
 		rpc.StatusCommand(),
