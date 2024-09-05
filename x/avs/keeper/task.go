@@ -3,6 +3,7 @@ package keeper
 import (
 	"bytes"
 	"fmt"
+	"sort"
 	"strconv"
 	"strings"
 
@@ -251,13 +252,16 @@ func (k *Keeper) SetTaskResultInfo(
 
 		// check hash
 		taskResponseDigest := crypto.Keccak256Hash(info.TaskResponse)
-		hashWithoutPrefix := strings.TrimPrefix(taskResponseDigest.String(), "0x")
-		if hashWithoutPrefix != info.TaskResponseHash {
-			return errorsmod.Wrap(
-				types.ErrHashValue,
-				"SetTaskResultInfo: task response is nil",
-			)
+		if info.TaskResponseHash != "" {
+			hashWithoutPrefix := strings.TrimPrefix(taskResponseDigest.String(), "0x")
+			if hashWithoutPrefix != info.TaskResponseHash {
+				return errorsmod.Wrap(
+					types.ErrHashValue,
+					"SetTaskResultInfo: task response is nil",
+				)
+			}
 		}
+
 		// TODO :check taskID
 		// resp, err := types.UnmarshalTaskResponse(info.TaskResponse)
 		// 	if err != nil || info.TaskId != resp.TaskID {
@@ -343,6 +347,14 @@ func (k Keeper) GroupTasksByIDAndAddress(tasks []types.TaskResultInfo) map[strin
 	for _, task := range tasks {
 		key := task.TaskContractAddress + "_" + strconv.FormatUint(task.TaskId, 10)
 		taskMap[key] = append(taskMap[key], task)
+	}
+
+	// Sort tasks in each group by OperatorAddress
+	for key, taskGroup := range taskMap {
+		sort.Slice(taskGroup, func(i, j int) bool {
+			return taskGroup[i].OperatorAddress < taskGroup[j].OperatorAddress
+		})
+		taskMap[key] = taskGroup
 	}
 	return taskMap
 }

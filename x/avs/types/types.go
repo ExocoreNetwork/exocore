@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"math/big"
+	"sort"
 	"strings"
 
 	"github.com/ethereum/go-ethereum/accounts/abi"
@@ -168,16 +169,13 @@ func Difference(a, b []string) []string {
 		}
 	}
 
-	// Calculate the final size for the different slice
-	finalSize := len(different) + len(diffMap)
-
-	// Pre-allocate the different slice with the final size
-	different = make([]string, 0, finalSize)
-
 	// Add remaining elements from the map to different
 	for item := range diffMap {
 		different = append(different, item)
 	}
+
+	// Sort the different slice
+	sort.Strings(different)
 
 	return different
 }

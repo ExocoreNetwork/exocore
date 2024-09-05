@@ -32,7 +32,7 @@ func (wrapper EpochsHooksWrapper) AfterEpochEnd(
 	// get all the task info bypass the epoch end
 	// threshold calculation, signature verification, nosig quantity statistics
 	taskResList := wrapper.keeper.GetTaskStatisticalEpochEndAVSs(ctx, epochIdentifier, epochNumber)
-
+	// TODO:There should be a retry mechanism or compensation mechanism to handle cases of failure
 	if len(taskResList) != 0 {
 		groupedTasks := wrapper.keeper.GroupTasksByIDAndAddress(taskResList)
 		for _, value := range groupedTasks {
@@ -58,7 +58,7 @@ func (wrapper EpochsHooksWrapper) AfterEpochEnd(
 					}
 					power, err := wrapper.keeper.operatorKeeper.GetOperatorOptedUSDValue(ctx, avsAddr, res.OperatorAddress)
 					if err != nil || power.ActiveUSDValue.IsNegative() {
-						ctx.Logger().Error("Failed to update task result statistics", "task result", taskAddr, "error", err)
+						ctx.Logger().Error("Failed to update task result statistics,GetOperatorOptedUSDValue call failed!", "task result", taskAddr, "error", err)
 						// Handle the error gracefully, continue to the next
 						continue
 					}
@@ -73,7 +73,7 @@ func (wrapper EpochsHooksWrapper) AfterEpochEnd(
 			}
 			taskInfo, err := wrapper.keeper.GetTaskInfo(ctx, strconv.FormatUint(taskID, 10), taskAddr)
 			if err != nil {
-				ctx.Logger().Error("Failed to update task result statistics", "task result", taskAddr, "error", err)
+				ctx.Logger().Error("Failed to update task result statistics,GetTaskInfo call failed!", "task result", taskAddr, "error", err)
 				// Handle the error gracefully, continue to the next
 				continue
 			}
@@ -85,14 +85,14 @@ func (wrapper EpochsHooksWrapper) AfterEpochEnd(
 			taskPowerTotal, err := wrapper.keeper.operatorKeeper.GetAVSUSDValue(ctx, avsAddr)
 
 			if err != nil || taskPowerTotal.IsZero() || operatorPowerTotal.IsZero() {
-				ctx.Logger().Error("Failed to update task result statistics", "task result", taskAddr, "error", err)
+				ctx.Logger().Error("Failed to update task result statistics,GetAVSUSDValue call failed!", "task result", taskAddr, "error", err)
 				// Handle the error gracefully, continue to the next
 				continue
 			}
 
 			actualThreshold := taskPowerTotal.Quo(operatorPowerTotal).Mul(sdk.NewDec(100))
 			if err != nil {
-				ctx.Logger().Error("Failed to update task result statistics", "task result", taskAddr, "error", err)
+				ctx.Logger().Error("Failed to update task result statistics,Calculation of actualThreshold ratio failed!", "task result", taskAddr, "error", err)
 				// Handle the error gracefully, continue to the next
 				continue
 			}
@@ -102,7 +102,7 @@ func (wrapper EpochsHooksWrapper) AfterEpochEnd(
 			// Update the taskInfo in the state
 			err = wrapper.keeper.SetTaskInfo(ctx, taskInfo)
 			if err != nil {
-				ctx.Logger().Error("Failed to update task result statistics", "task result", taskAddr, "error", err)
+				ctx.Logger().Error("Failed to update task result statistics,SetTaskInfo call failed!", "task result", taskAddr, "error", err)
 				// Handle the error gracefully, continue to the next
 				continue
 			}
