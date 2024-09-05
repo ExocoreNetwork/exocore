@@ -39,7 +39,7 @@ func (k *Keeper) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.Valida
 			}*/
 
 		recordID := types.GetUndelegationRecordKey(record.BlockNumber, record.LzTxNonce, record.TxHash, record.OperatorAddr)
-		if tmp := k.GetUndelegationHoldCount(ctx, recordID); tmp > 0 {
+		if k.GetUndelegationHoldCount(ctx, recordID) > 0 {
 			// store it again with the next block and move on
 			// #nosec G701
 			record.CompleteBlockNumber = uint64(ctx.BlockHeight()) + 1
