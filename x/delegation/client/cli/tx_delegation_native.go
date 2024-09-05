@@ -16,9 +16,9 @@ import (
 func CmdDelegate() *cobra.Command {
 	cmd := &cobra.Command{
 		// TODO: only support native token for now
-		Use:   "delegate asset-id operator amount approve-signature, approve-salt",
+		Use:   "delegate asset-id operator amount",
 		Short: "Broadcast a transaction to delegate amount of native token to the operator",
-		Args:  cobra.MinimumNArgs(3),
+		Args:  cobra.ExactArgs(3),
 		RunE: func(cmd *cobra.Command, args []string) (err error) {
 			clientCtx, err := client.GetClientTxContext(cmd)
 			if err != nil {
@@ -43,7 +43,7 @@ func CmdUndelegate() *cobra.Command {
 		// TODO: only support native token for now
 		Use:   "undelegate asset-id operator amount",
 		Short: "Broadcast a transaction to undelegate amount of native token from the operator",
-		Args:  cobra.MinimumNArgs(3),
+		Args:  cobra.ExactArgs(3),
 		RunE: func(cmd *cobra.Command, args []string) (err error) {
 			clientCtx, err := client.GetClientTxContext(cmd)
 			if err != nil {
@@ -66,8 +66,8 @@ func CmdUndelegate() *cobra.Command {
 }
 
 func parseArgs(args []string) (string, string, sdkmath.Int, error) {
-	if len(args) < 3 {
-		return "", "", sdkmath.ZeroInt(), errors.New("not enough arguments")
+	if len(args) != 3 {
+		return "", "", sdkmath.ZeroInt(), errors.New("3 arguments needed")
 	}
 
 	assetID := args[0]

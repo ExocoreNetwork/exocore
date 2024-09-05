@@ -78,11 +78,11 @@ func (k Keeper) GetStakerSpecifiedAssetInfo(ctx sdk.Context, stakerID string, as
 	if assetID == assetstype.NativeAssetID {
 		stakerAddrStr, _, err := assetstype.ParseID(stakerID)
 		if err != nil {
-			return nil, err
+			return nil, errorsmod.Wrap(err, "failed to parse stakerID")
 		}
 		stakerAccDecode, err := hexutil.Decode(stakerAddrStr)
 		if err != nil {
-			return nil, err
+			return nil, errorsmod.Wrap(err, "failed to decode staker address")
 		}
 		stakerAcc := sdk.AccAddress(stakerAccDecode)
 		balance := k.bk.GetBalance(ctx, stakerAcc, assetstype.NativeAssetDenom)
@@ -94,16 +94,16 @@ func (k Keeper) GetStakerSpecifiedAssetInfo(ctx sdk.Context, stakerID string, as
 
 		delegationInfoRecords, err := k.dk.GetDelegationInfo(ctx, stakerID, assetID)
 		if err != nil {
-			return nil, err
+			return nil, errorsmod.Wrap(err, "failed to GetDelegationInfo")
 		}
 		for operator, record := range delegationInfoRecords.DelegationInfos {
 			operatorAssetInfo, err := k.GetOperatorSpecifiedAssetInfo(ctx, sdk.MustAccAddressFromBech32(operator), assetID)
 			if err != nil {
-				return nil, err
+				return nil, errorsmod.Wrap(err, "failed to GetOperatorSpecifiedAssetInfo")
 			}
 			undelegatableTokens, err := delegationkeeper.TokensFromShares(record.UndelegatableShare, operatorAssetInfo.TotalShare, operatorAssetInfo.TotalAmount)
 			if err != nil {
-				return nil, err
+				return nil, errorsmod.Wrap(err, "failed to get shares from token")
 			}
 			info.TotalDepositAmount = info.TotalDepositAmount.Add(undelegatableTokens).Add(record.WaitUndelegationAmount)
 			info.WaitUnbondingAmount = info.WaitUnbondingAmount.Add(record.WaitUndelegationAmount)
