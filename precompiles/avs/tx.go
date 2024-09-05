@@ -106,6 +106,14 @@ func (p Precompile) UpdateAVS(
 	avsParams.AvsAddress = contract.CallerAddress.String()
 	avsParams.CallerAddress = sdk.AccAddress(origin[:]).String()
 	avsParams.Action = avskeeper.UpdateAction
+	previousAVSInfo, err := p.avsKeeper.GetAVSInfo(ctx, avsParams.AvsAddress)
+	if err != nil {
+		return nil, err
+	}
+	// If avs UpdateAction check CallerAddress
+	if !slices.Contains(previousAVSInfo.Info.AvsOwnerAddress, avsParams.CallerAddress) {
+		return nil, fmt.Errorf("this caller not qualified to update %s", avsParams.CallerAddress)
+	}
 	err = p.avsKeeper.UpdateAVSInfo(ctx, avsParams)
 	if err != nil {
 		return nil, err

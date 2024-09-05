@@ -16,15 +16,21 @@ const layout = "2006-01-02 15:04:05"
 func (ms msgServer) CreatePrice(goCtx context.Context, msg *types.MsgCreatePrice) (*types.MsgCreatePriceResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
+	gasMeter := ctx.GasMeter()
+	ctx = ctx.WithGasMeter(sdk.NewInfiniteGasMeter())
+	defer func() {
+		ctx = ctx.WithGasMeter(gasMeter)
+	}()
 	logger := ms.Keeper.Logger(ctx)
 	if err := checkTimestamp(ctx, msg); err != nil {
 		logger.Info("price proposal timestamp check failed", "error", err, "height", ctx.BlockHeight())
 		return nil, types.ErrPriceProposalFormatInvalid.Wrap(err.Error())
 	}
 
-	newItem, caches, err := GetAggregatorContext(ctx, ms.Keeper).NewCreatePrice(ctx, msg)
+	agc := GetAggregatorContext(ctx, ms.Keeper)
+	newItem, caches, err := agc.NewCreatePrice(ctx, msg)
 	if err != nil {
-		logger.Info("price proposal failed", "error", err, "height", ctx.BlockHeight())
+		logger.Info("price proposal failed", "error", err, "height", ctx.BlockHeight(), "feederID", msg.FeederID)
 		return nil, err
 	}
 
@@ -49,6 +55,7 @@ func (ms msgServer) CreatePrice(goCtx context.Context, msg *types.MsgCreatePrice
 		} else {
 			logger.Info("final price aggregation done", "feederID", msg.FeederID, "roundID", newItem.PriceTR.RoundID, "price", newItem.PriceTR.Price)
 		}
+		ms.Keeper.RemoveNonceWithFeederIDForValidators(ctx, msg.FeederID, agc.GetValidators())
 
 		decimalStr := strconv.FormatInt(int64(newItem.PriceTR.Decimal), 10)
 		tokenIDStr := strconv.FormatUint(newItem.TokenID, 10)

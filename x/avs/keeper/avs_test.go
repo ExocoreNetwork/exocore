@@ -56,10 +56,9 @@ func (suite *AVSTestSuite) TestAVS() {
 	suite.Equal(found, true)
 	suite.Equal(epoch.CurrentEpoch, int64(2))
 	suite.CommitAfter(48*time.Hour + time.Nanosecond)
-
 }
 
-func (suite *AVSTestSuite) TestAVSInfoUpdate_Register() {
+func (suite *AVSTestSuite) TestUpdateAVSInfo_Register() {
 	avsName, avsAddres, slashAddress, rewardAddress := "avsTest", "exo18cggcpvwspnd5c6ny8wrqxpffj5zmhklprtnph", "0xDF907c29719154eb9872f021d21CAE6E5025d7aB", "0xDF907c29719154eb9872f021d21CAE6E5025d7aB"
 	avsOwnerAddress := []string{"exo13h6xg79g82e2g2vhjwg7j4r2z2hlncelwutkjr", "exo13h6xg79g82e2g2vhjwg7j4r2z2hlncelwutkj1", "exo13h6xg79g82e2g2vhjwg7j4r2z2hlncelwutkj2"}
 	assetID := []string{"11", "22", "33"}
@@ -90,7 +89,7 @@ func (suite *AVSTestSuite) TestAVSInfoUpdate_Register() {
 	suite.Contains(err.Error(), types.ErrAlreadyRegistered.Error())
 }
 
-func (suite *AVSTestSuite) TestAVSInfoUpdate_DeRegister() {
+func (suite *AVSTestSuite) TestUpdateAVSInfo_DeRegister() {
 	// Test case setup
 	avsName, avsAddres, slashAddress := "avsTest", suite.avsAddress.String(), "exo13h6xg79g82e2g2vhjwg7j4r2z2hlncelwutash"
 	avsOwnerAddress := []string{"exo13h6xg79g82e2g2vhjwg7j4r2z2hlncelwutkjr", "exo13h6xg79g82e2g2vhjwg7j4r2z2hlncelwutkj1", "exo13h6xg79g82e2g2vhjwg7j4r2z2hlncelwutkj2"}
@@ -127,7 +126,7 @@ func (suite *AVSTestSuite) TestAVSInfoUpdate_DeRegister() {
 	suite.Contains(err.Error(), types.ErrNoKeyInTheStore.Error())
 }
 
-func (suite *AVSTestSuite) TestAVSInfoUpdateWithOperator_Register() {
+func (suite *AVSTestSuite) TestUpdateAVSInfoWithOperator_Register() {
 	avsAddress := suite.avsAddress
 	operatorAddress := sdk.AccAddress(utiltx.GenerateAddress().Bytes()).String()
 
@@ -157,5 +156,4 @@ func (suite *AVSTestSuite) TestAVSInfoUpdateWithOperator_Register() {
 
 	err = suite.App.AVSManagerKeeper.OperatorOptAction(suite.Ctx, operatorParams)
 	suite.NoError(err)
-
 }

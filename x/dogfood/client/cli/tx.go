@@ -73,7 +73,7 @@ func CmdUpdateParams() *cobra.Command {
 	f.Uint32(
 		FlagHistoricalEntries, 0, "The number of historical entries stored for IBC",
 	)
-	f.StringArray(
+	f.StringSlice(
 		FlagAssetIDs, []string{}, "The asset ids to consider for the module",
 	)
 	f.Uint64(
@@ -101,7 +101,7 @@ func newBuildUpdateParamsMsg(
 	// #nosec G703 // this only errors if the flag isn't defined.
 	historicalEntries, _ := fs.GetUint32(FlagHistoricalEntries)
 	// #nosec G703 // this only errors if the flag isn't defined.
-	assetIDs, _ := fs.GetStringArray(FlagAssetIDs)
+	assetIDs, _ := fs.GetStringSlice(FlagAssetIDs)
 	// #nosec G703 // this only errors if the flag isn't defined.
 	minSelfDelegation, _ := fs.GetUint64(FlagMinSelfDelegation)
 	msg := &types.MsgUpdateParams{

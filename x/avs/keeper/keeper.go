@@ -133,13 +133,14 @@ func (k Keeper) UpdateAVSInfo(ctx sdk.Context, params *types.AVSRegisterOrDeregi
 		}
 		// TODO: The AvsUnbondingPeriod is used for undelegation, but this check currently blocks updates to AVS information. Remove this check to allow AVS updates, while detailed control mechanisms for updates should be considered and implemented in the future.
 		// If avs UpdateAction check UnbondingPeriod
-
+ 
 		// #nosec G115
 		//	if int64(avsInfo.Info.AvsUnbondingPeriod) < (epoch.CurrentEpoch - int64(avsInfo.GetInfo().StartingEpoch)) {
 		//	return errorsmod.Wrap(types.ErrUnbondingPeriod, fmt.Sprintf("not qualified to deregister %s", avsInfo))
 		// }
 		// If avs UpdateAction check CallerAddress
 
+ 
 		avs := avsInfo.Info
 
 		if params.AvsName != "" {
