@@ -101,7 +101,11 @@ func (k Keeper) RegisterNewTokenAndSetTokenFeeder(ctx sdk.Context, oInfo *types.
 	})
 
 	k.SetParams(ctx, p)
-	_ = GetAggregatorContext(ctx, k)
-	cs.AddCache(cache.ItemP(p))
+	// skip cache update if this is not deliverTx
+	// for normal cosmostx, checkTx will skip actual message exucution and do anteHandler only, but from ethc.callContract the message will be executed without anteHandler check as checkTx mode.
+	if !ctx.IsCheckTx() {
+		_ = GetAggregatorContext(ctx, k)
+		cs.AddCache(cache.ItemP(p))
+	}
 	return nil
 }
