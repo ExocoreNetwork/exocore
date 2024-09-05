@@ -30,8 +30,6 @@ func (k *Keeper) DelegateAssetToOperator(goCtx context.Context, msg *types.MsgDe
 		logger.Error("failed to get nonce", "error", err)
 		return nil, err
 	}
-	// // stakerAddr := sdk.MustAccAddressFromBech32(msg.BaseInfo.FromAddress).Bytes()
-	// stakerAddrBytes := fromAddr.Bytes()
 	txBytes := ctx.TxBytes()
 	txHash := sha256.Sum256(txBytes)
 	combined := fmt.Sprintf("%s-%d", txHash, nonce)
@@ -47,27 +45,6 @@ func (k *Keeper) DelegateAssetToOperator(goCtx context.Context, msg *types.MsgDe
 		}
 	}
 
-	//---
-
-	// 	for _, kv := range msg.BaseInfo.PerOperatorAmounts {
-	// 		operatorAddr := sdk.MustAccAddressFromBech32(kv.Key)
-	// 		inputParams := types.NewDelegationOrUndelegationParams(
-	// 			assetstypes.NativeChainLzID,
-	// 			assetstypes.DelegateTo,
-	// 			common.HexToAddress(assetstypes.NativeAssetAddr).Bytes(),
-	// 			operatorAddr,
-	// 			// stakerAddr,
-	// 			stakerAddrBytes,
-	// 			kv.Value.Amount,
-	// 			nonce,
-	// 			uniqueHash,
-	// 		)
-	// 		if err := k.DelegateTo(ctx, inputParams); err != nil {
-	// 			logger.Error("failed to delegate asset", "error", err, "operatorAddr", operatorAddr, "assetID", msg.AssetID)
-	// 			return &types.DelegationResponse{}, err
-	//
-	// 		}
-	// 	}
 	return &types.DelegationResponse{}, nil
 }
 
@@ -87,8 +64,6 @@ func (k *Keeper) UndelegateAssetFromOperator(goCtx context.Context, msg *types.M
 		logger.Error("failed to get nonce", "error", err)
 		return nil, err
 	}
-	//	// stakerAddr := sdk.MustAccAddressFromBech32(msg.BaseInfo.FromAddress).Bytes()
-	//	stakerAddr := fromAddr.Bytes()
 	txBytes := ctx.TxBytes()
 	txHash := sha256.Sum256(txBytes)
 	combined := fmt.Sprintf("%s-%d", txHash, nonce)
@@ -101,28 +76,6 @@ func (k *Keeper) UndelegateAssetFromOperator(goCtx context.Context, msg *types.M
 		}
 	}
 	return &types.UndelegationResponse{}, nil
-
-	//	for _, kv := range msg.BaseInfo.PerOperatorAmounts {
-	//		operatorAddr := sdk.MustAccAddressFromBech32(kv.Key)
-	//		inputParams := types.NewDelegationOrUndelegationParams(
-	//			assetstypes.NativeChainLzID,
-	//			assetstypes.DelegateTo,
-	//			//			[]byte(assetstypes.NativeAssetAddr),
-	//			common.HexToAddress(assetstypes.NativeAssetAddr).Bytes(),
-	//			operatorAddr,
-	//			stakerAddr,
-	//			kv.Value.Amount,
-	//			nonce,
-	//			uniqueHash,
-	//		)
-	//		if err := k.DelegateTo(ctx, inputParams); err != nil {
-	//			logger.Error("failed to delegate asset", "error", err, "operatorAddr", operatorAddr, "assetID", msg.AssetID)
-	//			return &types.UndelegationResponse{}, err
-	//
-	//		}
-	//	}
-	//
-	// return nil, errorsmod.Wrap(types.ErrNotSupportYet, "func:UndelegateAssetFromOperator")
 }
 
 func newDelegationParams(baseInfo *types.DelegationIncOrDecInfo, assetAddrStr string, clientChainLzID, txNonce uint64, txHash common.Hash) []*types.DelegationOrUndelegationParams {
