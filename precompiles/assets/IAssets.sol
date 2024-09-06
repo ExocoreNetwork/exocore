@@ -57,7 +57,7 @@ interface IAssets {
 
     /// @dev register a token to allow deposits / staking, etc.
     /// @dev note that there is no way to delete a token. If a token is to be removed,
-    /// the TVL limit should be set to 0.
+    /// the TVL limit should be set to 0 on the client chain.
     /// @param clientChainId is the identifier of the token's home chain (LZ or otherwise)
     /// @param token is the address of the token on the home chain
     /// @param decimals is the number of decimals of the token
@@ -86,7 +86,6 @@ interface IAssets {
     /// @param metaData is the arbitrary metadata of the token
     /// @return success if the token update is successful
     /// @dev The token must previously be registered before updating
-    /// @dev Pass a tvlLimit of 0 to disable any deposits of the token
     /// @dev Pass en empty metadata to keep the existing metadata
     function updateToken(uint32 clientChainId, bytes calldata token, uint256 totalSupply, string calldata metaData)
         external
