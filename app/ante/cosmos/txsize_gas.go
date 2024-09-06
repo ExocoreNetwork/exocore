@@ -70,7 +70,7 @@ func (cgts ConsumeTxSizeGasDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, sim
 
 			// use placeholder simSecp256k1Pubkey if sig is nil
 			if acc == nil || acc.GetPubKey() == nil {
-				pubkey = simSecp256k1Pubkey //gitleaks:allow
+				pubkey = simSecp256k1Pubkey // gitleaks:allow
 			} else {
 				pubkey = acc.GetPubKey()
 			}
