@@ -31,6 +31,8 @@ CONFIG=$HOMEDIR/config/config.toml
 APP_TOML=$HOMEDIR/config/app.toml
 GENESIS=$HOMEDIR/config/genesis.json
 TMP_GENESIS=$HOMEDIR/config/tmp_genesis.json
+ORACLE_ENV_CHAINLINK=$HOMEDIR/config/oracle_env_chainlink.yaml
+ORACLE_FEEDER=$HOMEDIR/config/oracle_feeder.yaml
 
 # validate dependencies are installed
 command -v jq >/dev/null 2>&1 || {
@@ -105,6 +107,7 @@ if [[ $overwrite == "y" || $overwrite == "Y" ]]; then
 
 	# x/oracle
 	jq '.app_state["oracle"]["params"]["tokens"][1]["asset_id"]="0xdac17f958d2ee523a2206206994597c13d831ec7_0x65"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
+	jq '.app_state["oracle"]["params"]["token_feeders"][1]["start_base_block"]="20"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
 
 	# x/operator
 	jq '.app_state["operator"]["operators"][0]["earnings_addr"]="exo18cggcpvwspnd5c6ny8wrqxpffj5zmhklprtnph"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
@@ -145,6 +148,44 @@ if [[ $overwrite == "y" || $overwrite == "Y" ]]; then
 	# custom epoch definitions can be added here, if required.
 	# see https://github.com/ExocoreNetwork/exocore/blob/82b2509ad33ab7679592dcb1aa56a7a811128410/local_node.sh#L123 as an example
 
+	# generate oracle_env_chainlink.yaml file
+	oracle_env_chainlink_content=$(cat <<EOF
+urls:
+  mainnet: !!str https://rpc.ankr.com/eth
+  sepolia: !!str https://rpc.ankr.com/eth_sepolia
+tokens:
+  ETHUSDT: 0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419_mainnet
+  AAVEUSDT: 0x547a514d5e3769680Ce22B2361c10Ea13619e8a9_mainnet
+  WSTETHUSDT: 0xaaabb530434B0EeAAc9A42E25dbC6A22D7bE218E_sepolia
+EOF
+)
+
+	# Write the YAML content to a file
+	echo "$oracle_env_chainlink_content" > "$ORACLE_ENV_CHAINLINK"
+
+	# generate oracle_feeder.yaml file
+	oracle_feeder_content=$(cat <<EOF
+sources:
+  - chainlink
+tokens:
+  - ETHUSDT
+  - WSTETHUSDT
+sender:
+  mnemonic: ""
+  path: $HOMEDIR/config
+exocore:
+  chainid: $CHAINID
+  appName: exocore
+  rpc: 127.0.0.1:9090
+  ws:
+    addr: !!str ws://127.0.0.1:26657
+    endpoint: /websocket
+EOF
+	)
+
+	# Write the YAML content to a file
+	echo "$oracle_feeder_content" > "$ORACLE_FEEDER"
+	
 	if [[ $1 == "pending" ]]; then
 		if [[ "$OSTYPE" == "darwin"* ]]; then
 			sed -i '' 's/timeout_propose = "3s"/timeout_propose = "30s"/g' "$CONFIG"
@@ -220,4 +261,4 @@ if [[ $overwrite == "y" || $overwrite == "Y" ]]; then
 fi
 
 # Start the node (remove the --pruning=nothing flag if historical queries are not needed)
-exocored start --metrics "$TRACE" --log_level $LOGLEVEL --minimum-gas-prices=0.0001aexo --json-rpc.api eth,txpool,personal,net,debug,web3 --api.enable --json-rpc.enable true --home "$HOMEDIR" --chain-id "$CHAINID"
+exocored start --metrics "$TRACE" --log_level $LOGLEVEL --minimum-gas-prices=0.0001aexo --json-rpc.api eth,txpool,personal,net,debug,web3 --api.enable --json-rpc.enable true --home "$HOMEDIR" --chain-id "$CHAINID" --oracle --grpc.enable true
