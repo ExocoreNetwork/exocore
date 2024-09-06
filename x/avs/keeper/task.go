@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"sort"
 	"strconv"
-	"strings"
 
 	"github.com/ethereum/go-ethereum/crypto"
 
@@ -252,15 +251,15 @@ func (k *Keeper) SetTaskResultInfo(
 
 		// check hash
 		taskResponseDigest := crypto.Keccak256Hash(info.TaskResponse)
-		if info.TaskResponseHash != "" {
-			hashWithoutPrefix := strings.TrimPrefix(taskResponseDigest.String(), "0x")
-			if hashWithoutPrefix != info.TaskResponseHash {
-				return errorsmod.Wrap(
-					types.ErrHashValue,
-					"SetTaskResultInfo: task response is nil",
-				)
-			}
-		}
+		// if info.TaskResponseHash != "" {
+		//	hashWithoutPrefix := strings.TrimPrefix(taskResponseDigest.String(), "0x")
+		//	if hashWithoutPrefix != info.TaskResponseHash {
+		//		return errorsmod.Wrap(
+		//			types.ErrHashValue,
+		//			"SetTaskResultInfo: task response is nil",
+		//		)
+		//	}
+		//}
 
 		// TODO :check taskID
 		// resp, err := types.UnmarshalTaskResponse(info.TaskResponse)

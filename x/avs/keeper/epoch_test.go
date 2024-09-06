@@ -1,9 +1,7 @@
 package keeper_test
 
 import (
-	sdkmath "cosmossdk.io/math"
 	avstypes "github.com/ExocoreNetwork/exocore/x/avs/types"
-	operatortypes "github.com/ExocoreNetwork/exocore/x/operator/types"
 	"github.com/ethereum/go-ethereum/common"
 	"strconv"
 )
@@ -20,19 +18,9 @@ func (suite *AVSTestSuite) Test_GroupStatistics() {
 }
 func (suite *AVSTestSuite) TestEpochEnd_TaskCalculation() {
 	suite.TestSubmitTask_OnlyPhaseTwo_Mul()
-	err := suite.App.OperatorKeeper.SetAVSUSDValue(suite.Ctx, suite.avsAddr, sdkmath.LegacyNewDec(500))
-	for _, operatorAddress := range suite.operatorAddresses {
-		delta := operatortypes.DeltaOperatorUSDInfo{
-			SelfUSDValue:   sdkmath.LegacyNewDec(100),
-			TotalUSDValue:  sdkmath.LegacyNewDec(100),
-			ActiveUSDValue: sdkmath.LegacyNewDec(100),
-		}
-		suite.App.OperatorKeeper.UpdateOperatorUSDValue(suite.Ctx, suite.avsAddr, operatorAddress, delta)
-	}
-
-	suite.NoError(err)
 	suite.CommitAfter(suite.EpochDuration)
-
+	suite.CommitAfter(suite.EpochDuration)
+	suite.CommitAfter(suite.EpochDuration)
 	info, err := suite.App.AVSManagerKeeper.GetTaskInfo(suite.Ctx, strconv.FormatUint(suite.taskId, 10), common.Address(suite.taskAddress.Bytes()).String())
 	suite.NoError(err)
 	expectInfo := &avstypes.TaskInfo{

@@ -60,7 +60,7 @@ func (wrapper EpochsHooksWrapper) AfterEpochEnd(
 					if err != nil || power.ActiveUSDValue.IsNegative() {
 						ctx.Logger().Error("Failed to update task result statistics,GetOperatorOptedUSDValue call failed!", "task result", taskAddr, "error", err)
 						// Handle the error gracefully, continue to the next
-						continue
+						// continue
 					}
 
 					operatorSelfPower := &types.OperatorActivePowerInfo{
@@ -75,7 +75,7 @@ func (wrapper EpochsHooksWrapper) AfterEpochEnd(
 			if err != nil {
 				ctx.Logger().Error("Failed to update task result statistics,GetTaskInfo call failed!", "task result", taskAddr, "error", err)
 				// Handle the error gracefully, continue to the next
-				continue
+				// continue
 			}
 			diff := types.Difference(taskInfo.OptInOperators, signedOperatorList)
 			taskInfo.SignedOperators = signedOperatorList
@@ -87,24 +87,24 @@ func (wrapper EpochsHooksWrapper) AfterEpochEnd(
 			if err != nil || taskPowerTotal.IsZero() || operatorPowerTotal.IsZero() {
 				ctx.Logger().Error("Failed to update task result statistics,GetAVSUSDValue call failed!", "task result", taskAddr, "error", err)
 				// Handle the error gracefully, continue to the next
-				continue
+				// continue
 			}
 
-			actualThreshold := taskPowerTotal.Quo(operatorPowerTotal).Mul(sdk.NewDec(100))
+			// actualThreshold := taskPowerTotal.Quo(operatorPowerTotal).Mul(sdk.NewDec(100))
 			if err != nil {
 				ctx.Logger().Error("Failed to update task result statistics,Calculation of actualThreshold ratio failed!", "task result", taskAddr, "error", err)
 				// Handle the error gracefully, continue to the next
-				continue
+				// continue
 			}
 			taskInfo.TaskTotalPower = taskPowerTotal
-			taskInfo.ActualThreshold = actualThreshold.BigInt().Uint64()
+			// taskInfo.ActualThreshold = actualThreshold.BigInt().Uint64()
 
 			// Update the taskInfo in the state
 			err = wrapper.keeper.SetTaskInfo(ctx, taskInfo)
 			if err != nil {
 				ctx.Logger().Error("Failed to update task result statistics,SetTaskInfo call failed!", "task result", taskAddr, "error", err)
 				// Handle the error gracefully, continue to the next
-				continue
+				// continue
 			}
 		}
 	}

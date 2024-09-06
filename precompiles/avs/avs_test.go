@@ -99,6 +99,7 @@ func (suite *AVSManagerPrecompileSuite) TestRegisterAVS() {
 	commonMalleate := func() (common.Address, []byte) {
 		input, err := suite.precompile.Pack(
 			avs.MethodRegisterAVS,
+			suite.Address,
 			avsName,
 			minStakeAmount,
 			common.HexToAddress(taskAddr),
@@ -210,6 +211,7 @@ func (suite *AVSManagerPrecompileSuite) TestDeregisterAVS() {
 		// prepare the call input for delegation test
 		input, err := suite.precompile.Pack(
 			avs.MethodDeregisterAVS,
+			suite.Address,
 			avsName,
 		)
 		suite.Require().NoError(err, "failed to pack input")
@@ -312,13 +314,14 @@ func (suite *AVSManagerPrecompileSuite) TestUpdateAVS() {
 		sdk.AccAddress(utiltx.GenerateAddress().Bytes()).String(),
 	}
 	assetID := []string{"11", "22", "33"}
-	minStakeAmount, taskAddr := uint64(3), "0xDF907c29719154eb9872f021d21CAE6E5025d7aB"
+	minStakeAmount, taskAddr := uint64(3), "0x3e108c058e8066DA635321Dc3018294cA82ddEdf"
 	avsUnbondingPeriod, minSelfDelegation := uint64(3), uint64(3)
 	epochIdentifier := epochstypes.DayEpochID
 	params := []uint64{2, 3, 4, 4}
 	commonMalleate := func() (common.Address, []byte) {
 		input, err := suite.precompile.Pack(
 			avs.MethodUpdateAVS,
+			suite.Address,
 			avsName,
 			minStakeAmount,
 			common.HexToAddress(taskAddr),
@@ -441,6 +444,7 @@ func (suite *AVSManagerPrecompileSuite) TestRegisterOperatorToAVS() {
 	commonMalleate := func() (common.Address, []byte) {
 		input, err := suite.precompile.Pack(
 			avs.MethodRegisterOperatorToAVS,
+			suite.Address,
 		)
 		suite.Require().NoError(err, "failed to pack input")
 		return common.HexToAddress("0x3e108c058e8066DA635321Dc3018294cA82ddEdf"), input
@@ -536,22 +540,10 @@ func (suite *AVSManagerPrecompileSuite) TestRegisterOperatorToAVS() {
 }
 
 func (suite *AVSManagerPrecompileSuite) TestDeregisterOperatorFromAVS() {
-	// from := s.Address
-	// operatorAddress, err := util.ProcessAddress(from.String())
-
-	// registerOperator := func() {
-	// 	registerReq := &operatortypes.RegisterOperatorReq{
-	// 		FromAddress: operatorAddress,
-	// 		Info: &operatortypes.OperatorInfo{
-	// 			EarningsAddr: operatorAddress,
-	// 		},
-	// 	}
-	// 	_, err := s.OperatorMsgServer.RegisterOperator(sdk.WrapSDKContext(s.Ctx), registerReq)
-	// 	s.NoError(err)
-	// }
 	commonMalleate := func() (common.Address, []byte) {
 		input, err := suite.precompile.Pack(
 			avs.MethodDeregisterOperatorFromAVS,
+			suite.Address,
 		)
 		suite.Require().NoError(err, "failed to pack input")
 		return common.HexToAddress("0x3e108c058e8066DA635321Dc3018294cA82ddEdf"), input
@@ -680,6 +672,7 @@ func (suite *AVSManagerPrecompileSuite) TestRunRegTaskInfo() {
 	commonMalleate := func() (common.Address, []byte) {
 		input, err := suite.precompile.Pack(
 			avs.MethodCreateAVSTask,
+			suite.Address,
 			"test-avstask",
 			rand.Bytes(3),
 			uint64(3),
