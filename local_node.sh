@@ -149,7 +149,8 @@ if [[ $overwrite == "y" || $overwrite == "Y" ]]; then
 	# see https://github.com/ExocoreNetwork/exocore/blob/82b2509ad33ab7679592dcb1aa56a7a811128410/local_node.sh#L123 as an example
 
 	# generate oracle_env_chainlink.yaml file
-	oracle_env_chainlink_content=$(cat <<EOF
+	oracle_env_chainlink_content=$(
+		cat <<EOF
 urls:
   mainnet: !!str https://rpc.ankr.com/eth
   sepolia: !!str https://rpc.ankr.com/eth_sepolia
@@ -158,13 +159,14 @@ tokens:
   AAVEUSDT: 0x547a514d5e3769680Ce22B2361c10Ea13619e8a9_mainnet
   WSTETHUSDT: 0xaaabb530434B0EeAAc9A42E25dbC6A22D7bE218E_sepolia
 EOF
-)
+	)
 
 	# Write the YAML content to a file
-	echo "$oracle_env_chainlink_content" > "$ORACLE_ENV_CHAINLINK"
+	echo "$oracle_env_chainlink_content" >"$ORACLE_ENV_CHAINLINK"
 
 	# generate oracle_feeder.yaml file
-	oracle_feeder_content=$(cat <<EOF
+	oracle_feeder_content=$(
+		cat <<EOF
 sources:
   - chainlink
 tokens:
@@ -184,8 +186,8 @@ EOF
 	)
 
 	# Write the YAML content to a file
-	echo "$oracle_feeder_content" > "$ORACLE_FEEDER"
-	
+	echo "$oracle_feeder_content" >"$ORACLE_FEEDER"
+
 	if [[ $1 == "pending" ]]; then
 		if [[ "$OSTYPE" == "darwin"* ]]; then
 			sed -i '' 's/timeout_propose = "3s"/timeout_propose = "30s"/g' "$CONFIG"
