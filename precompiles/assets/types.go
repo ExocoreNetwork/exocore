@@ -157,11 +157,11 @@ func (p Precompile) TokenFromInputs(ctx sdk.Context, args []interface{}) (types.
 	// #nosec G115
 	asset.Decimals = uint32(decimal)
 
-	tvlLimit, ok := args[3].(*big.Int)
-	if !ok || tvlLimit == nil || !(tvlLimit.Cmp(big.NewInt(0)) == 1) {
+	totalSupply, ok := args[3].(*big.Int)
+	if !ok || totalSupply == nil || !(totalSupply.Cmp(big.NewInt(0)) == 1) {
 		return types.AssetInfo{}, oracletypes.OracleInfo{}, fmt.Errorf(exocmn.ErrContractInputParaOrType, 3, "*big.Int", args[3])
 	}
-	asset.TotalSupply = sdkmath.NewIntFromBigInt(tvlLimit)
+	asset.TotalSupply = sdkmath.NewIntFromBigInt(totalSupply)
 
 	name, ok := args[4].(string)
 	if !ok {
@@ -218,7 +218,7 @@ func (p Precompile) TokenFromInputs(ctx sdk.Context, args []interface{}) (types.
 
 func (p Precompile) UpdateTokenFromInputs(
 	ctx sdk.Context, args []interface{},
-) (clientChainID uint32, hexAssetAddr string, tvlLimit sdkmath.Int, metadata string, err error) {
+) (clientChainID uint32, hexAssetAddr string, totalSupply sdkmath.Int, metadata string, err error) {
 	inputsLen := len(p.ABI.Methods[MethodUpdateToken].Inputs)
 	if len(args) != inputsLen {
 		return 0, "", sdkmath.NewInt(0), "", fmt.Errorf(cmn.ErrInvalidNumberOfArgs, inputsLen, len(args))
@@ -243,12 +243,11 @@ func (p Precompile) UpdateTokenFromInputs(
 	}
 	hexAssetAddr = hexutil.Encode(assetAddr[:clientChainAddrLength])
 
-	tvlLimitLocal, ok := args[2].(*big.Int)
-	// tvlLimit can be 0 to block the token deposits
-	if !ok || tvlLimitLocal == nil {
+	totalSupplyLocal, ok := args[2].(*big.Int)
+	if !ok || totalSupplyLocal == nil || !(totalSupplyLocal.Cmp(big.NewInt(0)) == 1) {
 		return 0, "", sdkmath.NewInt(0), "", fmt.Errorf(exocmn.ErrContractInputParaOrType, 2, "*big.Int", args[2])
 	}
-	tvlLimit = sdkmath.NewIntFromBigInt(tvlLimitLocal)
+	totalSupply = sdkmath.NewIntFromBigInt(totalSupplyLocal)
 
 	metadata, ok = args[3].(string)
 	if !ok {
@@ -259,7 +258,7 @@ func (p Precompile) UpdateTokenFromInputs(
 		return 0, "", sdkmath.NewInt(0), "", fmt.Errorf(exocmn.ErrInvalidMetaInfoLength, metadata, len(metadata), types.MaxChainTokenMetaInfoLength)
 	}
 
-	return clientChainID, hexAssetAddr, tvlLimit, metadata, nil
+	return clientChainID, hexAssetAddr, totalSupply, metadata, nil
 }
 
 func (p Precompile) ClientChainIDFromInputs(_ sdk.Context, args []interface{}) (uint32, error) {

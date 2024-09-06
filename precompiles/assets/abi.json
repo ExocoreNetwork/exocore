@@ -144,7 +144,7 @@
         "internalType": "uint8"
       },
       {
-        "name": "tvlLimit",
+        "name": "totalSupply",
         "type": "uint256",
         "internalType": "uint256"
       },
@@ -188,7 +188,7 @@
         "internalType": "bytes"
       },
       {
-        "name": "tvlLimit",
+        "name": "totalSupply",
         "type": "uint256",
         "internalType": "uint256"
       },

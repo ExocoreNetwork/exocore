@@ -61,8 +61,9 @@ interface IAssets {
     /// @param clientChainId is the identifier of the token's home chain (LZ or otherwise)
     /// @param token is the address of the token on the home chain
     /// @param decimals is the number of decimals of the token
-    /// @param tvlLimit is the number of tokens that can be deposited in the system. Set to
-    /// maxSupply if there is no limit
+    /// @param totalSupply is the total supply of the token. The deposited tokens must not exceed this logical limit. It
+    /// is different from the operational limit, which is instead imposed on the client chain. This value must be chosen
+    /// with care to ensure that any deposits (which may be in flight) do not fail.
     /// @param name is the name of the token
     /// @param metaData is the arbitrary metadata of the token
     /// @param oracleInfo is the oracle information of the token
@@ -71,7 +72,7 @@ interface IAssets {
         uint32 clientChainId,
         bytes calldata token,
         uint8 decimals,
-        uint256 tvlLimit,
+        uint256 totalSupply,
         string calldata name,
         string calldata metaData,
         string calldata oracleInfo
@@ -80,14 +81,14 @@ interface IAssets {
     /// @dev update a token to allow deposits / staking, etc.
     /// @param clientChainId is the identifier of the token's home chain (LZ or otherwise)
     /// @param token is the address of the token on the home chain
-    /// @param tvlLimit is the number of tokens that can be deposited in the system. Set to
-    /// maxSupply if there is no limit
+    /// @param totalSupply is the new total supply of the token (logical limit). Any modifications to this value must be
+    /// handled with great care to ensure that future deposits (or even in-flight deposits) do not fail.
     /// @param metaData is the arbitrary metadata of the token
     /// @return success if the token update is successful
     /// @dev The token must previously be registered before updating
-    /// @dev Pass a tvlLimit of 0 to disable any further deposits
+    /// @dev Pass a tvlLimit of 0 to disable any deposits of the token
     /// @dev Pass en empty metadata to keep the existing metadata
-    function updateToken(uint32 clientChainId, bytes calldata token, uint256 tvlLimit, string calldata metaData)
+    function updateToken(uint32 clientChainId, bytes calldata token, uint256 totalSupply, string calldata metaData)
         external
         returns (bool success);
 

@@ -172,7 +172,7 @@ func (p Precompile) UpdateToken(
 	}
 
 	// parse inputs
-	clientChainID, hexAssetAddr, tvlLimit, metadata, err := p.UpdateTokenFromInputs(ctx, args)
+	clientChainID, hexAssetAddr, totalSupply, metadata, err := p.UpdateTokenFromInputs(ctx, args)
 	if err != nil {
 		return nil, err
 	}
@@ -190,8 +190,11 @@ func (p Precompile) UpdateToken(
 		// if metadata is not empty, update it
 		assetInfo.AssetBasicInfo.MetaInfo = metadata
 	}
-	// always update TVL, since a value of 0 is used to reject deposits
-	assetInfo.AssetBasicInfo.TotalSupply = tvlLimit
+	// check the currently deposited quantity
+	if deposited := assetInfo.StakingTotalAmount; deposited.GT(totalSupply) {
+		return nil, fmt.Errorf("total supply %s is less than the total deposited amount %s", totalSupply, deposited)
+	}
+	assetInfo.AssetBasicInfo.TotalSupply = totalSupply
 
 	if err := p.assetsKeeper.SetStakingAssetInfo(ctx, assetInfo); err != nil {
 		return nil, err
