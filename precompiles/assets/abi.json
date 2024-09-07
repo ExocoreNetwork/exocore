@@ -58,6 +58,35 @@
   },
   {
     "type": "function",
+    "name": "getTotalSupply",
+    "inputs": [
+      {
+        "name": "clientChainId",
+        "type": "uint32",
+        "internalType": "uint32"
+      },
+      {
+        "name": "token",
+        "type": "bytes",
+        "internalType": "bytes"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "success",
+        "type": "bool",
+        "internalType": "bool"
+      },
+      {
+        "name": "totalSupply",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
     "name": "isRegisteredClientChain",
     "inputs": [
       {

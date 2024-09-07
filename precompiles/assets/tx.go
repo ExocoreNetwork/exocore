@@ -23,6 +23,7 @@ const (
 	MethodRegisterToken               = "registerToken"
 	MethodUpdateToken                 = "updateToken"
 	MethodIsRegisteredClientChain     = "isRegisteredClientChain"
+	MethodGetTotalSupply              = "getTotalSupply"
 )
 
 // DepositOrWithdraw deposit and withdraw the client chain assets for the staker,
@@ -214,4 +215,21 @@ func (p Precompile) IsRegisteredClientChain(
 	}
 	exists := p.assetsKeeper.ClientChainExists(ctx, uint64(clientChainID))
 	return method.Outputs.Pack(true, exists)
+}
+
+func (p Precompile) GetTotalSupply(
+	ctx sdk.Context,
+	method *abi.Method,
+	args []interface{},
+) ([]byte, error) {
+	clientChainID, hexAssetAddr, err := p.GetTotalSupplyFromInputs(ctx, args)
+	if err != nil {
+		return nil, err
+	}
+	_, assetID := assetstypes.GetStakeIDAndAssetIDFromStr(uint64(clientChainID), "", hexAssetAddr)
+	info, err := p.assetsKeeper.GetStakingAssetInfo(ctx, assetID)
+	if err != nil {
+		return nil, err
+	}
+	return method.Outputs.Pack(true, info.StakingTotalAmount.BigInt())
 }

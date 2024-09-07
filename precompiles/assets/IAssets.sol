@@ -101,4 +101,14 @@ interface IAssets {
     /// @return isRegistered true if the client chain is registered
     function isRegisteredClientChain(uint32 clientChainID) external view returns (bool success, bool isRegistered);
 
+    /// @dev Returns the token total supply for a given token on a client chain.
+    /// @param clientChainId The LayerZero chain id of the client chain.
+    /// @param token The address of the token on the client chain as a bytes32.
+    /// @return success true if the query is successful
+    /// @return totalSupply the total supply of the token
+    function getTotalSupply(uint32 clientChainId, bytes calldata token)
+        external
+        view
+        returns (bool success, uint256 totalSupply);
+
 }

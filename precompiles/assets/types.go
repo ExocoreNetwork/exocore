@@ -272,3 +272,33 @@ func (p Precompile) ClientChainIDFromInputs(_ sdk.Context, args []interface{}) (
 	}
 	return clientChainID, nil
 }
+
+func (p Precompile) GetTotalSupplyFromInputs(
+	ctx sdk.Context, args []interface{},
+) (clientChainID uint32, hexAssetAddr string, err error) {
+	inputsLen := len(p.ABI.Methods[MethodGetTotalSupply].Inputs)
+	if len(args) != inputsLen {
+		return 0, "", fmt.Errorf(cmn.ErrInvalidNumberOfArgs, inputsLen, len(args))
+	}
+
+	clientChainID, ok := args[0].(uint32)
+	if !ok {
+		return 0, "", fmt.Errorf(exocmn.ErrContractInputParaOrType, 0, "uint32", args[0])
+	}
+
+	info, err := p.assetsKeeper.GetClientChainInfoByIndex(ctx, uint64(clientChainID))
+	if err != nil {
+		return 0, "", err
+	}
+	clientChainAddrLength := info.AddressLength
+	assetAddr, ok := args[1].([]byte)
+	if !ok || assetAddr == nil {
+		return 0, "", fmt.Errorf(exocmn.ErrContractInputParaOrType, 1, "[]byte", args[1])
+	}
+	if uint32(len(assetAddr)) < clientChainAddrLength {
+		return 0, "", fmt.Errorf(exocmn.ErrInvalidAddrLength, len(assetAddr), clientChainAddrLength)
+	}
+	hexAssetAddr = hexutil.Encode(assetAddr[:clientChainAddrLength])
+
+	return clientChainID, hexAssetAddr, nil
+}
