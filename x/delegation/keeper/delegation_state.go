@@ -12,7 +12,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-type DelegationOpFunc func(keys *delegationtype.SingleDelegationInfoReq, amounts *delegationtype.DelegationAmounts) error
+type DelegationOpFunc func(keys *delegationtype.SingleDelegationInfoReq, amounts *delegationtype.DelegationAmounts) (bool, error)
 
 func (k Keeper) AllDelegationStates(ctx sdk.Context) (delegationStates []delegationtype.DelegationStates, err error) {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), delegationtype.KeyPrefixRestakerDelegationInfo)
@@ -55,9 +55,12 @@ func (k Keeper) IterateDelegationsForStakerAndAsset(ctx sdk.Context, stakerID st
 		if err != nil {
 			return err
 		}
-		err = opFunc(keys, &amounts)
+		isBreak, err := opFunc(keys, &amounts)
 		if err != nil {
 			return err
+		}
+		if isBreak {
+			break
 		}
 	}
 	return nil
@@ -75,9 +78,12 @@ func (k Keeper) IterateDelegationsForStaker(ctx sdk.Context, stakerID string, op
 		if err != nil {
 			return err
 		}
-		err = opFunc(keys, &amounts)
+		isBreak, err := opFunc(keys, &amounts)
 		if err != nil {
 			return err
+		}
+		if isBreak {
+			break
 		}
 	}
 	return nil
@@ -87,22 +93,22 @@ func (k Keeper) IterateDelegationsForStaker(ctx sdk.Context, stakerID string, op
 // It needs to be calculated from the share and amount of the asset pool.
 func (k Keeper) StakerDelegatedTotalAmount(ctx sdk.Context, stakerID string, assetID string) (amount sdkmath.Int, err error) {
 	amount = sdkmath.NewInt(0)
-	opFunc := func(keys *delegationtype.SingleDelegationInfoReq, amounts *delegationtype.DelegationAmounts) error {
+	opFunc := func(keys *delegationtype.SingleDelegationInfoReq, amounts *delegationtype.DelegationAmounts) (bool, error) {
 		if amounts.UndelegatableShare.IsZero() {
-			return nil
+			return true, nil
 		}
 		opAccAddr := sdk.MustAccAddressFromBech32(keys.GetOperatorAddr())
 		// get the asset state of operator
 		operatorAsset, err := k.assetsKeeper.GetOperatorSpecifiedAssetInfo(ctx, opAccAddr, assetID)
 		if err != nil {
-			return err
+			return true, err
 		}
 		singleAmount, err := TokensFromShares(amounts.UndelegatableShare, operatorAsset.TotalShare, operatorAsset.TotalAmount)
 		if err != nil {
-			return err
+			return true, err
 		}
 		amount = amount.Add(singleAmount)
-		return nil
+		return false, nil
 	}
 	err = k.IterateDelegationsForStakerAndAsset(ctx, stakerID, assetID, opFunc)
 	if err != nil {
@@ -115,19 +121,19 @@ func (k Keeper) StakerDelegatedTotalAmount(ctx sdk.Context, stakerID string, ass
 // the key of return value is the operator address, and the value is the asset amount.
 func (k *Keeper) AllDelegatedAmountForStakerAsset(ctx sdk.Context, stakerID string, assetID string) (map[string]sdkmath.Int, error) {
 	ret := make(map[string]sdkmath.Int)
-	opFunc := func(keys *delegationtype.SingleDelegationInfoReq, amounts *delegationtype.DelegationAmounts) error {
+	opFunc := func(keys *delegationtype.SingleDelegationInfoReq, amounts *delegationtype.DelegationAmounts) (bool, error) {
 		opAccAddr := sdk.MustAccAddressFromBech32(keys.GetOperatorAddr())
 		// get the asset state of operator
 		operatorAsset, err := k.assetsKeeper.GetOperatorSpecifiedAssetInfo(ctx, opAccAddr, assetID)
 		if err != nil {
-			return err
+			return true, err
 		}
 		singleAmount, err := TokensFromShares(amounts.UndelegatableShare, operatorAsset.TotalShare, operatorAsset.TotalAmount)
 		if err != nil {
-			return err
+			return true, err
 		}
 		ret[keys.OperatorAddr] = singleAmount
-		return nil
+		return false, nil
 	}
 	err := k.IterateDelegationsForStakerAndAsset(ctx, stakerID, assetID, opFunc)
 	if err != nil {
@@ -204,9 +210,9 @@ func (k *Keeper) GetSingleDelegationInfo(ctx sdk.Context, stakerID, assetID, ope
 func (k *Keeper) GetDelegationInfo(ctx sdk.Context, stakerID, assetID string) (*delegationtype.QueryDelegationInfoResponse, error) {
 	var ret delegationtype.QueryDelegationInfoResponse
 	ret.DelegationInfos = make(map[string]*delegationtype.DelegationAmounts, 0)
-	opFunc := func(keys *delegationtype.SingleDelegationInfoReq, amounts *delegationtype.DelegationAmounts) error {
+	opFunc := func(keys *delegationtype.SingleDelegationInfoReq, amounts *delegationtype.DelegationAmounts) (bool, error) {
 		ret.DelegationInfos[keys.OperatorAddr] = amounts
-		return nil
+		return false, nil
 	}
 	err := k.IterateDelegationsForStakerAndAsset(ctx, stakerID, assetID, opFunc)
 	if err != nil {

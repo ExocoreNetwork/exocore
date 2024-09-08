@@ -94,7 +94,7 @@ func (k *Keeper) GetUndelegationRecords(ctx sdk.Context, singleRecordKeys []stri
 		keyBytes := []byte(singleRecordKey)
 		value := store.Get(keyBytes)
 		if value == nil {
-			return nil, errorsmod.Wrap(types.ErrNoKeyInTheStore, fmt.Sprintf("GetSingleDelegationRecord: key is %s", singleRecordKey))
+			return nil, errorsmod.Wrap(types.ErrNoKeyInTheStore, fmt.Sprintf("undelegation record key doesn't exist: key is %s", singleRecordKey))
 		}
 		undelegationRecord := types.UndelegationRecord{}
 		k.cdc.MustUnmarshal(value, &undelegationRecord)
@@ -165,6 +165,37 @@ func (k *Keeper) GetStakerUndelegationRecords(ctx sdk.Context, stakerID, assetID
 	}
 
 	return k.GetUndelegationRecords(ctx, recordKeys)
+}
+
+// IterateUndelegationsByStakerAndAsset iterate the undelegation records according to the stakerID and assetID.
+func (k *Keeper) IterateUndelegationsByStakerAndAsset(
+	ctx sdk.Context, stakerID, assetID string, isUpdate bool,
+	opFunc func(undelegation *types.UndelegationRecord) (bool, error),
+) error {
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefixStakerUndelegationInfo)
+	iterator := sdk.KVStorePrefixIterator(store, []byte(strings.Join([]string{stakerID, assetID}, "/")))
+	defer iterator.Close()
+	undelegationInfoStore := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefixUndelegationInfo)
+	for ; iterator.Valid(); iterator.Next() {
+		infoValue := undelegationInfoStore.Get(iterator.Value())
+		if infoValue == nil {
+			return errorsmod.Wrap(types.ErrNoKeyInTheStore, fmt.Sprintf("undelegation record key doesn't exist: key is %s", string(iterator.Value())))
+		}
+		undelegation := types.UndelegationRecord{}
+		k.cdc.MustUnmarshal(infoValue, &undelegation)
+		isBreak, err := opFunc(&undelegation)
+		if err != nil {
+			return err
+		}
+		if isUpdate {
+			bz := k.cdc.MustMarshal(&undelegation)
+			store.Set(iterator.Key(), bz)
+		}
+		if isBreak {
+			break
+		}
+	}
+	return nil
 }
 
 func (k *Keeper) SetPendingUndelegationInfo(ctx sdk.Context, height, lzNonce uint64, recordKey string) error {
