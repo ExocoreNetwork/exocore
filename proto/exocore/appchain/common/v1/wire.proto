@@ -46,15 +46,15 @@ message VscMaturedPacketData {
 // SubscriberPacketData is the enum to identify the type of packet sent.
 enum SubscriberPacketDataType {
   option (gogoproto.goproto_enum_prefix) = false;
-  // SUBSCRIBER_PACKET_TYPE_UNSPECIFIED is the default value
-  SUBSCRIBER_PACKET_TYPE_UNSPECIFIED = 0 [ (gogoproto.enumvalue_customname) = "UnspecifiedPacket" ];
-  // SUBSCRIBER_PACKET_TYPE_SLASH is the type of packet sent when a subscriber
+  // SUBSCRIBER_PACKET_DATA_TYPE_UNSPECIFIED is the default value
+  SUBSCRIBER_PACKET_DATA_TYPE_UNSPECIFIED = 0 [ (gogoproto.enumvalue_customname) = "UnspecifiedPacket" ];
+  // SUBSCRIBER_PACKET_DATA_TYPE_SLASH is the type of packet sent when a subscriber
   // chain wants to request the slashing of a validator on the coordinator chain.
-  SUBSCRIBER_PACKET_TYPE_SLASH = 1 [ (gogoproto.enumvalue_customname) = "SlashPacket" ];
-  // SUBSCRIBER_PACKET_TYPE_VSC_MATURED is the type of packet sent when a subscriber
+  SUBSCRIBER_PACKET_DATA_TYPE_SLASH = 1 [ (gogoproto.enumvalue_customname) = "SlashPacket" ];
+  // SUBSCRIBER_PACKET_DATA_TYPE_VSC_MATURED is the type of packet sent when a subscriber
   // chain wants to indicate that a VSC has matured and unbondings associated with
   // that VSC can now be released.
-  SUBSCRIBER_PACKET_TYPE_VSC_MATURED = 2 [ (gogoproto.enumvalue_customname) = "VscMaturedPacket" ];;
+  SUBSCRIBER_PACKET_DATA_TYPE_VSC_MATURED = 2 [ (gogoproto.enumvalue_customname) = "VscMaturedPacket" ];
 }
 
 // SubscriberPacketData is a wrapped message that contains the type of packet
