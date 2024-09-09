@@ -1,11 +1,14 @@
 package avs_test
 
 import (
+	sdkmath "cosmossdk.io/math"
+	assetstype "github.com/ExocoreNetwork/exocore/x/assets/types"
+	operatorKeeper "github.com/ExocoreNetwork/exocore/x/operator/keeper"
 	"math/big"
+	"time"
 
 	"github.com/ExocoreNetwork/exocore/app"
 	"github.com/ExocoreNetwork/exocore/precompiles/avs"
-	"github.com/ExocoreNetwork/exocore/x/avs/types"
 	epochstypes "github.com/ExocoreNetwork/exocore/x/epochs/types"
 	operatortypes "github.com/ExocoreNetwork/exocore/x/operator/types"
 	"github.com/cometbft/cometbft/libs/rand"
@@ -641,33 +644,48 @@ func (suite *AVSManagerPrecompileSuite) TestDeregisterOperatorFromAVS() {
 // TestRun tests the precompiles Run method reg avstask.
 func (suite *AVSManagerPrecompileSuite) TestRunRegTaskInfo() {
 	taskAddr := utiltx.GenerateAddress()
-	registerAVS := func() {
-		avsName := "avsTest"
-		avsOwnerAddress := []string{
-			sdk.AccAddress(suite.Address.Bytes()).String(),
-			"exo13h6xg79g82e2g2vhjwg7j4r2z2hlncelwutkjr",
-			"exo13h6xg79g82e2g2vhjwg7j4r2z2hlncelwutkj2",
+	setUp := func() {
+		suite.prepare()
+		// register the new token
+		usdcAddr := common.HexToAddress("0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48")
+		usdcClientChainAsset := assetstype.AssetInfo{
+			Name:             "USD coin",
+			Symbol:           "USDC",
+			Address:          usdcAddr.String(),
+			Decimals:         6,
+			TotalSupply:      sdkmath.NewInt(1e18),
+			LayerZeroChainID: 101,
+			MetaInfo:         "USDC",
 		}
-		assetID := []string{"11", "22", "33"}
-		avsInfo := &types.AVSInfo{
-			Name:                avsName,
-			AvsAddress:          utiltx.GenerateAddress().String(),
-			SlashAddr:           utiltx.GenerateAddress().String(),
-			AvsOwnerAddress:     avsOwnerAddress,
-			AssetIDs:            assetID,
-			AvsUnbondingPeriod:  7,
-			MinSelfDelegation:   10,
-			EpochIdentifier:     epochstypes.DayEpochID,
-			StartingEpoch:       1,
-			MinOptInOperators:   100,
-			MinTotalStakeAmount: 1000,
-			AvsSlash:            sdk.MustNewDecFromStr("0.001"),
-			AvsReward:           sdk.MustNewDecFromStr("0.002"),
-			TaskAddr:            taskAddr.String(),
-		}
-
-		err := suite.App.AVSManagerKeeper.SetAVSInfo(suite.Ctx, avsInfo)
+		err := suite.App.AssetsKeeper.SetStakingAssetInfo(
+			suite.Ctx,
+			&assetstype.StakingAssetInfo{
+				AssetBasicInfo:     &usdcClientChainAsset,
+				StakingTotalAmount: sdkmath.NewInt(0),
+			},
+		)
 		suite.NoError(err)
+		// register the new AVS
+		suite.prepareAvs([]string{"0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48_0x65", "0xdac17f958d2ee523a2206206994597c13d831ec7_0x65"}, taskAddr.String())
+		// opt in
+		err = suite.App.OperatorKeeper.OptIn(suite.Ctx, suite.operatorAddr, suite.avsAddr)
+		suite.NoError(err)
+		usdtPrice, err := suite.App.OperatorKeeper.OracleInterface().GetSpecifiedAssetsPrice(suite.Ctx, suite.assetID)
+		suite.NoError(err)
+		operatorKeeper.CalculateUSDValue(suite.delegationAmount, usdtPrice.Value, suite.assetDecimal, usdtPrice.Decimal)
+		// deposit and delegate another asset to the operator
+		suite.NoError(err)
+		suite.prepareDeposit(usdcAddr, sdkmath.NewInt(1e8))
+		usdcPrice, err := suite.App.OperatorKeeper.OracleInterface().GetSpecifiedAssetsPrice(suite.Ctx, suite.assetID)
+		suite.NoError(err)
+		delegatedAmount := sdkmath.NewIntWithDecimal(8, 7)
+		suite.prepareDelegation(true, usdcAddr, delegatedAmount)
+
+		// updating the new voting power
+		operatorKeeper.CalculateUSDValue(suite.delegationAmount, usdcPrice.Value, suite.assetDecimal, usdcPrice.Decimal)
+		suite.CommitAfter(time.Hour*1 + time.Nanosecond)
+		suite.CommitAfter(time.Hour*1 + time.Nanosecond)
+		suite.CommitAfter(time.Hour*1 + time.Nanosecond)
 	}
 	commonMalleate := func() (common.Address, []byte) {
 		input, err := suite.precompile.Pack(
@@ -697,7 +715,7 @@ func (suite *AVSManagerPrecompileSuite) TestRunRegTaskInfo() {
 			name: "pass - avstask via pre-compiles",
 			malleate: func() (common.Address, []byte) {
 				suite.Require().NoError(err)
-				registerAVS()
+				setUp()
 				return commonMalleate()
 			},
 			returnBytes: successRet,

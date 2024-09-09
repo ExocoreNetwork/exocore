@@ -39,7 +39,7 @@ func (k *Keeper) GetTaskInfo(ctx sdk.Context, taskID, taskContractAddress string
 	value := store.Get(infoKey)
 	if value == nil {
 		return nil, errorsmod.Wrap(types.ErrNoKeyInTheStore,
-			fmt.Sprintf("GetTaskInfo: key is %s", taskContractAddress))
+			fmt.Sprintf("GetTaskInfo: key not found for task ID %s at contract address %s", taskID, taskContractAddress))
 	}
 
 	ret := types.TaskInfo{}

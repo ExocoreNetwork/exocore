@@ -16,7 +16,7 @@ var (
 	)
 	ErrUnregisterNonExistent = errorsmod.Register(
 		ModuleName, 4,
-		"Error: No available avs to DeRegisterAction",
+		"Error: No available avs ",
 	)
 
 	ErrInvalidAction = errorsmod.Register(
