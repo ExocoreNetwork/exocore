@@ -1,10 +1,8 @@
-package types_test
+package types
 
 import (
 	"fmt"
 	"testing"
-
-	"github.com/evmos/evmos/v14/types"
 )
 
 func BenchmarkParseChainID(b *testing.B) {
@@ -12,7 +10,7 @@ func BenchmarkParseChainID(b *testing.B) {
 	// Start at 1, for valid EIP155, see regexEIP155 variable.
 	for i := 1; i < b.N; i++ {
 		chainID := fmt.Sprintf("evmos_1-%d", i)
-		if _, err := types.ParseChainID(chainID); err != nil {
+		if _, err := ParseChainID(chainID); err != nil {
 			b.Fatal(err)
 		}
 	}
