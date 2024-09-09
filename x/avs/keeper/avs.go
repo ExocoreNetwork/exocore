@@ -7,6 +7,7 @@ import (
 	errorsmod "cosmossdk.io/errors"
 	sdkmath "cosmossdk.io/math"
 
+	exocoretypes "github.com/ExocoreNetwork/exocore/types"
 	"github.com/ExocoreNetwork/exocore/x/avs/types"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/evmos/evmos/v14/x/evm/statedb"
@@ -118,7 +119,7 @@ func (k Keeper) RegisterAVSWithChainID(
 	// guard against errors
 	ctx, writeFunc := oCtx.CacheContext()
 	// remove the version number and validate
-	params.ChainID = types.ChainIDWithoutRevision(params.ChainID)
+	params.ChainID = exocoretypes.ChainIDWithoutRevision(params.ChainID)
 	if len(params.ChainID) == 0 {
 		return common.Address{}, errorsmod.Wrap(types.ErrNotNull, "RegisterAVSWithChainID: chainID is null")
 	}

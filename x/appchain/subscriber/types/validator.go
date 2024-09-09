@@ -8,31 +8,31 @@ import (
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
 
-// NewOmniChainValidator creates a new OmniChainValidator instance.
-func NewOmniChainValidator(
+// NewSubscriberChainValidator creates a new SubscriberChainValidator instance.
+func NewSubscriberChainValidator(
 	address []byte, power int64, pubKey cryptotypes.PubKey,
-) (OmniChainValidator, error) {
+) (SubscriberChainValidator, error) {
 	pkAny, err := codectypes.NewAnyWithValue(pubKey)
 	if err != nil {
-		return OmniChainValidator{}, err
+		return SubscriberChainValidator{}, err
 	}
 
-	return OmniChainValidator{
-		Address: address,
-		Power:   power,
-		Pubkey:  pkAny,
+	return SubscriberChainValidator{
+		ConsAddress: address,
+		Power:       power,
+		Pubkey:      pkAny,
 	}, nil
 }
 
 // UnpackInterfaces implements UnpackInterfacesMessage.UnpackInterfaces.
 // It is required to ensure that ConsPubKey below works.
-func (ocv OmniChainValidator) UnpackInterfaces(unpacker codectypes.AnyUnpacker) error {
+func (ocv SubscriberChainValidator) UnpackInterfaces(unpacker codectypes.AnyUnpacker) error {
 	var pk cryptotypes.PubKey
 	return unpacker.UnpackAny(ocv.Pubkey, &pk)
 }
 
 // ConsPubKey returns the validator PubKey as a cryptotypes.PubKey.
-func (ocv OmniChainValidator) ConsPubKey() (cryptotypes.PubKey, error) {
+func (ocv SubscriberChainValidator) ConsPubKey() (cryptotypes.PubKey, error) {
 	pk, ok := ocv.Pubkey.GetCachedValue().(cryptotypes.PubKey)
 	if !ok {
 		return nil, errorsmod.Wrapf(

@@ -29,4 +29,8 @@ var (
 		ModuleName, 7,
 		"client not found",
 	)
+	ErrInvalidPacketData = errorsmod.Register(
+		ModuleName, 8,
+		"invalid packet data (but successfully unmarshalled)",
+	)
 )

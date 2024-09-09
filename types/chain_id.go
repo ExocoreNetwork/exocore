@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	errorsmod "cosmossdk.io/errors"
+	ibcclienttypes "github.com/cosmos/ibc-go/v7/modules/core/02-client/types"
 )
 
 var (
@@ -52,4 +53,14 @@ func ParseChainID(chainID string) (*big.Int, error) {
 	}
 
 	return chainIDInt, nil
+}
+
+// ChainIDWithoutRevision returns the chainID without the revision number.
+// For example, "exocoretestnet_233-1" returns "exocoretestnet_233".
+func ChainIDWithoutRevision(chainID string) string {
+	if !ibcclienttypes.IsRevisionFormat(chainID) {
+		return chainID
+	}
+	splitStr := strings.Split(chainID, "-")
+	return splitStr[0]
 }

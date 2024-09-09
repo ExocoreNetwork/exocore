@@ -21,3 +21,8 @@ message ChainIDs {
   repeated string list = 1;
 }
 
+// ConsensusAddresses is a list of consensus addresses.
+message ConsensusAddresses {
+  // list is the list of consensus addresses.
+  repeated bytes list = 1;
+}

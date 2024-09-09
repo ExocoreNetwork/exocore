@@ -34,12 +34,12 @@ func NewIBCModule(k keeper.Keeper) IBCModule {
 // OnChanOpenInit implements the IBCModule interface
 func (im IBCModule) OnChanOpenInit(
 	ctx sdk.Context,
-	order channeltypes.Order,
-	connectionHops []string,
-	portId string,
-	channelId string,
-	chanCap *capabilitytypes.Capability,
-	counterparty channeltypes.Counterparty,
+	_ channeltypes.Order,
+	_ []string,
+	_ string,
+	_ string,
+	_ *capabilitytypes.Capability,
+	_ channeltypes.Counterparty,
 	version string,
 ) (string, error) {
 	im.keeper.Logger(ctx).Debug(
@@ -117,24 +117,20 @@ func (im IBCModule) OnChanOpenTry(
 		CoordinatorFeePoolAddr: im.keeper.GetSubscriberRewardsPoolAddressStr(ctx),
 		Version:                commontypes.Version,
 	}
-	// no k.cdc here so use this
-	mdBz, err := (&md).Marshal()
-	if err != nil {
-		return "", errorsmod.Wrapf(commontypes.ErrInvalidHandshakeMetadata,
-			"error marshalling ibc-try metadata: %v", err)
-	}
+	// we can use `MustMarshal` for data that we create
+	mdBz := commontypes.ModuleCdc.MustMarshal(&md)
 	return string(mdBz), nil
 }
 
 // OnChanOpenAck implements the IBCModule interface
 func (im IBCModule) OnChanOpenAck(
 	ctx sdk.Context,
-	portId,
-	channelId string,
-	_,
-	counterpartyVersion string,
+	_ string,
+	_ string,
+	_ string,
+	_ string,
 ) error {
-	im.keeper.Logger(ctx).Error(
+	im.keeper.Logger(ctx).Debug(
 		"OnChanOpenAck",
 	)
 	return errorsmod.Wrap(
@@ -145,14 +141,12 @@ func (im IBCModule) OnChanOpenAck(
 
 // OnChanOpenConfirm implements the IBCModule interface
 func (im IBCModule) OnChanOpenConfirm(
-	ctx sdk.Context,
-	portId string,
-	channelId string,
+	ctx sdk.Context, _ string, dstChannelID string,
 ) error {
-	im.keeper.Logger(ctx).Error(
+	im.keeper.Logger(ctx).Debug(
 		"OnChanOpenConfirm",
 	)
-	err := im.keeper.SetSubscriberChain(ctx, channelId)
+	err := im.keeper.SetSubscriberChain(ctx, dstChannelID)
 	if err != nil {
 		return err
 	}
@@ -161,11 +155,9 @@ func (im IBCModule) OnChanOpenConfirm(
 
 // OnChanCloseInit implements the IBCModule interface
 func (im IBCModule) OnChanCloseInit(
-	ctx sdk.Context,
-	portId string,
-	channelId string,
+	ctx sdk.Context, _ string, _ string,
 ) error {
-	im.keeper.Logger(ctx).Error(
+	im.keeper.Logger(ctx).Debug(
 		"OnChanCloseInit",
 	)
 	// Disallow user-initiated channel closing for channels
@@ -174,11 +166,9 @@ func (im IBCModule) OnChanCloseInit(
 
 // OnChanCloseConfirm implements the IBCModule interface
 func (im IBCModule) OnChanCloseConfirm(
-	ctx sdk.Context,
-	portId,
-	channelId string,
+	ctx sdk.Context, _ string, _ string,
 ) error {
-	im.keeper.Logger(ctx).Error(
+	im.keeper.Logger(ctx).Debug(
 		"OnChanCloseConfirm",
 	)
 	return nil
@@ -186,39 +176,55 @@ func (im IBCModule) OnChanCloseConfirm(
 
 // OnRecvPacket implements the IBCModule interface
 func (im IBCModule) OnRecvPacket(
-	ctx sdk.Context,
-	packet channeltypes.Packet,
-	_ sdk.AccAddress,
+	ctx sdk.Context, packet channeltypes.Packet, _ sdk.AccAddress,
 ) ibcexported.Acknowledgement {
-	im.keeper.Logger(ctx).Error(
+	im.keeper.Logger(ctx).Debug(
 		"OnRecvPacket",
 	)
+
 	var (
 		ack  ibcexported.Acknowledgement
 		data commontypes.SubscriberPacketData
+		err  error
+		res  []byte
 	)
 
-	if err := commontypes.ModuleCdc.UnmarshalJSON(packet.GetData(), &data); err != nil {
-		errAck := utils.NewErrorAcknowledgementWithLog(ctx, err)
-		ack = &errAck
+	// (1) Since this is a packet originating from the subscriber, we cannot use MustUnmarshal,
+	// because such packets are not guaranteed to be correctly formed.
+	// (2) When the subscriber chain marshals the data, it should use MarshalJSON.
+	if unmarshalErr := commontypes.ModuleCdc.UnmarshalJSON(
+		packet.GetData(), &data,
+	); unmarshalErr != nil {
+		im.keeper.Logger(ctx).Error(
+			"cannot unmarshal subscriber packet data",
+			"error", unmarshalErr,
+		)
+		err = sdkerrors.ErrInvalidType.Wrapf(
+			"cannot unmarshal coordinator packet data: %s", unmarshalErr,
+		)
 	} else {
 		switch data.Type {
 		case commontypes.SlashPacket:
-			im.keeper.Logger(ctx).Error(
+			im.keeper.Logger(ctx).Debug(
 				"OnRecvSlashPacket",
 				"packet data", data,
 			)
-			ack = im.keeper.OnRecvSlashPacket(ctx, packet, *data.GetSlashPacketData())
+			res, err = im.keeper.OnRecvSlashPacket(ctx, packet, *data.GetSlashPacketData())
 		case commontypes.VscMaturedPacket:
-			im.keeper.Logger(ctx).Error(
+			im.keeper.Logger(ctx).Debug(
 				"OnRecvVscMaturedPacket",
 				"packet data", data,
 			)
-			ack = im.keeper.OnRecvVscMaturedPacket(ctx, packet, *data.GetVscMaturedPacketData())
+			// no need to send an ack for this packet type
+			err = im.keeper.OnRecvVscMaturedPacket(ctx, packet, *data.GetVscMaturedPacketData())
 		default:
-			errAck := utils.NewErrorAcknowledgementWithLog(ctx, fmt.Errorf("unknown packet type: %s", data.Type))
-			ack = &errAck
+			err = sdkerrors.ErrInvalidType.Wrapf("unknown packet type: %s", data.Type)
 		}
+	}
+	if err != nil {
+		ack = commontypes.NewErrorAcknowledgementWithLog(ctx, err)
+	} else if res != nil {
+		ack = commontypes.NewResultAcknowledgementWithLog(ctx, res)
 	}
 
 	ctx.EventManager().EmitEvent(
@@ -239,15 +245,15 @@ func (im IBCModule) OnAcknowledgementPacket(
 	acknowledgement []byte,
 	_ sdk.AccAddress,
 ) error {
-	im.keeper.Logger(ctx).Error(
+	im.keeper.Logger(ctx).Debug(
 		"OnAcknowledgementPacket",
 	)
+	// same as before, this packet is sent by the subscriber, so we cannot use MustUnmarshal
 	var ack channeltypes.Acknowledgement
 	if err := commontypes.ModuleCdc.UnmarshalJSON(acknowledgement, &ack); err != nil {
 		return errorsmod.Wrapf(
 			sdkerrors.ErrUnknownRequest,
-			"cannot unmarshal coordinator packet acknowledgement: %v",
-			err,
+			"cannot unmarshal packet acknowledgement: %s", err,
 		)
 	}
 
@@ -289,7 +295,7 @@ func (im IBCModule) OnTimeoutPacket(
 	packet channeltypes.Packet,
 	_ sdk.AccAddress,
 ) error {
-	im.keeper.Logger(ctx).Error(
+	im.keeper.Logger(ctx).Debug(
 		"OnTimeoutPacket",
 	)
 	if err := im.keeper.OnTimeoutPacket(ctx, packet); err != nil {

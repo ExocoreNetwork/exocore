@@ -10,3 +10,9 @@ func NewErrorAcknowledgementWithLog(ctx sdk.Context, err error) channeltypes.Ack
 	ctx.Logger().Error("IBC ErrorAcknowledgement constructed", "error", err)
 	return channeltypes.NewErrorAcknowledgement(err)
 }
+
+// NewResultAcknowledgementWithLog creates a result acknowledgement with a log message.
+func NewResultAcknowledgementWithLog(ctx sdk.Context, res []byte) channeltypes.Acknowledgement {
+	ctx.Logger().Info("IBC ResultAcknowledgement constructed", "res", res)
+	return channeltypes.NewResultAcknowledgement(res)
+}

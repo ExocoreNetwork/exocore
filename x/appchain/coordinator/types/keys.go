@@ -54,6 +54,14 @@ const (
 	ChannelForChainBytePrefix
 	// ChainForChannelBytePrefix is the prefix for the chain for channel key
 	ChainForChannelBytePrefix
+	// ChainInitTimeoutBytePrefix is the prefix for the chain init timeout key
+	ChainInitTimeoutBytePrefix
+	// InitChainHeightBytePrefix is the prefix for the init chain height key
+	InitChainHeightBytePrefix
+	// HeightToChainVscIDBytePrefix is the prefix for the height to chain id + vsc id key
+	HeightToChainVscIDBytePrefix
+	// SlashAcksBytePrefix is the prefix for the slashing acks key
+	SlashAcksBytePrefix
 )
 
 // ParamsKey returns the key under which the coordinator module's parameters are stored.
@@ -125,4 +133,31 @@ func ChannelForChainKey(chainID string) []byte {
 // for the given channelId is stored.
 func ChainForChannelKey(channelID string) []byte {
 	return append([]byte{ChainForChannelBytePrefix}, []byte(channelID)...)
+}
+
+// ChainInitTimeoutKey returns the key for the chain init timeout
+func ChainInitTimeoutKey(chainID string) []byte {
+	return append([]byte{ChainInitTimeoutBytePrefix}, []byte(chainID)...)
+}
+
+// InitChainHeightKey returns the key for the init chain height
+func InitChainHeightKey(chainID string) []byte {
+	return append([]byte{InitChainHeightBytePrefix}, []byte(chainID)...)
+}
+
+// HeightToChainVscIDKey returns the key for the height to chain id + vsc id
+func HeightToChainVscIDKey(chainID string, vscID uint64) []byte {
+	return utils.AppendMany(
+		[]byte{HeightToChainVscIDBytePrefix},
+		[]byte(chainID),
+		sdk.Uint64ToBigEndian(vscID),
+	)
+}
+
+// SlashAcksKey returns the key for the slashing acks
+func SlashAcksKey(chainID string) []byte {
+	return append(
+		[]byte{SlashAcksBytePrefix},
+		[]byte(chainID)...,
+	)
 }

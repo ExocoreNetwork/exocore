@@ -27,19 +27,19 @@ func (k Keeper) GetCoordinatorClientID(ctx sdk.Context) (string, bool) {
 }
 
 // SetCoordinatorChannel sets the channelId for the channel to the coordinator.
-func (k Keeper) SetCoordinatorChannel(ctx sdk.Context, channelId string) {
+func (k Keeper) SetCoordinatorChannel(ctx sdk.Context, channelID string) {
 	store := ctx.KVStore(k.storeKey)
-	store.Set(types.CoordinatorChannelKey(), []byte(channelId))
+	store.Set(types.CoordinatorChannelKey(), []byte(channelID))
 }
 
 // GetCoordinatorChannel gets the channelId for the channel to the coordinator.
 func (k Keeper) GetCoordinatorChannel(ctx sdk.Context) (string, bool) {
 	store := ctx.KVStore(k.storeKey)
-	channelIdBytes := store.Get(types.CoordinatorChannelKey())
-	if len(channelIdBytes) == 0 {
+	bz := store.Get(types.CoordinatorChannelKey())
+	if len(bz) == 0 {
 		return "", false
 	}
-	return string(channelIdBytes), true
+	return string(bz), true
 }
 
 // DeleteCoordinatorChannel deletes the channelId for the channel to the coordinator.
@@ -56,29 +56,29 @@ func (k Keeper) VerifyCoordinatorChain(ctx sdk.Context, connectionHops []string)
 			"must have direct connection to coordinator chain",
 		)
 	}
-	connectionId := connectionHops[0]
-	conn, ok := k.connectionKeeper.GetConnection(ctx, connectionId)
+	connectionID := connectionHops[0]
+	conn, ok := k.connectionKeeper.GetConnection(ctx, connectionID)
 	if !ok {
 		return errorsmod.Wrapf(
 			conntypes.ErrConnectionNotFound,
 			"connection not found for connection Id: %s",
-			connectionId,
+			connectionID,
 		)
 	}
 	// Verify that client id is expected clientId
-	expectedClientId, ok := k.GetCoordinatorClientID(ctx)
+	expectedClientID, ok := k.GetCoordinatorClientID(ctx)
 	if !ok {
 		return errorsmod.Wrapf(
 			clienttypes.ErrInvalidClient,
 			"could not find coordinator client id",
 		)
 	}
-	if expectedClientId != conn.ClientId {
+	if expectedClientID != conn.ClientId {
 		return errorsmod.Wrapf(
 			clienttypes.ErrInvalidClient,
 			"invalid client: %s, channel must be built on top of client: %s",
 			conn.ClientId,
-			expectedClientId,
+			expectedClientID,
 		)
 	}
 

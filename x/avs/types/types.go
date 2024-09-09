@@ -1,9 +1,6 @@
 package types
 
 import (
-	"strings"
-
-	ibcclienttypes "github.com/cosmos/ibc-go/v7/modules/core/02-client/types"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/crypto"
@@ -68,16 +65,6 @@ type AVSRegisterOrDeregisterParams struct {
 	AvsReward     uint64
 	AvsSlash      uint64
 	Action        uint64
-}
-
-// ChainIDWithoutRevision returns the chainID without the revision number.
-// For example, "exocoretestnet_233-1" returns "exocoretestnet_233".
-func ChainIDWithoutRevision(chainID string) string {
-	if !ibcclienttypes.IsRevisionFormat(chainID) {
-		return chainID
-	}
-	splitStr := strings.Split(chainID, "-")
-	return splitStr[0]
 }
 
 // GenerateAVSAddr generates a hex AVS address based on the chainID.

@@ -46,7 +46,7 @@ func (k Keeper) InitGenesis(
 		panic(fmt.Errorf("could not create the dogfood AVS: %s", err))
 	}
 	avsAddrString := avsAddr.String()
-	ctx.Logger().With(types.ModuleName).Info(fmt.Sprintf("created dogfood avs %s %s", avsAddrString, ctx.ChainID()))
+	k.Logger(ctx).Info(fmt.Sprintf("created dogfood avs %s %s", avsAddrString, ctx.ChainID()))
 	// create the validators
 	out := make([]exocoretypes.WrappedConsKeyWithPower, 0, len(genState.ValSet))
 	for _, val := range genState.ValSet {

@@ -6,7 +6,7 @@ package types
 import (
 	fmt "fmt"
 	types "github.com/cometbft/cometbft/abci/types"
-	_ "github.com/cosmos/cosmos-sdk/x/staking/types"
+	types1 "github.com/cosmos/cosmos-sdk/x/staking/types"
 	_ "github.com/cosmos/gogoproto/gogoproto"
 	proto "github.com/cosmos/gogoproto/proto"
 	io "io"
@@ -24,6 +24,41 @@ var _ = math.Inf
 // A compilation error at this line likely means your copy of the
 // proto package needs to be updated.
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
+
+// SubscriberPacketData is the enum to identify the type of packet sent.
+type SubscriberPacketDataType int32
+
+const (
+	// SUBSCRIBER_PACKET_TYPE_UNSPECIFIED is the default value
+	UnspecifiedPacket SubscriberPacketDataType = 0
+	// SUBSCRIBER_PACKET_TYPE_SLASH is the type of packet sent when a subscriber
+	// chain wants to request the slashing of a validator on the coordinator chain.
+	SlashPacket SubscriberPacketDataType = 1
+	// SUBSCRIBER_PACKET_TYPE_VSC_MATURED is the type of packet sent when a subscriber
+	// chain wants to indicate that a VSC has matured and unbondings associated with
+	// that VSC can now be released.
+	VscMaturedPacket SubscriberPacketDataType = 2
+)
+
+var SubscriberPacketDataType_name = map[int32]string{
+	0: "SUBSCRIBER_PACKET_TYPE_UNSPECIFIED",
+	1: "SUBSCRIBER_PACKET_TYPE_SLASH",
+	2: "SUBSCRIBER_PACKET_TYPE_VSC_MATURED",
+}
+
+var SubscriberPacketDataType_value = map[string]int32{
+	"SUBSCRIBER_PACKET_TYPE_UNSPECIFIED": 0,
+	"SUBSCRIBER_PACKET_TYPE_SLASH":       1,
+	"SUBSCRIBER_PACKET_TYPE_VSC_MATURED": 2,
+}
+
+func (x SubscriberPacketDataType) String() string {
+	return proto.EnumName(SubscriberPacketDataType_name, int32(x))
+}
+
+func (SubscriberPacketDataType) EnumDescriptor() ([]byte, []int) {
+	return fileDescriptor_646142158918d547, []int{0}
+}
 
 type HandshakeMetadata struct {
 	// This address is where the subscriber chain will send the fees proportionally
@@ -78,6 +113,219 @@ func (m *HandshakeMetadata) GetVersion() string {
 	return ""
 }
 
+// SlashPacketData  is sent from the subscriber chain to the coordinator chain
+// to request the slashing of a validator as a result of an infraction committed
+// on the subscriber chain.
+type SlashPacketData struct {
+	// validator is the validator to be slashed
+	Validator types.Validator `protobuf:"bytes,1,opt,name=validator,proto3" json:"validator" yaml:"validator"`
+	// valset_update_id is the id of the validator set change during which
+	// the infraction was committed
+	ValsetUpdateID uint64 `protobuf:"varint,2,opt,name=valset_update_id,json=valsetUpdateId,proto3" json:"valset_update_id,omitempty"`
+	// infraction refers to the type of infraction committed
+	Infraction types1.Infraction `protobuf:"varint,3,opt,name=infraction,proto3,enum=cosmos.staking.v1beta1.Infraction" json:"infraction,omitempty"`
+}
+
+func (m *SlashPacketData) Reset()         { *m = SlashPacketData{} }
+func (m *SlashPacketData) String() string { return proto.CompactTextString(m) }
+func (*SlashPacketData) ProtoMessage()    {}
+func (*SlashPacketData) Descriptor() ([]byte, []int) {
+	return fileDescriptor_646142158918d547, []int{1}
+}
+func (m *SlashPacketData) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *SlashPacketData) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_SlashPacketData.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *SlashPacketData) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_SlashPacketData.Merge(m, src)
+}
+func (m *SlashPacketData) XXX_Size() int {
+	return m.Size()
+}
+func (m *SlashPacketData) XXX_DiscardUnknown() {
+	xxx_messageInfo_SlashPacketData.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_SlashPacketData proto.InternalMessageInfo
+
+func (m *SlashPacketData) GetValidator() types.Validator {
+	if m != nil {
+		return m.Validator
+	}
+	return types.Validator{}
+}
+
+func (m *SlashPacketData) GetValsetUpdateID() uint64 {
+	if m != nil {
+		return m.ValsetUpdateID
+	}
+	return 0
+}
+
+func (m *SlashPacketData) GetInfraction() types1.Infraction {
+	if m != nil {
+		return m.Infraction
+	}
+	return types1.Infraction_INFRACTION_UNSPECIFIED
+}
+
+// VscMaturedPacketData is sent from the subscriber chain to the coordinator chain
+// to indicate that a VSC has matured and unbondings associated with that VSC
+// can now be released.
+type VscMaturedPacketData struct {
+	// valset_update_id is the id of the validator set change to mature.
+	ValsetUpdateID uint64 `protobuf:"varint,1,opt,name=valset_update_id,json=valsetUpdateId,proto3" json:"valset_update_id,omitempty"`
+}
+
+func (m *VscMaturedPacketData) Reset()         { *m = VscMaturedPacketData{} }
+func (m *VscMaturedPacketData) String() string { return proto.CompactTextString(m) }
+func (*VscMaturedPacketData) ProtoMessage()    {}
+func (*VscMaturedPacketData) Descriptor() ([]byte, []int) {
+	return fileDescriptor_646142158918d547, []int{2}
+}
+func (m *VscMaturedPacketData) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *VscMaturedPacketData) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_VscMaturedPacketData.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *VscMaturedPacketData) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_VscMaturedPacketData.Merge(m, src)
+}
+func (m *VscMaturedPacketData) XXX_Size() int {
+	return m.Size()
+}
+func (m *VscMaturedPacketData) XXX_DiscardUnknown() {
+	xxx_messageInfo_VscMaturedPacketData.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_VscMaturedPacketData proto.InternalMessageInfo
+
+func (m *VscMaturedPacketData) GetValsetUpdateID() uint64 {
+	if m != nil {
+		return m.ValsetUpdateID
+	}
+	return 0
+}
+
+// SubscriberPacketData is a wrapped message that contains the type of packet
+// and the data associated with that packet.
+type SubscriberPacketData struct {
+	// type is the type of packet sent
+	Type SubscriberPacketDataType `protobuf:"varint,1,opt,name=type,proto3,enum=exocore.appchain.common.v1.SubscriberPacketDataType" json:"type,omitempty"`
+	// data is the data associated with the packet
+	//
+	// Types that are valid to be assigned to Data:
+	//	*SubscriberPacketData_SlashPacketData
+	//	*SubscriberPacketData_VscMaturedPacketData
+	Data isSubscriberPacketData_Data `protobuf_oneof:"data"`
+}
+
+func (m *SubscriberPacketData) Reset()         { *m = SubscriberPacketData{} }
+func (m *SubscriberPacketData) String() string { return proto.CompactTextString(m) }
+func (*SubscriberPacketData) ProtoMessage()    {}
+func (*SubscriberPacketData) Descriptor() ([]byte, []int) {
+	return fileDescriptor_646142158918d547, []int{3}
+}
+func (m *SubscriberPacketData) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *SubscriberPacketData) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_SubscriberPacketData.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *SubscriberPacketData) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_SubscriberPacketData.Merge(m, src)
+}
+func (m *SubscriberPacketData) XXX_Size() int {
+	return m.Size()
+}
+func (m *SubscriberPacketData) XXX_DiscardUnknown() {
+	xxx_messageInfo_SubscriberPacketData.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_SubscriberPacketData proto.InternalMessageInfo
+
+type isSubscriberPacketData_Data interface {
+	isSubscriberPacketData_Data()
+	MarshalTo([]byte) (int, error)
+	Size() int
+}
+
+type SubscriberPacketData_SlashPacketData struct {
+	SlashPacketData *SlashPacketData `protobuf:"bytes,2,opt,name=slash_packet_data,json=slashPacketData,proto3,oneof" json:"slash_packet_data,omitempty"`
+}
+type SubscriberPacketData_VscMaturedPacketData struct {
+	VscMaturedPacketData *VscMaturedPacketData `protobuf:"bytes,3,opt,name=vsc_matured_packet_data,json=vscMaturedPacketData,proto3,oneof" json:"vsc_matured_packet_data,omitempty"`
+}
+
+func (*SubscriberPacketData_SlashPacketData) isSubscriberPacketData_Data()      {}
+func (*SubscriberPacketData_VscMaturedPacketData) isSubscriberPacketData_Data() {}
+
+func (m *SubscriberPacketData) GetData() isSubscriberPacketData_Data {
+	if m != nil {
+		return m.Data
+	}
+	return nil
+}
+
+func (m *SubscriberPacketData) GetType() SubscriberPacketDataType {
+	if m != nil {
+		return m.Type
+	}
+	return UnspecifiedPacket
+}
+
+func (m *SubscriberPacketData) GetSlashPacketData() *SlashPacketData {
+	if x, ok := m.GetData().(*SubscriberPacketData_SlashPacketData); ok {
+		return x.SlashPacketData
+	}
+	return nil
+}
+
+func (m *SubscriberPacketData) GetVscMaturedPacketData() *VscMaturedPacketData {
+	if x, ok := m.GetData().(*SubscriberPacketData_VscMaturedPacketData); ok {
+		return x.VscMaturedPacketData
+	}
+	return nil
+}
+
+// XXX_OneofWrappers is for the internal use of the proto package.
+func (*SubscriberPacketData) XXX_OneofWrappers() []interface{} {
+	return []interface{}{
+		(*SubscriberPacketData_SlashPacketData)(nil),
+		(*SubscriberPacketData_VscMaturedPacketData)(nil),
+	}
+}
+
 // ValidatorSetChangePacketData is sent from the coordinator chain to the subscriber chain
 // containing the new validator set and the id of the validator set change.
 type ValidatorSetChangePacketData struct {
@@ -94,7 +342,7 @@ func (m *ValidatorSetChangePacketData) Reset()         { *m = ValidatorSetChange
 func (m *ValidatorSetChangePacketData) String() string { return proto.CompactTextString(m) }
 func (*ValidatorSetChangePacketData) ProtoMessage()    {}
 func (*ValidatorSetChangePacketData) Descriptor() ([]byte, []int) {
-	return fileDescriptor_646142158918d547, []int{1}
+	return fileDescriptor_646142158918d547, []int{4}
 }
 func (m *ValidatorSetChangePacketData) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -145,7 +393,11 @@ func (m *ValidatorSetChangePacketData) GetSlashAcks() []string {
 }
 
 func init() {
+	proto.RegisterEnum("exocore.appchain.common.v1.SubscriberPacketDataType", SubscriberPacketDataType_name, SubscriberPacketDataType_value)
 	proto.RegisterType((*HandshakeMetadata)(nil), "exocore.appchain.common.v1.HandshakeMetadata")
+	proto.RegisterType((*SlashPacketData)(nil), "exocore.appchain.common.v1.SlashPacketData")
+	proto.RegisterType((*VscMaturedPacketData)(nil), "exocore.appchain.common.v1.VscMaturedPacketData")
+	proto.RegisterType((*SubscriberPacketData)(nil), "exocore.appchain.common.v1.SubscriberPacketData")
 	proto.RegisterType((*ValidatorSetChangePacketData)(nil), "exocore.appchain.common.v1.ValidatorSetChangePacketData")
 }
 
@@ -154,34 +406,53 @@ func init() {
 }
 
 var fileDescriptor_646142158918d547 = []byte{
-	// 420 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x64, 0x92, 0x4f, 0x6f, 0xd3, 0x4c,
-	0x10, 0xc6, 0xe3, 0x37, 0xaf, 0x40, 0x59, 0xa4, 0x8a, 0x5a, 0x08, 0x99, 0x00, 0x8e, 0x15, 0x81,
-	0x94, 0x93, 0x57, 0x81, 0x53, 0x11, 0x97, 0x86, 0x82, 0xe0, 0x00, 0xaa, 0x52, 0xd1, 0x03, 0x17,
-	0x6b, 0xb2, 0x3b, 0xd8, 0x2b, 0xdb, 0x3b, 0xd6, 0xee, 0xd6, 0x6d, 0xbf, 0x05, 0x1f, 0xab, 0xc7,
-	0x1e, 0x39, 0x45, 0x28, 0xb9, 0x72, 0xe2, 0x13, 0x20, 0xdb, 0x31, 0x14, 0xf5, 0x36, 0x7f, 0x7e,
-	0xf3, 0xec, 0x8e, 0x9e, 0x61, 0xcf, 0xf1, 0x82, 0x04, 0x19, 0xe4, 0x50, 0x55, 0x22, 0x03, 0xa5,
-	0xb9, 0xa0, 0xb2, 0x24, 0xcd, 0xeb, 0x39, 0x3f, 0x57, 0x06, 0xe3, 0xca, 0x90, 0x23, 0x7f, 0xbc,
-	0xc3, 0xe2, 0x1e, 0x8b, 0x3b, 0x2c, 0xae, 0xe7, 0xe3, 0x67, 0x82, 0x6c, 0x49, 0x96, 0x5b, 0x07,
-	0xb9, 0xd2, 0x29, 0xaf, 0xe7, 0x2b, 0x74, 0x30, 0xef, 0xf3, 0x4e, 0x61, 0xfc, 0x20, 0xa5, 0x94,
-	0xda, 0x90, 0x37, 0xd1, 0xae, 0xfa, 0xd8, 0xa1, 0x96, 0x68, 0x4a, 0xa5, 0x1d, 0x87, 0x95, 0x50,
-	0xdc, 0x5d, 0x56, 0x68, 0xbb, 0xe6, 0x34, 0x63, 0xfb, 0xef, 0x41, 0x4b, 0x9b, 0x41, 0x8e, 0x1f,
-	0xd1, 0x81, 0x04, 0x07, 0xfe, 0x01, 0x7b, 0x24, 0x88, 0x8c, 0x54, 0x1a, 0x1c, 0x99, 0xe4, 0x2b,
-	0x62, 0x52, 0x11, 0x15, 0x09, 0x48, 0x69, 0x02, 0x2f, 0xf2, 0x66, 0xa3, 0xe5, 0xc3, 0x1b, 0xc0,
-	0x3b, 0xc4, 0x63, 0xa2, 0xe2, 0x50, 0x4a, 0xe3, 0x07, 0xec, 0x6e, 0x8d, 0xc6, 0x2a, 0xd2, 0xc1,
-	0x7f, 0x2d, 0xd8, 0xa7, 0xd3, 0x9f, 0x1e, 0x7b, 0x72, 0x0a, 0x85, 0x92, 0xcd, 0xc8, 0x09, 0xba,
-	0x37, 0x19, 0xe8, 0x14, 0x8f, 0x41, 0xe4, 0xe8, 0x8e, 0x9a, 0x57, 0x89, 0xed, 0xd7, 0x7d, 0x3f,
-	0x39, 0xab, 0x24, 0x38, 0xb4, 0x81, 0x17, 0x0d, 0x67, 0xf7, 0x5e, 0x44, 0xf1, 0xdf, 0x1d, 0xe2,
-	0x66, 0x87, 0xf8, 0x8f, 0xd2, 0xe7, 0x16, 0x5c, 0x44, 0x57, 0xeb, 0xc9, 0xe0, 0xd7, 0x7a, 0x12,
-	0x5c, 0x42, 0x59, 0xbc, 0x9a, 0xde, 0x12, 0x9a, 0x2e, 0xef, 0xd7, 0xff, 0x8e, 0x58, 0xff, 0x35,
-	0x6b, 0x6a, 0x16, 0xdd, 0x0e, 0x4a, 0x94, 0x6c, 0x3f, 0xfd, 0xff, 0xc2, 0xdf, 0xac, 0x27, 0x7b,
-	0xa7, 0x6d, 0xaf, 0x83, 0x3f, 0x1c, 0x2d, 0xf7, 0xea, 0x9b, 0xb9, 0xf4, 0x9f, 0x32, 0x66, 0x0b,
-	0xb0, 0x59, 0x02, 0x22, 0xb7, 0xc1, 0x30, 0x1a, 0xce, 0x46, 0xcb, 0x51, 0x5b, 0x39, 0x14, 0xb9,
-	0x5d, 0x9c, 0x5c, 0x6d, 0x42, 0xef, 0x7a, 0x13, 0x7a, 0x3f, 0x36, 0xa1, 0xf7, 0x6d, 0x1b, 0x0e,
-	0xae, 0xb7, 0xe1, 0xe0, 0xfb, 0x36, 0x1c, 0x7c, 0x39, 0x48, 0x95, 0xcb, 0xce, 0x56, 0x8d, 0xbb,
-	0xfc, 0x6d, 0x67, 0xf9, 0x27, 0x74, 0xe7, 0x64, 0x72, 0xde, 0x1f, 0xca, 0xc5, 0xad, 0x53, 0x69,
-	0x3d, 0x5b, 0xdd, 0x69, 0x4d, 0x7b, 0xf9, 0x3b, 0x00, 0x00, 0xff, 0xff, 0x29, 0x74, 0xa9, 0x8a,
-	0x52, 0x02, 0x00, 0x00,
+	// 730 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xa4, 0x54, 0x41, 0x6f, 0xda, 0x48,
+	0x14, 0xb6, 0x03, 0xca, 0x8a, 0x41, 0x22, 0x60, 0xb1, 0xbb, 0x5e, 0x6f, 0x96, 0x58, 0xd6, 0xae,
+	0x84, 0x76, 0x25, 0x7b, 0xa1, 0xbd, 0xa4, 0x4a, 0x0f, 0x18, 0x88, 0x40, 0x6d, 0x22, 0x64, 0x03,
+	0x52, 0x7a, 0xb1, 0x06, 0x7b, 0x02, 0x23, 0xc0, 0x63, 0x79, 0x06, 0x27, 0xf9, 0x07, 0x55, 0x4e,
+	0xfd, 0x03, 0x39, 0xf5, 0xde, 0xdf, 0x91, 0x63, 0x8e, 0x3d, 0x45, 0x15, 0x39, 0xf4, 0xd2, 0x53,
+	0x7f, 0x41, 0x65, 0x1b, 0x13, 0x92, 0x42, 0x54, 0xa9, 0xb7, 0x99, 0x79, 0xef, 0x7d, 0xef, 0xcd,
+	0xf7, 0x7d, 0x7a, 0xe0, 0x1f, 0x74, 0x4e, 0x6c, 0xe2, 0x23, 0x0d, 0x7a, 0x9e, 0x3d, 0x82, 0xd8,
+	0xd5, 0x6c, 0x32, 0x9d, 0x12, 0x57, 0x0b, 0x2a, 0xda, 0x19, 0xf6, 0x91, 0xea, 0xf9, 0x84, 0x11,
+	0x41, 0x5a, 0xa4, 0xa9, 0x49, 0x9a, 0x1a, 0xa7, 0xa9, 0x41, 0x45, 0xfa, 0xdb, 0x26, 0x74, 0x4a,
+	0xa8, 0x46, 0x19, 0x1c, 0x63, 0x77, 0xa8, 0x05, 0x95, 0x01, 0x62, 0xb0, 0x92, 0xdc, 0x63, 0x04,
+	0xa9, 0x38, 0x24, 0x43, 0x12, 0x1d, 0xb5, 0xf0, 0xb4, 0x78, 0xfd, 0x93, 0x21, 0xd7, 0x41, 0xfe,
+	0x14, 0xbb, 0x4c, 0x83, 0x03, 0x1b, 0x6b, 0xec, 0xc2, 0x43, 0x34, 0x0e, 0x2a, 0x23, 0x50, 0x68,
+	0x41, 0xd7, 0xa1, 0x23, 0x38, 0x46, 0x47, 0x88, 0x41, 0x07, 0x32, 0x28, 0xec, 0x83, 0x3f, 0x6c,
+	0x42, 0x7c, 0x07, 0xbb, 0x90, 0x11, 0xdf, 0x3a, 0x45, 0xc8, 0xf2, 0x08, 0x99, 0x58, 0xd0, 0x71,
+	0x7c, 0x91, 0x97, 0xf9, 0x72, 0xc6, 0xf8, 0x6d, 0x25, 0xe1, 0x10, 0xa1, 0x0e, 0x21, 0x93, 0x9a,
+	0xe3, 0xf8, 0x82, 0x08, 0x7e, 0x09, 0x90, 0x4f, 0x31, 0x71, 0xc5, 0xad, 0x28, 0x31, 0xb9, 0x2a,
+	0x9f, 0x79, 0xb0, 0x63, 0x4e, 0x20, 0x1d, 0x75, 0xa0, 0x3d, 0x46, 0xac, 0x11, 0x36, 0x32, 0x40,
+	0x26, 0x80, 0x13, 0xec, 0x84, 0x28, 0x11, 0x70, 0xb6, 0x2a, 0xa9, 0xf7, 0xe3, 0xaa, 0xe1, 0xb8,
+	0x6a, 0x3f, 0xc9, 0xd0, 0xc5, 0xeb, 0xdb, 0x3d, 0xee, 0xeb, 0xed, 0x5e, 0xfe, 0x02, 0x4e, 0x27,
+	0x2f, 0x94, 0x65, 0xa9, 0x62, 0xdc, 0xc3, 0x08, 0x07, 0x20, 0x1f, 0xc0, 0x09, 0x45, 0xcc, 0x9a,
+	0x79, 0x0e, 0x64, 0xc8, 0xc2, 0x4e, 0x34, 0x4a, 0x5a, 0x17, 0xe6, 0xb7, 0x7b, 0xb9, 0x7e, 0x14,
+	0xeb, 0x45, 0xa1, 0x76, 0xc3, 0xc8, 0x05, 0xab, 0x77, 0x47, 0xd0, 0x01, 0xc0, 0xee, 0xa9, 0x0f,
+	0x6d, 0x16, 0x7e, 0x21, 0x25, 0xf3, 0xe5, 0x5c, 0x55, 0x51, 0x63, 0xf6, 0xd5, 0x84, 0xed, 0x05,
+	0xfb, 0x6a, 0x7b, 0x99, 0x69, 0xac, 0x54, 0x29, 0x5d, 0x50, 0xec, 0x53, 0xfb, 0x08, 0xb2, 0x99,
+	0x8f, 0x9c, 0x95, 0xdf, 0xae, 0x9b, 0x8c, 0xff, 0xd1, 0xc9, 0x94, 0x0f, 0x5b, 0xa0, 0x68, 0xce,
+	0x06, 0xd4, 0xf6, 0xf1, 0x00, 0xf9, 0x2b, 0xb0, 0x2d, 0x90, 0x0e, 0x15, 0x8d, 0xa0, 0x72, 0xd5,
+	0xe7, 0xea, 0x66, 0x1b, 0xa9, 0xeb, 0xea, 0xbb, 0x17, 0x1e, 0x32, 0x22, 0x04, 0xe1, 0x04, 0x14,
+	0x68, 0xa8, 0x90, 0xe5, 0x45, 0x51, 0x2b, 0x34, 0x43, 0xc4, 0x5d, 0xb6, 0xfa, 0xdf, 0x93, 0xb0,
+	0x0f, 0x65, 0x6d, 0x71, 0xc6, 0x0e, 0x7d, 0xa4, 0x34, 0x06, 0xbf, 0x07, 0xd4, 0xb6, 0xa6, 0x31,
+	0x29, 0x0f, 0x1a, 0xa4, 0xa2, 0x06, 0xff, 0x3f, 0xd5, 0x60, 0x1d, 0x9d, 0x2d, 0xce, 0x28, 0x06,
+	0x6b, 0xde, 0xf5, 0x6d, 0x90, 0x0e, 0x71, 0x95, 0x2f, 0x3c, 0xd8, 0x5d, 0x7a, 0xc7, 0x44, 0xac,
+	0x3e, 0x82, 0xee, 0x10, 0xad, 0xcc, 0x44, 0x40, 0x61, 0x69, 0x9b, 0x85, 0x24, 0x54, 0xe4, 0xe5,
+	0x54, 0x39, 0x5b, 0x95, 0x37, 0xbb, 0x30, 0x16, 0x44, 0x97, 0x17, 0x5e, 0x14, 0x1f, 0x79, 0x31,
+	0x01, 0x52, 0x8c, 0x7c, 0xf0, 0xb0, 0x84, 0xfe, 0xa4, 0x35, 0xff, 0x02, 0x20, 0x56, 0x07, 0xda,
+	0x63, 0x2a, 0xa6, 0xe4, 0x54, 0x39, 0x63, 0x64, 0xa2, 0x97, 0x9a, 0x3d, 0xa6, 0xff, 0xde, 0xf0,
+	0x40, 0xdc, 0xa4, 0xaf, 0xf0, 0x12, 0x28, 0x66, 0x4f, 0x37, 0xeb, 0x46, 0x5b, 0x6f, 0x1a, 0x56,
+	0xa7, 0x56, 0x7f, 0xd5, 0xec, 0x5a, 0xdd, 0x93, 0x4e, 0xd3, 0xea, 0x1d, 0x9b, 0x9d, 0x66, 0xbd,
+	0x7d, 0xd8, 0x6e, 0x36, 0xf2, 0x9c, 0xf4, 0xeb, 0xe5, 0x95, 0x5c, 0xe8, 0xb9, 0xd4, 0x43, 0x36,
+	0x3e, 0xc5, 0x09, 0xad, 0x42, 0x05, 0xec, 0x6e, 0x28, 0x37, 0x5f, 0xd7, 0xcc, 0x56, 0x9e, 0x97,
+	0x76, 0x2e, 0xaf, 0xe4, 0xec, 0x8a, 0x0f, 0x84, 0x83, 0x8d, 0x1d, 0xfb, 0x66, 0xdd, 0x3a, 0xaa,
+	0x75, 0x7b, 0x46, 0xb3, 0x91, 0xdf, 0x92, 0x8a, 0x97, 0x57, 0x72, 0xfe, 0xb1, 0xbe, 0x52, 0xfa,
+	0xed, 0xfb, 0x12, 0xa7, 0x9b, 0xd7, 0xf3, 0x12, 0x7f, 0x33, 0x2f, 0xf1, 0x9f, 0xe6, 0x25, 0xfe,
+	0xdd, 0x5d, 0x89, 0xbb, 0xb9, 0x2b, 0x71, 0x1f, 0xef, 0x4a, 0xdc, 0x9b, 0xfd, 0x21, 0x66, 0xa3,
+	0xd9, 0x20, 0xb4, 0x88, 0xd6, 0x8c, 0x7d, 0x73, 0x8c, 0xd8, 0x19, 0xf1, 0xc7, 0x5a, 0xb2, 0x6c,
+	0xcf, 0xbf, 0x5b, 0xb7, 0xd1, 0xde, 0x1b, 0x6c, 0x47, 0x8b, 0xef, 0xd9, 0xb7, 0x00, 0x00, 0x00,
+	0xff, 0xff, 0x5b, 0xc8, 0x9b, 0x3f, 0x96, 0x05, 0x00, 0x00,
 }
 
 func (m *HandshakeMetadata) Marshal() (dAtA []byte, err error) {
@@ -221,6 +492,156 @@ func (m *HandshakeMetadata) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
+func (m *SlashPacketData) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *SlashPacketData) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *SlashPacketData) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.Infraction != 0 {
+		i = encodeVarintWire(dAtA, i, uint64(m.Infraction))
+		i--
+		dAtA[i] = 0x18
+	}
+	if m.ValsetUpdateID != 0 {
+		i = encodeVarintWire(dAtA, i, uint64(m.ValsetUpdateID))
+		i--
+		dAtA[i] = 0x10
+	}
+	{
+		size, err := m.Validator.MarshalToSizedBuffer(dAtA[:i])
+		if err != nil {
+			return 0, err
+		}
+		i -= size
+		i = encodeVarintWire(dAtA, i, uint64(size))
+	}
+	i--
+	dAtA[i] = 0xa
+	return len(dAtA) - i, nil
+}
+
+func (m *VscMaturedPacketData) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *VscMaturedPacketData) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *VscMaturedPacketData) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.ValsetUpdateID != 0 {
+		i = encodeVarintWire(dAtA, i, uint64(m.ValsetUpdateID))
+		i--
+		dAtA[i] = 0x8
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *SubscriberPacketData) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *SubscriberPacketData) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *SubscriberPacketData) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.Data != nil {
+		{
+			size := m.Data.Size()
+			i -= size
+			if _, err := m.Data.MarshalTo(dAtA[i:]); err != nil {
+				return 0, err
+			}
+		}
+	}
+	if m.Type != 0 {
+		i = encodeVarintWire(dAtA, i, uint64(m.Type))
+		i--
+		dAtA[i] = 0x8
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *SubscriberPacketData_SlashPacketData) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *SubscriberPacketData_SlashPacketData) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	if m.SlashPacketData != nil {
+		{
+			size, err := m.SlashPacketData.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintWire(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0x12
+	}
+	return len(dAtA) - i, nil
+}
+func (m *SubscriberPacketData_VscMaturedPacketData) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *SubscriberPacketData_VscMaturedPacketData) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	if m.VscMaturedPacketData != nil {
+		{
+			size, err := m.VscMaturedPacketData.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintWire(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0x1a
+	}
+	return len(dAtA) - i, nil
+}
 func (m *ValidatorSetChangePacketData) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
@@ -300,6 +721,74 @@ func (m *HandshakeMetadata) Size() (n int) {
 	return n
 }
 
+func (m *SlashPacketData) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = m.Validator.Size()
+	n += 1 + l + sovWire(uint64(l))
+	if m.ValsetUpdateID != 0 {
+		n += 1 + sovWire(uint64(m.ValsetUpdateID))
+	}
+	if m.Infraction != 0 {
+		n += 1 + sovWire(uint64(m.Infraction))
+	}
+	return n
+}
+
+func (m *VscMaturedPacketData) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.ValsetUpdateID != 0 {
+		n += 1 + sovWire(uint64(m.ValsetUpdateID))
+	}
+	return n
+}
+
+func (m *SubscriberPacketData) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.Type != 0 {
+		n += 1 + sovWire(uint64(m.Type))
+	}
+	if m.Data != nil {
+		n += m.Data.Size()
+	}
+	return n
+}
+
+func (m *SubscriberPacketData_SlashPacketData) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.SlashPacketData != nil {
+		l = m.SlashPacketData.Size()
+		n += 1 + l + sovWire(uint64(l))
+	}
+	return n
+}
+func (m *SubscriberPacketData_VscMaturedPacketData) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.VscMaturedPacketData != nil {
+		l = m.VscMaturedPacketData.Size()
+		n += 1 + l + sovWire(uint64(l))
+	}
+	return n
+}
 func (m *ValidatorSetChangePacketData) Size() (n int) {
 	if m == nil {
 		return 0
@@ -422,6 +911,335 @@ func (m *HandshakeMetadata) Unmarshal(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			m.Version = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipWire(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthWire
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *SlashPacketData) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowWire
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: SlashPacketData: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: SlashPacketData: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Validator", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowWire
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthWire
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthWire
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.Validator.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 2:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field ValsetUpdateID", wireType)
+			}
+			m.ValsetUpdateID = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowWire
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.ValsetUpdateID |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 3:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Infraction", wireType)
+			}
+			m.Infraction = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowWire
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.Infraction |= types1.Infraction(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		default:
+			iNdEx = preIndex
+			skippy, err := skipWire(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthWire
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *VscMaturedPacketData) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowWire
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: VscMaturedPacketData: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: VscMaturedPacketData: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field ValsetUpdateID", wireType)
+			}
+			m.ValsetUpdateID = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowWire
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.ValsetUpdateID |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		default:
+			iNdEx = preIndex
+			skippy, err := skipWire(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthWire
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *SubscriberPacketData) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowWire
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: SubscriberPacketData: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: SubscriberPacketData: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Type", wireType)
+			}
+			m.Type = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowWire
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.Type |= SubscriberPacketDataType(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field SlashPacketData", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowWire
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthWire
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthWire
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			v := &SlashPacketData{}
+			if err := v.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			m.Data = &SubscriberPacketData_SlashPacketData{v}
+			iNdEx = postIndex
+		case 3:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field VscMaturedPacketData", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowWire
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthWire
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthWire
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			v := &VscMaturedPacketData{}
+			if err := v.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			m.Data = &SubscriberPacketData_VscMaturedPacketData{v}
 			iNdEx = postIndex
 		default:
 			iNdEx = preIndex

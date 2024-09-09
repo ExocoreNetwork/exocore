@@ -4,10 +4,10 @@ import (
 	sdkmath "cosmossdk.io/math"
 
 	utiltx "github.com/ExocoreNetwork/exocore/testutil/tx"
+	exocoretypes2 "github.com/ExocoreNetwork/exocore/types"
 	exocoretypes "github.com/ExocoreNetwork/exocore/types/keys"
 	assetskeeper "github.com/ExocoreNetwork/exocore/x/assets/keeper"
 	assetstypes "github.com/ExocoreNetwork/exocore/x/assets/types"
-	avstypes "github.com/ExocoreNetwork/exocore/x/avs/types"
 	delegationtypes "github.com/ExocoreNetwork/exocore/x/delegation/types"
 	operatorkeeper "github.com/ExocoreNetwork/exocore/x/operator/keeper"
 	operatortypes "github.com/ExocoreNetwork/exocore/x/operator/types"
@@ -30,7 +30,7 @@ func (suite *KeeperTestSuite) TestBasicOperations() {
 	suite.CheckLengthOfValidatorUpdates(0, nil, "register operator but don't opt in")
 
 	// opt-in with a key
-	chainIDWithoutRevision := avstypes.ChainIDWithoutRevision(suite.Ctx.ChainID())
+	chainIDWithoutRevision := exocoretypes2.ChainIDWithoutRevision(suite.Ctx.ChainID())
 	_, avsAddress := suite.App.AVSManagerKeeper.IsAVSByChainID(suite.Ctx, chainIDWithoutRevision)
 	key := utiltx.GenerateConsensusKey()
 	_, err = suite.OperatorMsgServer.OptIntoAVS(sdk.WrapSDKContext(suite.Ctx), &operatortypes.OptIntoAVSReq{

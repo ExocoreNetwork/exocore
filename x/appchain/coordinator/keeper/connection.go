@@ -20,7 +20,7 @@ import (
 // as well as the channel's presence.
 func (k Keeper) VerifySubscriberChain(
 	ctx sdk.Context,
-	channelID string,
+	_ string,
 	connectionHops []string,
 ) error {
 	if len(connectionHops) != 1 {
@@ -127,7 +127,13 @@ func (k Keeper) SetSubscriberChain(ctx sdk.Context, channelID string) error {
 	// - set current block height for the subscriber chain initialization
 	k.SetInitChainHeight(ctx, chainID, uint64(ctx.BlockHeight()))
 	// remove init timeout timestamp
-	k.DeleteInitTimeoutTimestamp(ctx, chainID)
+	timeout, exists := k.GetChainInitTimeout(ctx, chainID)
+	if exists {
+		k.DeleteChainInitTimeout(ctx, chainID)
+		k.RemoveChainFromInitTimeout(ctx, timeout, chainID)
+	} else {
+		k.Logger(ctx).Error("timeout not found for chain", "chainID", chainID)
+	}
 
 	// emit event on successful addition
 	ctx.EventManager().EmitEvent(

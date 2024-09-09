@@ -25,6 +25,7 @@ type Keeper struct {
 	scopedKeeper     commontypes.ScopedKeeper
 	channelKeeper    commontypes.ChannelKeeper
 	connectionKeeper commontypes.ConnectionKeeper
+	accountKeeper    commontypes.AccountKeeper
 }
 
 // NewKeeper creates a new coordinator keeper.
@@ -40,6 +41,7 @@ func NewKeeper(
 	scopedKeeper commontypes.ScopedKeeper,
 	channelKeeper commontypes.ChannelKeeper,
 	connectionKeeper commontypes.ConnectionKeeper,
+	accountKeeper commontypes.AccountKeeper,
 ) Keeper {
 	return Keeper{
 		cdc:              cdc,
@@ -53,6 +55,7 @@ func NewKeeper(
 		scopedKeeper:     scopedKeeper,
 		channelKeeper:    channelKeeper,
 		connectionKeeper: connectionKeeper,
+		accountKeeper:    accountKeeper,
 	}
 }
 
@@ -64,8 +67,8 @@ func (k Keeper) Logger(ctx sdk.Context) log.Logger {
 // BindPort defines a wrapper function for the port Keeper's function in
 // order to expose it to module's InitGenesis function
 func (k Keeper) BindPort(ctx sdk.Context, portID string) error {
-	cap := k.portKeeper.BindPort(ctx, portID)
-	return k.ClaimCapability(ctx, cap, host.PortPath(portID))
+	capability := k.portKeeper.BindPort(ctx, portID)
+	return k.ClaimCapability(ctx, capability, host.PortPath(portID))
 }
 
 // GetPort returns the portID for the IBC app module. Used in ExportGenesis

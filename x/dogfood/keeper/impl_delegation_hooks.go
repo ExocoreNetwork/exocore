@@ -3,8 +3,8 @@ package keeper
 import (
 	"fmt"
 
+	exocoretypes2 "github.com/ExocoreNetwork/exocore/types"
 	exocoretypes "github.com/ExocoreNetwork/exocore/types/keys"
-	avstypes "github.com/ExocoreNetwork/exocore/x/avs/types"
 	delegationtypes "github.com/ExocoreNetwork/exocore/x/delegation/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -37,7 +37,7 @@ func (wrapper DelegationHooksWrapper) AfterDelegation(
 func (wrapper DelegationHooksWrapper) AfterUndelegationStarted(
 	ctx sdk.Context, operator sdk.AccAddress, recordKey []byte,
 ) error {
-	chainIDWithoutRevision := avstypes.ChainIDWithoutRevision(ctx.ChainID())
+	chainIDWithoutRevision := exocoretypes2.ChainIDWithoutRevision(ctx.ChainID())
 	var unbondingCompletionEpoch int64
 	if wrapper.keeper.operatorKeeper.IsOperatorRemovingKeyFromChainID(
 		ctx, operator, chainIDWithoutRevision,

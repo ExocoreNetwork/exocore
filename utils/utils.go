@@ -171,7 +171,7 @@ func AccumulateChanges(
 	}
 
 	// convert to list
-	var out []abci.ValidatorUpdate
+	out := make([]abci.ValidatorUpdate, 0, len(m))
 	for _, update := range m {
 		out = append(out, update)
 	}

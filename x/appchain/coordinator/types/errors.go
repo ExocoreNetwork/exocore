@@ -10,6 +10,7 @@ const (
 	errCodeDuplicateSubChain
 	errCodeNoOperators
 	errCodeInvalidSubscriberClient
+	errCodeUnknownSubscriberChannelID
 )
 
 var (
@@ -35,5 +36,10 @@ var (
 	// client for the subscriber chain is invalid
 	ErrInvalidSubscriberClient = errorsmod.Register(
 		ModuleName, errCodeInvalidSubscriberClient, "invalid subscriber client",
+	)
+	// ErrUnknownSubscriberChannelID is the error returned when the channel ID
+	// corresponding to a message from the subscriber chain is unknown
+	ErrUnknownSubscriberChannelID = errorsmod.Register(
+		ModuleName, errCodeUnknownSubscriberChannelID, "unknown subscriber channel ID",
 	)
 )

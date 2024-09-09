@@ -44,6 +44,7 @@ func NewKeeper(
 		clientKeeper:     clientKeeper,
 		connectionKeeper: connectionKeeper,
 		channelKeeper:    channelKeeper,
+		ibcCoreKeeper:    ibcCoreKeeper,
 	}
 }
 
@@ -73,8 +74,8 @@ func (k Keeper) IsBound(ctx sdk.Context, portID string) bool {
 // BindPort defines a wrapper function for the port Keeper's function in
 // order to expose it to module's InitGenesis function
 func (k Keeper) BindPort(ctx sdk.Context, portID string) error {
-	cap := k.portKeeper.BindPort(ctx, portID)
-	return k.ClaimCapability(ctx, cap, host.PortPath(portID))
+	capability := k.portKeeper.BindPort(ctx, portID)
+	return k.ClaimCapability(ctx, capability, host.PortPath(portID))
 }
 
 // ClaimCapability allows the IBC app module to claim a capability that core IBC
@@ -115,15 +116,15 @@ func (k Keeper) SetPendingChanges(
 
 // SetPacketMaturityTime sets the maturity time for a given received VSC packet id
 func (k Keeper) SetPacketMaturityTime(
-	ctx sdk.Context, vscId uint64, maturityTime time.Time,
+	ctx sdk.Context, vscID uint64, maturityTime time.Time,
 ) {
 	store := ctx.KVStore(k.storeKey)
 	maturingVSCPacket := &types.MaturingVSCPacket{
-		ID:           vscId,
+		ID:           vscID,
 		MaturityTime: maturityTime,
 	}
 	store.Set(
-		types.PacketMaturityTimeKey(vscId, maturityTime),
+		types.PacketMaturityTimeKey(vscID, maturityTime),
 		k.cdc.MustMarshal(maturingVSCPacket),
 	)
 }

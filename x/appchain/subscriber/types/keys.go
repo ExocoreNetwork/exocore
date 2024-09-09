@@ -46,8 +46,8 @@ const (
 	CoordinatorClientIDBytePrefix
 	// ValsetUpdateIDBytePrefix is the prefix for the valset update ID key
 	ValsetUpdateIDBytePrefix
-	// OmniChainValidatorBytePrefix is the prefix for the omni chain validator key
-	OmniChainValidatorBytePrefix
+	// SubscriberChainValidatorBytePrefix is the prefix for the subscriber chain validator key
+	SubscriberChainValidatorBytePrefix
 	// CoordinatorChannelBytePrefix is the prefix for the coordinator channel key
 	CoordinatorChannelBytePrefix
 	// PendingChangesBytePrefix is the prefix for the pending changes key
@@ -81,9 +81,10 @@ func ValsetUpdateIDKey(height int64) []byte {
 	)
 }
 
-// OmniChainValidatorKey returns the key for the omni chain validator against the provided address.
-func OmniChainValidatorKey(address sdk.ConsAddress) []byte {
-	return append([]byte{OmniChainValidatorBytePrefix}, address...)
+// SubscriberChainValidatorKey returns the key for the subscriber chain validator
+// against the provided address.
+func SubscriberChainValidatorKey(address sdk.ConsAddress) []byte {
+	return append([]byte{SubscriberChainValidatorBytePrefix}, address...)
 }
 
 // CoordinatorChannelKey returns the key for which the ibc channel id to the coordinator chain

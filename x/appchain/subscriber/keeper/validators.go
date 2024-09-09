@@ -43,7 +43,8 @@ func (k Keeper) ApplyValidatorChanges(
 ) []abci.ValidatorUpdate {
 	ret := make([]abci.ValidatorUpdate, 0, len(changes))
 	logger := k.Logger(ctx)
-	for _, change := range changes {
+	for i := range changes {
+		change := changes[i] // avoid implicit memory aliasing
 		wrappedKey := exocoretypes.NewWrappedConsKeyFromTmProtoKey(&change.PubKey)
 		if wrappedKey == nil {
 			// an error in deserializing the key would indicate that the coordinator
@@ -52,20 +53,20 @@ func (k Keeper) ApplyValidatorChanges(
 			panic(fmt.Sprintf("invalid pubkey %s", change.PubKey))
 		}
 		consAddress := wrappedKey.ToConsAddr()
-		val, found := k.GetOmnichainValidator(ctx, consAddress)
+		val, found := k.GetSubscriberChainValidator(ctx, consAddress)
 		switch found {
 		case true:
 			if change.Power < 1 {
 				logger.Info("deleting validator", "consAddress", consAddress)
-				k.DeleteOmnichainValidator(ctx, consAddress)
+				k.DeleteSubscriberChainValidator(ctx, consAddress)
 			} else {
 				logger.Info("updating validator", "consAddress", consAddress)
 				val.Power = change.Power
-				k.SetOmnichainValidator(ctx, val)
+				k.SetSubscriberChainValidator(ctx, val)
 			}
 		case false:
 			if change.Power > 0 {
-				ocVal, err := types.NewOmniChainValidator(
+				ocVal, err := types.NewSubscriberChainValidator(
 					consAddress, change.Power, wrappedKey.ToSdkKey(),
 				)
 				if err != nil {
@@ -74,7 +75,7 @@ func (k Keeper) ApplyValidatorChanges(
 					continue
 				}
 				logger.Info("adding validator", "consAddress", consAddress)
-				k.SetOmnichainValidator(ctx, ocVal)
+				k.SetSubscriberChainValidator(ctx, ocVal)
 				ret = append(ret, change)
 			} else {
 				// edge case: we received an update for 0 power
@@ -92,22 +93,22 @@ func (k Keeper) ApplyValidatorChanges(
 	return ret
 }
 
-// SetOmnichainValidator stores a validator based on the pub key derived address.
-func (k Keeper) SetOmnichainValidator(
-	ctx sdk.Context, validator types.OmniChainValidator,
+// SetSubscriberChainValidator stores a validator based on the pub key derived address.
+func (k Keeper) SetSubscriberChainValidator(
+	ctx sdk.Context, validator types.SubscriberChainValidator,
 ) {
 	store := ctx.KVStore(k.storeKey)
 	bz := k.cdc.MustMarshal(&validator)
 
-	store.Set(types.OmniChainValidatorKey(validator.Address), bz)
+	store.Set(types.SubscriberChainValidatorKey(validator.ConsAddress), bz)
 }
 
-// GetOmnichainValidator gets a validator based on the pub key derived (consensus) address.
-func (k Keeper) GetOmnichainValidator(
+// GetSubscriberChainValidator gets a validator based on the pub key derived (consensus) address.
+func (k Keeper) GetSubscriberChainValidator(
 	ctx sdk.Context, addr sdk.ConsAddress,
-) (validator types.OmniChainValidator, found bool) {
+) (validator types.SubscriberChainValidator, found bool) {
 	store := ctx.KVStore(k.storeKey)
-	v := store.Get(types.OmniChainValidatorKey(addr.Bytes()))
+	v := store.Get(types.SubscriberChainValidatorKey(addr))
 	if v == nil {
 		return
 	}
@@ -117,22 +118,22 @@ func (k Keeper) GetOmnichainValidator(
 	return
 }
 
-// DeleteOmnichainValidator deletes a validator based on the pub key derived address.
-func (k Keeper) DeleteOmnichainValidator(ctx sdk.Context, addr sdk.ConsAddress) {
+// DeleteSubscriberChainValidator deletes a validator based on the pub key derived address.
+func (k Keeper) DeleteSubscriberChainValidator(ctx sdk.Context, addr sdk.ConsAddress) {
 	store := ctx.KVStore(k.storeKey)
-	store.Delete(types.OmniChainValidatorKey(addr.Bytes()))
+	store.Delete(types.SubscriberChainValidatorKey(addr))
 }
 
-// GetAllOmnichainValidators returns all validators in the store.
-func (k Keeper) GetAllOmnichainValidators(
+// GetAllSubscriberChainValidators returns all validators in the store.
+func (k Keeper) GetAllSubscriberChainValidators(
 	ctx sdk.Context,
-) (validators []types.OmniChainValidator) {
+) (validators []types.SubscriberChainValidator) {
 	store := ctx.KVStore(k.storeKey)
-	iterator := sdk.KVStorePrefixIterator(store, []byte{types.OmniChainValidatorBytePrefix})
+	iterator := sdk.KVStorePrefixIterator(store, []byte{types.SubscriberChainValidatorBytePrefix})
 
 	defer iterator.Close()
 	for ; iterator.Valid(); iterator.Next() {
-		val := types.OmniChainValidator{}
+		val := types.SubscriberChainValidator{}
 		k.cdc.MustUnmarshal(iterator.Value(), &val)
 		validators = append(validators, val)
 	}

@@ -116,13 +116,13 @@ func (im IBCModule) OnChanOpenInit(
 // that the channel is opened by this chain.
 func (im IBCModule) OnChanOpenTry(
 	ctx sdk.Context,
-	order channeltypes.Order,
-	connectionHops []string,
-	portID,
-	channelID string,
-	chanCap *capabilitytypes.Capability,
-	counterparty channeltypes.Counterparty,
-	counterpartyVersion string,
+	_ channeltypes.Order,
+	_ []string,
+	_ string,
+	_ string,
+	_ *capabilitytypes.Capability,
+	_ channeltypes.Counterparty,
+	_ string,
 ) (string, error) {
 	im.keeper.Logger(ctx).Debug(
 		"OnChanOpenTry",
@@ -225,8 +225,8 @@ func (im IBCModule) OnChanOpenAck(
 // OnChanOpenConfirm implements the IBCModule interface
 func (im IBCModule) OnChanOpenConfirm(
 	ctx sdk.Context,
-	portID,
-	channelID string,
+	_ string,
+	_ string,
 ) error {
 	im.keeper.Logger(ctx).Debug(
 		"OnChanOpenConfirm",
@@ -241,7 +241,7 @@ func (im IBCModule) OnChanOpenConfirm(
 // OnChanCloseInit implements the IBCModule interface
 func (im IBCModule) OnChanCloseInit(
 	ctx sdk.Context,
-	portID,
+	_ string,
 	channelID string,
 ) error {
 	im.keeper.Logger(ctx).Debug(
@@ -260,8 +260,8 @@ func (im IBCModule) OnChanCloseInit(
 // OnChanCloseConfirm implements the IBCModule interface
 func (im IBCModule) OnChanCloseConfirm(
 	ctx sdk.Context,
-	portID,
-	channelID string,
+	_ string,
+	_ string,
 ) error {
 	im.keeper.Logger(ctx).Debug(
 		"OnChanCloseConfirm",
@@ -311,7 +311,7 @@ func (im IBCModule) OnAcknowledgementPacket(
 	ctx sdk.Context,
 	packet channeltypes.Packet,
 	acknowledgement []byte,
-	relayer sdk.AccAddress,
+	_ sdk.AccAddress,
 ) error {
 	im.keeper.Logger(ctx).Debug(
 		"OnAcknowledgementPacket",
@@ -358,8 +358,8 @@ func (im IBCModule) OnAcknowledgementPacket(
 // OnTimeoutPacket implements the IBCModule interface
 func (im IBCModule) OnTimeoutPacket(
 	ctx sdk.Context,
-	modulePacket channeltypes.Packet,
-	relayer sdk.AccAddress,
+	_ channeltypes.Packet,
+	_ sdk.AccAddress,
 ) error {
 	im.keeper.Logger(ctx).Debug(
 		"OnTimeoutPacket",
