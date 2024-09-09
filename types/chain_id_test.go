@@ -1,10 +1,11 @@
-package types
+package types_test
 
 import (
 	"math/big"
 	"strings"
 	"testing"
 
+	"github.com/evmos/evmos/v14/types"
 	"github.com/stretchr/testify/require"
 )
 
@@ -72,16 +73,16 @@ func TestParseChainID(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		chainIDEpoch, err := ParseChainID(tc.chainID)
+		chainIDEpoch, err := types.ParseChainID(tc.chainID)
 		if tc.expError {
 			require.Error(t, err, tc.name)
 			require.Nil(t, chainIDEpoch)
 
-			require.False(t, IsValidChainID(tc.chainID), tc.name)
+			require.False(t, types.IsValidChainID(tc.chainID), tc.name)
 		} else {
 			require.NoError(t, err, tc.name)
 			require.Equal(t, tc.expInt, chainIDEpoch, tc.name)
-			require.True(t, IsValidChainID(tc.chainID))
+			require.True(t, types.IsValidChainID(tc.chainID))
 		}
 	}
 }
