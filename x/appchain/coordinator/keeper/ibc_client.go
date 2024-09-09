@@ -5,7 +5,6 @@ import (
 
 	errorsmod "cosmossdk.io/errors"
 	"github.com/ExocoreNetwork/exocore/utils"
-	exocoreutils "github.com/ExocoreNetwork/exocore/utils"
 	commontypes "github.com/ExocoreNetwork/exocore/x/appchain/common/types"
 	"github.com/ExocoreNetwork/exocore/x/appchain/coordinator/types"
 	abci "github.com/cometbft/cometbft/abci/types"
@@ -134,7 +133,7 @@ func (k Keeper) MakeSubscriberGenesis(
 	params := k.GetParams(ctx)
 	chainID := req.ChainID
 	k.Logger(ctx).Info("Creating genesis state for subscriber chain", "chainID", chainID)
-	chainIDWithoutRevision := exocoreutils.ChainIDWithoutRevision(chainID)
+	chainIDWithoutRevision := utils.ChainIDWithoutRevision(chainID)
 	coordinatorUnbondingPeriod := k.stakingKeeper.UnbondingTime(ctx)
 	// client state
 	clientState := params.TemplateClient

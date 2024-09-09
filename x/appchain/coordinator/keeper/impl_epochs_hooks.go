@@ -1,7 +1,7 @@
 package keeper
 
 import (
-	exocoreutils "github.com/ExocoreNetwork/exocore/utils"
+	"github.com/ExocoreNetwork/exocore/utils"
 	epochstypes "github.com/ExocoreNetwork/exocore/x/epochs/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -42,7 +42,7 @@ func (wrapper EpochsHooksWrapper) AfterEpochEnd(
 			)
 			// clear the registered AVS. remember that this module stores
 			// the chainID with the revision but the AVS module stores it without.
-			chainID := exocoreutils.ChainIDWithoutRevision(subscriber.ChainID)
+			chainID := utils.ChainIDWithoutRevision(subscriber.ChainID)
 			// always guaranteed to exist
 			_, addr := wrapper.keeper.avsKeeper.IsAVSByChainID(ctx, chainID)
 			if err := wrapper.keeper.avsKeeper.DeleteAVSInfo(ctx, addr); err != nil {

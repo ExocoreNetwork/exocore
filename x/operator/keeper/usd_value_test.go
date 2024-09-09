@@ -4,7 +4,7 @@ import (
 	"time"
 
 	sdkmath "cosmossdk.io/math"
-	exocoreutils "github.com/ExocoreNetwork/exocore/utils"
+	"github.com/ExocoreNetwork/exocore/utils"
 	assetstype "github.com/ExocoreNetwork/exocore/x/assets/types"
 	avstypes "github.com/ExocoreNetwork/exocore/x/avs/types"
 	operatorKeeper "github.com/ExocoreNetwork/exocore/x/operator/keeper"
@@ -115,7 +115,7 @@ func (suite *OperatorTestSuite) TestVotingPowerForDogFood() {
 	addPower := 1
 	addUSDValue := sdkmath.LegacyNewDec(1)
 
-	chainIDWithoutRevision := exocoreutils.ChainIDWithoutRevision(suite.Ctx.ChainID())
+	chainIDWithoutRevision := utils.ChainIDWithoutRevision(suite.Ctx.ChainID())
 	avsAddress := avstypes.GenerateAVSAddr(chainIDWithoutRevision).String()
 	// CommitAfter causes the epoch hook to be triggered, and results in writing
 	// of the AVS usd value to the store.

@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	"cosmossdk.io/errors"
-	exocoreutils "github.com/ExocoreNetwork/exocore/utils"
+	"github.com/ExocoreNetwork/exocore/utils"
 	avskeeper "github.com/ExocoreNetwork/exocore/x/avs/keeper"
 	avstypes "github.com/ExocoreNetwork/exocore/x/avs/types"
 
@@ -112,7 +112,7 @@ func (k Keeper) UpdateParams(
 
 	// update the related info in the AVS module
 	isAVS, avsAddr := k.avsKeeper.IsAVSByChainID(
-		c, exocoreutils.ChainIDWithoutRevision(c.ChainID()),
+		c, utils.ChainIDWithoutRevision(c.ChainID()),
 	)
 	if !isAVS {
 		return nil, errors.Wrapf(

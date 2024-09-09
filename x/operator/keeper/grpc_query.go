@@ -8,7 +8,6 @@ import (
 
 	exocoretypes "github.com/ExocoreNetwork/exocore/types/keys"
 	"github.com/ExocoreNetwork/exocore/utils"
-	exocoreutils "github.com/ExocoreNetwork/exocore/utils"
 	"github.com/ExocoreNetwork/exocore/x/operator/types"
 	tmprotocrypto "github.com/cometbft/cometbft/proto/tendermint/crypto"
 	"github.com/cosmos/cosmos-sdk/store/prefix"
@@ -57,7 +56,7 @@ func (k *Keeper) QueryOperatorConsKeyForChainID(
 	if err != nil {
 		return nil, err
 	}
-	chainIDWithoutRevision := exocoreutils.ChainIDWithoutRevision(req.Chain)
+	chainIDWithoutRevision := utils.ChainIDWithoutRevision(req.Chain)
 	found, key, err := k.GetOperatorConsKeyForChainID(
 		ctx, addr, chainIDWithoutRevision,
 	)
@@ -84,7 +83,7 @@ func (k Keeper) QueryOperatorConsAddressForChainID(
 	if err != nil {
 		return nil, err
 	}
-	chainIDWithoutRevision := exocoreutils.ChainIDWithoutRevision(req.Chain)
+	chainIDWithoutRevision := utils.ChainIDWithoutRevision(req.Chain)
 	found, wrappedKey, err := k.GetOperatorConsKeyForChainID(
 		ctx, addr, chainIDWithoutRevision,
 	)
@@ -108,7 +107,7 @@ func (k Keeper) QueryAllOperatorConsKeysByChainID(
 ) (*types.QueryAllOperatorConsKeysByChainIDResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 	res := make([]*types.OperatorConsKeyPair, 0)
-	chainIDWithoutRevision := exocoreutils.ChainIDWithoutRevision(req.Chain)
+	chainIDWithoutRevision := utils.ChainIDWithoutRevision(req.Chain)
 	chainPrefix := types.ChainIDAndAddrKey(
 		types.BytePrefixForChainIDAndOperatorToConsKey,
 		chainIDWithoutRevision, nil,
@@ -145,7 +144,7 @@ func (k Keeper) QueryAllOperatorConsAddrsByChainID(
 ) (*types.QueryAllOperatorConsAddrsByChainIDResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 	res := make([]*types.OperatorConsAddrPair, 0)
-	chainIDWithoutRevision := exocoreutils.ChainIDWithoutRevision(req.Chain)
+	chainIDWithoutRevision := utils.ChainIDWithoutRevision(req.Chain)
 	chainPrefix := types.ChainIDAndAddrKey(
 		types.BytePrefixForChainIDAndOperatorToConsKey,
 		chainIDWithoutRevision, nil,

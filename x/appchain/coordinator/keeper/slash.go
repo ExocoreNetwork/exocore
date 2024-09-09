@@ -3,7 +3,7 @@ package keeper
 import (
 	"time"
 
-	exocoreutils "github.com/ExocoreNetwork/exocore/utils"
+	"github.com/ExocoreNetwork/exocore/utils"
 	commontypes "github.com/ExocoreNetwork/exocore/x/appchain/common/types"
 	types "github.com/ExocoreNetwork/exocore/x/appchain/coordinator/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -55,7 +55,7 @@ func (k Keeper) HandleSlashPacket(ctx sdk.Context, chainID string, data commonty
 	// #nosec G703 // already validated
 	slashProportionDecimal, _ := sdk.NewDecFromStr(slashProportion)
 	jailDuration := k.GetSubDowntimeJailDuration(ctx, chainID)
-	chainIDWithoutRevision := exocoreutils.ChainIDWithoutRevision(chainID)
+	chainIDWithoutRevision := utils.ChainIDWithoutRevision(chainID)
 	_, avsAddress := k.avsKeeper.IsAVSByChainID(ctx, chainIDWithoutRevision)
 	// the slashing hook should trigger a validator set update for all affected AVSs. since the `chainID` is one of them
 	// we should make sure we are well set up for that update. we will include an ack of the slash packet in the next

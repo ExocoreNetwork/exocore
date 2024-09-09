@@ -5,7 +5,7 @@ import (
 
 	utiltx "github.com/ExocoreNetwork/exocore/testutil/tx"
 	exocoretypes "github.com/ExocoreNetwork/exocore/types/keys"
-	exocoreutils "github.com/ExocoreNetwork/exocore/utils"
+	"github.com/ExocoreNetwork/exocore/utils"
 	assetskeeper "github.com/ExocoreNetwork/exocore/x/assets/keeper"
 	assetstypes "github.com/ExocoreNetwork/exocore/x/assets/types"
 	delegationtypes "github.com/ExocoreNetwork/exocore/x/delegation/types"
@@ -30,7 +30,7 @@ func (suite *KeeperTestSuite) TestBasicOperations() {
 	suite.CheckLengthOfValidatorUpdates(0, nil, "register operator but don't opt in")
 
 	// opt-in with a key
-	chainIDWithoutRevision := exocoreutils.ChainIDWithoutRevision(suite.Ctx.ChainID())
+	chainIDWithoutRevision := utils.ChainIDWithoutRevision(suite.Ctx.ChainID())
 	_, avsAddress := suite.App.AVSManagerKeeper.IsAVSByChainID(suite.Ctx, chainIDWithoutRevision)
 	key := utiltx.GenerateConsensusKey()
 	_, err = suite.OperatorMsgServer.OptIntoAVS(sdk.WrapSDKContext(suite.Ctx), &operatortypes.OptIntoAVSReq{

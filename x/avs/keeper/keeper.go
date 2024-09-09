@@ -8,7 +8,7 @@ import (
 
 	errorsmod "cosmossdk.io/errors"
 
-	exocoreutils "github.com/ExocoreNetwork/exocore/utils"
+	"github.com/ExocoreNetwork/exocore/utils"
 	delegationtypes "github.com/ExocoreNetwork/exocore/x/delegation/types"
 	"github.com/cometbft/cometbft/libs/log"
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -84,7 +84,7 @@ func (k Keeper) UpdateAVSInfo(ctx sdk.Context, params *types.AVSRegisterOrDeregi
 			return errorsmod.Wrap(types.ErrAlreadyRegistered, fmt.Sprintf("the avsaddress is :%s", params.AvsAddress))
 		}
 		startingEpoch := uint64(epoch.CurrentEpoch + 1)
-		if params.ChainID == exocoreutils.ChainIDWithoutRevision(ctx.ChainID()) {
+		if params.ChainID == utils.ChainIDWithoutRevision(ctx.ChainID()) {
 			// TODO: handle this better
 			startingEpoch = uint64(epoch.CurrentEpoch)
 		}

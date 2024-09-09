@@ -3,7 +3,7 @@ package keeper
 import (
 	"context"
 
-	exocoreutils "github.com/ExocoreNetwork/exocore/utils"
+	"github.com/ExocoreNetwork/exocore/utils"
 	"github.com/ExocoreNetwork/exocore/x/avs/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -23,7 +23,7 @@ func (k Keeper) QueryAVSTaskInfo(ctx context.Context, req *types.QueryAVSTaskInf
 // QueryAVSAddrByChainID is an implementation of the QueryAVSAddrByChainID gRPC method
 func (k Keeper) QueryAVSAddrByChainID(ctx context.Context, req *types.QueryAVSAddrByChainIDReq) (*types.QueryAVSAddrByChainIDResponse, error) {
 	c := sdk.UnwrapSDKContext(ctx)
-	isChainAvs, avsAddr := k.IsAVSByChainID(c, exocoreutils.ChainIDWithoutRevision(req.ChainID))
+	isChainAvs, avsAddr := k.IsAVSByChainID(c, utils.ChainIDWithoutRevision(req.ChainID))
 	if !isChainAvs {
 		return nil, types.ErrNotYetRegistered
 	}
