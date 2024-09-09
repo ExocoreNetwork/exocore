@@ -11,6 +11,7 @@ import (
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
 	"github.com/cosmos/cosmos-sdk/crypto/types/multisig"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	ibcclienttypes "github.com/cosmos/ibc-go/v7/modules/core/02-client/types"
 	"github.com/evmos/evmos/v14/crypto/ethsecp256k1"
 )
 
@@ -194,4 +195,14 @@ func AppendMany(byteses ...[]byte) (out []byte) {
 		out = append(out, bytes...)
 	}
 	return out
+}
+
+// ChainIDWithoutRevision returns the chainID without the revision number.
+// For example, "exocoretestnet_233-1" returns "exocoretestnet_233".
+func ChainIDWithoutRevision(chainID string) string {
+	if !ibcclienttypes.IsRevisionFormat(chainID) {
+		return chainID
+	}
+	splitStr := strings.Split(chainID, "-")
+	return splitStr[0]
 }

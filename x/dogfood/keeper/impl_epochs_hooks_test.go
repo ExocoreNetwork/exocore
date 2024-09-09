@@ -3,8 +3,8 @@ package keeper_test
 import (
 	sdkmath "cosmossdk.io/math"
 	utiltx "github.com/ExocoreNetwork/exocore/testutil/tx"
-	exocoretypes2 "github.com/ExocoreNetwork/exocore/types"
 	exocoretypes "github.com/ExocoreNetwork/exocore/types/keys"
+	exocoreutils "github.com/ExocoreNetwork/exocore/utils"
 	assetskeeper "github.com/ExocoreNetwork/exocore/x/assets/keeper"
 	assetstypes "github.com/ExocoreNetwork/exocore/x/assets/types"
 	delegationtypes "github.com/ExocoreNetwork/exocore/x/delegation/types"
@@ -72,7 +72,7 @@ func (suite *KeeperTestSuite) TestSameEpochOperations() {
 	// generate keys, and get the AVS address
 	oldKey := utiltx.GenerateConsensusKey()
 	newKey := utiltx.GenerateConsensusKey()
-	chainIDWithoutRevision := exocoretypes2.ChainIDWithoutRevision(suite.Ctx.ChainID())
+	chainIDWithoutRevision := exocoreutils.ChainIDWithoutRevision(suite.Ctx.ChainID())
 	_, avsAddress := suite.App.AVSManagerKeeper.IsAVSByChainID(suite.Ctx, chainIDWithoutRevision)
 
 	// now define the operations
@@ -252,7 +252,7 @@ func (suite *KeeperTestSuite) TestDifferentEpochOperations() {
 	// generate keys, and get the AVS address
 	oldKey := utiltx.GenerateConsensusKey()
 	newKey := utiltx.GenerateConsensusKey()
-	chainIDWithoutRevision := exocoretypes2.ChainIDWithoutRevision(suite.Ctx.ChainID())
+	chainIDWithoutRevision := exocoreutils.ChainIDWithoutRevision(suite.Ctx.ChainID())
 	_, avsAddress := suite.App.AVSManagerKeeper.IsAVSByChainID(suite.Ctx, chainIDWithoutRevision)
 
 	// now define the operations
