@@ -12,8 +12,10 @@ option go_package = "github.com/ExocoreNetwork/exocore/x/appchain/common/types";
 // the coordinator or each of the subcribers.
 
 message HandshakeMetadata {
-  // This address is where the subscriber chain will send the fees proportionally
+  // coordinator_fee_pool_addr is the address on the coordinator to which the 
+  // subscriber chain will send the fees proportionally and periodically.
   string coordinator_fee_pool_addr = 1;
+  // version is the version of the appchain protocol
   string version = 2;
 }
 

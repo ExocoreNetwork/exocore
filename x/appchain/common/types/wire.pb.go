@@ -61,9 +61,11 @@ func (SubscriberPacketDataType) EnumDescriptor() ([]byte, []int) {
 }
 
 type HandshakeMetadata struct {
-	// This address is where the subscriber chain will send the fees proportionally
+	// coordinator_fee_pool_addr is the address on the coordinator to which the
+	// subscriber chain will send the fees proportionally and periodically.
 	CoordinatorFeePoolAddr string `protobuf:"bytes,1,opt,name=coordinator_fee_pool_addr,json=coordinatorFeePoolAddr,proto3" json:"coordinator_fee_pool_addr,omitempty"`
-	Version                string `protobuf:"bytes,2,opt,name=version,proto3" json:"version,omitempty"`
+	// version is the version of the appchain protocol
+	Version string `protobuf:"bytes,2,opt,name=version,proto3" json:"version,omitempty"`
 }
 
 func (m *HandshakeMetadata) Reset()         { *m = HandshakeMetadata{} }
