@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"path"
 	"path/filepath"
 	"time"
 
@@ -49,11 +50,17 @@ import (
 	srvflags "github.com/evmos/evmos/v14/server/flags"
 
 	cmdcfg "github.com/ExocoreNetwork/exocore/cmd/config"
+	pricefeeder "github.com/ExocoreNetwork/price-feeder/external"
 	evmoskr "github.com/evmos/evmos/v14/crypto/keyring"
 )
 
 const (
-	EnvPrefix = "EXOCORE"
+	EnvPrefix    = "EXOCORE"
+	flagOracle   = "oracle"
+	flagMnemonic = "mnemonic"
+	confPath     = "config"
+	confOracle   = "oracle_feeder.yaml"
+	cmdStartName = "start"
 )
 
 // NewRootCmd creates a new root command for exocored. It is called once in the
@@ -96,7 +103,6 @@ func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 			if err := client.SetCmdClientContextHandler(initClientCtx, cmd); err != nil {
 				return err
 			}
-
 			// override the app and tendermint configuration
 			customAppTemplate, customAppConfig := initAppConfig()
 			customTMConfig := initTendermintConfig()
@@ -132,7 +138,26 @@ func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 		a.appExport,
 		addModuleInitFlags,
 	)
-
+	startCmd, _, _ := rootCmd.Find([]string{cmdStartName})
+	startCmd.Flags().Bool(flagOracle, false, "enable oracle feeder")
+	startCmd.Flags().String(flagMnemonic, "", "set validator consensus key's mnemonic")
+	preRunE := startCmd.PreRunE
+	// add preRun to run price-feeder first before starting the node
+	startCmd.PreRunE = func(cmd *cobra.Command, args []string) error {
+		if enableFeeder, _ := cmd.Flags().GetBool(flagOracle); enableFeeder {
+			clientCtx := cmd.Context().Value(client.ClientContextKey).(*client.Context)
+			go func() {
+				defer func() {
+					if err := recover(); err != nil {
+						fmt.Println("price-feeder failed", err)
+					}
+				}()
+				mnemonic, _ := cmd.Flags().GetString(flagMnemonic)
+				pricefeeder.StartPriceFeeder(path.Join(clientCtx.HomeDir, confPath, confOracle), mnemonic, path.Join(clientCtx.HomeDir, confPath))
+			}()
+		}
+		return preRunE(cmd, args)
+	}
 	// add keybase, auxiliary RPC, query, and tx child commands
 	rootCmd.AddCommand(
 		rpc.StatusCommand(),

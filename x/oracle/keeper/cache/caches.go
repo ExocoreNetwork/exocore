@@ -65,13 +65,16 @@ func (c cacheMsgs) commit(ctx sdk.Context, k common.KeeperOracle) {
 		recentMsgs.Msgs = append(recentMsgs.Msgs, &msgTmp)
 	}
 	index, _ := k.GetIndexRecentMsg(ctx)
-	for i, b := range index.Index {
-		if b >= block-uint64(common.MaxNonce) {
-			index.Index = index.Index[i:]
+
+	i := 0
+	for ; i < len(index.Index); i++ {
+		b := index.Index[i]
+		if b > block-uint64(common.MaxNonce) {
 			break
 		}
 		k.RemoveRecentMsg(ctx, b)
 	}
+	index.Index = index.Index[i:]
 
 	k.SetRecentMsg(ctx, recentMsgs)
 
@@ -116,10 +119,12 @@ func (c *cacheParams) commit(ctx sdk.Context, k common.KeeperOracle) {
 	for ; i < len(index.Index); i++ {
 		b := index.Index[i]
 		if b >= block-uint64(common.MaxNonce) {
-			index.Index = index.Index[i:]
 			break
 		}
 		k.RemoveRecentParams(ctx, b)
+	}
+	if i > 0 && i == len(index.Index) {
+		i--
 	}
 	index.Index = index.Index[i:]
 	// remove and append for KVStore

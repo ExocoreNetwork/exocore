@@ -64,7 +64,7 @@ func (p Precompile) GetAVSParamsFromInputs(_ sdk.Context, args []interface{}) (*
 
 	// string, since it is the address_id representation
 	assetID, ok := args[6].([]string)
-	if !ok || assetID == nil || len(assetID) == 0 {
+	if !ok || len(assetID) == 0 {
 		return nil, fmt.Errorf(exocmn.ErrContractInputParaOrType, 6, "[]string", assetID)
 	}
 	avsParams.AssetID = assetID

@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"math/big"
 	"strings"
+	"sync"
 
 	// this line is used by starport scaffolding # 1
 
@@ -26,8 +27,9 @@ import (
 )
 
 var (
-	_ module.AppModule      = AppModule{}
-	_ module.AppModuleBasic = AppModuleBasic{}
+	_    module.AppModule      = AppModule{}
+	_    module.AppModuleBasic = AppModuleBasic{}
+	once                       = sync.Once{}
 )
 
 // ----------------------------------------------------------------------------
@@ -151,13 +153,12 @@ func (AppModule) ConsensusVersion() uint64 { return 1 }
 
 // BeginBlock contains the logic that is automatically triggered at the beginning of each block
 func (am AppModule) BeginBlock(ctx sdk.Context, _ abci.RequestBeginBlock) {
-	_ = keeper.GetCaches()
-	agc := keeper.GetAggregatorContext(ctx, am.keeper)
-
-	logger := am.keeper.Logger(ctx)
-
-	logger.Info("prepare for next oracle round of each tokenFeeder", "height", ctx.BlockHeight())
-	agc.PrepareRoundBeginBlock(ctx, 0)
+	// init caches and aggregatorContext for node restart
+	// TODO: try better way to init caches and aggregatorContext than beginBlock
+	once.Do(func() {
+		_ = keeper.GetCaches()
+		_ = keeper.GetAggregatorContext(ctx, am.keeper)
+	})
 }
 
 // EndBlock contains the logic that is automatically triggered at the end of each block
@@ -186,7 +187,10 @@ func (am AppModule) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.Val
 	}
 
 	// TODO: for v1 use mode==1, just check the failed feeders
-	_, failed := agc.SealRound(ctx, forceSeal)
+	_, failed, sealed := agc.SealRound(ctx, forceSeal)
+	for _, feederID := range sealed {
+		am.keeper.RemoveNonceWithFeederIDForValidators(ctx, feederID, agc.GetValidators())
+	}
 	// append new round with previous price for fail-seal token
 	for _, tokenID := range failed {
 		prevPrice, nextRoundID := am.keeper.GrowRoundID(ctx, tokenID)
@@ -216,5 +220,9 @@ func (am AppModule) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.Val
 		keeper.ResetUpdatedFeederIDs()
 	}
 
+	newRoundFeederIDs := agc.PrepareRoundEndBlock(uint64(ctx.BlockHeight()))
+	for _, feederID := range newRoundFeederIDs {
+		am.keeper.AddZeroNonceItemWithFeederIDForValidators(ctx, feederID, agc.GetValidators())
+	}
 	return []abci.ValidatorUpdate{}
 }
