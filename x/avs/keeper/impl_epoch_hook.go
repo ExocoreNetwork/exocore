@@ -40,7 +40,7 @@ func (wrapper EpochsHooksWrapper) AfterEpochEnd(
 			var taskID uint64
 			var taskAddr string
 			var avsAddr string
-			operatorPowers := []*types.OperatorActivePowerInfo{{}}
+			var operatorPowers []*types.OperatorActivePowerInfo
 			operatorPowerTotal := sdkmath.LegacyNewDec(0)
 			for _, res := range value {
 				// Find signed operators
@@ -90,14 +90,9 @@ func (wrapper EpochsHooksWrapper) AfterEpochEnd(
 				// continue
 			}
 
-			// actualThreshold := taskPowerTotal.Quo(operatorPowerTotal).Mul(sdk.NewDec(100))
-			if err != nil {
-				ctx.Logger().Error("Failed to update task result statistics,Calculation of actualThreshold ratio failed!", "task result", taskAddr, "error", err)
-				// Handle the error gracefully, continue to the next
-				// continue
-			}
+			actualThreshold := taskPowerTotal.Quo(operatorPowerTotal).Mul(sdk.NewDec(100))
 			taskInfo.TaskTotalPower = taskPowerTotal
-			// taskInfo.ActualThreshold = actualThreshold.BigInt().Uint64()
+			taskInfo.ActualThreshold = actualThreshold.BigInt().Uint64()
 
 			// Update the taskInfo in the state
 			err = wrapper.keeper.SetTaskInfo(ctx, taskInfo)

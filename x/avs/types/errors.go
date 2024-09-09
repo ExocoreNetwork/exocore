@@ -95,4 +95,8 @@ var (
 		ModuleName, 22,
 		"Inconsistent parameters",
 	)
+	ErrVotingPowerIncorrect = errorsmod.Register(
+		ModuleName, 23,
+		"Less than or equal to 0",
+	)
 )

@@ -208,6 +208,11 @@ func (k Keeper) CreateAVSTask(ctx sdk.Context, params *TaskInfoParams) error {
 	if !slices.Contains(avsInfo.AvsOwnerAddress, params.CallerAddress) {
 		return errorsmod.Wrap(types.ErrCallerAddressUnauthorized, fmt.Sprintf("this caller not qualified to CreateAVSTask %s", params.CallerAddress))
 	}
+	taskPowerTotal, err := k.operatorKeeper.GetAVSUSDValue(ctx, avsInfo.AvsAddress)
+
+	if err != nil || taskPowerTotal.IsZero() || taskPowerTotal.IsNegative() {
+		return errorsmod.Wrap(types.ErrVotingPowerIncorrect, fmt.Sprintf("the votingpower of avs is <<=0,avs addr is：%s", avsInfo.AvsAddress))
+	}
 
 	epoch, found := k.epochsKeeper.GetEpochInfo(ctx, avsInfo.EpochIdentifier)
 	if !found {

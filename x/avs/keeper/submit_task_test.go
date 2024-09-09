@@ -86,7 +86,7 @@ func (suite *AVSTestSuite) prepareAvs(assetIDs []string) {
 		MinSelfDelegation:   3,
 		AvsOwnerAddress:     nil,
 		UnbondingPeriod:     7,
-		MinOptInOperators:   3,
+		MinOptInOperators:   0,
 		MinStakeAmount:      2,
 		MinTotalStakeAmount: 2,
 		AvsSlash:            2,

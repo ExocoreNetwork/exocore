@@ -92,7 +92,7 @@ func (suite *AVSTestSuite) prepareMulAvs(assetIDs []string) {
 		TaskAddr:            suite.taskAddress.String(),
 		SlashContractAddr:   "",
 		RewardContractAddr:  "",
-		MinSelfDelegation:   3,
+		MinSelfDelegation:   0,
 		AvsOwnerAddress:     nil,
 		UnbondingPeriod:     7,
 		MinOptInOperators:   3,
