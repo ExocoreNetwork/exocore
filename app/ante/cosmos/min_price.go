@@ -4,6 +4,7 @@ import (
 	"math/big"
 
 	errorsmod "cosmossdk.io/errors"
+	anteutils "github.com/ExocoreNetwork/exocore/app/ante/utils"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	errortypes "github.com/cosmos/cosmos-sdk/types/errors"
 	evmante "github.com/evmos/evmos/v14/app/ante/evm"
@@ -29,6 +30,10 @@ func (mpd MinGasPriceDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate 
 	feeTx, ok := tx.(sdk.FeeTx)
 	if !ok {
 		return ctx, errorsmod.Wrapf(errortypes.ErrInvalidType, "invalid transaction type %T, expected sdk.FeeTx", tx)
+	}
+
+	if anteutils.IsOracleCreatePriceTx(tx) {
+		return next(ctx, tx, simulate)
 	}
 
 	minGasPrice := mpd.feesKeeper.GetParams(ctx).MinGasPrice

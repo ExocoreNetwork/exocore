@@ -23,3 +23,8 @@ type StakingKeeper interface {
 	BondDenom(ctx sdk.Context) string
 	IterateDelegations(ctx sdk.Context, delegator sdk.AccAddress, fn func(index int64, delegation stakingtypes.DelegationI) (stop bool))
 }
+
+// OracleKeeper defines the exposed interface for using functionality of the oracle keeper
+type OracleKeeper interface {
+	CheckAndIncreaseNonce(ctx sdk.Context, validator string, feederID uint64, nonce uint32) (prevNonce uint32, err error)
+}

@@ -307,7 +307,7 @@ func (suite *KeeperTestSuite) TestDifferentEpochOperations() {
 			errValues:       []error{nil},
 			expUpdatesCount: []int{1},
 			powers: [][]int64{
-				[]int64{amountUSD},
+				{amountUSD},
 			},
 			validatorKeys: []exocoretypes.WrappedConsKey{oldKey},
 			ultimateKey:   oldKey,
@@ -321,7 +321,7 @@ func (suite *KeeperTestSuite) TestDifferentEpochOperations() {
 			errValues:       []error{operatortypes.ErrNotOptedIn},
 			expUpdatesCount: []int{0},
 			powers: [][]int64{
-				[]int64{},
+				{},
 			},
 			validatorKeys: []exocoretypes.WrappedConsKey{nil},
 			ultimateKey:   nil,
@@ -335,7 +335,7 @@ func (suite *KeeperTestSuite) TestDifferentEpochOperations() {
 			errValues:       []error{operatortypes.ErrNotOptedIn},
 			expUpdatesCount: []int{0},
 			powers: [][]int64{
-				[]int64{},
+				{},
 			},
 			validatorKeys: []exocoretypes.WrappedConsKey{nil},
 			ultimateKey:   nil,
@@ -349,8 +349,8 @@ func (suite *KeeperTestSuite) TestDifferentEpochOperations() {
 			errValues:       []error{nil, nil},
 			expUpdatesCount: []int{1, 2},
 			powers: [][]int64{
-				[]int64{amountUSD},
-				[]int64{amountUSD, 0},
+				{amountUSD},
+				{amountUSD, 0},
 			},
 			validatorKeys: []exocoretypes.WrappedConsKey{
 				oldKey, newKey,
@@ -366,8 +366,8 @@ func (suite *KeeperTestSuite) TestDifferentEpochOperations() {
 			errValues:       []error{nil, nil},
 			expUpdatesCount: []int{1, 1},
 			powers: [][]int64{
-				[]int64{amountUSD},
-				[]int64{0},
+				{amountUSD},
+				{0},
 			},
 			validatorKeys: []exocoretypes.WrappedConsKey{oldKey, nil},
 			ultimateKey:   nil,
@@ -381,9 +381,9 @@ func (suite *KeeperTestSuite) TestDifferentEpochOperations() {
 			errValues:       []error{nil, nil, nil},
 			expUpdatesCount: []int{1, 2, 1},
 			powers: [][]int64{
-				[]int64{amountUSD},
-				[]int64{amountUSD, 0},
-				[]int64{0},
+				{amountUSD},
+				{amountUSD, 0},
+				{0},
 			},
 			validatorKeys: []exocoretypes.WrappedConsKey{oldKey, newKey, nil},
 			ultimateKey:   nil,
@@ -397,9 +397,9 @@ func (suite *KeeperTestSuite) TestDifferentEpochOperations() {
 			errValues:       []error{nil, nil, operatortypes.ErrAlreadyRemovingKey},
 			expUpdatesCount: []int{1, 1, 0},
 			powers: [][]int64{
-				[]int64{amountUSD},
-				[]int64{0},
-				[]int64{},
+				{amountUSD},
+				{0},
+				{},
 			},
 			validatorKeys: []exocoretypes.WrappedConsKey{oldKey, nil, nil},
 			ultimateKey:   nil,
