@@ -44,25 +44,3 @@ jobs:
         run: |
           make test-unit-cover
         if: env.GIT_DIFF
-      - name: Check if test coverage is above threshold
-        id: output-coverage
-        uses: vladopajic/go-test-coverage@v2
-        with:
-          profile: cover.out
-          local-prefix: github.com/ExocoreNetwork/exocore
-          # TODO: increase this threshold with time to 80
-          threshold-total: 0
-        if: env.GIT_DIFF
-        # even if coverage is low, do not exit.
-        continue-on-error: true
-      - name: Generate artifact for PR
-        run: |
-          mkdir -p ./result/
-          echo "${{ steps.output-coverage.outputs.total-coverage }}" > ./result/coverage.txt
-          echo "${{ github.event.pull_request.number }}" > ./result/pr_number.txt
-        if: env.GIT_DIFF && github.event_name == 'pull_request'
-      - uses: actions/upload-artifact@v2
-        with:
-          name: result
-          path: ./result/
-        if: env.GIT_DIFF && github.event_name == 'pull_request'
