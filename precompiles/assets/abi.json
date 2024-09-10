@@ -58,35 +58,6 @@
   },
   {
     "type": "function",
-    "name": "getTotalSupply",
-    "inputs": [
-      {
-        "name": "clientChainId",
-        "type": "uint32",
-        "internalType": "uint32"
-      },
-      {
-        "name": "token",
-        "type": "bytes",
-        "internalType": "bytes"
-      }
-    ],
-    "outputs": [
-      {
-        "name": "success",
-        "type": "bool",
-        "internalType": "bool"
-      },
-      {
-        "name": "totalSupply",
-        "type": "uint256",
-        "internalType": "uint256"
-      }
-    ],
-    "stateMutability": "view"
-  },
-  {
-    "type": "function",
     "name": "isRegisteredClientChain",
     "inputs": [
       {
@@ -173,11 +144,6 @@
         "internalType": "uint8"
       },
       {
-        "name": "totalSupply",
-        "type": "uint256",
-        "internalType": "uint256"
-      },
-      {
         "name": "name",
         "type": "string",
         "internalType": "string"
@@ -215,11 +181,6 @@
         "name": "token",
         "type": "bytes",
         "internalType": "bytes"
-      },
-      {
-        "name": "totalSupply",
-        "type": "uint256",
-        "internalType": "uint256"
       },
       {
         "name": "metaData",

@@ -129,12 +129,6 @@ func (p Precompile) Run(evm *vm.EVM, contract *vm.Contract, readOnly bool) (bz [
 			ctx.Logger().Error("internal error when calling assets precompile", "module", "assets precompile", "method", method.Name, "err", err)
 			bz, err = method.Outputs.Pack(false, false)
 		}
-	case MethodGetTotalSupply:
-		bz, err = p.GetTotalSupply(ctx, method, args)
-		if err != nil {
-			ctx.Logger().Error("internal error when calling assets precompile", "module", "assets precompile", "method", method.Name, "err", err)
-			bz, err = method.Outputs.Pack(false, new(big.Int))
-		}
 	default:
 		return nil, fmt.Errorf(cmn.ErrUnknownMethod, method.Name)
 	}
@@ -158,7 +152,7 @@ func (Precompile) IsTransaction(methodID string) bool {
 	switch methodID {
 	case MethodDepositTo, MethodWithdraw, MethodRegisterOrUpdateClientChain, MethodRegisterToken, MethodUpdateToken:
 		return true
-	case MethodGetClientChains, MethodIsRegisteredClientChain, MethodGetTotalSupply:
+	case MethodGetClientChains, MethodIsRegisteredClientChain:
 		return false
 	default:
 		return false

@@ -2,7 +2,6 @@ package types
 
 import (
 	errorsmod "cosmossdk.io/errors"
-	"cosmossdk.io/math"
 	"github.com/ethereum/go-ethereum/common"
 )
 
@@ -77,7 +76,7 @@ func (gs GenesisState) Validate() error {
 	}
 	// client_chain_asset.go -> check presence of client chain
 	// for all assets and no duplicates
-	tokenSupplies := make(map[string]math.Int, len(gs.Tokens))
+	tokens := make(map[string]struct{}, len(gs.Tokens))
 	for _, info := range gs.Tokens {
 		if info.AssetBasicInfo == nil {
 			return errorsmod.Wrapf(
@@ -142,23 +141,14 @@ func (gs GenesisState) Validate() error {
 			)
 		}
 		// check that it is not a duplicate.
-		if _, ok := tokenSupplies[assetID]; ok {
+		if _, ok := tokens[assetID]; ok {
 			return errorsmod.Wrapf(
 				ErrInvalidGenesisData,
 				"duplicate assetID: %s",
 				assetID,
 			)
 		}
-		// validate the amount of supply
-		if info.AssetBasicInfo.TotalSupply.IsNil() ||
-			!info.AssetBasicInfo.TotalSupply.IsPositive() {
-			return errorsmod.Wrapf(
-				ErrInvalidGenesisData,
-				"nil total supply for token %s",
-				info.AssetBasicInfo.MetaInfo,
-			)
-		}
-		tokenSupplies[assetID] = info.AssetBasicInfo.TotalSupply
+		tokens[assetID] = struct{}{}
 	}
 	// staker_asset.go -> check deposits and withdrawals and that there is no unbonding.
 	stakers := make(map[string]struct{}, len(gs.Deposits))
@@ -198,7 +188,7 @@ func (gs GenesisState) Validate() error {
 			// check that the asset is registered
 			// no need to check for the validity of the assetID, since
 			// an invalid assetID cannot be in the tokens map.
-			if _, ok := tokenSupplies[assetID]; !ok {
+			if _, ok := tokens[assetID]; !ok {
 				return errorsmod.Wrapf(
 					ErrInvalidGenesisData,
 					"unknown assetID for deposit %s: %s",
@@ -259,14 +249,6 @@ func (gs GenesisState) Validate() error {
 				return errorsmod.Wrapf(
 					ErrInvalidGenesisData,
 					"withdrawable amount is not equal to total deposit amount for %s: %+v",
-					assetID, info,
-				)
-			}
-			// check that deposit amount does not exceed supply.
-			if info.TotalDepositAmount.GT(tokenSupplies[assetID]) {
-				return errorsmod.Wrapf(
-					ErrInvalidGenesisData,
-					"deposit amount exceeds max supply for %s: %+v",
 					assetID, info,
 				)
 			}

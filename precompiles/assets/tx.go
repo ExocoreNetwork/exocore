@@ -23,7 +23,6 @@ const (
 	MethodRegisterToken               = "registerToken"
 	MethodUpdateToken                 = "updateToken"
 	MethodIsRegisteredClientChain     = "isRegisteredClientChain"
-	MethodGetTotalSupply              = "getTotalSupply"
 )
 
 // DepositOrWithdraw deposit and withdraw the client chain assets for the staker,
@@ -173,7 +172,7 @@ func (p Precompile) UpdateToken(
 	}
 
 	// parse inputs
-	clientChainID, hexAssetAddr, totalSupply, metadata, err := p.UpdateTokenFromInputs(ctx, args)
+	clientChainID, hexAssetAddr, metadata, err := p.UpdateTokenFromInputs(ctx, args)
 	if err != nil {
 		return nil, err
 	}
@@ -187,15 +186,7 @@ func (p Precompile) UpdateToken(
 	}
 
 	// finally, execute the update
-	if len(metadata) > 0 {
-		// if metadata is not empty, update it
-		assetInfo.AssetBasicInfo.MetaInfo = metadata
-	}
-	// check the currently deposited quantity
-	if deposited := assetInfo.StakingTotalAmount; deposited.GT(totalSupply) {
-		return nil, fmt.Errorf("total supply %s is less than the total deposited amount %s", totalSupply, deposited)
-	}
-	assetInfo.AssetBasicInfo.TotalSupply = totalSupply
+	assetInfo.AssetBasicInfo.MetaInfo = metadata
 
 	if err := p.assetsKeeper.SetStakingAssetInfo(ctx, assetInfo); err != nil {
 		return nil, err
@@ -215,21 +206,4 @@ func (p Precompile) IsRegisteredClientChain(
 	}
 	exists := p.assetsKeeper.ClientChainExists(ctx, uint64(clientChainID))
 	return method.Outputs.Pack(true, exists)
-}
-
-func (p Precompile) GetTotalSupply(
-	ctx sdk.Context,
-	method *abi.Method,
-	args []interface{},
-) ([]byte, error) {
-	clientChainID, hexAssetAddr, err := p.GetTotalSupplyFromInputs(ctx, args)
-	if err != nil {
-		return nil, err
-	}
-	_, assetID := assetstypes.GetStakeIDAndAssetIDFromStr(uint64(clientChainID), "", hexAssetAddr)
-	info, err := p.assetsKeeper.GetStakingAssetInfo(ctx, assetID)
-	if err != nil {
-		return nil, err
-	}
-	return method.Outputs.Pack(true, info.StakingTotalAmount.BigInt())
 }

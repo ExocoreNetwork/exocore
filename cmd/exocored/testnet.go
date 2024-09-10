@@ -384,10 +384,6 @@ func getTestExocoreGenesis(
 			MetaInfo:         "Tether USD token",
 		},
 	}
-	{
-		totalSupply, _ := sdk.NewIntFromString("40022689732746729")
-		assets[0].TotalSupply = totalSupply
-	}
 	_, assetID := assetstypes.GetStakeIDAndAssetIDFromStr(
 		clientChains[0].LayerZeroChainID,
 		"", assets[0].Address,

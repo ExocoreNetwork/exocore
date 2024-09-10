@@ -26,17 +26,10 @@ func (k Keeper) PerformDepositOrWithdraw(ctx sdk.Context, params *DepositWithdra
 		return errorsmod.Wrap(assetstypes.ErrInvalidDepositAmount, fmt.Sprintf("negative deposit amount:%s", params.OpAmount))
 	}
 	stakeID, assetID := assetstypes.GetStakeIDAndAssetID(params.ClientChainLzID, params.StakerAddress, params.AssetsAddress)
-	assetsInfo, err := k.GetStakingAssetInfo(ctx, assetID)
-	if err != nil {
-		return errorsmod.Wrapf(err, "the assetID is:%s", assetID)
-	}
 
 	actualOpAmount := params.OpAmount
 	switch params.Action {
 	case assetstypes.Deposit:
-		if params.OpAmount.Add(assetsInfo.StakingTotalAmount).GT(assetsInfo.AssetBasicInfo.TotalSupply) {
-			return errorsmod.Wrapf(assetstypes.ErrInvalidDepositAmount, "deposit amount will make the total staking amount greater than the total supply, amount:%s,totalStakingAmount:%s, totalSupply:%s", params.OpAmount, assetsInfo.StakingTotalAmount, assetsInfo.AssetBasicInfo.TotalSupply)
-		}
 	case assetstypes.WithdrawPrincipal:
 		actualOpAmount = actualOpAmount.Neg()
 	default:
@@ -48,7 +41,7 @@ func (k Keeper) PerformDepositOrWithdraw(ctx sdk.Context, params *DepositWithdra
 		WithdrawableAmount: actualOpAmount,
 	}
 	// update asset state of the specified staker
-	err = k.UpdateStakerAssetState(ctx, stakeID, assetID, changeAmount)
+	err := k.UpdateStakerAssetState(ctx, stakeID, assetID, changeAmount)
 	if err != nil {
 		return errorsmod.Wrapf(err, "stakeID:%s assetID:%s", stakeID, assetID)
 	}
