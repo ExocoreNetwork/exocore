@@ -169,9 +169,9 @@ func (k Keeper) UpdateAVSInfo(ctx sdk.Context, params *types.AVSRegisterOrDeregi
 		if params.UnbondingPeriod > 0 {
 			avs.AvsUnbondingPeriod = params.UnbondingPeriod
 		}
-		if params.MinSelfDelegation > 0 {
-			avs.MinSelfDelegation = params.MinSelfDelegation
-		}
+
+		avs.MinSelfDelegation = params.MinSelfDelegation
+
 		if params.EpochIdentifier != "" {
 			avs.EpochIdentifier = params.EpochIdentifier
 		}

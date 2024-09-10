@@ -84,7 +84,7 @@ func (p Precompile) GetAVSParamsFromInputs(_ sdk.Context, args []interface{}) (*
 	avsParams.UnbondingPeriod = unbondingPeriod
 
 	minSelfDelegation, ok := args[9].(uint64)
-	if !ok || minSelfDelegation == 0 {
+	if !ok {
 		return nil, fmt.Errorf(exocmn.ErrContractInputParaOrType, 9, "uint64", minSelfDelegation)
 	}
 	avsParams.MinSelfDelegation = minSelfDelegation
