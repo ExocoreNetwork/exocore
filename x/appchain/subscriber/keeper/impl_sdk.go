@@ -23,26 +23,29 @@ import (
 // https://github.com/orgs/cosmos/projects/28/views/11?pane=issue&itemId=21248976
 
 // interface guards
-var _ slashingtypes.StakingKeeper = Keeper{}
-var _ evidencetypes.StakingKeeper = Keeper{}
-var _ clienttypes.StakingKeeper = Keeper{}
-var _ genutiltypes.StakingKeeper = Keeper{}
+var (
+	_ slashingtypes.StakingKeeper = Keeper{}
+	_ evidencetypes.StakingKeeper = Keeper{}
+	_ clienttypes.StakingKeeper   = Keeper{}
+	_ genutiltypes.StakingKeeper  = Keeper{}
+)
 
 // GetParams returns an empty staking params. It is used by the interfaces above, but the returned
 // value is never examined.
-func (k Keeper) GetParams(ctx sdk.Context) stakingtypes.Params {
+func (k Keeper) GetParams(sdk.Context) stakingtypes.Params {
 	return stakingtypes.Params{}
 }
 
 // This function is used by the slashing module to store the validator public keys into the
 // state. These were previously verified in the evidence module but have since been removed.
 func (k Keeper) IterateValidators(sdk.Context,
-	func(index int64, validator stakingtypes.ValidatorI) (stop bool)) {
+	func(int64, stakingtypes.ValidatorI) bool,
+) {
 	// no op
 }
 
 // simply unimplemented because it is not needed
-func (k Keeper) Validator(ctx sdk.Context, addr sdk.ValAddress) stakingtypes.ValidatorI {
+func (k Keeper) Validator(sdk.Context, sdk.ValAddress) stakingtypes.ValidatorI {
 	panic("unimplemented on this keeper")
 }
 
@@ -83,7 +86,7 @@ func (k Keeper) SlashWithInfractionReason(
 	ctx sdk.Context,
 	addr sdk.ConsAddress,
 	infractionHeight, power int64,
-	slashFactor sdk.Dec,
+	_ sdk.Dec,
 	infraction stakingtypes.Infraction,
 ) math.Int {
 	if infraction == stakingtypes.Infraction_INFRACTION_UNSPECIFIED {
@@ -116,7 +119,7 @@ func (k Keeper) SlashWithInfractionReason(
 }
 
 // Unimplemented because jailing happens on the coordinator chain.
-func (k Keeper) Jail(ctx sdk.Context, addr sdk.ConsAddress) {}
+func (k Keeper) Jail(sdk.Context, sdk.ConsAddress) {}
 
 // Same as above.
 func (k Keeper) Unjail(sdk.Context, sdk.ConsAddress) {}
@@ -140,7 +143,7 @@ func (k Keeper) MaxValidators(ctx sdk.Context) uint32 {
 // In interchain-security, this does seem to have been implemented. However, I did not see
 // the validators being persisted in the first place so I just returned an empty list.
 // I also did not see this being used anywhere within the slashing module.
-func (k Keeper) GetAllValidators(ctx sdk.Context) (validators []stakingtypes.Validator) {
+func (k Keeper) GetAllValidators(sdk.Context) []stakingtypes.Validator {
 	return []stakingtypes.Validator{}
 }
 

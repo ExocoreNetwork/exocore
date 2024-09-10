@@ -36,7 +36,7 @@ func (k Keeper) AppendPendingPacket(
 // GetPendingPackets returns ALL the pending packets from the store without indexes.
 func (k Keeper) GetPendingPackets(ctx sdk.Context) []commontypes.SubscriberPacketData {
 	ppWithIndexes := k.GetAllPendingPacketsWithIdx(ctx)
-	var ppList []commontypes.SubscriberPacketData
+	ppList := make([]commontypes.SubscriberPacketData, 0)
 	for _, ppWithIndex := range ppWithIndexes {
 		ppList = append(ppList, ppWithIndex.SubscriberPacketData)
 	}

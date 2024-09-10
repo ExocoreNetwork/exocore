@@ -48,6 +48,7 @@ func NewKeeper(
 		cdc:               cdc,
 		storeKey:          storeKey,
 		accountKeeper:     accountKeeper,
+		bankKeeper:        bankKeeper,
 		scopedKeeper:      scopedKeeper,
 		portKeeper:        portKeeper,
 		clientKeeper:      clientKeeper,

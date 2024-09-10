@@ -146,7 +146,9 @@ func (k Keeper) Delegation(
 	// This interface is only used for unjail to retrieve the self delegation value,
 	// so the delegator and validator are the same.
 	operator := delegator
-	operatorUSDValues, err := k.operatorKeeper.GetOrCalculateOperatorUSDValues(ctx, operator, avstypes.ChainIDWithoutRevision(ctx.ChainID()))
+	operatorUSDValues, err := k.operatorKeeper.GetOrCalculateOperatorUSDValues(
+		ctx, operator, utils.ChainIDWithoutRevision(ctx.ChainID()),
+	)
 	if err != nil {
 		k.Logger(ctx).Error(
 			"Delegation: failed to get or calculate the operator USD values",
@@ -157,7 +159,9 @@ func (k Keeper) Delegation(
 	return stakingtypes.Delegation{
 		DelegatorAddress: delegator.String(),
 		ValidatorAddress: validator.String(),
-		Shares:           sdk.TokensFromConsensusPower(operatorUSDValues.SelfUSDValue.TruncateInt64(), sdk.DefaultPowerReduction).ToLegacyDec(),
+		Shares: sdk.TokensFromConsensusPower(
+			operatorUSDValues.SelfUSDValue.TruncateInt64(), sdk.DefaultPowerReduction,
+		).ToLegacyDec(),
 	}
 }
 

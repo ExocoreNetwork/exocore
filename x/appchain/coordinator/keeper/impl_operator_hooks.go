@@ -28,8 +28,8 @@ func (h OperatorHooksWrapper) AfterOperatorKeySet(
 
 // AfterOperatorKeyReplaced is the implementation of the operator hooks.
 func (h OperatorHooksWrapper) AfterOperatorKeyReplaced(
-	ctx sdk.Context, operatorAccAddress sdk.AccAddress,
-	oldKey exocoretypes.WrappedConsKey, newKey exocoretypes.WrappedConsKey,
+	ctx sdk.Context, _ sdk.AccAddress,
+	oldKey exocoretypes.WrappedConsKey, _ exocoretypes.WrappedConsKey,
 	chainID string,
 ) {
 	consAddr := oldKey.ToConsAddr()
@@ -52,7 +52,7 @@ func (h OperatorHooksWrapper) AfterOperatorKeyReplaced(
 
 // AfterOperatorKeyRemovalInitiated is the implementation of the operator hooks.
 func (h OperatorHooksWrapper) AfterOperatorKeyRemovalInitiated(
-	ctx sdk.Context, operator sdk.AccAddress, chainID string, key exocoretypes.WrappedConsKey,
+	ctx sdk.Context, _ sdk.AccAddress, chainID string, key exocoretypes.WrappedConsKey,
 ) {
 	consAddr := key.ToConsAddr()
 	_, found := h.keeper.GetSubscriberValidatorForChain(ctx, chainID, consAddr)

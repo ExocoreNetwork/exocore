@@ -163,11 +163,11 @@ func (AppModule) ConsensusVersion() uint64 { return 1 }
 
 // BeginBlock contains the logic that is automatically triggered at the beginning of each block
 func (am AppModule) BeginBlock(ctx sdk.Context, _ abci.RequestBeginBlock) {
-	channelId, found := am.keeper.GetCoordinatorChannel(ctx)
-	if found && am.keeper.IsChannelClosed(ctx, channelId) {
+	channelID, found := am.keeper.GetCoordinatorChannel(ctx)
+	if found && am.keeper.IsChannelClosed(ctx, channelID) {
 		// we are now PoA
 		am.keeper.Logger(ctx).
-			Error("coordinator channel is closed, we are now PoA", "channelId", channelId)
+			Error("coordinator channel is closed, we are now PoA", "channelId", channelID)
 	}
 
 	// get height of the yet-to-be-made block

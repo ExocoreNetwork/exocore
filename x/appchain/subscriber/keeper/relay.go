@@ -249,7 +249,8 @@ func (k Keeper) SendPackets(ctx sdk.Context) {
 	pending := k.GetAllPendingPacketsWithIdx(ctx)
 	idxsForDeletion := []uint64{}
 	timeoutPeriod := k.GetSubscriberParams(ctx).IBCTimeoutPeriod
-	for _, p := range pending {
+	for i := range pending {
+		p := pending[i]
 		// Send packet over IBC
 		err := commontypes.SendIBCPacket(
 			ctx,
@@ -279,23 +280,22 @@ func (k Keeper) SendPackets(ctx sdk.Context) {
 				"type", p.Type.String(), "err", err.Error(),
 			)
 			return
+		}
+		if p.Type == commontypes.VscMaturedPacket {
+			id := p.GetVscMaturedPacketData().ValsetUpdateID
+			k.Logger(ctx).Info(
+				"IBC packet sent",
+				"type", p.Type.String(),
+				"id", id,
+			)
 		} else {
-			if p.Type == commontypes.VscMaturedPacket {
-				id := p.GetVscMaturedPacketData().ValsetUpdateID
-				k.Logger(ctx).Info(
-					"IBC packet sent",
-					"type", p.Type.String(),
-					"id", id,
-				)
-			} else {
-				data := p.GetSlashPacketData()
-				addr := data.Validator.Address
-				k.Logger(ctx).Info(
-					"IBC packet sent",
-					"type", p.Type.String(),
-					"addr", addr,
-				)
-			}
+			data := p.GetSlashPacketData()
+			addr := data.Validator.Address
+			k.Logger(ctx).Info(
+				"IBC packet sent",
+				"type", p.Type.String(),
+				"addr", addr,
+			)
 		}
 		// Otherwise the vsc matured will be deleted
 		idxsForDeletion = append(idxsForDeletion, p.Idx)
