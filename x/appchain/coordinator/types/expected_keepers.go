@@ -16,6 +16,7 @@ type AVSKeeper interface {
 	RegisterAVSWithChainID(sdk.Context, *avstypes.AVSRegisterOrDeregisterParams) (common.Address, error)
 	IsAVSByChainID(sdk.Context, string) (bool, common.Address)
 	DeleteAVSInfo(sdk.Context, common.Address) error
+	GetEpochEndChainIDs(sdk.Context, string, int64) []string
 }
 
 // EpochsKeeper represents the expected keeper interface for the epochs module.
@@ -30,6 +31,8 @@ type StakingKeeper interface {
 
 // OperatorKeeper represents the expected keeper interface for the operator module.
 type OperatorKeeper interface {
+	GetOperatorConsKeyForChainID(sdk.Context, sdk.AccAddress, string) (bool, types.WrappedConsKey, error)
+	IsOperatorRemovingKeyFromChainID(sdk.Context, sdk.AccAddress, string) bool
 	GetActiveOperatorsForChainID(sdk.Context, string) ([]sdk.AccAddress, []types.WrappedConsKey)
 	GetVotePowerForChainID(sdk.Context, []sdk.AccAddress, string) ([]int64, error)
 	GetOperatorAddressForChainIDAndConsAddr(
@@ -47,4 +50,11 @@ type OperatorKeeper interface {
 		height uint64, fraction sdk.Dec, infraction stakingtypes.Infraction,
 		jailDuration time.Duration,
 	)
+	GetChainIDsForOperator(sdk.Context, sdk.AccAddress) []string
+}
+
+// DelegationKeeper represents the expected keeper interface for the delegation module.
+type DelegationKeeper interface {
+	IncrementUndelegationHoldCount(sdk.Context, []byte) error
+	DecrementUndelegationHoldCount(sdk.Context, []byte) error
 }

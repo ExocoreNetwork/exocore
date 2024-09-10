@@ -6,6 +6,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	auth "github.com/cosmos/cosmos-sdk/x/auth/types"
 	capabilitytypes "github.com/cosmos/cosmos-sdk/x/capability/types"
+	transfertypes "github.com/cosmos/ibc-go/v7/modules/apps/transfer/types"
 	clienttypes "github.com/cosmos/ibc-go/v7/modules/core/02-client/types"
 	conntypes "github.com/cosmos/ibc-go/v7/modules/core/03-connection/types"
 	channeltypes "github.com/cosmos/ibc-go/v7/modules/core/04-channel/types"
@@ -73,4 +74,23 @@ type IBCCoreKeeper interface {
 // AccountKeeper defines the expected account keeper
 type AccountKeeper interface {
 	GetModuleAccount(ctx sdk.Context, name string) auth.ModuleAccountI
+}
+
+// BankKeeper defines the expected bank keeper
+type BankKeeper interface {
+	GetBalance(ctx sdk.Context, addr sdk.AccAddress, denom string) sdk.Coin
+	GetAllBalances(ctx sdk.Context, addr sdk.AccAddress) sdk.Coins
+	SendCoinsFromModuleToModule(
+		ctx sdk.Context,
+		senderModule, recipientModule string,
+		amt sdk.Coins,
+	) error
+}
+
+// IBCTransferKeeper defines the expected IBC transfer keeper
+type IBCTransferKeeper interface {
+	Transfer(
+		context.Context,
+		*transfertypes.MsgTransfer,
+	) (*transfertypes.MsgTransferResponse, error)
 }

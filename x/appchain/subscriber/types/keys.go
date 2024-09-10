@@ -46,8 +46,8 @@ const (
 	CoordinatorClientIDBytePrefix
 	// ValsetUpdateIDBytePrefix is the prefix for the valset update ID key
 	ValsetUpdateIDBytePrefix
-	// SubscriberChainValidatorBytePrefix is the prefix for the subscriber chain validator key
-	SubscriberChainValidatorBytePrefix
+	// SubscriberValidatorBytePrefix is the prefix for the subscriber validator key
+	SubscriberValidatorBytePrefix
 	// CoordinatorChannelBytePrefix is the prefix for the coordinator channel key
 	CoordinatorChannelBytePrefix
 	// PendingChangesBytePrefix is the prefix for the pending changes key
@@ -56,6 +56,14 @@ const (
 	PacketMaturityTimeBytePrefix
 	// OutstandingDowntimeBytePrefix is the prefix for the outstanding downtime key
 	OutstandingDowntimeBytePrefix
+	// PendingPacketsIndexBytePrefix is the prefix for the pending packets index key
+	PendingPacketsIndexBytePrefix
+	// PendingDataPacketsBytePrefix is the prefix for the pending data packets key
+	PendingDataPacketsBytePrefix
+	// HistoricalInfoBytePrefix is the prefix for the historical info key
+	HistoricalInfoBytePrefix
+	// LastRewardTransmissionHeightBytePrefix is the prefix for the last reward transmission height key
+	LastRewardTransmissionHeightBytePrefix
 )
 
 // ParamsKey returns the key for the params
@@ -81,10 +89,10 @@ func ValsetUpdateIDKey(height int64) []byte {
 	)
 }
 
-// SubscriberChainValidatorKey returns the key for the subscriber chain validator
+// SubscriberValidatorKey returns the key for the subscriber chain validator
 // against the provided address.
-func SubscriberChainValidatorKey(address sdk.ConsAddress) []byte {
-	return append([]byte{SubscriberChainValidatorBytePrefix}, address...)
+func SubscriberValidatorKey(address sdk.ConsAddress) []byte {
+	return append([]byte{SubscriberValidatorBytePrefix}, address...)
 }
 
 // CoordinatorChannelKey returns the key for which the ibc channel id to the coordinator chain
@@ -99,7 +107,7 @@ func PendingChangesKey() []byte {
 }
 
 // PacketMaturityTimeKey returns the key for the packet maturity time
-func PacketMaturityTimeKey(vscID uint64, maturityTime time.Time) []byte {
+func PacketMaturityTimeKey(maturityTime time.Time, vscID uint64) []byte {
 	return utils.AppendMany(
 		[]byte{PacketMaturityTimeBytePrefix},
 		sdk.FormatTimeBytes(maturityTime),
@@ -110,4 +118,24 @@ func PacketMaturityTimeKey(vscID uint64, maturityTime time.Time) []byte {
 // OutstandingDowntimeKey returns the key for the outstanding downtime
 func OutstandingDowntimeKey(consAddress sdk.ConsAddress) []byte {
 	return append([]byte{OutstandingDowntimeBytePrefix}, consAddress.Bytes()...)
+}
+
+// PendingPacketsIndexKey returns the key for the pending packets index
+func PendingPacketsIndexKey() []byte {
+	return []byte{PendingPacketsIndexBytePrefix}
+}
+
+// PendingDataPacketsKey returns the key for the pending data packets
+func PendingDataPacketsKey(idx uint64) []byte {
+	return append([]byte{PendingDataPacketsBytePrefix}, sdk.Uint64ToBigEndian(idx)...)
+}
+
+// HistoricalInfoKey returns the key for the historical info
+func HistoricalInfoKey(height int64) []byte {
+	return append([]byte{HistoricalInfoBytePrefix}, sdk.Uint64ToBigEndian(uint64(height))...)
+}
+
+// LastRewardTransmissionHeightKey is the key for the last reward transmission height
+func LastRewardTransmissionHeightKey() []byte {
+	return []byte{LastRewardTransmissionHeightBytePrefix}
 }

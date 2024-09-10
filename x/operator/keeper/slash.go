@@ -178,6 +178,7 @@ func (k Keeper) SlashWithInfractionReason(
 	ctx sdk.Context, addr sdk.AccAddress, infractionHeight, power int64,
 	slashFactor sdk.Dec, infraction stakingtypes.Infraction,
 ) sdkmath.Int {
+	// for x/dogfood, we use the chainIDWithoutRevision as the chainID
 	chainID := utils.ChainIDWithoutRevision(ctx.ChainID())
 	isAvs, avsAddr := k.avsKeeper.IsAVSByChainID(ctx, chainID)
 	if !isAvs {

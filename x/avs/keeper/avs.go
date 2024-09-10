@@ -7,7 +7,6 @@ import (
 	errorsmod "cosmossdk.io/errors"
 	sdkmath "cosmossdk.io/math"
 
-	"github.com/ExocoreNetwork/exocore/utils"
 	"github.com/ExocoreNetwork/exocore/x/avs/types"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/evmos/evmos/v14/x/evm/statedb"
@@ -80,6 +79,20 @@ func (k *Keeper) GetEpochEndAVSs(ctx sdk.Context, epochIdentifier string, ending
 	return avsList
 }
 
+// GetEpochEndChainIDs returns a list of chainIDs for AVSs which are scheduled to start at the end of the
+// current epoch, or the beginning of the next one. The chainIDs used are without the revision number.
+func (k Keeper) GetEpochEndChainIDs(ctx sdk.Context, epochIdentifier string, endingEpochNumber int64) []string {
+	avsList := k.GetEpochEndAVSs(ctx, epochIdentifier, endingEpochNumber)
+	var chainIDs []string
+	for _, avsAddr := range avsList {
+		chainID, found := k.GetChainIDByAVSAddr(ctx, avsAddr)
+		if found {
+			chainIDs = append(chainIDs, chainID)
+		}
+	}
+	return chainIDs
+}
+
 // GetAVSInfoByTaskAddress returns the AVS  which containing this task address
 func (k *Keeper) GetAVSInfoByTaskAddress(ctx sdk.Context, taskAddr string) types.AVSInfo {
 	avs := types.AVSInfo{}
@@ -113,13 +126,15 @@ func (k *Keeper) GetTaskChallengeEpochEndAVSs(ctx sdk.Context, epochIdentifier s
 // AssetIDs, EpochsUntilUnbonded, EpochIdentifier, MinSelfDelegation and StartingEpoch.
 // This will ensure compatibility with all of the related AVS functions, like
 // GetEpochEndAVSs, GetAVSSupportedAssets, and GetAVSMinimumSelfDelegation.
+// The caller must use a chainID without the revision number if the AVS is intended
+// to outlive the upgrades, for example, the x/dogfood AVS. The same cannot be said
+// for x/appchain AVSs wherein the post-upgrade operators may not be the same.
 func (k Keeper) RegisterAVSWithChainID(
 	oCtx sdk.Context, params *types.AVSRegisterOrDeregisterParams,
 ) (avsAddr common.Address, err error) {
 	// guard against errors
 	ctx, writeFunc := oCtx.CacheContext()
 	// remove the version number and validate
-	params.ChainID = utils.ChainIDWithoutRevision(params.ChainID)
 	if len(params.ChainID) == 0 {
 		return common.Address{}, errorsmod.Wrap(types.ErrNotNull, "RegisterAVSWithChainID: chainID is null")
 	}

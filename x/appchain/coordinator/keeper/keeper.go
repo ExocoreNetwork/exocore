@@ -20,6 +20,7 @@ type Keeper struct {
 	epochsKeeper     types.EpochsKeeper
 	operatorKeeper   types.OperatorKeeper
 	stakingKeeper    types.StakingKeeper
+	delegationKeeper types.DelegationKeeper
 	clientKeeper     commontypes.ClientKeeper
 	portKeeper       commontypes.PortKeeper
 	scopedKeeper     commontypes.ScopedKeeper
@@ -36,6 +37,7 @@ func NewKeeper(
 	epochsKeeper types.EpochsKeeper,
 	operatorKeeper types.OperatorKeeper,
 	stakingKeeper types.StakingKeeper,
+	delegationKeeper types.DelegationKeeper,
 	clientKeeper commontypes.ClientKeeper,
 	portKeeper commontypes.PortKeeper,
 	scopedKeeper commontypes.ScopedKeeper,
@@ -50,6 +52,7 @@ func NewKeeper(
 		epochsKeeper:     epochsKeeper,
 		operatorKeeper:   operatorKeeper,
 		stakingKeeper:    stakingKeeper,
+		delegationKeeper: delegationKeeper,
 		clientKeeper:     clientKeeper,
 		portKeeper:       portKeeper,
 		scopedKeeper:     scopedKeeper,

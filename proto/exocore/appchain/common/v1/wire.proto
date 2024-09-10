@@ -83,5 +83,5 @@ message ValidatorSetChangePacketData {
   uint64 valset_update_id = 2 [(gogoproto.customname) = "ValsetUpdateID"];
   // slash_acks is the list of consensus addresses slashed on the coordinator chain,
   // in response to such requests from the subscriber chain.
-  repeated string slash_acks = 3;
+  repeated bytes slash_acks = 3;
 }

@@ -153,7 +153,8 @@ func (im IBCModule) OnChanOpenAck(
 	}
 
 	var md commontypes.HandshakeMetadata
-	// no k.cdc.MustUnmarshal available here, so we use this way.
+	// Marshal by coordinator and Unmarshal by subscriber. Don't use `must`,
+	// because we don't trust the source since it wasn't generated here.
 	if err := (&md).Unmarshal([]byte(counterpartyMetadata)); err != nil {
 		return errorsmod.Wrapf(
 			commontypes.ErrInvalidHandshakeMetadata,

@@ -16,7 +16,8 @@ import (
 )
 
 // This file indexes by chainID and not the avs address.
-// The caller must ensure that the chainID is without the revision number.
+// The chainID may or may not have a revision, depending on whether the AVS is
+// expected to outlast its upgrades, particularly with the same set of operators.
 
 func (k *Keeper) Logger(ctx sdk.Context) log.Logger {
 	return ctx.Logger().With("module", fmt.Sprintf("x/%s", types.ModuleName))
@@ -427,7 +428,7 @@ func (k Keeper) DeleteOperatorAddressForChainIDAndConsAddr(
 // ClearPreviousConsensusKeys clears the previous consensus public key for all operators
 // of the specified chain.
 func (k Keeper) ClearPreviousConsensusKeys(ctx sdk.Context, chainID string) {
-	partialKey := types.ChainIDWithLenKey(chainID)
+	partialKey := utils.ChainIDWithLenKey(chainID)
 	store := ctx.KVStore(k.storeKey)
 	iterator := sdk.KVStorePrefixIterator(
 		store,

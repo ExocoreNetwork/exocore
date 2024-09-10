@@ -20,7 +20,7 @@ func (k Keeper) InitGenesis(ctx sdk.Context, gs types.GenesisState) []abci.Valid
 		// around switchover is not yet fully designed.
 		panic("switchover use case not supported yet")
 	}
-	k.SetParams(ctx, gs.Params)
+	k.SetSubscriberParams(ctx, gs.Params)
 	k.SetPort(ctx, commontypes.SubscriberPortID)
 	// only bind to the port if the capability keeper hasn't done so already
 	if !k.IsBound(ctx, commontypes.SubscriberPortID) {
@@ -43,6 +43,6 @@ func (k Keeper) InitGenesis(ctx sdk.Context, gs types.GenesisState) []abci.Valid
 
 func (k Keeper) ExportGenesis(ctx sdk.Context) *types.GenesisState {
 	return &types.GenesisState{
-		Params: k.GetParams(ctx),
+		Params: k.GetSubscriberParams(ctx),
 	}
 }

@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	exocoretypes "github.com/ExocoreNetwork/exocore/types/keys"
+	"github.com/ExocoreNetwork/exocore/utils"
 	avstypes "github.com/ExocoreNetwork/exocore/x/avs/types"
 	"github.com/ExocoreNetwork/exocore/x/dogfood/types"
 	abci "github.com/cometbft/cometbft/abci/types"
@@ -35,13 +36,15 @@ func (k Keeper) InitGenesis(
 	var avsAddr common.Address
 	var err error
 	// the avs module will remove the revision by itself
+	chainIDWithoutRevision := utils.ChainIDWithoutRevision(ctx.ChainID())
+	// the caller must provide the accurate chainID: with or without revision
 	if avsAddr, err = k.avsKeeper.RegisterAVSWithChainID(ctx, &avstypes.AVSRegisterOrDeregisterParams{
-		AvsName:           ctx.ChainID(),
+		AvsName:           chainIDWithoutRevision,
 		AssetID:           genState.Params.AssetIDs,
 		UnbondingPeriod:   uint64(genState.Params.EpochsUntilUnbonded),
 		MinSelfDelegation: genState.Params.MinSelfDelegation.Uint64(),
 		EpochIdentifier:   epochID,
-		ChainID:           ctx.ChainID(),
+		ChainID:           chainIDWithoutRevision,
 	}); err != nil {
 		panic(fmt.Errorf("could not create the dogfood AVS: %s", err))
 	}

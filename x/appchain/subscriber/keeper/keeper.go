@@ -15,36 +15,47 @@ import (
 )
 
 type Keeper struct {
-	cdc              codec.BinaryCodec
-	storeKey         storetypes.StoreKey
-	scopedKeeper     commontypes.ScopedKeeper
-	portKeeper       commontypes.PortKeeper
-	clientKeeper     commontypes.ClientKeeper
-	connectionKeeper commontypes.ConnectionKeeper
-	channelKeeper    commontypes.ChannelKeeper
-	ibcCoreKeeper    commontypes.IBCCoreKeeper
+	cdc               codec.BinaryCodec
+	storeKey          storetypes.StoreKey
+	accountKeeper     commontypes.AccountKeeper
+	bankKeeper        commontypes.BankKeeper
+	scopedKeeper      commontypes.ScopedKeeper
+	portKeeper        commontypes.PortKeeper
+	clientKeeper      commontypes.ClientKeeper
+	connectionKeeper  commontypes.ConnectionKeeper
+	channelKeeper     commontypes.ChannelKeeper
+	ibcCoreKeeper     commontypes.IBCCoreKeeper
+	ibcTransferKeeper commontypes.IBCTransferKeeper
+	feeCollectorName  string
 }
 
 // NewKeeper creates a new subscriber keeper.
 func NewKeeper(
 	cdc codec.BinaryCodec,
 	storeKey storetypes.StoreKey,
+	accountKeeper commontypes.AccountKeeper,
+	bankKeeper commontypes.BankKeeper,
 	scopedKeeper commontypes.ScopedKeeper,
 	portKeeper commontypes.PortKeeper,
 	clientKeeper commontypes.ClientKeeper,
 	connectionKeeper commontypes.ConnectionKeeper,
 	channelKeeper commontypes.ChannelKeeper,
 	ibcCoreKeeper commontypes.IBCCoreKeeper,
+	ibcTransferKeeper commontypes.IBCTransferKeeper,
+	feeCollectorName string,
 ) Keeper {
 	return Keeper{
-		cdc:              cdc,
-		storeKey:         storeKey,
-		scopedKeeper:     scopedKeeper,
-		portKeeper:       portKeeper,
-		clientKeeper:     clientKeeper,
-		connectionKeeper: connectionKeeper,
-		channelKeeper:    channelKeeper,
-		ibcCoreKeeper:    ibcCoreKeeper,
+		cdc:               cdc,
+		storeKey:          storeKey,
+		accountKeeper:     accountKeeper,
+		scopedKeeper:      scopedKeeper,
+		portKeeper:        portKeeper,
+		clientKeeper:      clientKeeper,
+		connectionKeeper:  connectionKeeper,
+		channelKeeper:     channelKeeper,
+		ibcCoreKeeper:     ibcCoreKeeper,
+		ibcTransferKeeper: ibcTransferKeeper,
+		feeCollectorName:  feeCollectorName,
 	}
 }
 
@@ -92,15 +103,15 @@ func (k Keeper) ClaimCapability(
 // at the end of this block.
 func (k Keeper) GetPendingChanges(
 	ctx sdk.Context,
-) (*commontypes.ValidatorSetChangePacketData, bool) {
+) *commontypes.ValidatorSetChangePacketData {
 	store := ctx.KVStore(k.storeKey)
 	bz := store.Get(types.PendingChangesKey())
 	if bz == nil {
-		return nil, false
+		return nil
 	}
 	var res *commontypes.ValidatorSetChangePacketData
 	k.cdc.MustUnmarshal(bz, res)
-	return res, true
+	return res
 }
 
 // SetPendingChanges sets the pending validator set changes that will be applied
@@ -114,6 +125,13 @@ func (k Keeper) SetPendingChanges(
 	store.Set(types.PendingChangesKey(), bz)
 }
 
+// DeletePendingChanges deletes the pending validator set changes that will be applied
+// at the end of this block.
+func (k Keeper) DeletePendingChanges(ctx sdk.Context) {
+	store := ctx.KVStore(k.storeKey)
+	store.Delete(types.PendingChangesKey())
+}
+
 // SetPacketMaturityTime sets the maturity time for a given received VSC packet id
 func (k Keeper) SetPacketMaturityTime(
 	ctx sdk.Context, vscID uint64, maturityTime time.Time,
@@ -124,9 +142,37 @@ func (k Keeper) SetPacketMaturityTime(
 		MaturityTime: maturityTime,
 	}
 	store.Set(
-		types.PacketMaturityTimeKey(vscID, maturityTime),
+		types.PacketMaturityTimeKey(maturityTime, vscID),
 		k.cdc.MustMarshal(maturingVSCPacket),
 	)
+}
+
+// GetElapsedVscPackets returns all VSC packets that have matured as of the current block time
+func (k Keeper) GetElapsedVscPackets(ctx sdk.Context) []types.MaturingVSCPacket {
+	store := ctx.KVStore(k.storeKey)
+	prefix := []byte{types.PacketMaturityTimeBytePrefix}
+	iterator := sdk.KVStorePrefixIterator(store, prefix)
+	defer iterator.Close()
+
+	var ret []types.MaturingVSCPacket
+	for ; iterator.Valid(); iterator.Next() {
+		var packet types.MaturingVSCPacket
+		k.cdc.MustUnmarshal(iterator.Value(), &packet)
+		// since these are stored in order of maturity time, we can break early
+		if ctx.BlockTime().Before(packet.MaturityTime) {
+			break
+		}
+		ret = append(ret, packet)
+	}
+	return ret
+}
+
+// DeletePacketMaturityTime deletes the maturity time for a given received VSC packet id
+func (k Keeper) DeletePacketMaturityTime(
+	ctx sdk.Context, vscID uint64, maturityTime time.Time,
+) {
+	store := ctx.KVStore(k.storeKey)
+	store.Delete(types.PacketMaturityTimeKey(maturityTime, vscID))
 }
 
 // DeleteOutstandingDowntime deletes the outstanding downtime flag for the given validator
@@ -136,4 +182,20 @@ func (k Keeper) DeleteOutstandingDowntime(
 ) {
 	store := ctx.KVStore(k.storeKey)
 	store.Delete(types.OutstandingDowntimeKey(consAddress))
+}
+
+// SetOutstandingDowntime sets the outstanding downtime flag for the given validator
+func (k Keeper) SetOutstandingDowntime(
+	ctx sdk.Context, consAddress sdk.ConsAddress,
+) {
+	store := ctx.KVStore(k.storeKey)
+	store.Set(types.OutstandingDowntimeKey(consAddress), []byte{1})
+}
+
+// HasOutstandingDowntime returns true if the given validator has an outstanding downtime
+func (k Keeper) HasOutstandingDowntime(
+	ctx sdk.Context, consAddress sdk.ConsAddress,
+) bool {
+	store := ctx.KVStore(k.storeKey)
+	return store.Has(types.OutstandingDowntimeKey(consAddress))
 }

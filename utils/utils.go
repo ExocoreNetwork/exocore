@@ -199,10 +199,31 @@ func AppendMany(byteses ...[]byte) (out []byte) {
 
 // ChainIDWithoutRevision returns the chainID without the revision number.
 // For example, "exocoretestnet_233-1" returns "exocoretestnet_233".
+// In the case of app chains, it is not used because upgrading the subscriber
+// isn't handled yet, because, during an upgrade, it is not safe to assume
+// that the same set of operators will continue with the new chainID.
+// The coordinator upgrade also similarly needs to be
+// designed and implemented, but that it should be a trivial fix like
+// deploying a new IBC client.
 func ChainIDWithoutRevision(chainID string) string {
 	if !ibcclienttypes.IsRevisionFormat(chainID) {
 		return chainID
 	}
 	splitStr := strings.Split(chainID, "-")
 	return splitStr[0]
+}
+
+// ChainIDWithLenKey returns the key with the following format:
+// bytePrefix | len(chainId) | chainId
+// This is similar to Solidity's ABI encoding.
+// The caller should typically append a constant length byte array to this and use it as a key.
+func ChainIDWithLenKey(chainID string) []byte {
+	chainIDL := len(chainID)
+	return AppendMany(
+		// Append the chainID length
+		// #nosec G701
+		sdk.Uint64ToBigEndian(uint64(chainIDL)),
+		// Append the chainID
+		[]byte(chainID),
+	)
 }

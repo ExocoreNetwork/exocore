@@ -3,7 +3,6 @@ package keeper
 import (
 	"time"
 
-	"github.com/ExocoreNetwork/exocore/utils"
 	commontypes "github.com/ExocoreNetwork/exocore/x/appchain/common/types"
 	types "github.com/ExocoreNetwork/exocore/x/appchain/coordinator/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -55,8 +54,7 @@ func (k Keeper) HandleSlashPacket(ctx sdk.Context, chainID string, data commonty
 	// #nosec G703 // already validated
 	slashProportionDecimal, _ := sdk.NewDecFromStr(slashProportion)
 	jailDuration := k.GetSubDowntimeJailDuration(ctx, chainID)
-	chainIDWithoutRevision := utils.ChainIDWithoutRevision(chainID)
-	_, avsAddress := k.avsKeeper.IsAVSByChainID(ctx, chainIDWithoutRevision)
+	_, avsAddress := k.avsKeeper.IsAVSByChainID(ctx, chainID)
 	// the slashing hook should trigger a validator set update for all affected AVSs. since the `chainID` is one of them
 	// we should make sure we are well set up for that update. we will include an ack of the slash packet in the next
 	// validator set update; record that here.
@@ -88,7 +86,18 @@ func (k Keeper) GetSlashAcks(ctx sdk.Context, chainID string) types.ConsensusAdd
 func (k Keeper) SetSlashAcks(ctx sdk.Context, chainID string, consAddresses types.ConsensusAddresses) {
 	store := ctx.KVStore(k.storeKey)
 	key := types.SlashAcksKey(chainID)
-	store.Set(key, k.cdc.MustMarshal(&consAddresses))
+	if len(consAddresses.List) == 0 {
+		store.Delete(key)
+	} else {
+		store.Set(key, k.cdc.MustMarshal(&consAddresses))
+	}
+}
+
+// ConsumeSlashAcks consumes the slashing acknowledgments for a chain, to be sent in the next validator set update.
+func (k Keeper) ConsumeSlashAcks(ctx sdk.Context, chainID string) [][]byte {
+	ret := k.GetSlashAcks(ctx, chainID)
+	k.SetSlashAcks(ctx, chainID, types.ConsensusAddresses{})
+	return ret.List
 }
 
 // TODO: these fields should be in the AVS keeper instead.

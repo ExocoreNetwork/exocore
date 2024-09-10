@@ -159,7 +159,7 @@ func (k Keeper) OnTimeoutPacket(ctx sdk.Context, packet channeltypes.Packet) err
 	}
 	// stop chain and release unbondings
 	k.Logger(ctx).Info(
-		"packet timeout, removing the consumer",
+		"packet timeout, removing the subscriber",
 		"chainID", chainID,
 	)
 	return k.StopSubscriberChain(ctx, chainID, false)

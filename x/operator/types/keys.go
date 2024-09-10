@@ -95,7 +95,7 @@ func init() {
 }
 
 func AddrAndChainIDKey(prefix byte, addr sdk.AccAddress, chainID string) []byte {
-	partialKey := ChainIDWithLenKey(chainID)
+	partialKey := utils.ChainIDWithLenKey(chainID)
 	return utils.AppendMany(
 		// Append the prefix
 		[]byte{prefix},
@@ -108,7 +108,7 @@ func AddrAndChainIDKey(prefix byte, addr sdk.AccAddress, chainID string) []byte 
 }
 
 func ChainIDAndAddrKey(prefix byte, chainID string, addr sdk.AccAddress) []byte {
-	partialKey := ChainIDWithLenKey(chainID)
+	partialKey := utils.ChainIDWithLenKey(chainID)
 	return utils.AppendMany(
 		// Append the prefix
 		[]byte{prefix},
@@ -143,15 +143,19 @@ func KeyForChainIDAndOperatorToConsKey(chainID string, addr sdk.AccAddress) []by
 func KeyForChainIDAndConsKeyToOperator(chainID string, addr sdk.ConsAddress) []byte {
 	return utils.AppendMany(
 		[]byte{BytePrefixForChainIDAndConsKeyToOperator},
-		ChainIDWithLenKey(chainID),
+		utils.ChainIDWithLenKey(chainID),
 		addr,
 	)
 }
 
 func KeyForOperatorKeyRemovalForChainID(addr sdk.AccAddress, chainID string) []byte {
 	return utils.AppendMany(
-		[]byte{BytePrefixForOperatorKeyRemovalForChainID}, addr,
-		ChainIDWithLenKey(chainID),
+		[]byte{BytePrefixForOperatorKeyRemovalForChainID},
+		addr,
+		// TODO: it may be possible to just use the chainID here without the length.
+		// This is because the chainID is at the end of the key and we can just iterate
+		// over all keys with the same operator address.
+		utils.ChainIDWithLenKey(chainID),
 	)
 }
 

@@ -1,7 +1,6 @@
 package keeper
 
 import (
-	"github.com/ExocoreNetwork/exocore/utils"
 	epochstypes "github.com/ExocoreNetwork/exocore/x/epochs/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -25,50 +24,28 @@ func (k *Keeper) EpochsHooks() EpochsHooksWrapper {
 func (wrapper EpochsHooksWrapper) AfterEpochEnd(
 	ctx sdk.Context, identifier string, epoch int64,
 ) {
-	// whenever an epoch ends, we should iterate over the list of pending subscriber chains
-	// to be activated, and then activate them. once activated, we should move them from
-	// the pending list to the active list.
-	executable := wrapper.keeper.GetPendingSubChains(ctx, identifier, uint64(epoch))
-	for _, subscriber := range executable.List {
-		cctx, writeFn, err := wrapper.keeper.CreateClientForSubscriberInCachedCtx(ctx, subscriber)
-		if err != nil {
-			// within this block, we use the ctx and not the cctx, since the cctx's job is solely
-			// to guard the client creation.
-			// no re-attempts will be made for this subscriber
-			ctx.Logger().Error(
-				"subscriber client not created",
-				"chainID", subscriber,
-				"error", err,
-			)
-			// clear the registered AVS. remember that this module stores
-			// the chainID with the revision but the AVS module stores it without.
-			chainID := utils.ChainIDWithoutRevision(subscriber.ChainID)
-			// always guaranteed to exist
-			_, addr := wrapper.keeper.avsKeeper.IsAVSByChainID(ctx, chainID)
-			if err := wrapper.keeper.avsKeeper.DeleteAVSInfo(ctx, addr); err != nil {
-				// should never happen
-				ctx.Logger().Error(
-					"subscriber AVS not deleted",
-					"chainID", subscriber,
-					"error", err,
-				)
-			}
-			continue
-		}
-		// copy over the events from the cached ctx
-		ctx.EventManager().EmitEvents(cctx.EventManager().Events())
-		writeFn()
-		wrapper.keeper.Logger(ctx).Info(
-			"subscriber chain started",
-			"chainID", subscriber,
-			// we start at the current block and do not allow scheduling. this is the same
-			// as any other AVS.
-			"spawn time", ctx.BlockTime().UTC(),
-		)
-	}
-	// delete those that were executed (including those that failed)
-	wrapper.keeper.ClearPendingSubChains(ctx, identifier, uint64(epoch))
-	// next, we iterate over the active list and queue the validator set update for them.
+	// start any chains that are due to start, by creating their genesis state.
+	wrapper.keeper.ActivateScheduledChains(ctx, identifier, epoch)
+
+	// slashing is applied during the epoch, so we don't have to do anything about that here.
+	// note that slashing should flow through to this keeper via a hook and the impact
+	// should be applied to the validator set. first, it should freeze the oracle round,
+	// then, it should calculate the USD power, then, it should find the new x/dogfood
+	// validator set and lastly, it should find the new appchain validator set for the
+	// impacted chains.
+
+	// next, we remove any chains that didn't respond in time: either to the validator
+	// set update or to the initialization protocol. the removal is undertaken before
+	// generating the validator set update to save resources.
+	wrapper.keeper.RemoveTimedoutSubscribers(ctx, identifier, epoch)
+
+	// last, we iterate over the active list and queue the validator set update for them.
+	// interchain-security does this in EndBlock, but we can do it now because our validator
+	// set is independent of the coordinator chain's.
+	wrapper.keeper.QueueValidatorUpdatesForEpochID(ctx, identifier, epoch)
+	// send the queued validator updates. the `epoch` is used for scheduling the VSC timeouts
+	// and nothing else. it has no bearing on the actual validator set.
+	wrapper.keeper.SendQueuedValidatorUpdates(ctx, epoch)
 }
 
 // BeforeEpochStart is called before an epoch starts.

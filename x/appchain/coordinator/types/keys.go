@@ -1,6 +1,9 @@
 package types
 
 import (
+	"bytes"
+	fmt "fmt"
+
 	"github.com/ExocoreNetwork/exocore/utils"
 	epochstypes "github.com/ExocoreNetwork/exocore/x/epochs/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -62,6 +65,22 @@ const (
 	HeightToChainVscIDBytePrefix
 	// SlashAcksBytePrefix is the prefix for the slashing acks key
 	SlashAcksBytePrefix
+	// SubscriberValidatorBytePrefix is the prefix for the subscriber validator key
+	SubscriberValidatorBytePrefix
+	// MaxValidatorsBytePrefix is the prefix for the max validators key
+	MaxValidatorsBytePrefix
+	// VscIDForChainBytePrefix is the prefix to go from chainID to vscID
+	VscIDForChainBytePrefix
+	// ChainIDToVscPacketsBytePrefix is the prefix for the vsc packets key for a chainID
+	ChainIDToVscPacketsBytePrefix
+	// VscTimeoutBytePrefix is the prefix for the vsc timeout key
+	VscTimeoutBytePrefix
+	// ConsKeysToPruneBytePrefix is the prefix for the consensus keys to prune key
+	ConsKeysToPruneBytePrefix
+	// MaturityVscIDForChainIDConsAddrBytePrefix is the prefix for the vsc id for chain cons addr key
+	MaturityVscIDForChainIDConsAddrBytePrefix
+	// UndelegationsToReleaseBytePrefix is the prefix for the undelegations to release key
+	UndelegationsToReleaseBytePrefix
 )
 
 // ParamsKey returns the key under which the coordinator module's parameters are stored.
@@ -111,10 +130,10 @@ func SubscriberGenesisKey(chainID string) []byte {
 // InitTimeoutEpochKey returns the key under which the list of chains which will timeout (if not
 // initialized by then) at the beginning of the epoch is stored.
 func InitTimeoutEpochKey(epoch epochstypes.Epoch) []byte {
-	return utils.AppendMany(
-		[]byte{InitTimeoutBytePrefix},
-		[]byte(epoch.EpochIdentifier),
-		sdk.Uint64ToBigEndian(epoch.EpochNumber),
+	return utils.AppendMany( // safe to do, since...
+		[]byte{InitTimeoutBytePrefix},            // size 1
+		[]byte(epoch.EpochIdentifier),            // size unknown
+		sdk.Uint64ToBigEndian(epoch.EpochNumber), // size 8
 	)
 }
 
@@ -159,5 +178,89 @@ func SlashAcksKey(chainID string) []byte {
 	return append(
 		[]byte{SlashAcksBytePrefix},
 		[]byte(chainID)...,
+	)
+}
+
+// SubscriberValidatorKey returns the key for the subscriber validator
+// It is used to store the validator object for the subscriber chain, indexed by
+// prefix + len(chainID) + chainID + consensusAddr
+func SubscriberValidatorKey(chainID string, consensusAddr []byte) []byte {
+	return utils.AppendMany(
+		[]byte{SubscriberValidatorBytePrefix},
+		utils.ChainIDWithLenKey(chainID),
+		consensusAddr,
+	)
+}
+
+// MaxValidatorsKey returns the key for the max validators
+func MaxValidatorsKey(chainID string) []byte {
+	return append([]byte{MaxValidatorsBytePrefix}, []byte(chainID)...)
+}
+
+// VscIDForChainKey returns the key for the vsc id to chain
+func VscIDForChainKey(chainID string) []byte {
+	return append([]byte{VscIDForChainBytePrefix}, []byte(chainID)...)
+}
+
+// ChainIDToVscPacketsKey returns the key for the vsc packets for a chain
+func ChainIDToVscPacketsKey(chainID string) []byte {
+	return append([]byte{ChainIDToVscPacketsBytePrefix}, []byte(chainID)...)
+}
+
+// VscTimeoutKey returns the key for the vsc timeout
+func VscTimeoutKey(chainID string, vscID uint64) []byte {
+	return utils.AppendMany(
+		[]byte{VscTimeoutBytePrefix},
+		[]byte(chainID),
+		sdk.Uint64ToBigEndian(vscID),
+	)
+}
+
+// ParseVscTimeoutKey parses the chainID and vscID from the key of the format
+// prefix + chainID + vscID
+func ParseVscTimeoutKey(bz []byte) (chainID string, vscID uint64, err error) {
+	return ParseChainIDAndUintIDKey(VscTimeoutBytePrefix, bz)
+}
+
+// ParseChainIDAndUintIDKey returns the chain ID and uint ID for a ChainIdAndUintId key
+func ParseChainIDAndUintIDKey(prefix byte, bz []byte) (string, uint64, error) {
+	expectedPrefix := []byte{prefix}
+	prefixL := len(expectedPrefix)
+	if len(bz) < prefixL+8 { // for uint64
+		return "", 0, fmt.Errorf("invalid key length; expected at least %d bytes, got: %d", prefixL+8, len(bz))
+	}
+	if prefix := bz[:prefixL]; !bytes.Equal(prefix, expectedPrefix) {
+		return "", 0, fmt.Errorf("invalid prefix; expected: %X, got: %X", expectedPrefix, prefix)
+	}
+	uintID := sdk.BigEndianToUint64(bz[len(bz)-8:])
+	chainID := string(bz[prefixL : len(bz)-8])
+	return chainID, uintID, nil
+}
+
+// ConsAddrsToPruneKey returns the key for the consensus keys to prune, indexed by the
+// chainID + vscID as the key.
+func ConsAddrsToPruneKey(chainID string, vscID uint64) []byte {
+	return utils.AppendMany(
+		[]byte{ConsKeysToPruneBytePrefix},
+		[]byte(chainID),
+		sdk.Uint64ToBigEndian(vscID),
+	)
+}
+
+// MaturityVscIDForChainIDConsAddrKey returns the key for the vsc id for chain cons addr
+func MaturityVscIDForChainIDConsAddrKey(chainID string, consAddr sdk.ConsAddress) []byte {
+	return utils.AppendMany(
+		[]byte{MaturityVscIDForChainIDConsAddrBytePrefix},
+		[]byte(chainID),
+		consAddr.Bytes(),
+	)
+}
+
+// UndelegationsToReleaseKey returns the key for the undelegations to release
+func UndelegationsToReleaseKey(chainID string, vscID uint64) []byte {
+	return utils.AppendMany(
+		[]byte{UndelegationsToReleaseBytePrefix},
+		[]byte(chainID),
+		sdk.Uint64ToBigEndian(vscID),
 	)
 }

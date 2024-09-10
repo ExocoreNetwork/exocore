@@ -8,16 +8,16 @@ import (
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
 
-// NewSubscriberChainValidator creates a new SubscriberChainValidator instance.
-func NewSubscriberChainValidator(
+// NewSubscriberValidator creates a new SubscriberValidator instance.
+func NewSubscriberValidator(
 	address []byte, power int64, pubKey cryptotypes.PubKey,
-) (SubscriberChainValidator, error) {
+) (SubscriberValidator, error) {
 	pkAny, err := codectypes.NewAnyWithValue(pubKey)
 	if err != nil {
-		return SubscriberChainValidator{}, err
+		return SubscriberValidator{}, err
 	}
 
-	return SubscriberChainValidator{
+	return SubscriberValidator{
 		ConsAddress: address,
 		Power:       power,
 		Pubkey:      pkAny,
@@ -26,13 +26,13 @@ func NewSubscriberChainValidator(
 
 // UnpackInterfaces implements UnpackInterfacesMessage.UnpackInterfaces.
 // It is required to ensure that ConsPubKey below works.
-func (ocv SubscriberChainValidator) UnpackInterfaces(unpacker codectypes.AnyUnpacker) error {
+func (ocv SubscriberValidator) UnpackInterfaces(unpacker codectypes.AnyUnpacker) error {
 	var pk cryptotypes.PubKey
 	return unpacker.UnpackAny(ocv.Pubkey, &pk)
 }
 
 // ConsPubKey returns the validator PubKey as a cryptotypes.PubKey.
-func (ocv SubscriberChainValidator) ConsPubKey() (cryptotypes.PubKey, error) {
+func (ocv SubscriberValidator) ConsPubKey() (cryptotypes.PubKey, error) {
 	pk, ok := ocv.Pubkey.GetCachedValue().(cryptotypes.PubKey)
 	if !ok {
 		return nil, errorsmod.Wrapf(
