@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"os/exec"
 	"path"
 	"path/filepath"
 	"time"
@@ -51,21 +50,17 @@ import (
 	srvflags "github.com/evmos/evmos/v14/server/flags"
 
 	cmdcfg "github.com/ExocoreNetwork/exocore/cmd/config"
+	pricefeeder "github.com/ExocoreNetwork/price-feeder/external"
 	evmoskr "github.com/evmos/evmos/v14/crypto/keyring"
 )
 
 const (
 	EnvPrefix    = "EXOCORE"
+	flagOracle   = "oracle"
+	flagMnemonic = "mnemonic"
+	confPath     = "config"
+	confOracle   = "oracle_feeder.yaml"
 	cmdStartName = "start"
-
-	flagOracle         = "oracle"
-	flagMnemonic       = "mnemonic"
-	confPath           = "config"
-	confOracle         = "oracle_feeder.yaml"
-	feederBianry       = "price-feeder"
-	flagFeederMnemonic = "--mnemonic"
-	flagFeederConfig   = "--config"
-	flagFeederSource   = "--sources"
 )
 
 // NewRootCmd creates a new root command for exocored. It is called once in the
@@ -149,17 +144,17 @@ func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 	preRunE := startCmd.PreRunE
 	// add preRun to run price-feeder first before starting the node
 	startCmd.PreRunE = func(cmd *cobra.Command, args []string) error {
-		if enableOracle, _ := cmd.Flags().GetBool(flagOracle); enableOracle {
-			mnemonic, _ := cmd.Flags().GetString(flagMnemonic)
+		if enableFeeder, _ := cmd.Flags().GetBool(flagOracle); enableFeeder {
 			clientCtx := cmd.Context().Value(client.ClientContextKey).(*client.Context)
-			//nolint:gosec
-			// nosemgrep
-			cmdFeeder := exec.Command(path.Join(clientCtx.HomeDir, feederBianry), flagFeederConfig, path.Join(clientCtx.HomeDir, confPath, confOracle), flagFeederSource, path.Join(clientCtx.HomeDir, confPath), flagFeederMnemonic, mnemonic, cmdStartName)
-			cmdFeeder.Stdout = os.Stdout
-			cmdFeeder.Stderr = os.Stderr
-			if err := cmdFeeder.Start(); err != nil {
-				panic(err)
-			}
+			go func() {
+				defer func() {
+					if err := recover(); err != nil {
+						fmt.Println("price-feeder failed", err)
+					}
+				}()
+				mnemonic, _ := cmd.Flags().GetString(flagMnemonic)
+				pricefeeder.StartPriceFeeder(path.Join(clientCtx.HomeDir, confPath, confOracle), mnemonic, path.Join(clientCtx.HomeDir, confPath))
+			}()
 		}
 		return preRunE(cmd, args)
 	}
