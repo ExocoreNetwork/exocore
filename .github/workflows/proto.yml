@@ -62,12 +62,3 @@ jobs:
           against: "https://github.com/${{ github.repository }}.git#branch=${{ github.event.pull_request.base.ref }},subdir=proto"
         # do not fail the build if there are breaking changes
         continue-on-error: true
-      - name: Make buf breaking changes outcome as txt file
-        run: |
-          mkdir -p ./result/
-          echo "${{ steps.break-check.outcome }}" > ./result/outcome.txt
-          echo "${{ github.event.pull_request.number }}" > ./result/pr_number.txt
-      - uses: actions/upload-artifact@v2
-        with:
-          name: result
-          path: ./result/
