@@ -2,6 +2,7 @@ package types
 
 import (
 	errorsmod "cosmossdk.io/errors"
+	assetstype "github.com/ExocoreNetwork/exocore/x/assets/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
@@ -18,10 +19,7 @@ func (m *MsgDelegation) GetSigners() []sdk.AccAddress {
 
 // ValidateBasic does a sanity check of the provided data
 func (m *MsgDelegation) ValidateBasic() error {
-	if _, err := sdk.AccAddressFromBech32(m.BaseInfo.FromAddress); err != nil {
-		return errorsmod.Wrap(err, "invalid from address")
-	}
-	return nil
+	return validateDelegationInfo(m.AssetID, m.BaseInfo)
 }
 
 // new message to delegate asset to operator
@@ -52,10 +50,7 @@ func (m *MsgUndelegation) GetSigners() []sdk.AccAddress {
 
 // ValidateBasic does a sanity check of the provided data
 func (m *MsgUndelegation) ValidateBasic() error {
-	if _, err := sdk.AccAddressFromBech32(m.BaseInfo.FromAddress); err != nil {
-		return errorsmod.Wrap(err, "invalid from address")
-	}
-	return nil
+	return validateDelegationInfo(m.AssetID, m.BaseInfo)
 }
 
 // GetSignBytes implements the LegacyMsg interface.
@@ -76,4 +71,23 @@ func NewMsgUndelegation(assetID, fromAddress string, amountPerOperator []KeyValu
 		AssetID:  assetID,
 		BaseInfo: baseInfo,
 	}
+}
+
+// TODO: delegation and undelegation have the same params, try to use one single message with different flag to indicate action:delegation/undelegation
+func validateDelegationInfo(assetID string, baseInfo *DelegationIncOrDecInfo) error {
+	for _, kv := range baseInfo.PerOperatorAmounts {
+		if _, err := sdk.AccAddressFromBech32(kv.Key); err != nil {
+			return errorsmod.Wrap(err, "invalid operator address delegateTO")
+		}
+		if !kv.Value.Amount.IsPositive() {
+			return errorsmod.Wrapf(ErrAmountIsNotPositive, "amount should be positive, got%s", kv.Value.Amount.String())
+		}
+	}
+	if assetID != assetstype.NativeAssetID {
+		return errorsmod.Wrapf(ErrInvalidAssetID, "only nativeToken is support, expected:%s,got:%s", assetstype.NativeAssetID, assetID)
+	}
+	if _, err := sdk.AccAddressFromBech32(baseInfo.FromAddress); err != nil {
+		return errorsmod.Wrap(err, "invalid from address")
+	}
+	return nil
 }
