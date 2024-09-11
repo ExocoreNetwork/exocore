@@ -79,4 +79,8 @@ var (
 		ModuleName, 17,
 		"the client chain has not been registered",
 	)
+	ErrInvalidAssetID = errorsmod.Register(
+		ModuleName, 18,
+		"assetID is invalid",
+	)
 )
