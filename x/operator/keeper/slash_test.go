@@ -23,7 +23,7 @@ func (suite *OperatorTestSuite) TestSlashWithInfractionReason() {
 	suite.prepareDelegation(true, suite.assetAddr, delegationAmount)
 
 	// opt into the AVS
-	avsAddr := avstypes.GenerateAVSAddr(avstypes.ChainIDWithoutRevision(suite.Ctx.ChainID())).String()
+	avsAddr := avstypes.GenerateAVSAddr(avstypes.ChainIDWithoutRevision(suite.Ctx.ChainID()))
 	err := suite.App.OperatorKeeper.OptIn(suite.Ctx, suite.operatorAddr, avsAddr)
 	suite.NoError(err)
 	// call the EndBlock to update the voting power

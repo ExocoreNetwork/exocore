@@ -38,7 +38,7 @@ func (suite *GenesisTestSuite) TestValidateGenesis() {
 		AddressLength:      20,
 	}
 	// do not hardcode the address to avoid gitleaks complaining.
-	tokenAddress := utiltx.GenerateAddress().String()
+	tokenAddress := strings.ToLower(utiltx.GenerateAddress().String())
 	usdtClientChainAsset := types.AssetInfo{
 		Name:             "Tether USD",
 		Symbol:           "USDT",
@@ -179,25 +179,6 @@ func (suite *GenesisTestSuite) TestValidateGenesis() {
 				},
 			},
 			expPass: false,
-		},
-		{
-			name: "invalid genesis due to non zero deposit",
-			genState: &types.GenesisState{
-				Params: types.DefaultParams(),
-				ClientChains: []types.ClientChainInfo{
-					ethClientChain,
-				},
-				Tokens: []types.StakingAssetInfo{
-					stakingInfo,
-				},
-			},
-			expPass: false,
-			malleate: func(gs *types.GenesisState) {
-				gs.Tokens[0].StakingTotalAmount = math.NewInt(1)
-			},
-			unmalleate: func(gs *types.GenesisState) {
-				gs.Tokens[0].StakingTotalAmount = math.NewInt(0)
-			},
 		},
 		{
 			name: "invalid genesis due to upper case staker id",
@@ -459,28 +440,6 @@ func (suite *GenesisTestSuite) TestValidateGenesis() {
 					PendingUndelegationAmount: math.NewInt(0),
 				}
 				gs.Deposits[0].Deposits[0].Info = genesisDeposit.Deposits[0].Info
-			},
-		},
-		{
-			name: "invalid genesis due to excess deposited amount for staker",
-			genState: &types.GenesisState{
-				Params: types.DefaultParams(),
-				ClientChains: []types.ClientChainInfo{
-					ethClientChain,
-				},
-				Tokens: []types.StakingAssetInfo{
-					stakingInfo,
-				},
-				Deposits: []types.DepositsByStaker{genesisDeposit},
-			},
-			expPass: false,
-			malleate: func(gs *types.GenesisState) {
-				gs.Deposits[0].Deposits[0].Info.TotalDepositAmount = stakingInfo.AssetBasicInfo.TotalSupply.Add(math.NewInt(1))
-				gs.Deposits[0].Deposits[0].Info.WithdrawableAmount = stakingInfo.AssetBasicInfo.TotalSupply.Add(math.NewInt(1))
-			},
-			unmalleate: func(gs *types.GenesisState) {
-				gs.Deposits[0].Deposits[0].Info.TotalDepositAmount = math.NewInt(100)
-				gs.Deposits[0].Deposits[0].Info.WithdrawableAmount = math.NewInt(100)
 			},
 		},
 		{

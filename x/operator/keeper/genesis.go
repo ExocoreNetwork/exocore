@@ -57,49 +57,43 @@ func (k Keeper) InitGenesis(ctx sdk.Context, state types.GenesisState) []abci.Va
 
 func (k Keeper) ExportGenesis(ctx sdk.Context) *types.GenesisState {
 	res := types.GenesisState{}
+	var err error
 	res.Operators = k.AllOperators(ctx)
 
-	operatorRecords, err := k.GetAllOperatorConsKeyRecords(ctx)
+	res.OperatorRecords, err = k.GetAllOperatorConsKeyRecords(ctx)
 	if err != nil {
-		ctx.Logger().Error(errorsmod.Wrap(err, "failed to get all consensus keys for operators").Error())
+		panic(errorsmod.Wrap(err, "failed to get all consensus keys for operators").Error())
 	}
-	res.OperatorRecords = operatorRecords
 
-	optedInfos, err := k.GetAllOptedInfo(ctx)
+	res.OptStates, err = k.GetAllOptedInfo(ctx)
 	if err != nil {
-		ctx.Logger().Error(errorsmod.Wrap(err, "failed to get all opted info").Error())
+		panic(errorsmod.Wrap(err, "failed to get all opted info").Error())
 	}
-	res.OptStates = optedInfos
 
-	allAVSUSDValues, err := k.GetAllAVSUSDValues(ctx)
+	res.AVSUSDValues, err = k.GetAllAVSUSDValues(ctx)
 	if err != nil {
-		ctx.Logger().Error(errorsmod.Wrap(err, "failed to get all AVS USD values").Error())
+		panic(errorsmod.Wrap(err, "failed to get all AVS USD values").Error())
 	}
-	res.AVSUSDValues = allAVSUSDValues
 
-	allOperatorUSDValues, err := k.GetAllOperatorUSDValues(ctx)
+	res.OperatorUSDValues, err = k.GetAllOperatorUSDValues(ctx)
 	if err != nil {
-		ctx.Logger().Error(errorsmod.Wrap(err, "failed to get all operator USD values").Error())
+		panic(errorsmod.Wrap(err, "failed to get all operator USD values").Error())
 	}
-	res.OperatorUSDValues = allOperatorUSDValues
 
-	slashingInfos, err := k.GetAllSlashStates(ctx)
+	res.SlashStates, err = k.GetAllSlashStates(ctx)
 	if err != nil {
-		ctx.Logger().Error(errorsmod.Wrap(err, "failed to set all slashing info").Error())
+		panic(errorsmod.Wrap(err, "failed to set all slashing info").Error())
 	}
-	res.SlashStates = slashingInfos
 
-	prevConsKeys, err := k.GetAllPrevConsKeys(ctx)
+	res.PreConsKeys, err = k.GetAllPrevConsKeys(ctx)
 	if err != nil {
-		ctx.Logger().Error(errorsmod.Wrap(err, "failed to get all previous consensus keys").Error())
+		panic(errorsmod.Wrap(err, "failed to get all previous consensus keys").Error())
 	}
-	res.PreConsKeys = prevConsKeys
 
-	operatorKeyRemovals, err := k.GetAllOperatorKeyRemovals(ctx)
+	res.OperatorKeyRemovals, err = k.GetAllOperatorKeyRemovals(ctx)
 	if err != nil {
-		ctx.Logger().Error(errorsmod.Wrap(err, "failed to get all key removals for operators").Error())
+		panic(errorsmod.Wrap(err, "failed to get all key removals for operators").Error())
 	}
-	res.OperatorKeyRemovals = operatorKeyRemovals
 
 	return &res
 }

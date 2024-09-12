@@ -127,10 +127,16 @@ func (k Keeper) ExportGenesis(ctx sdk.Context) *types.GenesisState {
 		pubKey, _ := val.ConsPubKey()
 		// #nosec G703 // already validated
 		convKey, _ := cryptocodec.ToTmPubKeyInterface(pubKey)
+		addr := sdk.GetConsAddress(pubKey)
+		found, operatorAddr := k.operatorKeeper.GetOperatorAddressForChainIDAndConsAddr(ctx, avstypes.ChainIDWithoutRevision(ctx.ChainID()), addr)
+		if !found {
+			return false
+		}
 		validators = append(validators,
 			types.GenesisValidator{
-				PublicKey: hexutil.Encode(convKey.Bytes()),
-				Power:     val.GetConsensusPower(sdk.DefaultPowerReduction),
+				PublicKey:       hexutil.Encode(convKey.Bytes()),
+				Power:           val.GetConsensusPower(sdk.DefaultPowerReduction),
+				OperatorAccAddr: operatorAddr.String(),
 			},
 		)
 		return false /* stop */

@@ -73,7 +73,7 @@ func (suite *KeeperTestSuite) TestUndelegations() {
 		sdk.WrapSDKContext(suite.Ctx),
 		&operatortypes.OptIntoAVSReq{
 			FromAddress:   operatorAddressString,
-			AvsAddress:    avsAddress.String(),
+			AvsAddress:    avsAddress,
 			PublicKeyJSON: oldKey.ToJSON(),
 		},
 	)
@@ -114,7 +114,7 @@ func (suite *KeeperTestSuite) TestUndelegations() {
 		sdk.WrapSDKContext(suite.Ctx),
 		&operatortypes.OptOutOfAVSReq{
 			FromAddress: operatorAddressString,
-			AvsAddress:  avsAddress.String(),
+			AvsAddress:  avsAddress,
 		},
 	)
 	suite.NoError(err)
@@ -234,7 +234,7 @@ func (suite *KeeperTestSuite) TestUndelegationEdgeCases() {
 		sdk.WrapSDKContext(suite.Ctx),
 		&operatortypes.OptIntoAVSReq{
 			FromAddress:   operatorAddressString,
-			AvsAddress:    avsAddress.String(),
+			AvsAddress:    avsAddress,
 			PublicKeyJSON: oldKey.ToJSON(),
 		},
 	)
@@ -285,7 +285,7 @@ func (suite *KeeperTestSuite) TestUndelegationEdgeCases() {
 		sdk.WrapSDKContext(suite.Ctx),
 		&operatortypes.SetConsKeyReq{
 			Address:       operatorAddressString,
-			AvsAddress:    avsAddress.String(),
+			AvsAddress:    avsAddress,
 			PublicKeyJSON: newKey.ToJSON(),
 		},
 	)

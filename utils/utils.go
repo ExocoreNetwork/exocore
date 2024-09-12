@@ -3,6 +3,8 @@ package utils
 import (
 	"strings"
 
+	ibcclienttypes "github.com/cosmos/ibc-go/v7/modules/core/02-client/types"
+
 	"github.com/evmos/evmos/v16/crypto/ethsecp256k1"
 	"golang.org/x/exp/constraints"
 	"golang.org/x/xerrors"
@@ -24,6 +26,12 @@ const (
 	DefaultChainID = MainnetChainID + "-1"
 	// BaseDenom defines the Evmos mainnet denomination
 	BaseDenom = "aexo"
+
+	// DelimiterForCombinedKey is the delimiter used for constructing the combined key.
+	DelimiterForCombinedKey = "/"
+
+	// DelimiterForID Delimiter used for constructing the stakerID and assetID.
+	DelimiterForID = "_"
 )
 
 // IsMainnet returns true if the chain-id has the Evmos mainnet EIP155 chain prefix.
@@ -34,6 +42,20 @@ func IsMainnet(chainID string) bool {
 // IsTestnet returns true if the chain-id has the Evmos testnet EIP155 chain prefix.
 func IsTestnet(chainID string) bool {
 	return strings.HasPrefix(chainID, TestnetChainID)
+}
+
+func IsValidRevisionChainID(chainID string) bool {
+	if strings.Contains(chainID, DelimiterForCombinedKey) {
+		return false
+	}
+	return ibcclienttypes.IsRevisionFormat(chainID)
+}
+
+func IsValidChainIDWithoutRevision(chainID string) bool {
+	if strings.Contains(chainID, DelimiterForCombinedKey) {
+		return false
+	}
+	return !ibcclienttypes.IsRevisionFormat(chainID)
 }
 
 // IsSupportedKey returns true if the pubkey type is supported by the chain

@@ -145,7 +145,7 @@ func (k *Keeper) GetOptedInfo(ctx sdk.Context, operatorAddr, avsAddr string) (in
 	infoKey := assetstype.GetJoinedStoreKey(operatorAddr, avsAddr)
 	value := store.Get(infoKey)
 	if value == nil {
-		return nil, errorsmod.Wrap(operatortypes.ErrNoKeyInTheStore, fmt.Sprintf("GetOptedInfo: key is %s", opAccAddr))
+		return nil, errorsmod.Wrap(operatortypes.ErrNoKeyInTheStore, fmt.Sprintf("GetOptedInfo: operator is %s, avs address is %s", opAccAddr, avsAddr))
 	}
 
 	ret := operatortypes.OptedInfo{}

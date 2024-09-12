@@ -298,7 +298,6 @@ func (k Keeper) CompleteOperatorKeyRemovalForChainID(
 func (k *Keeper) GetOperatorsForChainID(
 	ctx sdk.Context, chainID string,
 ) ([]sdk.AccAddress, []types.WrappedConsKey) {
-	k.Logger(ctx).Info("GetOperatorsForChainID", "chainID", chainID)
 	if isAvs, _ := k.avsKeeper.IsAVSByChainID(ctx, chainID); !isAvs {
 		k.Logger(ctx).Info("GetOperatorsForChainID the chainID is not supported by AVS", "chainID", chainID)
 		return nil, nil
@@ -335,13 +334,12 @@ func (k *Keeper) GetOperatorsForChainID(
 func (k Keeper) GetActiveOperatorsForChainID(
 	ctx sdk.Context, chainID string,
 ) ([]sdk.AccAddress, []types.WrappedConsKey) {
-	isAvs, avsAddr := k.avsKeeper.IsAVSByChainID(ctx, chainID)
+	isAvs, avsAddrString := k.avsKeeper.IsAVSByChainID(ctx, chainID)
 	if !isAvs {
 		k.Logger(ctx).Error("GetActiveOperatorsForChainID the chainID is not supported by AVS", "chainID", chainID)
 		return nil, nil
 	}
 	operatorsAddr, pks := k.GetOperatorsForChainID(ctx, chainID)
-	avsAddrString := avsAddr.String()
 	activeOperator := make([]sdk.AccAddress, 0)
 	activePks := make([]types.WrappedConsKey, 0)
 	// check if the operator is active
@@ -361,7 +359,7 @@ func (k Keeper) GetActiveOperatorsForChainID(
 func (k Keeper) ValidatorByConsAddrForChainID(
 	ctx sdk.Context, consAddr sdk.ConsAddress, chainID string,
 ) (stakingtypes.Validator, bool) {
-	isAvs, avsAddr := k.avsKeeper.IsAVSByChainID(ctx, chainID)
+	isAvs, avsAddrStr := k.avsKeeper.IsAVSByChainID(ctx, chainID)
 	if !isAvs {
 		ctx.Logger().Error("ValidatorByConsAddrForChainID the chainID is not supported by AVS", "chainID", chainID)
 		return stakingtypes.Validator{}, false
@@ -394,9 +392,9 @@ func (k Keeper) ValidatorByConsAddrForChainID(
 	val.Jailed = k.IsOperatorJailedForChainID(ctx, consAddr, chainID)
 
 	// set the tokens, delegated shares and minimum self delegation for unjail
-	minSelfDelegation, err := k.avsKeeper.GetAVSMinimumSelfDelegation(ctx, avsAddr.String())
+	minSelfDelegation, err := k.avsKeeper.GetAVSMinimumSelfDelegation(ctx, avsAddrStr)
 	if err != nil {
-		ctx.Logger().Error("ValidatorByConsAddrForChainID get minimum self delegation for AVS error", "avsAddr", avsAddr.String(), "err", err)
+		ctx.Logger().Error("ValidatorByConsAddrForChainID get minimum self delegation for AVS error", "avsAddrStr", avsAddrStr, "err", err)
 		return stakingtypes.Validator{}, false
 	}
 	val.MinSelfDelegation = sdk.TokensFromConsensusPower(minSelfDelegation.TruncateInt64(), sdk.DefaultPowerReduction)

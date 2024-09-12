@@ -51,28 +51,24 @@ func (k Keeper) InitGenesis(
 // ExportGenesis returns the module's exported genesis
 func (k Keeper) ExportGenesis(ctx sdk.Context) *delegationtype.GenesisState {
 	res := delegationtype.GenesisState{}
-	associations, err := k.GetAllAssociations(ctx)
+	var err error
+	res.Associations, err = k.GetAllAssociations(ctx)
 	if err != nil {
-		ctx.Logger().Error(errorsmod.Wrap(err, "failed to get all associations").Error())
+		panic(errorsmod.Wrap(err, "failed to get all associations").Error())
 	}
-	res.Associations = associations
 
-	delegationStates, err := k.AllDelegationStates(ctx)
+	res.DelegationStates, err = k.AllDelegationStates(ctx)
 	if err != nil {
-		ctx.Logger().Error(errorsmod.Wrap(err, "failed to get all delegation states").Error())
+		panic(errorsmod.Wrap(err, "failed to get all delegation states").Error())
 	}
-	res.DelegationStates = delegationStates
+	res.StakersByOperator, err = k.AllStakerList(ctx)
+	if err != nil {
+		panic(errorsmod.Wrap(err, "failed to get all staker list").Error())
+	}
 
-	stakerList, err := k.AllStakerList(ctx)
+	res.Undelegations, err = k.AllUndelegations(ctx)
 	if err != nil {
-		ctx.Logger().Error(errorsmod.Wrap(err, "failed to get all staker list").Error())
+		panic(errorsmod.Wrap(err, "failed to get all undelegations").Error())
 	}
-	res.StakersByOperator = stakerList
-
-	undelegations, err := k.AllUndelegations(ctx)
-	if err != nil {
-		ctx.Logger().Error(errorsmod.Wrap(err, "failed to get all undelegations").Error())
-	}
-	res.Undelegations = undelegations
 	return &res
 }

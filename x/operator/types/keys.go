@@ -149,7 +149,7 @@ func ParseKeyForOperatorAndChainIDToConsKey(key []byte) (addr sdk.AccAddress, ch
 	}
 
 	// Extract the chainID
-	chainIDBytes := key[AccAddressLength+8 : AccAddressLength+chainIDLen]
+	chainIDBytes := key[AccAddressLength+8:]
 	chainID = string(chainIDBytes)
 
 	return addr, chainID, nil
@@ -228,7 +228,7 @@ func ParseKeyForOperatorKeyRemoval(key []byte) (addr sdk.AccAddress, chainID str
 	}
 
 	// Extract the chainID
-	chainIDBytes := key[AccAddressLength+8 : AccAddressLength+8+chainIDLen]
+	chainIDBytes := key[AccAddressLength+8:]
 	chainID = string(chainIDBytes)
 
 	return addr, chainID, nil

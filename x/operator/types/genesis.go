@@ -126,24 +126,30 @@ func (gs GenesisState) ValidateOperatorConsKeyRecords(operators map[string]struc
 		if _, err := sdk.AccAddressFromBech32(addr); err != nil {
 			return errorsmod.Wrapf(
 				ErrInvalidGenesisData,
-				"invalid operator address %s: %s", record.OperatorAddress, err,
+				"ValidateOperatorConsKeyRecords: invalid operator address %s: %s", record.OperatorAddress, err,
 			)
 		}
 		if _, found := operatorRecords[addr]; found {
 			return errorsmod.Wrapf(
 				ErrInvalidGenesisData,
-				"duplicate operator record for operator %s", addr,
+				"ValidateOperatorConsKeyRecords: duplicate operator record for operator %s", addr,
 			)
 		}
 		operatorRecords[addr] = struct{}{}
 		if _, opFound := operators[addr]; !opFound {
 			return errorsmod.Wrapf(
 				ErrInvalidGenesisData,
-				"operator record for un-registered operator %s", addr,
+				"ValidateOperatorConsKeyRecords: operator record for un-registered operator %s", addr,
 			)
 		}
 		for _, chain := range record.Chains {
 			chainID := chain.ChainID
+			if !utils.IsValidChainIDWithoutRevision(chainID) {
+				return errorsmod.Wrapf(
+					ErrInvalidGenesisData,
+					"ValidateOperatorConsKeyRecords: invalid chainID without revision, operator %s: chainID: %s", addr, chainID,
+				)
+			}
 			// Cosmos does not describe a specific `chainID` format, so can't validate it.
 			if _, found := keysByChainID[chainID]; !found {
 				keysByChainID[chainID] = make(map[string]struct{})
@@ -154,7 +160,7 @@ func (gs GenesisState) ValidateOperatorConsKeyRecords(operators map[string]struc
 			); wrappedKey == nil {
 				return errorsmod.Wrapf(
 					ErrInvalidGenesisData,
-					"invalid consensus key for operator %s: %s", addr, chain.ConsensusKey,
+					"ValidateOperatorConsKeyRecords: invalid consensus key for operator %s: %s", addr, chain.ConsensusKey,
 				)
 			}
 
@@ -162,7 +168,7 @@ func (gs GenesisState) ValidateOperatorConsKeyRecords(operators map[string]struc
 			if _, found := keysByChainID[chainID][chain.ConsensusKey]; found {
 				return errorsmod.Wrapf(
 					ErrInvalidGenesisData,
-					"duplicate consensus key for operator %s on chain %s", addr, chainID,
+					"ValidateOperatorConsKeyRecords: duplicate consensus key for operator %s on chain %s", addr, chainID,
 				)
 			}
 			keysByChainID[chainID][chain.ConsensusKey] = struct{}{}
@@ -174,9 +180,9 @@ func (gs GenesisState) ValidateOperatorConsKeyRecords(operators map[string]struc
 func (gs GenesisState) ValidateOptedStates(operators map[string]struct{}) (map[string]struct{}, error) {
 	avs := make(map[string]struct{})
 	validationFunc := func(_ int, state OptedState) error {
-		stringList, err := assetstypes.ParseJoinedStoreKey([]byte(state.Key), 3)
+		stringList, err := assetstypes.ParseJoinedStoreKey([]byte(state.Key), 2)
 		if err != nil {
-			return errorsmod.Wrap(ErrInvalidGenesisData, err.Error())
+			return errorsmod.Wrapf(ErrInvalidGenesisData, "ValidateOptedStates can't parse the joined key: %s", err.Error())
 		}
 		operator, avsAddr := stringList[0], stringList[1]
 		// check that the operator is registered
@@ -440,7 +446,14 @@ func (gs GenesisState) ValidatePrevConsKeys(operators map[string]struct{}) error
 				prevConsKey,
 			)
 		}
-		operator := keys[1]
+
+		chainID, operator := keys[0], keys[1]
+		if !utils.IsValidChainIDWithoutRevision(chainID) {
+			return errorsmod.Wrapf(
+				ErrInvalidGenesisData,
+				"ValidatePrevConsKeys: invalid chainID without revision, operator %s: chainID: %s", operator, chainID,
+			)
+		}
 		// check that the operator is registered
 		if _, ok := operators[operator]; !ok {
 			return errorsmod.Wrapf(

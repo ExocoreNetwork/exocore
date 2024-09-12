@@ -62,34 +62,31 @@ func (k Keeper) InitGenesis(ctx sdk.Context, data *types.GenesisState) {
 // ExportGenesis returns the module's exported genesis.
 func (k Keeper) ExportGenesis(ctx sdk.Context) *types.GenesisState {
 	res := types.GenesisState{}
+	var err error
 	params, err := k.GetParams(ctx)
 	if err != nil {
-		ctx.Logger().Error(errorsmod.Wrap(err, "failed to get parameter").Error())
+		panic(errorsmod.Wrap(err, "failed to get parameter").Error())
 	}
 	res.Params = *params
 
-	allClientChains, err := k.GetAllClientChainInfo(ctx)
+	res.ClientChains, err = k.GetAllClientChainInfo(ctx)
 	if err != nil {
-		ctx.Logger().Error(errorsmod.Wrap(err, "failed to get all client chains").Error())
+		panic(errorsmod.Wrap(err, "failed to get all client chains").Error())
 	}
-	res.ClientChains = allClientChains
 
-	allAssets, err := k.GetAllStakingAssetsInfo(ctx)
+	res.Tokens, err = k.GetAllStakingAssetsInfo(ctx)
 	if err != nil {
-		ctx.Logger().Error(errorsmod.Wrap(err, "failed to get all staking assets info").Error())
+		panic(errorsmod.Wrap(err, "failed to get all staking assets info").Error())
 	}
-	res.Tokens = allAssets
 
-	allDeposits, err := k.AllDeposits(ctx)
+	res.Deposits, err = k.AllDeposits(ctx)
 	if err != nil {
-		ctx.Logger().Error(errorsmod.Wrap(err, "failed to get all deposits").Error())
+		panic(errorsmod.Wrap(err, "failed to get all deposits").Error())
 	}
-	res.Deposits = allDeposits
 
-	operatorAssets, err := k.AllOperatorAssets(ctx)
+	res.OperatorAssets, err = k.AllOperatorAssets(ctx)
 	if err != nil {
-		ctx.Logger().Error(errorsmod.Wrap(err, "failed to get all assets info for the operators").Error())
+		panic(errorsmod.Wrap(err, "failed to get all assets info for the operators").Error())
 	}
-	res.OperatorAssets = operatorAssets
 	return &res
 }

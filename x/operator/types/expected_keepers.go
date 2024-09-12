@@ -7,7 +7,6 @@ import (
 	delegationtype "github.com/ExocoreNetwork/exocore/x/delegation/types"
 	oracletype "github.com/ExocoreNetwork/exocore/x/oracle/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/ethereum/go-ethereum/common"
 )
 
 var _ OracleKeeper = MockOracle{}
@@ -108,7 +107,7 @@ type AVSKeeper interface {
 	GetEpochEndAVSs(ctx sdk.Context, epochIdentifier string, epochNumber int64) []string
 	// IsAVS returns true if the address is a registered AVS address.
 	IsAVS(ctx sdk.Context, addr string) (bool, error)
-	IsAVSByChainID(ctx sdk.Context, chainID string) (bool, common.Address)
+	IsAVSByChainID(ctx sdk.Context, chainID string) (bool, string)
 }
 
 type SlashKeeper interface {

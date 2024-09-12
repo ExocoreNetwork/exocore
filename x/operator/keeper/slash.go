@@ -1,6 +1,9 @@
 package keeper
 
 import (
+	"strings"
+
+	"github.com/ExocoreNetwork/exocore/utils"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 
@@ -14,10 +17,10 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-// GetSlashIDForDogfood It use infractionType+'/'+'infractionHeight' as the slashID, because /* the slash  */event occurs in dogfood doesn't have a TxID. It isn't submitted through an external transaction.
+// GetSlashIDForDogfood It use infractionType+'_'+'infractionHeight' as the slashID, because /* the slash  */event occurs in dogfood doesn't have a TxID. It isn't submitted through an external transaction.
 func GetSlashIDForDogfood(infraction stakingtypes.Infraction, infractionHeight int64) string {
 	// #nosec G701
-	return string(assetstype.GetJoinedStoreKey(hexutil.EncodeUint64(uint64(infraction)), hexutil.EncodeUint64(uint64(infractionHeight))))
+	return strings.Join([]string{hexutil.EncodeUint64(uint64(infraction)), hexutil.EncodeUint64(uint64(infractionHeight))}, utils.DelimiterForID)
 }
 
 // SlashFromUndelegation executes the slash from an undelegation
@@ -191,14 +194,14 @@ func (k Keeper) SlashWithInfractionReason(
 		Power:            power,
 		SlashType:        uint32(infraction),
 		Operator:         addr,
-		AVSAddr:          avsAddr.Hex(),
+		AVSAddr:          avsAddr,
 		SlashID:          slashID,
 		SlashEventHeight: infractionHeight,
 		SlashProportion:  slashFactor,
 	}
 	err := k.Slash(ctx, slashParam)
 	if err != nil {
-		k.Logger(ctx).Error(err.Error(), avsAddr.Hex())
+		k.Logger(ctx).Error(err.Error(), avsAddr)
 		return sdkmath.NewInt(0)
 	}
 	// todo: The returned value should be the amount of burned Exo if we considering a slash from the reward
@@ -219,9 +222,9 @@ func (k Keeper) IsOperatorJailedForChainID(ctx sdk.Context, consAddr sdk.ConsAdd
 		k.Logger(ctx).Error("the chainID is not supported by AVS", chainID)
 		return false
 	}
-	optInfo, err := k.GetOptedInfo(ctx, operatorAddr.String(), avsAddr.Hex())
+	optInfo, err := k.GetOptedInfo(ctx, operatorAddr.String(), avsAddr)
 	if err != nil {
-		k.Logger(ctx).Error(err.Error(), operatorAddr, avsAddr.Hex())
+		k.Logger(ctx).Error(err.Error(), operatorAddr, avsAddr)
 		return false
 	}
 	return optInfo.Jailed
@@ -243,7 +246,7 @@ func (k *Keeper) SetJailedState(ctx sdk.Context, consAddr sdk.ConsAddress, chain
 	handleFunc := func(info *types.OptedInfo) {
 		info.Jailed = jailed
 	}
-	err := k.HandleOptedInfo(ctx, operatorAddr.String(), avsAddr.Hex(), handleFunc)
+	err := k.HandleOptedInfo(ctx, operatorAddr.String(), avsAddr, handleFunc)
 	if err != nil {
 		k.Logger(ctx).Error(err.Error(), chainID)
 	}

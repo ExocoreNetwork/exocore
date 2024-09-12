@@ -235,8 +235,8 @@ func (gs GenesisState) ValidateUndelegations() error {
 		}
 		return nil
 	}
-	seenFieldValueFunc := func(undelegaion UndelegationRecord) (string, struct{}) {
-		return undelegaion.TxHash, struct{}{}
+	seenFieldValueFunc := func(undelegation UndelegationRecord) (string, struct{}) {
+		return undelegation.TxHash, struct{}{}
 	}
 	_, err := utils.CommonValidation(gs.Undelegations, seenFieldValueFunc, validationFunc)
 	if err != nil {

@@ -231,12 +231,11 @@ func (k *Keeper) IterateOperatorsForAVS(ctx sdk.Context, avsAddr string, isUpdat
 func (k Keeper) GetVotePowerForChainID(
 	ctx sdk.Context, operators []sdk.AccAddress, chainIDWithoutRevision string,
 ) ([]int64, error) {
-	isAvs, avsAddr := k.avsKeeper.IsAVSByChainID(ctx, chainIDWithoutRevision)
+	isAvs, avsAddrString := k.avsKeeper.IsAVSByChainID(ctx, chainIDWithoutRevision)
 	if !isAvs {
 		return nil, errorsmod.Wrap(operatortypes.ErrUnknownChainID, fmt.Sprintf("GetVotePowerForChainID: chainIDWithoutRevision is %s", chainIDWithoutRevision))
 	}
 	ret := make([]int64, 0)
-	avsAddrString := avsAddr.String()
 	for _, operator := range operators {
 		// this already filters by the required assetIDs
 		optedUSDValues, err := k.GetOperatorOptedUSDValue(ctx, avsAddrString, operator.String())
@@ -255,7 +254,7 @@ func (k *Keeper) GetOperatorAssetValue(ctx sdk.Context, operator sdk.AccAddress,
 	if !isAvs {
 		return 0, errorsmod.Wrap(operatortypes.ErrUnknownChainID, fmt.Sprintf("GetOperatorAssetValue: chainIDWithoutRevision is %s", chainIDWithoutRevision))
 	}
-	optedUSDValues, err := k.GetOperatorOptedUSDValue(ctx, operator.String(), avsAddr.String())
+	optedUSDValues, err := k.GetOperatorOptedUSDValue(ctx, operator.String(), avsAddr)
 	if err != nil {
 		return 0, err
 	}
@@ -401,11 +400,10 @@ func (k Keeper) GetOrCalculateOperatorUSDValues(
 	operator sdk.AccAddress,
 	chainIDWithoutRevision string,
 ) (optedUSDValues operatortypes.OperatorOptedUSDValue, err error) {
-	isAvs, avsAddr := k.avsKeeper.IsAVSByChainID(ctx, chainIDWithoutRevision)
+	isAvs, avsAddrString := k.avsKeeper.IsAVSByChainID(ctx, chainIDWithoutRevision)
 	if !isAvs {
 		return operatortypes.OperatorOptedUSDValue{}, errorsmod.Wrap(operatortypes.ErrUnknownChainID, fmt.Sprintf("GetOrCalculateOperatorUSDValues: chainIDWithoutRevision is %s", chainIDWithoutRevision))
 	}
-	avsAddrString := avsAddr.String()
 	// the usd values will be deleted if the operator opts out, so recalculate the
 	// voting power to set the tokens and shares for this case.
 	if !k.IsOptedIn(ctx, operator.String(), avsAddrString) {

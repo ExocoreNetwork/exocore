@@ -14,9 +14,7 @@ const (
 	MaxDecForTotalSupply = 38
 )
 
-var (
-	MaxAssetTotalSupply = sdkmath.NewIntWithDecimal(1, MaxDecForTotalSupply)
-)
+var MaxAssetTotalSupply = sdkmath.NewIntWithDecimal(1, MaxDecForTotalSupply)
 
 func (suite *OperatorTestSuite) TestCalculateUSDValue() {
 	suite.prepare()
@@ -122,7 +120,7 @@ func (suite *OperatorTestSuite) TestVotingPowerForDogFood() {
 	addUSDValue := sdkmath.LegacyNewDec(1)
 
 	chainIDWithoutRevision := avstypes.ChainIDWithoutRevision(suite.Ctx.ChainID())
-	avsAddress := avstypes.GenerateAVSAddr(avstypes.ChainIDWithoutRevision(suite.Ctx.ChainID())).String()
+	avsAddress := avstypes.GenerateAVSAddr(avstypes.ChainIDWithoutRevision(suite.Ctx.ChainID()))
 	// CommitAfter causes the epoch hook to be triggered, and results in writing
 	// of the AVS usd value to the store.
 	suite.CommitAfter(time.Hour*24 + time.Nanosecond)

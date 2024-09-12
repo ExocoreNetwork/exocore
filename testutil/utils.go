@@ -249,7 +249,7 @@ func (suite *BaseTestSuite) SetupWithGenesisValSet(genAccs []authtypes.GenesisAc
 			},
 		},
 	}
-	avsAddr := avstypes.GenerateAVSAddr(chainIDWithoutRevision).String()
+	avsAddr := avstypes.GenerateAVSAddr(chainIDWithoutRevision)
 	optStates := []operatortypes.OptedState{
 		{
 			Key: string(assetstypes.GetJoinedStoreKey(operator1.String(), avsAddr)),
