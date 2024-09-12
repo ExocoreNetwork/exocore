@@ -141,21 +141,14 @@ func (k Keeper) AllocateTokensToStakers(ctx sdk.Context, operatorAddress sdk.Acc
 	sort.Slice(globalStakerAddressList, func(i, j int) bool {
 		return stakersPowerMap[globalStakerAddressList[i]].GT(stakersPowerMap[globalStakerAddressList[j]])
 	})
-
-	if curTotalStakersPowers.IsPositive() {
-		// allocate to stakers in voting power descending order if the curTotalStakersPower is positive
-		for _, staker := range globalStakerAddressList {
-			stakerPower := stakersPowerMap[staker]
-			powerFraction := stakerPower.QuoTruncate(curTotalStakersPowers)
-			rewardToSingleStaker := rewardToAllStakers.MulDecTruncate(powerFraction)
-			if rw := rewardToAllStakers.Sub(rewardToSingleStaker); rw.IsValid() {
-				rewardToAllStakers = rw
-				k.AllocateTokensToSingleStaker(ctx, staker, rewardToSingleStaker)
-			} else {
-				// it's negative, don't allocate to stakers anymore.
-				break
-			}
-		}
+	remaining := rewardToAllStakers
+	// allocate to stakers in voting power descending order if the curTotalStakersPower is positive
+	for _, staker := range globalStakerAddressList {
+		stakerPower := stakersPowerMap[staker]
+		powerFraction := stakerPower.QuoTruncate(curTotalStakersPowers)
+		rewardToSingleStaker := rewardToAllStakers.MulDecTruncate(powerFraction)
+		k.AllocateTokensToSingleStaker(ctx, staker, rewardToSingleStaker)
+		remaining = remaining.Sub(rewardToSingleStaker)
 	}
 
 	feePool.CommunityPool = feePool.CommunityPool.Add(rewardToAllStakers...)
