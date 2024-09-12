@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"path"
 	"path/filepath"
 	"time"
 
@@ -51,7 +50,6 @@ import (
 
 	cmdcfg "github.com/ExocoreNetwork/exocore/cmd/config"
 	evmoskr "github.com/evmos/evmos/v16/crypto/keyring"
-	pricefeeder "github.com/ExocoreNetwork/price-feeder/external"
 )
 
 const (
@@ -144,18 +142,21 @@ func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 	preRunE := startCmd.PreRunE
 	// add preRun to run price-feeder first before starting the node
 	startCmd.PreRunE = func(cmd *cobra.Command, args []string) error {
-		if enableFeeder, _ := cmd.Flags().GetBool(flagOracle); enableFeeder {
-			clientCtx := cmd.Context().Value(client.ClientContextKey).(*client.Context)
-			go func() {
-				defer func() {
-					if err := recover(); err != nil {
-						fmt.Println("price-feeder failed", err)
-					}
+		// TODO: Temporarily disable the price feeder to fix the issue caused by two different versions of the EVMOS dependency.
+		// This needs to be re-enabled after the price feeder updates the EVMOS dependency to v16 and updates the Exocore dependency
+		// to the version that includes this fix.
+		/*		if enableFeeder, _ := cmd.Flags().GetBool(flagOracle); enableFeeder {
+				clientCtx := cmd.Context().Value(client.ClientContextKey).(*client.Context)
+				go func() {
+					defer func() {
+						if err := recover(); err != nil {
+							fmt.Println("price-feeder failed", err)
+						}
+					}()
+					mnemonic, _ := cmd.Flags().GetString(flagMnemonic)
+					pricefeeder.StartPriceFeeder(path.Join(clientCtx.HomeDir, confPath, confOracle), mnemonic, path.Join(clientCtx.HomeDir, confPath))
 				}()
-				mnemonic, _ := cmd.Flags().GetString(flagMnemonic)
-				pricefeeder.StartPriceFeeder(path.Join(clientCtx.HomeDir, confPath, confOracle), mnemonic, path.Join(clientCtx.HomeDir, confPath))
-			}()
-		}
+			}*/
 		return preRunE(cmd, args)
 	}
 	// add keybase, auxiliary RPC, query, and tx child commands
