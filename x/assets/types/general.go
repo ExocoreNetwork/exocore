@@ -19,10 +19,9 @@ const (
 	ClientChainLzIDIndexInTopics = 0
 	ExoCoreOperatorAddrLength    = 42
 
-	// MaxDecimal and MaxDecForTotalSupply are set to prevent the overflow
+	// MaxDecimal is set to prevent the overflow
 	// during the calculation of share and usd value.
 	MaxDecimal                  = 18
-	MaxDecForTotalSupply        = 38
 	MaxChainTokenNameLength     = 50
 	MaxChainTokenMetaInfoLength = 200
 
@@ -37,8 +36,6 @@ const (
 	UndelegateFrom
 	Slash
 )
-
-var MaxAssetTotalSupply = math.NewIntWithDecimal(1, MaxDecForTotalSupply)
 
 type GeneralAssetsAddr [32]byte
 

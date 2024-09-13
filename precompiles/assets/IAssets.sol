@@ -57,12 +57,10 @@ interface IAssets {
 
     /// @dev register a token to allow deposits / staking, etc.
     /// @dev note that there is no way to delete a token. If a token is to be removed,
-    /// the TVL limit should be set to 0.
+    /// the TVL limit should be set to 0 on the client chain.
     /// @param clientChainId is the identifier of the token's home chain (LZ or otherwise)
     /// @param token is the address of the token on the home chain
     /// @param decimals is the number of decimals of the token
-    /// @param tvlLimit is the number of tokens that can be deposited in the system. Set to
-    /// maxSupply if there is no limit
     /// @param name is the name of the token
     /// @param metaData is the arbitrary metadata of the token
     /// @param oracleInfo is the oracle information of the token
@@ -71,7 +69,6 @@ interface IAssets {
         uint32 clientChainId,
         bytes calldata token,
         uint8 decimals,
-        uint256 tvlLimit,
         string calldata name,
         string calldata metaData,
         string calldata oracleInfo
@@ -80,14 +77,10 @@ interface IAssets {
     /// @dev update a token to allow deposits / staking, etc.
     /// @param clientChainId is the identifier of the token's home chain (LZ or otherwise)
     /// @param token is the address of the token on the home chain
-    /// @param tvlLimit is the number of tokens that can be deposited in the system. Set to
-    /// maxSupply if there is no limit
     /// @param metaData is the arbitrary metadata of the token
     /// @return success if the token update is successful
     /// @dev The token must previously be registered before updating
-    /// @dev Pass a tvlLimit of 0 to disable any further deposits
-    /// @dev Pass en empty metadata to keep the existing metadata
-    function updateToken(uint32 clientChainId, bytes calldata token, uint256 tvlLimit, string calldata metaData)
+    function updateToken(uint32 clientChainId, bytes calldata token, string calldata metaData)
         external
         returns (bool success);
 
