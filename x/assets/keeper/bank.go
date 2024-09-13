@@ -40,7 +40,8 @@ func (k Keeper) PerformDepositOrWithdraw(ctx sdk.Context, params *DepositWithdra
 
 	if assetstypes.IsNativeToken(assetID) {
 		// TODO: we skip check for case like withdraw amount>withdrawable is fine since it will fail for later check and the state will be rollback
-		actualOpAmount = k.UpdateNativeTokenByDepositOrWithdraw(ctx, assetID, hexutil.Encode(params.StakerAddress), params.OpAmount)
+		// TODO: need validatorIndex to be passed (0 as placeholder)
+		actualOpAmount = k.UpdateNativeTokenByDepositOrWithdraw(ctx, assetID, hexutil.Encode(params.StakerAddress), params.OpAmount, 0)
 	}
 
 	changeAmount := assetstypes.DeltaStakerSingleAsset{

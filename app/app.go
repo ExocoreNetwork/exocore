@@ -556,7 +556,6 @@ func NewExocoreApp(
 		&app.OperatorKeeper,
 		app.AccountKeeper,
 		app.BankKeeper,
-		&app.OracleKeeper,
 	)
 
 	// the dogfood module is the first AVS. it receives slashing calls from either x/slashing

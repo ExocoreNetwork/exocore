@@ -7,8 +7,6 @@ import (
 	assetstype "github.com/ExocoreNetwork/exocore/x/assets/types"
 	delegationtype "github.com/ExocoreNetwork/exocore/x/delegation/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-
-	"github.com/ethereum/go-ethereum/common/hexutil"
 )
 
 // DelegateTo : It doesn't need to check the active status of the operator in middlewares when
@@ -121,10 +119,6 @@ func (k *Keeper) UndelegateFrom(ctx sdk.Context, params *delegationtype.Delegati
 	}
 	// get staker delegation state, then check the validation of Undelegation amount
 	stakerID, assetID := assetstype.GetStakeIDAndAssetID(params.ClientChainID, params.StakerAddress, params.AssetsAddress)
-
-	if assetstype.IsNativeToken(assetID) {
-		params.OpAmount = k.oracleKeeper.UpdateNativeTokenByDelegation(ctx, assetID, params.OperatorAddress.String(), hexutil.Encode(params.StakerAddress), params.OpAmount.Neg()).Neg()
-	}
 
 	// verify the undelegation amount
 	share, err := k.ValidateUndelegationAmount(ctx, params.OperatorAddress, stakerID, assetID, params.OpAmount)

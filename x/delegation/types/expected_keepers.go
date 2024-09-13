@@ -63,7 +63,3 @@ type BankKeeper interface {
 type AccountKeeper interface {
 	GetSequence(ctx sdk.Context, addr sdk.AccAddress) (uint64, error)
 }
-
-type OracleKeeper interface {
-	UpdateNativeTokenByDelegation(ctx sdk.Context, assetID, operatorAddr, stakerAddr string, amountOriginal sdkmath.Int) (amount sdkmath.Int)
-}

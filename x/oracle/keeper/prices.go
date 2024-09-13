@@ -2,7 +2,6 @@ package keeper
 
 import (
 	"encoding/binary"
-	"strings"
 
 	sdkmath "cosmossdk.io/math"
 	assetstypes "github.com/ExocoreNetwork/exocore/x/assets/types"
@@ -62,10 +61,6 @@ func (k Keeper) GetSpecifiedAssetsPrice(ctx sdk.Context, assetID string) (types.
 		p = agc.GetParams()
 	} else {
 		p = k.GetParams(ctx)
-	}
-	// if this asset represents for native token fetch price identified by operator
-	if parsedAssetID := strings.Split(assetID, "_"); len(parsedAssetID) == 3 && assetstypes.IsNativeToken(strings.Join([]string{parsedAssetID[0], parsedAssetID[1]}, "_")) {
-		return k.GetNativeTokenPriceUSDForOperator(ctx, assetID)
 	}
 	tokenID := p.GetTokenIDFromAssetID(assetID)
 	if tokenID == 0 {
