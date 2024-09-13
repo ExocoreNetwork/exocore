@@ -17,7 +17,6 @@ type Keeper struct {
 	assetsKeeper   delegationtype.AssetsKeeper
 	slashKeeper    delegationtype.SlashKeeper
 	operatorKeeper delegationtype.OperatorKeeper
-	oracleKeeper   delegationtype.OracleKeeper
 	hooks          delegationtype.DelegationHooks
 }
 
@@ -27,7 +26,6 @@ func NewKeeper(
 	assetsKeeper delegationtype.AssetsKeeper,
 	slashKeeper delegationtype.SlashKeeper,
 	operatorKeeper delegationtype.OperatorKeeper,
-	oracleKeeper delegationtype.OracleKeeper,
 ) Keeper {
 	return Keeper{
 		storeKey:       storeKey,
@@ -35,7 +33,6 @@ func NewKeeper(
 		assetsKeeper:   assetsKeeper,
 		slashKeeper:    slashKeeper,
 		operatorKeeper: operatorKeeper,
-		oracleKeeper:   oracleKeeper,
 	}
 }
 

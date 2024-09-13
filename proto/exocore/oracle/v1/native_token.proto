@@ -18,12 +18,30 @@ message OperatorInfo {
   repeated PriceInfo price_list = 3;
 }
 
+message BalanceInfo {
+  uint64 round_id = 1 [(gogoproto.customname)="RoundID"];
+  uint64 block = 2;
+  // index used to distinguish multiple balanceInfo for one same roundid
+  uint64 index = 3;
+  // beaconchain epoch related to slash_refund
+  // uint epoch = 3;
+  int64 balance = 4;
+
+  enum Action {
+    ACTION_ROUND = 0;
+    ACTION_DEPOSIT = 1;
+	ACTION_WITHDRAW = 2;
+	ACTION_SLASH_REFUND = 3;
+  }
+
+  Action change = 5;
+}
+
 message StakerInfo {
   string staker_addr = 1;
   int64 staker_index = 2;
   repeated uint64 validator_indexs = 3;
-  string total_deposit = 4[(gogoproto.customtype)="cosmossdk.io/math.Int",(gogoproto.nullable) = false];
-  repeated PriceInfo price_list = 5;
+  repeated BalanceInfo balance_list = 5;
 }
 
 message NativeTokenPrice {

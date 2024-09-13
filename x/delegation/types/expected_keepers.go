@@ -53,7 +53,3 @@ type AssetsKeeper interface {
 
 	ClientChainExists(ctx sdk.Context, index uint64) bool
 }
-
-type OracleKeeper interface {
-	UpdateNativeTokenByDelegation(ctx sdk.Context, assetID, operatorAddr, stakerAddr string, amountOriginal sdkmath.Int) (amount sdkmath.Int)
-}
