@@ -229,11 +229,11 @@ func (k *Keeper) IterateOperatorsForAVS(ctx sdk.Context, avsAddr string, isUpdat
 }
 
 func (k Keeper) GetVotePowerForChainID(
-	ctx sdk.Context, operators []sdk.AccAddress, chainID string,
+	ctx sdk.Context, operators []sdk.AccAddress, chainIDWithoutRevision string,
 ) ([]int64, error) {
-	isAvs, avsAddr := k.avsKeeper.IsAVSByChainID(ctx, chainID)
+	isAvs, avsAddr := k.avsKeeper.IsAVSByChainID(ctx, chainIDWithoutRevision)
 	if !isAvs {
-		return nil, errorsmod.Wrap(operatortypes.ErrUnknownChainID, fmt.Sprintf("GetVotePowerForChainID: chainID is %s", chainID))
+		return nil, errorsmod.Wrap(operatortypes.ErrUnknownChainID, fmt.Sprintf("GetVotePowerForChainID: chainIDWithoutRevision is %s", chainIDWithoutRevision))
 	}
 	ret := make([]int64, 0)
 	avsAddrString := avsAddr.String()
@@ -250,10 +250,10 @@ func (k Keeper) GetVotePowerForChainID(
 	return ret, nil
 }
 
-func (k *Keeper) GetOperatorAssetValue(ctx sdk.Context, operator sdk.AccAddress, chainID string) (int64, error) {
-	isAvs, avsAddr := k.avsKeeper.IsAVSByChainID(ctx, chainID)
+func (k *Keeper) GetOperatorAssetValue(ctx sdk.Context, operator sdk.AccAddress, chainIDWithoutRevision string) (int64, error) {
+	isAvs, avsAddr := k.avsKeeper.IsAVSByChainID(ctx, chainIDWithoutRevision)
 	if !isAvs {
-		return 0, errorsmod.Wrap(operatortypes.ErrUnknownChainID, fmt.Sprintf("GetOperatorAssetValue: chainID is %s", chainID))
+		return 0, errorsmod.Wrap(operatortypes.ErrUnknownChainID, fmt.Sprintf("GetOperatorAssetValue: chainIDWithoutRevision is %s", chainIDWithoutRevision))
 	}
 	optedUSDValues, err := k.GetOperatorOptedUSDValue(ctx, operator.String(), avsAddr.String())
 	if err != nil {
@@ -345,11 +345,11 @@ func (k *Keeper) CalculateUSDValueForOperator(
 func (k Keeper) GetOrCalculateOperatorUSDValues(
 	ctx sdk.Context,
 	operator sdk.AccAddress,
-	chainID string,
+	chainIDWithoutRevision string,
 ) (optedUSDValues operatortypes.OperatorOptedUSDValue, err error) {
-	isAvs, avsAddr := k.avsKeeper.IsAVSByChainID(ctx, chainID)
+	isAvs, avsAddr := k.avsKeeper.IsAVSByChainID(ctx, chainIDWithoutRevision)
 	if !isAvs {
-		return operatortypes.OperatorOptedUSDValue{}, errorsmod.Wrap(operatortypes.ErrUnknownChainID, fmt.Sprintf("GetOrCalculateOperatorUSDValues: chainID is %s", chainID))
+		return operatortypes.OperatorOptedUSDValue{}, errorsmod.Wrap(operatortypes.ErrUnknownChainID, fmt.Sprintf("GetOrCalculateOperatorUSDValues: chainIDWithoutRevision is %s", chainIDWithoutRevision))
 	}
 	avsAddrString := avsAddr.String()
 	// the usd values will be deleted if the operator opts out, so recalculate the

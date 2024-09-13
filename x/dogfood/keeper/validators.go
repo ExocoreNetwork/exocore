@@ -226,7 +226,7 @@ func (k Keeper) DeleteHistoricalInfo(ctx sdk.Context, height int64) {
 }
 
 // TrackHistoricalInfo saves the latest historical info and deletes the ones eligible to be
-// pruned. The function is called within the EndBlock of the module, so it is kept public.
+// pruned. The function is called within the BeginBlock of the module, so it is kept public.
 // It is mostly a copy of the function used by interchain-security.
 // If the historical info were only used by IBC, this function would store a subset of the
 // header for each block, since only those parts were used.

@@ -41,7 +41,7 @@ func (h OperatorHooksWrapper) AfterOperatorKeyReplaced(
 	// the impact of key replacement is:
 	// 1. vote power of old key is 0, which happens automatically at epoch end in EndBlock. this
 	// is because the key is in the previous set but not in the new one and our code will queue
-	// a validator update of 0 fot this.
+	// a validator update of 0 for this.
 	// 2. vote power of new key is calculated, which happens automatically at epoch end in
 	// EndBlock.
 	// 3. X epochs later, the reverse lookup of old cons addr + chain id -> operator addr
