@@ -371,10 +371,6 @@ func (suite *BaseTestSuite) DoSetupTest() {
 			MetaInfo:         "Tether USD token",
 		},
 	}
-	{
-		totalSupply, _ := sdk.NewIntFromString("40022689732746729")
-		suite.Assets[0].TotalSupply = totalSupply
-	}
 
 	// Initialize an ExocoreApp for test
 	suite.SetupWithGenesisValSet(

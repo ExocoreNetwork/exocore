@@ -7,7 +7,6 @@ import (
 	"cosmossdk.io/math"
 	utiltx "github.com/ExocoreNetwork/exocore/testutil/tx"
 	"github.com/ExocoreNetwork/exocore/x/assets/types"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/suite"
 )
 
@@ -48,8 +47,6 @@ func (suite *GenesisTestSuite) TestValidateGenesis() {
 		LayerZeroChainID: ethClientChain.LayerZeroChainID,
 		MetaInfo:         "Tether USD token",
 	}
-	totalSupply, _ := sdk.NewIntFromString("40022689732746729")
-	usdtClientChainAsset.TotalSupply = totalSupply
 	stakingInfo := types.StakingAssetInfo{
 		AssetBasicInfo:     &usdtClientChainAsset,
 		StakingTotalAmount: math.NewInt(0),
@@ -203,25 +200,6 @@ func (suite *GenesisTestSuite) TestValidateGenesis() {
 			},
 		},
 		{
-			name: "invalid genesis due to negative supply amount for token",
-			genState: &types.GenesisState{
-				Params: types.DefaultParams(),
-				ClientChains: []types.ClientChainInfo{
-					ethClientChain,
-				},
-				Tokens: []types.StakingAssetInfo{
-					stakingInfo,
-				},
-			},
-			expPass: false,
-			malleate: func(gs *types.GenesisState) {
-				gs.Tokens[0].AssetBasicInfo.TotalSupply = math.NewInt(-1)
-			},
-			unmalleate: func(gs *types.GenesisState) {
-				gs.Tokens[0].AssetBasicInfo.TotalSupply = totalSupply
-			},
-		},
-		{
 			name: "invalid genesis due to upper case staker id",
 			genState: &types.GenesisState{
 				Params: types.DefaultParams(),
@@ -364,7 +342,6 @@ func (suite *GenesisTestSuite) TestValidateGenesis() {
 					Decimals:         18,
 					LayerZeroChainID: ethClientChain.LayerZeroChainID + 1,
 					MetaInfo:         "Circle USD token",
-					TotalSupply:      math.NewInt(500000000),
 				}
 				stakingInfo := types.StakingAssetInfo{
 					AssetBasicInfo:     &usdcClientChainAsset,
@@ -503,32 +480,10 @@ func (suite *GenesisTestSuite) TestValidateGenesis() {
 			unmalleate: func(gs *types.GenesisState) {
 				genesisDeposit.Deposits[0].Info = types.StakerAssetInfo{
 					TotalDepositAmount:  math.NewInt(100),
-					WithdrawableAmount:  math.NewInt(0),
+					WithdrawableAmount:  math.NewInt(100),
 					WaitUnbondingAmount: math.NewInt(0),
 				}
 				gs.Deposits[0].Deposits[0].Info = genesisDeposit.Deposits[0].Info
-			},
-		},
-		{
-			name: "invalid genesis due to excess deposited amount for staker",
-			genState: &types.GenesisState{
-				Params: types.DefaultParams(),
-				ClientChains: []types.ClientChainInfo{
-					ethClientChain,
-				},
-				Tokens: []types.StakingAssetInfo{
-					stakingInfo,
-				},
-				Deposits: []types.DepositsByStaker{genesisDeposit},
-			},
-			expPass: false,
-			malleate: func(gs *types.GenesisState) {
-				gs.Deposits[0].Deposits[0].Info.TotalDepositAmount = stakingInfo.AssetBasicInfo.TotalSupply.Add(math.NewInt(1))
-				gs.Deposits[0].Deposits[0].Info.WithdrawableAmount = stakingInfo.AssetBasicInfo.TotalSupply.Add(math.NewInt(1))
-			},
-			unmalleate: func(gs *types.GenesisState) {
-				gs.Deposits[0].Deposits[0].Info.TotalDepositAmount = math.NewInt(100)
-				gs.Deposits[0].Deposits[0].Info.WithdrawableAmount = math.NewInt(100)
 			},
 		},
 		{

@@ -177,10 +177,6 @@ func GenesisStateWithValSet(app *ExocoreApp, genesisState simapp.GenesisState,
 			MetaInfo:         "Tether USD token",
 		},
 	}
-	{
-		totalSupply, _ := sdk.NewIntFromString("40022689732746729")
-		assets[0].TotalSupply = totalSupply
-	}
 
 	// x/operator initialization - address only
 	privkey, _ := ethsecp256k1.GenerateKey()
