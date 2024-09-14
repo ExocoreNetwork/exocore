@@ -1,7 +1,5 @@
 package types
 
-import sdkmath "cosmossdk.io/math"
-
 const maxSize = 100
 
 // TODO: vlaidatorIndex need bridge data
@@ -14,21 +12,6 @@ func NewStakerInfo(stakerAddr string, validatorIndex uint64) *StakerInfo {
 		ValidatorIndexs: []uint64{validatorIndex},
 		// ValidatorIndexs: make([]uint64, 0, 1),
 		BalanceList: make([]*BalanceInfo, 0, 1),
-	}
-}
-
-func NewOperatorInfo(operatorAddr string) *OperatorInfo {
-	return &OperatorInfo{
-		OperatorAddr: operatorAddr,
-		TotalAmount:  sdkmath.NewInt(0),
-		PriceList: []*PriceInfo{
-			{
-				// default price should be 1
-				Price:   sdkmath.LegacyNewDec(1),
-				Block:   0,
-				RoundID: 0,
-			},
-		},
 	}
 }
 

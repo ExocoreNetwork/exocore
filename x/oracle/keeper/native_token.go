@@ -42,16 +42,23 @@ func (k Keeper) UpdateNativeTokenByDepositOrWithdraw(ctx sdk.Context, assetID, s
 		stakerInfo = types.NewStakerInfo(stakerAddr, validatorIndex)
 	} else {
 		k.cdc.MustUnmarshal(value, stakerInfo)
+		if amount.IsPositive() {
+			// deopsit add a new validator into staker's validatorList
+			stakerInfo.ValidatorIndexs = append(stakerInfo.ValidatorIndexs, validatorIndex)
+		}
 	}
 
-	latestIndex := len(stakerInfo.BalanceList) - 1
-	newBalance := *(stakerInfo.BalanceList[latestIndex])
-	newBalance.Index++
+	newBalance := types.BalanceInfo{}
+
+	if latestIndex := len(stakerInfo.BalanceList) - 1; latestIndex >= 0 {
+		newBalance = *(stakerInfo.BalanceList[latestIndex])
+		newBalance.Index++
+	}
+	//	newBalance := *(stakerInfo.BalanceList[latestIndex])
+	//	newBalance.Index++
 	newBalance.Block = uint64(ctx.BlockHeight())
 	if amount.IsPositive() {
 		newBalance.Change = types.BalanceInfo_ACTION_DEPOSIT
-		// deopsit add a new validator into staker's validatorList
-		stakerInfo.ValidatorIndexs = append(stakerInfo.ValidatorIndexs, validatorIndex)
 	} else {
 		// TODO: check if this validator has withdraw all its asset and then we can move it out from the staker's validatorList
 		// currently when withdraw happened we assume this validator has left the staker's validatorList (deposit/withdraw all of that validator's staking ETH(<=32))
@@ -68,16 +75,17 @@ func (k Keeper) UpdateNativeTokenByDepositOrWithdraw(ctx sdk.Context, assetID, s
 
 	keyStakerList := types.NativeTokenStakerListKey(assetID)
 	valueStakerList := store.Get(keyStakerList)
-	stakerList := &types.StakerList{}
+	stakerList.StakerAddrs = make([]string, 0, 1)
 	if valueStakerList != nil {
-		k.cdc.MustUnmarshal(valueStakerList, stakerList)
+		k.cdc.MustUnmarshal(valueStakerList, &stakerList)
 	}
 	exists := false
 	for idx, stakerExists := range stakerList.StakerAddrs {
+		// this should noly happen when do withdraw
 		if stakerExists == stakerAddr {
 			if newBalance.Balance <= 0 {
 				stakerList.StakerAddrs = append(stakerList.StakerAddrs[:idx], stakerList.StakerAddrs[idx+1:]...)
-				valueStakerList = k.cdc.MustMarshal(stakerList)
+				valueStakerList = k.cdc.MustMarshal(&stakerList)
 				store.Set(keyStakerList, valueStakerList)
 			}
 			exists = true
@@ -89,17 +97,19 @@ func (k Keeper) UpdateNativeTokenByDepositOrWithdraw(ctx sdk.Context, assetID, s
 	if !exists {
 		if newBalance.Balance <= 0 {
 			// this should not happened, if a staker execute the 'withdraw' action, he must have already been in the stakerList
+			store.Delete(key)
 			return amount
 		}
 		stakerList.StakerAddrs = append(stakerList.StakerAddrs, stakerAddr)
-		stakerInfo.StakerIndex = int64(len(stakerList.StakerAddrs) - 1)
-		valueStakerList = k.cdc.MustMarshal(stakerList)
+		valueStakerList = k.cdc.MustMarshal(&stakerList)
 		store.Set(keyStakerList, valueStakerList)
+		stakerInfo.StakerIndex = int64(len(stakerList.StakerAddrs) - 1)
 	}
 
 	if newBalance.Balance <= 0 {
 		store.Delete(key)
 	} else {
+		stakerInfo.BalanceList = append(stakerInfo.BalanceList, &newBalance)
 		bz := k.cdc.MustMarshal(stakerInfo)
 		store.Set(key, bz)
 	}
@@ -140,16 +150,16 @@ func (k Keeper) UpdateNativeTokenByBalanceChange(ctx sdk.Context, assetID string
 		}
 		stakerInfo := &types.StakerInfo{}
 		k.cdc.MustUnmarshal(value, stakerInfo)
-		//		changeOriginalFloat := sdkmath.LegacyNewDec(int64(change))
-		//		changeFloat := sdkmath.LegacyNewDec(int64(change))
-		length := len(stakerInfo.BalanceList)
-		balance := stakerInfo.BalanceList[length-1]
-		newBalance := *balance
+		newBalance := types.BalanceInfo{}
+		if length := len(stakerInfo.BalanceList); length > 0 {
+			newBalance = *(stakerInfo.BalanceList[length-1])
+		}
 		newBalance.Block = uint64(ctx.BlockHeight())
 		if newBalance.RoundID == roundID {
 			newBalance.Index++
 		} else {
 			newBalance.RoundID = roundID
+			newBalance.Index = 0
 		}
 		newBalance.Change = types.BalanceInfo_ACTION_SLASH_REFUND
 		newBalance.Balance += int64(change)

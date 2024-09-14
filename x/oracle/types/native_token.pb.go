@@ -4,7 +4,6 @@
 package types
 
 import (
-	cosmossdk_io_math "cosmossdk.io/math"
 	fmt "fmt"
 	_ "github.com/cosmos/gogoproto/gogoproto"
 	proto "github.com/cosmos/gogoproto/proto"
@@ -52,113 +51,7 @@ func (x BalanceInfo_Action) String() string {
 }
 
 func (BalanceInfo_Action) EnumDescriptor() ([]byte, []int) {
-	return fileDescriptor_ed348d855b8fd9a8, []int{2, 0}
-}
-
-type PriceInfo struct {
-	Price   cosmossdk_io_math.LegacyDec `protobuf:"bytes,1,opt,name=price,proto3,customtype=cosmossdk.io/math.LegacyDec" json:"price"`
-	Block   uint64                      `protobuf:"varint,2,opt,name=block,proto3" json:"block,omitempty"`
-	RoundID uint64                      `protobuf:"varint,3,opt,name=round_id,json=roundId,proto3" json:"round_id,omitempty"`
-}
-
-func (m *PriceInfo) Reset()         { *m = PriceInfo{} }
-func (m *PriceInfo) String() string { return proto.CompactTextString(m) }
-func (*PriceInfo) ProtoMessage()    {}
-func (*PriceInfo) Descriptor() ([]byte, []int) {
-	return fileDescriptor_ed348d855b8fd9a8, []int{0}
-}
-func (m *PriceInfo) XXX_Unmarshal(b []byte) error {
-	return m.Unmarshal(b)
-}
-func (m *PriceInfo) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	if deterministic {
-		return xxx_messageInfo_PriceInfo.Marshal(b, m, deterministic)
-	} else {
-		b = b[:cap(b)]
-		n, err := m.MarshalToSizedBuffer(b)
-		if err != nil {
-			return nil, err
-		}
-		return b[:n], nil
-	}
-}
-func (m *PriceInfo) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_PriceInfo.Merge(m, src)
-}
-func (m *PriceInfo) XXX_Size() int {
-	return m.Size()
-}
-func (m *PriceInfo) XXX_DiscardUnknown() {
-	xxx_messageInfo_PriceInfo.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_PriceInfo proto.InternalMessageInfo
-
-func (m *PriceInfo) GetBlock() uint64 {
-	if m != nil {
-		return m.Block
-	}
-	return 0
-}
-
-func (m *PriceInfo) GetRoundID() uint64 {
-	if m != nil {
-		return m.RoundID
-	}
-	return 0
-}
-
-type OperatorInfo struct {
-	OperatorAddr string                `protobuf:"bytes,1,opt,name=operator_addr,json=operatorAddr,proto3" json:"operator_addr,omitempty"`
-	TotalAmount  cosmossdk_io_math.Int `protobuf:"bytes,2,opt,name=total_amount,json=totalAmount,proto3,customtype=cosmossdk.io/math.Int" json:"total_amount"`
-	PriceList    []*PriceInfo          `protobuf:"bytes,3,rep,name=price_list,json=priceList,proto3" json:"price_list,omitempty"`
-}
-
-func (m *OperatorInfo) Reset()         { *m = OperatorInfo{} }
-func (m *OperatorInfo) String() string { return proto.CompactTextString(m) }
-func (*OperatorInfo) ProtoMessage()    {}
-func (*OperatorInfo) Descriptor() ([]byte, []int) {
-	return fileDescriptor_ed348d855b8fd9a8, []int{1}
-}
-func (m *OperatorInfo) XXX_Unmarshal(b []byte) error {
-	return m.Unmarshal(b)
-}
-func (m *OperatorInfo) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	if deterministic {
-		return xxx_messageInfo_OperatorInfo.Marshal(b, m, deterministic)
-	} else {
-		b = b[:cap(b)]
-		n, err := m.MarshalToSizedBuffer(b)
-		if err != nil {
-			return nil, err
-		}
-		return b[:n], nil
-	}
-}
-func (m *OperatorInfo) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_OperatorInfo.Merge(m, src)
-}
-func (m *OperatorInfo) XXX_Size() int {
-	return m.Size()
-}
-func (m *OperatorInfo) XXX_DiscardUnknown() {
-	xxx_messageInfo_OperatorInfo.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_OperatorInfo proto.InternalMessageInfo
-
-func (m *OperatorInfo) GetOperatorAddr() string {
-	if m != nil {
-		return m.OperatorAddr
-	}
-	return ""
-}
-
-func (m *OperatorInfo) GetPriceList() []*PriceInfo {
-	if m != nil {
-		return m.PriceList
-	}
-	return nil
+	return fileDescriptor_ed348d855b8fd9a8, []int{0, 0}
 }
 
 type BalanceInfo struct {
@@ -176,7 +69,7 @@ func (m *BalanceInfo) Reset()         { *m = BalanceInfo{} }
 func (m *BalanceInfo) String() string { return proto.CompactTextString(m) }
 func (*BalanceInfo) ProtoMessage()    {}
 func (*BalanceInfo) Descriptor() ([]byte, []int) {
-	return fileDescriptor_ed348d855b8fd9a8, []int{2}
+	return fileDescriptor_ed348d855b8fd9a8, []int{0}
 }
 func (m *BalanceInfo) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -251,7 +144,7 @@ func (m *StakerInfo) Reset()         { *m = StakerInfo{} }
 func (m *StakerInfo) String() string { return proto.CompactTextString(m) }
 func (*StakerInfo) ProtoMessage()    {}
 func (*StakerInfo) Descriptor() ([]byte, []int) {
-	return fileDescriptor_ed348d855b8fd9a8, []int{3}
+	return fileDescriptor_ed348d855b8fd9a8, []int{1}
 }
 func (m *StakerInfo) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -308,58 +201,6 @@ func (m *StakerInfo) GetBalanceList() []*BalanceInfo {
 	return nil
 }
 
-type NativeTokenPrice struct {
-	Token     string       `protobuf:"bytes,1,opt,name=token,proto3" json:"token,omitempty"`
-	PreceList []*PriceInfo `protobuf:"bytes,2,rep,name=prece_list,json=preceList,proto3" json:"prece_list,omitempty"`
-}
-
-func (m *NativeTokenPrice) Reset()         { *m = NativeTokenPrice{} }
-func (m *NativeTokenPrice) String() string { return proto.CompactTextString(m) }
-func (*NativeTokenPrice) ProtoMessage()    {}
-func (*NativeTokenPrice) Descriptor() ([]byte, []int) {
-	return fileDescriptor_ed348d855b8fd9a8, []int{4}
-}
-func (m *NativeTokenPrice) XXX_Unmarshal(b []byte) error {
-	return m.Unmarshal(b)
-}
-func (m *NativeTokenPrice) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	if deterministic {
-		return xxx_messageInfo_NativeTokenPrice.Marshal(b, m, deterministic)
-	} else {
-		b = b[:cap(b)]
-		n, err := m.MarshalToSizedBuffer(b)
-		if err != nil {
-			return nil, err
-		}
-		return b[:n], nil
-	}
-}
-func (m *NativeTokenPrice) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_NativeTokenPrice.Merge(m, src)
-}
-func (m *NativeTokenPrice) XXX_Size() int {
-	return m.Size()
-}
-func (m *NativeTokenPrice) XXX_DiscardUnknown() {
-	xxx_messageInfo_NativeTokenPrice.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_NativeTokenPrice proto.InternalMessageInfo
-
-func (m *NativeTokenPrice) GetToken() string {
-	if m != nil {
-		return m.Token
-	}
-	return ""
-}
-
-func (m *NativeTokenPrice) GetPreceList() []*PriceInfo {
-	if m != nil {
-		return m.PreceList
-	}
-	return nil
-}
-
 type StakerList struct {
 	StakerAddrs []string `protobuf:"bytes,1,rep,name=staker_addrs,json=stakerAddrs,proto3" json:"staker_addrs,omitempty"`
 }
@@ -368,7 +209,7 @@ func (m *StakerList) Reset()         { *m = StakerList{} }
 func (m *StakerList) String() string { return proto.CompactTextString(m) }
 func (*StakerList) ProtoMessage()    {}
 func (*StakerList) Descriptor() ([]byte, []int) {
-	return fileDescriptor_ed348d855b8fd9a8, []int{5}
+	return fileDescriptor_ed348d855b8fd9a8, []int{2}
 }
 func (m *StakerList) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -404,105 +245,11 @@ func (m *StakerList) GetStakerAddrs() []string {
 	return nil
 }
 
-type DelegationInfo struct {
-	OperatorAddr string                `protobuf:"bytes,1,opt,name=operator_addr,json=operatorAddr,proto3" json:"operator_addr,omitempty"`
-	Amount       cosmossdk_io_math.Int `protobuf:"bytes,2,opt,name=amount,proto3,customtype=cosmossdk.io/math.Int" json:"amount"`
-}
-
-func (m *DelegationInfo) Reset()         { *m = DelegationInfo{} }
-func (m *DelegationInfo) String() string { return proto.CompactTextString(m) }
-func (*DelegationInfo) ProtoMessage()    {}
-func (*DelegationInfo) Descriptor() ([]byte, []int) {
-	return fileDescriptor_ed348d855b8fd9a8, []int{6}
-}
-func (m *DelegationInfo) XXX_Unmarshal(b []byte) error {
-	return m.Unmarshal(b)
-}
-func (m *DelegationInfo) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	if deterministic {
-		return xxx_messageInfo_DelegationInfo.Marshal(b, m, deterministic)
-	} else {
-		b = b[:cap(b)]
-		n, err := m.MarshalToSizedBuffer(b)
-		if err != nil {
-			return nil, err
-		}
-		return b[:n], nil
-	}
-}
-func (m *DelegationInfo) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_DelegationInfo.Merge(m, src)
-}
-func (m *DelegationInfo) XXX_Size() int {
-	return m.Size()
-}
-func (m *DelegationInfo) XXX_DiscardUnknown() {
-	xxx_messageInfo_DelegationInfo.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_DelegationInfo proto.InternalMessageInfo
-
-func (m *DelegationInfo) GetOperatorAddr() string {
-	if m != nil {
-		return m.OperatorAddr
-	}
-	return ""
-}
-
-type StakerDelegationInfo struct {
-	Delegations []*DelegationInfo `protobuf:"bytes,1,rep,name=delegations,proto3" json:"delegations,omitempty"`
-}
-
-func (m *StakerDelegationInfo) Reset()         { *m = StakerDelegationInfo{} }
-func (m *StakerDelegationInfo) String() string { return proto.CompactTextString(m) }
-func (*StakerDelegationInfo) ProtoMessage()    {}
-func (*StakerDelegationInfo) Descriptor() ([]byte, []int) {
-	return fileDescriptor_ed348d855b8fd9a8, []int{7}
-}
-func (m *StakerDelegationInfo) XXX_Unmarshal(b []byte) error {
-	return m.Unmarshal(b)
-}
-func (m *StakerDelegationInfo) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	if deterministic {
-		return xxx_messageInfo_StakerDelegationInfo.Marshal(b, m, deterministic)
-	} else {
-		b = b[:cap(b)]
-		n, err := m.MarshalToSizedBuffer(b)
-		if err != nil {
-			return nil, err
-		}
-		return b[:n], nil
-	}
-}
-func (m *StakerDelegationInfo) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_StakerDelegationInfo.Merge(m, src)
-}
-func (m *StakerDelegationInfo) XXX_Size() int {
-	return m.Size()
-}
-func (m *StakerDelegationInfo) XXX_DiscardUnknown() {
-	xxx_messageInfo_StakerDelegationInfo.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_StakerDelegationInfo proto.InternalMessageInfo
-
-func (m *StakerDelegationInfo) GetDelegations() []*DelegationInfo {
-	if m != nil {
-		return m.Delegations
-	}
-	return nil
-}
-
 func init() {
 	proto.RegisterEnum("exocore.oracle.v1.BalanceInfo_Action", BalanceInfo_Action_name, BalanceInfo_Action_value)
-	proto.RegisterType((*PriceInfo)(nil), "exocore.oracle.v1.PriceInfo")
-	proto.RegisterType((*OperatorInfo)(nil), "exocore.oracle.v1.OperatorInfo")
 	proto.RegisterType((*BalanceInfo)(nil), "exocore.oracle.v1.BalanceInfo")
 	proto.RegisterType((*StakerInfo)(nil), "exocore.oracle.v1.StakerInfo")
-	proto.RegisterType((*NativeTokenPrice)(nil), "exocore.oracle.v1.NativeTokenPrice")
 	proto.RegisterType((*StakerList)(nil), "exocore.oracle.v1.StakerList")
-	proto.RegisterType((*DelegationInfo)(nil), "exocore.oracle.v1.DelegationInfo")
-	proto.RegisterType((*StakerDelegationInfo)(nil), "exocore.oracle.v1.StakerDelegationInfo")
 }
 
 func init() {
@@ -510,147 +257,37 @@ func init() {
 }
 
 var fileDescriptor_ed348d855b8fd9a8 = []byte{
-	// 682 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x94, 0x54, 0xcf, 0x6e, 0xd3, 0x4e,
-	0x10, 0x8e, 0x93, 0x26, 0xfd, 0x65, 0x9c, 0x5f, 0x1b, 0xb6, 0x41, 0x58, 0xfc, 0x49, 0xd2, 0x14,
-	0x50, 0xb8, 0xd8, 0xb4, 0x88, 0x03, 0x42, 0x48, 0x24, 0x4d, 0x51, 0x8d, 0xaa, 0xa4, 0xda, 0x04,
-	0x55, 0x02, 0xa4, 0x68, 0x63, 0x2f, 0xa9, 0x15, 0xc7, 0x1b, 0xd9, 0xdb, 0xd0, 0xde, 0x79, 0x00,
-	0x8e, 0x3c, 0x07, 0x0f, 0xc0, 0xb9, 0xc7, 0x1e, 0x11, 0x87, 0x0a, 0xa5, 0x2f, 0x82, 0xbc, 0xbb,
-	0xae, 0x02, 0x6d, 0x51, 0xb9, 0x79, 0xbe, 0x9d, 0xf1, 0x7c, 0xfb, 0x7d, 0x33, 0x0b, 0xf7, 0xe9,
-	0x21, 0x73, 0x58, 0x48, 0x2d, 0x16, 0x12, 0xc7, 0xa7, 0xd6, 0x74, 0xdd, 0x0a, 0x08, 0xf7, 0xa6,
-	0xb4, 0xcf, 0xd9, 0x88, 0x06, 0xe6, 0x24, 0x64, 0x9c, 0xa1, 0x1b, 0x2a, 0xcb, 0x94, 0x59, 0xe6,
-	0x74, 0xfd, 0x76, 0x69, 0xc8, 0x86, 0x4c, 0x9c, 0x5a, 0xf1, 0x97, 0x4c, 0xac, 0x7d, 0xd2, 0x20,
-	0xbf, 0x1b, 0x7a, 0x0e, 0xb5, 0x83, 0x0f, 0x0c, 0x3d, 0x83, 0xec, 0x24, 0x0e, 0x0c, 0xad, 0xaa,
-	0xd5, 0xf3, 0xcd, 0xb5, 0xe3, 0xd3, 0x4a, 0xea, 0xc7, 0x69, 0xe5, 0x8e, 0xc3, 0xa2, 0x31, 0x8b,
-	0x22, 0x77, 0x64, 0x7a, 0xcc, 0x1a, 0x13, 0xbe, 0x6f, 0xee, 0xd0, 0x21, 0x71, 0x8e, 0x5a, 0xd4,
-	0xc1, 0xb2, 0x02, 0x95, 0x20, 0x3b, 0xf0, 0x99, 0x33, 0x32, 0xd2, 0x55, 0xad, 0xbe, 0x80, 0x65,
-	0x80, 0x1e, 0xc2, 0x7f, 0x21, 0x3b, 0x08, 0xdc, 0xbe, 0xe7, 0x1a, 0x99, 0xf8, 0xa0, 0xa9, 0xcf,
-	0x4e, 0x2b, 0x8b, 0x38, 0xc6, 0xec, 0x16, 0x5e, 0x14, 0x87, 0xb6, 0x5b, 0xfb, 0xaa, 0x41, 0xa1,
-	0x33, 0xa1, 0x21, 0xe1, 0x2c, 0x14, 0x4c, 0xd6, 0xe0, 0x7f, 0xa6, 0xe2, 0x3e, 0x71, 0xdd, 0x50,
-	0x32, 0xc2, 0x85, 0x04, 0x6c, 0xb8, 0x6e, 0x88, 0x5e, 0x42, 0x81, 0x33, 0x4e, 0xfc, 0x3e, 0x19,
-	0xb3, 0x83, 0x80, 0x8b, 0xd6, 0xf9, 0xe6, 0x3d, 0xc5, 0xfa, 0xe6, 0x45, 0xd6, 0x76, 0xc0, 0xb1,
-	0x2e, 0x4a, 0x1a, 0xa2, 0x02, 0x3d, 0x07, 0x10, 0xf4, 0xfb, 0xbe, 0x17, 0x71, 0x23, 0x53, 0xcd,
-	0xd4, 0xf5, 0x8d, 0xbb, 0xe6, 0x05, 0xf1, 0xcc, 0x73, 0x89, 0x70, 0x5e, 0xe4, 0xef, 0x78, 0x11,
-	0xaf, 0x7d, 0x49, 0x83, 0xde, 0x24, 0x3e, 0x09, 0x94, 0x7a, 0xf3, 0x97, 0xd5, 0xae, 0xbe, 0xec,
-	0x15, 0x52, 0x95, 0x20, 0xeb, 0x05, 0x2e, 0x3d, 0x94, 0x3a, 0x61, 0x19, 0x20, 0x03, 0x16, 0x07,
-	0xb2, 0x85, 0xb1, 0x50, 0xd5, 0xea, 0x19, 0x9c, 0x84, 0xe8, 0x05, 0xe4, 0x9c, 0x7d, 0x12, 0x0c,
-	0xa9, 0x91, 0xad, 0x6a, 0xf5, 0xa5, 0x8d, 0x07, 0x97, 0xd0, 0x9e, 0x63, 0x67, 0x36, 0x1c, 0xee,
-	0xb1, 0x00, 0xab, 0xa2, 0xda, 0x7b, 0xc8, 0x49, 0x04, 0x15, 0xa1, 0xd0, 0xd8, 0xec, 0xd9, 0x9d,
-	0x76, 0x1f, 0x77, 0xde, 0xb4, 0x5b, 0xc5, 0x14, 0x42, 0xb0, 0xa4, 0x90, 0xd6, 0xd6, 0x6e, 0xa7,
-	0x6b, 0xf7, 0x8a, 0x1a, 0x5a, 0x81, 0x65, 0x85, 0xed, 0xd9, 0xbd, 0xed, 0x16, 0x6e, 0xec, 0x15,
-	0xd3, 0xe8, 0x16, 0xac, 0x28, 0xb0, 0xbb, 0xd3, 0xe8, 0x6e, 0xf7, 0xf1, 0xd6, 0xab, 0xf8, 0x0f,
-	0x99, 0xda, 0x37, 0x0d, 0xa0, 0xcb, 0xc9, 0x88, 0x4a, 0x37, 0x2b, 0xa0, 0x47, 0x22, 0x9a, 0xf7,
-	0x12, 0x24, 0x24, 0x9c, 0x5c, 0x85, 0x82, 0x4a, 0x90, 0x1a, 0xa4, 0xc5, 0x5d, 0x55, 0x91, 0x2d,
-	0x94, 0x78, 0x04, 0xc5, 0x29, 0xf1, 0x3d, 0x57, 0x8c, 0x84, 0xc8, 0x8a, 0x84, 0x61, 0x0b, 0x78,
-	0xf9, 0x1c, 0x17, 0x99, 0x11, 0x6a, 0x40, 0x41, 0xa9, 0x24, 0x7d, 0xcd, 0x0a, 0x5f, 0xcb, 0x7f,
-	0x17, 0x08, 0xeb, 0xaa, 0x46, 0x78, 0x4b, 0xa1, 0xd8, 0x16, 0x6b, 0xd5, 0x8b, 0xb7, 0x6a, 0x37,
-	0x19, 0x71, 0xb1, 0x63, 0x8a, 0xbf, 0x0c, 0xe4, 0x08, 0xd1, 0xa4, 0x55, 0xfa, 0x7a, 0x23, 0x44,
-	0x55, 0x1b, 0x2b, 0x91, 0x29, 0x8e, 0xe6, 0x54, 0x88, 0x65, 0x8a, 0x0c, 0xad, 0x9a, 0xa9, 0xe7,
-	0x13, 0x15, 0x62, 0x9d, 0xa2, 0x9a, 0x0f, 0x4b, 0x2d, 0xea, 0xd3, 0x21, 0x89, 0xad, 0xbb, 0xfe,
-	0xa6, 0x3c, 0x85, 0xdc, 0xbf, 0xec, 0x88, 0x4a, 0xae, 0xbd, 0x83, 0x92, 0xa4, 0xf7, 0x47, 0xcf,
-	0x4d, 0xd0, 0xdd, 0x73, 0x44, 0xf2, 0xd4, 0x37, 0x56, 0x2f, 0xb9, 0xf4, 0xef, 0x75, 0x78, 0xbe,
-	0xaa, 0xf9, 0xfa, 0x78, 0x56, 0xd6, 0x4e, 0x66, 0x65, 0xed, 0xe7, 0xac, 0xac, 0x7d, 0x3e, 0x2b,
-	0xa7, 0x4e, 0xce, 0xca, 0xa9, 0xef, 0x67, 0xe5, 0xd4, 0xdb, 0xc7, 0x43, 0x8f, 0xef, 0x1f, 0x0c,
-	0x4c, 0x87, 0x8d, 0xad, 0x2d, 0xf9, 0xcf, 0x36, 0xe5, 0x1f, 0x59, 0x38, 0xb2, 0x92, 0xd7, 0xef,
-	0x30, 0x79, 0xff, 0xf8, 0xd1, 0x84, 0x46, 0x83, 0x9c, 0x78, 0xcd, 0x9e, 0xfc, 0x0a, 0x00, 0x00,
-	0xff, 0xff, 0x5c, 0xee, 0x9a, 0x1f, 0x1e, 0x05, 0x00, 0x00,
-}
-
-func (m *PriceInfo) Marshal() (dAtA []byte, err error) {
-	size := m.Size()
-	dAtA = make([]byte, size)
-	n, err := m.MarshalToSizedBuffer(dAtA[:size])
-	if err != nil {
-		return nil, err
-	}
-	return dAtA[:n], nil
-}
-
-func (m *PriceInfo) MarshalTo(dAtA []byte) (int, error) {
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
-}
-
-func (m *PriceInfo) MarshalToSizedBuffer(dAtA []byte) (int, error) {
-	i := len(dAtA)
-	_ = i
-	var l int
-	_ = l
-	if m.RoundID != 0 {
-		i = encodeVarintNativeToken(dAtA, i, uint64(m.RoundID))
-		i--
-		dAtA[i] = 0x18
-	}
-	if m.Block != 0 {
-		i = encodeVarintNativeToken(dAtA, i, uint64(m.Block))
-		i--
-		dAtA[i] = 0x10
-	}
-	{
-		size := m.Price.Size()
-		i -= size
-		if _, err := m.Price.MarshalTo(dAtA[i:]); err != nil {
-			return 0, err
-		}
-		i = encodeVarintNativeToken(dAtA, i, uint64(size))
-	}
-	i--
-	dAtA[i] = 0xa
-	return len(dAtA) - i, nil
-}
-
-func (m *OperatorInfo) Marshal() (dAtA []byte, err error) {
-	size := m.Size()
-	dAtA = make([]byte, size)
-	n, err := m.MarshalToSizedBuffer(dAtA[:size])
-	if err != nil {
-		return nil, err
-	}
-	return dAtA[:n], nil
-}
-
-func (m *OperatorInfo) MarshalTo(dAtA []byte) (int, error) {
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
-}
-
-func (m *OperatorInfo) MarshalToSizedBuffer(dAtA []byte) (int, error) {
-	i := len(dAtA)
-	_ = i
-	var l int
-	_ = l
-	if len(m.PriceList) > 0 {
-		for iNdEx := len(m.PriceList) - 1; iNdEx >= 0; iNdEx-- {
-			{
-				size, err := m.PriceList[iNdEx].MarshalToSizedBuffer(dAtA[:i])
-				if err != nil {
-					return 0, err
-				}
-				i -= size
-				i = encodeVarintNativeToken(dAtA, i, uint64(size))
-			}
-			i--
-			dAtA[i] = 0x1a
-		}
-	}
-	{
-		size := m.TotalAmount.Size()
-		i -= size
-		if _, err := m.TotalAmount.MarshalTo(dAtA[i:]); err != nil {
-			return 0, err
-		}
-		i = encodeVarintNativeToken(dAtA, i, uint64(size))
-	}
-	i--
-	dAtA[i] = 0x12
-	if len(m.OperatorAddr) > 0 {
-		i -= len(m.OperatorAddr)
-		copy(dAtA[i:], m.OperatorAddr)
-		i = encodeVarintNativeToken(dAtA, i, uint64(len(m.OperatorAddr)))
-		i--
-		dAtA[i] = 0xa
-	}
-	return len(dAtA) - i, nil
+	// 466 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x7c, 0x92, 0x41, 0x6f, 0xd3, 0x30,
+	0x1c, 0xc5, 0xeb, 0x66, 0x6d, 0xd9, 0x3f, 0xd5, 0x16, 0xbc, 0x49, 0x44, 0x1c, 0xb2, 0x50, 0x01,
+	0x0a, 0x97, 0x84, 0x8d, 0x33, 0x87, 0x94, 0x16, 0x2d, 0x68, 0x6a, 0x91, 0x5b, 0x34, 0x09, 0x21,
+	0x45, 0x69, 0x6c, 0xba, 0xa8, 0x21, 0x9e, 0x12, 0xaf, 0x94, 0x6f, 0xc1, 0x91, 0x4f, 0xc3, 0x99,
+	0xe3, 0x8e, 0x9c, 0x10, 0x6a, 0xbf, 0x08, 0x8a, 0xed, 0xa0, 0x49, 0x48, 0xdc, 0xf2, 0x7e, 0x7e,
+	0xff, 0xf8, 0xf9, 0xe9, 0x0f, 0x8f, 0xd9, 0x86, 0xa7, 0xbc, 0x64, 0x01, 0x2f, 0x93, 0x34, 0x67,
+	0xc1, 0xfa, 0x34, 0x28, 0x12, 0x91, 0xad, 0x59, 0x2c, 0xf8, 0x8a, 0x15, 0xfe, 0x75, 0xc9, 0x05,
+	0xc7, 0xf7, 0xb5, 0xcb, 0x57, 0x2e, 0x7f, 0x7d, 0xfa, 0xf0, 0x78, 0xc9, 0x97, 0x5c, 0x9e, 0x06,
+	0xf5, 0x97, 0x32, 0x0e, 0xbe, 0xb5, 0xc1, 0x1c, 0x26, 0x79, 0x52, 0xa4, 0x2c, 0x2a, 0x3e, 0x72,
+	0xfc, 0x14, 0xee, 0x95, 0xfc, 0xa6, 0xa0, 0x71, 0x46, 0x6d, 0xe4, 0x22, 0x6f, 0x6f, 0x68, 0x6e,
+	0x7f, 0x9d, 0xf4, 0x48, 0xcd, 0xa2, 0x11, 0xe9, 0xc9, 0xc3, 0x88, 0xe2, 0x63, 0xe8, 0x2c, 0x72,
+	0x9e, 0xae, 0xec, 0x76, 0x6d, 0x22, 0x4a, 0xd4, 0x34, 0x2b, 0x28, 0xdb, 0xd8, 0x86, 0xa2, 0x52,
+	0x60, 0x1b, 0x7a, 0x0b, 0x75, 0x85, 0xbd, 0xe7, 0x22, 0xcf, 0x20, 0x8d, 0xc4, 0x2f, 0xa1, 0x9b,
+	0x5e, 0x25, 0xc5, 0x92, 0xd9, 0x1d, 0x17, 0x79, 0x07, 0x67, 0x4f, 0xfc, 0x7f, 0x72, 0xfb, 0x77,
+	0xd2, 0xf9, 0x61, 0x2a, 0x32, 0x5e, 0x10, 0x3d, 0x34, 0xf8, 0x00, 0x5d, 0x45, 0xb0, 0x05, 0xfd,
+	0xf0, 0xd5, 0x3c, 0x9a, 0x4e, 0x62, 0x32, 0x7d, 0x37, 0x19, 0x59, 0x2d, 0x8c, 0xe1, 0x40, 0x93,
+	0xd1, 0xf8, 0xed, 0x74, 0x16, 0xcd, 0x2d, 0x84, 0x8f, 0xe0, 0x50, 0xb3, 0xcb, 0x68, 0x7e, 0x3e,
+	0x22, 0xe1, 0xa5, 0xd5, 0xc6, 0x0f, 0xe0, 0x48, 0xc3, 0xd9, 0x45, 0x38, 0x3b, 0x8f, 0xc9, 0xf8,
+	0x75, 0xfd, 0x07, 0x63, 0xf0, 0x1d, 0x01, 0xcc, 0x44, 0xb2, 0x62, 0xa5, 0x6c, 0xe6, 0x04, 0xcc,
+	0x4a, 0xaa, 0x38, 0xa1, 0xb4, 0x94, 0xe5, 0xec, 0x13, 0x50, 0x28, 0xa4, 0xb4, 0xc4, 0x8f, 0xa0,
+	0xaf, 0x0d, 0xaa, 0x83, 0xb6, 0x7c, 0xab, 0x1e, 0x8a, 0x64, 0x13, 0xcf, 0xc0, 0x5a, 0x27, 0x79,
+	0x46, 0x13, 0xc1, 0xb5, 0xab, 0xb2, 0x0d, 0xd7, 0xf0, 0xf6, 0xc8, 0xe1, 0x5f, 0x2e, 0x9d, 0x15,
+	0x0e, 0xa1, 0xaf, 0x5b, 0x8a, 0xf3, 0xac, 0x12, 0x76, 0xc7, 0x35, 0x3c, 0xf3, 0xcc, 0xf9, 0x7f,
+	0x41, 0xc4, 0xd4, 0x33, 0x17, 0x59, 0x25, 0x06, 0x41, 0x93, 0xbf, 0x56, 0x77, 0xe2, 0xd5, 0xf9,
+	0x2b, 0x1b, 0xb9, 0x86, 0xb7, 0xdf, 0xc4, 0xab, 0x1f, 0x50, 0x0d, 0xdf, 0xfc, 0xd8, 0x3a, 0xe8,
+	0x76, 0xeb, 0xa0, 0xdf, 0x5b, 0x07, 0x7d, 0xdd, 0x39, 0xad, 0xdb, 0x9d, 0xd3, 0xfa, 0xb9, 0x73,
+	0x5a, 0xef, 0x9f, 0x2f, 0x33, 0x71, 0x75, 0xb3, 0xf0, 0x53, 0xfe, 0x29, 0x18, 0xab, 0x04, 0x13,
+	0x26, 0x3e, 0xf3, 0x72, 0x15, 0x34, 0xfb, 0xb8, 0x69, 0x36, 0x52, 0x7c, 0xb9, 0x66, 0xd5, 0xa2,
+	0x2b, 0xf7, 0xeb, 0xc5, 0x9f, 0x00, 0x00, 0x00, 0xff, 0xff, 0x73, 0xa1, 0x5a, 0x2b, 0xb0, 0x02,
+	0x00, 0x00,
 }
 
 func (m *BalanceInfo) Marshal() (dAtA []byte, err error) {
@@ -768,50 +405,6 @@ func (m *StakerInfo) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
-func (m *NativeTokenPrice) Marshal() (dAtA []byte, err error) {
-	size := m.Size()
-	dAtA = make([]byte, size)
-	n, err := m.MarshalToSizedBuffer(dAtA[:size])
-	if err != nil {
-		return nil, err
-	}
-	return dAtA[:n], nil
-}
-
-func (m *NativeTokenPrice) MarshalTo(dAtA []byte) (int, error) {
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
-}
-
-func (m *NativeTokenPrice) MarshalToSizedBuffer(dAtA []byte) (int, error) {
-	i := len(dAtA)
-	_ = i
-	var l int
-	_ = l
-	if len(m.PreceList) > 0 {
-		for iNdEx := len(m.PreceList) - 1; iNdEx >= 0; iNdEx-- {
-			{
-				size, err := m.PreceList[iNdEx].MarshalToSizedBuffer(dAtA[:i])
-				if err != nil {
-					return 0, err
-				}
-				i -= size
-				i = encodeVarintNativeToken(dAtA, i, uint64(size))
-			}
-			i--
-			dAtA[i] = 0x12
-		}
-	}
-	if len(m.Token) > 0 {
-		i -= len(m.Token)
-		copy(dAtA[i:], m.Token)
-		i = encodeVarintNativeToken(dAtA, i, uint64(len(m.Token)))
-		i--
-		dAtA[i] = 0xa
-	}
-	return len(dAtA) - i, nil
-}
-
 func (m *StakerList) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
@@ -844,83 +437,6 @@ func (m *StakerList) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
-func (m *DelegationInfo) Marshal() (dAtA []byte, err error) {
-	size := m.Size()
-	dAtA = make([]byte, size)
-	n, err := m.MarshalToSizedBuffer(dAtA[:size])
-	if err != nil {
-		return nil, err
-	}
-	return dAtA[:n], nil
-}
-
-func (m *DelegationInfo) MarshalTo(dAtA []byte) (int, error) {
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
-}
-
-func (m *DelegationInfo) MarshalToSizedBuffer(dAtA []byte) (int, error) {
-	i := len(dAtA)
-	_ = i
-	var l int
-	_ = l
-	{
-		size := m.Amount.Size()
-		i -= size
-		if _, err := m.Amount.MarshalTo(dAtA[i:]); err != nil {
-			return 0, err
-		}
-		i = encodeVarintNativeToken(dAtA, i, uint64(size))
-	}
-	i--
-	dAtA[i] = 0x12
-	if len(m.OperatorAddr) > 0 {
-		i -= len(m.OperatorAddr)
-		copy(dAtA[i:], m.OperatorAddr)
-		i = encodeVarintNativeToken(dAtA, i, uint64(len(m.OperatorAddr)))
-		i--
-		dAtA[i] = 0xa
-	}
-	return len(dAtA) - i, nil
-}
-
-func (m *StakerDelegationInfo) Marshal() (dAtA []byte, err error) {
-	size := m.Size()
-	dAtA = make([]byte, size)
-	n, err := m.MarshalToSizedBuffer(dAtA[:size])
-	if err != nil {
-		return nil, err
-	}
-	return dAtA[:n], nil
-}
-
-func (m *StakerDelegationInfo) MarshalTo(dAtA []byte) (int, error) {
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
-}
-
-func (m *StakerDelegationInfo) MarshalToSizedBuffer(dAtA []byte) (int, error) {
-	i := len(dAtA)
-	_ = i
-	var l int
-	_ = l
-	if len(m.Delegations) > 0 {
-		for iNdEx := len(m.Delegations) - 1; iNdEx >= 0; iNdEx-- {
-			{
-				size, err := m.Delegations[iNdEx].MarshalToSizedBuffer(dAtA[:i])
-				if err != nil {
-					return 0, err
-				}
-				i -= size
-				i = encodeVarintNativeToken(dAtA, i, uint64(size))
-			}
-			i--
-			dAtA[i] = 0xa
-		}
-	}
-	return len(dAtA) - i, nil
-}
-
 func encodeVarintNativeToken(dAtA []byte, offset int, v uint64) int {
 	offset -= sovNativeToken(v)
 	base := offset
@@ -932,44 +448,6 @@ func encodeVarintNativeToken(dAtA []byte, offset int, v uint64) int {
 	dAtA[offset] = uint8(v)
 	return base
 }
-func (m *PriceInfo) Size() (n int) {
-	if m == nil {
-		return 0
-	}
-	var l int
-	_ = l
-	l = m.Price.Size()
-	n += 1 + l + sovNativeToken(uint64(l))
-	if m.Block != 0 {
-		n += 1 + sovNativeToken(uint64(m.Block))
-	}
-	if m.RoundID != 0 {
-		n += 1 + sovNativeToken(uint64(m.RoundID))
-	}
-	return n
-}
-
-func (m *OperatorInfo) Size() (n int) {
-	if m == nil {
-		return 0
-	}
-	var l int
-	_ = l
-	l = len(m.OperatorAddr)
-	if l > 0 {
-		n += 1 + l + sovNativeToken(uint64(l))
-	}
-	l = m.TotalAmount.Size()
-	n += 1 + l + sovNativeToken(uint64(l))
-	if len(m.PriceList) > 0 {
-		for _, e := range m.PriceList {
-			l = e.Size()
-			n += 1 + l + sovNativeToken(uint64(l))
-		}
-	}
-	return n
-}
-
 func (m *BalanceInfo) Size() (n int) {
 	if m == nil {
 		return 0
@@ -1023,25 +501,6 @@ func (m *StakerInfo) Size() (n int) {
 	return n
 }
 
-func (m *NativeTokenPrice) Size() (n int) {
-	if m == nil {
-		return 0
-	}
-	var l int
-	_ = l
-	l = len(m.Token)
-	if l > 0 {
-		n += 1 + l + sovNativeToken(uint64(l))
-	}
-	if len(m.PreceList) > 0 {
-		for _, e := range m.PreceList {
-			l = e.Size()
-			n += 1 + l + sovNativeToken(uint64(l))
-		}
-	}
-	return n
-}
-
 func (m *StakerList) Size() (n int) {
 	if m == nil {
 		return 0
@@ -1057,313 +516,11 @@ func (m *StakerList) Size() (n int) {
 	return n
 }
 
-func (m *DelegationInfo) Size() (n int) {
-	if m == nil {
-		return 0
-	}
-	var l int
-	_ = l
-	l = len(m.OperatorAddr)
-	if l > 0 {
-		n += 1 + l + sovNativeToken(uint64(l))
-	}
-	l = m.Amount.Size()
-	n += 1 + l + sovNativeToken(uint64(l))
-	return n
-}
-
-func (m *StakerDelegationInfo) Size() (n int) {
-	if m == nil {
-		return 0
-	}
-	var l int
-	_ = l
-	if len(m.Delegations) > 0 {
-		for _, e := range m.Delegations {
-			l = e.Size()
-			n += 1 + l + sovNativeToken(uint64(l))
-		}
-	}
-	return n
-}
-
 func sovNativeToken(x uint64) (n int) {
 	return (math_bits.Len64(x|1) + 6) / 7
 }
 func sozNativeToken(x uint64) (n int) {
 	return sovNativeToken(uint64((x << 1) ^ uint64((int64(x) >> 63))))
-}
-func (m *PriceInfo) Unmarshal(dAtA []byte) error {
-	l := len(dAtA)
-	iNdEx := 0
-	for iNdEx < l {
-		preIndex := iNdEx
-		var wire uint64
-		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
-				return ErrIntOverflowNativeToken
-			}
-			if iNdEx >= l {
-				return io.ErrUnexpectedEOF
-			}
-			b := dAtA[iNdEx]
-			iNdEx++
-			wire |= uint64(b&0x7F) << shift
-			if b < 0x80 {
-				break
-			}
-		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
-		if wireType == 4 {
-			return fmt.Errorf("proto: PriceInfo: wiretype end group for non-group")
-		}
-		if fieldNum <= 0 {
-			return fmt.Errorf("proto: PriceInfo: illegal tag %d (wire type %d)", fieldNum, wire)
-		}
-		switch fieldNum {
-		case 1:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Price", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowNativeToken
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthNativeToken
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLengthNativeToken
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			if err := m.Price.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
-				return err
-			}
-			iNdEx = postIndex
-		case 2:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Block", wireType)
-			}
-			m.Block = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowNativeToken
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				m.Block |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-		case 3:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field RoundID", wireType)
-			}
-			m.RoundID = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowNativeToken
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				m.RoundID |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-		default:
-			iNdEx = preIndex
-			skippy, err := skipNativeToken(dAtA[iNdEx:])
-			if err != nil {
-				return err
-			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
-				return ErrInvalidLengthNativeToken
-			}
-			if (iNdEx + skippy) > l {
-				return io.ErrUnexpectedEOF
-			}
-			iNdEx += skippy
-		}
-	}
-
-	if iNdEx > l {
-		return io.ErrUnexpectedEOF
-	}
-	return nil
-}
-func (m *OperatorInfo) Unmarshal(dAtA []byte) error {
-	l := len(dAtA)
-	iNdEx := 0
-	for iNdEx < l {
-		preIndex := iNdEx
-		var wire uint64
-		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
-				return ErrIntOverflowNativeToken
-			}
-			if iNdEx >= l {
-				return io.ErrUnexpectedEOF
-			}
-			b := dAtA[iNdEx]
-			iNdEx++
-			wire |= uint64(b&0x7F) << shift
-			if b < 0x80 {
-				break
-			}
-		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
-		if wireType == 4 {
-			return fmt.Errorf("proto: OperatorInfo: wiretype end group for non-group")
-		}
-		if fieldNum <= 0 {
-			return fmt.Errorf("proto: OperatorInfo: illegal tag %d (wire type %d)", fieldNum, wire)
-		}
-		switch fieldNum {
-		case 1:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field OperatorAddr", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowNativeToken
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthNativeToken
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLengthNativeToken
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.OperatorAddr = string(dAtA[iNdEx:postIndex])
-			iNdEx = postIndex
-		case 2:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field TotalAmount", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowNativeToken
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthNativeToken
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLengthNativeToken
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			if err := m.TotalAmount.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
-				return err
-			}
-			iNdEx = postIndex
-		case 3:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field PriceList", wireType)
-			}
-			var msglen int
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowNativeToken
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				msglen |= int(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			if msglen < 0 {
-				return ErrInvalidLengthNativeToken
-			}
-			postIndex := iNdEx + msglen
-			if postIndex < 0 {
-				return ErrInvalidLengthNativeToken
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.PriceList = append(m.PriceList, &PriceInfo{})
-			if err := m.PriceList[len(m.PriceList)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
-				return err
-			}
-			iNdEx = postIndex
-		default:
-			iNdEx = preIndex
-			skippy, err := skipNativeToken(dAtA[iNdEx:])
-			if err != nil {
-				return err
-			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
-				return ErrInvalidLengthNativeToken
-			}
-			if (iNdEx + skippy) > l {
-				return io.ErrUnexpectedEOF
-			}
-			iNdEx += skippy
-		}
-	}
-
-	if iNdEx > l {
-		return io.ErrUnexpectedEOF
-	}
-	return nil
 }
 func (m *BalanceInfo) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
@@ -1721,122 +878,6 @@ func (m *StakerInfo) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *NativeTokenPrice) Unmarshal(dAtA []byte) error {
-	l := len(dAtA)
-	iNdEx := 0
-	for iNdEx < l {
-		preIndex := iNdEx
-		var wire uint64
-		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
-				return ErrIntOverflowNativeToken
-			}
-			if iNdEx >= l {
-				return io.ErrUnexpectedEOF
-			}
-			b := dAtA[iNdEx]
-			iNdEx++
-			wire |= uint64(b&0x7F) << shift
-			if b < 0x80 {
-				break
-			}
-		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
-		if wireType == 4 {
-			return fmt.Errorf("proto: NativeTokenPrice: wiretype end group for non-group")
-		}
-		if fieldNum <= 0 {
-			return fmt.Errorf("proto: NativeTokenPrice: illegal tag %d (wire type %d)", fieldNum, wire)
-		}
-		switch fieldNum {
-		case 1:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Token", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowNativeToken
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthNativeToken
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLengthNativeToken
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.Token = string(dAtA[iNdEx:postIndex])
-			iNdEx = postIndex
-		case 2:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field PreceList", wireType)
-			}
-			var msglen int
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowNativeToken
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				msglen |= int(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			if msglen < 0 {
-				return ErrInvalidLengthNativeToken
-			}
-			postIndex := iNdEx + msglen
-			if postIndex < 0 {
-				return ErrInvalidLengthNativeToken
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.PreceList = append(m.PreceList, &PriceInfo{})
-			if err := m.PreceList[len(m.PreceList)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
-				return err
-			}
-			iNdEx = postIndex
-		default:
-			iNdEx = preIndex
-			skippy, err := skipNativeToken(dAtA[iNdEx:])
-			if err != nil {
-				return err
-			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
-				return ErrInvalidLengthNativeToken
-			}
-			if (iNdEx + skippy) > l {
-				return io.ErrUnexpectedEOF
-			}
-			iNdEx += skippy
-		}
-	}
-
-	if iNdEx > l {
-		return io.ErrUnexpectedEOF
-	}
-	return nil
-}
 func (m *StakerList) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -1897,206 +938,6 @@ func (m *StakerList) Unmarshal(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			m.StakerAddrs = append(m.StakerAddrs, string(dAtA[iNdEx:postIndex]))
-			iNdEx = postIndex
-		default:
-			iNdEx = preIndex
-			skippy, err := skipNativeToken(dAtA[iNdEx:])
-			if err != nil {
-				return err
-			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
-				return ErrInvalidLengthNativeToken
-			}
-			if (iNdEx + skippy) > l {
-				return io.ErrUnexpectedEOF
-			}
-			iNdEx += skippy
-		}
-	}
-
-	if iNdEx > l {
-		return io.ErrUnexpectedEOF
-	}
-	return nil
-}
-func (m *DelegationInfo) Unmarshal(dAtA []byte) error {
-	l := len(dAtA)
-	iNdEx := 0
-	for iNdEx < l {
-		preIndex := iNdEx
-		var wire uint64
-		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
-				return ErrIntOverflowNativeToken
-			}
-			if iNdEx >= l {
-				return io.ErrUnexpectedEOF
-			}
-			b := dAtA[iNdEx]
-			iNdEx++
-			wire |= uint64(b&0x7F) << shift
-			if b < 0x80 {
-				break
-			}
-		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
-		if wireType == 4 {
-			return fmt.Errorf("proto: DelegationInfo: wiretype end group for non-group")
-		}
-		if fieldNum <= 0 {
-			return fmt.Errorf("proto: DelegationInfo: illegal tag %d (wire type %d)", fieldNum, wire)
-		}
-		switch fieldNum {
-		case 1:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field OperatorAddr", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowNativeToken
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthNativeToken
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLengthNativeToken
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.OperatorAddr = string(dAtA[iNdEx:postIndex])
-			iNdEx = postIndex
-		case 2:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Amount", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowNativeToken
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthNativeToken
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLengthNativeToken
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			if err := m.Amount.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
-				return err
-			}
-			iNdEx = postIndex
-		default:
-			iNdEx = preIndex
-			skippy, err := skipNativeToken(dAtA[iNdEx:])
-			if err != nil {
-				return err
-			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
-				return ErrInvalidLengthNativeToken
-			}
-			if (iNdEx + skippy) > l {
-				return io.ErrUnexpectedEOF
-			}
-			iNdEx += skippy
-		}
-	}
-
-	if iNdEx > l {
-		return io.ErrUnexpectedEOF
-	}
-	return nil
-}
-func (m *StakerDelegationInfo) Unmarshal(dAtA []byte) error {
-	l := len(dAtA)
-	iNdEx := 0
-	for iNdEx < l {
-		preIndex := iNdEx
-		var wire uint64
-		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
-				return ErrIntOverflowNativeToken
-			}
-			if iNdEx >= l {
-				return io.ErrUnexpectedEOF
-			}
-			b := dAtA[iNdEx]
-			iNdEx++
-			wire |= uint64(b&0x7F) << shift
-			if b < 0x80 {
-				break
-			}
-		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
-		if wireType == 4 {
-			return fmt.Errorf("proto: StakerDelegationInfo: wiretype end group for non-group")
-		}
-		if fieldNum <= 0 {
-			return fmt.Errorf("proto: StakerDelegationInfo: illegal tag %d (wire type %d)", fieldNum, wire)
-		}
-		switch fieldNum {
-		case 1:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Delegations", wireType)
-			}
-			var msglen int
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowNativeToken
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				msglen |= int(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			if msglen < 0 {
-				return ErrInvalidLengthNativeToken
-			}
-			postIndex := iNdEx + msglen
-			if postIndex < 0 {
-				return ErrInvalidLengthNativeToken
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.Delegations = append(m.Delegations, &DelegationInfo{})
-			if err := m.Delegations[len(m.Delegations)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
-				return err
-			}
 			iNdEx = postIndex
 		default:
 			iNdEx = preIndex
