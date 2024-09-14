@@ -4,6 +4,12 @@ import (
 	"encoding/binary"
 	"strings"
 
+	sdkmath "cosmossdk.io/math"
+
+	assetstypes "github.com/ExocoreNetwork/exocore/x/assets/types"
+	"github.com/ExocoreNetwork/exocore/x/oracle/types"
+
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/imroc/biu"
 )
 
@@ -12,151 +18,112 @@ import (
 //  1. stakerInfo {totalDeposit, price} - new
 //  2. stakerList - new
 //
-// 2. Delegate. into operator_A
-//  1. stakerDelegation_AA {amount, operator} - new
-//  2. operatorInfo_A {totalAmount, price} - new
-//
-// 3. Msg. minus staker_A's amountOriginal
+// 2. Msg. minus staker_A's amountOriginal
 //  1. stakerInfo_A {price-change} - update
 //  2. operatorInfo_A {price-change} - update
 //
-// 4. Deposit more. into staker_A
+// 3. Deposit more. into staker_A
 //  1. stakerInfo {totalDeposit-change} -update
 //
-// 5. Msg. add staker_A's amountOriginal
+// 4. Msg. add staker_A's amountOriginal
 //  1. stakerInfo_A {price-change} - update
 //  2. operatorInfo_A {price-change} - update
 //
-// 6. delegate into operator_A
-//  1. stakerDelegation_AA {amount-change} - update
-//  2. operatorInfo_A {totalAmount-change} - update
+// 5. withdraw from staker_A
+//  1. revmoed validatorIndex from stakerInfo
 //
-// 7. Undelegate from operator_A
-//  1. stakerDelegation_AA {amount-chagne} - update
-//  2. operatorInfo_A {price-change, totalAmount-change} - update
-//
-// 8. UndelegateAll from operator_A
-//  1. stakerDelegation_AA item-removed
-//  2. operatorInfo_A totalAmount->0-> operatorInfo removed
-//
-// 9. withdrawAll from staker_A
-//  1. stakerInfo removed
-//  2. stakerList removed
+// 6. withdraw all from staker_A
+//  1. removed stakerInfo
+//  2. removed stakerList
 
-// func (ks *KeeperSuite) TestNativeTokenLifeCycleOneStaker() {
-// 	operator := ks.Operators[0]
-// 	operatorStr := operator.String()
-// 	stakerStr := common.Address(operator.Bytes()).String()
-// 	assetID := assetstypes.NativeETHAssetID
-// 	// 1. deposit amount 100
-// 	amount100 := sdkmath.NewIntFromUint64(100)
-// 	ks.k.UpdateNativeTokenByDepositOrWithdraw(ks.ctx, assetID, stakerStr, amount100)
-// 	// - 1.1 check stakerInfo
-// 	stakerInfo := ks.k.GetStakerInfo(ks.ctx, assetID, stakerStr)
-// 	ks.Equal(stakerInfo.TotalDeposit, amount100)
-// 	// - 1.2 check stakerList
-// 	stakerList := ks.k.GetStakerList(ks.ctx, assetID)
-// 	ks.Equal(stakerList.StakerAddrs[0], stakerStr)
-// 	// 2. delegateTo operator with amount 80
-// 	amount80 := sdkmath.NewIntFromUint64(80)
-// 	ks.k.UpdateNativeTokenByDelegation(ks.ctx, assetID, operatorStr, stakerStr, amount80)
-// 	// - 2.1 check stakerDelegatioin
-// 	stakerDelegation := ks.k.GetStakerDelegations(ks.ctx, assetID, stakerStr)
-// 	ks.Equal(len(stakerDelegation.Delegations), 1)
-// 	ks.Equal(stakerDelegation.Delegations[0].OperatorAddr, operatorStr)
-// 	ks.Equal(stakerDelegation.Delegations[0].Amount, amount80)
-// 	// - 2.2 check operatorInfo
-// 	operatorInfo := ks.k.GetOperatorInfo(ks.ctx, assetID, operatorStr)
-// 	ks.Equal(operatorInfo, types.OperatorInfo{
-// 		OperatorAddr: operatorStr,
-// 		TotalAmount:  amount80,
-// 		PriceList: []*types.PriceInfo{
-// 			{
-// 				Price:   sdkmath.LegacyNewDec(1),
-// 				Block:   2,
-// 				RoundID: 0,
-// 			},
-// 		},
-// 	})
-// 	// 3. Msg. minus staker's amountOriginal
-// 	stakerChanges := [][]int{
-// 		{0, -50},
-// 	}
-// 	rawData := convertBalanceChangeToBytes(stakerChanges)
-// 	ks.k.UpdateNativeTokenByBalanceChange(ks.ctx, assetID, rawData, 9)
-// 	// - 3.1 check stakerInfo
-// 	stakerInfo = ks.k.GetStakerInfo(ks.ctx, assetID, stakerStr)
-// 	ks.Equal(stakerInfo.PriceList[len(stakerInfo.PriceList)-1].Price, sdkmath.LegacyNewDecWithPrec(5, 1))
-// 	// - 3.2 check operatorInfo
-// 	operatorInfo = ks.k.GetOperatorInfo(ks.ctx, assetID, operatorStr)
-// 	ks.Equal(operatorInfo.PriceList[len(operatorInfo.PriceList)-1].Price, sdkmath.LegacyNewDecWithPrec(5, 1))
-// 	ks.Equal(operatorInfo.PriceList[len(operatorInfo.PriceList)-1].RoundID, uint64(9))
-//
-// 	// 4. deposit more. 100
-// 	ks.k.UpdateNativeTokenByDepositOrWithdraw(ks.ctx, assetID, stakerStr, amount100)
-// 	// - 4.1 check stakerInfo
-// 	stakerInfo = ks.k.GetStakerInfo(ks.ctx, assetID, stakerStr)
-// 	amount300 := sdkmath.NewInt(300)
-// 	ks.Equal(stakerInfo.TotalDeposit, amount300)
-// 	// 5. Msg. add staker's amountOriginal
-// 	stakerChanges = [][]int{
-// 		{0, 30},
-// 	}
-// 	rawData = convertBalanceChangeToBytes(stakerChanges)
-// 	ks.k.UpdateNativeTokenByBalanceChange(ks.ctx, assetID, rawData, 11)
-// 	// - 5.1 check stakerInfo
-// 	stakerInfo = ks.k.GetStakerInfo(ks.ctx, assetID, stakerStr)
-// 	ks.Equal(types.PriceInfo{
-// 		Price:   sdkmath.LegacyNewDecWithPrec(6, 1),
-// 		Block:   2,
-// 		RoundID: 11,
-// 	}, *stakerInfo.PriceList[2])
-// 	ks.Equal(amount300, stakerInfo.TotalDeposit)
-// 	// - 5.2 check operatorInfo
-// 	operatorInfo = ks.k.GetOperatorInfo(ks.ctx, assetID, operatorStr)
-// 	ks.Equal(sdkmath.LegacyNewDecWithPrec(6, 1), operatorInfo.PriceList[len(operatorInfo.PriceList)-1].Price)
-//
-// 	// 6. delegate more. 60->100
-// 	amount60 := sdkmath.NewInt(60)
-// 	ks.k.UpdateNativeTokenByDelegation(ks.ctx, assetID, operatorStr, stakerStr, amount60)
-// 	// - 6.1 check delegation-record
-// 	stakerDelegation = ks.k.GetStakerDelegations(ks.ctx, assetID, stakerStr)
-// 	amount180 := sdkmath.NewInt(180)
-// 	ks.Equal(amount180, stakerDelegation.Delegations[0].Amount)
-// 	// - 6.2 check operatorInfo
-// 	operatorInfo = ks.k.GetOperatorInfo(ks.ctx, assetID, operatorStr)
-// 	ks.Equal(amount180, operatorInfo.TotalAmount)
-//
-// 	// 7. undelegate. 72->120
-// 	amount72N := sdkmath.NewInt(-72)
-// 	ks.k.UpdateNativeTokenByDelegation(ks.ctx, assetID, operatorStr, stakerStr, amount72N)
-// 	// - 7.1 check delegation-record
-// 	stakerDelegation = ks.k.GetStakerDelegations(ks.ctx, assetID, stakerStr)
-// 	ks.Equal(amount60, stakerDelegation.Delegations[0].Amount)
-// 	// - 7.2 check operatorInfo
-// 	operatorInfo = ks.k.GetOperatorInfo(ks.ctx, assetID, operatorStr)
-// 	ks.Equal(amount60, operatorInfo.TotalAmount)
-//
-// 	// 8. undelegate all
-// 	amount36N := sdkmath.NewInt(-36)
-// 	ks.k.UpdateNativeTokenByDelegation(ks.ctx, assetID, operatorStr, stakerStr, amount36N)
-// 	// - 8.1 check delegation-record
-// 	stakerDelegation = ks.k.GetStakerDelegations(ks.ctx, assetID, stakerStr)
-// 	ks.Equal(0, len(stakerDelegation.Delegations))
-// 	// - 8.2 check operatorInfo
-// 	operatorInfo = ks.k.GetOperatorInfo(ks.ctx, assetID, operatorStr)
-// 	ks.Equal(types.OperatorInfo{}, operatorInfo)
-//
-// 	// 9. withdraw all
-// 	amount180N := sdkmath.NewInt(-180)
-// 	ks.k.UpdateNativeTokenByDepositOrWithdraw(ks.ctx, assetID, stakerStr, amount180N)
-// 	// - 9.1 check stakerInfo
-// 	stakerInfo = ks.k.GetStakerInfo(ks.ctx, assetID, stakerStr)
-// 	ks.Equal(types.StakerInfo{}, stakerInfo)
-// 	// - 9.2 check stakerList
-// 	stakerList = ks.k.GetStakerList(ks.ctx, assetID)
-// 	ks.Equal(0, len(stakerList.StakerAddrs))
-// }
+func (ks *KeeperSuite) TestNativeTokenLifeCycleOneStaker() {
+	operator := ks.Operators[0]
+	//	operatorStr := operator.String()
+	stakerStr := common.Address(operator.Bytes()).String()
+	assetID := assetstypes.NativeETHAssetID
+	// 1. deposit amount 100
+	amount100 := sdkmath.NewIntFromUint64(100)
+	ks.k.UpdateNativeTokenByDepositOrWithdraw(ks.ctx, assetID, stakerStr, amount100, 199)
+	// - 1.1 check stakerInfo
+	stakerInfo := ks.k.GetStakerInfo(ks.ctx, assetID, stakerStr)
+	ks.Equal(types.BalanceInfo{
+		Block:   2,
+		RoundID: 0,
+		Change:  types.BalanceInfo_ACTION_DEPOSIT,
+		Balance: 100,
+	}, *stakerInfo.BalanceList[0])
+	ks.Equal([]uint64{199}, stakerInfo.ValidatorIndexs)
+	// - 1.2 check stakerList
+	stakerList := ks.k.GetStakerList(ks.ctx, assetID)
+	ks.Equal(stakerList.StakerAddrs[0], stakerStr)
+
+	// 2. Msg. minus staker's balance
+	stakerChanges := [][]int{
+		{0, -50},
+	}
+	rawData := convertBalanceChangeToBytes(stakerChanges)
+	ks.k.UpdateNativeTokenByBalanceChange(ks.ctx, assetID, rawData, 9)
+	// - 2.1 check stakerInfo
+	stakerInfo = ks.k.GetStakerInfo(ks.ctx, assetID, stakerStr)
+	ks.Equal(types.BalanceInfo{
+		Block:   2,
+		RoundID: 9,
+		Change:  types.BalanceInfo_ACTION_SLASH_REFUND,
+		Balance: 50,
+	}, *stakerInfo.BalanceList[1])
+
+	// 3. deposit more. 100
+	ks.k.UpdateNativeTokenByDepositOrWithdraw(ks.ctx, assetID, stakerStr, amount100, 999)
+	// - 3.1 check stakerInfo
+	stakerInfo = ks.k.GetStakerInfo(ks.ctx, assetID, stakerStr)
+	ks.Equal(types.BalanceInfo{
+		Block:   2,
+		RoundID: 9,
+		Index:   1,
+		Change:  types.BalanceInfo_ACTION_DEPOSIT,
+		Balance: 150,
+	}, *stakerInfo.BalanceList[2])
+	ks.Equal([]uint64{199, 999}, stakerInfo.ValidatorIndexs)
+
+	// 4. Msg. add staker's balance
+	stakerChanges = [][]int{
+		{0, 30},
+	}
+	rawData = convertBalanceChangeToBytes(stakerChanges)
+	ks.k.UpdateNativeTokenByBalanceChange(ks.ctx, assetID, rawData, 11)
+	// - 4.1 check stakerInfo
+	stakerInfo = ks.k.GetStakerInfo(ks.ctx, assetID, stakerStr)
+	ks.Equal(types.BalanceInfo{
+		Balance: 180,
+		Block:   2,
+		RoundID: 11,
+		Index:   0,
+		Change:  types.BalanceInfo_ACTION_SLASH_REFUND,
+	}, *stakerInfo.BalanceList[3])
+
+	// 5. withdraw
+	amount80N := sdkmath.NewInt(-80)
+	ks.k.UpdateNativeTokenByDepositOrWithdraw(ks.ctx, assetID, stakerStr, amount80N, 199)
+	// - 5.1 check stakerInfo
+	stakerInfo = ks.k.GetStakerInfo(ks.ctx, assetID, stakerStr)
+	ks.Equal(types.BalanceInfo{
+		Balance: 100,
+		Block:   2,
+		RoundID: 11,
+		Index:   1,
+		Change:  types.BalanceInfo_ACTION_WITHDRAW,
+	}, *stakerInfo.BalanceList[4])
+	ks.Equal([]uint64{999}, stakerInfo.ValidatorIndexs)
+
+	// 6.withdrawall
+	amount100N := sdkmath.NewInt(-100)
+	ks.k.UpdateNativeTokenByDepositOrWithdraw(ks.ctx, assetID, stakerStr, amount100N, 999)
+	// - 6.1 check stakerInfo
+	stakerInfo = ks.k.GetStakerInfo(ks.ctx, assetID, stakerStr)
+	ks.Equal(types.StakerInfo{}, stakerInfo)
+	// - 6.2 check stakerList
+	stakerList = ks.k.GetStakerList(ks.ctx, assetID)
+}
 
 func convertBalanceChangeToBytes(stakerChanges [][]int) []byte {
 	if len(stakerChanges) == 0 {
