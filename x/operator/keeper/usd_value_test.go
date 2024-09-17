@@ -10,6 +10,14 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 )
 
+const (
+	MaxDecForTotalSupply = 38
+)
+
+var (
+	MaxAssetTotalSupply = sdkmath.NewIntWithDecimal(1, MaxDecForTotalSupply)
+)
+
 func (suite *OperatorTestSuite) TestCalculateUSDValue() {
 	suite.prepare()
 	price, err := suite.App.OperatorKeeper.OracleInterface().GetSpecifiedAssetsPrice(suite.Ctx, suite.assetID)
@@ -24,18 +32,18 @@ func (suite *OperatorTestSuite) TestCalculateUSDValue() {
 }
 
 func (suite *OperatorTestSuite) TestCalculatedUSDValueOverflow() {
-	price := assetstype.MaxAssetTotalSupply
+	price := MaxAssetTotalSupply
 	priceDecimal := uint8(assetstype.MaxDecimal)
-	amount := assetstype.MaxAssetTotalSupply
+	amount := MaxAssetTotalSupply
 	assetDecimal := uint32(assetstype.MaxDecimal)
 	usdValue := operatorKeeper.CalculateUSDValue(amount, price, assetDecimal, priceDecimal)
-	expectedValue := sdkmath.LegacyNewDecFromBigInt(sdkmath.NewIntWithDecimal(1, 2*assetstype.MaxDecForTotalSupply-2*assetstype.MaxDecimal).BigInt())
+	expectedValue := sdkmath.LegacyNewDecFromBigInt(sdkmath.NewIntWithDecimal(1, 2*MaxDecForTotalSupply-2*assetstype.MaxDecimal).BigInt())
 	suite.Equal(expectedValue, usdValue)
 
 	priceDecimal = uint8(0)
 	assetDecimal = uint32(0)
 	usdValue = operatorKeeper.CalculateUSDValue(amount, price, assetDecimal, priceDecimal)
-	expectedValue = sdkmath.LegacyNewDecFromBigInt(sdkmath.NewIntWithDecimal(1, 2*assetstype.MaxDecForTotalSupply).BigInt())
+	expectedValue = sdkmath.LegacyNewDecFromBigInt(sdkmath.NewIntWithDecimal(1, 2*MaxDecForTotalSupply).BigInt())
 	suite.Equal(expectedValue, usdValue)
 
 	price = sdkmath.NewInt(1)
@@ -67,7 +75,6 @@ func (suite *OperatorTestSuite) TestAVSUSDValue() {
 		Symbol:           "USDC",
 		Address:          usdcAddr.String(),
 		Decimals:         6,
-		TotalSupply:      sdkmath.NewInt(1e18),
 		LayerZeroChainID: 101,
 		MetaInfo:         "USDC",
 	}

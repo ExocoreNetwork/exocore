@@ -3,7 +3,6 @@ package keeper_test
 import (
 	"cosmossdk.io/math"
 	assetstype "github.com/ExocoreNetwork/exocore/x/assets/types"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 func (suite *StakingAssetsTestSuite) TestGenesisClientChainAndAssetInfo() {
@@ -23,8 +22,6 @@ func (suite *StakingAssetsTestSuite) TestGenesisClientChainAndAssetInfo() {
 		LayerZeroChainID: ethClientChain.LayerZeroChainID,
 		MetaInfo:         "Tether USD token",
 	}
-	totalSupply, _ := sdk.NewIntFromString("40022689732746729")
-	usdtClientChainAsset.TotalSupply = totalSupply
 	stakingInfo := assetstype.StakingAssetInfo{
 		AssetBasicInfo:     &usdtClientChainAsset,
 		StakingTotalAmount: math.NewInt(0),

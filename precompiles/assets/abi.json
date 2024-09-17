@@ -144,11 +144,6 @@
         "internalType": "uint8"
       },
       {
-        "name": "tvlLimit",
-        "type": "uint256",
-        "internalType": "uint256"
-      },
-      {
         "name": "name",
         "type": "string",
         "internalType": "string"
@@ -186,11 +181,6 @@
         "name": "token",
         "type": "bytes",
         "internalType": "bytes"
-      },
-      {
-        "name": "tvlLimit",
-        "type": "uint256",
-        "internalType": "uint256"
       },
       {
         "name": "metaData",
