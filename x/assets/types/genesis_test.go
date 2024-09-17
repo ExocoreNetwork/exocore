@@ -1,6 +1,7 @@
 package types_test
 
 import (
+	"fmt"
 	"strings"
 	"testing"
 
@@ -480,7 +481,7 @@ func (suite *GenesisTestSuite) TestValidateGenesis() {
 			unmalleate: func(gs *types.GenesisState) {
 				genesisDeposit.Deposits[0].Info = types.StakerAssetInfo{
 					TotalDepositAmount:        math.NewInt(100),
-					WithdrawableAmount:        math.NewInt(0),
+					WithdrawableAmount:        math.NewInt(100),
 					PendingUndelegationAmount: math.NewInt(0),
 				}
 				gs.Deposits[0].Deposits[0].Info = genesisDeposit.Deposits[0].Info
@@ -511,6 +512,7 @@ func (suite *GenesisTestSuite) TestValidateGenesis() {
 		}
 		err := tc.genState.Validate()
 		if tc.expPass {
+			fmt.Println("name is:", tc.name)
 			suite.Require().NoError(err, tc.name)
 		} else {
 			suite.Require().Error(err, tc.name)
