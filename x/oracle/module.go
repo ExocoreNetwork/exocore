@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"math/big"
+	"strconv"
 	"strings"
 	"sync"
 
@@ -163,6 +164,12 @@ func (am AppModule) BeginBlock(ctx sdk.Context, _ abci.RequestBeginBlock) {
 
 // EndBlock contains the logic that is automatically triggered at the end of each block
 func (am AppModule) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.ValidatorUpdate {
+	// debug: this is for test only to trigger this event every block
+	eventValue := fmt.Sprintf("%s_%s_%s", types.AttributeValueNativeTokenWithdraw, "0xabcefz", strconv.FormatUint(1977, 10))
+	ctx.EventManager().EmitEvent(sdk.NewEvent(
+		types.EventTypeCreatePrice,
+		sdk.NewAttribute(types.AttributeKeyNativeTokenChange, eventValue),
+	))
 	cs := keeper.GetCaches()
 	validatorUpdates := am.keeper.GetValidatorUpdates(ctx)
 	forceSeal := false
