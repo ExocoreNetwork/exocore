@@ -255,7 +255,8 @@ func (gs GenesisState) ValidateOperatorAssets(tokensTotalStaking map[string]math
 			// check that the asset is registered
 			// no need to check for the validity of the assetID, since
 			// an invalid assetID cannot be in the tokens map.
-			if _, ok := tokensTotalStaking[asset.AssetID]; !ok {
+			totalStaking, ok := tokensTotalStaking[asset.AssetID]
+			if !ok {
 				return errorsmod.Wrapf(
 					ErrInvalidGenesisData,
 					"unknown assetID for operator assets %s: %s",
@@ -263,7 +264,7 @@ func (gs GenesisState) ValidateOperatorAssets(tokensTotalStaking map[string]math
 				)
 			}
 			// the sum amount of operators shouldn't be greater than the total staking amount of this asset
-			if asset.Info.TotalAmount.Add(asset.Info.PendingUndelegationAmount).GT(tokensTotalStaking[asset.AssetID]) {
+			if asset.Info.TotalAmount.Add(asset.Info.PendingUndelegationAmount).GT(totalStaking) {
 				return errorsmod.Wrapf(
 					ErrInvalidGenesisData,
 					"operator's sum amount exceeds the total staking amount for %s: %+v",

@@ -31,6 +31,9 @@ const (
 	// AccAddressLength is used to parse the key, because the length isn't padded in the key
 	// This might be removed if the address length is padded in the key
 	AccAddressLength = 20
+
+	// ByteLengthForUint64 the type of chainID length is uint64, uint64 has 8 bytes.
+	ByteLengthForUint64 = 8
 )
 
 const (
@@ -133,7 +136,7 @@ func KeyForOperatorAndChainIDToConsKey(addr sdk.AccAddress, chainID string) []by
 }
 
 func ParseKeyForOperatorAndChainIDToConsKey(key []byte) (addr sdk.AccAddress, chainID string, err error) {
-	if len(key) < AccAddressLength+8 {
+	if len(key) < AccAddressLength+ByteLengthForUint64 {
 		return nil, "", xerrors.New("key length is too short to contain address and chainID length")
 	}
 	// Extract the address
@@ -143,13 +146,13 @@ func ParseKeyForOperatorAndChainIDToConsKey(key []byte) (addr sdk.AccAddress, ch
 	}
 
 	// Extract the chainID length
-	chainIDLen := sdk.BigEndianToUint64(key[AccAddressLength : AccAddressLength+8])
-	if len(key) != int(AccAddressLength+8+chainIDLen) {
-		return nil, "", xerrors.Errorf("invalid key length,expected:%d,got:%d", AccAddressLength+8+chainIDLen, len(key))
+	chainIDLen := sdk.BigEndianToUint64(key[AccAddressLength : AccAddressLength+ByteLengthForUint64])
+	if len(key) != int(AccAddressLength+ByteLengthForUint64+chainIDLen) {
+		return nil, "", xerrors.Errorf("invalid key length,expected:%d,got:%d", AccAddressLength+ByteLengthForUint64+chainIDLen, len(key))
 	}
 
 	// Extract the chainID
-	chainIDBytes := key[AccAddressLength+8:]
+	chainIDBytes := key[AccAddressLength+ByteLengthForUint64:]
 	chainID = string(chainIDBytes)
 
 	return addr, chainID, nil
@@ -164,22 +167,22 @@ func KeyForChainIDAndOperatorToPrevConsKey(chainID string, addr sdk.AccAddress) 
 
 func ParsePrevConsKey(key []byte) (chainID string, addr sdk.AccAddress, err error) {
 	// Check if the key has at least eight byte for the chainID length
-	if len(key) < 8 {
+	if len(key) < ByteLengthForUint64 {
 		return "", nil, xerrors.New("key length is too short to contain chainID length")
 	}
 
 	// Extract the chainID length
-	chainIDLen := sdk.BigEndianToUint64(key[0:8])
-	if len(key) < int(8+chainIDLen) {
+	chainIDLen := sdk.BigEndianToUint64(key[0:ByteLengthForUint64])
+	if len(key) < int(ByteLengthForUint64+chainIDLen) {
 		return "", nil, xerrors.New("key too short for chainID length")
 	}
 
 	// Extract the chainID
-	chainIDBytes := key[8 : 8+chainIDLen]
+	chainIDBytes := key[ByteLengthForUint64 : ByteLengthForUint64+chainIDLen]
 	chainID = string(chainIDBytes)
 
 	// Extract the address
-	addr = key[8+chainIDLen:]
+	addr = key[ByteLengthForUint64+chainIDLen:]
 	if len(addr) == 0 {
 		return "", nil, xerrors.New("missing address")
 	}
@@ -211,7 +214,7 @@ func KeyForOperatorKeyRemovalForChainID(addr sdk.AccAddress, chainID string) []b
 
 func ParseKeyForOperatorKeyRemoval(key []byte) (addr sdk.AccAddress, chainID string, err error) {
 	// Check if the key has at least 20 byte for the operator and eight byte for the chainID length
-	if len(key) < AccAddressLength+8 {
+	if len(key) < AccAddressLength+ByteLengthForUint64 {
 		return nil, "", xerrors.New("key length is too short to contain operator address and chainID length")
 	}
 
@@ -222,13 +225,13 @@ func ParseKeyForOperatorKeyRemoval(key []byte) (addr sdk.AccAddress, chainID str
 	}
 
 	// Extract the chainID length
-	chainIDLen := sdk.BigEndianToUint64(key[AccAddressLength : AccAddressLength+8])
-	if len(key) != int(AccAddressLength+8+chainIDLen) {
-		return nil, "", xerrors.Errorf("invalid key length,expected:%d,got:%d", AccAddressLength+8+chainIDLen, len(key))
+	chainIDLen := sdk.BigEndianToUint64(key[AccAddressLength : AccAddressLength+ByteLengthForUint64])
+	if len(key) != int(AccAddressLength+ByteLengthForUint64+chainIDLen) {
+		return nil, "", xerrors.Errorf("invalid key length,expected:%d,got:%d", AccAddressLength+ByteLengthForUint64+chainIDLen, len(key))
 	}
 
 	// Extract the chainID
-	chainIDBytes := key[AccAddressLength+8:]
+	chainIDBytes := key[AccAddressLength+ByteLengthForUint64:]
 	chainID = string(chainIDBytes)
 
 	return addr, chainID, nil
