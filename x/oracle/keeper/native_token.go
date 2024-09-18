@@ -2,6 +2,8 @@ package keeper
 
 import (
 	"errors"
+	"fmt"
+	"strconv"
 
 	sdkmath "cosmossdk.io/math"
 	"github.com/ExocoreNetwork/exocore/x/oracle/types"
@@ -32,8 +34,11 @@ func (k Keeper) GetStakerInfo(ctx sdk.Context, assetID, stakerAddr string) types
 // TODO: validatorIndex
 // amount: represents for originalToken
 func (k Keeper) UpdateNativeTokenByDepositOrWithdraw(ctx sdk.Context, assetID, stakerAddr string, amount sdkmath.Int, validatorIndex uint64) sdkmath.Int {
-	// TODO: just convert the number for assets module, and don't store state in oracleModule, can use cache only here
-	// TODO: we havn't included validatorIndex here, need the bridge info
+	// emit an event to tell that a staker's validator list has changed
+	ctx.EventManager().EmitEvent(sdk.NewEvent(
+		types.EventTypeCreatePrice,
+		sdk.NewAttribute(types.AttributeKeyNativeTokenUpdate, types.AttributeValueNativeTokenUpdate),
+	))
 	store := ctx.KVStore(k.storeKey)
 	key := types.NativeTokenStakerKey(assetID, stakerAddr)
 	stakerInfo := &types.StakerInfo{}
@@ -93,13 +98,7 @@ func (k Keeper) UpdateNativeTokenByDepositOrWithdraw(ctx sdk.Context, assetID, s
 			break
 		}
 	}
-
 	if !exists {
-		if newBalance.Balance <= 0 {
-			// this should not happened, if a staker execute the 'withdraw' action, he must have already been in the stakerList
-			store.Delete(key)
-			return amount
-		}
 		stakerList.StakerAddrs = append(stakerList.StakerAddrs, stakerAddr)
 		valueStakerList = k.cdc.MustMarshal(&stakerList)
 		store.Set(keyStakerList, valueStakerList)
@@ -113,6 +112,17 @@ func (k Keeper) UpdateNativeTokenByDepositOrWithdraw(ctx sdk.Context, assetID, s
 		bz := k.cdc.MustMarshal(stakerInfo)
 		store.Set(key, bz)
 	}
+	var eventValue string
+	if newBalance.Change == types.BalanceInfo_ACTION_DEPOSIT {
+		eventValue = fmt.Sprintf("%s_%d_%s", types.AttributeValueNativeTokenDeposit, stakerInfo.StakerIndex, strconv.FormatUint(validatorIndex, 10))
+	} else {
+		eventValue = fmt.Sprintf("%s_%d_%s", types.AttributeValueNativeTokenWithdraw, stakerInfo.StakerIndex, strconv.FormatUint(validatorIndex, 10))
+	}
+	// emit an event to tell a new valdiator added/or a validator is removed for the staker
+	ctx.EventManager().EmitEvent(sdk.NewEvent(
+		types.EventTypeCreatePrice,
+		sdk.NewAttribute(types.AttributeKeyNativeTokenChange, eventValue),
+	))
 	return amount
 }
 
