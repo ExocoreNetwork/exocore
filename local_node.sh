@@ -112,9 +112,9 @@ if [[ $overwrite == "y" || $overwrite == "Y" ]]; then
 	# x/operator
 	jq '.app_state["operator"]["operators"][0]["earnings_addr"]="exo18cggcpvwspnd5c6ny8wrqxpffj5zmhklprtnph"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
 	jq '.app_state["operator"]["operators"][0]["operator_meta_info"]="operator1"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
-	jq '.app_state["operator"]["operators"][0]["commission"]["commission_rates"]["rate"]="0.0"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
-	jq '.app_state["operator"]["operators"][0]["commission"]["commission_rates"]["max_rate"]="0.0"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
-	jq '.app_state["operator"]["operators"][0]["commission"]["commission_rates"]["max_change_rate"]="0.0"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
+	jq '.app_state["operator"]["operators"][0]["commission"]["commission_rates"]["rate"]="1.0"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
+	jq '.app_state["operator"]["operators"][0]["commission"]["commission_rates"]["max_rate"]="1.0"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
+	jq '.app_state["operator"]["operators"][0]["commission"]["commission_rates"]["max_change_rate"]="1.0"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
 
 	# x/delegation
 	jq '.app_state["delegation"]["delegations"][0]["staker_id"]="0x3e108c058e8066da635321dc3018294ca82ddedf_0x65"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"

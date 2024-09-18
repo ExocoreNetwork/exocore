@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"fmt"
+	operatortypes "github.com/ExocoreNetwork/exocore/x/operator/types"
 
 	sdkmath "cosmossdk.io/math"
 
@@ -131,4 +132,8 @@ func (k Keeper) GetOptedInAVSForOperator(ctx sdk.Context, operatorAddr string) (
 
 func (k Keeper) CalculateUSDValueForStaker(ctx sdk.Context, stakerID, avsAddr string, operator sdk.AccAddress) (sdkmath.LegacyDec, error) {
 	return k.operatorKeeper.CalculateUSDValueForStaker(ctx, stakerID, avsAddr, operator)
+}
+
+func (k *Keeper) OperatorInfo(ctx sdk.Context, addr string) (info *operatortypes.OperatorInfo, err error) {
+	return k.operatorKeeper.OperatorInfo(ctx, addr)
 }

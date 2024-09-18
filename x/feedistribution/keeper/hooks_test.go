@@ -1,6 +1,7 @@
 package keeper_test
 
 import (
+	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	"time"
 
 	sdkmath "cosmossdk.io/math"
@@ -54,6 +55,13 @@ func (suite *KeeperTestSuite) prepare() {
 		FromAddress: operatorAddressString,
 		Info: &operatortypes.OperatorInfo{
 			EarningsAddr: operatorAddressString,
+			Commission: stakingtypes.Commission{
+				CommissionRates: stakingtypes.CommissionRates{
+					Rate:          sdk.NewDec(1),
+					MaxRate:       sdk.NewDec(1),
+					MaxChangeRate: sdk.NewDec(1),
+				},
+			},
 		},
 	}
 	_, err := suite.OperatorMsgServer.RegisterOperator(sdk.WrapSDKContext(suite.Ctx), registerReq)

@@ -71,11 +71,14 @@ func (k Keeper) AllocateTokens(ctx sdk.Context, totalPreviousPower int64) error 
 // splitting according to commission.
 func (k Keeper) AllocateTokensToValidator(ctx sdk.Context, val stakingtypes.ValidatorI, tokens sdk.DecCoins, feePool *types.FeePool) {
 	logger := k.Logger()
-	rate := val.GetCommission()
-	commission := tokens.MulDec(rate)
-	shared := tokens.Sub(commission)
 	valBz := val.GetOperator()
-
+	accAddr := sdk.AccAddress(valBz)
+	ops, err := k.StakingKeeper.OperatorInfo(ctx, accAddr.String())
+	if err != nil {
+		ctx.Logger().Error("Failed to get operator info", "error", err)
+	}
+	commission := tokens.MulDec(ops.GetCommission().Rate)
+	shared := tokens.Sub(commission)
 	// update current commission
 	ctx.EventManager().EmitEvent(sdk.NewEvent(
 		types.EventTypeCommission,
