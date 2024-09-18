@@ -653,7 +653,6 @@ func (suite *AVSManagerPrecompileSuite) TestRunRegTaskInfo() {
 			Symbol:           "USDC",
 			Address:          usdcAddr.String(),
 			Decimals:         6,
-			TotalSupply:      sdkmath.NewInt(1e18),
 			LayerZeroChainID: 101,
 			MetaInfo:         "USDC",
 		}
