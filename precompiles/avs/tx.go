@@ -192,7 +192,6 @@ func (p Precompile) CreateAVSTask(
 		return nil, err
 	}
 	params.TaskContractAddress = contract.CallerAddress.String()
-	params.TaskID = p.avsKeeper.GetTaskID(ctx, common.HexToAddress(params.TaskContractAddress))
 	err = p.avsKeeper.CreateAVSTask(ctx, params)
 	if err != nil {
 		return nil, err
