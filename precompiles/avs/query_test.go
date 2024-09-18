@@ -149,7 +149,6 @@ func (suite *AVSManagerPrecompileSuite) TestAVSUSDValue() {
 			Symbol:           "USDC",
 			Address:          usdcAddr.String(),
 			Decimals:         6,
-			TotalSupply:      sdkmath.NewInt(1e18),
 			LayerZeroChainID: 101,
 			MetaInfo:         "USDC",
 		}
@@ -238,7 +237,6 @@ func (suite *AVSManagerPrecompileSuite) TestGetOperatorOptedUSDValue() {
 			Symbol:           "USDC",
 			Address:          usdcAddr.String(),
 			Decimals:         6,
-			TotalSupply:      sdkmath.NewInt(1e18),
 			LayerZeroChainID: 101,
 			MetaInfo:         "USDC",
 		}

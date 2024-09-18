@@ -40,9 +40,6 @@ func (k Keeper) SetStakingAssetInfo(ctx sdk.Context, info *assetstype.StakingAss
 	if info.AssetBasicInfo.Decimals > assetstype.MaxDecimal {
 		return errorsmod.Wrapf(assetstype.ErrInvalidInputParameter, "the decimal is greater than the MaxDecimal,decimal:%v,MaxDecimal:%v", info.AssetBasicInfo.Decimals, assetstype.MaxDecimal)
 	}
-	if info.AssetBasicInfo.TotalSupply.GT(assetstype.MaxAssetTotalSupply) {
-		return errorsmod.Wrapf(assetstype.ErrInvalidInputParameter, "the total supply is greater than the MaxAssetTotalSupply,totalSupply:%v,MaxAssetTotalSupply:%v", info.AssetBasicInfo.TotalSupply, assetstype.MaxAssetTotalSupply)
-	}
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), assetstype.KeyPrefixReStakingAssetInfo)
 	// key := common.HexToAddress(incentive.Contract)
 	bz := k.cdc.MustMarshal(info)
