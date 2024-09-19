@@ -173,7 +173,7 @@ func (k *Keeper) IterateUndelegationsByStakerAndAsset(
 	opFunc func(undelegation *types.UndelegationRecord) (bool, error),
 ) error {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefixStakerUndelegationInfo)
-	iterator := sdk.KVStorePrefixIterator(store, []byte(strings.Join([]string{stakerID, assetID}, "/")))
+	iterator := sdk.KVStorePrefixIterator(store, types.IteratorPrefixForStakerAsset(stakerID, assetID))
 	defer iterator.Close()
 	undelegationInfoStore := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefixUndelegationInfo)
 	for ; iterator.Valid(); iterator.Next() {
@@ -189,7 +189,7 @@ func (k *Keeper) IterateUndelegationsByStakerAndAsset(
 		}
 		if isUpdate {
 			bz := k.cdc.MustMarshal(&undelegation)
-			store.Set(iterator.Key(), bz)
+			undelegationInfoStore.Set(iterator.Value(), bz)
 		}
 		if isBreak {
 			break

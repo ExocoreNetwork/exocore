@@ -67,7 +67,7 @@ func (k Keeper) IterateDelegations(ctx sdk.Context, iteratorPrefix []byte, opFun
 // IterateDelegationsForStakerAndAsset processes all operations
 // that require iterating over delegations for a specified staker and asset.
 func (k Keeper) IterateDelegationsForStakerAndAsset(ctx sdk.Context, stakerID string, assetID string, opFunc DelegationOpFunc) error {
-	return k.IterateDelegations(ctx, delegationtype.GetDelegationStateIteratorPrefix(stakerID, assetID), opFunc)
+	return k.IterateDelegations(ctx, delegationtype.IteratorPrefixForStakerAsset(stakerID, assetID), opFunc)
 }
 
 func (k Keeper) IterateDelegationsForStaker(ctx sdk.Context, stakerID string, opFunc DelegationOpFunc) error {
