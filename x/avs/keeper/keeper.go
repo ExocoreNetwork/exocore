@@ -3,6 +3,8 @@ package keeper
 import (
 	"encoding/hex"
 	"fmt"
+	"github.com/prysmaticlabs/prysm/v4/crypto/bls"
+	"github.com/prysmaticlabs/prysm/v4/crypto/bls/blst"
 	"slices"
 	"strconv"
 
@@ -244,8 +246,15 @@ func (k Keeper) CreateAVSTask(ctx sdk.Context, params *TaskInfoParams) error {
 }
 
 func (k Keeper) RegisterBLSPublicKey(ctx sdk.Context, params *BlsParams) error {
-	// TODO:check bls signature to prevent rogue key attacks
-	// params.pubkeyRegistrationSignature == key.sig(params.pubkeyRegistrationMessageHash)
+	// check bls signature to prevent rogue key attacks
+	sig := params.PubkeyRegistrationSignature
+	msgHash := params.PubkeyRegistrationMessageHash
+	pubKey, _ := bls.PublicKeyFromBytes(params.PubKey)
+	valid, err := blst.VerifySignature(sig, [32]byte(msgHash), pubKey)
+	if err != nil || !valid {
+		return errorsmod.Wrap(types.ErrSigNotMatchPubKey, fmt.Sprintf("the operator is :%s", params.Operator))
+	}
+
 	if k.IsExistPubKey(ctx, params.Operator) {
 		return errorsmod.Wrap(types.ErrAlreadyExists, fmt.Sprintf("the operator is :%s", params.Operator))
 	}

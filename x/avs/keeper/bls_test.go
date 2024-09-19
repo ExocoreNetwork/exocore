@@ -14,6 +14,8 @@ func (suite *AVSTestSuite) TestOperator_pubkey() {
 	operatorAddr := "exo13h6xg79g82e2g2vhjwg7j4r2z2hlncelwutkjr"
 
 	privateKey, err := blst.RandKey()
+	fmt.Println("privateKey:", hex.EncodeToString(privateKey.Marshal()))
+
 	publicKey := privateKey.PublicKey()
 	blsPub := &types.BlsPubKeyInfo{
 		Operator: operatorAddr,

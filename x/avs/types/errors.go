@@ -99,4 +99,8 @@ var (
 		ModuleName, 23,
 		"Less than or equal to 0",
 	)
+	ErrSigNotMatchPubKey = errorsmod.Register(
+		ModuleName, 24,
+		"Signature and pubkey do not match",
+	)
 )

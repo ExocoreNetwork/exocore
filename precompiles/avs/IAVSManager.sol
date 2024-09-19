@@ -163,11 +163,11 @@ interface IAVSManager {
 
     /// @dev Returns the pubkey and pubkey hash of an operator
     /// @param operator is the operator for whom the key is being registered
-    function getRegisteredPubkey(string memory operator) external returns (bytes calldata pubkey);
+    function getRegisteredPubkey(string memory operator) external pure returns (bytes memory pubkey);
 
     /// @dev Returns the operators of all opt-in in the current avs
     /// @param avsAddress avs address
-    function getOptInOperators(address avsAddress) external returns (string[] calldata operators);
+    function getOptInOperators(address avsAddress) external returns (string[] memory operators);
 
     /// @dev getAVSUSDValue is a function to retrieve the USD share of specified Avs.
     /// @param avsAddr The address of the avs
