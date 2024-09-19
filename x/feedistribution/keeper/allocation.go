@@ -53,6 +53,9 @@ func (k Keeper) AllocateTokens(ctx sdk.Context, totalPreviousPower int64) error 
 			ctx.Logger().Error("Operator address not found; skipping", "consAddress", sdk.GetConsAddress(pk), "i", i)
 			continue
 		}
+		if totalPreviousPower == 0 {
+			return nil
+		}
 		powerFraction := math.LegacyNewDec(val.Power).QuoTruncate(math.LegacyNewDec(totalPreviousPower))
 		reward := feeMultiplier.MulDecTruncate(powerFraction)
 
@@ -146,14 +149,15 @@ func (k Keeper) AllocateTokensToStakers(ctx sdk.Context, operatorAddress sdk.Acc
 	})
 	remaining := rewardToAllStakers
 	// allocate to stakers in voting power descending order if the curTotalStakersPower is positive
-	for _, staker := range globalStakerAddressList {
-		stakerPower := stakersPowerMap[staker]
-		powerFraction := stakerPower.QuoTruncate(curTotalStakersPowers)
-		rewardToSingleStaker := rewardToAllStakers.MulDecTruncate(powerFraction)
-		k.AllocateTokensToSingleStaker(ctx, staker, rewardToSingleStaker)
-		remaining = remaining.Sub(rewardToSingleStaker)
+	if curTotalStakersPowers.IsPositive() {
+		for _, staker := range globalStakerAddressList {
+			stakerPower := stakersPowerMap[staker]
+			powerFraction := stakerPower.QuoTruncate(curTotalStakersPowers)
+			rewardToSingleStaker := rewardToAllStakers.MulDecTruncate(powerFraction)
+			k.AllocateTokensToSingleStaker(ctx, staker, rewardToSingleStaker)
+			remaining = remaining.Sub(rewardToSingleStaker)
+		}
 	}
-
 	feePool.CommunityPool = feePool.CommunityPool.Add(rewardToAllStakers...)
 	logger.Info("allocate tokens to stakers successfully", "allocated amount is", rewardToAllStakers.String())
 }

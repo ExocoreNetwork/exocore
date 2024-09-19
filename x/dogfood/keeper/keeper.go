@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"fmt"
+
 	operatortypes "github.com/ExocoreNetwork/exocore/x/operator/types"
 
 	sdkmath "cosmossdk.io/math"

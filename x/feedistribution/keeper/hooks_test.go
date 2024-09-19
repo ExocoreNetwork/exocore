@@ -1,8 +1,9 @@
 package keeper_test
 
 import (
-	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	"time"
+
+	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 
 	sdkmath "cosmossdk.io/math"
 

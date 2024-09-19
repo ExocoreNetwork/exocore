@@ -14,9 +14,7 @@ const (
 	MaxDecForTotalSupply = 38
 )
 
-var (
-	MaxAssetTotalSupply = sdkmath.NewIntWithDecimal(1, MaxDecForTotalSupply)
-)
+var MaxAssetTotalSupply = sdkmath.NewIntWithDecimal(1, MaxDecForTotalSupply)
 
 func (suite *OperatorTestSuite) TestCalculateUSDValue() {
 	suite.prepare()
