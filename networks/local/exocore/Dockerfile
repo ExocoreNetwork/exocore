@@ -1,5 +1,5 @@
 FROM golang:1.21.12-alpine3.19 AS build
-RUN apk add --no-cache build-base=0.5-r3 git=2.43.4-r0 linux-headers=6.5-r0
+RUN apk add --no-cache build-base=0.5-r3 git=2.43.5-r0 linux-headers=6.5-r0
 # Set working directory for the build
 WORKDIR /go/work
 # Add source files

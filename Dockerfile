@@ -6,7 +6,7 @@ WORKDIR /go/src/github.com/ExocoreNetwork/exocore
 
 COPY go.mod go.sum ./
 
-RUN apk add --no-cache ca-certificates=20240226-r0 build-base=0.5-r3 git=2.43.4-r0 linux-headers=6.5-r0
+RUN apk add --no-cache ca-certificates=20240226-r0 build-base=0.5-r3 git=2.43.5-r0 linux-headers=6.5-r0
 
 RUN --mount=type=bind,target=. --mount=type=secret,id=GITHUB_TOKEN \
     git config --global url."https://$(cat /run/secrets/GITHUB_TOKEN)@github.com/".insteadOf "https://github.com/"; \
