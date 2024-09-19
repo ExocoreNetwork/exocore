@@ -130,7 +130,8 @@ func (k Keeper) ExportGenesis(ctx sdk.Context) *types.GenesisState {
 		addr := sdk.GetConsAddress(pubKey)
 		found, operatorAddr := k.operatorKeeper.GetOperatorAddressForChainIDAndConsAddr(ctx, avstypes.ChainIDWithoutRevision(ctx.ChainID()), addr)
 		if !found {
-			return false
+			ctx.Logger().Error("Operator address not found for validator", "consAddr", addr.String())
+			return true
 		}
 		validators = append(validators,
 			types.GenesisValidator{
