@@ -4,6 +4,7 @@ package exocore.assets.v1;
 import "cosmos/base/query/v1beta1/pagination.proto";
 import "cosmos/query/v1/query.proto";
 import "cosmos_proto/cosmos.proto";
+import "exocore/assets/v1/genesis.proto";
 import "exocore/assets/v1/params.proto";
 import "exocore/assets/v1/tx.proto";
 import "gogoproto/gogo.proto";
@@ -44,7 +45,7 @@ message QueryAllStakingAssetsInfo {}
 // indexed by the asset id.
 message QueryAllStakingAssetsInfoResponse {
   // all_staking_assets_info is the response for all staking assets info.
-  map<string, StakingAssetInfo> all_staking_assets_info = 1;
+  repeated StakingAssetInfo all_staking_assets_info = 1 [(gogoproto.nullable) = false];
 }
 
 // QueryStakerAssetInfo is the query for getting the staker asset info.
@@ -56,7 +57,7 @@ message QueryStakerAssetInfo {
 // QueryAssetInfoResponse is the response for the staker asset info.
 message QueryAssetInfoResponse {
   // asset_infos is the response for the staker asset info, indexed by the asset id.
-  map<string, StakerAssetInfo> asset_infos = 1;
+  repeated DepositByAsset asset_infos = 1 [(gogoproto.nullable) = false];
 }
 
 // QuerySpecifiedAssetAmountReq is the query for getting the staker specified asset amount.
@@ -76,7 +77,7 @@ message QueryOperatorAssetInfos {
 // QueryOperatorAssetInfosResponse is the response to the operator asset info query.
 message QueryOperatorAssetInfosResponse {
   // asset_infos is the response for the operator asset info, indexed by the asset id.
-  map<string, OperatorAssetInfo> asset_infos = 1;
+  repeated AssetByID asset_infos = 1 [(gogoproto.nullable) = false];
 }
 
 // QueryOperatorSpecifiedAssetAmountReq is the query for getting the operator 

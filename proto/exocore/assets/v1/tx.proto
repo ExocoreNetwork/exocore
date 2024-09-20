@@ -63,7 +63,7 @@ message AssetInfo {
 // StakingAssetInfo defines the information for an asset to be used in staking.
 message StakingAssetInfo {
   // asset_basic_info is the basic information of the asset.
-  AssetInfo asset_basic_info = 1;
+  AssetInfo asset_basic_info = 1[(gogoproto.nullable) = false];
   // staking_total_amount is the total amount of the asset staked.
   string staking_total_amount = 2
   [
@@ -110,7 +110,10 @@ message StakerAllAssetsInfo {
 // OperatorAssetInfo defines the information for a single asset,
 // for an operator.
 message OperatorAssetInfo {
-  // total_amount is the total amount of the asset deposited.
+  // total_amount is the total amount of the asset deposited, which excludes the
+  // pending_undelegation_amount. It represent the total delegated amount of asset pool,
+  // it will be used to calculate the asset amount of a specified staker from its
+  // delegated share.
   string total_amount = 1
   [
     (cosmos_proto.scalar) = "cosmos.Int",

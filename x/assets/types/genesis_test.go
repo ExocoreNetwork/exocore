@@ -1,7 +1,6 @@
 package types_test
 
 import (
-	"fmt"
 	"strings"
 	"testing"
 
@@ -26,8 +25,8 @@ func (suite *GenesisTestSuite) TestValidateGenesis() {
 	params := types.DefaultParams()
 	params.ExocoreLzAppAddress = "0x0000000000000000000000000000000000000001"
 	newGen := types.NewGenesis(
-		params, []types.ClientChainInfo{},
-		[]types.StakingAssetInfo{}, []types.DepositsByStaker{},
+		params, nil,
+		nil, nil, nil,
 	)
 	// genesis data that is hardcoded for use in the tests
 	ethClientChain := types.ClientChainInfo{
@@ -39,7 +38,7 @@ func (suite *GenesisTestSuite) TestValidateGenesis() {
 		AddressLength:      20,
 	}
 	// do not hardcode the address to avoid gitleaks complaining.
-	tokenAddress := utiltx.GenerateAddress().String()
+	tokenAddress := strings.ToLower(utiltx.GenerateAddress().String())
 	usdtClientChainAsset := types.AssetInfo{
 		Name:             "Tether USD",
 		Symbol:           "USDT",
@@ -49,8 +48,8 @@ func (suite *GenesisTestSuite) TestValidateGenesis() {
 		MetaInfo:         "Tether USD token",
 	}
 	stakingInfo := types.StakingAssetInfo{
-		AssetBasicInfo:     &usdtClientChainAsset,
-		StakingTotalAmount: math.NewInt(0),
+		AssetBasicInfo:     usdtClientChainAsset,
+		StakingTotalAmount: math.NewInt(100),
 	}
 	// generated information
 	ethAddress := utiltx.GenerateAddress()
@@ -180,25 +179,6 @@ func (suite *GenesisTestSuite) TestValidateGenesis() {
 				},
 			},
 			expPass: false,
-		},
-		{
-			name: "invalid genesis due to non zero deposit",
-			genState: &types.GenesisState{
-				Params: types.DefaultParams(),
-				ClientChains: []types.ClientChainInfo{
-					ethClientChain,
-				},
-				Tokens: []types.StakingAssetInfo{
-					stakingInfo,
-				},
-			},
-			expPass: false,
-			malleate: func(gs *types.GenesisState) {
-				gs.Tokens[0].StakingTotalAmount = math.NewInt(1)
-			},
-			unmalleate: func(gs *types.GenesisState) {
-				gs.Tokens[0].StakingTotalAmount = math.NewInt(0)
-			},
 		},
 		{
 			name: "invalid genesis due to upper case staker id",
@@ -345,7 +325,7 @@ func (suite *GenesisTestSuite) TestValidateGenesis() {
 					MetaInfo:         "Circle USD token",
 				}
 				stakingInfo := types.StakingAssetInfo{
-					AssetBasicInfo:     &usdcClientChainAsset,
+					AssetBasicInfo:     usdcClientChainAsset,
 					StakingTotalAmount: math.NewInt(0),
 				}
 				gs.Tokens[1] = stakingInfo
@@ -412,31 +392,6 @@ func (suite *GenesisTestSuite) TestValidateGenesis() {
 			},
 		},
 		{
-			name: "invalid genesis due to non zero unbonding amount for staker",
-			genState: &types.GenesisState{
-				Params: types.DefaultParams(),
-				ClientChains: []types.ClientChainInfo{
-					ethClientChain,
-				},
-				Tokens: []types.StakingAssetInfo{
-					stakingInfo,
-				},
-				Deposits: []types.DepositsByStaker{genesisDeposit},
-			},
-			expPass: false,
-			malleate: func(gs *types.GenesisState) {
-				gs.Deposits[0].Deposits[0].Info.PendingUndelegationAmount = math.NewInt(1)
-			},
-			unmalleate: func(gs *types.GenesisState) {
-				genesisDeposit.Deposits[0].Info = types.StakerAssetInfo{
-					TotalDepositAmount:        math.NewInt(100),
-					WithdrawableAmount:        math.NewInt(0),
-					PendingUndelegationAmount: math.NewInt(0),
-				}
-				gs.Deposits[0].Deposits[0].Info = genesisDeposit.Deposits[0].Info
-			},
-		},
-		{
 			name: "invalid genesis due to negative amount for staker",
 			genState: &types.GenesisState{
 				Params: types.DefaultParams(),
@@ -481,7 +436,7 @@ func (suite *GenesisTestSuite) TestValidateGenesis() {
 			unmalleate: func(gs *types.GenesisState) {
 				genesisDeposit.Deposits[0].Info = types.StakerAssetInfo{
 					TotalDepositAmount:        math.NewInt(100),
-					WithdrawableAmount:        math.NewInt(100),
+					WithdrawableAmount:        math.NewInt(0),
 					PendingUndelegationAmount: math.NewInt(0),
 				}
 				gs.Deposits[0].Deposits[0].Info = genesisDeposit.Deposits[0].Info
@@ -512,7 +467,6 @@ func (suite *GenesisTestSuite) TestValidateGenesis() {
 		}
 		err := tc.genState.Validate()
 		if tc.expPass {
-			fmt.Println("name is:", tc.name)
 			suite.Require().NoError(err, tc.name)
 		} else {
 			suite.Require().Error(err, tc.name)

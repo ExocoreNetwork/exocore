@@ -29,7 +29,27 @@ const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 type GenesisState struct {
 	// there are no params for this module.
 	// operators is a list of the registered operators.
-	Operators []OperatorInfo `protobuf:"bytes,1,rep,name=operators,proto3" json:"operators"`
+	Operators []OperatorDetail `protobuf:"bytes,1,rep,name=operators,proto3" json:"operators"`
+	// add other information for exporting / importing.
+	// Although it is not necessary for the bootstrapped genesis, it is
+	// necessary for chain restarts.
+	// operator_records refers to a list of operator records. each record
+	// contains an operator address and a list of chain id +
+	// cons key combination.
+	OperatorRecords []OperatorConsKeyRecord `protobuf:"bytes,2,rep,name=operator_records,json=operatorRecords,proto3" json:"operator_records"`
+	// opt_states is a list of all opted information for the AVS and operators
+	OptStates []OptedState `protobuf:"bytes,3,rep,name=opt_states,json=optStates,proto3" json:"opt_states"`
+	// avs_usd_values is a list of AVS USD value
+	AVSUSDValues []AVSUSDValue `protobuf:"bytes,4,rep,name=avs_usd_values,json=avsUsdValues,proto3" json:"avs_usd_values"`
+	// operator_usd_values is a list of operator USD value
+	OperatorUSDValues []OperatorUSDValue `protobuf:"bytes,5,rep,name=operator_usd_values,json=operatorUsdValues,proto3" json:"operator_usd_values"`
+	// slash_states is a list of all slashing information
+	SlashStates []OperatorSlashState `protobuf:"bytes,6,rep,name=slash_states,json=slashStates,proto3" json:"slash_states"`
+	// pre_cons_key is a list of all previous consensus public key
+	PreConsKeys []PrevConsKey `protobuf:"bytes,7,rep,name=pre_cons_keys,json=preConsKeys,proto3" json:"pre_cons_keys"`
+	// operator_key_removal is a list of operator with the given address
+	// is in the process of unbonding their key for the given chainID.
+	OperatorKeyRemovals []OperatorKeyRemoval `protobuf:"bytes,8,rep,name=operator_key_removals,json=operatorKeyRemovals,proto3" json:"operator_key_removals"`
 }
 
 func (m *GenesisState) Reset()         { *m = GenesisState{} }
@@ -65,11 +85,567 @@ func (m *GenesisState) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_GenesisState proto.InternalMessageInfo
 
-func (m *GenesisState) GetOperators() []OperatorInfo {
+func (m *GenesisState) GetOperators() []OperatorDetail {
 	if m != nil {
 		return m.Operators
 	}
 	return nil
+}
+
+func (m *GenesisState) GetOperatorRecords() []OperatorConsKeyRecord {
+	if m != nil {
+		return m.OperatorRecords
+	}
+	return nil
+}
+
+func (m *GenesisState) GetOptStates() []OptedState {
+	if m != nil {
+		return m.OptStates
+	}
+	return nil
+}
+
+func (m *GenesisState) GetAVSUSDValues() []AVSUSDValue {
+	if m != nil {
+		return m.AVSUSDValues
+	}
+	return nil
+}
+
+func (m *GenesisState) GetOperatorUSDValues() []OperatorUSDValue {
+	if m != nil {
+		return m.OperatorUSDValues
+	}
+	return nil
+}
+
+func (m *GenesisState) GetSlashStates() []OperatorSlashState {
+	if m != nil {
+		return m.SlashStates
+	}
+	return nil
+}
+
+func (m *GenesisState) GetPreConsKeys() []PrevConsKey {
+	if m != nil {
+		return m.PreConsKeys
+	}
+	return nil
+}
+
+func (m *GenesisState) GetOperatorKeyRemovals() []OperatorKeyRemoval {
+	if m != nil {
+		return m.OperatorKeyRemovals
+	}
+	return nil
+}
+
+// OperatorDetail is helper structure to store the operator information for the genesis state.
+// it's corresponding to the kvStore `KeyPrefixOperatorInfo`
+type OperatorDetail struct {
+	// operator_address is the address of the operator as the bech32
+	// encoded version of sdk.AccAddress.
+	OperatorAddress string `protobuf:"bytes,1,opt,name=operator_address,json=operatorAddress,proto3" json:"operator_address,omitempty"`
+	// operator_info is the detail information for the above operator
+	OperatorInfo OperatorInfo `protobuf:"bytes,2,opt,name=operator_info,json=operatorInfo,proto3" json:"operator_info"`
+}
+
+func (m *OperatorDetail) Reset()         { *m = OperatorDetail{} }
+func (m *OperatorDetail) String() string { return proto.CompactTextString(m) }
+func (*OperatorDetail) ProtoMessage()    {}
+func (*OperatorDetail) Descriptor() ([]byte, []int) {
+	return fileDescriptor_bb7040bc6ae6ddee, []int{1}
+}
+func (m *OperatorDetail) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *OperatorDetail) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_OperatorDetail.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *OperatorDetail) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_OperatorDetail.Merge(m, src)
+}
+func (m *OperatorDetail) XXX_Size() int {
+	return m.Size()
+}
+func (m *OperatorDetail) XXX_DiscardUnknown() {
+	xxx_messageInfo_OperatorDetail.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_OperatorDetail proto.InternalMessageInfo
+
+func (m *OperatorDetail) GetOperatorAddress() string {
+	if m != nil {
+		return m.OperatorAddress
+	}
+	return ""
+}
+
+func (m *OperatorDetail) GetOperatorInfo() OperatorInfo {
+	if m != nil {
+		return m.OperatorInfo
+	}
+	return OperatorInfo{}
+}
+
+// OptedStates is helper structure to store the opted state for the genesis state.
+// it's corresponding to the kvStore `KeyPrefixOperatorOptedAVSInfo`
+type OptedState struct {
+	// key is used for storing the opted states,
+	// which is a combination of the operator address and AVS address.
+	Key string `protobuf:"bytes,1,opt,name=key,proto3" json:"key,omitempty"`
+	// opt_info is the value of undelegation state for the above key
+	OptInfo OptedInfo `protobuf:"bytes,2,opt,name=opt_info,json=optInfo,proto3" json:"opt_info"`
+}
+
+func (m *OptedState) Reset()         { *m = OptedState{} }
+func (m *OptedState) String() string { return proto.CompactTextString(m) }
+func (*OptedState) ProtoMessage()    {}
+func (*OptedState) Descriptor() ([]byte, []int) {
+	return fileDescriptor_bb7040bc6ae6ddee, []int{2}
+}
+func (m *OptedState) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *OptedState) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_OptedState.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *OptedState) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_OptedState.Merge(m, src)
+}
+func (m *OptedState) XXX_Size() int {
+	return m.Size()
+}
+func (m *OptedState) XXX_DiscardUnknown() {
+	xxx_messageInfo_OptedState.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_OptedState proto.InternalMessageInfo
+
+func (m *OptedState) GetKey() string {
+	if m != nil {
+		return m.Key
+	}
+	return ""
+}
+
+func (m *OptedState) GetOptInfo() OptedInfo {
+	if m != nil {
+		return m.OptInfo
+	}
+	return OptedInfo{}
+}
+
+// AVSUSDValue is helper structure to store the USD value for the genesis state.
+// it's corresponding to the kvStore `KeyPrefixUSDValueForAVS`
+type AVSUSDValue struct {
+	// avs_addr
+	AVSAddr string `protobuf:"bytes,1,opt,name=avs_addr,json=avsAddr,proto3" json:"avs_addr,omitempty"`
+	// value is the USD value for the AVS address
+	Value DecValueField `protobuf:"bytes,2,opt,name=value,proto3" json:"value"`
+}
+
+func (m *AVSUSDValue) Reset()         { *m = AVSUSDValue{} }
+func (m *AVSUSDValue) String() string { return proto.CompactTextString(m) }
+func (*AVSUSDValue) ProtoMessage()    {}
+func (*AVSUSDValue) Descriptor() ([]byte, []int) {
+	return fileDescriptor_bb7040bc6ae6ddee, []int{3}
+}
+func (m *AVSUSDValue) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *AVSUSDValue) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_AVSUSDValue.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *AVSUSDValue) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_AVSUSDValue.Merge(m, src)
+}
+func (m *AVSUSDValue) XXX_Size() int {
+	return m.Size()
+}
+func (m *AVSUSDValue) XXX_DiscardUnknown() {
+	xxx_messageInfo_AVSUSDValue.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_AVSUSDValue proto.InternalMessageInfo
+
+func (m *AVSUSDValue) GetAVSAddr() string {
+	if m != nil {
+		return m.AVSAddr
+	}
+	return ""
+}
+
+func (m *AVSUSDValue) GetValue() DecValueField {
+	if m != nil {
+		return m.Value
+	}
+	return DecValueField{}
+}
+
+// OperatorUSDValue is helper structure to store the USD value for the genesis state.
+// it's corresponding to the kvStore `KeyPrefixUSDValueForOperator`
+type OperatorUSDValue struct {
+	// key is used for storing the voting power of specified operator and AVS,
+	// which is the combination of operator and AVS address.
+	Key string `protobuf:"bytes,1,opt,name=key,proto3" json:"key,omitempty"`
+	// value is the USD value states for the AVS address
+	OptedUSDValue OperatorOptedUSDValue `protobuf:"bytes,2,opt,name=opted_usd_value,json=optedUsdValue,proto3" json:"opted_usd_value"`
+}
+
+func (m *OperatorUSDValue) Reset()         { *m = OperatorUSDValue{} }
+func (m *OperatorUSDValue) String() string { return proto.CompactTextString(m) }
+func (*OperatorUSDValue) ProtoMessage()    {}
+func (*OperatorUSDValue) Descriptor() ([]byte, []int) {
+	return fileDescriptor_bb7040bc6ae6ddee, []int{4}
+}
+func (m *OperatorUSDValue) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *OperatorUSDValue) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_OperatorUSDValue.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *OperatorUSDValue) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_OperatorUSDValue.Merge(m, src)
+}
+func (m *OperatorUSDValue) XXX_Size() int {
+	return m.Size()
+}
+func (m *OperatorUSDValue) XXX_DiscardUnknown() {
+	xxx_messageInfo_OperatorUSDValue.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_OperatorUSDValue proto.InternalMessageInfo
+
+func (m *OperatorUSDValue) GetKey() string {
+	if m != nil {
+		return m.Key
+	}
+	return ""
+}
+
+func (m *OperatorUSDValue) GetOptedUSDValue() OperatorOptedUSDValue {
+	if m != nil {
+		return m.OptedUSDValue
+	}
+	return OperatorOptedUSDValue{}
+}
+
+// OperatorSlashState is helper structure to store the slash information for the genesis state.
+// it's corresponding to the kvStore `KeyPrefixOperatorSlashInfo`
+type OperatorSlashState struct {
+	// key is used for storing the slash information,
+	// which is the combination of the operator address, AVS address, and slashID.
+	Key string `protobuf:"bytes,1,opt,name=key,proto3" json:"key,omitempty"`
+	// states is the voting power value for the above key
+	Info OperatorSlashInfo `protobuf:"bytes,2,opt,name=info,proto3" json:"info"`
+}
+
+func (m *OperatorSlashState) Reset()         { *m = OperatorSlashState{} }
+func (m *OperatorSlashState) String() string { return proto.CompactTextString(m) }
+func (*OperatorSlashState) ProtoMessage()    {}
+func (*OperatorSlashState) Descriptor() ([]byte, []int) {
+	return fileDescriptor_bb7040bc6ae6ddee, []int{5}
+}
+func (m *OperatorSlashState) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *OperatorSlashState) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_OperatorSlashState.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *OperatorSlashState) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_OperatorSlashState.Merge(m, src)
+}
+func (m *OperatorSlashState) XXX_Size() int {
+	return m.Size()
+}
+func (m *OperatorSlashState) XXX_DiscardUnknown() {
+	xxx_messageInfo_OperatorSlashState.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_OperatorSlashState proto.InternalMessageInfo
+
+func (m *OperatorSlashState) GetKey() string {
+	if m != nil {
+		return m.Key
+	}
+	return ""
+}
+
+func (m *OperatorSlashState) GetInfo() OperatorSlashInfo {
+	if m != nil {
+		return m.Info
+	}
+	return OperatorSlashInfo{}
+}
+
+// PrevConsKey is helper structure to store the previous consensus key
+// for the operator and chainID.
+// it's corresponding to the kvStore `BytePrefixForOperatorAndChainIDToPrevConsKey`
+type PrevConsKey struct {
+	// key is used for storing the previous consensus key,
+	// which is the combination of chainID and operator address.
+	Key string `protobuf:"bytes,1,opt,name=key,proto3" json:"key,omitempty"`
+	// consensus_key is the consensus key of the operator on the chain.
+	// the length of this key should be exactly 32 bytes, and must be enforced
+	// outside of protobuf. It's the hex encoding of the 32 bytes.
+	ConsensusKey string `protobuf:"bytes,2,opt,name=consensus_key,json=consensusKey,proto3" json:"consensus_key,omitempty"`
+}
+
+func (m *PrevConsKey) Reset()         { *m = PrevConsKey{} }
+func (m *PrevConsKey) String() string { return proto.CompactTextString(m) }
+func (*PrevConsKey) ProtoMessage()    {}
+func (*PrevConsKey) Descriptor() ([]byte, []int) {
+	return fileDescriptor_bb7040bc6ae6ddee, []int{6}
+}
+func (m *PrevConsKey) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *PrevConsKey) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_PrevConsKey.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *PrevConsKey) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_PrevConsKey.Merge(m, src)
+}
+func (m *PrevConsKey) XXX_Size() int {
+	return m.Size()
+}
+func (m *PrevConsKey) XXX_DiscardUnknown() {
+	xxx_messageInfo_PrevConsKey.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_PrevConsKey proto.InternalMessageInfo
+
+func (m *PrevConsKey) GetKey() string {
+	if m != nil {
+		return m.Key
+	}
+	return ""
+}
+
+func (m *PrevConsKey) GetConsensusKey() string {
+	if m != nil {
+		return m.ConsensusKey
+	}
+	return ""
+}
+
+// OperatorKeyRemoval is helper structure to store the operator with the given address
+// is in the process of unbonding their key for the given chainID.
+// it's corresponding to the kvStore `BytePrefixForOperatorKeyRemovalForChainID`
+type OperatorKeyRemoval struct {
+	// key is the combination of operator address and chainID.
+	Key string `protobuf:"bytes,1,opt,name=key,proto3" json:"key,omitempty"`
+}
+
+func (m *OperatorKeyRemoval) Reset()         { *m = OperatorKeyRemoval{} }
+func (m *OperatorKeyRemoval) String() string { return proto.CompactTextString(m) }
+func (*OperatorKeyRemoval) ProtoMessage()    {}
+func (*OperatorKeyRemoval) Descriptor() ([]byte, []int) {
+	return fileDescriptor_bb7040bc6ae6ddee, []int{7}
+}
+func (m *OperatorKeyRemoval) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *OperatorKeyRemoval) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_OperatorKeyRemoval.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *OperatorKeyRemoval) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_OperatorKeyRemoval.Merge(m, src)
+}
+func (m *OperatorKeyRemoval) XXX_Size() int {
+	return m.Size()
+}
+func (m *OperatorKeyRemoval) XXX_DiscardUnknown() {
+	xxx_messageInfo_OperatorKeyRemoval.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_OperatorKeyRemoval proto.InternalMessageInfo
+
+func (m *OperatorKeyRemoval) GetKey() string {
+	if m != nil {
+		return m.Key
+	}
+	return ""
+}
+
+// OperatorConsKeyRecord is a helper structure for the genesis state. Each record
+// contains an operator address and a list of chain id + cons key combination.
+type OperatorConsKeyRecord struct {
+	// operator_address is the address of the operator as the bech32
+	// encoded version of sdk.AccAddress.
+	OperatorAddress string `protobuf:"bytes,1,opt,name=operator_address,json=operatorAddress,proto3" json:"operator_address,omitempty"`
+	// chains is a list of chain id + consensus key combination.
+	Chains []ChainDetails `protobuf:"bytes,2,rep,name=chains,proto3" json:"chains"`
+}
+
+func (m *OperatorConsKeyRecord) Reset()         { *m = OperatorConsKeyRecord{} }
+func (m *OperatorConsKeyRecord) String() string { return proto.CompactTextString(m) }
+func (*OperatorConsKeyRecord) ProtoMessage()    {}
+func (*OperatorConsKeyRecord) Descriptor() ([]byte, []int) {
+	return fileDescriptor_bb7040bc6ae6ddee, []int{8}
+}
+func (m *OperatorConsKeyRecord) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *OperatorConsKeyRecord) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_OperatorConsKeyRecord.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *OperatorConsKeyRecord) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_OperatorConsKeyRecord.Merge(m, src)
+}
+func (m *OperatorConsKeyRecord) XXX_Size() int {
+	return m.Size()
+}
+func (m *OperatorConsKeyRecord) XXX_DiscardUnknown() {
+	xxx_messageInfo_OperatorConsKeyRecord.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_OperatorConsKeyRecord proto.InternalMessageInfo
+
+func (m *OperatorConsKeyRecord) GetOperatorAddress() string {
+	if m != nil {
+		return m.OperatorAddress
+	}
+	return ""
+}
+
+func (m *OperatorConsKeyRecord) GetChains() []ChainDetails {
+	if m != nil {
+		return m.Chains
+	}
+	return nil
+}
+
+// ChainDetails is a helper structure for the genesis state. Each record
+// contains a chain id and a consensus key.
+type ChainDetails struct {
+	// chain_id is the unique identifier of the chain.
+	ChainID string `protobuf:"bytes,1,opt,name=chain_id,json=chainId,proto3" json:"chain_id,omitempty"`
+	// consensus_key is the consensus key of the operator on the chain.
+	// the length of this key should be exactly 32 bytes, and must be enforced
+	// outside of protobuf. It's the hex encoding of the 32 bytes.
+	ConsensusKey string `protobuf:"bytes,2,opt,name=consensus_key,json=consensusKey,proto3" json:"consensus_key,omitempty"`
+}
+
+func (m *ChainDetails) Reset()         { *m = ChainDetails{} }
+func (m *ChainDetails) String() string { return proto.CompactTextString(m) }
+func (*ChainDetails) ProtoMessage()    {}
+func (*ChainDetails) Descriptor() ([]byte, []int) {
+	return fileDescriptor_bb7040bc6ae6ddee, []int{9}
+}
+func (m *ChainDetails) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *ChainDetails) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_ChainDetails.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *ChainDetails) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_ChainDetails.Merge(m, src)
+}
+func (m *ChainDetails) XXX_Size() int {
+	return m.Size()
+}
+func (m *ChainDetails) XXX_DiscardUnknown() {
+	xxx_messageInfo_ChainDetails.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_ChainDetails proto.InternalMessageInfo
+
+func (m *ChainDetails) GetChainID() string {
+	if m != nil {
+		return m.ChainID
+	}
+	return ""
+}
+
+func (m *ChainDetails) GetConsensusKey() string {
+	if m != nil {
+		return m.ConsensusKey
+	}
+	return ""
 }
 
 // StakerRecord is a helper structure for the genesis state. Each record
@@ -86,7 +662,7 @@ func (m *StakerRecord) Reset()         { *m = StakerRecord{} }
 func (m *StakerRecord) String() string { return proto.CompactTextString(m) }
 func (*StakerRecord) ProtoMessage()    {}
 func (*StakerRecord) Descriptor() ([]byte, []int) {
-	return fileDescriptor_bb7040bc6ae6ddee, []int{1}
+	return fileDescriptor_bb7040bc6ae6ddee, []int{10}
 }
 func (m *StakerRecord) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -142,7 +718,7 @@ func (m *StakerDetails) Reset()         { *m = StakerDetails{} }
 func (m *StakerDetails) String() string { return proto.CompactTextString(m) }
 func (*StakerDetails) ProtoMessage()    {}
 func (*StakerDetails) Descriptor() ([]byte, []int) {
-	return fileDescriptor_bb7040bc6ae6ddee, []int{2}
+	return fileDescriptor_bb7040bc6ae6ddee, []int{11}
 }
 func (m *StakerDetails) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -200,7 +776,7 @@ func (m *AssetDetails) Reset()         { *m = AssetDetails{} }
 func (m *AssetDetails) String() string { return proto.CompactTextString(m) }
 func (*AssetDetails) ProtoMessage()    {}
 func (*AssetDetails) Descriptor() ([]byte, []int) {
-	return fileDescriptor_bb7040bc6ae6ddee, []int{3}
+	return fileDescriptor_bb7040bc6ae6ddee, []int{12}
 }
 func (m *AssetDetails) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -238,6 +814,15 @@ func (m *AssetDetails) GetOperatorAddress() string {
 
 func init() {
 	proto.RegisterType((*GenesisState)(nil), "exocore.operator.v1.GenesisState")
+	proto.RegisterType((*OperatorDetail)(nil), "exocore.operator.v1.OperatorDetail")
+	proto.RegisterType((*OptedState)(nil), "exocore.operator.v1.OptedState")
+	proto.RegisterType((*AVSUSDValue)(nil), "exocore.operator.v1.AVSUSDValue")
+	proto.RegisterType((*OperatorUSDValue)(nil), "exocore.operator.v1.OperatorUSDValue")
+	proto.RegisterType((*OperatorSlashState)(nil), "exocore.operator.v1.OperatorSlashState")
+	proto.RegisterType((*PrevConsKey)(nil), "exocore.operator.v1.PrevConsKey")
+	proto.RegisterType((*OperatorKeyRemoval)(nil), "exocore.operator.v1.OperatorKeyRemoval")
+	proto.RegisterType((*OperatorConsKeyRecord)(nil), "exocore.operator.v1.OperatorConsKeyRecord")
+	proto.RegisterType((*ChainDetails)(nil), "exocore.operator.v1.ChainDetails")
 	proto.RegisterType((*StakerRecord)(nil), "exocore.operator.v1.StakerRecord")
 	proto.RegisterType((*StakerDetails)(nil), "exocore.operator.v1.StakerDetails")
 	proto.RegisterType((*AssetDetails)(nil), "exocore.operator.v1.AssetDetails")
@@ -246,34 +831,63 @@ func init() {
 func init() { proto.RegisterFile("exocore/operator/v1/genesis.proto", fileDescriptor_bb7040bc6ae6ddee) }
 
 var fileDescriptor_bb7040bc6ae6ddee = []byte{
-	// 420 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x6c, 0x92, 0xc1, 0xae, 0xd2, 0x40,
-	0x14, 0x86, 0x3b, 0x57, 0x73, 0x81, 0xb9, 0xbd, 0x6a, 0x46, 0x17, 0xf5, 0xc6, 0xb4, 0x97, 0x2e,
-	0x08, 0x2c, 0x68, 0x03, 0x6e, 0xdd, 0x40, 0x20, 0xa6, 0x89, 0x91, 0xa4, 0xe8, 0xc6, 0x0d, 0x29,
-	0x9d, 0xb1, 0x36, 0x48, 0x87, 0xcc, 0x0c, 0x88, 0x3e, 0x82, 0x1b, 0x7d, 0x18, 0x1f, 0x82, 0x25,
-	0x71, 0x65, 0x5c, 0x34, 0xa6, 0xbc, 0x88, 0x61, 0x66, 0x1a, 0x20, 0xe9, 0xaa, 0x33, 0xff, 0xf9,
-	0xcf, 0x39, 0x5f, 0x27, 0x3f, 0x6c, 0x92, 0x2d, 0x8d, 0x29, 0x23, 0x3e, 0x5d, 0x11, 0x16, 0x09,
-	0xca, 0xfc, 0x4d, 0xcf, 0x4f, 0x48, 0x46, 0x78, 0xca, 0xbd, 0x15, 0xa3, 0x82, 0xa2, 0xa7, 0xda,
-	0xe2, 0x95, 0x16, 0x6f, 0xd3, 0xbb, 0x7b, 0x1e, 0x53, 0xbe, 0xa4, 0x7c, 0x26, 0x2d, 0xbe, 0xba,
-	0x28, 0xff, 0xdd, 0xb3, 0x84, 0x26, 0x54, 0xe9, 0xc7, 0x93, 0x56, 0x5f, 0x54, 0x2d, 0x12, 0x5b,
-	0x55, 0x75, 0xdf, 0x43, 0xf3, 0xb5, 0x5a, 0x3a, 0x15, 0x91, 0x20, 0x68, 0x0c, 0x1b, 0xa5, 0x8f,
-	0x5b, 0xe0, 0xfe, 0x41, 0xfb, 0xa6, 0xdf, 0xf4, 0x2a, 0x38, 0xbc, 0x89, 0x3e, 0x07, 0xd9, 0x47,
-	0x3a, 0x7c, 0xb8, 0xcb, 0x1d, 0x23, 0x3c, 0x75, 0xba, 0xdf, 0x01, 0x34, 0xa7, 0x22, 0x5a, 0x10,
-	0x16, 0x92, 0x98, 0x32, 0x8c, 0x3a, 0xb0, 0xc1, 0xe5, 0x7d, 0x96, 0x62, 0x0b, 0xdc, 0x83, 0x76,
-	0x63, 0x68, 0x16, 0xb9, 0x53, 0x57, 0xa6, 0x60, 0x14, 0xd6, 0x55, 0x39, 0xc0, 0x68, 0x02, 0x1f,
-	0x69, 0x2b, 0x26, 0x22, 0x4a, 0x3f, 0x73, 0xeb, 0x4a, 0x72, 0xb8, 0x95, 0x1c, 0x6a, 0xc0, 0x48,
-	0x39, 0x35, 0xc8, 0x2d, 0x3f, 0x17, 0xdd, 0x6f, 0xf0, 0xf6, 0xc2, 0x85, 0x5a, 0xb0, 0x1e, 0x71,
-	0x4e, 0xc4, 0x89, 0xe5, 0xa6, 0xc8, 0x9d, 0xda, 0xe0, 0xa8, 0x05, 0xa3, 0xb0, 0x26, 0x8b, 0x01,
-	0x46, 0x03, 0x58, 0xbb, 0x44, 0xa8, 0x7e, 0x0a, 0xd9, 0x77, 0x49, 0x50, 0xf6, 0xb9, 0x3f, 0x00,
-	0x34, 0xcf, 0xeb, 0xa8, 0x03, 0x9f, 0x94, 0xbd, 0xb3, 0x08, 0x63, 0x46, 0x38, 0x57, 0x0c, 0xe1,
-	0xe3, 0x52, 0x1f, 0x28, 0x19, 0xbd, 0x83, 0xd7, 0xd1, 0x92, 0xae, 0x33, 0x61, 0x5d, 0x49, 0xc8,
-	0x57, 0xc7, 0xd1, 0x7f, 0x73, 0xa7, 0x95, 0xa4, 0xe2, 0xd3, 0x7a, 0xee, 0xc5, 0x74, 0xa9, 0x03,
-	0xa0, 0x3f, 0x5d, 0x8e, 0x17, 0xbe, 0xf8, 0xba, 0x22, 0xdc, 0x0b, 0x32, 0xf1, 0xfb, 0x57, 0x17,
-	0xea, 0x7c, 0x04, 0x99, 0x08, 0xf5, 0xac, 0xe1, 0x9b, 0x5d, 0x61, 0x83, 0x7d, 0x61, 0x83, 0x7f,
-	0x85, 0x0d, 0x7e, 0x1e, 0x6c, 0x63, 0x7f, 0xb0, 0x8d, 0x3f, 0x07, 0xdb, 0xf8, 0xd0, 0x3f, 0x9b,
-	0x3b, 0x56, 0xff, 0xf9, 0x96, 0x88, 0x2f, 0x94, 0x2d, 0xfc, 0x32, 0x43, 0xdb, 0x53, 0x8a, 0xe4,
-	0x9e, 0xf9, 0xb5, 0x8c, 0xd1, 0xcb, 0xff, 0x01, 0x00, 0x00, 0xff, 0xff, 0xdc, 0x40, 0x9d, 0xcc,
-	0xcf, 0x02, 0x00, 0x00,
+	// 886 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x94, 0x56, 0xcd, 0x6e, 0xdb, 0x46,
+	0x10, 0x36, 0xe3, 0x1f, 0xc9, 0x23, 0xca, 0x71, 0x36, 0x31, 0xa0, 0x04, 0x85, 0xe4, 0x30, 0xa8,
+	0xeb, 0x16, 0x88, 0x84, 0xb8, 0xd7, 0xa2, 0xa9, 0x14, 0xb5, 0x81, 0x9a, 0xa0, 0x09, 0xa8, 0xc6,
+	0x87, 0xa6, 0x00, 0xc1, 0x88, 0x1b, 0x9b, 0x90, 0xcc, 0x25, 0x38, 0x2b, 0xd6, 0xea, 0xb5, 0xa7,
+	0xf6, 0xd2, 0x3e, 0x4c, 0x1f, 0x22, 0x40, 0x2f, 0x41, 0x4f, 0x45, 0x0f, 0x42, 0x21, 0xbf, 0x48,
+	0xb1, 0x3f, 0x24, 0x57, 0x0e, 0xa3, 0x24, 0x27, 0xed, 0xce, 0xcf, 0xf7, 0xcd, 0x8c, 0xbe, 0x21,
+	0x16, 0x6e, 0xd3, 0x73, 0x36, 0x62, 0x09, 0xed, 0xb0, 0x98, 0x26, 0x3e, 0x67, 0x49, 0x27, 0xbd,
+	0xd7, 0x39, 0xa1, 0x11, 0xc5, 0x10, 0xdb, 0x71, 0xc2, 0x38, 0x23, 0xd7, 0x75, 0x48, 0x3b, 0x0b,
+	0x69, 0xa7, 0xf7, 0x6e, 0xdd, 0x1c, 0x31, 0x3c, 0x63, 0xe8, 0xc9, 0x90, 0x8e, 0xba, 0xa8, 0xf8,
+	0x5b, 0x37, 0x4e, 0xd8, 0x09, 0x53, 0x76, 0x71, 0xd2, 0xd6, 0x8f, 0xca, 0x88, 0xf8, 0xb9, 0xf2,
+	0x3a, 0x7f, 0x6d, 0x82, 0xfd, 0x50, 0xb1, 0x0e, 0xb9, 0xcf, 0x29, 0x79, 0x08, 0xdb, 0x59, 0x20,
+	0x36, 0xac, 0xfd, 0xf5, 0xc3, 0xda, 0xd1, 0x9d, 0x76, 0x49, 0x21, 0xed, 0x27, 0xfa, 0xdc, 0xa7,
+	0xdc, 0x0f, 0x27, 0xbd, 0x8d, 0x57, 0xf3, 0xd6, 0x9a, 0x5b, 0xe4, 0x92, 0xe7, 0xb0, 0x9b, 0x5d,
+	0xbc, 0x84, 0x8e, 0x58, 0x12, 0x60, 0xe3, 0x8a, 0xc4, 0xfb, 0x6c, 0x25, 0xde, 0x03, 0x16, 0xe1,
+	0x23, 0x3a, 0x73, 0x65, 0x8a, 0x86, 0xbd, 0x9a, 0x05, 0x2a, 0x2b, 0x92, 0x3e, 0x00, 0x8b, 0xb9,
+	0x87, 0xa2, 0x64, 0x6c, 0xac, 0x4b, 0xd8, 0xd6, 0x5b, 0x60, 0x39, 0x0d, 0x64, 0x6b, 0x45, 0x89,
+	0x5c, 0xde, 0x91, 0xfc, 0x08, 0x3b, 0x7e, 0x8a, 0xde, 0x14, 0x03, 0x2f, 0xf5, 0x27, 0x53, 0x8a,
+	0x8d, 0x0d, 0x89, 0xb4, 0x5f, 0x8a, 0xd4, 0x3d, 0x1e, 0x3e, 0x1b, 0xf6, 0x8f, 0x45, 0x60, 0xef,
+	0x86, 0x80, 0x5a, 0xcc, 0x5b, 0xb6, 0x61, 0x44, 0xd7, 0xf6, 0x53, 0x7c, 0x86, 0x81, 0xba, 0x91,
+	0x18, 0xae, 0xe7, 0x03, 0x30, 0x28, 0x36, 0x25, 0xc5, 0xc7, 0x2b, 0x67, 0x90, 0xf3, 0xdc, 0xd4,
+	0x3c, 0xd7, 0x2e, 0x7b, 0xd0, 0xbd, 0x96, 0x25, 0x16, 0x8c, 0x4f, 0xc1, 0xc6, 0x89, 0x8f, 0xa7,
+	0xd9, 0x5c, 0xb6, 0x24, 0xd5, 0x27, 0x2b, 0xa9, 0x86, 0x22, 0xc1, 0x9c, 0x4f, 0x0d, 0x73, 0x0b,
+	0x92, 0x6f, 0xa1, 0x1e, 0x27, 0xd4, 0x1b, 0xb1, 0x08, 0xbd, 0x31, 0x9d, 0x61, 0xa3, 0xb2, 0x62,
+	0x40, 0x4f, 0x13, 0x9a, 0xea, 0x7f, 0x2f, 0xc3, 0x8a, 0x13, 0xaa, 0x2d, 0x48, 0x7c, 0xd8, 0xcb,
+	0xe7, 0x31, 0xa6, 0x33, 0x2f, 0xa1, 0x67, 0x2c, 0xf5, 0x27, 0xd8, 0xa8, 0xbe, 0x47, 0x99, 0x52,
+	0x11, 0x32, 0x5e, 0x43, 0xe7, 0xb3, 0x2d, 0x3c, 0xe8, 0xfc, 0x6a, 0xc1, 0xce, 0xb2, 0x2e, 0xc9,
+	0xa7, 0x86, 0x0c, 0xfd, 0x20, 0x48, 0x28, 0x0a, 0x59, 0x5b, 0x87, 0xdb, 0x85, 0xa8, 0xba, 0xca,
+	0x4c, 0x1e, 0x43, 0x3d, 0x0f, 0x0d, 0xa3, 0x97, 0xac, 0x71, 0x65, 0xdf, 0x3a, 0xac, 0x1d, 0xdd,
+	0x5e, 0x59, 0xd8, 0x20, 0x7a, 0xc9, 0x74, 0x49, 0x36, 0x33, 0x6c, 0x8e, 0x07, 0x50, 0x68, 0x8f,
+	0xec, 0xc2, 0xfa, 0x98, 0xce, 0x34, 0xb3, 0x38, 0x92, 0xfb, 0x50, 0x15, 0x12, 0x36, 0x88, 0x9a,
+	0x6f, 0x17, 0xb0, 0xc1, 0x52, 0x61, 0x31, 0x97, 0x04, 0x53, 0xa8, 0x19, 0xea, 0x23, 0x07, 0x50,
+	0x15, 0x62, 0x16, 0x3d, 0x2a, 0x9a, 0x5e, 0x6d, 0x31, 0x6f, 0x55, 0xba, 0xc7, 0x43, 0xd1, 0x9f,
+	0x5b, 0xf1, 0x53, 0x14, 0x07, 0xf2, 0x25, 0x6c, 0x4a, 0x25, 0x6a, 0x52, 0xa7, 0x94, 0xb4, 0x4f,
+	0x47, 0x12, 0xf5, 0x9b, 0x90, 0x4e, 0xb2, 0x25, 0x54, 0x69, 0xce, 0xef, 0x16, 0xec, 0x5e, 0x56,
+	0x63, 0x49, 0x7b, 0x21, 0x5c, 0x65, 0xa2, 0xf2, 0x42, 0xfa, 0x9a, 0x70, 0xf5, 0xf6, 0xcb, 0x6e,
+	0x73, 0xf9, 0xef, 0x69, 0xf9, 0xd7, 0x97, 0xcc, 0x6e, 0x5d, 0x22, 0x67, 0xba, 0x77, 0x4e, 0x81,
+	0xbc, 0xa9, 0xe6, 0x92, 0x92, 0xbe, 0x82, 0x0d, 0x63, 0xda, 0x07, 0xef, 0x5e, 0x0b, 0x63, 0xea,
+	0x32, 0xd3, 0xe9, 0x43, 0xcd, 0x10, 0x79, 0x09, 0xc5, 0x1d, 0xa8, 0x8b, 0x5d, 0xa1, 0x11, 0x4e,
+	0xe5, 0xc2, 0x48, 0xae, 0x6d, 0xd7, 0xce, 0x8d, 0x8f, 0xe8, 0xcc, 0x39, 0x28, 0xea, 0x2d, 0xc4,
+	0xfb, 0x26, 0x98, 0xf3, 0x8b, 0x05, 0x7b, 0xa5, 0x5f, 0xc5, 0x0f, 0x11, 0xf5, 0x7d, 0xd8, 0x1a,
+	0x9d, 0xfa, 0x61, 0x94, 0x7d, 0x7c, 0xcb, 0xd5, 0xfc, 0x40, 0x84, 0xa8, 0x8d, 0x41, 0xdd, 0xb1,
+	0x4e, 0x73, 0x9e, 0x83, 0x6d, 0x7a, 0x85, 0xce, 0xa4, 0xc7, 0x0b, 0x03, 0x53, 0x67, 0x32, 0x66,
+	0xd0, 0x77, 0x2b, 0xd2, 0x39, 0x08, 0xde, 0x6f, 0x14, 0xbf, 0x59, 0x60, 0x0f, 0xb9, 0x3f, 0xa6,
+	0x49, 0xde, 0xd9, 0x36, 0xca, 0x7b, 0x01, 0x6f, 0x2f, 0xe6, 0xad, 0xaa, 0x0a, 0x1a, 0xf4, 0xdd,
+	0xaa, 0x72, 0x0f, 0x02, 0xf2, 0x04, 0x76, 0x74, 0x68, 0xa0, 0x4a, 0xd3, 0x1d, 0x96, 0x2b, 0x5a,
+	0x01, 0x2c, 0xb7, 0x58, 0x47, 0xd3, 0xe8, 0xfc, 0x0c, 0xf5, 0xa5, 0x28, 0xb9, 0x52, 0x88, 0x94,
+	0x5f, 0x6a, 0xb5, 0x2b, 0x6c, 0xa2, 0x55, 0xe9, 0x1c, 0x04, 0xa4, 0x0b, 0x95, 0xe5, 0x12, 0xca,
+	0x87, 0x2c, 0xf3, 0x96, 0x2b, 0xc8, 0xf2, 0xc4, 0x56, 0xd9, 0xa6, 0xff, 0x43, 0xfe, 0xe2, 0xef,
+	0x61, 0xcb, 0x3f, 0x63, 0xd3, 0x88, 0xab, 0x11, 0xf7, 0xbe, 0x10, 0xd0, 0xff, 0xce, 0x5b, 0x07,
+	0x27, 0x21, 0x3f, 0x9d, 0xbe, 0x68, 0x8f, 0xd8, 0x99, 0x7e, 0x28, 0xe8, 0x9f, 0xbb, 0x18, 0x8c,
+	0x3b, 0x7c, 0x16, 0x53, 0x6c, 0x0f, 0x22, 0xfe, 0xf7, 0x9f, 0x77, 0x41, 0xbf, 0x23, 0x06, 0x11,
+	0x77, 0x35, 0x56, 0xef, 0xf1, 0xab, 0x45, 0xd3, 0x7a, 0xbd, 0x68, 0x5a, 0xff, 0x2d, 0x9a, 0xd6,
+	0x1f, 0x17, 0xcd, 0xb5, 0xd7, 0x17, 0xcd, 0xb5, 0x7f, 0x2e, 0x9a, 0x6b, 0x3f, 0x1c, 0x19, 0xb8,
+	0x5f, 0xab, 0x3e, 0xbf, 0xa3, 0xfc, 0x27, 0x96, 0x8c, 0x3b, 0xd9, 0x5b, 0xe3, 0xbc, 0x78, 0x6d,
+	0x48, 0x9e, 0x17, 0x5b, 0xf2, 0xb9, 0xf1, 0xf9, 0xff, 0x01, 0x00, 0x00, 0xff, 0xff, 0xc1, 0x55,
+	0xa8, 0x87, 0xf7, 0x08, 0x00, 0x00,
 }
 
 func (m *GenesisState) Marshal() (dAtA []byte, err error) {
@@ -296,6 +910,104 @@ func (m *GenesisState) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	_ = i
 	var l int
 	_ = l
+	if len(m.OperatorKeyRemovals) > 0 {
+		for iNdEx := len(m.OperatorKeyRemovals) - 1; iNdEx >= 0; iNdEx-- {
+			{
+				size, err := m.OperatorKeyRemovals[iNdEx].MarshalToSizedBuffer(dAtA[:i])
+				if err != nil {
+					return 0, err
+				}
+				i -= size
+				i = encodeVarintGenesis(dAtA, i, uint64(size))
+			}
+			i--
+			dAtA[i] = 0x42
+		}
+	}
+	if len(m.PreConsKeys) > 0 {
+		for iNdEx := len(m.PreConsKeys) - 1; iNdEx >= 0; iNdEx-- {
+			{
+				size, err := m.PreConsKeys[iNdEx].MarshalToSizedBuffer(dAtA[:i])
+				if err != nil {
+					return 0, err
+				}
+				i -= size
+				i = encodeVarintGenesis(dAtA, i, uint64(size))
+			}
+			i--
+			dAtA[i] = 0x3a
+		}
+	}
+	if len(m.SlashStates) > 0 {
+		for iNdEx := len(m.SlashStates) - 1; iNdEx >= 0; iNdEx-- {
+			{
+				size, err := m.SlashStates[iNdEx].MarshalToSizedBuffer(dAtA[:i])
+				if err != nil {
+					return 0, err
+				}
+				i -= size
+				i = encodeVarintGenesis(dAtA, i, uint64(size))
+			}
+			i--
+			dAtA[i] = 0x32
+		}
+	}
+	if len(m.OperatorUSDValues) > 0 {
+		for iNdEx := len(m.OperatorUSDValues) - 1; iNdEx >= 0; iNdEx-- {
+			{
+				size, err := m.OperatorUSDValues[iNdEx].MarshalToSizedBuffer(dAtA[:i])
+				if err != nil {
+					return 0, err
+				}
+				i -= size
+				i = encodeVarintGenesis(dAtA, i, uint64(size))
+			}
+			i--
+			dAtA[i] = 0x2a
+		}
+	}
+	if len(m.AVSUSDValues) > 0 {
+		for iNdEx := len(m.AVSUSDValues) - 1; iNdEx >= 0; iNdEx-- {
+			{
+				size, err := m.AVSUSDValues[iNdEx].MarshalToSizedBuffer(dAtA[:i])
+				if err != nil {
+					return 0, err
+				}
+				i -= size
+				i = encodeVarintGenesis(dAtA, i, uint64(size))
+			}
+			i--
+			dAtA[i] = 0x22
+		}
+	}
+	if len(m.OptStates) > 0 {
+		for iNdEx := len(m.OptStates) - 1; iNdEx >= 0; iNdEx-- {
+			{
+				size, err := m.OptStates[iNdEx].MarshalToSizedBuffer(dAtA[:i])
+				if err != nil {
+					return 0, err
+				}
+				i -= size
+				i = encodeVarintGenesis(dAtA, i, uint64(size))
+			}
+			i--
+			dAtA[i] = 0x1a
+		}
+	}
+	if len(m.OperatorRecords) > 0 {
+		for iNdEx := len(m.OperatorRecords) - 1; iNdEx >= 0; iNdEx-- {
+			{
+				size, err := m.OperatorRecords[iNdEx].MarshalToSizedBuffer(dAtA[:i])
+				if err != nil {
+					return 0, err
+				}
+				i -= size
+				i = encodeVarintGenesis(dAtA, i, uint64(size))
+			}
+			i--
+			dAtA[i] = 0x12
+		}
+	}
 	if len(m.Operators) > 0 {
 		for iNdEx := len(m.Operators) - 1; iNdEx >= 0; iNdEx-- {
 			{
@@ -309,6 +1021,354 @@ func (m *GenesisState) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 			i--
 			dAtA[i] = 0xa
 		}
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *OperatorDetail) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *OperatorDetail) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *OperatorDetail) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	{
+		size, err := m.OperatorInfo.MarshalToSizedBuffer(dAtA[:i])
+		if err != nil {
+			return 0, err
+		}
+		i -= size
+		i = encodeVarintGenesis(dAtA, i, uint64(size))
+	}
+	i--
+	dAtA[i] = 0x12
+	if len(m.OperatorAddress) > 0 {
+		i -= len(m.OperatorAddress)
+		copy(dAtA[i:], m.OperatorAddress)
+		i = encodeVarintGenesis(dAtA, i, uint64(len(m.OperatorAddress)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *OptedState) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *OptedState) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *OptedState) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	{
+		size, err := m.OptInfo.MarshalToSizedBuffer(dAtA[:i])
+		if err != nil {
+			return 0, err
+		}
+		i -= size
+		i = encodeVarintGenesis(dAtA, i, uint64(size))
+	}
+	i--
+	dAtA[i] = 0x12
+	if len(m.Key) > 0 {
+		i -= len(m.Key)
+		copy(dAtA[i:], m.Key)
+		i = encodeVarintGenesis(dAtA, i, uint64(len(m.Key)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *AVSUSDValue) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *AVSUSDValue) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *AVSUSDValue) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	{
+		size, err := m.Value.MarshalToSizedBuffer(dAtA[:i])
+		if err != nil {
+			return 0, err
+		}
+		i -= size
+		i = encodeVarintGenesis(dAtA, i, uint64(size))
+	}
+	i--
+	dAtA[i] = 0x12
+	if len(m.AVSAddr) > 0 {
+		i -= len(m.AVSAddr)
+		copy(dAtA[i:], m.AVSAddr)
+		i = encodeVarintGenesis(dAtA, i, uint64(len(m.AVSAddr)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *OperatorUSDValue) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *OperatorUSDValue) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *OperatorUSDValue) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	{
+		size, err := m.OptedUSDValue.MarshalToSizedBuffer(dAtA[:i])
+		if err != nil {
+			return 0, err
+		}
+		i -= size
+		i = encodeVarintGenesis(dAtA, i, uint64(size))
+	}
+	i--
+	dAtA[i] = 0x12
+	if len(m.Key) > 0 {
+		i -= len(m.Key)
+		copy(dAtA[i:], m.Key)
+		i = encodeVarintGenesis(dAtA, i, uint64(len(m.Key)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *OperatorSlashState) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *OperatorSlashState) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *OperatorSlashState) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	{
+		size, err := m.Info.MarshalToSizedBuffer(dAtA[:i])
+		if err != nil {
+			return 0, err
+		}
+		i -= size
+		i = encodeVarintGenesis(dAtA, i, uint64(size))
+	}
+	i--
+	dAtA[i] = 0x12
+	if len(m.Key) > 0 {
+		i -= len(m.Key)
+		copy(dAtA[i:], m.Key)
+		i = encodeVarintGenesis(dAtA, i, uint64(len(m.Key)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *PrevConsKey) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *PrevConsKey) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *PrevConsKey) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.ConsensusKey) > 0 {
+		i -= len(m.ConsensusKey)
+		copy(dAtA[i:], m.ConsensusKey)
+		i = encodeVarintGenesis(dAtA, i, uint64(len(m.ConsensusKey)))
+		i--
+		dAtA[i] = 0x12
+	}
+	if len(m.Key) > 0 {
+		i -= len(m.Key)
+		copy(dAtA[i:], m.Key)
+		i = encodeVarintGenesis(dAtA, i, uint64(len(m.Key)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *OperatorKeyRemoval) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *OperatorKeyRemoval) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *OperatorKeyRemoval) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.Key) > 0 {
+		i -= len(m.Key)
+		copy(dAtA[i:], m.Key)
+		i = encodeVarintGenesis(dAtA, i, uint64(len(m.Key)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *OperatorConsKeyRecord) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *OperatorConsKeyRecord) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *OperatorConsKeyRecord) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.Chains) > 0 {
+		for iNdEx := len(m.Chains) - 1; iNdEx >= 0; iNdEx-- {
+			{
+				size, err := m.Chains[iNdEx].MarshalToSizedBuffer(dAtA[:i])
+				if err != nil {
+					return 0, err
+				}
+				i -= size
+				i = encodeVarintGenesis(dAtA, i, uint64(size))
+			}
+			i--
+			dAtA[i] = 0x12
+		}
+	}
+	if len(m.OperatorAddress) > 0 {
+		i -= len(m.OperatorAddress)
+		copy(dAtA[i:], m.OperatorAddress)
+		i = encodeVarintGenesis(dAtA, i, uint64(len(m.OperatorAddress)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *ChainDetails) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *ChainDetails) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *ChainDetails) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.ConsensusKey) > 0 {
+		i -= len(m.ConsensusKey)
+		copy(dAtA[i:], m.ConsensusKey)
+		i = encodeVarintGenesis(dAtA, i, uint64(len(m.ConsensusKey)))
+		i--
+		dAtA[i] = 0x12
+	}
+	if len(m.ChainID) > 0 {
+		i -= len(m.ChainID)
+		copy(dAtA[i:], m.ChainID)
+		i = encodeVarintGenesis(dAtA, i, uint64(len(m.ChainID)))
+		i--
+		dAtA[i] = 0xa
 	}
 	return len(dAtA) - i, nil
 }
@@ -464,6 +1524,189 @@ func (m *GenesisState) Size() (n int) {
 			n += 1 + l + sovGenesis(uint64(l))
 		}
 	}
+	if len(m.OperatorRecords) > 0 {
+		for _, e := range m.OperatorRecords {
+			l = e.Size()
+			n += 1 + l + sovGenesis(uint64(l))
+		}
+	}
+	if len(m.OptStates) > 0 {
+		for _, e := range m.OptStates {
+			l = e.Size()
+			n += 1 + l + sovGenesis(uint64(l))
+		}
+	}
+	if len(m.AVSUSDValues) > 0 {
+		for _, e := range m.AVSUSDValues {
+			l = e.Size()
+			n += 1 + l + sovGenesis(uint64(l))
+		}
+	}
+	if len(m.OperatorUSDValues) > 0 {
+		for _, e := range m.OperatorUSDValues {
+			l = e.Size()
+			n += 1 + l + sovGenesis(uint64(l))
+		}
+	}
+	if len(m.SlashStates) > 0 {
+		for _, e := range m.SlashStates {
+			l = e.Size()
+			n += 1 + l + sovGenesis(uint64(l))
+		}
+	}
+	if len(m.PreConsKeys) > 0 {
+		for _, e := range m.PreConsKeys {
+			l = e.Size()
+			n += 1 + l + sovGenesis(uint64(l))
+		}
+	}
+	if len(m.OperatorKeyRemovals) > 0 {
+		for _, e := range m.OperatorKeyRemovals {
+			l = e.Size()
+			n += 1 + l + sovGenesis(uint64(l))
+		}
+	}
+	return n
+}
+
+func (m *OperatorDetail) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.OperatorAddress)
+	if l > 0 {
+		n += 1 + l + sovGenesis(uint64(l))
+	}
+	l = m.OperatorInfo.Size()
+	n += 1 + l + sovGenesis(uint64(l))
+	return n
+}
+
+func (m *OptedState) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.Key)
+	if l > 0 {
+		n += 1 + l + sovGenesis(uint64(l))
+	}
+	l = m.OptInfo.Size()
+	n += 1 + l + sovGenesis(uint64(l))
+	return n
+}
+
+func (m *AVSUSDValue) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.AVSAddr)
+	if l > 0 {
+		n += 1 + l + sovGenesis(uint64(l))
+	}
+	l = m.Value.Size()
+	n += 1 + l + sovGenesis(uint64(l))
+	return n
+}
+
+func (m *OperatorUSDValue) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.Key)
+	if l > 0 {
+		n += 1 + l + sovGenesis(uint64(l))
+	}
+	l = m.OptedUSDValue.Size()
+	n += 1 + l + sovGenesis(uint64(l))
+	return n
+}
+
+func (m *OperatorSlashState) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.Key)
+	if l > 0 {
+		n += 1 + l + sovGenesis(uint64(l))
+	}
+	l = m.Info.Size()
+	n += 1 + l + sovGenesis(uint64(l))
+	return n
+}
+
+func (m *PrevConsKey) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.Key)
+	if l > 0 {
+		n += 1 + l + sovGenesis(uint64(l))
+	}
+	l = len(m.ConsensusKey)
+	if l > 0 {
+		n += 1 + l + sovGenesis(uint64(l))
+	}
+	return n
+}
+
+func (m *OperatorKeyRemoval) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.Key)
+	if l > 0 {
+		n += 1 + l + sovGenesis(uint64(l))
+	}
+	return n
+}
+
+func (m *OperatorConsKeyRecord) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.OperatorAddress)
+	if l > 0 {
+		n += 1 + l + sovGenesis(uint64(l))
+	}
+	if len(m.Chains) > 0 {
+		for _, e := range m.Chains {
+			l = e.Size()
+			n += 1 + l + sovGenesis(uint64(l))
+		}
+	}
+	return n
+}
+
+func (m *ChainDetails) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.ChainID)
+	if l > 0 {
+		n += 1 + l + sovGenesis(uint64(l))
+	}
+	l = len(m.ConsensusKey)
+	if l > 0 {
+		n += 1 + l + sovGenesis(uint64(l))
+	}
 	return n
 }
 
@@ -584,10 +1827,1249 @@ func (m *GenesisState) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.Operators = append(m.Operators, OperatorInfo{})
+			m.Operators = append(m.Operators, OperatorDetail{})
 			if err := m.Operators[len(m.Operators)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field OperatorRecords", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowGenesis
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthGenesis
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthGenesis
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.OperatorRecords = append(m.OperatorRecords, OperatorConsKeyRecord{})
+			if err := m.OperatorRecords[len(m.OperatorRecords)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 3:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field OptStates", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowGenesis
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthGenesis
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthGenesis
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.OptStates = append(m.OptStates, OptedState{})
+			if err := m.OptStates[len(m.OptStates)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 4:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field AVSUSDValues", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowGenesis
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthGenesis
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthGenesis
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.AVSUSDValues = append(m.AVSUSDValues, AVSUSDValue{})
+			if err := m.AVSUSDValues[len(m.AVSUSDValues)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 5:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field OperatorUSDValues", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowGenesis
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthGenesis
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthGenesis
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.OperatorUSDValues = append(m.OperatorUSDValues, OperatorUSDValue{})
+			if err := m.OperatorUSDValues[len(m.OperatorUSDValues)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 6:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field SlashStates", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowGenesis
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthGenesis
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthGenesis
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.SlashStates = append(m.SlashStates, OperatorSlashState{})
+			if err := m.SlashStates[len(m.SlashStates)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 7:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field PreConsKeys", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowGenesis
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthGenesis
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthGenesis
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.PreConsKeys = append(m.PreConsKeys, PrevConsKey{})
+			if err := m.PreConsKeys[len(m.PreConsKeys)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 8:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field OperatorKeyRemovals", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowGenesis
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthGenesis
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthGenesis
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.OperatorKeyRemovals = append(m.OperatorKeyRemovals, OperatorKeyRemoval{})
+			if err := m.OperatorKeyRemovals[len(m.OperatorKeyRemovals)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipGenesis(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthGenesis
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *OperatorDetail) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowGenesis
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: OperatorDetail: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: OperatorDetail: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field OperatorAddress", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowGenesis
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthGenesis
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthGenesis
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.OperatorAddress = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field OperatorInfo", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowGenesis
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthGenesis
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthGenesis
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.OperatorInfo.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipGenesis(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthGenesis
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *OptedState) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowGenesis
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: OptedState: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: OptedState: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Key", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowGenesis
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthGenesis
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthGenesis
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Key = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field OptInfo", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowGenesis
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthGenesis
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthGenesis
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.OptInfo.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipGenesis(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthGenesis
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *AVSUSDValue) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowGenesis
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: AVSUSDValue: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: AVSUSDValue: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field AVSAddr", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowGenesis
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthGenesis
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthGenesis
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.AVSAddr = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Value", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowGenesis
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthGenesis
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthGenesis
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.Value.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipGenesis(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthGenesis
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *OperatorUSDValue) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowGenesis
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: OperatorUSDValue: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: OperatorUSDValue: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Key", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowGenesis
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthGenesis
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthGenesis
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Key = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field OptedUSDValue", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowGenesis
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthGenesis
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthGenesis
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.OptedUSDValue.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipGenesis(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthGenesis
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *OperatorSlashState) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowGenesis
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: OperatorSlashState: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: OperatorSlashState: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Key", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowGenesis
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthGenesis
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthGenesis
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Key = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Info", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowGenesis
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthGenesis
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthGenesis
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.Info.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipGenesis(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthGenesis
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *PrevConsKey) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowGenesis
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: PrevConsKey: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: PrevConsKey: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Key", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowGenesis
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthGenesis
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthGenesis
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Key = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field ConsensusKey", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowGenesis
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthGenesis
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthGenesis
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.ConsensusKey = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipGenesis(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthGenesis
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *OperatorKeyRemoval) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowGenesis
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: OperatorKeyRemoval: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: OperatorKeyRemoval: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Key", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowGenesis
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthGenesis
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthGenesis
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Key = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipGenesis(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthGenesis
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *OperatorConsKeyRecord) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowGenesis
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: OperatorConsKeyRecord: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: OperatorConsKeyRecord: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field OperatorAddress", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowGenesis
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthGenesis
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthGenesis
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.OperatorAddress = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Chains", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowGenesis
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthGenesis
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthGenesis
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Chains = append(m.Chains, ChainDetails{})
+			if err := m.Chains[len(m.Chains)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipGenesis(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthGenesis
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *ChainDetails) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowGenesis
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: ChainDetails: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: ChainDetails: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field ChainID", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowGenesis
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthGenesis
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthGenesis
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.ChainID = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field ConsensusKey", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowGenesis
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthGenesis
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthGenesis
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.ConsensusKey = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
 		default:
 			iNdEx = preIndex

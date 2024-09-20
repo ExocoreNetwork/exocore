@@ -271,13 +271,5 @@ func (gs GenesisState) Validate() error {
 		)
 	}
 
-	if !gs.LastTotalPower.Equal(math.NewInt(totalPower)) {
-		return errorsmod.Wrapf(
-			ErrInvalidGenesisData,
-			"last total power mismatch %s, expected %d",
-			gs.LastTotalPower, totalPower,
-		)
-	}
-
 	return nil
 }

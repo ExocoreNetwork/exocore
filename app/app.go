@@ -672,7 +672,6 @@ func NewExocoreApp(
 	// to determine whether an AVS is registered or not.
 	app.OperatorKeeper = operatorKeeper.NewKeeper(
 		keys[operatorTypes.StoreKey], appCodec,
-		bApp.CreateQueryContext,
 		app.AssetsKeeper,
 		&app.DelegationKeeper, // intentionally a pointer, since not yet initialized.
 		&app.OracleKeeper,

@@ -40,6 +40,9 @@ func (k Keeper) SetStakingAssetInfo(ctx sdk.Context, info *assetstype.StakingAss
 	if info.AssetBasicInfo.Decimals > assetstype.MaxDecimal {
 		return errorsmod.Wrapf(assetstype.ErrInvalidInputParameter, "the decimal is greater than the MaxDecimal,decimal:%v,MaxDecimal:%v", info.AssetBasicInfo.Decimals, assetstype.MaxDecimal)
 	}
+	if info.StakingTotalAmount.IsNegative() {
+		return errorsmod.Wrapf(assetstype.ErrInvalidInputParameter, "the total staking amount is negative, StakingTotalAmount:%v", info.StakingTotalAmount)
+	}
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), assetstype.KeyPrefixReStakingAssetInfo)
 	// key := common.HexToAddress(incentive.Contract)
 	bz := k.cdc.MustMarshal(info)
@@ -85,17 +88,16 @@ func (k Keeper) GetAssetsDecimal(ctx sdk.Context, assets map[string]interface{})
 	return decimals, nil
 }
 
-func (k Keeper) GetAllStakingAssetsInfo(ctx sdk.Context) (allAssets map[string]*assetstype.StakingAssetInfo, err error) {
+func (k Keeper) GetAllStakingAssetsInfo(ctx sdk.Context) (allAssets []assetstype.StakingAssetInfo, err error) {
 	store := ctx.KVStore(k.storeKey)
 	iterator := sdk.KVStorePrefixIterator(store, assetstype.KeyPrefixReStakingAssetInfo)
 	defer iterator.Close()
 
-	ret := make(map[string]*assetstype.StakingAssetInfo, 0)
+	ret := make([]assetstype.StakingAssetInfo, 0)
 	for ; iterator.Valid(); iterator.Next() {
 		var assetInfo assetstype.StakingAssetInfo
 		k.cdc.MustUnmarshal(iterator.Value(), &assetInfo)
-		_, assetID := assetstype.GetStakeIDAndAssetIDFromStr(assetInfo.AssetBasicInfo.LayerZeroChainID, "", assetInfo.AssetBasicInfo.Address)
-		ret[assetID] = &assetInfo
+		ret = append(ret, assetInfo)
 	}
 	return ret, nil
 }

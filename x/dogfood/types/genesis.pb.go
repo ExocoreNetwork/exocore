@@ -33,7 +33,7 @@ const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 type GenesisState struct {
 	// params refers to the parameters of the module.
 	Params Params `protobuf:"bytes,1,opt,name=params,proto3" json:"params"`
-	// val_set is the initial validator set. it onyl represents the active
+	// val_set is the initial validator set. it only represents the active
 	// validators.
 	ValSet []GenesisValidator `protobuf:"bytes,2,rep,name=val_set,json=valSet,proto3" json:"val_set"`
 	// opt_out_expiries is a list of (future) epochs at the end of which the

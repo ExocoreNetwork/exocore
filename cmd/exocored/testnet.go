@@ -391,8 +391,10 @@ func getTestExocoreGenesis(
 	power := int64(300)
 	depositAmount := sdk.TokensFromConsensusPower(power, evmostypes.PowerReduction)
 	depositsByStaker := []assetstypes.DepositsByStaker{}
-	operatorInfos := []operatortypes.OperatorInfo{}
-	delegationsByStaker := []delegationtypes.DelegationsByStaker{}
+	operatorInfos := []operatortypes.OperatorDetail{}
+	delegationStates := []delegationtypes.DelegationStates{}
+	associations := []delegationtypes.StakerToOperator{}
+	stakersByOperator := []delegationtypes.StakersByOperator{}
 	validators := []dogfoodtypes.GenesisValidator{}
 	for i := range operatorAddrs {
 		operator := operatorAddrs[i]
@@ -414,27 +416,33 @@ func getTestExocoreGenesis(
 				},
 			},
 		})
-		operatorInfos = append(operatorInfos, operatortypes.OperatorInfo{
-			EarningsAddr:     operator.String(),
-			OperatorMetaInfo: "operator1",
-			Commission: stakingtypes.NewCommission(
-				sdk.ZeroDec(), sdk.ZeroDec(), sdk.ZeroDec(),
-			),
+		operatorInfos = append(operatorInfos, operatortypes.OperatorDetail{
+			OperatorAddress: operator.String(),
+			OperatorInfo: operatortypes.OperatorInfo{
+				EarningsAddr:     operator.String(),
+				OperatorMetaInfo: "operator1",
+				Commission: stakingtypes.NewCommission(
+					sdk.ZeroDec(), sdk.ZeroDec(), sdk.ZeroDec(),
+				),
+			},
 		})
-		delegationsByStaker = append(delegationsByStaker, delegationtypes.DelegationsByStaker{
+		singleStateKey := assetstypes.GetJoinedStoreKey(stakerID, assetID, operator.String())
+		delegationStates = append(delegationStates, delegationtypes.DelegationStates{
+			Key: string(singleStateKey),
+			States: delegationtypes.DelegationAmounts{
+				WaitUndelegationAmount: math.NewInt(0),
+				UndelegatableShare:     math.LegacyNewDecFromBigInt(depositAmount.BigInt()),
+			},
+		},
+		)
+		associations = append(associations, delegationtypes.StakerToOperator{
+			Operator: operator.String(),
 			StakerID: stakerID,
-			Delegations: []delegationtypes.DelegatedSingleAssetInfo{
-				{
-					AssetID: assetID,
-					PerOperatorAmounts: []delegationtypes.KeyValue{
-						{
-							Key: operator.String(),
-							Value: &delegationtypes.ValueField{
-								Amount: depositAmount,
-							},
-						},
-					},
-				},
+		})
+		stakersByOperator = append(stakersByOperator, delegationtypes.StakersByOperator{
+			Key: string(assetstypes.GetJoinedStoreKey(operator.String(), assetID)),
+			Stakers: []string{
+				stakerID,
 			},
 		})
 		validators = append(validators, dogfoodtypes.GenesisValidator{
@@ -447,17 +455,14 @@ func getTestExocoreGenesis(
 			assetstypes.DefaultParams(),
 			clientChains, []assetstypes.StakingAssetInfo{
 				{
-					AssetBasicInfo: &assets[0],
+					AssetBasicInfo: assets[0],
 					// required to be 0, since deposits are handled after token init.
 					StakingTotalAmount: sdk.ZeroInt(),
 				},
-			}, depositsByStaker,
+			}, depositsByStaker, nil,
 		), operatortypes.NewGenesisState(
-			operatorInfos,
-		), delegationtypes.NewGenesis(
-			delegationsByStaker,
-			nil,
-		), dogfoodtypes.NewGenesis(
+			operatorInfos, nil, nil, nil, nil, nil, nil, nil,
+		), delegationtypes.NewGenesis(associations, delegationStates, stakersByOperator, nil), dogfoodtypes.NewGenesis(
 			dogfoodtypes.NewParams(
 				dogfoodtypes.DefaultEpochsUntilUnbonded,
 				dogfoodtypes.DefaultEpochIdentifier,

@@ -1,7 +1,6 @@
 package keeper_test
 
 import (
-	"fmt"
 	"strings"
 	"time"
 
@@ -123,7 +122,6 @@ func (suite *OperatorTestSuite) CheckState(expectedState *StateForCheck) {
 
 	optedUSDValues, err := suite.App.OperatorKeeper.GetOperatorOptedUSDValue(suite.Ctx, suite.avsAddr, suite.operatorAddr.String())
 	if expectedState.AVSOperatorShare.IsNil() {
-		fmt.Println("the err is:", err)
 		suite.True(strings.Contains(err.Error(), operatorTypes.ErrNoKeyInTheStore.Error()))
 	} else {
 		suite.NoError(err)
