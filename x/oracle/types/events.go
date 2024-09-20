@@ -18,6 +18,6 @@ const (
 	AttributeValuePriceUpdatedSuccess  = "success"
 	AttributeValueParamsUpdatedSuccess = "success"
 	AttributeValueNativeTokenUpdate    = "update"
-	AttributeValueNativeTokenDeposit   = "depposit"
+	AttributeValueNativeTokenDeposit   = "deposit"
 	AttributeValueNativeTokenWithdraw  = "withdraw"
 )

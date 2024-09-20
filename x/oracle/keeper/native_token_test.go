@@ -42,7 +42,9 @@ func (ks *KeeperSuite) TestNativeTokenLifeCycleOneStaker() {
 	stakerStr := common.Address(operator.Bytes()).String()
 	assetID := assetstypes.NativeETHAssetID
 	// 1. deposit amount 100
+	// 100 is not a possible nubmer with one validator, it's ok to use this as a start and we'll check the number to be updated to a right number(uncer 32 with one validator)
 	amount100 := sdkmath.NewIntFromUint64(100)
+	amount32 := sdkmath.NewIntFromUint64(32)
 	ks.k.UpdateNativeTokenByDepositOrWithdraw(ks.ctx, assetID, stakerStr, amount100, 199)
 	// - 1.1 check stakerInfo
 	stakerInfo := ks.k.GetStakerInfo(ks.ctx, assetID, stakerStr)
@@ -52,14 +54,14 @@ func (ks *KeeperSuite) TestNativeTokenLifeCycleOneStaker() {
 		Change:  types.BalanceInfo_ACTION_DEPOSIT,
 		Balance: 100,
 	}, *stakerInfo.BalanceList[0])
-	ks.Equal([]uint64{199}, stakerInfo.ValidatorIndexs)
+	ks.Equal([]uint64{199}, stakerInfo.ValidatorIndexes)
 	// - 1.2 check stakerList
 	stakerList := ks.k.GetStakerList(ks.ctx, assetID)
 	ks.Equal(stakerList.StakerAddrs[0], stakerStr)
 
 	// 2. Msg. minus staker's balance
 	stakerChanges := [][]int{
-		{0, -50},
+		{0, -10},
 	}
 	rawData := convertBalanceChangeToBytes(stakerChanges)
 	ks.k.UpdateNativeTokenByBalanceChange(ks.ctx, assetID, rawData, 9)
@@ -69,11 +71,12 @@ func (ks *KeeperSuite) TestNativeTokenLifeCycleOneStaker() {
 		Block:   2,
 		RoundID: 9,
 		Change:  types.BalanceInfo_ACTION_SLASH_REFUND,
-		Balance: 50,
+		// this is expected to be 32-10=22, not 100-10
+		Balance: 22,
 	}, *stakerInfo.BalanceList[1])
 
 	// 3. deposit more. 100
-	ks.k.UpdateNativeTokenByDepositOrWithdraw(ks.ctx, assetID, stakerStr, amount100, 999)
+	ks.k.UpdateNativeTokenByDepositOrWithdraw(ks.ctx, assetID, stakerStr, amount32, 999)
 	// - 3.1 check stakerInfo
 	stakerInfo = ks.k.GetStakerInfo(ks.ctx, assetID, stakerStr)
 	ks.Equal(types.BalanceInfo{
@@ -81,20 +84,22 @@ func (ks *KeeperSuite) TestNativeTokenLifeCycleOneStaker() {
 		RoundID: 9,
 		Index:   1,
 		Change:  types.BalanceInfo_ACTION_DEPOSIT,
-		Balance: 150,
+		Balance: 54,
 	}, *stakerInfo.BalanceList[2])
-	ks.Equal([]uint64{199, 999}, stakerInfo.ValidatorIndexs)
+	ks.Equal([]uint64{199, 999}, stakerInfo.ValidatorIndexes)
 
 	// 4. Msg. add staker's balance
+	// at this point the system correct number should be 32*2-10 = 52, if some validator do refund, means the delta should be less than 10
 	stakerChanges = [][]int{
-		{0, 30},
+		// means delta from -10 change to -5
+		{0, -5},
 	}
 	rawData = convertBalanceChangeToBytes(stakerChanges)
 	ks.k.UpdateNativeTokenByBalanceChange(ks.ctx, assetID, rawData, 11)
 	// - 4.1 check stakerInfo
 	stakerInfo = ks.k.GetStakerInfo(ks.ctx, assetID, stakerStr)
 	ks.Equal(types.BalanceInfo{
-		Balance: 180,
+		Balance: 59,
 		Block:   2,
 		RoundID: 11,
 		Index:   0,
@@ -102,21 +107,22 @@ func (ks *KeeperSuite) TestNativeTokenLifeCycleOneStaker() {
 	}, *stakerInfo.BalanceList[3])
 
 	// 5. withdraw
-	amount80N := sdkmath.NewInt(-80)
-	ks.k.UpdateNativeTokenByDepositOrWithdraw(ks.ctx, assetID, stakerStr, amount80N, 199)
+	amount30N := sdkmath.NewInt(-30)
+	ks.k.UpdateNativeTokenByDepositOrWithdraw(ks.ctx, assetID, stakerStr, amount30N, 199)
 	// - 5.1 check stakerInfo
 	stakerInfo = ks.k.GetStakerInfo(ks.ctx, assetID, stakerStr)
 	ks.Equal(types.BalanceInfo{
-		Balance: 100,
+		Balance: 29,
 		Block:   2,
 		RoundID: 11,
 		Index:   1,
 		Change:  types.BalanceInfo_ACTION_WITHDRAW,
 	}, *stakerInfo.BalanceList[4])
-	ks.Equal([]uint64{999}, stakerInfo.ValidatorIndexs)
+	// withdraw will remove this validator
+	ks.Equal([]uint64{999}, stakerInfo.ValidatorIndexes)
 
 	// 6.withdrawall
-	amount100N := sdkmath.NewInt(-100)
+	amount100N := sdkmath.NewInt(-29)
 	ks.k.UpdateNativeTokenByDepositOrWithdraw(ks.ctx, assetID, stakerStr, amount100N, 999)
 	// - 6.1 check stakerInfo
 	stakerInfo = ks.k.GetStakerInfo(ks.ctx, assetID, stakerStr)
