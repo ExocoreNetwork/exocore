@@ -6,6 +6,7 @@ import "gogoproto/gogo.proto";
 
 option go_package = "github.com/ExocoreNetwork/exocore/x/oracle/types";
 
+// BalanceInfo tells effective-balance for native-restaking asset
 message BalanceInfo {
   uint64 round_id = 1 [(gogoproto.customname)="RoundID"];
   uint64 block = 2;
@@ -25,13 +26,15 @@ message BalanceInfo {
   Action change = 5;
 }
 
+// StakerInfo represents all related information for a staker of native-restaking
 message StakerInfo {
   string staker_addr = 1;
   int64 staker_index = 2;
-  repeated uint64 validator_indexs = 3;
+  repeated uint64 validator_indexes = 3;
   repeated BalanceInfo balance_list = 5;
 }
 
+// StakerList tells which stakers are active for one specific native-restaking asset
 message StakerList {
   repeated string staker_addrs = 1;
 }

@@ -11,6 +11,7 @@ import "exocore/oracle/v1/prices.proto";
 import "exocore/oracle/v1/recent_msg.proto";
 import "exocore/oracle/v1/recent_params.proto";
 import "exocore/oracle/v1/validator_update_block.proto";
+import "exocore/oracle/v1/native_token.proto";
 import "gogoproto/gogo.proto";
 import "google/api/annotations.proto";
 
@@ -18,6 +19,14 @@ option go_package = "github.com/ExocoreNetwork/exocore/x/oracle/types";
 
 // Query defines the gRPC querier service.
 service Query {
+  rpc StakerList (QueryStakerListRequest) returns (QueryStakerListResponse) {
+    option (google.api.http).get = "/ExocoreNetwork/exocore/oracle/staker_list";
+  }
+
+  rpc StakerInfos (QueryStakerInfosRequest) returns (QueryStakerInfosResponse) {
+    option (google.api.http).get = "/ExocoreNetwork/exocore/oracle/staker_infos";
+  }
+  
   // Parameters queries the parameters of the module.
   rpc Params(QueryParamsRequest) returns (QueryParamsResponse) {
     option (google.api.http).get = "/ExocoreNetwork/exocore/oracle/params";
@@ -74,6 +83,21 @@ service Query {
   }
 }
 
+message QueryStakerListRequest {
+  string asset_id = 1[(gogoproto.customname) = "AssetID"];
+}
+
+message QueryStakerListResponse {
+  StakerList staker_list = 1;
+}
+
+message QueryStakerInfosRequest {
+  string asset_id = 1[(gogoproto.customname) = "AssetID"];
+}
+
+message QueryStakerInfosResponse {
+  repeated StakerInfo staker_infos = 1;  
+}
 // QueryParamsRequest is request type for the Query/Params RPC method.
 message QueryParamsRequest {}
 

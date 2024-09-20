@@ -16,6 +16,8 @@ import (
 // undelegate: update operator's price, operator's totalAmount, operator's totalShare, staker's share
 // msg(refund or slash on beaconChain): update staker's price, operator's price
 
+const maxEffectiveBalance = 32
+
 var stakerList types.StakerList
 
 // GetStakerInfo returns details about staker for native-restaking under asset of assetID
@@ -30,9 +32,6 @@ func (k Keeper) GetStakerInfo(ctx sdk.Context, assetID, stakerAddr string) types
 	return stakerInfo
 }
 
-// TODO, NOTE: price changes will effect reward/slash calculation, every time one staker's price changed, it's reward/slash amount(LST) should be cleaned or recalculated immediately
-// TODO: validatorIndex
-// amount: represents for originalToken
 func (k Keeper) UpdateNativeTokenByDepositOrWithdraw(ctx sdk.Context, assetID, stakerAddr string, amount sdkmath.Int, validatorIndex uint64) sdkmath.Int {
 	// emit an event to tell that a staker's validator list has changed
 	ctx.EventManager().EmitEvent(sdk.NewEvent(
@@ -49,7 +48,7 @@ func (k Keeper) UpdateNativeTokenByDepositOrWithdraw(ctx sdk.Context, assetID, s
 		k.cdc.MustUnmarshal(value, stakerInfo)
 		if amount.IsPositive() {
 			// deopsit add a new validator into staker's validatorList
-			stakerInfo.ValidatorIndexs = append(stakerInfo.ValidatorIndexs, validatorIndex)
+			stakerInfo.ValidatorIndexes = append(stakerInfo.ValidatorIndexes, validatorIndex)
 		}
 	}
 
@@ -68,9 +67,9 @@ func (k Keeper) UpdateNativeTokenByDepositOrWithdraw(ctx sdk.Context, assetID, s
 		// TODO: check if this validator has withdraw all its asset and then we can move it out from the staker's validatorList
 		// currently when withdraw happened we assume this validator has left the staker's validatorList (deposit/withdraw all of that validator's staking ETH(<=32))
 		newBalance.Change = types.BalanceInfo_ACTION_WITHDRAW
-		for i, vIdx := range stakerInfo.ValidatorIndexs {
+		for i, vIdx := range stakerInfo.ValidatorIndexes {
 			if vIdx == validatorIndex {
-				stakerInfo.ValidatorIndexs = append(stakerInfo.ValidatorIndexs[:i], stakerInfo.ValidatorIndexs[i+1:]...)
+				stakerInfo.ValidatorIndexes = append(stakerInfo.ValidatorIndexes[:i], stakerInfo.ValidatorIndexes[i+1:]...)
 				break
 			}
 		}
@@ -126,6 +125,23 @@ func (k Keeper) UpdateNativeTokenByDepositOrWithdraw(ctx sdk.Context, assetID, s
 	return amount
 }
 
+// GetStakerInfos returns all stakers information
+func (k Keeper) GetStakerInfos(ctx sdk.Context, assetID string) (ret []*types.StakerInfo) {
+	store := ctx.KVStore(k.storeKey)
+	iterator := sdk.KVStorePrefixIterator(store, types.NativeTokenStakerKeyPrefix(assetID))
+	defer iterator.Close()
+	for ; iterator.Valid(); iterator.Next() {
+		sInfo := types.StakerInfo{}
+		k.cdc.MustUnmarshal(iterator.Value(), &sInfo)
+		// keep only the latest effective-balance
+		sInfo.BalanceList = sInfo.BalanceList[:len(sInfo.BalanceList)-1]
+		// this is mainly used by price feeder, so we remove the stakerAddr to reduce the size of return value
+		sInfo.StakerAddr = ""
+		ret = append(ret, &sInfo)
+	}
+	return ret
+}
+
 // GetstakerList return stakerList for native-restaking asset of assetID
 func (k Keeper) GetStakerList(ctx sdk.Context, assetID string) types.StakerList {
 	store := ctx.KVStore(k.storeKey)
@@ -152,7 +168,9 @@ func (k Keeper) UpdateNativeTokenByBalanceChange(ctx sdk.Context, assetID string
 		return err
 	}
 	store := ctx.KVStore(k.storeKey)
-	for stakerAddr, change := range stakerChanges {
+	for _, stakerAddr := range sl.StakerAddrs {
+		// if stakerAddr is not in stakerChanges, then the change would be set to 0 which is expected
+		change := stakerChanges[stakerAddr]
 		key := types.NativeTokenStakerKey(assetID, stakerAddr)
 		value := store.Get(key)
 		if value == nil {
@@ -172,11 +190,21 @@ func (k Keeper) UpdateNativeTokenByBalanceChange(ctx sdk.Context, assetID string
 			newBalance.Index = 0
 		}
 		newBalance.Change = types.BalanceInfo_ACTION_SLASH_REFUND
-		newBalance.Balance += int64(change)
+		// balance update are based on initial/max effective balance: 32
+		maxBalance := maxEffectiveBalance * (len(stakerInfo.ValidatorIndexes))
+		balance := maxBalance + change
+		if balance > maxBalance {
+			return errors.New("effective balance should never exceeds 32")
+		}
+		if delta := int64(balance) - newBalance.Balance; delta != 0 {
+			// TODO: call assetsmodule. func(k Keeper) UpdateNativeRestakingBalance(ctx sdk.Context, stakerID, assetID string, amount sdkmath.Int) error
+			_ = balance
+			newBalance.Balance = int64(balance)
+		}
+		//	newBalance.Balance += int64(change)
 		stakerInfo.Append(&newBalance)
 		bz := k.cdc.MustMarshal(stakerInfo)
 		store.Set(key, bz)
-		// TODO: call assetsmodule. func(k Keeper) UpdateNativeRestakingBalance(ctx sdk.Context, stakerID, assetID string, amount sdkmath.Int) error
 	}
 	return nil
 }
@@ -191,14 +219,21 @@ func (k Keeper) getStakerList(ctx sdk.Context, assetID string) types.StakerList 
 
 // parseBalanceChange parses rawData to details of amount change for all stakers relative to native restaking
 func parseBalanceChange(rawData []byte, sl types.StakerList) (map[string]int, error) {
-	indexs := rawData[:32]
+	// eg. 0100-000011
+	// first part 0100 tells that the effective-balance of staker corresponding to index 2 in StakerList
+	// the lenft part 000011. we use the first 4 bits to tell the length of this number, and it shows as 1 here, the 5th bit is used to tell symbol of the number, 1 means negative, then we can get the abs number indicate by the length. It's -1 here, means effective-balane is 32-1 on beacon chain for now
+	// the first 32 bytes are information to indicates effective-balance of which staker has changed, 1 means changed, 0 means not. 32 bytes can represents changes for at most 256 stakers
+	indexes := rawData[:32]
+	// bytes after first 32 are details of effective-balance change for each staker which has been marked with 1 in the first 32 bytes, for those who are marked with 0 will just be ignored
+	// For each staker we support at most 256 validators to join, so the biggest effective-balance change we would have is 256*16, then we need 12 bits to represents the number for each staker. And for compression we use 4 bits to tell then length of bits without leading 0 this number has.
+	// Then with the symbol we need at most 17 bits for each staker's effective-balance change: 0000.0.0000-0000-0000 (the leading 0 will be ignored for the last 12 bits)
 	changes := rawData[32:]
 	index := -1
 	byteIndex := 0
 	bitOffset := 0
 	lengthBits := 5
 	stakerChanges := make(map[string]int)
-	for _, b := range indexs {
+	for _, b := range indexes {
 		for i := 7; i >= 0; i-- {
 			index++
 			if (b>>i)&1 == 1 {
