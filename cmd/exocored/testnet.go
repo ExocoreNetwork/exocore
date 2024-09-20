@@ -41,16 +41,16 @@ import (
 	govv1 "github.com/cosmos/cosmos-sdk/x/gov/types/v1"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 
-	"github.com/evmos/evmos/v14/crypto/hd"
-	"github.com/evmos/evmos/v14/server/config"
-	srvflags "github.com/evmos/evmos/v14/server/flags"
+	"github.com/evmos/evmos/v16/crypto/hd"
+	"github.com/evmos/evmos/v16/server/config"
+	srvflags "github.com/evmos/evmos/v16/server/flags"
 
-	evmostypes "github.com/evmos/evmos/v14/types"
-	evmtypes "github.com/evmos/evmos/v14/x/evm/types"
+	evmostypes "github.com/evmos/evmos/v16/types"
+	evmtypes "github.com/evmos/evmos/v16/x/evm/types"
 
 	cmdcfg "github.com/ExocoreNetwork/exocore/cmd/config"
-	evmoskr "github.com/evmos/evmos/v14/crypto/keyring"
-	"github.com/evmos/evmos/v14/testutil/network"
+	evmoskr "github.com/evmos/evmos/v16/crypto/keyring"
+	"github.com/evmos/evmos/v16/testutil/network"
 
 	assetstypes "github.com/ExocoreNetwork/exocore/x/assets/types"
 	delegationtypes "github.com/ExocoreNetwork/exocore/x/delegation/types"
@@ -407,9 +407,9 @@ func getTestExocoreGenesis(
 				{
 					AssetID: assetID,
 					Info: assetstypes.StakerAssetInfo{
-						TotalDepositAmount:  depositAmount,
-						WithdrawableAmount:  depositAmount,
-						WaitUnbondingAmount: sdk.ZeroInt(),
+						TotalDepositAmount:        depositAmount,
+						WithdrawableAmount:        depositAmount,
+						PendingUndelegationAmount: sdk.ZeroInt(),
 					},
 				},
 			},

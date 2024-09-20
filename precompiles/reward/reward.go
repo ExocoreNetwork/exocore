@@ -15,7 +15,7 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/vm"
-	cmn "github.com/evmos/evmos/v14/precompiles/common"
+	cmn "github.com/evmos/evmos/v16/precompiles/common"
 )
 
 var _ vm.PrecompiledContract = &Precompile{}
@@ -91,6 +91,10 @@ func (p Precompile) Run(evm *vm.EVM, contract *vm.Contract, readOnly bool) (bz [
 	// This handles any out of gas errors that may occur during the execution of a precompile tx or query.
 	// It avoids panics and returns the out of gas error so the EVM can continue gracefully.
 	defer cmn.HandleGasError(ctx, contract, initialGas, &err)()
+
+	if err := stateDB.Commit(); err != nil {
+		return nil, err
+	}
 
 	if method.Name == MethodReward {
 		bz, err = p.Reward(ctx, evm.Origin, contract, stateDB, method, args)

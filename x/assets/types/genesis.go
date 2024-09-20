@@ -219,7 +219,7 @@ func (gs GenesisState) Validate() error {
 			info := deposit.Info
 			// check that there is no nil value provided.
 			if info.TotalDepositAmount.IsNil() || info.WithdrawableAmount.IsNil() ||
-				info.WaitUnbondingAmount.IsNil() {
+				info.PendingUndelegationAmount.IsNil() {
 				return errorsmod.Wrapf(
 					ErrInvalidGenesisData,
 					"nil deposit info for %s: %+v",
@@ -227,11 +227,11 @@ func (gs GenesisState) Validate() error {
 				)
 			}
 			// at genesis (not chain restart), there is no unbonding amount.
-			if !info.WaitUnbondingAmount.IsZero() {
+			if !info.PendingUndelegationAmount.IsZero() {
 				return errorsmod.Wrapf(
 					ErrInvalidGenesisData,
 					"non-zero unbonding amount for %s: %s",
-					assetID, info.WaitUnbondingAmount,
+					assetID, info.PendingUndelegationAmount,
 				)
 			}
 			// check for negative values.

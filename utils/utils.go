@@ -3,7 +3,7 @@ package utils
 import (
 	"strings"
 
-	"github.com/evmos/evmos/v14/crypto/ethsecp256k1"
+	"github.com/evmos/evmos/v16/crypto/ethsecp256k1"
 
 	"github.com/cosmos/cosmos-sdk/crypto/keys/ed25519"
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
