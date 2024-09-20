@@ -31,7 +31,7 @@ message StakerInfo {
   string staker_addr = 1;
   int64 staker_index = 2;
   repeated uint64 validator_indexes = 3;
-  repeated BalanceInfo balance_list = 5;
+  repeated BalanceInfo balance_list = 4;
 }
 
 // StakerList tells which stakers are active for one specific native-restaking asset
