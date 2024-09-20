@@ -43,5 +43,5 @@ func (suite *RewardTestSuite) TestClaimWithdrawRequest() {
 
 	assetInfo, err := suite.App.AssetsKeeper.GetStakingAssetInfo(suite.Ctx, assetID)
 	suite.NoError(err)
-	suite.Equal(sdkmath.NewInt(10).Add(assets[assetID].StakingTotalAmount), assetInfo.StakingTotalAmount)
+	suite.Equal(sdkmath.NewInt(10).Add(assets[0].StakingTotalAmount), assetInfo.StakingTotalAmount)
 }

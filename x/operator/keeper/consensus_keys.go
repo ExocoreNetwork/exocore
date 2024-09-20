@@ -3,6 +3,11 @@ package keeper
 import (
 	"fmt"
 
+	assetstypes "github.com/ExocoreNetwork/exocore/x/assets/types"
+
+	"github.com/cosmos/cosmos-sdk/store/prefix"
+	"github.com/ethereum/go-ethereum/common/hexutil"
+
 	"github.com/cometbft/cometbft/libs/log"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -293,7 +298,6 @@ func (k Keeper) CompleteOperatorKeyRemovalForChainID(
 func (k *Keeper) GetOperatorsForChainID(
 	ctx sdk.Context, chainID string,
 ) ([]sdk.AccAddress, []types.WrappedConsKey) {
-	k.Logger(ctx).Info("GetOperatorsForChainID", "chainID", chainID)
 	if isAvs, _ := k.avsKeeper.IsAVSByChainID(ctx, chainID); !isAvs {
 		k.Logger(ctx).Info("GetOperatorsForChainID the chainID is not supported by AVS", "chainID", chainID)
 		return nil, nil
@@ -330,13 +334,12 @@ func (k *Keeper) GetOperatorsForChainID(
 func (k Keeper) GetActiveOperatorsForChainID(
 	ctx sdk.Context, chainID string,
 ) ([]sdk.AccAddress, []types.WrappedConsKey) {
-	isAvs, avsAddr := k.avsKeeper.IsAVSByChainID(ctx, chainID)
+	isAvs, avsAddrString := k.avsKeeper.IsAVSByChainID(ctx, chainID)
 	if !isAvs {
 		k.Logger(ctx).Error("GetActiveOperatorsForChainID the chainID is not supported by AVS", "chainID", chainID)
 		return nil, nil
 	}
 	operatorsAddr, pks := k.GetOperatorsForChainID(ctx, chainID)
-	avsAddrString := avsAddr.String()
 	activeOperator := make([]sdk.AccAddress, 0)
 	activePks := make([]types.WrappedConsKey, 0)
 	// check if the operator is active
@@ -356,7 +359,7 @@ func (k Keeper) GetActiveOperatorsForChainID(
 func (k Keeper) ValidatorByConsAddrForChainID(
 	ctx sdk.Context, consAddr sdk.ConsAddress, chainID string,
 ) (stakingtypes.Validator, bool) {
-	isAvs, avsAddr := k.avsKeeper.IsAVSByChainID(ctx, chainID)
+	isAvs, avsAddrStr := k.avsKeeper.IsAVSByChainID(ctx, chainID)
 	if !isAvs {
 		ctx.Logger().Error("ValidatorByConsAddrForChainID the chainID is not supported by AVS", "chainID", chainID)
 		return stakingtypes.Validator{}, false
@@ -389,9 +392,9 @@ func (k Keeper) ValidatorByConsAddrForChainID(
 	val.Jailed = k.IsOperatorJailedForChainID(ctx, consAddr, chainID)
 
 	// set the tokens, delegated shares and minimum self delegation for unjail
-	minSelfDelegation, err := k.avsKeeper.GetAVSMinimumSelfDelegation(ctx, avsAddr.String())
+	minSelfDelegation, err := k.avsKeeper.GetAVSMinimumSelfDelegation(ctx, avsAddrStr)
 	if err != nil {
-		ctx.Logger().Error("ValidatorByConsAddrForChainID get minimum self delegation for AVS error", "avsAddr", avsAddr.String(), "err", err)
+		ctx.Logger().Error("ValidatorByConsAddrForChainID get minimum self delegation for AVS error", "avsAddrStr", avsAddrStr, "err", err)
 		return stakingtypes.Validator{}, false
 	}
 	val.MinSelfDelegation = sdk.TokensFromConsensusPower(minSelfDelegation.TruncateInt64(), sdk.DefaultPowerReduction)
@@ -437,4 +440,115 @@ func (k Keeper) ClearPreviousConsensusKeys(ctx sdk.Context, chainID string) {
 	for ; iterator.Valid(); iterator.Next() {
 		store.Delete(iterator.Key())
 	}
+}
+
+func (k *Keeper) SetAllPrevConsKeys(ctx sdk.Context, prevConsKeys []types.PrevConsKey) error {
+	store := ctx.KVStore(k.storeKey)
+	for i := range prevConsKeys {
+		prevKey := prevConsKeys[i]
+		keys, err := assetstypes.ParseJoinedStoreKey([]byte(prevKey.Key), 2)
+		if err != nil {
+			return err
+		}
+		chainID := keys[0]
+		opAccAddr, err := sdk.AccAddressFromBech32(keys[1])
+		if err != nil {
+			return err
+		}
+		wrappedKey := types.NewWrappedConsKeyFromHex(prevKey.ConsensusKey)
+		bz := k.cdc.MustMarshal(wrappedKey.ToTmProtoKey())
+
+		store.Set(types.KeyForChainIDAndOperatorToPrevConsKey(chainID, opAccAddr), bz)
+	}
+	return nil
+}
+
+func (k *Keeper) GetAllPrevConsKeys(ctx sdk.Context) ([]types.PrevConsKey, error) {
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), []byte{types.BytePrefixForOperatorAndChainIDToPrevConsKey})
+	iterator := sdk.KVStorePrefixIterator(store, []byte{})
+	defer iterator.Close()
+
+	ret := make([]types.PrevConsKey, 0)
+	for ; iterator.Valid(); iterator.Next() {
+		var consKey tmprotocrypto.PublicKey
+		k.cdc.MustUnmarshal(iterator.Value(), &consKey)
+		chainID, operatorAddr, err := types.ParsePrevConsKey(iterator.Key())
+		if err != nil {
+			return nil, err
+		}
+		wrappedConsKey := types.NewWrappedConsKeyFromTmProtoKey(&consKey)
+		ret = append(ret, types.PrevConsKey{
+			Key:          string(assetstypes.GetJoinedStoreKey(chainID, operatorAddr.String())),
+			ConsensusKey: wrappedConsKey.ToHex(),
+		})
+	}
+	return ret, nil
+}
+
+func (k *Keeper) SetAllOperatorKeyRemovals(ctx sdk.Context, operatorKeyRemoval []types.OperatorKeyRemoval) error {
+	store := ctx.KVStore(k.storeKey)
+	for i := range operatorKeyRemoval {
+		keyRemoval := operatorKeyRemoval[i]
+		keys, err := assetstypes.ParseJoinedStoreKey([]byte(keyRemoval.Key), 2)
+		if err != nil {
+			return err
+		}
+		chainID := keys[1]
+		opAccAddr, err := sdk.AccAddressFromBech32(keys[0])
+		if err != nil {
+			return err
+		}
+		store.Set(types.KeyForOperatorKeyRemovalForChainID(opAccAddr, chainID), []byte{})
+	}
+	return nil
+}
+
+func (k *Keeper) GetAllOperatorKeyRemovals(ctx sdk.Context) ([]types.OperatorKeyRemoval, error) {
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), []byte{types.BytePrefixForOperatorKeyRemovalForChainID})
+	iterator := sdk.KVStorePrefixIterator(store, []byte{})
+	defer iterator.Close()
+
+	ret := make([]types.OperatorKeyRemoval, 0)
+	for ; iterator.Valid(); iterator.Next() {
+		operatorAddr, chainID, err := types.ParseKeyForOperatorKeyRemoval(iterator.Key())
+		if err != nil {
+			return nil, err
+		}
+
+		ret = append(ret, types.OperatorKeyRemoval{
+			Key: string(assetstypes.GetJoinedStoreKey(operatorAddr.String(), chainID)),
+		})
+	}
+	return ret, nil
+}
+
+func (k *Keeper) GetAllOperatorConsKeyRecords(ctx sdk.Context) ([]types.OperatorConsKeyRecord, error) {
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), []byte{types.BytePrefixForOperatorAndChainIDToConsKey})
+	iterator := sdk.KVStorePrefixIterator(store, []byte{})
+	defer iterator.Close()
+
+	ret := make([]types.OperatorConsKeyRecord, 0)
+	var previousOperator string
+	for ; iterator.Valid(); iterator.Next() {
+		operator, chainID, err := types.ParseKeyForOperatorAndChainIDToConsKey(iterator.Key())
+		if err != nil {
+			return nil, err
+		}
+		if previousOperator != operator.String() {
+			assetsByOperator := types.OperatorConsKeyRecord{
+				OperatorAddress: operator.String(),
+				Chains:          make([]types.ChainDetails, 0),
+			}
+			ret = append(ret, assetsByOperator)
+		}
+		var consKey tmprotocrypto.PublicKey
+		k.cdc.MustUnmarshal(iterator.Value(), &consKey)
+		index := len(ret) - 1
+		ret[index].Chains = append(ret[index].Chains, types.ChainDetails{
+			ChainID:      chainID,
+			ConsensusKey: hexutil.Encode(consKey.GetEd25519()),
+		})
+		previousOperator = operator.String()
+	}
+	return ret, nil
 }

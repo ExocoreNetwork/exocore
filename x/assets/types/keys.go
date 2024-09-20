@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/ExocoreNetwork/exocore/utils"
+
 	errorsmod "cosmossdk.io/errors"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	"github.com/ethereum/go-ethereum/common"
@@ -63,13 +65,6 @@ var (
 	// or operatorAddr->mapping(AssetID->OperatorAssetInfo) ?
 	KeyPrefixOperatorAssetInfos = []byte{prefixOperatorAssetInfo}
 
-	// KeyPrefixOperatorOptedInMiddleWareAssetInfos key->value:
-	// operatorAddr+'_'+AssetID->mapping(middleWareAddr->struct{})
-	// or operatorAddr->mapping(AssetID->mapping(middleWareAddr->struct{})) ?
-	KeyPrefixOperatorOptedInMiddleWareAssetInfos = []byte{
-		prefixOperatorOptedInMiddlewareAssetInfo,
-	}
-
 	// KeyPrefixReStakerExoCoreAddr restakerID = clientChainAddr+'_'+ExoCoreChainIndex
 	// KeyPrefixReStakerExoCoreAddr key-value: restakerID->exoCoreAddr
 	KeyPrefixReStakerExoCoreAddr = []byte{prefixRestakerExocoreAddr}
@@ -84,25 +79,29 @@ var (
 )
 
 func GetJoinedStoreKey(keys ...string) []byte {
-	return []byte(strings.Join(keys, "/"))
+	return []byte(strings.Join(keys, utils.DelimiterForCombinedKey))
 }
 
 func GetJoinedStoreKeyForPrefix(keys ...string) []byte {
-	ret := []byte(strings.Join(keys, "/"))
-	ret = append(ret, '/')
+	ret := []byte(strings.Join(keys, utils.DelimiterForCombinedKey))
+	ret = append(ret, []byte(utils.DelimiterForCombinedKey)...)
 	return ret
 }
 
 func ParseJoinedKey(key []byte) (keys []string, err error) {
-	stringList := strings.Split(string(key), "/")
+	stringList := strings.Split(string(key), utils.DelimiterForCombinedKey)
 	return stringList, nil
 }
 
+func IsJoinedStoreKey(key string) bool {
+	return strings.Contains(key, utils.DelimiterForCombinedKey)
+}
+
 func ParseJoinedStoreKey(key []byte, number int) (keys []string, err error) {
-	stringList := strings.Split(string(key), "/")
+	stringList := strings.Split(string(key), utils.DelimiterForCombinedKey)
 	if len(stringList) != number {
 		return nil, errorsmod.Wrap(
-			ErrParseAssetsStateKey,
+			ErrParseJoinedKey,
 			fmt.Sprintf(
 				"expected length:%d,actual length:%d,the stringList is:%v",
 				number,
@@ -118,7 +117,7 @@ func ParseJoinedStoreKey(key []byte, number int) (keys []string, err error) {
 // It constraints the key to be in the format of "clientAddress_0xid"
 // The 0xid must be in hex.
 func ParseID(key string) (string, uint64, error) {
-	keys := strings.Split(key, "_")
+	keys := strings.Split(key, utils.DelimiterForID)
 	if len(keys) != 2 {
 		return "", 0, errorsmod.Wrap(ErrParseAssetsStateKey, fmt.Sprintf("invalid length:%s", key))
 	}

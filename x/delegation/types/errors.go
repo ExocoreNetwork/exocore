@@ -79,4 +79,9 @@ var (
 		ModuleName, 17,
 		"the client chain has not been registered",
 	)
+
+	ErrInvalidCompletedHeight = errorsmod.Register(
+		ModuleName, 23,
+		"the block height to complete the unelegation is invalid",
+	)
 )

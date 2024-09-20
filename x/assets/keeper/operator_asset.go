@@ -10,10 +10,46 @@ import (
 
 // This file provides all functions about operator assets state management.
 
-func (k Keeper) GetOperatorAssetInfos(ctx sdk.Context, operatorAddr sdk.Address, assetsFilter map[string]interface{}) (assetsInfo map[string]*assetstype.OperatorAssetInfo, err error) {
-	ret := make(map[string]*assetstype.OperatorAssetInfo, 0)
+// AllOperatorAssets
+func (k Keeper) AllOperatorAssets(ctx sdk.Context) (operatorAssets []assetstype.AssetsByOperator, err error) {
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), assetstype.KeyPrefixOperatorAssetInfos)
+	iterator := sdk.KVStorePrefixIterator(store, []byte{})
+	defer iterator.Close()
+
+	ret := make([]assetstype.AssetsByOperator, 0)
+	var previousOperator string
+	for ; iterator.Valid(); iterator.Next() {
+		keyList, err := assetstype.ParseJoinedStoreKey(iterator.Key(), 2)
+		if err != nil {
+			return nil, err
+		}
+		operator, assetID := keyList[0], keyList[1]
+		if previousOperator != operator {
+			assetsByOperator := assetstype.AssetsByOperator{
+				Operator:    operator,
+				AssetsState: make([]assetstype.AssetByID, 0),
+			}
+			ret = append(ret, assetsByOperator)
+		}
+		var assetInfo assetstype.OperatorAssetInfo
+		k.cdc.MustUnmarshal(iterator.Value(), &assetInfo)
+		index := len(ret) - 1
+		ret[index].AssetsState = append(ret[index].AssetsState, assetstype.AssetByID{
+			AssetID: assetID,
+			Info:    assetInfo,
+		})
+		previousOperator = operator
+	}
+	return ret, nil
+}
+
+func (k Keeper) GetOperatorAssetInfos(ctx sdk.Context, operatorAddr sdk.Address, assetsFilter map[string]interface{}) (assetsInfo []assetstype.AssetByID, err error) {
+	ret := make([]assetstype.AssetByID, 0)
 	opFunc := func(assetID string, state *assetstype.OperatorAssetInfo) error {
-		ret[assetID] = state
+		ret = append(ret, assetstype.AssetByID{
+			AssetID: assetID,
+			Info:    *state,
+		})
 		return nil
 	}
 	err = k.IterateAssetsForOperator(ctx, false, operatorAddr.String(), assetsFilter, opFunc)

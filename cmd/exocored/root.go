@@ -293,7 +293,7 @@ func (a appCreator) newApp(logger log.Logger, db dbm.DB, traceStore io.Writer, a
 
 	chainID := getChainID(appOpts, home)
 
-	evmosApp := app.NewExocoreApp(
+	exocoreApp := app.NewExocoreApp(
 		logger, db, traceStore, true, skipUpgradeHeights,
 		cast.ToString(appOpts.Get(flags.FlagHome)),
 		cast.ToUint(appOpts.Get(sdkserver.FlagInvCheckPeriod)),
@@ -313,7 +313,7 @@ func (a appCreator) newApp(logger log.Logger, db dbm.DB, traceStore io.Writer, a
 		baseapp.SetChainID(chainID),
 	)
 
-	return evmosApp
+	return exocoreApp
 }
 
 // appExport creates a new simapp (optionally at a given height)
@@ -328,7 +328,7 @@ func (a appCreator) appExport(
 	appOpts servertypes.AppOptions,
 	modulesToExport []string,
 ) (servertypes.ExportedApp, error) {
-	var evmosApp *app.ExocoreApp
+	var exocoreApp *app.ExocoreApp
 	homePath, ok := appOpts.Get(flags.FlagHome).(string)
 	if !ok || homePath == "" {
 		return servertypes.ExportedApp{}, errors.New("application home not set")
@@ -337,24 +337,24 @@ func (a appCreator) appExport(
 	chainID := getChainID(appOpts, homePath)
 
 	if height != -1 {
-		evmosApp = app.NewExocoreApp(
+		exocoreApp = app.NewExocoreApp(
 			logger, db, traceStore, false,
 			map[int64]bool{}, "", uint(1), a.encCfg, appOpts,
 			baseapp.SetChainID(chainID),
 		)
 
-		if err := evmosApp.LoadHeight(height); err != nil {
+		if err := exocoreApp.LoadHeight(height); err != nil {
 			return servertypes.ExportedApp{}, err
 		}
 	} else {
-		evmosApp = app.NewExocoreApp(
+		exocoreApp = app.NewExocoreApp(
 			logger, db, traceStore, true,
 			map[int64]bool{}, "", uint(1), a.encCfg, appOpts,
 			baseapp.SetChainID(chainID),
 		)
 	}
 
-	return evmosApp.ExportAppStateAndValidators(
+	return exocoreApp.ExportAppStateAndValidators(
 		forZeroHeight,
 		jailAllowedAddrs,
 		modulesToExport,

@@ -143,7 +143,7 @@ func (p Precompile) RegisterToken(
 	}
 
 	stakingAsset := &assetstypes.StakingAssetInfo{
-		AssetBasicInfo:     &asset,
+		AssetBasicInfo:     asset,
 		StakingTotalAmount: sdkmath.NewInt(0),
 	}
 
