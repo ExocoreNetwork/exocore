@@ -185,7 +185,7 @@ func (k Keeper) SlashWithInfractionReason(
 	chainID := avstypes.ChainIDWithoutRevision(ctx.ChainID())
 	isAvs, avsAddr := k.avsKeeper.IsAVSByChainID(ctx, chainID)
 	if !isAvs {
-		k.Logger(ctx).Error("the chainID is not supported by AVS", chainID)
+		k.Logger(ctx).Error("the chainID is not supported by AVS", "chainID", chainID)
 		return sdkmath.NewInt(0)
 	}
 	slashID := GetSlashIDForDogfood(infraction, infractionHeight)
@@ -213,7 +213,7 @@ func (k Keeper) SlashWithInfractionReason(
 func (k Keeper) IsOperatorJailedForChainID(ctx sdk.Context, consAddr sdk.ConsAddress, chainID string) bool {
 	found, operatorAddr := k.GetOperatorAddressForChainIDAndConsAddr(ctx, chainID, consAddr)
 	if !found {
-		k.Logger(ctx).Info("couldn't find operator by consensus address and chainID", consAddr, chainID)
+		k.Logger(ctx).Info("couldn't find operator by consensus address and chainID", "consAddr", consAddr, "chainID", chainID)
 		return false
 	}
 
@@ -233,13 +233,13 @@ func (k Keeper) IsOperatorJailedForChainID(ctx sdk.Context, consAddr sdk.ConsAdd
 func (k *Keeper) SetJailedState(ctx sdk.Context, consAddr sdk.ConsAddress, chainID string, jailed bool) {
 	found, operatorAddr := k.GetOperatorAddressForChainIDAndConsAddr(ctx, chainID, consAddr)
 	if !found {
-		k.Logger(ctx).Info("couldn't find operator by consensus address and chainID", consAddr, chainID)
+		k.Logger(ctx).Info("couldn't find operator by consensus address and chainID", "consAddr", consAddr, "chainID", chainID)
 		return
 	}
 
 	isAvs, avsAddr := k.avsKeeper.IsAVSByChainID(ctx, chainID)
 	if !isAvs {
-		k.Logger(ctx).Error("the chainID is not supported by AVS", chainID)
+		k.Logger(ctx).Error("the chainID is not supported by AVS", "chainID", chainID)
 		return
 	}
 

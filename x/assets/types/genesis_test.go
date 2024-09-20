@@ -409,8 +409,8 @@ func (suite *GenesisTestSuite) TestValidateGenesis() {
 			},
 			unmalleate: func(gs *types.GenesisState) {
 				genesisDeposit.Deposits[0].Info = types.StakerAssetInfo{
-					TotalDepositAmount:  math.NewInt(100),
-					WithdrawableAmount:  math.NewInt(0),
+					TotalDepositAmount:        math.NewInt(100),
+					WithdrawableAmount:        math.NewInt(0),
 					PendingUndelegationAmount: math.NewInt(0),
 				}
 				gs.Deposits[0].Deposits[0].Info = genesisDeposit.Deposits[0].Info
