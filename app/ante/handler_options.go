@@ -15,7 +15,7 @@ import (
 	cosmosante "github.com/ExocoreNetwork/exocore/app/ante/cosmos"
 	evmante "github.com/ExocoreNetwork/exocore/app/ante/evm"
 	anteutils "github.com/ExocoreNetwork/exocore/app/ante/utils"
-	evmtypes "github.com/evmos/evmos/v14/x/evm/types"
+	evmtypes "github.com/evmos/evmos/v16/x/evm/types"
 )
 
 // HandlerOptions defines the list of module keepers required to run the Evmos

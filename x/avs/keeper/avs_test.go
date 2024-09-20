@@ -9,7 +9,7 @@ import (
 	epochstypes "github.com/ExocoreNetwork/exocore/x/epochs/types"
 	operatorTypes "github.com/ExocoreNetwork/exocore/x/operator/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	utiltx "github.com/evmos/evmos/v14/testutil/tx"
+	utiltx "github.com/evmos/evmos/v16/testutil/tx"
 )
 
 func (suite *AVSTestSuite) TestAVS() {

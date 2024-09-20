@@ -6,14 +6,14 @@ import (
 	sdkmath "cosmossdk.io/math"
 	assetsprecompile "github.com/ExocoreNetwork/exocore/precompiles/assets"
 	assetskeeper "github.com/ExocoreNetwork/exocore/x/assets/keeper"
-	"github.com/evmos/evmos/v14/x/evm/statedb"
+	"github.com/evmos/evmos/v16/x/evm/statedb"
 
 	"github.com/ExocoreNetwork/exocore/app"
 	assetstype "github.com/ExocoreNetwork/exocore/x/assets/types"
 	"github.com/ethereum/go-ethereum/common"
 	ethtypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/core/vm"
-	evmtypes "github.com/evmos/evmos/v14/x/evm/types"
+	evmtypes "github.com/evmos/evmos/v16/x/evm/types"
 )
 
 func (s *AssetsPrecompileSuite) TestIsTransaction() {

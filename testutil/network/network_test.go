@@ -12,7 +12,7 @@ import (
 
 	"github.com/ExocoreNetwork/exocore/testutil/network"
 	"github.com/ethereum/go-ethereum/ethclient"
-	"github.com/evmos/evmos/v14/server/config"
+	"github.com/evmos/evmos/v16/server/config"
 
 	exocorenetwork "github.com/ExocoreNetwork/exocore/testutil/network"
 )
