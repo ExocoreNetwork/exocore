@@ -170,7 +170,7 @@ func (k *Keeper) GetStakerUndelegationRecords(ctx sdk.Context, stakerID, assetID
 // IterateUndelegationsByStakerAndAsset iterate the undelegation records according to the stakerID and assetID.
 func (k *Keeper) IterateUndelegationsByStakerAndAsset(
 	ctx sdk.Context, stakerID, assetID string, isUpdate bool,
-	opFunc func(undelegation *types.UndelegationRecord) (bool, error),
+	opFunc func(undelegationKey string, undelegation *types.UndelegationRecord) (bool, error),
 ) error {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefixStakerUndelegationInfo)
 	iterator := sdk.KVStorePrefixIterator(store, types.IteratorPrefixForStakerAsset(stakerID, assetID))
@@ -183,7 +183,7 @@ func (k *Keeper) IterateUndelegationsByStakerAndAsset(
 		}
 		undelegation := types.UndelegationRecord{}
 		k.cdc.MustUnmarshal(infoValue, &undelegation)
-		isBreak, err := opFunc(&undelegation)
+		isBreak, err := opFunc(string(iterator.Value()), &undelegation)
 		if err != nil {
 			return err
 		}
