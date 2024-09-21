@@ -70,7 +70,10 @@ func (k Keeper) GetStakerAssetInfos(ctx sdk.Context, stakerID string) (assetsInf
 	if err != nil {
 		return nil, err
 	}
-	ret[assetstype.NativeAssetID] = info
+	ret = append(ret, assetstype.DepositByAsset{
+		AssetID: assetstype.NativeAssetID,
+		Info:    *info,
+	})
 	return ret, nil
 }
 
@@ -87,9 +90,9 @@ func (k Keeper) GetStakerSpecifiedAssetInfo(ctx sdk.Context, stakerID string, as
 		stakerAcc := sdk.AccAddress(stakerAccDecode)
 		balance := k.bk.GetBalance(ctx, stakerAcc, assetstype.NativeAssetDenom)
 		info := &assetstype.StakerAssetInfo{
-			TotalDepositAmount:  balance.Amount,
-			WithdrawableAmount:  balance.Amount,
-			WaitUnbondingAmount: math.NewInt(0),
+			TotalDepositAmount:        balance.Amount,
+			WithdrawableAmount:        balance.Amount,
+			PendingUndelegationAmount: math.NewInt(0),
 		}
 
 		delegationInfoRecords, err := k.dk.GetDelegationInfo(ctx, stakerID, assetID)
@@ -106,7 +109,7 @@ func (k Keeper) GetStakerSpecifiedAssetInfo(ctx sdk.Context, stakerID string, as
 				return nil, errorsmod.Wrap(err, "failed to get shares from token")
 			}
 			info.TotalDepositAmount = info.TotalDepositAmount.Add(undelegatableTokens).Add(record.WaitUndelegationAmount)
-			info.WaitUnbondingAmount = info.WaitUnbondingAmount.Add(record.WaitUndelegationAmount)
+			info.PendingUndelegationAmount = info.PendingUndelegationAmount.Add(record.WaitUndelegationAmount)
 		}
 		return info, nil
 	}

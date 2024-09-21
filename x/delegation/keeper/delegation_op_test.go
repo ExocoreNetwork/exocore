@@ -161,17 +161,17 @@ func (suite *DelegationTestSuite) TestDelegateTo() {
 	suite.NoError(err)
 	balance := suite.App.BankKeeper.GetBalance(suite.Ctx, suite.accAddr, assetstypes.NativeAssetDenom)
 	suite.Equal(types.StakerAssetInfo{
-		TotalDepositAmount:  balance.Amount.Add(delegationParams.OpAmount),
-		WithdrawableAmount:  balance.Amount,
-		WaitUnbondingAmount: sdkmath.NewInt(0),
+		TotalDepositAmount:        balance.Amount.Add(delegationParams.OpAmount),
+		WithdrawableAmount:        balance.Amount,
+		PendingUndelegationAmount: sdkmath.NewInt(0),
 	}, *restakerState)
 	operatorState, err = suite.App.AssetsKeeper.GetOperatorSpecifiedAssetInfo(suite.Ctx, opAccAddr, assetID)
 	suite.NoError(err)
 	suite.Equal(types.OperatorAssetInfo{
-		TotalAmount:         delegationParams.OpAmount,
-		WaitUnbondingAmount: sdkmath.NewInt(0),
-		TotalShare:          sdkmath.LegacyNewDecFromBigInt(delegationParams.OpAmount.BigInt()),
-		OperatorShare:       sdkmath.LegacyNewDec(0),
+		TotalAmount:               delegationParams.OpAmount,
+		PendingUndelegationAmount: sdkmath.NewInt(0),
+		TotalShare:                sdkmath.LegacyNewDecFromBigInt(delegationParams.OpAmount.BigInt()),
+		OperatorShare:             sdkmath.LegacyNewDec(0),
 	}, *operatorState)
 
 	specifiedDelegationAmount, err = suite.App.DelegationKeeper.GetSingleDelegationInfo(suite.Ctx, stakerID, assetID, opAccAddr.String())
@@ -259,18 +259,18 @@ func (suite *DelegationTestSuite) TestUndelegateFrom() {
 	suite.NoError(err)
 	balance := suite.App.BankKeeper.GetBalance(suite.Ctx, suite.accAddr, assetstypes.NativeAssetDenom)
 	suite.Equal(types.StakerAssetInfo{
-		TotalDepositAmount:  balance.Amount.Add(delegationEvent.OpAmount),
-		WithdrawableAmount:  balance.Amount,
-		WaitUnbondingAmount: delegationEvent.OpAmount,
+		TotalDepositAmount:        balance.Amount.Add(delegationEvent.OpAmount),
+		WithdrawableAmount:        balance.Amount,
+		PendingUndelegationAmount: delegationEvent.OpAmount,
 	}, *restakerState)
 
 	operatorState, err = suite.App.AssetsKeeper.GetOperatorSpecifiedAssetInfo(suite.Ctx, delegationEvent.OperatorAddress, assetID)
 	suite.NoError(err)
 	suite.Equal(types.OperatorAssetInfo{
-		TotalAmount:         sdkmath.NewInt(0),
-		WaitUnbondingAmount: delegationEvent.OpAmount,
-		TotalShare:          sdkmath.LegacyNewDec(0),
-		OperatorShare:       sdkmath.LegacyNewDec(0),
+		TotalAmount:               sdkmath.NewInt(0),
+		PendingUndelegationAmount: delegationEvent.OpAmount,
+		TotalShare:                sdkmath.LegacyNewDec(0),
+		OperatorShare:             sdkmath.LegacyNewDec(0),
 	}, *operatorState)
 
 	specifiedDelegationAmount, err = suite.App.DelegationKeeper.GetSingleDelegationInfo(suite.Ctx, stakerID, assetID, delegationEvent.OperatorAddress.String())
@@ -416,18 +416,18 @@ func (suite *DelegationTestSuite) TestCompleteUndelegation() {
 
 	balance := suite.App.BankKeeper.GetBalance(suite.Ctx, suite.accAddr, assetstypes.NativeAssetDenom)
 	suite.Equal(types.StakerAssetInfo{
-		TotalDepositAmount:  balance.Amount,
-		WithdrawableAmount:  balance.Amount,
-		WaitUnbondingAmount: sdkmath.NewInt(0),
+		TotalDepositAmount:        balance.Amount,
+		WithdrawableAmount:        balance.Amount,
+		PendingUndelegationAmount: sdkmath.NewInt(0),
 	}, *restakerState)
 
 	operatorState, err = suite.App.AssetsKeeper.GetOperatorSpecifiedAssetInfo(suite.Ctx, delegationEvent.OperatorAddress, assetID)
 	suite.NoError(err)
 	suite.Equal(types.OperatorAssetInfo{
-		TotalAmount:         sdkmath.NewInt(0),
-		WaitUnbondingAmount: sdkmath.NewInt(0),
-		TotalShare:          sdkmath.LegacyNewDec(0),
-		OperatorShare:       sdkmath.LegacyNewDec(0),
+		TotalAmount:               sdkmath.NewInt(0),
+		PendingUndelegationAmount: sdkmath.NewInt(0),
+		TotalShare:                sdkmath.LegacyNewDec(0),
+		OperatorShare:             sdkmath.LegacyNewDec(0),
 	}, *operatorState)
 
 	specifiedDelegationAmount, err = suite.App.DelegationKeeper.GetSingleDelegationInfo(suite.Ctx, stakerID, assetID, delegationEvent.OperatorAddress.String())
