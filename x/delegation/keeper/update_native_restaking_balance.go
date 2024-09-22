@@ -62,11 +62,17 @@ func (k Keeper) UpdateNativeRestakingBalance(
 					slashAmount = undelegation.ActualCompletedAmount
 				}
 				undelegation.ActualCompletedAmount = undelegation.ActualCompletedAmount.Sub(slashAmount)
+				err = k.assetsKeeper.UpdateStakerAssetState(ctx, stakerID, assetID, types.DeltaStakerSingleAsset{
+					TotalDepositAmount: slashAmount.Neg(),
+				})
+				if err != nil {
+					return true, err
+				}
+				ctx.Logger().Info("UpdateNativeRestakingBalance slash from undelegation", "stakerID", stakerID, "assetID", assetID, "operator", undelegation.OperatorAddr, "undelegationKey", undelegationKey, "slashAmount", slashAmount, "remainAmount", remainAmount)
 				if !remainAmount.IsPositive() {
 					// return ture to break the iteration if there isn't remaining amount to be slashed
 					return true, nil
 				}
-				ctx.Logger().Info("UpdateNativeRestakingBalance slash from undelegation", "stakerID", stakerID, "assetID", assetID, "operator", undelegation.OperatorAddr, "undelegationKey", undelegationKey, "slashAmount", slashAmount, "remainAmount", remainAmount)
 				return false, nil
 			}
 			err = k.IterateUndelegationsByStakerAndAsset(ctx, stakerID, assetID, true, opFunc)
@@ -84,28 +90,36 @@ func (k Keeper) UpdateNativeRestakingBalance(
 			if err != nil {
 				return err
 			}
-			slashProportion := sdkmath.LegacyNewDecFromBigInt(remainAmount.BigInt()).Quo(sdkmath.LegacyNewDecFromBigInt(totalDelegatedAmount.BigInt()))
-			if slashProportion.GT(sdkmath.LegacyNewDec(1)) {
-				slashProportion = sdkmath.LegacyNewDec(1)
-			}
-			opFunc := func(keys *delegationtypes.SingleDelegationInfoReq, delegationAmount *delegationtypes.DelegationAmounts) (bool, error) {
-				opAccAddr, err := sdk.AccAddressFromBech32(keys.OperatorAddr)
-				if err != nil {
-					return true, err
+			if !totalDelegatedAmount.IsZero() {
+				slashProportion := sdkmath.LegacyNewDecFromBigInt(remainAmount.BigInt()).Quo(sdkmath.LegacyNewDecFromBigInt(totalDelegatedAmount.BigInt()))
+				if slashProportion.GT(sdkmath.LegacyNewDec(1)) {
+					slashProportion = sdkmath.LegacyNewDec(1)
 				}
-				slashShare := delegationAmount.UndelegatableShare.Mul(slashProportion)
-				actualSlashAmount, err := k.RemoveShare(ctx, false, opAccAddr, stakerID, assetID, slashShare)
-				if err != nil {
-					return true, err
+				opFunc := func(keys *delegationtypes.SingleDelegationInfoReq, delegationAmount *delegationtypes.DelegationAmounts) (bool, error) {
+					opAccAddr, err := sdk.AccAddressFromBech32(keys.OperatorAddr)
+					if err != nil {
+						return true, err
+					}
+					slashShare := delegationAmount.UndelegatableShare.Mul(slashProportion)
+					actualSlashAmount, err := k.RemoveShare(ctx, false, opAccAddr, stakerID, assetID, slashShare)
+					if err != nil {
+						return true, err
+					}
+					err = k.assetsKeeper.UpdateStakerAssetState(ctx, stakerID, assetID, types.DeltaStakerSingleAsset{
+						TotalDepositAmount: actualSlashAmount.Neg(),
+					})
+					if err != nil {
+						return true, err
+					}
+					remainAmount = remainAmount.Sub(actualSlashAmount)
+					ctx.Logger().Info("UpdateNativeRestakingBalance slash from delegated share", "stakerID", stakerID, "assetID", assetID, "operator", keys.OperatorAddr, "slashProportion", slashProportion, "slashShare", slashShare, "actualSlashAmount", actualSlashAmount, "remainAmount", remainAmount)
+					return false, nil
 				}
-				ctx.Logger().Info("UpdateNativeRestakingBalance slash from delegated share", "stakerID", stakerID, "assetID", assetID, "operator", keys.OperatorAddr, "slashProportion", "slashShare", slashShare, "actualSlashAmount", actualSlashAmount)
-				return false, nil
+				err = k.IterateDelegationsForStakerAndAsset(ctx, stakerID, assetID, opFunc)
+				if err != nil {
+					return err
+				}
 			}
-			err = k.IterateDelegationsForStakerAndAsset(ctx, stakerID, assetID, opFunc)
-			if err != nil {
-				return err
-			}
-			remainAmount = sdkmath.LegacyNewDec(1).Sub(slashProportion).MulInt(remainAmount).TruncateInt()
 		}
 		// In this case, we only print a log as a reminder. This situation will only occur when the total slashing amount
 		// from the client chain and Exocore chain is greater than the total staking amount.

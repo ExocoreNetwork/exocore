@@ -470,11 +470,12 @@ func (k *Keeper) CalculateUSDValueForStaker(ctx sdk.Context, stakerID, avsAddr s
 	}
 	totalUSDValue := sdkmath.LegacyNewDec(0)
 	opFunc := func(keys *delegationtype.SingleDelegationInfoReq, amounts *delegationtype.DelegationAmounts) (bool, error) {
+		// Return true to stop iteration, false to continue iterating
 		if keys.OperatorAddr == operator.String() {
 			if _, ok := assets[keys.AssetID]; ok {
 				price, ok := prices[keys.AssetID]
 				if !ok {
-					return true, errorsmod.Wrapf(operatortypes.ErrKeyNotExistInMap, "CalculateUSDValueForStaker assetID doesn't exist, assetID:%s", keys.AssetID)
+					return true, errorsmod.Wrapf(operatortypes.ErrKeyNotExistInMap, "CalculateUSDValueForStaker Price not found for assetID: %s", keys.AssetID)
 				}
 				operatorAsset, err := k.assetsKeeper.GetOperatorSpecifiedAssetInfo(ctx, operator, keys.AssetID)
 				if err != nil {
