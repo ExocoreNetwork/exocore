@@ -194,7 +194,7 @@ func (k *Keeper) GetSingleDelegationInfo(ctx sdk.Context, stakerID, assetID, ope
 	delegationState := delegationtype.DelegationAmounts{}
 	value := store.Get(singleStateKey)
 	if value == nil {
-		return nil, errorsmod.Wrap(delegationtype.ErrNoKeyInTheStore, fmt.Sprintf("QuerySingleDelegationInfo: key is %s", singleStateKey))
+		return nil, delegationtype.ErrNoKeyInTheStore.Wrapf("QuerySingleDelegationInfo: key is %s", singleStateKey)
 	}
 	k.cdc.MustUnmarshal(value, &delegationState)
 	return &delegationState, nil

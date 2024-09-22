@@ -79,7 +79,10 @@ var (
 		ModuleName, 17,
 		"the client chain has not been registered",
 	)
-
+	ErrInvalidAssetID = errorsmod.Register(
+		ModuleName, 18,
+		"assetID is invalid",
+	)
 	ErrInvalidCompletedHeight = errorsmod.Register(
 		ModuleName, 23,
 		"the block height to complete the unelegation is invalid",
