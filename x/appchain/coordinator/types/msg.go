@@ -74,13 +74,15 @@ func (msg *RegisterSubscriberChainRequest) GetSigners() []sdk.AccAddress {
 }
 
 // NewRegisterSubscriberChainRequest creates a new RegisterSubscriberChainRequest using
-// the provided creator and json value.
-func NewRegisterSubscriberChainRequest(creator, jsonValue string) *RegisterSubscriberChainRequest {
-	var r RegisterSubscriberChainRequest
-	if err := json.Unmarshal([]byte(jsonValue), &r); err != nil {
-		panic(fmt.Sprintf("invalid json %s", err))
+// the provided creator and json value. If the JSON is not valid, an error is returned.
+func NewRegisterSubscriberChainRequest(
+	creator, jsonValue string,
+) (*RegisterSubscriberChainRequest, error) {
+	r := &RegisterSubscriberChainRequest{}
+	if err := json.Unmarshal([]byte(jsonValue), r); err != nil {
+		return nil, err
 	}
 	// the creator is overwritten
 	r.FromAddress = creator
-	return &r
+	return r, nil
 }
