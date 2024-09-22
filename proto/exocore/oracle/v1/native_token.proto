@@ -8,7 +8,9 @@ option go_package = "github.com/ExocoreNetwork/exocore/x/oracle/types";
 
 // BalanceInfo tells effective-balance for native-restaking asset
 message BalanceInfo {
+  // current round of price, this is updated based on tokenFeeder
   uint64 round_id = 1 [(gogoproto.customname)="RoundID"];
+  // on which block the balance updated, deposit/withdraw will update this and round_id might not change
   uint64 block = 2;
   // index used to distinguish multiple balanceInfo for one same roundid
   uint64 index = 3;
@@ -16,25 +18,36 @@ message BalanceInfo {
   // uint epoch = 3;
   int64 balance = 4;
 
+  // Action defines the reason the balance changed
   enum Action {
-    ACTION_ROUND = 0;
+    // balance updated when a new round generated
+    ACTION_ROUND_UNSPECIFIED = 0;
+    // balance updated when a deposit happened
     ACTION_DEPOSIT = 1;
-	ACTION_WITHDRAW = 2;
-	ACTION_SLASH_REFUND = 3;
+    // balance updated when a withdraw happened
+    ACTION_WITHDRAW = 2;
+    // balance updatd when a slah/refund on beacon chain happened
+    ACTION_SLASH_REFUND = 3;
   }
 
+  // change tells the reason balance changed
   Action change = 5;
 }
 
 // StakerInfo represents all related information for a staker of native-restaking
 message StakerInfo {
+  // staker's address
   string staker_addr = 1;
+  // the index of corresponding staker in staker list
   int64 staker_index = 2;
+  // list of validators that this staker corresponding to on beacon chain
   repeated uint64 validator_indexes = 3;
+  // list of balances to represets the history of this staker
   repeated BalanceInfo balance_list = 4;
 }
 
 // StakerList tells which stakers are active for one specific native-restaking asset
 message StakerList {
+  // staker's address
   repeated string staker_addrs = 1;
 }

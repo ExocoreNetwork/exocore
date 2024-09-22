@@ -1334,7 +1334,9 @@ const _ = grpc.SupportPackageIsVersion4
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
 type QueryClient interface {
+	// stakerList shows all stakers related to the specified asset under native-restaking context
 	StakerList(ctx context.Context, in *QueryStakerListRequest, opts ...grpc.CallOption) (*QueryStakerListResponse, error)
+	// StakerInfo shows the details for all stakers of the specified assets under native-restaking context
 	StakerInfos(ctx context.Context, in *QueryStakerInfosRequest, opts ...grpc.CallOption) (*QueryStakerInfosResponse, error)
 	// Parameters queries the parameters of the module.
 	Params(ctx context.Context, in *QueryParamsRequest, opts ...grpc.CallOption) (*QueryParamsResponse, error)
@@ -1476,7 +1478,9 @@ func (c *queryClient) RecentParamsAll(ctx context.Context, in *QueryAllRecentPar
 
 // QueryServer is the server API for Query service.
 type QueryServer interface {
+	// stakerList shows all stakers related to the specified asset under native-restaking context
 	StakerList(context.Context, *QueryStakerListRequest) (*QueryStakerListResponse, error)
+	// StakerInfo shows the details for all stakers of the specified assets under native-restaking context
 	StakerInfos(context.Context, *QueryStakerInfosRequest) (*QueryStakerInfosResponse, error)
 	// Parameters queries the parameters of the module.
 	Params(context.Context, *QueryParamsRequest) (*QueryParamsResponse, error)

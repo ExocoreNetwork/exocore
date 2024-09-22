@@ -19,10 +19,12 @@ option go_package = "github.com/ExocoreNetwork/exocore/x/oracle/types";
 
 // Query defines the gRPC querier service.
 service Query {
+  // stakerList shows all stakers related to the specified asset under native-restaking context
   rpc StakerList (QueryStakerListRequest) returns (QueryStakerListResponse) {
     option (google.api.http).get = "/ExocoreNetwork/exocore/oracle/staker_list";
   }
 
+  // StakerInfo shows the details for all stakers of the specified assets under native-restaking context
   rpc StakerInfos (QueryStakerInfosRequest) returns (QueryStakerInfosResponse) {
     option (google.api.http).get = "/ExocoreNetwork/exocore/oracle/staker_infos";
   }
