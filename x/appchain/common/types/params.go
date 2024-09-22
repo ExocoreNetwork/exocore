@@ -45,8 +45,8 @@ func NewSubscriberParams(
 	slashFractionDowntime string,
 	downtimeJailDuration time.Duration,
 	slashFractionDoubleSign string,
-) *SubscriberParams {
-	return (&SubscriberParams{}).
+) SubscriberParams {
+	return SubscriberParams{}.
 		WithCoordinatorFeePoolAddrStr(coordinatorFeePoolAddrStr).
 		WithDistributionTransmissionChannel(distributionTransmissionChannel).
 		WithBlocksPerDistributionTransmission(blocksPerDistributionTransmission).
@@ -62,7 +62,7 @@ func NewSubscriberParams(
 }
 
 // DefaultSubscriberParams returns the default subscriber params.
-func DefaultSubscriberParams() *SubscriberParams {
+func DefaultSubscriberParams() SubscriberParams {
 	return NewSubscriberParams(
 		"", // this is set by the coordinator, not by the subscriber
 		"", // this is set by the coordinator, not by the subscriber
@@ -149,97 +149,97 @@ func ValidateDenomination(denom string) error {
 // option pattern implementation, for clarity and ease of instantiation
 
 // WithCoordinatorFeePoolAddrStr sets the CoordinatorFeePoolAddrStr field
-func (p *SubscriberParams) WithCoordinatorFeePoolAddrStr(
+func (p SubscriberParams) WithCoordinatorFeePoolAddrStr(
 	coordinatorFeePoolAddrStr string,
-) *SubscriberParams {
+) SubscriberParams {
 	p.CoordinatorFeePoolAddrStr = coordinatorFeePoolAddrStr
 	return p
 }
 
 // WithDistributionTransmissionChannel sets the DistributionTransmissionChannel field
-func (p *SubscriberParams) WithDistributionTransmissionChannel(
+func (p SubscriberParams) WithDistributionTransmissionChannel(
 	distributionTransmissionChannel string,
-) *SubscriberParams {
+) SubscriberParams {
 	p.DistributionTransmissionChannel = distributionTransmissionChannel
 	return p
 }
 
 // WithBlocksPerDistributionTransmission sets the BlocksPerDistributionTransmission field
-func (p *SubscriberParams) WithBlocksPerDistributionTransmission(
+func (p SubscriberParams) WithBlocksPerDistributionTransmission(
 	blocksPerDistributionTransmission int64,
-) *SubscriberParams {
+) SubscriberParams {
 	p.BlocksPerDistributionTransmission = blocksPerDistributionTransmission
 	return p
 }
 
 // WithSubscriberRedistributionFraction sets the SubscriberRedistributionFraction field
-func (p *SubscriberParams) WithSubscriberRedistributionFraction(
+func (p SubscriberParams) WithSubscriberRedistributionFraction(
 	subscriberRedistributionFraction string,
-) *SubscriberParams {
+) SubscriberParams {
 	p.SubscriberRedistributionFraction = subscriberRedistributionFraction
 	return p
 }
 
 // WithRewardDenom sets the RewardDenom field
-func (p *SubscriberParams) WithRewardDenom(
+func (p SubscriberParams) WithRewardDenom(
 	rewardDenom string,
-) *SubscriberParams {
+) SubscriberParams {
 	p.RewardDenom = rewardDenom
 	return p
 }
 
 // WithIBCTimeoutPeriod sets the IBCTimeoutPeriod field
-func (p *SubscriberParams) WithIBCTimeoutPeriod(
+func (p SubscriberParams) WithIBCTimeoutPeriod(
 	ibcTimeoutPeriod time.Duration,
-) *SubscriberParams {
+) SubscriberParams {
 	p.IBCTimeoutPeriod = ibcTimeoutPeriod
 	return p
 }
 
 // WithTransferTimeoutPeriod sets the TransferTimeoutPeriod field
-func (p *SubscriberParams) WithTransferTimeoutPeriod(
+func (p SubscriberParams) WithTransferTimeoutPeriod(
 	transferTimeoutPeriod time.Duration,
-) *SubscriberParams {
+) SubscriberParams {
 	p.TransferTimeoutPeriod = transferTimeoutPeriod
 	return p
 }
 
 // WithUnbondingPeriod sets the UnbondingPeriod field
-func (p *SubscriberParams) WithUnbondingPeriod(
+func (p SubscriberParams) WithUnbondingPeriod(
 	unbondingPeriod time.Duration,
-) *SubscriberParams {
+) SubscriberParams {
 	p.UnbondingPeriod = unbondingPeriod
 	return p
 }
 
 // WithHistoricalEntries sets the HistoricalEntries field
-func (p *SubscriberParams) WithHistoricalEntries(
+func (p SubscriberParams) WithHistoricalEntries(
 	historicalEntries int64,
-) *SubscriberParams {
+) SubscriberParams {
 	p.HistoricalEntries = historicalEntries
 	return p
 }
 
 // WithSlashFractionDowntime sets the SlashFractionDowntime field
-func (p *SubscriberParams) WithSlashFractionDowntime(
+func (p SubscriberParams) WithSlashFractionDowntime(
 	slashFractionDowntime string,
-) *SubscriberParams {
+) SubscriberParams {
 	p.SlashFractionDowntime = slashFractionDowntime
 	return p
 }
 
 // WithDowntimeJailDuration sets the DowntimeJailDuration field
-func (p *SubscriberParams) WithDowntimeJailDuration(
+func (p SubscriberParams) WithDowntimeJailDuration(
 	downtimeJailDuration time.Duration,
-) *SubscriberParams {
+) SubscriberParams {
 	p.DowntimeJailDuration = downtimeJailDuration
 	return p
 }
 
 // WithSlashFractionDoubleSign sets the SlashFractionDoubleSign field
-func (p *SubscriberParams) WithSlashFractionDoubleSign(
+func (p SubscriberParams) WithSlashFractionDoubleSign(
 	slashFractionDoubleSign string,
-) *SubscriberParams {
+) SubscriberParams {
 	p.SlashFractionDoubleSign = slashFractionDoubleSign
 	return p
 }
