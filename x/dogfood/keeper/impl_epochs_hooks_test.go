@@ -81,7 +81,7 @@ func (suite *KeeperTestSuite) TestSameEpochOperations() {
 			sdk.WrapSDKContext(suite.Ctx),
 			&operatortypes.OptIntoAVSReq{
 				FromAddress:   operatorAddressString,
-				AvsAddress:    avsAddress.String(),
+				AvsAddress:    avsAddress,
 				PublicKeyJSON: oldKey.ToJSON(),
 			},
 		)
@@ -92,7 +92,7 @@ func (suite *KeeperTestSuite) TestSameEpochOperations() {
 			sdk.WrapSDKContext(suite.Ctx),
 			&operatortypes.OptOutOfAVSReq{
 				FromAddress: operatorAddressString,
-				AvsAddress:  avsAddress.String(),
+				AvsAddress:  avsAddress,
 			},
 		)
 		return err
@@ -102,7 +102,7 @@ func (suite *KeeperTestSuite) TestSameEpochOperations() {
 			sdk.WrapSDKContext(suite.Ctx),
 			&operatortypes.SetConsKeyReq{
 				Address:       operatorAddressString,
-				AvsAddress:    avsAddress.String(),
+				AvsAddress:    avsAddress,
 				PublicKeyJSON: newKey.ToJSON(),
 			},
 		)
@@ -261,7 +261,7 @@ func (suite *KeeperTestSuite) TestDifferentEpochOperations() {
 			sdk.WrapSDKContext(suite.Ctx),
 			&operatortypes.OptIntoAVSReq{
 				FromAddress:   operatorAddressString,
-				AvsAddress:    avsAddress.String(),
+				AvsAddress:    avsAddress,
 				PublicKeyJSON: oldKey.ToJSON(),
 			},
 		)
@@ -272,7 +272,7 @@ func (suite *KeeperTestSuite) TestDifferentEpochOperations() {
 			sdk.WrapSDKContext(suite.Ctx),
 			&operatortypes.OptOutOfAVSReq{
 				FromAddress: operatorAddressString,
-				AvsAddress:  avsAddress.String(),
+				AvsAddress:  avsAddress,
 			},
 		)
 		return err
@@ -282,7 +282,7 @@ func (suite *KeeperTestSuite) TestDifferentEpochOperations() {
 			sdk.WrapSDKContext(suite.Ctx),
 			&operatortypes.SetConsKeyReq{
 				Address:       operatorAddressString,
-				AvsAddress:    avsAddress.String(),
+				AvsAddress:    avsAddress,
 				PublicKeyJSON: newKey.ToJSON(),
 			},
 		)

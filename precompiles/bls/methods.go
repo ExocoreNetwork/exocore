@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/ethereum/go-ethereum/accounts/abi"
-	cmn "github.com/evmos/evmos/v14/precompiles/common"
+	cmn "github.com/evmos/evmos/v16/precompiles/common"
 	"github.com/prysmaticlabs/prysm/v4/crypto/bls"
 	"github.com/prysmaticlabs/prysm/v4/crypto/bls/blst"
 	"github.com/prysmaticlabs/prysm/v4/crypto/bls/common"

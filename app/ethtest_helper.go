@@ -25,9 +25,9 @@ import (
 	tmtypes "github.com/cometbft/cometbft/proto/tendermint/types"
 	cmtypes "github.com/cometbft/cometbft/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/evmos/evmos/v14/crypto/ethsecp256k1"
-	"github.com/evmos/evmos/v14/encoding"
-	evmostypes "github.com/evmos/evmos/v14/types"
+	"github.com/evmos/evmos/v16/crypto/ethsecp256k1"
+	"github.com/evmos/evmos/v16/encoding"
+	evmostypes "github.com/evmos/evmos/v16/types"
 
 	assetstypes "github.com/ExocoreNetwork/exocore/x/assets/types"
 	delegationtypes "github.com/ExocoreNetwork/exocore/x/delegation/types"
@@ -173,9 +173,9 @@ func genesisStateWithValSet(codec codec.Codec, genesisState simapp.GenesisState,
 				{
 					AssetID: assetID,
 					Info: assetstypes.StakerAssetInfo{
-						TotalDepositAmount:  depositAmount,
-						WithdrawableAmount:  depositAmount,
-						WaitUnbondingAmount: sdk.ZeroInt(),
+						TotalDepositAmount:        depositAmount,
+						WithdrawableAmount:        depositAmount,
+						PendingUndelegationAmount: sdk.ZeroInt(),
 					},
 				},
 			},
@@ -185,11 +185,10 @@ func genesisStateWithValSet(codec codec.Codec, genesisState simapp.GenesisState,
 		assetstypes.DefaultParams(),
 		clientChains, []assetstypes.StakingAssetInfo{
 			{
-				AssetBasicInfo: &assets[0],
-				// required to be 0, since deposits are handled after token init.
-				StakingTotalAmount: sdk.ZeroInt(),
+				AssetBasicInfo:     assets[0],
+				StakingTotalAmount: depositAmount,
 			},
-		}, depositsByStaker,
+		}, depositsByStaker, nil,
 	)
 	genesisState[assetstypes.ModuleName] = codec.MustMarshalJSON(assetsGenesis)
 
@@ -200,31 +199,26 @@ func genesisStateWithValSet(codec codec.Codec, genesisState simapp.GenesisState,
 	genesisState[oracletypes.ModuleName] = codec.MustMarshalJSON(oracleGenesis)
 
 	// operator registration
-	operatorInfos := []operatortypes.OperatorInfo{
+	operatorInfos := []operatortypes.OperatorDetail{
 		{
-			EarningsAddr:     operator.String(),
-			OperatorMetaInfo: "operator1",
-			Commission:       stakingtypes.NewCommission(sdk.ZeroDec(), sdk.ZeroDec(), sdk.ZeroDec()),
+			OperatorAddress: operator.String(),
+			OperatorInfo: operatortypes.OperatorInfo{
+				EarningsAddr:     operator.String(),
+				OperatorMetaInfo: "operator1",
+				Commission:       stakingtypes.NewCommission(sdk.ZeroDec(), sdk.ZeroDec(), sdk.ZeroDec()),
+			},
 		},
 	}
-	operatorGenesis := operatortypes.NewGenesisState(operatorInfos)
+	operatorGenesis := operatortypes.NewGenesisState(operatorInfos, nil, nil, nil, nil, nil, nil, nil)
 	genesisState[operatortypes.ModuleName] = codec.MustMarshalJSON(operatorGenesis)
 	// x/delegation
-	delegationsByStaker := []delegationtypes.DelegationsByStaker{
+	singleStateKey := assetstypes.GetJoinedStoreKey(stakerID, assetID, operator.String())
+	delegationStates := []delegationtypes.DelegationStates{
 		{
-			StakerID: stakerID,
-			Delegations: []delegationtypes.DelegatedSingleAssetInfo{
-				{
-					AssetID: assetID,
-					PerOperatorAmounts: []delegationtypes.KeyValue{
-						{
-							Key: operator.String(),
-							Value: &delegationtypes.ValueField{
-								Amount: depositAmount,
-							},
-						},
-					},
-				},
+			Key: string(singleStateKey),
+			States: delegationtypes.DelegationAmounts{
+				WaitUndelegationAmount: math.NewInt(0),
+				UndelegatableShare:     math.LegacyNewDecFromBigInt(depositAmount.BigInt()),
 			},
 		},
 	}
@@ -234,7 +228,15 @@ func genesisStateWithValSet(codec codec.Codec, genesisState simapp.GenesisState,
 			StakerID: stakerID,
 		},
 	}
-	delegationGenesis := delegationtypes.NewGenesis(delegationsByStaker, associations)
+	stakersByOperator := []delegationtypes.StakersByOperator{
+		{
+			Key: string(assetstypes.GetJoinedStoreKey(operator.String(), assetID)),
+			Stakers: []string{
+				stakerID,
+			},
+		},
+	}
+	delegationGenesis := delegationtypes.NewGenesis(associations, delegationStates, stakersByOperator, nil)
 	genesisState[delegationtypes.ModuleName] = codec.MustMarshalJSON(delegationGenesis)
 
 	dogfoodGenesis := dogfoodtypes.NewGenesis(
@@ -243,7 +245,7 @@ func genesisStateWithValSet(codec codec.Codec, genesisState simapp.GenesisState,
 				// PublicKey: consensusKeyRecords[0].Chains[0].ConsensusKey,
 				Power:           1,
 				PublicKey:       hexutil.Encode(valSet.Validators[0].PubKey.Bytes()),
-				OperatorAccAddr: operatorInfos[0].EarningsAddr,
+				OperatorAccAddr: operatorInfos[0].OperatorAddress,
 			},
 		},
 		[]dogfoodtypes.EpochToOperatorAddrs{}, []dogfoodtypes.EpochToConsensusAddrs{},

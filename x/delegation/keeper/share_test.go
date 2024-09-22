@@ -297,7 +297,7 @@ func (suite *DelegationTestSuite) TestRemoveShareFromOperator() {
 	expectedInfo = *originalInfo
 	expectedInfo.TotalAmount = originalInfo.TotalAmount.Sub(amount)
 	expectedInfo.TotalShare = originalInfo.TotalShare.Sub(removeShareForUndelegation)
-	expectedInfo.WaitUnbondingAmount = originalInfo.WaitUnbondingAmount.Add(amount)
+	expectedInfo.PendingUndelegationAmount = originalInfo.PendingUndelegationAmount.Add(amount)
 	suite.Equal(expectedInfo, *info)
 }
 
@@ -327,7 +327,7 @@ func (suite *DelegationTestSuite) TestRemoveShare() {
 	suite.Equal(removeShare.TruncateInt(), delegationInfo.WaitUndelegationAmount)
 	stakerAssetInfo, err := suite.App.AssetsKeeper.GetStakerSpecifiedAssetInfo(suite.Ctx, stakerID, assetID)
 	suite.NoError(err)
-	suite.Equal(removeShare.TruncateInt(), stakerAssetInfo.WaitUnbondingAmount)
+	suite.Equal(removeShare.TruncateInt(), stakerAssetInfo.PendingUndelegationAmount)
 	stakerMap, err = suite.App.DelegationKeeper.GetStakersByOperator(suite.Ctx, suite.opAccAddr.String(), assetID)
 	suite.NoError(err)
 	suite.NotContains(stakerMap.Stakers, stakerID)

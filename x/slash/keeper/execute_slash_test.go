@@ -44,9 +44,9 @@ func (suite *SlashTestSuite) TestSlash() {
 	info, err := suite.App.AssetsKeeper.GetStakerSpecifiedAssetInfo(suite.Ctx, stakerID, assetID)
 	suite.NoError(err)
 	suite.Equal(types.StakerAssetInfo{
-		TotalDepositAmount:  depositEvent.OpAmount,
-		WithdrawableAmount:  depositEvent.OpAmount,
-		WaitUnbondingAmount: sdkmath.NewInt(0),
+		TotalDepositAmount:        depositEvent.OpAmount,
+		WithdrawableAmount:        depositEvent.OpAmount,
+		PendingUndelegationAmount: sdkmath.NewInt(0),
 	}, *info)
 
 	// test the normal case
@@ -59,12 +59,12 @@ func (suite *SlashTestSuite) TestSlash() {
 	info, err = suite.App.AssetsKeeper.GetStakerSpecifiedAssetInfo(suite.Ctx, stakerID, assetID)
 	suite.NoError(err)
 	suite.Equal(types.StakerAssetInfo{
-		TotalDepositAmount:  sdkmath.NewInt(10),
-		WithdrawableAmount:  sdkmath.NewInt(10),
-		WaitUnbondingAmount: sdkmath.NewInt(0),
+		TotalDepositAmount:        sdkmath.NewInt(10),
+		WithdrawableAmount:        sdkmath.NewInt(10),
+		PendingUndelegationAmount: sdkmath.NewInt(0),
 	}, *info)
 
 	assetInfo, err := suite.App.AssetsKeeper.GetStakingAssetInfo(suite.Ctx, assetID)
 	suite.NoError(err)
-	suite.Equal(assets[assetID].StakingTotalAmount.Add(depositEvent.OpAmount).Sub(event.OpAmount), assetInfo.StakingTotalAmount)
+	suite.Equal(assets[0].StakingTotalAmount.Add(depositEvent.OpAmount).Sub(event.OpAmount), assetInfo.StakingTotalAmount)
 }

@@ -66,8 +66,8 @@ func (k *Keeper) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.Valida
 
 		// update the staker state
 		err = k.assetsKeeper.UpdateStakerAssetState(ctx, record.StakerID, record.AssetID, types.DeltaStakerSingleAsset{
-			WithdrawableAmount:  record.ActualCompletedAmount,
-			WaitUnbondingAmount: recordAmountNeg,
+			WithdrawableAmount:        record.ActualCompletedAmount,
+			PendingUndelegationAmount: recordAmountNeg,
 		})
 		if err != nil {
 			panic(err)
@@ -75,7 +75,7 @@ func (k *Keeper) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.Valida
 
 		// update the operator state
 		err = k.assetsKeeper.UpdateOperatorAssetState(ctx, operatorAccAddress, record.AssetID, types.DeltaOperatorSingleAsset{
-			WaitUnbondingAmount: recordAmountNeg,
+			PendingUndelegationAmount: recordAmountNeg,
 		})
 		if err != nil {
 			panic(err)

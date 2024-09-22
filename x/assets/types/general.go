@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/ExocoreNetwork/exocore/utils"
+
 	errorsmod "cosmossdk.io/errors"
 	"cosmossdk.io/math"
 
@@ -64,11 +66,11 @@ func GetStakeIDAndAssetID(
 ) (stakeID string, assetID string) {
 	clientChainLzIDStr := hexutil.EncodeUint64(clientChainLzID)
 	if stakerAddress != nil {
-		stakeID = strings.Join([]string{hexutil.Encode(stakerAddress), clientChainLzIDStr}, "_")
+		stakeID = strings.Join([]string{hexutil.Encode(stakerAddress), clientChainLzIDStr}, utils.DelimiterForID)
 	}
 
 	if assetsAddress != nil {
-		assetID = strings.Join([]string{hexutil.Encode(assetsAddress), clientChainLzIDStr}, "_")
+		assetID = strings.Join([]string{hexutil.Encode(assetsAddress), clientChainLzIDStr}, utils.DelimiterForID)
 	}
 	return
 }
@@ -85,14 +87,14 @@ func GetStakeIDAndAssetIDFromStr(
 	if stakerAddress != "" {
 		stakeID = strings.Join(
 			[]string{strings.ToLower(stakerAddress), clientChainLzIDStr},
-			"_",
+			utils.DelimiterForID,
 		)
 	}
 
 	if assetsAddress != "" {
 		assetID = strings.Join(
 			[]string{strings.ToLower(assetsAddress), clientChainLzIDStr},
-			"_",
+			utils.DelimiterForID,
 		)
 	}
 	return

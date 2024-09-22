@@ -33,7 +33,7 @@ import (
 	// for EIP-1559 fee handling
 	ethante "github.com/ExocoreNetwork/exocore/app/ante/evm"
 	// for encoding and decoding of EIP-712 messages
-	"github.com/evmos/evmos/v14/ethereum/eip712"
+	"github.com/evmos/evmos/v16/ethereum/eip712"
 
 	"github.com/ExocoreNetwork/exocore/x/assets"
 	assetsKeeper "github.com/ExocoreNetwork/exocore/x/assets/keeper"
@@ -50,9 +50,9 @@ import (
 	rewardTypes "github.com/ExocoreNetwork/exocore/x/reward/types"
 
 	// increases or decreases block gas limit based on usage
-	"github.com/evmos/evmos/v14/x/feemarket"
-	feemarketkeeper "github.com/evmos/evmos/v14/x/feemarket/keeper"
-	feemarkettypes "github.com/evmos/evmos/v14/x/feemarket/types"
+	"github.com/evmos/evmos/v16/x/feemarket"
+	feemarketkeeper "github.com/evmos/evmos/v16/x/feemarket/keeper"
+	feemarkettypes "github.com/evmos/evmos/v16/x/feemarket/types"
 
 	runtimeservices "github.com/cosmos/cosmos-sdk/runtime/services"
 
@@ -65,7 +65,7 @@ import (
 	abci "github.com/cometbft/cometbft/abci/types"
 	"github.com/cometbft/cometbft/libs/log"
 
-	"github.com/evmos/evmos/v14/precompiles/common"
+	"github.com/evmos/evmos/v16/precompiles/common"
 
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/client"
@@ -96,8 +96,8 @@ import (
 
 	// this module allows the transfer of ERC20 tokens over IBC. for such transfers to occur,
 	// they must be enabled in the ERC20 keeper.
-	transfer "github.com/evmos/evmos/v14/x/ibc/transfer"
-	transferkeeper "github.com/evmos/evmos/v14/x/ibc/transfer/keeper"
+	transfer "github.com/evmos/evmos/v16/x/ibc/transfer"
+	transferkeeper "github.com/evmos/evmos/v16/x/ibc/transfer/keeper"
 
 	"cosmossdk.io/simapp"
 	simappparams "cosmossdk.io/simapp/params"
@@ -108,7 +108,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/mempool"
 	"github.com/cosmos/cosmos-sdk/types/module"
 	"github.com/cosmos/cosmos-sdk/version"
-	srvflags "github.com/evmos/evmos/v14/server/flags"
+	srvflags "github.com/evmos/evmos/v16/server/flags"
 
 	"github.com/cosmos/cosmos-sdk/x/auth"
 	authkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
@@ -179,28 +179,21 @@ import (
 
 	"github.com/ExocoreNetwork/exocore/x/evm"
 	evmkeeper "github.com/ExocoreNetwork/exocore/x/evm/keeper"
-	evmtypes "github.com/evmos/evmos/v14/x/evm/types"
+	evmtypes "github.com/evmos/evmos/v16/x/evm/types"
 
-	"github.com/evmos/evmos/v14/encoding"
-	evmostypes "github.com/evmos/evmos/v14/types"
-
-	// The recovery module is an IBC middleware for helping users recover funds that they sent
-	// to the Cosmos secp256k1 address instead of the Ethereum ethsecp256k1 address. It only
-	// works for authorized chains.
-	"github.com/evmos/evmos/v14/x/recovery"
-	recoverykeeper "github.com/evmos/evmos/v14/x/recovery/keeper"
-	recoverytypes "github.com/evmos/evmos/v14/x/recovery/types"
+	"github.com/evmos/evmos/v16/encoding"
+	evmostypes "github.com/evmos/evmos/v16/types"
 
 	"github.com/ExocoreNetwork/exocore/x/epochs"
 	epochskeeper "github.com/ExocoreNetwork/exocore/x/epochs/keeper"
 	epochstypes "github.com/ExocoreNetwork/exocore/x/epochs/types"
 
-	"github.com/evmos/evmos/v14/x/erc20"
-	erc20keeper "github.com/evmos/evmos/v14/x/erc20/keeper"
-	erc20types "github.com/evmos/evmos/v14/x/erc20/types"
+	"github.com/evmos/evmos/v16/x/erc20"
+	erc20keeper "github.com/evmos/evmos/v16/x/erc20/keeper"
+	erc20types "github.com/evmos/evmos/v16/x/erc20/types"
 
 	// unnamed import of statik for swagger UI support
-	_ "github.com/evmos/evmos/v14/client/docs/statik"
+	_ "github.com/evmos/evmos/v16/client/docs/statik"
 
 	// Force-load the tracer engines to trigger registration due to Go-Ethereum v1.10.15 changes
 	_ "github.com/ethereum/go-ethereum/eth/tracers/js"
@@ -264,7 +257,6 @@ var (
 		// evmos modules
 		erc20.AppModuleBasic{},
 		epochs.AppModuleBasic{},
-		recovery.AppModuleBasic{},
 		consensus.AppModuleBasic{},
 		// Exocore modules
 		assets.AppModuleBasic{},
@@ -345,9 +337,8 @@ type ExocoreApp struct {
 	FeeMarketKeeper feemarketkeeper.Keeper
 
 	// Evmos keepers
-	Erc20Keeper    erc20keeper.Keeper
-	EpochsKeeper   epochskeeper.Keeper
-	RecoveryKeeper *recoverykeeper.Keeper
+	Erc20Keeper  erc20keeper.Keeper
+	EpochsKeeper epochskeeper.Keeper
 
 	// exocore assets module keepers
 	AssetsKeeper     assetsKeeper.Keeper
@@ -433,7 +424,6 @@ func NewExocoreApp(
 		// evmos keys
 		erc20types.StoreKey,
 		epochstypes.StoreKey,
-		recoverytypes.StoreKey,
 		// exoCore module keys
 		assetsTypes.StoreKey,
 		delegationTypes.StoreKey,
@@ -684,7 +674,6 @@ func NewExocoreApp(
 	// to determine whether an AVS is registered or not.
 	app.OperatorKeeper = operatorKeeper.NewKeeper(
 		keys[operatorTypes.StoreKey], appCodec,
-		bApp.CreateQueryContext,
 		app.AssetsKeeper,
 		&app.DelegationKeeper, // intentionally a pointer, since not yet initialized.
 		&app.OracleKeeper,
@@ -705,36 +694,19 @@ func NewExocoreApp(
 		),
 	)
 
-	// the recovery keeper is used to help recover any assets wrongly sent (over IBC) to the
-	// Cosmos address instead of Eth address by users. it needs IBC related stuff initialized
-	// which needs the staking keeper, so it is initialized later in the stack.
-	app.RecoveryKeeper = recoverykeeper.NewKeeper(
-		keys[recoverytypes.StoreKey], appCodec, authtypes.NewModuleAddress(govtypes.ModuleName),
-		app.AccountKeeper, app.BankKeeper,
-		// ibc related
-		app.IBCKeeper.ChannelKeeper, &app.TransferKeeper,
-	)
-
-	// the ERC20 keeper is used to convert IBC tokens to ERC20 tokens. it only works if such
-	// conversion is enabled in its parameters. it uses the recovery keeper's params to figure
-	// out the type (EVM or Cosmos) type of source chain.
 	app.Erc20Keeper = erc20keeper.NewKeeper(
 		keys[erc20types.StoreKey], appCodec, authtypes.NewModuleAddress(govtypes.ModuleName),
-		app.AccountKeeper, app.BankKeeper, app.EvmKeeper, app.StakingKeeper, app.RecoveryKeeper,
+		app.AccountKeeper, app.BankKeeper, app.EvmKeeper, app.StakingKeeper,
+		app.AuthzKeeper, &app.TransferKeeper,
 	)
 
-	// remaining bits of the IBC stack: transfer stack and interchain accounts.
-
-	// transfer assets across chains
 	app.TransferKeeper = transferkeeper.NewKeeper(
 		appCodec, keys[ibctransfertypes.StoreKey], app.GetSubspace(ibctransfertypes.ModuleName),
-		app.RecoveryKeeper, // ICS4 Wrapper: recovery IBC middleware
+		app.IBCKeeper.ChannelKeeper, // ICS4 Wrapper: claims IBC middleware
 		app.IBCKeeper.ChannelKeeper, &app.IBCKeeper.PortKeeper,
 		app.AccountKeeper, app.BankKeeper, scopedTransferKeeper,
 		app.Erc20Keeper, // Add ERC20 Keeper for ERC20 transfers
 	)
-	// the middleware for recovery of tokens
-	app.RecoveryKeeper.SetICS4Wrapper(app.IBCKeeper.ChannelKeeper)
 
 	// Override the ICS20 app module
 	transferModule := transfer.NewAppModule(app.TransferKeeper)
@@ -743,7 +715,7 @@ func NewExocoreApp(
 	app.ICAHostKeeper = icahostkeeper.NewKeeper(
 		appCodec, app.keys[icahosttypes.StoreKey],
 		app.GetSubspace(icahosttypes.SubModuleName),
-		app.RecoveryKeeper,
+		app.IBCKeeper.ChannelKeeper,
 		app.IBCKeeper.ChannelKeeper,
 		&app.IBCKeeper.PortKeeper,
 		app.AccountKeeper,
@@ -773,7 +745,6 @@ func NewExocoreApp(
 	var transferStack porttypes.IBCModule
 
 	transferStack = transfer.NewIBCModule(app.TransferKeeper)
-	transferStack = recovery.NewIBCMiddleware(*app.RecoveryKeeper, transferStack)
 	transferStack = erc20.NewIBCMiddleware(app.Erc20Keeper, transferStack)
 
 	// Create static IBC router, add transfer route, then set and seal it
@@ -886,8 +857,6 @@ func NewExocoreApp(
 		erc20.NewAppModule(app.Erc20Keeper, app.AccountKeeper,
 			app.GetSubspace(erc20types.ModuleName)),
 		epochs.NewAppModule(appCodec, app.EpochsKeeper),
-		recovery.NewAppModule(*app.RecoveryKeeper,
-			app.GetSubspace(recoverytypes.ModuleName)),
 		// exoCore app modules
 		exomint.NewAppModule(appCodec, app.ExomintKeeper),
 		assets.NewAppModule(appCodec, app.AssetsKeeper),
@@ -925,7 +894,6 @@ func NewExocoreApp(
 		paramstypes.ModuleName,
 		consensusparamtypes.ModuleName,
 		erc20types.ModuleName,
-		recoverytypes.ModuleName,
 		exominttypes.ModuleName, // called via hooks not directly
 		assetsTypes.ModuleName,
 		operatorTypes.ModuleName,
@@ -960,7 +928,6 @@ func NewExocoreApp(
 		upgradetypes.ModuleName,
 		epochstypes.ModuleName, // begin blocker only
 		erc20types.ModuleName,
-		recoverytypes.ModuleName,
 		exominttypes.ModuleName,
 		consensusparamtypes.ModuleName,
 		assetsTypes.ModuleName,
@@ -995,8 +962,7 @@ func NewExocoreApp(
 		// must be after staking to `IterateValidators` but it is not implemented anyway
 		slashingtypes.ModuleName,
 		evidencetypes.ModuleName,
-		govtypes.ModuleName,      // can be anywhere after bank
-		recoverytypes.ModuleName, // just params
+		govtypes.ModuleName, // can be anywhere after bank
 		erc20types.ModuleName,
 		ibcexported.ModuleName,
 		ibctransfertypes.ModuleName,
@@ -1351,7 +1317,7 @@ func initParamsKeeper(
 	paramsKeeper.Subspace(banktypes.ModuleName)
 	paramsKeeper.Subspace(slashingtypes.ModuleName)
 	paramsKeeper.Subspace(govtypes.ModuleName).
-		WithKeyTable(govv1.ParamKeyTable()) // nolint:staticcheck
+		WithKeyTable(govv1.ParamKeyTable()) //nolint:staticcheck
 	paramsKeeper.Subspace(crisistypes.ModuleName)
 	paramsKeeper.Subspace(ibctransfertypes.ModuleName)
 	paramsKeeper.Subspace(ibcexported.ModuleName)

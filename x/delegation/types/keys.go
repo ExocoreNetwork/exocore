@@ -72,7 +72,7 @@ func GetDelegationStateIteratorPrefix(stakerID, assetID string) []byte {
 	return tmp
 }
 
-func ParseStakerAssetIDAndOperatorAddrFromKey(key []byte) (keys *SingleDelegationInfoReq, err error) {
+func ParseStakerAssetIDAndOperator(key []byte) (keys *SingleDelegationInfoReq, err error) {
 	stringList, err := assetstypes.ParseJoinedStoreKey(key, 3)
 	if err != nil {
 		return nil, err

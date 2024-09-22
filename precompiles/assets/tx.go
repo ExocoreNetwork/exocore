@@ -12,7 +12,7 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/vm"
-	cmn "github.com/evmos/evmos/v14/precompiles/common"
+	cmn "github.com/evmos/evmos/v16/precompiles/common"
 )
 
 const (
@@ -143,7 +143,7 @@ func (p Precompile) RegisterToken(
 	}
 
 	stakingAsset := &assetstypes.StakingAssetInfo{
-		AssetBasicInfo:     &asset,
+		AssetBasicInfo:     asset,
 		StakingTotalAmount: sdkmath.NewInt(0),
 	}
 

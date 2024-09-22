@@ -13,7 +13,7 @@ import (
 
 	"github.com/ExocoreNetwork/exocore/app"
 	"github.com/ExocoreNetwork/exocore/testutil/tx"
-	"github.com/evmos/evmos/v14/encoding"
+	"github.com/evmos/evmos/v16/encoding"
 )
 
 // Commit commits a block at a given time. Reminder: At the end of each

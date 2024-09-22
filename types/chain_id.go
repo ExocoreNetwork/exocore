@@ -8,7 +8,7 @@ import (
 
 	errorsmod "cosmossdk.io/errors"
 
-	"github.com/evmos/evmos/v14/types"
+	"github.com/evmos/evmos/v16/types"
 )
 
 var (

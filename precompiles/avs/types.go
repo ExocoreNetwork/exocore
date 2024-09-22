@@ -8,7 +8,7 @@ import (
 	avstypes "github.com/ExocoreNetwork/exocore/x/avs/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/common"
-	cmn "github.com/evmos/evmos/v14/precompiles/common"
+	cmn "github.com/evmos/evmos/v16/precompiles/common"
 	"golang.org/x/xerrors"
 )
 

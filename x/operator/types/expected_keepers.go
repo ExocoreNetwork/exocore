@@ -7,7 +7,6 @@ import (
 	delegationtype "github.com/ExocoreNetwork/exocore/x/delegation/types"
 	oracletype "github.com/ExocoreNetwork/exocore/x/oracle/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/ethereum/go-ethereum/common"
 )
 
 var _ OracleKeeper = MockOracle{}
@@ -24,8 +23,8 @@ type AssetsKeeper interface {
 		f func(assetID string, state *assetstype.OperatorAssetInfo) error,
 	) error
 	ClientChainExists(ctx sdk.Context, index uint64) bool
-	GetAllStakingAssetsInfo(ctx sdk.Context) (allAssets map[string]*assetstype.StakingAssetInfo, err error)
 	GetOperatorSpecifiedAssetInfo(ctx sdk.Context, operatorAddr sdk.Address, assetID string) (info *assetstype.OperatorAssetInfo, err error)
+	GetAllStakingAssetsInfo(ctx sdk.Context) (allAssets []assetstype.StakingAssetInfo, err error)
 }
 
 var _ DelegationKeeper = &delegationkeeper.Keeper{}
@@ -108,7 +107,7 @@ type AVSKeeper interface {
 	GetEpochEndAVSs(ctx sdk.Context, epochIdentifier string, epochNumber int64) []string
 	// IsAVS returns true if the address is a registered AVS address.
 	IsAVS(ctx sdk.Context, addr string) (bool, error)
-	IsAVSByChainID(ctx sdk.Context, chainID string) (bool, common.Address)
+	IsAVSByChainID(ctx sdk.Context, chainID string) (bool, string)
 }
 
 type SlashKeeper interface {

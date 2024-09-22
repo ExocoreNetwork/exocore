@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	errorsmod "cosmossdk.io/errors"
 	sdkmath "cosmossdk.io/math"
 
 	delegationtypes "github.com/ExocoreNetwork/exocore/x/delegation/types"
@@ -19,7 +20,7 @@ type AssetPriceAndDecimal struct {
 func (k *Keeper) OptIn(ctx sdk.Context, operatorAddress sdk.AccAddress, avsAddr string) error {
 	// check that the operator is registered
 	if !k.IsOperator(ctx, operatorAddress) {
-		return delegationtypes.ErrOperatorNotExist
+		return errorsmod.Wrapf(delegationtypes.ErrOperatorNotExist, "operator is :%s", operatorAddress)
 	}
 	// check that the AVS is registered
 	if isAvs, _ := k.avsKeeper.IsAVS(ctx, avsAddr); !isAvs {

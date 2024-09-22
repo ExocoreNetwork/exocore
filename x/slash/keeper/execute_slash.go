@@ -17,7 +17,7 @@ import (
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/core"
 	ethtypes "github.com/ethereum/go-ethereum/core/types"
-	"github.com/evmos/evmos/v14/rpc/namespaces/ethereum/eth/filters"
+	"github.com/evmos/evmos/v16/rpc/namespaces/ethereum/eth/filters"
 )
 
 type SlashParams struct {

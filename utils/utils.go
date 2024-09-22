@@ -5,7 +5,11 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/evmos/evmos/v14/crypto/ethsecp256k1"
+	ibcclienttypes "github.com/cosmos/ibc-go/v7/modules/core/02-client/types"
+
+	"github.com/evmos/evmos/v16/crypto/ethsecp256k1"
+	"golang.org/x/exp/constraints"
+	"golang.org/x/xerrors"
 
 	operatortypes "github.com/ExocoreNetwork/exocore/x/operator/types"
 	"github.com/cosmos/cosmos-sdk/crypto/keys/ed25519"
@@ -25,6 +29,12 @@ const (
 	DefaultChainID = MainnetChainID + "-1"
 	// BaseDenom defines the Evmos mainnet denomination
 	BaseDenom = "aexo"
+
+	// DelimiterForCombinedKey is the delimiter used for constructing the combined key.
+	DelimiterForCombinedKey = "/"
+
+	// DelimiterForID Delimiter used for constructing the stakerID and assetID.
+	DelimiterForID = "_"
 )
 
 // IsMainnet returns true if the chain-id has the Evmos mainnet EIP155 chain prefix.
@@ -35,6 +45,20 @@ func IsMainnet(chainID string) bool {
 // IsTestnet returns true if the chain-id has the Evmos testnet EIP155 chain prefix.
 func IsTestnet(chainID string) bool {
 	return strings.HasPrefix(chainID, TestnetChainID)
+}
+
+func IsValidRevisionChainID(chainID string) bool {
+	if strings.Contains(chainID, DelimiterForCombinedKey) {
+		return false
+	}
+	return ibcclienttypes.IsRevisionFormat(chainID)
+}
+
+func IsValidChainIDWithoutRevision(chainID string) bool {
+	if strings.Contains(chainID, DelimiterForCombinedKey) {
+		return false
+	}
+	return !ibcclienttypes.IsRevisionFormat(chainID)
 }
 
 // IsSupportedKey returns true if the pubkey type is supported by the chain
@@ -63,6 +87,38 @@ func IsSupportedKey(pubkey cryptotypes.PubKey) bool {
 	default:
 		return false
 	}
+}
+
+// CommonValidation is used to check for duplicates in the input list
+// and validate the input information simultaneously.
+// It might be used for validating most genesis states.
+// slice is the input list
+// seenFieldValue return the key used to check for duplicates and the
+// value stored for the other validations
+// validation is a function to execute customized check for the object
+func CommonValidation[T any, V constraints.Ordered, D any](
+	slice []T,
+	seenFieldValue func(T) (V, D),
+	validation func(int, T) error,
+) (map[V]D, error) {
+	seen := make(map[V]D)
+	for i := range slice {
+		v := slice[i]
+		field, value := seenFieldValue(v)
+		// check for no duplicated element
+		if _, ok := seen[field]; ok {
+			return nil, xerrors.Errorf(
+				"duplicate element: %v",
+				field,
+			)
+		}
+		// perform the validation
+		if err := validation(i, v); err != nil {
+			return nil, err
+		}
+		seen[field] = value
+	}
+	return seen, nil
 }
 
 // // GetExocoreAddressFromBech32 returns the sdk.Account address of given address,

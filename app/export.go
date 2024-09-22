@@ -14,9 +14,9 @@ import (
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 	govtypesv1 "github.com/cosmos/cosmos-sdk/x/gov/types/v1"
 	slashingtypes "github.com/cosmos/cosmos-sdk/x/slashing/types"
-	evmtypes "github.com/evmos/evmos/v14/x/evm/types"
+	evmtypes "github.com/evmos/evmos/v16/x/evm/types"
 
-	"github.com/evmos/evmos/v14/encoding"
+	"github.com/evmos/evmos/v16/encoding"
 )
 
 // NewDefaultGenesisState generates the default state for the application.

@@ -15,7 +15,7 @@ import (
 	"github.com/ExocoreNetwork/exocore/x/assets/types"
 	oracletypes "github.com/ExocoreNetwork/exocore/x/oracle/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	cmn "github.com/evmos/evmos/v14/precompiles/common"
+	cmn "github.com/evmos/evmos/v16/precompiles/common"
 )
 
 // oracleInfo: '[tokenName],[chainName],[tokenDecimal](,[interval],[contract](,[ChainDesc:{...}],[TokenDesc:{...}]))'

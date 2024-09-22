@@ -10,8 +10,8 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/cosmos/cosmos-sdk/crypto/keyring"
-	clientkeys "github.com/evmos/evmos/v14/client/keys"
-	"github.com/evmos/evmos/v14/crypto/hd"
+	clientkeys "github.com/evmos/evmos/v16/client/keys"
+	"github.com/evmos/evmos/v16/crypto/hd"
 )
 
 // KeyCommands registers a sub-tree of commands to interact with
