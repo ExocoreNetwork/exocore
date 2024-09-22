@@ -65,5 +65,4 @@ func CmdQueryStakerList() *cobra.Command {
 	flags.AddQueryFlagsToCmd(cmd)
 
 	return cmd
-
 }
