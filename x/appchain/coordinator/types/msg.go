@@ -31,7 +31,6 @@ func (msg *RegisterSubscriberChainRequest) GetSignBytes() []byte {
 }
 
 // ValidateBasic executes sanity validation on the provided data
-// MsgUpdateParams is used to update params, the validation will mostly be stateful which is done by service
 func (msg *RegisterSubscriberChainRequest) ValidateBasic() error {
 	if _, err := sdk.AccAddressFromBech32(msg.FromAddress); err != nil {
 		return sdkerrors.Wrap(err, "invalid from address")
@@ -63,7 +62,7 @@ func (msg *RegisterSubscriberChainRequest) ValidateBasic() error {
 	return nil
 }
 
-// GetSigners returns the expected signers for a MsgUpdateParams message
+// GetSigners returns the expected signers for a RegisterSubscriberChainRequest message
 func (msg *RegisterSubscriberChainRequest) GetSigners() []sdk.AccAddress {
 	addr, err := sdk.AccAddressFromBech32(msg.FromAddress)
 	if err != nil {

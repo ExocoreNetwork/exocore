@@ -36,7 +36,7 @@ func (k Keeper) UnbondingTime(ctx sdk.Context) time.Duration {
 // stores the validators that are added or those that are removed, and updates
 // the stored power for the existing validators. It also allows any hooks registered
 // on the keeper to be executed. Lastly, it stores the validator set against the
-// provided validator set id.
+// provided validator set id. The caller must ensure that `change.Key` is not nil.
 func (k Keeper) ApplyValidatorChanges(
 	ctx sdk.Context, changes []exocoretypes.WrappedConsKeyWithPower,
 ) []abci.ValidatorUpdate {

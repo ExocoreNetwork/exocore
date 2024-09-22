@@ -182,7 +182,12 @@ func (k *Keeper) getOperatorPrevConsKeyForChainID(
 	}
 	key := &tmprotocrypto.PublicKey{}
 	k.cdc.MustUnmarshal(res, key)
-	return true, exocoretypes.NewWrappedConsKeyFromTmProtoKey(key)
+	return true,
+		// technically this can be nil, but it can't happen because
+		// (1) res is not nil, and
+		// (2) during key storage, the type is checked to be PublicKey_Ed25519.
+		//     if the type mismatches, nil is returned.
+		exocoretypes.NewWrappedConsKeyFromTmProtoKey(key)
 }
 
 // GetOperatorConsKeyForChainID gets the (consensus) public key for the given operator address
@@ -326,6 +331,7 @@ func (k *Keeper) GetOperatorsForChainID(
 		k.cdc.MustUnmarshal(res, ret)
 		wrappedKey := exocoretypes.NewWrappedConsKeyFromTmProtoKey(ret)
 		if wrappedKey != nil {
+			// this should not happen, but just in case
 			addrs = append(addrs, addr)
 			pubKeys = append(pubKeys, wrappedKey)
 		}

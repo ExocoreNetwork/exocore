@@ -6,6 +6,9 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
+// AddSubscriberChain adds a subscriber chain to the pending list. It will be started at the
+// next epoch, with the identifier set in the `req.EpochIdentifier` field. The caller must
+// have performed stateless validation on the request.
 func (k Keeper) AddSubscriberChain(
 	ctx sdk.Context,
 	req *types.RegisterSubscriberChainRequest,

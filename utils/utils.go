@@ -176,7 +176,7 @@ func CommonValidation[T any, V constraints.Ordered, D any](
 // the sorting is descending, so the highest power is first. If the powers are equal,
 // the operator address (bytes, not string!) is used as a tiebreaker. The bytes
 // are preferred since that is how the operator module stores them, indexed by
-// the bytes.
+// the bytes. The caller must ensure that the slices are of the same length.
 func SortByPower(
 	operatorAddrs []sdk.AccAddress,
 	pubKeys []types.WrappedConsKey,

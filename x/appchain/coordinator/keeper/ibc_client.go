@@ -229,11 +229,14 @@ func (k Keeper) SetSubscriberGenesis(
 func (k Keeper) GetSubscriberGenesis(
 	ctx sdk.Context,
 	chainID string,
-) (genesis commontypes.SubscriberGenesisState) {
+) (genesis commontypes.SubscriberGenesisState, found bool) {
 	store := ctx.KVStore(k.storeKey)
 	key := types.SubscriberGenesisKey(chainID)
+	if !store.Has(key) {
+		return genesis, false
+	}
 	k.cdc.MustUnmarshal(store.Get(key), &genesis)
-	return genesis
+	return genesis, true
 }
 
 // DeleteSubscriberGenesis deletes the genesis state for the subscriber chain.

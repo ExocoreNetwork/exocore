@@ -42,7 +42,7 @@ func (k Keeper) EndBlock(ctx sdk.Context) []abci.ValidatorUpdate {
 			ctx, addr, chainIDWithoutRevision,
 		)
 		if err != nil {
-			k.Logger(ctx).Error("error decrementing undelegation hold count", "error", err)
+			k.Logger(ctx).Error("error completing operator key removal", "error", err)
 		}
 	}
 	k.ClearPendingOptOuts(ctx)
