@@ -168,7 +168,16 @@ func (k Keeper) MakeSubscriberGenesis(
 	}
 	operators, keys, powers = utils.SortByPower(operators, keys, powers)
 	maxVals := req.MaxValidators
-	validatorUpdates := make([]abci.ValidatorUpdate, 0, maxVals)
+	validatorUpdates := make(
+		[]abci.ValidatorUpdate, 0,
+		min(
+			// the maximum size of the validator set is the minimum of the number of operators
+			// and the max validators allowed by the subscriber chain. the capacity is not
+			// multiplied by 2 here because this is the initial validator set and there are no
+			// previous validators whose power will be set to zero.
+			int(maxVals), len(operators),
+		),
+	)
 	for i := range operators {
 		if i >= int(maxVals) {
 			break
