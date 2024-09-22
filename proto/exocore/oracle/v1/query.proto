@@ -2,6 +2,8 @@ syntax = "proto3";
 
 package exocore.oracle.v1;
 
+import "gogoproto/gogo.proto";
+import "google/api/annotations.proto";
 import "cosmos/base/query/v1beta1/pagination.proto";
 import "exocore/oracle/v1/index_recent_msg.proto";
 import "exocore/oracle/v1/index_recent_params.proto";
@@ -12,8 +14,6 @@ import "exocore/oracle/v1/recent_msg.proto";
 import "exocore/oracle/v1/recent_params.proto";
 import "exocore/oracle/v1/validator_update_block.proto";
 import "exocore/oracle/v1/native_token.proto";
-import "gogoproto/gogo.proto";
-import "google/api/annotations.proto";
 
 option go_package = "github.com/ExocoreNetwork/exocore/x/oracle/types";
 
@@ -85,19 +85,27 @@ service Query {
   }
 }
 
+// QueryStakerListRequest is request type for Query/StakerList RPC method
 message QueryStakerListRequest {
+  // id of assets for the staker list request for 
   string asset_id = 1[(gogoproto.customname) = "AssetID"];
 }
 
+// QueryStakerListResponse is response type for Query/StakerList RPC method
 message QueryStakerListResponse {
+  // staker list including all stakers of request asset
   StakerList staker_list = 1;
 }
 
+// QueryStakerInfosRequest is request type for Query/StakerInfo RCP method
 message QueryStakerInfosRequest {
+  // asset id for the staker info request for
   string asset_id = 1[(gogoproto.customname) = "AssetID"];
 }
 
+// QueryStakerInfosResponse is response type for Query/StakerInfo RCP method
 message QueryStakerInfosResponse {
+  // all staker infos under the specified asset
   repeated StakerInfo staker_infos = 1;  
 }
 // QueryParamsRequest is request type for the Query/Params RPC method.
