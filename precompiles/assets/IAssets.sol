@@ -15,7 +15,7 @@ interface IAssets {
 
     /// TRANSACTIONS
     /// @dev deposit the client chain assets for the staker,
-    /// that will change the state in deposit module
+    /// that will change the state in assets module
     /// Note that this address cannot be a module account.
     /// @param clientChainID is the layerZero chainID if it is supported.
     //  It might be allocated by Exocore when the client chain isn't supported
@@ -27,7 +27,7 @@ interface IAssets {
         external
         returns (bool success, uint256 latestAssetState);
 
-    /// @dev withdraw To the staker, that will change the state in withdraw module
+    /// @dev withdraw To the staker, that will change the state in assets module
     /// Note that this address cannot be a module account.
     /// @param clientChainID is the layerZero chainID if it is supported.
     //  It might be allocated by Exocore when the client chain isn't supported
