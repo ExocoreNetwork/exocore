@@ -64,15 +64,26 @@ func ConsumeMultisignatureVerificationGas(
 	meter sdk.GasMeter, sig *signing.MultiSignatureData, pubkey multisig.PubKey,
 	params authtypes.Params, accSeq uint64,
 ) error {
+	pubkeys := pubkey.GetPubKeys()
 	size := sig.BitArray.Count()
+	// each pubkey must either sign, or not sign
+	if size != len(pubkeys) {
+		return errorsmod.Wrapf(errortypes.ErrInvalidPubKey, "bitarray length doesn't match the number of public keys")
+	}
+	// when not signed, the corresponding signature will not be included;
+	// in other words, len(sig.Signatures) <= size == len(pubkeys)
+	if len(sig.Signatures) > size {
+		return errorsmod.Wrapf(errortypes.ErrTooManySignatures, "number of signatures exceeds number of public keys")
+	}
 	sigIndex := 0
 
 	for i := 0; i < size; i++ {
 		if !sig.BitArray.GetIndex(i) {
+			// not signed
 			continue
 		}
 		sigV2 := signing.SignatureV2{
-			PubKey:   pubkey.GetPubKeys()[i],
+			PubKey:   pubkeys[i],
 			Data:     sig.Signatures[sigIndex],
 			Sequence: accSeq,
 		}
