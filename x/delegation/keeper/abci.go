@@ -39,6 +39,9 @@ func (k *Keeper) EndBlock(oCtx sdk.Context, _ abci.RequestEndBlock) []abci.Valid
 
 		recordID := types.GetUndelegationRecordKey(record.BlockNumber, record.LzTxNonce, record.TxHash, record.OperatorAddr)
 		if k.GetUndelegationHoldCount(ctx, recordID) > 0 {
+			// delete it from state. then rewrite it with the next block
+			// #nosec G703 // the error is always nil
+			_ = k.DeleteUndelegationRecord(ctx, record)
 			// store it again with the next block and move on
 			// #nosec G701
 			record.CompleteBlockNumber = uint64(ctx.BlockHeight()) + 1
