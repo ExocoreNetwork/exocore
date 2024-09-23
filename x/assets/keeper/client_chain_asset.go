@@ -36,6 +36,7 @@ func (k Keeper) UpdateStakingAssetTotalAmount(ctx sdk.Context, assetID string, c
 
 // SetStakingAssetInfo todo: Temporarily use clientChainAssetAddr+'_'+LayerZeroChainID as the key.
 // It provides a function to register the client chain assets supported by exoCore.It's called by genesis configuration now,however it will be called by the governance in the future
+// The caller is responsible for ensuring that no such asset already exists (if a new asset is being created)
 func (k Keeper) SetStakingAssetInfo(ctx sdk.Context, info *assetstype.StakingAssetInfo) (err error) {
 	if info.AssetBasicInfo.Decimals > assetstype.MaxDecimal {
 		return errorsmod.Wrapf(assetstype.ErrInvalidInputParameter, "the decimal is greater than the MaxDecimal,decimal:%v,MaxDecimal:%v", info.AssetBasicInfo.Decimals, assetstype.MaxDecimal)

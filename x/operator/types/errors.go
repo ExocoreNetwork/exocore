@@ -62,53 +62,48 @@ var (
 		"the genesis data supplied is invalid",
 	)
 
-	ErrInvalidAvsAddr = errorsmod.Register(
-		ModuleName, 14,
-		"avs address should be a hex evm contract address",
-	)
-
 	ErrOperatorAlreadyExists = errorsmod.Register(
-		ModuleName, 15,
+		ModuleName, 14,
 		"operator already exists",
 	)
 
 	ErrUnknownChainID = errorsmod.Register(
-		ModuleName, 16,
+		ModuleName, 15,
 		"unknown chain id",
 	)
 
 	ErrOperatorNotRemovingKey = errorsmod.Register(
-		ModuleName, 17,
+		ModuleName, 16,
 		"operator not removing key",
 	)
 
 	ErrInvalidSlashPower = errorsmod.Register(
-		ModuleName, 18,
+		ModuleName, 17,
 		"the slash power is invalid",
 	)
 
 	ErrKeyAlreadyExist = errorsmod.Register(
-		ModuleName, 19,
+		ModuleName, 18,
 		"the key already exists",
 	)
 
 	ErrValueIsNilOrZero = errorsmod.Register(
-		ModuleName, 20,
+		ModuleName, 19,
 		"the value is nil or zero",
 	)
 
 	ErrKeyNotExistInMap = errorsmod.Register(
-		ModuleName, 21,
+		ModuleName, 20,
 		"the key doesn't exist in the map",
 	)
 
 	ErrNoSuchAvs = errorsmod.Register(
-		ModuleName, 22,
+		ModuleName, 21,
 		"no such avs",
 	)
 
 	ErrInvalidConsKey = errorsmod.Register(
-		ModuleName, 23,
+		ModuleName, 22,
 		"invalid consensus key",
 	)
 )

@@ -151,7 +151,7 @@ func (k Keeper) UpdateDelegationState(ctx sdk.Context, stakerID, assetID, opAddr
 	// check operator address validation
 	_, err := sdk.AccAddressFromBech32(opAddr)
 	if err != nil {
-		return shareIsZero, delegationtype.OperatorAddrIsNotAccAddr
+		return shareIsZero, delegationtype.ErrOperatorAddrIsNotAccAddr
 	}
 	singleStateKey := assetstype.GetJoinedStoreKey(stakerID, assetID, opAddr)
 	delegationState := delegationtype.DelegationAmounts{
@@ -358,7 +358,7 @@ func (k Keeper) DelegationStateByOperatorAssets(ctx sdk.Context, operatorAddr st
 func (k *Keeper) SetAssociatedOperator(ctx sdk.Context, stakerID, operatorAddr string) error {
 	_, err := sdk.AccAddressFromBech32(operatorAddr)
 	if err != nil {
-		return delegationtype.OperatorAddrIsNotAccAddr
+		return delegationtype.ErrOperatorAddrIsNotAccAddr
 	}
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), delegationtype.KeyPrefixAssociatedOperatorByStaker)
 	store.Set([]byte(stakerID), []byte(operatorAddr))
