@@ -285,9 +285,8 @@ func GenesisStateWithValSet(app *ExocoreApp, genesisState simapp.GenesisState,
 	dogfoodGenesis := dogfoodtypes.NewGenesis(
 		dogfoodtypes.DefaultParams(), []dogfoodtypes.GenesisValidator{
 			{
-				Power:           1,
-				PublicKey:       hexutil.Encode(valSet.Validators[0].PubKey.Bytes()),
-				OperatorAccAddr: operatorInfos[0].OperatorAddress,
+				Power:     1,
+				PublicKey: hexutil.Encode(valSet.Validators[0].PubKey.Bytes()),
 			},
 		},
 		[]dogfoodtypes.EpochToOperatorAddrs{}, []dogfoodtypes.EpochToConsensusAddrs{},

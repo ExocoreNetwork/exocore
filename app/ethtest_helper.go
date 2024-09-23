@@ -243,9 +243,8 @@ func genesisStateWithValSet(codec codec.Codec, genesisState simapp.GenesisState,
 		dogfoodtypes.DefaultParams(), []dogfoodtypes.GenesisValidator{
 			{
 				// PublicKey: consensusKeyRecords[0].Chains[0].ConsensusKey,
-				Power:           1,
-				PublicKey:       hexutil.Encode(valSet.Validators[0].PubKey.Bytes()),
-				OperatorAccAddr: operatorInfos[0].OperatorAddress,
+				Power:     1,
+				PublicKey: hexutil.Encode(valSet.Validators[0].PubKey.Bytes()),
 			},
 		},
 		[]dogfoodtypes.EpochToOperatorAddrs{}, []dogfoodtypes.EpochToConsensusAddrs{},
