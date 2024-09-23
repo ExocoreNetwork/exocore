@@ -39,7 +39,7 @@ command -v jq >/dev/null 2>&1 || {
 	echo >&2 "jq not installed. More info: https://stedolan.github.io/jq/download/"
 	exit 1
 }
-command -v cast > /dev/null 2>&1 || {
+command -v cast >/dev/null 2>&1 || {
 	echo >&2 "cast not installed. More info: https://getfoundry.sh"
 	exit 1
 }
@@ -133,11 +133,11 @@ if [[ $overwrite == "y" || $overwrite == "Y" ]]; then
 	jq '.app_state["operator"]["operators"][0]["operator_info"]["commission"]["commission_rates"]["max_rate"]="0.0"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
 	jq '.app_state["operator"]["operators"][0]["operator_info"]["commission"]["commission_rates"]["max_change_rate"]="0.0"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
 	jq '.app_state["operator"]["operator_records"][0]["operator_address"]="'$LOCAL_ADDRESS_EXO'"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
-	jq '.app_state["operator"]["operator_records"][0]["chains"][0]["chain_id"]="'$CHAINID_WITHOUT_REVISION'"' "$GENESIS" > "$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
+	jq '.app_state["operator"]["operator_records"][0]["chains"][0]["chain_id"]="'$CHAINID_WITHOUT_REVISION'"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
 	jq '.app_state["operator"]["operator_records"][0]["chains"][0]["consensus_key"]="'$CONSENSUS_KEY'"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
 	jq '.app_state["operator"]["opt_states"][0]["key"]="'$LOCAL_ADDRESS_EXO'/'$AVS_ADDRESS'"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
 	jq '.app_state["operator"]["opt_states"][0]["opt_info"]["opted_in_height"]=1' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
-	jq '.app_state["operator"]["opt_states"][0]["opt_info"]["opted_out_height"]='"$(echo '2^64-1' | bc)" "$GENESIS" > "$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
+	jq '.app_state["operator"]["opt_states"][0]["opt_info"]["opted_out_height"]='"$(echo '2^64-1' | bc)" "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
 	jq '.app_state["operator"]["opt_states"][0]["opt_info"]["jailed"]=false' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
 
 	# x/delegation
