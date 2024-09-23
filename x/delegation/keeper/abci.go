@@ -13,15 +13,14 @@ import (
 
 // EndBlock : completed Undelegation events according to the canCompleted blockHeight
 // This function will be triggered at the end of every block, it will query the undelegation state to get the records that need to be handled and try to complete the undelegation task.
-func (k *Keeper) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.ValidatorUpdate {
-	records, err := k.GetPendingUndelegationRecords(ctx, uint64(ctx.BlockHeight()))
-	if err != nil {
-		panic(err)
-	}
+func (k *Keeper) EndBlock(oCtx sdk.Context, _ abci.RequestEndBlock) []abci.ValidatorUpdate {
+	// #nosec G703 // the error is always nil
+	records, _ := k.GetPendingUndelegationRecords(oCtx, uint64(oCtx.BlockHeight()))
 	if len(records) == 0 {
 		return []abci.ValidatorUpdate{}
 	}
 	for _, record := range records {
+		ctx, writeCache := oCtx.CacheContext()
 		// check if the operator has been slashed or frozen
 		operatorAccAddress := sdk.MustAccAddressFromBech32(record.OperatorAddr)
 		// todo: don't think about freezing the operator in current implementation
@@ -44,15 +43,12 @@ func (k *Keeper) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.Valida
 			// #nosec G701
 			record.CompleteBlockNumber = uint64(ctx.BlockHeight()) + 1
 			// we need to store two things here: one is the updated record in itself
-			recordKey, err := k.SetSingleUndelegationRecord(ctx, record)
-			if err != nil {
-				panic(err)
-			}
+			// #nosec G703 // the error is always nil
+			recordKey, _ := k.SetSingleUndelegationRecord(ctx, record)
 			// and the other is the fact that it matures at the next block
-			err = k.StorePendingUndelegationRecord(ctx, recordKey, record)
-			if err != nil {
-				panic(err)
-			}
+			// #nosec G703 // the error is always nil
+			_ = k.StorePendingUndelegationRecord(ctx, recordKey, record)
+			writeCache()
 			continue
 		}
 		// TODO(mike): ensure that operator is required to perform self delegation to match above.
@@ -62,10 +58,11 @@ func (k *Keeper) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.Valida
 		deltaAmount := &types.DeltaDelegationAmounts{
 			WaitUndelegationAmount: recordAmountNeg,
 		}
-		_, err = k.UpdateDelegationState(ctx, record.StakerID, record.AssetID, record.OperatorAddr, deltaAmount)
+		_, err := k.UpdateDelegationState(ctx, record.StakerID, record.AssetID, record.OperatorAddr, deltaAmount)
 		if err != nil {
-			// todo: using cached context to remove the panic
-			panic(err)
+			// use oCtx so that the error is logged on the original context
+			k.Logger(oCtx).Error("failed to update delegation state", "error", err)
+			continue
 		}
 
 		// update the staker state
@@ -73,7 +70,8 @@ func (k *Keeper) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.Valida
 			parsedStakerID := strings.Split(record.StakerID, "_")
 			stakerAddr := sdk.AccAddress(hexutil.MustDecode(parsedStakerID[0]))
 			if err := k.bankKeeper.UndelegateCoinsFromModuleToAccount(ctx, types.DelegatedPoolName, stakerAddr, sdk.NewCoins(sdk.NewCoin(assetstypes.NativeAssetDenom, record.ActualCompletedAmount))); err != nil {
-				panic(err)
+				k.Logger(oCtx).Error("failed to undelegate coins from module to account", "error", err)
+				continue
 			}
 		} else {
 			err = k.assetsKeeper.UpdateStakerAssetState(ctx, record.StakerID, record.AssetID, assetstypes.DeltaStakerSingleAsset{
@@ -81,7 +79,8 @@ func (k *Keeper) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.Valida
 				PendingUndelegationAmount: recordAmountNeg,
 			})
 			if err != nil {
-				panic(err)
+				k.Logger(oCtx).Error("failed to update staker asset state", "error", err)
+				continue
 			}
 		}
 
@@ -90,14 +89,15 @@ func (k *Keeper) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.Valida
 			PendingUndelegationAmount: recordAmountNeg,
 		})
 		if err != nil {
-			panic(err)
+			k.Logger(oCtx).Error("failed to update operator asset state", "error", err)
+			continue
 		}
 
 		// delete the Undelegation records that have been complemented
-		err = k.DeleteUndelegationRecord(ctx, record)
-		if err != nil {
-			panic(err)
-		}
+		// #nosec G703 // the error is always nil
+		_ = k.DeleteUndelegationRecord(ctx, record)
+		// when calling `writeCache`, events are automatically emitted on the parent context
+		writeCache()
 	}
 	return []abci.ValidatorUpdate{}
 }
