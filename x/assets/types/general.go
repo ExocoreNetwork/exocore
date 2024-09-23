@@ -40,7 +40,7 @@ const (
 const (
 	Deposit CrossChainOpType = iota
 	WithdrawPrincipal
-	WithDrawReward
+	WithdrawReward
 	DelegateTo
 	UndelegateFrom
 	Slash

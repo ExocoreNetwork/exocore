@@ -38,7 +38,7 @@ func (r *reportPrice) aggregate() *big.Int {
 type aggregator struct {
 	finalPrice *big.Int
 	reports    []*reportPrice
-	// total valiadtor power who has submitted pice
+	// total valiadtor power who has submitted price
 	reportPower *big.Int
 	totalPower  *big.Int
 	// validator set total power
