@@ -11,7 +11,7 @@ import (
 
 const (
 	// EventTypeRegisterAVSTask defines the event type for the avs CreateAVSTask transaction.
-	EventTypeRegisterAVSTask = "CreateTask"
+	EventTypeRegisterAVSTask = "TaskCreated"
 )
 
 // EmitCreateAVSTaskEvent creates a new event emitted on a EmitCreateAVSTaskEvent transaction.
@@ -36,8 +36,8 @@ func (p Precompile) EmitCreateAVSTaskEvent(ctx sdk.Context, stateDB vm.StateDB, 
 	}
 
 	// Pack the arguments to be used as the Data field
-	arguments := event.Inputs[2:7]
-	packed, err := arguments.Pack(task.TaskName, task.Hash, task.TaskResponsePeriod, task.TaskChallengePeriod, task.ThresholdPercentage)
+	arguments := event.Inputs[1:8]
+	packed, err := arguments.Pack(task.TaskContractAddress, task.TaskName, task.Hash, task.TaskResponsePeriod, task.TaskChallengePeriod, task.ThresholdPercentage, task.TaskStatisticalPeriod)
 	if err != nil {
 		return err
 	}

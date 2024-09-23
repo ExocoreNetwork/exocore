@@ -185,118 +185,9 @@ interface IAVSManager {
         string memory operatorAddr
     ) external view returns (uint256 amount);
 
-    /// @dev RegisterBLSPublicKey Emitted when `operator` registers with the public keys `pubKey`.
-    /// @param name the name of the blsKey
-    /// @param pubKey the public key of the operator
-    /// @param pubkeyRegistrationSignature the sig of the operator
-    /// @param pubkeyRegistrationMessageHash the sig hash of the operator
-    event RegisterBLSPublicKey(
-        string name,
-        bytes pubKey,
-        bytes pubkeyRegistrationSignature,
-        bytes pubkeyRegistrationMessageHash
-    );
-
-    /// @dev RegisterAVS Emitted when `avs` register to exocore.
-    /// @dev Register AVS contract to EXO.
-    /// @param avsAddress The address of AVS.
-    /// @param avsName The name of AVS.
-    /// @param minStakeAmount The minimum amount of funds staked by each operator.
-    /// @param taskAddr The task address of AVS.
-    /// @param slashAddr The slash address of AVS.
-    /// @param rewardAddr The reward address of AVS.
-    /// @param avsOwnerAddress The owners who have permission for AVS.
-    /// @param assetIds The basic asset information of AVS.
-    /// @param avsUnbondingPeriod The unbonding duration of AVS.
-    /// @param minSelfDelegation The minimum delegation amount for an operator.
-    /// @param epochIdentifier The AVS epoch identifier.
-    /// @param params 1.miniOptInOperators The minimum number of opt-in operators.
-    ///2.minTotalStakeAmount The minimum total amount of stake by all operators.
-    ///3.avsReward The proportion of reward for AVS.
-    ///4.avsSlash The proportion of slash for AVS.
-    event RegisterAVS(
-        string indexed avsAddress,
-        string avsName,
-        uint64 minStakeAmount,
-        address taskAddr,
-        address slashAddr,
-        address rewardAddr,
-        address[] avsOwnerAddress,
-        string[] assetIds,
-        uint64 avsUnbondingPeriod,
-        uint64 minSelfDelegation,
-        string epochIdentifier,
-        uint64[] params
-    );
-
-    /// @dev UpdateAVS Emitted when `avs` update to exocore.
-    /// @param avsAddress The address of AVS.
-    /// @param avsName The name of AVS.
-    /// @param minStakeAmount The minimum amount of funds staked by each operator.
-    /// @param taskAddr The task address of AVS.
-    /// @param slashAddr The slash address of AVS.
-    /// @param rewardAddr The reward address of AVS.
-    /// @param avsOwnerAddress The owners who have permission for AVS.
-    /// @param assetIds The basic asset information of AVS.
-    /// @param avsUnbondingPeriod The unbonding duration of AVS.
-    /// @param minSelfDelegation The minimum delegation amount for an operator.
-    /// @param epochIdentifier The AVS epoch identifier.
-    /// @param params 1.miniOptInOperators The minimum number of opt-in operators.
-    ///2.minTotalStakeAmount The minimum total amount of stake by all operators.
-    ///3.avsReward The proportion of reward for AVS.
-    ///4.avsSlash The proportion of slash for AVS.
-    event UpdateAVS(
-        string indexed avsAddress,
-        string avsName,
-        uint64 minStakeAmount,
-        address taskAddr,
-        address slashAddr,
-        address rewardAddr,
-        address[] avsOwnerAddress,
-        string[] assetIds,
-        uint64 avsUnbondingPeriod,
-        uint64 minSelfDelegation,
-        string epochIdentifier,
-        uint64[]  params
-    );
-
-    /// @dev DeregisterAVS Emitted when `avs` Deregister to exocore.
-    /// @param avsAddress The address of AVS.
-    /// @param avsName The name of AVS.
-    event DeregisterAVS(
-        string indexed avsAddress,
-        string  avsName
-    );
-
-    /// @dev RegisterOperatorToAVS Emitted when `operator` opt-in to avs.
-    /// @param operator address.
-    /// @param avsAddress The address of AVS.
-    event RegisterOperatorToAVS(
-        string indexed operator,
-        string indexed avsAddress
-    );
-
-    /// @dev DeregisterOperatorFromAVS Emitted when `operator` opt-out to avs.
-    /// @param operator address.
-    /// @param avsAddress The address of AVS.
-    event DeregisterOperatorFromAVS(
-        string indexed operator,
-        string indexed avsAddress
-    );
-
-    /// @dev CreateTask Emitted when `avs` CreateTask.
-    /// @param taskContractAddress The contract address of AVSTask.
-    /// @param taskId The task ID of the task.
-    /// @param name The name of the task.
-    /// @param hash The data supplied by the contract, usually ABI-encoded.
-    /// @param taskResponsePeriod The deadline for task response.
-    /// @param taskChallengePeriod The challenge period for the task.
-    /// @param thresholdPercentage The signature threshold percentage.
-    /// @param taskStatisticalPeriod The statistical period for the task.
-
-    event CreateTask(
-        string indexed taskContractAddress,
-        string indexed taskId,
+    event TaskCreated(
+        uint64 indexed taskId,
+        string taskContractAddress,
         string name,
         bytes hash,
         uint64 taskResponsePeriod,
@@ -304,17 +195,4 @@ interface IAVSManager {
         uint64 thresholdPercentage,
         uint64 taskStatisticalPeriod
     );
-    /// @dev SubmitProof Emitted when task contract submit proof.
-    /// @param taskContractAddress The contract address of AVSTask.
-    /// @param taskId The task ID of the task.
-    /// @param aggregator The aggregator address.
-    /// @param avsAddress The address of AVS.
-    /// @param operatorStatuses The status and proof of operators.
-    event SubmitProof(
-        string indexed taskContractAddress,
-        string indexed taskId,
-        string aggregator,
-        string avsAddress,
-        bytes operatorStatuses
-    );
-}
+ }

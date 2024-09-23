@@ -249,26 +249,17 @@ func (k *Keeper) SetTaskResultInfo(
 			)
 		}
 
-		// check hash
+		// calculate hash by original task
 		taskResponseDigest := crypto.Keccak256Hash(info.TaskResponse)
-		// if info.TaskResponseHash != "" {
-		//	hashWithoutPrefix := strings.TrimPrefix(taskResponseDigest.String(), "0x")
-		//	if hashWithoutPrefix != info.TaskResponseHash {
-		//		return errorsmod.Wrap(
-		//			types.ErrHashValue,
-		//			"SetTaskResultInfo: task response is nil",
-		//		)
-		//	}
-		//}
 
-		// TODO :check taskID
-		// resp, err := types.UnmarshalTaskResponse(info.TaskResponse)
-		// 	if err != nil || info.TaskId != resp.TaskID {
-		//	return errorsmod.Wrap(
-		//		types.ErrParamError,
-		//		fmt.Sprintf("SetTaskResultInfo: invalid param value:%s", info.Stage),
-		//	)
-		//}
+		// check taskID
+		resp, err := types.UnmarshalTaskResponse(info.TaskResponse)
+		if err != nil || info.TaskId != resp.TaskID {
+			return errorsmod.Wrap(
+				types.ErrParamError,
+				fmt.Sprintf("SetTaskResultInfo: invalid param value:%s", info.Stage),
+			)
+		}
 		// check bls sig
 		flag, err := blst.VerifySignature(info.BlsSignature, taskResponseDigest, pubKey)
 		if !flag || err != nil {
