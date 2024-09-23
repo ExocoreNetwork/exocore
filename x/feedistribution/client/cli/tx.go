@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"strconv"
 
+	epochsTypes "github.com/ExocoreNetwork/exocore/x/epochs/types"
+
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/client/tx"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -41,6 +43,9 @@ func CmdUpdateParams() *cobra.Command {
 			sender := cliCtx.GetFromAddress()
 			communityInteger, err := strconv.ParseInt(args[1], 10, 64)
 			if err != nil {
+				return err
+			}
+			if err := epochsTypes.ValidateEpochIdentifierString(args[0]); err != nil {
 				return err
 			}
 			communityPrecise, err := strconv.ParseInt(args[2], 10, 64)

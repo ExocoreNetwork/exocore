@@ -75,11 +75,14 @@ func (k Keeper) setPool(ctx sdk.Context, pool types.Pool) {
 //}
 
 func (k Keeper) getPool(ctx sdk.Context, name string) *rewardRecord {
-	var pool types.Pool
 	poolKey := key.FromStr(poolNamePrefix).Append(key.FromStr(name))
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefixRewardInfo)
-	if !store.Has(poolKey.Bytes()) {
+	value := store.Get(poolKey.Bytes())
+	if value == nil {
 		return newRewardRecord(ctx, k, k.banker, k.distributor, types.NewPool(name))
 	}
+	pool := types.Pool{}
+	k.cdc.MustUnmarshal(value, &pool)
+
 	return newRewardRecord(ctx, k, k.banker, k.distributor, pool)
 }

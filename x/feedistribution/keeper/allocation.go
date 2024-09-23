@@ -86,7 +86,7 @@ func (k Keeper) AllocateTokensToValidator(ctx sdk.Context, val stakingtypes.Vali
 	ctx.EventManager().EmitEvent(sdk.NewEvent(
 		types.EventTypeCommission,
 		sdk.NewAttribute(sdk.AttributeKeyAmount, commission.String()),
-		sdk.NewAttribute(types.EventTypeCommission, val.GetOperator().String()),
+		sdk.NewAttribute(types.AttributeKeyValidator, val.GetOperator().String()),
 	))
 	currentCommission := k.GetValidatorAccumulatedCommission(ctx, valBz)
 	currentCommission.Commission = currentCommission.Commission.Add(commission...)

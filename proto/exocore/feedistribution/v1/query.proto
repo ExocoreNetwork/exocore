@@ -1,8 +1,8 @@
 syntax = "proto3";
-package exocore.feedistribute.v1;
+package exocore.feedistribution.v1;
 
 import "amino/amino.proto";
-import "exocore/feedistribute/v1/params.proto";
+import "exocore/feedistribution/v1/params.proto";
 import "gogoproto/gogo.proto";
 import "google/api/annotations.proto";
 
