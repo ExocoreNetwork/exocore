@@ -35,7 +35,7 @@ func (k Keeper) AddSubscriberChain(
 	}
 	// this value is required by the AVS module when making edits or deleting the AVS. as always, we round it up for the
 	// current epoch. it can never be 0, because both the durations are positive.
-	unbondingEpochs := 1 + req.SubscriberParams.UnbondingPeriod/epochInfo.Duration
+	unbondingEpochs := (req.SubscriberParams.UnbondingPeriod + epochInfo.Duration - 1) / epochInfo.Duration
 	if _, err := k.avsKeeper.RegisterAVSWithChainID(ctx, &avstypes.AVSRegisterOrDeregisterParams{
 		AvsName:           req.ChainID,
 		AssetID:           req.AssetIDs,
