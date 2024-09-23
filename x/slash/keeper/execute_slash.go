@@ -146,11 +146,8 @@ func (k Keeper) PostTxProcessing(ctx sdk.Context, _ core.Message, receipt *ethty
 	topics := [][]common.Hash{
 		{common.HexToHash(params.ExocoreLzAppEventTopic)},
 	}
-	needLogs := filters.FilterLogs(receipt.Logs, nil, nil, addresses, topics)
-	if err != nil {
-		return err
-	}
 
+	needLogs := filters.FilterLogs(receipt.Logs, nil, nil, addresses, topics)
 	if len(needLogs) == 0 {
 		log.Println("the hook message doesn't have any event needed to handle")
 		return nil
