@@ -33,7 +33,7 @@ func NewParams() Params {
 		// Mode is set to 1 for V1, means:
 		// For deteministic source, use consensus to find out valid final price, for non-deteministic source, use the latest price
 		// Final price will be confirmed as soon as the threshold is reached, and will ignore any furthur messages submitted with prices
-		Mode:         1,
+		Mode:         ConsensusModeASAP,
 		ThresholdA:   2,
 		ThresholdB:   3,
 		Chains:       []*Chain{{}},
@@ -100,7 +100,7 @@ func DefaultParams() Params {
 		ThresholdA: 2,
 		ThresholdB: 3,
 		// V1 set mode to 1
-		Mode:          1,
+		Mode:          ConsensusModeASAP,
 		MaxDetId:      5,
 		MaxSizePrices: 100,
 	}
@@ -125,7 +125,7 @@ func (p Params) Validate() error {
 	// MaxDetID: This only works for DS, to tell how many continuous roundID_from_DS could be accept at most for one round of exorcore_oracle
 	// ThresholdA/ThresholdB: represents the threshold of voting power to confirm a price as final price
 	// Mode: tells how and when to confirm a final price, expect for voting power threshold, v1 set this value to 1 means final price will be confirmed as soon as it has reached the threshold of total voting power, and just ignore any remaining transactions followed for current round.
-	if p.MaxNonce < 1 || p.MaxDetId < 1 || p.ThresholdA < 1 || p.ThresholdB < p.ThresholdA || p.Mode != 1 || p.MaxSizePrices < 1 {
+	if p.MaxNonce < 1 || p.MaxDetId < 1 || p.ThresholdA < 1 || p.ThresholdB < p.ThresholdA || p.Mode != ConsensusModeASAP || p.MaxSizePrices < 1 {
 		return ErrInvalidParams.Wrapf("invalid maxNonce/maxDetID/Threshold/Mode/MaxSizePrices: %d, %d, %d, %d, %d, %d", p.MaxNonce, p.MaxDetId, p.ThresholdA, p.ThresholdB, p.Mode, p.MaxSizePrices)
 	}
 
