@@ -11,7 +11,7 @@ MONIKER="localtestnet"
 # The keyring test does not require private key to steal tokens from you
 KEYRING="test"
 ALGO="eth_secp256k1"
-LOGLEVEL="error"
+LOGLEVEL="info"
 # Set dedicated home directory for the exocored instance
 HOMEDIR="$HOME/.tmp-exocored"
 # to trace evm
