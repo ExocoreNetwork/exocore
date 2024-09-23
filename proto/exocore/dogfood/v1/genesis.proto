@@ -71,17 +71,12 @@ message GenesisState {
 // GenesisValidator defines a genesis validator. It is a helper struct
 // used for serializing the genesis state. The only reason it is a different
 // structure is to support importing hex public keys from Solidity.
-// TODO: consider this set up when resolving issue 73 about storage
-// optimization between dogfood and operator modules.
-// https://github.com/ExocoreNetwork/exocore/issues/73
 message GenesisValidator {
   // public_key is the hex consensus public key of the validator. It should
   // be exactly 32 bytes, but this is not enforced in protobuf.
   string public_key = 1;
   // power is the voting power of the validator.
   int64 power = 2;
-  // acc_address is the operator account address of the validator.
-  string operator_acc_addr = 3;
 }
 
 // EpochToOperatorAddress is used to store a mapping from epoch to a list of

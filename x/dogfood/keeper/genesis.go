@@ -57,14 +57,6 @@ func (k Keeper) InitGenesis(
 	for _, val := range genState.ValSet {
 		// wrappedKey can never be nil
 		wrappedKey := operatortypes.NewWrappedConsKeyFromHex(val.PublicKey)
-		// #nosec G703 // already validated
-		/*		operatorAddr, _ := sdk.AccAddressFromBech32(val.OperatorAccAddr)
-				// OptIntoAVS checks that the operator exists and will error if it does not.
-				if err := k.operatorKeeper.OptInWithConsKey(
-					ctx, operatorAddr, avsAddrString, wrappedKey,
-				); err != nil {
-					panic(fmt.Errorf("failed to opt into avs: %s", err))
-				}*/
 		out = append(out, abci.ValidatorUpdate{
 			PubKey: *wrappedKey.ToTmProtoKey(),
 			Power:  val.Power,
@@ -127,20 +119,13 @@ func (k Keeper) ExportGenesis(ctx sdk.Context) *types.GenesisState {
 		pubKey, _ := val.ConsPubKey()
 		// #nosec G703 // already validated
 		convKey, _ := cryptocodec.ToTmPubKeyInterface(pubKey)
-		addr := sdk.GetConsAddress(pubKey)
-		found, operatorAddr := k.operatorKeeper.GetOperatorAddressForChainIDAndConsAddr(ctx, avstypes.ChainIDWithoutRevision(ctx.ChainID()), addr)
-		if !found {
-			ctx.Logger().Error("Operator address not found for validator", "consAddr", addr.String())
-			return true
-		}
 		validators = append(validators,
 			types.GenesisValidator{
-				PublicKey:       hexutil.Encode(convKey.Bytes()),
-				Power:           val.GetConsensusPower(sdk.DefaultPowerReduction),
-				OperatorAccAddr: operatorAddr.String(),
+				PublicKey: hexutil.Encode(convKey.Bytes()),
+				Power:     val.GetConsensusPower(sdk.DefaultPowerReduction),
 			},
 		)
-		return false /* stop */
+		return false // stop == false => continue iteration
 	})
 	return types.NewGenesis(
 		k.GetDogfoodParams(ctx),
