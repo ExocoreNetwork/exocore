@@ -23,13 +23,18 @@ func (m *MsgDelegation) ValidateBasic() error {
 }
 
 // new message to delegate asset to operator
-func NewMsgDelegation(assetID, fromAddress string, amountPerOperator []KeyValue) *MsgDelegation {
+func NewMsgDelegation(
+	assetID string, fromAddress string, amountPerOperator []KeyValue,
+) *MsgDelegation {
 	baseInfo := &DelegationIncOrDecInfo{
 		FromAddress:        fromAddress,
 		PerOperatorAmounts: make([]KeyValue, 0, 1),
 	}
 	for _, kv := range amountPerOperator {
-		baseInfo.PerOperatorAmounts = append(baseInfo.PerOperatorAmounts, KeyValue{Key: kv.Key, Value: kv.Value})
+		baseInfo.PerOperatorAmounts = append(
+			baseInfo.PerOperatorAmounts,
+			KeyValue{Key: kv.Key, Value: kv.Value},
+		)
 	}
 	return &MsgDelegation{
 		AssetID:  assetID,
@@ -65,7 +70,10 @@ func NewMsgUndelegation(assetID, fromAddress string, amountPerOperator []KeyValu
 		PerOperatorAmounts: make([]KeyValue, 0, 1),
 	}
 	for _, kv := range amountPerOperator {
-		baseInfo.PerOperatorAmounts = append(baseInfo.PerOperatorAmounts, KeyValue{Key: kv.Key, Value: kv.Value})
+		baseInfo.PerOperatorAmounts = append(
+			baseInfo.PerOperatorAmounts,
+			KeyValue{Key: kv.Key, Value: kv.Value},
+		)
 	}
 	return &MsgUndelegation{
 		AssetID:  assetID,
@@ -73,18 +81,28 @@ func NewMsgUndelegation(assetID, fromAddress string, amountPerOperator []KeyValu
 	}
 }
 
-// TODO: delegation and undelegation have the same params, try to use one single message with different flag to indicate action:delegation/undelegation
+// validateDelegationInfo validates the delegation or undelegation info.
+// (1) the operator amounts are positive, and the operator addresses are valid.
+// (2) the assetID is native only, since only native token is supported for this mechanism.
+// (3) the from address is valid.
+// TODO: delegation and undelegation have the same params, try to use one single message with
+// different flag to indicate action:delegation/undelegation
 func validateDelegationInfo(assetID string, baseInfo *DelegationIncOrDecInfo) error {
 	for _, kv := range baseInfo.PerOperatorAmounts {
 		if _, err := sdk.AccAddressFromBech32(kv.Key); err != nil {
 			return errorsmod.Wrap(err, "invalid operator address delegateTO")
 		}
 		if !kv.Value.Amount.IsPositive() {
-			return errorsmod.Wrapf(ErrAmountIsNotPositive, "amount should be positive, got%s", kv.Value.Amount.String())
+			return ErrAmountIsNotPositive.Wrapf(
+				"amount should be positive, got %s", kv.Value.Amount.String(),
+			)
 		}
 	}
 	if assetID != assetstype.NativeAssetID {
-		return errorsmod.Wrapf(ErrInvalidAssetID, "only nativeToken is support, expected:%s,got:%s", assetstype.NativeAssetID, assetID)
+		return ErrInvalidAssetID.Wrapf(
+			"only nativeToken is support, expected:%s, got:%s",
+			assetstype.NativeAssetID, assetID,
+		)
 	}
 	if _, err := sdk.AccAddressFromBech32(baseInfo.FromAddress); err != nil {
 		return errorsmod.Wrap(err, "invalid from address")
