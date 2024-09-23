@@ -66,15 +66,15 @@ func ConsumeMultisignatureVerificationGas(
 ) error {
 	pubkeys := pubkey.GetPubKeys()
 	size := sig.BitArray.Count()
-	// each pubkey must either sign, or not sign
 	if size != len(pubkeys) {
 		return errorsmod.Wrapf(errortypes.ErrInvalidPubKey, "bitarray length doesn't match the number of public keys")
 	}
-	// when not signed, the corresponding signature will not be included;
-	// in other words, len(sig.Signatures) <= size == len(pubkeys)
-	if len(sig.Signatures) > size {
-		return errorsmod.Wrapf(errortypes.ErrTooManySignatures, "number of signatures exceeds number of public keys")
+	if len(sig.Signatures) != sig.BitArray.NumTrueBitsBefore(size) {
+		return errorsmod.Wrapf(errortypes.ErrTooManySignatures, "number of signatures exceeds number of bits in bitarray")
 	}
+	// we have verified that size == len(pubkeys)
+	// and that the number of signatures == number of true bits in the bitarray
+	// so we can safely iterate over the pubkeys and signatures
 	sigIndex := 0
 
 	for i := 0; i < size; i++ {
