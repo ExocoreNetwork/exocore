@@ -5,6 +5,7 @@ import (
 
 	sdkmath "cosmossdk.io/math"
 	"github.com/cosmos/cosmos-sdk/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/common"
 
 	"github.com/ExocoreNetwork/exocore/testutil"
@@ -19,6 +20,7 @@ type DelegationTestSuite struct {
 	clientChainLzID  uint64
 	depositAmount    sdkmath.Int
 	delegationAmount sdkmath.Int
+	accAddr          sdk.AccAddress
 }
 
 var s *DelegationTestSuite

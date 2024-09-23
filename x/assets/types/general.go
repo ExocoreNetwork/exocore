@@ -14,6 +14,13 @@ import (
 )
 
 const (
+	NativeChainLzID  = 0
+	NativeAssetAddr  = "0x0000000000000000000000000000000000000000"
+	NativeAssetID    = "0x0000000000000000000000000000000000000000_0x0"
+	NativeAssetDenom = utils.BaseDenom
+)
+
+const (
 	CrossChainActionLength       = 1
 	CrossChainOpAmountLength     = 32
 	GeneralAssetsAddrLength      = 32

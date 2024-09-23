@@ -441,7 +441,6 @@ func (suite *BaseTestSuite) DoSetupTest() {
 		Address: acc.GetAddress().String(),
 		Coins:   sdk.NewCoins(sdk.NewCoin(utils.BaseDenom, amount)),
 	}
-
 	// Exocore modules genesis
 	// x/assets
 	suite.ClientChains = []assetstypes.ClientChainInfo{
