@@ -224,8 +224,9 @@ func (suite *DelegationTestSuite) TestCalculateShare() {
 }
 
 func (suite *DelegationTestSuite) TestValidateUndelegationAmount() {
-	suite.prepareDeposit()
-	suite.prepareDelegation()
+	suite.basicPrepare()
+	suite.prepareDeposit(suite.depositAmount)
+	suite.prepareDelegation(suite.delegationAmount, suite.opAccAddr)
 	stakerID, assetID := assetstype.GetStakeIDAndAssetID(suite.clientChainLzID, suite.Address[:], suite.assetAddr[:])
 
 	undelegationAmount := sdkmath.NewInt(0)
@@ -244,8 +245,9 @@ func (suite *DelegationTestSuite) TestValidateUndelegationAmount() {
 }
 
 func (suite *DelegationTestSuite) TestCalculateSlashShare() {
-	suite.prepareDeposit()
-	suite.prepareDelegation()
+	suite.basicPrepare()
+	suite.prepareDeposit(suite.depositAmount)
+	suite.prepareDelegation(suite.delegationAmount, suite.opAccAddr)
 	stakerID, assetID := assetstype.GetStakeIDAndAssetID(suite.clientChainLzID, suite.Address[:], suite.assetAddr[:])
 	slashAmount := sdkmath.NewInt(0)
 	_, err := suite.App.DelegationKeeper.CalculateSlashShare(suite.Ctx, suite.opAccAddr, stakerID, assetID, slashAmount)
@@ -264,8 +266,9 @@ func (suite *DelegationTestSuite) TestCalculateSlashShare() {
 }
 
 func (suite *DelegationTestSuite) TestRemoveShareFromOperator() {
-	suite.prepareDeposit()
-	suite.prepareDelegation()
+	suite.basicPrepare()
+	suite.prepareDeposit(suite.depositAmount)
+	suite.prepareDelegation(suite.delegationAmount, suite.opAccAddr)
 	stakerID, assetID := assetstype.GetStakeIDAndAssetID(suite.clientChainLzID, suite.Address[:], suite.assetAddr[:])
 	originalInfo, err := suite.App.AssetsKeeper.GetOperatorSpecifiedAssetInfo(suite.Ctx, suite.opAccAddr, assetID)
 	suite.NoError(err)
@@ -302,8 +305,9 @@ func (suite *DelegationTestSuite) TestRemoveShareFromOperator() {
 }
 
 func (suite *DelegationTestSuite) TestRemoveShare() {
-	suite.prepareDeposit()
-	suite.prepareDelegation()
+	suite.basicPrepare()
+	suite.prepareDeposit(suite.depositAmount)
+	suite.prepareDelegation(suite.delegationAmount, suite.opAccAddr)
 	stakerID, assetID := assetstype.GetStakeIDAndAssetID(suite.clientChainLzID, suite.Address[:], suite.assetAddr[:])
 	removeShare := sdkmath.LegacyNewDec(10)
 	removeToken, err := suite.App.DelegationKeeper.RemoveShare(suite.Ctx, false, suite.opAccAddr, stakerID, assetID, removeShare)

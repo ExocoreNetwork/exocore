@@ -189,7 +189,7 @@ func (k *Keeper) AssociateOperatorWithStaker(
 		return delegationtype.ErrOperatorAlreadyAssociated
 	}
 
-	opFunc := func(keys *delegationtype.SingleDelegationInfoReq, amounts *delegationtype.DelegationAmounts) error {
+	opFunc := func(keys *delegationtype.SingleDelegationInfoReq, amounts *delegationtype.DelegationAmounts) (bool, error) {
 		// increase the share of new marked operator
 		if keys.OperatorAddr == operatorAddress.String() {
 			err = k.assetsKeeper.UpdateOperatorAssetState(ctx, operatorAddress, keys.AssetID, assetstype.DeltaOperatorSingleAsset{
@@ -197,9 +197,9 @@ func (k *Keeper) AssociateOperatorWithStaker(
 			})
 		}
 		if err != nil {
-			return err
+			return true, err
 		}
-		return nil
+		return false, nil
 	}
 	err = k.IterateDelegationsForStaker(ctx, stakerID, opFunc)
 	if err != nil {
@@ -236,7 +236,7 @@ func (k *Keeper) DissociateOperatorFromStaker(
 		return delegationtype.OperatorAddrIsNotAccAddr
 	}
 
-	opFunc := func(keys *delegationtype.SingleDelegationInfoReq, amounts *delegationtype.DelegationAmounts) error {
+	opFunc := func(keys *delegationtype.SingleDelegationInfoReq, amounts *delegationtype.DelegationAmounts) (bool, error) {
 		// decrease the share of old operator
 		if keys.OperatorAddr == associatedOperator {
 			err = k.assetsKeeper.UpdateOperatorAssetState(ctx, oldOperatorAccAddr, keys.AssetID, assetstype.DeltaOperatorSingleAsset{
@@ -244,9 +244,9 @@ func (k *Keeper) DissociateOperatorFromStaker(
 			})
 		}
 		if err != nil {
-			return err
+			return true, err
 		}
-		return nil
+		return false, nil
 	}
 	err = k.IterateDelegationsForStaker(ctx, stakerID, opFunc)
 	if err != nil {
