@@ -3,7 +3,9 @@ package cli
 import (
 	"context"
 
+	"github.com/ExocoreNetwork/exocore/x/avs/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/ethereum/go-ethereum/common"
 	"golang.org/x/xerrors"
 
 	operatortypes "github.com/ExocoreNetwork/exocore/x/operator/types"
@@ -33,6 +35,8 @@ func GetQueryCmd() *cobra.Command {
 		QueryOperatorUSDValue(),
 		QueryAVSUSDValue(),
 		QueryOperatorSlashInfo(),
+		QueryAllOperatorsWithOptInAVS(),
+		QueryAllAVSsByOperator(),
 	)
 	return cmd
 }
@@ -343,6 +347,71 @@ func QueryOperatorSlashInfo() *cobra.Command {
 		},
 	}
 
+	flags.AddQueryFlagsToCmd(cmd)
+	return cmd
+}
+
+// QueryAllOperatorsWithOptInAVS queries all operators
+func QueryAllOperatorsWithOptInAVS() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:     "get-operator-list <avsAddr>",
+		Short:   "Get list of operators by AVS",
+		Long:    "Get the list of operators who have opted in to the specified AVS",
+		Example: "exocored query operator get-operator-list 0x598ACcB5e7F83cA6B19D70592Def9E5b25B978CA",
+		Args:    cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			if !common.IsHexAddress(args[0]) {
+				return xerrors.Errorf("invalid  address,err:%s", types.ErrInvalidAddr)
+			}
+			clientCtx, err := client.GetClientQueryContext(cmd)
+			if err != nil {
+				return err
+			}
+
+			queryClient := operatortypes.NewQueryClient(clientCtx)
+			req := operatortypes.QueryAllOperatorsByOptInAVSRequest{
+				Avs: args[0],
+			}
+			res, err := queryClient.QueryAllOperatorsWithOptInAVS(context.Background(), &req)
+			if err != nil {
+				return err
+			}
+			return clientCtx.PrintProto(res)
+		},
+	}
+	flags.AddQueryFlagsToCmd(cmd)
+	return cmd
+}
+
+// QueryAllAVSsByOperator queries all avs
+func QueryAllAVSsByOperator() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:     "get-avs-list <operatorAddr>",
+		Short:   "Get list of AVSs by operator",
+		Long:    "Get a list of AVSs to which an operator has opted in",
+		Example: "exocored query operator get-avs-list exo1mq6pj6f5tafmgkk6lehew5radfq3w20gpegzs5",
+		Args:    cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			addr, err := sdk.AccAddressFromBech32(args[0])
+			if err != nil {
+				return xerrors.Errorf("invalid  address,err:%s", types.ErrInvalidAddr)
+			}
+			clientCtx, err := client.GetClientQueryContext(cmd)
+			if err != nil {
+				return err
+			}
+
+			queryClient := operatortypes.NewQueryClient(clientCtx)
+			req := operatortypes.QueryAllAVSsByOperatorRequest{
+				Operator: addr.String(),
+			}
+			res, err := queryClient.QueryAllAVSsByOperator(context.Background(), &req)
+			if err != nil {
+				return err
+			}
+			return clientCtx.PrintProto(res)
+		},
+	}
 	flags.AddQueryFlagsToCmd(cmd)
 	return cmd
 }

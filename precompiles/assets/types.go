@@ -232,6 +232,7 @@ func (p Precompile) UpdateTokenFromInputs(
 	if !ok || assetAddr == nil {
 		return 0, "", "", fmt.Errorf(exocmn.ErrContractInputParaOrType, 1, "[]byte", args[1])
 	}
+	// #nosec G115
 	if uint32(len(assetAddr)) < clientChainAddrLength {
 		return 0, "", "", fmt.Errorf(exocmn.ErrInvalidAddrLength, len(assetAddr), clientChainAddrLength)
 	}
