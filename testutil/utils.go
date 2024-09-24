@@ -344,14 +344,12 @@ func (suite *BaseTestSuite) SetupWithGenesisValSet(genAccs []authtypes.GenesisAc
 	dogfoodGenesis := dogfoodtypes.NewGenesis(
 		dogfoodtypes.DefaultParams(), []dogfoodtypes.GenesisValidator{
 			{
-				PublicKey:       pubKey.ToHex(),
-				Power:           power,
-				OperatorAccAddr: operator1.String(),
+				PublicKey: pubKey.ToHex(),
+				Power:     power,
 			},
 			{
-				PublicKey:       pubKey2.ToHex(),
-				Power:           power2,
-				OperatorAccAddr: operator2.String(),
+				PublicKey: pubKey2.ToHex(),
+				Power:     power2,
 			},
 		},
 		[]dogfoodtypes.EpochToOperatorAddrs{},
