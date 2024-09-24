@@ -6,18 +6,21 @@ import (
 
 	sdkmath "cosmossdk.io/math"
 
+	"github.com/ethereum/go-ethereum/common/hexutil"
+
 	exocmn "github.com/ExocoreNetwork/exocore/precompiles/common"
 	assetstypes "github.com/ExocoreNetwork/exocore/x/assets/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/vm"
-	cmn "github.com/evmos/evmos/v16/precompiles/common"
 )
 
 const (
-	MethodDepositTo                   = "depositTo"
-	MethodWithdraw                    = "withdrawPrincipal"
+	MethodDepositLST                  = "depositLST"
+	MethodDepositNST                  = "depositNST"
+	MethodWithdrawLST                 = "withdrawLST"
+	MethodWithdrawNST                 = "withdrawNST"
 	MethodGetClientChains             = "getClientChains"
 	MethodRegisterOrUpdateClientChain = "registerOrUpdateClientChain"
 	MethodRegisterToken               = "registerToken"
@@ -41,24 +44,29 @@ func (p Precompile) DepositOrWithdraw(
 		return nil, fmt.Errorf(exocmn.ErrContractCaller, err.Error())
 	}
 	// parse the depositTo input params
-	depositWithdrawParams, err := p.DepositWithdrawParamsFromInputs(ctx, args)
+	depositWithdrawParams, err := p.DepositWithdrawParams(ctx, method, args)
 	if err != nil {
 		return nil, err
 	}
 
 	// call assets keeper to perform the deposit or withdraw action
-	switch method.Name {
-	// deposit transactions
-	case MethodDepositTo:
-		depositWithdrawParams.Action = assetstypes.Deposit
-	case MethodWithdraw:
-		depositWithdrawParams.Action = assetstypes.WithdrawPrincipal
-	default:
-		return nil, fmt.Errorf(cmn.ErrUnknownMethod, method.Name)
-	}
 	err = p.assetsKeeper.PerformDepositOrWithdraw(ctx, depositWithdrawParams)
 	if err != nil {
 		return nil, err
+	}
+
+	// call oracle to update the validator info of staker for native asset restaking
+	switch depositWithdrawParams.Action {
+	case assetstypes.DepositNST, assetstypes.WithdrawNST:
+		_, assetID := assetstypes.GetStakeIDAndAssetID(depositWithdrawParams.ClientChainLzID,
+			depositWithdrawParams.StakerAddress, depositWithdrawParams.AssetsAddress)
+		err = p.assetsKeeper.UpdateNativeTokenValidatorInfo(ctx, assetID,
+			hexutil.Encode(depositWithdrawParams.StakerAddress),
+			hexutil.Encode(depositWithdrawParams.ValidatorPubkey),
+			depositWithdrawParams.OpAmount)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	// get the latest asset state of staker to return.

@@ -21,7 +21,7 @@ func (suite *SlashTestSuite) TestSlash() {
 
 	depositEvent := &assetskeeper.DepositWithdrawParams{
 		ClientChainLzID: 101,
-		Action:          types.Deposit,
+		Action:          types.DepositLST,
 		StakerAddress:   suite.Address[:],
 		OpAmount:        sdkmath.NewInt(100),
 	}

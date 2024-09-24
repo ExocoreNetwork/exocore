@@ -62,7 +62,7 @@ func (s *SlashPrecompileTestSuite) TestRunSlash() {
 		// deposit asset for slash test
 		params := &assetskeeper.DepositWithdrawParams{
 			ClientChainLzID: 101,
-			Action:          assetstype.Deposit,
+			Action:          assetstype.DepositLST,
 			StakerAddress:   staker,
 			AssetsAddress:   usdtAddress,
 			OpAmount:        depositAmount,

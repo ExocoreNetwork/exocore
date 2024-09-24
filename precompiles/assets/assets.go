@@ -92,7 +92,8 @@ func (p Precompile) Run(evm *vm.EVM, contract *vm.Contract, readOnly bool) (bz [
 
 	switch method.Name {
 	// transactions
-	case MethodDepositTo, MethodWithdraw:
+	case MethodDepositLST, MethodWithdrawLST,
+		MethodDepositNST, MethodWithdrawNST:
 		bz, err = p.DepositOrWithdraw(ctx, evm.Origin, contract, stateDB, method, args)
 		if err != nil {
 			ctx.Logger().Error("internal error when calling assets precompile", "module", "assets precompile", "method", method.Name, "err", err)
@@ -154,7 +155,10 @@ func (p Precompile) Run(evm *vm.EVM, contract *vm.Contract, readOnly bool) (bz [
 // IsTransaction checks if the given methodID corresponds to a transaction or query.
 func (Precompile) IsTransaction(methodID string) bool {
 	switch methodID {
-	case MethodDepositTo, MethodWithdraw, MethodRegisterOrUpdateClientChain, MethodRegisterToken, MethodUpdateToken:
+	case MethodDepositLST, MethodWithdrawLST,
+		MethodDepositNST, MethodWithdrawNST,
+		MethodRegisterOrUpdateClientChain,
+		MethodRegisterToken, MethodUpdateToken:
 		return true
 	case MethodGetClientChains, MethodIsRegisteredClientChain:
 		return false

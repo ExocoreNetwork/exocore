@@ -38,7 +38,7 @@ func (k *Keeper) delegateTo(
 	}
 
 	stakerID, assetID := assetstype.GetStakeIDAndAssetID(params.ClientChainID, params.StakerAddress, params.AssetsAddress)
-	if assetID != assetstype.NativeAssetID {
+	if assetID != assetstype.ExocoreAssetID {
 		// check if the staker asset has been deposited and the canWithdraw amount is bigger than the delegation amount
 		info, err := k.assetsKeeper.GetStakerSpecifiedAssetInfo(ctx, stakerID, assetID)
 		if err != nil {
@@ -57,7 +57,7 @@ func (k *Keeper) delegateTo(
 			return err
 		}
 	} else {
-		coins := sdk.NewCoins(sdk.NewCoin(assetstype.NativeAssetDenom, params.OpAmount))
+		coins := sdk.NewCoins(sdk.NewCoin(assetstype.ExocoreAssetDenom, params.OpAmount))
 		// transfer the delegation amount from the staker account to the delegated pool
 		if err := k.bankKeeper.DelegateCoinsFromAccountToModule(ctx, params.StakerAddress, delegationtype.DelegatedPoolName, coins); err != nil {
 			return err

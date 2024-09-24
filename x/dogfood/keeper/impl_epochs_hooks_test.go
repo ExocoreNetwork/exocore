@@ -44,7 +44,7 @@ func (suite *KeeperTestSuite) TestSameEpochOperations() {
 		)
 		depositParams := &assetskeeper.DepositWithdrawParams{
 			ClientChainLzID: lzID,
-			Action:          assetstypes.Deposit,
+			Action:          assetstypes.DepositLST,
 			StakerAddress:   staker.Bytes(),
 			AssetsAddress:   assetAddr.Bytes(),
 			OpAmount:        amount,
@@ -224,7 +224,7 @@ func (suite *KeeperTestSuite) TestDifferentEpochOperations() {
 		)
 		depositParams := &assetskeeper.DepositWithdrawParams{
 			ClientChainLzID: lzID,
-			Action:          assetstypes.Deposit,
+			Action:          assetstypes.DepositLST,
 			StakerAddress:   staker.Bytes(),
 			AssetsAddress:   assetAddr.Bytes(),
 			OpAmount:        amount,

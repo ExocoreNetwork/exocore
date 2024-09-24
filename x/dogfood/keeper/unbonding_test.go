@@ -42,7 +42,7 @@ func (suite *KeeperTestSuite) TestUndelegations() {
 	)
 	depositParams := &assetskeeper.DepositWithdrawParams{
 		ClientChainLzID: lzID,
-		Action:          assetstypes.Deposit,
+		Action:          assetstypes.DepositLST,
 		StakerAddress:   staker.Bytes(),
 		AssetsAddress:   assetAddr.Bytes(),
 		OpAmount:        amount,
@@ -182,7 +182,7 @@ func (suite *KeeperTestSuite) TestUndelegationEdgeCases() {
 	)
 	depositParams := &assetskeeper.DepositWithdrawParams{
 		ClientChainLzID: lzID,
-		Action:          assetstypes.Deposit,
+		Action:          assetstypes.DepositLST,
 		StakerAddress:   staker.Bytes(),
 		AssetsAddress:   assetAddr.Bytes(),
 		OpAmount:        amount.Mul(sdkmath.NewInt(5)),

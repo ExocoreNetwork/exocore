@@ -57,7 +57,7 @@ func (suite *AVSManagerPrecompileSuite) prepareDeposit(assetAddr common.Address,
 	// staking assets
 	depositParam := &assetskeeper.DepositWithdrawParams{
 		ClientChainLzID: suite.clientChainLzID,
-		Action:          assetstypes.Deposit,
+		Action:          assetstypes.DepositLST,
 		StakerAddress:   suite.Address[:],
 		OpAmount:        suite.depositAmount,
 		AssetsAddress:   assetAddr[:],

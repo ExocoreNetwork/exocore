@@ -54,7 +54,7 @@ func (suite *OperatorTestSuite) prepareDeposit(assetAddr common.Address, amount 
 	// staking assets
 	depositParam := &assetskeeper.DepositWithdrawParams{
 		ClientChainLzID: suite.clientChainLzID,
-		Action:          assetstypes.Deposit,
+		Action:          assetstypes.DepositLST,
 		StakerAddress:   suite.Address[:],
 		OpAmount:        suite.depositAmount,
 		AssetsAddress:   assetAddr[:],

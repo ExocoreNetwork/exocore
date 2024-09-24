@@ -48,7 +48,7 @@ func (suite *AVSTestSuite) prepareMulDeposit(assetAddr common.Address, amount sd
 	// staking assets
 	depositParam := &assetskeeper.DepositWithdrawParams{
 		ClientChainLzID: suite.clientChainLzID,
-		Action:          assetstypes.Deposit,
+		Action:          assetstypes.DepositLST,
 		StakerAddress:   suite.Address[:],
 		OpAmount:        suite.depositAmount,
 		AssetsAddress:   assetAddr[:],
