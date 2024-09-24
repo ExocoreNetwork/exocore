@@ -81,20 +81,65 @@ message TaskInfo {
   // name of task
   string name = 2;
   // data which is supplied by the contract, usually ABI-encoded
-  bytes data = 3;
+  bytes hash = 3;
   // task_id of task
-  string task_id = 4;
+  uint64 task_id = 4;
   // Deadline for task response
   uint64 task_response_period = 5;
+  // Statistical period: threshold calculation, signature verification,
+  // nosig quantity statistics, operator submits messages corresponding to signatures
+  uint64 task_statistical_period = 6;
   //challenge period for  task
-  uint64 task_challenge_period = 6;
+  uint64 task_challenge_period = 7;
   //Signature threshold percentage
-  uint64 threshold_percentage = 7;
+  uint64 threshold_percentage = 8;
   // Effective current epoch, accounting for current_epoch + 1
   // and current_epoch is the integer identifier of the epoch module
-  uint64 starting_epoch = 8;
+  uint64 starting_epoch = 9;
+
+
+  // actual_threshold is the Actual threshold
+  uint64 actual_threshold = 10;
+  // opt_in_count when creating a task, the actual opt-in operator counts at this moment
+  repeated string opt_in_operators = 11;
+  // signed_count is Actual number of signatures already signed
+  repeated string signed_operators = 12;
+  // no_signed_count is the final number of unsigned operators
+  repeated string no_signed_operators = 13;
+  // err_signed_count is the number of operators with final incorrect signatures
+  repeated string err_signed_operators = 14;
+  // task_total_power is the USD value owned by the avs task itself.
+  string task_total_power = 15
+  [
+    (cosmos_proto.scalar) = "cosmos.Dec",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+    (gogoproto.nullable) = false,
+    (gogoproto.customname) = "TaskTotalPower"
+  ];
+  // operator_active_power_list is a power list of operators opt-in to the current task
+  OperatorActivePowerList operator_active_power= 16;
+}
+// OperatorActivePowerList is the power list of operators opt-in to the current task.
+// Because power is always changing, record the power of all operators
+// who have completed tasks and submitted results by the task deadline
+message OperatorActivePowerList {
+  // operator_power_list is a power list of operators.
+  repeated OperatorActivePowerInfo operator_power_list = 1;
 }
 
+// OperatorActivePowerInfo is the operator power info.
+message OperatorActivePowerInfo {
+  // operator_addr is the operator  address.
+  string operator_addr = 1;
+  // active_power is the USD value owned by the operator itself.
+  string active_power = 2
+  [
+    (cosmos_proto.scalar) = "cosmos.Dec",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+    (gogoproto.nullable) = false,
+    (gogoproto.customname) = "SelfActivePower"
+  ];
+}
 // BlsPubKeyInfo is the task info.
 message BlsPubKeyInfo {
   // operator address
@@ -164,6 +209,40 @@ message DeRegisterAVSResponse {
   AVSInfo info = 2;
 }
 
+// TaskResultInfo is the operator sign task info result.
+message TaskResultInfo {
+  // operator_address operator address
+  string operator_address = 1;
+  // task_response_hash is the task_response msg hash.
+  string task_response_hash = 2;
+  // task_response is the task response data.
+  bytes task_response = 3;
+  // bls_signature is the operator bls sig info.
+  bytes bls_signature = 4;
+  // task_contract_address is contract address of task
+  string task_contract_address = 5;
+  // task_id is the  task id
+  uint64 task_id = 6;
+  // stage this field is used to solve the problem of task results being copied by other operators.
+  // It is a two-stage submission with two values, 1 and 2
+  string stage = 7;
+}
+
+// SubmitTaskResultReq is the request to submit task results.
+message SubmitTaskResultReq {
+  option (cosmos.msg.v1.signer) = "FromAddress";
+  option (amino.name) = "cosmos-sdk/OperatorInfo";
+  option (gogoproto.equal) = false;
+  option (gogoproto.goproto_getters) = false;
+
+  // from_address is the address of the operator (sdk.AccAddress).
+  string from_address = 1
+  [(cosmos_proto.scalar) = "cosmos.AddressString"];
+  // info is the taskResult.
+  TaskResultInfo info = 2;
+}
+// SubmitTaskResultResponse is the response to submit task results.
+message SubmitTaskResultResponse {}
 // Msg defines the AVS related Msg service.
 service Msg {
   option (cosmos.msg.v1.service) = true;
@@ -178,5 +257,9 @@ service Msg {
   // RegisterAVSTask registers a new task.
   rpc RegisterAVSTask(RegisterAVSTaskReq) returns (RegisterAVSTaskResponse) {
     option (google.api.http).post = "/exocore/avs/v1/tx/RegisterAVSTask";
+  };
+  // SubmitTaskResult operator submit task results .
+  rpc SubmitTaskResult (SubmitTaskResultReq) returns (SubmitTaskResultResponse) {
+    option (google.api.http).post = "/exocore/avs/v1/tx/SubmitTaskResult";
   };
 }
