@@ -24,7 +24,7 @@ const (
 	// DefaultChainID is the standard chain id used for testing purposes
 	DefaultChainID = MainnetChainID + "-1"
 	// BaseDenom defines the Evmos mainnet denomination
-	BaseDenom = "aexo"
+	BaseDenom = "hua"
 
 	// DelimiterForCombinedKey is the delimiter used for constructing the combined key.
 	DelimiterForCombinedKey = "/"

@@ -87,12 +87,12 @@ if [[ $overwrite == "y" || $overwrite == "Y" ]]; then
 	LOCAL_ADDRESS_HEX=0x$(exocored keys parse "$LOCAL_ADDRESS_EXO" --output json | jq -r .bytes | tr '[:upper:]' '[:lower:]')
 	CONSENSUS_KEY=$(exocored keys consensus-pubkey-to-bytes --keyring-backend "$KEYRING" --home "$HOMEDIR" --output json | jq -r .bytes32)
 
-	# Change parameter token denominations to aexo
-	jq '.app_state["crisis"]["constant_fee"]["denom"]="aexo"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
-	jq '.app_state["gov"]["deposit_params"]["min_deposit"][0]["denom"]="aexo"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
+	# Change parameter token denominations to hua
+	jq '.app_state["crisis"]["constant_fee"]["denom"]="hua"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
+	jq '.app_state["gov"]["deposit_params"]["min_deposit"][0]["denom"]="hua"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
 	# When upgrade to cosmos-sdk v0.47, use gov.params to edit the deposit params
-	jq '.app_state["gov"]["params"]["min_deposit"][0]["denom"]="aexo"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
-	jq '.app_state["evm"]["params"]["evm_denom"]="aexo"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
+	jq '.app_state["gov"]["params"]["min_deposit"][0]["denom"]="hua"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
+	jq '.app_state["evm"]["params"]["evm_denom"]="hua"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
 
 	# Set gas limit in genesis
 	jq '.consensus_params["block"]["max_gas"]="10000000"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
@@ -275,9 +275,9 @@ EOF
 
 	# Allocate genesis accounts (cosmos formatted addresses)
 	for KEY in "${KEYS[@]}"; do
-		exocored add-genesis-account "$KEY" 100000000000000000000000000aexo --keyring-backend "$KEYRING" --home "$HOMEDIR"
+		exocored add-genesis-account "$KEY" 100000000000000000000000000hua --keyring-backend "$KEYRING" --home "$HOMEDIR"
 	done
-	exocored add-genesis-account "${LOCAL_NAME}" 100000000000000000000000000aexo --keyring-backend "$KEYRING" --home "$HOMEDIR"
+	exocored add-genesis-account "${LOCAL_NAME}" 100000000000000000000000000hua --keyring-backend "$KEYRING" --home "$HOMEDIR"
 
 	# bc is required to add these big numbers
 	# note the extra +1 is for LOCAL_NAME
@@ -293,4 +293,4 @@ EOF
 fi
 
 # Start the node (remove the --pruning=nothing flag if historical queries are not needed)
-exocored start --metrics "$TRACE" --log_level $LOGLEVEL --minimum-gas-prices=0.0001aexo --json-rpc.api eth,txpool,personal,net,debug,web3 --api.enable --json-rpc.enable true --home "$HOMEDIR" --chain-id "$CHAINID" --oracle --grpc.enable true
+exocored start --metrics "$TRACE" --log_level $LOGLEVEL --minimum-gas-prices=0.0001hua --json-rpc.api eth,txpool,personal,net,debug,web3 --api.enable --json-rpc.enable true --home "$HOMEDIR" --chain-id "$CHAINID" --oracle --grpc.enable true
