@@ -3,13 +3,13 @@ package types
 const maxSize = 100
 
 // TODO: vlaidatorIndex need bridge data
-func NewStakerInfo(stakerAddr string, validatorIndex uint64) *StakerInfo {
+func NewStakerInfo(stakerAddr, validatorPubkey string) *StakerInfo {
 	return &StakerInfo{
 		StakerAddr:  stakerAddr,
 		StakerIndex: 0,
 		// TODO: need bridge information
-		ValidatorIndexes: []uint64{validatorIndex},
-		BalanceList:      make([]*BalanceInfo, 0, 1),
+		ValidatorPubkeyList: []string{validatorPubkey},
+		BalanceList:         make([]*BalanceInfo, 0, 1),
 	}
 }
 

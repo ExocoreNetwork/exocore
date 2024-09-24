@@ -3,8 +3,8 @@ package keeper
 import (
 	"errors"
 	"fmt"
+	"strconv"
 
-	sdkmath "cosmossdk.io/math"
 	"github.com/ExocoreNetwork/exocore/x/oracle/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -31,7 +31,9 @@ func (k Keeper) GetStakerInfo(ctx sdk.Context, assetID, stakerAddr string) types
 	return stakerInfo
 }
 
-func (k Keeper) UpdateNativeTokenValidatorListForStaker(ctx sdk.Context, chainID, stakerAddr, validatorPubkey string, amount sdkmath.Int) error {
+// func (k Keeper) UpdateNativeTokenByDepositOrWithdraw(ctx sdk.Context, assetID, stakerAddr string, amount sdkmath.Int, validatorIndex uint64) sdkmath.Int {
+
+func (k Keeper) UpdateNativeTokenValidatorListForStaker(ctx sdk.Context, chainID, stakerAddr, validatorPubkey string, amount skdmath.Int) error {
 	// TODO: use definition from assets module
 	assetID := "0xe_" + chainID
 	// emit an event to tell that a staker's validator list has changed
@@ -49,7 +51,7 @@ func (k Keeper) UpdateNativeTokenValidatorListForStaker(ctx sdk.Context, chainID
 		k.cdc.MustUnmarshal(value, stakerInfo)
 		if amount.IsPositive() {
 			// deopsit add a new validator into staker's validatorList
-			stakerInfo.ValidatorPubkeyList = append(stakerInfo.ValidatorPubkeyList, validatorPubkey)
+			stakerInfo.ValidatorIndexes = append(stakerInfo.ValidatorIndexes, validatorIndex)
 		}
 	}
 
@@ -68,9 +70,9 @@ func (k Keeper) UpdateNativeTokenValidatorListForStaker(ctx sdk.Context, chainID
 		// TODO: check if this validator has withdraw all its asset and then we can move it out from the staker's validatorList
 		// currently when withdraw happened we assume this validator has left the staker's validatorList (deposit/withdraw all of that validator's staking ETH(<=32))
 		newBalance.Change = types.BalanceInfo_ACTION_WITHDRAW
-		for i, vPubkey := range stakerInfo.ValidatorPubkeyList {
-			if vPubkey == validatorPubkey {
-				stakerInfo.ValidatorPubkeyList = append(stakerInfo.ValidatorPubkeyList[:i], stakerInfo.ValidatorPubkeyList[i+1:]...)
+		for i, vIdx := range stakerInfo.ValidatorIndexes {
+			if vIdx == validatorIndex {
+				stakerInfo.ValidatorIndexes = append(stakerInfo.ValidatorIndexes[:i], stakerInfo.ValidatorIndexes[i+1:]...)
 				break
 			}
 		}
@@ -99,9 +101,6 @@ func (k Keeper) UpdateNativeTokenValidatorListForStaker(ctx sdk.Context, chainID
 		}
 	}
 	if !exists {
-		if !amount.IsPositive() {
-			return errors.New("remove unexist validator")
-		}
 		stakerList.StakerAddrs = append(stakerList.StakerAddrs, stakerAddr)
 		valueStakerList = k.cdc.MustMarshal(&stakerList)
 		store.Set(keyStakerList, valueStakerList)
@@ -115,18 +114,18 @@ func (k Keeper) UpdateNativeTokenValidatorListForStaker(ctx sdk.Context, chainID
 		bz := k.cdc.MustMarshal(stakerInfo)
 		store.Set(key, bz)
 	}
-	eventValue := fmt.Sprintf("%d_%s", stakerInfo.StakerIndex, validatorPubkey)
+	var eventValue string
 	if newBalance.Change == types.BalanceInfo_ACTION_DEPOSIT {
-		eventValue = fmt.Sprintf("%s_%s", types.AttributeValueNativeTokenDeposit, eventValue)
+		eventValue = fmt.Sprintf("%s_%d_%s", types.AttributeValueNativeTokenDeposit, stakerInfo.StakerIndex, strconv.FormatUint(validatorIndex, 10))
 	} else {
-		eventValue = fmt.Sprintf("%s_%s", types.AttributeValueNativeTokenWithdraw, eventValue)
+		eventValue = fmt.Sprintf("%s_%d_%s", types.AttributeValueNativeTokenWithdraw, stakerInfo.StakerIndex, strconv.FormatUint(validatorIndex, 10))
 	}
 	// emit an event to tell a new valdiator added/or a validator is removed for the staker
 	ctx.EventManager().EmitEvent(sdk.NewEvent(
 		types.EventTypeCreatePrice,
 		sdk.NewAttribute(types.AttributeKeyNativeTokenChange, eventValue),
 	))
-	return nil
+	return amount
 }
 
 // GetStakerInfos returns all stakers information
@@ -195,7 +194,7 @@ func (k Keeper) UpdateNativeTokenByBalanceChange(ctx sdk.Context, assetID string
 		}
 		newBalance.Change = types.BalanceInfo_ACTION_SLASH_REFUND
 		// balance update are based on initial/max effective balance: 32
-		maxBalance := maxEffectiveBalance * (len(stakerInfo.ValidatorPubkeyList))
+		maxBalance := maxEffectiveBalance * (len(stakerInfo.ValidatorIndexes))
 		balance := maxBalance + change
 		if balance > maxBalance {
 			return errors.New("effective balance should never exceeds 32")

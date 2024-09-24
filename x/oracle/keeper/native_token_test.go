@@ -6,7 +6,6 @@ import (
 
 	sdkmath "cosmossdk.io/math"
 
-	assetstypes "github.com/ExocoreNetwork/exocore/x/assets/types"
 	"github.com/ExocoreNetwork/exocore/x/oracle/types"
 
 	"github.com/ethereum/go-ethereum/common"
@@ -38,14 +37,16 @@ import (
 
 func (ks *KeeperSuite) TestNativeTokenLifeCycleOneStaker() {
 	operator := ks.Operators[0]
-	//	operatorStr := operator.String()
 	stakerStr := common.Address(operator.Bytes()).String()
-	assetID := assetstypes.NativeETHAssetID
+	chainID := "beaconchain"
+	// TODO: update after assets module got the definition
+	assetID := "0xe_" + chainID
+	validators := []string{"0xv1", "0xv2"}
 	// 1. deposit amount 100
 	// 100 is not a possible nubmer with one validator, it's ok to use this as a start and we'll check the number to be updated to a right number(uncer 32 with one validator)
 	amount100 := sdkmath.NewIntFromUint64(100)
 	amount32 := sdkmath.NewIntFromUint64(32)
-	ks.k.UpdateNativeTokenByDepositOrWithdraw(ks.ctx, assetID, stakerStr, amount100, 199)
+	ks.k.UpdateNativeTokenValidatorListForStaker(ks.ctx, chainID, stakerStr, validators[0], amount100)
 	// - 1.1 check stakerInfo
 	stakerInfo := ks.k.GetStakerInfo(ks.ctx, assetID, stakerStr)
 	ks.Equal(types.BalanceInfo{
@@ -54,7 +55,7 @@ func (ks *KeeperSuite) TestNativeTokenLifeCycleOneStaker() {
 		Change:  types.BalanceInfo_ACTION_DEPOSIT,
 		Balance: 100,
 	}, *stakerInfo.BalanceList[0])
-	ks.Equal([]uint64{199}, stakerInfo.ValidatorIndexes)
+	ks.Equal([]string{validators[0]}, stakerInfo.ValidatorPubkeyList)
 	// - 1.2 check stakerList
 	stakerList := ks.k.GetStakerList(ks.ctx, assetID)
 	ks.Equal(stakerList.StakerAddrs[0], stakerStr)
@@ -76,7 +77,7 @@ func (ks *KeeperSuite) TestNativeTokenLifeCycleOneStaker() {
 	}, *stakerInfo.BalanceList[1])
 
 	// 3. deposit more. 100
-	ks.k.UpdateNativeTokenByDepositOrWithdraw(ks.ctx, assetID, stakerStr, amount32, 999)
+	ks.k.UpdateNativeTokenValidatorListForStaker(ks.ctx, chainID, stakerStr, validators[1], amount32) // 999
 	// - 3.1 check stakerInfo
 	stakerInfo = ks.k.GetStakerInfo(ks.ctx, assetID, stakerStr)
 	ks.Equal(types.BalanceInfo{
@@ -86,7 +87,7 @@ func (ks *KeeperSuite) TestNativeTokenLifeCycleOneStaker() {
 		Change:  types.BalanceInfo_ACTION_DEPOSIT,
 		Balance: 54,
 	}, *stakerInfo.BalanceList[2])
-	ks.Equal([]uint64{199, 999}, stakerInfo.ValidatorIndexes)
+	ks.Equal(validators, stakerInfo.ValidatorPubkeyList)
 
 	// 4. Msg. add staker's balance
 	// at this point the system correct number should be 32*2-10 = 52, if some validator do refund, means the delta should be less than 10
@@ -108,7 +109,7 @@ func (ks *KeeperSuite) TestNativeTokenLifeCycleOneStaker() {
 
 	// 5. withdraw
 	amount30N := sdkmath.NewInt(-30)
-	ks.k.UpdateNativeTokenByDepositOrWithdraw(ks.ctx, assetID, stakerStr, amount30N, 199)
+	ks.k.UpdateNativeTokenValidatorListForStaker(ks.ctx, chainID, stakerStr, validators[0], amount30N)
 	// - 5.1 check stakerInfo
 	stakerInfo = ks.k.GetStakerInfo(ks.ctx, assetID, stakerStr)
 	ks.Equal(types.BalanceInfo{
@@ -119,11 +120,11 @@ func (ks *KeeperSuite) TestNativeTokenLifeCycleOneStaker() {
 		Change:  types.BalanceInfo_ACTION_WITHDRAW,
 	}, *stakerInfo.BalanceList[4])
 	// withdraw will remove this validator
-	ks.Equal([]uint64{999}, stakerInfo.ValidatorIndexes)
+	ks.Equal([]string{validators[1]}, stakerInfo.ValidatorPubkeyList)
 
 	// 6.withdrawall
 	amount100N := sdkmath.NewInt(-29)
-	ks.k.UpdateNativeTokenByDepositOrWithdraw(ks.ctx, assetID, stakerStr, amount100N, 999)
+	ks.k.UpdateNativeTokenValidatorListForStaker(ks.ctx, chainID, stakerStr, validators[1], amount100N)
 	// - 6.1 check stakerInfo
 	stakerInfo = ks.k.GetStakerInfo(ks.ctx, assetID, stakerStr)
 	ks.Equal(types.StakerInfo{}, stakerInfo)

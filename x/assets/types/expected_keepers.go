@@ -9,7 +9,7 @@ import (
 type OracleKeeper interface {
 	GetSpecifiedAssetsPrice(ctx sdk.Context, assetID string) (oracletypes.Price, error)
 	RegisterNewTokenAndSetTokenFeeder(ctx sdk.Context, oInfo *oracletypes.OracleInfo) error
-	UpdateNativeTokenByDepositOrWithdraw(ctx sdk.Context, assetID, stakerAddr string, amount sdkmath.Int, validatorIndex uint64) sdkmath.Int
+	UpdateNativeTokenValidatorListForStaker(ctx sdk.Context, chainID, stakerAddr, validatorPubkey string, amount sdkmath.Int) error
 }
 
 type BankKeeper interface {
