@@ -184,7 +184,6 @@ func (suite *DelegationTestSuite) TestDelegateTo() {
 	totalDelegationAmount, err = suite.App.DelegationKeeper.TotalDelegatedAmountForStakerAsset(suite.Ctx, stakerID, assetID)
 	suite.NoError(err)
 	suite.Equal(delegationParams.OpAmount, totalDelegationAmount)
-
 }
 
 func (suite *DelegationTestSuite) TestUndelegateFrom() {
@@ -450,5 +449,4 @@ func (suite *DelegationTestSuite) TestCompleteUndelegation() {
 	waitUndelegationRecords, err = suite.App.DelegationKeeper.GetPendingUndelegationRecords(suite.Ctx, uint64(completeBlockNumber))
 	suite.NoError(err)
 	suite.Equal(0, len(waitUndelegationRecords))
-
 }

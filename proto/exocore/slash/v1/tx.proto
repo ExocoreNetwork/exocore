@@ -1,9 +1,9 @@
 syntax = "proto3";
-package exocore.slash;
+package exocore.slash.v1;
 
 import "cosmos/msg/v1/msg.proto";
 import "cosmos_proto/cosmos.proto";
-import "exocore/slash/params.proto";
+import "exocore/slash/v1/params.proto";
 import "gogoproto/gogo.proto";
 
 option go_package = "github.com/ExocoreNetwork/exocore/x/slash/types";
@@ -29,4 +29,3 @@ message MsgUpdateParams {
 // MsgUpdateParamsResponse defines the response structure for executing a
 // MsgUpdateParams message.
 message MsgUpdateParamsResponse {}
-

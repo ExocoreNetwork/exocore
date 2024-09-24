@@ -2,9 +2,10 @@ package avs_test
 
 import (
 	"fmt"
-	utiltx "github.com/ExocoreNetwork/exocore/testutil/tx"
 	"strings"
 	"time"
+
+	utiltx "github.com/ExocoreNetwork/exocore/testutil/tx"
 
 	assetskeeper "github.com/ExocoreNetwork/exocore/x/assets/keeper"
 	avskeeper "github.com/ExocoreNetwork/exocore/x/avs/keeper"

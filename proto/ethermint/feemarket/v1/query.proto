@@ -1,4 +1,3 @@
-
 syntax = "proto3";
 package ethermint.feemarket.v1;
 

@@ -3,11 +3,12 @@ package keeper_test
 import (
 	"encoding/hex"
 	"fmt"
+	"math/big"
+
 	"github.com/ExocoreNetwork/exocore/x/avs/types"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/prysmaticlabs/prysm/v4/crypto/bls/blst"
 	blscommon "github.com/prysmaticlabs/prysm/v4/crypto/bls/common"
-	"math/big"
 )
 
 func (suite *AVSTestSuite) TestOperator_pubkey() {
@@ -117,5 +118,4 @@ func (suite *AVSTestSuite) Test_bls_agg_uncertainMsgs() {
 	copy(array32[:], msgs[1])
 	valid1 := aggSignature.FastAggregateVerify(publicKeys, array32)
 	suite.False(valid1, "Signature verification failed")
-
 }

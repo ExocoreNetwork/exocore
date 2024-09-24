@@ -1,10 +1,11 @@
 package keeper_test
 
 import (
-	sdkmath "cosmossdk.io/math"
-	blscommon "github.com/prysmaticlabs/prysm/v4/crypto/bls/common"
 	"testing"
 	"time"
+
+	sdkmath "cosmossdk.io/math"
+	blscommon "github.com/prysmaticlabs/prysm/v4/crypto/bls/common"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/common"
@@ -71,5 +72,4 @@ func (suite *AVSTestSuite) SetupTest() {
 		"exo1pkeqsekm0wsu4d5wqntf32t9l0sn35xquk65kz",
 		"exo1wsqzfdkmv5a4wu7788uw7zjaqfj6rcrm7q69dg",
 	}
-
 }

@@ -10,7 +10,11 @@ import (
 	"path/filepath"
 	"sort"
 
+	distr "github.com/ExocoreNetwork/exocore/x/feedistribution"
+	distrkeeper "github.com/ExocoreNetwork/exocore/x/feedistribution/keeper"
+	distrtypes "github.com/ExocoreNetwork/exocore/x/feedistribution/types"
 	"github.com/ExocoreNetwork/exocore/x/oracle"
+
 	oracleKeeper "github.com/ExocoreNetwork/exocore/x/oracle/keeper"
 	oracleTypes "github.com/ExocoreNetwork/exocore/x/oracle/types"
 
@@ -269,6 +273,7 @@ var (
 		exoslash.AppModuleBasic{},
 		avs.AppModuleBasic{},
 		oracle.AppModuleBasic{},
+		distr.AppModuleBasic{},
 	)
 
 	// module account permissions
@@ -284,6 +289,7 @@ var (
 		exominttypes.ModuleName:           {authtypes.Minter},
 		erc20types.ModuleName:             {authtypes.Minter, authtypes.Burner},
 		delegationTypes.DelegatedPoolName: {authtypes.Burner, authtypes.Staking},
+		distrtypes.ModuleName:             nil,
 	}
 
 	// module accounts that are allowed to receive tokens
@@ -353,6 +359,7 @@ type ExocoreApp struct {
 	AVSManagerKeeper avsManagerKeeper.Keeper
 	OracleKeeper     oracleKeeper.Keeper
 	ExomintKeeper    exomintkeeper.Keeper
+	DistrKeeper      distrkeeper.Keeper
 
 	// the module manager
 	mm *module.Manager
@@ -437,6 +444,7 @@ func NewExocoreApp(
 		avsManagerTypes.StoreKey,
 		oracleTypes.StoreKey,
 		exominttypes.StoreKey,
+		distrtypes.StoreKey,
 	)
 
 	tkeys := sdk.NewTransientStoreKeys(paramstypes.TStoreKey, evmtypes.TransientKey, feemarkettypes.TransientKey)
@@ -566,6 +574,7 @@ func NewExocoreApp(
 	// these two modules aren't finalized yet.
 	app.RewardKeeper = rewardKeeper.NewKeeper(
 		appCodec, keys[rewardTypes.StoreKey], app.AssetsKeeper,
+		app.AVSManagerKeeper,
 	)
 	app.ExoSlashKeeper = slashKeeper.NewKeeper(
 		appCodec, keys[exoslashTypes.StoreKey], app.AssetsKeeper,
@@ -684,6 +693,19 @@ func NewExocoreApp(
 		&app.AVSManagerKeeper,
 		delegationTypes.VirtualSlashKeeper{},
 	)
+	// the fee distribution keeper is used to allocate reward to exocore validators on epoch-basis,
+	// and it'll interact with other modules, like delegation for voting power, mint and inflation and etc.
+	// this keeper is initialized after the StakingKeeper  because it depends on the StakingKeeper
+	app.DistrKeeper = distrkeeper.NewKeeper(
+		appCodec, logger,
+		authtypes.FeeCollectorName,
+		authAddrString,
+		keys[distrtypes.StoreKey],
+		app.BankKeeper,
+		app.AccountKeeper,
+		app.StakingKeeper,
+		app.EpochsKeeper,
+	)
 
 	app.EvmKeeper.WithPrecompiles(
 		evmkeeper.AvailablePrecompiles(
@@ -770,6 +792,7 @@ func NewExocoreApp(
 
 	(&app.EpochsKeeper).SetHooks(
 		epochstypes.NewMultiEpochHooks(
+			app.DistrKeeper.EpochsHooks(),      // come first for using the voting power of last epoch
 			app.OperatorKeeper.EpochsHooks(),   // must come before staking keeper so it can set the USD value
 			app.StakingKeeper.EpochsHooks(),    // at this point, the order is irrelevant.
 			app.ExomintKeeper.EpochsHooks(),    // however, this may change once we have distribution
@@ -871,6 +894,7 @@ func NewExocoreApp(
 		exoslash.NewAppModule(appCodec, app.ExoSlashKeeper),
 		avs.NewAppModule(appCodec, app.AVSManagerKeeper),
 		oracle.NewAppModule(appCodec, app.OracleKeeper, app.AccountKeeper, app.BankKeeper),
+		distr.NewAppModule(appCodec, app.DistrKeeper),
 	)
 
 	// During begin block slashing happens after reward.BeginBlocker so that
@@ -908,6 +932,7 @@ func NewExocoreApp(
 		exoslashTypes.ModuleName,
 		avsManagerTypes.ModuleName,
 		oracleTypes.ModuleName,
+		distrtypes.ModuleName,
 	)
 
 	app.mm.SetOrderEndBlockers(
@@ -941,6 +966,7 @@ func NewExocoreApp(
 		rewardTypes.ModuleName,
 		exoslashTypes.ModuleName,
 		avsManagerTypes.ModuleName,
+		distrtypes.ModuleName,
 		// op module
 		feemarkettypes.ModuleName, // last in order to retrieve the block gas used
 	)
@@ -982,6 +1008,7 @@ func NewExocoreApp(
 		upgradetypes.ModuleName,  // no-op since we don't call SetInitVersionMap
 		rewardTypes.ModuleName,   // not fully implemented yet
 		exoslashTypes.ModuleName, // not fully implemented yet
+		distrtypes.ModuleName,
 		// must be the last module after others have been set up, so that it can check
 		// the invariants (if configured to do so).
 		crisistypes.ModuleName,

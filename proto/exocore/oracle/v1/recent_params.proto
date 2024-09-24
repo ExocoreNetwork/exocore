@@ -8,8 +8,7 @@ option go_package = "github.com/ExocoreNetwork/exocore/x/oracle/types";
 // RecentParams represents the params cached for recent blocks
 message RecentParams {
   // block height of which the params from
-  uint64 block = 1; 
+  uint64 block = 1;
   // params the module params
-  Params params = 2;  
+  Params params = 2;
 }
-

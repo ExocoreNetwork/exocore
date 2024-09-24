@@ -1,11 +1,12 @@
 package avs_test
 
 import (
+	"math/big"
+	"time"
+
 	sdkmath "cosmossdk.io/math"
 	assetstype "github.com/ExocoreNetwork/exocore/x/assets/types"
 	operatorKeeper "github.com/ExocoreNetwork/exocore/x/operator/keeper"
-	"math/big"
-	"time"
 
 	"github.com/ExocoreNetwork/exocore/app"
 	"github.com/ExocoreNetwork/exocore/precompiles/avs"

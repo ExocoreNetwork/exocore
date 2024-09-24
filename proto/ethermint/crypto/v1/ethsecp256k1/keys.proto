@@ -1,4 +1,3 @@
-
 syntax = "proto3";
 package ethermint.crypto.v1.ethsecp256k1;
 

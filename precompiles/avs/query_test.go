@@ -2,9 +2,10 @@ package avs_test
 
 import (
 	"fmt"
-	utiltx "github.com/ExocoreNetwork/exocore/testutil/tx"
 	"math/big"
 	"time"
+
+	utiltx "github.com/ExocoreNetwork/exocore/testutil/tx"
 
 	sdkmath "cosmossdk.io/math"
 
