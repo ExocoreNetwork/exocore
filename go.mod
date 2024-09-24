@@ -17,7 +17,6 @@ require (
 	github.com/cosmos/gogoproto v1.4.11
 	github.com/cosmos/ibc-go/v7 v7.4.0
 	github.com/ethereum/go-ethereum v1.13.5-0.20231027145059-2d7dba024d76
-	github.com/evmos/evmos/v14 v14.1.0
 	github.com/evmos/evmos/v16 v16.0.0
 	github.com/golang/protobuf v1.5.4
 	github.com/gorilla/mux v1.8.1

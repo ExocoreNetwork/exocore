@@ -829,8 +829,6 @@ github.com/envoyproxy/protoc-gen-validate v0.9.1/go.mod h1:OKNgG7TCp5pF4d6XftA0+
 github.com/envoyproxy/protoc-gen-validate v0.10.0/go.mod h1:DRjgyB0I43LtJapqN6NiRwroiAU2PaFuvk/vjgh61ss=
 github.com/evmos/cosmos-sdk v0.47.5-evmos.2 h1:fyhM0NYw/FnP4ZBXzQ7k+G4fXhfdU07MONoYrGlOCpc=
 github.com/evmos/cosmos-sdk v0.47.5-evmos.2/go.mod h1:EHwCeN9IXonsjKcjpS12MqeStdZvIdxt3VYXhus3G3c=
-github.com/evmos/evmos/v14 v14.1.0 h1:QsuhF2ImfwBfq8QU2v4m1wI8JVc2wwMFNv2Bntbx5j8=
-github.com/evmos/evmos/v14 v14.1.0/go.mod h1:Hi3CAMxAE+H7Fs7sSHsHKb4DZIURk+trop+mMrjlZqw=
 github.com/evmos/go-ethereum v1.10.26-evmos-rc2 h1:tYghk1ZZ8X4/OQ4YI9hvtm8aSN8OSqO0g9vo/sCMdBo=
 github.com/evmos/go-ethereum v1.10.26-evmos-rc2/go.mod h1:/6CsT5Ceen2WPLI/oCA3xMcZ5sWMF/D46SjM/ayY0Oo=
 github.com/fatih/color v1.7.0/go.mod h1:Zm6kSWBoL9eyXnKyktHP6abPY2pDugNf5KwzbycvMj4=
