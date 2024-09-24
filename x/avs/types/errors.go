@@ -58,16 +58,16 @@ var (
 	)
 	ErrTaskIsNotExists = errorsmod.Register(
 		ModuleName, 14,
-		"The task does not exists",
+		"The task does not exist",
 	)
 	ErrHashValue = errorsmod.Register(
 		ModuleName, 15,
-		"The task response hash is not equal",
+		"The task response hash does not match the expected value.",
 	)
 
 	ErrPubKeyIsNotExists = errorsmod.Register(
 		ModuleName, 16,
-		"The pubKey does not exists",
+		"The pubKey does not exist",
 	)
 	ErrSigVerifyError = errorsmod.Register(
 		ModuleName, 17,
@@ -81,11 +81,11 @@ var (
 
 	ErrParamNotEmptyError = errorsmod.Register(
 		ModuleName, 19,
-		"in the first stage the parameter must be empty",
+		"In the first stage, the parameter must be empty.",
 	)
 	ErrSubmitTooLateError = errorsmod.Register(
 		ModuleName, 20,
-		" responded result too late",
+		" The response was submitted too late.",
 	)
 	ErrResAlreadyExists = errorsmod.Register(
 		ModuleName, 21,
@@ -97,10 +97,14 @@ var (
 	)
 	ErrVotingPowerIncorrect = errorsmod.Register(
 		ModuleName, 23,
-		"Less than or equal to 0",
+		"Voting power must be greater than 0",
 	)
 	ErrSigNotMatchPubKey = errorsmod.Register(
 		ModuleName, 24,
 		"Signature and pubkey do not match",
+	)
+	ErrParsePubKey = errorsmod.Register(
+		ModuleName, 25,
+		"The pubKey parsing failed",
 	)
 )

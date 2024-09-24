@@ -68,15 +68,14 @@ func (k *Keeper) SetOperatorPubKey(ctx sdk.Context, pub *types.BlsPubKeyInfo) (e
 func (k *Keeper) GetOperatorPubKey(ctx sdk.Context, addr string) (pub *types.BlsPubKeyInfo, err error) {
 	opAccAddr, err := sdk.AccAddressFromBech32(addr)
 	if err != nil {
-		return nil, errorsmod.Wrap(err, "GetOperatorPubKey: error occurred when parse acc "+
-			"address from Bech32")
+		return nil, errorsmod.Wrap(err, "GetOperatorPubKey: error occurred when parsing account address from Bech32: "+addr)
 	}
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefixOperatePub)
 	// key := common.HexToAddress(incentive.Contract)
 	isExist := store.Has(opAccAddr)
 	if !isExist {
 		return nil, errorsmod.Wrap(types.ErrNoKeyInTheStore,
-			fmt.Sprintf("GetOperatorPubKey: key is %s", opAccAddr))
+			fmt.Sprintf("GetOperatorPubKey: public key not found for address %s", opAccAddr))
 	}
 	value := store.Get(opAccAddr)
 	ret := types.BlsPubKeyInfo{}
@@ -157,7 +156,7 @@ func (k *Keeper) SetTaskResultInfo(
 	pubKey, err := blst.PublicKeyFromBytes(keyInfo.PubKey)
 	if err != nil || pubKey == nil {
 		return errorsmod.Wrap(
-			types.ErrPubKeyIsNotExists,
+			types.ErrParsePubKey,
 			fmt.Sprintf("SetTaskResultInfo:get operator address:%s", opAccAddr),
 		)
 	}
@@ -195,7 +194,7 @@ func (k *Keeper) SetTaskResultInfo(
 		// check parameters
 		if info.BlsSignature == nil {
 			return errorsmod.Wrap(
-				types.ErrInconsistentParams,
+				types.ErrParamNotEmptyError,
 				fmt.Sprintf("SetTaskResultInfo: invalid param BlsSignature is not be null (BlsSignature: %s)", info.BlsSignature),
 			)
 		}
@@ -262,8 +261,8 @@ func (k *Keeper) SetTaskResultInfo(
 		resp, err := types.UnmarshalTaskResponse(info.TaskResponse)
 		if err != nil || info.TaskId != resp.TaskID {
 			return errorsmod.Wrap(
-				types.ErrParamError,
-				fmt.Sprintf("SetTaskResultInfo: invalid param value:%s", info.Stage),
+				types.ErrInconsistentParams,
+				fmt.Sprintf("SetTaskResultInfo: invalid TaskId param value:%s", info.TaskResponse),
 			)
 		}
 		// check bls sig
