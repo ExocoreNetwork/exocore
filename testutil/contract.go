@@ -18,7 +18,7 @@ import (
 
 	"github.com/ExocoreNetwork/exocore/app"
 	"github.com/ExocoreNetwork/exocore/testutil/tx"
-	evm "github.com/evmos/evmos/v14/x/evm/types"
+	evm "github.com/evmos/evmos/v16/x/evm/types"
 )
 
 // ContractArgs are the params used for calling a smart contract.

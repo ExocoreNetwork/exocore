@@ -10,7 +10,7 @@ import (
 
 	"github.com/ExocoreNetwork/exocore/x/reward/keeper"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	cmn "github.com/evmos/evmos/v14/precompiles/common"
+	cmn "github.com/evmos/evmos/v16/precompiles/common"
 )
 
 func (p Precompile) GetRewardParamsFromInputs(ctx sdk.Context, args []interface{}) (*keeper.RewardParams, error) {

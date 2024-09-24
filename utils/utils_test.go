@@ -12,7 +12,7 @@ import (
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/evmos/evmos/v14/crypto/ethsecp256k1"
+	"github.com/evmos/evmos/v16/crypto/ethsecp256k1"
 )
 
 func init() {
@@ -124,6 +124,36 @@ func TestExocoreCoinDenom(t *testing.T) {
 			} else {
 				require.NoError(t, err, tc.name)
 			}
+		})
+	}
+}
+
+func TestIsValidChainIDWithoutRevision(t *testing.T) {
+	testCases := []struct {
+		name      string
+		chainID   string
+		expResult bool
+	}{
+		{
+			name:      "invalid chainID: include delimiter",
+			chainID:   "exocore/testnet_233",
+			expResult: false,
+		},
+		{
+			name:      "invalid chainID: include revision",
+			chainID:   "exocoretestnet_233-6",
+			expResult: false,
+		},
+		{
+			name:      "valid chainID",
+			chainID:   "exocoretestnet_233",
+			expResult: true,
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(fmt.Sprintf("Case %s", tc.name), func(t *testing.T) {
+			isInvalid := IsValidChainIDWithoutRevision(tc.chainID)
+			require.Equal(t, tc.expResult, isInvalid)
 		})
 	}
 }

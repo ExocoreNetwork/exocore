@@ -4,8 +4,8 @@ import (
 	"github.com/ExocoreNetwork/exocore/utils"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
-	erc20types "github.com/evmos/evmos/v14/x/erc20/types"
-	evmtypes "github.com/evmos/evmos/v14/x/evm/types"
+	erc20types "github.com/evmos/evmos/v16/x/erc20/types"
+	evmtypes "github.com/evmos/evmos/v16/x/evm/types"
 )
 
 // interface guards

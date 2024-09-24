@@ -34,7 +34,7 @@ func (suite *KeeperTestSuite) TestBasicOperations() {
 	key := utiltx.GenerateConsensusKey()
 	_, err = suite.OperatorMsgServer.OptIntoAVS(sdk.WrapSDKContext(suite.Ctx), &operatortypes.OptIntoAVSReq{
 		FromAddress:   operatorAddressString,
-		AvsAddress:    avsAddress.String(),
+		AvsAddress:    avsAddress,
 		PublicKeyJSON: key.ToJSON(),
 	})
 	suite.NoError(err)
@@ -227,7 +227,7 @@ func (suite *KeeperTestSuite) TestBasicOperations() {
 		&operatortypes.SetConsKeyReq{
 			Address:       operatorAddressString,
 			PublicKeyJSON: newKey.ToJSON(),
-			AvsAddress:    avsAddress.String(),
+			AvsAddress:    avsAddress,
 		},
 	)
 	suite.NoError(err)
@@ -287,7 +287,7 @@ func (suite *KeeperTestSuite) TestBasicOperations() {
 		sdk.WrapSDKContext(suite.Ctx),
 		&operatortypes.OptOutOfAVSReq{
 			FromAddress: operatorAddressString,
-			AvsAddress:  avsAddress.String(),
+			AvsAddress:  avsAddress,
 		},
 	)
 	suite.NoError(err)

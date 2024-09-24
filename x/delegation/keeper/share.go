@@ -190,7 +190,7 @@ func (k Keeper) RemoveShareFromOperator(
 		delta.OperatorShare = share.Neg()
 	}
 	if isUndelegation {
-		delta.WaitUnbondingAmount = removedToken
+		delta.PendingUndelegationAmount = removedToken
 	}
 	err = k.assetsKeeper.UpdateOperatorAssetState(ctx, operator, assetID, delta)
 	if err != nil {
@@ -221,13 +221,16 @@ func (k Keeper) RemoveShare(
 	}
 	if isUndelegation {
 		deltaAmount.WaitUndelegationAmount = removeToken
-		// todo: TotalDepositAmount might be influenced by slash and precision loss,
-		// consider removing it, it can be recalculated from the share for RPC query.
-		err = k.assetsKeeper.UpdateStakerAssetState(ctx, stakerID, assetID, assetstype.DeltaStakerSingleAsset{
-			WaitUnbondingAmount: removeToken,
-		})
-		if err != nil {
-			return removeToken, err
+		// don't update staker asset info for exo-native-token
+		if assetID != assetstype.NativeAssetID {
+			// todo: TotalDepositAmount might be influenced by slash and precision loss,
+			// consider removing it, it can be recalculated from the share for RPC query.
+			err = k.assetsKeeper.UpdateStakerAssetState(ctx, stakerID, assetID, assetstype.DeltaStakerSingleAsset{
+				PendingUndelegationAmount: removeToken,
+			})
+			if err != nil {
+				return removeToken, err
+			}
 		}
 	}
 	shareIsZero, err := k.UpdateDelegationState(ctx, stakerID, assetID, operator.String(), deltaAmount)

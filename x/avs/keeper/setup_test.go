@@ -5,9 +5,9 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/evmos/evmos/v14/app"
-	utiltx "github.com/evmos/evmos/v14/testutil/tx"
-	evm "github.com/evmos/evmos/v14/x/evm/types"
+	"github.com/evmos/evmos/v16/app"
+	utiltx "github.com/evmos/evmos/v16/testutil/tx"
+	evm "github.com/evmos/evmos/v16/x/evm/types"
 
 	"github.com/ExocoreNetwork/exocore/testutil"
 	. "github.com/onsi/ginkgo/v2"

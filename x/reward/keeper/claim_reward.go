@@ -17,7 +17,7 @@ import (
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/core"
 	ethtypes "github.com/ethereum/go-ethereum/core/types"
-	"github.com/evmos/evmos/v14/rpc/namespaces/ethereum/eth/filters"
+	"github.com/evmos/evmos/v16/rpc/namespaces/ethereum/eth/filters"
 )
 
 type RewardParams struct {
@@ -140,12 +140,15 @@ func (k Keeper) RewardForWithdraw(ctx sdk.Context, event *RewardParams) error {
 		TotalDepositAmount: event.OpAmount,
 		WithdrawableAmount: event.OpAmount,
 	}
-	err := k.assetsKeeper.UpdateStakerAssetState(ctx, stakeID, assetID, changeAmount)
-	if err != nil {
-		return err
-	}
-	if err = k.assetsKeeper.UpdateStakingAssetTotalAmount(ctx, assetID, event.OpAmount); err != nil {
-		return err
+	// TODO: there should be a reward pool to be transferred from for native tokens' reward, don't update staker-asset-info, just transfer exo-native-token:pool->staker or handled by validators since the reward would be transferred to validators directly.
+	if assetID != types.NativeAssetID {
+		err := k.assetsKeeper.UpdateStakerAssetState(ctx, stakeID, assetID, changeAmount)
+		if err != nil {
+			return err
+		}
+		if err = k.assetsKeeper.UpdateStakingAssetTotalAmount(ctx, assetID, event.OpAmount); err != nil {
+			return err
+		}
 	}
 	return nil
 }

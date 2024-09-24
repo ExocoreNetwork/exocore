@@ -1,6 +1,7 @@
 package keeper_test
 
 import (
+	"fmt"
 	"time"
 
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
@@ -19,6 +20,7 @@ import (
 )
 
 func (suite *KeeperTestSuite) TestEpochHooks() {
+	fmt.Println(12)
 	suite.SetupTest()
 	suite.prepare()
 	epoch, _ := suite.App.EpochsKeeper.GetEpochInfo(suite.Ctx, suite.App.StakingKeeper.GetEpochIdentifier(suite.Ctx))
@@ -75,7 +77,7 @@ func (suite *KeeperTestSuite) prepare() {
 	key := utiltx.GenerateConsensusKey()
 	_, err = suite.OperatorMsgServer.OptIntoAVS(sdk.WrapSDKContext(suite.Ctx), &operatortypes.OptIntoAVSReq{
 		FromAddress:   operatorAddressString,
-		AvsAddress:    avsAddress.String(),
+		AvsAddress:    avsAddress,
 		PublicKeyJSON: key.ToJSON(),
 	})
 	suite.NoError(err)

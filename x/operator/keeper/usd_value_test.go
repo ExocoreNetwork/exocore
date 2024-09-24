@@ -79,7 +79,7 @@ func (suite *OperatorTestSuite) TestAVSUSDValue() {
 	err := suite.App.AssetsKeeper.SetStakingAssetInfo(
 		suite.Ctx,
 		&assetstype.StakingAssetInfo{
-			AssetBasicInfo:     &usdcClientChainAsset,
+			AssetBasicInfo:     usdcClientChainAsset,
 			StakingTotalAmount: sdkmath.NewInt(0),
 		},
 	)
@@ -120,7 +120,7 @@ func (suite *OperatorTestSuite) TestVotingPowerForDogFood() {
 	addUSDValue := sdkmath.LegacyNewDec(1)
 
 	chainIDWithoutRevision := avstypes.ChainIDWithoutRevision(suite.Ctx.ChainID())
-	avsAddress := avstypes.GenerateAVSAddr(avstypes.ChainIDWithoutRevision(suite.Ctx.ChainID())).String()
+	avsAddress := avstypes.GenerateAVSAddr(avstypes.ChainIDWithoutRevision(suite.Ctx.ChainID()))
 	// CommitAfter causes the epoch hook to be triggered, and results in writing
 	// of the AVS usd value to the store.
 	suite.CommitAfter(time.Hour*24 + time.Nanosecond)
@@ -137,7 +137,7 @@ func (suite *OperatorTestSuite) TestVotingPowerForDogFood() {
 	suite.Equal(1, len(allAssets))
 	var asset assetstype.AssetInfo
 	for _, value := range allAssets {
-		asset = *value.AssetBasicInfo
+		asset = value.AssetBasicInfo
 	}
 
 	assetAddr := common.HexToAddress(asset.Address)
