@@ -3,7 +3,7 @@
 		"anonymous": false,
 		"inputs": [
 			{
-				"indexed": true,
+				"indexed": false,
 				"internalType": "uint64",
 				"name": "taskId",
 				"type": "uint64"

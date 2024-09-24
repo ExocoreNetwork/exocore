@@ -15,7 +15,6 @@ import (
 
 const (
 	FlagOperatorAddress     = "operator-address"
-	FlagTaskResponseHash    = "task-response-hash"
 	FlagTaskResponse        = "task-response"
 	FlagBlsSignature        = "bls-signature"
 	FlagTaskContractAddress = "task-contract-address"
@@ -68,9 +67,6 @@ func CmdSubmitTaskResult() *cobra.Command {
 			" If not provided, it will default to the sender's address.",
 	)
 	f.String(
-		FlagTaskResponseHash, "", "The task response msg hash",
-	)
-	f.String(
 		FlagTaskResponse, "", "The task response data",
 	)
 	f.String(
@@ -105,8 +101,6 @@ func newBuildMsg(
 	if operatorAddress == "" {
 		operatorAddress = sender.String()
 	}
-	taskResponseHash, _ := fs.GetString(FlagTaskResponseHash)
-
 	taskResponse, _ := fs.GetString(FlagTaskResponse)
 	taskRes, _ := hex.DecodeString(taskResponse)
 	blsSignature, _ := fs.GetString(FlagBlsSignature)
@@ -120,7 +114,6 @@ func newBuildMsg(
 		FromAddress: sender.String(),
 		Info: &types.TaskResultInfo{
 			OperatorAddress:     operatorAddress,
-			TaskResponseHash:    taskResponseHash,
 			TaskResponse:        taskRes,
 			BlsSignature:        sig,
 			TaskContractAddress: taskContractAddress,

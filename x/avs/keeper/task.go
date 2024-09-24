@@ -147,7 +147,13 @@ func (k *Keeper) SetTaskResultInfo(
 		)
 	}
 	// check operator bls pubkey
-	keyInfo, _ := k.GetOperatorPubKey(ctx, info.OperatorAddress)
+	keyInfo, err := k.GetOperatorPubKey(ctx, info.OperatorAddress)
+	if err != nil || keyInfo.PubKey == nil {
+		return errorsmod.Wrap(
+			types.ErrPubKeyIsNotExists,
+			fmt.Sprintf("SetTaskResultInfo:get operator address:%s", opAccAddr),
+		)
+	}
 	pubKey, err := blst.PublicKeyFromBytes(keyInfo.PubKey)
 	if err != nil || pubKey == nil {
 		return errorsmod.Wrap(
@@ -217,11 +223,11 @@ func (k *Keeper) SetTaskResultInfo(
 
 	case types.TwoPhaseCommitTwo:
 		// check task response
-		if info.TaskResponseHash == "" || info.TaskResponse == nil {
+		if info.TaskResponse == nil {
 			return errorsmod.Wrap(
 				types.ErrNotNull,
-				fmt.Sprintf("SetTaskResultInfo: invalid param TaskResponseHash: %s (TaskResponse: %d)",
-					info.TaskResponseHash, info.TaskResponse),
+				fmt.Sprintf("SetTaskResultInfo: invalid param  (TaskResponse: %d)",
+					info.TaskResponse),
 			)
 		}
 		// check parameters
@@ -251,7 +257,7 @@ func (k *Keeper) SetTaskResultInfo(
 
 		// calculate hash by original task
 		taskResponseDigest := crypto.Keccak256Hash(info.TaskResponse)
-
+		info.TaskResponseHash = taskResponseDigest.String()
 		// check taskID
 		resp, err := types.UnmarshalTaskResponse(info.TaskResponse)
 		if err != nil || info.TaskId != resp.TaskID {

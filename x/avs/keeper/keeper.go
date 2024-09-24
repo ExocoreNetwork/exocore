@@ -3,10 +3,11 @@ package keeper
 import (
 	"encoding/hex"
 	"fmt"
-	"github.com/prysmaticlabs/prysm/v4/crypto/bls"
-	"github.com/prysmaticlabs/prysm/v4/crypto/bls/blst"
 	"slices"
 	"strconv"
+
+	"github.com/prysmaticlabs/prysm/v4/crypto/bls"
+	"github.com/prysmaticlabs/prysm/v4/crypto/bls/blst"
 
 	"github.com/ethereum/go-ethereum/common"
 
@@ -378,7 +379,16 @@ func (k Keeper) RaiseAndResolveChallenge(ctx sdk.Context, params *ChallengeParam
 	// check Task result
 	res, err := k.GetTaskResultInfo(ctx, params.OperatorAddress.String(), params.TaskContractAddress.String(),
 		params.TaskID)
-	if err != nil || res.TaskId != params.TaskID || res.TaskResponseHash != hex.EncodeToString(params.TaskResponseHash) {
+	if err != nil {
+		return fmt.Errorf("task result does not exist, this task address: %s", params.TaskContractAddress)
+	}
+	taskRes, err := types.UnmarshalTaskResponse(res.TaskResponse)
+	if err != nil {
+		return errorsmod.Wrap(err, fmt.Sprintf("error occurred when unmarshal task response, this task address: %s", params.TaskContractAddress))
+	}
+	hash, err := types.GetTaskResponseDigestEncodeByAbi(taskRes)
+
+	if err != nil || res.TaskId != params.TaskID || hex.EncodeToString(hash[:]) != hex.EncodeToString(params.TaskResponseHash) {
 		return errorsmod.Wrap(
 			types.ErrInconsistentParams,
 			fmt.Sprintf("Task response does not match the one recorded,task addr: %s ,(TaskContractAddress: %s)"+

@@ -30,11 +30,11 @@ func (suite *AVSTestSuite) TestOperator_pubkey() {
 	suite.NoError(err)
 	suite.Equal(publicKey.Marshal(), pub.PubKey)
 
-	taskRes := types.TaskResponse{TaskID: 17, NumberSum: big.NewInt(1000)}
+	taskRes := types.TaskResponse{TaskID: 1, NumberSum: big.NewInt(1000)}
 
-	hashAbi, _ := types.GetTaskResponseDigestEncodeByAbi(taskRes)
+	hash, _ := types.GetTaskResponseDigestEncodeByjson(taskRes)
 
-	msgBytes := hashAbi[:]
+	msgBytes := hash[:]
 	fmt.Println("ResHash:", hex.EncodeToString(msgBytes))
 
 	sig := privateKey.Sign(msgBytes)
@@ -43,14 +43,13 @@ func (suite *AVSTestSuite) TestOperator_pubkey() {
 	valid := sig.Verify(publicKey, msgBytes)
 	suite.True(valid)
 
-	valid1, _ := blst.VerifySignature(sig.Marshal(), hashAbi, publicKey)
+	valid1, _ := blst.VerifySignature(sig.Marshal(), hash, publicKey)
 	suite.NoError(err)
 
 	suite.True(valid1)
 
 	jsonData, err := types.MarshalTaskResponse(taskRes)
 	fmt.Println("jsondata:", hex.EncodeToString(jsonData))
-
 }
 
 func (suite *AVSTestSuite) Test_hash() {

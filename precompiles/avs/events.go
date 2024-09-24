@@ -6,7 +6,6 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	ethtypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/core/vm"
-	cmn "github.com/evmos/evmos/v14/precompiles/common"
 )
 
 const (
@@ -19,25 +18,16 @@ func (p Precompile) EmitCreateAVSTaskEvent(ctx sdk.Context, stateDB vm.StateDB, 
 	// Prepare the event topics
 	event := p.ABI.Events[EventTypeRegisterAVSTask]
 
-	topics := make([]common.Hash, 3)
+	topics := make([]common.Hash, 1)
 
 	// The first topic is always the signature of the event.
 	topics[0] = event.ID
 
 	var err error
-	topics[1], err = cmn.MakeTopic(common.HexToAddress(task.TaskContractAddress))
-	if err != nil {
-		return err
-	}
-
-	topics[2], err = cmn.MakeTopic(task.TaskID)
-	if err != nil {
-		return err
-	}
 
 	// Pack the arguments to be used as the Data field
-	arguments := event.Inputs[1:8]
-	packed, err := arguments.Pack(task.TaskContractAddress, task.TaskName, task.Hash, task.TaskResponsePeriod, task.TaskChallengePeriod, task.ThresholdPercentage, task.TaskStatisticalPeriod)
+	arguments := event.Inputs[0:8]
+	packed, err := arguments.Pack(task.TaskID, task.TaskContractAddress, task.TaskName, task.Hash, task.TaskResponsePeriod, task.TaskChallengePeriod, task.ThresholdPercentage, task.TaskStatisticalPeriod)
 	if err != nil {
 		return err
 	}

@@ -186,7 +186,7 @@ interface IAVSManager {
     ) external view returns (uint256 amount);
 
     event TaskCreated(
-        uint64 indexed taskId,
+        uint64 taskId,
         string taskContractAddress,
         string name,
         bytes hash,

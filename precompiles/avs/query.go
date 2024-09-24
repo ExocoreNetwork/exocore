@@ -2,6 +2,7 @@ package avs
 
 import (
 	"fmt"
+
 	exocmn "github.com/ExocoreNetwork/exocore/precompiles/common"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/accounts/abi"
