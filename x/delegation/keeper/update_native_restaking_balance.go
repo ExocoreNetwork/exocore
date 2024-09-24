@@ -7,6 +7,10 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
+const (
+	MaxSlashProportion = 1
+)
+
 func (k Keeper) UpdateNativeRestakingBalance(
 	ctx sdk.Context, stakerID, assetID string, amount sdkmath.Int,
 ) error {
@@ -39,8 +43,8 @@ func (k Keeper) UpdateNativeRestakingBalance(
 			return err
 		}
 		slashFromWithdrawable := amount.Neg()
-		remainAmount := slashFromWithdrawable.Sub(assetInfo.WithdrawableAmount)
-		if remainAmount.IsPositive() {
+		pendingSlashAmount := slashFromWithdrawable.Sub(assetInfo.WithdrawableAmount)
+		if pendingSlashAmount.IsPositive() {
 			slashFromWithdrawable = assetInfo.WithdrawableAmount
 		}
 		err = k.assetsKeeper.UpdateStakerAssetState(ctx, stakerID, assetID, types.DeltaStakerSingleAsset{
@@ -50,15 +54,15 @@ func (k Keeper) UpdateNativeRestakingBalance(
 		if err != nil {
 			return err
 		}
-		ctx.Logger().Info("UpdateNativeRestakingBalance slash from withdrawable amount", "stakerID", stakerID, "assetID", assetID, "slashFromWithdrawable", slashFromWithdrawable, "remainAmount", remainAmount)
+		ctx.Logger().Info("UpdateNativeRestakingBalance slash from withdrawable amount", "stakerID", stakerID, "assetID", assetID, "slashFromWithdrawable", slashFromWithdrawable, "pendingSlashAmount", pendingSlashAmount)
 
 		// slash from pending undelegations
-		if remainAmount.IsPositive() {
+		if pendingSlashAmount.IsPositive() {
 			opFunc := func(undelegationKey string, undelegation *delegationtypes.UndelegationRecord) (bool, error) {
 				// slash from the single undelegation
-				slashAmount := remainAmount
-				remainAmount = slashAmount.Sub(undelegation.ActualCompletedAmount)
-				if remainAmount.IsPositive() {
+				slashAmount := pendingSlashAmount
+				pendingSlashAmount = slashAmount.Sub(undelegation.ActualCompletedAmount)
+				if pendingSlashAmount.IsPositive() {
 					slashAmount = undelegation.ActualCompletedAmount
 				}
 				undelegation.ActualCompletedAmount = undelegation.ActualCompletedAmount.Sub(slashAmount)
@@ -68,8 +72,8 @@ func (k Keeper) UpdateNativeRestakingBalance(
 				if err != nil {
 					return true, err
 				}
-				ctx.Logger().Info("UpdateNativeRestakingBalance slash from undelegation", "stakerID", stakerID, "assetID", assetID, "operator", undelegation.OperatorAddr, "undelegationKey", undelegationKey, "slashAmount", slashAmount, "remainAmount", remainAmount)
-				if !remainAmount.IsPositive() {
+				ctx.Logger().Info("UpdateNativeRestakingBalance slash from undelegation", "stakerID", stakerID, "assetID", assetID, "operator", undelegation.OperatorAddr, "undelegationKey", undelegationKey, "slashAmount", slashAmount, "pendingSlashAmount", pendingSlashAmount)
+				if !pendingSlashAmount.IsPositive() {
 					// return ture to break the iteration if there isn't remaining amount to be slashed
 					return true, nil
 				}
@@ -84,16 +88,16 @@ func (k Keeper) UpdateNativeRestakingBalance(
 		// slash from the delegated share
 		// the delegated share will be proportionally decreased from all operators to
 		// whom the related staker has already delegated
-		if remainAmount.IsPositive() {
+		if pendingSlashAmount.IsPositive() {
 			// calculate the slash proportion
 			totalDelegatedAmount, err := k.TotalDelegatedAmountForStakerAsset(ctx, stakerID, assetID)
 			if err != nil {
 				return err
 			}
 			if !totalDelegatedAmount.IsZero() {
-				slashProportion := sdkmath.LegacyNewDecFromBigInt(remainAmount.BigInt()).Quo(sdkmath.LegacyNewDecFromBigInt(totalDelegatedAmount.BigInt()))
-				if slashProportion.GT(sdkmath.LegacyNewDec(1)) {
-					slashProportion = sdkmath.LegacyNewDec(1)
+				slashProportion := sdkmath.LegacyNewDecFromBigInt(pendingSlashAmount.BigInt()).Quo(sdkmath.LegacyNewDecFromBigInt(totalDelegatedAmount.BigInt()))
+				if slashProportion.GT(sdkmath.LegacyNewDec(MaxSlashProportion)) {
+					slashProportion = sdkmath.LegacyNewDec(MaxSlashProportion)
 				}
 				opFunc := func(keys *delegationtypes.SingleDelegationInfoReq, delegationAmount *delegationtypes.DelegationAmounts) (bool, error) {
 					opAccAddr, err := sdk.AccAddressFromBech32(keys.OperatorAddr)
@@ -111,8 +115,8 @@ func (k Keeper) UpdateNativeRestakingBalance(
 					if err != nil {
 						return true, err
 					}
-					remainAmount = remainAmount.Sub(actualSlashAmount)
-					ctx.Logger().Info("UpdateNativeRestakingBalance slash from delegated share", "stakerID", stakerID, "assetID", assetID, "operator", keys.OperatorAddr, "slashProportion", slashProportion, "slashShare", slashShare, "actualSlashAmount", actualSlashAmount, "remainAmount", remainAmount)
+					pendingSlashAmount = pendingSlashAmount.Sub(actualSlashAmount)
+					ctx.Logger().Info("UpdateNativeRestakingBalance slash from delegated share", "stakerID", stakerID, "assetID", assetID, "operator", keys.OperatorAddr, "slashProportion", slashProportion, "slashShare", slashShare, "actualSlashAmount", actualSlashAmount, "pendingSlashAmount", pendingSlashAmount)
 					return false, nil
 				}
 				err = k.IterateDelegationsForStakerAndAsset(ctx, stakerID, assetID, opFunc)
@@ -123,8 +127,8 @@ func (k Keeper) UpdateNativeRestakingBalance(
 		}
 		// In this case, we only print a log as a reminder. This situation will only occur when the total slashing amount
 		// from the client chain and Exocore chain is greater than the total staking amount.
-		if remainAmount.IsPositive() {
-			ctx.Logger().Info("UpdateNativeRestakingBalance all staking funds has been slashed, the remaining amount is:", "stakerID", stakerID, "assetID", assetID, "remainAmount", remainAmount)
+		if pendingSlashAmount.IsPositive() {
+			ctx.Logger().Info("UpdateNativeRestakingBalance all staking funds has been slashed, the remaining amount is:", "stakerID", stakerID, "assetID", assetID, "pendingSlashAmount", pendingSlashAmount)
 		}
 	}
 	return nil
