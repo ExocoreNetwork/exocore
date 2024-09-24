@@ -60,9 +60,6 @@ func CmdUpdateParams() *cobra.Command {
 					CommunityTax:    communityTax,
 				},
 			}
-			if err := msg.ValidateBasic(); err != nil {
-				return err
-			}
 			// this calls ValidateBasic internally so we don't need to do that.
 			return tx.GenerateOrBroadcastTxCLI(cliCtx, cmd.Flags(), msg)
 		},

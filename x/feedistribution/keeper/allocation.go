@@ -43,14 +43,14 @@ func (k Keeper) AllocateTokens(ctx sdk.Context, totalPreviousPower int64) error 
 	for i, val := range allValidators {
 		pk, err := val.ConsPubKey()
 		if err != nil {
-			ctx.Logger().Error("Failed to deserialize public key; skipping", "error", err, "i", i)
+			logger.Error("Failed to deserialize public key; skipping", "error", err, "i", i)
 			continue
 		}
 		validatorDetail, found := k.StakingKeeper.ValidatorByConsAddrForChainID(
 			ctx, sdk.GetConsAddress(pk), avstypes.ChainIDWithoutRevision(ctx.ChainID()),
 		)
 		if !found {
-			ctx.Logger().Error("Operator address not found; skipping", "consAddress", sdk.GetConsAddress(pk), "i", i)
+			logger.Error("Operator address not found; skipping", "consAddress", sdk.GetConsAddress(pk), "i", i)
 			continue
 		}
 		if totalPreviousPower == 0 {
@@ -113,7 +113,7 @@ func (k Keeper) AllocateTokensToValidator(ctx sdk.Context, val stakingtypes.Vali
 
 func (k Keeper) AllocateTokensToStakers(ctx sdk.Context, operatorAddress sdk.AccAddress, rewardToAllStakers sdk.DecCoins, feePool *types.FeePool) {
 	logger := k.Logger()
-	logger.Info("Allocate to stakers of operatorAddress:", operatorAddress.String())
+	logger.Info("AllocateTokensToStakers", "operatorAddress", operatorAddress.String())
 	avsList, err := k.StakingKeeper.GetOptedInAVSForOperator(ctx, operatorAddress.String())
 	if err != nil {
 		logger.Debug("avs address lists not found; skipping")

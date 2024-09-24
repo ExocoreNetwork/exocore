@@ -20,14 +20,14 @@ func GetQueryCmd(_ string) *cobra.Command {
 		RunE:                       client.ValidateCmd,
 	}
 
-	cmd.AddCommand(QueryDistributionInfo())
+	cmd.AddCommand(CmdQueryParams())
 	return cmd
 }
 
-func QueryDistributionInfo() *cobra.Command {
+func CmdQueryParams() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "DistributionInfo query",
-		Short: "DistributionInfo query",
+		Use:   "params",
+		Short: "show module params",
 		Args:  cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			clientCtx, err := client.GetClientQueryContext(cmd)

@@ -9,7 +9,7 @@ import (
 
 const (
 	// ModuleName defines the module name
-	ModuleName = "distribution"
+	ModuleName = "feedistribution"
 
 	// StoreKey defines the primary module store key
 	StoreKey = ModuleName
@@ -18,7 +18,7 @@ const (
 	RouterKey = ModuleName
 
 	// MemStoreKey defines the in-memory store key
-	MemStoreKey            = "mem_feedistribute"
+	MemStoreKey            = "mem_feedistribution"
 	ProtocolPoolModuleName = "protocolpool"
 )
 
