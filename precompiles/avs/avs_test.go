@@ -659,7 +659,7 @@ func (suite *AVSManagerPrecompileSuite) TestRunRegTaskInfo() {
 		err := suite.App.AssetsKeeper.SetStakingAssetInfo(
 			suite.Ctx,
 			&assetstype.StakingAssetInfo{
-				AssetBasicInfo:     &usdcClientChainAsset,
+				AssetBasicInfo:     usdcClientChainAsset,
 				StakingTotalAmount: sdkmath.NewInt(0),
 			},
 		)
