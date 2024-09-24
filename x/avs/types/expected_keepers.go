@@ -8,7 +8,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/auth/types"
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/evmos/evmos/v14/x/evm/statedb"
+	"github.com/evmos/evmos/v16/x/evm/statedb"
 )
 
 // EpochsKeeper represents the expected keeper interface for the epochs module.

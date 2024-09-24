@@ -100,8 +100,8 @@ func ChainIDWithoutRevision(chainID string) string {
 
 // GenerateAVSAddr generates a hex AVS address based on the chainID.
 // It returns a hex address as a string.
-func GenerateAVSAddr(chainID string) common.Address {
-	return common.BytesToAddress(
+func GenerateAVSAddr(chainID string) string {
+	avsAddr := common.BytesToAddress(
 		crypto.Keccak256(
 			append(
 				ChainIDPrefix,
@@ -109,6 +109,7 @@ func GenerateAVSAddr(chainID string) common.Address {
 			),
 		),
 	)
+	return strings.ToLower(avsAddr.String())
 }
 
 type TaskResponse struct {

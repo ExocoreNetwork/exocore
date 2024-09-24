@@ -81,16 +81,28 @@ func (suite *StakingAssetsTestSuite) TestUpdateStakerAssetsState() {
 }
 
 func (suite *StakingAssetsTestSuite) TestGetStakerAssetInfos() {
-	stakerID := fmt.Sprintf("%s_%s", suite.Address, "0")
+	stakerID := fmt.Sprintf("%s_%s", suite.Address, "0x0")
 	ethUniAssetID := fmt.Sprintf("%s_%s", "0x1f9840a85d5af5bf1d1762f925bdaddc4201f984", "101")
 	ethUsdtAssetID := fmt.Sprintf("%s_%s", "0xdac17f958d2ee523a2206206994597c13d831ec7", "101")
 	ethUniInitialChangeValue := assetstype.DeltaStakerSingleAsset{
-		TotalDepositAmount: math.NewInt(1000),
-		WithdrawableAmount: math.NewInt(1000),
+		TotalDepositAmount:        math.NewInt(1000),
+		WithdrawableAmount:        math.NewInt(1000),
+		PendingUndelegationAmount: math.NewInt(0),
 	}
 	ethUsdtInitialChangeValue := assetstype.DeltaStakerSingleAsset{
-		TotalDepositAmount: math.NewInt(2000),
-		WithdrawableAmount: math.NewInt(2000),
+		TotalDepositAmount:        math.NewInt(2000),
+		WithdrawableAmount:        math.NewInt(2000),
+		PendingUndelegationAmount: math.NewInt(0),
+	}
+	assetsInfo := []assetstype.DepositByAsset{
+		{
+			AssetID: ethUniAssetID,
+			Info:    assetstype.StakerAssetInfo(ethUniInitialChangeValue),
+		},
+		{
+			AssetID: ethUsdtAssetID,
+			Info:    assetstype.StakerAssetInfo(ethUsdtInitialChangeValue),
+		},
 	}
 	err := suite.App.AssetsKeeper.UpdateStakerAssetState(suite.Ctx, stakerID, ethUniAssetID, ethUniInitialChangeValue)
 	suite.Require().NoError(err)
@@ -98,15 +110,8 @@ func (suite *StakingAssetsTestSuite) TestGetStakerAssetInfos() {
 	suite.Require().NoError(err)
 
 	// test get all assets state of staker
-	assetsInfo, err := suite.App.AssetsKeeper.GetStakerAssetInfos(suite.Ctx, stakerID)
+	getAssetsInfo, err := suite.App.AssetsKeeper.GetStakerAssetInfos(suite.Ctx, stakerID)
 	suite.Require().NoError(err)
-	uniState, isExist := assetsInfo[ethUniAssetID]
-	suite.Require().True(isExist)
-	suite.Require().True(uniState.TotalDepositAmount.Equal(math.NewInt(1000)))
-	suite.Require().True(uniState.WithdrawableAmount.Equal(math.NewInt(1000)))
-
-	usdtState, isExist := assetsInfo[ethUsdtAssetID]
-	suite.Require().True(isExist)
-	suite.Require().True(usdtState.TotalDepositAmount.Equal(math.NewInt(2000)))
-	suite.Require().True(usdtState.WithdrawableAmount.Equal(math.NewInt(2000)))
+	suite.Contains(getAssetsInfo, assetsInfo[0])
+	suite.Contains(getAssetsInfo, assetsInfo[1])
 }

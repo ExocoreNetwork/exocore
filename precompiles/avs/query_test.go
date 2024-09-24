@@ -155,7 +155,7 @@ func (suite *AVSManagerPrecompileSuite) TestAVSUSDValue() {
 		err := suite.App.AssetsKeeper.SetStakingAssetInfo(
 			suite.Ctx,
 			&assetstype.StakingAssetInfo{
-				AssetBasicInfo:     &usdcClientChainAsset,
+				AssetBasicInfo:     usdcClientChainAsset,
 				StakingTotalAmount: sdkmath.NewInt(0),
 			},
 		)
@@ -243,7 +243,7 @@ func (suite *AVSManagerPrecompileSuite) TestGetOperatorOptedUSDValue() {
 		err := suite.App.AssetsKeeper.SetStakingAssetInfo(
 			suite.Ctx,
 			&assetstype.StakingAssetInfo{
-				AssetBasicInfo:     &usdcClientChainAsset,
+				AssetBasicInfo:     usdcClientChainAsset,
 				StakingTotalAmount: sdkmath.NewInt(0),
 			},
 		)

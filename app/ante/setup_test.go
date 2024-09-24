@@ -9,12 +9,12 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/client"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/evmos/evmos/v14/app"
-	"github.com/evmos/evmos/v14/crypto/ethsecp256k1"
-	"github.com/evmos/evmos/v14/encoding"
-	"github.com/evmos/evmos/v14/testutil"
-	"github.com/evmos/evmos/v14/utils"
-	feemarkettypes "github.com/evmos/evmos/v14/x/feemarket/types"
+	"github.com/evmos/evmos/v16/app"
+	"github.com/evmos/evmos/v16/crypto/ethsecp256k1"
+	"github.com/evmos/evmos/v16/encoding"
+	"github.com/evmos/evmos/v16/testutil"
+	"github.com/evmos/evmos/v16/utils"
+	feemarkettypes "github.com/evmos/evmos/v16/x/feemarket/types"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 )

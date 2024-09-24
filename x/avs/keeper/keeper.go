@@ -329,10 +329,11 @@ func (k *Keeper) IsAVS(ctx sdk.Context, addr string) (bool, error) {
 
 // IsAVSByChainID queries whether an AVS exists by chainID.
 // It returns the AVS address if it exists.
-func (k Keeper) IsAVSByChainID(ctx sdk.Context, chainID string) (bool, common.Address) {
-	avsAddr := types.GenerateAVSAddr(chainID)
+func (k Keeper) IsAVSByChainID(ctx sdk.Context, chainID string) (bool, string) {
+	avsAddrStr := types.GenerateAVSAddr(chainID)
+	avsAddr := common.HexToAddress(avsAddrStr)
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefixAVSInfo)
-	return store.Has(avsAddr.Bytes()), avsAddr
+	return store.Has(avsAddr.Bytes()), avsAddrStr
 }
 
 func (k Keeper) DeleteAVSInfo(ctx sdk.Context, addr string) error {

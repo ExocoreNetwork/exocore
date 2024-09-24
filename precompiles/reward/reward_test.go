@@ -12,8 +12,8 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	ethtypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/core/vm"
-	"github.com/evmos/evmos/v14/x/evm/statedb"
-	evmtypes "github.com/evmos/evmos/v14/x/evm/types"
+	"github.com/evmos/evmos/v16/x/evm/statedb"
+	evmtypes "github.com/evmos/evmos/v16/x/evm/types"
 )
 
 func (s *RewardPrecompileTestSuite) TestIsTransaction() {

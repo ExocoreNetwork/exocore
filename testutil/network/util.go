@@ -27,8 +27,8 @@ import (
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 	govv1 "github.com/cosmos/cosmos-sdk/x/gov/types/v1"
 
-	"github.com/evmos/evmos/v14/server"
-	evmtypes "github.com/evmos/evmos/v14/x/evm/types"
+	"github.com/evmos/evmos/v16/server"
+	evmtypes "github.com/evmos/evmos/v16/x/evm/types"
 )
 
 func startInProcess(cfg Config, val *Validator) error {

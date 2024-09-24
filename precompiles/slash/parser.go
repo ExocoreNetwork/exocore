@@ -9,7 +9,7 @@ import (
 	sdkmath "cosmossdk.io/math"
 	"github.com/ExocoreNetwork/exocore/x/slash/keeper"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	cmn "github.com/evmos/evmos/v14/precompiles/common"
+	cmn "github.com/evmos/evmos/v16/precompiles/common"
 )
 
 func (p Precompile) GetSlashParamsFromInputs(ctx sdk.Context, args []interface{}) (*keeper.SlashParams, error) {

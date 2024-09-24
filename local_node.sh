@@ -18,7 +18,7 @@ HOMEDIR="$HOME/.tmp-exocored"
 #TRACE="--trace"
 TRACE=""
 
-# make the validator consensus key consistent
+# make the validator consensus key consistent 0xf0f6919e522c5b97db2c8255bff743f9dfddd7ad9fc37cb0c1670b480d0f9914
 CONSENSUS_KEY_MNEMONIC="wonder quality resource ketchup occur stadium vicious output situate plug second monkey harbor vanish then myself primary feed earth story real soccer shove like"
 # the account below acts as both initial operator and local consistent faucet.
 # pk: D196DCA836F8AC2FFF45B3C9F0113825CCBB33FA1B39737B948503B263ED75AE
@@ -37,6 +37,10 @@ ORACLE_FEEDER=$HOMEDIR/config/oracle_feeder.yaml
 # validate dependencies are installed
 command -v jq >/dev/null 2>&1 || {
 	echo >&2 "jq not installed. More info: https://stedolan.github.io/jq/download/"
+	exit 1
+}
+command -v cast >/dev/null 2>&1 || {
+	echo >&2 "cast not installed. More info: https://getfoundry.sh"
 	exit 1
 }
 
@@ -66,15 +70,22 @@ if [[ $overwrite == "y" || $overwrite == "Y" ]]; then
 
 	# If keys exist they should be deleted
 	for KEY in "${KEYS[@]}"; do
-		exocored keys add "$KEY" --keyring-backend $KEYRING --algo $ALGO --home "$HOMEDIR"
+		exocored keys add "$KEY" --keyring-backend "$KEYRING" --algo $ALGO --home "$HOMEDIR"
 	done
 
 	# Use recover so that there is always a consistent address funded in the localnet genesis.
-	echo "${LOCAL_MNEMONIC}" | exocored --home "$HOMEDIR" --keyring-backend $KEYRING keys add "${LOCAL_NAME}" --recover
+	echo "${LOCAL_MNEMONIC}" | exocored --home "$HOMEDIR" --keyring-backend "$KEYRING" keys add "${LOCAL_NAME}" --recover
 
 	# Set moniker and chain-id for Evmos (Moniker can be anything, chain-id must be an integer)
 	# Use recover to use a consistent consensus key for validator.
 	echo "${CONSENSUS_KEY_MNEMONIC}" | exocored init $MONIKER -o --chain-id $CHAINID --home "$HOMEDIR" --recover
+
+	# these values are derived instead of hardcoded, so that edits to mnemonic or chain-id are automatically reflected
+	CHAINID_WITHOUT_REVISION=${CHAINID%-*}
+	AVS_ADDRESS=0x$(cast keccak "chain-id-prefix""$CHAINID_WITHOUT_REVISION" | cast 2b | tail -c 41)
+	LOCAL_ADDRESS_EXO=$(exocored keys show "$LOCAL_NAME" -a --keyring-backend "$KEYRING" --home "$HOMEDIR")
+	LOCAL_ADDRESS_HEX=0x$(exocored keys parse "$LOCAL_ADDRESS_EXO" --output json | jq -r .bytes | tr '[:upper:]' '[:lower:]')
+	CONSENSUS_KEY=$(exocored keys consensus-pubkey-to-bytes --keyring-backend "$KEYRING" --home "$HOMEDIR" --output json | jq -r .bytes32)
 
 	# Change parameter token denominations to aexo
 	jq '.app_state["crisis"]["constant_fee"]["denom"]="aexo"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
@@ -88,50 +99,69 @@ if [[ $overwrite == "y" || $overwrite == "Y" ]]; then
 
 	# x/assets
 	# Using the local funding address as the Exocore gateway address to facilitate testing for precompiles without depending on the gateway contract.
-	jq '.app_state["assets"]["params"]["exocore_lz_app_address"]="0x3e108c058e8066da635321dc3018294ca82ddedf"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
+	jq '.app_state["assets"]["params"]["exocore_lz_app_address"]="'"$LOCAL_ADDRESS_HEX"'"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
 	jq '.app_state["assets"]["client_chains"][0]["name"]="Example EVM chain"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
 	jq '.app_state["assets"]["client_chains"][0]["meta_info"]="Example EVM chain meta info"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
 	jq '.app_state["assets"]["client_chains"][0]["layer_zero_chain_id"]="101"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
 	jq '.app_state["assets"]["client_chains"][0]["address_length"]="20"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
 	jq '.app_state["assets"]["tokens"][0]["asset_basic_info"]["name"]="Tether USD"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
 	jq '.app_state["assets"]["tokens"][0]["asset_basic_info"]["meta_info"]="Tether USD token"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
-	jq '.app_state["assets"]["tokens"][0]["asset_basic_info"]["address"]="0xdAC17F958D2ee523a2206206994597C13D831ec7"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
+	jq '.app_state["assets"]["tokens"][0]["asset_basic_info"]["address"]="0xdac17f958d2ee523a2206206994597c13d831ec7"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
 	jq '.app_state["assets"]["tokens"][0]["asset_basic_info"]["layer_zero_chain_id"]="101"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
-	jq '.app_state["assets"]["tokens"][0]["asset_basic_info"]["total_supply"]="40022689732746729"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
-	jq '.app_state["assets"]["tokens"][0]["staking_total_amount"]="0"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
-	jq '.app_state["assets"]["deposits"][0]["staker"]="0x3e108c058e8066da635321dc3018294ca82ddedf_0x65"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
+	jq '.app_state["assets"]["tokens"][0]["staking_total_amount"]="5000"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
+	jq '.app_state["assets"]["deposits"][0]["staker"]="'"$LOCAL_ADDRESS_HEX"'_0x65"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
 	jq '.app_state["assets"]["deposits"][0]["deposits"][0]["asset_id"]="0xdac17f958d2ee523a2206206994597c13d831ec7_0x65"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
 	jq '.app_state["assets"]["deposits"][0]["deposits"][0]["info"]["total_deposit_amount"]="5000"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
 	jq '.app_state["assets"]["deposits"][0]["deposits"][0]["info"]["withdrawable_amount"]="5000"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
-	jq '.app_state["assets"]["deposits"][0]["deposits"][0]["info"]["wait_unbonding_amount"]="0"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
+	jq '.app_state["assets"]["deposits"][0]["deposits"][0]["info"]["pending_undelegation_amount"]="0"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
+	jq '.app_state["assets"]["operator_assets"][0]["operator"]="'"$LOCAL_ADDRESS_EXO"'"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
+	jq '.app_state["assets"]["operator_assets"][0]["assets_state"][0]["asset_id"]="0xdac17f958d2ee523a2206206994597c13d831ec7_0x65"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
+	jq '.app_state["assets"]["operator_assets"][0]["assets_state"][0]["info"]["total_amount"]="5000"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
+	jq '.app_state["assets"]["operator_assets"][0]["assets_state"][0]["info"]["pending_undelegation_amount"]="0"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
+	jq '.app_state["assets"]["operator_assets"][0]["assets_state"][0]["info"]["total_share"]="5000"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
+	jq '.app_state["assets"]["operator_assets"][0]["assets_state"][0]["info"]["operator_share"]="5000"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
 
 	# x/oracle
 	jq '.app_state["oracle"]["params"]["tokens"][1]["asset_id"]="0xdac17f958d2ee523a2206206994597c13d831ec7_0x65"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
 	jq '.app_state["oracle"]["params"]["token_feeders"][1]["start_base_block"]="20"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
 
 	# x/operator
-	jq '.app_state["operator"]["operators"][0]["earnings_addr"]="exo18cggcpvwspnd5c6ny8wrqxpffj5zmhklprtnph"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
-	jq '.app_state["operator"]["operators"][0]["operator_meta_info"]="operator1"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
-	jq '.app_state["operator"]["operators"][0]["commission"]["commission_rates"]["rate"]="0.0"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
-	jq '.app_state["operator"]["operators"][0]["commission"]["commission_rates"]["max_rate"]="0.0"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
-	jq '.app_state["operator"]["operators"][0]["commission"]["commission_rates"]["max_change_rate"]="0.0"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
+	jq '.app_state["operator"]["operators"][0]["operator_address"]="'"$LOCAL_ADDRESS_EXO"'"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
+	jq '.app_state["operator"]["operators"][0]["operator_info"]["earnings_addr"]="'"$LOCAL_ADDRESS_EXO"'"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
+	jq '.app_state["operator"]["operators"][0]["operator_info"]["operator_meta_info"]="operator1"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
+	jq '.app_state["operator"]["operators"][0]["operator_info"]["commission"]["commission_rates"]["rate"]="0.0"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
+	jq '.app_state["operator"]["operators"][0]["operator_info"]["commission"]["commission_rates"]["max_rate"]="0.0"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
+	jq '.app_state["operator"]["operators"][0]["operator_info"]["commission"]["commission_rates"]["max_change_rate"]="0.0"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
+	jq '.app_state["operator"]["operator_records"][0]["operator_address"]="'"$LOCAL_ADDRESS_EXO"'"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
+	jq '.app_state["operator"]["operator_records"][0]["chains"][0]["chain_id"]="'"$CHAINID_WITHOUT_REVISION"'"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
+	jq '.app_state["operator"]["operator_records"][0]["chains"][0]["consensus_key"]="'"$CONSENSUS_KEY"'"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
+	jq '.app_state["operator"]["opt_states"][0]["key"]="'"$LOCAL_ADDRESS_EXO"'/'"$AVS_ADDRESS"'"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
+	jq '.app_state["operator"]["opt_states"][0]["opt_info"]["opted_in_height"]=1' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
+	jq '.app_state["operator"]["opt_states"][0]["opt_info"]["opted_out_height"]="'"$(echo '2^64-1' | bc)"'"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
+	jq '.app_state["operator"]["opt_states"][0]["opt_info"]["jailed"]=false' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
+	jq '.app_state["operator"]["avs_usd_values"][0]["avs_addr"]="'"$AVS_ADDRESS"'"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
+	jq '.app_state["operator"]["avs_usd_values"][0]["value"]["amount"]="5000"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
+	jq '.app_state["operator"]["operator_usd_values"][0]["key"]="'"$AVS_ADDRESS"'/'"$LOCAL_ADDRESS_EXO"'"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
+	jq '.app_state["operator"]["operator_usd_values"][0]["opted_usd_value"]["self_usd_value"]="5000"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
+	jq '.app_state["operator"]["operator_usd_values"][0]["opted_usd_value"]["total_usd_value"]="5000"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
+	jq '.app_state["operator"]["operator_usd_values"][0]["opted_usd_value"]["active_usd_value"]="5000"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
 
 	# x/delegation
-	jq '.app_state["delegation"]["delegations"][0]["staker_id"]="0x3e108c058e8066da635321dc3018294ca82ddedf_0x65"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
-	jq '.app_state["delegation"]["delegations"][0]["delegations"][0]["asset_id"]="0xdac17f958d2ee523a2206206994597c13d831ec7_0x65"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
-	jq '.app_state["delegation"]["delegations"][0]["delegations"][0]["per_operator_amounts"][0]["key"]="exo18cggcpvwspnd5c6ny8wrqxpffj5zmhklprtnph"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
-	jq '.app_state["delegation"]["delegations"][0]["delegations"][0]["per_operator_amounts"][0]["value"]["amount"]="5000"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
-	jq '.app_state["delegation"]["associations"][0]["staker_id"]="0x3e108c058e8066da635321dc3018294ca82ddedf_0x65"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
-	jq '.app_state["delegation"]["associations"][0]["operator"]="exo18cggcpvwspnd5c6ny8wrqxpffj5zmhklprtnph"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
+	jq '.app_state["delegation"]["delegation_states"][0]["key"]="'"$LOCAL_ADDRESS_HEX"'_0x65/0xdac17f958d2ee523a2206206994597c13d831ec7_0x65/'"$LOCAL_ADDRESS_EXO"'"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
+	jq '.app_state["delegation"]["delegation_states"][0]["states"]["undelegatable_share"]="5000"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
+	jq '.app_state["delegation"]["delegation_states"][0]["states"]["wait_undelegation_amount"]="0"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
+	jq '.app_state["delegation"]["associations"][0]["staker_id"]="'"$LOCAL_ADDRESS_HEX"'_0x65"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
+	jq '.app_state["delegation"]["associations"][0]["operator"]="'"$LOCAL_ADDRESS_EXO"'"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
+	jq '.app_state["delegation"]["stakers_by_operator"][0]["key"]="'"$LOCAL_ADDRESS_EXO"'/0xdac17f958d2ee523a2206206994597c13d831ec7_0x65"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
+	jq '.app_state["delegation"]["stakers_by_operator"][0]["stakers"][0]="'"$LOCAL_ADDRESS_HEX"'_0x65"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
 
 	# x/dogfood
 	# for easy testing, use an epoch of 1 minute and 5 epochs until unbonded.
 	# i did not use 1 epoch to allow for testing that it does not happen at each epoch.
 	jq '.app_state["dogfood"]["params"]["epoch_identifier"]="minute"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
 	jq '.app_state["dogfood"]["params"]["epochs_until_unbonded"]="5"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
-	jq '.app_state["dogfood"]["val_set"][0]["public_key"]="0xf0f6919e522c5b97db2c8255bff743f9dfddd7ad9fc37cb0c1670b480d0f9914"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
+	jq '.app_state["dogfood"]["val_set"][0]["public_key"]="'"$CONSENSUS_KEY"'"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
 	jq '.app_state["dogfood"]["val_set"][0]["power"]="5000"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
-	jq '.app_state["dogfood"]["val_set"][0]["operator_acc_addr"]="exo18cggcpvwspnd5c6ny8wrqxpffj5zmhklprtnph"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
 	jq '.app_state["dogfood"]["last_total_power"]="5000"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
 	jq '.app_state["dogfood"]["params"]["min_self_delegation"]="100"' "$GENESIS" >"$TMP_GENESIS" && mv "$TMP_GENESIS" "$GENESIS"
 
@@ -245,9 +275,9 @@ EOF
 
 	# Allocate genesis accounts (cosmos formatted addresses)
 	for KEY in "${KEYS[@]}"; do
-		exocored add-genesis-account "$KEY" 100000000000000000000000000aexo --keyring-backend $KEYRING --home "$HOMEDIR"
+		exocored add-genesis-account "$KEY" 100000000000000000000000000aexo --keyring-backend "$KEYRING" --home "$HOMEDIR"
 	done
-	exocored add-genesis-account "${LOCAL_NAME}" 100000000000000000000000000aexo --keyring-backend $KEYRING --home "$HOMEDIR"
+	exocored add-genesis-account "${LOCAL_NAME}" 100000000000000000000000000aexo --keyring-backend "$KEYRING" --home "$HOMEDIR"
 
 	# bc is required to add these big numbers
 	# note the extra +1 is for LOCAL_NAME

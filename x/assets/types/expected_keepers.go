@@ -9,3 +9,7 @@ type OracleKeeper interface {
 	GetSpecifiedAssetsPrice(ctx sdk.Context, assetID string) (oracletypes.Price, error)
 	RegisterNewTokenAndSetTokenFeeder(ctx sdk.Context, oInfo *oracletypes.OracleInfo) error
 }
+
+type BankKeeper interface {
+	GetBalance(ctx sdk.Context, addr sdk.AccAddress, denom string) sdk.Coin
+}

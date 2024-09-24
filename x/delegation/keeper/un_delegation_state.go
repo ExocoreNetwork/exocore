@@ -13,17 +13,34 @@ import (
 	"github.com/ethereum/go-ethereum/common/hexutil"
 )
 
+func (k Keeper) AllUndelegations(ctx sdk.Context) (undelegations []types.UndelegationRecord, err error) {
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefixUndelegationInfo)
+	iterator := sdk.KVStorePrefixIterator(store, []byte{})
+	defer iterator.Close()
+
+	ret := make([]types.UndelegationRecord, 0)
+	for ; iterator.Valid(); iterator.Next() {
+		var undelegation types.UndelegationRecord
+		k.cdc.MustUnmarshal(iterator.Value(), &undelegation)
+		ret = append(ret, undelegation)
+	}
+	return ret, nil
+}
+
 // SetUndelegationRecords function saves the undelegation records to be handled when the handle time expires.
 // When we save the undelegation records, we save them in three kv stores which are `KeyPrefixUndelegationInfo` `KeyPrefixStakerUndelegationInfo` and `KeyPrefixPendingUndelegations`
-func (k *Keeper) SetUndelegationRecords(ctx sdk.Context, records []*types.UndelegationRecord) error {
+func (k *Keeper) SetUndelegationRecords(ctx sdk.Context, records []types.UndelegationRecord) error {
 	singleRecordStore := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefixUndelegationInfo)
 	stakerUndelegationStore := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefixStakerUndelegationInfo)
 	pendingUndelegationStore := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefixPendingUndelegations)
-	// key := common.HexToAddress(incentive.Contract)
-	for _, record := range records {
-		bz := k.cdc.MustMarshal(record)
+	currentHeight := ctx.BlockHeight()
+	for i := range records {
+		record := records[i]
+		if record.CompleteBlockNumber < uint64(currentHeight) {
+			return errorsmod.Wrapf(types.ErrInvalidCompletedHeight, "currentHeight:%d,CompleteBlockNumber:%d", currentHeight, record.CompleteBlockNumber)
+		}
+		bz := k.cdc.MustMarshal(&record)
 		// todo: check if the following state can only be set once?
-
 		singleRecKey := types.GetUndelegationRecordKey(record.BlockNumber, record.LzTxNonce, record.TxHash, record.OperatorAddr)
 		singleRecordStore.Set(singleRecKey, bz)
 

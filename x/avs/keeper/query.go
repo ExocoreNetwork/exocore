@@ -27,7 +27,7 @@ func (k Keeper) QueryAVSAddrByChainID(ctx context.Context, req *types.QueryAVSAd
 	if !isChainAvs {
 		return nil, types.ErrNotYetRegistered
 	}
-	return &types.QueryAVSAddrByChainIDResponse{AVSAddress: avsAddr.String()}, nil
+	return &types.QueryAVSAddrByChainIDResponse{AVSAddress: avsAddr}, nil
 }
 
 func (k Keeper) QuerySubmitTaskResult(ctx context.Context, req *types.QuerySubmitTaskResultReq) (*types.QuerySubmitTaskResultResponse, error) {

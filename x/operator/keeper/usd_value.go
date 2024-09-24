@@ -22,7 +22,7 @@ import (
 // AVSAddr + '/' + operatorAddr -> types.OperatorOptedUSDValue (the total USD share of specified operator and Avs)
 // This function will be called when some assets supported by Avs are delegated/undelegated or slashed.
 func (k *Keeper) UpdateOperatorUSDValue(ctx sdk.Context, avsAddr, operatorAddr string, delta operatortypes.DeltaOperatorUSDInfo) error {
-	store := prefix.NewStore(ctx.KVStore(k.storeKey), operatortypes.KeyPrefixVotingPowerForOperator)
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), operatortypes.KeyPrefixUSDValueForOperator)
 	var key []byte
 	if operatorAddr == "" {
 		return errorsmod.Wrap(operatortypes.ErrParameterInvalid, "UpdateOperatorUSDValue the operatorAddr is empty")
@@ -57,7 +57,7 @@ func (k *Keeper) UpdateOperatorUSDValue(ctx sdk.Context, avsAddr, operatorAddr s
 }
 
 func (k *Keeper) InitOperatorUSDValue(ctx sdk.Context, avsAddr, operatorAddr string) error {
-	store := prefix.NewStore(ctx.KVStore(k.storeKey), operatortypes.KeyPrefixVotingPowerForOperator)
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), operatortypes.KeyPrefixUSDValueForOperator)
 	var key []byte
 	if operatorAddr == "" {
 		return errorsmod.Wrap(operatortypes.ErrParameterInvalid, "UpdateOperatorUSDValue the operatorAddr is empty")
@@ -82,7 +82,7 @@ func (k *Keeper) InitOperatorUSDValue(ctx sdk.Context, avsAddr, operatorAddr str
 // This function will be called when the operator opts out of the AVS, because the USD share
 // doesn't need to be stored.
 func (k *Keeper) DeleteOperatorUSDValue(ctx sdk.Context, avsAddr, operatorAddr string) error {
-	store := prefix.NewStore(ctx.KVStore(k.storeKey), operatortypes.KeyPrefixVotingPowerForOperator)
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), operatortypes.KeyPrefixUSDValueForOperator)
 	var key []byte
 	if operatorAddr == "" {
 		return errorsmod.Wrap(operatortypes.ErrParameterInvalid, "UpdateOperatorUSDValue the operatorAddr is empty")
@@ -94,7 +94,7 @@ func (k *Keeper) DeleteOperatorUSDValue(ctx sdk.Context, avsAddr, operatorAddr s
 }
 
 func (k *Keeper) DeleteAllOperatorsUSDValueForAVS(ctx sdk.Context, avsAddr string) error {
-	store := prefix.NewStore(ctx.KVStore(k.storeKey), operatortypes.KeyPrefixVotingPowerForOperator)
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), operatortypes.KeyPrefixUSDValueForOperator)
 	iterator := sdk.KVStorePrefixIterator(store, operatortypes.IterateOperatorsForAVSPrefix(avsAddr))
 	defer iterator.Close()
 
@@ -120,7 +120,7 @@ func (k *Keeper) GetOperatorOptedUSDValue(ctx sdk.Context, avsAddr, operatorAddr
 		}, nil
 	}
 
-	store := prefix.NewStore(ctx.KVStore(k.storeKey), operatortypes.KeyPrefixVotingPowerForOperator)
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), operatortypes.KeyPrefixUSDValueForOperator)
 	var ret operatortypes.OperatorOptedUSDValue
 	var key []byte
 	if operatorAddr == "" {
@@ -146,7 +146,7 @@ func (k *Keeper) UpdateAVSUSDValue(ctx sdk.Context, avsAddr string, opAmount sdk
 	if opAmount.IsNil() || opAmount.IsZero() {
 		return errorsmod.Wrap(operatortypes.ErrValueIsNilOrZero, fmt.Sprintf("UpdateAVSUSDValue the opAmount is:%v", opAmount))
 	}
-	store := prefix.NewStore(ctx.KVStore(k.storeKey), operatortypes.KeyPrefixVotingPowerForAVS)
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), operatortypes.KeyPrefixUSDValueForAVS)
 	key := []byte(avsAddr)
 	totalValue := operatortypes.DecValueField{Amount: sdkmath.LegacyNewDec(0)}
 	value := store.Get(key)
@@ -168,7 +168,7 @@ func (k *Keeper) SetAVSUSDValue(ctx sdk.Context, avsAddr string, amount sdkmath.
 	if amount.IsNil() {
 		return errorsmod.Wrap(operatortypes.ErrValueIsNilOrZero, fmt.Sprintf("SetAVSUSDValue the amount is:%v", amount))
 	}
-	store := prefix.NewStore(ctx.KVStore(k.storeKey), operatortypes.KeyPrefixVotingPowerForAVS)
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), operatortypes.KeyPrefixUSDValueForAVS)
 	key := []byte(avsAddr)
 	setValue := operatortypes.DecValueField{Amount: amount}
 	bz := k.cdc.MustMarshal(&setValue)
@@ -177,7 +177,7 @@ func (k *Keeper) SetAVSUSDValue(ctx sdk.Context, avsAddr string, amount sdkmath.
 }
 
 func (k *Keeper) DeleteAVSUSDValue(ctx sdk.Context, avsAddr string) error {
-	store := prefix.NewStore(ctx.KVStore(k.storeKey), operatortypes.KeyPrefixVotingPowerForAVS)
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), operatortypes.KeyPrefixUSDValueForAVS)
 	key := []byte(avsAddr)
 	store.Delete(key)
 	return nil
@@ -189,7 +189,7 @@ func (k *Keeper) DeleteAVSUSDValue(ctx sdk.Context, avsAddr string) error {
 func (k *Keeper) GetAVSUSDValue(ctx sdk.Context, avsAddr string) (sdkmath.LegacyDec, error) {
 	store := prefix.NewStore(
 		ctx.KVStore(k.storeKey),
-		operatortypes.KeyPrefixVotingPowerForAVS,
+		operatortypes.KeyPrefixUSDValueForAVS,
 	)
 	var ret operatortypes.DecValueField
 	key := []byte(avsAddr)
@@ -205,7 +205,7 @@ func (k *Keeper) GetAVSUSDValue(ctx sdk.Context, avsAddr string) (sdkmath.Legacy
 // IterateOperatorsForAVS is used to iterate the operators of a specified AVS and do some external operations
 // `isUpdate` is a flag to indicate whether the change of the state should be set to the store.
 func (k *Keeper) IterateOperatorsForAVS(ctx sdk.Context, avsAddr string, isUpdate bool, opFunc func(operator string, optedUSDValues *operatortypes.OperatorOptedUSDValue) error) error {
-	store := prefix.NewStore(ctx.KVStore(k.storeKey), operatortypes.KeyPrefixVotingPowerForOperator)
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), operatortypes.KeyPrefixUSDValueForOperator)
 	iterator := sdk.KVStorePrefixIterator(store, operatortypes.IterateOperatorsForAVSPrefix(avsAddr))
 	defer iterator.Close()
 
@@ -231,12 +231,11 @@ func (k *Keeper) IterateOperatorsForAVS(ctx sdk.Context, avsAddr string, isUpdat
 func (k Keeper) GetVotePowerForChainID(
 	ctx sdk.Context, operators []sdk.AccAddress, chainIDWithoutRevision string,
 ) ([]int64, error) {
-	isAvs, avsAddr := k.avsKeeper.IsAVSByChainID(ctx, chainIDWithoutRevision)
+	isAvs, avsAddrString := k.avsKeeper.IsAVSByChainID(ctx, chainIDWithoutRevision)
 	if !isAvs {
 		return nil, errorsmod.Wrap(operatortypes.ErrUnknownChainID, fmt.Sprintf("GetVotePowerForChainID: chainIDWithoutRevision is %s", chainIDWithoutRevision))
 	}
 	ret := make([]int64, 0)
-	avsAddrString := avsAddr.String()
 	for _, operator := range operators {
 		// this already filters by the required assetIDs
 		optedUSDValues, err := k.GetOperatorOptedUSDValue(ctx, avsAddrString, operator.String())
@@ -255,12 +254,66 @@ func (k *Keeper) GetOperatorAssetValue(ctx sdk.Context, operator sdk.AccAddress,
 	if !isAvs {
 		return 0, errorsmod.Wrap(operatortypes.ErrUnknownChainID, fmt.Sprintf("GetOperatorAssetValue: chainIDWithoutRevision is %s", chainIDWithoutRevision))
 	}
-	optedUSDValues, err := k.GetOperatorOptedUSDValue(ctx, operator.String(), avsAddr.String())
+	optedUSDValues, err := k.GetOperatorOptedUSDValue(ctx, operator.String(), avsAddr)
 	if err != nil {
 		return 0, err
 	}
 	// truncate the USD value to int64
 	return optedUSDValues.ActiveUSDValue.TruncateInt64(), nil
+}
+
+func (k *Keeper) SetAllOperatorUSDValues(ctx sdk.Context, usdValues []operatortypes.OperatorUSDValue) error {
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), operatortypes.KeyPrefixUSDValueForOperator)
+	for i := range usdValues {
+		usdValue := usdValues[i]
+		bz := k.cdc.MustMarshal(&usdValue.OptedUSDValue)
+		store.Set([]byte(usdValue.Key), bz)
+	}
+	return nil
+}
+
+func (k *Keeper) GetAllOperatorUSDValues(ctx sdk.Context) ([]operatortypes.OperatorUSDValue, error) {
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), operatortypes.KeyPrefixUSDValueForOperator)
+	iterator := sdk.KVStorePrefixIterator(store, []byte{})
+	defer iterator.Close()
+
+	ret := make([]operatortypes.OperatorUSDValue, 0)
+	for ; iterator.Valid(); iterator.Next() {
+		var usdValues operatortypes.OperatorOptedUSDValue
+		k.cdc.MustUnmarshal(iterator.Value(), &usdValues)
+		ret = append(ret, operatortypes.OperatorUSDValue{
+			Key:           string(iterator.Key()),
+			OptedUSDValue: usdValues,
+		})
+	}
+	return ret, nil
+}
+
+func (k *Keeper) SetAllAVSUSDValues(ctx sdk.Context, usdValues []operatortypes.AVSUSDValue) error {
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), operatortypes.KeyPrefixUSDValueForAVS)
+	for i := range usdValues {
+		usdValue := usdValues[i]
+		bz := k.cdc.MustMarshal(&usdValue.Value)
+		store.Set([]byte(usdValue.AVSAddr), bz)
+	}
+	return nil
+}
+
+func (k *Keeper) GetAllAVSUSDValues(ctx sdk.Context) ([]operatortypes.AVSUSDValue, error) {
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), operatortypes.KeyPrefixUSDValueForAVS)
+	iterator := sdk.KVStorePrefixIterator(store, []byte{})
+	defer iterator.Close()
+
+	ret := make([]operatortypes.AVSUSDValue, 0)
+	for ; iterator.Valid(); iterator.Next() {
+		var usdValue operatortypes.DecValueField
+		k.cdc.MustUnmarshal(iterator.Value(), &usdValue)
+		ret = append(ret, operatortypes.AVSUSDValue{
+			AVSAddr: string(iterator.Key()),
+			Value:   usdValue,
+		})
+	}
+	return ret, nil
 }
 
 // CalculateUSDValueForOperator calculates the total and self usd value for the
@@ -312,7 +365,7 @@ func (k *Keeper) CalculateUSDValueForOperator(
 				return err
 			}
 			decimal = assetInfo.AssetBasicInfo.Decimals
-			ret.StakingAndWaitUnbonding = ret.StakingAndWaitUnbonding.Add(CalculateUSDValue(state.TotalAmount.Add(state.WaitUnbondingAmount), price.Value, decimal, price.Decimal))
+			ret.StakingAndWaitUnbonding = ret.StakingAndWaitUnbonding.Add(CalculateUSDValue(state.TotalAmount.Add(state.PendingUndelegationAmount), price.Value, decimal, price.Decimal))
 		} else {
 			if prices == nil {
 				return errorsmod.Wrap(operatortypes.ErrValueIsNilOrZero, "CalculateUSDValueForOperator prices map is nil")
@@ -347,11 +400,10 @@ func (k Keeper) GetOrCalculateOperatorUSDValues(
 	operator sdk.AccAddress,
 	chainIDWithoutRevision string,
 ) (optedUSDValues operatortypes.OperatorOptedUSDValue, err error) {
-	isAvs, avsAddr := k.avsKeeper.IsAVSByChainID(ctx, chainIDWithoutRevision)
+	isAvs, avsAddrString := k.avsKeeper.IsAVSByChainID(ctx, chainIDWithoutRevision)
 	if !isAvs {
 		return operatortypes.OperatorOptedUSDValue{}, errorsmod.Wrap(operatortypes.ErrUnknownChainID, fmt.Sprintf("GetOrCalculateOperatorUSDValues: chainIDWithoutRevision is %s", chainIDWithoutRevision))
 	}
-	avsAddrString := avsAddr.String()
 	// the usd values will be deleted if the operator opts out, so recalculate the
 	// voting power to set the tokens and shares for this case.
 	if !k.IsOptedIn(ctx, operator.String(), avsAddrString) {

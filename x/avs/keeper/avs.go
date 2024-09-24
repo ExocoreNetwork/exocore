@@ -10,7 +10,7 @@ import (
 
 	"github.com/ExocoreNetwork/exocore/x/avs/types"
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/evmos/evmos/v14/x/evm/statedb"
+	"github.com/evmos/evmos/v16/x/evm/statedb"
 
 	"github.com/cosmos/cosmos-sdk/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -133,7 +133,8 @@ func (k Keeper) RegisterAVSWithChainID(
 	if len(params.ChainID) == 0 {
 		return common.Address{}, errorsmod.Wrap(types.ErrNotNull, "RegisterAVSWithChainID: chainID is null")
 	}
-	avsAddr = types.GenerateAVSAddr(params.ChainID)
+	avsAddrStr := types.GenerateAVSAddr(params.ChainID)
+	avsAddr = common.HexToAddress(avsAddrStr)
 	defer func() {
 		if err == nil {
 			// store the reverse lookup from AVSAddress to ChainID
@@ -158,7 +159,7 @@ func (k Keeper) RegisterAVSWithChainID(
 		return common.Address{}, err
 	}
 	// SetAVSInfo expects HexAddress for the AvsAddress
-	params.AvsAddress = avsAddr.String()
+	params.AvsAddress = avsAddrStr
 	params.Action = RegisterAction
 
 	if err := k.UpdateAVSInfo(ctx, params); err != nil {

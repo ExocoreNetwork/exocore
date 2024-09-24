@@ -36,12 +36,12 @@ func (suite *RewardTestSuite) TestClaimWithdrawRequest() {
 	info, err := suite.App.AssetsKeeper.GetStakerSpecifiedAssetInfo(suite.Ctx, stakerID, assetID)
 	suite.NoError(err)
 	suite.Equal(types.StakerAssetInfo{
-		TotalDepositAmount:  sdkmath.NewInt(10),
-		WithdrawableAmount:  sdkmath.NewInt(10),
-		WaitUnbondingAmount: sdkmath.NewInt(0),
+		TotalDepositAmount:        sdkmath.NewInt(10),
+		WithdrawableAmount:        sdkmath.NewInt(10),
+		PendingUndelegationAmount: sdkmath.NewInt(0),
 	}, *info)
 
 	assetInfo, err := suite.App.AssetsKeeper.GetStakingAssetInfo(suite.Ctx, assetID)
 	suite.NoError(err)
-	suite.Equal(sdkmath.NewInt(10).Add(assets[assetID].StakingTotalAmount), assetInfo.StakingTotalAmount)
+	suite.Equal(sdkmath.NewInt(10).Add(assets[0].StakingTotalAmount), assetInfo.StakingTotalAmount)
 }

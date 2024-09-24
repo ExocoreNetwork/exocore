@@ -50,12 +50,12 @@ import (
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	"github.com/cosmos/cosmos-sdk/x/genutil"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
-	"github.com/evmos/evmos/v14/crypto/hd"
+	"github.com/evmos/evmos/v16/crypto/hd"
 
-	"github.com/evmos/evmos/v14/encoding"
-	"github.com/evmos/evmos/v14/server/config"
-	evmostypes "github.com/evmos/evmos/v14/types"
-	evmtypes "github.com/evmos/evmos/v14/x/evm/types"
+	"github.com/evmos/evmos/v16/encoding"
+	"github.com/evmos/evmos/v16/server/config"
+	evmostypes "github.com/evmos/evmos/v16/types"
+	evmtypes "github.com/evmos/evmos/v16/x/evm/types"
 )
 
 // package-wide network lock to only allow one test network at a time

@@ -85,9 +85,8 @@ func (suite *GenesisTestSuite) TestValidateGenesis() {
 					)
 					gs.ValSet = append(gs.ValSet,
 						types.GenesisValidator{
-							PublicKey:       key,
-							Power:           5,
-							OperatorAccAddr: sdk.AccAddress(testutiltx.GenerateAddress().Bytes()).String(),
+							PublicKey: key,
+							Power:     5,
 						},
 					)
 				}
@@ -104,14 +103,12 @@ func (suite *GenesisTestSuite) TestValidateGenesis() {
 				Params: params,
 				ValSet: []types.GenesisValidator{
 					{
-						PublicKey:       sharedKey,
-						OperatorAccAddr: sdk.AccAddress(testutiltx.GenerateAddress().Bytes()).String(),
-						Power:           5,
+						PublicKey: sharedKey,
+						Power:     5,
 					},
 					{
-						PublicKey:       sharedKey,
-						OperatorAccAddr: sdk.AccAddress(testutiltx.GenerateAddress().Bytes()).String(),
-						Power:           10,
+						PublicKey: sharedKey,
+						Power:     10,
 					},
 				},
 				LastTotalPower: math.NewInt(10),
@@ -126,9 +123,8 @@ func (suite *GenesisTestSuite) TestValidateGenesis() {
 				ValSet: []types.GenesisValidator{
 					{
 						// remove 2 chars and add 2 chars
-						PublicKey:       sharedKey[2:] + "ab",
-						Power:           5,
-						OperatorAccAddr: operator1.String(),
+						PublicKey: sharedKey[2:] + "ab",
+						Power:     5,
 					},
 				},
 				LastTotalPower: math.NewInt(5),
@@ -143,9 +139,8 @@ func (suite *GenesisTestSuite) TestValidateGenesis() {
 				Params: params,
 				ValSet: []types.GenesisValidator{
 					{
-						PublicKey:       sharedKey + "ab",
-						Power:           5,
-						OperatorAccAddr: operator1.String(),
+						PublicKey: sharedKey + "ab",
+						Power:     5,
 					},
 				},
 				LastTotalPower: math.NewInt(5),
@@ -160,9 +155,8 @@ func (suite *GenesisTestSuite) TestValidateGenesis() {
 				ValSet: []types.GenesisValidator{
 					{
 						// replace last 2 chars with non-hex
-						PublicKey:       sharedKey[:64] + "ss",
-						Power:           5,
-						OperatorAccAddr: operator1.String(),
+						PublicKey: sharedKey[:64] + "ss",
+						Power:     5,
 					},
 				},
 				LastTotalPower: math.NewInt(5),
@@ -176,9 +170,8 @@ func (suite *GenesisTestSuite) TestValidateGenesis() {
 				Params: params,
 				ValSet: []types.GenesisValidator{
 					{
-						PublicKey:       sharedKey,
-						Power:           -1,
-						OperatorAccAddr: operator1.String(),
+						PublicKey: sharedKey,
+						Power:     -1,
 					},
 				},
 				LastTotalPower: math.NewInt(1),
@@ -192,9 +185,8 @@ func (suite *GenesisTestSuite) TestValidateGenesis() {
 				Params: params,
 				ValSet: []types.GenesisValidator{
 					{
-						PublicKey:       sharedKey,
-						Power:           5,
-						OperatorAccAddr: operator1.String(),
+						PublicKey: sharedKey,
+						Power:     5,
 					},
 				},
 				LastTotalPower: math.NewInt(5),
@@ -202,53 +194,13 @@ func (suite *GenesisTestSuite) TestValidateGenesis() {
 			expPass: true,
 		},
 		{
-			name: "invalid operator address",
-			genState: &types.GenesisState{
-				Params: params,
-				ValSet: []types.GenesisValidator{
-					{
-						PublicKey:       sharedKey,
-						Power:           5,
-						OperatorAccAddr: operator1.String() + "aaaaaa",
-					},
-				},
-				LastTotalPower: math.NewInt(5),
-			},
-			expPass:  false,
-			expError: "invalid operator address",
-		},
-		{
-			name: "duplicate operator address",
-			genState: &types.GenesisState{
-				Params: params,
-				ValSet: []types.GenesisValidator{
-					{
-						PublicKey: hexutil.Encode(
-							ed25519.GenPrivKey().PubKey().Bytes(),
-						),
-						Power:           5,
-						OperatorAccAddr: operator1.String(),
-					},
-					{
-						PublicKey:       sharedKey,
-						Power:           5,
-						OperatorAccAddr: operator1.String(),
-					},
-				},
-				LastTotalPower: math.NewInt(10),
-			},
-			expPass:  false,
-			expError: "duplicate operator address",
-		},
-		{
 			name: "duplicate epoch in expiries",
 			genState: &types.GenesisState{
 				Params: params,
 				ValSet: []types.GenesisValidator{
 					{
-						PublicKey:       sharedKey,
-						OperatorAccAddr: operator1.String(),
-						Power:           5,
+						PublicKey: sharedKey,
+						Power:     5,
 					},
 				},
 				LastTotalPower: math.NewInt(5),
@@ -276,9 +228,8 @@ func (suite *GenesisTestSuite) TestValidateGenesis() {
 				Params: params,
 				ValSet: []types.GenesisValidator{
 					{
-						PublicKey:       sharedKey,
-						Power:           5,
-						OperatorAccAddr: operator1.String(),
+						PublicKey: sharedKey,
+						Power:     5,
 					},
 				},
 				LastTotalPower: math.NewInt(5),
@@ -300,9 +251,8 @@ func (suite *GenesisTestSuite) TestValidateGenesis() {
 				Params: params,
 				ValSet: []types.GenesisValidator{
 					{
-						PublicKey:       sharedKey,
-						Power:           5,
-						OperatorAccAddr: operator1.String(),
+						PublicKey: sharedKey,
+						Power:     5,
 					},
 				},
 				LastTotalPower: math.NewInt(5),
@@ -321,9 +271,8 @@ func (suite *GenesisTestSuite) TestValidateGenesis() {
 				Params: params,
 				ValSet: []types.GenesisValidator{
 					{
-						PublicKey:       sharedKey,
-						Power:           5,
-						OperatorAccAddr: operator1.String(),
+						PublicKey: sharedKey,
+						Power:     5,
 					},
 				},
 				LastTotalPower: math.NewInt(5),
@@ -346,9 +295,8 @@ func (suite *GenesisTestSuite) TestValidateGenesis() {
 				Params: params,
 				ValSet: []types.GenesisValidator{
 					{
-						PublicKey:       sharedKey,
-						Power:           5,
-						OperatorAccAddr: operator1.String(),
+						PublicKey: sharedKey,
+						Power:     5,
 					},
 				},
 				LastTotalPower: math.NewInt(5),
@@ -370,9 +318,8 @@ func (suite *GenesisTestSuite) TestValidateGenesis() {
 				Params: params,
 				ValSet: []types.GenesisValidator{
 					{
-						PublicKey:       sharedKey,
-						Power:           5,
-						OperatorAccAddr: operator1.String(),
+						PublicKey: sharedKey,
+						Power:     5,
 					},
 				},
 				LastTotalPower: math.NewInt(5),
@@ -393,9 +340,8 @@ func (suite *GenesisTestSuite) TestValidateGenesis() {
 				Params: params,
 				ValSet: []types.GenesisValidator{
 					{
-						PublicKey:       sharedKey,
-						Power:           5,
-						OperatorAccAddr: operator1.String(),
+						PublicKey: sharedKey,
+						Power:     5,
 					},
 				},
 				LastTotalPower: math.NewInt(5),
@@ -423,9 +369,8 @@ func (suite *GenesisTestSuite) TestValidateGenesis() {
 				Params: params,
 				ValSet: []types.GenesisValidator{
 					{
-						PublicKey:       sharedKey,
-						Power:           5,
-						OperatorAccAddr: operator1.String(),
+						PublicKey: sharedKey,
+						Power:     5,
 					},
 				},
 				LastTotalPower: math.NewInt(5),
@@ -447,9 +392,8 @@ func (suite *GenesisTestSuite) TestValidateGenesis() {
 				Params: params,
 				ValSet: []types.GenesisValidator{
 					{
-						PublicKey:       sharedKey,
-						Power:           5,
-						OperatorAccAddr: operator1.String(),
+						PublicKey: sharedKey,
+						Power:     5,
 					},
 				},
 				LastTotalPower: math.NewInt(5),
@@ -468,9 +412,8 @@ func (suite *GenesisTestSuite) TestValidateGenesis() {
 				Params: params,
 				ValSet: []types.GenesisValidator{
 					{
-						PublicKey:       sharedKey,
-						Power:           5,
-						OperatorAccAddr: operator1.String(),
+						PublicKey: sharedKey,
+						Power:     5,
 					},
 				},
 				LastTotalPower: math.NewInt(5),
@@ -493,9 +436,8 @@ func (suite *GenesisTestSuite) TestValidateGenesis() {
 				Params: params,
 				ValSet: []types.GenesisValidator{
 					{
-						PublicKey:       sharedKey,
-						Power:           5,
-						OperatorAccAddr: operator1.String(),
+						PublicKey: sharedKey,
+						Power:     5,
 					},
 				},
 				LastTotalPower: math.NewInt(5),
@@ -516,9 +458,8 @@ func (suite *GenesisTestSuite) TestValidateGenesis() {
 				Params: params,
 				ValSet: []types.GenesisValidator{
 					{
-						PublicKey:       sharedKey,
-						Power:           5,
-						OperatorAccAddr: operator1.String(),
+						PublicKey: sharedKey,
+						Power:     5,
 					},
 				},
 				LastTotalPower: math.NewInt(5),
@@ -540,9 +481,8 @@ func (suite *GenesisTestSuite) TestValidateGenesis() {
 				Params: params,
 				ValSet: []types.GenesisValidator{
 					{
-						PublicKey:       sharedKey,
-						Power:           5,
-						OperatorAccAddr: operator1.String(),
+						PublicKey: sharedKey,
+						Power:     5,
 					},
 				},
 				LastTotalPower: math.NewInt(5),
@@ -570,9 +510,8 @@ func (suite *GenesisTestSuite) TestValidateGenesis() {
 				Params: params,
 				ValSet: []types.GenesisValidator{
 					{
-						PublicKey:       sharedKey,
-						Power:           5,
-						OperatorAccAddr: operator1.String(),
+						PublicKey: sharedKey,
+						Power:     5,
 					},
 				},
 				LastTotalPower: math.NewInt(5),
@@ -594,9 +533,8 @@ func (suite *GenesisTestSuite) TestValidateGenesis() {
 				Params: params,
 				ValSet: []types.GenesisValidator{
 					{
-						PublicKey:       sharedKey,
-						Power:           5,
-						OperatorAccAddr: operator1.String(),
+						PublicKey: sharedKey,
+						Power:     5,
 					},
 				},
 				LastTotalPower: math.NewInt(5),
@@ -615,9 +553,8 @@ func (suite *GenesisTestSuite) TestValidateGenesis() {
 				Params: params,
 				ValSet: []types.GenesisValidator{
 					{
-						PublicKey:       sharedKey,
-						Power:           5,
-						OperatorAccAddr: operator1.String(),
+						PublicKey: sharedKey,
+						Power:     5,
 					},
 				},
 				LastTotalPower: math.NewInt(5),
@@ -640,9 +577,8 @@ func (suite *GenesisTestSuite) TestValidateGenesis() {
 				Params: params,
 				ValSet: []types.GenesisValidator{
 					{
-						PublicKey:       sharedKey,
-						Power:           5,
-						OperatorAccAddr: operator1.String(),
+						PublicKey: sharedKey,
+						Power:     5,
 					},
 				},
 				LastTotalPower: math.NewInt(5),
@@ -663,9 +599,8 @@ func (suite *GenesisTestSuite) TestValidateGenesis() {
 				Params: params,
 				ValSet: []types.GenesisValidator{
 					{
-						PublicKey:       sharedKey,
-						Power:           5,
-						OperatorAccAddr: operator1.String(),
+						PublicKey: sharedKey,
+						Power:     5,
 					},
 				},
 				LastTotalPower: math.NewInt(5),
@@ -687,9 +622,8 @@ func (suite *GenesisTestSuite) TestValidateGenesis() {
 				Params: params,
 				ValSet: []types.GenesisValidator{
 					{
-						PublicKey:       sharedKey,
-						Power:           5,
-						OperatorAccAddr: operator1.String(),
+						PublicKey: sharedKey,
+						Power:     5,
 					},
 				},
 				LastTotalPower: math.NewInt(5),
