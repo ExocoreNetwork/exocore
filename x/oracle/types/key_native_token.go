@@ -10,8 +10,6 @@ const (
 	NativeTokenOperatorInfoKeyPrefix     = NativeTokenKeyPrefix + "operatorInfo/value/"
 	NativeTokenStakerListKeyPrefix       = NativeTokenKeyPrefix + "stakerList/value/"
 	NativeTokenStakerDelegationKeyPrefix = NativeTokenKeyPrefix + "stakerDelegation/value/"
-
-// NativeTokenValidatorListKeyPrefix    = NativeTokenKeyPrefix + "validatorList/value"
 )
 
 func NativeTokenStakerDelegationKey(assetID, stakerAddr string) []byte {
@@ -36,10 +34,6 @@ func NativeTokenOperatorKey(assetID, operatorAddr string) []byte {
 	assetID = strings.Join([]string{assetID, operatorAddr}, "/")
 	return append([]byte(NativeTokenOperatorInfoKeyPrefix), []byte(assetID)...)
 }
-
-// func NativeTokenValidatorListKey(assetID string) []byte {
-// 	return append([]byte(NativeTokenValidatorListKeyPrefix), []byte(assetID)...)
-// }
 
 func ParseNativeTokenStakerKey(key []byte) (assetID, stakerAddr string) {
 	parsed := strings.Split(string(key), "/")

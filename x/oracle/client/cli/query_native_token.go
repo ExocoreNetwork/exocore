@@ -9,7 +9,7 @@ import (
 
 func CmdQueryStakerInfos() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "show-staker-infos",
+		Use:   "show-staker-infos [assetID]",
 		Short: "shows all staker infos including stakerAddr, validators of that staker, latest balance...",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) (err error) {
@@ -23,10 +23,42 @@ func CmdQueryStakerInfos() *cobra.Command {
 			assetID := args[0]
 
 			request := &types.QueryStakerInfosRequest{
-				AssetID: assetID,
+				AssetId: assetID,
 			}
 
 			res, err := queryClient.StakerInfos(cmd.Context(), request)
+			if err != nil {
+				return err
+			}
+
+			return clientCtx.PrintProto(res)
+		},
+	}
+
+	flags.AddQueryFlagsToCmd(cmd)
+
+	return cmd
+}
+
+func CmdQueryStakerInfo() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "show-staker-info [assetID] [stakerAddr]",
+		Short: "shows staker info of the specified staker including stakerAddr, validators of that staker, latest balance...",
+		Args:  cobra.ExactArgs(2),
+		RunE: func(cmd *cobra.Command, args []string) (err error) {
+			clientCtx, err := client.GetClientQueryContext(cmd)
+			if err != nil {
+				return err
+			}
+
+			queryClient := types.NewQueryClient(clientCtx)
+
+			request := &types.QueryStakerInfoRequest{
+				AssetId:    args[0],
+				StakerAddr: args[1],
+			}
+
+			res, err := queryClient.StakerInfo(cmd.Context(), request)
 			if err != nil {
 				return err
 			}

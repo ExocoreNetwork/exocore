@@ -2,7 +2,6 @@ package types
 
 const maxSize = 100
 
-// TODO: vlaidatorIndex need bridge data
 func NewStakerInfo(stakerAddr, validatorPubkey string) *StakerInfo {
 	return &StakerInfo{
 		StakerAddr:  stakerAddr,

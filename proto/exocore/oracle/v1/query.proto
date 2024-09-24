@@ -24,10 +24,16 @@ service Query {
     option (google.api.http).get = "/ExocoreNetwork/exocore/oracle/staker_list";
   }
 
-  // StakerInfo shows the details for all stakers of the specified assets under native-restaking context
+  // StakerInfos shows the details for all stakers of the specified assets under native-restaking context
   rpc StakerInfos (QueryStakerInfosRequest) returns (QueryStakerInfosResponse) {
-    option (google.api.http).get = "/ExocoreNetwork/exocore/oracle/staker_infos";
+    option (google.api.http).get = "/ExocoreNetwork/exocore/oracle/staker_infos/{asset_id}";
   }
+
+  // StakerInfo shows the details for one staker required by input parsms of the specified asset
+  rpc StakerInfo (QueryStakerInfoRequest) returns (QueryStakerInfoResponse) {
+    option (google.api.http).get = "/ExocoreNetwork/exocore/oracle/staker_info/{asset_id}/{staker_addr}";
+  }
+
   
   // Parameters queries the parameters of the module.
   rpc Params(QueryParamsRequest) returns (QueryParamsResponse) {
@@ -88,7 +94,7 @@ service Query {
 // QueryStakerListRequest is request type for Query/StakerList RPC method
 message QueryStakerListRequest {
   // id of assets for the staker list request for 
-  string asset_id = 1[(gogoproto.customname) = "AssetID"];
+  string asset_id = 1;
 }
 
 // QueryStakerListResponse is response type for Query/StakerList RPC method
@@ -97,10 +103,24 @@ message QueryStakerListResponse {
   StakerList staker_list = 1;
 }
 
-// QueryStakerInfosRequest is request type for Query/StakerInfo RCP method
+// QueryStakerInfoRequest is request type for Query/StakerInfo RCP method
+message QueryStakerInfoRequest {
+  // asset id for the staker info request for
+  string asset_id = 1;
+  string staker_addr = 2;
+}
+
+// QueryStakerInfoResponse is response type for Query/StakerInfo RCP method
+message QueryStakerInfoResponse {
+  // all staker infos under the specified asset
+  StakerInfo staker_info = 1;  
+}
+
+
+// QueryStakerInfosRequest is request type for Query/StakerInfos RCP method
 message QueryStakerInfosRequest {
   // asset id for the staker info request for
-  string asset_id = 1[(gogoproto.customname) = "AssetID"];
+  string asset_id = 1;
 }
 
 // QueryStakerInfosResponse is response type for Query/StakerInfo RCP method

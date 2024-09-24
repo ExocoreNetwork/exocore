@@ -59,8 +59,6 @@ func (k Keeper) UpdateNativeTokenValidatorListForStaker(ctx sdk.Context, chainID
 		newBalance = *(stakerInfo.BalanceList[latestIndex])
 		newBalance.Index++
 	}
-	//	newBalance := *(stakerInfo.BalanceList[latestIndex])
-	//	newBalance.Index++
 	newBalance.Block = uint64(ctx.BlockHeight())
 	if amount.IsPositive() {
 		newBalance.Change = types.BalanceInfo_ACTION_DEPOSIT
@@ -70,6 +68,7 @@ func (k Keeper) UpdateNativeTokenValidatorListForStaker(ctx sdk.Context, chainID
 		newBalance.Change = types.BalanceInfo_ACTION_WITHDRAW
 		for i, vPubkey := range stakerInfo.ValidatorPubkeyList {
 			if vPubkey == validatorPubkey {
+				// TODO: len(stkaerInfo.ValidatorPubkeyList)==0 shoule equal to newBalance.Balance<=0
 				stakerInfo.ValidatorPubkeyList = append(stakerInfo.ValidatorPubkeyList[:i], stakerInfo.ValidatorPubkeyList[i+1:]...)
 				break
 			}
@@ -115,7 +114,8 @@ func (k Keeper) UpdateNativeTokenValidatorListForStaker(ctx sdk.Context, chainID
 		bz := k.cdc.MustMarshal(stakerInfo)
 		store.Set(key, bz)
 	}
-	eventValue := fmt.Sprintf("%d_%s", stakerInfo.StakerIndex, validatorPubkey)
+	// we use len(stakerInfo.ValidatorPubkeyList) to sync with client about status of stakerInfo.ValidatorPubkeyList
+	eventValue := fmt.Sprintf("%d_%s_%d", stakerInfo.StakerIndex, validatorPubkey, len(stakerInfo.ValidatorPubkeyList))
 	if newBalance.Change == types.BalanceInfo_ACTION_DEPOSIT {
 		eventValue = fmt.Sprintf("%s_%s", types.AttributeValueNativeTokenDeposit, eventValue)
 	} else {
@@ -129,6 +129,7 @@ func (k Keeper) UpdateNativeTokenValidatorListForStaker(ctx sdk.Context, chainID
 	return nil
 }
 
+// TODO: pagination
 // GetStakerInfos returns all stakers information
 func (k Keeper) GetStakerInfos(ctx sdk.Context, assetID string) (ret []*types.StakerInfo) {
 	store := ctx.KVStore(k.storeKey)
@@ -146,7 +147,7 @@ func (k Keeper) GetStakerInfos(ctx sdk.Context, assetID string) (ret []*types.St
 	return ret
 }
 
-// GetstakerList return stakerList for native-restaking asset of assetID
+// GetStakerList return stakerList for native-restaking asset of assetID
 func (k Keeper) GetStakerList(ctx sdk.Context, assetID string) types.StakerList {
 	store := ctx.KVStore(k.storeKey)
 	value := store.Get(types.NativeTokenStakerListKey(assetID))
