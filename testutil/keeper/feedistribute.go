@@ -60,7 +60,9 @@ func FeedistributeKeeper(t testing.TB) (distrkeeper.Keeper, sdk.Context) {
 	)
 
 	ctx := sdk.NewContext(stateStore, cmtproto.Header{}, false, log.NewNopLogger())
-	epochskeeper.AddEpochInfo(ctx, epochInfo)
+	if err := epochskeeper.AddEpochInfo(ctx, epochInfo); err != nil {
+		return k, ctx
+	}
 	// Initialize params
 	k.SetParams(ctx, types.DefaultParams())
 

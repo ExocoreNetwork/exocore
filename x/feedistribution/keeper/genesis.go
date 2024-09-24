@@ -14,7 +14,6 @@ func (k Keeper) InitGenesis(ctx sdk.Context, genState types.GenesisState) {
 		// the panic is suitable here because it is being done at genesis, when the node
 		// is not running. it means that the genesis file is malformed.
 		panic("not found the epoch info")
-		return
 	}
 }
 
