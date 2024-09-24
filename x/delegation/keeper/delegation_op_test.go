@@ -17,7 +17,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 )
 
-func (suite *DelegationTestSuite) prepare() {
+func (suite *DelegationTestSuite) basicPrepare() {
 	suite.assetAddr = common.HexToAddress("0xdAC17F958D2ee523a2206206994597C13D831ec7")
 	suite.clientChainLzID = uint64(101)
 	opAccAddr, err := sdk.AccAddressFromBech32("exo13h6xg79g82e2g2vhjwg7j4r2z2hlncelwutkjr")
@@ -28,13 +28,12 @@ func (suite *DelegationTestSuite) prepare() {
 	suite.accAddr = sdk.AccAddress(suite.Address.Bytes())
 }
 
-func (suite *DelegationTestSuite) prepareDeposit() *assetskeeper.DepositWithdrawParams {
-	suite.prepare()
+func (suite *DelegationTestSuite) prepareDeposit(depositAmount sdkmath.Int) *assetskeeper.DepositWithdrawParams {
 	depositEvent := &assetskeeper.DepositWithdrawParams{
 		ClientChainLzID: suite.clientChainLzID,
 		Action:          types.Deposit,
 		StakerAddress:   suite.Address[:],
-		OpAmount:        suite.depositAmount,
+		OpAmount:        depositAmount,
 	}
 	depositEvent.AssetsAddress = suite.assetAddr[:]
 	err := suite.App.AssetsKeeper.PerformDepositOrWithdraw(suite.Ctx, depositEvent)
@@ -42,21 +41,21 @@ func (suite *DelegationTestSuite) prepareDeposit() *assetskeeper.DepositWithdraw
 	return depositEvent
 }
 
-func (suite *DelegationTestSuite) prepareDelegation() *delegationtype.DelegationOrUndelegationParams {
+func (suite *DelegationTestSuite) prepareDelegation(delegationAmount sdkmath.Int, operator sdk.AccAddress) *delegationtype.DelegationOrUndelegationParams {
 	delegationEvent := &delegationtype.DelegationOrUndelegationParams{
 		ClientChainID:   suite.clientChainLzID,
 		Action:          types.DelegateTo,
 		AssetsAddress:   suite.assetAddr.Bytes(),
-		OperatorAddress: suite.opAccAddr,
+		OperatorAddress: operator,
 		StakerAddress:   suite.Address[:],
-		OpAmount:        suite.delegationAmount,
+		OpAmount:        delegationAmount,
 		LzNonce:         0,
 		TxHash:          common.HexToHash("0x24c4a315d757249c12a7a1d7b6fb96261d49deee26f06a3e1787d008b445c3ac"),
 	}
 	registerReq := &operatortype.RegisterOperatorReq{
-		FromAddress: suite.opAccAddr.String(),
+		FromAddress: operator.String(),
 		Info: &operatortype.OperatorInfo{
-			EarningsAddr: suite.opAccAddr.String(),
+			EarningsAddr: operator.String(),
 		},
 	}
 	_, err := s.OperatorMsgServer.RegisterOperator(s.Ctx, registerReq)
@@ -84,7 +83,8 @@ func (suite *DelegationTestSuite) prepareDelegationNativeToken() *delegationtype
 }
 
 func (suite *DelegationTestSuite) TestDelegateTo() {
-	suite.prepareDeposit()
+	suite.basicPrepare()
+	suite.prepareDeposit(suite.depositAmount)
 	opAccAddr, err := sdk.AccAddressFromBech32("exo13h6xg79g82e2g2vhjwg7j4r2z2hlncelwutkjr")
 	suite.NoError(err)
 	delegationParams := &delegationtype.DelegationOrUndelegationParams{
@@ -138,7 +138,7 @@ func (suite *DelegationTestSuite) TestDelegateTo() {
 		WaitUndelegationAmount: sdkmath.NewInt(0),
 	}, *specifiedDelegationAmount)
 
-	totalDelegationAmount, err := suite.App.DelegationKeeper.StakerDelegatedTotalAmount(suite.Ctx, stakerID, assetID)
+	totalDelegationAmount, err := suite.App.DelegationKeeper.TotalDelegatedAmountForStakerAsset(suite.Ctx, stakerID, assetID)
 	suite.NoError(err)
 	suite.Equal(delegationParams.OpAmount, totalDelegationAmount)
 
@@ -181,15 +181,16 @@ func (suite *DelegationTestSuite) TestDelegateTo() {
 		WaitUndelegationAmount: sdkmath.NewInt(0),
 	}, *specifiedDelegationAmount)
 
-	totalDelegationAmount, err = suite.App.DelegationKeeper.StakerDelegatedTotalAmount(suite.Ctx, stakerID, assetID)
+	totalDelegationAmount, err = suite.App.DelegationKeeper.TotalDelegatedAmountForStakerAsset(suite.Ctx, stakerID, assetID)
 	suite.NoError(err)
 	suite.Equal(delegationParams.OpAmount, totalDelegationAmount)
 
 }
 
 func (suite *DelegationTestSuite) TestUndelegateFrom() {
-	suite.prepareDeposit()
-	delegationEvent := suite.prepareDelegation()
+	suite.basicPrepare()
+	suite.prepareDeposit(suite.depositAmount)
+	delegationEvent := suite.prepareDelegation(suite.delegationAmount, suite.opAccAddr)
 	// test Undelegation
 	delegationEvent.LzNonce = 1
 	err := suite.App.DelegationKeeper.UndelegateFrom(suite.Ctx, delegationEvent)
@@ -221,7 +222,7 @@ func (suite *DelegationTestSuite) TestUndelegateFrom() {
 		UndelegatableShare:     sdkmath.LegacyNewDec(0),
 	}, *specifiedDelegationAmount)
 
-	totalDelegationAmount, err := suite.App.DelegationKeeper.StakerDelegatedTotalAmount(suite.Ctx, stakerID, assetID)
+	totalDelegationAmount, err := suite.App.DelegationKeeper.TotalDelegatedAmountForStakerAsset(suite.Ctx, stakerID, assetID)
 	suite.NoError(err)
 	suite.Equal(sdkmath.NewInt(0), totalDelegationAmount)
 
@@ -280,7 +281,7 @@ func (suite *DelegationTestSuite) TestUndelegateFrom() {
 		UndelegatableShare:     sdkmath.LegacyNewDec(0),
 	}, *specifiedDelegationAmount)
 
-	totalDelegationAmount, err = suite.App.DelegationKeeper.StakerDelegatedTotalAmount(suite.Ctx, stakerID, assetID)
+	totalDelegationAmount, err = suite.App.DelegationKeeper.TotalDelegatedAmountForStakerAsset(suite.Ctx, stakerID, assetID)
 	suite.NoError(err)
 	suite.Equal(sdkmath.NewInt(0), totalDelegationAmount)
 
@@ -315,8 +316,9 @@ func (suite *DelegationTestSuite) TestCompleteUndelegation() {
 	epochsUntilUnbonded := suite.App.StakingKeeper.GetEpochsUntilUnbonded(suite.Ctx)
 	matureEpochs := epochInfo.CurrentEpoch + int64(epochsUntilUnbonded)
 
-	suite.prepareDeposit()
-	delegationEvent := suite.prepareDelegation()
+	suite.basicPrepare()
+	suite.prepareDeposit(suite.depositAmount)
+	delegationEvent := suite.prepareDelegation(suite.delegationAmount, suite.opAccAddr)
 
 	delegationEvent.LzNonce = 1
 	err := suite.App.DelegationKeeper.UndelegateFrom(suite.Ctx, delegationEvent)
@@ -369,7 +371,7 @@ func (suite *DelegationTestSuite) TestCompleteUndelegation() {
 		WaitUndelegationAmount: sdkmath.NewInt(0),
 	}, *specifiedDelegationAmount)
 
-	totalDelegationAmount, err := suite.App.DelegationKeeper.StakerDelegatedTotalAmount(suite.Ctx, stakerID, assetID)
+	totalDelegationAmount, err := suite.App.DelegationKeeper.TotalDelegatedAmountForStakerAsset(suite.Ctx, stakerID, assetID)
 	suite.NoError(err)
 	suite.Equal(sdkmath.NewInt(0), totalDelegationAmount)
 
@@ -437,7 +439,7 @@ func (suite *DelegationTestSuite) TestCompleteUndelegation() {
 		WaitUndelegationAmount: sdkmath.NewInt(0),
 	}, *specifiedDelegationAmount)
 
-	totalDelegationAmount, err = suite.App.DelegationKeeper.StakerDelegatedTotalAmount(suite.Ctx, stakerID, assetID)
+	totalDelegationAmount, err = suite.App.DelegationKeeper.TotalDelegatedAmountForStakerAsset(suite.Ctx, stakerID, assetID)
 	suite.NoError(err)
 	suite.Equal(sdkmath.NewInt(0), totalDelegationAmount)
 

@@ -172,7 +172,7 @@ func (gs GenesisState) ValidateStakerList() error {
 				)
 			}
 			if stakerClientChainID != assetClientChainID {
-				return errorsmod.Wrapf(ErrInvalidGenesisData, "the client chain layerZero IDs of the staker and asset are different,key:%s stakerID:%s", stakersByOperator.Key, stakerID)
+				return errorsmod.Wrapf(ErrInvalidGenesisData, "the client chain layerZero IDs of the staker and asset are different, key:%s stakerID:%s", stakersByOperator.Key, stakerID)
 			}
 			return nil
 		}
