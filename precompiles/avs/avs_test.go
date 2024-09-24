@@ -1,6 +1,9 @@
 package avs_test
 
 import (
+	"cosmossdk.io/math"
+	types2 "github.com/ExocoreNetwork/exocore/x/assets/types"
+	avskeeper "github.com/ExocoreNetwork/exocore/x/avs/keeper"
 	"math/big"
 	"time"
 
@@ -433,17 +436,26 @@ func (suite *AVSManagerPrecompileSuite) TestUpdateAVS() {
 
 func (suite *AVSManagerPrecompileSuite) TestRegisterOperatorToAVS() {
 	// from := s.Address
-	operatorAddress := sdk.AccAddress(suite.Address.Bytes()).String()
+	operatorAddress := sdk.AccAddress(suite.Address.Bytes())
 
 	registerOperator := func() {
 		registerReq := &operatortypes.RegisterOperatorReq{
-			FromAddress: operatorAddress,
+			FromAddress: operatorAddress.String(),
 			Info: &operatortypes.OperatorInfo{
-				EarningsAddr: operatorAddress,
+				EarningsAddr: operatorAddress.String(),
 			},
 		}
 		_, err := suite.OperatorMsgServer.RegisterOperator(sdk.WrapSDKContext(suite.Ctx), registerReq)
 		suite.NoError(err)
+		asset := suite.Assets[0]
+		_, assetID := types2.GetStakeIDAndAssetIDFromStr(asset.LayerZeroChainID, "", asset.Address)
+		selfDelegateAmount := big.NewInt(10)
+		minPrecisionSelfDelegateAmount := big.NewInt(0).Mul(selfDelegateAmount, big.NewInt(0).Exp(big.NewInt(10), big.NewInt(int64(asset.Decimals)), nil))
+		err = suite.App.AssetsKeeper.UpdateOperatorAssetState(suite.Ctx, operatorAddress, assetID, types2.DeltaOperatorSingleAsset{
+			TotalAmount:   math.NewIntFromBigInt(minPrecisionSelfDelegateAmount),
+			TotalShare:    math.LegacyNewDecFromBigInt(minPrecisionSelfDelegateAmount),
+			OperatorShare: math.LegacyNewDecFromBigInt(minPrecisionSelfDelegateAmount),
+		})
 	}
 	commonMalleate := func() (common.Address, []byte) {
 		input, err := suite.precompile.Pack(
@@ -469,7 +481,16 @@ func (suite *AVSManagerPrecompileSuite) TestRegisterOperatorToAVS() {
 			malleate: func() (common.Address, []byte) {
 				suite.TestRegisterAVS()
 				registerOperator()
-				return commonMalleate()
+				avsAddr, intput := commonMalleate()
+				asset := suite.Assets[0]
+				_, defaultAssetID := types2.GetStakeIDAndAssetIDFromStr(asset.LayerZeroChainID, "", asset.Address)
+				err = suite.App.AVSManagerKeeper.UpdateAVSInfo(suite.Ctx, &types.AVSRegisterOrDeregisterParams{
+					Action:     avskeeper.UpdateAction,
+					AvsAddress: avsAddr.String(),
+					AssetID:    []string{defaultAssetID},
+				})
+				suite.NoError(err)
+				return avsAddr, intput
 			},
 			readOnly:    false,
 			expPass:     true,
