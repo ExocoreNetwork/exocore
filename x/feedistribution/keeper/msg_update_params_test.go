@@ -35,7 +35,7 @@ func TestMsgUpdateParams(t *testing.T) {
 			name: "send enabled param",
 			input: &types.MsgUpdateParams{
 				Authority: k.GetAuthority(),
-				Params:    types.Params{},
+				Params:    params,
 			},
 			expErr: false,
 		},
@@ -53,12 +53,12 @@ func TestMsgUpdateParams(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			_, err := ms.UpdateParams(wctx, tc.input)
 			require.NoError(t, err)
-			//if tc.expErr {
-			//	require.Error(t, err)
-			//	require.Contains(t, err.Error(), tc.expErrMsg)
-			//} else {
-			//	require.NoError(t, err)
-			//}
+			// if tc.expErr {
+			// 	require.Error(t, err)
+			// 	require.Contains(t, err.Error(), tc.expErrMsg)
+			// } else {
+			// 	require.NoError(t, err)
+			// }
 		})
 	}
 }

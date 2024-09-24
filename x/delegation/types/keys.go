@@ -66,7 +66,7 @@ var (
 	KeyPrefixAssociatedOperatorByStaker = []byte{prefixAssociatedOperatorByStaker}
 )
 
-func GetDelegationStateIteratorPrefix(stakerID, assetID string) []byte {
+func IteratorPrefixForStakerAsset(stakerID, assetID string) []byte {
 	tmp := []byte(strings.Join([]string{stakerID, assetID}, "/"))
 	tmp = append(tmp, '/')
 	return tmp

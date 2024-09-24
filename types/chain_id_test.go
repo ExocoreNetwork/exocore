@@ -1,11 +1,12 @@
 package types_test
 
 import (
-	"github.com/evmos/evmos/v16/types"
-	"github.com/stretchr/testify/require"
 	"math/big"
 	"strings"
 	"testing"
+
+	"github.com/evmos/evmos/v16/types"
+	"github.com/stretchr/testify/require"
 )
 
 func TestParseChainID(t *testing.T) {

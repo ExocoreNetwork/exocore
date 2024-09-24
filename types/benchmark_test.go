@@ -2,8 +2,9 @@ package types_test
 
 import (
 	"fmt"
-	"github.com/evmos/evmos/v16/types"
 	"testing"
+
+	"github.com/evmos/evmos/v16/types"
 )
 
 func BenchmarkParseChainID(b *testing.B) {
