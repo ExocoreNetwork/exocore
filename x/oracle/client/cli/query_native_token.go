@@ -1,6 +1,7 @@
 package cli
 
 import (
+	assetstypes "github.com/ExocoreNetwork/exocore/x/assets/types"
 	"github.com/ExocoreNetwork/exocore/x/oracle/types"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
@@ -21,6 +22,10 @@ func CmdQueryStakerInfos() *cobra.Command {
 			queryClient := types.NewQueryClient(clientCtx)
 
 			assetID := args[0]
+
+			if _, _, err := assetstypes.ValidateID(assetID, true, false); err != nil {
+				return err
+			}
 
 			request := &types.QueryStakerInfosRequest{
 				AssetId: assetID,
@@ -53,9 +58,16 @@ func CmdQueryStakerInfo() *cobra.Command {
 
 			queryClient := types.NewQueryClient(clientCtx)
 
+			assetID := args[0]
+			stakerAddr := args[1]
+
+			if _, _, err := assetstypes.ValidateID(assetID, true, false); err != nil {
+				return err
+			}
+
 			request := &types.QueryStakerInfoRequest{
-				AssetId:    args[0],
-				StakerAddr: args[1],
+				AssetId:    assetID,
+				StakerAddr: stakerAddr,
 			}
 
 			res, err := queryClient.StakerInfo(cmd.Context(), request)
