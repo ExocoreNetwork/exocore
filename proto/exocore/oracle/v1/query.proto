@@ -5,6 +5,7 @@ package exocore.oracle.v1;
 import "cosmos/base/query/v1beta1/pagination.proto";
 import "exocore/oracle/v1/index_recent_msg.proto";
 import "exocore/oracle/v1/index_recent_params.proto";
+import "exocore/oracle/v1/native_token.proto";
 import "exocore/oracle/v1/params.proto";
 import "exocore/oracle/v1/price.proto";
 import "exocore/oracle/v1/prices.proto";
@@ -18,6 +19,22 @@ option go_package = "github.com/ExocoreNetwork/exocore/x/oracle/types";
 
 // Query defines the gRPC querier service.
 service Query {
+  // stakerList shows all stakers related to the specified asset under native-restaking context
+  rpc StakerList (QueryStakerListRequest) returns (QueryStakerListResponse) {
+    option (google.api.http).get = "/ExocoreNetwork/exocore/oracle/staker_list";
+  }
+
+  // StakerInfos shows the details for all stakers of the specified assets under native-restaking context
+  rpc StakerInfos (QueryStakerInfosRequest) returns (QueryStakerInfosResponse) {
+    option (google.api.http).get = "/ExocoreNetwork/exocore/oracle/staker_infos/{asset_id}";
+  }
+
+  // StakerInfo shows the details for one staker required by input parsms of the specified asset
+  rpc StakerInfo (QueryStakerInfoRequest) returns (QueryStakerInfoResponse) {
+    option (google.api.http).get = "/ExocoreNetwork/exocore/oracle/staker_info/{asset_id}/{staker_addr}";
+  }
+
+  
   // Parameters queries the parameters of the module.
   rpc Params(QueryParamsRequest) returns (QueryParamsResponse) {
     option (google.api.http).get = "/ExocoreNetwork/exocore/oracle/params";
@@ -74,6 +91,44 @@ service Query {
   }
 }
 
+// QueryStakerListRequest is request type for Query/StakerList RPC method
+message QueryStakerListRequest {
+  // id of assets for the staker list request for 
+  string asset_id = 1;
+}
+
+// QueryStakerListResponse is response type for Query/StakerList RPC method
+message QueryStakerListResponse {
+  // staker list including all stakers of request asset
+  StakerList staker_list = 1;
+}
+
+// QueryStakerInfoRequest is request type for Query/StakerInfo RCP method
+message QueryStakerInfoRequest {
+  // asset id for the staker info request for
+  string asset_id = 1;
+  // staker_addr is the staker address
+  string staker_addr = 2;
+}
+
+// QueryStakerInfoResponse is response type for Query/StakerInfo RCP method
+message QueryStakerInfoResponse {
+  // all staker infos under the specified asset
+  StakerInfo staker_info = 1;  
+}
+
+
+// QueryStakerInfosRequest is request type for Query/StakerInfos RCP method
+message QueryStakerInfosRequest {
+  // asset id for the staker info request for
+  string asset_id = 1;
+}
+
+// QueryStakerInfosResponse is response type for Query/StakerInfo RCP method
+message QueryStakerInfosResponse {
+  // all staker infos under the specified asset
+  repeated StakerInfo staker_infos = 1;  
+}
 // QueryParamsRequest is request type for the Query/Params RPC method.
 message QueryParamsRequest {}
 
