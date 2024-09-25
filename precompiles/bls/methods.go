@@ -26,10 +26,9 @@ func (p Precompile) Verify(
 	method *abi.Method,
 	args []interface{},
 ) ([]byte, error) {
-	if len(args) != 3 {
-		return nil, fmt.Errorf(cmn.ErrInvalidNumberOfArgs, 3, len(args))
+	if len(args) != len(p.ABI.Methods[MethodVerify].Inputs) {
+		return nil, fmt.Errorf(cmn.ErrInvalidNumberOfArgs, len(p.ABI.Methods[MethodVerify].Inputs), len(args))
 	}
-
 	sigBz, ok := args[1].([]byte)
 	if !ok {
 		return nil, ErrInvalidArg
@@ -61,8 +60,8 @@ func (p Precompile) FastAggregateVerify(
 	method *abi.Method,
 	args []interface{},
 ) ([]byte, error) {
-	if len(args) != 3 {
-		return nil, fmt.Errorf(cmn.ErrInvalidNumberOfArgs, 3, len(args))
+	if len(args) != len(p.ABI.Methods[MethodFastAggregateVerify].Inputs) {
+		return nil, fmt.Errorf(cmn.ErrInvalidNumberOfArgs, len(p.ABI.Methods[MethodFastAggregateVerify].Inputs), len(args))
 	}
 
 	sigBz, ok := args[1].([]byte)
@@ -99,8 +98,8 @@ func (p Precompile) AggregatePubkeys(
 	method *abi.Method,
 	args []interface{},
 ) ([]byte, error) {
-	if len(args) != 1 {
-		return nil, fmt.Errorf(cmn.ErrInvalidNumberOfArgs, 3, len(args))
+	if len(args) != len(p.ABI.Methods[MethodAggregatePubkeys].Inputs) {
+		return nil, fmt.Errorf(cmn.ErrInvalidNumberOfArgs, len(p.ABI.Methods[MethodAggregatePubkeys].Inputs), len(args))
 	}
 
 	pubkeysBz, ok := args[0].([][]byte)
@@ -120,10 +119,9 @@ func (p Precompile) AggregateSignatures(
 	method *abi.Method,
 	args []interface{},
 ) ([]byte, error) {
-	if len(args) != 1 {
-		return nil, fmt.Errorf(cmn.ErrInvalidNumberOfArgs, 3, len(args))
+	if len(args) != len(p.ABI.Methods[MethodAggregateSignatures].Inputs) {
+		return nil, fmt.Errorf(cmn.ErrInvalidNumberOfArgs, len(p.ABI.Methods[MethodAggregateSignatures].Inputs), len(args))
 	}
-
 	sigsBz, ok := args[0].([][]byte)
 	if !ok {
 		return nil, ErrInvalidArg
@@ -141,10 +139,9 @@ func (p Precompile) AddTwoPubkeys(
 	method *abi.Method,
 	args []interface{},
 ) ([]byte, error) {
-	if len(args) != 2 {
-		return nil, fmt.Errorf(cmn.ErrInvalidNumberOfArgs, 2, len(args))
+	if len(args) != len(p.ABI.Methods[MethodAddTwoPubkeys].Inputs) {
+		return nil, fmt.Errorf(cmn.ErrInvalidNumberOfArgs, len(p.ABI.Methods[MethodAddTwoPubkeys].Inputs), len(args))
 	}
-
 	pubkeyOneBz, ok := args[0].([]byte)
 	if !ok {
 		return nil, ErrInvalidArg
