@@ -68,7 +68,7 @@ func (p Precompile) DepositWithdrawParams(ctx sdk.Context, method *abi.Method, a
 			return nil, fmt.Errorf(exocmn.ErrContractInputParaOrType, 1, "[]byte", args[1])
 		}
 		// generate the virtual address for native restaking asset
-		depositWithdrawParams.AssetsAddress = assetstypes.GenerateNativeRestakingAssetAddr(clientChainAddrLength)
+		depositWithdrawParams.AssetsAddress = assetstypes.GenerateNSTAddr(clientChainAddrLength)
 		// todo: add a check for the validator pubkey
 		depositWithdrawParams.ValidatorPubkey = validatorPubkey
 		if method.Name == MethodDepositNST {

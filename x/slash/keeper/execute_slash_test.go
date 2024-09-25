@@ -40,7 +40,7 @@ func (suite *SlashTestSuite) TestSlash() {
 	err = suite.App.ExoSlashKeeper.Slash(suite.Ctx, event)
 	suite.ErrorContains(err, slashtype.ErrSlashAssetNotExist.Error())
 
-	stakerID, assetID := types.GetStakeIDAndAssetID(depositEvent.ClientChainLzID, depositEvent.StakerAddress, depositEvent.AssetsAddress)
+	stakerID, assetID := types.GetStakerIDAndAssetID(depositEvent.ClientChainLzID, depositEvent.StakerAddress, depositEvent.AssetsAddress)
 	info, err := suite.App.AssetsKeeper.GetStakerSpecifiedAssetInfo(suite.Ctx, stakerID, assetID)
 	suite.NoError(err)
 	suite.Equal(types.StakerAssetInfo{
@@ -55,7 +55,7 @@ func (suite *SlashTestSuite) TestSlash() {
 	suite.NoError(err)
 
 	// check state after slash
-	stakerID, assetID = types.GetStakeIDAndAssetID(event.ClientChainLzID, event.StakerAddress, event.AssetsAddress)
+	stakerID, assetID = types.GetStakerIDAndAssetID(event.ClientChainLzID, event.StakerAddress, event.AssetsAddress)
 	info, err = suite.App.AssetsKeeper.GetStakerSpecifiedAssetInfo(suite.Ctx, stakerID, assetID)
 	suite.NoError(err)
 	suite.Equal(types.StakerAssetInfo{

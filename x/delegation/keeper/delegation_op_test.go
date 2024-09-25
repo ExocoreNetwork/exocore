@@ -113,7 +113,7 @@ func (suite *DelegationTestSuite) TestDelegateTo() {
 	suite.NoError(err)
 
 	// check delegation states
-	stakerID, assetID := types.GetStakeIDAndAssetID(delegationParams.ClientChainID, delegationParams.StakerAddress, delegationParams.AssetsAddress)
+	stakerID, assetID := types.GetStakerIDAndAssetID(delegationParams.ClientChainID, delegationParams.StakerAddress, delegationParams.AssetsAddress)
 	restakerState, err := suite.App.AssetsKeeper.GetStakerSpecifiedAssetInfo(suite.Ctx, stakerID, assetID)
 	suite.NoError(err)
 	suite.Equal(types.StakerAssetInfo{
@@ -156,7 +156,7 @@ func (suite *DelegationTestSuite) TestDelegateTo() {
 	err = suite.App.DelegationKeeper.DelegateTo(suite.Ctx, delegationParams)
 	suite.NoError(err)
 	// check delegation states
-	stakerID, assetID = types.GetStakeIDAndAssetID(delegationParams.ClientChainID, delegationParams.StakerAddress, delegationParams.AssetsAddress)
+	stakerID, assetID = types.GetStakerIDAndAssetID(delegationParams.ClientChainID, delegationParams.StakerAddress, delegationParams.AssetsAddress)
 	restakerState, err = suite.App.AssetsKeeper.GetStakerSpecifiedAssetInfo(suite.Ctx, stakerID, assetID)
 	suite.NoError(err)
 	balance := suite.App.BankKeeper.GetBalance(suite.Ctx, suite.accAddr, assetstypes.ExocoreAssetDenom)
@@ -196,7 +196,7 @@ func (suite *DelegationTestSuite) TestUndelegateFrom() {
 	suite.NoError(err)
 
 	// check state
-	stakerID, assetID := types.GetStakeIDAndAssetID(delegationEvent.ClientChainID, delegationEvent.StakerAddress, delegationEvent.AssetsAddress)
+	stakerID, assetID := types.GetStakerIDAndAssetID(delegationEvent.ClientChainID, delegationEvent.StakerAddress, delegationEvent.AssetsAddress)
 	restakerState, err := suite.App.AssetsKeeper.GetStakerSpecifiedAssetInfo(suite.Ctx, stakerID, assetID)
 	suite.NoError(err)
 	suite.Equal(types.StakerAssetInfo{
@@ -254,7 +254,7 @@ func (suite *DelegationTestSuite) TestUndelegateFrom() {
 	err = suite.App.DelegationKeeper.UndelegateFrom(suite.Ctx, delegationEvent)
 	suite.NoError(err)
 
-	stakerID, assetID = types.GetStakeIDAndAssetID(delegationEvent.ClientChainID, delegationEvent.StakerAddress, delegationEvent.AssetsAddress)
+	stakerID, assetID = types.GetStakerIDAndAssetID(delegationEvent.ClientChainID, delegationEvent.StakerAddress, delegationEvent.AssetsAddress)
 	restakerState, err = suite.App.AssetsKeeper.GetStakerSpecifiedAssetInfo(suite.Ctx, stakerID, assetID)
 	suite.NoError(err)
 	balance := suite.App.BankKeeper.GetBalance(suite.Ctx, suite.accAddr, assetstypes.ExocoreAssetDenom)
@@ -345,7 +345,7 @@ func (suite *DelegationTestSuite) TestCompleteUndelegation() {
 	suite.App.DelegationKeeper.EndBlock(suite.Ctx, abci.RequestEndBlock{})
 
 	// check state
-	stakerID, assetID := types.GetStakeIDAndAssetID(delegationEvent.ClientChainID, delegationEvent.StakerAddress, delegationEvent.AssetsAddress)
+	stakerID, assetID := types.GetStakerIDAndAssetID(delegationEvent.ClientChainID, delegationEvent.StakerAddress, delegationEvent.AssetsAddress)
 	restakerState, err := suite.App.AssetsKeeper.GetStakerSpecifiedAssetInfo(suite.Ctx, stakerID, assetID)
 	suite.NoError(err)
 	suite.Equal(types.StakerAssetInfo{
@@ -411,7 +411,7 @@ func (suite *DelegationTestSuite) TestCompleteUndelegation() {
 	suite.App.DelegationKeeper.EndBlock(suite.Ctx, abci.RequestEndBlock{})
 
 	// check state
-	stakerID, assetID = types.GetStakeIDAndAssetID(delegationEvent.ClientChainID, delegationEvent.StakerAddress, delegationEvent.AssetsAddress)
+	stakerID, assetID = types.GetStakerIDAndAssetID(delegationEvent.ClientChainID, delegationEvent.StakerAddress, delegationEvent.AssetsAddress)
 	restakerState, err = suite.App.AssetsKeeper.GetStakerSpecifiedAssetInfo(suite.Ctx, stakerID, assetID)
 	suite.NoError(err)
 

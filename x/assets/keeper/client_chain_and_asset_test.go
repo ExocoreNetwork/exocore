@@ -50,7 +50,7 @@ func (suite *StakingAssetsTestSuite) TestGenesisClientChainAndAssetInfo() {
 
 	usdtAssetX := defaultGensisState.Tokens[0]
 	usdtAsset := usdtAssetX.AssetBasicInfo
-	_, assetID := assetstype.GetStakeIDAndAssetIDFromStr(usdtAsset.LayerZeroChainID, "", usdtAsset.Address)
+	_, assetID := assetstype.GetStakerIDAndAssetIDFromStr(usdtAsset.LayerZeroChainID, "", usdtAsset.Address)
 	assetInfo, err := suite.App.AssetsKeeper.GetStakingAssetInfo(suite.Ctx, assetID)
 	suite.NoError(err)
 	suite.Equal(usdtAsset, assetInfo.AssetBasicInfo)

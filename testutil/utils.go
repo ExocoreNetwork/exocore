@@ -91,15 +91,15 @@ func (suite *BaseTestSuite) SetupWithGenesisValSet(genAccs []authtypes.GenesisAc
 	operator1 := sdk.AccAddress(testutiltx.GenerateAddress().Bytes())
 	operator2 := sdk.AccAddress(testutiltx.GenerateAddress().Bytes())
 	suite.Operators = []sdk.AccAddress{operator1, operator2}
-	stakerID1, _ := assetstypes.GetStakeIDAndAssetIDFromStr(
+	stakerID1, _ := assetstypes.GetStakerIDAndAssetIDFromStr(
 		suite.ClientChains[0].LayerZeroChainID,
 		common.Address(operator1.Bytes()).String(), "",
 	)
-	stakerID2, _ := assetstypes.GetStakeIDAndAssetIDFromStr(
+	stakerID2, _ := assetstypes.GetStakerIDAndAssetIDFromStr(
 		suite.ClientChains[0].LayerZeroChainID,
 		common.Address(operator2.Bytes()).String(), "",
 	)
-	_, assetID := assetstypes.GetStakeIDAndAssetIDFromStr(
+	_, assetID := assetstypes.GetStakerIDAndAssetIDFromStr(
 		suite.ClientChains[0].LayerZeroChainID,
 		"", suite.Assets[0].Address,
 	)

@@ -34,7 +34,7 @@ func (suite *DelegationTestSuite) TestUpdateNativeRestakingBalance() {
 	// The actual slash amount is 79, not 80; this is due to precision loss.
 	slashAmount := sdkmath.NewInt(80)
 	actualSlashAmount := sdkmath.NewInt(79)
-	stakerID, assetID := assettypes.GetStakeIDAndAssetID(suite.clientChainLzID, suite.Address[:], suite.assetAddr.Bytes())
+	stakerID, assetID := assettypes.GetStakerIDAndAssetID(suite.clientChainLzID, suite.Address[:], suite.assetAddr.Bytes())
 	err = suite.App.DelegationKeeper.UpdateNativeRestakingBalance(suite.Ctx, stakerID, assetID, slashAmount.Neg())
 	suite.NoError(err)
 

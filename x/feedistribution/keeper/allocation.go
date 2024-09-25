@@ -135,7 +135,7 @@ func (k Keeper) AllocateTokensToStakers(ctx sdk.Context, operatorAddress sdk.Acc
 			}
 			for _, staker := range stakerList.Stakers {
 				if curStakerPower, err := k.StakingKeeper.CalculateUSDValueForStaker(ctx, staker, avsAddress, operatorAddress.Bytes()); err != nil {
-					logger.Error("curStakerPower error", err)
+					logger.Error("curStakerPower error", "error", err)
 				} else {
 					stakersPowerMap[staker] = curStakerPower
 					globalStakerAddressList = append(globalStakerAddressList, staker)

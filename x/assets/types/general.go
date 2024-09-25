@@ -68,16 +68,16 @@ type DeltaOperatorSingleAsset OperatorAssetInfo
 
 type CreateQueryContext func(height int64, prove bool) (sdk.Context, error)
 
-// GetStakeIDAndAssetID stakerID = stakerAddress+'_'+clientChainLzID,assetID =
+// GetStakerIDAndAssetID stakerID = stakerAddress+'_'+clientChainLzID,assetID =
 // assetAddress+'_'+clientChainLzID
-func GetStakeIDAndAssetID(
+func GetStakerIDAndAssetID(
 	clientChainLzID uint64,
 	stakerAddress []byte,
 	assetsAddress []byte,
-) (stakeID string, assetID string) {
+) (stakerID string, assetID string) {
 	clientChainLzIDStr := hexutil.EncodeUint64(clientChainLzID)
 	if stakerAddress != nil {
-		stakeID = strings.Join([]string{hexutil.Encode(stakerAddress), clientChainLzIDStr}, utils.DelimiterForID)
+		stakerID = strings.Join([]string{hexutil.Encode(stakerAddress), clientChainLzIDStr}, utils.DelimiterForID)
 	}
 
 	if assetsAddress != nil {
@@ -86,17 +86,17 @@ func GetStakeIDAndAssetID(
 	return
 }
 
-// GetStakeIDAndAssetIDFromStr stakerID = stakerAddress+'_'+clientChainLzID,assetID =
+// GetStakerIDAndAssetIDFromStr stakerID = stakerAddress+'_'+clientChainLzID,assetID =
 // assetAddress+'_'+clientChainLzID
-func GetStakeIDAndAssetIDFromStr(
+func GetStakerIDAndAssetIDFromStr(
 	clientChainLzID uint64,
 	stakerAddress string,
 	assetsAddress string,
-) (stakeID string, assetID string) {
+) (stakerID string, assetID string) {
 	// hexutil always returns lowercase values
 	clientChainLzIDStr := hexutil.EncodeUint64(clientChainLzID)
 	if stakerAddress != "" {
-		stakeID = strings.Join(
+		stakerID = strings.Join(
 			[]string{strings.ToLower(stakerAddress), clientChainLzIDStr},
 			utils.DelimiterForID,
 		)
@@ -173,10 +173,10 @@ func UpdateAssetDecValue(valueToUpdate *math.LegacyDec, changeValue *math.Legacy
 	return nil
 }
 
-// GenerateNativeRestakingAssetAddr we use a virtual address that is padding by 0xee
+// GenerateNSTAddr we use a virtual address that is padding by 0xee
 // to represent the address of native restaking asset. It's okay because we can distinguish
 // which client chain's native asset it is through the clientChainID in the assetID.
-func GenerateNativeRestakingAssetAddr(clientChainAddrLength uint32) []byte {
+func GenerateNSTAddr(clientChainAddrLength uint32) []byte {
 	address := make([]byte, clientChainAddrLength)
 	for i := range address {
 		address[i] = FillCharForRestakingAssetAddr
@@ -184,10 +184,14 @@ func GenerateNativeRestakingAssetAddr(clientChainAddrLength uint32) []byte {
 	return address
 }
 
-func IsNativeRestakingAsset(assetAddr string) (bool, error) {
+func IsNST(assetID string) bool {
+	assetAddr, _, err := ParseID(assetID)
+	if err != nil {
+		return false
+	}
 	addressBytes, err := hexutil.Decode(assetAddr)
 	if err != nil {
-		return false, err
+		return false
 	}
 	isNativeRestakingAsset := true
 	for i := range addressBytes {
@@ -196,5 +200,5 @@ func IsNativeRestakingAsset(assetAddr string) (bool, error) {
 			break
 		}
 	}
-	return isNativeRestakingAsset, nil
+	return isNativeRestakingAsset
 }

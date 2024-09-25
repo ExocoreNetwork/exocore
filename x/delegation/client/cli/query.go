@@ -54,7 +54,7 @@ func QuerySingleDelegationInfo() *cobra.Command {
 			if err != nil {
 				return errorsmod.Wrap(types.ErrInvalidCliCmdArg, err.Error())
 			}
-			stakerID, assetID := types.GetStakeIDAndAssetIDFromStr(clientChainLzID, args[1], args[2])
+			stakerID, assetID := types.GetStakerIDAndAssetIDFromStr(clientChainLzID, args[1], args[2])
 			accAddr, err := sdk.AccAddressFromBech32(args[3])
 			if err != nil {
 				return errorsmod.Wrap(types.ErrInvalidCliCmdArg, err.Error())

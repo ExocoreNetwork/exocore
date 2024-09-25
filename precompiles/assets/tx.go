@@ -58,9 +58,9 @@ func (p Precompile) DepositOrWithdraw(
 	// call oracle to update the validator info of staker for native asset restaking
 	switch depositWithdrawParams.Action {
 	case assetstypes.DepositNST, assetstypes.WithdrawNST:
-		_, assetID := assetstypes.GetStakeIDAndAssetID(depositWithdrawParams.ClientChainLzID,
+		_, assetID := assetstypes.GetStakerIDAndAssetID(depositWithdrawParams.ClientChainLzID,
 			depositWithdrawParams.StakerAddress, depositWithdrawParams.AssetsAddress)
-		err = p.assetsKeeper.UpdateNativeTokenValidatorInfo(ctx, assetID,
+		err = p.assetsKeeper.UpdateNativeTokenValidatorListForStaker(ctx, assetID,
 			hexutil.Encode(depositWithdrawParams.StakerAddress),
 			hexutil.Encode(depositWithdrawParams.ValidatorPubkey),
 			depositWithdrawParams.OpAmount)
@@ -70,7 +70,7 @@ func (p Precompile) DepositOrWithdraw(
 	}
 
 	// get the latest asset state of staker to return.
-	stakerID, assetID := assetstypes.GetStakeIDAndAssetID(depositWithdrawParams.ClientChainLzID, depositWithdrawParams.StakerAddress, depositWithdrawParams.AssetsAddress)
+	stakerID, assetID := assetstypes.GetStakerIDAndAssetID(depositWithdrawParams.ClientChainLzID, depositWithdrawParams.StakerAddress, depositWithdrawParams.AssetsAddress)
 	info, err := p.assetsKeeper.GetStakerSpecifiedAssetInfo(ctx, stakerID, assetID)
 	if err != nil {
 		return nil, err
@@ -143,7 +143,7 @@ func (p Precompile) RegisterToken(
 		return nil, err
 	}
 
-	_, assetID := assetstypes.GetStakeIDAndAssetIDFromStr(asset.LayerZeroChainID, "", asset.Address)
+	_, assetID := assetstypes.GetStakerIDAndAssetIDFromStr(asset.LayerZeroChainID, "", asset.Address)
 	oInfo.AssetID = assetID
 
 	if p.assetsKeeper.IsStakingAsset(ctx, assetID) {
@@ -186,7 +186,7 @@ func (p Precompile) UpdateToken(
 	}
 
 	// check that the asset being updated actually exists
-	_, assetID := assetstypes.GetStakeIDAndAssetIDFromStr(uint64(clientChainID), "", hexAssetAddr)
+	_, assetID := assetstypes.GetStakerIDAndAssetIDFromStr(uint64(clientChainID), "", hexAssetAddr)
 	assetInfo, err := p.assetsKeeper.GetStakingAssetInfo(ctx, assetID)
 	if err != nil {
 		// fails if asset does not exist with ErrNoClientChainAssetKey

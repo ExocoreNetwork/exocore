@@ -25,7 +25,7 @@ func (k Keeper) PerformDepositOrWithdraw(ctx sdk.Context, params *DepositWithdra
 	if params.OpAmount.IsNegative() {
 		return errorsmod.Wrapf(assetstypes.ErrInvalidDepositAmount, "negative deposit amount:%s", params.OpAmount)
 	}
-	stakeID, assetID := assetstypes.GetStakeIDAndAssetID(params.ClientChainLzID, params.StakerAddress, params.AssetsAddress)
+	stakerID, assetID := assetstypes.GetStakerIDAndAssetID(params.ClientChainLzID, params.StakerAddress, params.AssetsAddress)
 	if !k.IsStakingAsset(ctx, assetID) {
 		return errorsmod.Wrapf(assetstypes.ErrNoClientChainAssetKey, "assetAddr:%s clientChainID:%v", hexutil.Encode(params.AssetsAddress), params.ClientChainLzID)
 	}
@@ -47,9 +47,9 @@ func (k Keeper) PerformDepositOrWithdraw(ctx sdk.Context, params *DepositWithdra
 	// TODO: do we need additional process for exo-native-token ?
 	if assetID != assetstypes.ExocoreAssetID {
 		// update asset state of the specified staker
-		err := k.UpdateStakerAssetState(ctx, stakeID, assetID, changeAmount)
+		err := k.UpdateStakerAssetState(ctx, stakerID, assetID, changeAmount)
 		if err != nil {
-			return errorsmod.Wrapf(err, "stakeID:%s assetID:%s", stakeID, assetID)
+			return errorsmod.Wrapf(err, "stakerID:%s assetID:%s", stakerID, assetID)
 		}
 
 		// update total amount of the deposited asset
