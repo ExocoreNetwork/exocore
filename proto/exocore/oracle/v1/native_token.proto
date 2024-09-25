@@ -6,9 +6,9 @@ import "gogoproto/gogo.proto";
 
 option go_package = "github.com/ExocoreNetwork/exocore/x/oracle/types";
 
-  // Action defines the reason the balance changed
+// Action defines the reason the balance changed
 enum BalanceChangeAction {
-    // balance updated when a new round generated
+  // balance updated when a new round generated
   ACTION_ROUND_UNSPECIFIED = 0;
   // balance updated when a deposit happened
   ACTION_DEPOSIT = 1;
