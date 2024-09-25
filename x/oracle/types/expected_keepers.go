@@ -20,5 +20,5 @@ type BankKeeper interface {
 
 // DelegationKeeper defines the expected interfaces needed to update nst token balance change
 type DelegationKeeper interface {
-	UpdateNativeRestakingBalance(ctx sdk.Context, stakerID, assetID string, amount sdkmath.Int) error
+	UpdateNSTBalance(ctx sdk.Context, stakerID, assetID string, amount sdkmath.Int) error
 }

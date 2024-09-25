@@ -6,7 +6,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-func (suite *DelegationTestSuite) TestUpdateNativeRestakingBalance() {
+func (suite *DelegationTestSuite) TestUpdateNSTBalance() {
 	// test case: slash 80
 	// withdrawable: 60 slash: 60 -> 0
 	// undelegation: 10 slash: 10 -> 0
@@ -35,7 +35,7 @@ func (suite *DelegationTestSuite) TestUpdateNativeRestakingBalance() {
 	slashAmount := sdkmath.NewInt(80)
 	actualSlashAmount := sdkmath.NewInt(79)
 	stakerID, assetID := assettypes.GetStakerIDAndAssetID(suite.clientChainLzID, suite.Address[:], suite.assetAddr.Bytes())
-	err = suite.App.DelegationKeeper.UpdateNativeRestakingBalance(suite.Ctx, stakerID, assetID, slashAmount.Neg())
+	err = suite.App.DelegationKeeper.UpdateNSTBalance(suite.Ctx, stakerID, assetID, slashAmount.Neg())
 	suite.NoError(err)
 
 	// check the asset state for the slashed staker

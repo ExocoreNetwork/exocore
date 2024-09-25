@@ -103,6 +103,11 @@ func (suite *BaseTestSuite) SetupWithGenesisValSet(genAccs []authtypes.GenesisAc
 		suite.ClientChains[0].LayerZeroChainID,
 		"", suite.Assets[0].Address,
 	)
+	NSTAssetAddr := assetstypes.GenerateNSTAddr(
+		suite.ClientChains[0].AddressLength,
+	)
+	_, assetIDNST := assetstypes.GetStakerIDAndAssetID(suite.ClientChains[0].LayerZeroChainID, []byte{}, NSTAssetAddr)
+
 	// x/assets initialization - deposits (client chains and tokens are from caller)
 	power := int64(101)
 	power2 := int64(100)
@@ -123,6 +128,14 @@ func (suite *BaseTestSuite) SetupWithGenesisValSet(genAccs []authtypes.GenesisAc
 						PendingUndelegationAmount: sdk.ZeroInt(),
 					},
 				},
+				{
+					AssetID: assetIDNST,
+					Info: assetstypes.StakerAssetInfo{
+						TotalDepositAmount:        depositAmount,
+						WithdrawableAmount:        depositAmount,
+						PendingUndelegationAmount: sdk.ZeroInt(),
+					},
+				},
 			},
 		},
 		{
@@ -130,6 +143,14 @@ func (suite *BaseTestSuite) SetupWithGenesisValSet(genAccs []authtypes.GenesisAc
 			Deposits: []assetstypes.DepositByAsset{
 				{
 					AssetID: assetID,
+					Info: assetstypes.StakerAssetInfo{
+						TotalDepositAmount:        depositAmount2,
+						WithdrawableAmount:        depositAmount2,
+						PendingUndelegationAmount: sdk.ZeroInt(),
+					},
+				},
+				{
+					AssetID: assetIDNST,
 					Info: assetstypes.StakerAssetInfo{
 						TotalDepositAmount:        depositAmount2,
 						WithdrawableAmount:        depositAmount2,

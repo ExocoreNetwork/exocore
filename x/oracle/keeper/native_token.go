@@ -205,7 +205,7 @@ func (k Keeper) UpdateNSTByBalanceChange(ctx sdk.Context, assetID string, rawDat
 			return errors.New("effective balance should never exceeds 32")
 		}
 		if delta := int64(balance) - newBalance.Balance; delta != 0 {
-			if err := k.delegationKeeper.UpdateNativeRestakingBalance(ctx, getStakerID(stakerAddr, chainID), assetID, sdkmath.NewInt(delta)); err != nil {
+			if err := k.delegationKeeper.UpdateNSTBalance(ctx, getStakerID(stakerAddr, chainID), assetID, sdkmath.NewInt(delta)); err != nil {
 				return err
 			}
 			newBalance.Balance = int64(balance)
@@ -295,6 +295,7 @@ func parseBalanceChange(rawData []byte, sl types.StakerList) (map[string]int, er
 	return stakerChanges, nil
 }
 
+// TODO use []byte and assetstypes.GetStakerIDAndAssetID for stakerAddr representation
 func getStakerID(stakerAddr string, chainID uint64) string {
 	return strings.Join([]string{stakerAddr, hexutil.EncodeUint64(chainID)}, utils.DelimiterForID)
 }

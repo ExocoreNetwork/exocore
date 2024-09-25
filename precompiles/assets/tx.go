@@ -64,7 +64,7 @@ func (p Precompile) DepositOrWithdraw(
 		}
 		_, assetID := assetstypes.GetStakerIDAndAssetID(depositWithdrawParams.ClientChainLzID,
 			depositWithdrawParams.StakerAddress, depositWithdrawParams.AssetsAddress)
-		err = p.assetsKeeper.UpdateNativeTokenValidatorListForStaker(ctx, assetID,
+		err = p.assetsKeeper.UpdateNSTValidatorListForStaker(ctx, assetID,
 			hexutil.Encode(depositWithdrawParams.StakerAddress),
 			hexutil.Encode(depositWithdrawParams.ValidatorPubkey),
 			opAmount)
