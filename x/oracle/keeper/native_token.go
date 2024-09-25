@@ -297,5 +297,5 @@ func parseBalanceChange(rawData []byte, sl types.StakerList) (map[string]int, er
 
 // TODO use []byte and assetstypes.GetStakerIDAndAssetID for stakerAddr representation
 func getStakerID(stakerAddr string, chainID uint64) string {
-	return strings.Join([]string{stakerAddr, hexutil.EncodeUint64(chainID)}, utils.DelimiterForID)
+	return strings.Join([]string{strings.ToLower(stakerAddr), hexutil.EncodeUint64(chainID)}, utils.DelimiterForID)
 }
