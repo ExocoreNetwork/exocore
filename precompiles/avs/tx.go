@@ -43,6 +43,7 @@ func (p Precompile) RegisterAVS(
 	if err != nil {
 		return nil, errorsmod.Wrap(err, "parse args error")
 	}
+	// verification of the calling address to ensure it is avs contract owner
 	if !slices.Contains(avsParams.AvsOwnerAddress, avsParams.CallerAddress) {
 		return nil, errorsmod.Wrap(err, "not qualified to registerOrDeregister")
 	}

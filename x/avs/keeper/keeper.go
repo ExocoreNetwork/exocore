@@ -86,7 +86,7 @@ func (k Keeper) UpdateAVSInfo(ctx sdk.Context, params *types.AVSRegisterOrDeregi
 			// TODO: handle this better
 			startingEpoch = uint64(epoch.CurrentEpoch)
 		}
-		// The caller must ensure that the relevant addresses are set to be the appropriate format (hex/bech32)
+
 		avs := &types.AVSInfo{
 			Name:                params.AvsName,
 			AvsAddress:          params.AvsAddress,
