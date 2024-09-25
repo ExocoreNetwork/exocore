@@ -48,6 +48,9 @@ message AVSInfo {
   // avs_slash defines the proportion of slash
   string avs_slash = 17
   [(gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec", (gogoproto.nullable) = false];
+
+  // asset_reward_commission_epoch_basis is the avs reward distribution based on asset per eopch end.
+  map<string, int64> asset_reward_amount_epoch_basis = 18;
 }
 
 //Status and proof of each operator

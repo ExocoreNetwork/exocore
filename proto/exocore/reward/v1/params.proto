@@ -1,5 +1,5 @@
 syntax = "proto3";
-package exocore.reward;
+package exocore.reward.v1;
 
 option go_package = "github.com/ExocoreNetwork/exocore/x/reward/types";
 

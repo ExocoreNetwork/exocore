@@ -480,8 +480,9 @@ var xxx_messageInfo_DelegationResponse proto.InternalMessageInfo
 
 // MsgUndelegation is the undelegation Msg.
 type MsgUndelegation struct {
+	// asset_id is the identity of the asset.
+	AssetID string `protobuf:"bytes,1,opt,name=asset_id,json=assetId,proto3" json:"asset_id,omitempty"`
 	// base_info is the delegation increase or decrease request container.
-	AssetID  string                  `protobuf:"bytes,1,opt,name=asset_id,json=assetId,proto3" json:"asset_id,omitempty"`
 	BaseInfo *DelegationIncOrDecInfo `protobuf:"bytes,2,opt,name=base_info,json=baseInfo,proto3" json:"base_info,omitempty"`
 }
 

@@ -1,11 +1,12 @@
 package keeper_test
 
 import (
+	"strconv"
+
 	sdkmath "cosmossdk.io/math"
 	types "github.com/ExocoreNetwork/exocore/x/avs/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/common"
-	"strconv"
 )
 
 func (suite *AVSTestSuite) TestTaskInfo() {
@@ -46,8 +47,8 @@ func (suite *AVSTestSuite) TestGetTaskId() {
 	taskId = suite.App.AVSManagerKeeper.GetTaskID(suite.Ctx, addr)
 	suite.Equal(uint64(2), taskId)
 }
+
 func (suite *AVSTestSuite) TestTaskChallengedInfo() {
 	suite.TestEpochEnd_TaskCalculation()
 	suite.CommitAfter(suite.EpochDuration)
-
 }

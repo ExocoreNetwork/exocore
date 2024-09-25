@@ -181,7 +181,7 @@ func (k Keeper) RemoveShareFromOperator(
 		TotalAmount: removedToken.Neg(),
 		TotalShare:  share.Neg(),
 	}
-	// Check if the staker belongs to the delegated operator. Increase the operator's share if yes.
+	// Check if the staker belongs to the delegated operator. Decrease the operator's share if yes.
 	getOperator, err := k.GetAssociatedOperator(ctx, stakerID)
 	if err != nil {
 		return token, err

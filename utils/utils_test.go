@@ -81,7 +81,7 @@ func TestExocoreCoinDenom(t *testing.T) {
 	}{
 		{
 			"valid denom - native coin",
-			"aexo",
+			"hua",
 			false,
 		},
 		{
