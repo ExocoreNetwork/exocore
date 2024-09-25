@@ -1,4 +1,3 @@
-
 syntax = "proto3";
 package evmos.erc20.v1;
 

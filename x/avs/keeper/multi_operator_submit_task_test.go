@@ -1,6 +1,9 @@
 package keeper_test
 
 import (
+	"math/big"
+	"time"
+
 	sdkmath "cosmossdk.io/math"
 	assetskeeper "github.com/ExocoreNetwork/exocore/x/assets/keeper"
 	assetstypes "github.com/ExocoreNetwork/exocore/x/assets/types"
@@ -14,8 +17,6 @@ import (
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/prysmaticlabs/prysm/v4/crypto/bls/blst"
 	blscommon "github.com/prysmaticlabs/prysm/v4/crypto/bls/common"
-	"math/big"
-	"time"
 )
 
 func (suite *AVSTestSuite) prepareOperators() {
@@ -104,6 +105,7 @@ func (suite *AVSTestSuite) prepareMulAvs(assetIDs []string) {
 
 	suite.NoError(err)
 }
+
 func (suite *AVSTestSuite) prepareMulOptIn() {
 	for _, operatorAddress := range suite.operatorAddresses {
 		addr, err := sdk.AccAddressFromBech32(operatorAddress)
@@ -119,6 +121,7 @@ func (suite *AVSTestSuite) prepareMulOptIn() {
 	suite.CommitAfter(time.Hour*1 + time.Nanosecond)
 	suite.CommitAfter(time.Hour*1 + time.Nanosecond)
 }
+
 func (suite *AVSTestSuite) prepareMulOperatorubkey() {
 	suite.blsKeys = make([]blscommon.SecretKey, len(suite.operatorAddresses))
 	for index, operatorAddress := range suite.operatorAddresses {
@@ -135,6 +138,7 @@ func (suite *AVSTestSuite) prepareMulOperatorubkey() {
 		suite.Require().NoError(err)
 	}
 }
+
 func (suite *AVSTestSuite) prepareMulTaskInfo() {
 	suite.taskId = suite.App.AVSManagerKeeper.GetTaskID(suite.Ctx, suite.taskAddress)
 	epoch, _ := suite.App.EpochsKeeper.GetEpochInfo(suite.Ctx, epochstypes.HourEpochID)
@@ -156,10 +160,11 @@ func (suite *AVSTestSuite) prepareMulTaskInfo() {
 	err = suite.App.AVSManagerKeeper.SetTaskInfo(suite.Ctx, info)
 	suite.NoError(err)
 }
+
 func (suite *AVSTestSuite) prepareMul() {
 	usdtAddress := common.HexToAddress("0xdAC17F958D2ee523a2206206994597C13D831ec7")
 	depositAmount := sdkmath.NewInt(500)
-	//delegationAmount := sdkmath.NewInt(100)
+	// delegationAmount := sdkmath.NewInt(100)
 	suite.prepareOperators()
 	suite.prepareMulDeposit(usdtAddress, depositAmount)
 	suite.prepareDelegations()
@@ -202,7 +207,6 @@ func (suite *AVSTestSuite) TestSubmitTask_OnlyPhaseOne_Mul() {
 		err := suite.App.AVSManagerKeeper.SetTaskResultInfo(suite.Ctx, operatorAddress, info)
 		suite.Require().NoError(err)
 	}
-
 }
 
 func (suite *AVSTestSuite) TestSubmitTask_OnlyPhaseTwo_Mul() {

@@ -35,6 +35,9 @@ const (
 	MaxChainTokenMetaInfoLength = 200
 
 	MinClientChainAddrLength = 20
+
+	// TODO: update before merge
+	NativeETHAssetID = "0x01_0x01"
 )
 
 const (
@@ -45,6 +48,10 @@ const (
 	UndelegateFrom
 	Slash
 )
+
+var NativeAssets = []string{
+	NativeETHAssetID,
+}
 
 type GeneralAssetsAddr [32]byte
 
@@ -167,4 +174,18 @@ func UpdateAssetDecValue(valueToUpdate *math.LegacyDec, changeValue *math.Legacy
 		}
 	}
 	return nil
+}
+
+func IsNST(assetID string) bool {
+	for _, aID := range NativeAssets {
+		if assetID == aID {
+			return true
+		}
+	}
+	return false
+}
+
+func GetNativeTokenAssetIDs() []string {
+	// TODO: we currently have native_eth only
+	return []string{NativeETHAssetID}
 }

@@ -1,6 +1,10 @@
 package keeper_test
 
 import (
+	"math/big"
+	"strconv"
+	"time"
+
 	sdkmath "cosmossdk.io/math"
 	assetskeeper "github.com/ExocoreNetwork/exocore/x/assets/keeper"
 	assetstypes "github.com/ExocoreNetwork/exocore/x/assets/types"
@@ -13,9 +17,6 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/prysmaticlabs/prysm/v4/crypto/bls/blst"
-	"math/big"
-	"strconv"
-	"time"
 )
 
 func (suite *AVSTestSuite) prepareOperator() {
@@ -73,6 +74,7 @@ func (suite *AVSTestSuite) prepareDelegation(isDelegation bool, assetAddr common
 	}
 	suite.NoError(err)
 }
+
 func (suite *AVSTestSuite) prepareAvs(assetIDs []string) {
 	err := suite.App.AVSManagerKeeper.UpdateAVSInfo(suite.Ctx, &avstypes.AVSRegisterOrDeregisterParams{
 		AvsName:             "avs01",
@@ -95,6 +97,7 @@ func (suite *AVSTestSuite) prepareAvs(assetIDs []string) {
 
 	suite.NoError(err)
 }
+
 func (suite *AVSTestSuite) prepareOptIn() {
 	err := suite.App.OperatorKeeper.OptIn(suite.Ctx, suite.operatorAddr, suite.avsAddr)
 	suite.NoError(err)
@@ -102,6 +105,7 @@ func (suite *AVSTestSuite) prepareOptIn() {
 	suite.CommitAfter(time.Hour*1 + time.Nanosecond)
 	suite.CommitAfter(time.Hour*1 + time.Nanosecond)
 }
+
 func (suite *AVSTestSuite) prepareOperatorubkey() {
 	privateKey, err := blst.RandKey()
 	suite.blsKey = privateKey
@@ -115,6 +119,7 @@ func (suite *AVSTestSuite) prepareOperatorubkey() {
 	err = suite.App.AVSManagerKeeper.SetOperatorPubKey(suite.Ctx, blsPub)
 	suite.NoError(err)
 }
+
 func (suite *AVSTestSuite) prepareTaskInfo() {
 	suite.taskId = suite.App.AVSManagerKeeper.GetTaskID(suite.Ctx, suite.taskAddress)
 	epoch, _ := suite.App.EpochsKeeper.GetEpochInfo(suite.Ctx, epochstypes.HourEpochID)
@@ -141,6 +146,7 @@ func (suite *AVSTestSuite) prepareTaskInfo() {
 	suite.NoError(err)
 	suite.Equal(*info, *getTaskInfo)
 }
+
 func (suite *AVSTestSuite) prepare() {
 	usdtAddress := common.HexToAddress("0xdAC17F958D2ee523a2206206994597C13D831ec7")
 	depositAmount := sdkmath.NewInt(100)
@@ -182,7 +188,6 @@ func (suite *AVSTestSuite) TestSubmitTask_OnlyPhaseOne() {
 	}
 	err = suite.App.AVSManagerKeeper.SetTaskResultInfo(suite.Ctx, suite.operatorAddr.String(), info)
 	suite.NoError(err)
-
 }
 
 func (suite *AVSTestSuite) TestSubmitTask_OnlyPhaseTwo() {
@@ -212,5 +217,4 @@ func (suite *AVSTestSuite) TestSubmitTask_OnlyPhaseTwo() {
 	}
 	err = suite.App.AVSManagerKeeper.SetTaskResultInfo(suite.Ctx, suite.operatorAddr.String(), info)
 	suite.NoError(err)
-
 }

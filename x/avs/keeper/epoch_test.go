@@ -1,9 +1,10 @@
 package keeper_test
 
 import (
+	"strconv"
+
 	avstypes "github.com/ExocoreNetwork/exocore/x/avs/types"
 	"github.com/ethereum/go-ethereum/common"
-	"strconv"
 )
 
 func (suite *AVSTestSuite) Test_GroupStatistics() {
@@ -16,6 +17,7 @@ func (suite *AVSTestSuite) Test_GroupStatistics() {
 	groupedTasks := suite.App.AVSManagerKeeper.GroupTasksByIDAndAddress(tasks)
 	suite.Equal(2, len(groupedTasks["contract1_1"]))
 }
+
 func (suite *AVSTestSuite) TestEpochEnd_TaskCalculation() {
 	suite.TestSubmitTask_OnlyPhaseTwo_Mul()
 	suite.CommitAfter(suite.EpochDuration)
@@ -43,5 +45,4 @@ func (suite *AVSTestSuite) TestEpochEnd_TaskCalculation() {
 	suite.Equal(0, len(diff))
 	suite.Equal(expectInfo.NoSignedOperators, info.NoSignedOperators)
 	suite.Equal(expectInfo.ActualThreshold, info.ActualThreshold)
-
 }

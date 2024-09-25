@@ -5,6 +5,7 @@ package exocore.oracle.v1;
 import "cosmos/base/query/v1beta1/pagination.proto";
 import "exocore/oracle/v1/index_recent_msg.proto";
 import "exocore/oracle/v1/index_recent_params.proto";
+import "exocore/oracle/v1/native_token.proto";
 import "exocore/oracle/v1/params.proto";
 import "exocore/oracle/v1/price.proto";
 import "exocore/oracle/v1/prices.proto";
@@ -18,78 +19,121 @@ option go_package = "github.com/ExocoreNetwork/exocore/x/oracle/types";
 
 // Query defines the gRPC querier service.
 service Query {
+  // stakerList shows all stakers related to the specified asset under native-restaking context
+  rpc StakerList (QueryStakerListRequest) returns (QueryStakerListResponse) {
+    option (google.api.http).get = "/ExocoreNetwork/exocore/oracle/staker_list";
+  }
+
+  // StakerInfos shows the details for all stakers of the specified assets under native-restaking context
+  rpc StakerInfos (QueryStakerInfosRequest) returns (QueryStakerInfosResponse) {
+    option (google.api.http).get = "/ExocoreNetwork/exocore/oracle/staker_infos/{asset_id}";
+  }
+
+  // StakerInfo shows the details for one staker required by input parsms of the specified asset
+  rpc StakerInfo (QueryStakerInfoRequest) returns (QueryStakerInfoResponse) {
+    option (google.api.http).get = "/ExocoreNetwork/exocore/oracle/staker_info/{asset_id}/{staker_addr}";
+  }
+
   
   // Parameters queries the parameters of the module.
-  rpc Params (QueryParamsRequest) returns (QueryParamsResponse) {
+  rpc Params(QueryParamsRequest) returns (QueryParamsResponse) {
     option (google.api.http).get = "/ExocoreNetwork/exocore/oracle/params";
-  
   }
-  
+
   // Queries a list of Prices items.
-  rpc Prices (QueryGetPricesRequest) returns (QueryGetPricesResponse) {
+  rpc Prices(QueryGetPricesRequest) returns (QueryGetPricesResponse) {
     option (google.api.http).get = "/ExocoreNetwork/exocore/oracle/prices/{token_id}";
-  
   }
 
   // Queries the latest price of a specific token
-  rpc LatestPrice (QueryGetLatestPriceRequest) returns (QueryGetLatestPriceResponse) {
+  rpc LatestPrice(QueryGetLatestPriceRequest) returns (QueryGetLatestPriceResponse) {
     option (google.api.http).get = "/ExocoreNetwork/exocore/oracle/latest_price/{token_id}";
-  
   }
 
   //  rpc PricesAll (QueryAllPricesRequest) returns (QueryAllPricesResponse) {
   //    option (google.api.http).get = "/ExocoreNetwork/exocore/oracle/prices";
-  //  
+  //
   //  }
-  
+
   // Queries a ValidatorUpdateBlock by index.
-  rpc ValidatorUpdateBlock (QueryGetValidatorUpdateBlockRequest) returns (QueryGetValidatorUpdateBlockResponse) {
+  rpc ValidatorUpdateBlock(QueryGetValidatorUpdateBlockRequest) returns (QueryGetValidatorUpdateBlockResponse) {
     option (google.api.http).get = "/ExocoreNetwork/exocore/oracle/validator_update_block";
-  
   }
-  
+
   // Queries a IndexRecentParams by index.
-  rpc IndexRecentParams (QueryGetIndexRecentParamsRequest) returns (QueryGetIndexRecentParamsResponse) {
+  rpc IndexRecentParams(QueryGetIndexRecentParamsRequest) returns (QueryGetIndexRecentParamsResponse) {
     option (google.api.http).get = "/ExocoreNetwork/exocore/oracle/index_recent_params";
-  
   }
-  
+
   // Queries a IndexRecentMsg by index.
-  rpc IndexRecentMsg (QueryGetIndexRecentMsgRequest) returns (QueryGetIndexRecentMsgResponse) {
+  rpc IndexRecentMsg(QueryGetIndexRecentMsgRequest) returns (QueryGetIndexRecentMsgResponse) {
     option (google.api.http).get = "/ExocoreNetwork/exocore/oracle/index_recent_msg";
-  
   }
-  
+
   // Queries a list of RecentMsg items.
-  rpc RecentMsg    (QueryGetRecentMsgRequest) returns (QueryGetRecentMsgResponse) {
+  rpc RecentMsg(QueryGetRecentMsgRequest) returns (QueryGetRecentMsgResponse) {
     option (google.api.http).get = "/ExocoreNetwork/exocore/oracle/recent_msg/{block}";
-  
   }
 
   // RecentMsgAll all RecentMsg items.
-  rpc RecentMsgAll (QueryAllRecentMsgRequest) returns (QueryAllRecentMsgResponse) {
+  rpc RecentMsgAll(QueryAllRecentMsgRequest) returns (QueryAllRecentMsgResponse) {
     option (google.api.http).get = "/ExocoreNetwork/exocore/oracle/recent_msg";
-  
   }
-  
+
   // Queries a list of RecentParams items.
-  rpc RecentParams    (QueryGetRecentParamsRequest) returns (QueryGetRecentParamsResponse) {
+  rpc RecentParams(QueryGetRecentParamsRequest) returns (QueryGetRecentParamsResponse) {
     option (google.api.http).get = "/ExocoreNetwork/exocore/oracle/recent_params/{block}";
-  
   }
 
   // RecentParamsAll query all RecentParams.
-  rpc RecentParamsAll (QueryAllRecentParamsRequest) returns (QueryAllRecentParamsResponse) {
+  rpc RecentParamsAll(QueryAllRecentParamsRequest) returns (QueryAllRecentParamsResponse) {
     option (google.api.http).get = "/ExocoreNetwork/exocore/oracle/recent_params";
-  
   }
+}
+
+// QueryStakerListRequest is request type for Query/StakerList RPC method
+message QueryStakerListRequest {
+  // id of assets for the staker list request for 
+  string asset_id = 1;
+}
+
+// QueryStakerListResponse is response type for Query/StakerList RPC method
+message QueryStakerListResponse {
+  // staker list including all stakers of request asset
+  StakerList staker_list = 1;
+}
+
+// QueryStakerInfoRequest is request type for Query/StakerInfo RCP method
+message QueryStakerInfoRequest {
+  // asset id for the staker info request for
+  string asset_id = 1;
+  // staker_addr is the staker address
+  string staker_addr = 2;
+}
+
+// QueryStakerInfoResponse is response type for Query/StakerInfo RCP method
+message QueryStakerInfoResponse {
+  // all staker infos under the specified asset
+  StakerInfo staker_info = 1;  
+}
+
+
+// QueryStakerInfosRequest is request type for Query/StakerInfos RCP method
+message QueryStakerInfosRequest {
+  // asset id for the staker info request for
+  string asset_id = 1;
+}
+
+// QueryStakerInfosResponse is response type for Query/StakerInfo RCP method
+message QueryStakerInfosResponse {
+  // all staker infos under the specified asset
+  repeated StakerInfo staker_infos = 1;  
 }
 // QueryParamsRequest is request type for the Query/Params RPC method.
 message QueryParamsRequest {}
 
 // QueryParamsResponse is response type for the Query/Params RPC method.
 message QueryParamsResponse {
-  
   // params holds all the parameters of this module.
   Params params = 1 [(gogoproto.nullable) = false];
 }
@@ -105,7 +149,6 @@ message QueryGetLatestPriceRequest {
   // token_id represents which token's price will be retrieved
   uint64 token_id = 1; //[(gogoproto.customname) = "TokenID"];
 }
-
 
 // QueryGetPricesResponse
 message QueryGetPricesResponse {
@@ -128,7 +171,7 @@ message QueryAllPricesRequest {
 // QueryAllPricesResponse
 message QueryAllPricesResponse {
   // prices retreived
-  repeated Prices                                 prices     = 1 [(gogoproto.nullable) = false];
+  repeated Prices prices = 1 [(gogoproto.nullable) = false];
   // info of the pagination
   cosmos.base.query.v1beta1.PageResponse pagination = 2;
 }
@@ -181,7 +224,7 @@ message QueryAllRecentMsgRequest {
 // QueryAllRecentMsgResponse
 message QueryAllRecentMsgResponse {
   // recent_msg represets the cached recent message
-  repeated RecentMsg                              recent_msg  = 1 [(gogoproto.nullable) = false];
+  repeated RecentMsg recent_msg = 1 [(gogoproto.nullable) = false];
   // info of pagination
   cosmos.base.query.v1beta1.PageResponse pagination = 2;
 }
@@ -207,8 +250,7 @@ message QueryAllRecentParamsRequest {
 // QueryAllRecentParamsResponse
 message QueryAllRecentParamsResponse {
   // recent_params cached recent params
-  repeated RecentParams                           recent_params = 1 [(gogoproto.nullable) = false];
+  repeated RecentParams recent_params = 1 [(gogoproto.nullable) = false];
   // info of pagination
-  cosmos.base.query.v1beta1.PageResponse pagination   = 2;
+  cosmos.base.query.v1beta1.PageResponse pagination = 2;
 }
-

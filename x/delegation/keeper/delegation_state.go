@@ -252,7 +252,7 @@ func (k *Keeper) DeleteStakersListForOperator(ctx sdk.Context, operator, assetID
 	return nil
 }
 
-func (k *Keeper) GetStakersByOperator(ctx sdk.Context, operator, assetID string) (delegationtype.StakerList, error) {
+func (k Keeper) GetStakersByOperator(ctx sdk.Context, operator, assetID string) (delegationtype.StakerList, error) {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), delegationtype.KeyPrefixStakersByOperator)
 	Key := assetstype.GetJoinedStoreKey(operator, assetID)
 	value := store.Get(Key)

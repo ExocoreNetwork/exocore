@@ -20,7 +20,7 @@ const (
 	// epoch.
 	DefaultEpochIdentifier = epochstypes.DayEpochID
 	// DefaultEpochRewardStr is the amount of MintDenom minted at each epoch end, as a string.
-	DefaultEpochRewardStr = "20000000000000000000"
+	DefaultEpochRewardStr = "20"
 )
 
 func init() {

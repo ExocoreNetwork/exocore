@@ -15,9 +15,9 @@ message Params {
   // this is in addition to any other fees that are collected, or rewards
   // that are minted.
   string epoch_reward = 2 [
-    (cosmos_proto.scalar)  = "cosmos.Int",
+    (cosmos_proto.scalar) = "cosmos.Int",
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
-    (gogoproto.nullable)   = false
+    (gogoproto.nullable) = false
   ];
   // epoch_identifier is the epoch identifier used to determine when to mint
   // the reward.

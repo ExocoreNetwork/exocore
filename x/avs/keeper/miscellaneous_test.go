@@ -2,17 +2,17 @@ package keeper_test
 
 import (
 	"fmt"
+	"math/big"
+	"testing"
+
 	utiltx "github.com/ExocoreNetwork/exocore/testutil/tx"
 	"github.com/ExocoreNetwork/exocore/x/avs/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/crypto"
-	"math/big"
-	"testing"
 )
 
 func TestReceiptMarshalBinary(t *testing.T) {
-
 	task := types.TaskResponse{
 		TaskID:    10,
 		NumberSum: big.NewInt(1000),
@@ -26,7 +26,7 @@ func TestReceiptMarshalBinary(t *testing.T) {
 		fmt.Println("abi encoded", hexutil.Encode(packed))
 	}
 
-	var args = make(map[string]interface{})
+	args := make(map[string]interface{})
 
 	err = types.Args.UnpackIntoMap(args, packed)
 	result, _ := types.Args.Unpack(packed)
@@ -57,7 +57,6 @@ func TestReceiptMarshalBinary(t *testing.T) {
 		fmt.Println("unpacked", result)
 	}
 	fmt.Println("taskResponse", taskResponse)
-
 }
 
 func Test_difference(t *testing.T) {
