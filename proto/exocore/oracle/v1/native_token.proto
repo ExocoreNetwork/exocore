@@ -7,7 +7,7 @@ import "gogoproto/gogo.proto";
 option go_package = "github.com/ExocoreNetwork/exocore/x/oracle/types";
 
 // Action defines the reason the balance changed
-enum BalanceChangeAction {
+enum Action {
   // balance updated when a new round generated
   ACTION_ROUND_UNSPECIFIED = 0;
   // balance updated when a deposit happened
@@ -30,7 +30,7 @@ message BalanceInfo {
   // uint epoch = 3;
   int64 balance = 4;
   // change tells the reason balance changed
-  BalanceChangeAction change = 5;
+  Action change = 5;
 }
 
 // StakerInfo represents all related information for a staker of native-restaking
