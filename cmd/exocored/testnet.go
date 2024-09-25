@@ -384,7 +384,7 @@ func getTestExocoreGenesis(
 			MetaInfo:         "Tether USD token",
 		},
 	}
-	_, assetID := assetstypes.GetStakeIDAndAssetIDFromStr(
+	_, assetID := assetstypes.GetStakerIDAndAssetIDFromStr(
 		clientChains[0].LayerZeroChainID,
 		"", assets[0].Address,
 	)
@@ -398,7 +398,7 @@ func getTestExocoreGenesis(
 	validators := []dogfoodtypes.GenesisValidator{}
 	for i := range operatorAddrs {
 		operator := operatorAddrs[i]
-		stakerID, _ := assetstypes.GetStakeIDAndAssetIDFromStr(
+		stakerID, _ := assetstypes.GetStakerIDAndAssetIDFromStr(
 			clientChains[0].LayerZeroChainID,
 			common.Address(operator.Bytes()).String(), "",
 		)

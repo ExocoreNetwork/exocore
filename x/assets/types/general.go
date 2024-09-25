@@ -14,10 +14,12 @@ import (
 )
 
 const (
-	NativeChainLzID  = 0
-	NativeAssetAddr  = "0x0000000000000000000000000000000000000000"
-	NativeAssetID    = "0x0000000000000000000000000000000000000000_0x0"
-	NativeAssetDenom = utils.BaseDenom
+	ExocoreChainLzID  = 0
+	ExocoreAssetAddr  = "0x0000000000000000000000000000000000000000"
+	ExocoreAssetID    = "0x0000000000000000000000000000000000000000_0x0"
+	ExocoreAssetDenom = utils.BaseDenom
+
+	FillCharForRestakingAssetAddr = 0xee
 )
 
 const (
@@ -35,23 +37,18 @@ const (
 	MaxChainTokenMetaInfoLength = 200
 
 	MinClientChainAddrLength = 20
-
-	// TODO: update before merge
-	NativeETHAssetID = "0x01_0x01"
 )
 
 const (
-	Deposit CrossChainOpType = iota
-	WithdrawPrincipal
+	DepositLST CrossChainOpType = iota
+	WithdrawLST
+	DepositNST
+	WithdrawNST
 	WithDrawReward
 	DelegateTo
 	UndelegateFrom
 	Slash
 )
-
-var NativeAssets = []string{
-	NativeETHAssetID,
-}
 
 type GeneralAssetsAddr [32]byte
 
@@ -71,16 +68,16 @@ type DeltaOperatorSingleAsset OperatorAssetInfo
 
 type CreateQueryContext func(height int64, prove bool) (sdk.Context, error)
 
-// GetStakeIDAndAssetID stakerID = stakerAddress+'_'+clientChainLzID,assetID =
+// GetStakerIDAndAssetID stakerID = stakerAddress+'_'+clientChainLzID,assetID =
 // assetAddress+'_'+clientChainLzID
-func GetStakeIDAndAssetID(
+func GetStakerIDAndAssetID(
 	clientChainLzID uint64,
 	stakerAddress []byte,
 	assetsAddress []byte,
-) (stakeID string, assetID string) {
+) (stakerID string, assetID string) {
 	clientChainLzIDStr := hexutil.EncodeUint64(clientChainLzID)
 	if stakerAddress != nil {
-		stakeID = strings.Join([]string{hexutil.Encode(stakerAddress), clientChainLzIDStr}, utils.DelimiterForID)
+		stakerID = strings.Join([]string{hexutil.Encode(stakerAddress), clientChainLzIDStr}, utils.DelimiterForID)
 	}
 
 	if assetsAddress != nil {
@@ -89,17 +86,17 @@ func GetStakeIDAndAssetID(
 	return
 }
 
-// GetStakeIDAndAssetIDFromStr stakerID = stakerAddress+'_'+clientChainLzID,assetID =
+// GetStakerIDAndAssetIDFromStr stakerID = stakerAddress+'_'+clientChainLzID,assetID =
 // assetAddress+'_'+clientChainLzID
-func GetStakeIDAndAssetIDFromStr(
+func GetStakerIDAndAssetIDFromStr(
 	clientChainLzID uint64,
 	stakerAddress string,
 	assetsAddress string,
-) (stakeID string, assetID string) {
+) (stakerID string, assetID string) {
 	// hexutil always returns lowercase values
 	clientChainLzIDStr := hexutil.EncodeUint64(clientChainLzID)
 	if stakerAddress != "" {
-		stakeID = strings.Join(
+		stakerID = strings.Join(
 			[]string{strings.ToLower(stakerAddress), clientChainLzIDStr},
 			utils.DelimiterForID,
 		)
@@ -176,16 +173,32 @@ func UpdateAssetDecValue(valueToUpdate *math.LegacyDec, changeValue *math.Legacy
 	return nil
 }
 
-func IsNST(assetID string) bool {
-	for _, aID := range NativeAssets {
-		if assetID == aID {
-			return true
-		}
+// GenerateNSTAddr we use a virtual address that is padding by 0xee
+// to represent the address of native restaking asset. It's okay because we can distinguish
+// which client chain's native asset it is through the clientChainID in the assetID.
+func GenerateNSTAddr(clientChainAddrLength uint32) []byte {
+	address := make([]byte, clientChainAddrLength)
+	for i := range address {
+		address[i] = FillCharForRestakingAssetAddr
 	}
-	return false
+	return address
 }
 
-func GetNativeTokenAssetIDs() []string {
-	// TODO: we currently have native_eth only
-	return []string{NativeETHAssetID}
+func IsNST(assetID string) bool {
+	assetAddr, _, err := ParseID(assetID)
+	if err != nil {
+		return false
+	}
+	addressBytes, err := hexutil.Decode(assetAddr)
+	if err != nil {
+		return false
+	}
+	isNativeRestakingAsset := true
+	for i := range addressBytes {
+		if addressBytes[i] != FillCharForRestakingAssetAddr {
+			isNativeRestakingAsset = false
+			break
+		}
+	}
+	return isNativeRestakingAsset
 }

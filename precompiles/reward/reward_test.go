@@ -62,7 +62,7 @@ func (s *RewardPrecompileTestSuite) TestRunRewardThroughClientChain() {
 		// deposit asset for reward test
 		params := &assetskeeper.DepositWithdrawParams{
 			ClientChainLzID: 101,
-			Action:          assetstype.Deposit,
+			Action:          assetstype.DepositLST,
 			StakerAddress:   staker,
 			AssetsAddress:   usdtAddress,
 			OpAmount:        depositAmount,

@@ -141,7 +141,7 @@ func (k Keeper) RewardForWithdraw(ctx sdk.Context, event *RewardParams) error {
 		WithdrawableAmount: event.OpAmount,
 	}
 	// TODO: there should be a reward pool to be transferred from for native tokens' reward, don't update staker-asset-info, just transfer exo-native-token:pool->staker or handled by validators since the reward would be transferred to validators directly.
-	if assetID != types.NativeAssetID {
+	if assetID != types.ExocoreAssetID {
 		err := k.assetsKeeper.UpdateStakerAssetState(ctx, stakeID, assetID, changeAmount)
 		if err != nil {
 			return err

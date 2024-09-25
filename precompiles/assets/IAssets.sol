@@ -14,7 +14,7 @@ IAssets constant ASSETS_CONTRACT = IAssets(ASSETS_PRECOMPILE_ADDRESS);
 interface IAssets {
 
     /// TRANSACTIONS
-    /// @dev deposit the client chain assets for the staker,
+    /// @dev deposit the client chain assets, mainly LSTs, for the staker,
     /// that will change the state in deposit module
     /// Note that this address cannot be a module account.
     /// @param clientChainID is the layerZero chainID if it is supported.
@@ -23,11 +23,31 @@ interface IAssets {
     /// @param assetsAddress The client chain asset address
     /// @param stakerAddress The staker address
     /// @param opAmount The amount to deposit
-    function depositTo(uint32 clientChainID, bytes memory assetsAddress, bytes memory stakerAddress, uint256 opAmount)
-        external
-        returns (bool success, uint256 latestAssetState);
+    function depositLST(
+        uint32 clientChainID,
+        bytes calldata assetsAddress,
+        bytes calldata stakerAddress,
+        uint256 opAmount
+    ) external returns (bool success, uint256 latestAssetState);
 
-    /// @dev withdraw To the staker, that will change the state in withdraw module
+    /// TRANSACTIONS
+    /// @dev deposit the client chain assets, native staking tokens, for the staker,
+    /// that will change the state in deposit module
+    /// Note that this address cannot be a module account.
+    /// @param clientChainID is the layerZero chainID if it is supported.
+    //  It might be allocated by Exocore when the client chain isn't supported
+    //  by layerZero
+    /// @param validatorPubkey The validator's pubkey
+    /// @param stakerAddress The staker address
+    /// @param opAmount The amount to deposit
+    function depositNST(
+        uint32 clientChainID,
+        bytes calldata validatorPubkey,
+        bytes calldata stakerAddress,
+        uint256 opAmount
+    ) external returns (bool success, uint256 latestAssetState);
+
+    /// @dev withdraw LST To the staker, that will change the state in withdraw module
     /// Note that this address cannot be a module account.
     /// @param clientChainID is the layerZero chainID if it is supported.
     //  It might be allocated by Exocore when the client chain isn't supported
@@ -35,10 +55,25 @@ interface IAssets {
     /// @param assetsAddress The client chain asset Address
     /// @param withdrawAddress The withdraw address
     /// @param opAmount The withdraw amount
-    function withdrawPrincipal(
+    function withdrawLST(
         uint32 clientChainID,
-        bytes memory assetsAddress,
-        bytes memory withdrawAddress,
+        bytes calldata assetsAddress,
+        bytes calldata withdrawAddress,
+        uint256 opAmount
+    ) external returns (bool success, uint256 latestAssetState);
+
+    /// @dev withdraw NST To the staker, that will change the state in withdraw module
+    /// Note that this address cannot be a module account.
+    /// @param clientChainID is the layerZero chainID if it is supported.
+    //  It might be allocated by Exocore when the client chain isn't supported
+    //  by layerZero
+    /// @param validatorPubkey The validator's pubkey
+    /// @param withdrawAddress The withdraw address
+    /// @param opAmount The withdraw amount
+    function withdrawNST(
+        uint32 clientChainID,
+        bytes calldata validatorPubkey,
+        bytes calldata withdrawAddress,
         uint256 opAmount
     ) external returns (bool success, uint256 latestAssetState);
 

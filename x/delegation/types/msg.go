@@ -83,8 +83,8 @@ func validateDelegationInfo(assetID string, baseInfo *DelegationIncOrDecInfo) er
 			return errorsmod.Wrapf(ErrAmountIsNotPositive, "amount should be positive, got%s", kv.Value.Amount.String())
 		}
 	}
-	if assetID != assetstype.NativeAssetID {
-		return errorsmod.Wrapf(ErrInvalidAssetID, "only nativeToken is support, expected:%s,got:%s", assetstype.NativeAssetID, assetID)
+	if assetID != assetstype.ExocoreAssetID {
+		return errorsmod.Wrapf(ErrInvalidAssetID, "only nativeToken is support, expected:%s,got:%s", assetstype.ExocoreAssetID, assetID)
 	}
 	if _, err := sdk.AccAddressFromBech32(baseInfo.FromAddress); err != nil {
 		return errorsmod.Wrap(err, "invalid from address")

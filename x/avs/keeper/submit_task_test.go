@@ -42,11 +42,11 @@ func (suite *AVSTestSuite) prepareDeposit(assetAddr common.Address, amount sdkma
 	suite.clientChainLzID = clientChainLzID
 	suite.depositAmount = amount
 	suite.updatedAmountForOptIn = sdkmath.NewInt(20)
-	suite.stakerID, suite.assetID = assetstypes.GetStakeIDAndAssetID(suite.clientChainLzID, suite.Address[:], suite.assetAddr[:])
+	suite.stakerID, suite.assetID = assetstypes.GetStakerIDAndAssetID(suite.clientChainLzID, suite.Address[:], suite.assetAddr[:])
 	// staking assets
 	depositParam := &assetskeeper.DepositWithdrawParams{
 		ClientChainLzID: suite.clientChainLzID,
-		Action:          assetstypes.Deposit,
+		Action:          assetstypes.DepositLST,
 		StakerAddress:   suite.Address[:],
 		OpAmount:        suite.depositAmount,
 		AssetsAddress:   assetAddr[:],
