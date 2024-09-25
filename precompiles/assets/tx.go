@@ -56,14 +56,18 @@ func (p Precompile) DepositOrWithdraw(
 	}
 
 	// call oracle to update the validator info of staker for native asset restaking
-	switch depositWithdrawParams.Action {
-	case assetstypes.DepositNST, assetstypes.WithdrawNST:
+	if depositWithdrawParams.Action == assetstypes.DepositNST ||
+		depositWithdrawParams.Action == assetstypes.WithdrawNST {
+		opAmount := depositWithdrawParams.OpAmount
+		if depositWithdrawParams.Action == assetstypes.WithdrawLST {
+			opAmount = opAmount.Neg()
+		}
 		_, assetID := assetstypes.GetStakerIDAndAssetID(depositWithdrawParams.ClientChainLzID,
 			depositWithdrawParams.StakerAddress, depositWithdrawParams.AssetsAddress)
 		err = p.assetsKeeper.UpdateNativeTokenValidatorListForStaker(ctx, assetID,
 			hexutil.Encode(depositWithdrawParams.StakerAddress),
 			hexutil.Encode(depositWithdrawParams.ValidatorPubkey),
-			depositWithdrawParams.OpAmount)
+			opAmount)
 		if err != nil {
 			return nil, err
 		}
