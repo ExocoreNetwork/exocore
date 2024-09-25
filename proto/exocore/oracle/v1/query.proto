@@ -2,18 +2,18 @@ syntax = "proto3";
 
 package exocore.oracle.v1;
 
-import "gogoproto/gogo.proto";
-import "google/api/annotations.proto";
 import "cosmos/base/query/v1beta1/pagination.proto";
 import "exocore/oracle/v1/index_recent_msg.proto";
 import "exocore/oracle/v1/index_recent_params.proto";
+import "exocore/oracle/v1/native_token.proto";
 import "exocore/oracle/v1/params.proto";
 import "exocore/oracle/v1/price.proto";
 import "exocore/oracle/v1/prices.proto";
 import "exocore/oracle/v1/recent_msg.proto";
 import "exocore/oracle/v1/recent_params.proto";
 import "exocore/oracle/v1/validator_update_block.proto";
-import "exocore/oracle/v1/native_token.proto";
+import "google/api/annotations.proto";
+import "gogoproto/gogo.proto";
 
 option go_package = "github.com/ExocoreNetwork/exocore/x/oracle/types";
 
@@ -107,6 +107,7 @@ message QueryStakerListResponse {
 message QueryStakerInfoRequest {
   // asset id for the staker info request for
   string asset_id = 1;
+  // staker_addr is the staker address
   string staker_addr = 2;
 }
 
