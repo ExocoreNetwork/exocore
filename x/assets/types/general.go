@@ -176,7 +176,7 @@ func UpdateAssetDecValue(valueToUpdate *math.LegacyDec, changeValue *math.Legacy
 	return nil
 }
 
-func IsNativeToken(assetID string) bool {
+func IsNST(assetID string) bool {
 	for _, aID := range NativeAssets {
 		if assetID == aID {
 			return true

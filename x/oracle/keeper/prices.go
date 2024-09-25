@@ -217,7 +217,7 @@ func (k Keeper) AppendPriceTR(ctx sdk.Context, tokenID uint64, priceTR types.Pri
 	}
 	assetIDs := p.GetAssetIDsFromTokenID(tokenID)
 	for _, assetID := range assetIDs {
-		if assetstypes.IsNativeToken(assetID) {
+		if assetstypes.IsNST(assetID) {
 			if err := k.UpdateNativeTokenByBalanceChange(ctx, assetID, []byte(priceTR.Price), roundID); err != nil {
 				// we just report this error in log to notify validators
 				k.Logger(ctx).Error(types.ErrUpdateNativeTokenVirtualPriceFail.Error(), "error", err)

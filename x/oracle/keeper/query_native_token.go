@@ -20,7 +20,7 @@ func (k Keeper) StakerInfos(goCtx context.Context, req *types.QueryStakerInfosRe
 	if req == nil {
 		return nil, ErrInvalidRequest
 	}
-	if !assetstypes.IsNativeToken(req.AssetId) {
+	if !assetstypes.IsNST(req.AssetId) {
 		return nil, ErrUnsupportedAsset
 	}
 	ctx := sdk.UnwrapSDKContext(goCtx)
@@ -32,7 +32,7 @@ func (k Keeper) StakerInfo(goCtx context.Context, req *types.QueryStakerInfoRequ
 	if req == nil {
 		return nil, ErrInvalidRequest
 	}
-	if !assetstypes.IsNativeToken(req.AssetId) {
+	if !assetstypes.IsNST(req.AssetId) {
 		return nil, ErrUnsupportedAsset
 	}
 	ctx := sdk.UnwrapSDKContext(goCtx)
@@ -44,7 +44,7 @@ func (k Keeper) StakerList(goCtx context.Context, req *types.QueryStakerListRequ
 	if req == nil {
 		return nil, ErrInvalidRequest
 	}
-	if !assetstypes.IsNativeToken(req.AssetId) {
+	if !assetstypes.IsNST(req.AssetId) {
 		return nil, ErrUnsupportedAsset
 	}
 	ctx := sdk.UnwrapSDKContext(goCtx)

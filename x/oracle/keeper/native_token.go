@@ -61,11 +61,11 @@ func (k Keeper) UpdateNativeTokenValidatorListForStaker(ctx sdk.Context, chainID
 	}
 	newBalance.Block = uint64(ctx.BlockHeight())
 	if amount.IsPositive() {
-		newBalance.Change = types.BalanceInfo_ACTION_DEPOSIT
+		newBalance.Change = types.BalanceChangeAction_ACTION_DEPOSIT
 	} else {
 		// TODO: check if this validator has withdraw all its asset and then we can move it out from the staker's validatorList
 		// currently when withdraw happened we assume this validator has left the staker's validatorList (deposit/withdraw all of that validator's staking ETH(<=32))
-		newBalance.Change = types.BalanceInfo_ACTION_WITHDRAW
+		newBalance.Change = types.BalanceChangeAction_ACTION_WITHDRAW
 		for i, vPubkey := range stakerInfo.ValidatorPubkeyList {
 			if vPubkey == validatorPubkey {
 				// TODO: len(stkaerInfo.ValidatorPubkeyList)==0 shoule equal to newBalance.Balance<=0
@@ -116,7 +116,7 @@ func (k Keeper) UpdateNativeTokenValidatorListForStaker(ctx sdk.Context, chainID
 	}
 	// we use len(stakerInfo.ValidatorPubkeyList) to sync with client about status of stakerInfo.ValidatorPubkeyList
 	eventValue := fmt.Sprintf("%d_%s_%d", stakerInfo.StakerIndex, validatorPubkey, len(stakerInfo.ValidatorPubkeyList))
-	if newBalance.Change == types.BalanceInfo_ACTION_DEPOSIT {
+	if newBalance.Change == types.BalanceChangeAction_ACTION_DEPOSIT {
 		eventValue = fmt.Sprintf("%s_%s", types.AttributeValueNativeTokenDeposit, eventValue)
 	} else {
 		eventValue = fmt.Sprintf("%s_%s", types.AttributeValueNativeTokenWithdraw, eventValue)
@@ -194,7 +194,7 @@ func (k Keeper) UpdateNativeTokenByBalanceChange(ctx sdk.Context, assetID string
 			newBalance.RoundID = roundID
 			newBalance.Index = 0
 		}
-		newBalance.Change = types.BalanceInfo_ACTION_SLASH_REFUND
+		newBalance.Change = types.BalanceChangeAction_ACTION_SLASH_REFUND
 		// balance update are based on initial/max effective balance: 32
 		maxBalance := maxEffectiveBalance * (len(stakerInfo.ValidatorPubkeyList))
 		balance := maxBalance + change

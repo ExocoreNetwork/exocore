@@ -38,7 +38,7 @@ func (k Keeper) PerformDepositOrWithdraw(ctx sdk.Context, params *DepositWithdra
 		return errorsmod.Wrapf(assetstypes.ErrInvalidOperationType, "the operation type is: %v", params.Action)
 	}
 
-	if assetstypes.IsNativeToken(assetID) {
+	if assetstypes.IsNST(assetID) {
 		// TODO: we skip check for case like withdraw amount>withdrawable is fine since it will fail for later check and the state will be rollback
 		// TODO: need validatorIndex to be passed (0 as placeholder)
 		if err := k.UpdateNativeTokenValidatorListForStaker(ctx, assetID, hexutil.Encode(params.StakerAddress), "0", params.OpAmount); err != nil {
