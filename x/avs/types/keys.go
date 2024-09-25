@@ -15,13 +15,11 @@ const (
 
 	// RouterKey defines the module's message routing key
 	RouterKey = ModuleName
-
-	// MemStoreKey defines the in-memory store key
-	MemStoreKey   = "mem_avs"
+)
+const (
 	prefixAVSInfo = iota + 1
-	prefixAVSOperatorInfo
 	prefixParams
-	prefixAVSTaskInfo = iota + 1
+	prefixAVSTaskInfo
 	prefixOperatePub
 	prefixAVSAddressToChainID
 	LatestTaskNum
