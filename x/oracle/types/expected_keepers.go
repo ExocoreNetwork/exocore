@@ -1,6 +1,7 @@
 package types
 
 import (
+	sdkmath "cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/auth/types"
 )
@@ -15,4 +16,9 @@ type AccountKeeper interface {
 type BankKeeper interface {
 	SpendableCoins(ctx sdk.Context, addr sdk.AccAddress) sdk.Coins
 	// Methods imported from bank should be defined here
+}
+
+// DelegationKeeper defines the expected interfaces needed to update nst token balance change
+type DelegationKeeper interface {
+	UpdateNativeRestakingBalance(ctx sdk.Context, stakerID, assetID string, amount sdkmath.Int) error
 }

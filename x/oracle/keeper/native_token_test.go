@@ -65,7 +65,7 @@ func (ks *KeeperSuite) TestNativeTokenLifeCycleOneStaker() {
 		{0, -10},
 	}
 	rawData := convertBalanceChangeToBytes(stakerChanges)
-	ks.k.UpdateNativeTokenByBalanceChange(ks.ctx, assetID, rawData, 9)
+	ks.k.UpdateNSTByBalanceChange(ks.ctx, assetID, rawData, 9)
 	// - 2.1 check stakerInfo
 	stakerInfo = ks.k.GetStakerInfo(ks.ctx, assetID, stakerStr)
 	ks.Equal(types.BalanceInfo{
@@ -96,7 +96,7 @@ func (ks *KeeperSuite) TestNativeTokenLifeCycleOneStaker() {
 		{0, -5},
 	}
 	rawData = convertBalanceChangeToBytes(stakerChanges)
-	ks.k.UpdateNativeTokenByBalanceChange(ks.ctx, assetID, rawData, 11)
+	ks.k.UpdateNSTByBalanceChange(ks.ctx, assetID, rawData, 11)
 	// - 4.1 check stakerInfo
 	stakerInfo = ks.k.GetStakerInfo(ks.ctx, assetID, stakerStr)
 	ks.Equal(types.BalanceInfo{
