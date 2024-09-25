@@ -16,9 +16,6 @@ const (
 	MethodFastAggregateVerify = "fastAggregateVerify"
 	// MethodVerify defines the ABI method name to verify aggregated signature and aggregated public key.
 	MethodVerify              = "verify"
-	MethodGeneratePrivateKey  = "generatePrivateKey"
-	MethodPublicKey           = "publicKey"
-	MethodSign                = "sign"
 	MethodAggregatePubkeys    = "aggregatePubkeys"
 	MethodAggregateSignatures = "aggregateSignatures"
 	MethodAddTwoPubkeys       = "addTwoPubkeys"
@@ -96,67 +93,6 @@ func (p Precompile) FastAggregateVerify(
 	}
 
 	return method.Outputs.Pack(sig.FastAggregateVerify(pubkeys, msg))
-}
-
-func (p Precompile) GeneratePrivateKey(
-	method *abi.Method,
-	args []interface{},
-) ([]byte, error) {
-	if len(args) != 0 {
-		return nil, fmt.Errorf(cmn.ErrInvalidNumberOfArgs, 3, len(args))
-	}
-
-	privkey, err := blst.RandKey()
-	if err != nil {
-		return nil, err
-	}
-	pri := privkey.Marshal()
-	return method.Outputs.Pack(pri)
-}
-
-func (p Precompile) PublicKey(
-	method *abi.Method,
-	args []interface{},
-) ([]byte, error) {
-	if len(args) != 1 {
-		return nil, fmt.Errorf(cmn.ErrInvalidNumberOfArgs, 3, len(args))
-	}
-
-	privkeyBz, ok := args[0].([]byte)
-	if !ok {
-		return nil, ErrInvalidArg
-	}
-	privkey, err := blst.SecretKeyFromBytes(privkeyBz)
-	if err != nil {
-		return nil, err
-	}
-
-	return method.Outputs.Pack(privkey.PublicKey().Marshal())
-}
-
-func (p Precompile) Sign(
-	method *abi.Method,
-	args []interface{},
-) ([]byte, error) {
-	if len(args) != 2 {
-		return nil, fmt.Errorf(cmn.ErrInvalidNumberOfArgs, 3, len(args))
-	}
-
-	privkeyBz, ok := args[0].([]byte)
-	if !ok {
-		return nil, ErrInvalidArg
-	}
-	privkey, err := blst.SecretKeyFromBytes(privkeyBz)
-	if err != nil {
-		return nil, err
-	}
-
-	msg, ok := args[1].([32]byte)
-	if !ok {
-		return nil, ErrInvalidArg
-	}
-
-	return method.Outputs.Pack(privkey.Sign(msg[:]).Marshal())
 }
 
 func (p Precompile) AggregatePubkeys(
