@@ -12,8 +12,8 @@ import "exocore/oracle/v1/prices.proto";
 import "exocore/oracle/v1/recent_msg.proto";
 import "exocore/oracle/v1/recent_params.proto";
 import "exocore/oracle/v1/validator_update_block.proto";
-import "google/api/annotations.proto";
 import "gogoproto/gogo.proto";
+import "google/api/annotations.proto";
 
 option go_package = "github.com/ExocoreNetwork/exocore/x/oracle/types";
 

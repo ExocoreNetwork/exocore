@@ -52,7 +52,7 @@ func (ks *KeeperSuite) TestNativeTokenLifeCycleOneStaker() {
 	ks.Equal(types.BalanceInfo{
 		Block:   2,
 		RoundID: 0,
-		Change:  types.BalanceInfo_ACTION_DEPOSIT,
+		Change:  types.BalanceChangeAction_ACTION_DEPOSIT,
 		Balance: 100,
 	}, *stakerInfo.BalanceList[0])
 	ks.Equal([]string{validators[0]}, stakerInfo.ValidatorPubkeyList)
@@ -71,7 +71,7 @@ func (ks *KeeperSuite) TestNativeTokenLifeCycleOneStaker() {
 	ks.Equal(types.BalanceInfo{
 		Block:   2,
 		RoundID: 9,
-		Change:  types.BalanceInfo_ACTION_SLASH_REFUND,
+		Change:  types.BalanceChangeAction_ACTION_SLASH_REFUND,
 		// this is expected to be 32-10=22, not 100-10
 		Balance: 22,
 	}, *stakerInfo.BalanceList[1])
@@ -84,7 +84,7 @@ func (ks *KeeperSuite) TestNativeTokenLifeCycleOneStaker() {
 		Block:   2,
 		RoundID: 9,
 		Index:   1,
-		Change:  types.BalanceInfo_ACTION_DEPOSIT,
+		Change:  types.BalanceChangeAction_ACTION_DEPOSIT,
 		Balance: 54,
 	}, *stakerInfo.BalanceList[2])
 	ks.Equal(validators, stakerInfo.ValidatorPubkeyList)
@@ -104,7 +104,7 @@ func (ks *KeeperSuite) TestNativeTokenLifeCycleOneStaker() {
 		Block:   2,
 		RoundID: 11,
 		Index:   0,
-		Change:  types.BalanceInfo_ACTION_SLASH_REFUND,
+		Change:  types.BalanceChangeAction_ACTION_SLASH_REFUND,
 	}, *stakerInfo.BalanceList[3])
 
 	// 5. withdraw
@@ -117,7 +117,7 @@ func (ks *KeeperSuite) TestNativeTokenLifeCycleOneStaker() {
 		Block:   2,
 		RoundID: 11,
 		Index:   1,
-		Change:  types.BalanceInfo_ACTION_WITHDRAW,
+		Change:  types.BalanceChangeAction_ACTION_WITHDRAW,
 	}, *stakerInfo.BalanceList[4])
 	// withdraw will remove this validator
 	ks.Equal([]string{validators[1]}, stakerInfo.ValidatorPubkeyList)
