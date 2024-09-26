@@ -11,10 +11,9 @@ const (
 	MaxSlashProportion = 1
 )
 
-func (k Keeper) UpdateNativeRestakingBalance(
+func (k Keeper) UpdateNSTBalance(
 	ctx sdk.Context, stakerID, assetID string, amount sdkmath.Int,
 ) error {
-	// todo: check if the assetID is native retaking token
 	if amount.IsPositive() {
 		// If the balance increases due to the client chain PoS staking reward, the increased
 		// amount can be considered a virtual deposit event. However, the increased amount needs
@@ -54,7 +53,7 @@ func (k Keeper) UpdateNativeRestakingBalance(
 		if err != nil {
 			return err
 		}
-		ctx.Logger().Info("UpdateNativeRestakingBalance slash from withdrawable amount", "stakerID", stakerID, "assetID", assetID, "slashFromWithdrawable", slashFromWithdrawable, "pendingSlashAmount", pendingSlashAmount)
+		ctx.Logger().Info("UpdateNSTBalance slash from withdrawable amount", "stakerID", stakerID, "assetID", assetID, "slashFromWithdrawable", slashFromWithdrawable, "pendingSlashAmount", pendingSlashAmount)
 
 		// slash from pending undelegations
 		if pendingSlashAmount.IsPositive() {
@@ -72,7 +71,7 @@ func (k Keeper) UpdateNativeRestakingBalance(
 				if err != nil {
 					return true, err
 				}
-				ctx.Logger().Info("UpdateNativeRestakingBalance slash from undelegation", "stakerID", stakerID, "assetID", assetID, "operator", undelegation.OperatorAddr, "undelegationKey", undelegationKey, "slashAmount", slashAmount, "pendingSlashAmount", pendingSlashAmount)
+				ctx.Logger().Info("UpdateNSTBalance slash from undelegation", "stakerID", stakerID, "assetID", assetID, "operator", undelegation.OperatorAddr, "undelegationKey", undelegationKey, "slashAmount", slashAmount, "pendingSlashAmount", pendingSlashAmount)
 				if !pendingSlashAmount.IsPositive() {
 					// return ture to break the iteration if there isn't remaining amount to be slashed
 					return true, nil
@@ -116,7 +115,7 @@ func (k Keeper) UpdateNativeRestakingBalance(
 						return true, err
 					}
 					pendingSlashAmount = pendingSlashAmount.Sub(actualSlashAmount)
-					ctx.Logger().Info("UpdateNativeRestakingBalance slash from delegated share", "stakerID", stakerID, "assetID", assetID, "operator", keys.OperatorAddr, "slashProportion", slashProportion, "slashShare", slashShare, "actualSlashAmount", actualSlashAmount, "pendingSlashAmount", pendingSlashAmount)
+					ctx.Logger().Info("UpdateNSTBalance slash from delegated share", "stakerID", stakerID, "assetID", assetID, "operator", keys.OperatorAddr, "slashProportion", slashProportion, "slashShare", slashShare, "actualSlashAmount", actualSlashAmount, "pendingSlashAmount", pendingSlashAmount)
 					return false, nil
 				}
 				err = k.IterateDelegationsForStakerAndAsset(ctx, stakerID, assetID, opFunc)
@@ -128,7 +127,7 @@ func (k Keeper) UpdateNativeRestakingBalance(
 		// In this case, we only print a log as a reminder. This situation will only occur when the total slashing amount
 		// from the client chain and Exocore chain is greater than the total staking amount.
 		if pendingSlashAmount.IsPositive() {
-			ctx.Logger().Info("UpdateNativeRestakingBalance all staking funds has been slashed, the remaining amount is:", "stakerID", stakerID, "assetID", assetID, "pendingSlashAmount", pendingSlashAmount)
+			ctx.Logger().Info("UpdateNSTBalance all staking funds has been slashed, the remaining amount is:", "stakerID", stakerID, "assetID", assetID, "pendingSlashAmount", pendingSlashAmount)
 		}
 	}
 	return nil

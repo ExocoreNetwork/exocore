@@ -50,6 +50,7 @@ type BaseTestSuite struct {
 	App        *exocoreapp.ExocoreApp
 	Address    common.Address
 	AccAddress sdk.AccAddress
+	StakerAddr string
 
 	PrivKey   cryptotypes.PrivKey
 	Signer    keyring.Signer
@@ -95,6 +96,7 @@ func (suite *BaseTestSuite) SetupWithGenesisValSet(genAccs []authtypes.GenesisAc
 		suite.ClientChains[0].LayerZeroChainID,
 		common.Address(operator1.Bytes()).String(), "",
 	)
+	suite.StakerAddr = common.Address(operator1.Bytes()).String()
 	stakerID2, _ := assetstypes.GetStakerIDAndAssetIDFromStr(
 		suite.ClientChains[0].LayerZeroChainID,
 		common.Address(operator2.Bytes()).String(), "",
@@ -176,6 +178,10 @@ func (suite *BaseTestSuite) SetupWithGenesisValSet(genAccs []authtypes.GenesisAc
 				AssetBasicInfo:     suite.Assets[0],
 				StakingTotalAmount: depositAmount.Add(depositAmount2),
 			},
+			//	{
+			//		AssetBasicInfo:     suite.Assets[1],
+			//		StakingTotalAmount: depositAmount.Add(math.NewInt(132)),
+			//	},
 		}, depositsByStaker, operatorAssets,
 	)
 	genesisState[assetstypes.ModuleName] = app.AppCodec().MustMarshalJSON(assetsGenesis)

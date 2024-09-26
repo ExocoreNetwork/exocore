@@ -23,6 +23,7 @@ type (
 		paramstore paramtypes.Subspace
 		// authority  string
 		common.KeeperDogfood
+		delegationKeeper types.DelegationKeeper
 	}
 )
 
@@ -34,6 +35,7 @@ func NewKeeper(
 	memKey storetypes.StoreKey,
 	ps paramtypes.Subspace,
 	sKeeper common.KeeperDogfood,
+	delegationKeeper types.DelegationKeeper,
 ) Keeper {
 	// set KeyTable if it has not already been set
 	if !ps.HasKeyTable() {
@@ -41,11 +43,12 @@ func NewKeeper(
 	}
 
 	return Keeper{
-		cdc:           cdc,
-		storeKey:      storeKey,
-		memKey:        memKey,
-		paramstore:    ps,
-		KeeperDogfood: sKeeper,
+		cdc:              cdc,
+		storeKey:         storeKey,
+		memKey:           memKey,
+		paramstore:       ps,
+		KeeperDogfood:    sKeeper,
+		delegationKeeper: delegationKeeper,
 	}
 }
 

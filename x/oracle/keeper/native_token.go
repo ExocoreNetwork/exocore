@@ -3,10 +3,14 @@ package keeper
 import (
 	"errors"
 	"fmt"
+	"strings"
 
 	sdkmath "cosmossdk.io/math"
+	utils "github.com/ExocoreNetwork/exocore/utils"
+	assetstypes "github.com/ExocoreNetwork/exocore/x/assets/types"
 	"github.com/ExocoreNetwork/exocore/x/oracle/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/ethereum/go-ethereum/common/hexutil"
 )
 
 // deposit: update staker's totalDeposit
@@ -31,9 +35,7 @@ func (k Keeper) GetStakerInfo(ctx sdk.Context, assetID, stakerAddr string) types
 	return stakerInfo
 }
 
-func (k Keeper) UpdateNativeTokenValidatorListForStaker(ctx sdk.Context, chainID, stakerAddr, validatorPubkey string, amount sdkmath.Int) error {
-	// TODO: use definition from assets module
-	assetID := "0xe_" + chainID
+func (k Keeper) UpdateNSTValidatorListForStaker(ctx sdk.Context, assetID, stakerAddr, validatorPubkey string, amount sdkmath.Int) error {
 	// emit an event to tell that a staker's validator list has changed
 	ctx.EventManager().EmitEvent(sdk.NewEvent(
 		types.EventTypeCreatePrice,
@@ -159,8 +161,9 @@ func (k Keeper) GetStakerList(ctx sdk.Context, assetID string) types.StakerList 
 	return *stakerList
 }
 
-// UpdateNativeTokenByBalanceChange updates balance info for staker under native-restaking asset of assetID when its balance changed by slash/refund on the source chain (beacon chain for eth)
-func (k Keeper) UpdateNativeTokenByBalanceChange(ctx sdk.Context, assetID string, rawData []byte, roundID uint64) error {
+// UpdateNSTByBalanceChange updates balance info for staker under native-restaking asset of assetID when its balance changed by slash/refund on the source chain (beacon chain for eth)
+func (k Keeper) UpdateNSTByBalanceChange(ctx sdk.Context, assetID string, rawData []byte, roundID uint64) error {
+	_, chainID, _ := assetstypes.ParseID(assetID)
 	if len(rawData) < 32 {
 		return errors.New("length of indicate maps for stakers shoule be exactly 32 bytes")
 	}
@@ -202,8 +205,9 @@ func (k Keeper) UpdateNativeTokenByBalanceChange(ctx sdk.Context, assetID string
 			return errors.New("effective balance should never exceeds 32")
 		}
 		if delta := int64(balance) - newBalance.Balance; delta != 0 {
-			// TODO: call assetsmodule. func(k Keeper) UpdateNativeRestakingBalance(ctx sdk.Context, stakerID, assetID string, amount sdkmath.Int) error
-			_ = balance
+			if err := k.delegationKeeper.UpdateNSTBalance(ctx, getStakerID(stakerAddr, chainID), assetID, sdkmath.NewInt(delta)); err != nil {
+				return err
+			}
 			newBalance.Balance = int64(balance)
 		}
 		//	newBalance.Balance += int64(change)
@@ -289,4 +293,9 @@ func parseBalanceChange(rawData []byte, sl types.StakerList) (map[string]int, er
 		}
 	}
 	return stakerChanges, nil
+}
+
+// TODO use []byte and assetstypes.GetStakerIDAndAssetID for stakerAddr representation
+func getStakerID(stakerAddr string, chainID uint64) string {
+	return strings.Join([]string{strings.ToLower(stakerAddr), hexutil.EncodeUint64(chainID)}, utils.DelimiterForID)
 }
