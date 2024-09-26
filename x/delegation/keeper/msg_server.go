@@ -18,7 +18,7 @@ func (k *Keeper) DelegateAssetToOperator(goCtx context.Context, msg *types.MsgDe
 	ctx := sdk.UnwrapSDKContext(goCtx)
 	logger := k.Logger(ctx)
 	// TODO: currently we only support delegation with native token by invoking service
-	if msg.AssetID != assetstypes.NativeAssetID {
+	if msg.AssetID != assetstypes.ExocoreAssetID {
 		logger.Error("failed to delegate asset", "error", types.ErrNotSupportYet, "assetID", msg.AssetID)
 		return nil, types.ErrNotSupportYet.Wrap("assets other than native token are not supported yet")
 	}
@@ -36,7 +36,7 @@ func (k *Keeper) DelegateAssetToOperator(goCtx context.Context, msg *types.MsgDe
 	uniqueHash := sha256.Sum256([]byte(combined))
 
 	// test for refactor
-	delegationParamsList := newDelegationParams(msg.BaseInfo, assetstypes.NativeAssetAddr, assetstypes.NativeChainLzID, nonce, uniqueHash)
+	delegationParamsList := newDelegationParams(msg.BaseInfo, assetstypes.ExocoreAssetAddr, assetstypes.ExocoreChainLzID, nonce, uniqueHash)
 	for _, delegationParams := range delegationParamsList {
 		if err := k.DelegateTo(ctx, delegationParams); err != nil {
 			logger.Error("failed to delegate asset", "error", err, "delegationParams", delegationParams)
@@ -52,7 +52,7 @@ func (k *Keeper) UndelegateAssetFromOperator(goCtx context.Context, msg *types.M
 	ctx := sdk.UnwrapSDKContext(goCtx)
 	logger := k.Logger(ctx)
 	// TODO: currently we only support undelegation with native token by invoking service
-	if msg.AssetID != assetstypes.NativeAssetID {
+	if msg.AssetID != assetstypes.ExocoreAssetID {
 		logger.Error("failed to undelegate asset", "error", types.ErrNotSupportYet, "assetID", msg.AssetID)
 		return nil, types.ErrNotSupportYet.Wrap("assets other than native token are not supported yet")
 	}
@@ -69,7 +69,7 @@ func (k *Keeper) UndelegateAssetFromOperator(goCtx context.Context, msg *types.M
 	combined := fmt.Sprintf("%s-%d", txHash, nonce)
 	uniqueHash := sha256.Sum256([]byte(combined))
 
-	inputParamsList := newDelegationParams(msg.BaseInfo, assetstypes.NativeAssetAddr, assetstypes.NativeChainLzID, nonce, uniqueHash)
+	inputParamsList := newDelegationParams(msg.BaseInfo, assetstypes.ExocoreAssetAddr, assetstypes.ExocoreChainLzID, nonce, uniqueHash)
 	for _, inputParams := range inputParamsList {
 		if err := k.UndelegateFrom(ctx, inputParams); err != nil {
 			return nil, err

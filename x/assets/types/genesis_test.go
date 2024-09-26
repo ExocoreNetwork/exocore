@@ -54,7 +54,7 @@ func (suite *GenesisTestSuite) TestValidateGenesis() {
 	// generated information
 	ethAddress := utiltx.GenerateAddress()
 	// csmAddress := sdk.AccAddress(ethAddress.Bytes())
-	stakerID, assetID := types.GetStakeIDAndAssetIDFromStr(
+	stakerID, assetID := types.GetStakerIDAndAssetIDFromStr(
 		usdtClientChainAsset.LayerZeroChainID, ethAddress.String(), usdtClientChainAsset.Address,
 	)
 	genesisDeposit := types.DepositsByStaker{
@@ -234,7 +234,7 @@ func (suite *GenesisTestSuite) TestValidateGenesis() {
 			},
 			expPass: false,
 			malleate: func(gs *types.GenesisState) {
-				stakerID, _ := types.GetStakeIDAndAssetIDFromStr(
+				stakerID, _ := types.GetStakerIDAndAssetIDFromStr(
 					usdtClientChainAsset.LayerZeroChainID+1,
 					ethAddress.String(), usdtClientChainAsset.Address,
 				)
@@ -329,7 +329,7 @@ func (suite *GenesisTestSuite) TestValidateGenesis() {
 					StakingTotalAmount: math.NewInt(0),
 				}
 				gs.Tokens[1] = stakingInfo
-				stakerID, _ := types.GetStakeIDAndAssetIDFromStr(
+				stakerID, _ := types.GetStakerIDAndAssetIDFromStr(
 					usdtClientChainAsset.LayerZeroChainID+1,
 					ethAddress.String(), usdtClientChainAsset.Address,
 				)

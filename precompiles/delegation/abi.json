@@ -64,7 +64,7 @@
         "type": "uint256"
       }
     ],
-    "name": "delegateToThroughClientChain",
+    "name": "delegate",
     "outputs":
     [
       {
@@ -136,7 +136,7 @@
         "type": "uint256"
       }
     ],
-    "name": "undelegateFromThroughClientChain",
+    "name": "undelegate",
     "outputs":
     [
       {

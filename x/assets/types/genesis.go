@@ -119,7 +119,7 @@ func (gs GenesisState) ValidateTokens(lzIDs map[uint64]struct{}) (map[string]mat
 	}
 	seenFieldValueFunc := func(info StakingAssetInfo) (string, math.Int) {
 		// calculate the asset id.
-		_, assetID := GetStakeIDAndAssetIDFromStr(
+		_, assetID := GetStakerIDAndAssetIDFromStr(
 			info.AssetBasicInfo.LayerZeroChainID,
 			"", info.AssetBasicInfo.Address,
 		)

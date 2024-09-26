@@ -48,7 +48,7 @@ func (k Keeper) GetPrices(
 // return latest price for one specified price
 func (k Keeper) GetSpecifiedAssetsPrice(ctx sdk.Context, assetID string) (types.Price, error) {
 	// for native token exo, we temporarily use default price
-	if assetID == assetstypes.NativeAssetID {
+	if assetID == assetstypes.ExocoreAssetID {
 		return types.Price{
 			Value:   sdkmath.NewInt(types.DefaultPriceValue),
 			Decimal: types.DefaultPriceDecimal,
@@ -101,7 +101,7 @@ func (k Keeper) GetMultipleAssetsPrices(ctx sdk.Context, assets map[string]inter
 	info := ""
 	for assetID := range assets {
 		// for native token exo, we temporarily use default price
-		if assetID == assetstypes.NativeAssetID {
+		if assetID == assetstypes.ExocoreAssetID {
 			prices[assetID] = types.Price{
 				Value:   sdkmath.NewInt(types.DefaultPriceValue),
 				Decimal: types.DefaultPriceDecimal,
@@ -218,7 +218,7 @@ func (k Keeper) AppendPriceTR(ctx sdk.Context, tokenID uint64, priceTR types.Pri
 	assetIDs := p.GetAssetIDsFromTokenID(tokenID)
 	for _, assetID := range assetIDs {
 		if assetstypes.IsNST(assetID) {
-			if err := k.UpdateNativeTokenByBalanceChange(ctx, assetID, []byte(priceTR.Price), roundID); err != nil {
+			if err := k.UpdateNSTByBalanceChange(ctx, assetID, []byte(priceTR.Price), roundID); err != nil {
 				// we just report this error in log to notify validators
 				k.Logger(ctx).Error(types.ErrUpdateNativeTokenVirtualPriceFail.Error(), "error", err)
 			}

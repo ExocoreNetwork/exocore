@@ -193,7 +193,7 @@ func (k Keeper) Slash(ctx sdk.Context, event *SlashParams) error {
 
 	// dont't create stakerasset info for native token.
 	// TODO: do we need to do any other process for native token 'else{}' ?
-	if assetID != assetstypes.NativeAssetID {
+	if assetID != assetstypes.ExocoreAssetID {
 		changeAmount := assetstypes.DeltaStakerSingleAsset{
 			TotalDepositAmount: event.OpAmount.Neg(),
 			WithdrawableAmount: event.OpAmount.Neg(),
