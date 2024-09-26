@@ -16,8 +16,9 @@ const (
 	// RouterKey defines the module's message routing key
 	RouterKey = ModuleName
 )
+
 const (
-	prefixAVSInfo = iota + 1
+	prefixAVSInfo = iota + 5
 	prefixParams
 	prefixAVSTaskInfo
 	prefixOperatePub
