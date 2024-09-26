@@ -584,6 +584,7 @@ func NewExocoreApp(
 	app.OracleKeeper = oracleKeeper.NewKeeper(
 		appCodec, keys[oracleTypes.StoreKey], memKeys[oracleTypes.MemStoreKey],
 		app.GetSubspace(oracleTypes.ModuleName), app.StakingKeeper,
+		&app.DelegationKeeper,
 	)
 
 	// the SDK slashing module is used to slash validators in the case of downtime. it tracks

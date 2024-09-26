@@ -4,7 +4,9 @@ import (
 	"context"
 	"testing"
 
+	"cosmossdk.io/math"
 	"github.com/ExocoreNetwork/exocore/testutil"
+	assetstypes "github.com/ExocoreNetwork/exocore/x/assets/types"
 	"github.com/ExocoreNetwork/exocore/x/oracle/keeper"
 	"github.com/ExocoreNetwork/exocore/x/oracle/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -80,6 +82,34 @@ func (suite *KeeperSuite) Reset() {
 
 func (suite *KeeperSuite) SetupTest() {
 	suite.DoSetupTest()
+
+	depositAmountNST := math.NewInt(132)
+	suite.App.AssetsKeeper.SetStakingAssetInfo(suite.Ctx, &assetstypes.StakingAssetInfo{
+		AssetBasicInfo: assetstypes.AssetInfo{
+			Name:             "Native Restaking ETH",
+			Symbol:           "NSTETH",
+			Address:          "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+			Decimals:         6,
+			LayerZeroChainID: suite.ClientChains[0].LayerZeroChainID,
+			MetaInfo:         "native restaking token",
+		},
+		StakingTotalAmount: depositAmountNST,
+	})
+
+	stakerID, _ := assetstypes.GetStakerIDAndAssetIDFromStr(
+		suite.ClientChains[0].LayerZeroChainID,
+		ks.StakerAddr, "",
+	)
+	NSTAssetAddr := assetstypes.GenerateNSTAddr(
+		suite.ClientChains[0].AddressLength,
+	)
+	_, assetIDNST := assetstypes.GetStakerIDAndAssetID(suite.ClientChains[0].LayerZeroChainID, []byte{}, NSTAssetAddr)
+	suite.App.AssetsKeeper.UpdateStakerAssetState(ks.Ctx, stakerID, assetIDNST, assetstypes.DeltaStakerSingleAsset{
+		TotalDepositAmount:        depositAmountNST,
+		WithdrawableAmount:        depositAmountNST,
+		PendingUndelegationAmount: sdk.ZeroInt(),
+	})
+
 	validators := suite.ValSet.Validators
 	suite.valAddr1, _ = sdk.ValAddressFromBech32(sdk.ValAddress(validators[0].Address).String())
 	suite.valAddr2, _ = sdk.ValAddressFromBech32(sdk.ValAddress(validators[1].Address).String())

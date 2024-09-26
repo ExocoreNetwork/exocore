@@ -146,7 +146,7 @@ func QueStakingAssetInfo() *cobra.Command {
 				return errorsmod.Wrap(types.ErrInvalidCliCmdArg, fmt.Sprintf("error arg is:%v", args[1]))
 			}
 
-			_, assetID := types.GetStakeIDAndAssetIDFromStr(clientChainID, "", args[0])
+			_, assetID := types.GetStakerIDAndAssetIDFromStr(clientChainID, "", args[0])
 			queryClient := types.NewQueryClient(clientCtx)
 			req := &types.QueryStakingAssetInfo{
 				AssetID: assetID, // already lowercase
@@ -242,7 +242,7 @@ func QueStakerSpecifiedAssetAmount() *cobra.Command {
 			if err != nil {
 				return errorsmod.Wrap(types.ErrInvalidCliCmdArg, err.Error())
 			}
-			stakerID, assetID := types.GetStakeIDAndAssetIDFromStr(clientChainLzID, args[1], args[2])
+			stakerID, assetID := types.GetStakerIDAndAssetIDFromStr(clientChainLzID, args[1], args[2])
 			req := &types.QuerySpecifiedAssetAmountReq{
 				StakerID: stakerID, // already lowercase
 				AssetID:  assetID,  // already lowercase
@@ -309,7 +309,7 @@ func QueOperatorSpecifiedAssetAmount() *cobra.Command {
 			if err != nil {
 				return errorsmod.Wrap(types.ErrInvalidCliCmdArg, err.Error())
 			}
-			_, assetID := types.GetStakeIDAndAssetIDFromStr(clientChainLzID, "", args[2])
+			_, assetID := types.GetStakerIDAndAssetIDFromStr(clientChainLzID, "", args[2])
 			accAddr, err := sdk.AccAddressFromBech32(args[0])
 			if err != nil {
 				return errorsmod.Wrap(types.ErrInvalidCliCmdArg, err.Error())

@@ -49,8 +49,8 @@ func (k *Keeper) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.Valida
 				panic(err)
 			}
 			// and the other is the fact that it matures at the next block
-			err = k.StorePendingUndelegationRecord(ctx, recordKey, record)
-			if err != nil {
+			if err = k.StorePendingUndelegationRecord(ctx, recordKey, record); err != nil {
+				// TODO: remove previous index with currentHeight for pendingUndelegationRecord
 				panic(err)
 			}
 			continue
@@ -69,10 +69,10 @@ func (k *Keeper) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.Valida
 		}
 
 		// update the staker state
-		if record.AssetID == assetstypes.NativeAssetID {
+		if record.AssetID == assetstypes.ExocoreAssetID {
 			parsedStakerID := strings.Split(record.StakerID, "_")
 			stakerAddr := sdk.AccAddress(hexutil.MustDecode(parsedStakerID[0]))
-			if err := k.bankKeeper.UndelegateCoinsFromModuleToAccount(ctx, types.DelegatedPoolName, stakerAddr, sdk.NewCoins(sdk.NewCoin(assetstypes.NativeAssetDenom, record.ActualCompletedAmount))); err != nil {
+			if err := k.bankKeeper.UndelegateCoinsFromModuleToAccount(ctx, types.DelegatedPoolName, stakerAddr, sdk.NewCoins(sdk.NewCoin(assetstypes.ExocoreAssetDenom, record.ActualCompletedAmount))); err != nil {
 				panic(err)
 			}
 		} else {

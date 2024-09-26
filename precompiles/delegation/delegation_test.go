@@ -29,13 +29,13 @@ func (s *DelegationPrecompileSuite) TestIsTransaction() {
 		isTx   bool
 	}{
 		{
-			delegation.MethodDelegateToThroughClientChain,
-			s.precompile.Methods[delegation.MethodDelegateToThroughClientChain].Name,
+			delegation.MethodDelegate,
+			s.precompile.Methods[delegation.MethodDelegate].Name,
 			true,
 		},
 		{
-			delegation.MethodUndelegateFromThroughClientChain,
-			s.precompile.Methods[delegation.MethodUndelegateFromThroughClientChain].Name,
+			delegation.MethodUndelegate,
+			s.precompile.Methods[delegation.MethodUndelegate].Name,
 			true,
 		},
 		{
@@ -60,8 +60,8 @@ func paddingClientChainAddress(input []byte, outputLength int) []byte {
 	return input
 }
 
-// TestRun tests DelegateToThroughClientChain method through calling Run function.
-func (s *DelegationPrecompileSuite) TestRunDelegateToThroughClientChain() {
+// TestRun tests Delegate method through calling Run function.
+func (s *DelegationPrecompileSuite) TestRunDelegate() {
 	// deposit params for test
 	exocoreLzAppAddress := "0x3fC91A3afd70395Cd496C647d5a6CC9D4B2b7FAD"
 	exocoreLzAppEventTopic := "0xc6a377bfc4eb120024a8ac08eef205be16b817020812c73223e81d1bdb9708ec"
@@ -77,7 +77,7 @@ func (s *DelegationPrecompileSuite) TestRunDelegateToThroughClientChain() {
 		// deposit asset for delegation test
 		params := &assetskeeper.DepositWithdrawParams{
 			ClientChainLzID: 101,
-			Action:          types.Deposit,
+			Action:          types.DepositLST,
 			StakerAddress:   staker,
 			AssetsAddress:   usdtAddress,
 			OpAmount:        depositAmount,
@@ -98,7 +98,7 @@ func (s *DelegationPrecompileSuite) TestRunDelegateToThroughClientChain() {
 	commonMalleate := func() (common.Address, []byte) {
 		// prepare the call input for delegation test
 		input, err := s.precompile.Pack(
-			delegation.MethodDelegateToThroughClientChain,
+			delegation.MethodDelegate,
 			uint32(clientChainLzID),
 			uint64(lzNonce),
 			assetAddr,
@@ -109,10 +109,10 @@ func (s *DelegationPrecompileSuite) TestRunDelegateToThroughClientChain() {
 		s.Require().NoError(err, "failed to pack input")
 		return s.Address, input
 	}
-	successRet, err := s.precompile.Methods[delegation.MethodDelegateToThroughClientChain].Outputs.Pack(true)
+	successRet, err := s.precompile.Methods[delegation.MethodDelegate].Outputs.Pack(true)
 	s.Require().NoError(err)
 
-	failureRet, err := s.precompile.Methods[delegation.MethodDelegateToThroughClientChain].Outputs.Pack(false)
+	failureRet, err := s.precompile.Methods[delegation.MethodDelegate].Outputs.Pack(false)
 	s.Require().NoError(err)
 
 	testcases := []struct {
@@ -288,8 +288,8 @@ func (s *DelegationPrecompileSuite) TestRunDelegateToThroughClientChain() {
 	}
 }
 
-// TestRun tests DelegateToThroughClientChain method through calling Run function.
-func (s *DelegationPrecompileSuite) TestRunUnDelegateFromThroughClientChain() {
+// TestRun tests Delegate method through calling Run function.
+func (s *DelegationPrecompileSuite) TestRunUnDelegate() {
 	// deposit params for test
 	exocoreLzAppEventTopic := "0xc6a377bfc4eb120024a8ac08eef205be16b817020812c73223e81d1bdb9708ec"
 	usdtAddress := common.FromHex("0xdAC17F958D2ee523a2206206994597C13D831ec7")
@@ -303,7 +303,7 @@ func (s *DelegationPrecompileSuite) TestRunUnDelegateFromThroughClientChain() {
 		// deposit asset for delegation test
 		params := &assetskeeper.DepositWithdrawParams{
 			ClientChainLzID: 101,
-			Action:          types.Deposit,
+			Action:          types.DepositLST,
 			StakerAddress:   staker,
 			AssetsAddress:   usdtAddress,
 			OpAmount:        depositAmount,
@@ -341,7 +341,7 @@ func (s *DelegationPrecompileSuite) TestRunUnDelegateFromThroughClientChain() {
 	commonMalleate := func() (common.Address, []byte) {
 		// prepare the call input for delegation test
 		input, err := s.precompile.Pack(
-			delegation.MethodUndelegateFromThroughClientChain,
+			delegation.MethodUndelegate,
 			uint32(clientChainLzID),
 			lzNonce+1,
 			assetAddr,
@@ -352,7 +352,7 @@ func (s *DelegationPrecompileSuite) TestRunUnDelegateFromThroughClientChain() {
 		s.Require().NoError(err, "failed to pack input")
 		return s.Address, input
 	}
-	successRet, err := s.precompile.Methods[delegation.MethodUndelegateFromThroughClientChain].Outputs.Pack(true)
+	successRet, err := s.precompile.Methods[delegation.MethodUndelegate].Outputs.Pack(true)
 	s.Require().NoError(err)
 
 	testcases := []struct {
