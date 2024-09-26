@@ -117,7 +117,8 @@ func (k *Keeper) SlashAssets(ctx sdk.Context, parameter *types.SlashInputInfo) (
 		// all shares need to be cleared if the asset amount is slashed to zero,
 		// otherwise there will be a problem in updating the shares when handling
 		// the new delegations.
-		if remainingAmount.IsZero() {
+		if remainingAmount.IsZero() &&
+			k.delegationKeeper.HasStakerList(ctx, parameter.Operator.String(), assetID) {
 			// clear the share of other stakers
 			stakerList, err := k.delegationKeeper.GetStakersByOperator(ctx, parameter.Operator.String(), assetID)
 			if err != nil {
