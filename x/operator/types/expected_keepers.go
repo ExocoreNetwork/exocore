@@ -34,6 +34,7 @@ type DelegationKeeper interface {
 	IterateUndelegationsByOperator(
 		ctx sdk.Context, operator string, heightFilter *uint64, isUpdate bool,
 		opFunc func(undelegation *delegationtype.UndelegationRecord) error) error
+	HasStakerList(ctx sdk.Context, operator, assetID string) bool
 	GetStakersByOperator(
 		ctx sdk.Context, operator, assetID string,
 	) (delegationtype.StakerList, error)

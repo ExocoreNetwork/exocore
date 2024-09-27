@@ -5,6 +5,8 @@ import (
 	"math/big"
 	"time"
 
+	utiltx "github.com/ExocoreNetwork/exocore/testutil/tx"
+
 	sdkmath "cosmossdk.io/math"
 
 	avsManagerPrecompile "github.com/ExocoreNetwork/exocore/precompiles/avs"
@@ -160,7 +162,7 @@ func (suite *AVSManagerPrecompileSuite) TestAVSUSDValue() {
 		)
 		suite.NoError(err)
 		// register the new AVS
-		suite.prepareAvs([]string{"0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48_0x65", "0xdac17f958d2ee523a2206206994597c13d831ec7_0x65"})
+		suite.prepareAvs([]string{"0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48_0x65", "0xdac17f958d2ee523a2206206994597c13d831ec7_0x65"}, utiltx.GenerateAddress().String())
 		// opt in
 		err = suite.App.OperatorKeeper.OptIn(suite.Ctx, suite.operatorAddr, suite.avsAddr)
 		suite.NoError(err)
@@ -248,7 +250,7 @@ func (suite *AVSManagerPrecompileSuite) TestGetOperatorOptedUSDValue() {
 		)
 		suite.NoError(err)
 		// register the new AVS
-		suite.prepareAvs([]string{"0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48_0x65", "0xdac17f958d2ee523a2206206994597c13d831ec7_0x65"})
+		suite.prepareAvs([]string{"0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48_0x65", "0xdac17f958d2ee523a2206206994597c13d831ec7_0x65"}, utiltx.GenerateAddress().String())
 		// opt in
 		err = suite.App.OperatorKeeper.OptIn(suite.Ctx, suite.operatorAddr, suite.avsAddr)
 		suite.NoError(err)

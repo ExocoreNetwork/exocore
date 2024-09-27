@@ -26,7 +26,7 @@ func (suite *GenesisTestSuite) TestValidateGenesis() {
 	assetAddress := utiltx.GenerateAddress()
 	stakerAddress := utiltx.GenerateAddress()
 	lzID := uint64(101)
-	stakerID, assetID := assetstypes.GetStakeIDAndAssetID(
+	stakerID, assetID := assetstypes.GetStakerIDAndAssetID(
 		lzID, stakerAddress[:], assetAddress[:],
 	)
 	operatorAddress := sdk.AccAddress(utiltx.GenerateAddress().Bytes())
@@ -110,7 +110,7 @@ func (suite *GenesisTestSuite) TestValidateGenesis() {
 			genState: types.NewGenesis(nil, delegationStates, stakersByOperator, nil),
 			expPass:  false,
 			malleate: func(gs *types.GenesisState) {
-				stakerID, _ := assetstypes.GetStakeIDAndAssetID(
+				stakerID, _ := assetstypes.GetStakerIDAndAssetID(
 					lzID+1, stakerAddress[:], assetAddress[:],
 				)
 				invalidStateKey := assetstypes.GetJoinedStoreKey(stakerID, assetID, operatorAddress.String())

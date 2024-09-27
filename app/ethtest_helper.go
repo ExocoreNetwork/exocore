@@ -157,11 +157,11 @@ func genesisStateWithValSet(codec codec.Codec, genesisState simapp.GenesisState,
 	privkey, _ := ethsecp256k1.GenerateKey()
 	key, _ := privkey.ToECDSA()
 	operator := crypto.PubkeyToAddress(key.PublicKey)
-	stakerID, _ := assetstypes.GetStakeIDAndAssetIDFromStr(
+	stakerID, _ := assetstypes.GetStakerIDAndAssetIDFromStr(
 		clientChains[0].LayerZeroChainID,
 		common.Address(operator.Bytes()).String(), "",
 	)
-	_, assetID := assetstypes.GetStakeIDAndAssetIDFromStr(
+	_, assetID := assetstypes.GetStakerIDAndAssetIDFromStr(
 		clientChains[0].LayerZeroChainID,
 		"", assets[0].Address,
 	)
@@ -243,9 +243,8 @@ func genesisStateWithValSet(codec codec.Codec, genesisState simapp.GenesisState,
 		dogfoodtypes.DefaultParams(), []dogfoodtypes.GenesisValidator{
 			{
 				// PublicKey: consensusKeyRecords[0].Chains[0].ConsensusKey,
-				Power:           1,
-				PublicKey:       hexutil.Encode(valSet.Validators[0].PubKey.Bytes()),
-				OperatorAccAddr: operatorInfos[0].OperatorAddress,
+				Power:     1,
+				PublicKey: hexutil.Encode(valSet.Validators[0].PubKey.Bytes()),
 			},
 		},
 		[]dogfoodtypes.EpochToOperatorAddrs{}, []dogfoodtypes.EpochToConsensusAddrs{},

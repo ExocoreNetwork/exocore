@@ -25,18 +25,18 @@ func (p Precompile) GetRegisteredPubkey(
 	args []interface{},
 ) ([]byte, error) {
 	if len(args) != len(p.ABI.Methods[MethodGetRegisteredPubkey].Inputs) {
-		return nil, fmt.Errorf(cmn.ErrInvalidNumberOfArgs, len(p.ABI.Methods[MethodRegisterAVS].Inputs), len(args))
+		return nil, fmt.Errorf(cmn.ErrInvalidNumberOfArgs, len(p.ABI.Methods[MethodGetRegisteredPubkey].Inputs), len(args))
 	}
 	// the key is set using the operator's acc address so the same logic should apply here
 	addr, ok := args[0].(string)
 	if !ok {
 		return nil, fmt.Errorf(exocmn.ErrContractInputParaOrType, 0, "string", addr)
 	}
-	pubkey, err := p.avsKeeper.GetOperatorPubKey(ctx, addr)
+	blsPubkeyInfo, err := p.avsKeeper.GetOperatorPubKey(ctx, addr)
 	if err != nil {
 		return nil, err
 	}
-	return method.Outputs.Pack(pubkey)
+	return method.Outputs.Pack(blsPubkeyInfo.PubKey)
 }
 
 func (p Precompile) GetOptedInOperatorAccAddrs(
@@ -46,7 +46,7 @@ func (p Precompile) GetOptedInOperatorAccAddrs(
 	args []interface{},
 ) ([]byte, error) {
 	if len(args) != len(p.ABI.Methods[MethodGetOptinOperators].Inputs) {
-		return nil, fmt.Errorf(cmn.ErrInvalidNumberOfArgs, len(p.ABI.Methods[MethodRegisterAVS].Inputs), len(args))
+		return nil, fmt.Errorf(cmn.ErrInvalidNumberOfArgs, len(p.ABI.Methods[MethodGetOptinOperators].Inputs), len(args))
 	}
 
 	addr, ok := args[0].(common.Address)

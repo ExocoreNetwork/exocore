@@ -1,8 +1,13 @@
 package keeper
 
 import (
+	"encoding/hex"
 	"fmt"
 	"slices"
+	"strconv"
+
+	"github.com/prysmaticlabs/prysm/v4/crypto/bls"
+	"github.com/prysmaticlabs/prysm/v4/crypto/bls/blst"
 
 	"github.com/ethereum/go-ethereum/common"
 
@@ -82,6 +87,9 @@ func (k Keeper) UpdateAVSInfo(ctx sdk.Context, params *types.AVSRegisterOrDeregi
 		if avsInfo != nil {
 			return errorsmod.Wrap(types.ErrAlreadyRegistered, fmt.Sprintf("the avsaddress is :%s", params.AvsAddress))
 		}
+		if k.GetAVSInfoByTaskAddress(ctx, params.TaskAddr).AvsAddress != "" {
+			return errorsmod.Wrap(types.ErrAlreadyRegistered, fmt.Sprintf("this TaskAddr has already been used by other AVS,the TaskAddr is :%s", params.TaskAddr))
+		}
 		startingEpoch := uint64(epoch.CurrentEpoch + 1)
 		if params.ChainID == types.ChainIDWithoutRevision(ctx.ChainID()) {
 			// TODO: handle this better
@@ -106,8 +114,10 @@ func (k Keeper) UpdateAVSInfo(ctx sdk.Context, params *types.AVSRegisterOrDeregi
 			TaskAddr:            params.TaskAddr,
 			MinStakeAmount:      params.MinStakeAmount, // Effective at CurrentEpoch+1, avoid immediate effects and ensure that the first epoch time of avs is equal to a normal identifier
 			MinTotalStakeAmount: params.MinTotalStakeAmount,
-			AvsSlash:            sdk.NewDecWithPrec(int64(params.AvsSlash), 2),  // #nosec G115
-			AvsReward:           sdk.NewDecWithPrec(int64(params.AvsReward), 2), // #nosec G115
+			// #nosec G115
+			AvsSlash: sdk.NewDecWithPrec(int64(params.AvsSlash), 2),
+			// #nosec G115
+			AvsReward: sdk.NewDecWithPrec(int64(params.AvsReward), 2),
 		}
 
 		return k.SetAVSInfo(ctx, avs)
@@ -135,11 +145,18 @@ func (k Keeper) UpdateAVSInfo(ctx sdk.Context, params *types.AVSRegisterOrDeregi
 		if avsInfo == nil {
 			return errorsmod.Wrap(types.ErrUnregisterNonExistent, fmt.Sprintf("the avsaddress is :%s", params.AvsAddress))
 		}
+		if k.GetAVSInfoByTaskAddress(ctx, params.TaskAddr).AvsAddress != "" {
+			return errorsmod.Wrap(types.ErrAlreadyRegistered, fmt.Sprintf("this TaskAddr has already been used by other AVS,the TaskAddr is :%s", params.TaskAddr))
+		}
 		// TODO: The AvsUnbondingPeriod is used for undelegation, but this check currently blocks updates to AVS information. Remove this check to allow AVS updates, while detailed control mechanisms for updates should be considered and implemented in the future.
 		// If avs UpdateAction check UnbondingPeriod
-		/*		if int64(avsInfo.Info.AvsUnbondingPeriod) < (epoch.CurrentEpoch - int64(avsInfo.GetInfo().StartingEpoch)) {
-				return errorsmod.Wrap(types.ErrUnbondingPeriod, fmt.Sprintf("not qualified to update %s", avsInfo))
-			}*/
+
+		// #nosec G115
+		//	if int64(avsInfo.Info.AvsUnbondingPeriod) < (epoch.CurrentEpoch - int64(avsInfo.GetInfo().StartingEpoch)) {
+		//	return errorsmod.Wrap(types.ErrUnbondingPeriod, fmt.Sprintf("not qualified to deregister %s", avsInfo))
+		// }
+		// If avs UpdateAction check CallerAddress
+
 		avs := avsInfo.Info
 
 		if params.AvsName != "" {
@@ -170,9 +187,9 @@ func (k Keeper) UpdateAVSInfo(ctx sdk.Context, params *types.AVSRegisterOrDeregi
 		if params.UnbondingPeriod > 0 {
 			avs.AvsUnbondingPeriod = params.UnbondingPeriod
 		}
-		if params.MinSelfDelegation > 0 {
-			avs.MinSelfDelegation = params.MinSelfDelegation
-		}
+
+		avs.MinSelfDelegation = params.MinSelfDelegation
+
 		if params.EpochIdentifier != "" {
 			avs.EpochIdentifier = params.EpochIdentifier
 		}
@@ -184,10 +201,12 @@ func (k Keeper) UpdateAVSInfo(ctx sdk.Context, params *types.AVSRegisterOrDeregi
 			avs.MinTotalStakeAmount = params.MinTotalStakeAmount
 		}
 		if params.AvsSlash > 0 {
-			avs.AvsSlash = sdk.NewDecWithPrec(int64(params.AvsSlash), 2) // #nosec G115
+			// #nosec G115
+			avs.AvsSlash = sdk.NewDecWithPrec(int64(params.AvsSlash), 2)
 		}
 		if params.AvsReward > 0 {
-			avs.AvsReward = sdk.NewDecWithPrec(int64(params.AvsReward), 2) // #nosec G115
+			// #nosec G115
+			avs.AvsReward = sdk.NewDecWithPrec(int64(params.AvsReward), 2)
 		}
 		avs.AvsAddress = params.AvsAddress
 		avs.StartingEpoch = uint64(epoch.CurrentEpoch + 1)
@@ -198,7 +217,7 @@ func (k Keeper) UpdateAVSInfo(ctx sdk.Context, params *types.AVSRegisterOrDeregi
 	}
 }
 
-func (k Keeper) CreateAVSTask(ctx sdk.Context, params *TaskParams) error {
+func (k Keeper) CreateAVSTask(ctx sdk.Context, params *TaskInfoParams) error {
 	avsInfo := k.GetAVSInfoByTaskAddress(ctx, params.TaskContractAddress)
 	if avsInfo.AvsAddress == "" {
 		return errorsmod.Wrap(types.ErrUnregisterNonExistent, fmt.Sprintf("the taskaddr is :%s", params.TaskContractAddress))
@@ -207,31 +226,51 @@ func (k Keeper) CreateAVSTask(ctx sdk.Context, params *TaskParams) error {
 	if !slices.Contains(avsInfo.AvsOwnerAddress, params.CallerAddress) {
 		return errorsmod.Wrap(types.ErrCallerAddressUnauthorized, fmt.Sprintf("this caller not qualified to CreateAVSTask %s", params.CallerAddress))
 	}
+	taskPowerTotal, err := k.operatorKeeper.GetAVSUSDValue(ctx, avsInfo.AvsAddress)
+
+	if err != nil || taskPowerTotal.IsZero() || taskPowerTotal.IsNegative() {
+		return errorsmod.Wrap(types.ErrVotingPowerIncorrect, fmt.Sprintf("the votingpower of avs is <<=0,avs addr is：%s", avsInfo.AvsAddress))
+	}
 
 	epoch, found := k.epochsKeeper.GetEpochInfo(ctx, avsInfo.EpochIdentifier)
 	if !found {
 		return errorsmod.Wrap(types.ErrEpochNotFound, fmt.Sprintf("epoch info not found %s", avsInfo.EpochIdentifier))
 	}
 
-	if k.IsExistTask(ctx, params.TaskID, params.TaskContractAddress) {
-		return errorsmod.Wrap(types.ErrAlreadyExists, fmt.Sprintf("the task is :%s", params.TaskID))
+	if k.IsExistTask(ctx, strconv.FormatUint(params.TaskID, 10), params.TaskContractAddress) {
+		return errorsmod.Wrap(types.ErrAlreadyExists, fmt.Sprintf("the task is :%s", strconv.FormatUint(params.TaskID, 10)))
 	}
+	operatorList, err := k.GetOptInOperators(ctx, avsInfo.AvsAddress)
+	if err != nil {
+		return errorsmod.Wrap(err, "CreateAVSTask: failed to get opt-in operators")
+	}
+	params.TaskID = k.GetTaskID(ctx, common.HexToAddress(params.TaskContractAddress))
 	task := &types.TaskInfo{
-		Name:                params.TaskName,
-		Data:                params.Data,
-		TaskContractAddress: params.TaskContractAddress,
-		TaskId:              params.TaskID,
-		TaskChallengePeriod: params.TaskChallengePeriod,
-		ThresholdPercentage: params.ThresholdPercentage,
-		TaskResponsePeriod:  params.TaskResponsePeriod,
-		StartingEpoch:       uint64(epoch.CurrentEpoch + 1),
+		Name:                  params.TaskName,
+		Hash:                  params.Hash,
+		TaskContractAddress:   params.TaskContractAddress,
+		TaskId:                params.TaskID,
+		TaskChallengePeriod:   params.TaskChallengePeriod,
+		ThresholdPercentage:   params.ThresholdPercentage,
+		TaskResponsePeriod:    params.TaskResponsePeriod,
+		TaskStatisticalPeriod: params.TaskStatisticalPeriod,
+		StartingEpoch:         uint64(epoch.CurrentEpoch + 1),
+		ActualThreshold:       0,
+		OptInOperators:        operatorList,
 	}
 	return k.SetTaskInfo(ctx, task)
 }
 
 func (k Keeper) RegisterBLSPublicKey(ctx sdk.Context, params *BlsParams) error {
-	// TODO:check bls signature to prevent rogue key attacks
-	// params.pubkeyRegistrationSignature == key.sig(params.pubkeyRegistrationMessageHash)
+	// check bls signature to prevent rogue key attacks
+	sig := params.PubkeyRegistrationSignature
+	msgHash := params.PubkeyRegistrationMessageHash
+	pubKey, _ := bls.PublicKeyFromBytes(params.PubKey)
+	valid, err := blst.VerifySignature(sig, [32]byte(msgHash), pubKey)
+	if err != nil || !valid {
+		return errorsmod.Wrap(types.ErrSigNotMatchPubKey, fmt.Sprintf("the operator is :%s", params.Operator))
+	}
+
 	if k.IsExistPubKey(ctx, params.Operator) {
 		return errorsmod.Wrap(types.ErrAlreadyExists, fmt.Sprintf("the operator is :%s", params.Operator))
 	}
@@ -342,4 +381,63 @@ func (k Keeper) IterateAVSInfo(ctx sdk.Context, fn func(index int64, avsInfo typ
 		}
 		i++
 	}
+}
+
+func (k Keeper) RaiseAndResolveChallenge(ctx sdk.Context, params *ChallengeParams) error {
+	taskInfo, err := k.GetTaskInfo(ctx, strconv.FormatUint(params.TaskID, 10), params.TaskContractAddress.String())
+	if err != nil {
+		return fmt.Errorf("task does not exist,this task address: %s", params.TaskContractAddress)
+	}
+	// check Task
+	if hex.EncodeToString(taskInfo.Hash) != hex.EncodeToString(params.TaskHash) {
+		return errorsmod.Wrap(err, fmt.Sprintf("error Task hasn't been responded to yet: %s", params.TaskContractAddress))
+	}
+	// check Task result
+	res, err := k.GetTaskResultInfo(ctx, params.OperatorAddress.String(), params.TaskContractAddress.String(),
+		params.TaskID)
+	if err != nil {
+		return fmt.Errorf("task result does not exist, this task address: %s", params.TaskContractAddress)
+	}
+	taskRes, err := types.UnmarshalTaskResponse(res.TaskResponse)
+	if err != nil {
+		return errorsmod.Wrap(err, fmt.Sprintf("error occurred when unmarshal task response, this task address: %s", params.TaskContractAddress))
+	}
+	hash, err := types.GetTaskResponseDigestEncodeByAbi(taskRes)
+
+	if err != nil || res.TaskId != params.TaskID || hex.EncodeToString(hash[:]) != hex.EncodeToString(params.TaskResponseHash) {
+		return errorsmod.Wrap(
+			types.ErrInconsistentParams,
+			fmt.Sprintf("Task response does not match the one recorded,task addr: %s ,(TaskContractAddress: %s)"+
+				",(TaskId: %d),(TaskResponseHash: %s)",
+				params.OperatorAddress, params.TaskContractAddress, params.TaskID, params.TaskResponseHash),
+		)
+	}
+	// check challenge record
+	if k.IsExistTaskChallengedInfo(ctx, params.OperatorAddress.String(),
+		params.TaskContractAddress.String(), params.TaskID) {
+		return errorsmod.Wrap(types.ErrAlreadyExists, fmt.Sprintf("the challenge has been raised: %s", params.TaskContractAddress))
+	}
+
+	// check challenge period
+	//  check epoch，The challenge must be within the challenge window period
+	avsInfo := k.GetAVSInfoByTaskAddress(ctx, taskInfo.TaskContractAddress)
+	epoch, found := k.epochsKeeper.GetEpochInfo(ctx, avsInfo.EpochIdentifier)
+	if !found {
+		return errorsmod.Wrap(types.ErrEpochNotFound, fmt.Sprintf("epoch info not found %s",
+			avsInfo.EpochIdentifier))
+	}
+	if epoch.CurrentEpoch <= int64(taskInfo.StartingEpoch)+int64(taskInfo.TaskResponsePeriod)+int64(taskInfo.TaskStatisticalPeriod) {
+		return errorsmod.Wrap(
+			types.ErrSubmitTooLateError,
+			fmt.Sprintf("SetTaskResultInfo:the challenge period has not started , CurrentEpoch:%d", epoch.CurrentEpoch),
+		)
+	}
+	if epoch.CurrentEpoch > int64(taskInfo.StartingEpoch)+int64(taskInfo.TaskResponsePeriod)+int64(taskInfo.TaskStatisticalPeriod)+int64(taskInfo.TaskChallengePeriod) {
+		return errorsmod.Wrap(
+			types.ErrSubmitTooLateError,
+			fmt.Sprintf("SetTaskResultInfo:submit  too late, CurrentEpoch:%d", epoch.CurrentEpoch),
+		)
+	}
+	return k.SetTaskChallengedInfo(ctx, params.TaskID, params.OperatorAddress.String(), params.CallerAddress,
+		params.TaskContractAddress)
 }

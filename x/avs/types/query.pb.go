@@ -269,50 +269,284 @@ func (m *QueryAVSTaskInfoReq) GetTaskId() string {
 	return ""
 }
 
+// QuerySubmitTaskResultReq is the request to obtain the task information.
+type QuerySubmitTaskResultReq struct {
+	// task_addr is the task contract address,its type should be a sdk.AccAddress
+	TaskAddress string `protobuf:"bytes,1,opt,name=task_addr,json=taskAddr,proto3" json:"task_addr,omitempty"`
+	// task_id is the task identifier
+	TaskId string `protobuf:"bytes,2,opt,name=task_id,json=taskId,proto3" json:"task_id,omitempty"`
+	// operator_addr is the operator address,its type should be a sdk.AccAddress
+	OperatorAddr string `protobuf:"bytes,3,opt,name=operator_addr,json=operatorAddr,proto3" json:"operator_addr,omitempty"`
+}
+
+func (m *QuerySubmitTaskResultReq) Reset()         { *m = QuerySubmitTaskResultReq{} }
+func (m *QuerySubmitTaskResultReq) String() string { return proto.CompactTextString(m) }
+func (*QuerySubmitTaskResultReq) ProtoMessage()    {}
+func (*QuerySubmitTaskResultReq) Descriptor() ([]byte, []int) {
+	return fileDescriptor_fd804655b77429f2, []int{5}
+}
+func (m *QuerySubmitTaskResultReq) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QuerySubmitTaskResultReq) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QuerySubmitTaskResultReq.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QuerySubmitTaskResultReq) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QuerySubmitTaskResultReq.Merge(m, src)
+}
+func (m *QuerySubmitTaskResultReq) XXX_Size() int {
+	return m.Size()
+}
+func (m *QuerySubmitTaskResultReq) XXX_DiscardUnknown() {
+	xxx_messageInfo_QuerySubmitTaskResultReq.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QuerySubmitTaskResultReq proto.InternalMessageInfo
+
+func (m *QuerySubmitTaskResultReq) GetTaskAddress() string {
+	if m != nil {
+		return m.TaskAddress
+	}
+	return ""
+}
+
+func (m *QuerySubmitTaskResultReq) GetTaskId() string {
+	if m != nil {
+		return m.TaskId
+	}
+	return ""
+}
+
+func (m *QuerySubmitTaskResultReq) GetOperatorAddr() string {
+	if m != nil {
+		return m.OperatorAddr
+	}
+	return ""
+}
+
+// QueryChallengeInfoReq is the request to obtain the task information.
+type QueryChallengeInfoReq struct {
+	// task_addr is the task contract address,its type should be a sdk.AccAddress
+	TaskAddress string `protobuf:"bytes,1,opt,name=task_addr,json=taskAddr,proto3" json:"task_addr,omitempty"`
+	// task_id is the task identifier
+	TaskId string `protobuf:"bytes,2,opt,name=task_id,json=taskId,proto3" json:"task_id,omitempty"`
+	// operator_addr is the operator address,its type should be a sdk.AccAddress
+	OperatorAddr string `protobuf:"bytes,3,opt,name=operator_addr,json=operatorAddr,proto3" json:"operator_addr,omitempty"`
+}
+
+func (m *QueryChallengeInfoReq) Reset()         { *m = QueryChallengeInfoReq{} }
+func (m *QueryChallengeInfoReq) String() string { return proto.CompactTextString(m) }
+func (*QueryChallengeInfoReq) ProtoMessage()    {}
+func (*QueryChallengeInfoReq) Descriptor() ([]byte, []int) {
+	return fileDescriptor_fd804655b77429f2, []int{6}
+}
+func (m *QueryChallengeInfoReq) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QueryChallengeInfoReq) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryChallengeInfoReq.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QueryChallengeInfoReq) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryChallengeInfoReq.Merge(m, src)
+}
+func (m *QueryChallengeInfoReq) XXX_Size() int {
+	return m.Size()
+}
+func (m *QueryChallengeInfoReq) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryChallengeInfoReq.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryChallengeInfoReq proto.InternalMessageInfo
+
+func (m *QueryChallengeInfoReq) GetTaskAddress() string {
+	if m != nil {
+		return m.TaskAddress
+	}
+	return ""
+}
+
+func (m *QueryChallengeInfoReq) GetTaskId() string {
+	if m != nil {
+		return m.TaskId
+	}
+	return ""
+}
+
+func (m *QueryChallengeInfoReq) GetOperatorAddr() string {
+	if m != nil {
+		return m.OperatorAddr
+	}
+	return ""
+}
+
+// QuerySubmitTaskResultResponse is the response of avs related information
+type QuerySubmitTaskResultResponse struct {
+	// info is the taskResult.
+	Info *TaskResultInfo `protobuf:"bytes,1,opt,name=info,proto3" json:"info,omitempty"`
+}
+
+func (m *QuerySubmitTaskResultResponse) Reset()         { *m = QuerySubmitTaskResultResponse{} }
+func (m *QuerySubmitTaskResultResponse) String() string { return proto.CompactTextString(m) }
+func (*QuerySubmitTaskResultResponse) ProtoMessage()    {}
+func (*QuerySubmitTaskResultResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_fd804655b77429f2, []int{7}
+}
+func (m *QuerySubmitTaskResultResponse) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QuerySubmitTaskResultResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QuerySubmitTaskResultResponse.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QuerySubmitTaskResultResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QuerySubmitTaskResultResponse.Merge(m, src)
+}
+func (m *QuerySubmitTaskResultResponse) XXX_Size() int {
+	return m.Size()
+}
+func (m *QuerySubmitTaskResultResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_QuerySubmitTaskResultResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QuerySubmitTaskResultResponse proto.InternalMessageInfo
+
+func (m *QuerySubmitTaskResultResponse) GetInfo() *TaskResultInfo {
+	if m != nil {
+		return m.Info
+	}
+	return nil
+}
+
+// QueryChallengeInfoResponse is the response of avs related information
+type QueryChallengeInfoResponse struct {
+	// challenge_addr is the challenge address,its type should be a common.HexAddress.
+	ChallengeAddr string `protobuf:"bytes,1,opt,name=challenge_addr,json=challengeAddr,proto3" json:"challenge_addr,omitempty"`
+}
+
+func (m *QueryChallengeInfoResponse) Reset()         { *m = QueryChallengeInfoResponse{} }
+func (m *QueryChallengeInfoResponse) String() string { return proto.CompactTextString(m) }
+func (*QueryChallengeInfoResponse) ProtoMessage()    {}
+func (*QueryChallengeInfoResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_fd804655b77429f2, []int{8}
+}
+func (m *QueryChallengeInfoResponse) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QueryChallengeInfoResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryChallengeInfoResponse.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QueryChallengeInfoResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryChallengeInfoResponse.Merge(m, src)
+}
+func (m *QueryChallengeInfoResponse) XXX_Size() int {
+	return m.Size()
+}
+func (m *QueryChallengeInfoResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryChallengeInfoResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryChallengeInfoResponse proto.InternalMessageInfo
+
+func (m *QueryChallengeInfoResponse) GetChallengeAddr() string {
+	if m != nil {
+		return m.ChallengeAddr
+	}
+	return ""
+}
+
 func init() {
 	proto.RegisterType((*QueryAVSInfoReq)(nil), "exocore.avs.v1.QueryAVSInfoReq")
 	proto.RegisterType((*QueryAVSInfoResponse)(nil), "exocore.avs.v1.QueryAVSInfoResponse")
 	proto.RegisterType((*QueryAVSAddrByChainIDReq)(nil), "exocore.avs.v1.QueryAVSAddrByChainIDReq")
 	proto.RegisterType((*QueryAVSAddrByChainIDResponse)(nil), "exocore.avs.v1.QueryAVSAddrByChainIDResponse")
 	proto.RegisterType((*QueryAVSTaskInfoReq)(nil), "exocore.avs.v1.QueryAVSTaskInfoReq")
+	proto.RegisterType((*QuerySubmitTaskResultReq)(nil), "exocore.avs.v1.QuerySubmitTaskResultReq")
+	proto.RegisterType((*QueryChallengeInfoReq)(nil), "exocore.avs.v1.QueryChallengeInfoReq")
+	proto.RegisterType((*QuerySubmitTaskResultResponse)(nil), "exocore.avs.v1.QuerySubmitTaskResultResponse")
+	proto.RegisterType((*QueryChallengeInfoResponse)(nil), "exocore.avs.v1.QueryChallengeInfoResponse")
 }
 
 func init() { proto.RegisterFile("exocore/avs/v1/query.proto", fileDescriptor_fd804655b77429f2) }
 
 var fileDescriptor_fd804655b77429f2 = []byte{
-	// 502 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x94, 0x93, 0x4f, 0x6f, 0xd3, 0x30,
-	0x18, 0xc6, 0x9b, 0x01, 0xeb, 0xe6, 0xa2, 0x81, 0x4c, 0xd1, 0xb2, 0x00, 0x29, 0x84, 0x01, 0x13,
-	0xa8, 0xb1, 0x3a, 0xc4, 0x07, 0x68, 0x06, 0x9a, 0x7a, 0x41, 0xd0, 0xa2, 0x1d, 0xb8, 0x54, 0x5e,
-	0xe3, 0x65, 0x51, 0x59, 0xde, 0x2e, 0xf6, 0x42, 0x7b, 0x02, 0xf1, 0x09, 0x90, 0xb8, 0x72, 0xe3,
-	0x2b, 0xf0, 0x21, 0x38, 0x4e, 0x70, 0xe1, 0x34, 0xa1, 0x94, 0x0f, 0x82, 0xec, 0x38, 0xa8, 0x89,
-	0x5a, 0xfe, 0xdc, 0x62, 0xbf, 0xcf, 0xfb, 0xf3, 0xe3, 0xc7, 0x6f, 0x90, 0xc5, 0xc6, 0x30, 0x80,
-	0x98, 0x11, 0x9a, 0x70, 0x92, 0xb4, 0xc8, 0xf1, 0x09, 0x8b, 0x27, 0xee, 0x28, 0x06, 0x01, 0x78,
-	0x4d, 0xd7, 0x5c, 0x9a, 0x70, 0x37, 0x69, 0x59, 0x1b, 0x03, 0xe0, 0x47, 0xc0, 0xfb, 0xaa, 0x4a,
-	0xb2, 0x45, 0x26, 0xb5, 0xd6, 0x4b, 0x18, 0x31, 0xd6, 0x85, 0x7a, 0x00, 0x01, 0x64, 0x0d, 0xf2,
-	0x4b, 0xef, 0x5e, 0x0f, 0x00, 0x82, 0x57, 0x8c, 0xd0, 0x51, 0x48, 0x68, 0x14, 0x81, 0xa0, 0x22,
-	0x84, 0x48, 0xc3, 0x1c, 0x0f, 0x5d, 0x7a, 0x2e, 0x6d, 0xb4, 0xf7, 0x7a, 0x9d, 0xe8, 0x00, 0xba,
-	0xec, 0x18, 0x13, 0x54, 0xa3, 0x09, 0xef, 0x53, 0xdf, 0x8f, 0x19, 0xe7, 0xa6, 0x71, 0xd3, 0xd8,
-	0x5a, 0xf5, 0xd6, 0xd2, 0xb3, 0x06, 0x6a, 0xef, 0xf5, 0xda, 0xd9, 0x6e, 0x17, 0xd1, 0x84, 0xeb,
-	0x6f, 0x67, 0x07, 0xd5, 0x8b, 0x0c, 0x3e, 0x82, 0x88, 0x33, 0xfc, 0x00, 0x9d, 0x0f, 0xa3, 0x03,
-	0x50, 0x84, 0xda, 0xf6, 0xba, 0x5b, 0xbc, 0xa2, 0x9b, 0xcb, 0x95, 0xc8, 0xf1, 0x90, 0x99, 0x43,
-	0x24, 0xd7, 0x9b, 0xec, 0x1c, 0xd2, 0x30, 0xea, 0x3c, 0x96, 0x8e, 0xee, 0xa2, 0x95, 0x81, 0x5c,
-	0xf5, 0x43, 0x5f, 0xdb, 0xa9, 0xa5, 0x67, 0x8d, 0x6a, 0xae, 0xa8, 0xaa, 0x62, 0xc7, 0x77, 0x9e,
-	0xa1, 0x1b, 0x0b, 0x18, 0xda, 0xd1, 0x7f, 0x5f, 0xed, 0x0d, 0xba, 0x92, 0x13, 0x5f, 0x50, 0x3e,
-	0xcc, 0x23, 0x7a, 0x84, 0x56, 0x05, 0xe5, 0x43, 0x05, 0xd2, 0x14, 0xf3, 0xeb, 0xe7, 0x66, 0x5d,
-	0xbf, 0x93, 0xee, 0xee, 0x89, 0x38, 0x8c, 0x82, 0xee, 0x8a, 0x94, 0xca, 0x2d, 0xdc, 0x42, 0x55,
-	0xd5, 0x16, 0xfa, 0xe6, 0xd2, 0x5f, 0x9a, 0x96, 0xa5, 0xb0, 0xe3, 0x6f, 0x7f, 0x3a, 0x87, 0x2e,
-	0x28, 0x07, 0x78, 0x8c, 0x2e, 0xce, 0xa6, 0x8c, 0x1b, 0xe5, 0x3c, 0x4b, 0xef, 0x68, 0x6d, 0xfe,
-	0x59, 0x90, 0x45, 0xe2, 0xdc, 0x7a, 0xf7, 0xed, 0xe7, 0x87, 0xa5, 0x6b, 0x78, 0x83, 0xcc, 0x8e,
-	0x55, 0xe1, 0xa4, 0xb7, 0x06, 0xba, 0x5c, 0x4e, 0x01, 0xdf, 0x5e, 0x44, 0x9f, 0xc9, 0xc9, 0x32,
-	0xcb, 0xa2, 0xbc, 0xe8, 0x34, 0xd5, 0xb1, 0xf7, 0xf0, 0x9d, 0xd9, 0x63, 0xe5, 0x9d, 0xe5, 0x44,
-	0xef, 0x32, 0x51, 0x0a, 0xfc, 0xa3, 0x81, 0xae, 0xce, 0x7d, 0x5a, 0xbc, 0xb5, 0xc8, 0x47, 0x79,
-	0x8a, 0xac, 0xe6, 0x3f, 0x2a, 0x75, 0x30, 0xf7, 0x95, 0xc3, 0x4d, 0xec, 0xcc, 0x0d, 0xa6, 0xd0,
-	0xe3, 0xed, 0x7e, 0x49, 0x6d, 0xe3, 0x34, 0xb5, 0x8d, 0x1f, 0xa9, 0x6d, 0xbc, 0x9f, 0xda, 0x95,
-	0xd3, 0xa9, 0x5d, 0xf9, 0x3e, 0xb5, 0x2b, 0x2f, 0x9b, 0x41, 0x28, 0x0e, 0x4f, 0xf6, 0xdd, 0x01,
-	0x1c, 0x91, 0x27, 0x19, 0xe7, 0x29, 0x13, 0xaf, 0x21, 0x1e, 0xfe, 0xc6, 0x8e, 0x15, 0x58, 0x4c,
-	0x46, 0x8c, 0xef, 0x2f, 0xab, 0xbf, 0xf2, 0xe1, 0xaf, 0x00, 0x00, 0x00, 0xff, 0xff, 0xb9, 0x08,
-	0xbb, 0xb7, 0x2b, 0x04, 0x00, 0x00,
+	// 669 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xac, 0x95, 0xcd, 0x6e, 0xd3, 0x40,
+	0x10, 0xc7, 0xeb, 0x42, 0xbf, 0x36, 0xfd, 0x40, 0x4b, 0x51, 0x53, 0x03, 0x0e, 0x35, 0x2d, 0xad,
+	0x0a, 0xb1, 0xd5, 0x22, 0x8e, 0x1c, 0x9a, 0x80, 0xaa, 0x5c, 0x10, 0x38, 0x55, 0x0f, 0x5c, 0xaa,
+	0x6d, 0xbc, 0x75, 0xad, 0xa6, 0xde, 0xd4, 0xbb, 0x31, 0xe9, 0x0d, 0xf1, 0x04, 0x95, 0xb8, 0x72,
+	0xe0, 0x21, 0x90, 0x78, 0x05, 0x8e, 0x15, 0x08, 0x89, 0x53, 0x85, 0x1c, 0x1e, 0x04, 0xed, 0x7a,
+	0x1d, 0x6c, 0x27, 0x4e, 0x5b, 0x89, 0x5b, 0x76, 0x3e, 0xfe, 0xf3, 0xdb, 0xf1, 0xcc, 0x06, 0xa8,
+	0xb8, 0x43, 0x1a, 0xc4, 0xc7, 0x26, 0x0a, 0xa8, 0x19, 0x6c, 0x98, 0x27, 0x6d, 0xec, 0x9f, 0x1a,
+	0x2d, 0x9f, 0x30, 0x02, 0x67, 0xa5, 0xcf, 0x40, 0x01, 0x35, 0x82, 0x0d, 0x75, 0xb1, 0x41, 0xe8,
+	0x31, 0xa1, 0x7b, 0xc2, 0x6b, 0x46, 0x87, 0x28, 0x54, 0x5d, 0xc8, 0xc8, 0xb0, 0x8e, 0x74, 0xcc,
+	0x3b, 0xc4, 0x21, 0x51, 0x02, 0xff, 0x25, 0xad, 0xf7, 0x1c, 0x42, 0x9c, 0x26, 0x36, 0x51, 0xcb,
+	0x35, 0x91, 0xe7, 0x11, 0x86, 0x98, 0x4b, 0x3c, 0x29, 0xa6, 0x57, 0xc0, 0xdc, 0x1b, 0x8e, 0xb1,
+	0xb5, 0x5b, 0xaf, 0x79, 0x07, 0xc4, 0xc2, 0x27, 0xd0, 0x04, 0x05, 0x14, 0xd0, 0x3d, 0x64, 0xdb,
+	0x3e, 0xa6, 0xb4, 0xa8, 0x3c, 0x50, 0xd6, 0xa6, 0x2a, 0xb3, 0xe1, 0x45, 0x09, 0x6c, 0xed, 0xd6,
+	0xb7, 0x22, 0xab, 0x05, 0x50, 0x40, 0xe5, 0x6f, 0xbd, 0x0a, 0xe6, 0xd3, 0x1a, 0xb4, 0x45, 0x3c,
+	0x8a, 0xe1, 0x63, 0x70, 0xd3, 0xf5, 0x0e, 0x88, 0x50, 0x28, 0x6c, 0x2e, 0x18, 0xe9, 0x2b, 0x1a,
+	0x71, 0xb8, 0x08, 0xd2, 0x2b, 0xa0, 0x18, 0x8b, 0x70, 0xdd, 0xca, 0x69, 0xf5, 0x10, 0xb9, 0x5e,
+	0xed, 0x05, 0x27, 0x7a, 0x04, 0x26, 0x1b, 0xfc, 0xb4, 0xe7, 0xda, 0x12, 0xa7, 0x10, 0x5e, 0x94,
+	0x26, 0xe2, 0x88, 0x09, 0xe1, 0xac, 0xd9, 0xfa, 0x6b, 0x70, 0x3f, 0x47, 0x43, 0x12, 0x5d, 0xfb,
+	0x6a, 0x18, 0xdc, 0x8e, 0x15, 0x77, 0x10, 0x3d, 0x8a, 0x5b, 0xf4, 0x0c, 0x4c, 0x31, 0x44, 0x8f,
+	0x84, 0x90, 0x54, 0x29, 0x7e, 0xff, 0x52, 0x9e, 0x97, 0xdf, 0x49, 0x66, 0xd7, 0x99, 0xef, 0x7a,
+	0x8e, 0x35, 0xc9, 0x43, 0xb9, 0x09, 0x2e, 0x80, 0x09, 0x91, 0xe6, 0xda, 0xc5, 0x51, 0x9e, 0x64,
+	0x8d, 0xf3, 0x63, 0xcd, 0xd6, 0x3f, 0x2b, 0xf2, 0xf6, 0xf5, 0xf6, 0xfe, 0xb1, 0xcb, 0x78, 0x29,
+	0x0b, 0xd3, 0x76, 0x93, 0xf1, 0x62, 0x4f, 0xfa, 0x8b, 0xcd, 0x85, 0x17, 0xa5, 0xc2, 0x8e, 0x94,
+	0xe5, 0xcc, 0x97, 0xd7, 0x80, 0xcf, 0xc1, 0x0c, 0x69, 0x61, 0x1f, 0x31, 0xe2, 0x47, 0x52, 0x37,
+	0x2e, 0xe1, 0x9e, 0x8e, 0xc3, 0xb9, 0x59, 0xff, 0xaa, 0x80, 0x3b, 0x02, 0xb1, 0x7a, 0x88, 0x9a,
+	0x4d, 0xec, 0x39, 0x38, 0x6e, 0xc6, 0xf5, 0xf8, 0x36, 0x32, 0x7c, 0x43, 0x00, 0xfe, 0x13, 0x79,
+	0x5d, 0x4e, 0x45, 0x7f, 0x6f, 0xe5, 0x54, 0x6c, 0xa6, 0xe6, 0x54, 0xcb, 0xce, 0xe9, 0xbf, 0x8c,
+	0xc4, 0xb8, 0x56, 0x81, 0x3a, 0xa8, 0x1b, 0x52, 0x71, 0x05, 0xcc, 0x36, 0x62, 0x47, 0xa2, 0x2f,
+	0xd6, 0x4c, 0xcf, 0xca, 0xc9, 0x36, 0x7f, 0x8e, 0x81, 0x31, 0xa1, 0x02, 0x3b, 0x60, 0x3a, 0xb9,
+	0x42, 0xb0, 0x94, 0x85, 0xc8, 0x2c, 0xa9, 0xba, 0x3c, 0x3c, 0x20, 0xe2, 0xd0, 0x97, 0x3e, 0xfc,
+	0xf8, 0xf3, 0x71, 0xf4, 0x2e, 0x5c, 0x34, 0x93, 0x6f, 0x46, 0xaa, 0xd2, 0x7b, 0x05, 0xdc, 0xca,
+	0x8e, 0x38, 0x7c, 0x98, 0xa7, 0x9e, 0x58, 0x02, 0xb5, 0x38, 0xa8, 0x51, 0xdc, 0xa9, 0x97, 0x45,
+	0xd9, 0x55, 0xb8, 0x92, 0x2c, 0xcb, 0x3f, 0x26, 0x7f, 0xae, 0xb6, 0x31, 0xcb, 0x6c, 0xd3, 0xa7,
+	0x78, 0xb4, 0xb2, 0x7b, 0x0b, 0xd7, 0xf2, 0x38, 0xb2, 0x4f, 0x84, 0x5a, 0xbe, 0x62, 0xa4, 0x6c,
+	0xcc, 0xba, 0x20, 0x5c, 0x86, 0xfa, 0xc0, 0xc6, 0xa4, 0x21, 0x7a, 0x78, 0xd9, 0x01, 0xca, 0xc1,
+	0x1b, 0xb0, 0xc3, 0x39, 0x78, 0x79, 0x13, 0x39, 0x0c, 0xaf, 0x0f, 0xe2, 0x4c, 0x01, 0xb0, 0x7f,
+	0x14, 0xe1, 0xca, 0xc0, 0x8a, 0xd9, 0xe5, 0x55, 0xd7, 0xaf, 0x12, 0x26, 0xa9, 0x56, 0x05, 0xd5,
+	0x12, 0x2c, 0xf5, 0x53, 0xa5, 0x12, 0x2a, 0xdb, 0xdf, 0x42, 0x4d, 0x39, 0x0f, 0x35, 0xe5, 0x77,
+	0xa8, 0x29, 0x67, 0x5d, 0x6d, 0xe4, 0xbc, 0xab, 0x8d, 0xfc, 0xea, 0x6a, 0x23, 0x6f, 0xcb, 0x8e,
+	0xcb, 0x0e, 0xdb, 0xfb, 0x46, 0x83, 0x1c, 0x9b, 0x2f, 0x23, 0x91, 0x57, 0x98, 0xbd, 0x23, 0xfe,
+	0x51, 0x4f, 0xb3, 0x23, 0x54, 0xd9, 0x69, 0x0b, 0xd3, 0xfd, 0x71, 0xf1, 0x27, 0xf5, 0xf4, 0x6f,
+	0x00, 0x00, 0x00, 0xff, 0xff, 0xd1, 0x2f, 0x76, 0x3f, 0x3a, 0x07, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -333,6 +567,10 @@ type QueryClient interface {
 	QueryAVSTaskInfo(ctx context.Context, in *QueryAVSTaskInfoReq, opts ...grpc.CallOption) (*TaskInfo, error)
 	// QueryAVSAddrByChainID queries the avs address by chain id
 	QueryAVSAddrByChainID(ctx context.Context, in *QueryAVSAddrByChainIDReq, opts ...grpc.CallOption) (*QueryAVSAddrByChainIDResponse, error)
+	// Parameters queries the parameters of the module.
+	QuerySubmitTaskResult(ctx context.Context, in *QuerySubmitTaskResultReq, opts ...grpc.CallOption) (*QuerySubmitTaskResultResponse, error)
+	// Parameters queries the parameters of the module.
+	QueryChallengeInfo(ctx context.Context, in *QueryChallengeInfoReq, opts ...grpc.CallOption) (*QueryChallengeInfoResponse, error)
 }
 
 type queryClient struct {
@@ -370,6 +608,24 @@ func (c *queryClient) QueryAVSAddrByChainID(ctx context.Context, in *QueryAVSAdd
 	return out, nil
 }
 
+func (c *queryClient) QuerySubmitTaskResult(ctx context.Context, in *QuerySubmitTaskResultReq, opts ...grpc.CallOption) (*QuerySubmitTaskResultResponse, error) {
+	out := new(QuerySubmitTaskResultResponse)
+	err := c.cc.Invoke(ctx, "/exocore.avs.v1.Query/QuerySubmitTaskResult", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *queryClient) QueryChallengeInfo(ctx context.Context, in *QueryChallengeInfoReq, opts ...grpc.CallOption) (*QueryChallengeInfoResponse, error) {
+	out := new(QueryChallengeInfoResponse)
+	err := c.cc.Invoke(ctx, "/exocore.avs.v1.Query/QueryChallengeInfo", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // QueryServer is the server API for Query service.
 type QueryServer interface {
 	// Parameters queries the parameters of the module.
@@ -378,6 +634,10 @@ type QueryServer interface {
 	QueryAVSTaskInfo(context.Context, *QueryAVSTaskInfoReq) (*TaskInfo, error)
 	// QueryAVSAddrByChainID queries the avs address by chain id
 	QueryAVSAddrByChainID(context.Context, *QueryAVSAddrByChainIDReq) (*QueryAVSAddrByChainIDResponse, error)
+	// Parameters queries the parameters of the module.
+	QuerySubmitTaskResult(context.Context, *QuerySubmitTaskResultReq) (*QuerySubmitTaskResultResponse, error)
+	// Parameters queries the parameters of the module.
+	QueryChallengeInfo(context.Context, *QueryChallengeInfoReq) (*QueryChallengeInfoResponse, error)
 }
 
 // UnimplementedQueryServer can be embedded to have forward compatible implementations.
@@ -392,6 +652,12 @@ func (*UnimplementedQueryServer) QueryAVSTaskInfo(ctx context.Context, req *Quer
 }
 func (*UnimplementedQueryServer) QueryAVSAddrByChainID(ctx context.Context, req *QueryAVSAddrByChainIDReq) (*QueryAVSAddrByChainIDResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method QueryAVSAddrByChainID not implemented")
+}
+func (*UnimplementedQueryServer) QuerySubmitTaskResult(ctx context.Context, req *QuerySubmitTaskResultReq) (*QuerySubmitTaskResultResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method QuerySubmitTaskResult not implemented")
+}
+func (*UnimplementedQueryServer) QueryChallengeInfo(ctx context.Context, req *QueryChallengeInfoReq) (*QueryChallengeInfoResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method QueryChallengeInfo not implemented")
 }
 
 func RegisterQueryServer(s grpc1.Server, srv QueryServer) {
@@ -452,6 +718,42 @@ func _Query_QueryAVSAddrByChainID_Handler(srv interface{}, ctx context.Context, 
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Query_QuerySubmitTaskResult_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QuerySubmitTaskResultReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).QuerySubmitTaskResult(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/exocore.avs.v1.Query/QuerySubmitTaskResult",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).QuerySubmitTaskResult(ctx, req.(*QuerySubmitTaskResultReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Query_QueryChallengeInfo_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryChallengeInfoReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).QueryChallengeInfo(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/exocore.avs.v1.Query/QueryChallengeInfo",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).QueryChallengeInfo(ctx, req.(*QueryChallengeInfoReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 var _Query_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "exocore.avs.v1.Query",
 	HandlerType: (*QueryServer)(nil),
@@ -467,6 +769,14 @@ var _Query_serviceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "QueryAVSAddrByChainID",
 			Handler:    _Query_QueryAVSAddrByChainID_Handler,
+		},
+		{
+			MethodName: "QuerySubmitTaskResult",
+			Handler:    _Query_QuerySubmitTaskResult_Handler,
+		},
+		{
+			MethodName: "QueryChallengeInfo",
+			Handler:    _Query_QueryChallengeInfo_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
@@ -635,6 +945,159 @@ func (m *QueryAVSTaskInfoReq) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
+func (m *QuerySubmitTaskResultReq) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QuerySubmitTaskResultReq) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QuerySubmitTaskResultReq) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.OperatorAddr) > 0 {
+		i -= len(m.OperatorAddr)
+		copy(dAtA[i:], m.OperatorAddr)
+		i = encodeVarintQuery(dAtA, i, uint64(len(m.OperatorAddr)))
+		i--
+		dAtA[i] = 0x1a
+	}
+	if len(m.TaskId) > 0 {
+		i -= len(m.TaskId)
+		copy(dAtA[i:], m.TaskId)
+		i = encodeVarintQuery(dAtA, i, uint64(len(m.TaskId)))
+		i--
+		dAtA[i] = 0x12
+	}
+	if len(m.TaskAddress) > 0 {
+		i -= len(m.TaskAddress)
+		copy(dAtA[i:], m.TaskAddress)
+		i = encodeVarintQuery(dAtA, i, uint64(len(m.TaskAddress)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *QueryChallengeInfoReq) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QueryChallengeInfoReq) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QueryChallengeInfoReq) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.OperatorAddr) > 0 {
+		i -= len(m.OperatorAddr)
+		copy(dAtA[i:], m.OperatorAddr)
+		i = encodeVarintQuery(dAtA, i, uint64(len(m.OperatorAddr)))
+		i--
+		dAtA[i] = 0x1a
+	}
+	if len(m.TaskId) > 0 {
+		i -= len(m.TaskId)
+		copy(dAtA[i:], m.TaskId)
+		i = encodeVarintQuery(dAtA, i, uint64(len(m.TaskId)))
+		i--
+		dAtA[i] = 0x12
+	}
+	if len(m.TaskAddress) > 0 {
+		i -= len(m.TaskAddress)
+		copy(dAtA[i:], m.TaskAddress)
+		i = encodeVarintQuery(dAtA, i, uint64(len(m.TaskAddress)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *QuerySubmitTaskResultResponse) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QuerySubmitTaskResultResponse) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QuerySubmitTaskResultResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.Info != nil {
+		{
+			size, err := m.Info.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintQuery(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *QueryChallengeInfoResponse) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QueryChallengeInfoResponse) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QueryChallengeInfoResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.ChallengeAddr) > 0 {
+		i -= len(m.ChallengeAddr)
+		copy(dAtA[i:], m.ChallengeAddr)
+		i = encodeVarintQuery(dAtA, i, uint64(len(m.ChallengeAddr)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
 func encodeVarintQuery(dAtA []byte, offset int, v uint64) int {
 	offset -= sovQuery(v)
 	base := offset
@@ -709,6 +1172,74 @@ func (m *QueryAVSTaskInfoReq) Size() (n int) {
 		n += 1 + l + sovQuery(uint64(l))
 	}
 	l = len(m.TaskId)
+	if l > 0 {
+		n += 1 + l + sovQuery(uint64(l))
+	}
+	return n
+}
+
+func (m *QuerySubmitTaskResultReq) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.TaskAddress)
+	if l > 0 {
+		n += 1 + l + sovQuery(uint64(l))
+	}
+	l = len(m.TaskId)
+	if l > 0 {
+		n += 1 + l + sovQuery(uint64(l))
+	}
+	l = len(m.OperatorAddr)
+	if l > 0 {
+		n += 1 + l + sovQuery(uint64(l))
+	}
+	return n
+}
+
+func (m *QueryChallengeInfoReq) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.TaskAddress)
+	if l > 0 {
+		n += 1 + l + sovQuery(uint64(l))
+	}
+	l = len(m.TaskId)
+	if l > 0 {
+		n += 1 + l + sovQuery(uint64(l))
+	}
+	l = len(m.OperatorAddr)
+	if l > 0 {
+		n += 1 + l + sovQuery(uint64(l))
+	}
+	return n
+}
+
+func (m *QuerySubmitTaskResultResponse) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.Info != nil {
+		l = m.Info.Size()
+		n += 1 + l + sovQuery(uint64(l))
+	}
+	return n
+}
+
+func (m *QueryChallengeInfoResponse) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.ChallengeAddr)
 	if l > 0 {
 		n += 1 + l + sovQuery(uint64(l))
 	}
@@ -1145,6 +1676,466 @@ func (m *QueryAVSTaskInfoReq) Unmarshal(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			m.TaskId = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *QuerySubmitTaskResultReq) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QuerySubmitTaskResultReq: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QuerySubmitTaskResultReq: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field TaskAddress", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.TaskAddress = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field TaskId", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.TaskId = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 3:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field OperatorAddr", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.OperatorAddr = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *QueryChallengeInfoReq) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryChallengeInfoReq: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryChallengeInfoReq: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field TaskAddress", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.TaskAddress = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field TaskId", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.TaskId = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 3:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field OperatorAddr", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.OperatorAddr = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *QuerySubmitTaskResultResponse) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QuerySubmitTaskResultResponse: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QuerySubmitTaskResultResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Info", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if m.Info == nil {
+				m.Info = &TaskResultInfo{}
+			}
+			if err := m.Info.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *QueryChallengeInfoResponse) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryChallengeInfoResponse: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryChallengeInfoResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field ChallengeAddr", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.ChallengeAddr = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
 		default:
 			iNdEx = preIndex

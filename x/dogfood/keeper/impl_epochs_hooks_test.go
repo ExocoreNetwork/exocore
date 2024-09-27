@@ -35,7 +35,7 @@ func (suite *KeeperTestSuite) TestSameEpochOperations() {
 		lzID := suite.ClientChains[0].LayerZeroChainID
 		assetAddrHex := suite.Assets[0].Address
 		assetAddr := common.HexToAddress(assetAddrHex)
-		_, assetID := assetstypes.GetStakeIDAndAssetIDFromStr(lzID, staker.String(), assetAddrHex)
+		_, assetID := assetstypes.GetStakerIDAndAssetIDFromStr(lzID, staker.String(), assetAddrHex)
 		asset, err := suite.App.AssetsKeeper.GetStakingAssetInfo(suite.Ctx, assetID)
 		suite.NoError(err)
 		assetDecimals := asset.AssetBasicInfo.Decimals
@@ -45,7 +45,7 @@ func (suite *KeeperTestSuite) TestSameEpochOperations() {
 		)
 		depositParams := &assetskeeper.DepositWithdrawParams{
 			ClientChainLzID: lzID,
-			Action:          assetstypes.Deposit,
+			Action:          assetstypes.DepositLST,
 			StakerAddress:   staker.Bytes(),
 			AssetsAddress:   assetAddr.Bytes(),
 			OpAmount:        amount,
@@ -215,7 +215,7 @@ func (suite *KeeperTestSuite) TestDifferentEpochOperations() {
 		lzID := suite.ClientChains[0].LayerZeroChainID
 		assetAddrHex := suite.Assets[0].Address
 		assetAddr := common.HexToAddress(assetAddrHex)
-		_, assetID := assetstypes.GetStakeIDAndAssetIDFromStr(lzID, staker.String(), assetAddrHex)
+		_, assetID := assetstypes.GetStakerIDAndAssetIDFromStr(lzID, staker.String(), assetAddrHex)
 		asset, err := suite.App.AssetsKeeper.GetStakingAssetInfo(suite.Ctx, assetID)
 		suite.NoError(err)
 		assetDecimals := asset.AssetBasicInfo.Decimals
@@ -225,7 +225,7 @@ func (suite *KeeperTestSuite) TestDifferentEpochOperations() {
 		)
 		depositParams := &assetskeeper.DepositWithdrawParams{
 			ClientChainLzID: lzID,
-			Action:          assetstypes.Deposit,
+			Action:          assetstypes.DepositLST,
 			StakerAddress:   staker.Bytes(),
 			AssetsAddress:   assetAddr.Bytes(),
 			OpAmount:        amount,

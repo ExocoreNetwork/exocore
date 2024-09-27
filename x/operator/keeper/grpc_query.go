@@ -226,3 +226,25 @@ func (k *Keeper) QueryOperatorSlashInfo(goCtx context.Context, req *types.QueryO
 		Pagination:   pageRes,
 	}, nil
 }
+
+func (k *Keeper) QueryAllOperatorsWithOptInAVS(goCtx context.Context, req *types.QueryAllOperatorsByOptInAVSRequest) (*types.QueryAllOperatorsByOptInAVSResponse, error) {
+	ctx := sdk.UnwrapSDKContext(goCtx)
+	operatorList, err := k.GetOptedInOperatorListByAVS(ctx, req.Avs)
+	if err != nil {
+		return nil, err
+	}
+	return &types.QueryAllOperatorsByOptInAVSResponse{
+		OperatorList: operatorList,
+	}, nil
+}
+
+func (k *Keeper) QueryAllAVSsByOperator(goCtx context.Context, req *types.QueryAllAVSsByOperatorRequest) (*types.QueryAllAVSsByOperatorResponse, error) {
+	ctx := sdk.UnwrapSDKContext(goCtx)
+	avsList, err := k.GetOptedInAVSForOperator(ctx, req.Operator)
+	if err != nil {
+		return nil, err
+	}
+	return &types.QueryAllAVSsByOperatorResponse{
+		AvsList: avsList,
+	}, nil
+}

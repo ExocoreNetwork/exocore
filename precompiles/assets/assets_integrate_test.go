@@ -25,7 +25,7 @@ var (
 	passCheck testutil.LogCheckArgs
 )
 
-func (s *AssetsPrecompileSuite) TestCallDepositToFromEOA() {
+func (s *AssetsPrecompileSuite) TestCallDepositLSTFromEOA() {
 	// deposit params for test
 	exocoreLzAppAddress := "0x3fC91A3afd70395Cd496C647d5a6CC9D4B2b7FAD"
 	exocoreLzAppEventTopic := "0xc6a377bfc4eb120024a8ac08eef205be16b817020812c73223e81d1bdb9708ec"
@@ -38,7 +38,7 @@ func (s *AssetsPrecompileSuite) TestCallDepositToFromEOA() {
 	clientChainLzID := 101
 	stakerAddr := paddingClientChainAddress(s.Address.Bytes(), assetstype.GeneralClientChainAddrLength)
 	opAmount := big.NewInt(100)
-	method := "depositTo"
+	method := assets.MethodDepositLST
 
 	beforeEach := func() {
 		s.SetupTest()
@@ -71,7 +71,7 @@ func (s *AssetsPrecompileSuite) TestCallDepositToFromEOA() {
 	setDepositToArgs := prepareFunc(&depositParams, method)
 	_, response, err := contracts.CallContractAndCheckLogs(s.Ctx, s.App, setDepositToArgs, passCheck)
 	// s.Require().ErrorContains(err, assetstype.ErrNotEqualToLzAppAddr.Error())
-	result, err := s.precompile.ABI.Unpack(assets.MethodDepositTo, response.Ret)
+	result, err := s.precompile.ABI.Unpack(assets.MethodDepositLST, response.Ret)
 	s.Require().NoError(err)
 	s.Require().Equal(len(result), 2)
 	success, ok := result[0].(bool)
@@ -83,7 +83,7 @@ func (s *AssetsPrecompileSuite) TestCallDepositToFromEOA() {
 	depositParams.ExocoreLzAppAddress = s.Address.String()
 	setDepositToArgs = prepareFunc(&depositParams, method)
 	_, ethRes, err := contracts.CallContractAndCheckLogs(s.Ctx, s.App, setDepositToArgs, passCheck)
-	successRet, err := s.precompile.Methods[assets.MethodDepositTo].Outputs.Pack(true, opAmount)
+	successRet, err := s.precompile.Methods[assets.MethodDepositLST].Outputs.Pack(true, opAmount)
 	s.Require().NoError(err)
 	s.Require().Equal(successRet, ethRes.Ret)
 }
@@ -179,7 +179,7 @@ func (s *AssetsPrecompileSuite) TestCallDepositToFromContract() {
 		s.Require().Equal(successRet, ethRes.Ret)*/
 }
 
-func (s *AssetsPrecompileSuite) TestCallWithdrawFromEOA() {
+func (s *AssetsPrecompileSuite) TestCallWithdrawLSTFromEOA() {
 	// withdraw params for test
 	exocoreLzAppAddress := "0x3fC91A3afd70395Cd496C647d5a6CC9D4B2b7FAD"
 	exocoreLzAppEventTopic := "0xc6a377bfc4eb120024a8ac08eef205be16b817020812c73223e81d1bdb9708ec"
@@ -192,7 +192,7 @@ func (s *AssetsPrecompileSuite) TestCallWithdrawFromEOA() {
 	stakerAddr := paddingClientChainAddress(s.Address.Bytes(), assetstype.GeneralClientChainAddrLength)
 	opAmount := big.NewInt(100)
 	assetAddr := usdtAddress
-	method := "withdrawPrincipal"
+	method := assets.MethodWithdrawLST
 
 	beforeEach := func() {
 		s.SetupTest()

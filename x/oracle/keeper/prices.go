@@ -4,6 +4,7 @@ import (
 	"encoding/binary"
 
 	sdkmath "cosmossdk.io/math"
+	assetstypes "github.com/ExocoreNetwork/exocore/x/assets/types"
 	"github.com/ExocoreNetwork/exocore/x/oracle/types"
 	"github.com/cosmos/cosmos-sdk/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -46,6 +47,14 @@ func (k Keeper) GetPrices(
 
 // return latest price for one specified price
 func (k Keeper) GetSpecifiedAssetsPrice(ctx sdk.Context, assetID string) (types.Price, error) {
+	// for native token exo, we temporarily use default price
+	if assetID == assetstypes.ExocoreAssetID {
+		return types.Price{
+			Value:   sdkmath.NewInt(types.DefaultPriceValue),
+			Decimal: types.DefaultPriceDecimal,
+		}, nil
+	}
+
 	var p types.Params
 	// get params from cache if exists
 	if agc != nil {
@@ -91,6 +100,14 @@ func (k Keeper) GetMultipleAssetsPrices(ctx sdk.Context, assets map[string]inter
 	prices = make(map[string]types.Price)
 	info := ""
 	for assetID := range assets {
+		// for native token exo, we temporarily use default price
+		if assetID == assetstypes.ExocoreAssetID {
+			prices[assetID] = types.Price{
+				Value:   sdkmath.NewInt(types.DefaultPriceValue),
+				Decimal: types.DefaultPriceDecimal,
+			}
+			continue
+		}
 		tokenID := p.GetTokenIDFromAssetID(assetID)
 		if tokenID == 0 {
 			err = types.ErrGetPriceAssetNotFound.Wrapf("assetID does not exist in oracle %s", assetID)
@@ -187,13 +204,32 @@ func (k Keeper) AppendPriceTR(ctx sdk.Context, tokenID uint64, priceTR types.Pri
 	if expiredRoundID := nextRoundID - agc.GetParamsMaxSizePrices(); expiredRoundID > 0 {
 		store.Delete(types.PricesRoundKey(expiredRoundID))
 	}
-	k.IncreaseNextRoundID(ctx, tokenID)
+	roundID := k.IncreaseNextRoundID(ctx, tokenID)
+
+	// update for native tokens
+	// TODO: set hooks as a genral approach
+	var p types.Params
+	// get params from cache if exists
+	if agc != nil {
+		p = agc.GetParams()
+	} else {
+		p = k.GetParams(ctx)
+	}
+	assetIDs := p.GetAssetIDsFromTokenID(tokenID)
+	for _, assetID := range assetIDs {
+		if assetstypes.IsNST(assetID) {
+			if err := k.UpdateNSTByBalanceChange(ctx, assetID, []byte(priceTR.Price), roundID); err != nil {
+				// we just report this error in log to notify validators
+				k.Logger(ctx).Error(types.ErrUpdateNativeTokenVirtualPriceFail.Error(), "error", err)
+			}
+		}
+	}
+
 	return true
 }
 
 // GrowRoundID Increases roundID with the previous price
 func (k Keeper) GrowRoundID(ctx sdk.Context, tokenID uint64) (price string, roundID uint64) {
-	//	logInfo := fmt.Sprintf("add new round with previous price under fail aggregation, tokenID:%d", tokenID)
 	if pTR, ok := k.GetPriceTRLatest(ctx, tokenID); ok {
 		pTR.RoundID++
 		k.AppendPriceTR(ctx, tokenID, pTR)
@@ -259,12 +295,13 @@ func (k Keeper) GetNextRoundID(ctx sdk.Context, tokenID uint64) (nextRoundID uin
 }
 
 // IncreaseNextRoundID increases nextRoundID persisted by 1 of a token
-func (k Keeper) IncreaseNextRoundID(ctx sdk.Context, tokenID uint64) {
+func (k Keeper) IncreaseNextRoundID(ctx sdk.Context, tokenID uint64) uint64 {
 	store := k.getPriceTRStore(ctx, tokenID)
 	nextRoundID := k.GetNextRoundID(ctx, tokenID)
 	b := make([]byte, 8)
 	binary.BigEndian.PutUint64(b, nextRoundID+1)
 	store.Set(types.PricesNextRoundIDKey, b)
+	return nextRoundID
 }
 
 func (k Keeper) getPriceTRStore(ctx sdk.Context, tokenID uint64) prefix.Store {

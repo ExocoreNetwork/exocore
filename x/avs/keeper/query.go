@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"context"
+	"strconv"
 
 	"github.com/ExocoreNetwork/exocore/x/avs/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -27,4 +28,30 @@ func (k Keeper) QueryAVSAddrByChainID(ctx context.Context, req *types.QueryAVSAd
 		return nil, types.ErrNotYetRegistered
 	}
 	return &types.QueryAVSAddrByChainIDResponse{AVSAddress: avsAddr}, nil
+}
+
+func (k Keeper) QuerySubmitTaskResult(ctx context.Context, req *types.QuerySubmitTaskResultReq) (*types.QuerySubmitTaskResultResponse, error) {
+	c := sdk.UnwrapSDKContext(ctx)
+	id, err := strconv.ParseUint(req.TaskId, 10, 64)
+	if err != nil {
+		return &types.QuerySubmitTaskResultResponse{}, err
+	}
+
+	info, err := k.GetTaskResultInfo(c, req.OperatorAddr, req.TaskAddress, id)
+	return &types.QuerySubmitTaskResultResponse{
+		Info: info,
+	}, err
+}
+
+func (k Keeper) QueryChallengeInfo(ctx context.Context, req *types.QueryChallengeInfoReq) (*types.QueryChallengeInfoResponse, error) {
+	c := sdk.UnwrapSDKContext(ctx)
+	id, err := strconv.ParseUint(req.TaskId, 10, 64)
+	if err != nil {
+		return &types.QueryChallengeInfoResponse{}, err
+	}
+
+	addr, err := k.GetTaskChallengedInfo(c, req.OperatorAddr, req.TaskAddress, id)
+	return &types.QueryChallengeInfoResponse{
+		ChallengeAddr: addr,
+	}, err
 }

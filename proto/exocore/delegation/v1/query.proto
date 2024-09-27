@@ -37,16 +37,14 @@ message DelegationAmounts {
   // so the updated share should be added by it.
   // A special case is the initial delegation, when T = 0 and S = 0, so T_j / T is undefined.
   // For the initial delegation, delegator j who delegates T_j tokens receive S_j = T_j shares.
-  string undelegatable_share = 1
-  [
+  string undelegatable_share = 1 [
     (cosmos_proto.scalar) = "cosmos.Dec",
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
     (gogoproto.nullable) = false
   ];
 
   // wait_undelegation_amount is the amount that is waiting to be unbonded.
-  string wait_undelegation_amount = 2
-  [
+  string wait_undelegation_amount = 2 [
     (cosmos_proto.scalar) = "cosmos.Int",
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
     (gogoproto.nullable) = false
@@ -123,7 +121,7 @@ service Query {
     option (cosmos.query.v1.module_query_safe) = true;
     option (google.api.http).get = "/exocore/delegation/v1/GetDelegationInfo";
   }
-  // SingleDelegationInfo queries the single delegation information for 
+  // SingleDelegationInfo queries the single delegation information for
   // {chain, staker, asset, operator}.
   rpc QuerySingleDelegationInfo(SingleDelegationInfoReq) returns (DelegationAmounts) {
     option (cosmos.query.v1.module_query_safe) = true;
@@ -157,4 +155,3 @@ service Query {
     option (google.api.http).get = "/exocore/delegation/v1/QueryAssociatedOperatorByStaker";
   }
 }
-

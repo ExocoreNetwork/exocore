@@ -5,6 +5,8 @@ import (
 	"strings"
 	"time"
 
+	utiltx "github.com/ExocoreNetwork/exocore/testutil/tx"
+
 	assetskeeper "github.com/ExocoreNetwork/exocore/x/assets/keeper"
 	avskeeper "github.com/ExocoreNetwork/exocore/x/avs/keeper"
 	avstypes "github.com/ExocoreNetwork/exocore/x/avs/types"
@@ -51,11 +53,11 @@ func (suite *AVSManagerPrecompileSuite) prepareDeposit(assetAddr common.Address,
 	suite.clientChainLzID = clientChainLzID
 	suite.depositAmount = amount
 	suite.updatedAmountForOptIn = sdkmath.NewInt(20)
-	suite.stakerID, suite.assetID = assetstypes.GetStakeIDAndAssetID(suite.clientChainLzID, suite.Address[:], suite.assetAddr[:])
+	suite.stakerID, suite.assetID = assetstypes.GetStakerIDAndAssetID(suite.clientChainLzID, suite.Address[:], suite.assetAddr[:])
 	// staking assets
 	depositParam := &assetskeeper.DepositWithdrawParams{
 		ClientChainLzID: suite.clientChainLzID,
-		Action:          assetstypes.Deposit,
+		Action:          assetstypes.DepositLST,
 		StakerAddress:   suite.Address[:],
 		OpAmount:        suite.depositAmount,
 		AssetsAddress:   assetAddr[:],
@@ -93,12 +95,19 @@ func (suite *AVSManagerPrecompileSuite) prepare() {
 	suite.prepareDelegation(true, usdtAddress, delegationAmount)
 }
 
-func (suite *AVSManagerPrecompileSuite) prepareAvs(assetIDs []string) {
+func (suite *AVSManagerPrecompileSuite) prepareAvs(assetIDs []string, task string) {
+	avsOwnerAddress := []string{
+		sdk.AccAddress(suite.Address.Bytes()).String(),
+		"exo13h6xg79g82e2g2vhjwg7j4r2z2hlncelwutkjr",
+		"exo13h6xg79g82e2g2vhjwg7j4r2z2hlncelwutkj2",
+	}
 	err := suite.App.AVSManagerKeeper.UpdateAVSInfo(suite.Ctx, &avstypes.AVSRegisterOrDeregisterParams{
 		Action:          avskeeper.RegisterAction,
 		EpochIdentifier: epochstypes.HourEpochID,
 		AvsAddress:      suite.avsAddr,
 		AssetID:         assetIDs,
+		TaskAddr:        task,
+		AvsOwnerAddress: avsOwnerAddress,
 	})
 	suite.NoError(err)
 }
@@ -133,7 +142,7 @@ func (suite *AVSManagerPrecompileSuite) CheckState(expectedState *StateForCheck)
 
 func (suite *AVSManagerPrecompileSuite) TestOptIn() {
 	suite.prepare()
-	suite.prepareAvs([]string{"0xdac17f958d2ee523a2206206994597c13d831ec7_0x65"})
+	suite.prepareAvs([]string{"0xdac17f958d2ee523a2206206994597c13d831ec7_0x65"}, utiltx.GenerateAddress().String())
 	err := suite.App.OperatorKeeper.OptIn(suite.Ctx, suite.operatorAddr, suite.avsAddr)
 	suite.NoError(err)
 	// check if the related state is correct
@@ -161,7 +170,7 @@ func (suite *AVSManagerPrecompileSuite) TestOptIn() {
 
 func (suite *AVSManagerPrecompileSuite) TestOptInList() {
 	suite.prepare()
-	suite.prepareAvs([]string{"0xdac17f958d2ee523a2206206994597c13d831ec7_0x65"})
+	suite.prepareAvs([]string{"0xdac17f958d2ee523a2206206994597c13d831ec7_0x65"}, utiltx.GenerateAddress().String())
 	err := suite.App.OperatorKeeper.OptIn(suite.Ctx, suite.operatorAddr, suite.avsAddr)
 	suite.NoError(err)
 	// check if the related state is correct
@@ -177,7 +186,7 @@ func (suite *AVSManagerPrecompileSuite) TestOptInList() {
 
 func (suite *AVSManagerPrecompileSuite) TestOptOut() {
 	suite.prepare()
-	suite.prepareAvs([]string{"0xdac17f958d2ee523a2206206994597c13d831ec7_0x65"})
+	suite.prepareAvs([]string{"0xdac17f958d2ee523a2206206994597c13d831ec7_0x65"}, utiltx.GenerateAddress().String())
 	err := suite.App.OperatorKeeper.OptOut(suite.Ctx, suite.operatorAddr, suite.avsAddr)
 	suite.EqualError(err, operatorTypes.ErrNotOptedIn.Error())
 

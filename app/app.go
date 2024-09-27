@@ -10,7 +10,11 @@ import (
 	"path/filepath"
 	"sort"
 
+	distr "github.com/ExocoreNetwork/exocore/x/feedistribution"
+	distrkeeper "github.com/ExocoreNetwork/exocore/x/feedistribution/keeper"
+	distrtypes "github.com/ExocoreNetwork/exocore/x/feedistribution/types"
 	"github.com/ExocoreNetwork/exocore/x/oracle"
+
 	oracleKeeper "github.com/ExocoreNetwork/exocore/x/oracle/keeper"
 	oracleTypes "github.com/ExocoreNetwork/exocore/x/oracle/types"
 
@@ -116,6 +120,8 @@ import (
 	authsims "github.com/cosmos/cosmos-sdk/x/auth/simulation"
 	authtx "github.com/cosmos/cosmos-sdk/x/auth/tx"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
+	"github.com/cosmos/cosmos-sdk/x/auth/vesting"
+	vestingtypes "github.com/cosmos/cosmos-sdk/x/auth/vesting/types"
 
 	"github.com/cosmos/cosmos-sdk/x/authz"
 	authzmodule "github.com/cosmos/cosmos-sdk/x/authz/module"
@@ -248,6 +254,7 @@ var (
 		ibctm.AppModuleBasic{},
 		ica.AppModuleBasic{},
 		authzmodule.AppModuleBasic{},
+		vesting.AppModuleBasic{},
 		feegrantmodule.AppModuleBasic{},
 		upgrade.AppModuleBasic{},
 		evidence.AppModuleBasic{},
@@ -266,6 +273,7 @@ var (
 		exoslash.AppModuleBasic{},
 		avs.AppModuleBasic{},
 		oracle.AppModuleBasic{},
+		distr.AppModuleBasic{},
 	)
 
 	// module account permissions
@@ -278,8 +286,10 @@ var (
 			authtypes.Minter,
 			authtypes.Burner,
 		}, // used for secure addition and subtraction of balance using module account
-		erc20types.ModuleName:   {authtypes.Minter, authtypes.Burner},
-		exominttypes.ModuleName: {authtypes.Minter},
+		exominttypes.ModuleName:           {authtypes.Minter},
+		erc20types.ModuleName:             {authtypes.Minter, authtypes.Burner},
+		delegationTypes.DelegatedPoolName: {authtypes.Burner, authtypes.Staking},
+		distrtypes.ModuleName:             nil,
 	}
 
 	// module accounts that are allowed to receive tokens
@@ -349,6 +359,7 @@ type ExocoreApp struct {
 	AVSManagerKeeper avsManagerKeeper.Keeper
 	OracleKeeper     oracleKeeper.Keeper
 	ExomintKeeper    exomintkeeper.Keeper
+	DistrKeeper      distrkeeper.Keeper
 
 	// the module manager
 	mm *module.Manager
@@ -433,6 +444,7 @@ func NewExocoreApp(
 		avsManagerTypes.StoreKey,
 		oracleTypes.StoreKey,
 		exominttypes.StoreKey,
+		distrtypes.StoreKey,
 	)
 
 	tkeys := sdk.NewTransientStoreKeys(paramstypes.TStoreKey, evmtypes.TransientKey, feemarkettypes.TransientKey)
@@ -534,7 +546,7 @@ func NewExocoreApp(
 	)
 
 	// asset and client chain registry.
-	app.AssetsKeeper = assetsKeeper.NewKeeper(keys[assetsTypes.StoreKey], appCodec, &app.OracleKeeper)
+	app.AssetsKeeper = assetsKeeper.NewKeeper(keys[assetsTypes.StoreKey], appCodec, &app.OracleKeeper, app.BankKeeper, &app.DelegationKeeper)
 
 	// handles delegations by stakers, and must know if the delegatee operator is registered.
 	app.DelegationKeeper = delegationKeeper.NewKeeper(
@@ -542,6 +554,8 @@ func NewExocoreApp(
 		app.AssetsKeeper,
 		delegationTypes.VirtualSlashKeeper{},
 		&app.OperatorKeeper,
+		app.AccountKeeper,
+		app.BankKeeper,
 	)
 
 	// the dogfood module is the first AVS. it receives slashing calls from either x/slashing
@@ -560,6 +574,7 @@ func NewExocoreApp(
 	// these two modules aren't finalized yet.
 	app.RewardKeeper = rewardKeeper.NewKeeper(
 		appCodec, keys[rewardTypes.StoreKey], app.AssetsKeeper,
+		app.AVSManagerKeeper,
 	)
 	app.ExoSlashKeeper = slashKeeper.NewKeeper(
 		appCodec, keys[exoslashTypes.StoreKey], app.AssetsKeeper,
@@ -569,6 +584,7 @@ func NewExocoreApp(
 	app.OracleKeeper = oracleKeeper.NewKeeper(
 		appCodec, keys[oracleTypes.StoreKey], memKeys[oracleTypes.MemStoreKey],
 		app.GetSubspace(oracleTypes.ModuleName), app.StakingKeeper,
+		&app.DelegationKeeper,
 	)
 
 	// the SDK slashing module is used to slash validators in the case of downtime. it tracks
@@ -680,6 +696,19 @@ func NewExocoreApp(
 		&app.AVSManagerKeeper,
 		delegationTypes.VirtualSlashKeeper{},
 	)
+	// the fee distribution keeper is used to allocate reward to exocore validators on epoch-basis,
+	// and it'll interact with other modules, like delegation for voting power, mint and inflation and etc.
+	// this keeper is initialized after the StakingKeeper  because it depends on the StakingKeeper
+	app.DistrKeeper = distrkeeper.NewKeeper(
+		appCodec, logger,
+		authtypes.FeeCollectorName,
+		authAddrString,
+		keys[distrtypes.StoreKey],
+		app.BankKeeper,
+		app.AccountKeeper,
+		app.StakingKeeper,
+		app.EpochsKeeper,
+	)
 
 	app.EvmKeeper.WithPrecompiles(
 		evmkeeper.AvailablePrecompiles(
@@ -730,15 +759,15 @@ func NewExocoreApp(
 		Create Transfer Stack
 
 		transfer stack contains (from bottom to top):
-			- ERC-20 Middleware
-		 	- Recovery Middleware
-			- IBC Transfer
+		- ERC-20 Middleware
+		- Recovery Middleware
+		- IBC Transfer
 
 		SendPacket, since it is originating from the application to core IBC:
-		 	transferKeeper.SendPacket -> recovery.SendPacket -> erc20.SendPacket -> channel.SendPacket
+		transferKeeper.SendPacket -> recovery.SendPacket -> erc20.SendPacket -> channel.SendPacket
 
 		RecvPacket, message that originates from core IBC and goes down to app, the flow is the other way
-			channel.RecvPacket -> erc20.OnRecvPacket -> recovery.OnRecvPacket -> transfer.OnRecvPacket
+		channel.RecvPacket -> erc20.OnRecvPacket -> recovery.OnRecvPacket -> transfer.OnRecvPacket
 	*/
 
 	// create IBC module from top to bottom of stack
@@ -766,6 +795,7 @@ func NewExocoreApp(
 
 	(&app.EpochsKeeper).SetHooks(
 		epochstypes.NewMultiEpochHooks(
+			app.DistrKeeper.EpochsHooks(),      // come first for using the voting power of last epoch
 			app.OperatorKeeper.EpochsHooks(),   // must come before staking keeper so it can set the USD value
 			app.StakingKeeper.EpochsHooks(),    // at this point, the order is irrelevant.
 			app.ExomintKeeper.EpochsHooks(),    // however, this may change once we have distribution
@@ -804,6 +834,7 @@ func NewExocoreApp(
 			authsims.RandomGenesisAccounts,
 			app.GetSubspace(authtypes.ModuleName),
 		),
+		vesting.NewAppModule(app.AccountKeeper, app.BankKeeper),
 		bank.NewAppModule(
 			appCodec, app.BankKeeper, app.AccountKeeper,
 			app.GetSubspace(banktypes.ModuleName),
@@ -866,6 +897,7 @@ func NewExocoreApp(
 		exoslash.NewAppModule(appCodec, app.ExoSlashKeeper),
 		avs.NewAppModule(appCodec, app.AVSManagerKeeper),
 		oracle.NewAppModule(appCodec, app.OracleKeeper, app.AccountKeeper, app.BankKeeper),
+		distr.NewAppModule(appCodec, app.DistrKeeper),
 	)
 
 	// During begin block slashing happens after reward.BeginBlocker so that
@@ -892,6 +924,7 @@ func NewExocoreApp(
 		genutiltypes.ModuleName,
 		feegrant.ModuleName,
 		paramstypes.ModuleName,
+		vestingtypes.ModuleName,
 		consensusparamtypes.ModuleName,
 		erc20types.ModuleName,
 		exominttypes.ModuleName, // called via hooks not directly
@@ -902,6 +935,7 @@ func NewExocoreApp(
 		exoslashTypes.ModuleName,
 		avsManagerTypes.ModuleName,
 		oracleTypes.ModuleName,
+		distrtypes.ModuleName,
 	)
 
 	app.mm.SetOrderEndBlockers(
@@ -926,6 +960,7 @@ func NewExocoreApp(
 		authz.ModuleName,
 		paramstypes.ModuleName,
 		upgradetypes.ModuleName,
+		vestingtypes.ModuleName,
 		epochstypes.ModuleName, // begin blocker only
 		erc20types.ModuleName,
 		exominttypes.ModuleName,
@@ -934,6 +969,7 @@ func NewExocoreApp(
 		rewardTypes.ModuleName,
 		exoslashTypes.ModuleName,
 		avsManagerTypes.ModuleName,
+		distrtypes.ModuleName,
 		// op module
 		feemarkettypes.ModuleName, // last in order to retrieve the block gas used
 	)
@@ -970,10 +1006,12 @@ func NewExocoreApp(
 		oracleTypes.ModuleName, // after staking module to ensure total vote power available
 		// no-op modules
 		paramstypes.ModuleName,
+		vestingtypes.ModuleName,
 		consensusparamtypes.ModuleName,
 		upgradetypes.ModuleName,  // no-op since we don't call SetInitVersionMap
 		rewardTypes.ModuleName,   // not fully implemented yet
 		exoslashTypes.ModuleName, // not fully implemented yet
+		distrtypes.ModuleName,
 		// must be the last module after others have been set up, so that it can check
 		// the invariants (if configured to do so).
 		crisistypes.ModuleName,
