@@ -107,4 +107,8 @@ var (
 		ModuleName, 25,
 		"The pubKey parsing failed",
 	)
+	ErrSubmitTooSoonError = errorsmod.Register(
+		ModuleName, 26,
+		" The response was submitted too soon.",
+	)
 )
