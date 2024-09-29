@@ -80,7 +80,7 @@ func InitCmd(mbm module.BasicManager, defaultNodeHome string) *cobra.Command {
 			config.P2P.MaxNumInboundPeers = 240
 			config.P2P.MaxNumOutboundPeers = 30
 
-			// if we decide to hardcode any seeds, they may be added here
+			// TODO: hardcode any seeds here
 
 			config.Mempool.Size = 10000
 			config.StateSync.TrustPeriod = 112 * time.Hour
