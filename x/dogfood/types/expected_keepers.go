@@ -2,7 +2,7 @@ package types
 
 import (
 	"cosmossdk.io/math"
-	exocoretypes "github.com/ExocoreNetwork/exocore/types"
+	keytypes "github.com/ExocoreNetwork/exocore/types/keys"
 	avstypes "github.com/ExocoreNetwork/exocore/x/avs/types"
 	delegationtype "github.com/ExocoreNetwork/exocore/x/delegation/types"
 	epochsTypes "github.com/ExocoreNetwork/exocore/x/epochs/types"
@@ -56,7 +56,7 @@ type OperatorKeeper interface {
 	// at each epoch, get the list and create validator update
 	GetActiveOperatorsForChainID(
 		sdk.Context, string,
-	) ([]sdk.AccAddress, []exocoretypes.WrappedConsKey)
+	) ([]sdk.AccAddress, []keytypes.WrappedConsKey)
 	// get vote power
 	GetVotePowerForChainID(
 		sdk.Context, []sdk.AccAddress, string,
@@ -70,13 +70,13 @@ type OperatorKeeper interface {
 	ClearPreviousConsensusKeys(ctx sdk.Context, chainID string)
 	GetOperatorConsKeyForChainID(
 		sdk.Context, sdk.AccAddress, string,
-	) (bool, exocoretypes.WrappedConsKey, error)
+	) (bool, keytypes.WrappedConsKey, error)
 	GetOperatorPrevConsKeyForChainID(
 		sdk.Context, sdk.AccAddress, string,
-	) (bool, exocoretypes.WrappedConsKey, error)
+	) (bool, keytypes.WrappedConsKey, error)
 	// OptInWithConsKey is used at genesis to opt in with a consensus key
 	OptInWithConsKey(
-		sdk.Context, sdk.AccAddress, string, exocoretypes.WrappedConsKey,
+		sdk.Context, sdk.AccAddress, string, keytypes.WrappedConsKey,
 	) error
 	// GetOrCalculateOperatorUSDValues is used to get the self staking value for the operator
 	GetOrCalculateOperatorUSDValues(sdk.Context, sdk.AccAddress, string) (operatortypes.OperatorOptedUSDValue, error)

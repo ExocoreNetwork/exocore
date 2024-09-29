@@ -3,7 +3,7 @@ package tx
 import (
 	"fmt"
 
-	"github.com/ExocoreNetwork/exocore/types"
+	keytypes "github.com/ExocoreNetwork/exocore/types/keys"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/crypto"
@@ -43,13 +43,13 @@ func GenerateAddress() common.Address {
 }
 
 // GenerateConsensusKey generates a consensus key.
-func GenerateConsensusKey() types.WrappedConsKey {
+func GenerateConsensusKey() keytypes.WrappedConsKey {
 	privVal := mock.NewPV()
 	pubKey, err := privVal.GetPubKey()
 	if err != nil {
 		return nil
 	}
-	return types.NewWrappedConsKeyFromHex(hexutil.Encode(pubKey.Bytes()))
+	return keytypes.NewWrappedConsKeyFromHex(hexutil.Encode(pubKey.Bytes()))
 }
 
 var _ keyring.Signer = &Signer{}

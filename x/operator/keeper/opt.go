@@ -4,7 +4,7 @@ import (
 	errorsmod "cosmossdk.io/errors"
 	sdkmath "cosmossdk.io/math"
 
-	exocoretypes "github.com/ExocoreNetwork/exocore/types"
+	keytypes "github.com/ExocoreNetwork/exocore/types/keys"
 	delegationtypes "github.com/ExocoreNetwork/exocore/x/delegation/types"
 	"github.com/ExocoreNetwork/exocore/x/operator/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -68,7 +68,7 @@ func (k *Keeper) OptIn(
 // OptInWithConsKey is a wrapper function to call OptIn and then SetOperatorConsKeyForChainID.
 // The caller must ensure that the operatorAddress passed is valid and that the AVS is a chain-type AVS.
 func (k Keeper) OptInWithConsKey(
-	ctx sdk.Context, operatorAddress sdk.AccAddress, avsAddr string, key exocoretypes.WrappedConsKey,
+	ctx sdk.Context, operatorAddress sdk.AccAddress, avsAddr string, key keytypes.WrappedConsKey,
 ) error {
 	err := k.OptIn(ctx, operatorAddress, avsAddr)
 	if err != nil {

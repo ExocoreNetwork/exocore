@@ -2,7 +2,7 @@ package keeper
 
 import (
 	"cosmossdk.io/math"
-	exocoretypes "github.com/ExocoreNetwork/exocore/types"
+	keytypes "github.com/ExocoreNetwork/exocore/types/keys"
 	"github.com/ExocoreNetwork/exocore/utils"
 	avstypes "github.com/ExocoreNetwork/exocore/x/avs/types"
 	abci "github.com/cometbft/cometbft/abci/types"
@@ -93,7 +93,7 @@ func (k Keeper) EndBlock(ctx sdk.Context) []abci.ValidatorUpdate {
 	// the capacity of this list is twice the maximum number of validators.
 	// this is because we can have a maximum of maxVals validators, and we can also have
 	// a maximum of maxVals validators that are removed.
-	res := make([]exocoretypes.WrappedConsKeyWithPower, 0, maxVals*2)
+	res := make([]keytypes.WrappedConsKeyWithPower, 0, maxVals*2)
 	for i := range operators {
 		// #nosec G701 // ok on 64-bit systems.
 		if i >= int(maxVals) {
@@ -117,7 +117,7 @@ func (k Keeper) EndBlock(ctx sdk.Context) []abci.ValidatorUpdate {
 		if found {
 			// if the power has changed, queue an update. skip, otherwise.
 			if prevPower != power {
-				res = append(res, exocoretypes.WrappedConsKeyWithPower{
+				res = append(res, keytypes.WrappedConsKeyWithPower{
 					Key:   wrappedKey,
 					Power: power,
 				})
@@ -127,7 +127,7 @@ func (k Keeper) EndBlock(ctx sdk.Context) []abci.ValidatorUpdate {
 			delete(prevMap, addressString)
 		} else {
 			// new consensus key, queue an update.
-			res = append(res, exocoretypes.WrappedConsKeyWithPower{
+			res = append(res, keytypes.WrappedConsKeyWithPower{
 				Key:   wrappedKey,
 				Power: power,
 			})
@@ -144,8 +144,8 @@ func (k Keeper) EndBlock(ctx sdk.Context) []abci.ValidatorUpdate {
 		addressString := sdk.GetConsAddress(pubKey).String()
 		// Check if this validator is still in prevMap (i.e., hasn't been deleted)
 		if _, exists := prevMap[addressString]; exists { // O(1) since hash map
-			res = append(res, exocoretypes.WrappedConsKeyWithPower{
-				Key:   exocoretypes.NewWrappedConsKeyFromSdkKey(pubKey),
+			res = append(res, keytypes.WrappedConsKeyWithPower{
+				Key:   keytypes.NewWrappedConsKeyFromSdkKey(pubKey),
 				Power: 0,
 			})
 			// while calculating total power, we started with 0 and not previous power.

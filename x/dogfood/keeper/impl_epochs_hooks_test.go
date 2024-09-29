@@ -3,7 +3,7 @@ package keeper_test
 import (
 	sdkmath "cosmossdk.io/math"
 	utiltx "github.com/ExocoreNetwork/exocore/testutil/tx"
-	exocoretypes "github.com/ExocoreNetwork/exocore/types"
+	keytypes "github.com/ExocoreNetwork/exocore/types/keys"
 	assetskeeper "github.com/ExocoreNetwork/exocore/x/assets/keeper"
 	assetstypes "github.com/ExocoreNetwork/exocore/x/assets/types"
 	avstypes "github.com/ExocoreNetwork/exocore/x/avs/types"
@@ -115,7 +115,7 @@ func (suite *KeeperTestSuite) TestSameEpochOperations() {
 		errValues       []error
 		expUpdatesCount int
 		powers          []int64
-		validatorKey    exocoretypes.WrappedConsKey
+		validatorKey    keytypes.WrappedConsKey
 	}{
 		{
 			name: "opt in - base case",
@@ -295,9 +295,9 @@ func (suite *KeeperTestSuite) TestDifferentEpochOperations() {
 		errValues       []error
 		expUpdatesCount []int
 		powers          [][]int64
-		validatorKeys   []exocoretypes.WrappedConsKey
-		ultimateKey     exocoretypes.WrappedConsKey
-		absentKeys      []exocoretypes.WrappedConsKey
+		validatorKeys   []keytypes.WrappedConsKey
+		ultimateKey     keytypes.WrappedConsKey
+		absentKeys      []keytypes.WrappedConsKey
 	}{
 		{
 			name: "opt in - base case",
@@ -309,9 +309,9 @@ func (suite *KeeperTestSuite) TestDifferentEpochOperations() {
 			powers: [][]int64{
 				{amountUSD},
 			},
-			validatorKeys: []exocoretypes.WrappedConsKey{oldKey},
+			validatorKeys: []keytypes.WrappedConsKey{oldKey},
 			ultimateKey:   oldKey,
-			absentKeys:    []exocoretypes.WrappedConsKey{newKey},
+			absentKeys:    []keytypes.WrappedConsKey{newKey},
 		},
 		{
 			name: "opt out without opting in",
@@ -323,9 +323,9 @@ func (suite *KeeperTestSuite) TestDifferentEpochOperations() {
 			powers: [][]int64{
 				{},
 			},
-			validatorKeys: []exocoretypes.WrappedConsKey{nil},
+			validatorKeys: []keytypes.WrappedConsKey{nil},
 			ultimateKey:   nil,
-			absentKeys:    []exocoretypes.WrappedConsKey{oldKey, newKey},
+			absentKeys:    []keytypes.WrappedConsKey{oldKey, newKey},
 		},
 		{
 			name: "set key without opting in",
@@ -337,9 +337,9 @@ func (suite *KeeperTestSuite) TestDifferentEpochOperations() {
 			powers: [][]int64{
 				{},
 			},
-			validatorKeys: []exocoretypes.WrappedConsKey{nil},
+			validatorKeys: []keytypes.WrappedConsKey{nil},
 			ultimateKey:   nil,
-			absentKeys:    []exocoretypes.WrappedConsKey{oldKey, newKey},
+			absentKeys:    []keytypes.WrappedConsKey{oldKey, newKey},
 		},
 		{
 			name: "opt in then replace",
@@ -352,11 +352,11 @@ func (suite *KeeperTestSuite) TestDifferentEpochOperations() {
 				{amountUSD},
 				{amountUSD, 0},
 			},
-			validatorKeys: []exocoretypes.WrappedConsKey{
+			validatorKeys: []keytypes.WrappedConsKey{
 				oldKey, newKey,
 			},
 			ultimateKey: newKey,
-			absentKeys:  []exocoretypes.WrappedConsKey{oldKey},
+			absentKeys:  []keytypes.WrappedConsKey{oldKey},
 		},
 		{
 			name: "opt in then opt out",
@@ -369,9 +369,9 @@ func (suite *KeeperTestSuite) TestDifferentEpochOperations() {
 				{amountUSD},
 				{0},
 			},
-			validatorKeys: []exocoretypes.WrappedConsKey{oldKey, nil},
+			validatorKeys: []keytypes.WrappedConsKey{oldKey, nil},
 			ultimateKey:   nil,
-			absentKeys:    []exocoretypes.WrappedConsKey{oldKey, newKey},
+			absentKeys:    []keytypes.WrappedConsKey{oldKey, newKey},
 		},
 		{
 			name: "opt in then replace then opt out",
@@ -385,9 +385,9 @@ func (suite *KeeperTestSuite) TestDifferentEpochOperations() {
 				{amountUSD, 0},
 				{0},
 			},
-			validatorKeys: []exocoretypes.WrappedConsKey{oldKey, newKey, nil},
+			validatorKeys: []keytypes.WrappedConsKey{oldKey, newKey, nil},
 			ultimateKey:   nil,
-			absentKeys:    []exocoretypes.WrappedConsKey{oldKey, newKey},
+			absentKeys:    []keytypes.WrappedConsKey{oldKey, newKey},
 		},
 		{
 			name: "opt in then opt out then opt in",
@@ -401,9 +401,9 @@ func (suite *KeeperTestSuite) TestDifferentEpochOperations() {
 				{0},
 				{},
 			},
-			validatorKeys: []exocoretypes.WrappedConsKey{oldKey, nil, nil},
+			validatorKeys: []keytypes.WrappedConsKey{oldKey, nil, nil},
 			ultimateKey:   nil,
-			absentKeys:    []exocoretypes.WrappedConsKey{oldKey, newKey},
+			absentKeys:    []keytypes.WrappedConsKey{oldKey, newKey},
 		},
 	}
 	for _, tc := range testcases {

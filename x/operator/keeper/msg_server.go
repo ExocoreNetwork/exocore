@@ -4,7 +4,7 @@ import (
 	context "context"
 
 	errorsmod "cosmossdk.io/errors"
-	exocoretypes "github.com/ExocoreNetwork/exocore/types"
+	keytypes "github.com/ExocoreNetwork/exocore/types/keys"
 	"github.com/ExocoreNetwork/exocore/x/operator/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -51,7 +51,7 @@ func (msgServer *MsgServerImpl) OptIntoAVS(goCtx context.Context, req *types.Opt
 			return nil, err
 		}
 	} else {
-		key := exocoretypes.NewWrappedConsKeyFromJSON(req.PublicKeyJSON)
+		key := keytypes.NewWrappedConsKeyFromJSON(req.PublicKeyJSON)
 		if key == nil {
 			return nil, errorsmod.Wrap(types.ErrInvalidPubKey, "invalid public key")
 		}
@@ -93,7 +93,7 @@ func (msgServer *MsgServerImpl) SetConsKey(goCtx context.Context, req *types.Set
 	if !msgServer.keeper.IsActive(ctx, accAddr, req.AvsAddress) {
 		return nil, errorsmod.Wrap(types.ErrNotOptedIn, "operator is not active")
 	}
-	wrappedKey := exocoretypes.NewWrappedConsKeyFromJSON(req.PublicKeyJSON)
+	wrappedKey := keytypes.NewWrappedConsKeyFromJSON(req.PublicKeyJSON)
 	if wrappedKey == nil {
 		return nil, errorsmod.Wrap(types.ErrInvalidPubKey, "invalid public key")
 	}

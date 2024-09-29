@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"cosmossdk.io/math"
-	exocoretypes "github.com/ExocoreNetwork/exocore/types"
+	keytypes "github.com/ExocoreNetwork/exocore/types/keys"
 	avstypes "github.com/ExocoreNetwork/exocore/x/avs/types"
 	"github.com/ExocoreNetwork/exocore/x/dogfood/types"
 	abci "github.com/cometbft/cometbft/abci/types"
@@ -38,7 +38,7 @@ func (k Keeper) UnbondingTime(ctx sdk.Context) time.Duration {
 // on the keeper to be executed. Lastly, it stores the validator set against the
 // provided validator set id. The caller must ensure that `change.Key` is not nil.
 func (k Keeper) ApplyValidatorChanges(
-	ctx sdk.Context, changes []exocoretypes.WrappedConsKeyWithPower,
+	ctx sdk.Context, changes []keytypes.WrappedConsKeyWithPower,
 ) []abci.ValidatorUpdate {
 	ret := []abci.ValidatorUpdate{}
 	logger := k.Logger(ctx)

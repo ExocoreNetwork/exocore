@@ -3,7 +3,7 @@ package keeper
 import (
 	"fmt"
 
-	exocoretypes "github.com/ExocoreNetwork/exocore/types"
+	keytypes "github.com/ExocoreNetwork/exocore/types/keys"
 	avstypes "github.com/ExocoreNetwork/exocore/x/avs/types"
 	"github.com/ExocoreNetwork/exocore/x/dogfood/types"
 	abci "github.com/cometbft/cometbft/abci/types"
@@ -54,17 +54,17 @@ func (k Keeper) InitGenesis(
 		"chainIDWithoutRevision", chainIDWithoutRevision,
 	)
 	// create the validators
-	out := make([]exocoretypes.WrappedConsKeyWithPower, 0, len(genState.ValSet))
+	out := make([]keytypes.WrappedConsKeyWithPower, 0, len(genState.ValSet))
 	for _, val := range genState.ValSet {
 		// we have already checked in gs.Validate() that wrappedKey is not nil
-		wrappedKey := exocoretypes.NewWrappedConsKeyFromHex(val.PublicKey)
+		wrappedKey := keytypes.NewWrappedConsKeyFromHex(val.PublicKey)
 		// check that an operator exists
 		if found, _ := k.operatorKeeper.GetOperatorAddressForChainIDAndConsAddr(
 			ctx, chainIDWithoutRevision, wrappedKey.ToConsAddr(),
 		); !found {
 			panic(fmt.Sprintf("operator not found for key %s", val.PublicKey))
 		}
-		out = append(out, exocoretypes.WrappedConsKeyWithPower{
+		out = append(out, keytypes.WrappedConsKeyWithPower{
 			Key:   wrappedKey,
 			Power: val.Power,
 		})

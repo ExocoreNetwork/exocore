@@ -3,7 +3,7 @@ package keeper
 import (
 	"fmt"
 
-	exocoretypes "github.com/ExocoreNetwork/exocore/types"
+	keytypes "github.com/ExocoreNetwork/exocore/types/keys"
 	avstypes "github.com/ExocoreNetwork/exocore/x/avs/types"
 	delegationtypes "github.com/ExocoreNetwork/exocore/x/delegation/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -49,7 +49,7 @@ func (wrapper DelegationHooksWrapper) AfterUndelegationStarted(
 		// because the operator is not in the validator set.
 	} else {
 		var found bool
-		var wrappedKey exocoretypes.WrappedConsKey
+		var wrappedKey keytypes.WrappedConsKey
 		if found, wrappedKey, _ = wrapper.keeper.operatorKeeper.GetOperatorConsKeyForChainID(
 			ctx, operator, chainIDWithoutRevision,
 		); !found {

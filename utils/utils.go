@@ -11,7 +11,7 @@ import (
 	"golang.org/x/exp/constraints"
 	"golang.org/x/xerrors"
 
-	"github.com/ExocoreNetwork/exocore/types"
+	keytypes "github.com/ExocoreNetwork/exocore/types/keys"
 	"github.com/cosmos/cosmos-sdk/crypto/keys/ed25519"
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
 	"github.com/cosmos/cosmos-sdk/crypto/types/multisig"
@@ -179,9 +179,9 @@ func CommonValidation[T any, V constraints.Ordered, D any](
 // the bytes. The caller must ensure that the slices are of the same length.
 func SortByPower(
 	operatorAddrs []sdk.AccAddress,
-	pubKeys []types.WrappedConsKey,
+	pubKeys []keytypes.WrappedConsKey,
 	powers []int64,
-) ([]sdk.AccAddress, []types.WrappedConsKey, []int64) {
+) ([]sdk.AccAddress, []keytypes.WrappedConsKey, []int64) {
 	// Create a slice of indices
 	indices := make([]int, len(powers))
 	for i := range indices {
@@ -201,7 +201,7 @@ func SortByPower(
 
 	// Reorder all slices using the sorted indices
 	sortedOperatorAddrs := make([]sdk.AccAddress, len(operatorAddrs))
-	sortedPubKeys := make([]types.WrappedConsKey, len(pubKeys))
+	sortedPubKeys := make([]keytypes.WrappedConsKey, len(pubKeys))
 	sortedPowers := make([]int64, len(powers))
 	for i, idx := range indices {
 		sortedOperatorAddrs[i] = operatorAddrs[idx]

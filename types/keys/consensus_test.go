@@ -1,9 +1,9 @@
-package types_test
+package keys_test
 
 import (
 	"testing"
 
-	"github.com/ExocoreNetwork/exocore/types"
+	keytypes "github.com/ExocoreNetwork/exocore/types/keys"
 	"github.com/cometbft/cometbft/crypto/ed25519"
 	"github.com/cometbft/cometbft/crypto/secp256k1"
 	tmprotocrypto "github.com/cometbft/cometbft/proto/tendermint/crypto"
@@ -27,36 +27,36 @@ func TestConsKeyTestSuite(t *testing.T) {
 func (suite *ConsKeyTestSuite) TestNewWrappedConsKeyFromJSON() {
 	// success
 	json := `{"@type":"/cosmos.crypto.ed25519.PubKey","key":"wtDUcGq4pGt1X0/IU1kJtfxSJAMFa7C/sBhWn8ExVOQ="}`
-	key := types.NewWrappedConsKeyFromJSON(json)
+	key := keytypes.NewWrappedConsKeyFromJSON(json)
 	suite.NotNil(key)
 	suite.Equal(json, key.ToJSON())
 	// fail unmarshalling
 	json = `{"type":"/cosmos.crypto.ed25519.PubKey","key":"wtDUcGq4pGt1X0/IU1kJtfxSJAMFa7C/sBhWn8ExVOQ="}`
-	key = types.NewWrappedConsKeyFromJSON(json)
+	key = keytypes.NewWrappedConsKeyFromJSON(json)
 	suite.Nil(key)
 	// fail key type
 	json = `{"@type":"/cosmos.crypto.ed25518.PubKey","key":"wtDUcGq4pGt1X0/IU1kJtfxSJAMFa7C/sBhWn8ExVOQ="}`
-	key = types.NewWrappedConsKeyFromJSON(json)
+	key = keytypes.NewWrappedConsKeyFromJSON(json)
 	suite.Nil(key)
 	// fail decoding
 	json = `{"@type":"/cosmos.crypto.ed25519.PubKey","key":"wtDUcGq4pGt1X0/IU1kJtfxSJAMFa7C/sBhWn8ExVOQ=="}`
-	key = types.NewWrappedConsKeyFromJSON(json)
+	key = keytypes.NewWrappedConsKeyFromJSON(json)
 	suite.Nil(key)
 }
 
 func (suite *ConsKeyTestSuite) TestNewWrappedConsKeyFromHex() {
 	// success
 	hex := "0xF0F6919E522C5B97DB2C8255BFF743F9DFDDD7AD9FC37CB0C1670B480D0F9914"
-	key := types.NewWrappedConsKeyFromHex(hex)
+	key := keytypes.NewWrappedConsKeyFromHex(hex)
 	suite.NotNil(key)
 	suite.Equal(hex, key.ToHex())
 	// high length
 	hex = "0xF0F6919E522C5B97DB2C8255BFF743F9DFDDD7AD9FC37CB0C1670B480D0F9914F0F6919E522C5B97DB2C8255BFF743F9DFDDD7AD9FC37CB0C1670B480D0F9914"
-	key = types.NewWrappedConsKeyFromHex(hex)
+	key = keytypes.NewWrappedConsKeyFromHex(hex)
 	suite.Nil(key)
 	// non hex
 	hex = "0xF0F6919E522C5B97DB2C8255BFF743F9DFDDD7AD9FC37CB0C1670B480D0F991G"
-	key = types.NewWrappedConsKeyFromHex(hex)
+	key = keytypes.NewWrappedConsKeyFromHex(hex)
 	suite.Nil(key)
 }
 
@@ -67,7 +67,7 @@ func (suite *ConsKeyTestSuite) TestNewWrappedConsKeyFromTmProtoKey() {
 			Ed25519: ed25519.GenPrivKey().PubKey().Bytes(),
 		},
 	}
-	key := types.NewWrappedConsKeyFromTmProtoKey(tmKey)
+	key := keytypes.NewWrappedConsKeyFromTmProtoKey(tmKey)
 	suite.NotNil(key)
 	suite.Equal(tmKey, key.ToTmProtoKey())
 	// different type failure
@@ -76,18 +76,18 @@ func (suite *ConsKeyTestSuite) TestNewWrappedConsKeyFromTmProtoKey() {
 			Secp256K1: secp256k1.GenPrivKey().PubKey().Bytes(),
 		},
 	}
-	key = types.NewWrappedConsKeyFromTmProtoKey(tmKey)
+	key = keytypes.NewWrappedConsKeyFromTmProtoKey(tmKey)
 	suite.Nil(key)
 }
 
 func (suite *ConsKeyTestSuite) TestNewWrappedConsKeyFromSdkKey() {
 	// success
 	sdkKey := cryptotypes.PubKey(sdked25519.GenPrivKey().PubKey())
-	key := types.NewWrappedConsKeyFromSdkKey(sdkKey)
+	key := keytypes.NewWrappedConsKeyFromSdkKey(sdkKey)
 	suite.NotNil(key)
 	suite.Equal(sdkKey, key.ToSdkKey())
 	// different type failure
 	sdkKey = cryptotypes.PubKey(sdksecp256k1.GenPrivKey().PubKey())
-	key = types.NewWrappedConsKeyFromSdkKey(sdkKey)
+	key = keytypes.NewWrappedConsKeyFromSdkKey(sdkKey)
 	suite.Nil(key)
 }
