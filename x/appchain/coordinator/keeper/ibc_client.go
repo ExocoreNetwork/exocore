@@ -163,6 +163,7 @@ func (k Keeper) MakeSubscriberGenesis(
 		ctx, operators, chainIDWithoutRevision,
 	)
 	if err != nil {
+		// the `err` includes the `chainID` and hence no need to log it again
 		k.Logger(ctx).Error("error getting vote power for chain", "error", err)
 		return nil, nil, err
 	}
