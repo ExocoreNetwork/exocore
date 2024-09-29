@@ -80,18 +80,18 @@ func (gs GenesisState) Validate() error {
 				if len(StakerListAsset.StakerList.StakerAddrs) != len(stakerInfosAsset.StakerInfos) {
 					return fmt.Errorf("length not equal for stakerListAsset and StakerInfosAsset of assetID:%s", StakerListAsset.AssetId)
 				}
-				tmp := make(map[string]int)
+				stakerListIdx := make(map[string]int)
 				for idx, staker := range StakerListAsset.StakerList.StakerAddrs {
-					if _, ok := tmp[staker]; ok {
+					if _, ok := stakerListIdx[staker]; ok {
 						return fmt.Errorf("duplicated staker in stakerList for assetID:%s", StakerListAsset.AssetId)
 					}
-					tmp[staker] = idx
+					stakerListIdx[staker] = idx
 				}
 				for _, stakerInfo := range stakerInfosAsset.StakerInfos {
-					if idx, ok := tmp[stakerInfo.StakerAddr]; !ok {
+					if idx, ok := stakerListIdx[stakerInfo.StakerAddr]; !ok {
 						return fmt.Errorf("staker %s from stakerInfo not exsists in stakerList for assetID:%s", stakerInfo.StakerAddr, StakerListAsset.AssetId)
 					} else if idx != int(stakerInfo.StakerIndex) {
-						return fmt.Errorf("staker %s from stakerInfo has index %s, not match which from stakerList %d", stakerInfo.StakerIndex, idx)
+						return fmt.Errorf("staker %s from stakerInfo has index %d, not match which from stakerList %d", stakerInfo.StakerAddr, stakerInfo.StakerIndex, idx)
 					}
 				}
 			}
