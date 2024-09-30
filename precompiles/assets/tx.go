@@ -216,6 +216,10 @@ func (p Precompile) IsRegisteredClientChain(
 	if err != nil {
 		return nil, err
 	}
+	if clientChainID == 0 {
+		// explicitly return false for client chain ID 0 to prevent `setPeer` calls
+		return method.Outputs.Pack(true, false)
+	}
 	exists := p.assetsKeeper.ClientChainExists(ctx, uint64(clientChainID))
 	return method.Outputs.Pack(true, exists)
 }
