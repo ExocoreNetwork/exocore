@@ -116,8 +116,9 @@ func (k Keeper) UpdateNSTValidatorListForStaker(ctx sdk.Context, assetID, staker
 		bz := k.cdc.MustMarshal(stakerInfo)
 		store.Set(key, bz)
 	}
-	// we use len(stakerInfo.ValidatorPubkeyList) to sync with client about status of stakerInfo.ValidatorPubkeyList
-	eventValue := fmt.Sprintf("%d_%s_%d", stakerInfo.StakerIndex, validatorPubkey, len(stakerInfo.ValidatorPubkeyList))
+
+	// we use index to sync with client about status of stakerInfo.ValidatorPubkeyList
+	eventValue := fmt.Sprintf("%d_%s_%d", stakerInfo.StakerIndex, validatorPubkey, newBalance.Index)
 	if newBalance.Change == types.Action_ACTION_DEPOSIT {
 		eventValue = fmt.Sprintf("%s_%s", types.AttributeValueNativeTokenDeposit, eventValue)
 	} else {
@@ -201,9 +202,16 @@ func (k Keeper) UpdateNSTByBalanceChange(ctx sdk.Context, assetID string, rawDat
 		// balance update are based on initial/max effective balance: 32
 		maxBalance := maxEffectiveBalance * (len(stakerInfo.ValidatorPubkeyList))
 		balance := maxBalance + change
-		if balance > maxBalance {
-			return errors.New("effective balance should never exceeds 32")
+		// there's one case that this delta might be more than previous Balance
+		// staker's validatorlist: {v1, v2, v3, v5}
+		// in one same block: withdraw v2, v3, v5, balance of v2, v3, v5 all be slashed by -16
+		// => amount: 32*4->32(by withdraw), the validatorList of feeder will be updated on next block, so it will report the balance change of v5: -16 as in the staker's balance change, result to: 32*4->32-> 32-16*3 = -16
+		// we will just ingore this misbehavior introduced by synchronize-issue, and this will be correct in next block/round
+		if balance > maxBalance || balance <= 0 {
+			// balance should not be able to be reduced to 0 by balance change
+			return errors.New("effective balance should never exceeds 32 for one validator and should be positive")
 		}
+
 		if delta := int64(balance) - newBalance.Balance; delta != 0 {
 			if err := k.delegationKeeper.UpdateNSTBalance(ctx, getStakerID(stakerAddr, chainID), assetID, sdkmath.NewInt(delta)); err != nil {
 				return err
