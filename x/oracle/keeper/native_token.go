@@ -150,6 +150,14 @@ func (k Keeper) GetStakerInfos(ctx sdk.Context, assetID string) (ret []*types.St
 	return ret
 }
 
+func (k Keeper) SetStakerInfos(ctx sdk.Context, assetID string, stakerInfos []*types.StakerInfo) {
+	store := ctx.KVStore(k.storeKey)
+	for _, stakerInfo := range stakerInfos {
+		bz := k.cdc.MustMarshal(stakerInfo)
+		store.Set(types.NativeTokenStakerKey(assetID, stakerInfo.StakerAddr), bz)
+	}
+}
+
 // GetStakerList return stakerList for native-restaking asset of assetID
 func (k Keeper) GetStakerList(ctx sdk.Context, assetID string) types.StakerList {
 	store := ctx.KVStore(k.storeKey)
@@ -160,6 +168,16 @@ func (k Keeper) GetStakerList(ctx sdk.Context, assetID string) types.StakerList 
 	stakerList := &types.StakerList{}
 	k.cdc.MustUnmarshal(value, stakerList)
 	return *stakerList
+}
+
+// SetStakerList set staker list for assetID, this is mainly used for genesis init
+func (k Keeper) SetStakerList(ctx sdk.Context, assetID string, stakerList *types.StakerList) {
+	if stakerList == nil {
+		return
+	}
+	store := ctx.KVStore(k.storeKey)
+	bz := k.cdc.MustMarshal(stakerList)
+	store.Set(types.NativeTokenStakerListKey(assetID), bz)
 }
 
 // UpdateNSTByBalanceChange updates balance info for staker under native-restaking asset of assetID when its balance changed by slash/refund on the source chain (beacon chain for eth)
