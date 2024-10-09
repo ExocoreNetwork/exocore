@@ -23,6 +23,15 @@ const maxEffectiveBalance = 32
 
 var stakerList types.StakerList
 
+// SetStakerInfos set stakerInfos for the specific assetID
+func (k Keeper) SetStakerInfos(ctx sdk.Context, assetID string, stakerInfos []*types.StakerInfo) {
+	store := ctx.KVStore(k.storeKey)
+	for _, stakerInfo := range stakerInfos {
+		bz := k.cdc.MustMarshal(stakerInfo)
+		store.Set(types.NativeTokenStakerKey(assetID, stakerInfo.StakerAddr), bz)
+	}
+}
+
 // GetStakerInfo returns details about staker for native-restaking under asset of assetID
 func (k Keeper) GetStakerInfo(ctx sdk.Context, assetID, stakerAddr string) types.StakerInfo {
 	store := ctx.KVStore(k.storeKey)
@@ -33,6 +42,90 @@ func (k Keeper) GetStakerInfo(ctx sdk.Context, assetID, stakerAddr string) types
 	}
 	k.cdc.MustUnmarshal(value, &stakerInfo)
 	return stakerInfo
+}
+
+// TODO: pagination
+// GetStakerInfos returns all stakers information
+func (k Keeper) GetStakerInfos(ctx sdk.Context, assetID string) (ret []*types.StakerInfo) {
+	store := ctx.KVStore(k.storeKey)
+	iterator := sdk.KVStorePrefixIterator(store, types.NativeTokenStakerKeyPrefix(assetID))
+	defer iterator.Close()
+	for ; iterator.Valid(); iterator.Next() {
+		sInfo := types.StakerInfo{}
+		k.cdc.MustUnmarshal(iterator.Value(), &sInfo)
+		// keep only the latest effective-balance
+		sInfo.BalanceList = sInfo.BalanceList[:len(sInfo.BalanceList)-1]
+		// this is mainly used by price feeder, so we remove the stakerAddr to reduce the size of return value
+		sInfo.StakerAddr = ""
+		ret = append(ret, &sInfo)
+	}
+	return ret
+}
+
+// GetAllStakerInfosAssets returns all stakerInfos combined with assetIDs they belong to, used for genesisstate exporting
+func (k Keeper) GetAllStakerInfosAssets(ctx sdk.Context) (ret []types.StakerInfosAssets) {
+	store := ctx.KVStore(k.storeKey)
+	// set assetID as "" to iterate all value with different assetIDs
+	iterator := sdk.KVStorePrefixIterator(store, types.NativeTokenStakerKeyPrefix(""))
+	defer iterator.Close()
+	ret = make([]types.StakerInfosAssets, 0)
+	l := 0
+	for ; iterator.Valid(); iterator.Next() {
+		assetID, _ := types.ParseNativeTokenStakerKey(iterator.Key())
+		if l == 0 || ret[l-1].AssetId != assetID {
+			ret = append(ret, types.StakerInfosAssets{
+				AssetId:     assetID,
+				StakerInfos: make([]*types.StakerInfo, 0),
+			})
+			l++
+		}
+		v := &types.StakerInfo{}
+		k.cdc.MustUnmarshal(iterator.Value(), v)
+		ret[l-1].StakerInfos = append(ret[l-1].StakerInfos, v)
+	}
+	return ret
+}
+
+// SetStakerList set staker list for assetID, this is mainly used for genesis init
+func (k Keeper) SetStakerList(ctx sdk.Context, assetID string, sl *types.StakerList) {
+	if sl == nil {
+		return
+	}
+	store := ctx.KVStore(k.storeKey)
+	bz := k.cdc.MustMarshal(sl)
+	store.Set(types.NativeTokenStakerListKey(assetID), bz)
+	// set cache used by updateNSTByBalanceChange
+	stakerList = *sl
+}
+
+// GetStakerList return stakerList for native-restaking asset of assetID
+func (k Keeper) GetStakerList(ctx sdk.Context, assetID string) types.StakerList {
+	store := ctx.KVStore(k.storeKey)
+	value := store.Get(types.NativeTokenStakerListKey(assetID))
+	if value == nil {
+		return types.StakerList{}
+	}
+	stakerList := &types.StakerList{}
+	k.cdc.MustUnmarshal(value, stakerList)
+	return *stakerList
+}
+
+// GetAllStakerListAssets return stakerList combined with assetIDs they belong to, used for genesisstate exporting
+func (k Keeper) GetAllStakerListAssets(ctx sdk.Context) (ret []types.StakerListAssets) {
+	store := ctx.KVStore(k.storeKey)
+	// set assetID with "" to iterate all stakerList with every assetIDs
+	iterator := sdk.KVStorePrefixIterator(store, types.NativeTokenStakerListKey(""))
+	defer iterator.Close()
+	ret = make([]types.StakerListAssets, 0)
+	for ; iterator.Valid(); iterator.Next() {
+		v := &types.StakerList{}
+		k.cdc.MustUnmarshal(iterator.Value(), v)
+		ret = append(ret, types.StakerListAssets{
+			AssetId:    string(iterator.Key()),
+			StakerList: v,
+		})
+	}
+	return ret
 }
 
 func (k Keeper) UpdateNSTValidatorListForStaker(ctx sdk.Context, assetID, stakerAddr, validatorPubkey string, amount sdkmath.Int) error {
@@ -130,99 +223,6 @@ func (k Keeper) UpdateNSTValidatorListForStaker(ctx sdk.Context, assetID, staker
 		sdk.NewAttribute(types.AttributeKeyNativeTokenChange, eventValue),
 	))
 	return nil
-}
-
-// TODO: pagination
-// GetStakerInfos returns all stakers information
-func (k Keeper) GetStakerInfos(ctx sdk.Context, assetID string) (ret []*types.StakerInfo) {
-	store := ctx.KVStore(k.storeKey)
-	iterator := sdk.KVStorePrefixIterator(store, types.NativeTokenStakerKeyPrefix(assetID))
-	defer iterator.Close()
-	for ; iterator.Valid(); iterator.Next() {
-		sInfo := types.StakerInfo{}
-		k.cdc.MustUnmarshal(iterator.Value(), &sInfo)
-		// keep only the latest effective-balance
-		sInfo.BalanceList = sInfo.BalanceList[:len(sInfo.BalanceList)-1]
-		// this is mainly used by price feeder, so we remove the stakerAddr to reduce the size of return value
-		sInfo.StakerAddr = ""
-		ret = append(ret, &sInfo)
-	}
-	return ret
-}
-
-// GetAllStakerInfosAssets returns all stakerInfos combined with assetIDs they belong to, used for genesisstate exporting
-func (k Keeper) GetAllStakerInfosAssets(ctx sdk.Context) (ret []types.StakerInfosAssets) {
-	store := ctx.KVStore(k.storeKey)
-	// set assetID as "" to iterate all value with different assetIDs
-	iterator := sdk.KVStorePrefixIterator(store, types.NativeTokenStakerKeyPrefix(""))
-	defer iterator.Close()
-	ret = make([]types.StakerInfosAssets, 0)
-	l := 0
-	//	stakerInfos := make([]*types.StakerInfo, 0)
-	for ; iterator.Valid(); iterator.Next() {
-		assetID, _ := types.ParseNativeTokenStakerKey(iterator.Key())
-		if l == 0 || ret[l-1].AssetId != assetID {
-			//			stakerInfos = make([]*types.StakerInfo, 0)
-			ret = append(ret, types.StakerInfosAssets{
-				AssetId:     assetID,
-				StakerInfos: make([]*types.StakerInfo, 0),
-			})
-			l++
-		}
-		v := &types.StakerInfo{}
-		k.cdc.MustUnmarshal(iterator.Value(), v)
-		ret[l-1].StakerInfos = append(ret[l-1].StakerInfos, v)
-	}
-	return ret
-}
-
-// SetStakerInfos set stakerInfos for the specific assetID
-func (k Keeper) SetStakerInfos(ctx sdk.Context, assetID string, stakerInfos []*types.StakerInfo) {
-	store := ctx.KVStore(k.storeKey)
-	for _, stakerInfo := range stakerInfos {
-		bz := k.cdc.MustMarshal(stakerInfo)
-		store.Set(types.NativeTokenStakerKey(assetID, stakerInfo.StakerAddr), bz)
-	}
-}
-
-// GetStakerList return stakerList for native-restaking asset of assetID
-func (k Keeper) GetStakerList(ctx sdk.Context, assetID string) types.StakerList {
-	store := ctx.KVStore(k.storeKey)
-	value := store.Get(types.NativeTokenStakerListKey(assetID))
-	if value == nil {
-		return types.StakerList{}
-	}
-	stakerList := &types.StakerList{}
-	k.cdc.MustUnmarshal(value, stakerList)
-	return *stakerList
-}
-
-// GetAllStakerListAssets return stakerList combined with assetIDs they belong to, used for genesisstate exporting
-func (k Keeper) GetAllStakerListAssets(ctx sdk.Context) (ret []types.StakerListAssets) {
-	store := ctx.KVStore(k.storeKey)
-	// set assetID with "" to iterate all stakerList with every assetIDs
-	iterator := sdk.KVStorePrefixIterator(store, types.NativeTokenStakerListKey(""))
-	defer iterator.Close()
-	ret = make([]types.StakerListAssets, 0)
-	for ; iterator.Valid(); iterator.Next() {
-		v := &types.StakerList{}
-		k.cdc.MustUnmarshal(iterator.Value(), v)
-		ret = append(ret, types.StakerListAssets{
-			AssetId:    string(iterator.Key()),
-			StakerList: v,
-		})
-	}
-	return ret
-}
-
-// SetStakerList set staker list for assetID, this is mainly used for genesis init
-func (k Keeper) SetStakerList(ctx sdk.Context, assetID string, stakerList *types.StakerList) {
-	if stakerList == nil {
-		return
-	}
-	store := ctx.KVStore(k.storeKey)
-	bz := k.cdc.MustMarshal(stakerList)
-	store.Set(types.NativeTokenStakerListKey(assetID), bz)
 }
 
 // UpdateNSTByBalanceChange updates balance info for staker under native-restaking asset of assetID when its balance changed by slash/refund on the source chain (beacon chain for eth)
