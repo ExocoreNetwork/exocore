@@ -32,7 +32,7 @@ func NativeTokenStakerListKey(assetID string) []byte {
 	return append([]byte(NativeTokenStakerListKeyPrefix), []byte(assetID)...)
 }
 
-// ParseNativeTokenStakerKey retreive assetID and stakerAddr from stakerInfoKey
+// ParseNativeTokenStakerKey retieve assetID and stakerAddr from stakerInfoKey
 // assetID/stakerAddr -> {assetID, stakerAddr}
 func ParseNativeTokenStakerKey(key []byte) (assetID, stakerAddr string) {
 	parsed := strings.Split(string(key), "/")
