@@ -150,6 +150,33 @@ func (k Keeper) GetStakerInfos(ctx sdk.Context, assetID string) (ret []*types.St
 	return ret
 }
 
+// GetAllStakerInfosAssets returns all stakerInfos combined with assetIDs they belong to, used for genesisstate exporting
+func (k Keeper) GetAllStakerInfosAssets(ctx sdk.Context) (ret []types.StakerInfosAssets) {
+	store := ctx.KVStore(k.storeKey)
+	// set assetID as "" to iterate all value with different assetIDs
+	iterator := sdk.KVStorePrefixIterator(store, types.NativeTokenStakerKeyPrefix(""))
+	defer iterator.Close()
+	ret = make([]types.StakerInfosAssets, 0)
+	l := 0
+	//	stakerInfos := make([]*types.StakerInfo, 0)
+	for ; iterator.Valid(); iterator.Next() {
+		assetID, _ := types.ParseNativeTokenStakerKey(iterator.Key())
+		if l == 0 || ret[l-1].AssetId != assetID {
+			//			stakerInfos = make([]*types.StakerInfo, 0)
+			ret = append(ret, types.StakerInfosAssets{
+				AssetId:     assetID,
+				StakerInfos: make([]*types.StakerInfo, 0),
+			})
+			l++
+		}
+		v := &types.StakerInfo{}
+		k.cdc.MustUnmarshal(iterator.Value(), v)
+		ret[l-1].StakerInfos = append(ret[l-1].StakerInfos, v)
+	}
+	return ret
+}
+
+// SetStakerInfos set stakerInfos for the specific assetID
 func (k Keeper) SetStakerInfos(ctx sdk.Context, assetID string, stakerInfos []*types.StakerInfo) {
 	store := ctx.KVStore(k.storeKey)
 	for _, stakerInfo := range stakerInfos {
@@ -168,6 +195,24 @@ func (k Keeper) GetStakerList(ctx sdk.Context, assetID string) types.StakerList 
 	stakerList := &types.StakerList{}
 	k.cdc.MustUnmarshal(value, stakerList)
 	return *stakerList
+}
+
+// GetAllStakerListAssets return stakerList combined with assetIDs they belong to, used for genesisstate exporting
+func (k Keeper) GetAllStakerListAssets(ctx sdk.Context) (ret []types.StakerListAssets) {
+	store := ctx.KVStore(k.storeKey)
+	// set assetID with "" to iterate all stakerList with every assetIDs
+	iterator := sdk.KVStorePrefixIterator(store, types.NativeTokenStakerListKey(""))
+	defer iterator.Close()
+	ret = make([]types.StakerListAssets, 0)
+	for ; iterator.Valid(); iterator.Next() {
+		v := &types.StakerList{}
+		k.cdc.MustUnmarshal(iterator.Value(), v)
+		ret = append(ret, types.StakerListAssets{
+			AssetId:    string(iterator.Key()),
+			StakerList: v,
+		})
+	}
+	return ret
 }
 
 // SetStakerList set staker list for assetID, this is mainly used for genesis init
