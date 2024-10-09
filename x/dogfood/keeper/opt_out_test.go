@@ -4,6 +4,7 @@ import (
 	sdkmath "cosmossdk.io/math"
 
 	utiltx "github.com/ExocoreNetwork/exocore/testutil/tx"
+	keytypes "github.com/ExocoreNetwork/exocore/types/keys"
 	assetskeeper "github.com/ExocoreNetwork/exocore/x/assets/keeper"
 	assetstypes "github.com/ExocoreNetwork/exocore/x/assets/types"
 	avstypes "github.com/ExocoreNetwork/exocore/x/avs/types"
@@ -338,7 +339,7 @@ func (suite *KeeperTestSuite) CheckLengthOfValidatorUpdates(
 }
 
 func (suite *KeeperTestSuite) CheckValidatorFound(
-	key operatortypes.WrappedConsKey, expected bool,
+	key keytypes.WrappedConsKey, expected bool,
 	chainIDWithoutRevision string,
 	operatorAddress sdk.AccAddress,
 ) {

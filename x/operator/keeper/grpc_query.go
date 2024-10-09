@@ -6,6 +6,7 @@ import (
 
 	assetstype "github.com/ExocoreNetwork/exocore/x/assets/types"
 
+	keytypes "github.com/ExocoreNetwork/exocore/types/keys"
 	avstypes "github.com/ExocoreNetwork/exocore/x/avs/types"
 	"github.com/ExocoreNetwork/exocore/x/operator/types"
 	tmprotocrypto "github.com/cometbft/cometbft/proto/tendermint/crypto"
@@ -156,7 +157,7 @@ func (k Keeper) QueryAllOperatorConsAddrsByChainID(
 		if err := ret.Unmarshal(value); err != nil {
 			return err
 		}
-		wrappedKey := types.NewWrappedConsKeyFromTmProtoKey(ret)
+		wrappedKey := keytypes.NewWrappedConsKeyFromTmProtoKey(ret)
 		if wrappedKey == nil {
 			return types.ErrInvalidConsKey
 		}

@@ -2,6 +2,7 @@ package types
 
 import (
 	sdkmath "cosmossdk.io/math"
+	keytypes "github.com/ExocoreNetwork/exocore/types/keys"
 	assetstype "github.com/ExocoreNetwork/exocore/x/assets/types"
 	delegationkeeper "github.com/ExocoreNetwork/exocore/x/delegation/keeper"
 	delegationtype "github.com/ExocoreNetwork/exocore/x/delegation/types"
@@ -119,16 +120,16 @@ type OperatorHooks interface {
 	// This hook is called when an operator declares the consensus key for the provided chain.
 	AfterOperatorKeySet(
 		ctx sdk.Context, addr sdk.AccAddress, chainID string,
-		pubKey WrappedConsKey,
+		pubKey keytypes.WrappedConsKey,
 	)
 	// This hook is called when an operator's consensus key is replaced for a chain.
 	AfterOperatorKeyReplaced(
-		ctx sdk.Context, addr sdk.AccAddress, oldKey WrappedConsKey,
-		newKey WrappedConsKey, chainID string,
+		ctx sdk.Context, addr sdk.AccAddress, oldKey keytypes.WrappedConsKey,
+		newKey keytypes.WrappedConsKey, chainID string,
 	)
 	// This hook is called when an operator initiates the removal of a consensus key for a
 	// chain.
 	AfterOperatorKeyRemovalInitiated(
-		ctx sdk.Context, addr sdk.AccAddress, chainID string, key WrappedConsKey,
+		ctx sdk.Context, addr sdk.AccAddress, chainID string, key keytypes.WrappedConsKey,
 	)
 }

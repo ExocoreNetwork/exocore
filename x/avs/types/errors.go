@@ -107,4 +107,8 @@ var (
 		ModuleName, 25,
 		"The pubKey parsing failed",
 	)
+	ErrInvalidAssetID = errorsmod.Register(
+		ModuleName, 26,
+		"Invalid asset ID",
+	)
 )
