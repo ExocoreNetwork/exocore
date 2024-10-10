@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	errorsmod "cosmossdk.io/errors"
 	"github.com/ExocoreNetwork/exocore/x/avs/types"
 	abci "github.com/cometbft/cometbft/abci/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -8,18 +9,19 @@ import (
 
 // InitGenesis initializes the module's state from a provided genesis state.
 // Since this action typically occurs on chain starts, this function is allowed to panic.
-func (k Keeper) InitGenesis(
-	ctx sdk.Context,
-	_ types.GenesisState,
-) []abci.ValidatorUpdate {
-	// Store a lookup from codeHash to code. Since these are static parameters,
-	// such a lookup is stored at genesis and never updated.
-	k.evmKeeper.SetCode(ctx, types.ChainIDCodeHash.Bytes(), types.ChainIDCode)
+func (k Keeper) InitGenesis(ctx sdk.Context, state types.GenesisState) []abci.ValidatorUpdate {
+	for _, avs := range state.AvsInfos {
+
+		if err := k.SetAVSInfo(ctx, &avs); err != nil { //nolint:gosec
+			panic(errorsmod.Wrap(err, "failed to set avs info"))
+		}
+	}
+
 	return []abci.ValidatorUpdate{}
 }
 
-// ExportGenesis returns the module's exported genesis
-func (Keeper) ExportGenesis(sdk.Context) *types.GenesisState {
-	// TODO
-	return types.DefaultGenesis()
+func (k Keeper) ExportGenesis(ctx sdk.Context) *types.GenesisState {
+	res := types.GenesisState{}
+	var _ error
+	return &res
 }
