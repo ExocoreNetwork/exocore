@@ -1,7 +1,3 @@
-// This file is a duplicate of the subscriber module's validators file with minor changes.
-// The function ApplyValidatorChanges can likely be carved out into a shared package with
-// the appchain module when it is ready.
-
 package keeper
 
 import (
@@ -9,6 +5,7 @@ import (
 	"time"
 
 	"cosmossdk.io/math"
+	keytypes "github.com/ExocoreNetwork/exocore/types/keys"
 	avstypes "github.com/ExocoreNetwork/exocore/x/avs/types"
 	"github.com/ExocoreNetwork/exocore/x/dogfood/types"
 	abci "github.com/cometbft/cometbft/abci/types"
@@ -27,34 +24,26 @@ func (k Keeper) UnbondingTime(ctx sdk.Context) time.Duration {
 	// no need to check for found, as the epoch info is validated at genesis.
 	epoch, _ := k.epochsKeeper.GetEpochInfo(ctx, params.EpochIdentifier)
 	durationPerEpoch := epoch.Duration
-	return time.Duration(params.EpochsUntilUnbonded) * durationPerEpoch
+	// the extra 1 is added to account for the current epoch. this is,
+	// therefore, the maximum time it takes for unbonding. if the tx
+	// is sent towards the end of the current epoch, the actual time
+	// will be closer to 7 days; if it is sent towards the beginning,
+	// the actual time will be closer to 8 days.
+	return time.Duration(params.EpochsUntilUnbonded+1) * durationPerEpoch
 }
 
 // ApplyValidatorChanges returns the validator set as is. However, it also
 // stores the validators that are added or those that are removed, and updates
 // the stored power for the existing validators. It also allows any hooks registered
 // on the keeper to be executed. Lastly, it stores the validator set against the
-// provided validator set id.
+// provided validator set id. The caller must ensure that `change.Key` is not nil.
 func (k Keeper) ApplyValidatorChanges(
-	ctx sdk.Context, changes []abci.ValidatorUpdate,
+	ctx sdk.Context, changes []keytypes.WrappedConsKeyWithPower,
 ) []abci.ValidatorUpdate {
 	ret := []abci.ValidatorUpdate{}
 	logger := k.Logger(ctx)
 	for _, change := range changes {
-		// convert TM pubkey to SDK pubkey for storage within the validator object.
-		pubkey, err := cryptocodec.FromTmProtoPublicKey(change.GetPubKey())
-		if err != nil {
-			// An error here would indicate that this change is invalid.
-			// The change is received either from the genesis file, or from
-			// other parts of the module.
-			// In no situation it should happen; however, if it does,
-			// we do not panic. Simply skip the change.
-			logger.Error("could not convert tendermint pubkey to sdk pubkey", "error", err)
-			continue
-		}
-		// the address is just derived from the public key and
-		// has no correlation with the operator address on Exocore.
-		addr := sdk.GetConsAddress(pubkey)
+		addr := change.Key.ToConsAddr()
 		val, found := k.GetExocoreValidator(ctx, addr)
 		switch found {
 		case true:
@@ -66,8 +55,7 @@ func (k Keeper) ApplyValidatorChanges(
 				k.DeleteExocoreValidator(cc, addr)
 				// sdk slashing.AfterValidatorRemoved deletes the lookup from cons address to
 				// cons pub key
-				err = k.Hooks().AfterValidatorRemoved(cc, addr, nil)
-				if err != nil {
+				if err := k.Hooks().AfterValidatorRemoved(cc, addr, nil); err != nil {
 					logger.Error("error in AfterValidatorRemoved", "error", err)
 					continue
 				}
@@ -89,8 +77,9 @@ func (k Keeper) ApplyValidatorChanges(
 					logger.Error("operator address not found for validator", "cons address", addr)
 					continue
 				}
-				err = k.Hooks().AfterValidatorCreated(cc, sdk.ValAddress(accAddress))
-				if err != nil {
+				if err := k.Hooks().AfterValidatorCreated(
+					cc, sdk.ValAddress(accAddress),
+				); err != nil {
 					logger.Error("error in AfterValidatorCreated", "error", err)
 					continue
 				}
@@ -99,7 +88,7 @@ func (k Keeper) ApplyValidatorChanges(
 		case false:
 			if change.Power > 0 {
 				// create a new validator.
-				ocVal, err := types.NewExocoreValidator(addr, change.Power, pubkey)
+				ocVal, err := types.NewExocoreValidator(addr, change.Power, change.Key.ToSdkKey())
 				if err != nil {
 					logger.Error("could not create new exocore validator", "error", err)
 					continue
@@ -122,7 +111,10 @@ func (k Keeper) ApplyValidatorChanges(
 				continue
 			}
 		}
-		ret = append(ret, change)
+		ret = append(ret, abci.ValidatorUpdate{
+			PubKey: *change.Key.ToTmProtoKey(),
+			Power:  change.Power,
+		})
 	}
 
 	// sort for determinism

@@ -1,6 +1,8 @@
 package utils
 
 import (
+	"bytes"
+	"sort"
 	"strings"
 
 	ibcclienttypes "github.com/cosmos/ibc-go/v7/modules/core/02-client/types"
@@ -9,9 +11,11 @@ import (
 	"golang.org/x/exp/constraints"
 	"golang.org/x/xerrors"
 
+	keytypes "github.com/ExocoreNetwork/exocore/types/keys"
 	"github.com/cosmos/cosmos-sdk/crypto/keys/ed25519"
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
 	"github.com/cosmos/cosmos-sdk/crypto/types/multisig"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 const (
@@ -167,3 +171,42 @@ func CommonValidation[T any, V constraints.Ordered, D any](
 // 		return "", errorsmod.Wrapf(errortypes.ErrInvalidAddress, "invalid input address: %s", address)
 // 	}
 // }
+
+// SortByPower sorts operators, their pubkeys, and their powers by the powers.
+// the sorting is descending, so the highest power is first. If the powers are equal,
+// the operator address (bytes, not string!) is used as a tiebreaker. The bytes
+// are preferred since that is how the operator module stores them, indexed by
+// the bytes. The caller must ensure that the slices are of the same length.
+func SortByPower(
+	operatorAddrs []sdk.AccAddress,
+	pubKeys []keytypes.WrappedConsKey,
+	powers []int64,
+) ([]sdk.AccAddress, []keytypes.WrappedConsKey, []int64) {
+	// Create a slice of indices
+	indices := make([]int, len(powers))
+	for i := range indices {
+		indices[i] = i
+	}
+
+	// Sort the indices slice based on the powers slice
+	// Since the operator address is unique, SliceStable is not needed
+	sort.Slice(indices, func(i, j int) bool {
+		if powers[indices[i]] == powers[indices[j]] {
+			// ascending order of operator address as tiebreaker
+			return bytes.Compare(operatorAddrs[indices[i]], operatorAddrs[indices[j]]) < 0
+		}
+		// descending order of power
+		return powers[indices[i]] > powers[indices[j]]
+	})
+
+	// Reorder all slices using the sorted indices
+	sortedOperatorAddrs := make([]sdk.AccAddress, len(operatorAddrs))
+	sortedPubKeys := make([]keytypes.WrappedConsKey, len(pubKeys))
+	sortedPowers := make([]int64, len(powers))
+	for i, idx := range indices {
+		sortedOperatorAddrs[i] = operatorAddrs[idx]
+		sortedPubKeys[i] = pubKeys[idx]
+		sortedPowers[i] = powers[idx]
+	}
+	return sortedOperatorAddrs, sortedPubKeys, sortedPowers
+}

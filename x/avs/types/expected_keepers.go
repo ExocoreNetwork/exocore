@@ -49,4 +49,5 @@ type AssetsKeeper interface {
 	GetStakingAssetInfo(
 		ctx sdk.Context, assetID string,
 	) (info *assetstype.StakingAssetInfo, err error)
+	IsStakingAsset(sdk.Context, string) bool
 }

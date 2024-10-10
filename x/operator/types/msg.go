@@ -2,6 +2,7 @@ package types
 
 import (
 	errorsmod "cosmossdk.io/errors"
+	keytypes "github.com/ExocoreNetwork/exocore/types/keys"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/common"
 )
@@ -68,7 +69,7 @@ func (m *SetConsKeyReq) ValidateBasic() error {
 	if !common.IsHexAddress(m.AvsAddress) {
 		return errorsmod.Wrap(ErrParameterInvalid, "invalid AVS address")
 	}
-	if wrappedKey := NewWrappedConsKeyFromJSON(m.PublicKeyJSON); wrappedKey == nil {
+	if wrappedKey := keytypes.NewWrappedConsKeyFromJSON(m.PublicKeyJSON); wrappedKey == nil {
 		return errorsmod.Wrapf(ErrParameterInvalid, "invalid public key")
 	}
 	return nil
@@ -106,7 +107,7 @@ func (m *OptIntoAVSReq) ValidateBasic() error {
 	// cannot check whether a public key is required or not,
 	// since that is a stateful check
 	if key := m.PublicKeyJSON; len(key) > 0 {
-		if wrappedKey := NewWrappedConsKeyFromJSON(key); wrappedKey == nil {
+		if wrappedKey := keytypes.NewWrappedConsKeyFromJSON(key); wrappedKey == nil {
 			return errorsmod.Wrapf(ErrParameterInvalid, "invalid public key")
 		}
 	}
