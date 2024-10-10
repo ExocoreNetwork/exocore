@@ -2,13 +2,13 @@ package avs_test
 
 import (
 	"cosmossdk.io/math"
-	types2 "github.com/ExocoreNetwork/exocore/x/assets/types"
+	assetstypes "github.com/ExocoreNetwork/exocore/x/assets/types"
 	avskeeper "github.com/ExocoreNetwork/exocore/x/avs/keeper"
+	"github.com/ExocoreNetwork/exocore/x/avs/types"
 	"math/big"
 	"time"
 
 	sdkmath "cosmossdk.io/math"
-	assetstype "github.com/ExocoreNetwork/exocore/x/assets/types"
 	operatorKeeper "github.com/ExocoreNetwork/exocore/x/operator/keeper"
 
 	"github.com/ExocoreNetwork/exocore/app"
@@ -448,10 +448,10 @@ func (suite *AVSManagerPrecompileSuite) TestRegisterOperatorToAVS() {
 		_, err := suite.OperatorMsgServer.RegisterOperator(sdk.WrapSDKContext(suite.Ctx), registerReq)
 		suite.NoError(err)
 		asset := suite.Assets[0]
-		_, assetID := types2.GetStakeIDAndAssetIDFromStr(asset.LayerZeroChainID, "", asset.Address)
+		_, assetID := assetstypes.GetStakerIDAndAssetIDFromStr(asset.LayerZeroChainID, "", asset.Address)
 		selfDelegateAmount := big.NewInt(10)
 		minPrecisionSelfDelegateAmount := big.NewInt(0).Mul(selfDelegateAmount, big.NewInt(0).Exp(big.NewInt(10), big.NewInt(int64(asset.Decimals)), nil))
-		err = suite.App.AssetsKeeper.UpdateOperatorAssetState(suite.Ctx, operatorAddress, assetID, types2.DeltaOperatorSingleAsset{
+		err = suite.App.AssetsKeeper.UpdateOperatorAssetState(suite.Ctx, operatorAddress, assetID, assetstypes.DeltaOperatorSingleAsset{
 			TotalAmount:   math.NewIntFromBigInt(minPrecisionSelfDelegateAmount),
 			TotalShare:    math.LegacyNewDecFromBigInt(minPrecisionSelfDelegateAmount),
 			OperatorShare: math.LegacyNewDecFromBigInt(minPrecisionSelfDelegateAmount),
@@ -483,7 +483,7 @@ func (suite *AVSManagerPrecompileSuite) TestRegisterOperatorToAVS() {
 				registerOperator()
 				avsAddr, intput := commonMalleate()
 				asset := suite.Assets[0]
-				_, defaultAssetID := types2.GetStakeIDAndAssetIDFromStr(asset.LayerZeroChainID, "", asset.Address)
+				_, defaultAssetID := assetstypes.GetStakerIDAndAssetIDFromStr(asset.LayerZeroChainID, "", asset.Address)
 				err = suite.App.AVSManagerKeeper.UpdateAVSInfo(suite.Ctx, &types.AVSRegisterOrDeregisterParams{
 					Action:     avskeeper.UpdateAction,
 					AvsAddress: avsAddr.String(),
@@ -670,7 +670,7 @@ func (suite *AVSManagerPrecompileSuite) TestRunRegTaskInfo() {
 		suite.prepare()
 		// register the new token
 		usdcAddr := common.HexToAddress("0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48")
-		usdcClientChainAsset := assetstype.AssetInfo{
+		usdcClientChainAsset := assetstypes.AssetInfo{
 			Name:             "USD coin",
 			Symbol:           "USDC",
 			Address:          usdcAddr.String(),
@@ -680,7 +680,7 @@ func (suite *AVSManagerPrecompileSuite) TestRunRegTaskInfo() {
 		}
 		err := suite.App.AssetsKeeper.SetStakingAssetInfo(
 			suite.Ctx,
-			&assetstype.StakingAssetInfo{
+			&assetstypes.StakingAssetInfo{
 				AssetBasicInfo:     usdcClientChainAsset,
 				StakingTotalAmount: sdkmath.NewInt(0),
 			},

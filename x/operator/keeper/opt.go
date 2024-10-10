@@ -39,12 +39,12 @@ func (k *Keeper) OptIn(
 	if err != nil {
 		return errorsmod.Wrapf(err, "OptIn: error when calculating operator USD value, operator:%s avsAddr:%s", operatorAddress.String(), avsAddr)
 	}
-	minSelfDelgation, err := k.avsKeeper.GetAVSMinimumSelfDelegation(ctx, avsAddr)
+	minSelfDelegation, err := k.avsKeeper.GetAVSMinimumSelfDelegation(ctx, avsAddr)
 	if err != nil {
 		return errorsmod.Wrapf(err, "OptIn: error when getting minimum self delegation of AVS, avsAddr:%s", avsAddr)
 	}
-	if operatorUSDValues.SelfUSDValue.LT(minSelfDelgation) {
-		return errorsmod.Wrapf(types.ErrMinDelegationNotMet, "operator:%s avs:%s selfUSDValue:%s minSelfDelgation:%s", operatorAddress.String(), avsAddr, operatorUSDValues.SelfUSDValue, minSelfDelgation)
+	if operatorUSDValues.SelfUSDValue.LT(minSelfDelegation) {
+		return errorsmod.Wrapf(types.ErrMinDelegationNotMet, "operator:%s avs:%s selfUSDValue:%s minSelfDelegation:%s", operatorAddress.String(), avsAddr, operatorUSDValues.SelfUSDValue, minSelfDelegation)
 	}
 
 	// do not allow frozen operators to do anything meaningful
