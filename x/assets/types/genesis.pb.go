@@ -293,7 +293,7 @@ func (m *DepositsByStaker) GetDeposits() []DepositByAsset {
 // The info contains the deposit amount, the withdrawable amount
 // and the amount currently unbonding.
 // It is named DepositByAsset (since it is indexed by the assetID)
-// and not DepositLST to prevent conflict with CrossChainOpType.
+// and not Deposit to prevent conflict with CrossChainOpType.
 type DepositByAsset struct {
 	// asset_id is the id of the asset.
 	AssetID string `protobuf:"bytes,1,opt,name=asset_id,json=assetId,proto3" json:"asset_id,omitempty"`

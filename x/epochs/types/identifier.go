@@ -41,3 +41,23 @@ func ValidateEpochIdentifierString(s string) error {
 	}
 	return nil
 }
+
+// ValidateEpoch accepts an Epoch and validates it. The validation performed is that the epoch identifier string is valid, and that the epoch number (uint64) is not zero.
+func ValidateEpoch(epoch Epoch) error {
+	if err := ValidateEpochIdentifierString(epoch.EpochIdentifier); err != nil {
+		return err
+	}
+	if epoch.EpochNumber == 0 {
+		return fmt.Errorf("epoch number cannot be zero")
+	}
+	return nil
+}
+
+// ValidateEpochInterface accepts an interface and validates it as an Epoch.
+func ValidateEpochInterface(i interface{}) error {
+	v, ok := i.(Epoch)
+	if !ok {
+		return fmt.Errorf("invalid parameter type: %T", i)
+	}
+	return ValidateEpoch(v)
+}

@@ -16,7 +16,7 @@ func (suite *AVSTestSuite) TestAVS() {
 	avsName := "avsTest"
 	avsAddress := suite.avsAddress
 	avsOwnerAddress := []string{"exo13h6xg79g82e2g2vhjwg7j4r2z2hlncelwutkjr", "exo13h6xg79g82e2g2vhjwg7j4r2z2hlncelwutkj1", "exo13h6xg79g82e2g2vhjwg7j4r2z2hlncelwutkj2"}
-	assetID := []string{"0xdac17f958d2ee523a2206206994597c13d831ec7_0x65"}
+	assetID := suite.AssetIDs
 	avs := &types.AVSInfo{
 		Name:                avsName,
 		AvsAddress:          avsAddress.String(),
@@ -61,7 +61,7 @@ func (suite *AVSTestSuite) TestAVS() {
 func (suite *AVSTestSuite) TestUpdateAVSInfo_Register() {
 	avsName, avsAddres, slashAddress, rewardAddress := "avsTest", "exo18cggcpvwspnd5c6ny8wrqxpffj5zmhklprtnph", "0xDF907c29719154eb9872f021d21CAE6E5025d7aB", "0xDF907c29719154eb9872f021d21CAE6E5025d7aB"
 	avsOwnerAddress := []string{"exo13h6xg79g82e2g2vhjwg7j4r2z2hlncelwutkjr", "exo13h6xg79g82e2g2vhjwg7j4r2z2hlncelwutkj1", "exo13h6xg79g82e2g2vhjwg7j4r2z2hlncelwutkj2"}
-	assetID := []string{"11", "22", "33"}
+	assetID := suite.AssetIDs
 
 	avsParams := &types.AVSRegisterOrDeregisterParams{
 		AvsName:            avsName,
@@ -93,7 +93,7 @@ func (suite *AVSTestSuite) TestUpdateAVSInfo_DeRegister() {
 	// Test case setup
 	avsName, avsAddres, slashAddress := "avsTest", suite.avsAddress.String(), "exo13h6xg79g82e2g2vhjwg7j4r2z2hlncelwutash"
 	avsOwnerAddress := []string{"exo13h6xg79g82e2g2vhjwg7j4r2z2hlncelwutkjr", "exo13h6xg79g82e2g2vhjwg7j4r2z2hlncelwutkj1", "exo13h6xg79g82e2g2vhjwg7j4r2z2hlncelwutkj2"}
-	assetID := []string{"11", "22", "33", "44", "55"} // Multiple assets
+	assetID := suite.AssetIDs
 
 	avsParams := &types.AVSRegisterOrDeregisterParams{
 		AvsName:           avsName,

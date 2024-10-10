@@ -60,6 +60,7 @@ type BaseTestSuite struct {
 	// x/assets
 	ClientChains []assetstypes.ClientChainInfo
 	Assets       []assetstypes.AssetInfo
+	AssetIDs     []string
 	// for tracking validator across blocks
 	ValSet    *tmtypes.ValidatorSet
 	Operators []sdk.AccAddress
@@ -105,6 +106,7 @@ func (suite *BaseTestSuite) SetupWithGenesisValSet(genAccs []authtypes.GenesisAc
 		suite.ClientChains[0].LayerZeroChainID,
 		"", suite.Assets[0].Address,
 	)
+	suite.AssetIDs = append(suite.AssetIDs, assetID)
 	// x/assets initialization - deposits (client chains and tokens are from caller)
 	power := int64(101)
 	power2 := int64(100)

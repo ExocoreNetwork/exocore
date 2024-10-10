@@ -233,7 +233,9 @@ func (k Keeper) GetVotePowerForChainID(
 ) ([]int64, error) {
 	isAvs, avsAddrString := k.avsKeeper.IsAVSByChainID(ctx, chainIDWithoutRevision)
 	if !isAvs {
-		return nil, errorsmod.Wrap(operatortypes.ErrUnknownChainID, fmt.Sprintf("GetVotePowerForChainID: chainIDWithoutRevision is %s", chainIDWithoutRevision))
+		return nil, operatortypes.ErrUnknownChainID.Wrapf(
+			"GetVotePowerForChainID: chainIDWithoutRevision is %s", chainIDWithoutRevision,
+		)
 	}
 	ret := make([]int64, 0)
 	for _, operator := range operators {

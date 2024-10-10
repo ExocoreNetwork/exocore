@@ -107,8 +107,12 @@ var (
 		ModuleName, 25,
 		"The pubKey parsing failed",
 	)
-	ErrSubmitTooSoonError = errorsmod.Register(
+	ErrInvalidAssetID = errorsmod.Register(
 		ModuleName, 26,
-		" The response was submitted too soon.",
+		"Invalid asset ID",
 	)
+  ErrSubmitTooSoonError = errorsmod.Register(
+		ModuleName, 27,
+		" The response was submitted too soon.",
+  )
 )

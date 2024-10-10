@@ -32,6 +32,14 @@ func InitGenesis(ctx sdk.Context, k keeper.Keeper, genState types.GenesisState) 
 	for _, elem := range genState.RecentParamsList {
 		k.SetRecentParams(ctx, elem)
 	}
+	// Set all stakerList for assetIDs
+	for _, elem := range genState.StakerListAssets {
+		k.SetStakerList(ctx, elem.AssetId, elem.StakerList)
+	}
+	// Set all stakerInfos for assetIDs
+	for _, elem := range genState.StakerInfosAssets {
+		k.SetStakerInfos(ctx, elem.AssetId, elem.StakerInfos)
+	}
 	// this line is used by starport scaffolding # genesis/module/init
 	k.SetParams(ctx, genState.Params)
 }
@@ -59,6 +67,7 @@ func ExportGenesis(ctx sdk.Context, k keeper.Keeper) *types.GenesisState {
 	}
 	genesis.RecentMsgList = k.GetAllRecentMsg(ctx)
 	genesis.RecentParamsList = k.GetAllRecentParams(ctx)
+	// TODO: export stakerListAssets, and stakerInfosAssets
 	// this line is used by starport scaffolding # genesis/module/export
 
 	return genesis

@@ -1,13 +1,11 @@
 package keeper
 
 import (
-	"sort"
-
 	"cosmossdk.io/math"
+	keytypes "github.com/ExocoreNetwork/exocore/types/keys"
+	"github.com/ExocoreNetwork/exocore/utils"
 	avstypes "github.com/ExocoreNetwork/exocore/x/avs/types"
-	operatortypes "github.com/ExocoreNetwork/exocore/x/operator/types"
 	abci "github.com/cometbft/cometbft/abci/types"
-	cryptocodec "github.com/cosmos/cosmos-sdk/crypto/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
@@ -40,9 +38,11 @@ func (k Keeper) EndBlock(ctx sdk.Context) []abci.ValidatorUpdate {
 	// then, let the operator module know that the opt out has finished.
 	optOuts := k.GetPendingOptOuts(ctx)
 	for _, addr := range optOuts.GetList() {
-		err := k.operatorKeeper.CompleteOperatorKeyRemovalForChainID(ctx, addr, chainIDWithoutRevision)
+		err := k.operatorKeeper.CompleteOperatorKeyRemovalForChainID(
+			ctx, addr, chainIDWithoutRevision,
+		)
 		if err != nil {
-			k.Logger(ctx).Error("error decrementing undelegation hold count", "error", err)
+			k.Logger(ctx).Error("error completing operator key removal", "error", err)
 		}
 	}
 	k.ClearPendingOptOuts(ctx)
@@ -87,13 +87,13 @@ func (k Keeper) EndBlock(ctx sdk.Context) []abci.ValidatorUpdate {
 		k.Logger(ctx).Error("error getting vote power for chain", "error", err)
 		return []abci.ValidatorUpdate{}
 	}
-	operators, keys, powers = sortByPower(operators, keys, powers)
+	operators, keys, powers = utils.SortByPower(operators, keys, powers)
 	maxVals := k.GetMaxValidators(ctx)
 	k.Logger(ctx).Info("max validators", "maxVals", maxVals, "len(operators)", len(operators))
 	// the capacity of this list is twice the maximum number of validators.
 	// this is because we can have a maximum of maxVals validators, and we can also have
 	// a maximum of maxVals validators that are removed.
-	res := make([]abci.ValidatorUpdate, 0, maxVals*2)
+	res := make([]keytypes.WrappedConsKeyWithPower, 0, maxVals*2)
 	for i := range operators {
 		// #nosec G701 // ok on 64-bit systems.
 		if i >= int(maxVals) {
@@ -112,15 +112,14 @@ func (k Keeper) EndBlock(ctx sdk.Context) []abci.ValidatorUpdate {
 		}
 		// find the previous power.
 		wrappedKey := keys[i]
-		address := wrappedKey.ToConsAddr()
-		addressString := address.String()
+		addressString := wrappedKey.ToConsAddr().String()
 		prevPower, found := prevMap[addressString]
 		if found {
-			// if the power has changed, queue an update.
+			// if the power has changed, queue an update. skip, otherwise.
 			if prevPower != power {
-				res = append(res, abci.ValidatorUpdate{
-					PubKey: *wrappedKey.ToTmProtoKey(),
-					Power:  power,
+				res = append(res, keytypes.WrappedConsKeyWithPower{
+					Key:   wrappedKey,
+					Power: power,
 				})
 			}
 			// remove the validator from the previous map, so that 0 power
@@ -128,11 +127,12 @@ func (k Keeper) EndBlock(ctx sdk.Context) []abci.ValidatorUpdate {
 			delete(prevMap, addressString)
 		} else {
 			// new consensus key, queue an update.
-			res = append(res, abci.ValidatorUpdate{
-				PubKey: *wrappedKey.ToTmProtoKey(),
-				Power:  power,
+			res = append(res, keytypes.WrappedConsKeyWithPower{
+				Key:   wrappedKey,
+				Power: power,
 			})
 		}
+		// all powers, regardless of whether the key exists, are added to the total power.
 		totalPower = totalPower.Add(sdk.NewInt(power))
 	}
 	k.Logger(ctx).Info("total power", "totalPower", totalPower, "len(res)", len(res))
@@ -144,13 +144,9 @@ func (k Keeper) EndBlock(ctx sdk.Context) []abci.ValidatorUpdate {
 		addressString := sdk.GetConsAddress(pubKey).String()
 		// Check if this validator is still in prevMap (i.e., hasn't been deleted)
 		if _, exists := prevMap[addressString]; exists { // O(1) since hash map
-			tmprotoKey, err := cryptocodec.ToTmProtoPublicKey(pubKey)
-			if err != nil {
-				continue
-			}
-			res = append(res, abci.ValidatorUpdate{
-				PubKey: tmprotoKey,
-				Power:  0,
+			res = append(res, keytypes.WrappedConsKeyWithPower{
+				Key:   keytypes.NewWrappedConsKeyFromSdkKey(pubKey),
+				Power: 0,
 			})
 			// while calculating total power, we started with 0 and not previous power.
 			// so the previous power of these validators does not need to be subtracted.
@@ -164,35 +160,4 @@ func (k Keeper) EndBlock(ctx sdk.Context) []abci.ValidatorUpdate {
 
 	// call via wrapper function so that validator info is stored.
 	return k.ApplyValidatorChanges(ctx, res)
-}
-
-// sortByPower sorts operators, their pubkeys, and their powers by the powers.
-// the sorting is descending, so the highest power is first.
-func sortByPower(
-	operatorAddrs []sdk.AccAddress,
-	pubKeys []operatortypes.WrappedConsKey,
-	powers []int64,
-) ([]sdk.AccAddress, []operatortypes.WrappedConsKey, []int64) {
-	// Create a slice of indices
-	indices := make([]int, len(powers))
-	for i := range indices {
-		indices[i] = i
-	}
-
-	// Sort the indices slice based on the powers slice
-	sort.SliceStable(indices, func(i, j int) bool {
-		return powers[indices[i]] > powers[indices[j]]
-	})
-
-	// Reorder all slices using the sorted indices
-	sortedOperatorAddrs := make([]sdk.AccAddress, len(operatorAddrs))
-	sortedPubKeys := make([]operatortypes.WrappedConsKey, len(pubKeys))
-	sortedPowers := make([]int64, len(powers))
-	for i, idx := range indices {
-		sortedOperatorAddrs[i] = operatorAddrs[idx]
-		sortedPubKeys[i] = pubKeys[idx]
-		sortedPowers[i] = powers[idx]
-	}
-
-	return sortedOperatorAddrs, sortedPubKeys, sortedPowers
 }

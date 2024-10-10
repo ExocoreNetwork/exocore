@@ -73,7 +73,7 @@ func (suite *GenesisTestSuite) TestValidateGenesis() {
 				},
 			),
 			expPass:  false,
-			expError: "epoch duration should NOT be 0",
+			expError: "epoch duration should NOT be non-positive",
 		},
 		{
 			name: "negative current epoch number",

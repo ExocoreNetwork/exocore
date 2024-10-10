@@ -45,14 +45,6 @@ func (gs GenesisState) ValidateClientChains() (map[uint64]struct{}, error) {
 				i,
 			)
 		}
-		// this is our primary method of cross-chain communication.
-		if info.LayerZeroChainID == 0 {
-			return errorsmod.Wrapf(
-				ErrInvalidGenesisData,
-				"nil LayerZeroChainID for chain %s",
-				info.Name,
-			)
-		}
 		// the address length is used to convert from bytes32 to address.
 		if info.AddressLength == 0 {
 			return errorsmod.Wrapf(
