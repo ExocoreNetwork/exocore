@@ -111,8 +111,8 @@ var (
 		ModuleName, 26,
 		"Invalid asset ID",
 	)
-  ErrSubmitTooSoonError = errorsmod.Register(
+	ErrSubmitTooSoonError = errorsmod.Register(
 		ModuleName, 27,
 		" The response was submitted too soon.",
-  )
+	)
 )

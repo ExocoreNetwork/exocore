@@ -99,7 +99,7 @@ func (k Keeper) UpdateAVSInfo(ctx sdk.Context, params *types.AVSRegisterOrDeregi
 		if err := k.ValidateAssetIDs(ctx, params.AssetID); err != nil {
 			return err
 		}
-	
+
 		avs := &types.AVSInfo{
 			Name:                params.AvsName,
 			AvsAddress:          params.AvsAddress,
