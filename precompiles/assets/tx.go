@@ -189,18 +189,9 @@ func (p Precompile) UpdateToken(
 		return nil, err
 	}
 
-	// check that the asset being updated actually exists
 	_, assetID := assetstypes.GetStakerIDAndAssetIDFromStr(uint64(clientChainID), "", hexAssetAddr)
-	assetInfo, err := p.assetsKeeper.GetStakingAssetInfo(ctx, assetID)
-	if err != nil {
-		// fails if asset does not exist with ErrNoClientChainAssetKey
-		return nil, err
-	}
-
-	// finally, execute the update
-	assetInfo.AssetBasicInfo.MetaInfo = metadata
-
-	if err := p.assetsKeeper.SetStakingAssetInfo(ctx, assetInfo); err != nil {
+	// this verifies the existence of the asset and returns an error if it doesn't exist
+	if err := p.assetsKeeper.UpdateStakingAssetMetaInfo(ctx, assetID, metadata); err != nil {
 		return nil, err
 	}
 
