@@ -47,7 +47,7 @@ func (k Keeper) SetStakingAssetInfo(ctx sdk.Context, info *assetstype.StakingAss
 	}
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), assetstype.KeyPrefixReStakingAssetInfo)
 	_, assetID := assetstype.GetStakerIDAndAssetIDFromStr(info.AssetBasicInfo.LayerZeroChainID, "", info.AssetBasicInfo.Address)
-	if k.IsStakingAsset(ctx, assetID) {
+	if store.Has([]byte(assetID)) {
 		return assetstype.ErrInvalidInputParameter.Wrapf(
 			"the asset has already been registered,assetID:%v,LayerZeroChainID:%v,ClientChainAssetAddr:%v",
 			assetID, info.AssetBasicInfo.LayerZeroChainID, info.AssetBasicInfo.Address,
