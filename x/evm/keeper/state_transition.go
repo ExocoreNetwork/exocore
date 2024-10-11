@@ -225,6 +225,8 @@ func (k *Keeper) ApplyTransaction(ctx sdk.Context, tx *ethtypes.Transaction) (*t
 			commit()
 			// Since the post-processing can alter the log, we need to update the result
 			res.Logs = types.NewLogsFromEth(receipt.Logs)
+			// no need to re-emit the events on ctx; see
+			// https://github.com/evmos/evmos/pull/2559
 		}
 	}
 
