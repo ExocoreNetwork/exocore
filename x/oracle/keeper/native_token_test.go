@@ -34,15 +34,13 @@ import (
 //  2. removed stakerList
 
 func (ks *KeeperSuite) TestNSTLifeCycleOneStaker() {
-	// operator := ks.Operators[0]
-	// stakerStr := common.Address(operator.Bytes()).String()
 	stakerStr := ks.StakerAddr
 	assetID := "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee_0x65"
 	validators := []string{"0xv1", "0xv2"}
 	// 1. deposit amount 100
 	// 100 is not a possible nubmer with one validator, it's ok to use this as a start and we'll check the number to be updated to a right number(uncer 32 with one validator)
-	amount100 := sdkmath.NewIntFromUint64(100)
-	amount32 := sdkmath.NewIntFromUint64(32)
+	amount100 := sdkmath.NewIntWithDecimal(100, 18)
+	amount32 := sdkmath.NewIntWithDecimal(32, 18)
 	ks.App.OracleKeeper.UpdateNSTValidatorListForStaker(ks.Ctx, assetID, stakerStr, validators[0], amount100)
 
 	// - 1.1 check stakerInfo
@@ -51,7 +49,8 @@ func (ks *KeeperSuite) TestNSTLifeCycleOneStaker() {
 		Block:   1,
 		RoundID: 0,
 		Change:  types.Action_ACTION_DEPOSIT,
-		Balance: 100,
+		// Balance: 100,
+		Balance: 32,
 	}, *stakerInfo.BalanceList[0])
 	ks.Equal([]string{validators[0]}, stakerInfo.ValidatorPubkeyList)
 	// - 1.2 check stakerList
@@ -106,7 +105,7 @@ func (ks *KeeperSuite) TestNSTLifeCycleOneStaker() {
 	}, *stakerInfo.BalanceList[3])
 
 	// 5. withdraw
-	amount30N := sdkmath.NewInt(-30)
+	amount30N := sdkmath.NewIntWithDecimal(-30, 18)
 	ks.App.OracleKeeper.UpdateNSTValidatorListForStaker(ks.Ctx, assetID, stakerStr, validators[0], amount30N)
 	// - 5.1 check stakerInfo
 	stakerInfo = ks.App.OracleKeeper.GetStakerInfo(ks.Ctx, assetID, stakerStr)
@@ -121,7 +120,7 @@ func (ks *KeeperSuite) TestNSTLifeCycleOneStaker() {
 	ks.Equal([]string{validators[1]}, stakerInfo.ValidatorPubkeyList)
 
 	// 6.withdrawall
-	amount100N := sdkmath.NewInt(-29)
+	amount100N := sdkmath.NewIntWithDecimal(-29, 18)
 	ks.App.OracleKeeper.UpdateNSTValidatorListForStaker(ks.Ctx, assetID, stakerStr, validators[1], amount100N)
 	// - 6.1 check stakerInfo
 	stakerInfo = ks.App.OracleKeeper.GetStakerInfo(ks.Ctx, assetID, stakerStr)
