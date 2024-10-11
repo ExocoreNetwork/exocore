@@ -37,14 +37,14 @@ message GenesisState {
 
 }
 
-
+// TaskID is helper structure to store the task id information for the genesis state.
 message TaskID {
   // task_addr is the address of task as a hex string
   string task_addr = 1;
   // id of task.
   uint64 task_id = 3;
 }
-
+// ChallengeInfo is helper structure to store the task challenge information for the genesis state.
 message ChallengeInfo {
   // key is used for storing the ChallengeInfos,
   // which is a combination of the operator address ,task address and task id.
@@ -52,7 +52,7 @@ message ChallengeInfo {
   // challenge_addr is the address of the challenger
   string challenge_addr = 2;
 }
-
+// ChainIDInfo is helper structure to store the dogfood ChainID information for the genesis state.
 message ChainIDInfo {
   // avs_address is the address of avs as a hex string.
   string avs_address = 1;

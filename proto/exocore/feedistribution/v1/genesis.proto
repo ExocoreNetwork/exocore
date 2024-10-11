@@ -35,7 +35,8 @@ message GenesisState {
 
 }
 
-
+// ValidatorAccumulatedCommissions is helper structure to store
+// the validator accumulated commissions for the genesis state.
 message ValidatorAccumulatedCommissions {
   // val_addr is the address of validator
   string val_addr = 1;
@@ -44,7 +45,7 @@ message ValidatorAccumulatedCommissions {
   // for a validator kept as a running counter, can be withdrawn at any time.
   ValidatorAccumulatedCommission commission = 2;
 }
-
+// ValidatorCurrentRewardsList is helper structure to store the validator current rewards  for the genesis state.
 message ValidatorCurrentRewardsList {
   // val_addr is the address of validator
   string val_addr = 1;
@@ -54,7 +55,7 @@ message ValidatorCurrentRewardsList {
   // each block as long as the validator's tokens remain constant.
   ValidatorCurrentRewards current_rewards = 2;
 }
-
+// TaskID is helper structure to store the validator outstanding rewards  for the genesis state.
 message ValidatorOutstandingRewardsList {
   // val_addr is the address of validator
   string val_addr = 1;
@@ -63,7 +64,7 @@ message ValidatorOutstandingRewardsList {
   // for a validator inexpensive to track, allows simple sanity checks.
   ValidatorOutstandingRewards outstanding_rewards = 2;
 }
-
+// StakerOutstandingRewardsList is helper structure to store the staker outstanding rewards  for the genesis state.
 message StakerOutstandingRewardsList {
   // val_addr is the address of validator
   string val_addr = 1;
