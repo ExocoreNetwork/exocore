@@ -20,7 +20,9 @@ import (
 // undelegate: update operator's price, operator's totalAmount, operator's totalShare, staker's share
 // msg(refund or slash on beaconChain): update staker's price, operator's price
 
-const maxEffectiveBalance = 32
+const (
+	maxEffectiveBalance = 32
+)
 
 // SetStakerInfos set stakerInfos for the specific assetID
 func (k Keeper) SetStakerInfos(ctx sdk.Context, assetID string, stakerInfos []*types.StakerInfo) {
@@ -168,7 +170,12 @@ func (k Keeper) UpdateNSTValidatorListForStaker(ctx sdk.Context, assetID, staker
 		}
 	}
 
-	newBalance.Balance += amount.Int64()
+	if amount.GTE(efbUnit) {
+		newBalance.Balance += maxEffectiveBalance
+	} else {
+		// deposit must be gte efbunit, otherwise this is a withdraw action
+		newBalance.Balance += amount.Quo(decimal).Int64()
+	}
 
 	keyStakerList := types.NativeTokenStakerListKey(assetID)
 	valueStakerList := store.Get(keyStakerList)
