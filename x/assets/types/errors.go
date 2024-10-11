@@ -89,8 +89,12 @@ var (
 		ModuleName, 18,
 		"the operation type is invalid")
 
-	ErrParseJoinedKey = errorsmod.Register(
+	ErrRegisterDuplicateAssetID = errorsmod.Register(
 		ModuleName, 19,
+		"register new asset with an existing assetID")
+
+	ErrParseJoinedKey = errorsmod.Register(
+		ModuleName, 20,
 		"the joined key can't be parsed",
 	)
 )
