@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	"bytes"
 	"fmt"
 
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
@@ -106,6 +107,79 @@ func (k Keeper) GetValidatorAccumulatedCommission(ctx sdk.Context, val sdk.ValAd
 	}
 	k.cdc.MustUnmarshal(b, &commission)
 	return
+}
+
+// GetAllValidatorData returns a slice containing all accumulated commissions for validators.
+func (k Keeper) GetAllValidatorData(ctx sdk.Context) (map[string]interface{}, error) {
+	store := ctx.KVStore(k.storeKey)
+	iterator := store.Iterator(nil, nil)
+	defer iterator.Close()
+
+	commissions := make([]types.ValidatorAccumulatedCommissions, 0)
+	currentList := make([]types.ValidatorCurrentRewardsList, 0)
+	outList := make([]types.ValidatorOutstandingRewardsList, 0)
+	stakerList := make([]types.StakerOutstandingRewardsList, 0)
+	validatorData := map[string]interface{}{
+		"ValidatorAccumulatedCommissions": commissions,
+		"ValidatorCurrentRewardsList":     currentList,
+		"ValidatorOutstandingRewardsList": outList,
+		"StakerOutstandingRewardsList":    stakerList,
+	}
+
+	for ; iterator.Valid(); iterator.Next() {
+		key := iterator.Key()
+		value := iterator.Value()
+
+		switch {
+		case bytes.HasPrefix(key, types.GetValidatorAccumulatedCommissionKey(sdk.ValAddress{})):
+			var commission types.ValidatorAccumulatedCommission
+			err := k.cdc.Unmarshal(value, &commission)
+			if err != nil {
+				return nil, err
+			}
+			commissions = append(commissions, types.ValidatorAccumulatedCommissions{
+				ValAddr:    string(key),
+				Commission: &commission,
+			})
+		case bytes.HasPrefix(key, types.GetValidatorCurrentRewardsKey(sdk.ValAddress{})):
+			var rewards types.ValidatorCurrentRewards
+			err := k.cdc.Unmarshal(value, &rewards)
+			if err != nil {
+				return nil, err
+			}
+			currentList = append(currentList, types.ValidatorCurrentRewardsList{
+				ValAddr:        string(key),
+				CurrentRewards: &rewards,
+			})
+
+		case bytes.HasPrefix(key, types.GetValidatorOutstandingRewardsKey(sdk.ValAddress{})):
+			var outstandingRewards types.ValidatorOutstandingRewards
+			err := k.cdc.Unmarshal(value, &outstandingRewards)
+			if err != nil {
+				return nil, err
+			}
+			outList = append(outList, types.ValidatorOutstandingRewardsList{
+				ValAddr:            string(key),
+				OutstandingRewards: &outstandingRewards,
+			})
+
+		case bytes.HasPrefix(key, types.GetStakerOutstandingRewardsKey("")):
+			var stakerRewards types.StakerOutstandingRewards
+			err := k.cdc.Unmarshal(value, &stakerRewards)
+			if err != nil {
+				return nil, err
+			}
+			stakerList = append(stakerList, types.StakerOutstandingRewardsList{
+				ValAddr:                  string(key),
+				StakerOutstandingRewards: &stakerRewards,
+			})
+
+		default:
+			continue
+		}
+	}
+
+	return validatorData, nil
 }
 
 // set accumulated commission for a validator
