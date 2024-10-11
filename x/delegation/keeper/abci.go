@@ -61,7 +61,6 @@ func (k *Keeper) EndBlock(
 		if _, err := k.UpdateDelegationState(
 			ctx, record.StakerID, record.AssetID, record.OperatorAddr, deltaAmount,
 		); err != nil {
-			// use oCtx so that the error is logged on the original context
 			logger.Error(
 				"failed to update delegation state",
 				"error", err,
