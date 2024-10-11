@@ -1,10 +1,9 @@
 package keeper
 
 import (
-	"fmt"
-
 	errorsmod "cosmossdk.io/errors"
 	sdkmath "cosmossdk.io/math"
+	"github.com/ethereum/go-ethereum/common/hexutil"
 
 	assetstypes "github.com/ExocoreNetwork/exocore/x/assets/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -16,6 +15,7 @@ type DepositWithdrawParams struct {
 	AssetsAddress   []byte
 	StakerAddress   []byte
 	OpAmount        sdkmath.Int
+	ValidatorPubkey []byte
 }
 
 // PerformDepositOrWithdraw the assets precompile contract will call this function to update asset state
@@ -23,14 +23,17 @@ type DepositWithdrawParams struct {
 func (k Keeper) PerformDepositOrWithdraw(ctx sdk.Context, params *DepositWithdrawParams) error {
 	// check params parameter before executing deposit operation
 	if params.OpAmount.IsNegative() {
-		return errorsmod.Wrap(assetstypes.ErrInvalidDepositAmount, fmt.Sprintf("negative amount:%s", params.OpAmount))
+		return assetstypes.ErrInvalidDepositAmount.Wrapf("negative deposit amount:%s", params.OpAmount)
 	}
-	stakeID, assetID := assetstypes.GetStakeIDAndAssetID(params.ClientChainLzID, params.StakerAddress, params.AssetsAddress)
+	stakerID, assetID := assetstypes.GetStakerIDAndAssetID(params.ClientChainLzID, params.StakerAddress, params.AssetsAddress)
+	if !k.IsStakingAsset(ctx, assetID) {
+		return errorsmod.Wrapf(assetstypes.ErrNoClientChainAssetKey, "assetAddr:%s clientChainID:%v", hexutil.Encode(params.AssetsAddress), params.ClientChainLzID)
+	}
 
 	actualOpAmount := params.OpAmount
 	switch params.Action {
-	case assetstypes.Deposit:
-	case assetstypes.WithdrawPrincipal:
+	case assetstypes.DepositLST, assetstypes.DepositNST:
+	case assetstypes.WithdrawLST, assetstypes.WithdrawNST:
 		actualOpAmount = actualOpAmount.Neg()
 	default:
 		return errorsmod.Wrapf(assetstypes.ErrInvalidOperationType, "the operation type is: %v", params.Action)
@@ -42,11 +45,11 @@ func (k Keeper) PerformDepositOrWithdraw(ctx sdk.Context, params *DepositWithdra
 	}
 	// don't update staker info for exo-native-token
 	// TODO: do we need additional process for exo-native-token ?
-	if assetID != assetstypes.NativeAssetID {
+	if assetID != assetstypes.ExocoreAssetID {
 		// update asset state of the specified staker
-		err := k.UpdateStakerAssetState(ctx, stakeID, assetID, changeAmount)
+		err := k.UpdateStakerAssetState(ctx, stakerID, assetID, changeAmount)
 		if err != nil {
-			return errorsmod.Wrapf(err, "stakeID:%s assetID:%s", stakeID, assetID)
+			return errorsmod.Wrapf(err, "stakerID:%s assetID:%s", stakerID, assetID)
 		}
 
 		// update total amount of the deposited asset

@@ -54,7 +54,7 @@ func (suite *GenesisTestSuite) TestValidateGenesis() {
 	// generated information
 	ethAddress := utiltx.GenerateAddress()
 	// csmAddress := sdk.AccAddress(ethAddress.Bytes())
-	stakerID, assetID := types.GetStakeIDAndAssetIDFromStr(
+	stakerID, assetID := types.GetStakerIDAndAssetIDFromStr(
 		usdtClientChainAsset.LayerZeroChainID, ethAddress.String(), usdtClientChainAsset.Address,
 	)
 	genesisDeposit := types.DepositsByStaker{
@@ -102,22 +102,6 @@ func (suite *GenesisTestSuite) TestValidateGenesis() {
 				ClientChains: []types.ClientChainInfo{
 					ethClientChain, ethClientChain,
 				},
-			},
-			expPass: false,
-		},
-		{
-			name: "invalid genesis due to zero layer zero chain id",
-			genState: &types.GenesisState{
-				Params: types.DefaultParams(),
-				ClientChains: []types.ClientChainInfo{
-					ethClientChain,
-				},
-			},
-			malleate: func(gs *types.GenesisState) {
-				gs.ClientChains[0].LayerZeroChainID = 0
-			},
-			unmalleate: func(gs *types.GenesisState) {
-				gs.ClientChains[0].LayerZeroChainID = 101
 			},
 			expPass: false,
 		},
@@ -234,7 +218,7 @@ func (suite *GenesisTestSuite) TestValidateGenesis() {
 			},
 			expPass: false,
 			malleate: func(gs *types.GenesisState) {
-				stakerID, _ := types.GetStakeIDAndAssetIDFromStr(
+				stakerID, _ := types.GetStakerIDAndAssetIDFromStr(
 					usdtClientChainAsset.LayerZeroChainID+1,
 					ethAddress.String(), usdtClientChainAsset.Address,
 				)
@@ -329,7 +313,7 @@ func (suite *GenesisTestSuite) TestValidateGenesis() {
 					StakingTotalAmount: math.NewInt(0),
 				}
 				gs.Tokens[1] = stakingInfo
-				stakerID, _ := types.GetStakeIDAndAssetIDFromStr(
+				stakerID, _ := types.GetStakerIDAndAssetIDFromStr(
 					usdtClientChainAsset.LayerZeroChainID+1,
 					ethAddress.String(), usdtClientChainAsset.Address,
 				)

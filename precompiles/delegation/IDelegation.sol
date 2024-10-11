@@ -24,12 +24,12 @@ interface IDelegation {
 /// @param stakerAddress The staker address
 /// @param operatorAddr  The operator address that wants to be delegated to
 /// @param opAmount The delegation amount
-    function delegateToThroughClientChain(
+    function delegate(
         uint32 clientChainID,
         uint64 lzNonce,
-        bytes memory assetsAddress,
-        bytes memory stakerAddress,
-        bytes memory operatorAddr,
+        bytes calldata assetsAddress,
+        bytes calldata stakerAddress,
+        bytes calldata operatorAddr,
         uint256 opAmount
     ) external returns (bool success);
 
@@ -43,12 +43,12 @@ interface IDelegation {
 /// @param stakerAddress The staker address
 /// @param operatorAddr  The operator address that wants to unDelegate from
 /// @param opAmount The Undelegation amount
-    function undelegateFromThroughClientChain(
+    function undelegate(
         uint32 clientChainID,
         uint64 lzNonce,
-        bytes memory assetsAddress,
-        bytes memory stakerAddress,
-        bytes memory operatorAddr,
+        bytes calldata assetsAddress,
+        bytes calldata stakerAddress,
+        bytes calldata operatorAddr,
         uint256 opAmount
     ) external returns (bool success);
 
@@ -60,8 +60,8 @@ interface IDelegation {
 /// @param operator is the address that is to be marked as the owner.
     function associateOperatorWithStaker(
         uint32 clientChainID,
-        bytes memory staker,
-        bytes memory operator
+        bytes calldata staker,
+        bytes calldata operator
     ) external returns (bool success);
 
 /// @dev dissociate the operator from staker
@@ -71,7 +71,7 @@ interface IDelegation {
 /// @param staker is the EVM address to remove the marking from.
     function dissociateOperatorFromStaker(
         uint32 clientChainID,
-        bytes memory staker
+        bytes calldata staker
     ) external returns (bool success);
 }
 

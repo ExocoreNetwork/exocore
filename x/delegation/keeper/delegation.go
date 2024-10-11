@@ -37,8 +37,8 @@ func (k *Keeper) delegateTo(
 		return delegationtype.ErrOperatorIsFrozen
 	}
 
-	stakerID, assetID := assetstype.GetStakeIDAndAssetID(params.ClientChainID, params.StakerAddress, params.AssetsAddress)
-	if assetID != assetstype.NativeAssetID {
+	stakerID, assetID := assetstype.GetStakerIDAndAssetID(params.ClientChainID, params.StakerAddress, params.AssetsAddress)
+	if assetID != assetstype.ExocoreAssetID {
 		// check if the staker asset has been deposited and the canWithdraw amount is bigger than the delegation amount
 		info, err := k.assetsKeeper.GetStakerSpecifiedAssetInfo(ctx, stakerID, assetID)
 		if err != nil {
@@ -57,7 +57,7 @@ func (k *Keeper) delegateTo(
 			return err
 		}
 	} else {
-		coins := sdk.NewCoins(sdk.NewCoin(assetstype.NativeAssetDenom, params.OpAmount))
+		coins := sdk.NewCoins(sdk.NewCoin(assetstype.ExocoreAssetDenom, params.OpAmount))
 		// transfer the delegation amount from the staker account to the delegated pool
 		if err := k.bankKeeper.DelegateCoinsFromAccountToModule(ctx, params.StakerAddress, delegationtype.DelegatedPoolName, coins); err != nil {
 			return err
@@ -118,7 +118,7 @@ func (k *Keeper) UndelegateFrom(ctx sdk.Context, params *delegationtype.Delegati
 		return delegationtype.ErrOperatorNotExist
 	}
 	// get staker delegation state, then check the validation of Undelegation amount
-	stakerID, assetID := assetstype.GetStakeIDAndAssetID(params.ClientChainID, params.StakerAddress, params.AssetsAddress)
+	stakerID, assetID := assetstype.GetStakerIDAndAssetID(params.ClientChainID, params.StakerAddress, params.AssetsAddress)
 
 	// verify the undelegation amount
 	share, err := k.ValidateUndelegationAmount(ctx, params.OperatorAddress, stakerID, assetID, params.OpAmount)
@@ -180,7 +180,7 @@ func (k *Keeper) AssociateOperatorWithStaker(
 		return delegationtype.ErrOperatorNotExist
 	}
 
-	stakerID, _ := assetstype.GetStakeIDAndAssetID(clientChainID, stakerAddress, nil)
+	stakerID, _ := assetstype.GetStakerIDAndAssetID(clientChainID, stakerAddress, nil)
 	associatedOperator, err := k.GetAssociatedOperator(ctx, stakerID)
 	if err != nil {
 		return err
@@ -189,7 +189,7 @@ func (k *Keeper) AssociateOperatorWithStaker(
 		return delegationtype.ErrOperatorAlreadyAssociated
 	}
 
-	opFunc := func(keys *delegationtype.SingleDelegationInfoReq, amounts *delegationtype.DelegationAmounts) error {
+	opFunc := func(keys *delegationtype.SingleDelegationInfoReq, amounts *delegationtype.DelegationAmounts) (bool, error) {
 		// increase the share of new marked operator
 		if keys.OperatorAddr == operatorAddress.String() {
 			err = k.assetsKeeper.UpdateOperatorAssetState(ctx, operatorAddress, keys.AssetID, assetstype.DeltaOperatorSingleAsset{
@@ -197,9 +197,9 @@ func (k *Keeper) AssociateOperatorWithStaker(
 			})
 		}
 		if err != nil {
-			return err
+			return true, err
 		}
-		return nil
+		return false, nil
 	}
 	err = k.IterateDelegationsForStaker(ctx, stakerID, opFunc)
 	if err != nil {
@@ -223,7 +223,7 @@ func (k *Keeper) DissociateOperatorFromStaker(
 	clientChainID uint64,
 	stakerAddress []byte,
 ) error {
-	stakerID, _ := assetstype.GetStakeIDAndAssetID(clientChainID, stakerAddress, nil)
+	stakerID, _ := assetstype.GetStakerIDAndAssetID(clientChainID, stakerAddress, nil)
 	associatedOperator, err := k.GetAssociatedOperator(ctx, stakerID)
 	if err != nil {
 		return err
@@ -236,7 +236,7 @@ func (k *Keeper) DissociateOperatorFromStaker(
 		return delegationtype.ErrOperatorAddrIsNotAccAddr
 	}
 
-	opFunc := func(keys *delegationtype.SingleDelegationInfoReq, amounts *delegationtype.DelegationAmounts) error {
+	opFunc := func(keys *delegationtype.SingleDelegationInfoReq, amounts *delegationtype.DelegationAmounts) (bool, error) {
 		// decrease the share of old operator
 		if keys.OperatorAddr == associatedOperator {
 			err = k.assetsKeeper.UpdateOperatorAssetState(ctx, oldOperatorAccAddr, keys.AssetID, assetstype.DeltaOperatorSingleAsset{
@@ -244,9 +244,9 @@ func (k *Keeper) DissociateOperatorFromStaker(
 			})
 		}
 		if err != nil {
-			return err
+			return true, err
 		}
-		return nil
+		return false, nil
 	}
 	err = k.IterateDelegationsForStaker(ctx, stakerID, opFunc)
 	if err != nil {

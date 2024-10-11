@@ -233,7 +233,9 @@ func (k Keeper) GetVotePowerForChainID(
 ) ([]int64, error) {
 	isAvs, avsAddrString := k.avsKeeper.IsAVSByChainID(ctx, chainIDWithoutRevision)
 	if !isAvs {
-		return nil, errorsmod.Wrap(operatortypes.ErrUnknownChainID, fmt.Sprintf("GetVotePowerForChainID: chainIDWithoutRevision is %s", chainIDWithoutRevision))
+		return nil, operatortypes.ErrUnknownChainID.Wrapf(
+			"GetVotePowerForChainID: chainIDWithoutRevision is %s", chainIDWithoutRevision,
+		)
 	}
 	ret := make([]int64, 0)
 	for _, operator := range operators {
@@ -469,30 +471,31 @@ func (k *Keeper) CalculateUSDValueForStaker(ctx sdk.Context, stakerID, avsAddr s
 		return sdkmath.LegacyDec{}, errorsmod.Wrap(operatortypes.ErrValueIsNilOrZero, "CalculateUSDValueForStaker prices map is nil")
 	}
 	totalUSDValue := sdkmath.LegacyNewDec(0)
-	opFunc := func(keys *delegationtype.SingleDelegationInfoReq, amounts *delegationtype.DelegationAmounts) error {
+	opFunc := func(keys *delegationtype.SingleDelegationInfoReq, amounts *delegationtype.DelegationAmounts) (bool, error) {
+		// Return true to stop iteration, false to continue iterating
 		if keys.OperatorAddr == operator.String() {
 			if _, ok := assets[keys.AssetID]; ok {
 				price, ok := prices[keys.AssetID]
 				if !ok {
-					return errorsmod.Wrapf(operatortypes.ErrKeyNotExistInMap, "CalculateUSDValueForStaker assetID doesn't exist, assetID:%s", keys.AssetID)
+					return true, errorsmod.Wrapf(operatortypes.ErrKeyNotExistInMap, "CalculateUSDValueForStaker Price not found for assetID: %s", keys.AssetID)
 				}
 				operatorAsset, err := k.assetsKeeper.GetOperatorSpecifiedAssetInfo(ctx, operator, keys.AssetID)
 				if err != nil {
-					return err
+					return true, err
 				}
 				amount, err := delegationkeeper.TokensFromShares(amounts.UndelegatableShare, operatorAsset.TotalShare, operatorAsset.TotalAmount)
 				if err != nil {
-					return err
+					return true, err
 				}
 				assetInfo, err := k.assetsKeeper.GetStakingAssetInfo(ctx, keys.AssetID)
 				if err != nil {
-					return err
+					return true, err
 				}
 				usdValue := CalculateUSDValue(amount, price.Value, assetInfo.AssetBasicInfo.Decimals, price.Decimal)
 				totalUSDValue = totalUSDValue.Add(usdValue)
 			}
 		}
-		return nil
+		return false, nil
 	}
 	err = k.delegationKeeper.IterateDelegationsForStaker(ctx, stakerID, opFunc)
 	if err != nil {

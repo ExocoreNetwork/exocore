@@ -86,7 +86,7 @@ func (k *Keeper) GetUndelegationRecords(ctx sdk.Context, singleRecordKeys []stri
 		keyBytes := []byte(singleRecordKey)
 		value := store.Get(keyBytes)
 		if value == nil {
-			return nil, errorsmod.Wrap(types.ErrNoKeyInTheStore, fmt.Sprintf("GetSingleDelegationRecord: key is %s", singleRecordKey))
+			return nil, errorsmod.Wrap(types.ErrNoKeyInTheStore, fmt.Sprintf("undelegation record key doesn't exist: key is %s", singleRecordKey))
 		}
 		undelegationRecord := types.UndelegationRecord{}
 		k.cdc.MustUnmarshal(value, &undelegationRecord)
@@ -153,6 +153,39 @@ func (k *Keeper) GetStakerUndelegationRecords(ctx sdk.Context, stakerID, assetID
 	}
 
 	return k.GetUndelegationRecords(ctx, recordKeys)
+}
+
+// IterateUndelegationsByStakerAndAsset iterates over the undelegation records belonging to the provided
+// stakerID and assetID. If the isUpdate is true, the undelegation record will be updated after the
+// operation is performed.
+func (k *Keeper) IterateUndelegationsByStakerAndAsset(
+	ctx sdk.Context, stakerID, assetID string, isUpdate bool,
+	opFunc func(undelegationKey string, undelegation *types.UndelegationRecord) (bool, error),
+) error {
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefixStakerUndelegationInfo)
+	iterator := sdk.KVStorePrefixIterator(store, types.IteratorPrefixForStakerAsset(stakerID, assetID))
+	defer iterator.Close()
+	undelegationInfoStore := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefixUndelegationInfo)
+	for ; iterator.Valid(); iterator.Next() {
+		infoValue := undelegationInfoStore.Get(iterator.Value())
+		if infoValue == nil {
+			return errorsmod.Wrap(types.ErrNoKeyInTheStore, fmt.Sprintf("undelegation record key doesn't exist: key is %s", string(iterator.Value())))
+		}
+		undelegation := types.UndelegationRecord{}
+		k.cdc.MustUnmarshal(infoValue, &undelegation)
+		isBreak, err := opFunc(string(iterator.Value()), &undelegation)
+		if err != nil {
+			return err
+		}
+		if isUpdate {
+			bz := k.cdc.MustMarshal(&undelegation)
+			undelegationInfoStore.Set(iterator.Value(), bz)
+		}
+		if isBreak {
+			break
+		}
+	}
+	return nil
 }
 
 // GetPendingUndelegationRecKeys returns the undelegation record keys scheduled to mature at the

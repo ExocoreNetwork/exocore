@@ -3,6 +3,7 @@ package types
 import (
 	errorsmod "cosmossdk.io/errors"
 	sdkmath "cosmossdk.io/math"
+	keytypes "github.com/ExocoreNetwork/exocore/types/keys"
 	"github.com/ExocoreNetwork/exocore/utils"
 	assetstypes "github.com/ExocoreNetwork/exocore/x/assets/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -155,7 +156,7 @@ func (gs GenesisState) ValidateOperatorConsKeyRecords(operators map[string]struc
 				keysByChainID[chainID] = make(map[string]struct{})
 			}
 
-			if wrappedKey := NewWrappedConsKeyFromHex(
+			if wrappedKey := keytypes.NewWrappedConsKeyFromHex(
 				chain.ConsensusKey,
 			); wrappedKey == nil {
 				return errorsmod.Wrapf(
@@ -462,7 +463,7 @@ func (gs GenesisState) ValidatePrevConsKeys(operators map[string]struct{}) error
 				prevConsKey,
 			)
 		}
-		if wrappedKey := NewWrappedConsKeyFromHex(
+		if wrappedKey := keytypes.NewWrappedConsKeyFromHex(
 			prevConsKey.ConsensusKey,
 		); wrappedKey == nil {
 			return errorsmod.Wrapf(

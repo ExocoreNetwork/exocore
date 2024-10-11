@@ -1,4 +1,3 @@
-
 syntax = "proto3";
 package evmos.revenue.v1;
 
@@ -15,16 +14,16 @@ service Msg {
   // RegisterRevenue registers a new contract for receiving transaction fees
   rpc RegisterRevenue(MsgRegisterRevenue) returns (MsgRegisterRevenueResponse) {
     option (google.api.http).post = "/evmos/revenue/v1/tx/register_revenue";
-  };
+  }
   // UpdateRevenue updates the withdrawer address of a revenue
   rpc UpdateRevenue(MsgUpdateRevenue) returns (MsgUpdateRevenueResponse) {
     option (google.api.http).post = "/evmos/revenue/v1/tx/update_revenue";
-  };
+  }
   // CancelRevenue cancels a contract's fee registration and further receival
   // of transaction fees
   rpc CancelRevenue(MsgCancelRevenue) returns (MsgCancelRevenueResponse) {
     option (google.api.http).post = "/evmos/revenue/v1/tx/cancel_revenue";
-  };
+  }
   // UpdateParams defined a governance operation for updating the x/revenue module parameters.
   // The authority is hard-coded to the Cosmos SDK x/gov module account
   rpc UpdateParams(MsgUpdateParams) returns (MsgUpdateParamsResponse);

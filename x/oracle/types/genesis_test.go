@@ -102,6 +102,201 @@ func TestGenesisState_Validate(t *testing.T) {
 			},
 			valid: false,
 		},
+		{
+			desc: "length not match for stakerInfosAssets and stakerListAssets",
+			genState: &types.GenesisState{
+				StakerListAssets: []types.StakerListAssets{
+					{
+						AssetId:    "0xasset1",
+						StakerList: &types.StakerList{},
+					},
+					{
+						AssetId:    "0xasset2",
+						StakerList: &types.StakerList{},
+					},
+				},
+				StakerInfosAssets: []types.StakerInfosAssets{
+					{
+						AssetId:     "0xasset1",
+						StakerInfos: []*types.StakerInfo{},
+					},
+				},
+			},
+			valid: false,
+		},
+		{
+			desc: "assetIds not match for stakerInfosAssets and stakerListAssets",
+			genState: &types.GenesisState{
+				StakerListAssets: []types.StakerListAssets{
+					{
+						AssetId:    "0xasset1",
+						StakerList: &types.StakerList{},
+					},
+					{
+						AssetId:    "0xasset2",
+						StakerList: &types.StakerList{},
+					},
+				},
+				StakerInfosAssets: []types.StakerInfosAssets{
+					{
+						AssetId:     "0xasset1",
+						StakerInfos: []*types.StakerInfo{},
+					},
+					{
+						AssetId:     "0xasset3",
+						StakerInfos: []*types.StakerInfo{},
+					},
+				},
+			},
+			valid: false,
+		},
+		{
+			desc: "valid",
+			genState: &types.GenesisState{
+				StakerListAssets: []types.StakerListAssets{
+					{
+						AssetId:    "0xasset1",
+						StakerList: &types.StakerList{},
+					},
+					{
+						AssetId:    "0xasset2",
+						StakerList: &types.StakerList{},
+					},
+				},
+				StakerInfosAssets: []types.StakerInfosAssets{
+					{
+						AssetId:     "0xasset1",
+						StakerInfos: []*types.StakerInfo{},
+					},
+					{
+						AssetId:     "0xasset2",
+						StakerInfos: []*types.StakerInfo{},
+					},
+				},
+			},
+			valid: false,
+		},
+		{
+			desc: "stakerAddr not matched for stakerInfosAsset and stakerListAsset",
+			genState: &types.GenesisState{
+				StakerListAssets: []types.StakerListAssets{
+					{
+						AssetId: "0xasset1",
+						StakerList: &types.StakerList{
+							StakerAddrs: []string{
+								"staker_01",
+								"staker_02",
+							},
+						},
+					},
+					{
+						AssetId:    "0xasset2",
+						StakerList: &types.StakerList{},
+					},
+				},
+				StakerInfosAssets: []types.StakerInfosAssets{
+					{
+						AssetId: "0xasset1",
+						StakerInfos: []*types.StakerInfo{
+							{
+								StakerIndex: 0,
+								StakerAddr:  "staker_01",
+							},
+							{
+								StakerIndex: 2,
+								StakerAddr:  "staker_03",
+							},
+						},
+					},
+					{
+						AssetId:     "0xasset2",
+						StakerInfos: []*types.StakerInfo{},
+					},
+				},
+			},
+			valid: false,
+		},
+		{
+			desc: "stakerIndex not matched for stakerInfosAsset and stakerListAsset",
+			genState: &types.GenesisState{
+				StakerListAssets: []types.StakerListAssets{
+					{
+						AssetId: "0xasset1",
+						StakerList: &types.StakerList{
+							StakerAddrs: []string{
+								"staker_01",
+								"staker_02",
+							},
+						},
+					},
+					{
+						AssetId:    "0xasset2",
+						StakerList: &types.StakerList{},
+					},
+				},
+				StakerInfosAssets: []types.StakerInfosAssets{
+					{
+						AssetId: "0xasset1",
+						StakerInfos: []*types.StakerInfo{
+							{
+								StakerIndex: 0,
+								StakerAddr:  "staker_01",
+							},
+							{
+								StakerIndex: 2,
+								StakerAddr:  "staker_02",
+							},
+						},
+					},
+					{
+						AssetId:     "0xasset2",
+						StakerInfos: []*types.StakerInfo{},
+					},
+				},
+			},
+			valid: false,
+		},
+		{
+			desc: "valid",
+			genState: &types.GenesisState{
+				StakerListAssets: []types.StakerListAssets{
+					{
+						AssetId: "0xasset1",
+						StakerList: &types.StakerList{
+							StakerAddrs: []string{
+								"staker_01",
+								"staker_02",
+							},
+						},
+					},
+					{
+						AssetId:    "0xasset2",
+						StakerList: &types.StakerList{},
+					},
+				},
+				StakerInfosAssets: []types.StakerInfosAssets{
+					{
+						AssetId: "0xasset1",
+						StakerInfos: []*types.StakerInfo{
+							{
+								StakerIndex: 0,
+								StakerAddr:  "staker_01",
+							},
+							{
+								StakerIndex: 1,
+								StakerAddr:  "staker_02",
+							},
+						},
+					},
+					{
+						AssetId:     "0xasset2",
+						StakerInfos: []*types.StakerInfo{},
+					},
+				},
+			},
+			valid: false,
+		},
+
 		// this line is used by starport scaffolding # types/genesis/testcase
 	}
 	for _, tc := range tests {

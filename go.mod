@@ -7,6 +7,7 @@ require (
 	cosmossdk.io/math v1.2.0
 	cosmossdk.io/simapp v0.0.0-20230608160436-666c345ad23d
 	cosmossdk.io/tools/rosetta v0.2.1
+	github.com/ExocoreNetwork/price-feeder v0.1.9
 	github.com/agiledragon/gomonkey/v2 v2.11.0
 	github.com/armon/go-metrics v0.4.1
 	github.com/cometbft/cometbft v0.37.4
@@ -46,6 +47,15 @@ require (
 )
 
 require (
+	github.com/alitto/pond v1.8.3 // indirect
+	github.com/crypto-org-chain/cronos/memiavl v0.0.5-0.20231027074119-c05c9c61c90e // indirect
+	github.com/crypto-org-chain/cronos/store v0.0.5-0.20231027074119-c05c9c61c90e // indirect
+	github.com/crypto-org-chain/cronos/versiondb v0.0.0-20231027074119-c05c9c61c90e // indirect
+	github.com/ledgerwatch/erigon-lib v0.0.0-20230210071639-db0e7ed11263 // indirect
+	go.uber.org/atomic v1.10.0 // indirect
+)
+
+require (
 	cosmossdk.io/api v0.3.1
 	github.com/btcsuite/btcd v0.23.3 // indirect
 	github.com/btcsuite/btcd/btcutil v1.1.3 // indirect
@@ -75,7 +85,6 @@ require (
 	github.com/99designs/keyring v1.2.1 // indirect
 	github.com/ChainSafe/go-schnorrkel v1.0.0 // indirect
 	github.com/VictoriaMetrics/fastcache v1.12.1 // indirect
-	github.com/alitto/pond v1.8.3 // indirect
 	github.com/aws/aws-sdk-go v1.44.224 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/bgentry/go-netrc v0.0.0-20140422174119-9fd32a8b3d3d // indirect
@@ -99,9 +108,6 @@ require (
 	github.com/cosmos/ledger-cosmos-go v0.12.4 // indirect
 	github.com/cosmos/rosetta-sdk-go v0.10.0 // indirect
 	github.com/creachadair/taskgroup v0.4.2 // indirect
-	github.com/crypto-org-chain/cronos/memiavl v0.0.5-0.20231027074119-c05c9c61c90e // indirect
-	github.com/crypto-org-chain/cronos/store v0.0.5-0.20231027074119-c05c9c61c90e // indirect
-	github.com/crypto-org-chain/cronos/versiondb v0.0.0-20231027074119-c05c9c61c90e // indirect
 	github.com/danieljoos/wincred v1.1.2 // indirect
 	github.com/deckarep/golang-set v1.8.0 // indirect
 	github.com/decred/dcrd/dcrec/secp256k1/v4 v4.2.0 // indirect
@@ -131,7 +137,7 @@ require (
 	github.com/godbus/dbus v0.0.0-20190726142602-4481cbc300e2 // indirect
 	github.com/golang/glog v1.1.2 // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
-	github.com/golang/mock v1.6.0 // indirect
+	github.com/golang/mock v1.6.0
 	github.com/golang/snappy v0.0.5-0.20220116011046-fa5810519dcb // indirect
 	github.com/google/btree v1.1.2 // indirect
 	github.com/google/go-cmp v0.6.0 // indirect
@@ -159,6 +165,7 @@ require (
 	github.com/holiman/uint256 v1.2.4 // indirect
 	github.com/huandu/skiplist v1.2.0 // indirect
 	github.com/huin/goupnp v1.3.0 // indirect
+	github.com/imroc/biu v0.0.0-20170329141542-0376ce6761c0
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/jackpal/go-nat-pmp v1.0.2 // indirect
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
@@ -168,7 +175,6 @@ require (
 	github.com/klauspost/cpuid/v2 v2.2.5 // indirect
 	github.com/kr/pretty v0.3.1 // indirect
 	github.com/kr/text v0.2.0 // indirect
-	github.com/ledgerwatch/erigon-lib v0.0.0-20230210071639-db0e7ed11263 // indirect
 	github.com/lib/pq v1.10.9 // indirect
 	github.com/libp2p/go-buffer-pool v0.1.0 // indirect
 	github.com/linxGnu/grocksdb v1.8.5 // indirect
@@ -180,7 +186,7 @@ require (
 	github.com/matttproud/golang_protobuf_extensions v1.0.4 // indirect
 	github.com/mimoo/StrobeGo v0.0.0-20210601165009-122bf33a46e0 // indirect
 	github.com/minio/highwayhash v1.0.2 // indirect
-	github.com/minio/sha256-simd v1.0.1 // indirect
+	github.com/minio/sha256-simd v1.0.1
 	github.com/mitchellh/go-homedir v1.1.0 // indirect
 	github.com/mitchellh/go-testing-interface v1.14.1 // indirect
 	github.com/mitchellh/mapstructure v1.5.0 // indirect

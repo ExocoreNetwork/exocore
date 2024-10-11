@@ -35,8 +35,10 @@ message QueryEpochsInfoResponse {
   // epochs is a slice of all EpochInfos returned by the query.
   repeated EpochInfo epochs = 1 [(gogoproto.nullable) = false];
   // block_time is the block time of the query block ctx.
-  google.protobuf.Timestamp block_time = 2
-    [(gogoproto.stdtime) = true, (gogoproto.nullable) = false];
+  google.protobuf.Timestamp block_time = 2 [
+    (gogoproto.stdtime) = true,
+    (gogoproto.nullable) = false
+  ];
   // pagination defines the pagination for the response.
   cosmos.base.query.v1beta1.PageResponse pagination = 3;
 }

@@ -3,9 +3,9 @@ package keeper
 import (
 	"fmt"
 
+	keytypes "github.com/ExocoreNetwork/exocore/types/keys"
 	avstypes "github.com/ExocoreNetwork/exocore/x/avs/types"
 	"github.com/ExocoreNetwork/exocore/x/dogfood/types"
-	operatortypes "github.com/ExocoreNetwork/exocore/x/operator/types"
 	abci "github.com/cometbft/cometbft/abci/types"
 	cryptocodec "github.com/cosmos/cosmos-sdk/crypto/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -29,45 +29,44 @@ func (k Keeper) InitGenesis(
 		// is not running. it means that the genesis file is malformed.
 		panic(fmt.Sprintf("epoch info not found %s", epochID))
 	}
-	// apply the same logic to the staking assets.
-	for _, assetID := range genState.Params.AssetIDs {
-		if !k.restakingKeeper.IsStakingAsset(ctx, assetID) {
-			panic(fmt.Errorf("staking param %s not found in assets module", assetID))
-		}
-	}
+	// the staking assets are validated during AVS registration so we skip it here
 	k.SetParams(ctx, genState.Params)
 	// create the AVS
 	var avsAddr common.Address
 	var err error
-	// the avs module will remove the revision by itself
+	// the avs module will remove the revision by itself, but we do it here anyway because we need it
+	// to look up operator registration status after this - which is keyed by chainID without revision.
+	chainIDWithoutRevision := avstypes.ChainIDWithoutRevision(ctx.ChainID())
 	if avsAddr, err = k.avsKeeper.RegisterAVSWithChainID(ctx, &avstypes.AVSRegisterOrDeregisterParams{
-		AvsName:           ctx.ChainID(),
+		AvsName:           chainIDWithoutRevision,
 		AssetID:           genState.Params.AssetIDs,
 		UnbondingPeriod:   uint64(genState.Params.EpochsUntilUnbonded),
 		MinSelfDelegation: genState.Params.MinSelfDelegation.Uint64(),
 		EpochIdentifier:   epochID,
-		ChainID:           ctx.ChainID(),
+		ChainID:           chainIDWithoutRevision,
 	}); err != nil {
 		panic(fmt.Errorf("could not create the dogfood AVS: %s", err))
 	}
 	avsAddrString := avsAddr.String()
-	ctx.Logger().With(types.ModuleName).Info(fmt.Sprintf("created dogfood avs %s %s", avsAddrString, ctx.ChainID()))
+	k.Logger(ctx).Info(
+		"created dogfood avs",
+		"avsAddrString", avsAddrString,
+		"chainIDWithoutRevision", chainIDWithoutRevision,
+	)
 	// create the validators
-	out := make([]abci.ValidatorUpdate, 0, len(genState.ValSet))
+	out := make([]keytypes.WrappedConsKeyWithPower, 0, len(genState.ValSet))
 	for _, val := range genState.ValSet {
-		// wrappedKey can never be nil
-		wrappedKey := operatortypes.NewWrappedConsKeyFromHex(val.PublicKey)
-		// #nosec G703 // already validated
-		/*		operatorAddr, _ := sdk.AccAddressFromBech32(val.OperatorAccAddr)
-				// OptIntoAVS checks that the operator exists and will error if it does not.
-				if err := k.operatorKeeper.OptInWithConsKey(
-					ctx, operatorAddr, avsAddrString, wrappedKey,
-				); err != nil {
-					panic(fmt.Errorf("failed to opt into avs: %s", err))
-				}*/
-		out = append(out, abci.ValidatorUpdate{
-			PubKey: *wrappedKey.ToTmProtoKey(),
-			Power:  val.Power,
+		// we have already checked in gs.Validate() that wrappedKey is not nil
+		wrappedKey := keytypes.NewWrappedConsKeyFromHex(val.PublicKey)
+		// check that an operator exists
+		if found, _ := k.operatorKeeper.GetOperatorAddressForChainIDAndConsAddr(
+			ctx, chainIDWithoutRevision, wrappedKey.ToConsAddr(),
+		); !found {
+			panic(fmt.Sprintf("operator not found for key %s", val.PublicKey))
+		}
+		out = append(out, keytypes.WrappedConsKeyWithPower{
+			Key:   wrappedKey,
+			Power: val.Power,
 		})
 	}
 	for i := range genState.OptOutExpiries {
@@ -127,20 +126,13 @@ func (k Keeper) ExportGenesis(ctx sdk.Context) *types.GenesisState {
 		pubKey, _ := val.ConsPubKey()
 		// #nosec G703 // already validated
 		convKey, _ := cryptocodec.ToTmPubKeyInterface(pubKey)
-		addr := sdk.GetConsAddress(pubKey)
-		found, operatorAddr := k.operatorKeeper.GetOperatorAddressForChainIDAndConsAddr(ctx, avstypes.ChainIDWithoutRevision(ctx.ChainID()), addr)
-		if !found {
-			ctx.Logger().Error("Operator address not found for validator", "consAddr", addr.String())
-			return true
-		}
 		validators = append(validators,
 			types.GenesisValidator{
-				PublicKey:       hexutil.Encode(convKey.Bytes()),
-				Power:           val.GetConsensusPower(sdk.DefaultPowerReduction),
-				OperatorAccAddr: operatorAddr.String(),
+				PublicKey: hexutil.Encode(convKey.Bytes()),
+				Power:     val.GetConsensusPower(sdk.DefaultPowerReduction),
 			},
 		)
-		return false /* stop */
+		return false // stop == false => continue iteration
 	})
 	return types.NewGenesis(
 		k.GetDogfoodParams(ctx),

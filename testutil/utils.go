@@ -22,6 +22,8 @@ import (
 	exocoreapp "github.com/ExocoreNetwork/exocore/app"
 	"github.com/ExocoreNetwork/exocore/utils"
 	assetstypes "github.com/ExocoreNetwork/exocore/x/assets/types"
+	distributiontypes "github.com/ExocoreNetwork/exocore/x/feedistribution/types"
+
 	delegationtypes "github.com/ExocoreNetwork/exocore/x/delegation/types"
 	dogfoodtypes "github.com/ExocoreNetwork/exocore/x/dogfood/types"
 	operatorkeeper "github.com/ExocoreNetwork/exocore/x/operator/keeper"
@@ -48,6 +50,7 @@ type BaseTestSuite struct {
 	App        *exocoreapp.ExocoreApp
 	Address    common.Address
 	AccAddress sdk.AccAddress
+	StakerAddr string
 
 	PrivKey   cryptotypes.PrivKey
 	Signer    keyring.Signer
@@ -57,6 +60,7 @@ type BaseTestSuite struct {
 	// x/assets
 	ClientChains []assetstypes.ClientChainInfo
 	Assets       []assetstypes.AssetInfo
+	AssetIDs     []string
 	// for tracking validator across blocks
 	ValSet    *tmtypes.ValidatorSet
 	Operators []sdk.AccAddress
@@ -77,7 +81,7 @@ func (suite *BaseTestSuite) SetupTest() {
 // that also act as delegators.
 func (suite *BaseTestSuite) SetupWithGenesisValSet(genAccs []authtypes.GenesisAccount, balances ...banktypes.Balance) {
 	pruneOpts := pruningtypes.NewPruningOptionsFromString(pruningtypes.PruningOptionDefault)
-	appI, genesisState := exocoreapp.SetupTestingApp(utils.DefaultChainID, &pruneOpts, true)()
+	appI, genesisState := exocoreapp.SetupTestingApp(utils.DefaultChainID, &pruneOpts, false)()
 	app, ok := appI.(*exocoreapp.ExocoreApp)
 	suite.Require().True(ok)
 
@@ -89,18 +93,20 @@ func (suite *BaseTestSuite) SetupWithGenesisValSet(genAccs []authtypes.GenesisAc
 	operator1 := sdk.AccAddress(testutiltx.GenerateAddress().Bytes())
 	operator2 := sdk.AccAddress(testutiltx.GenerateAddress().Bytes())
 	suite.Operators = []sdk.AccAddress{operator1, operator2}
-	stakerID1, _ := assetstypes.GetStakeIDAndAssetIDFromStr(
+	stakerID1, _ := assetstypes.GetStakerIDAndAssetIDFromStr(
 		suite.ClientChains[0].LayerZeroChainID,
 		common.Address(operator1.Bytes()).String(), "",
 	)
-	stakerID2, _ := assetstypes.GetStakeIDAndAssetIDFromStr(
+	suite.StakerAddr = common.Address(operator1.Bytes()).String()
+	stakerID2, _ := assetstypes.GetStakerIDAndAssetIDFromStr(
 		suite.ClientChains[0].LayerZeroChainID,
 		common.Address(operator2.Bytes()).String(), "",
 	)
-	_, assetID := assetstypes.GetStakeIDAndAssetIDFromStr(
+	_, assetID := assetstypes.GetStakerIDAndAssetIDFromStr(
 		suite.ClientChains[0].LayerZeroChainID,
 		"", suite.Assets[0].Address,
 	)
+	suite.AssetIDs = append(suite.AssetIDs, assetID)
 	// x/assets initialization - deposits (client chains and tokens are from caller)
 	power := int64(101)
 	power2 := int64(100)
@@ -174,6 +180,10 @@ func (suite *BaseTestSuite) SetupWithGenesisValSet(genAccs []authtypes.GenesisAc
 				AssetBasicInfo:     suite.Assets[0],
 				StakingTotalAmount: depositAmount.Add(depositAmount2),
 			},
+			//	{
+			//		AssetBasicInfo:     suite.Assets[1],
+			//		StakingTotalAmount: depositAmount.Add(math.NewInt(132)),
+			//	},
 		}, depositsByStaker, operatorAssets,
 	)
 	genesisState[assetstypes.ModuleName] = app.AppCodec().MustMarshalJSON(assetsGenesis)
@@ -344,14 +354,12 @@ func (suite *BaseTestSuite) SetupWithGenesisValSet(genAccs []authtypes.GenesisAc
 	dogfoodGenesis := dogfoodtypes.NewGenesis(
 		dogfoodtypes.DefaultParams(), []dogfoodtypes.GenesisValidator{
 			{
-				PublicKey:       pubKey.ToHex(),
-				Power:           power,
-				OperatorAccAddr: operator1.String(),
+				PublicKey: pubKey.ToHex(),
+				Power:     power,
 			},
 			{
-				PublicKey:       pubKey2.ToHex(),
-				Power:           power2,
-				OperatorAccAddr: operator2.String(),
+				PublicKey: pubKey2.ToHex(),
+				Power:     power2,
 			},
 		},
 		[]dogfoodtypes.EpochToOperatorAddrs{},
@@ -361,6 +369,10 @@ func (suite *BaseTestSuite) SetupWithGenesisValSet(genAccs []authtypes.GenesisAc
 	)
 	dogfoodGenesis.Params.MinSelfDelegation = math.NewInt(100)
 	genesisState[dogfoodtypes.ModuleName] = app.AppCodec().MustMarshalJSON(dogfoodGenesis)
+	distributionGenesis := distributiontypes.NewGenesisState(
+		distributiontypes.DefaultParams(),
+	)
+	genesisState[distributiontypes.ModuleName] = app.AppCodec().MustMarshalJSON(distributionGenesis)
 
 	suite.ValSet = tmtypes.NewValidatorSet([]*tmtypes.Validator{
 		tmtypes.NewValidator(pubKey.ToTmKey(), 1),

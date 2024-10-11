@@ -4,6 +4,7 @@ import (
 	sdkmath "cosmossdk.io/math"
 
 	utiltx "github.com/ExocoreNetwork/exocore/testutil/tx"
+	keytypes "github.com/ExocoreNetwork/exocore/types/keys"
 	assetskeeper "github.com/ExocoreNetwork/exocore/x/assets/keeper"
 	assetstypes "github.com/ExocoreNetwork/exocore/x/assets/types"
 	avstypes "github.com/ExocoreNetwork/exocore/x/avs/types"
@@ -48,7 +49,7 @@ func (suite *KeeperTestSuite) TestBasicOperations() {
 	lzID := suite.ClientChains[0].LayerZeroChainID
 	assetAddrHex := suite.Assets[0].Address
 	assetAddr := common.HexToAddress(assetAddrHex)
-	_, assetID := assetstypes.GetStakeIDAndAssetIDFromStr(lzID, staker.String(), assetAddrHex)
+	_, assetID := assetstypes.GetStakerIDAndAssetIDFromStr(lzID, staker.String(), assetAddrHex)
 	asset, err := suite.App.AssetsKeeper.GetStakingAssetInfo(suite.Ctx, assetID)
 	suite.NoError(err)
 	assetDecimals := asset.AssetBasicInfo.Decimals
@@ -57,7 +58,7 @@ func (suite *KeeperTestSuite) TestBasicOperations() {
 	).Sub(sdkmath.NewInt(1))
 	depositParams := &assetskeeper.DepositWithdrawParams{
 		ClientChainLzID: lzID,
-		Action:          assetstypes.Deposit,
+		Action:          assetstypes.DepositLST,
 		StakerAddress:   staker.Bytes(),
 		AssetsAddress:   assetAddr.Bytes(),
 		OpAmount:        amount,
@@ -88,7 +89,7 @@ func (suite *KeeperTestSuite) TestBasicOperations() {
 	additionalAmount := sdkmath.NewIntWithDecimal(2, int(assetDecimals))
 	depositParams = &assetskeeper.DepositWithdrawParams{
 		ClientChainLzID: lzID,
-		Action:          assetstypes.Deposit,
+		Action:          assetstypes.DepositLST,
 		StakerAddress:   staker.Bytes(),
 		AssetsAddress:   assetAddr.Bytes(),
 		OpAmount:        additionalAmount,
@@ -122,7 +123,7 @@ func (suite *KeeperTestSuite) TestBasicOperations() {
 	staker = utiltx.GenerateAddress()
 	depositParams = &assetskeeper.DepositWithdrawParams{
 		ClientChainLzID: lzID,
-		Action:          assetstypes.Deposit,
+		Action:          assetstypes.DepositLST,
 		StakerAddress:   staker.Bytes(),
 		AssetsAddress:   assetAddr.Bytes(),
 		OpAmount:        amount,
@@ -157,7 +158,7 @@ func (suite *KeeperTestSuite) TestBasicOperations() {
 		staker := utiltx.GenerateAddress()
 		depositParams = &assetskeeper.DepositWithdrawParams{
 			ClientChainLzID: lzID,
-			Action:          assetstypes.Deposit,
+			Action:          assetstypes.DepositLST,
 			StakerAddress:   staker.Bytes(),
 			AssetsAddress:   assetAddr.Bytes(),
 			OpAmount:        amount,
@@ -193,7 +194,7 @@ func (suite *KeeperTestSuite) TestBasicOperations() {
 		staker := utiltx.GenerateAddress()
 		depositParams = &assetskeeper.DepositWithdrawParams{
 			ClientChainLzID: lzID,
-			Action:          assetstypes.Deposit,
+			Action:          assetstypes.DepositLST,
 			StakerAddress:   staker.Bytes(),
 			AssetsAddress:   assetAddr.Bytes(),
 			OpAmount:        amount,
@@ -338,7 +339,7 @@ func (suite *KeeperTestSuite) CheckLengthOfValidatorUpdates(
 }
 
 func (suite *KeeperTestSuite) CheckValidatorFound(
-	key operatortypes.WrappedConsKey, expected bool,
+	key keytypes.WrappedConsKey, expected bool,
 	chainIDWithoutRevision string,
 	operatorAddress sdk.AccAddress,
 ) {

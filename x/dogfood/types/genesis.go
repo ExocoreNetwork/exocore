@@ -3,8 +3,8 @@ package types
 import (
 	errorsmod "cosmossdk.io/errors"
 	"cosmossdk.io/math"
+	keytypes "github.com/ExocoreNetwork/exocore/types/keys"
 	delegationtypes "github.com/ExocoreNetwork/exocore/x/delegation/types"
-	operatortypes "github.com/ExocoreNetwork/exocore/x/operator/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 )
@@ -64,7 +64,6 @@ func (gs GenesisState) Validate() error {
 	}
 	// do not complain about 0 validators, let Tendermint do that.
 	pubkeys := make(map[string]struct{}, len(gs.ValSet))
-	operatorAccAddrs := make(map[string]struct{}, len(gs.ValSet))
 	totalPower := int64(0)
 	for _, val := range gs.ValSet {
 		// check for duplicates in puyb keys
@@ -75,7 +74,7 @@ func (gs GenesisState) Validate() error {
 			)
 		}
 		// check for validity of the public key
-		if wrappedKey := operatortypes.NewWrappedConsKeyFromHex(
+		if wrappedKey := keytypes.NewWrappedConsKeyFromHex(
 			val.PublicKey,
 		); wrappedKey == nil {
 			return errorsmod.Wrapf(
@@ -85,22 +84,6 @@ func (gs GenesisState) Validate() error {
 			)
 		}
 		pubkeys[val.PublicKey] = struct{}{}
-		// check for duplicates in operator addresses
-		if _, ok := operatorAccAddrs[val.OperatorAccAddr]; ok {
-			return errorsmod.Wrapf(
-				ErrInvalidGenesisData,
-				"duplicate operator address %s", val.OperatorAccAddr,
-			)
-		}
-		// check for validity of the operator address
-		if _, err := sdk.AccAddressFromBech32(val.OperatorAccAddr); err != nil {
-			return errorsmod.Wrapf(
-				ErrInvalidGenesisData,
-				"invalid operator address %s: %s",
-				val.OperatorAccAddr, err,
-			)
-		}
-		operatorAccAddrs[val.OperatorAccAddr] = struct{}{}
 		power := val.Power
 		// minSelfDelegation is non negative per Params.Validate, so we don't need to check if power is.
 		// simply checking that power is greater than or equal to minSelfDelegation is enough.

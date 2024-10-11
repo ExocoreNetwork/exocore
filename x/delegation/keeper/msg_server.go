@@ -17,9 +17,12 @@ var _ types.MsgServer = &Keeper{}
 func (k *Keeper) DelegateAssetToOperator(
 	goCtx context.Context, msg *types.MsgDelegation,
 ) (*types.DelegationResponse, error) {
+	// TODO: currently we only support delegation with native token by invoking service
 	ctx := sdk.UnwrapSDKContext(goCtx)
 	logger := k.Logger(ctx)
 	// no need to validate whether assetID == native token, since that is done by ValidateBasic.
+	logger.Info("DelegateAssetToOperator-nativeToken", "msg", msg)
+
 	// we can use `Must` since pre-validated
 	fromAddr := sdk.MustAccAddressFromBech32(msg.BaseInfo.FromAddress)
 	// create nonce and unique hash
@@ -34,7 +37,7 @@ func (k *Keeper) DelegateAssetToOperator(
 	uniqueHash := sha256.Sum256([]byte(combined))
 
 	delegationParamsList := newDelegationParams(
-		msg.BaseInfo, assetstypes.NativeAssetAddr, assetstypes.NativeChainLzID,
+		msg.BaseInfo, assetstypes.ExocoreAssetAddr, assetstypes.ExocoreChainLzID,
 		nonce, uniqueHash,
 	)
 	cachedCtx, writeFunc := ctx.CacheContext()
@@ -45,10 +48,12 @@ func (k *Keeper) DelegateAssetToOperator(
 				"error", err,
 				"delegationParams", delegationParams,
 			)
+			// fail all delegations if one fails
 			return nil, err
 		}
 	}
 	writeFunc()
+
 	return &types.DelegationResponse{}, nil
 }
 
@@ -59,6 +64,7 @@ func (k *Keeper) UndelegateAssetFromOperator(
 ) (*types.UndelegationResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 	logger := k.Logger(ctx)
+	logger.Info("UndelegateAssetFromOperator", "msg", msg)
 	// can use `Must` since pre-validated
 	fromAddr := sdk.MustAccAddressFromBech32(msg.BaseInfo.FromAddress)
 	// no need to check that `assetID` is native token, since that is done by ValidateBasic.
@@ -74,7 +80,7 @@ func (k *Keeper) UndelegateAssetFromOperator(
 	uniqueHash := sha256.Sum256([]byte(combined))
 
 	inputParamsList := newDelegationParams(
-		msg.BaseInfo, assetstypes.NativeAssetAddr, assetstypes.NativeChainLzID,
+		msg.BaseInfo, assetstypes.ExocoreAssetAddr, assetstypes.ExocoreChainLzID,
 		nonce, uniqueHash,
 	)
 	cachedCtx, writeFunc := ctx.CacheContext()

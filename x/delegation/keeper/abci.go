@@ -70,7 +70,7 @@ func (k *Keeper) EndBlock(
 		}
 
 		// update the staker state
-		if record.AssetID == assetstypes.NativeAssetID {
+		if record.AssetID == assetstypes.ExocoreAssetID {
 			stakerAddrHex, _, err := assetstypes.ParseID(record.StakerID)
 			if err != nil {
 				logger.Error(
@@ -91,7 +91,7 @@ func (k *Keeper) EndBlock(
 			if err := k.bankKeeper.UndelegateCoinsFromModuleToAccount(
 				ctx, types.DelegatedPoolName, stakerAddr,
 				sdk.NewCoins(
-					sdk.NewCoin(assetstypes.NativeAssetDenom, record.ActualCompletedAmount),
+					sdk.NewCoin(assetstypes.ExocoreAssetDenom, record.ActualCompletedAmount),
 				),
 			); err != nil {
 				logger.Error(

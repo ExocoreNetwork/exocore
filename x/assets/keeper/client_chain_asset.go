@@ -48,7 +48,7 @@ func (k Keeper) SetStakingAssetInfo(ctx sdk.Context, info *assetstype.StakingAss
 	// key := common.HexToAddress(incentive.Contract)
 	bz := k.cdc.MustMarshal(info)
 
-	_, assetID := assetstype.GetStakeIDAndAssetIDFromStr(info.AssetBasicInfo.LayerZeroChainID, "", info.AssetBasicInfo.Address)
+	_, assetID := assetstype.GetStakerIDAndAssetIDFromStr(info.AssetBasicInfo.LayerZeroChainID, "", info.AssetBasicInfo.Address)
 	store.Set([]byte(assetID), bz)
 	return nil
 }

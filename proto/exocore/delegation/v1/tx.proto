@@ -1,4 +1,3 @@
-
 syntax = "proto3";
 package exocore.delegation.v1;
 
@@ -12,8 +11,7 @@ option go_package = "github.com/ExocoreNetwork/exocore/x/delegation/types";
 // ValueField is a field that holds a value of sdk.Int type.
 message ValueField {
   // amount is the amount of the asset, as an sdk.Int.
-  string amount = 1
-  [
+  string amount = 1 [
     (cosmos_proto.scalar) = "cosmos.Int",
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
     (gogoproto.nullable) = false
@@ -48,7 +46,7 @@ message DelegationIncOrDecInfo {
   option (gogoproto.goproto_getters) = false;
 
   // from_address is the staker address
-  string   from_address = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+  string from_address = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
 
   // per_operator_amounts is the amount of the asset delegated to each operator.
   repeated KeyValue per_operator_amounts = 2 [(gogoproto.nullable) = false];
@@ -82,16 +80,14 @@ message UndelegationRecord {
   // lz_tx_nonce is the nonce of the transaction on the client chain.
   uint64 lz_tx_nonce = 8;
   // amount is the amount of the asset to be undelegated.
-  string amount = 9
-  [
+  string amount = 9 [
     (cosmos_proto.scalar) = "cosmos.Int",
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
     (gogoproto.nullable) = false
   ];
   // actual_completed_amount is the actual amount of the asset that has been
   // undelegated so far. it may be lower than the amount in the case of slashing.
-  string actual_completed_amount =10
-  [
+  string actual_completed_amount = 10 [
     (cosmos_proto.scalar) = "cosmos.Int",
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
     (gogoproto.nullable) = false
@@ -126,7 +122,3 @@ service Msg {
   // UndelegateAssetFromOperator undelegates asset from operator.
   rpc UndelegateAssetFromOperator(MsgUndelegation) returns (UndelegationResponse);
 }
-
-
-
-

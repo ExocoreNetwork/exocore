@@ -181,7 +181,7 @@ func (k Keeper) RemoveShareFromOperator(
 		TotalAmount: removedToken.Neg(),
 		TotalShare:  share.Neg(),
 	}
-	// Check if the staker belongs to the delegated operator. Increase the operator's share if yes.
+	// Check if the staker belongs to the delegated operator. Decrease the operator's share if yes.
 	getOperator, err := k.GetAssociatedOperator(ctx, stakerID)
 	if err != nil {
 		return token, err
@@ -222,7 +222,7 @@ func (k Keeper) RemoveShare(
 	if isUndelegation {
 		deltaAmount.WaitUndelegationAmount = removeToken
 		// don't update staker asset info for exo-native-token
-		if assetID != assetstype.NativeAssetID {
+		if assetID != assetstype.ExocoreAssetID {
 			// todo: TotalDepositAmount might be influenced by slash and precision loss,
 			// consider removing it, it can be recalculated from the share for RPC query.
 			err = k.assetsKeeper.UpdateStakerAssetState(ctx, stakerID, assetID, assetstype.DeltaStakerSingleAsset{

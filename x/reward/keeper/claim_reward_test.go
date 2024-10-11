@@ -32,7 +32,7 @@ func (suite *RewardTestSuite) TestClaimWithdrawRequest() {
 	suite.NoError(err)
 
 	// check state after reward
-	stakerID, assetID := types.GetStakeIDAndAssetID(event.ClientChainLzID, event.WithdrawRewardAddress, event.AssetsAddress)
+	stakerID, assetID := types.GetStakerIDAndAssetID(event.ClientChainLzID, event.WithdrawRewardAddress, event.AssetsAddress)
 	info, err := suite.App.AssetsKeeper.GetStakerSpecifiedAssetInfo(suite.Ctx, stakerID, assetID)
 	suite.NoError(err)
 	suite.Equal(types.StakerAssetInfo{

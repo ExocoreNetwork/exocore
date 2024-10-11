@@ -66,19 +66,19 @@ func (k Keeper) GetStakerAssetInfos(ctx sdk.Context, stakerID string) (assetsInf
 		})
 	}
 	// add exo-native-token info
-	info, err := k.GetStakerSpecifiedAssetInfo(ctx, stakerID, assetstype.NativeAssetID)
+	info, err := k.GetStakerSpecifiedAssetInfo(ctx, stakerID, assetstype.ExocoreAssetID)
 	if err != nil {
 		return nil, err
 	}
 	ret = append(ret, assetstype.DepositByAsset{
-		AssetID: assetstype.NativeAssetID,
+		AssetID: assetstype.ExocoreAssetID,
 		Info:    *info,
 	})
 	return ret, nil
 }
 
 func (k Keeper) GetStakerSpecifiedAssetInfo(ctx sdk.Context, stakerID string, assetID string) (info *assetstype.StakerAssetInfo, err error) {
-	if assetID == assetstype.NativeAssetID {
+	if assetID == assetstype.ExocoreAssetID {
 		stakerAddrStr, _, err := assetstype.ParseID(stakerID)
 		if err != nil {
 			return nil, errorsmod.Wrap(err, "failed to parse stakerID")
@@ -88,7 +88,7 @@ func (k Keeper) GetStakerSpecifiedAssetInfo(ctx sdk.Context, stakerID string, as
 			return nil, errorsmod.Wrap(err, "failed to decode staker address")
 		}
 		stakerAcc := sdk.AccAddress(stakerAccDecode)
-		balance := k.bk.GetBalance(ctx, stakerAcc, assetstype.NativeAssetDenom)
+		balance := k.bk.GetBalance(ctx, stakerAcc, assetstype.ExocoreAssetDenom)
 		info := &assetstype.StakerAssetInfo{
 			TotalDepositAmount:        balance.Amount,
 			WithdrawableAmount:        balance.Amount,

@@ -2,7 +2,9 @@ package types
 
 import (
 	"cosmossdk.io/math"
+	keytypes "github.com/ExocoreNetwork/exocore/types/keys"
 	avstypes "github.com/ExocoreNetwork/exocore/x/avs/types"
+	delegationtype "github.com/ExocoreNetwork/exocore/x/delegation/types"
 	epochsTypes "github.com/ExocoreNetwork/exocore/x/epochs/types"
 	operatortypes "github.com/ExocoreNetwork/exocore/x/operator/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -54,7 +56,7 @@ type OperatorKeeper interface {
 	// at each epoch, get the list and create validator update
 	GetActiveOperatorsForChainID(
 		sdk.Context, string,
-	) ([]sdk.AccAddress, []operatortypes.WrappedConsKey)
+	) ([]sdk.AccAddress, []keytypes.WrappedConsKey)
 	// get vote power
 	GetVotePowerForChainID(
 		sdk.Context, []sdk.AccAddress, string,
@@ -68,22 +70,26 @@ type OperatorKeeper interface {
 	ClearPreviousConsensusKeys(ctx sdk.Context, chainID string)
 	GetOperatorConsKeyForChainID(
 		sdk.Context, sdk.AccAddress, string,
-	) (bool, operatortypes.WrappedConsKey, error)
+	) (bool, keytypes.WrappedConsKey, error)
 	GetOperatorPrevConsKeyForChainID(
 		sdk.Context, sdk.AccAddress, string,
-	) (bool, operatortypes.WrappedConsKey, error)
+	) (bool, keytypes.WrappedConsKey, error)
 	// OptInWithConsKey is used at genesis to opt in with a consensus key
 	OptInWithConsKey(
-		sdk.Context, sdk.AccAddress, string, operatortypes.WrappedConsKey,
+		sdk.Context, sdk.AccAddress, string, keytypes.WrappedConsKey,
 	) error
 	// GetOrCalculateOperatorUSDValues is used to get the self staking value for the operator
 	GetOrCalculateOperatorUSDValues(sdk.Context, sdk.AccAddress, string) (operatortypes.OperatorOptedUSDValue, error)
+	GetOptedInAVSForOperator(ctx sdk.Context, operatorAddr string) ([]string, error)
+	CalculateUSDValueForStaker(ctx sdk.Context, stakerID, avsAddr string, operator sdk.AccAddress) (math.LegacyDec, error)
+	OperatorInfo(ctx sdk.Context, addr string) (info *operatortypes.OperatorInfo, err error)
 }
 
 // DelegationKeeper represents the expected keeper interface for the delegation module.
 type DelegationKeeper interface {
 	IncrementUndelegationHoldCount(sdk.Context, []byte) error
 	DecrementUndelegationHoldCount(sdk.Context, []byte) error
+	GetStakersByOperator(ctx sdk.Context, operator, assetID string) (delegationtype.StakerList, error)
 }
 
 // AssetsKeeper represents the expected keeper interface for the assets module.
@@ -94,5 +100,6 @@ type AssetsKeeper interface {
 type AVSKeeper interface {
 	RegisterAVSWithChainID(sdk.Context, *avstypes.AVSRegisterOrDeregisterParams) (common.Address, error)
 	IsAVSByChainID(ctx sdk.Context, chainID string) (bool, string)
+	GetAVSSupportedAssets(ctx sdk.Context, avsAddr string) (map[string]interface{}, error)
 	UpdateAVSInfo(ctx sdk.Context, params *avstypes.AVSRegisterOrDeregisterParams) error
 }

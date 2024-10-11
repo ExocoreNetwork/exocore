@@ -3,6 +3,14 @@ package keeper
 import (
 	"fmt"
 
+	operatortypes "github.com/ExocoreNetwork/exocore/x/operator/types"
+
+	sdkmath "cosmossdk.io/math"
+
+	"github.com/ExocoreNetwork/exocore/x/delegation/keeper"
+	delegationtype "github.com/ExocoreNetwork/exocore/x/delegation/types"
+	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
+
 	"github.com/cometbft/cometbft/libs/log"
 	"github.com/cosmos/cosmos-sdk/codec"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
@@ -32,16 +40,7 @@ type (
 )
 
 // NewKeeper creates a new dogfood keeper.
-func NewKeeper(
-	cdc codec.BinaryCodec,
-	storeKey storetypes.StoreKey,
-	epochsKeeper types.EpochsKeeper,
-	operatorKeeper types.OperatorKeeper,
-	delegationKeeper types.DelegationKeeper,
-	restakingKeeper types.AssetsKeeper,
-	avsKeeper types.AVSKeeper,
-	authority string,
-) Keeper {
+func NewKeeper(cdc codec.BinaryCodec, storeKey storetypes.StoreKey, epochsKeeper types.EpochsKeeper, operatorKeeper types.OperatorKeeper, delegationKeeper keeper.Keeper, restakingKeeper types.AssetsKeeper, avsKeeper types.AVSKeeper, authority string) Keeper {
 	k := Keeper{
 		cdc:              cdc,
 		storeKey:         storeKey,
@@ -114,4 +113,29 @@ func (k Keeper) mustValidateFields() {
 	types.PanicIfNil(k.delegationKeeper, "delegationKeeper")
 	types.PanicIfNil(k.restakingKeeper, "restakingKeeper")
 	types.PanicIfNil(k.avsKeeper, "avsKeeper")
+}
+
+// Add the function to get detail information through the operatorKeeper within the dogfood
+func (k Keeper) ValidatorByConsAddrForChainID(ctx sdk.Context, consAddr sdk.ConsAddress, chainID string) (stakingtypes.Validator, bool) {
+	return k.operatorKeeper.ValidatorByConsAddrForChainID(ctx, consAddr, chainID)
+}
+
+func (k *Keeper) GetStakersByOperator(ctx sdk.Context, operator, assetID string) (delegationtype.StakerList, error) {
+	return k.delegationKeeper.GetStakersByOperator(ctx, operator, assetID)
+}
+
+func (k Keeper) GetAVSSupportedAssets(ctx sdk.Context, avsAddr string) (map[string]interface{}, error) {
+	return k.avsKeeper.GetAVSSupportedAssets(ctx, avsAddr)
+}
+
+func (k Keeper) GetOptedInAVSForOperator(ctx sdk.Context, operatorAddr string) ([]string, error) {
+	return k.operatorKeeper.GetOptedInAVSForOperator(ctx, operatorAddr)
+}
+
+func (k Keeper) CalculateUSDValueForStaker(ctx sdk.Context, stakerID, avsAddr string, operator sdk.AccAddress) (sdkmath.LegacyDec, error) {
+	return k.operatorKeeper.CalculateUSDValueForStaker(ctx, stakerID, avsAddr, operator)
+}
+
+func (k *Keeper) OperatorInfo(ctx sdk.Context, addr string) (info *operatortypes.OperatorInfo, err error) {
+	return k.operatorKeeper.OperatorInfo(ctx, addr)
 }
