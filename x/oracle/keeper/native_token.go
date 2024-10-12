@@ -9,6 +9,7 @@ import (
 	utils "github.com/ExocoreNetwork/exocore/utils"
 	assetstypes "github.com/ExocoreNetwork/exocore/x/assets/types"
 	"github.com/ExocoreNetwork/exocore/x/oracle/types"
+	"github.com/cosmos/cosmos-sdk/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 )
@@ -63,8 +64,9 @@ func (k Keeper) GetStakerInfos(ctx sdk.Context, assetID string) (ret []*types.St
 // GetAllStakerInfosAssets returns all stakerInfos combined with assetIDs they belong to, used for genesisstate exporting
 func (k Keeper) GetAllStakerInfosAssets(ctx sdk.Context) (ret []types.StakerInfosAssets) {
 	store := ctx.KVStore(k.storeKey)
+	store = prefix.NewStore(store, types.NativeTokenStakerKeyPrefix(""))
 	// set assetID as "" to iterate all value with different assetIDs
-	iterator := sdk.KVStorePrefixIterator(store, types.NativeTokenStakerKeyPrefix(""))
+	iterator := sdk.KVStorePrefixIterator(store, []byte{})
 	defer iterator.Close()
 	ret = make([]types.StakerInfosAssets, 0)
 	l := 0
