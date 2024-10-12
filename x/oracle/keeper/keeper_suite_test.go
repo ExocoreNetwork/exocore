@@ -89,7 +89,7 @@ func (suite *KeeperSuite) SetupTest() {
 			Name:             "Native Restaking ETH",
 			Symbol:           "NSTETH",
 			Address:          "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
-			Decimals:         6,
+			Decimals:         18,
 			LayerZeroChainID: suite.ClientChains[0].LayerZeroChainID,
 			MetaInfo:         "native restaking token",
 		},

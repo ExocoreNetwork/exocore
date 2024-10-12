@@ -21,7 +21,7 @@ import (
 // msg(refund or slash on beaconChain): update staker's price, operator's price
 
 const (
-	maxEffectiveBalance = 32
+	NSTETHASSETID = "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee_0x65"
 )
 
 // SetStakerInfos set stakerInfos for the specific assetID
@@ -31,6 +31,10 @@ func (k Keeper) SetStakerInfos(ctx sdk.Context, assetID string, stakerInfos []*t
 		bz := k.cdc.MustMarshal(stakerInfo)
 		store.Set(types.NativeTokenStakerKey(assetID, stakerInfo.StakerAddr), bz)
 	}
+}
+
+var maxEffectiveBalance = map[string]int{
+	NSTETHASSETID: 32,
 }
 
 // GetStakerInfo returns details about staker for native-restaking under asset of assetID
@@ -170,11 +174,18 @@ func (k Keeper) UpdateNSTValidatorListForStaker(ctx sdk.Context, assetID, staker
 		}
 	}
 
+	decimal, decimalInt, err := k.getDecimal(ctx, assetID)
+	if err != nil {
+		return err
+	}
+
+	// the amount should be checked by caller
+	// in case of nstETH, deposit should be equal to 32e18 as the maxeffectivebalance
+	efbUnit := sdkmath.NewIntWithDecimal(int64(maxEffectiveBalance[assetID]), decimal)
 	if amount.GTE(efbUnit) {
-		newBalance.Balance += maxEffectiveBalance
+		newBalance.Balance += int64(maxEffectiveBalance[assetID])
 	} else {
-		// deposit must be gte efbunit, otherwise this is a withdraw action
-		newBalance.Balance += amount.Quo(decimal).Int64()
+		newBalance.Balance += amount.Quo(decimalInt).Int64()
 	}
 
 	keyStakerList := types.NativeTokenStakerListKey(assetID)
@@ -269,7 +280,7 @@ func (k Keeper) UpdateNSTByBalanceChange(ctx sdk.Context, assetID string, rawDat
 		}
 		newBalance.Change = types.Action_ACTION_SLASH_REFUND
 		// balance update are based on initial/max effective balance: 32
-		maxBalance := maxEffectiveBalance * (len(stakerInfo.ValidatorPubkeyList))
+		maxBalance := maxEffectiveBalance[assetID] * (len(stakerInfo.ValidatorPubkeyList))
 		balance := maxBalance + change
 		// there's one case that this delta might be more than previous Balance
 		// staker's validatorlist: {v1, v2, v3, v5}
@@ -282,7 +293,11 @@ func (k Keeper) UpdateNSTByBalanceChange(ctx sdk.Context, assetID string, rawDat
 		}
 
 		if delta := int64(balance) - newBalance.Balance; delta != 0 {
-			if err := k.delegationKeeper.UpdateNSTBalance(ctx, getStakerID(stakerAddr, chainID), assetID, sdkmath.NewInt(delta)); err != nil {
+			decimal, _, err := k.getDecimal(ctx, assetID)
+			if err != nil {
+				return err
+			}
+			if err := k.delegationKeeper.UpdateNSTBalance(ctx, getStakerID(stakerAddr, chainID), assetID, sdkmath.NewIntWithDecimal(delta, decimal)); err != nil {
 				return err
 			}
 			newBalance.Balance = int64(balance)
@@ -293,6 +308,15 @@ func (k Keeper) UpdateNSTByBalanceChange(ctx sdk.Context, assetID string, rawDat
 		store.Set(key, bz)
 	}
 	return nil
+}
+
+func (k Keeper) getDecimal(ctx sdk.Context, assetID string) (int, sdkmath.Int, error) {
+	decimalMap, err := k.assetsKeeper.GetAssetsDecimal(ctx, map[string]interface{}{assetID: nil})
+	if err != nil {
+		return 0, sdkmath.NewInt(0), err
+	}
+	decimal := decimalMap[assetID]
+	return int(decimal), sdkmath.NewIntWithDecimal(1, int(decimal)), nil
 }
 
 // parseBalanceChange parses rawData to details of amount change for all stakers relative to native restaking
