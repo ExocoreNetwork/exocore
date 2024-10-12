@@ -68,6 +68,8 @@ func ExportGenesis(ctx sdk.Context, k keeper.Keeper) *types.GenesisState {
 	genesis.RecentMsgList = k.GetAllRecentMsg(ctx)
 	genesis.RecentParamsList = k.GetAllRecentParams(ctx)
 	// TODO: export stakerListAssets, and stakerInfosAssets
+	genesis.StakerInfosAssets = k.GetAllStakerInfosAssets(ctx)
+	genesis.StakerListAssets = k.GetAllStakerListAssets(ctx)
 	// this line is used by starport scaffolding # genesis/module/export
 
 	return genesis
