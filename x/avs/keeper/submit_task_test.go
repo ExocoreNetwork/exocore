@@ -1,6 +1,7 @@
 package keeper_test
 
 import (
+	"github.com/ethereum/go-ethereum/common/math"
 	"math/big"
 	"strconv"
 	"time"
@@ -149,10 +150,13 @@ func (suite *AVSTestSuite) prepareTaskInfo() {
 
 func (suite *AVSTestSuite) prepare() {
 	usdtAddress := common.HexToAddress("0xdAC17F958D2ee523a2206206994597C13D831ec7")
-	depositAmount := sdkmath.NewInt(100)
-	delegationAmount := sdkmath.NewInt(50)
+	decimal := int64(6)
+	depositAmount := sdkmath.NewInt(100).Mul(sdkmath.NewIntFromBigInt(math.BigPow(10, decimal)))
+	delegationAmount := sdkmath.NewInt(50).Mul(sdkmath.NewIntFromBigInt(math.BigPow(10, decimal)))
 	suite.prepareOperator()
 	suite.prepareDeposit(usdtAddress, depositAmount)
+	err := suite.App.DelegationKeeper.AssociateOperatorWithStaker(suite.Ctx, suite.clientChainLzID, suite.operatorAddr, suite.Address[:])
+	suite.NoError(err)
 	suite.prepareDelegation(true, usdtAddress, delegationAmount)
 	suite.prepareAvs([]string{"0xdac17f958d2ee523a2206206994597c13d831ec7_0x65"})
 	suite.prepareOptIn()

@@ -1,6 +1,9 @@
 package keeper_test
 
 import (
+	"cosmossdk.io/math"
+	assetstypes "github.com/ExocoreNetwork/exocore/x/assets/types"
+	"math/big"
 	"time"
 
 	avstypes "github.com/ExocoreNetwork/exocore/x/avs/keeper"
@@ -154,6 +157,16 @@ func (suite *AVSTestSuite) TestUpdateAVSInfoWithOperator_Register() {
 	suite.NoError(err)
 	suite.TestAVS() // registers the AVS
 
+	asset := suite.Assets[0]
+	_, assetID := assetstypes.GetStakerIDAndAssetIDFromStr(asset.LayerZeroChainID, "", asset.Address)
+	selfDelegateAmount := big.NewInt(10)
+	minPrecisionSelfDelegateAmount := big.NewInt(0).Mul(selfDelegateAmount, big.NewInt(0).Exp(big.NewInt(10), big.NewInt(int64(asset.Decimals)), nil))
+	err = suite.App.AssetsKeeper.UpdateOperatorAssetState(suite.Ctx, opAccAddr, assetID, assetstypes.DeltaOperatorSingleAsset{
+		TotalAmount:   math.NewIntFromBigInt(minPrecisionSelfDelegateAmount),
+		TotalShare:    math.LegacyNewDecFromBigInt(minPrecisionSelfDelegateAmount),
+		OperatorShare: math.LegacyNewDecFromBigInt(minPrecisionSelfDelegateAmount),
+	})
+	suite.NoError(err)
 	err = suite.App.AVSManagerKeeper.OperatorOptAction(suite.Ctx, operatorParams)
 	suite.NoError(err)
 }
