@@ -81,9 +81,9 @@ var (
 		"the input parameter is invalid",
 	)
 
-	ErrInvalidDepositAmount = errorsmod.Register(
+	ErrInvalidAmount = errorsmod.Register(
 		ModuleName, 17,
-		"the deposit amount is invalid")
+		"the amount is invalid")
 
 	ErrInvalidOperationType = errorsmod.Register(
 		ModuleName, 18,

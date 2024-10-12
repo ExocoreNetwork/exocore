@@ -146,7 +146,8 @@ func (k Keeper) Delegation(
 	// This interface is only used for unjail to retrieve the self delegation value,
 	// so the delegator and validator are the same.
 	operator := delegator
-	operatorUSDValues, err := k.operatorKeeper.GetOrCalculateOperatorUSDValues(ctx, operator, avstypes.ChainIDWithoutRevision(ctx.ChainID()))
+	avsAddr := avstypes.GenerateAVSAddr(avstypes.ChainIDWithoutRevision(ctx.ChainID()))
+	operatorUSDValues, err := k.operatorKeeper.GetOrCalculateOperatorUSDValues(ctx, operator, avsAddr)
 	if err != nil {
 		k.Logger(ctx).Error("Delegation: failed to get or calculate the operator USD values", "operator", operator.String(), "chainID", ctx.ChainID(), "error", err)
 		return nil

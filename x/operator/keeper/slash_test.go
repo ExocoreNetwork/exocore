@@ -17,14 +17,16 @@ func (suite *OperatorTestSuite) TestSlashWithInfractionReason() {
 	suite.prepareOperator()
 	usdtAddress := common.HexToAddress("0xdAC17F958D2ee523a2206206994597C13D831ec7")
 	assetDecimal := 6
-	depositAmount := sdkmath.NewIntWithDecimal(100, assetDecimal)
+	depositAmount := sdkmath.NewIntWithDecimal(200, assetDecimal)
 	suite.prepareDeposit(usdtAddress, depositAmount)
-	delegationAmount := sdkmath.NewIntWithDecimal(50, assetDecimal)
+	delegationAmount := sdkmath.NewIntWithDecimal(100, assetDecimal)
 	suite.prepareDelegation(true, suite.assetAddr, delegationAmount)
+	err := suite.App.DelegationKeeper.AssociateOperatorWithStaker(suite.Ctx, suite.clientChainLzID, suite.operatorAddr, suite.Address[:])
+	suite.NoError(err)
 
 	// opt into the AVS
 	avsAddr := avstypes.GenerateAVSAddr(avstypes.ChainIDWithoutRevision(suite.Ctx.ChainID()))
-	err := suite.App.OperatorKeeper.OptIn(suite.Ctx, suite.operatorAddr, avsAddr)
+	err = suite.App.OperatorKeeper.OptIn(suite.Ctx, suite.operatorAddr, avsAddr)
 	suite.NoError(err)
 	// call the EndBlock to update the voting power
 	suite.CommitAfter(time.Hour*24 + time.Nanosecond)

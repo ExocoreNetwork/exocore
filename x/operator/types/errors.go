@@ -106,4 +106,9 @@ var (
 		ModuleName, 22,
 		"invalid consensus key",
 	)
+
+	ErrMinDelegationNotMet = errorsmod.Register(
+		ModuleName, 24,
+		"the operator USD value is less than the minimum self delegation",
+	)
 )

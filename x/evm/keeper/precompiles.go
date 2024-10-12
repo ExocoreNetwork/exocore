@@ -10,7 +10,6 @@ import (
 	blsPrecompile "github.com/ExocoreNetwork/exocore/precompiles/bls"
 	delegationprecompile "github.com/ExocoreNetwork/exocore/precompiles/delegation"
 	rewardPrecompile "github.com/ExocoreNetwork/exocore/precompiles/reward"
-	slashPrecompile "github.com/ExocoreNetwork/exocore/precompiles/slash"
 	stakingStateKeeper "github.com/ExocoreNetwork/exocore/x/assets/keeper"
 	avsManagerKeeper "github.com/ExocoreNetwork/exocore/x/avs/keeper"
 	delegationKeeper "github.com/ExocoreNetwork/exocore/x/delegation/keeper"
@@ -37,7 +36,7 @@ func AvailablePrecompiles(
 	_ channelkeeper.Keeper,
 	delegationKeeper delegationKeeper.Keeper,
 	assetskeeper stakingStateKeeper.Keeper,
-	slashKeeper exoslashKeeper.Keeper,
+	_ exoslashKeeper.Keeper,
 	rewardKeeper rewardKeeper.Keeper,
 	avsManagerKeeper avsManagerKeeper.Keeper,
 ) map[common.Address]vm.PrecompiledContract {
@@ -69,11 +68,12 @@ func AvailablePrecompiles(
 		panic(fmt.Errorf("failed to load delegation precompile: %w", err))
 	}
 
-	slashPrecompile, err := slashPrecompile.NewPrecompile(
+	// The slash precompile is deprecated, but I have only commented out this code to facilitate future refactoring.
+	/*	slashPrecompile, err := slashPrecompile.NewPrecompile(
 		assetskeeper,
 		slashKeeper,
 		authzKeeper,
-	)
+	)*/
 	if err != nil {
 		panic(fmt.Errorf("failed to load slash precompile: %w", err))
 	}
@@ -93,7 +93,7 @@ func AvailablePrecompiles(
 	if err != nil {
 		panic(fmt.Errorf("failed to load bls precompile: %v", err))
 	}
-	precompiles[slashPrecompile.Address()] = slashPrecompile
+	// precompiles[slashPrecompile.Address()] = slashPrecompile
 	precompiles[rewardPrecompile.Address()] = rewardPrecompile
 	precompiles[assetsPrecompile.Address()] = assetsPrecompile
 	precompiles[delegationPrecompile.Address()] = delegationPrecompile

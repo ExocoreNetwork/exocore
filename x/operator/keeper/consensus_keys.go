@@ -368,26 +368,26 @@ func (k Keeper) GetActiveOperatorsForChainID(
 // ValidatorByConsAddrForChainID returns a stakingtypes.ValidatorI for the given consensus
 // address and chain id.
 func (k Keeper) ValidatorByConsAddrForChainID(
-	ctx sdk.Context, consAddr sdk.ConsAddress, chainID string,
+	ctx sdk.Context, consAddr sdk.ConsAddress, chainIDWithoutRevision string,
 ) (stakingtypes.Validator, bool) {
-	isAvs, avsAddrStr := k.avsKeeper.IsAVSByChainID(ctx, chainID)
+	isAvs, avsAddrStr := k.avsKeeper.IsAVSByChainID(ctx, chainIDWithoutRevision)
 	if !isAvs {
-		ctx.Logger().Error("ValidatorByConsAddrForChainID the chainID is not supported by AVS", "chainID", chainID)
+		ctx.Logger().Error("ValidatorByConsAddrForChainID the chainIDWithoutRevision is not supported by AVS", "chainIDWithoutRevision", chainIDWithoutRevision)
 		return stakingtypes.Validator{}, false
 	}
-	// this value is stored using chainID + consAddr and only deleted when
+	// this value is stored using chainIDWithoutRevision + consAddr and only deleted when
 	// advised by the dogfood module to delete. hence, even if the consensus key
 	// changes, this lookup is available.
 	found, operatorAddr := k.GetOperatorAddressForChainIDAndConsAddr(
-		ctx, chainID, consAddr,
+		ctx, chainIDWithoutRevision, consAddr,
 	)
 	if !found {
-		ctx.Logger().Error("ValidatorByConsAddrForChainID the operator isn't found by the chainID and consensus address", "consAddress", consAddr, "chainID", chainID)
+		ctx.Logger().Error("ValidatorByConsAddrForChainID the operator isn't found by the chainIDWithoutRevision and consensus address", "consAddress", consAddr, "chainIDWithoutRevision", chainIDWithoutRevision)
 		return stakingtypes.Validator{}, false
 	}
-	found, wrappedKey, err := k.GetOperatorConsKeyForChainID(ctx, operatorAddr, chainID)
+	found, wrappedKey, err := k.GetOperatorConsKeyForChainID(ctx, operatorAddr, chainIDWithoutRevision)
 	if !found || err != nil {
-		ctx.Logger().Error("ValidatorByConsAddrForChainID the consensus key isn't found by the chainID and operator address", "operatorAddr", operatorAddr, "chainID", chainID, "err", err)
+		ctx.Logger().Error("ValidatorByConsAddrForChainID the consensus key isn't found by the chainIDWithoutRevision and operator address", "operatorAddr", operatorAddr, "chainIDWithoutRevision", chainIDWithoutRevision, "err", err)
 		return stakingtypes.Validator{}, false
 	}
 	// since we are sending the address, we have to send the consensus key as well.
@@ -400,7 +400,7 @@ func (k Keeper) ValidatorByConsAddrForChainID(
 		ctx.Logger().Error("ValidatorByConsAddrForChainID new validator error", "err", err)
 		return stakingtypes.Validator{}, false
 	}
-	val.Jailed = k.IsOperatorJailedForChainID(ctx, consAddr, chainID)
+	val.Jailed = k.IsOperatorJailedForChainID(ctx, consAddr, chainIDWithoutRevision)
 
 	// set the tokens, delegated shares and minimum self delegation for unjail
 	minSelfDelegation, err := k.avsKeeper.GetAVSMinimumSelfDelegation(ctx, avsAddrStr)
@@ -413,9 +413,9 @@ func (k Keeper) ValidatorByConsAddrForChainID(
 	// get opted usd values, then use the total usd value as the virtual tokens and shares
 	// we use USD to simulate the staking token for the cosmos-SDK because the Exocore is
 	// a multi-token staking system. The tokens and shares are always balanced.
-	operatorUSDValues, err := k.GetOrCalculateOperatorUSDValues(ctx, operatorAddr, chainID)
+	operatorUSDValues, err := k.GetOrCalculateOperatorUSDValues(ctx, operatorAddr, avsAddrStr)
 	if err != nil {
-		ctx.Logger().Error("ValidatorByConsAddrForChainID get or calculate the operator USD values error", "operatorAddr", operatorAddr, "chainID", chainID, "err", err)
+		ctx.Logger().Error("ValidatorByConsAddrForChainID get or calculate the operator USD values error", "operatorAddr", operatorAddr, "chainIDWithoutRevision", chainIDWithoutRevision, "err", err)
 		return stakingtypes.Validator{}, false
 	}
 	power := operatorUSDValues.TotalUSDValue.TruncateInt64()

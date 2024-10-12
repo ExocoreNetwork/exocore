@@ -21,9 +21,11 @@ type DepositWithdrawParams struct {
 // PerformDepositOrWithdraw the assets precompile contract will call this function to update asset state
 // when there is a deposit or withdraw.
 func (k Keeper) PerformDepositOrWithdraw(ctx sdk.Context, params *DepositWithdrawParams) error {
-	// check params parameter before executing deposit operation
+	// check params parameter before executing operation
 	if params.OpAmount.IsNegative() {
-		return assetstypes.ErrInvalidDepositAmount.Wrapf("negative deposit amount:%s", params.OpAmount)
+		return assetstypes.ErrInvalidAmount.Wrapf(
+			"negative amount:%s", params.OpAmount,
+		)
 	}
 	stakerID, assetID := assetstypes.GetStakerIDAndAssetID(params.ClientChainLzID, params.StakerAddress, params.AssetsAddress)
 	if !k.IsStakingAsset(ctx, assetID) {
