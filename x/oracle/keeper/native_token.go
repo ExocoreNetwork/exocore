@@ -21,8 +21,6 @@ import (
 
 const maxEffectiveBalance = 32
 
-var stakerList types.StakerList
-
 // SetStakerInfos set stakerInfos for the specific assetID
 func (k Keeper) SetStakerInfos(ctx sdk.Context, assetID string, stakerInfos []*types.StakerInfo) {
 	store := ctx.KVStore(k.storeKey)
@@ -94,8 +92,6 @@ func (k Keeper) SetStakerList(ctx sdk.Context, assetID string, sl *types.StakerL
 	store := ctx.KVStore(k.storeKey)
 	bz := k.cdc.MustMarshal(sl)
 	store.Set(types.NativeTokenStakerListKey(assetID), bz)
-	// set cache used by updateNSTByBalanceChange
-	stakerList = *sl
 }
 
 // GetStakerList return stakerList for native-restaking asset of assetID
@@ -174,6 +170,7 @@ func (k Keeper) UpdateNSTValidatorListForStaker(ctx sdk.Context, assetID, staker
 
 	keyStakerList := types.NativeTokenStakerListKey(assetID)
 	valueStakerList := store.Get(keyStakerList)
+	var stakerList types.StakerList
 	stakerList.StakerAddrs = make([]string, 0, 1)
 	if valueStakerList != nil {
 		k.cdc.MustUnmarshal(valueStakerList, &stakerList)
@@ -231,7 +228,7 @@ func (k Keeper) UpdateNSTByBalanceChange(ctx sdk.Context, assetID string, rawDat
 	if len(rawData) < 32 {
 		return errors.New("length of indicate maps for stakers shoule be exactly 32 bytes")
 	}
-	sl := k.getStakerList(ctx, assetID)
+	sl := k.GetStakerList(ctx, assetID)
 	if len(sl.StakerAddrs) == 0 {
 		return errors.New("staker list is empty")
 	}
@@ -287,14 +284,6 @@ func (k Keeper) UpdateNSTByBalanceChange(ctx sdk.Context, assetID string, rawDat
 		store.Set(key, bz)
 	}
 	return nil
-}
-
-// getStakerList returns all Stakers for native-restaking of assetID, this is used for cache
-func (k Keeper) getStakerList(ctx sdk.Context, assetID string) types.StakerList {
-	if len(stakerList.StakerAddrs) == 0 {
-		stakerList = k.GetStakerList(ctx, assetID)
-	}
-	return stakerList
 }
 
 // parseBalanceChange parses rawData to details of amount change for all stakers relative to native restaking
