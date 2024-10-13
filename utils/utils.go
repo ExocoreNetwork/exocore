@@ -218,14 +218,13 @@ func SortByPower(
 func AccumulateChanges(
 	currentChanges, newChanges []abci.ValidatorUpdate,
 ) []abci.ValidatorUpdate {
-	// get only unieque updates
+	// get only unique updates
 	m := make(map[string]abci.ValidatorUpdate)
-	for i := 0; i < len(currentChanges); i++ {
-		m[currentChanges[i].PubKey.String()] = currentChanges[i]
+	for _, change := range currentChanges {
+		m[change.PubKey.String()] = change
 	}
-	for i := 0; i < len(newChanges); i++ {
-		// overwrite with new power
-		m[newChanges[i].PubKey.String()] = newChanges[i]
+	for _, change := range newChanges {
+		m[change.PubKey.String()] = change
 	}
 
 	// convert to list

@@ -157,8 +157,7 @@ func (im IBCModule) OnChanOpenAck(
 	if err := (&md).Unmarshal([]byte(counterpartyMetadata)); err != nil {
 		return errorsmod.Wrapf(
 			commontypes.ErrInvalidHandshakeMetadata,
-			"error unmarshalling ibc-ack metadata: \n%v; \nmetadata: %v",
-			err, counterpartyMetadata,
+			"error unmarshalling ibc-ack metadata: \n%v", err,
 		)
 	}
 

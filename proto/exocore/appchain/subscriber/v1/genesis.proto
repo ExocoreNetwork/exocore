@@ -31,7 +31,7 @@ message GenesisState {
 // The key used is prefix + time + vscId.
 message MaturingVSCPacket {
   // vsc_id is the id of the VSC that is maturing.
-  uint64 vsc_id = 1 [ (gogoproto.customname) = "ID" ];
+  uint64 vsc_id = 1 [ (gogoproto.customname) = "ValidatorSetChangeID" ];
   // maturity_time is the time at which the VSC will mature.
   google.protobuf.Timestamp maturity_time = 2
       [ (gogoproto.stdtime) = true, (gogoproto.nullable) = false ];

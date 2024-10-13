@@ -51,9 +51,9 @@ func (k Keeper) DeleteCoordinatorChannel(ctx sdk.Context) {
 // VerifyCoordinatorChain verifies the chain trying to connect on the channel handshake.
 func (k Keeper) VerifyCoordinatorChain(ctx sdk.Context, connectionHops []string) error {
 	if len(connectionHops) != 1 {
-		return errorsmod.Wrap(
-			channeltypes.ErrTooManyConnectionHops,
-			"must have direct connection to coordinator chain",
+		return channeltypes.ErrTooManyConnectionHops.Wrapf(
+			"must have direct connection to coordinator chain, found %d hops",
+			len(connectionHops),
 		)
 	}
 	connectionID := connectionHops[0]

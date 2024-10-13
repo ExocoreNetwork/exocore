@@ -98,7 +98,7 @@ func (k Keeper) GetPendingChanges(
 	if bz == nil {
 		return nil, false
 	}
-	var res *commontypes.ValidatorSetChangePacketData
+	res := &commontypes.ValidatorSetChangePacketData{}
 	k.cdc.MustUnmarshal(bz, res)
 	return res, true
 }
@@ -120,8 +120,8 @@ func (k Keeper) SetPacketMaturityTime(
 ) {
 	store := ctx.KVStore(k.storeKey)
 	maturingVSCPacket := &types.MaturingVSCPacket{
-		ID:           vscID,
-		MaturityTime: maturityTime,
+		ValidatorSetChangeID: vscID,
+		MaturityTime:         maturityTime,
 	}
 	store.Set(
 		types.PacketMaturityTimeKey(vscID, maturityTime),

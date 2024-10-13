@@ -225,6 +225,8 @@ func (im IBCModule) OnRecvPacket(
 		ack = commontypes.NewErrorAcknowledgementWithLog(ctx, err)
 	} else if res != nil {
 		ack = commontypes.NewResultAcknowledgementWithLog(ctx, res)
+	} else {
+		ack = commontypes.NewResultAcknowledgementWithLog(ctx, nil)
 	}
 
 	ctx.EventManager().EmitEvent(

@@ -1,8 +1,6 @@
 package keeper
 
 import (
-	"fmt"
-
 	keytypes "github.com/ExocoreNetwork/exocore/types/keys"
 	types "github.com/ExocoreNetwork/exocore/x/appchain/subscriber/types"
 	abci "github.com/cometbft/cometbft/abci/types"
@@ -50,7 +48,11 @@ func (k Keeper) ApplyValidatorChanges(
 			// an error in deserializing the key would indicate that the coordinator
 			// has provided invalid data. this is a critical error and should be
 			// investigated.
-			panic(fmt.Sprintf("invalid pubkey %s", change.PubKey))
+			logger.Error(
+				"failed to deserialize validator key",
+				"validator", change.PubKey,
+			)
+			continue
 		}
 		consAddress := wrappedKey.ToConsAddr()
 		val, found := k.GetSubscriberChainValidator(ctx, consAddress)
@@ -76,7 +78,6 @@ func (k Keeper) ApplyValidatorChanges(
 				}
 				logger.Info("adding validator", "consAddress", consAddress)
 				k.SetSubscriberChainValidator(ctx, ocVal)
-				ret = append(ret, change)
 			} else {
 				// edge case: we received an update for 0 power
 				// but the validator is already deleted. Do not forward
@@ -121,7 +122,12 @@ func (k Keeper) GetSubscriberChainValidator(
 // DeleteSubscriberChainValidator deletes a validator based on the pub key derived address.
 func (k Keeper) DeleteSubscriberChainValidator(ctx sdk.Context, addr sdk.ConsAddress) {
 	store := ctx.KVStore(k.storeKey)
-	store.Delete(types.SubscriberChainValidatorKey(addr))
+	key := types.SubscriberChainValidatorKey(addr)
+	if store.Has(key) {
+		store.Delete(key)
+	} else {
+		k.Logger(ctx).Info("validator not found", "address", addr)
+	}
 }
 
 // GetAllSubscriberChainValidators returns all validators in the store.

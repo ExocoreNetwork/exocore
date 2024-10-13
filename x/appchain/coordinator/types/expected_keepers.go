@@ -3,7 +3,7 @@ package types
 import (
 	time "time"
 
-	types "github.com/ExocoreNetwork/exocore/types/keys"
+	keytypes "github.com/ExocoreNetwork/exocore/types/keys"
 	avstypes "github.com/ExocoreNetwork/exocore/x/avs/types"
 	epochstypes "github.com/ExocoreNetwork/exocore/x/epochs/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -13,7 +13,9 @@ import (
 
 // AVSKeeper represents the expected keeper interface for the AVS module.
 type AVSKeeper interface {
-	RegisterAVSWithChainID(sdk.Context, *avstypes.AVSRegisterOrDeregisterParams) (common.Address, error)
+	RegisterAVSWithChainID(
+		sdk.Context, *avstypes.AVSRegisterOrDeregisterParams,
+	) (common.Address, error)
 	IsAVSByChainID(sdk.Context, string) (bool, common.Address)
 	DeleteAVSInfo(sdk.Context, common.Address) error
 }
@@ -30,7 +32,7 @@ type StakingKeeper interface {
 
 // OperatorKeeper represents the expected keeper interface for the operator module.
 type OperatorKeeper interface {
-	GetActiveOperatorsForChainID(sdk.Context, string) ([]sdk.AccAddress, []types.WrappedConsKey)
+	GetActiveOperatorsForChainID(sdk.Context, string) ([]sdk.AccAddress, []keytypes.WrappedConsKey)
 	GetVotePowerForChainID(sdk.Context, []sdk.AccAddress, string) ([]int64, error)
 	GetOperatorAddressForChainIDAndConsAddr(
 		sdk.Context, string, sdk.ConsAddress,
@@ -46,5 +48,5 @@ type OperatorKeeper interface {
 		ctx sdk.Context, operatorAccAddress sdk.AccAddress, avsAddress string,
 		height uint64, fraction sdk.Dec, infraction stakingtypes.Infraction,
 		jailDuration time.Duration,
-	)
+	) error
 }
