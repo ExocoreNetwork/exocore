@@ -7,7 +7,6 @@ import (
 	"cosmossdk.io/math"
 	utiltx "github.com/ExocoreNetwork/exocore/testutil/tx"
 	"github.com/ExocoreNetwork/exocore/x/assets/types"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/suite"
 )
 
@@ -26,8 +25,8 @@ func (suite *GenesisTestSuite) TestValidateGenesis() {
 	params := types.DefaultParams()
 	params.ExocoreLzAppAddress = "0x0000000000000000000000000000000000000001"
 	newGen := types.NewGenesis(
-		params, []types.ClientChainInfo{},
-		[]types.StakingAssetInfo{}, []types.DepositsByStaker{},
+		params, nil,
+		nil, nil, nil,
 	)
 	// genesis data that is hardcoded for use in the tests
 	ethClientChain := types.ClientChainInfo{
@@ -39,7 +38,7 @@ func (suite *GenesisTestSuite) TestValidateGenesis() {
 		AddressLength:      20,
 	}
 	// do not hardcode the address to avoid gitleaks complaining.
-	tokenAddress := utiltx.GenerateAddress().String()
+	tokenAddress := strings.ToLower(utiltx.GenerateAddress().String())
 	usdtClientChainAsset := types.AssetInfo{
 		Name:             "Tether USD",
 		Symbol:           "USDT",
@@ -48,16 +47,14 @@ func (suite *GenesisTestSuite) TestValidateGenesis() {
 		LayerZeroChainID: ethClientChain.LayerZeroChainID,
 		MetaInfo:         "Tether USD token",
 	}
-	totalSupply, _ := sdk.NewIntFromString("40022689732746729")
-	usdtClientChainAsset.TotalSupply = totalSupply
 	stakingInfo := types.StakingAssetInfo{
-		AssetBasicInfo:     &usdtClientChainAsset,
-		StakingTotalAmount: math.NewInt(0),
+		AssetBasicInfo:     usdtClientChainAsset,
+		StakingTotalAmount: math.NewInt(100),
 	}
 	// generated information
 	ethAddress := utiltx.GenerateAddress()
 	// csmAddress := sdk.AccAddress(ethAddress.Bytes())
-	stakerID, assetID := types.GetStakeIDAndAssetIDFromStr(
+	stakerID, assetID := types.GetStakerIDAndAssetIDFromStr(
 		usdtClientChainAsset.LayerZeroChainID, ethAddress.String(), usdtClientChainAsset.Address,
 	)
 	genesisDeposit := types.DepositsByStaker{
@@ -66,9 +63,9 @@ func (suite *GenesisTestSuite) TestValidateGenesis() {
 			{
 				AssetID: assetID,
 				Info: types.StakerAssetInfo{
-					TotalDepositAmount:  math.NewInt(100),
-					WithdrawableAmount:  math.NewInt(100),
-					WaitUnbondingAmount: math.NewInt(0),
+					TotalDepositAmount:        math.NewInt(100),
+					WithdrawableAmount:        math.NewInt(100),
+					PendingUndelegationAmount: math.NewInt(0),
 				},
 			},
 		},
@@ -105,22 +102,6 @@ func (suite *GenesisTestSuite) TestValidateGenesis() {
 				ClientChains: []types.ClientChainInfo{
 					ethClientChain, ethClientChain,
 				},
-			},
-			expPass: false,
-		},
-		{
-			name: "invalid genesis due to zero layer zero chain id",
-			genState: &types.GenesisState{
-				Params: types.DefaultParams(),
-				ClientChains: []types.ClientChainInfo{
-					ethClientChain,
-				},
-			},
-			malleate: func(gs *types.GenesisState) {
-				gs.ClientChains[0].LayerZeroChainID = 0
-			},
-			unmalleate: func(gs *types.GenesisState) {
-				gs.ClientChains[0].LayerZeroChainID = 101
 			},
 			expPass: false,
 		},
@@ -184,44 +165,6 @@ func (suite *GenesisTestSuite) TestValidateGenesis() {
 			expPass: false,
 		},
 		{
-			name: "invalid genesis due to non zero deposit",
-			genState: &types.GenesisState{
-				Params: types.DefaultParams(),
-				ClientChains: []types.ClientChainInfo{
-					ethClientChain,
-				},
-				Tokens: []types.StakingAssetInfo{
-					stakingInfo,
-				},
-			},
-			expPass: false,
-			malleate: func(gs *types.GenesisState) {
-				gs.Tokens[0].StakingTotalAmount = math.NewInt(1)
-			},
-			unmalleate: func(gs *types.GenesisState) {
-				gs.Tokens[0].StakingTotalAmount = math.NewInt(0)
-			},
-		},
-		{
-			name: "invalid genesis due to negative supply amount for token",
-			genState: &types.GenesisState{
-				Params: types.DefaultParams(),
-				ClientChains: []types.ClientChainInfo{
-					ethClientChain,
-				},
-				Tokens: []types.StakingAssetInfo{
-					stakingInfo,
-				},
-			},
-			expPass: false,
-			malleate: func(gs *types.GenesisState) {
-				gs.Tokens[0].AssetBasicInfo.TotalSupply = math.NewInt(-1)
-			},
-			unmalleate: func(gs *types.GenesisState) {
-				gs.Tokens[0].AssetBasicInfo.TotalSupply = totalSupply
-			},
-		},
-		{
 			name: "invalid genesis due to upper case staker id",
 			genState: &types.GenesisState{
 				Params: types.DefaultParams(),
@@ -275,7 +218,7 @@ func (suite *GenesisTestSuite) TestValidateGenesis() {
 			},
 			expPass: false,
 			malleate: func(gs *types.GenesisState) {
-				stakerID, _ := types.GetStakeIDAndAssetIDFromStr(
+				stakerID, _ := types.GetStakerIDAndAssetIDFromStr(
 					usdtClientChainAsset.LayerZeroChainID+1,
 					ethAddress.String(), usdtClientChainAsset.Address,
 				)
@@ -364,14 +307,13 @@ func (suite *GenesisTestSuite) TestValidateGenesis() {
 					Decimals:         18,
 					LayerZeroChainID: ethClientChain.LayerZeroChainID + 1,
 					MetaInfo:         "Circle USD token",
-					TotalSupply:      math.NewInt(500000000),
 				}
 				stakingInfo := types.StakingAssetInfo{
-					AssetBasicInfo:     &usdcClientChainAsset,
+					AssetBasicInfo:     usdcClientChainAsset,
 					StakingTotalAmount: math.NewInt(0),
 				}
 				gs.Tokens[1] = stakingInfo
-				stakerID, _ := types.GetStakeIDAndAssetIDFromStr(
+				stakerID, _ := types.GetStakerIDAndAssetIDFromStr(
 					usdtClientChainAsset.LayerZeroChainID+1,
 					ethAddress.String(), usdtClientChainAsset.Address,
 				)
@@ -426,34 +368,9 @@ func (suite *GenesisTestSuite) TestValidateGenesis() {
 			},
 			unmalleate: func(gs *types.GenesisState) {
 				genesisDeposit.Deposits[0].Info = types.StakerAssetInfo{
-					TotalDepositAmount:  math.NewInt(100),
-					WithdrawableAmount:  math.NewInt(0),
-					WaitUnbondingAmount: math.NewInt(0),
-				}
-				gs.Deposits[0].Deposits[0].Info = genesisDeposit.Deposits[0].Info
-			},
-		},
-		{
-			name: "invalid genesis due to non zero unbonding amount for staker",
-			genState: &types.GenesisState{
-				Params: types.DefaultParams(),
-				ClientChains: []types.ClientChainInfo{
-					ethClientChain,
-				},
-				Tokens: []types.StakingAssetInfo{
-					stakingInfo,
-				},
-				Deposits: []types.DepositsByStaker{genesisDeposit},
-			},
-			expPass: false,
-			malleate: func(gs *types.GenesisState) {
-				gs.Deposits[0].Deposits[0].Info.WaitUnbondingAmount = math.NewInt(1)
-			},
-			unmalleate: func(gs *types.GenesisState) {
-				genesisDeposit.Deposits[0].Info = types.StakerAssetInfo{
-					TotalDepositAmount:  math.NewInt(100),
-					WithdrawableAmount:  math.NewInt(0),
-					WaitUnbondingAmount: math.NewInt(0),
+					TotalDepositAmount:        math.NewInt(100),
+					WithdrawableAmount:        math.NewInt(0),
+					PendingUndelegationAmount: math.NewInt(0),
 				}
 				gs.Deposits[0].Deposits[0].Info = genesisDeposit.Deposits[0].Info
 			},
@@ -476,9 +393,9 @@ func (suite *GenesisTestSuite) TestValidateGenesis() {
 			},
 			unmalleate: func(gs *types.GenesisState) {
 				genesisDeposit.Deposits[0].Info = types.StakerAssetInfo{
-					TotalDepositAmount:  math.NewInt(100),
-					WithdrawableAmount:  math.NewInt(0),
-					WaitUnbondingAmount: math.NewInt(0),
+					TotalDepositAmount:        math.NewInt(100),
+					WithdrawableAmount:        math.NewInt(0),
+					PendingUndelegationAmount: math.NewInt(0),
 				}
 				gs.Deposits[0].Deposits[0].Info = genesisDeposit.Deposits[0].Info
 			},
@@ -502,33 +419,11 @@ func (suite *GenesisTestSuite) TestValidateGenesis() {
 			},
 			unmalleate: func(gs *types.GenesisState) {
 				genesisDeposit.Deposits[0].Info = types.StakerAssetInfo{
-					TotalDepositAmount:  math.NewInt(100),
-					WithdrawableAmount:  math.NewInt(0),
-					WaitUnbondingAmount: math.NewInt(0),
+					TotalDepositAmount:        math.NewInt(100),
+					WithdrawableAmount:        math.NewInt(0),
+					PendingUndelegationAmount: math.NewInt(0),
 				}
 				gs.Deposits[0].Deposits[0].Info = genesisDeposit.Deposits[0].Info
-			},
-		},
-		{
-			name: "invalid genesis due to excess deposited amount for staker",
-			genState: &types.GenesisState{
-				Params: types.DefaultParams(),
-				ClientChains: []types.ClientChainInfo{
-					ethClientChain,
-				},
-				Tokens: []types.StakingAssetInfo{
-					stakingInfo,
-				},
-				Deposits: []types.DepositsByStaker{genesisDeposit},
-			},
-			expPass: false,
-			malleate: func(gs *types.GenesisState) {
-				gs.Deposits[0].Deposits[0].Info.TotalDepositAmount = stakingInfo.AssetBasicInfo.TotalSupply.Add(math.NewInt(1))
-				gs.Deposits[0].Deposits[0].Info.WithdrawableAmount = stakingInfo.AssetBasicInfo.TotalSupply.Add(math.NewInt(1))
-			},
-			unmalleate: func(gs *types.GenesisState) {
-				gs.Deposits[0].Deposits[0].Info.TotalDepositAmount = math.NewInt(100)
-				gs.Deposits[0].Deposits[0].Info.WithdrawableAmount = math.NewInt(100)
 			},
 		},
 		{

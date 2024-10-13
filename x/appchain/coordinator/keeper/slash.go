@@ -59,10 +59,15 @@ func (k Keeper) HandleSlashPacket(ctx sdk.Context, chainID string, data commonty
 	// we should make sure we are well set up for that update. we will include an ack of the slash packet in the next
 	// validator set update; record that here.
 	k.AppendSlashAck(ctx, chainID, consAddress)
-	k.operatorKeeper.ApplySlashForHeight(
+	if err := k.operatorKeeper.ApplySlashForHeight(
 		ctx, operatorAccAddress, avsAddress.String(), height,
 		slashProportionDecimal, data.Infraction, jailDuration,
-	)
+	); err != nil {
+		k.Logger(ctx).Error(
+			"failed to apply slash for height",
+			"chainID", chainID, "height", height, "consAddress", consAddress, "error", err,
+		)
+	}
 }
 
 // AppendSlashAck appends a slashing acknowledgment for a chain, to be sent in the next validator set update.
@@ -75,7 +80,7 @@ func (k Keeper) AppendSlashAck(ctx sdk.Context, chainID string, consAddress sdk.
 // GetSlashAcks gets the slashing acknowledgments for a chain, to be sent in the next validator set update.
 func (k Keeper) GetSlashAcks(ctx sdk.Context, chainID string) types.ConsensusAddresses {
 	store := ctx.KVStore(k.storeKey)
-	var consAddresses types.ConsensusAddresses
+	consAddresses := types.ConsensusAddresses{}
 	key := types.SlashAcksKey(chainID)
 	value := store.Get(key)
 	k.cdc.MustUnmarshal(value, &consAddresses)

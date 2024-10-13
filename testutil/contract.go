@@ -18,7 +18,7 @@ import (
 
 	"github.com/ExocoreNetwork/exocore/app"
 	"github.com/ExocoreNetwork/exocore/testutil/tx"
-	evm "github.com/evmos/evmos/v14/x/evm/types"
+	evm "github.com/evmos/evmos/v16/x/evm/types"
 )
 
 // ContractArgs are the params used for calling a smart contract.
@@ -39,7 +39,7 @@ type ContractCallArgs struct {
 	Contract ContractArgs
 	// Nonce is the nonce to use for the transaction.
 	Nonce *big.Int
-	// Amount is the aexo amount to send in the transaction.
+	// Amount is the hua amount to send in the transaction.
 	Amount *big.Int
 	// GasLimit to use for the transaction
 	GasLimit uint64

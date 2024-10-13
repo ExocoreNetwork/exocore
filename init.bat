@@ -39,11 +39,11 @@ exocored keys add %KEY% --keyring-backend %KEYRING% --algo %ALGO%
 rem Set moniker and chain-id for exocore (Moniker can be anything, chain-id must be an integer)
 exocored init %MONIKER% --chain-id %CHAINID% 
 
-rem Change parameter token denominations to aexocore
-cat %GENESIS% | jq ".app_state[\"staking\"][\"params\"][\"bond_denom\"]=\"aexocore\""   >   %TMPGENESIS% && move %TMPGENESIS% %GENESIS%
-cat %GENESIS% | jq ".app_state[\"crisis\"][\"constant_fee\"][\"denom\"]=\"aexocore\"" > %TMPGENESIS% && move %TMPGENESIS% %GENESIS%
-cat %GENESIS% | jq ".app_state[\"gov\"][\"deposit_params\"][\"min_deposit\"][0][\"denom\"]=\"aexocore\"" > %TMPGENESIS% && move %TMPGENESIS% %GENESIS%
-cat %GENESIS% | jq ".app_state[\"mint\"][\"params\"][\"mint_denom\"]=\"aexocore\"" > %TMPGENESIS% && move %TMPGENESIS% %GENESIS%
+rem Change parameter token denominations to hua
+cat %GENESIS% | jq ".app_state[\"staking\"][\"params\"][\"bond_denom\"]=\"hua\""   >   %TMPGENESIS% && move %TMPGENESIS% %GENESIS%
+cat %GENESIS% | jq ".app_state[\"crisis\"][\"constant_fee\"][\"denom\"]=\"hua\"" > %TMPGENESIS% && move %TMPGENESIS% %GENESIS%
+cat %GENESIS% | jq ".app_state[\"gov\"][\"deposit_params\"][\"min_deposit\"][0][\"denom\"]=\"hua\"" > %TMPGENESIS% && move %TMPGENESIS% %GENESIS%
+cat %GENESIS% | jq ".app_state[\"mint\"][\"params\"][\"mint_denom\"]=\"hua\"" > %TMPGENESIS% && move %TMPGENESIS% %GENESIS%
 
 rem increase block time (?)
 cat %GENESIS% | jq ".consensus_params[\"block\"][\"time_iota_ms\"]=\"30000\"" > %TMPGENESIS% && move %TMPGENESIS% %GENESIS%
@@ -55,10 +55,10 @@ rem setup
 sed -i "s/create_empty_blocks = true/create_empty_blocks = false/g" %ETHCONFIG%
 
 rem Allocate genesis accounts (cosmos formatted addresses)
-exocored add-genesis-account %KEY% 100000000000000000000000000aexocore --keyring-backend %KEYRING%
+exocored add-genesis-account %KEY% 100000000000000000000000000hua --keyring-backend %KEYRING%
 
 rem Sign genesis transaction
-exocored gentx %KEY% 1000000000000000000000aexocore --keyring-backend %KEYRING% --chain-id %CHAINID%
+exocored gentx %KEY% 1000000000000000000000hua --keyring-backend %KEYRING% --chain-id %CHAINID%
 
 rem Collect genesis tx
 exocored collect-gentxs
@@ -69,4 +69,4 @@ exocored validate-genesis
 
 
 rem Start the node (remove the --pruning=nothing flag if historical queries are not needed)
-exocored start --pruning=nothing %TRACE% --log_level %LOGLEVEL% --minimum-gas-prices=0.0001aexocore
+exocored start --pruning=nothing %TRACE% --log_level %LOGLEVEL% --minimum-gas-prices=0.0001hua

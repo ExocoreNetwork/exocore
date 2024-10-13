@@ -3,7 +3,7 @@ package keeper_test
 import (
 	sdkmath "cosmossdk.io/math"
 	utiltx "github.com/ExocoreNetwork/exocore/testutil/tx"
-	exocoretypes "github.com/ExocoreNetwork/exocore/types/keys"
+	keytypes "github.com/ExocoreNetwork/exocore/types/keys"
 	"github.com/ExocoreNetwork/exocore/utils"
 	assetskeeper "github.com/ExocoreNetwork/exocore/x/assets/keeper"
 	assetstypes "github.com/ExocoreNetwork/exocore/x/assets/types"
@@ -35,7 +35,7 @@ func (suite *KeeperTestSuite) TestSameEpochOperations() {
 		lzID := suite.ClientChains[0].LayerZeroChainID
 		assetAddrHex := suite.Assets[0].Address
 		assetAddr := common.HexToAddress(assetAddrHex)
-		_, assetID := assetstypes.GetStakeIDAndAssetIDFromStr(lzID, staker.String(), assetAddrHex)
+		_, assetID := assetstypes.GetStakerIDAndAssetIDFromStr(lzID, staker.String(), assetAddrHex)
 		asset, err := suite.App.AssetsKeeper.GetStakingAssetInfo(suite.Ctx, assetID)
 		suite.NoError(err)
 		assetDecimals := asset.AssetBasicInfo.Decimals
@@ -45,7 +45,7 @@ func (suite *KeeperTestSuite) TestSameEpochOperations() {
 		)
 		depositParams := &assetskeeper.DepositWithdrawParams{
 			ClientChainLzID: lzID,
-			Action:          assetstypes.Deposit,
+			Action:          assetstypes.DepositLST,
 			StakerAddress:   staker.Bytes(),
 			AssetsAddress:   assetAddr.Bytes(),
 			OpAmount:        amount,
@@ -82,7 +82,7 @@ func (suite *KeeperTestSuite) TestSameEpochOperations() {
 			sdk.WrapSDKContext(suite.Ctx),
 			&operatortypes.OptIntoAVSReq{
 				FromAddress:   operatorAddressString,
-				AvsAddress:    avsAddress.String(),
+				AvsAddress:    avsAddress,
 				PublicKeyJSON: oldKey.ToJSON(),
 			},
 		)
@@ -93,7 +93,7 @@ func (suite *KeeperTestSuite) TestSameEpochOperations() {
 			sdk.WrapSDKContext(suite.Ctx),
 			&operatortypes.OptOutOfAVSReq{
 				FromAddress: operatorAddressString,
-				AvsAddress:  avsAddress.String(),
+				AvsAddress:  avsAddress,
 			},
 		)
 		return err
@@ -103,7 +103,7 @@ func (suite *KeeperTestSuite) TestSameEpochOperations() {
 			sdk.WrapSDKContext(suite.Ctx),
 			&operatortypes.SetConsKeyReq{
 				Address:       operatorAddressString,
-				AvsAddress:    avsAddress.String(),
+				AvsAddress:    avsAddress,
 				PublicKeyJSON: newKey.ToJSON(),
 			},
 		)
@@ -115,7 +115,7 @@ func (suite *KeeperTestSuite) TestSameEpochOperations() {
 		errValues       []error
 		expUpdatesCount int
 		powers          []int64
-		validatorKey    exocoretypes.WrappedConsKey
+		validatorKey    keytypes.WrappedConsKey
 	}{
 		{
 			name: "opt in - base case",
@@ -215,7 +215,7 @@ func (suite *KeeperTestSuite) TestDifferentEpochOperations() {
 		lzID := suite.ClientChains[0].LayerZeroChainID
 		assetAddrHex := suite.Assets[0].Address
 		assetAddr := common.HexToAddress(assetAddrHex)
-		_, assetID := assetstypes.GetStakeIDAndAssetIDFromStr(lzID, staker.String(), assetAddrHex)
+		_, assetID := assetstypes.GetStakerIDAndAssetIDFromStr(lzID, staker.String(), assetAddrHex)
 		asset, err := suite.App.AssetsKeeper.GetStakingAssetInfo(suite.Ctx, assetID)
 		suite.NoError(err)
 		assetDecimals := asset.AssetBasicInfo.Decimals
@@ -225,7 +225,7 @@ func (suite *KeeperTestSuite) TestDifferentEpochOperations() {
 		)
 		depositParams := &assetskeeper.DepositWithdrawParams{
 			ClientChainLzID: lzID,
-			Action:          assetstypes.Deposit,
+			Action:          assetstypes.DepositLST,
 			StakerAddress:   staker.Bytes(),
 			AssetsAddress:   assetAddr.Bytes(),
 			OpAmount:        amount,
@@ -262,7 +262,7 @@ func (suite *KeeperTestSuite) TestDifferentEpochOperations() {
 			sdk.WrapSDKContext(suite.Ctx),
 			&operatortypes.OptIntoAVSReq{
 				FromAddress:   operatorAddressString,
-				AvsAddress:    avsAddress.String(),
+				AvsAddress:    avsAddress,
 				PublicKeyJSON: oldKey.ToJSON(),
 			},
 		)
@@ -273,7 +273,7 @@ func (suite *KeeperTestSuite) TestDifferentEpochOperations() {
 			sdk.WrapSDKContext(suite.Ctx),
 			&operatortypes.OptOutOfAVSReq{
 				FromAddress: operatorAddressString,
-				AvsAddress:  avsAddress.String(),
+				AvsAddress:  avsAddress,
 			},
 		)
 		return err
@@ -283,7 +283,7 @@ func (suite *KeeperTestSuite) TestDifferentEpochOperations() {
 			sdk.WrapSDKContext(suite.Ctx),
 			&operatortypes.SetConsKeyReq{
 				Address:       operatorAddressString,
-				AvsAddress:    avsAddress.String(),
+				AvsAddress:    avsAddress,
 				PublicKeyJSON: newKey.ToJSON(),
 			},
 		)
@@ -295,9 +295,9 @@ func (suite *KeeperTestSuite) TestDifferentEpochOperations() {
 		errValues       []error
 		expUpdatesCount []int
 		powers          [][]int64
-		validatorKeys   []exocoretypes.WrappedConsKey
-		ultimateKey     exocoretypes.WrappedConsKey
-		absentKeys      []exocoretypes.WrappedConsKey
+		validatorKeys   []keytypes.WrappedConsKey
+		ultimateKey     keytypes.WrappedConsKey
+		absentKeys      []keytypes.WrappedConsKey
 	}{
 		{
 			name: "opt in - base case",
@@ -309,9 +309,9 @@ func (suite *KeeperTestSuite) TestDifferentEpochOperations() {
 			powers: [][]int64{
 				{amountUSD},
 			},
-			validatorKeys: []exocoretypes.WrappedConsKey{oldKey},
+			validatorKeys: []keytypes.WrappedConsKey{oldKey},
 			ultimateKey:   oldKey,
-			absentKeys:    []exocoretypes.WrappedConsKey{newKey},
+			absentKeys:    []keytypes.WrappedConsKey{newKey},
 		},
 		{
 			name: "opt out without opting in",
@@ -323,9 +323,9 @@ func (suite *KeeperTestSuite) TestDifferentEpochOperations() {
 			powers: [][]int64{
 				{},
 			},
-			validatorKeys: []exocoretypes.WrappedConsKey{nil},
+			validatorKeys: []keytypes.WrappedConsKey{nil},
 			ultimateKey:   nil,
-			absentKeys:    []exocoretypes.WrappedConsKey{oldKey, newKey},
+			absentKeys:    []keytypes.WrappedConsKey{oldKey, newKey},
 		},
 		{
 			name: "set key without opting in",
@@ -337,9 +337,9 @@ func (suite *KeeperTestSuite) TestDifferentEpochOperations() {
 			powers: [][]int64{
 				{},
 			},
-			validatorKeys: []exocoretypes.WrappedConsKey{nil},
+			validatorKeys: []keytypes.WrappedConsKey{nil},
 			ultimateKey:   nil,
-			absentKeys:    []exocoretypes.WrappedConsKey{oldKey, newKey},
+			absentKeys:    []keytypes.WrappedConsKey{oldKey, newKey},
 		},
 		{
 			name: "opt in then replace",
@@ -352,11 +352,11 @@ func (suite *KeeperTestSuite) TestDifferentEpochOperations() {
 				{amountUSD},
 				{amountUSD, 0},
 			},
-			validatorKeys: []exocoretypes.WrappedConsKey{
+			validatorKeys: []keytypes.WrappedConsKey{
 				oldKey, newKey,
 			},
 			ultimateKey: newKey,
-			absentKeys:  []exocoretypes.WrappedConsKey{oldKey},
+			absentKeys:  []keytypes.WrappedConsKey{oldKey},
 		},
 		{
 			name: "opt in then opt out",
@@ -369,9 +369,9 @@ func (suite *KeeperTestSuite) TestDifferentEpochOperations() {
 				{amountUSD},
 				{0},
 			},
-			validatorKeys: []exocoretypes.WrappedConsKey{oldKey, nil},
+			validatorKeys: []keytypes.WrappedConsKey{oldKey, nil},
 			ultimateKey:   nil,
-			absentKeys:    []exocoretypes.WrappedConsKey{oldKey, newKey},
+			absentKeys:    []keytypes.WrappedConsKey{oldKey, newKey},
 		},
 		{
 			name: "opt in then replace then opt out",
@@ -385,9 +385,9 @@ func (suite *KeeperTestSuite) TestDifferentEpochOperations() {
 				{amountUSD, 0},
 				{0},
 			},
-			validatorKeys: []exocoretypes.WrappedConsKey{oldKey, newKey, nil},
+			validatorKeys: []keytypes.WrappedConsKey{oldKey, newKey, nil},
 			ultimateKey:   nil,
-			absentKeys:    []exocoretypes.WrappedConsKey{oldKey, newKey},
+			absentKeys:    []keytypes.WrappedConsKey{oldKey, newKey},
 		},
 		{
 			name: "opt in then opt out then opt in",
@@ -401,9 +401,9 @@ func (suite *KeeperTestSuite) TestDifferentEpochOperations() {
 				{0},
 				{},
 			},
-			validatorKeys: []exocoretypes.WrappedConsKey{oldKey, nil, nil},
+			validatorKeys: []keytypes.WrappedConsKey{oldKey, nil, nil},
 			ultimateKey:   nil,
-			absentKeys:    []exocoretypes.WrappedConsKey{oldKey, newKey},
+			absentKeys:    []keytypes.WrappedConsKey{oldKey, newKey},
 		},
 	}
 	for _, tc := range testcases {

@@ -5,6 +5,7 @@ package types
 
 import (
 	fmt "fmt"
+	_ "github.com/cosmos/cosmos-proto"
 	_ "github.com/cosmos/gogoproto/gogoproto"
 	proto "github.com/cosmos/gogoproto/proto"
 	io "io"
@@ -42,6 +43,9 @@ type GenesisState struct {
 	// which contains deposits, withdrawable and unbonding amount.
 	// at genesis (not chain restart), the unbonding amount must be 0.
 	Deposits []DepositsByStaker `protobuf:"bytes,4,rep,name=deposits,proto3" json:"deposits"`
+	// operator_assets is the list of all operator assets information, indexed
+	// by the operator address and the asset id. The struct is the `OperatorAssetInfo`
+	OperatorAssets []AssetsByOperator `protobuf:"bytes,5,rep,name=operator_assets,json=operatorAssets,proto3" json:"operator_assets"`
 }
 
 func (m *GenesisState) Reset()         { *m = GenesisState{} }
@@ -105,6 +109,127 @@ func (m *GenesisState) GetDeposits() []DepositsByStaker {
 	return nil
 }
 
+func (m *GenesisState) GetOperatorAssets() []AssetsByOperator {
+	if m != nil {
+		return m.OperatorAssets
+	}
+	return nil
+}
+
+// AssetsByOperator is a struct to be used in the genesis state.
+// It is used to store the operator and its assets state.
+type AssetsByOperator struct {
+	// operator is the address of the operator,its type should be a sdk.AccAddress
+	Operator string `protobuf:"bytes,1,opt,name=operator,proto3" json:"operator,omitempty"`
+	// assets_state is the list of assets state, indexed by the asset id.
+	// The struct is the `OperatorAssetInfo`
+	AssetsState []AssetByID `protobuf:"bytes,2,rep,name=assets_state,json=assetsState,proto3" json:"assets_state"`
+}
+
+func (m *AssetsByOperator) Reset()         { *m = AssetsByOperator{} }
+func (m *AssetsByOperator) String() string { return proto.CompactTextString(m) }
+func (*AssetsByOperator) ProtoMessage()    {}
+func (*AssetsByOperator) Descriptor() ([]byte, []int) {
+	return fileDescriptor_caf4f124d39d82ce, []int{1}
+}
+func (m *AssetsByOperator) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *AssetsByOperator) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_AssetsByOperator.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *AssetsByOperator) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_AssetsByOperator.Merge(m, src)
+}
+func (m *AssetsByOperator) XXX_Size() int {
+	return m.Size()
+}
+func (m *AssetsByOperator) XXX_DiscardUnknown() {
+	xxx_messageInfo_AssetsByOperator.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_AssetsByOperator proto.InternalMessageInfo
+
+func (m *AssetsByOperator) GetOperator() string {
+	if m != nil {
+		return m.Operator
+	}
+	return ""
+}
+
+func (m *AssetsByOperator) GetAssetsState() []AssetByID {
+	if m != nil {
+		return m.AssetsState
+	}
+	return nil
+}
+
+// AssetByID is a helper struct to be used in the genesis state.
+// It is used to store the asset id and its info for an operator.
+// It is named AssetByID (since it is indexed by the assetID)
+type AssetByID struct {
+	// asset_id is the id of the asset.
+	AssetID string `protobuf:"bytes,1,opt,name=asset_id,json=assetId,proto3" json:"asset_id,omitempty"`
+	// info is the asset info.
+	Info OperatorAssetInfo `protobuf:"bytes,2,opt,name=info,proto3" json:"info"`
+}
+
+func (m *AssetByID) Reset()         { *m = AssetByID{} }
+func (m *AssetByID) String() string { return proto.CompactTextString(m) }
+func (*AssetByID) ProtoMessage()    {}
+func (*AssetByID) Descriptor() ([]byte, []int) {
+	return fileDescriptor_caf4f124d39d82ce, []int{2}
+}
+func (m *AssetByID) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *AssetByID) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_AssetByID.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *AssetByID) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_AssetByID.Merge(m, src)
+}
+func (m *AssetByID) XXX_Size() int {
+	return m.Size()
+}
+func (m *AssetByID) XXX_DiscardUnknown() {
+	xxx_messageInfo_AssetByID.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_AssetByID proto.InternalMessageInfo
+
+func (m *AssetByID) GetAssetID() string {
+	if m != nil {
+		return m.AssetID
+	}
+	return ""
+}
+
+func (m *AssetByID) GetInfo() OperatorAssetInfo {
+	if m != nil {
+		return m.Info
+	}
+	return OperatorAssetInfo{}
+}
+
 // DepositByStaker is a helper struct to be used in the genesis state.
 // It is used to store the staker address and its deposits for each asset ID.
 type DepositsByStaker struct {
@@ -120,7 +245,7 @@ func (m *DepositsByStaker) Reset()         { *m = DepositsByStaker{} }
 func (m *DepositsByStaker) String() string { return proto.CompactTextString(m) }
 func (*DepositsByStaker) ProtoMessage()    {}
 func (*DepositsByStaker) Descriptor() ([]byte, []int) {
-	return fileDescriptor_caf4f124d39d82ce, []int{1}
+	return fileDescriptor_caf4f124d39d82ce, []int{3}
 }
 func (m *DepositsByStaker) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -180,7 +305,7 @@ func (m *DepositByAsset) Reset()         { *m = DepositByAsset{} }
 func (m *DepositByAsset) String() string { return proto.CompactTextString(m) }
 func (*DepositByAsset) ProtoMessage()    {}
 func (*DepositByAsset) Descriptor() ([]byte, []int) {
-	return fileDescriptor_caf4f124d39d82ce, []int{2}
+	return fileDescriptor_caf4f124d39d82ce, []int{4}
 }
 func (m *DepositByAsset) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -225,6 +350,8 @@ func (m *DepositByAsset) GetInfo() StakerAssetInfo {
 
 func init() {
 	proto.RegisterType((*GenesisState)(nil), "exocore.assets.v1.GenesisState")
+	proto.RegisterType((*AssetsByOperator)(nil), "exocore.assets.v1.AssetsByOperator")
+	proto.RegisterType((*AssetByID)(nil), "exocore.assets.v1.AssetByID")
 	proto.RegisterType((*DepositsByStaker)(nil), "exocore.assets.v1.DepositsByStaker")
 	proto.RegisterType((*DepositByAsset)(nil), "exocore.assets.v1.DepositByAsset")
 }
@@ -232,33 +359,41 @@ func init() {
 func init() { proto.RegisterFile("exocore/assets/v1/genesis.proto", fileDescriptor_caf4f124d39d82ce) }
 
 var fileDescriptor_caf4f124d39d82ce = []byte{
-	// 407 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x74, 0x92, 0xb1, 0x8e, 0xda, 0x30,
-	0x1c, 0xc6, 0x13, 0x40, 0x81, 0x1a, 0x5a, 0xb5, 0x56, 0x87, 0x34, 0x43, 0x42, 0xd3, 0xaa, 0x62,
-	0x4a, 0x0a, 0x1d, 0xba, 0x74, 0x21, 0x80, 0x2a, 0x2a, 0xb5, 0xaa, 0x60, 0xeb, 0x82, 0x42, 0x30,
-	0xc1, 0xa2, 0xc4, 0x51, 0xec, 0xe3, 0x60, 0xb8, 0x77, 0xb8, 0x47, 0xb8, 0xc7, 0x61, 0x64, 0xbc,
-	0x09, 0x9d, 0xc2, 0x8b, 0x9c, 0x62, 0x9b, 0x3b, 0x8e, 0xc0, 0x66, 0xf9, 0xfb, 0xbe, 0x9f, 0xff,
-	0xf9, 0xf2, 0x07, 0x16, 0x5a, 0x91, 0x80, 0x24, 0xc8, 0xf5, 0x29, 0x45, 0x8c, 0xba, 0xcb, 0xa6,
-	0x1b, 0xa2, 0x08, 0x51, 0x4c, 0x9d, 0x38, 0x21, 0x8c, 0xc0, 0x77, 0xd2, 0xe0, 0x08, 0x83, 0xb3,
-	0x6c, 0x1a, 0xef, 0x43, 0x12, 0x12, 0xae, 0xba, 0xd9, 0x49, 0x18, 0x0d, 0x33, 0x4f, 0x8a, 0xfd,
-	0xc4, 0x5f, 0x48, 0x90, 0x61, 0xe4, 0x75, 0xb6, 0x12, 0x9a, 0x7d, 0x57, 0x00, 0xb5, 0x9f, 0xe2,
-	0xd9, 0x21, 0xf3, 0x19, 0x82, 0xdf, 0x81, 0x26, 0xc2, 0xba, 0x5a, 0x57, 0x1b, 0xd5, 0xd6, 0x07,
-	0x27, 0x37, 0x86, 0xf3, 0x97, 0x1b, 0xbc, 0xd2, 0x66, 0x67, 0x29, 0x03, 0x69, 0x87, 0xbf, 0xc1,
-	0xeb, 0xe0, 0x3f, 0x46, 0x11, 0x1b, 0x05, 0x33, 0x1f, 0x47, 0x54, 0x2f, 0xd4, 0x8b, 0x8d, 0x6a,
-	0xcb, 0x3e, 0x93, 0xef, 0x70, 0x5f, 0x27, 0xb3, 0xf5, 0xa3, 0x29, 0x91, 0xa0, 0x5a, 0xf0, 0x7c,
-	0x4d, 0x61, 0x1b, 0x68, 0x8c, 0xcc, 0x51, 0x44, 0xf5, 0x22, 0xe7, 0x7c, 0x3a, 0xc3, 0x19, 0x32,
-	0x7f, 0x8e, 0xa3, 0xb0, 0x9d, 0x5d, 0x1c, 0x81, 0x64, 0x10, 0xf6, 0x40, 0x65, 0x82, 0x62, 0x42,
-	0x31, 0xa3, 0x7a, 0xe9, 0x22, 0xa4, 0x2b, 0x2d, 0xde, 0x3a, 0xc3, 0xa1, 0x44, 0x42, 0x9e, 0xa2,
-	0xf6, 0x0d, 0x78, 0x7b, 0xea, 0x81, 0x9f, 0x81, 0x46, 0xf9, 0x89, 0xb7, 0xf4, 0xca, 0xab, 0xa5,
-	0x3b, 0xab, 0x22, 0xb4, 0x7e, 0x77, 0x20, 0x35, 0xd8, 0x39, 0x1a, 0x40, 0xb4, 0xf1, 0xf1, 0xf2,
-	0x00, 0xde, 0x9a, 0x7f, 0x47, 0xee, 0xf9, 0x25, 0x78, 0xf3, 0xd2, 0x01, 0xbf, 0x80, 0x0a, 0x4f,
-	0x8f, 0xf0, 0x44, 0x3e, 0x5f, 0x4d, 0x77, 0x56, 0x59, 0xd4, 0xd0, 0x1d, 0x94, 0xb9, 0xd8, 0x9f,
-	0xc0, 0x1f, 0xa0, 0x84, 0xa3, 0x29, 0xd1, 0x0b, 0xfc, 0x47, 0xda, 0x17, 0x0a, 0x44, 0xc9, 0x69,
-	0x7f, 0x3c, 0xe5, 0xfd, 0xda, 0xa4, 0xa6, 0xba, 0x4d, 0x4d, 0xf5, 0x21, 0x35, 0xd5, 0xdb, 0xbd,
-	0xa9, 0x6c, 0xf7, 0xa6, 0x72, 0xbf, 0x37, 0x95, 0x7f, 0x5f, 0x43, 0xcc, 0x66, 0x57, 0x63, 0x27,
-	0x20, 0x0b, 0xb7, 0x27, 0x98, 0x7f, 0x10, 0xbb, 0x26, 0xc9, 0xdc, 0x3d, 0x6c, 0xda, 0xea, 0xb0,
-	0x6b, 0x6c, 0x1d, 0x23, 0x3a, 0xd6, 0xf8, 0xb2, 0x7d, 0x7b, 0x0c, 0x00, 0x00, 0xff, 0xff, 0xf2,
-	0x41, 0x0b, 0xdb, 0xf4, 0x02, 0x00, 0x00,
+	// 531 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x8c, 0x93, 0xcf, 0x6e, 0xd3, 0x4a,
+	0x14, 0xc6, 0xe3, 0x34, 0x37, 0x4d, 0x27, 0xb9, 0xa5, 0x8c, 0xba, 0x70, 0x23, 0xe4, 0x14, 0x53,
+	0xa1, 0x6e, 0xb0, 0x69, 0x41, 0x62, 0x83, 0x90, 0xe2, 0x24, 0x42, 0x41, 0x82, 0x22, 0x67, 0xc7,
+	0xc6, 0x72, 0xed, 0xa9, 0x6b, 0x85, 0x78, 0x2c, 0x9f, 0x21, 0xc4, 0x0b, 0x9e, 0x01, 0x1e, 0x86,
+	0x87, 0xe8, 0xb2, 0x62, 0xc5, 0x2a, 0x42, 0xce, 0x2b, 0xf0, 0x00, 0xc8, 0x33, 0xe3, 0x90, 0x26,
+	0xb1, 0xc4, 0xce, 0x9e, 0xef, 0x3b, 0xbf, 0x39, 0x7f, 0xe6, 0xa0, 0x0e, 0x99, 0x51, 0x8f, 0x26,
+	0xc4, 0x74, 0x01, 0x08, 0x03, 0x73, 0x7a, 0x66, 0x06, 0x24, 0x22, 0x10, 0x82, 0x11, 0x27, 0x94,
+	0x51, 0x7c, 0x5f, 0x1a, 0x0c, 0x61, 0x30, 0xa6, 0x67, 0xed, 0x23, 0x8f, 0xc2, 0x84, 0x82, 0xc3,
+	0x0d, 0xa6, 0xf8, 0x11, 0xee, 0xb6, 0xb6, 0x89, 0x8b, 0xdd, 0xc4, 0x9d, 0x14, 0x7a, 0x7b, 0x53,
+	0x67, 0x33, 0xa9, 0x1d, 0x06, 0x34, 0xa0, 0x82, 0x99, 0x7f, 0x89, 0x53, 0xfd, 0x77, 0x15, 0xb5,
+	0x5e, 0x8b, 0x8c, 0x46, 0xcc, 0x65, 0x04, 0xbf, 0x40, 0x75, 0x81, 0x54, 0x95, 0x63, 0xe5, 0xb4,
+	0x79, 0x7e, 0x64, 0x6c, 0x64, 0x68, 0xbc, 0xe7, 0x06, 0xab, 0x76, 0x33, 0xef, 0x54, 0x6c, 0x69,
+	0xc7, 0x6f, 0xd1, 0xff, 0xde, 0xc7, 0x90, 0x44, 0xcc, 0xf1, 0xae, 0xdd, 0x30, 0x02, 0xb5, 0x7a,
+	0xbc, 0x73, 0xda, 0x3c, 0xd7, 0xb7, 0xc4, 0xf7, 0xb8, 0xaf, 0x97, 0xdb, 0x86, 0xd1, 0x15, 0x95,
+	0xa0, 0x96, 0xf7, 0xf7, 0x18, 0x70, 0x17, 0xd5, 0x19, 0x1d, 0x93, 0x08, 0xd4, 0x1d, 0xce, 0x79,
+	0xb4, 0x85, 0x33, 0x62, 0xee, 0x38, 0x8c, 0x82, 0x6e, 0x7e, 0xb0, 0x02, 0x92, 0x81, 0x78, 0x80,
+	0x1a, 0x3e, 0x89, 0x29, 0x84, 0x0c, 0xd4, 0x5a, 0x29, 0xa4, 0x2f, 0x2d, 0x56, 0x9a, 0xe3, 0x48,
+	0x22, 0x21, 0xcb, 0x50, 0x6c, 0xa3, 0x7b, 0x34, 0x26, 0x89, 0xcb, 0x68, 0xe2, 0x88, 0x30, 0xf5,
+	0xbf, 0x52, 0x1a, 0xcf, 0x05, 0xac, 0xf4, 0x42, 0x46, 0x48, 0xda, 0x7e, 0x41, 0x10, 0xba, 0xfe,
+	0x55, 0x41, 0x07, 0xeb, 0x56, 0xfc, 0x1c, 0x35, 0x0a, 0x1b, 0x6f, 0xfe, 0x9e, 0xa5, 0xfe, 0xf8,
+	0xfe, 0xe4, 0x50, 0xbe, 0x80, 0xae, 0xef, 0x27, 0x04, 0x60, 0xc4, 0x92, 0x30, 0x0a, 0xec, 0xa5,
+	0x13, 0x0f, 0x50, 0x4b, 0x5c, 0xef, 0x40, 0x3e, 0x40, 0xd9, 0xf6, 0x07, 0x65, 0xb9, 0x59, 0xe9,
+	0xb0, 0x2f, 0x93, 0x6a, 0x0a, 0x89, 0xcf, 0x5d, 0x07, 0xb4, 0xb7, 0xd4, 0xf1, 0x63, 0xd4, 0xe0,
+	0x9a, 0x13, 0xfa, 0x32, 0x93, 0x66, 0x36, 0xef, 0xec, 0x8a, 0x46, 0xf7, 0xed, 0x5d, 0x2e, 0x0e,
+	0x7d, 0xfc, 0x0a, 0xd5, 0xc2, 0xe8, 0x8a, 0xaa, 0x55, 0xfe, 0x54, 0x4e, 0xb6, 0xdc, 0x79, 0xb1,
+	0x5a, 0xf7, 0xca, 0x8c, 0x78, 0x9c, 0xfe, 0x05, 0x1d, 0xac, 0xb7, 0x1f, 0x9f, 0xa0, 0x3a, 0xf0,
+	0x2f, 0x79, 0x73, 0x2b, 0x9b, 0x77, 0x1a, 0x42, 0x1b, 0xf6, 0x6d, 0xa9, 0xe1, 0xde, 0xca, 0x6c,
+	0x45, 0xc5, 0x0f, 0xcb, 0x67, 0x6b, 0xa5, 0xa2, 0xb4, 0xb5, 0xc9, 0xea, 0x53, 0xb4, 0x7f, 0xd7,
+	0xf1, 0xcf, 0x85, 0xbf, 0xbc, 0x53, 0xb8, 0x5e, 0xf2, 0x36, 0xc9, 0xf6, 0xb2, 0xad, 0x37, 0x37,
+	0x99, 0xa6, 0xdc, 0x66, 0x9a, 0xf2, 0x2b, 0xd3, 0x94, 0x6f, 0x0b, 0xad, 0x72, 0xbb, 0xd0, 0x2a,
+	0x3f, 0x17, 0x5a, 0xe5, 0xc3, 0xd3, 0x20, 0x64, 0xd7, 0x9f, 0x2e, 0x0d, 0x8f, 0x4e, 0xcc, 0x81,
+	0x60, 0xbe, 0x23, 0xec, 0x33, 0x4d, 0xc6, 0x66, 0xb1, 0xda, 0xb3, 0x62, 0xb9, 0x59, 0x1a, 0x13,
+	0xb8, 0xac, 0xf3, 0x3d, 0x7e, 0xf6, 0x27, 0x00, 0x00, 0xff, 0xff, 0x4d, 0x6e, 0x63, 0xe0, 0x6a,
+	0x04, 0x00, 0x00,
 }
 
 func (m *GenesisState) Marshal() (dAtA []byte, err error) {
@@ -281,6 +416,20 @@ func (m *GenesisState) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	_ = i
 	var l int
 	_ = l
+	if len(m.OperatorAssets) > 0 {
+		for iNdEx := len(m.OperatorAssets) - 1; iNdEx >= 0; iNdEx-- {
+			{
+				size, err := m.OperatorAssets[iNdEx].MarshalToSizedBuffer(dAtA[:i])
+				if err != nil {
+					return 0, err
+				}
+				i -= size
+				i = encodeVarintGenesis(dAtA, i, uint64(size))
+			}
+			i--
+			dAtA[i] = 0x2a
+		}
+	}
 	if len(m.Deposits) > 0 {
 		for iNdEx := len(m.Deposits) - 1; iNdEx >= 0; iNdEx-- {
 			{
@@ -333,6 +482,90 @@ func (m *GenesisState) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	}
 	i--
 	dAtA[i] = 0xa
+	return len(dAtA) - i, nil
+}
+
+func (m *AssetsByOperator) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *AssetsByOperator) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *AssetsByOperator) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.AssetsState) > 0 {
+		for iNdEx := len(m.AssetsState) - 1; iNdEx >= 0; iNdEx-- {
+			{
+				size, err := m.AssetsState[iNdEx].MarshalToSizedBuffer(dAtA[:i])
+				if err != nil {
+					return 0, err
+				}
+				i -= size
+				i = encodeVarintGenesis(dAtA, i, uint64(size))
+			}
+			i--
+			dAtA[i] = 0x12
+		}
+	}
+	if len(m.Operator) > 0 {
+		i -= len(m.Operator)
+		copy(dAtA[i:], m.Operator)
+		i = encodeVarintGenesis(dAtA, i, uint64(len(m.Operator)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *AssetByID) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *AssetByID) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *AssetByID) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	{
+		size, err := m.Info.MarshalToSizedBuffer(dAtA[:i])
+		if err != nil {
+			return 0, err
+		}
+		i -= size
+		i = encodeVarintGenesis(dAtA, i, uint64(size))
+	}
+	i--
+	dAtA[i] = 0x12
+	if len(m.AssetID) > 0 {
+		i -= len(m.AssetID)
+		copy(dAtA[i:], m.AssetID)
+		i = encodeVarintGenesis(dAtA, i, uint64(len(m.AssetID)))
+		i--
+		dAtA[i] = 0xa
+	}
 	return len(dAtA) - i, nil
 }
 
@@ -457,6 +690,46 @@ func (m *GenesisState) Size() (n int) {
 			n += 1 + l + sovGenesis(uint64(l))
 		}
 	}
+	if len(m.OperatorAssets) > 0 {
+		for _, e := range m.OperatorAssets {
+			l = e.Size()
+			n += 1 + l + sovGenesis(uint64(l))
+		}
+	}
+	return n
+}
+
+func (m *AssetsByOperator) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.Operator)
+	if l > 0 {
+		n += 1 + l + sovGenesis(uint64(l))
+	}
+	if len(m.AssetsState) > 0 {
+		for _, e := range m.AssetsState {
+			l = e.Size()
+			n += 1 + l + sovGenesis(uint64(l))
+		}
+	}
+	return n
+}
+
+func (m *AssetByID) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.AssetID)
+	if l > 0 {
+		n += 1 + l + sovGenesis(uint64(l))
+	}
+	l = m.Info.Size()
+	n += 1 + l + sovGenesis(uint64(l))
 	return n
 }
 
@@ -661,6 +934,271 @@ func (m *GenesisState) Unmarshal(dAtA []byte) error {
 			}
 			m.Deposits = append(m.Deposits, DepositsByStaker{})
 			if err := m.Deposits[len(m.Deposits)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 5:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field OperatorAssets", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowGenesis
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthGenesis
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthGenesis
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.OperatorAssets = append(m.OperatorAssets, AssetsByOperator{})
+			if err := m.OperatorAssets[len(m.OperatorAssets)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipGenesis(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthGenesis
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *AssetsByOperator) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowGenesis
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: AssetsByOperator: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: AssetsByOperator: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Operator", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowGenesis
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthGenesis
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthGenesis
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Operator = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field AssetsState", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowGenesis
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthGenesis
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthGenesis
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.AssetsState = append(m.AssetsState, AssetByID{})
+			if err := m.AssetsState[len(m.AssetsState)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipGenesis(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthGenesis
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *AssetByID) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowGenesis
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: AssetByID: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: AssetByID: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field AssetID", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowGenesis
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthGenesis
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthGenesis
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.AssetID = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Info", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowGenesis
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthGenesis
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthGenesis
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.Info.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex

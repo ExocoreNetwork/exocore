@@ -1,9 +1,7 @@
 package keeper
 
 import (
-	"fmt"
-
-	exocoretypes "github.com/ExocoreNetwork/exocore/types/keys"
+	keytypes "github.com/ExocoreNetwork/exocore/types/keys"
 	commontypes "github.com/ExocoreNetwork/exocore/x/appchain/common/types"
 	types "github.com/ExocoreNetwork/exocore/x/appchain/subscriber/types"
 	abci "github.com/cometbft/cometbft/abci/types"
@@ -47,12 +45,16 @@ func (k Keeper) ApplyValidatorChanges(
 	logger := k.Logger(ctx)
 	for i := range changes {
 		change := changes[i] // avoid implicit memory aliasing
-		wrappedKey := exocoretypes.NewWrappedConsKeyFromTmProtoKey(&change.PubKey)
+		wrappedKey := keytypes.NewWrappedConsKeyFromTmProtoKey(&change.PubKey)
 		if wrappedKey == nil {
 			// an error in deserializing the key would indicate that the coordinator
 			// has provided invalid data. this is a critical error and should be
 			// investigated.
-			panic(fmt.Sprintf("invalid pubkey %s", change.PubKey))
+			logger.Error(
+				"failed to deserialize validator key",
+				"i", i, "validator", change.PubKey,
+			)
+			continue
 		}
 		consAddress := wrappedKey.ToConsAddr()
 		val, found := k.GetSubscriberValidator(ctx, consAddress)
@@ -74,11 +76,14 @@ func (k Keeper) ApplyValidatorChanges(
 				if err != nil {
 					// cannot happen, but just in case add this check.
 					// simply skip the validator if it does.
+					logger.Error(
+						"failed to instantiate validator",
+						"i", i, "validator", change.PubKey,
+					)
 					continue
 				}
 				logger.Info("adding validator", "consAddress", consAddress)
 				k.SetSubscriberValidator(ctx, ocVal)
-				ret = append(ret, change)
 			} else {
 				// edge case: we received an update for 0 power
 				// but the validator is already deleted. Do not forward
@@ -123,7 +128,12 @@ func (k Keeper) GetSubscriberValidator(
 // DeleteSubscriberValidator deletes a validator based on the pub key derived address.
 func (k Keeper) DeleteSubscriberValidator(ctx sdk.Context, addr sdk.ConsAddress) {
 	store := ctx.KVStore(k.storeKey)
-	store.Delete(types.SubscriberValidatorKey(addr))
+	key := types.SubscriberValidatorKey(addr)
+	if store.Has(key) {
+		store.Delete(key)
+	} else {
+		k.Logger(ctx).Info("validator not found", "address", addr)
+	}
 }
 
 // GetAllSubscriberValidators returns all validators in the store.

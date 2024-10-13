@@ -31,7 +31,6 @@ func (msg *RegisterSubscriberChainRequest) GetSignBytes() []byte {
 }
 
 // ValidateBasic executes sanity validation on the provided data
-// MsgUpdateParams is used to update params, the validation will mostly be stateful which is done by service
 func (msg *RegisterSubscriberChainRequest) ValidateBasic() error {
 	if _, err := sdk.AccAddressFromBech32(msg.FromAddress); err != nil {
 		return sdkerrors.Wrap(err, "invalid from address")
@@ -63,7 +62,7 @@ func (msg *RegisterSubscriberChainRequest) ValidateBasic() error {
 	return nil
 }
 
-// GetSigners returns the expected signers for a MsgUpdateParams message
+// GetSigners returns the expected signers for a RegisterSubscriberChainRequest message
 func (msg *RegisterSubscriberChainRequest) GetSigners() []sdk.AccAddress {
 	addr, err := sdk.AccAddressFromBech32(msg.FromAddress)
 	if err != nil {
@@ -74,13 +73,15 @@ func (msg *RegisterSubscriberChainRequest) GetSigners() []sdk.AccAddress {
 }
 
 // NewRegisterSubscriberChainRequest creates a new RegisterSubscriberChainRequest using
-// the provided creator and json value.
-func NewRegisterSubscriberChainRequest(creator, jsonValue string) *RegisterSubscriberChainRequest {
-	var r RegisterSubscriberChainRequest
-	if err := json.Unmarshal([]byte(jsonValue), &r); err != nil {
-		panic(fmt.Sprintf("invalid json %s", err))
+// the provided creator and json value. If the JSON is not valid, an error is returned.
+func NewRegisterSubscriberChainRequest(
+	creator, jsonValue string,
+) (*RegisterSubscriberChainRequest, error) {
+	r := &RegisterSubscriberChainRequest{}
+	if err := json.Unmarshal([]byte(jsonValue), r); err != nil {
+		return nil, err
 	}
 	// the creator is overwritten
 	r.FromAddress = creator
-	return &r
+	return r, nil
 }

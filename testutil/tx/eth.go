@@ -18,8 +18,8 @@ import (
 
 	"github.com/ExocoreNetwork/exocore/app"
 	"github.com/ExocoreNetwork/exocore/utils"
-	"github.com/evmos/evmos/v14/server/config"
-	evmtypes "github.com/evmos/evmos/v14/x/evm/types"
+	"github.com/evmos/evmos/v16/server/config"
+	evmtypes "github.com/evmos/evmos/v16/x/evm/types"
 )
 
 // PrepareEthTx creates an ethereum tx and signs it with the provided messages and private key.

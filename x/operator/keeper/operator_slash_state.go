@@ -155,3 +155,30 @@ func (k *Keeper) GetSlashAssetsState(ctx sdk.Context, assetID, stakerOrOperator 
 
 	return ret.Amount, nil
 }
+
+func (k *Keeper) SetAllSlashStates(ctx sdk.Context, slashStates []operatortypes.OperatorSlashState) error {
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), operatortypes.KeyPrefixOperatorSlashInfo)
+	for i := range slashStates {
+		state := slashStates[i]
+		bz := k.cdc.MustMarshal(&state.Info)
+		store.Set([]byte(state.Key), bz)
+	}
+	return nil
+}
+
+func (k *Keeper) GetAllSlashStates(ctx sdk.Context) ([]operatortypes.OperatorSlashState, error) {
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), operatortypes.KeyPrefixOperatorSlashInfo)
+	iterator := sdk.KVStorePrefixIterator(store, []byte{})
+	defer iterator.Close()
+
+	ret := make([]operatortypes.OperatorSlashState, 0)
+	for ; iterator.Valid(); iterator.Next() {
+		var slashInfo operatortypes.OperatorSlashInfo
+		k.cdc.MustUnmarshal(iterator.Value(), &slashInfo)
+		ret = append(ret, operatortypes.OperatorSlashState{
+			Key:  string(iterator.Key()),
+			Info: slashInfo,
+		})
+	}
+	return ret, nil
+}

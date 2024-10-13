@@ -33,7 +33,11 @@ func (k Keeper) QuerySubscriberGenesis(
 		return nil, status.Error(codes.InvalidArgument, "invalid request")
 	}
 	ctx := sdk.UnwrapSDKContext(goCtx)
+	genesis, found := k.GetSubscriberGenesis(ctx, req.Chain)
+	if !found {
+		return nil, status.Error(codes.NotFound, "subscriber genesis not found")
+	}
 	return &types.QuerySubscriberGenesisResponse{
-		SubscriberGenesis: k.GetSubscriberGenesis(ctx, req.Chain),
+		SubscriberGenesis: genesis,
 	}, nil
 }

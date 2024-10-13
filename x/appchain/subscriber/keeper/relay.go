@@ -145,14 +145,14 @@ func (k Keeper) QueueVscMaturedPackets(
 	ctx sdk.Context,
 ) {
 	for _, packet := range k.GetElapsedVscPackets(ctx) {
-		vscPacket := commontypes.NewVscMaturedPacketData(packet.ID)
+		vscPacket := commontypes.NewVscMaturedPacketData(packet.ValidatorSetChangeID)
 		k.AppendPendingPacket(
 			ctx, commontypes.VscMaturedPacket,
 			&commontypes.SubscriberPacketData_VscMaturedPacketData{
 				VscMaturedPacketData: vscPacket,
 			},
 		)
-		k.DeletePacketMaturityTime(ctx, packet.ID, packet.MaturityTime)
+		k.DeletePacketMaturityTime(ctx, packet.ValidatorSetChangeID, packet.MaturityTime)
 
 		k.Logger(ctx).Info("VSCMaturedPacket enqueued", "vscID", vscPacket.ValsetUpdateID)
 
@@ -167,7 +167,7 @@ func (k Keeper) QueueVscMaturedPackets(
 				),
 				sdk.NewAttribute(
 					commontypes.AttributeValSetUpdateID,
-					strconv.Itoa(int(packet.ID)),
+					strconv.Itoa(int(packet.ValidatorSetChangeID)),
 				),
 				sdk.NewAttribute(types.AttributeTimestamp, ctx.BlockTime().String()),
 			),

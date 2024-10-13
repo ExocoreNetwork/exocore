@@ -6,14 +6,14 @@ import (
 	sdkmath "cosmossdk.io/math"
 	assetsprecompile "github.com/ExocoreNetwork/exocore/precompiles/assets"
 	assetskeeper "github.com/ExocoreNetwork/exocore/x/assets/keeper"
-	"github.com/evmos/evmos/v14/x/evm/statedb"
+	"github.com/evmos/evmos/v16/x/evm/statedb"
 
 	"github.com/ExocoreNetwork/exocore/app"
 	assetstype "github.com/ExocoreNetwork/exocore/x/assets/types"
 	"github.com/ethereum/go-ethereum/common"
 	ethtypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/core/vm"
-	evmtypes "github.com/evmos/evmos/v14/x/evm/types"
+	evmtypes "github.com/evmos/evmos/v16/x/evm/types"
 )
 
 func (s *AssetsPrecompileSuite) TestIsTransaction() {
@@ -23,13 +23,23 @@ func (s *AssetsPrecompileSuite) TestIsTransaction() {
 		isTx   bool
 	}{
 		{
-			assetsprecompile.MethodDepositTo,
-			s.precompile.Methods[assetsprecompile.MethodDepositTo].Name,
+			assetsprecompile.MethodDepositLST,
+			s.precompile.Methods[assetsprecompile.MethodDepositLST].Name,
 			true,
 		},
 		{
-			assetsprecompile.MethodWithdraw,
-			s.precompile.Methods[assetsprecompile.MethodWithdraw].Name,
+			assetsprecompile.MethodWithdrawLST,
+			s.precompile.Methods[assetsprecompile.MethodWithdrawLST].Name,
+			true,
+		},
+		{
+			assetsprecompile.MethodDepositNST,
+			s.precompile.Methods[assetsprecompile.MethodDepositNST].Name,
+			true,
+		},
+		{
+			assetsprecompile.MethodWithdrawNST,
+			s.precompile.Methods[assetsprecompile.MethodWithdrawNST].Name,
 			true,
 		},
 		{
@@ -60,7 +70,7 @@ func paddingClientChainAddress(input []byte, outputLength int) []byte {
 }
 
 // TestRunDepositTo tests DepositOrWithdraw method through calling Run function..
-func (s *AssetsPrecompileSuite) TestRunDepositTo() {
+func (s *AssetsPrecompileSuite) TestRunDepositLST() {
 	// assetsprecompile params for test
 	exocoreLzAppAddress := "0x3fC91A3afd70395Cd496C647d5a6CC9D4B2b7FAD"
 	exocoreLzAppEventTopic := "0xc6a377bfc4eb120024a8ac08eef205be16b817020812c73223e81d1bdb9708ec"
@@ -72,7 +82,7 @@ func (s *AssetsPrecompileSuite) TestRunDepositTo() {
 	assetAddr := usdtAddress
 	commonMalleate := func() (common.Address, []byte) {
 		input, err := s.precompile.Pack(
-			assetsprecompile.MethodDepositTo,
+			assetsprecompile.MethodDepositLST,
 			uint32(clientChainLzID),
 			assetAddr,
 			stakerAddr,
@@ -81,7 +91,7 @@ func (s *AssetsPrecompileSuite) TestRunDepositTo() {
 		s.Require().NoError(err, "failed to pack input")
 		return s.Address, input
 	}
-	successRet, err := s.precompile.Methods[assetsprecompile.MethodDepositTo].Outputs.Pack(true, opAmount)
+	successRet, err := s.precompile.Methods[assetsprecompile.MethodDepositLST].Outputs.Pack(true, opAmount)
 	s.Require().NoError(err)
 
 	testcases := []struct {
@@ -218,7 +228,7 @@ func (s *AssetsPrecompileSuite) TestRunDepositTo() {
 				// this is a workaround because the error returned by precompile can not be caught in EVM
 				// see https://github.com/ExocoreNetwork/exocore/issues/70
 				// TODO: we should figure out root cause and fix this issue to make precompiles work normally
-				result, err := s.precompile.ABI.Unpack(assetsprecompile.MethodDepositTo, bz)
+				result, err := s.precompile.ABI.Unpack(assetsprecompile.MethodDepositLST, bz)
 				s.Require().NoError(err)
 				s.Require().Equal(len(result), 2)
 				success, ok := result[0].(bool)
@@ -242,7 +252,7 @@ func (s *AssetsPrecompileSuite) TestRunWithdrawPrincipal() {
 		// deposit asset for withdraw test
 		params := &assetskeeper.DepositWithdrawParams{
 			ClientChainLzID: 101,
-			Action:          assetstype.Deposit,
+			Action:          assetstype.DepositLST,
 			StakerAddress:   staker,
 			AssetsAddress:   usdtAddress,
 			OpAmount:        depositAmount,
@@ -254,7 +264,7 @@ func (s *AssetsPrecompileSuite) TestRunWithdrawPrincipal() {
 	commonMalleate := func() (common.Address, []byte) {
 		// Prepare the call input for withdraw test
 		input, err := s.precompile.Pack(
-			assetsprecompile.MethodWithdraw,
+			assetsprecompile.MethodWithdrawLST,
 			uint32(clientChainLzID),
 			assetAddr,
 			paddingClientChainAddress(s.Address.Bytes(), assetstype.GeneralClientChainAddrLength),
@@ -263,7 +273,7 @@ func (s *AssetsPrecompileSuite) TestRunWithdrawPrincipal() {
 		s.Require().NoError(err, "failed to pack input")
 		return s.Address, input
 	}
-	successRet, err := s.precompile.Methods[assetsprecompile.MethodWithdraw].Outputs.Pack(true, new(big.Int).Sub(depositAmount, withdrawAmount))
+	successRet, err := s.precompile.Methods[assetsprecompile.MethodWithdrawLST].Outputs.Pack(true, new(big.Int).Sub(depositAmount, withdrawAmount))
 	s.Require().NoError(err)
 	testcases := []struct {
 		name        string

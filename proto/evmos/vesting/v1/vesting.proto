@@ -1,4 +1,3 @@
-
 syntax = "proto3";
 package evmos.vesting.v1;
 
@@ -6,7 +5,7 @@ import "cosmos/vesting/v1beta1/vesting.proto";
 import "gogoproto/gogo.proto";
 import "google/protobuf/timestamp.proto";
 
-option go_package = "github.com/evmos/evmos/v14/x/vesting/types";
+option go_package = "github.com/evmos/evmos/v16/x/vesting/types";
 
 // ClawbackVestingAccount implements the VestingAccount interface. It provides
 // an account that can hold contributions subject to "lockup" (like a
@@ -22,7 +21,10 @@ message ClawbackVestingAccount {
   // funder_address specifies the account which can perform clawback
   string funder_address = 2;
   // start_time defines the time at which the vesting period begins
-  google.protobuf.Timestamp start_time = 3 [(gogoproto.stdtime) = true, (gogoproto.nullable) = false];
+  google.protobuf.Timestamp start_time = 3 [
+    (gogoproto.stdtime) = true,
+    (gogoproto.nullable) = false
+  ];
   // lockup_periods defines the unlocking schedule relative to the start_time
   repeated cosmos.vesting.v1beta1.Period lockup_periods = 4 [
     (gogoproto.nullable) = false,

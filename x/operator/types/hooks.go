@@ -1,7 +1,7 @@
 package types
 
 import (
-	exocoretypes "github.com/ExocoreNetwork/exocore/types/keys"
+	keytypes "github.com/ExocoreNetwork/exocore/types/keys"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
@@ -17,7 +17,7 @@ func (hooks MultiOperatorHooks) AfterOperatorKeySet(
 	ctx sdk.Context,
 	addr sdk.AccAddress,
 	chainID string,
-	pubKey exocoretypes.WrappedConsKey,
+	pubKey keytypes.WrappedConsKey,
 ) {
 	for _, hook := range hooks {
 		hook.AfterOperatorKeySet(ctx, addr, chainID, pubKey)
@@ -27,8 +27,8 @@ func (hooks MultiOperatorHooks) AfterOperatorKeySet(
 func (hooks MultiOperatorHooks) AfterOperatorKeyReplaced(
 	ctx sdk.Context,
 	addr sdk.AccAddress,
-	oldKey exocoretypes.WrappedConsKey,
-	newAddr exocoretypes.WrappedConsKey,
+	oldKey keytypes.WrappedConsKey,
+	newAddr keytypes.WrappedConsKey,
 	chainID string,
 ) {
 	for _, hook := range hooks {
@@ -37,7 +37,7 @@ func (hooks MultiOperatorHooks) AfterOperatorKeyReplaced(
 }
 
 func (hooks MultiOperatorHooks) AfterOperatorKeyRemovalInitiated(
-	ctx sdk.Context, addr sdk.AccAddress, chainID string, key exocoretypes.WrappedConsKey,
+	ctx sdk.Context, addr sdk.AccAddress, chainID string, key keytypes.WrappedConsKey,
 ) {
 	for _, hook := range hooks {
 		hook.AfterOperatorKeyRemovalInitiated(ctx, addr, chainID, key)

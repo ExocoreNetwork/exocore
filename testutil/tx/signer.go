@@ -3,7 +3,7 @@ package tx
 import (
 	"fmt"
 
-	"github.com/ExocoreNetwork/exocore/types/keys"
+	keytypes "github.com/ExocoreNetwork/exocore/types/keys"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/crypto"
@@ -13,7 +13,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/testutil/mock"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/evmos/evmos/v14/crypto/ethsecp256k1"
+	"github.com/evmos/evmos/v16/crypto/ethsecp256k1"
 )
 
 // NewAddrKey generates an Ethereum address and its corresponding private key.
@@ -43,13 +43,13 @@ func GenerateAddress() common.Address {
 }
 
 // GenerateConsensusKey generates a consensus key.
-func GenerateConsensusKey() keys.WrappedConsKey {
+func GenerateConsensusKey() keytypes.WrappedConsKey {
 	privVal := mock.NewPV()
 	pubKey, err := privVal.GetPubKey()
 	if err != nil {
 		return nil
 	}
-	return keys.NewWrappedConsKeyFromHex(hexutil.Encode(pubKey.Bytes()))
+	return keytypes.NewWrappedConsKeyFromHex(hexutil.Encode(pubKey.Bytes()))
 }
 
 var _ keyring.Signer = &Signer{}

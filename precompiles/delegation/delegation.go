@@ -12,7 +12,7 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/vm"
-	cmn "github.com/evmos/evmos/v14/precompiles/common"
+	cmn "github.com/evmos/evmos/v16/precompiles/common"
 )
 
 var _ vm.PrecompiledContract = &Precompile{}
@@ -88,12 +88,17 @@ func (p Precompile) Run(evm *vm.EVM, contract *vm.Contract, readOnly bool) (bz [
 	// This handles any out of gas errors that may occur during the execution of a precompile tx or query.
 	// It avoids panics and returns the out of gas error so the EVM can continue gracefully.
 	defer cmn.HandleGasError(ctx, contract, initialGas, &err)()
+
+	if err := stateDB.Commit(); err != nil {
+		return nil, err
+	}
+
 	switch method.Name {
 	// delegation transactions
-	case MethodDelegateToThroughClientChain:
-		bz, err = p.DelegateToThroughClientChain(ctx, evm.Origin, contract, stateDB, method, args)
-	case MethodUndelegateFromThroughClientChain:
-		bz, err = p.UndelegateFromThroughClientChain(ctx, evm.Origin, contract, stateDB, method, args)
+	case MethodDelegate:
+		bz, err = p.Delegate(ctx, evm.Origin, contract, stateDB, method, args)
+	case MethodUndelegate:
+		bz, err = p.Undelegate(ctx, evm.Origin, contract, stateDB, method, args)
 	case MethodAssociateOperatorWithStaker:
 		bz, err = p.AssociateOperatorWithStaker(ctx, evm.Origin, contract, stateDB, method, args)
 	case MethodDissociateOperatorFromStaker:
@@ -125,15 +130,15 @@ func (p Precompile) Run(evm *vm.EVM, contract *vm.Contract, readOnly bool) (bz [
 
 // IsTransaction checks if the given methodID corresponds to a transaction or query.
 //
-// Available deposit transactions are:
-//   - delegateToThroughClientChain
-//   - undelegateFromThroughClientChain
+// Available delegation transactions are:
+//   - delegate
+//   - undelegate
 //   - associateOperatorWithStaker
 //   - dissociateOperatorFromStaker
 func (Precompile) IsTransaction(methodID string) bool {
 	switch methodID {
-	case MethodDelegateToThroughClientChain,
-		MethodUndelegateFromThroughClientChain,
+	case MethodDelegate,
+		MethodUndelegate,
 		MethodAssociateOperatorWithStaker,
 		MethodDissociateOperatorFromStaker:
 		return true

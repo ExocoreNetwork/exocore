@@ -1,4 +1,3 @@
-
 syntax = "proto3";
 package evmos.claims.v1;
 
@@ -7,7 +6,7 @@ import "gogoproto/gogo.proto";
 import "google/protobuf/duration.proto";
 import "google/protobuf/timestamp.proto";
 
-option go_package = "github.com/evmos/evmos/v14/x/claims/types";
+option go_package = "github.com/evmos/evmos/v16/x/claims/types";
 
 // GenesisState define the claims module's genesis state.
 message GenesisState {
@@ -22,11 +21,20 @@ message Params {
   // enable_claims is the parameter to enable the claiming process
   bool enable_claims = 1;
   // airdrop_start_time defines the timestamp of the airdrop start
-  google.protobuf.Timestamp airdrop_start_time = 2 [(gogoproto.nullable) = false, (gogoproto.stdtime) = true];
+  google.protobuf.Timestamp airdrop_start_time = 2 [
+    (gogoproto.nullable) = false,
+    (gogoproto.stdtime) = true
+  ];
   // duration_until_decay of claimable tokens begin
-  google.protobuf.Duration duration_until_decay = 3 [(gogoproto.nullable) = false, (gogoproto.stdduration) = true];
+  google.protobuf.Duration duration_until_decay = 3 [
+    (gogoproto.nullable) = false,
+    (gogoproto.stdduration) = true
+  ];
   // duration_of_decay for token claim decay period
-  google.protobuf.Duration duration_of_decay = 4 [(gogoproto.nullable) = false, (gogoproto.stdduration) = true];
+  google.protobuf.Duration duration_of_decay = 4 [
+    (gogoproto.nullable) = false,
+    (gogoproto.stdduration) = true
+  ];
   // claims_denom is the denomination of the claimable coin
   string claims_denom = 5;
   // authorized_channels is the list of authorized channel identifiers that can perform address

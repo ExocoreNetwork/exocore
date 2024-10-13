@@ -4,7 +4,7 @@ import (
 	sdkmath "cosmossdk.io/math"
 
 	utiltx "github.com/ExocoreNetwork/exocore/testutil/tx"
-	exocoretypes "github.com/ExocoreNetwork/exocore/types/keys"
+	keytypes "github.com/ExocoreNetwork/exocore/types/keys"
 	"github.com/ExocoreNetwork/exocore/utils"
 	assetskeeper "github.com/ExocoreNetwork/exocore/x/assets/keeper"
 	assetstypes "github.com/ExocoreNetwork/exocore/x/assets/types"
@@ -35,10 +35,10 @@ func (suite *KeeperTestSuite) TestBasicOperations() {
 	key := utiltx.GenerateConsensusKey()
 	_, err = suite.OperatorMsgServer.OptIntoAVS(sdk.WrapSDKContext(suite.Ctx), &operatortypes.OptIntoAVSReq{
 		FromAddress:   operatorAddressString,
-		AvsAddress:    avsAddress.String(),
+		AvsAddress:    avsAddress,
 		PublicKeyJSON: key.ToJSON(),
 	})
-	suite.NoError(err)
+	suite.Error(err)
 	// opted in but not enough self-delegation
 	suite.CheckLengthOfValidatorUpdates(0, nil, "opt in but no delegation")
 
@@ -49,7 +49,7 @@ func (suite *KeeperTestSuite) TestBasicOperations() {
 	lzID := suite.ClientChains[0].LayerZeroChainID
 	assetAddrHex := suite.Assets[0].Address
 	assetAddr := common.HexToAddress(assetAddrHex)
-	_, assetID := assetstypes.GetStakeIDAndAssetIDFromStr(lzID, staker.String(), assetAddrHex)
+	_, assetID := assetstypes.GetStakerIDAndAssetIDFromStr(lzID, staker.String(), assetAddrHex)
 	asset, err := suite.App.AssetsKeeper.GetStakingAssetInfo(suite.Ctx, assetID)
 	suite.NoError(err)
 	assetDecimals := asset.AssetBasicInfo.Decimals
@@ -58,7 +58,7 @@ func (suite *KeeperTestSuite) TestBasicOperations() {
 	).Sub(sdkmath.NewInt(1))
 	depositParams := &assetskeeper.DepositWithdrawParams{
 		ClientChainLzID: lzID,
-		Action:          assetstypes.Deposit,
+		Action:          assetstypes.DepositLST,
 		StakerAddress:   staker.Bytes(),
 		AssetsAddress:   assetAddr.Bytes(),
 		OpAmount:        amount,
@@ -89,7 +89,7 @@ func (suite *KeeperTestSuite) TestBasicOperations() {
 	additionalAmount := sdkmath.NewIntWithDecimal(2, int(assetDecimals))
 	depositParams = &assetskeeper.DepositWithdrawParams{
 		ClientChainLzID: lzID,
-		Action:          assetstypes.Deposit,
+		Action:          assetstypes.DepositLST,
 		StakerAddress:   staker.Bytes(),
 		AssetsAddress:   assetAddr.Bytes(),
 		OpAmount:        additionalAmount,
@@ -114,6 +114,13 @@ func (suite *KeeperTestSuite) TestBasicOperations() {
 		assetDecimals,
 		0, // price decimals
 	)
+	// opt in again when the self delegation meet the requirement
+	_, err = suite.OperatorMsgServer.OptIntoAVS(sdk.WrapSDKContext(suite.Ctx), &operatortypes.OptIntoAVSReq{
+		FromAddress:   operatorAddressString,
+		AvsAddress:    avsAddress,
+		PublicKeyJSON: key.ToJSON(),
+	})
+	suite.NoError(err)
 	suite.CheckLengthOfValidatorUpdates(
 		1, []int64{totalAmountInUSD.TruncateInt64()}, "delegate above min",
 	)
@@ -123,7 +130,7 @@ func (suite *KeeperTestSuite) TestBasicOperations() {
 	staker = utiltx.GenerateAddress()
 	depositParams = &assetskeeper.DepositWithdrawParams{
 		ClientChainLzID: lzID,
-		Action:          assetstypes.Deposit,
+		Action:          assetstypes.DepositLST,
 		StakerAddress:   staker.Bytes(),
 		AssetsAddress:   assetAddr.Bytes(),
 		OpAmount:        amount,
@@ -158,7 +165,7 @@ func (suite *KeeperTestSuite) TestBasicOperations() {
 		staker := utiltx.GenerateAddress()
 		depositParams = &assetskeeper.DepositWithdrawParams{
 			ClientChainLzID: lzID,
-			Action:          assetstypes.Deposit,
+			Action:          assetstypes.DepositLST,
 			StakerAddress:   staker.Bytes(),
 			AssetsAddress:   assetAddr.Bytes(),
 			OpAmount:        amount,
@@ -194,7 +201,7 @@ func (suite *KeeperTestSuite) TestBasicOperations() {
 		staker := utiltx.GenerateAddress()
 		depositParams = &assetskeeper.DepositWithdrawParams{
 			ClientChainLzID: lzID,
-			Action:          assetstypes.Deposit,
+			Action:          assetstypes.DepositLST,
 			StakerAddress:   staker.Bytes(),
 			AssetsAddress:   assetAddr.Bytes(),
 			OpAmount:        amount,
@@ -228,7 +235,7 @@ func (suite *KeeperTestSuite) TestBasicOperations() {
 		&operatortypes.SetConsKeyReq{
 			Address:       operatorAddressString,
 			PublicKeyJSON: newKey.ToJSON(),
-			AvsAddress:    avsAddress.String(),
+			AvsAddress:    avsAddress,
 		},
 	)
 	suite.NoError(err)
@@ -288,7 +295,7 @@ func (suite *KeeperTestSuite) TestBasicOperations() {
 		sdk.WrapSDKContext(suite.Ctx),
 		&operatortypes.OptOutOfAVSReq{
 			FromAddress: operatorAddressString,
-			AvsAddress:  avsAddress.String(),
+			AvsAddress:  avsAddress,
 		},
 	)
 	suite.NoError(err)
@@ -339,7 +346,7 @@ func (suite *KeeperTestSuite) CheckLengthOfValidatorUpdates(
 }
 
 func (suite *KeeperTestSuite) CheckValidatorFound(
-	key exocoretypes.WrappedConsKey, expected bool,
+	key keytypes.WrappedConsKey, expected bool,
 	chainIDWithoutRevision string,
 	operatorAddress sdk.AccAddress,
 ) {

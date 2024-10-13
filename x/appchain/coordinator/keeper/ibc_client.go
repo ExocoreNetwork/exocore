@@ -205,12 +205,22 @@ func (k Keeper) MakeSubscriberGenesis(
 		ctx, operators, chainID,
 	)
 	if err != nil {
+		// the `err` includes the `chainID` and hence no need to log it again
 		k.Logger(ctx).Error("error getting vote power for chain", "error", err)
 		return nil, nil, err
 	}
 	operators, keys, powers = utils.SortByPower(operators, keys, powers)
 	maxVals := req.MaxValidators
-	validatorUpdates := make([]abci.ValidatorUpdate, 0, maxVals)
+	validatorUpdates := make(
+		[]abci.ValidatorUpdate, 0,
+		min(
+			// the maximum size of the validator set is the minimum of the number of operators
+			// and the max validators allowed by the subscriber chain. the capacity is not
+			// multiplied by 2 here because this is the initial validator set and there are no
+			// previous validators whose power will be set to zero.
+			int(maxVals), len(operators),
+		),
+	)
 	for i := range operators {
 		if i >= int(maxVals) {
 			break
@@ -273,11 +283,14 @@ func (k Keeper) SetSubscriberGenesis(
 func (k Keeper) GetSubscriberGenesis(
 	ctx sdk.Context,
 	chainID string,
-) (genesis commontypes.SubscriberGenesisState) {
+) (genesis commontypes.SubscriberGenesisState, found bool) {
 	store := ctx.KVStore(k.storeKey)
 	key := types.SubscriberGenesisKey(chainID)
+	if !store.Has(key) {
+		return genesis, false
+	}
 	k.cdc.MustUnmarshal(store.Get(key), &genesis)
-	return genesis
+	return genesis, true
 }
 
 // DeleteSubscriberGenesis deletes the genesis state for the subscriber chain.

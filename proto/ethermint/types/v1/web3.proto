@@ -1,10 +1,9 @@
-
 syntax = "proto3";
 package ethermint.types.v1;
 
 import "gogoproto/gogo.proto";
 
-option go_package = "github.com/evmos/evmos/v14/types";
+option go_package = "github.com/evmos/evmos/v16/types";
 
 // ExtensionOptionsWeb3Tx is an extension option that specifies the typed chain id,
 // the fee payer as well as its signature data.
@@ -13,8 +12,10 @@ message ExtensionOptionsWeb3Tx {
 
   // typed_data_chain_id is used only in EIP712 Domain and should match
   // Ethereum network ID in a Web3 provider (e.g. Metamask).
-  uint64 typed_data_chain_id = 1
-      [(gogoproto.jsontag) = "typedDataChainID,omitempty", (gogoproto.customname) = "TypedDataChainID"];
+  uint64 typed_data_chain_id = 1 [
+    (gogoproto.jsontag) = "typedDataChainID,omitempty",
+    (gogoproto.customname) = "TypedDataChainID"
+  ];
 
   // fee_payer is an account address for the fee payer. It will be validated
   // during EIP712 signature checking.

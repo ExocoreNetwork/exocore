@@ -197,7 +197,7 @@ func (suite *DelegationTestSuite) TestSharesFromTokens() {
 func (suite *DelegationTestSuite) TestCalculateShare() {
 	assetAmount := sdkmath.NewInt(10)
 	// test the case that the operator doesn't exist
-	_, assetID := assetstype.GetStakeIDAndAssetID(suite.clientChainLzID, nil, suite.assetAddr[:])
+	_, assetID := assetstype.GetStakerIDAndAssetID(suite.clientChainLzID, nil, suite.assetAddr[:])
 	share, err := suite.App.DelegationKeeper.CalculateShare(suite.Ctx, suite.opAccAddr, assetID, assetAmount)
 	suite.NoError(err)
 	suite.Equal(sdkmath.LegacyNewDecFromBigInt(assetAmount.BigInt()), share)
@@ -224,9 +224,10 @@ func (suite *DelegationTestSuite) TestCalculateShare() {
 }
 
 func (suite *DelegationTestSuite) TestValidateUndelegationAmount() {
-	suite.prepareDeposit()
-	suite.prepareDelegation()
-	stakerID, assetID := assetstype.GetStakeIDAndAssetID(suite.clientChainLzID, suite.Address[:], suite.assetAddr[:])
+	suite.basicPrepare()
+	suite.prepareDeposit(suite.depositAmount)
+	suite.prepareDelegation(suite.delegationAmount, suite.opAccAddr)
+	stakerID, assetID := assetstype.GetStakerIDAndAssetID(suite.clientChainLzID, suite.Address[:], suite.assetAddr[:])
 
 	undelegationAmount := sdkmath.NewInt(0)
 	_, err := suite.App.DelegationKeeper.ValidateUndelegationAmount(suite.Ctx, suite.opAccAddr, stakerID, assetID, undelegationAmount)
@@ -244,9 +245,10 @@ func (suite *DelegationTestSuite) TestValidateUndelegationAmount() {
 }
 
 func (suite *DelegationTestSuite) TestCalculateSlashShare() {
-	suite.prepareDeposit()
-	suite.prepareDelegation()
-	stakerID, assetID := assetstype.GetStakeIDAndAssetID(suite.clientChainLzID, suite.Address[:], suite.assetAddr[:])
+	suite.basicPrepare()
+	suite.prepareDeposit(suite.depositAmount)
+	suite.prepareDelegation(suite.delegationAmount, suite.opAccAddr)
+	stakerID, assetID := assetstype.GetStakerIDAndAssetID(suite.clientChainLzID, suite.Address[:], suite.assetAddr[:])
 	slashAmount := sdkmath.NewInt(0)
 	_, err := suite.App.DelegationKeeper.CalculateSlashShare(suite.Ctx, suite.opAccAddr, stakerID, assetID, slashAmount)
 	suite.Error(err, delegationtypes.ErrAmountIsNotPositive)
@@ -264,9 +266,10 @@ func (suite *DelegationTestSuite) TestCalculateSlashShare() {
 }
 
 func (suite *DelegationTestSuite) TestRemoveShareFromOperator() {
-	suite.prepareDeposit()
-	suite.prepareDelegation()
-	stakerID, assetID := assetstype.GetStakeIDAndAssetID(suite.clientChainLzID, suite.Address[:], suite.assetAddr[:])
+	suite.basicPrepare()
+	suite.prepareDeposit(suite.depositAmount)
+	suite.prepareDelegation(suite.delegationAmount, suite.opAccAddr)
+	stakerID, assetID := assetstype.GetStakerIDAndAssetID(suite.clientChainLzID, suite.Address[:], suite.assetAddr[:])
 	originalInfo, err := suite.App.AssetsKeeper.GetOperatorSpecifiedAssetInfo(suite.Ctx, suite.opAccAddr, assetID)
 	suite.NoError(err)
 
@@ -297,14 +300,15 @@ func (suite *DelegationTestSuite) TestRemoveShareFromOperator() {
 	expectedInfo = *originalInfo
 	expectedInfo.TotalAmount = originalInfo.TotalAmount.Sub(amount)
 	expectedInfo.TotalShare = originalInfo.TotalShare.Sub(removeShareForUndelegation)
-	expectedInfo.WaitUnbondingAmount = originalInfo.WaitUnbondingAmount.Add(amount)
+	expectedInfo.PendingUndelegationAmount = originalInfo.PendingUndelegationAmount.Add(amount)
 	suite.Equal(expectedInfo, *info)
 }
 
 func (suite *DelegationTestSuite) TestRemoveShare() {
-	suite.prepareDeposit()
-	suite.prepareDelegation()
-	stakerID, assetID := assetstype.GetStakeIDAndAssetID(suite.clientChainLzID, suite.Address[:], suite.assetAddr[:])
+	suite.basicPrepare()
+	suite.prepareDeposit(suite.depositAmount)
+	suite.prepareDelegation(suite.delegationAmount, suite.opAccAddr)
+	stakerID, assetID := assetstype.GetStakerIDAndAssetID(suite.clientChainLzID, suite.Address[:], suite.assetAddr[:])
 	removeShare := sdkmath.LegacyNewDec(10)
 	removeToken, err := suite.App.DelegationKeeper.RemoveShare(suite.Ctx, false, suite.opAccAddr, stakerID, assetID, removeShare)
 	suite.NoError(err)
@@ -327,7 +331,7 @@ func (suite *DelegationTestSuite) TestRemoveShare() {
 	suite.Equal(removeShare.TruncateInt(), delegationInfo.WaitUndelegationAmount)
 	stakerAssetInfo, err := suite.App.AssetsKeeper.GetStakerSpecifiedAssetInfo(suite.Ctx, stakerID, assetID)
 	suite.NoError(err)
-	suite.Equal(removeShare.TruncateInt(), stakerAssetInfo.WaitUnbondingAmount)
+	suite.Equal(removeShare.TruncateInt(), stakerAssetInfo.PendingUndelegationAmount)
 	stakerMap, err = suite.App.DelegationKeeper.GetStakersByOperator(suite.Ctx, suite.opAccAddr.String(), assetID)
 	suite.NoError(err)
 	suite.NotContains(stakerMap.Stakers, stakerID)

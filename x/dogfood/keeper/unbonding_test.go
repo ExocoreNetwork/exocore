@@ -32,7 +32,7 @@ func (suite *KeeperTestSuite) TestUndelegations() {
 	lzID := suite.ClientChains[0].LayerZeroChainID
 	assetAddrHex := suite.Assets[0].Address
 	assetAddr := common.HexToAddress(assetAddrHex)
-	_, assetID := assetstypes.GetStakeIDAndAssetIDFromStr(lzID, staker.String(), assetAddrHex)
+	_, assetID := assetstypes.GetStakerIDAndAssetIDFromStr(lzID, staker.String(), assetAddrHex)
 	asset, err := suite.App.AssetsKeeper.GetStakingAssetInfo(suite.Ctx, assetID)
 	suite.NoError(err)
 	assetDecimals := asset.AssetBasicInfo.Decimals
@@ -42,7 +42,7 @@ func (suite *KeeperTestSuite) TestUndelegations() {
 	)
 	depositParams := &assetskeeper.DepositWithdrawParams{
 		ClientChainLzID: lzID,
-		Action:          assetstypes.Deposit,
+		Action:          assetstypes.DepositLST,
 		StakerAddress:   staker.Bytes(),
 		AssetsAddress:   assetAddr.Bytes(),
 		OpAmount:        amount,
@@ -73,7 +73,7 @@ func (suite *KeeperTestSuite) TestUndelegations() {
 		sdk.WrapSDKContext(suite.Ctx),
 		&operatortypes.OptIntoAVSReq{
 			FromAddress:   operatorAddressString,
-			AvsAddress:    avsAddress.String(),
+			AvsAddress:    avsAddress,
 			PublicKeyJSON: oldKey.ToJSON(),
 		},
 	)
@@ -114,7 +114,7 @@ func (suite *KeeperTestSuite) TestUndelegations() {
 		sdk.WrapSDKContext(suite.Ctx),
 		&operatortypes.OptOutOfAVSReq{
 			FromAddress: operatorAddressString,
-			AvsAddress:  avsAddress.String(),
+			AvsAddress:  avsAddress,
 		},
 	)
 	suite.NoError(err)
@@ -171,7 +171,7 @@ func (suite *KeeperTestSuite) TestUndelegationEdgeCases() {
 	lzID := suite.ClientChains[0].LayerZeroChainID
 	assetAddrHex := suite.Assets[0].Address
 	assetAddr := common.HexToAddress(assetAddrHex)
-	_, assetID := assetstypes.GetStakeIDAndAssetIDFromStr(lzID, staker.String(), assetAddrHex)
+	_, assetID := assetstypes.GetStakerIDAndAssetIDFromStr(lzID, staker.String(), assetAddrHex)
 	asset, err := suite.App.AssetsKeeper.GetStakingAssetInfo(suite.Ctx, assetID)
 	suite.NoError(err)
 	assetDecimals := asset.AssetBasicInfo.Decimals
@@ -182,7 +182,7 @@ func (suite *KeeperTestSuite) TestUndelegationEdgeCases() {
 	)
 	depositParams := &assetskeeper.DepositWithdrawParams{
 		ClientChainLzID: lzID,
-		Action:          assetstypes.Deposit,
+		Action:          assetstypes.DepositLST,
 		StakerAddress:   staker.Bytes(),
 		AssetsAddress:   assetAddr.Bytes(),
 		OpAmount:        amount.Mul(sdkmath.NewInt(5)),
@@ -234,7 +234,7 @@ func (suite *KeeperTestSuite) TestUndelegationEdgeCases() {
 		sdk.WrapSDKContext(suite.Ctx),
 		&operatortypes.OptIntoAVSReq{
 			FromAddress:   operatorAddressString,
-			AvsAddress:    avsAddress.String(),
+			AvsAddress:    avsAddress,
 			PublicKeyJSON: oldKey.ToJSON(),
 		},
 	)
@@ -285,7 +285,7 @@ func (suite *KeeperTestSuite) TestUndelegationEdgeCases() {
 		sdk.WrapSDKContext(suite.Ctx),
 		&operatortypes.SetConsKeyReq{
 			Address:       operatorAddressString,
-			AvsAddress:    avsAddress.String(),
+			AvsAddress:    avsAddress,
 			PublicKeyJSON: newKey.ToJSON(),
 		},
 	)

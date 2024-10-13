@@ -2,13 +2,12 @@ package types
 
 import (
 	sdkmath "cosmossdk.io/math"
-	exocoretypes "github.com/ExocoreNetwork/exocore/types/keys"
+	keytypes "github.com/ExocoreNetwork/exocore/types/keys"
 	assetstype "github.com/ExocoreNetwork/exocore/x/assets/types"
 	delegationkeeper "github.com/ExocoreNetwork/exocore/x/delegation/keeper"
 	delegationtype "github.com/ExocoreNetwork/exocore/x/delegation/types"
 	oracletype "github.com/ExocoreNetwork/exocore/x/oracle/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/ethereum/go-ethereum/common"
 )
 
 var _ OracleKeeper = MockOracle{}
@@ -25,8 +24,8 @@ type AssetsKeeper interface {
 		f func(assetID string, state *assetstype.OperatorAssetInfo) error,
 	) error
 	ClientChainExists(ctx sdk.Context, index uint64) bool
-	GetAllStakingAssetsInfo(ctx sdk.Context) (allAssets map[string]*assetstype.StakingAssetInfo, err error)
 	GetOperatorSpecifiedAssetInfo(ctx sdk.Context, operatorAddr sdk.Address, assetID string) (info *assetstype.OperatorAssetInfo, err error)
+	GetAllStakingAssetsInfo(ctx sdk.Context) (allAssets []assetstype.StakingAssetInfo, err error)
 }
 
 var _ DelegationKeeper = &delegationkeeper.Keeper{}
@@ -35,6 +34,7 @@ type DelegationKeeper interface {
 	IterateUndelegationsByOperator(
 		ctx sdk.Context, operator string, heightFilter *uint64, isUpdate bool,
 		opFunc func(undelegation *delegationtype.UndelegationRecord) error) error
+	HasStakerList(ctx sdk.Context, operator, assetID string) bool
 	GetStakersByOperator(
 		ctx sdk.Context, operator, assetID string,
 	) (delegationtype.StakerList, error)
@@ -109,7 +109,7 @@ type AVSKeeper interface {
 	GetEpochEndAVSs(ctx sdk.Context, epochIdentifier string, epochNumber int64) []string
 	// IsAVS returns true if the address is a registered AVS address.
 	IsAVS(ctx sdk.Context, addr string) (bool, error)
-	IsAVSByChainID(ctx sdk.Context, chainID string) (bool, common.Address)
+	IsAVSByChainID(ctx sdk.Context, chainID string) (bool, string)
 }
 
 type SlashKeeper interface {
@@ -120,16 +120,16 @@ type OperatorHooks interface {
 	// This hook is called when an operator declares the consensus key for the provided chain.
 	AfterOperatorKeySet(
 		ctx sdk.Context, addr sdk.AccAddress, chainID string,
-		pubKey exocoretypes.WrappedConsKey,
+		pubKey keytypes.WrappedConsKey,
 	)
 	// This hook is called when an operator's consensus key is replaced for a chain.
 	AfterOperatorKeyReplaced(
-		ctx sdk.Context, addr sdk.AccAddress, oldKey exocoretypes.WrappedConsKey,
-		newKey exocoretypes.WrappedConsKey, chainID string,
+		ctx sdk.Context, addr sdk.AccAddress, oldKey keytypes.WrappedConsKey,
+		newKey keytypes.WrappedConsKey, chainID string,
 	)
 	// This hook is called when an operator initiates the removal of a consensus key for a
 	// chain.
 	AfterOperatorKeyRemovalInitiated(
-		ctx sdk.Context, addr sdk.AccAddress, chainID string, key exocoretypes.WrappedConsKey,
+		ctx sdk.Context, addr sdk.AccAddress, chainID string, key keytypes.WrappedConsKey,
 	)
 }

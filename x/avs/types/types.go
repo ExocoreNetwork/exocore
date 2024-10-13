@@ -1,6 +1,15 @@
 package types
 
 import (
+	"encoding/hex"
+	"encoding/json"
+	"fmt"
+	"math/big"
+	"sort"
+	"strings"
+
+	"github.com/ethereum/go-ethereum/accounts/abi"
+
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/crypto"
@@ -67,10 +76,21 @@ type AVSRegisterOrDeregisterParams struct {
 	Action        uint64
 }
 
+var (
+	taskResponseType, _ = abi.NewType("tuple", "struct", []abi.ArgumentMarshaling{
+		{Name: "TaskID", Type: "uint64"},
+		{Name: "NumberSum", Type: "uint256"},
+	})
+
+	Args = abi.Arguments{
+		{Type: taskResponseType, Name: "TaskResponse"},
+	}
+)
+
 // GenerateAVSAddr generates a hex AVS address based on the chainID.
 // It returns a hex address as a string.
-func GenerateAVSAddr(chainID string) common.Address {
-	return common.BytesToAddress(
+func GenerateAVSAddr(chainID string) string {
+	avsAddr := common.BytesToAddress(
 		crypto.Keccak256(
 			append(
 				ChainIDPrefix,
@@ -78,4 +98,74 @@ func GenerateAVSAddr(chainID string) common.Address {
 			),
 		),
 	)
+	return strings.ToLower(avsAddr.String())
+}
+
+type TaskResponse struct {
+	TaskID    uint64
+	NumberSum *big.Int
+}
+
+// GetTaskResponseDigestEncodeByjson returns the hash of the TaskResponse, which is what operators sign over
+// MarshalTaskResponse marshals the TaskResponse struct into JSON bytes.
+func MarshalTaskResponse(h TaskResponse) ([]byte, error) {
+	return json.Marshal(h)
+}
+
+// UnmarshalTaskResponse unmarshals the JSON bytes into a TaskResponse struct.
+func UnmarshalTaskResponse(jsonData []byte) (TaskResponse, error) {
+	var taskResponse TaskResponse
+	err := json.Unmarshal(jsonData, &taskResponse)
+	return taskResponse, err
+}
+
+// GetTaskResponseDigestEncodeByjson returns the hash of the TaskResponse, which is what operators sign over.
+func GetTaskResponseDigestEncodeByjson(h TaskResponse) ([32]byte, error) {
+	jsonData, err := MarshalTaskResponse(h)
+	if err != nil {
+		return [32]byte{}, err
+	}
+	taskResponseDigest := crypto.Keccak256Hash(jsonData)
+	return taskResponseDigest, nil
+}
+
+// GetTaskResponseDigestEncodeByAbi returns the hash of the TaskResponse, which is what operators sign over.
+func GetTaskResponseDigestEncodeByAbi(h TaskResponse) ([32]byte, error) {
+	packed, err := Args.Pack(&h)
+	if err != nil {
+		return [32]byte{}, err
+	}
+	fmt.Println("Res:", hex.EncodeToString(packed))
+	hashAbi := crypto.Keccak256Hash(packed)
+	return hashAbi, nil
+}
+
+func Difference(a, b []string) []string {
+	var different []string //nolint:prealloc
+
+	diffMap := make(map[string]bool)
+
+	// Add all elements of a to the map
+	for _, item := range a {
+		diffMap[item] = true
+	}
+
+	// Remove elements found in b from the map and collect differences
+	for _, item := range b {
+		if diffMap[item] {
+			delete(diffMap, item)
+		} else {
+			different = append(different, item)
+		}
+	}
+
+	// Add remaining elements from the map to different
+	for item := range diffMap {
+		different = append(different, item)
+	}
+
+	// Sort the different slice
+	sort.Strings(different)
+
+	return different
 }

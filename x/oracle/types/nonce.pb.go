@@ -25,8 +25,10 @@ const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
 // Nonce is a message that contains a nonce for a feeder
 type Nonce struct {
+	// FeederID is the ID of the feeder that corresponding to the nonce
 	FeederID uint64 `protobuf:"varint,1,opt,name=feeder_id,json=feederId,proto3" json:"feeder_id,omitempty"`
-	Value    uint32 `protobuf:"varint,2,opt,name=value,proto3" json:"value,omitempty"`
+	// value is the nonce value
+	Value uint32 `protobuf:"varint,2,opt,name=value,proto3" json:"value,omitempty"`
 }
 
 func (m *Nonce) Reset()         { *m = Nonce{} }
@@ -78,7 +80,9 @@ func (m *Nonce) GetValue() uint32 {
 
 // ValidatorNonce is a message that contains the nonces for a validator
 type ValidatorNonce struct {
-	Validator string   `protobuf:"bytes,1,opt,name=validator,proto3" json:"validator,omitempty"`
+	// validator is the validator address
+	Validator string `protobuf:"bytes,1,opt,name=validator,proto3" json:"validator,omitempty"`
+	// nonces is the list of nonces for the feeders
 	NonceList []*Nonce `protobuf:"bytes,2,rep,name=nonce_list,json=nonceList,proto3" json:"nonce_list,omitempty"`
 }
 

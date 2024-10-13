@@ -2,7 +2,7 @@ package types
 
 import (
 	"github.com/ExocoreNetwork/exocore/utils"
-	evmtype "github.com/evmos/evmos/v14/x/evm/types"
+	evmtype "github.com/evmos/evmos/v16/x/evm/types"
 )
 
 // ExocoreAvailableEVMExtensions defines the default active precompiles
@@ -11,11 +11,11 @@ var (
 	DefaultEVMDenom               = utils.BaseDenom
 	ExocoreAvailableEVMExtensions = []string{
 		// 0x0000000000000000000000000000000000000801 client chains precompile has been merged to assets.
-		"0x0000000000000000000000000000000000000802", // ICS20 transfer precompile
+		// "0x0000000000000000000000000000000000000802", // ICS20 transfer precompile
 		"0x0000000000000000000000000000000000000804", // assets precompile
 		"0x0000000000000000000000000000000000000805", // delegation precompile
 		"0x0000000000000000000000000000000000000806", // reward precompile
-		"0x0000000000000000000000000000000000000807", // slash precompile
+		// "0x0000000000000000000000000000000000000807", // slash precompile
 		// 0x0000000000000000000000000000000000000808 withdraw precompile has been merged to assets.
 		// the function has been merged to the assets precompile
 		"0x0000000000000000000000000000000000000809", // bls precompile

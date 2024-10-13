@@ -5,6 +5,7 @@ import (
 
 	"cosmossdk.io/math"
 	"github.com/ExocoreNetwork/exocore/utils"
+	avstypes "github.com/ExocoreNetwork/exocore/x/avs/types"
 	abci "github.com/cometbft/cometbft/abci/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	evidencetypes "github.com/cosmos/cosmos-sdk/x/evidence/types"
@@ -146,8 +147,9 @@ func (k Keeper) Delegation(
 	// This interface is only used for unjail to retrieve the self delegation value,
 	// so the delegator and validator are the same.
 	operator := delegator
+	avsAddr := avstypes.GenerateAVSAddr(utils.ChainIDWithoutRevision(ctx.ChainID()))
 	operatorUSDValues, err := k.operatorKeeper.GetOrCalculateOperatorUSDValues(
-		ctx, operator, utils.ChainIDWithoutRevision(ctx.ChainID()),
+		ctx, operator, avsAddr,
 	)
 	if err != nil {
 		k.Logger(ctx).Error(

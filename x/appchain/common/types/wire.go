@@ -51,8 +51,8 @@ func (vdt SlashPacketData) Validate() error {
 		return ErrInvalidPacketData.Wrapf("invalid validator: %s", err.Error())
 	}
 	// vdt.Validator.Power must be positive
-	if vdt.Validator.Power == 0 {
-		return ErrInvalidPacketData.Wrap("validator power cannot be zero")
+	if vdt.Validator.Power <= 0 {
+		return ErrInvalidPacketData.Wrap("validator power must be positive")
 	}
 	// ValsetUpdateId can be zero for the first validator set, so we don't validate it here.
 	if vdt.Infraction != stakingtypes.Infraction_INFRACTION_DOWNTIME {

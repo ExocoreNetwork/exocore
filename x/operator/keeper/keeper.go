@@ -6,8 +6,6 @@ import (
 	sdkmath "cosmossdk.io/math"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 
-	"github.com/ExocoreNetwork/exocore/x/assets/types"
-
 	operatortypes "github.com/ExocoreNetwork/exocore/x/operator/types"
 	"github.com/cosmos/cosmos-sdk/codec"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
@@ -15,9 +13,8 @@ import (
 )
 
 type Keeper struct {
-	storeKey      storetypes.StoreKey
-	cdc           codec.BinaryCodec
-	historicalCtx types.CreateQueryContext
+	storeKey storetypes.StoreKey
+	cdc      codec.BinaryCodec
 	// other keepers
 	assetsKeeper     operatortypes.AssetsKeeper
 	delegationKeeper operatortypes.DelegationKeeper
@@ -31,7 +28,6 @@ type Keeper struct {
 func NewKeeper(
 	storeKey storetypes.StoreKey,
 	cdc codec.BinaryCodec,
-	historicalCtx types.CreateQueryContext,
 	assetsKeeper operatortypes.AssetsKeeper,
 	delegationKeeper operatortypes.DelegationKeeper,
 	oracleKeeper operatortypes.OracleKeeper,
@@ -41,7 +37,6 @@ func NewKeeper(
 	return Keeper{
 		storeKey:         storeKey,
 		cdc:              cdc,
-		historicalCtx:    historicalCtx,
 		assetsKeeper:     assetsKeeper,
 		delegationKeeper: delegationKeeper,
 		oracleKeeper:     oracleKeeper,

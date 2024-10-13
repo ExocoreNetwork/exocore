@@ -11,7 +11,7 @@ option go_package = "github.com/ExocoreNetwork/exocore/x/oracle/types";
 message PriceTimeDetID {
   // price at a specific point(timestamp of non-deterministic source, roundId of deteministic source)
   string price = 1;
-  // decimal of the corresponding price 
+  // decimal of the corresponding price
   int32 decimal = 2;
   // timestamp when the price corresponding to
   string timestamp = 3;
@@ -20,7 +20,7 @@ message PriceTimeDetID {
 }
 
 // price with its corresponding source
-message PriceSource{
+message PriceSource {
   // source_id refers to id from Params.SourceList, where this price fetched from, 0 is reserved for custom usage
   uint64 source_id = 1 [(gogoproto.customname) = "SourceID"];
   //if source is deteministic like chainlink with roundID, set this value with which returned from source

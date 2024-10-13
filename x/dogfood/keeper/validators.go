@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"cosmossdk.io/math"
-	exocoretypes "github.com/ExocoreNetwork/exocore/types/keys"
+	keytypes "github.com/ExocoreNetwork/exocore/types/keys"
 	"github.com/ExocoreNetwork/exocore/utils"
 	"github.com/ExocoreNetwork/exocore/x/dogfood/types"
 	abci "github.com/cometbft/cometbft/abci/types"
@@ -36,9 +36,9 @@ func (k Keeper) UnbondingTime(ctx sdk.Context) time.Duration {
 // stores the validators that are added or those that are removed, and updates
 // the stored power for the existing validators. It also allows any hooks registered
 // on the keeper to be executed. Lastly, it stores the validator set against the
-// provided validator set id.
+// provided validator set id. The caller must ensure that `change.Key` is not nil.
 func (k Keeper) ApplyValidatorChanges(
-	ctx sdk.Context, changes []exocoretypes.WrappedConsKeyWithPower,
+	ctx sdk.Context, changes []keytypes.WrappedConsKeyWithPower,
 ) []abci.ValidatorUpdate {
 	ret := []abci.ValidatorUpdate{}
 	logger := k.Logger(ctx)
@@ -213,7 +213,7 @@ func (k Keeper) DeleteHistoricalInfo(ctx sdk.Context, height int64) {
 }
 
 // TrackHistoricalInfo saves the latest historical info and deletes the ones eligible to be
-// pruned. The function is called within the EndBlock of the module, so it is kept public.
+// pruned. The function is called within the BeginBlock of the module, so it is kept public.
 // It is mostly a copy of the function used by interchain-security.
 // If the historical info were only used by IBC, this function would store a subset of the
 // header for each block, since only those parts were used.

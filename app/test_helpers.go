@@ -30,10 +30,10 @@ import (
 
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 
-	"github.com/evmos/evmos/v14/crypto/ethsecp256k1"
-	"github.com/evmos/evmos/v14/encoding"
-	evmostypes "github.com/evmos/evmos/v14/types"
-	feemarkettypes "github.com/evmos/evmos/v14/x/feemarket/types"
+	"github.com/evmos/evmos/v16/crypto/ethsecp256k1"
+	"github.com/evmos/evmos/v16/encoding"
+	evmostypes "github.com/evmos/evmos/v16/types"
+	feemarkettypes "github.com/evmos/evmos/v16/x/feemarket/types"
 
 	"github.com/ExocoreNetwork/exocore/cmd/config"
 	"github.com/ExocoreNetwork/exocore/utils"
@@ -177,20 +177,16 @@ func GenesisStateWithValSet(app *ExocoreApp, genesisState simapp.GenesisState,
 			MetaInfo:         "Tether USD token",
 		},
 	}
-	{
-		totalSupply, _ := sdk.NewIntFromString("40022689732746729")
-		assets[0].TotalSupply = totalSupply
-	}
 
 	// x/operator initialization - address only
 	privkey, _ := ethsecp256k1.GenerateKey()
 	key, _ := privkey.ToECDSA()
 	operator := crypto.PubkeyToAddress(key.PublicKey)
-	stakerID, _ := assetstypes.GetStakeIDAndAssetIDFromStr(
+	stakerID, _ := assetstypes.GetStakerIDAndAssetIDFromStr(
 		clientChains[0].LayerZeroChainID,
 		common.Address(operator.Bytes()).String(), "",
 	)
-	_, assetID := assetstypes.GetStakeIDAndAssetIDFromStr(
+	_, assetID := assetstypes.GetStakerIDAndAssetIDFromStr(
 		clientChains[0].LayerZeroChainID,
 		"", assets[0].Address,
 	)
@@ -202,9 +198,9 @@ func GenesisStateWithValSet(app *ExocoreApp, genesisState simapp.GenesisState,
 				{
 					AssetID: assetID,
 					Info: assetstypes.StakerAssetInfo{
-						TotalDepositAmount:  depositAmount,
-						WithdrawableAmount:  depositAmount,
-						WaitUnbondingAmount: sdk.ZeroInt(),
+						TotalDepositAmount:        depositAmount,
+						WithdrawableAmount:        depositAmount,
+						PendingUndelegationAmount: sdk.ZeroInt(),
 					},
 				},
 			},
@@ -220,39 +216,50 @@ func GenesisStateWithValSet(app *ExocoreApp, genesisState simapp.GenesisState,
 		assetstypes.DefaultParams(),
 		clientChains, []assetstypes.StakingAssetInfo{
 			{
-				AssetBasicInfo: &assets[0],
+				AssetBasicInfo: assets[0],
 				// required to be 0, since deposits are handled after token init.
 				StakingTotalAmount: sdk.ZeroInt(),
 			},
 		}, depositsByStaker,
-	)
-	genesisState[assetstypes.ModuleName] = app.AppCodec().MustMarshalJSON(assetsGenesis)
-	// operator registration
-	operatorInfos := []operatortypes.OperatorInfo{
-		{
-			EarningsAddr:     operator.String(),
-			OperatorMetaInfo: "operator1",
-			Commission:       stakingtypes.NewCommission(sdk.ZeroDec(), sdk.ZeroDec(), sdk.ZeroDec()),
-		},
-	}
-	operatorGenesis := operatortypes.NewGenesisState(operatorInfos)
-	genesisState[operatortypes.ModuleName] = app.AppCodec().MustMarshalJSON(operatorGenesis)
-	// x/delegation
-	delegationsByStaker := []delegationtypes.DelegationsByStaker{
-		{
-			StakerID: stakerID,
-			Delegations: []delegationtypes.DelegatedSingleAssetInfo{
-				{
-					AssetID: assetID,
-					PerOperatorAmounts: []delegationtypes.KeyValue{
-						{
-							Key: operator.String(),
-							Value: &delegationtypes.ValueField{
-								Amount: depositAmount,
-							},
+		[]assetstypes.AssetsByOperator{
+			{
+				Operator: operator.String(),
+				AssetsState: []assetstypes.AssetByID{
+					{
+						AssetID: assetID,
+						Info: assetstypes.OperatorAssetInfo{
+							TotalAmount:               depositAmount,
+							PendingUndelegationAmount: math.NewInt(0),
+							TotalShare:                math.LegacyNewDecFromBigInt(depositAmount.BigInt()),
+							OperatorShare:             math.LegacyNewDec(0),
 						},
 					},
 				},
+			},
+		},
+	)
+	genesisState[assetstypes.ModuleName] = app.AppCodec().MustMarshalJSON(assetsGenesis)
+	// operator registration
+	operatorInfos := []operatortypes.OperatorDetail{
+		{
+			OperatorAddress: operator.String(),
+			OperatorInfo: operatortypes.OperatorInfo{
+				EarningsAddr:     operator.String(),
+				OperatorMetaInfo: "operator1",
+				Commission:       stakingtypes.NewCommission(sdk.ZeroDec(), sdk.ZeroDec(), sdk.ZeroDec()),
+			},
+		},
+	}
+	operatorGenesis := operatortypes.NewGenesisState(operatorInfos, nil, nil, nil, nil, nil, nil, nil)
+	genesisState[operatortypes.ModuleName] = app.AppCodec().MustMarshalJSON(operatorGenesis)
+	// x/delegation
+	singleStateKey := assetstypes.GetJoinedStoreKey(stakerID, assetID, operator.String())
+	delegationStates := []delegationtypes.DelegationStates{
+		{
+			Key: string(singleStateKey),
+			States: delegationtypes.DelegationAmounts{
+				WaitUndelegationAmount: math.NewInt(0),
+				UndelegatableShare:     math.LegacyNewDecFromBigInt(depositAmount.BigInt()),
 			},
 		},
 	}
@@ -262,7 +269,15 @@ func GenesisStateWithValSet(app *ExocoreApp, genesisState simapp.GenesisState,
 			StakerID: stakerID,
 		},
 	}
-	delegationGenesis := delegationtypes.NewGenesis(delegationsByStaker, associations)
+	stakersByOperator := []delegationtypes.StakersByOperator{
+		{
+			Key: string(assetstypes.GetJoinedStoreKey(operator.String(), assetID)),
+			Stakers: []string{
+				stakerID,
+			},
+		},
+	}
+	delegationGenesis := delegationtypes.NewGenesis(associations, delegationStates, stakersByOperator, nil)
 	genesisState[delegationtypes.ModuleName] = app.AppCodec().MustMarshalJSON(delegationGenesis)
 
 	// create a dogfood genesis with just the validator set, that is, the bare
@@ -270,9 +285,8 @@ func GenesisStateWithValSet(app *ExocoreApp, genesisState simapp.GenesisState,
 	dogfoodGenesis := dogfoodtypes.NewGenesis(
 		dogfoodtypes.DefaultParams(), []dogfoodtypes.GenesisValidator{
 			{
-				Power:           1,
-				PublicKey:       hexutil.Encode(valSet.Validators[0].PubKey.Bytes()),
-				OperatorAccAddr: operatorInfos[0].EarningsAddr,
+				Power:     1,
+				PublicKey: hexutil.Encode(valSet.Validators[0].PubKey.Bytes()),
 			},
 		},
 		[]dogfoodtypes.EpochToOperatorAddrs{}, []dogfoodtypes.EpochToConsensusAddrs{},
