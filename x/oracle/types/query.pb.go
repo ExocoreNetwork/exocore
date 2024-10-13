@@ -30,6 +30,7 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
+// TokenIndex is the pair of tokenName and its index defined in params
 type TokenIndex struct {
 	// token name
 	Token string `protobuf:"bytes,1,opt,name=token,proto3" json:"token,omitempty"`
@@ -1594,7 +1595,7 @@ const _ = grpc.SupportPackageIsVersion4
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
 type QueryClient interface {
-	// TokenIndexes shows the map tells token and its index for further usage like quering for token price corresponding to its index
+	// TokenIndexes shows the map tells token and its index for further usage
 	TokenIndexes(ctx context.Context, in *QueryTokenIndexesRequest, opts ...grpc.CallOption) (*QueryTokenIndexesResponse, error)
 	// StakerList shows all stakers related to the specified asset under native-restaking context
 	StakerList(ctx context.Context, in *QueryStakerListRequest, opts ...grpc.CallOption) (*QueryStakerListResponse, error)
@@ -1760,7 +1761,7 @@ func (c *queryClient) RecentParamsAll(ctx context.Context, in *QueryAllRecentPar
 
 // QueryServer is the server API for Query service.
 type QueryServer interface {
-	// TokenIndexes shows the map tells token and its index for further usage like quering for token price corresponding to its index
+	// TokenIndexes shows the map tells token and its index for further usage
 	TokenIndexes(context.Context, *QueryTokenIndexesRequest) (*QueryTokenIndexesResponse, error)
 	// StakerList shows all stakers related to the specified asset under native-restaking context
 	StakerList(context.Context, *QueryStakerListRequest) (*QueryStakerListResponse, error)

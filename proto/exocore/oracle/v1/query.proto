@@ -19,7 +19,7 @@ option go_package = "github.com/ExocoreNetwork/exocore/x/oracle/types";
 
 // Query defines the gRPC querier service.
 service Query {
-  // TokenIndexes shows the map tells token and its index for further usage like quering for token price corresponding to its index 
+  // TokenIndexes shows the map tells token and its index for further usage
   rpc TokenIndexes(QueryTokenIndexesRequest) returns (QueryTokenIndexesResponse) {
     option (google.api.http).get = "/ExocoreNetwork/exocore/oracle/v1/token_indexes";
   }
@@ -95,6 +95,7 @@ service Query {
   }
 }
 
+// TokenIndex is the pair of tokenName and its index defined in params
 message TokenIndex {
   // token name
   string token = 1;
