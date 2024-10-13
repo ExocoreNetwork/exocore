@@ -50,7 +50,7 @@ func (k Keeper) ApplyValidatorChanges(
 			// investigated.
 			logger.Error(
 				"failed to deserialize validator key",
-				"validator", change.PubKey,
+				"i", i, "validator", change.PubKey,
 			)
 			continue
 		}
@@ -74,6 +74,10 @@ func (k Keeper) ApplyValidatorChanges(
 				if err != nil {
 					// cannot happen, but just in case add this check.
 					// simply skip the validator if it does.
+					logger.Error(
+						"failed to instantiate validator",
+						"i", i, "validator", change.PubKey,
+					)
 					continue
 				}
 				logger.Info("adding validator", "consAddress", consAddress)

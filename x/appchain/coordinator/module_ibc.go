@@ -234,7 +234,7 @@ func (im IBCModule) OnRecvPacket(
 		sdk.NewEvent(
 			commontypes.EventTypePacket,
 			sdk.NewAttribute(sdk.AttributeKeyModule, types.ModuleName),
-			sdk.NewAttribute(commontypes.AttributeKeyAckSuccess, fmt.Sprintf("%t", ack != nil)),
+			sdk.NewAttribute(commontypes.AttributeKeyAckSuccess, fmt.Sprintf("%t", ack.Success())),
 		),
 	)
 
