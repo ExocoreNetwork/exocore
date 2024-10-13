@@ -6,7 +6,9 @@ import (
 
 	sdkmath "cosmossdk.io/math"
 
+	assetstypes "github.com/ExocoreNetwork/exocore/x/assets/types"
 	"github.com/ExocoreNetwork/exocore/x/oracle/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/imroc/biu"
 )
 
@@ -35,13 +37,28 @@ import (
 
 func (ks *KeeperSuite) TestNSTLifeCycleOneStaker() {
 	stakerStr := ks.StakerAddr
-	assetID := "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee_0x65"
+	NSTAssetAddr := assetstypes.GenerateNSTAddr(
+		ks.ClientChains[0].AddressLength,
+	)
+	_, assetID := assetstypes.GetStakerIDAndAssetID(ks.ClientChains[0].LayerZeroChainID, []byte{}, NSTAssetAddr)
 	validators := []string{"0xv1", "0xv2"}
-	// 1. deposit amount 100
-	// 100 is not a possible nubmer with one validator, it's ok to use this as a start and we'll check the number to be updated to a right number(uncer 32 with one validator)
-	amount100 := sdkmath.NewIntWithDecimal(100, 18)
+
+	stakerID, _ := assetstypes.GetStakerIDAndAssetIDFromStr(
+		ks.ClientChains[0].LayerZeroChainID,
+		ks.StakerAddr, "",
+	)
+
+	// deposit amount 32e18 into stakerID(related to stakerAddr), just update kv instead of call 'deposit'
+	// we separate actions to check if single module works properly
 	amount32 := sdkmath.NewIntWithDecimal(32, 18)
-	ks.App.OracleKeeper.UpdateNSTValidatorListForStaker(ks.Ctx, assetID, stakerStr, validators[0], amount100)
+	ks.App.AssetsKeeper.UpdateStakerAssetState(ks.Ctx, stakerID, assetID, assetstypes.DeltaStakerSingleAsset{
+		TotalDepositAmount:        amount32,
+		WithdrawableAmount:        amount32,
+		PendingUndelegationAmount: sdk.ZeroInt(),
+	})
+
+	// 1. update oracle NST related info caused by the 'deposit amount 32e18'
+	ks.App.OracleKeeper.UpdateNSTValidatorListForStaker(ks.Ctx, assetID, stakerStr, validators[0], amount32)
 
 	// - 1.1 check stakerInfo
 	stakerInfo := ks.App.OracleKeeper.GetStakerInfo(ks.Ctx, assetID, stakerStr)
@@ -49,7 +66,6 @@ func (ks *KeeperSuite) TestNSTLifeCycleOneStaker() {
 		Block:   1,
 		RoundID: 0,
 		Change:  types.Action_ACTION_DEPOSIT,
-		// Balance: 100,
 		Balance: 32,
 	}, *stakerInfo.BalanceList[0])
 	ks.Equal([]string{validators[0]}, stakerInfo.ValidatorPubkeyList)
@@ -73,7 +89,32 @@ func (ks *KeeperSuite) TestNSTLifeCycleOneStaker() {
 		Balance: 22,
 	}, *stakerInfo.BalanceList[1])
 
-	// 3. deposit more. 100
+	// stakerAssetInfo should be updated triggered by oracle module through UpdateNSTByBalanceChange
+	stakerAssetInfo, _ := ks.App.AssetsKeeper.GetStakerSpecifiedAssetInfo(ks.Ctx, stakerID, assetID)
+	amount22 := sdkmath.NewIntWithDecimal(22, 18)
+	ks.Equal(assetstypes.StakerAssetInfo{
+		TotalDepositAmount:        amount22,
+		WithdrawableAmount:        amount22,
+		PendingUndelegationAmount: sdk.ZeroInt(),
+	}, *stakerAssetInfo)
+
+	// 3. deposit more. 32e18
+	// update assetInfo first, should update the staker's totalAmount,withdrawableAmount to 54e18
+	ks.App.AssetsKeeper.UpdateStakerAssetState(ks.Ctx, stakerID, assetID, assetstypes.DeltaStakerSingleAsset{
+		TotalDepositAmount:        amount32,
+		WithdrawableAmount:        amount32,
+		PendingUndelegationAmount: sdk.ZeroInt(),
+	})
+	// check stakerAssetInfo is updated correctly in assets module
+	stakerAssetInfo, _ = ks.App.AssetsKeeper.GetStakerSpecifiedAssetInfo(ks.Ctx, stakerID, assetID)
+	amount54 := sdkmath.NewIntWithDecimal(54, 18)
+	ks.Equal(assetstypes.StakerAssetInfo{
+		TotalDepositAmount:        amount54,
+		WithdrawableAmount:        amount54,
+		PendingUndelegationAmount: sdk.ZeroInt(),
+	}, *stakerAssetInfo)
+
+	// update related infor in oracle module causd by new deposit NST
 	ks.App.OracleKeeper.UpdateNSTValidatorListForStaker(ks.Ctx, assetID, stakerStr, validators[1], amount32) // 999
 	// - 3.1 check stakerInfo
 	stakerInfo = ks.App.OracleKeeper.GetStakerInfo(ks.Ctx, assetID, stakerStr)
@@ -87,7 +128,7 @@ func (ks *KeeperSuite) TestNSTLifeCycleOneStaker() {
 	ks.Equal(validators, stakerInfo.ValidatorPubkeyList)
 
 	// 4. Msg. add staker's balance
-	// at this point the system correct number should be 32*2-10 = 52, if some validator do refund, means the delta should be less than 10
+	// at this point the system correct number should be 32*2-10 = 54, if some validator do refund, means the delta should be less than 10
 	stakerChanges = [][]int{
 		// means delta from -10 change to -5
 		{0, -5},
@@ -103,6 +144,14 @@ func (ks *KeeperSuite) TestNSTLifeCycleOneStaker() {
 		Index:   0,
 		Change:  types.Action_ACTION_SLASH_REFUND,
 	}, *stakerInfo.BalanceList[3])
+	// check stakerAssetInfo is updated correctly in assets module, this should be triggered in assets module by oracle module's UpdateNSTByBalanceChange
+	stakerAssetInfo, _ = ks.App.AssetsKeeper.GetStakerSpecifiedAssetInfo(ks.Ctx, stakerID, assetID)
+	amount59 := sdkmath.NewIntWithDecimal(59, 18)
+	ks.Equal(assetstypes.StakerAssetInfo{
+		TotalDepositAmount:        amount59,
+		WithdrawableAmount:        amount59,
+		PendingUndelegationAmount: sdk.ZeroInt(),
+	}, *stakerAssetInfo)
 
 	// 5. withdraw
 	amount30N := sdkmath.NewIntWithDecimal(-30, 18)
@@ -120,8 +169,8 @@ func (ks *KeeperSuite) TestNSTLifeCycleOneStaker() {
 	ks.Equal([]string{validators[1]}, stakerInfo.ValidatorPubkeyList)
 
 	// 6.withdrawall
-	amount100N := sdkmath.NewIntWithDecimal(-29, 18)
-	ks.App.OracleKeeper.UpdateNSTValidatorListForStaker(ks.Ctx, assetID, stakerStr, validators[1], amount100N)
+	amount29N := sdkmath.NewIntWithDecimal(-29, 18)
+	ks.App.OracleKeeper.UpdateNSTValidatorListForStaker(ks.Ctx, assetID, stakerStr, validators[1], amount29N)
 	// - 6.1 check stakerInfo
 	stakerInfo = ks.App.OracleKeeper.GetStakerInfo(ks.Ctx, assetID, stakerStr)
 	ks.Equal(types.StakerInfo{}, stakerInfo)

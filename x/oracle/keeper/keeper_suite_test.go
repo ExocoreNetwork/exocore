@@ -4,14 +4,14 @@ import (
 	"context"
 	"testing"
 
-	"cosmossdk.io/math"
+	math "cosmossdk.io/math"
 	"github.com/ExocoreNetwork/exocore/testutil"
-	assetstypes "github.com/ExocoreNetwork/exocore/x/assets/types"
 	"github.com/ExocoreNetwork/exocore/x/oracle/keeper"
 	"github.com/ExocoreNetwork/exocore/x/oracle/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/suite"
 
+	assetstypes "github.com/ExocoreNetwork/exocore/x/assets/types"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	gomock "go.uber.org/mock/gomock"
@@ -83,7 +83,7 @@ func (suite *KeeperSuite) Reset() {
 func (suite *KeeperSuite) SetupTest() {
 	suite.DoSetupTest()
 
-	depositAmountNST := math.NewInt(132)
+	depositAmountNST := math.NewInt(64)
 	suite.App.AssetsKeeper.SetStakingAssetInfo(suite.Ctx, &assetstypes.StakingAssetInfo{
 		AssetBasicInfo: assetstypes.AssetInfo{
 			Name:             "Native Restaking ETH",
@@ -94,20 +94,6 @@ func (suite *KeeperSuite) SetupTest() {
 			MetaInfo:         "native restaking token",
 		},
 		StakingTotalAmount: depositAmountNST,
-	})
-
-	stakerID, _ := assetstypes.GetStakerIDAndAssetIDFromStr(
-		suite.ClientChains[0].LayerZeroChainID,
-		ks.StakerAddr, "",
-	)
-	NSTAssetAddr := assetstypes.GenerateNSTAddr(
-		suite.ClientChains[0].AddressLength,
-	)
-	_, assetIDNST := assetstypes.GetStakerIDAndAssetID(suite.ClientChains[0].LayerZeroChainID, []byte{}, NSTAssetAddr)
-	suite.App.AssetsKeeper.UpdateStakerAssetState(ks.Ctx, stakerID, assetIDNST, assetstypes.DeltaStakerSingleAsset{
-		TotalDepositAmount:        depositAmountNST,
-		WithdrawableAmount:        depositAmountNST,
-		PendingUndelegationAmount: sdk.ZeroInt(),
 	})
 
 	validators := suite.ValSet.Validators
