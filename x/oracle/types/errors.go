@@ -14,6 +14,7 @@ const (
 	getPriceFailedAssetNotFound
 	getPriceFailedRoundNotFound
 	updateNativeTokenVirtualPriceFail
+	nstAssetNotSurpported
 )
 
 // x/oracle module sentinel errors
@@ -25,4 +26,5 @@ var (
 	ErrGetPriceAssetNotFound             = sdkerrors.Register(ModuleName, getPriceFailedAssetNotFound, "get price failed for asset not found")
 	ErrGetPriceRoundNotFound             = sdkerrors.Register(ModuleName, getPriceFailedRoundNotFound, "get price failed for round not found")
 	ErrUpdateNativeTokenVirtualPriceFail = sdkerrors.Register(ModuleName, updateNativeTokenVirtualPriceFail, "update native token balance change failed")
+	ErrNSTAssetNotSurpported             = sdkerrors.Register(ModuleName, nstAssetNotSurpported, "nstAsset not supported")
 )
