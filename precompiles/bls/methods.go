@@ -29,8 +29,8 @@ func (p Precompile) Verify(
 	method *abi.Method,
 	args []interface{},
 ) ([]byte, error) {
-	if len(args) != 3 {
-		return nil, fmt.Errorf(cmn.ErrInvalidNumberOfArgs, 3, len(args))
+	if len(args) != len(p.ABI.Methods[MethodVerify].Inputs) {
+		return nil, fmt.Errorf(cmn.ErrInvalidNumberOfArgs, len(p.ABI.Methods[MethodVerify].Inputs), len(args))
 	}
 
 	sigBz, ok := args[1].([]byte)
@@ -64,8 +64,8 @@ func (p Precompile) FastAggregateVerify(
 	method *abi.Method,
 	args []interface{},
 ) ([]byte, error) {
-	if len(args) != 3 {
-		return nil, fmt.Errorf(cmn.ErrInvalidNumberOfArgs, 3, len(args))
+	if len(args) != len(p.ABI.Methods[MethodFastAggregateVerify].Inputs) {
+		return nil, fmt.Errorf(cmn.ErrInvalidNumberOfArgs, len(p.ABI.Methods[MethodFastAggregateVerify].Inputs), len(args))
 	}
 
 	sigBz, ok := args[1].([]byte)
@@ -102,8 +102,8 @@ func (p Precompile) GeneratePrivateKey(
 	method *abi.Method,
 	args []interface{},
 ) ([]byte, error) {
-	if len(args) != 0 {
-		return nil, fmt.Errorf(cmn.ErrInvalidNumberOfArgs, 3, len(args))
+	if len(args) != len(p.ABI.Methods[MethodGeneratePrivateKey].Inputs) {
+		return nil, fmt.Errorf(cmn.ErrInvalidNumberOfArgs, len(p.ABI.Methods[MethodGeneratePrivateKey].Inputs), len(args))
 	}
 
 	privkey, err := blst.RandKey()
@@ -138,8 +138,8 @@ func (p Precompile) Sign(
 	method *abi.Method,
 	args []interface{},
 ) ([]byte, error) {
-	if len(args) != 2 {
-		return nil, fmt.Errorf(cmn.ErrInvalidNumberOfArgs, 3, len(args))
+	if len(args) != len(p.ABI.Methods[MethodSign].Inputs) {
+		return nil, fmt.Errorf(cmn.ErrInvalidNumberOfArgs, len(p.ABI.Methods[MethodSign].Inputs), len(args))
 	}
 
 	privkeyBz, ok := args[0].([]byte)
@@ -163,8 +163,8 @@ func (p Precompile) AggregatePubkeys(
 	method *abi.Method,
 	args []interface{},
 ) ([]byte, error) {
-	if len(args) != 1 {
-		return nil, fmt.Errorf(cmn.ErrInvalidNumberOfArgs, 3, len(args))
+	if len(args) != len(p.ABI.Methods[MethodAggregatePubkeys].Inputs) {
+		return nil, fmt.Errorf(cmn.ErrInvalidNumberOfArgs, len(p.ABI.Methods[MethodAggregatePubkeys].Inputs), len(args))
 	}
 
 	pubkeysBz, ok := args[0].([][]byte)
@@ -184,8 +184,8 @@ func (p Precompile) AggregateSignatures(
 	method *abi.Method,
 	args []interface{},
 ) ([]byte, error) {
-	if len(args) != 1 {
-		return nil, fmt.Errorf(cmn.ErrInvalidNumberOfArgs, 3, len(args))
+	if len(args) != len(p.ABI.Methods[MethodAggregateSignatures].Inputs) {
+		return nil, fmt.Errorf(cmn.ErrInvalidNumberOfArgs, len(p.ABI.Methods[MethodAggregateSignatures].Inputs), len(args))
 	}
 
 	sigsBz, ok := args[0].([][]byte)
@@ -195,7 +195,7 @@ func (p Precompile) AggregateSignatures(
 
 	aggregatedSig, err := blst.AggregateCompressedSignatures(sigsBz)
 	if err != nil {
-		return nil, fmt.Errorf("failed to aggregate public keys")
+		return nil, fmt.Errorf("failed to aggregate signatures")
 	}
 
 	return method.Outputs.Pack(aggregatedSig.Marshal())
@@ -205,8 +205,8 @@ func (p Precompile) AddTwoPubkeys(
 	method *abi.Method,
 	args []interface{},
 ) ([]byte, error) {
-	if len(args) != 2 {
-		return nil, fmt.Errorf(cmn.ErrInvalidNumberOfArgs, 2, len(args))
+	if len(args) != len(p.ABI.Methods[MethodAddTwoPubkeys].Inputs) {
+		return nil, fmt.Errorf(cmn.ErrInvalidNumberOfArgs, len(p.ABI.Methods[MethodAddTwoPubkeys].Inputs), len(args))
 	}
 
 	pubkeyOneBz, ok := args[0].([]byte)

@@ -1,4 +1,3 @@
-//nolint:dupl
 package keeper
 
 import (
@@ -11,14 +10,14 @@ import (
 func (k Keeper) SetValidatorUpdateBlock(ctx sdk.Context, validatorUpdateBlock types.ValidatorUpdateBlock) {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefix(types.ValidatorUpdateBlockKey))
 	b := k.cdc.MustMarshal(&validatorUpdateBlock)
-	store.Set([]byte{0}, b)
+	store.Set(types.BlockKey, b)
 }
 
 // GetValidatorUpdateBlock returns validatorUpdateBlock
 func (k Keeper) GetValidatorUpdateBlock(ctx sdk.Context) (val types.ValidatorUpdateBlock, found bool) {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefix(types.ValidatorUpdateBlockKey))
 
-	b := store.Get([]byte{0})
+	b := store.Get(types.BlockKey)
 	if b == nil {
 		return val, false
 	}
@@ -30,5 +29,5 @@ func (k Keeper) GetValidatorUpdateBlock(ctx sdk.Context) (val types.ValidatorUpd
 // RemoveValidatorUpdateBlock removes validatorUpdateBlock from the store
 func (k Keeper) RemoveValidatorUpdateBlock(ctx sdk.Context) {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefix(types.ValidatorUpdateBlockKey))
-	store.Delete([]byte{0})
+	store.Delete(types.BlockKey)
 }

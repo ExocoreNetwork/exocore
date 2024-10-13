@@ -52,7 +52,7 @@ func TestGenesisState_Validate(t *testing.T) {
 					MaxNonce:      3,
 					ThresholdA:    2,
 					ThresholdB:    3,
-					Mode:          1,
+					Mode:          types.ConsensusModeASAP,
 					MaxDetId:      5,
 					MaxSizePrices: 100,
 				},

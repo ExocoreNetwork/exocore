@@ -233,7 +233,7 @@ func (k *Keeper) DissociateOperatorFromStaker(
 	}
 	oldOperatorAccAddr, err := sdk.AccAddressFromBech32(associatedOperator)
 	if err != nil {
-		return delegationtype.OperatorAddrIsNotAccAddr
+		return delegationtype.ErrOperatorAddrIsNotAccAddr
 	}
 
 	opFunc := func(keys *delegationtype.SingleDelegationInfoReq, amounts *delegationtype.DelegationAmounts) (bool, error) {
