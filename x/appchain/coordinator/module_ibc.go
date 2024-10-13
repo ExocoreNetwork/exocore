@@ -221,11 +221,12 @@ func (im IBCModule) OnRecvPacket(
 			err = sdkerrors.ErrInvalidType.Wrapf("unknown packet type: %s", data.Type)
 		}
 	}
-	if err != nil {
+	switch {
+	case err != nil:
 		ack = commontypes.NewErrorAcknowledgementWithLog(ctx, err)
-	} else if res != nil {
+	case res != nil:
 		ack = commontypes.NewResultAcknowledgementWithLog(ctx, res)
-	} else {
+	default:
 		ack = commontypes.NewResultAcknowledgementWithLog(ctx, nil)
 	}
 

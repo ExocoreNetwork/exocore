@@ -9,15 +9,19 @@ const maxLogSize = 1024
 
 // NewResultAcknowledgementWithLog creates a result acknowledgement with a log message.
 func NewResultAcknowledgementWithLog(ctx sdk.Context, res []byte) channeltypes.Acknowledgement {
-	logRes := res
 	if len(res) > maxLogSize {
-		logRes = append(res[:maxLogSize], []byte("... (truncated)")...)
+		ctx.Logger().Info(
+			"IBC ResultAcknowledgement constructed",
+			"res_size", len(res),
+			"res_preview", string(res[:maxLogSize]),
+		)
+	} else {
+		ctx.Logger().Info(
+			"IBC ResultAcknowledgement constructed",
+			"res_size", len(res),
+			"res", string(res),
+		)
 	}
-	ctx.Logger().Info(
-		"IBC ResultAcknowledgement constructed",
-		"res_size", len(res),
-		"res_preview", string(logRes),
-	)
 	return channeltypes.NewResultAcknowledgement(res)
 }
 
