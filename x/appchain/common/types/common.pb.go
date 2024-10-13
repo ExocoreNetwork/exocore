@@ -40,7 +40,9 @@ type SubscriberParams struct {
 	// the rewards from the subscriber to the coordinator. It is used in the event
 	// that a channel between coordinator and subscriber exists prior to the
 	// provision of security from Exocore to the appchain. Until a changeover
-	// process is implemented, it is currently unused. (TODO)
+	// process is implemented, it is currently unused (TODO). The advantage
+	// of reusing a channel that was already in place is that the coin denomination
+	// which contains a hash of the channel name will remain unchanged.
 	DistributionTransmissionChannel string `protobuf:"bytes,2,opt,name=distribution_transmission_channel,json=distributionTransmissionChannel,proto3" json:"distribution_transmission_channel,omitempty"`
 	// blocks_per_distribution_transmission is the number of blocks after which the minted
 	// reward is sent to the coordinator.
@@ -57,8 +59,7 @@ type SubscriberParams struct {
 	// transfer_timeout_period is the timeout period used for IBC transfers.
 	TransferTimeoutPeriod time.Duration `protobuf:"bytes,7,opt,name=transfer_timeout_period,json=transferTimeoutPeriod,proto3,stdduration" json:"transfer_timeout_period"`
 	// Params relevant to chain operation
-	// unbonding_duration is the subscriber chain's unbonding duration. it should be less
-	// than the coordinator chain's unbonding duration.
+	// unbonding_duration is the subscriber chain's unbonding duration.
 	// for now, we don't support the subscriber chain using x/epochs as a unit of time; however,
 	// when we do, this duration should be the best approximation of that mechanism, with
 	// 1 epoch added to account for the current epoch. (TODO)

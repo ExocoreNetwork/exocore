@@ -1,11 +1,10 @@
-
 syntax = "proto3";
 package evmos.revenue.v1;
 
 import "evmos/revenue/v1/revenue.proto";
 import "gogoproto/gogo.proto";
 
-option go_package = "github.com/evmos/evmos/v14/x/revenue/v1/types";
+option go_package = "github.com/evmos/evmos/v16/x/revenue/v1/types";
 
 // GenesisState defines the module's genesis state.
 message GenesisState {
@@ -21,8 +20,10 @@ message Params {
   bool enable_revenue = 1;
   // developer_shares defines the proportion of the transaction fees to be
   // distributed to the registered contract owner
-  string developer_shares = 2
-      [(gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec", (gogoproto.nullable) = false];
+  string developer_shares = 2 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+    (gogoproto.nullable) = false
+  ];
   // addr_derivation_cost_create defines the cost of address derivation for
   // verifying the contract deployer at fee registration
   uint64 addr_derivation_cost_create = 3;

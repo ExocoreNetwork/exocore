@@ -37,6 +37,7 @@ func (k Keeper) InitGenesis(ctx sdk.Context, gs types.GenesisState) []abci.Valid
 		panic(fmt.Sprintf("could not create client for coordinator chain: %v", err))
 	}
 	k.SetCoordinatorClientID(ctx, clientID)
+	// TODO: in the case of switchover, this number may be a different value
 	k.SetValsetUpdateIDForHeight(ctx, ctx.BlockHeight(), types.FirstValsetUpdateID)
 	return k.ApplyValidatorChanges(ctx, gs.Coordinator.InitialValSet)
 }

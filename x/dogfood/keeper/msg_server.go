@@ -11,7 +11,7 @@ import (
 
 	"github.com/ExocoreNetwork/exocore/x/dogfood/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	epochstypes "github.com/evmos/evmos/v14/x/epochs/types"
+	epochstypes "github.com/evmos/evmos/v16/x/epochs/types"
 )
 
 type msgServer struct {
@@ -121,7 +121,7 @@ func (k Keeper) UpdateParams(
 	}
 	err := k.avsKeeper.UpdateAVSInfo(c, &avstypes.AVSRegisterOrDeregisterParams{
 		AvsName:           c.ChainID(),
-		AvsAddress:        avsAddr.String(),
+		AvsAddress:        avsAddr,
 		AssetID:           nextParams.AssetIDs,
 		UnbondingPeriod:   uint64(nextParams.EpochsUntilUnbonded),
 		MinSelfDelegation: nextParams.MinSelfDelegation.Uint64(),

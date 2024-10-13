@@ -1,7 +1,6 @@
 package keeper_test
 
 import (
-	"fmt"
 	"strings"
 	"time"
 
@@ -51,11 +50,11 @@ func (suite *OperatorTestSuite) prepareDeposit(assetAddr common.Address, amount 
 	suite.clientChainLzID = clientChainLzID
 	suite.depositAmount = amount
 	suite.updatedAmountForOptIn = sdkmath.NewInt(20)
-	suite.stakerID, suite.assetID = assetstypes.GetStakeIDAndAssetID(suite.clientChainLzID, suite.Address[:], suite.assetAddr[:])
+	suite.stakerID, suite.assetID = assetstypes.GetStakerIDAndAssetID(suite.clientChainLzID, suite.Address[:], suite.assetAddr[:])
 	// staking assets
 	depositParam := &assetskeeper.DepositWithdrawParams{
 		ClientChainLzID: suite.clientChainLzID,
-		Action:          assetstypes.Deposit,
+		Action:          assetstypes.DepositLST,
 		StakerAddress:   suite.Address[:],
 		OpAmount:        suite.depositAmount,
 		AssetsAddress:   assetAddr[:],
@@ -123,7 +122,6 @@ func (suite *OperatorTestSuite) CheckState(expectedState *StateForCheck) {
 
 	optedUSDValues, err := suite.App.OperatorKeeper.GetOperatorOptedUSDValue(suite.Ctx, suite.avsAddr, suite.operatorAddr.String())
 	if expectedState.AVSOperatorShare.IsNil() {
-		fmt.Println("the err is:", err)
 		suite.True(strings.Contains(err.Error(), operatorTypes.ErrNoKeyInTheStore.Error()))
 	} else {
 		suite.NoError(err)

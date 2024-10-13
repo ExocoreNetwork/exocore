@@ -3,6 +3,8 @@ package keeper
 import (
 	"fmt"
 
+	sdkmath "cosmossdk.io/math"
+
 	"github.com/cometbft/cometbft/libs/log"
 	"github.com/cosmos/cosmos-sdk/codec"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
@@ -21,6 +23,8 @@ type (
 		paramstore paramtypes.Subspace
 		// authority  string
 		common.KeeperDogfood
+		delegationKeeper types.DelegationKeeper
+		assetsKeeper     types.AssetsKeeper
 	}
 )
 
@@ -32,6 +36,8 @@ func NewKeeper(
 	memKey storetypes.StoreKey,
 	ps paramtypes.Subspace,
 	sKeeper common.KeeperDogfood,
+	delegationKeeper types.DelegationKeeper,
+	assetsKeeper types.AssetsKeeper,
 ) Keeper {
 	// set KeyTable if it has not already been set
 	if !ps.HasKeyTable() {
@@ -39,14 +45,22 @@ func NewKeeper(
 	}
 
 	return Keeper{
-		cdc:           cdc,
-		storeKey:      storeKey,
-		memKey:        memKey,
-		paramstore:    ps,
-		KeeperDogfood: sKeeper,
+		cdc:              cdc,
+		storeKey:         storeKey,
+		memKey:           memKey,
+		paramstore:       ps,
+		KeeperDogfood:    sKeeper,
+		delegationKeeper: delegationKeeper,
+		assetsKeeper:     assetsKeeper,
 	}
 }
 
 func (k Keeper) Logger(ctx sdk.Context) log.Logger {
 	return ctx.Logger().With("module", fmt.Sprintf("x/%s", types.ModuleName))
+}
+
+// UpdateNativeTokenValidatorInfo it's used to fix the issue of missing interface.
+// it will be removed when merging with the oracle PR.
+func (k Keeper) UpdateNativeTokenValidatorInfo(_ sdk.Context, _, _, _ string, _ sdkmath.Int) error {
+	return nil
 }

@@ -4,6 +4,8 @@ import (
 	"fmt"
 
 	assetstype "github.com/ExocoreNetwork/exocore/x/assets/types"
+	delegationkeeper "github.com/ExocoreNetwork/exocore/x/delegation/keeper"
+	"github.com/ethereum/go-ethereum/common/hexutil"
 
 	errorsmod "cosmossdk.io/errors"
 	"cosmossdk.io/math"
@@ -11,12 +13,45 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-func (k Keeper) GetStakerAssetInfos(ctx sdk.Context, stakerID string) (assetsInfo map[string]*assetstype.StakerAssetInfo, err error) {
+// AllDeposits
+func (k Keeper) AllDeposits(ctx sdk.Context) (deposits []assetstype.DepositsByStaker, err error) {
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), assetstype.KeyPrefixReStakerAssetInfos)
+	iterator := sdk.KVStorePrefixIterator(store, []byte{})
+	defer iterator.Close()
+
+	ret := make([]assetstype.DepositsByStaker, 0)
+	var previousStakerID string
+	for ; iterator.Valid(); iterator.Next() {
+		var stateInfo assetstype.StakerAssetInfo
+		k.cdc.MustUnmarshal(iterator.Value(), &stateInfo)
+		keyList, err := assetstype.ParseJoinedStoreKey(iterator.Key(), 2)
+		if err != nil {
+			return nil, err
+		}
+		stakerID, assetID := keyList[0], keyList[1]
+		if previousStakerID != stakerID {
+			depositsByStaker := assetstype.DepositsByStaker{
+				StakerID: stakerID,
+				Deposits: make([]assetstype.DepositByAsset, 0),
+			}
+			ret = append(ret, depositsByStaker)
+		}
+		index := len(ret) - 1
+		ret[index].Deposits = append(ret[index].Deposits, assetstype.DepositByAsset{
+			AssetID: assetID,
+			Info:    stateInfo,
+		})
+		previousStakerID = stakerID
+	}
+	return ret, nil
+}
+
+func (k Keeper) GetStakerAssetInfos(ctx sdk.Context, stakerID string) (assetsInfo []assetstype.DepositByAsset, err error) {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), assetstype.KeyPrefixReStakerAssetInfos)
 	iterator := sdk.KVStorePrefixIterator(store, []byte(stakerID))
 	defer iterator.Close()
 
-	ret := make(map[string]*assetstype.StakerAssetInfo, 0)
+	ret := make([]assetstype.DepositByAsset, 0)
 	for ; iterator.Valid(); iterator.Next() {
 		var stateInfo assetstype.StakerAssetInfo
 		k.cdc.MustUnmarshal(iterator.Value(), &stateInfo)
@@ -25,12 +60,59 @@ func (k Keeper) GetStakerAssetInfos(ctx sdk.Context, stakerID string) (assetsInf
 			return nil, err
 		}
 		assetID := keyList[1]
-		ret[assetID] = &stateInfo
+		ret = append(ret, assetstype.DepositByAsset{
+			AssetID: assetID,
+			Info:    stateInfo,
+		})
 	}
+	// add exo-native-token info
+	info, err := k.GetStakerSpecifiedAssetInfo(ctx, stakerID, assetstype.ExocoreAssetID)
+	if err != nil {
+		return nil, err
+	}
+	ret = append(ret, assetstype.DepositByAsset{
+		AssetID: assetstype.ExocoreAssetID,
+		Info:    *info,
+	})
 	return ret, nil
 }
 
 func (k Keeper) GetStakerSpecifiedAssetInfo(ctx sdk.Context, stakerID string, assetID string) (info *assetstype.StakerAssetInfo, err error) {
+	if assetID == assetstype.ExocoreAssetID {
+		stakerAddrStr, _, err := assetstype.ParseID(stakerID)
+		if err != nil {
+			return nil, errorsmod.Wrap(err, "failed to parse stakerID")
+		}
+		stakerAccDecode, err := hexutil.Decode(stakerAddrStr)
+		if err != nil {
+			return nil, errorsmod.Wrap(err, "failed to decode staker address")
+		}
+		stakerAcc := sdk.AccAddress(stakerAccDecode)
+		balance := k.bk.GetBalance(ctx, stakerAcc, assetstype.ExocoreAssetDenom)
+		info := &assetstype.StakerAssetInfo{
+			TotalDepositAmount:        balance.Amount,
+			WithdrawableAmount:        balance.Amount,
+			PendingUndelegationAmount: math.NewInt(0),
+		}
+
+		delegationInfoRecords, err := k.dk.GetDelegationInfo(ctx, stakerID, assetID)
+		if err != nil {
+			return nil, errorsmod.Wrap(err, "failed to GetDelegationInfo")
+		}
+		for operator, record := range delegationInfoRecords.DelegationInfos {
+			operatorAssetInfo, err := k.GetOperatorSpecifiedAssetInfo(ctx, sdk.MustAccAddressFromBech32(operator), assetID)
+			if err != nil {
+				return nil, errorsmod.Wrap(err, "failed to GetOperatorSpecifiedAssetInfo")
+			}
+			undelegatableTokens, err := delegationkeeper.TokensFromShares(record.UndelegatableShare, operatorAssetInfo.TotalShare, operatorAssetInfo.TotalAmount)
+			if err != nil {
+				return nil, errorsmod.Wrap(err, "failed to get shares from token")
+			}
+			info.TotalDepositAmount = info.TotalDepositAmount.Add(undelegatableTokens).Add(record.WaitUndelegationAmount)
+			info.PendingUndelegationAmount = info.PendingUndelegationAmount.Add(record.WaitUndelegationAmount)
+		}
+		return info, nil
+	}
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), assetstype.KeyPrefixReStakerAssetInfos)
 	key := assetstype.GetJoinedStoreKey(stakerID, assetID)
 	value := store.Get(key)
@@ -51,9 +133,9 @@ func (k Keeper) UpdateStakerAssetState(ctx sdk.Context, stakerID string, assetID
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), assetstype.KeyPrefixReStakerAssetInfos)
 	key := assetstype.GetJoinedStoreKey(stakerID, assetID)
 	assetState := assetstype.StakerAssetInfo{
-		TotalDepositAmount:  math.NewInt(0),
-		WithdrawableAmount:  math.NewInt(0),
-		WaitUnbondingAmount: math.NewInt(0),
+		TotalDepositAmount:        math.NewInt(0),
+		WithdrawableAmount:        math.NewInt(0),
+		PendingUndelegationAmount: math.NewInt(0),
 	}
 	value := store.Get(key)
 	if value != nil {
@@ -68,7 +150,7 @@ func (k Keeper) UpdateStakerAssetState(ctx sdk.Context, stakerID string, assetID
 	if err != nil {
 		return errorsmod.Wrap(err, "UpdateStakerAssetState CanWithdrawAmountOrWantChangeValue error")
 	}
-	err = assetstype.UpdateAssetValue(&assetState.WaitUnbondingAmount, &changeAmount.WaitUnbondingAmount)
+	err = assetstype.UpdateAssetValue(&assetState.PendingUndelegationAmount, &changeAmount.PendingUndelegationAmount)
 	if err != nil {
 		return errorsmod.Wrap(err, "UpdateStakerAssetState WaitUndelegationAmountOrWantChangeValue error")
 	}

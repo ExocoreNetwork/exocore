@@ -4,15 +4,17 @@ import (
 	"math/big"
 
 	"github.com/ExocoreNetwork/exocore/precompiles/delegation"
+	"golang.org/x/exp/slices"
 
 	tmtypes "github.com/cometbft/cometbft/types"
 
 	errorsmod "cosmossdk.io/errors"
+	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	evmostypes "github.com/evmos/evmos/v14/types"
-	"github.com/evmos/evmos/v14/x/evm/statedb"
-	"github.com/evmos/evmos/v14/x/evm/types"
+	evmostypes "github.com/evmos/evmos/v16/types"
+	"github.com/evmos/evmos/v16/x/evm/statedb"
+	"github.com/evmos/evmos/v16/x/evm/types"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core"
@@ -165,6 +167,9 @@ func (k *Keeper) ApplyTransaction(ctx sdk.Context, tx *ethtypes.Transaction) (*t
 	// pass true to commit the StateDB
 	res, err := k.ApplyMessageWithConfig(tmpCtx, msg, nil, true, cfg, txConfig)
 	if err != nil {
+		// when a transaction contains multiple msg, as long as one of the msg fails
+		// all gas will be deducted. so is not msg.Gas()
+		k.ResetGasMeterAndConsumeGas(ctx, ctx.GasMeter().Limit())
 		return nil, errorsmod.Wrap(err, "failed to apply ethereum core message")
 	}
 
@@ -220,7 +225,8 @@ func (k *Keeper) ApplyTransaction(ctx sdk.Context, tx *ethtypes.Transaction) (*t
 			commit()
 			// Since the post-processing can alter the log, we need to update the result
 			res.Logs = types.NewLogsFromEth(receipt.Logs)
-			ctx.EventManager().EmitEvents(tmpCtx.EventManager().Events())
+			// no need to re-emit the events on ctx; see
+			// https://github.com/evmos/evmos/pull/2559
 		}
 	}
 
@@ -307,6 +313,7 @@ func (k *Keeper) ApplyMessageWithConfig(ctx sdk.Context,
 		ret   []byte // return bytes from evm execution
 		vmErr error  // vm errors do not effect consensus and are therefore not assigned to err
 	)
+
 	// return error if contract creation or call are disabled through governance
 	if !cfg.Params.EnableCreate && msg.To() == nil {
 		return nil, errorsmod.Wrap(types.ErrCreateDisabled, "failed to create new contract")
@@ -328,6 +335,21 @@ func (k *Keeper) ApplyMessageWithConfig(ctx sdk.Context,
 		copy(activePrecompiles[:len(vm.PrecompiledAddressesBerlin)], vm.PrecompiledAddressesBerlin)
 		copy(activePrecompiles[len(vm.PrecompiledAddressesBerlin):], customPrecompiles)
 
+		// Check if the transaction is sent to an inactive precompile
+		//
+		// NOTE: This has to be checked here instead of in the actual evm.Call method
+		// because evm.WithPrecompiles only populates the EVM with the active precompiles,
+		// so there's no telling if the To address is an inactive precompile further down the call stack.
+		toAddr := msg.To()
+		if toAddr != nil &&
+			slices.Contains(types.AvailableEVMExtensions, toAddr.String()) &&
+			!slices.Contains(activePrecompiles, *toAddr) {
+			return nil, errorsmod.Wrap(types.ErrInactivePrecompile, "failed to call precompile")
+		}
+
+		// NOTE: this only adds active precompiles to the EVM.
+		// This means that evm.Precompile(addr) will return false for inactive precompiles
+		// even though this is actually a reserved address.
 		precompileMap := k.Precompiles(activePrecompiles...)
 		evm.WithPrecompiles(precompileMap, activePrecompiles)
 	}
@@ -412,7 +434,7 @@ func (k *Keeper) ApplyMessageWithConfig(ctx sdk.Context,
 	// calculate a minimum amount of gas to be charged to sender if GasLimit
 	// is considerably higher than GasUsed to stay more aligned with Tendermint gas mechanics
 	// for more info https://github.com/evmos/ethermint/issues/1085
-	gasLimit := sdk.NewDec(int64(msg.Gas())) // #nosec G115
+	gasLimit := math.LegacyNewDec(int64(msg.Gas())) // #nosec G115
 	minGasMultiplier := k.GetMinGasMultiplier(ctx)
 	minimumGasUsed := gasLimit.Mul(minGasMultiplier)
 
@@ -424,7 +446,7 @@ func (k *Keeper) ApplyMessageWithConfig(ctx sdk.Context,
 		return nil, errorsmod.Wrapf(types.ErrGasOverflow, "message gas limit < leftover gas (%d < %d)", msg.Gas(), leftoverGas)
 	}
 	// #nosec G115
-	gasUsed := sdk.MaxDec(minimumGasUsed, sdk.NewDec(int64(temporaryGasUsed))).TruncateInt().Uint64()
+	gasUsed := math.LegacyMaxDec(minimumGasUsed, math.LegacyNewDec(int64(temporaryGasUsed))).TruncateInt().Uint64()
 	// reset leftoverGas, to be used by the tracer
 	leftoverGas = msg.Gas() - gasUsed
 

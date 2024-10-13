@@ -1,9 +1,10 @@
 package keeper
 
 import (
+	errorsmod "cosmossdk.io/errors"
 	sdkmath "cosmossdk.io/math"
 
-	exocoretypes "github.com/ExocoreNetwork/exocore/types/keys"
+	keytypes "github.com/ExocoreNetwork/exocore/types/keys"
 	delegationtypes "github.com/ExocoreNetwork/exocore/x/delegation/types"
 	"github.com/ExocoreNetwork/exocore/x/operator/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -22,7 +23,7 @@ func (k *Keeper) OptIn(
 ) error {
 	// check that the operator is registered
 	if !k.IsOperator(ctx, operatorAddress) {
-		return delegationtypes.ErrOperatorNotExist
+		return errorsmod.Wrapf(delegationtypes.ErrOperatorNotExist, "operator is :%s", operatorAddress)
 	}
 	// check that the AVS is registered
 	if isAvs, _ := k.avsKeeper.IsAVS(ctx, avsAddr); !isAvs {
@@ -32,6 +33,20 @@ func (k *Keeper) OptIn(
 	if k.IsOptedIn(ctx, operatorAddress.String(), avsAddr) {
 		return types.ErrAlreadyOptedIn
 	}
+	// Check if the USD value of the operator is greater than or equal to the self-delegation
+	// configured by the AVS. This is used to prevent a DDOS attack from zero-USD value opting in.
+	operatorUSDValues, err := k.GetOrCalculateOperatorUSDValues(ctx, operatorAddress, avsAddr)
+	if err != nil {
+		return errorsmod.Wrapf(err, "OptIn: error when calculating operator USD value, operator:%s avsAddr:%s", operatorAddress.String(), avsAddr)
+	}
+	minSelfDelegation, err := k.avsKeeper.GetAVSMinimumSelfDelegation(ctx, avsAddr)
+	if err != nil {
+		return errorsmod.Wrapf(err, "OptIn: error when getting minimum self delegation of AVS, avsAddr:%s", avsAddr)
+	}
+	if operatorUSDValues.SelfUSDValue.LT(minSelfDelegation) {
+		return errorsmod.Wrapf(types.ErrMinDelegationNotMet, "operator:%s avs:%s selfUSDValue:%s minSelfDelegation:%s", operatorAddress.String(), avsAddr, operatorUSDValues.SelfUSDValue, minSelfDelegation)
+	}
+
 	// do not allow frozen operators to do anything meaningful
 	if k.slashKeeper.IsOperatorFrozen(ctx, operatorAddress) {
 		return delegationtypes.ErrOperatorIsFrozen
@@ -41,7 +56,7 @@ func (k *Keeper) OptIn(
 	// but the actual voting power calculation and update will be performed at the
 	// end of epoch of the AVS. So there isn't any reward in the opted-in epoch for the
 	// operator
-	err := k.InitOperatorUSDValue(ctx, avsAddr, operatorAddress.String())
+	err = k.InitOperatorUSDValue(ctx, avsAddr, operatorAddress.String())
 	if err != nil {
 		return err
 	}
@@ -67,7 +82,7 @@ func (k *Keeper) OptIn(
 // OptInWithConsKey is a wrapper function to call OptIn and then SetOperatorConsKeyForChainID.
 // The caller must ensure that the operatorAddress passed is valid and that the AVS is a chain-type AVS.
 func (k Keeper) OptInWithConsKey(
-	ctx sdk.Context, operatorAddress sdk.AccAddress, avsAddr string, key exocoretypes.WrappedConsKey,
+	ctx sdk.Context, operatorAddress sdk.AccAddress, avsAddr string, key keytypes.WrappedConsKey,
 ) error {
 	err := k.OptIn(ctx, operatorAddress, avsAddr)
 	if err != nil {

@@ -6,5 +6,5 @@ option go_package = "github.com/ExocoreNetwork/exocore/x/oracle/types";
 // ValidatorUpdateBlock
 message ValidatorUpdateBlock {
   // block height on which the validator set changed
-  uint64 block = 1;  
+  uint64 block = 1;
 }

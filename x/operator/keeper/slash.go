@@ -1,7 +1,7 @@
 package keeper
 
 import (
-	"fmt"
+	"strings"
 
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	"github.com/ethereum/go-ethereum/common/hexutil"
@@ -16,10 +16,10 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-// GetSlashIDForDogfood It use infractionType+'/'+'infractionHeight' as the slashID, because /* the slash  */event occurs in dogfood doesn't have a TxID. It isn't submitted through an external transaction.
+// GetSlashIDForDogfood It use infractionType+'_'+'infractionHeight' as the slashID, because /* the slash  */event occurs in dogfood doesn't have a TxID. It isn't submitted through an external transaction.
 func GetSlashIDForDogfood(infraction stakingtypes.Infraction, infractionHeight int64) string {
 	// #nosec G701
-	return string(assetstype.GetJoinedStoreKey(hexutil.EncodeUint64(uint64(infraction)), hexutil.EncodeUint64(uint64(infractionHeight))))
+	return strings.Join([]string{hexutil.EncodeUint64(uint64(infraction)), hexutil.EncodeUint64(uint64(infractionHeight))}, utils.DelimiterForID)
 }
 
 // SlashFromUndelegation executes the slash from an undelegation
@@ -44,9 +44,12 @@ func SlashFromUndelegation(undelegation *delegationtype.UndelegationRecord, slas
 }
 
 func (k *Keeper) CheckSlashParameter(ctx sdk.Context, parameter *types.SlashInputInfo) error {
+	if parameter.SlashProportion.IsNil() || parameter.SlashProportion.IsNegative() {
+		return errorsmod.Wrapf(types.ErrValueIsNilOrZero, "Invalid SlashProportion; expected non-nil and non-negative, got: %+v", parameter.SlashProportion)
+	}
 	height := ctx.BlockHeight()
 	if parameter.SlashEventHeight > height {
-		return errorsmod.Wrap(types.ErrSlashOccurredHeight, fmt.Sprintf("slashEventHeight:%d,curHeight:%d", parameter.SlashEventHeight, height))
+		return errorsmod.Wrapf(types.ErrSlashOccurredHeight, "slashEventHeight:%d,curHeight:%d", parameter.SlashEventHeight, height)
 	}
 
 	if parameter.IsDogFood {
@@ -82,8 +85,8 @@ func (k *Keeper) SlashAssets(ctx sdk.Context, parameter *types.SlashInputInfo) (
 	executionInfo := &types.SlashExecutionInfo{
 		SlashProportion:    newSlashProportion,
 		SlashValue:         slashUSDValue,
-		SlashUndelegations: make([]*types.SlashFromUndelegation, 0),
-		SlashAssetsPool:    make([]*types.SlashFromAssetsPool, 0),
+		SlashUndelegations: make([]types.SlashFromUndelegation, 0),
+		SlashAssetsPool:    make([]types.SlashFromAssetsPool, 0),
 	}
 	// slash from the unbonding stakers
 	if parameter.SlashEventHeight < ctx.BlockHeight() {
@@ -91,7 +94,7 @@ func (k *Keeper) SlashAssets(ctx sdk.Context, parameter *types.SlashInputInfo) (
 		opFunc := func(undelegation *delegationtype.UndelegationRecord) error {
 			slashFromUndelegation := SlashFromUndelegation(undelegation, newSlashProportion)
 			if slashFromUndelegation != nil {
-				executionInfo.SlashUndelegations = append(executionInfo.SlashUndelegations, slashFromUndelegation)
+				executionInfo.SlashUndelegations = append(executionInfo.SlashUndelegations, *slashFromUndelegation)
 			}
 			return nil
 		}
@@ -113,7 +116,8 @@ func (k *Keeper) SlashAssets(ctx sdk.Context, parameter *types.SlashInputInfo) (
 		// all shares need to be cleared if the asset amount is slashed to zero,
 		// otherwise there will be a problem in updating the shares when handling
 		// the new delegations.
-		if remainingAmount.IsZero() {
+		if remainingAmount.IsZero() &&
+			k.delegationKeeper.HasStakerList(ctx, parameter.Operator.String(), assetID) {
 			// clear the share of other stakers
 			stakerList, err := k.delegationKeeper.GetStakersByOperator(ctx, parameter.Operator.String(), assetID)
 			if err != nil {
@@ -131,7 +135,7 @@ func (k *Keeper) SlashAssets(ctx sdk.Context, parameter *types.SlashInputInfo) (
 			state.OperatorShare = sdkmath.LegacyNewDec(0)
 		}
 		state.TotalAmount = remainingAmount
-		executionInfo.SlashAssetsPool = append(executionInfo.SlashAssetsPool, &types.SlashFromAssetsPool{
+		executionInfo.SlashAssetsPool = append(executionInfo.SlashAssetsPool, types.SlashFromAssetsPool{
 			AssetID: assetID,
 			Amount:  slashAmount,
 		})
@@ -181,7 +185,7 @@ func (k Keeper) SlashWithInfractionReason(
 	chainID := utils.ChainIDWithoutRevision(ctx.ChainID())
 	isAvs, avsAddr := k.avsKeeper.IsAVSByChainID(ctx, chainID)
 	if !isAvs {
-		k.Logger(ctx).Error("the chainID is not supported by AVS", chainID)
+		k.Logger(ctx).Error("the chainID is not supported by AVS", "chainID", chainID)
 		return sdkmath.NewInt(0)
 	}
 	slashID := GetSlashIDForDogfood(infraction, infractionHeight)
@@ -190,14 +194,14 @@ func (k Keeper) SlashWithInfractionReason(
 		Power:            power,
 		SlashType:        uint32(infraction),
 		Operator:         addr,
-		AVSAddr:          avsAddr.Hex(),
+		AVSAddr:          avsAddr,
 		SlashID:          slashID,
 		SlashEventHeight: infractionHeight,
 		SlashProportion:  slashFactor,
 	}
 	err := k.Slash(ctx, slashParam)
 	if err != nil {
-		k.Logger(ctx).Error(err.Error(), avsAddr.Hex())
+		k.Logger(ctx).Error(err.Error(), avsAddr)
 		return sdkmath.NewInt(0)
 	}
 	// todo: The returned value should be the amount of burned Exo if we considering a slash from the reward
@@ -209,7 +213,7 @@ func (k Keeper) SlashWithInfractionReason(
 func (k Keeper) IsOperatorJailedForChainID(ctx sdk.Context, consAddr sdk.ConsAddress, chainID string) bool {
 	found, operatorAddr := k.GetOperatorAddressForChainIDAndConsAddr(ctx, chainID, consAddr)
 	if !found {
-		k.Logger(ctx).Info("couldn't find operator by consensus address and chainID", consAddr, chainID)
+		k.Logger(ctx).Info("couldn't find operator by consensus address and chainID", "consAddr", consAddr, "chainID", chainID)
 		return false
 	}
 
@@ -218,9 +222,9 @@ func (k Keeper) IsOperatorJailedForChainID(ctx sdk.Context, consAddr sdk.ConsAdd
 		k.Logger(ctx).Error("the chainID is not supported by AVS", chainID)
 		return false
 	}
-	optInfo, err := k.GetOptedInfo(ctx, operatorAddr.String(), avsAddr.Hex())
+	optInfo, err := k.GetOptedInfo(ctx, operatorAddr.String(), avsAddr)
 	if err != nil {
-		k.Logger(ctx).Error(err.Error(), operatorAddr, avsAddr.Hex())
+		k.Logger(ctx).Error(err.Error(), operatorAddr, avsAddr)
 		return false
 	}
 	return optInfo.Jailed
@@ -229,20 +233,20 @@ func (k Keeper) IsOperatorJailedForChainID(ctx sdk.Context, consAddr sdk.ConsAdd
 func (k *Keeper) SetJailedState(ctx sdk.Context, consAddr sdk.ConsAddress, chainID string, jailed bool) {
 	found, operatorAddr := k.GetOperatorAddressForChainIDAndConsAddr(ctx, chainID, consAddr)
 	if !found {
-		k.Logger(ctx).Info("couldn't find operator by consensus address and chainID", consAddr, chainID)
+		k.Logger(ctx).Info("couldn't find operator by consensus address and chainID", "consAddr", consAddr, "chainID", chainID)
 		return
 	}
 
 	isAvs, avsAddr := k.avsKeeper.IsAVSByChainID(ctx, chainID)
 	if !isAvs {
-		k.Logger(ctx).Error("the chainID is not supported by AVS", chainID)
+		k.Logger(ctx).Error("the chainID is not supported by AVS", "chainID", chainID)
 		return
 	}
 
 	handleFunc := func(info *types.OptedInfo) {
 		info.Jailed = jailed
 	}
-	err := k.HandleOptedInfo(ctx, operatorAddr.String(), avsAddr.Hex(), handleFunc)
+	err := k.HandleOptedInfo(ctx, operatorAddr.String(), avsAddr, handleFunc)
 	if err != nil {
 		k.Logger(ctx).Error(err.Error(), chainID)
 	}

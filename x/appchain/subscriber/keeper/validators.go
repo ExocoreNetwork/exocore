@@ -3,7 +3,7 @@ package keeper
 import (
 	"fmt"
 
-	exocoretypes "github.com/ExocoreNetwork/exocore/types/keys"
+	keytypes "github.com/ExocoreNetwork/exocore/types/keys"
 	types "github.com/ExocoreNetwork/exocore/x/appchain/subscriber/types"
 	abci "github.com/cometbft/cometbft/abci/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -45,7 +45,7 @@ func (k Keeper) ApplyValidatorChanges(
 	logger := k.Logger(ctx)
 	for i := range changes {
 		change := changes[i] // avoid implicit memory aliasing
-		wrappedKey := exocoretypes.NewWrappedConsKeyFromTmProtoKey(&change.PubKey)
+		wrappedKey := keytypes.NewWrappedConsKeyFromTmProtoKey(&change.PubKey)
 		if wrappedKey == nil {
 			// an error in deserializing the key would indicate that the coordinator
 			// has provided invalid data. this is a critical error and should be

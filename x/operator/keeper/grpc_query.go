@@ -4,10 +4,10 @@ import (
 	"context"
 	"errors"
 
+	"github.com/ExocoreNetwork/exocore/utils"
 	assetstype "github.com/ExocoreNetwork/exocore/x/assets/types"
 
-	exocoretypes "github.com/ExocoreNetwork/exocore/types/keys"
-	"github.com/ExocoreNetwork/exocore/utils"
+	keytypes "github.com/ExocoreNetwork/exocore/types/keys"
 	"github.com/ExocoreNetwork/exocore/x/operator/types"
 	tmprotocrypto "github.com/cometbft/cometbft/proto/tendermint/crypto"
 	"github.com/cosmos/cosmos-sdk/store/prefix"
@@ -157,7 +157,7 @@ func (k Keeper) QueryAllOperatorConsAddrsByChainID(
 		if err := ret.Unmarshal(value); err != nil {
 			return err
 		}
-		wrappedKey := exocoretypes.NewWrappedConsKeyFromTmProtoKey(ret)
+		wrappedKey := keytypes.NewWrappedConsKeyFromTmProtoKey(ret)
 		if wrappedKey == nil {
 			return types.ErrInvalidConsKey
 		}
@@ -224,5 +224,27 @@ func (k *Keeper) QueryOperatorSlashInfo(goCtx context.Context, req *types.QueryO
 	return &types.QueryOperatorSlashInfoResponse{
 		AllSlashInfo: res,
 		Pagination:   pageRes,
+	}, nil
+}
+
+func (k *Keeper) QueryAllOperatorsWithOptInAVS(goCtx context.Context, req *types.QueryAllOperatorsByOptInAVSRequest) (*types.QueryAllOperatorsByOptInAVSResponse, error) {
+	ctx := sdk.UnwrapSDKContext(goCtx)
+	operatorList, err := k.GetOptedInOperatorListByAVS(ctx, req.Avs)
+	if err != nil {
+		return nil, err
+	}
+	return &types.QueryAllOperatorsByOptInAVSResponse{
+		OperatorList: operatorList,
+	}, nil
+}
+
+func (k *Keeper) QueryAllAVSsByOperator(goCtx context.Context, req *types.QueryAllAVSsByOperatorRequest) (*types.QueryAllAVSsByOperatorResponse, error) {
+	ctx := sdk.UnwrapSDKContext(goCtx)
+	avsList, err := k.GetOptedInAVSForOperator(ctx, req.Operator)
+	if err != nil {
+		return nil, err
+	}
+	return &types.QueryAllAVSsByOperatorResponse{
+		AvsList: avsList,
 	}, nil
 }

@@ -1,7 +1,7 @@
 package keeper
 
 import (
-	exocoretypes "github.com/ExocoreNetwork/exocore/types/keys"
+	keytypes "github.com/ExocoreNetwork/exocore/types/keys"
 	"github.com/ExocoreNetwork/exocore/utils"
 	operatortypes "github.com/ExocoreNetwork/exocore/x/operator/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -23,7 +23,7 @@ func (k *Keeper) OperatorHooks() OperatorHooksWrapper {
 // AfterOperatorKeySet is the implementation of the operator hooks.
 // CONTRACT: an operator cannot set their key if they are already in the process of removing it.
 func (h OperatorHooksWrapper) AfterOperatorKeySet(
-	sdk.Context, sdk.AccAddress, string, exocoretypes.WrappedConsKey,
+	sdk.Context, sdk.AccAddress, string, keytypes.WrappedConsKey,
 ) {
 	// an operator opting in does not meaningfully affect this module, since
 	// this information will be fetched at the end of the epoch
@@ -36,13 +36,13 @@ func (h OperatorHooksWrapper) AfterOperatorKeySet(
 // CONTRACT: key replacement from newKey to oldKey is not allowed, after a replacement from
 // oldKey to newKey.
 func (h OperatorHooksWrapper) AfterOperatorKeyReplaced(
-	ctx sdk.Context, _ sdk.AccAddress, oldKey exocoretypes.WrappedConsKey,
-	_ exocoretypes.WrappedConsKey, chainID string,
+	ctx sdk.Context, _ sdk.AccAddress, oldKey keytypes.WrappedConsKey,
+	_ keytypes.WrappedConsKey, chainID string,
 ) {
 	// the impact of key replacement is:
 	// 1. vote power of old key is 0, which happens automatically at epoch end in EndBlock. this
 	// is because the key is in the previous set but not in the new one and our code will queue
-	// a validator update of 0 fot this.
+	// a validator update of 0 for this.
 	// 2. vote power of new key is calculated, which happens automatically at epoch end in
 	// EndBlock.
 	// 3. X epochs later, the reverse lookup of old cons addr + chain id -> operator addr
@@ -72,7 +72,7 @@ func (h OperatorHooksWrapper) AfterOperatorKeyReplaced(
 
 // AfterOperatorKeyRemovalInitiated is the implementation of the operator hooks.
 func (h OperatorHooksWrapper) AfterOperatorKeyRemovalInitiated(
-	ctx sdk.Context, operator sdk.AccAddress, chainID string, key exocoretypes.WrappedConsKey,
+	ctx sdk.Context, operator sdk.AccAddress, chainID string, key keytypes.WrappedConsKey,
 ) {
 	// the impact of key removal is:
 	// 1. vote power of the operator is 0, which happens automatically at epoch end in EndBlock.

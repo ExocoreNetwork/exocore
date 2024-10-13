@@ -11,7 +11,7 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/vm"
-	cmn "github.com/evmos/evmos/v14/precompiles/common"
+	cmn "github.com/evmos/evmos/v16/precompiles/common"
 )
 
 var _ vm.PrecompiledContract = &Precompile{}
@@ -84,6 +84,10 @@ func (p Precompile) Run(evm *vm.EVM, contract *vm.Contract, readOnly bool) (bz [
 	// It avoids panics and returns the out of gas error so the EVM can continue gracefully.
 	defer cmn.HandleGasError(ctx, contract, initialGas, &err)()
 
+	if err := stateDB.Commit(); err != nil {
+		return nil, err
+	}
+
 	switch method.Name {
 	case MethodRegisterAVS:
 		bz, err = p.RegisterAVS(ctx, evm.Origin, contract, stateDB, method, args)
@@ -149,6 +153,12 @@ func (p Precompile) Run(evm *vm.EVM, contract *vm.Contract, readOnly bool) (bz [
 			ctx.Logger().Error("internal error when calling avs precompile", "module", "avs precompile", "method", method.Name, "err", err)
 			bz, err = method.Outputs.Pack(common.Big0)
 		}
+	case MethodChallenge:
+		bz, err = p.Challenge(ctx, evm.Origin, contract, stateDB, method, args)
+		if err != nil {
+			ctx.Logger().Error("internal error when calling avs precompile", "module", "avs precompile", "method", method.Name, "err", err)
+			bz, err = method.Outputs.Pack(false)
+		}
 	}
 
 	if err != nil {
@@ -171,7 +181,7 @@ func (p Precompile) Run(evm *vm.EVM, contract *vm.Contract, readOnly bool) (bz [
 func (Precompile) IsTransaction(methodID string) bool {
 	switch methodID {
 	case MethodRegisterAVS, MethodDeregisterAVS, MethodUpdateAVS, MethodRegisterOperatorToAVS,
-		MethodDeregisterOperatorFromAVS, MethodCreateAVSTask, MethodRegisterBLSPublicKey, MethodSubmitProof:
+		MethodDeregisterOperatorFromAVS, MethodCreateAVSTask, MethodRegisterBLSPublicKey, MethodSubmitProof, MethodChallenge:
 		return true
 	case MethodGetRegisteredPubkey, MethodGetOptinOperators, MethodGetAVSUSDValue, MethodGetOperatorOptedUSDValue:
 		return false

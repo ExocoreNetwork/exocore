@@ -5,7 +5,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/core"
 	ethtypes "github.com/ethereum/go-ethereum/core/types"
-	"github.com/evmos/evmos/v14/x/evm/types"
+	"github.com/evmos/evmos/v16/x/evm/types"
 )
 
 var _ types.EvmHooks = MultiEvmHooks{}

@@ -1,8 +1,12 @@
 package types
 
 import (
+	"strings"
+
 	errorsmod "cosmossdk.io/errors"
 	"cosmossdk.io/math"
+	"github.com/ExocoreNetwork/exocore/utils"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/common"
 )
 
@@ -10,12 +14,14 @@ import (
 func NewGenesis(
 	params Params, chains []ClientChainInfo,
 	tokens []StakingAssetInfo, deposits []DepositsByStaker,
+	operatorAssets []AssetsByOperator,
 ) *GenesisState {
 	return &GenesisState{
-		Params:       params,
-		ClientChains: chains,
-		Tokens:       tokens,
-		Deposits:     deposits,
+		Params:         params,
+		ClientChains:   chains,
+		Tokens:         tokens,
+		Deposits:       deposits,
+		OperatorAssets: operatorAssets,
 	}
 }
 
@@ -25,36 +31,18 @@ func NewGenesis(
 // for any unit / integration tests.
 func DefaultGenesis() *GenesisState {
 	return NewGenesis(
-		DefaultParams(), []ClientChainInfo{}, []StakingAssetInfo{}, []DepositsByStaker{},
+		DefaultParams(), []ClientChainInfo{}, []StakingAssetInfo{}, []DepositsByStaker{}, []AssetsByOperator{},
 	)
 }
 
-// Validate performs basic genesis state validation returning an error
-// upon any failure.
-func (gs GenesisState) Validate() error {
-	// client_chain.go -> check no repeat chain
-	lzIDs := make(map[uint64]struct{}, len(gs.ClientChains))
-	for i, info := range gs.ClientChains {
-		if info.Name == "" || len(info.Name) > MaxChainTokenNameLength {
+// ValidateClientChains performs basic client chains validation
+func (gs GenesisState) ValidateClientChains() (map[uint64]struct{}, error) {
+	validationFunc := func(i int, info ClientChainInfo) error {
+		if info.Name == "" {
 			return errorsmod.Wrapf(
 				ErrInvalidGenesisData,
-				"nil Name or too long for chain %d, name:%s, maxLength:%d",
-				i, info.Name, MaxChainTokenNameLength,
-			)
-		}
-		if info.MetaInfo == "" || len(info.MetaInfo) > MaxChainTokenMetaInfoLength {
-			return errorsmod.Wrapf(
-				ErrInvalidGenesisData,
-				"nil meta info or too long for chain %d, metaInfo:%s, maxLength:%d",
-				i, info.MetaInfo, MaxChainTokenMetaInfoLength,
-			)
-		}
-		// this is our primary method of cross-chain communication.
-		if info.LayerZeroChainID == 0 {
-			return errorsmod.Wrapf(
-				ErrInvalidGenesisData,
-				"nil LayerZeroChainID for chain %s",
-				info.Name,
+				"nil Name for chain %d",
+				i,
 			)
 		}
 		// the address length is used to convert from bytes32 to address.
@@ -65,104 +53,80 @@ func (gs GenesisState) Validate() error {
 				info.Name,
 			)
 		}
-		// check for no duplicated chain, indexed by LayerZeroChainID.
-		if _, ok := lzIDs[info.LayerZeroChainID]; ok {
-			return errorsmod.Wrapf(
-				ErrInvalidGenesisData,
-				"duplicate LayerZeroChainID: %d",
-				info.LayerZeroChainID,
-			)
-		}
-		lzIDs[info.LayerZeroChainID] = struct{}{}
+		return nil
 	}
-	// client_chain_asset.go -> check presence of client chain
-	// for all assets and no duplicates
-	tokenSupplies := make(map[string]math.Int, len(gs.Tokens))
-	for _, info := range gs.Tokens {
-		if info.AssetBasicInfo == nil {
-			return errorsmod.Wrapf(
-				ErrInvalidGenesisData,
-				"nil AssetBasicInfo for token %s",
-				info.AssetBasicInfo.MetaInfo,
-			)
-		}
-		if info.AssetBasicInfo.Name == "" || len(info.AssetBasicInfo.Name) > MaxChainTokenNameLength {
-			return errorsmod.Wrapf(
-				ErrInvalidGenesisData,
-				"nil Name or too long for token, name:%s, maxLength:%d",
-				info.AssetBasicInfo.Name, MaxChainTokenNameLength,
-			)
-		}
-		if info.AssetBasicInfo.MetaInfo == "" || len(info.AssetBasicInfo.MetaInfo) > MaxChainTokenMetaInfoLength {
-			return errorsmod.Wrapf(
-				ErrInvalidGenesisData,
-				"nil meta info or too long for token, metaInfo:%s, maxLength:%d",
-				info.AssetBasicInfo.MetaInfo, MaxChainTokenMetaInfoLength,
-			)
-		}
+	seenFieldValueFunc := func(info ClientChainInfo) (uint64, struct{}) {
+		return info.LayerZeroChainID, struct{}{}
+	}
+	lzIDs, err := utils.CommonValidation(gs.ClientChains, seenFieldValueFunc, validationFunc)
+	if err != nil {
+		return nil, errorsmod.Wrap(ErrInvalidGenesisData, err.Error())
+	}
+
+	return lzIDs, nil
+}
+
+// ValidateTokens performs basic client chain assets validation
+func (gs GenesisState) ValidateTokens(lzIDs map[uint64]struct{}) (map[string]math.Int, error) {
+	validationFunc := func(_ int, info StakingAssetInfo) error {
 		id := info.AssetBasicInfo.LayerZeroChainID
 		// check that the chain is registered
 		if _, ok := lzIDs[id]; !ok {
 			return errorsmod.Wrapf(
 				ErrInvalidGenesisData,
-				"unknown LayerZeroChainID for token %s: %d",
+				"unknown LayerZeroChainID for token %s, clientChainID: %d",
 				info.AssetBasicInfo.MetaInfo, id,
 			)
 		}
 		address := info.AssetBasicInfo.Address
+		if strings.ToLower(address) != address {
+			return errorsmod.Wrapf(
+				ErrInvalidGenesisData,
+				"contains uppercase characters for token %s, address: %s",
+				info.AssetBasicInfo.Name, address,
+			)
+		}
 		// build for 0x addresses only.
 		// TODO: consider removing this check for non-EVM client chains.
 		if !common.IsHexAddress(address) {
 			return errorsmod.Wrapf(
 				ErrInvalidGenesisData,
-				"not hex address for token %s: %s",
-				info.AssetBasicInfo.MetaInfo, address,
+				"not hex address for token %s, address: %s",
+				info.AssetBasicInfo.Name, address,
 			)
 		}
-		// calculate the asset id.
-		_, assetID := GetStakeIDAndAssetIDFromStr(
-			info.AssetBasicInfo.LayerZeroChainID,
-			"", address,
-		)
+
 		// ensure there are no deposits for this asset already (since they are handled in the
 		// genesis exec). while it is possible to remove this field entirely (and assume 0),
 		// i did not do so in order to make the genesis state more explicit.
-		if info.StakingTotalAmount.IsNil() {
+		if info.StakingTotalAmount.IsNil() ||
+			info.StakingTotalAmount.IsNegative() {
 			return errorsmod.Wrapf(
 				ErrInvalidGenesisData,
-				"nil staking total amount for asset %s",
-				assetID,
+				"nil total staking amount for asset %s",
+				info.AssetBasicInfo.Address,
 			)
 		}
-		if !info.StakingTotalAmount.IsZero() {
-			return errorsmod.Wrapf(
-				ErrInvalidGenesisData,
-				"non-zero deposit amount for asset %s",
-				assetID,
-			)
-		}
-		// check that it is not a duplicate.
-		if _, ok := tokenSupplies[assetID]; ok {
-			return errorsmod.Wrapf(
-				ErrInvalidGenesisData,
-				"duplicate assetID: %s",
-				assetID,
-			)
-		}
-		// validate the amount of supply
-		if info.AssetBasicInfo.TotalSupply.IsNil() ||
-			!info.AssetBasicInfo.TotalSupply.IsPositive() {
-			return errorsmod.Wrapf(
-				ErrInvalidGenesisData,
-				"nil total supply for token %s",
-				info.AssetBasicInfo.MetaInfo,
-			)
-		}
-		tokenSupplies[assetID] = info.AssetBasicInfo.TotalSupply
+		return nil
 	}
-	// staker_asset.go -> check deposits and withdrawals and that there is no unbonding.
-	stakers := make(map[string]struct{}, len(gs.Deposits))
-	for _, depositByStaker := range gs.Deposits {
+	seenFieldValueFunc := func(info StakingAssetInfo) (string, math.Int) {
+		// calculate the asset id.
+		_, assetID := GetStakerIDAndAssetIDFromStr(
+			info.AssetBasicInfo.LayerZeroChainID,
+			"", info.AssetBasicInfo.Address,
+		)
+		return assetID, info.StakingTotalAmount
+	}
+	totalStaking, err := utils.CommonValidation(gs.Tokens, seenFieldValueFunc, validationFunc)
+	if err != nil {
+		return nil, errorsmod.Wrap(ErrInvalidGenesisData, err.Error())
+	}
+	return totalStaking, nil
+}
+
+// ValidateDeposits performs basic deposits validation
+func (gs GenesisState) ValidateDeposits(lzIDs map[uint64]struct{}, tokensTotalStaking map[string]math.Int) error {
+	validationFunc := func(_ int, depositByStaker DepositsByStaker) error {
 		stakerID := depositByStaker.StakerID
 		// validate the stakerID
 		var stakerClientChainID uint64
@@ -182,23 +146,15 @@ func (gs GenesisState) Validate() error {
 				stakerID, stakerClientChainID,
 			)
 		}
-		// check that it is not a duplicate
-		if _, ok := stakers[stakerID]; ok {
-			return errorsmod.Wrapf(
-				ErrInvalidGenesisData,
-				"duplicate stakerID: %s",
-				stakerID,
-			)
-		}
-		stakers[stakerID] = struct{}{}
-		// map to check for duplicate tokens for the staker.
-		tokensForStaker := make(map[string]struct{}, len(depositByStaker.Deposits))
-		for _, deposit := range depositByStaker.Deposits {
+
+		// validate the deposits
+		depositValidationF := func(_ int, deposit DepositByAsset) error {
 			assetID := deposit.AssetID
 			// check that the asset is registered
 			// no need to check for the validity of the assetID, since
 			// an invalid assetID cannot be in the tokens map.
-			if _, ok := tokenSupplies[assetID]; !ok {
+			tokenTotalStaking, ok := tokensTotalStaking[assetID]
+			if !ok {
 				return errorsmod.Wrapf(
 					ErrInvalidGenesisData,
 					"unknown assetID for deposit %s: %s",
@@ -217,60 +173,143 @@ func (gs GenesisState) Validate() error {
 					stakerID, assetID,
 				)
 			}
-			// check that it is not a duplicate
-			if _, ok := tokensForStaker[assetID]; ok {
-				return errorsmod.Wrapf(
-					ErrInvalidGenesisData,
-					"duplicate assetID for staker %s: %s",
-					stakerID, assetID,
-				)
-			}
-			tokensForStaker[assetID] = struct{}{}
+
 			info := deposit.Info
 			// check that there is no nil value provided.
 			if info.TotalDepositAmount.IsNil() || info.WithdrawableAmount.IsNil() ||
-				info.WaitUnbondingAmount.IsNil() {
+				info.PendingUndelegationAmount.IsNil() {
 				return errorsmod.Wrapf(
 					ErrInvalidGenesisData,
 					"nil deposit info for %s: %+v",
 					assetID, info,
 				)
 			}
-			// at genesis (not chain restart), there is no unbonding amount.
-			if !info.WaitUnbondingAmount.IsZero() {
-				return errorsmod.Wrapf(
-					ErrInvalidGenesisData,
-					"non-zero unbonding amount for %s: %s",
-					assetID, info.WaitUnbondingAmount,
-				)
-			}
+
 			// check for negative values.
-			if info.TotalDepositAmount.IsNegative() || info.WithdrawableAmount.IsNegative() {
+			if info.TotalDepositAmount.IsNegative() || info.WithdrawableAmount.IsNegative() ||
+				info.PendingUndelegationAmount.IsNegative() {
 				return errorsmod.Wrapf(
 					ErrInvalidGenesisData,
 					"negative deposit amount for %s: %+v",
 					assetID, info,
 				)
 			}
-			// check that the withdrawable amount and the deposited amount are equal.
-			// this is because this module's genesis only sets up free deposits.
-			// the delegation module bonds them, thereby altering the withdrawable amount.
-			if !info.WithdrawableAmount.Equal(info.TotalDepositAmount) {
+
+			if info.TotalDepositAmount.GT(tokenTotalStaking) {
 				return errorsmod.Wrapf(
 					ErrInvalidGenesisData,
-					"withdrawable amount is not equal to total deposit amount for %s: %+v",
+					"invalid deposit amount that is greater than the total staking, assetID: %s: %+v",
 					assetID, info,
 				)
 			}
-			// check that deposit amount does not exceed supply.
-			if info.TotalDepositAmount.GT(tokenSupplies[assetID]) {
+
+			if info.PendingUndelegationAmount.Add(info.WithdrawableAmount).GT(info.TotalDepositAmount) {
 				return errorsmod.Wrapf(
 					ErrInvalidGenesisData,
-					"deposit amount exceeds max supply for %s: %+v",
+					"the sum of PendingUndelegationAmount and WithdrawableAmount is greater than the TotalDepositAmount, assetID: %s: %+v",
 					assetID, info,
 				)
 			}
+			return nil
 		}
+		depositFieldValueF := func(deposit DepositByAsset) (string, struct{}) {
+			return deposit.AssetID, struct{}{}
+		}
+		_, err = utils.CommonValidation(depositByStaker.Deposits, depositFieldValueF, depositValidationF)
+		if err != nil {
+			return errorsmod.Wrap(ErrInvalidGenesisData, err.Error())
+		}
+		return nil
+	}
+	seenFieldValueFunc := func(deposits DepositsByStaker) (string, struct{}) {
+		return deposits.StakerID, struct{}{}
+	}
+	_, err := utils.CommonValidation(gs.Deposits, seenFieldValueFunc, validationFunc)
+	if err != nil {
+		return errorsmod.Wrap(ErrInvalidGenesisData, err.Error())
+	}
+	return nil
+}
+
+// ValidateOperatorAssets performs basic operator assets validation
+func (gs GenesisState) ValidateOperatorAssets(tokensTotalStaking map[string]math.Int) error {
+	validationFunc := func(_ int, assets AssetsByOperator) error {
+		_, err := sdk.AccAddressFromBech32(assets.Operator)
+		if err != nil {
+			return errorsmod.Wrapf(
+				ErrInvalidGenesisData,
+				"invalid operator address %s: %s", assets.Operator, err,
+			)
+		}
+
+		// validate the assets list for the specified operator
+		assetValidationFunc := func(_ int, asset AssetByID) error {
+			// check that the asset is registered
+			// no need to check for the validity of the assetID, since
+			// an invalid assetID cannot be in the tokens map.
+			totalStaking, ok := tokensTotalStaking[asset.AssetID]
+			if !ok {
+				return errorsmod.Wrapf(
+					ErrInvalidGenesisData,
+					"unknown assetID for operator assets %s: %s",
+					assets.Operator, asset.AssetID,
+				)
+			}
+			// the sum amount of operators shouldn't be greater than the total staking amount of this asset
+			if asset.Info.TotalAmount.Add(asset.Info.PendingUndelegationAmount).GT(totalStaking) {
+				return errorsmod.Wrapf(
+					ErrInvalidGenesisData,
+					"operator's sum amount exceeds the total staking amount for %s: %+v",
+					assets.Operator, asset,
+				)
+			}
+
+			if asset.Info.OperatorShare.GT(asset.Info.TotalShare) {
+				return errorsmod.Wrapf(
+					ErrInvalidGenesisData,
+					"operator's share exceeds the total share for %s: %+v",
+					assets.Operator, asset,
+				)
+			}
+			return nil
+		}
+		assetFieldValueFunc := func(asset AssetByID) (string, struct{}) {
+			return asset.AssetID, struct{}{}
+		}
+		_, err = utils.CommonValidation(assets.AssetsState, assetFieldValueFunc, assetValidationFunc)
+		if err != nil {
+			return errorsmod.Wrap(ErrInvalidGenesisData, err.Error())
+		}
+		return nil
+	}
+	seenFieldValueFunc := func(assets AssetsByOperator) (string, struct{}) {
+		return assets.Operator, struct{}{}
+	}
+	_, err := utils.CommonValidation(gs.OperatorAssets, seenFieldValueFunc, validationFunc)
+	if err != nil {
+		return errorsmod.Wrap(ErrInvalidGenesisData, err.Error())
+	}
+	return nil
+}
+
+// Validate performs basic genesis state validation returning an error
+// upon any failure.
+func (gs GenesisState) Validate() error {
+	lzIDs, err := gs.ValidateClientChains()
+	if err != nil {
+		return err
+	}
+	totalStaking, err := gs.ValidateTokens(lzIDs)
+	if err != nil {
+		return err
+	}
+	err = gs.ValidateDeposits(lzIDs, totalStaking)
+	if err != nil {
+		return err
+	}
+	err = gs.ValidateOperatorAssets(totalStaking)
+	if err != nil {
+		return err
 	}
 	return gs.Params.Validate()
 }

@@ -16,6 +16,8 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	typesparams "github.com/cosmos/cosmos-sdk/x/params/types"
 
+	assetskeeper "github.com/ExocoreNetwork/exocore/x/assets/keeper"
+	delegationkeeper "github.com/ExocoreNetwork/exocore/x/delegation/keeper"
 	dogfoodkeeper "github.com/ExocoreNetwork/exocore/x/dogfood/keeper"
 	"github.com/stretchr/testify/require"
 )
@@ -45,6 +47,8 @@ func OracleKeeper(t testing.TB) (*keeper.Keeper, sdk.Context) {
 		memStoreKey,
 		paramsSubspace,
 		dogfoodkeeper.Keeper{},
+		delegationkeeper.Keeper{},
+		assetskeeper.Keeper{},
 	)
 
 	ctx := sdk.NewContext(stateStore, tmproto.Header{

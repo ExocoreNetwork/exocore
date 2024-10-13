@@ -10,7 +10,10 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-const layout = "2006-01-02 15:04:05"
+const (
+	layout          = "2006-01-02 15:04:05"
+	maxFutureOffset = 5 * time.Second
+)
 
 // CreatePrice proposes price for new round of specific tokenFeeder
 func (ms msgServer) CreatePrice(goCtx context.Context, msg *types.MsgCreatePrice) (*types.MsgCreatePriceResponse, error) {
@@ -90,7 +93,7 @@ func checkTimestamp(goCtx context.Context, msg *types.MsgCreatePrice) error {
 			if err != nil {
 				return errors.New("timestamp format invalid")
 			}
-			if now.Add(5 * time.Second).Before(t) {
+			if now.Add(maxFutureOffset).Before(t) {
 				return errors.New("timestamp is in the future")
 			}
 		}

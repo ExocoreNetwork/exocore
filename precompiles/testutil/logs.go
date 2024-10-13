@@ -5,7 +5,7 @@ import (
 
 	abci "github.com/cometbft/cometbft/abci/types"
 	"github.com/ethereum/go-ethereum/accounts/abi"
-	evmtypes "github.com/evmos/evmos/v14/x/evm/types"
+	evmtypes "github.com/evmos/evmos/v16/x/evm/types"
 	"golang.org/x/exp/slices"
 )
 
@@ -37,6 +37,7 @@ func CheckLogs(logArgs LogCheckArgs) error {
 			int64(float64(logArgs.Res.GasUsed)/float64(logArgs.Res.GasWanted)*100),
 		)
 	}
+
 	if err := CheckVMError(logArgs.Res, logArgs.ErrContains); err != nil {
 		return err
 	}

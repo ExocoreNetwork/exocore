@@ -37,7 +37,7 @@ func (wrapper EpochsHooksWrapper) AfterEpochEnd(
 			// no re-attempts will be made for this subscriber
 			ctx.Logger().Error(
 				"subscriber client not created",
-				"chainID", subscriber,
+				"chainID", subscriber.ChainID,
 				"error", err,
 			)
 			// clear the registered AVS. remember that this module stores

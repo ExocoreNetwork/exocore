@@ -3,6 +3,8 @@ package keeper
 import (
 	"fmt"
 
+	"github.com/ethereum/go-ethereum/common"
+
 	"github.com/ExocoreNetwork/exocore/x/avs/types"
 	"github.com/cosmos/cosmos-sdk/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -41,16 +43,27 @@ type OperatorOptParams struct {
 	AvsAddress      string
 }
 
-type TaskParams struct {
-	TaskContractAddress string
-	TaskName            string
-	StartingEpoch       string
-	Data                []byte
-	TaskID              string
-	TaskResponsePeriod  uint64
-	TaskChallengePeriod uint64
-	ThresholdPercentage uint64
-	CallerAddress       string
+type TaskInfoParams struct {
+	TaskContractAddress   string `json:"task_contract_address"`
+	TaskName              string `json:"name"`
+	Hash                  []byte `json:"hash"`
+	TaskID                uint64 `json:"task_id"`
+	TaskResponsePeriod    uint64 `json:"task_response_period"`
+	TaskStatisticalPeriod uint64 `json:"task_statistical_period"`
+	TaskChallengePeriod   uint64 `json:"task_challenge_period"`
+	ThresholdPercentage   uint64 `json:"threshold_percentage"`
+	StartingEpoch         uint64 `json:"starting_epoch"`
+	OperatorAddress       string `json:"operator_address"`
+	TaskResponseHash      string `json:"task_response_hash"`
+	TaskResponse          []byte `json:"task_response"`
+	BlsSignature          []byte `json:"bls_signature"`
+	Stage                 string `json:"stage"`
+	ActualThreshold       uint64 `json:"actual_threshold"`
+	OptInCount            uint64 `json:"opt_in_count"`
+	SignedCount           uint64 `json:"signed_count"`
+	NoSignedCount         uint64 `json:"no_signed_count"`
+	ErrSignedCount        uint64 `json:"err_signed_count"`
+	CallerAddress         string `json:"caller_address"`
 }
 type BlsParams struct {
 	Operator                      string
@@ -79,3 +92,12 @@ const (
 	DeRegisterAction = 2
 	UpdateAction     = 3
 )
+
+type ChallengeParams struct {
+	TaskContractAddress common.Address `json:"task_contract_address"`
+	TaskHash            []byte         `json:"hash"`
+	TaskID              uint64         `json:"task_id"`
+	OperatorAddress     sdk.AccAddress `json:"operator_address"`
+	TaskResponseHash    []byte         `json:"task_response_hash"`
+	CallerAddress       string         `json:"caller_address"`
+}

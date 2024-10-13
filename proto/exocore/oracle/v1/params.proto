@@ -27,9 +27,19 @@ message Params {
   // voting power need to reach more than threshold_a/threshold_b
   int32 threshold_b = 8;
   // for v1, mode=1, get final price as soon as voting power reach threshold_a/threshold_b
-  int32 mode = 9;
+  ConsensusMode mode = 9;
   // for each round, a validator only allowed to provide at most max_det_id continuos rounds of prices for DS
   int32 max_det_id = 10;
   // for each token, only keep max_size_prices round of prices
   int32 max_size_prices = 11;
+}
+
+// ConsensusMode defines the consensus mode for the prices.
+enum ConsensusMode {
+  option (gogoproto.goproto_enum_prefix) = false;
+  // CONSENSUS_MODE_UNSPECIFIED defines an invalid mode.
+  CONSENSUS_MODE_UNSPECIFIED = 0 [(gogoproto.enumvalue_customname) = "ConsensusModeUnspecified"];
+  // CONSENSUS_MODE_ASAP defines the mode to get final price immediately when the voting power
+  // exceeds the threshold.
+  CONSENSUS_MODE_ASAP = 1 [(gogoproto.enumvalue_customname) = "ConsensusModeASAP"];
 }

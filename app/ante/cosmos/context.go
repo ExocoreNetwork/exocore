@@ -7,7 +7,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/cosmos/cosmos-sdk/x/auth/migrations/legacytx"
-	evmostypes "github.com/evmos/evmos/v14/types"
+	evmostypes "github.com/evmos/evmos/v16/types"
 )
 
 var _ GasTx = (*legacytx.StdTx)(nil) // assert StdTx implements GasTx

@@ -1,12 +1,10 @@
-
 syntax = "proto3";
 package evmos.inflation.v1;
 
+import "evmos/inflation/v1/inflation.proto";
 import "gogoproto/gogo.proto";
 
-import "evmos/inflation/v1/inflation.proto";
-
-option go_package = "github.com/evmos/evmos/v14/x/inflation/types";
+option go_package = "github.com/evmos/evmos/v16/x/inflation/v1/types";
 
 // GenesisState defines the inflation module's genesis state.
 message GenesisState {

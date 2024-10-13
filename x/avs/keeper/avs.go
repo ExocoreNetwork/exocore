@@ -3,6 +3,7 @@ package keeper
 import (
 	"fmt"
 	"math/big"
+	"strconv"
 
 	errorsmod "cosmossdk.io/errors"
 	sdkmath "cosmossdk.io/math"
@@ -10,7 +11,7 @@ import (
 	"github.com/ExocoreNetwork/exocore/utils"
 	"github.com/ExocoreNetwork/exocore/x/avs/types"
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/evmos/evmos/v14/x/evm/statedb"
+	"github.com/evmos/evmos/v16/x/evm/statedb"
 
 	"github.com/cosmos/cosmos-sdk/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -81,30 +82,41 @@ func (k *Keeper) GetEpochEndAVSs(ctx sdk.Context, epochIdentifier string, ending
 }
 
 // GetAVSInfoByTaskAddress returns the AVS  which containing this task address
+// TODO:this function is frequently used while its implementation iterates over existing avs to find the target avs by task contract address,  we should use a reverse mapping to avoid iteration
 func (k *Keeper) GetAVSInfoByTaskAddress(ctx sdk.Context, taskAddr string) types.AVSInfo {
 	avs := types.AVSInfo{}
+	if taskAddr == "" {
+		return avs
+	}
 	k.IterateAVSInfo(ctx, func(_ int64, avsInfo types.AVSInfo) (stop bool) {
 		if taskAddr == avsInfo.GetTaskAddr() {
 			avs = avsInfo
+			return true // stop because we found the AVS
 		}
 		return false
 	})
 	return avs
 }
 
-// GetTaskChallengeEpochEndAVSs returns the task list where the current block marks the end of their challenge period.
-func (k *Keeper) GetTaskChallengeEpochEndAVSs(ctx sdk.Context, epochIdentifier string, epochNumber int64) []types.TaskInfo {
-	var taskList []types.TaskInfo
-	k.IterateTaskAVSInfo(ctx, func(_ int64, taskInfo types.TaskInfo) (stop bool) {
-		avsInfo := k.GetAVSInfoByTaskAddress(ctx, taskInfo.TaskContractAddress)
-		// Determine if the challenge period has passed, the range of the challenge period is the num marked (StartingEpoch) add TaskChallengePeriod
+// GetTaskStatisticalEpochEndAVSs returns the task list where the current block marks the end of their statistical period.
+func (k *Keeper) GetTaskStatisticalEpochEndAVSs(ctx sdk.Context, epochIdentifier string, epochNumber int64) []types.TaskResultInfo {
+	var taskResList []types.TaskResultInfo
+	k.IterateResultInfo(ctx, func(_ int64, info types.TaskResultInfo) (stop bool) {
+		avsInfo := k.GetAVSInfoByTaskAddress(ctx, info.TaskContractAddress)
+		taskInfo, err := k.GetTaskInfo(ctx, strconv.FormatUint(info.TaskId, 10), info.TaskContractAddress)
+		if err != nil {
+			return false
+		}
+		// Determine if the statistical period has passed, the range of the statistical period is the num marked (StartingEpoch) add TaskStatisticalPeriod
 		// #nosec G115
-		if epochIdentifier == avsInfo.EpochIdentifier && epochNumber > int64(taskInfo.TaskChallengePeriod)+int64(taskInfo.StartingEpoch) {
-			taskList = append(taskList, taskInfo)
+		if epochIdentifier == avsInfo.EpochIdentifier && epochNumber ==
+			// #nosec G115
+			int64(taskInfo.StartingEpoch)+int64(taskInfo.TaskResponsePeriod)+int64(taskInfo.TaskStatisticalPeriod) {
+			taskResList = append(taskResList, info)
 		}
 		return false
 	})
-	return taskList
+	return taskResList
 }
 
 // RegisterAVSWithChainID registers an AVS by its chainID.
@@ -123,7 +135,8 @@ func (k Keeper) RegisterAVSWithChainID(
 	if len(params.ChainID) == 0 {
 		return common.Address{}, errorsmod.Wrap(types.ErrNotNull, "RegisterAVSWithChainID: chainID is null")
 	}
-	avsAddr = types.GenerateAVSAddr(params.ChainID)
+	avsAddrStr := types.GenerateAVSAddr(params.ChainID)
+	avsAddr = common.HexToAddress(avsAddrStr)
 	defer func() {
 		if err == nil {
 			// store the reverse lookup from AVSAddress to ChainID
@@ -148,7 +161,7 @@ func (k Keeper) RegisterAVSWithChainID(
 		return common.Address{}, err
 	}
 	// SetAVSInfo expects HexAddress for the AvsAddress
-	params.AvsAddress = avsAddr.String()
+	params.AvsAddress = avsAddrStr
 	params.Action = RegisterAction
 
 	if err := k.UpdateAVSInfo(ctx, params); err != nil {

@@ -19,6 +19,7 @@ import (
 )
 
 const (
+	FlagEarningAddr     = "earning-addr"
 	FlagApproveAddr     = "approve-addr"
 	FlagMetaInfo        = "meta-info"
 	FlagClientChainData = "client-chain-data"
@@ -73,10 +74,12 @@ func CmdRegisterOperator() *cobra.Command {
 		},
 	}
 
-	// EarningsAddr is the same as the sender's address, since the operator registration must be
-	// done by the operators themselves.
-
 	f := cmd.Flags()
+	// EarningAddr may be different from the sender's address.
+	f.String(
+		FlagEarningAddr, "", "The address which is used to receive the earning reward in the Exocore chain. "+
+			"If not provided, it will default to the sender's address.",
+	)
 	// ApproveAddr may be different from the sender's address.
 	f.String(
 		FlagApproveAddr, "", "The address which is used to approve the delegations made to "+
@@ -112,11 +115,16 @@ func newBuildRegisterOperatorMsg(
 	if approveAddr == "" {
 		approveAddr = sender.String()
 	}
+	// #nosec G703 // this only errors if the flag isn't defined.
+	earningAddr, _ := fs.GetString(FlagEarningAddr)
+	if earningAddr == "" {
+		earningAddr = sender.String()
+	}
 	metaInfo, _ := fs.GetString(FlagMetaInfo)
 	msg := &types.RegisterOperatorReq{
 		FromAddress: sender.String(),
 		Info: &types.OperatorInfo{
-			EarningsAddr:     sender.String(),
+			EarningsAddr:     earningAddr,
 			ApproveAddr:      approveAddr,
 			OperatorMetaInfo: metaInfo,
 		},

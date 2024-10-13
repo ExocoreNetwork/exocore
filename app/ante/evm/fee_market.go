@@ -7,7 +7,7 @@ import (
 	anteutils "github.com/ExocoreNetwork/exocore/app/ante/utils"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	errortypes "github.com/cosmos/cosmos-sdk/types/errors"
-	"github.com/evmos/evmos/v14/types"
+	"github.com/evmos/evmos/v16/types"
 )
 
 // GasWantedDecorator keeps track of the gasWanted amount on the current block in transient store

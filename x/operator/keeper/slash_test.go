@@ -18,14 +18,16 @@ func (suite *OperatorTestSuite) TestSlashWithInfractionReason() {
 	suite.prepareOperator()
 	usdtAddress := common.HexToAddress("0xdAC17F958D2ee523a2206206994597C13D831ec7")
 	assetDecimal := 6
-	depositAmount := sdkmath.NewIntWithDecimal(100, assetDecimal)
+	depositAmount := sdkmath.NewIntWithDecimal(200, assetDecimal)
 	suite.prepareDeposit(usdtAddress, depositAmount)
-	delegationAmount := sdkmath.NewIntWithDecimal(50, assetDecimal)
+	delegationAmount := sdkmath.NewIntWithDecimal(100, assetDecimal)
 	suite.prepareDelegation(true, suite.assetAddr, delegationAmount)
+	err := suite.App.DelegationKeeper.AssociateOperatorWithStaker(suite.Ctx, suite.clientChainLzID, suite.operatorAddr, suite.Address[:])
+	suite.NoError(err)
 
 	// opt into the AVS
-	avsAddr := avstypes.GenerateAVSAddr(utils.ChainIDWithoutRevision(suite.Ctx.ChainID())).String()
-	err := suite.App.OperatorKeeper.OptIn(suite.Ctx, suite.operatorAddr, avsAddr)
+	avsAddr := avstypes.GenerateAVSAddr(utils.ChainIDWithoutRevision(suite.Ctx.ChainID()))
+	err = suite.App.OperatorKeeper.OptIn(suite.Ctx, suite.operatorAddr, avsAddr)
 	suite.NoError(err)
 	// call the EndBlock to update the voting power
 	suite.CommitAfter(time.Hour*24 + time.Nanosecond)
@@ -73,11 +75,11 @@ func (suite *OperatorTestSuite) TestSlashWithInfractionReason() {
 		StakerID: suite.stakerID,
 		AssetID:  suite.assetID,
 		Amount:   newSlashProportion.MulInt(undelegationAmount).TruncateInt(),
-	}, *slashInfo.ExecutionInfo.SlashUndelegations[0])
+	}, slashInfo.ExecutionInfo.SlashUndelegations[0])
 	suite.Equal(types.SlashFromAssetsPool{
 		AssetID: suite.assetID,
 		Amount:  newSlashProportion.MulInt(delegationRemaining).TruncateInt(),
-	}, *slashInfo.ExecutionInfo.SlashAssetsPool[0])
+	}, slashInfo.ExecutionInfo.SlashAssetsPool[0])
 
 	// check the assets state of undelegation and assets pool
 	assetsInfo, err := suite.App.AssetsKeeper.GetOperatorSpecifiedAssetInfo(suite.Ctx, suite.operatorAddr, suite.assetID)

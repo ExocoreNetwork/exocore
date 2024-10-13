@@ -1,5 +1,5 @@
 FROM golang:1.21.12-alpine3.19 AS build
-RUN apk add --no-cache build-base=0.5-r3 git=2.43.4-r0 linux-headers=6.5-r0
+RUN apk add --no-cache build-base=0.5-r3 git=2.43.5-r0 linux-headers=6.5-r0
 # Set working directory for the build
 WORKDIR /go/work
 # Add source files
@@ -10,12 +10,12 @@ RUN LEDGER_ENABLED=false make build
 
 #####################################
 FROM alpine:3.19 AS run
-RUN apk add --no-cache libstdc++=13.2.1_git20231014-r0 bash=5.2.21-r0 curl=8.9.0-r0 jq=1.7.1-r0 \
+RUN apk add --no-cache libstdc++=13.2.1_git20231014-r0 bash=5.2.21-r0 curl=8.9.1-r1 jq=1.7.1-r0 \
     && addgroup -g 1000 exocore \
     && adduser -S -h /home/exocore -D exocore -u 1000 -G exocore
 EXPOSE 26656 26657 1317 9090 8545 8546
 # TODO: exocore testnet chainid is still under consideration and need to be finalized later
-CMD ["start", "--log_format", "plain", "--chain-id", "exocoretestnet_233-1", "--metrics", "--json-rpc.api", "eth,txpool,personal,net,debug,web3", "--api.enable", "--json-rpc.enable", "true", "--minimum-gas-prices", "0.0001aexocore"]
+CMD ["start", "--log_format", "plain", "--chain-id", "exocoretestnet_233-1", "--metrics", "--json-rpc.api", "eth,txpool,personal,net,debug,web3", "--api.enable", "--json-rpc.enable", "true", "--minimum-gas-prices", "0.0001hua"]
 # by default, a SIGKILL is sent after 10 seconds. We need to override this to allow graceful shutdown.
 STOPSIGNAL SIGTERM
 VOLUME /exocore

@@ -12,26 +12,24 @@ const (
 
 	// MemStoreKey defines the in-memory store key
 	MemStoreKey = "mem_oracle"
+
+	// TODO: rename for prefix and keys
+	ValidatorsKey = "Validators/value/"
+
+	ValidatorUpdateBlockKey = "ValidatorUpdateBlock/value/"
+
+	IndexRecentParamsKey = "IndexRecentParams/value/"
+
+	IndexRecentMsgKey = "IndexRecentMsg/value/"
 )
 
-var ParamsKey = []byte{0x11}
+var (
+	// ParamsKey defines the key to store the params in store
+	ParamsKey = []byte{0x11}
+	// BlockKey stores the last validator update block
+	BlockKey = []byte{0x0}
+)
 
 func KeyPrefix(p string) []byte {
 	return []byte(p)
 }
-
-const (
-	ValidatorsKey = "Validators/value/"
-)
-
-const (
-	ValidatorUpdateBlockKey = "ValidatorUpdateBlock/value/"
-)
-
-const (
-	IndexRecentParamsKey = "IndexRecentParams/value/"
-)
-
-const (
-	IndexRecentMsgKey = "IndexRecentMsg/value/"
-)

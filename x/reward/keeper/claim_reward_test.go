@@ -16,7 +16,7 @@ func (suite *RewardTestSuite) TestClaimWithdrawRequest() {
 	usdcAddress := common.HexToAddress("0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48")
 	event := &keeper.RewardParams{
 		ClientChainLzID:       101,
-		Action:                types.WithDrawReward,
+		Action:                types.WithdrawReward,
 		WithdrawRewardAddress: suite.Address[:],
 		OpAmount:              sdkmath.NewInt(10),
 	}
@@ -32,16 +32,16 @@ func (suite *RewardTestSuite) TestClaimWithdrawRequest() {
 	suite.NoError(err)
 
 	// check state after reward
-	stakerID, assetID := types.GetStakeIDAndAssetID(event.ClientChainLzID, event.WithdrawRewardAddress, event.AssetsAddress)
+	stakerID, assetID := types.GetStakerIDAndAssetID(event.ClientChainLzID, event.WithdrawRewardAddress, event.AssetsAddress)
 	info, err := suite.App.AssetsKeeper.GetStakerSpecifiedAssetInfo(suite.Ctx, stakerID, assetID)
 	suite.NoError(err)
 	suite.Equal(types.StakerAssetInfo{
-		TotalDepositAmount:  sdkmath.NewInt(10),
-		WithdrawableAmount:  sdkmath.NewInt(10),
-		WaitUnbondingAmount: sdkmath.NewInt(0),
+		TotalDepositAmount:        sdkmath.NewInt(10),
+		WithdrawableAmount:        sdkmath.NewInt(10),
+		PendingUndelegationAmount: sdkmath.NewInt(0),
 	}, *info)
 
 	assetInfo, err := suite.App.AssetsKeeper.GetStakingAssetInfo(suite.Ctx, assetID)
 	suite.NoError(err)
-	suite.Equal(sdkmath.NewInt(10).Add(assets[assetID].StakingTotalAmount), assetInfo.StakingTotalAmount)
+	suite.Equal(sdkmath.NewInt(10).Add(assets[0].StakingTotalAmount), assetInfo.StakingTotalAmount)
 }

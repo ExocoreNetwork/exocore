@@ -1,4 +1,3 @@
-
 syntax = "proto3";
 package ethermint.evm.v1;
 
@@ -9,14 +8,14 @@ import "gogoproto/gogo.proto";
 import "google/api/annotations.proto";
 import "google/protobuf/any.proto";
 
-option go_package = "github.com/evmos/evmos/v14/x/evm/types";
+option go_package = "github.com/evmos/evmos/v16/x/evm/types";
 
 // Msg defines the evm Msg service.
 service Msg {
   // EthereumTx defines a method submitting Ethereum transactions.
   rpc EthereumTx(MsgEthereumTx) returns (MsgEthereumTxResponse) {
     option (google.api.http).post = "/evmos/evm/v1/ethereum_tx";
-  };
+  }
   // UpdateParams defined a governance operation for updating the x/evm module parameters.
   // The authority is hard-coded to the Cosmos SDK x/gov module account
   rpc UpdateParams(MsgUpdateParams) returns (MsgUpdateParamsResponse);
@@ -55,8 +54,10 @@ message LegacyTx {
   // to is the hex formatted address of the recipient
   string to = 4;
   // value defines the unsigned integer value of the transaction amount.
-  string value = 5
-      [(gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int", (gogoproto.customname) = "Amount"];
+  string value = 5 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.customname) = "Amount"
+  ];
   // data is the data payload bytes of the transaction.
   bytes data = 6;
   // v defines the signature value
@@ -87,13 +88,18 @@ message AccessListTx {
   // to is the recipient address in hex format
   string to = 5;
   // value defines the unsigned integer value of the transaction amount.
-  string value = 6
-      [(gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int", (gogoproto.customname) = "Amount"];
+  string value = 6 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.customname) = "Amount"
+  ];
   // data is the data payload bytes of the transaction.
   bytes data = 7;
   // accesses is an array of access tuples
-  repeated AccessTuple accesses = 8
-      [(gogoproto.castrepeated) = "AccessList", (gogoproto.jsontag) = "accessList", (gogoproto.nullable) = false];
+  repeated AccessTuple accesses = 8 [
+    (gogoproto.castrepeated) = "AccessList",
+    (gogoproto.jsontag) = "accessList",
+    (gogoproto.nullable) = false
+  ];
   // v defines the signature value
   bytes v = 9;
   // r defines the signature value
@@ -124,13 +130,18 @@ message DynamicFeeTx {
   // to is the hex formatted address of the recipient
   string to = 6;
   // value defines the the transaction amount.
-  string value = 7
-      [(gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int", (gogoproto.customname) = "Amount"];
+  string value = 7 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.customname) = "Amount"
+  ];
   // data is the data payload bytes of the transaction.
   bytes data = 8;
   // accesses is an array of access tuples
-  repeated AccessTuple accesses = 9
-      [(gogoproto.castrepeated) = "AccessList", (gogoproto.jsontag) = "accessList", (gogoproto.nullable) = false];
+  repeated AccessTuple accesses = 9 [
+    (gogoproto.castrepeated) = "AccessList",
+    (gogoproto.jsontag) = "accessList",
+    (gogoproto.nullable) = false
+  ];
   // v defines the signature value
   bytes v = 10;
   // r defines the signature value

@@ -1,4 +1,3 @@
-
 syntax = "proto3";
 package evmos.claims.v1;
 
@@ -7,7 +6,7 @@ import "cosmos_proto/cosmos.proto";
 import "evmos/claims/v1/genesis.proto";
 import "gogoproto/gogo.proto";
 
-option go_package = "github.com/evmos/evmos/v14/x/claims/types";
+option go_package = "github.com/evmos/evmos/v16/x/claims/types";
 
 // Msg defines the claims Msg service.
 service Msg {

@@ -12,95 +12,110 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-type DelegationOpFunc func(keys *delegationtype.SingleDelegationInfoReq, amounts *delegationtype.DelegationAmounts) error
+type DelegationOpFunc func(keys *delegationtype.SingleDelegationInfoReq, amounts *delegationtype.DelegationAmounts) (bool, error)
+
+func (k Keeper) AllDelegationStates(ctx sdk.Context) (delegationStates []delegationtype.DelegationStates, err error) {
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), delegationtype.KeyPrefixRestakerDelegationInfo)
+	iterator := sdk.KVStorePrefixIterator(store, []byte{})
+	defer iterator.Close()
+
+	ret := make([]delegationtype.DelegationStates, 0)
+	for ; iterator.Valid(); iterator.Next() {
+		var stateInfo delegationtype.DelegationAmounts
+		k.cdc.MustUnmarshal(iterator.Value(), &stateInfo)
+		ret = append(ret, delegationtype.DelegationStates{
+			Key:    string(iterator.Key()),
+			States: stateInfo,
+		})
+	}
+	return ret, nil
+}
+
+func (k Keeper) SetAllDelegationStates(ctx sdk.Context, delegationStates []delegationtype.DelegationStates) error {
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), delegationtype.KeyPrefixRestakerDelegationInfo)
+	for i := range delegationStates {
+		singleElement := delegationStates[i]
+		bz := k.cdc.MustMarshal(&singleElement.States)
+		store.Set([]byte(singleElement.Key), bz)
+	}
+	return nil
+}
+
+func (k Keeper) IterateDelegations(ctx sdk.Context, iteratorPrefix []byte, opFunc DelegationOpFunc) error {
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), delegationtype.KeyPrefixRestakerDelegationInfo)
+	iterator := sdk.KVStorePrefixIterator(store, iteratorPrefix)
+	defer iterator.Close()
+
+	for ; iterator.Valid(); iterator.Next() {
+		var amounts delegationtype.DelegationAmounts
+		k.cdc.MustUnmarshal(iterator.Value(), &amounts)
+		keys, err := delegationtype.ParseStakerAssetIDAndOperator(iterator.Key())
+		if err != nil {
+			return err
+		}
+		isBreak, err := opFunc(keys, &amounts)
+		if err != nil {
+			return err
+		}
+		if isBreak {
+			break
+		}
+	}
+	return nil
+}
 
 // IterateDelegationsForStakerAndAsset processes all operations
 // that require iterating over delegations for a specified staker and asset.
 func (k Keeper) IterateDelegationsForStakerAndAsset(ctx sdk.Context, stakerID string, assetID string, opFunc DelegationOpFunc) error {
-	store := prefix.NewStore(ctx.KVStore(k.storeKey), delegationtype.KeyPrefixRestakerDelegationInfo)
-	iterator := sdk.KVStorePrefixIterator(store, delegationtype.GetDelegationStateIteratorPrefix(stakerID, assetID))
-	defer iterator.Close()
-
-	for ; iterator.Valid(); iterator.Next() {
-		var amounts delegationtype.DelegationAmounts
-		k.cdc.MustUnmarshal(iterator.Value(), &amounts)
-		keys, err := delegationtype.ParseStakerAssetIDAndOperatorAddrFromKey(iterator.Key())
-		if err != nil {
-			return err
-		}
-		err = opFunc(keys, &amounts)
-		if err != nil {
-			return err
-		}
-	}
-	return nil
+	return k.IterateDelegations(ctx, delegationtype.IteratorPrefixForStakerAsset(stakerID, assetID), opFunc)
 }
 
 func (k Keeper) IterateDelegationsForStaker(ctx sdk.Context, stakerID string, opFunc DelegationOpFunc) error {
-	store := prefix.NewStore(ctx.KVStore(k.storeKey), delegationtype.KeyPrefixRestakerDelegationInfo)
-	iterator := sdk.KVStorePrefixIterator(store, []byte(stakerID))
-	defer iterator.Close()
-
-	for ; iterator.Valid(); iterator.Next() {
-		var amounts delegationtype.DelegationAmounts
-		k.cdc.MustUnmarshal(iterator.Value(), &amounts)
-		keys, err := delegationtype.ParseStakerAssetIDAndOperatorAddrFromKey(iterator.Key())
-		if err != nil {
-			return err
-		}
-		err = opFunc(keys, &amounts)
-		if err != nil {
-			return err
-		}
-	}
-	return nil
+	return k.IterateDelegations(ctx, []byte(stakerID), opFunc)
 }
 
-// StakerDelegatedTotalAmount query the total delegation amount of the specified staker and asset.
+// TotalDelegatedAmountForStakerAsset query the total delegation amount of the specified staker and asset.
 // It needs to be calculated from the share and amount of the asset pool.
-func (k Keeper) StakerDelegatedTotalAmount(ctx sdk.Context, stakerID string, assetID string) (amount sdkmath.Int, err error) {
+func (k Keeper) TotalDelegatedAmountForStakerAsset(ctx sdk.Context, stakerID string, assetID string) (amount sdkmath.Int, err error) {
 	amount = sdkmath.NewInt(0)
-	opFunc := func(keys *delegationtype.SingleDelegationInfoReq, amounts *delegationtype.DelegationAmounts) error {
+	opFunc := func(keys *delegationtype.SingleDelegationInfoReq, amounts *delegationtype.DelegationAmounts) (bool, error) {
 		if amounts.UndelegatableShare.IsZero() {
-			return nil
+			return false, nil
 		}
 		opAccAddr := sdk.MustAccAddressFromBech32(keys.GetOperatorAddr())
 		// get the asset state of operator
 		operatorAsset, err := k.assetsKeeper.GetOperatorSpecifiedAssetInfo(ctx, opAccAddr, assetID)
 		if err != nil {
-			return err
+			return true, err
 		}
 		singleAmount, err := TokensFromShares(amounts.UndelegatableShare, operatorAsset.TotalShare, operatorAsset.TotalAmount)
 		if err != nil {
-			return err
+			return true, err
 		}
 		amount = amount.Add(singleAmount)
-		return nil
+		return false, nil
 	}
 	err = k.IterateDelegationsForStakerAndAsset(ctx, stakerID, assetID, opFunc)
-	if err != nil {
-		return amount, err
-	}
-	return amount, nil
+	return amount, err
 }
 
-// AllDelegatedAmountForStakerAsset returns all delegated amount of the specified staker and asset
+// AllDelegatedInfoForStakerAsset returns all delegated information of the specified staker and asset
 // the key of return value is the operator address, and the value is the asset amount.
-func (k *Keeper) AllDelegatedAmountForStakerAsset(ctx sdk.Context, stakerID string, assetID string) (map[string]sdkmath.Int, error) {
+func (k *Keeper) AllDelegatedInfoForStakerAsset(ctx sdk.Context, stakerID string, assetID string) (map[string]sdkmath.Int, error) {
 	ret := make(map[string]sdkmath.Int)
-	opFunc := func(keys *delegationtype.SingleDelegationInfoReq, amounts *delegationtype.DelegationAmounts) error {
+	opFunc := func(keys *delegationtype.SingleDelegationInfoReq, amounts *delegationtype.DelegationAmounts) (bool, error) {
 		opAccAddr := sdk.MustAccAddressFromBech32(keys.GetOperatorAddr())
 		// get the asset state of operator
 		operatorAsset, err := k.assetsKeeper.GetOperatorSpecifiedAssetInfo(ctx, opAccAddr, assetID)
 		if err != nil {
-			return err
+			return true, err
 		}
 		singleAmount, err := TokensFromShares(amounts.UndelegatableShare, operatorAsset.TotalShare, operatorAsset.TotalAmount)
 		if err != nil {
-			return err
+			return true, err
 		}
 		ret[keys.OperatorAddr] = singleAmount
-		return nil
+		return false, nil
 	}
 	err := k.IterateDelegationsForStakerAndAsset(ctx, stakerID, assetID, opFunc)
 	if err != nil {
@@ -124,7 +139,7 @@ func (k Keeper) UpdateDelegationState(ctx sdk.Context, stakerID, assetID, opAddr
 	// check operator address validation
 	_, err := sdk.AccAddressFromBech32(opAddr)
 	if err != nil {
-		return shareIsZero, delegationtype.OperatorAddrIsNotAccAddr
+		return shareIsZero, delegationtype.ErrOperatorAddrIsNotAccAddr
 	}
 	singleStateKey := assetstype.GetJoinedStoreKey(stakerID, assetID, opAddr)
 	delegationState := delegationtype.DelegationAmounts{
@@ -167,7 +182,7 @@ func (k *Keeper) GetSingleDelegationInfo(ctx sdk.Context, stakerID, assetID, ope
 	delegationState := delegationtype.DelegationAmounts{}
 	value := store.Get(singleStateKey)
 	if value == nil {
-		return nil, errorsmod.Wrap(delegationtype.ErrNoKeyInTheStore, fmt.Sprintf("QuerySingleDelegationInfo: key is %s", singleStateKey))
+		return nil, delegationtype.ErrNoKeyInTheStore.Wrapf("QuerySingleDelegationInfo: key is %s", singleStateKey)
 	}
 	k.cdc.MustUnmarshal(value, &delegationState)
 	return &delegationState, nil
@@ -176,10 +191,10 @@ func (k *Keeper) GetSingleDelegationInfo(ctx sdk.Context, stakerID, assetID, ope
 // GetDelegationInfo query the staker's asset info that has been delegated.
 func (k *Keeper) GetDelegationInfo(ctx sdk.Context, stakerID, assetID string) (*delegationtype.QueryDelegationInfoResponse, error) {
 	var ret delegationtype.QueryDelegationInfoResponse
-	ret.DelegationInfos = make(map[string]*delegationtype.DelegationAmounts, 0)
-	opFunc := func(keys *delegationtype.SingleDelegationInfoReq, amounts *delegationtype.DelegationAmounts) error {
+	ret.DelegationInfos = make(map[string]*delegationtype.DelegationAmounts)
+	opFunc := func(keys *delegationtype.SingleDelegationInfoReq, amounts *delegationtype.DelegationAmounts) (bool, error) {
 		ret.DelegationInfos[keys.OperatorAddr] = amounts
-		return nil
+		return false, nil
 	}
 	err := k.IterateDelegationsForStakerAndAsset(ctx, stakerID, assetID, opFunc)
 	if err != nil {
@@ -237,7 +252,13 @@ func (k *Keeper) DeleteStakersListForOperator(ctx sdk.Context, operator, assetID
 	return nil
 }
 
-func (k *Keeper) GetStakersByOperator(ctx sdk.Context, operator, assetID string) (delegationtype.StakerList, error) {
+func (k Keeper) HasStakerList(ctx sdk.Context, operator, assetID string) bool {
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), delegationtype.KeyPrefixStakersByOperator)
+	Key := assetstype.GetJoinedStoreKey(operator, assetID)
+	return store.Has(Key)
+}
+
+func (k Keeper) GetStakersByOperator(ctx sdk.Context, operator, assetID string) (delegationtype.StakerList, error) {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), delegationtype.KeyPrefixStakersByOperator)
 	Key := assetstype.GetJoinedStoreKey(operator, assetID)
 	value := store.Get(Key)
@@ -247,6 +268,33 @@ func (k *Keeper) GetStakersByOperator(ctx sdk.Context, operator, assetID string)
 	stakerList := delegationtype.StakerList{}
 	k.cdc.MustUnmarshal(value, &stakerList)
 	return stakerList, nil
+}
+
+func (k Keeper) AllStakerList(ctx sdk.Context) (stakerList []delegationtype.StakersByOperator, err error) {
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), delegationtype.KeyPrefixStakersByOperator)
+	iterator := sdk.KVStorePrefixIterator(store, []byte{})
+	defer iterator.Close()
+
+	ret := make([]delegationtype.StakersByOperator, 0)
+	for ; iterator.Valid(); iterator.Next() {
+		var stakers delegationtype.StakerList
+		k.cdc.MustUnmarshal(iterator.Value(), &stakers)
+		ret = append(ret, delegationtype.StakersByOperator{
+			Key:     string(iterator.Key()),
+			Stakers: stakers.Stakers,
+		})
+	}
+	return ret, nil
+}
+
+func (k Keeper) SetAllStakerList(ctx sdk.Context, stakersByOperator []delegationtype.StakersByOperator) error {
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), delegationtype.KeyPrefixStakersByOperator)
+	for i := range stakersByOperator {
+		singleElement := stakersByOperator[i]
+		bz := k.cdc.MustMarshal(&delegationtype.StakerList{Stakers: singleElement.Stakers})
+		store.Set([]byte(singleElement.Key), bz)
+	}
+	return nil
 }
 
 func (k *Keeper) SetStakerShareToZero(ctx sdk.Context, operator, assetID string, stakerList delegationtype.StakerList) error {
@@ -304,7 +352,7 @@ func (k Keeper) DelegationStateByOperatorAssets(ctx sdk.Context, operatorAddr st
 func (k *Keeper) SetAssociatedOperator(ctx sdk.Context, stakerID, operatorAddr string) error {
 	_, err := sdk.AccAddressFromBech32(operatorAddr)
 	if err != nil {
-		return delegationtype.OperatorAddrIsNotAccAddr
+		return delegationtype.ErrOperatorAddrIsNotAccAddr
 	}
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), delegationtype.KeyPrefixAssociatedOperatorByStaker)
 	store.Set([]byte(stakerID), []byte(operatorAddr))
@@ -324,4 +372,19 @@ func (k *Keeper) GetAssociatedOperator(ctx sdk.Context, stakerID string) (string
 		return string(value), nil
 	}
 	return "", nil
+}
+
+func (k *Keeper) GetAllAssociations(ctx sdk.Context) ([]delegationtype.StakerToOperator, error) {
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), delegationtype.KeyPrefixAssociatedOperatorByStaker)
+	iterator := sdk.KVStorePrefixIterator(store, []byte{})
+	defer iterator.Close()
+
+	ret := make([]delegationtype.StakerToOperator, 0)
+	for ; iterator.Valid(); iterator.Next() {
+		ret = append(ret, delegationtype.StakerToOperator{
+			StakerID: string(iterator.Key()),
+			Operator: string(iterator.Value()),
+		})
+	}
+	return ret, nil
 }

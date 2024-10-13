@@ -5,7 +5,7 @@ import (
 	"reflect"
 
 	exocmn "github.com/ExocoreNetwork/exocore/precompiles/common"
-	cmn "github.com/evmos/evmos/v14/precompiles/common"
+	cmn "github.com/evmos/evmos/v16/precompiles/common"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/accounts/abi"
@@ -14,13 +14,13 @@ import (
 )
 
 const (
-	// MethodDelegateToThroughClientChain defines the ABI method name for the
-	// DelegateToThroughClientChain transaction.
-	MethodDelegateToThroughClientChain = "delegateToThroughClientChain"
+	// MethodDelegate defines the ABI method name for the
+	// Delegate transaction.
+	MethodDelegate = "delegate"
 
-	// MethodUndelegateFromThroughClientChain defines the ABI method name for the
-	// UndelegateFromThroughClientChain transaction.
-	MethodUndelegateFromThroughClientChain = "undelegateFromThroughClientChain"
+	// MethodUndelegate defines the ABI method name for the
+	// Undelegate transaction.
+	MethodUndelegate = "undelegate"
 
 	// MethodAssociateOperatorWithStaker defines the ABI method name for the
 	// associateOperatorWithStaker transaction.
@@ -33,8 +33,8 @@ const (
 	CtxKeyTxHash = "TxHash"
 )
 
-// DelegateToThroughClientChain delegate the client chain assets to the operator through client chain, that will change the states in delegation and assets module
-func (p Precompile) DelegateToThroughClientChain(
+// Delegate the client chain assets to the operator through client chain, that will change the states in delegation and assets module
+func (p Precompile) Delegate(
 	ctx sdk.Context,
 	_ common.Address,
 	contract *vm.Contract,
@@ -60,8 +60,8 @@ func (p Precompile) DelegateToThroughClientChain(
 	return method.Outputs.Pack(true)
 }
 
-// UndelegateFromThroughClientChain Undelegation the client chain assets from the operator through client chain, that will change the states in delegation and assets module
-func (p Precompile) UndelegateFromThroughClientChain(
+// Undelegate the client chain assets from the operator through client chain, that will change the states in delegation and assets module
+func (p Precompile) Undelegate(
 	ctx sdk.Context,
 	_ common.Address,
 	contract *vm.Contract,

@@ -4,12 +4,14 @@ import (
 	"context"
 	"testing"
 
+	math "cosmossdk.io/math"
 	"github.com/ExocoreNetwork/exocore/testutil"
 	"github.com/ExocoreNetwork/exocore/x/oracle/keeper"
 	"github.com/ExocoreNetwork/exocore/x/oracle/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/suite"
 
+	assetstypes "github.com/ExocoreNetwork/exocore/x/assets/types"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	gomock "go.uber.org/mock/gomock"
@@ -80,6 +82,20 @@ func (suite *KeeperSuite) Reset() {
 
 func (suite *KeeperSuite) SetupTest() {
 	suite.DoSetupTest()
+
+	depositAmountNST := math.NewInt(64)
+	suite.App.AssetsKeeper.SetStakingAssetInfo(suite.Ctx, &assetstypes.StakingAssetInfo{
+		AssetBasicInfo: assetstypes.AssetInfo{
+			Name:             "Native Restaking ETH",
+			Symbol:           "NSTETH",
+			Address:          "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+			Decimals:         18,
+			LayerZeroChainID: suite.ClientChains[0].LayerZeroChainID,
+			MetaInfo:         "native restaking token",
+		},
+		StakingTotalAmount: depositAmountNST,
+	})
+
 	validators := suite.ValSet.Validators
 	suite.valAddr1, _ = sdk.ValAddressFromBech32(sdk.ValAddress(validators[0].Address).String())
 	suite.valAddr2, _ = sdk.ValAddressFromBech32(sdk.ValAddress(validators[1].Address).String())

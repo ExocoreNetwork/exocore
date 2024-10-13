@@ -3,7 +3,8 @@ package keeper
 import (
 	"fmt"
 
-	exocoretypes "github.com/ExocoreNetwork/exocore/types/keys"
+	keytypes "github.com/ExocoreNetwork/exocore/types/keys"
+	"github.com/ExocoreNetwork/exocore/utils"
 	avstypes "github.com/ExocoreNetwork/exocore/x/avs/types"
 	"github.com/ExocoreNetwork/exocore/x/dogfood/types"
 	abci "github.com/cometbft/cometbft/abci/types"
@@ -34,35 +35,39 @@ func (k Keeper) InitGenesis(
 	// create the AVS
 	var avsAddr common.Address
 	var err error
-	// the avs module will remove the revision by itself
+	// the avs module will remove the revision by itself, but we do it here anyway because we need it
+	// to look up operator registration status after this - which is keyed by chainID without revision.
+	chainIDWithoutRevision := utils.ChainIDWithoutRevision(ctx.ChainID())
 	if avsAddr, err = k.avsKeeper.RegisterAVSWithChainID(ctx, &avstypes.AVSRegisterOrDeregisterParams{
-		AvsName:           ctx.ChainID(),
+		AvsName:           chainIDWithoutRevision,
 		AssetID:           genState.Params.AssetIDs,
 		UnbondingPeriod:   uint64(genState.Params.EpochsUntilUnbonded),
 		MinSelfDelegation: genState.Params.MinSelfDelegation.Uint64(),
 		EpochIdentifier:   epochID,
-		ChainID:           ctx.ChainID(),
+		ChainID:           chainIDWithoutRevision,
 	}); err != nil {
 		panic(fmt.Errorf("could not create the dogfood AVS: %s", err))
 	}
 	avsAddrString := avsAddr.String()
-	k.Logger(ctx).Info(fmt.Sprintf("created dogfood avs %s %s", avsAddrString, ctx.ChainID()))
+	k.Logger(ctx).Info(
+		"created dogfood avs",
+		"avsAddrString", avsAddrString,
+		"chainIDWithoutRevision", chainIDWithoutRevision,
+	)
 	// create the validators
-	out := make([]exocoretypes.WrappedConsKeyWithPower, 0, len(genState.ValSet))
+	out := make([]keytypes.WrappedConsKeyWithPower, 0, len(genState.ValSet))
 	for _, val := range genState.ValSet {
 		// we have already checked in gs.Validate() that wrappedKey is not nil
-		wrappedKey := exocoretypes.NewWrappedConsKeyFromHex(val.PublicKey)
-		// #nosec G703 // already validated
-		operatorAddr, _ := sdk.AccAddressFromBech32(val.OperatorAccAddr)
-		// OptIntoAVS checks that the operator exists and will error if it does not.
-		if err := k.operatorKeeper.OptInWithConsKey(
-			ctx, operatorAddr, avsAddrString, wrappedKey,
-		); err != nil {
-			panic(fmt.Errorf("failed to opt into avs: %s", err))
+		wrappedKey := keytypes.NewWrappedConsKeyFromHex(val.PublicKey)
+		// check that an operator exists
+		if found, _ := k.operatorKeeper.GetOperatorAddressForChainIDAndConsAddr(
+			ctx, chainIDWithoutRevision, wrappedKey.ToConsAddr(),
+		); !found {
+			panic(fmt.Sprintf("operator not found for key %s", val.PublicKey))
 		}
-		out = append(out, exocoretypes.WrappedConsKeyWithPower{
-			Power: val.Power,
+		out = append(out, keytypes.WrappedConsKeyWithPower{
 			Key:   wrappedKey,
+			Power: val.Power,
 		})
 	}
 	for i := range genState.OptOutExpiries {
@@ -128,7 +133,7 @@ func (k Keeper) ExportGenesis(ctx sdk.Context) *types.GenesisState {
 				Power:     val.GetConsensusPower(sdk.DefaultPowerReduction),
 			},
 		)
-		return false /* stop */
+		return false // stop == false => continue iteration
 	})
 	return types.NewGenesis(
 		k.GetDogfoodParams(ctx),

@@ -1,7 +1,7 @@
 package types
 
 import (
-	evmtype "github.com/evmos/evmos/v14/x/evm/types"
+	evmtype "github.com/evmos/evmos/v16/x/evm/types"
 )
 
 // DefaultGenesisState sets default evm genesis state with empty accounts and default params and

@@ -47,7 +47,10 @@ func CmdRegisterSubscriberChain() *cobra.Command {
 				return fmt.Errorf("invalid JSON argument: %s", args[0])
 			}
 
-			msg := types.NewRegisterSubscriberChainRequest(clientCtx.GetFromAddress().String(), args[0])
+			msg, err := types.NewRegisterSubscriberChainRequest(clientCtx.GetFromAddress().String(), args[0])
+			if err != nil {
+				return fmt.Errorf("failed to parse JSON argument: %s", err)
+			}
 
 			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), msg)
 		},
