@@ -9,6 +9,7 @@ import (
 	utils "github.com/ExocoreNetwork/exocore/utils"
 	assetstypes "github.com/ExocoreNetwork/exocore/x/assets/types"
 	"github.com/ExocoreNetwork/exocore/x/oracle/types"
+	"github.com/cosmos/cosmos-sdk/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 )
@@ -19,9 +20,22 @@ import (
 // undelegate: update operator's price, operator's totalAmount, operator's totalShare, staker's share
 // msg(refund or slash on beaconChain): update staker's price, operator's price
 
-const maxEffectiveBalance = 32
+const (
+	NSTETHASSETID = "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee_0x65"
+)
 
-var stakerList types.StakerList
+// SetStakerInfos set stakerInfos for the specific assetID
+func (k Keeper) SetStakerInfos(ctx sdk.Context, assetID string, stakerInfos []*types.StakerInfo) {
+	store := ctx.KVStore(k.storeKey)
+	for _, stakerInfo := range stakerInfos {
+		bz := k.cdc.MustMarshal(stakerInfo)
+		store.Set(types.NativeTokenStakerKey(assetID, stakerInfo.StakerAddr), bz)
+	}
+}
+
+var maxEffectiveBalance = map[string]int{
+	NSTETHASSETID: 32,
+}
 
 // GetStakerInfo returns details about staker for native-restaking under asset of assetID
 func (k Keeper) GetStakerInfo(ctx sdk.Context, assetID, stakerAddr string) types.StakerInfo {
@@ -33,6 +47,89 @@ func (k Keeper) GetStakerInfo(ctx sdk.Context, assetID, stakerAddr string) types
 	}
 	k.cdc.MustUnmarshal(value, &stakerInfo)
 	return stakerInfo
+}
+
+// TODO: pagination
+// GetStakerInfos returns all stakers information
+func (k Keeper) GetStakerInfos(ctx sdk.Context, assetID string) (ret []*types.StakerInfo) {
+	store := ctx.KVStore(k.storeKey)
+	iterator := sdk.KVStorePrefixIterator(store, types.NativeTokenStakerKeyPrefix(assetID))
+	defer iterator.Close()
+	for ; iterator.Valid(); iterator.Next() {
+		sInfo := types.StakerInfo{}
+		k.cdc.MustUnmarshal(iterator.Value(), &sInfo)
+		// keep only the latest effective-balance
+		sInfo.BalanceList = sInfo.BalanceList[:len(sInfo.BalanceList)-1]
+		// this is mainly used by price feeder, so we remove the stakerAddr to reduce the size of return value
+		sInfo.StakerAddr = ""
+		ret = append(ret, &sInfo)
+	}
+	return ret
+}
+
+// GetAllStakerInfosAssets returns all stakerInfos combined with assetIDs they belong to, used for genesisstate exporting
+func (k Keeper) GetAllStakerInfosAssets(ctx sdk.Context) (ret []types.StakerInfosAssets) {
+	store := ctx.KVStore(k.storeKey)
+	store = prefix.NewStore(store, types.NativeTokenStakerKeyPrefix(""))
+	// set assetID as "" to iterate all value with different assetIDs
+	iterator := sdk.KVStorePrefixIterator(store, []byte{})
+	defer iterator.Close()
+	ret = make([]types.StakerInfosAssets, 0)
+	l := 0
+	for ; iterator.Valid(); iterator.Next() {
+		assetID, _ := types.ParseNativeTokenStakerKey(iterator.Key())
+		if l == 0 || ret[l-1].AssetId != assetID {
+			ret = append(ret, types.StakerInfosAssets{
+				AssetId:     assetID,
+				StakerInfos: make([]*types.StakerInfo, 0),
+			})
+			l++
+		}
+		v := &types.StakerInfo{}
+		k.cdc.MustUnmarshal(iterator.Value(), v)
+		ret[l-1].StakerInfos = append(ret[l-1].StakerInfos, v)
+	}
+	return ret
+}
+
+// SetStakerList set staker list for assetID, this is mainly used for genesis init
+func (k Keeper) SetStakerList(ctx sdk.Context, assetID string, sl *types.StakerList) {
+	if sl == nil {
+		return
+	}
+	store := ctx.KVStore(k.storeKey)
+	bz := k.cdc.MustMarshal(sl)
+	store.Set(types.NativeTokenStakerListKey(assetID), bz)
+}
+
+// GetStakerList return stakerList for native-restaking asset of assetID
+func (k Keeper) GetStakerList(ctx sdk.Context, assetID string) types.StakerList {
+	store := ctx.KVStore(k.storeKey)
+	value := store.Get(types.NativeTokenStakerListKey(assetID))
+	if value == nil {
+		return types.StakerList{}
+	}
+	stakerList := &types.StakerList{}
+	k.cdc.MustUnmarshal(value, stakerList)
+	return *stakerList
+}
+
+// GetAllStakerListAssets return stakerList combined with assetIDs they belong to, used for genesisstate exporting
+func (k Keeper) GetAllStakerListAssets(ctx sdk.Context) (ret []types.StakerListAssets) {
+	store := ctx.KVStore(k.storeKey)
+	// set assetID with "" to iterate all stakerList with every assetIDs
+	iterator := sdk.KVStorePrefixIterator(store, types.NativeTokenStakerListKey(""))
+	defer iterator.Close()
+	ret = make([]types.StakerListAssets, 0)
+	for ; iterator.Valid(); iterator.Next() {
+		v := &types.StakerList{}
+		k.cdc.MustUnmarshal(iterator.Value(), v)
+		ret = append(ret, types.StakerListAssets{
+			AssetId:    string(iterator.Key()),
+			StakerList: v,
+		})
+	}
+	return ret
 }
 
 func (k Keeper) UpdateNSTValidatorListForStaker(ctx sdk.Context, assetID, stakerAddr, validatorPubkey string, amount sdkmath.Int) error {
@@ -77,10 +174,23 @@ func (k Keeper) UpdateNSTValidatorListForStaker(ctx sdk.Context, assetID, staker
 		}
 	}
 
-	newBalance.Balance += amount.Int64()
+	decimal, decimalInt, err := k.getDecimal(ctx, assetID)
+	if err != nil {
+		return err
+	}
+
+	// the amount should be checked by caller
+	// in case of nstETH, deposit should be equal to 32e18 as the maxeffectivebalance
+	efbUnit := sdkmath.NewIntWithDecimal(int64(maxEffectiveBalance[assetID]), decimal)
+	if amount.GTE(efbUnit) {
+		newBalance.Balance += int64(maxEffectiveBalance[assetID])
+	} else {
+		newBalance.Balance += amount.Quo(decimalInt).Int64()
+	}
 
 	keyStakerList := types.NativeTokenStakerListKey(assetID)
 	valueStakerList := store.Get(keyStakerList)
+	var stakerList types.StakerList
 	stakerList.StakerAddrs = make([]string, 0, 1)
 	if valueStakerList != nil {
 		k.cdc.MustUnmarshal(valueStakerList, &stakerList)
@@ -132,61 +242,13 @@ func (k Keeper) UpdateNSTValidatorListForStaker(ctx sdk.Context, assetID, staker
 	return nil
 }
 
-// TODO: pagination
-// GetStakerInfos returns all stakers information
-func (k Keeper) GetStakerInfos(ctx sdk.Context, assetID string) (ret []*types.StakerInfo) {
-	store := ctx.KVStore(k.storeKey)
-	iterator := sdk.KVStorePrefixIterator(store, types.NativeTokenStakerKeyPrefix(assetID))
-	defer iterator.Close()
-	for ; iterator.Valid(); iterator.Next() {
-		sInfo := types.StakerInfo{}
-		k.cdc.MustUnmarshal(iterator.Value(), &sInfo)
-		// keep only the latest effective-balance
-		sInfo.BalanceList = sInfo.BalanceList[:len(sInfo.BalanceList)-1]
-		// this is mainly used by price feeder, so we remove the stakerAddr to reduce the size of return value
-		sInfo.StakerAddr = ""
-		ret = append(ret, &sInfo)
-	}
-	return ret
-}
-
-func (k Keeper) SetStakerInfos(ctx sdk.Context, assetID string, stakerInfos []*types.StakerInfo) {
-	store := ctx.KVStore(k.storeKey)
-	for _, stakerInfo := range stakerInfos {
-		bz := k.cdc.MustMarshal(stakerInfo)
-		store.Set(types.NativeTokenStakerKey(assetID, stakerInfo.StakerAddr), bz)
-	}
-}
-
-// GetStakerList return stakerList for native-restaking asset of assetID
-func (k Keeper) GetStakerList(ctx sdk.Context, assetID string) types.StakerList {
-	store := ctx.KVStore(k.storeKey)
-	value := store.Get(types.NativeTokenStakerListKey(assetID))
-	if value == nil {
-		return types.StakerList{}
-	}
-	stakerList := &types.StakerList{}
-	k.cdc.MustUnmarshal(value, stakerList)
-	return *stakerList
-}
-
-// SetStakerList set staker list for assetID, this is mainly used for genesis init
-func (k Keeper) SetStakerList(ctx sdk.Context, assetID string, stakerList *types.StakerList) {
-	if stakerList == nil {
-		return
-	}
-	store := ctx.KVStore(k.storeKey)
-	bz := k.cdc.MustMarshal(stakerList)
-	store.Set(types.NativeTokenStakerListKey(assetID), bz)
-}
-
 // UpdateNSTByBalanceChange updates balance info for staker under native-restaking asset of assetID when its balance changed by slash/refund on the source chain (beacon chain for eth)
 func (k Keeper) UpdateNSTByBalanceChange(ctx sdk.Context, assetID string, rawData []byte, roundID uint64) error {
 	_, chainID, _ := assetstypes.ParseID(assetID)
 	if len(rawData) < 32 {
 		return errors.New("length of indicate maps for stakers shoule be exactly 32 bytes")
 	}
-	sl := k.getStakerList(ctx, assetID)
+	sl := k.GetStakerList(ctx, assetID)
 	if len(sl.StakerAddrs) == 0 {
 		return errors.New("staker list is empty")
 	}
@@ -218,7 +280,7 @@ func (k Keeper) UpdateNSTByBalanceChange(ctx sdk.Context, assetID string, rawDat
 		}
 		newBalance.Change = types.Action_ACTION_SLASH_REFUND
 		// balance update are based on initial/max effective balance: 32
-		maxBalance := maxEffectiveBalance * (len(stakerInfo.ValidatorPubkeyList))
+		maxBalance := maxEffectiveBalance[assetID] * (len(stakerInfo.ValidatorPubkeyList))
 		balance := maxBalance + change
 		// there's one case that this delta might be more than previous Balance
 		// staker's validatorlist: {v1, v2, v3, v5}
@@ -231,7 +293,11 @@ func (k Keeper) UpdateNSTByBalanceChange(ctx sdk.Context, assetID string, rawDat
 		}
 
 		if delta := int64(balance) - newBalance.Balance; delta != 0 {
-			if err := k.delegationKeeper.UpdateNSTBalance(ctx, getStakerID(stakerAddr, chainID), assetID, sdkmath.NewInt(delta)); err != nil {
+			decimal, _, err := k.getDecimal(ctx, assetID)
+			if err != nil {
+				return err
+			}
+			if err := k.delegationKeeper.UpdateNSTBalance(ctx, getStakerID(stakerAddr, chainID), assetID, sdkmath.NewIntWithDecimal(delta, decimal)); err != nil {
 				return err
 			}
 			newBalance.Balance = int64(balance)
@@ -244,12 +310,13 @@ func (k Keeper) UpdateNSTByBalanceChange(ctx sdk.Context, assetID string, rawDat
 	return nil
 }
 
-// getStakerList returns all Stakers for native-restaking of assetID, this is used for cache
-func (k Keeper) getStakerList(ctx sdk.Context, assetID string) types.StakerList {
-	if len(stakerList.StakerAddrs) == 0 {
-		stakerList = k.GetStakerList(ctx, assetID)
+func (k Keeper) getDecimal(ctx sdk.Context, assetID string) (int, sdkmath.Int, error) {
+	decimalMap, err := k.assetsKeeper.GetAssetsDecimal(ctx, map[string]interface{}{assetID: nil})
+	if err != nil {
+		return 0, sdkmath.NewInt(0), err
 	}
-	return stakerList
+	decimal := decimalMap[assetID]
+	return int(decimal), sdkmath.NewIntWithDecimal(1, int(decimal)), nil
 }
 
 // parseBalanceChange parses rawData to details of amount change for all stakers relative to native restaking

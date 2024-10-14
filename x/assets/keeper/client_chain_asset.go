@@ -35,7 +35,9 @@ func (k Keeper) UpdateStakingAssetTotalAmount(ctx sdk.Context, assetID string, c
 }
 
 // SetStakingAssetInfo todo: Temporarily use clientChainAssetAddr+'_'+LayerZeroChainID as the key.
-// It provides a function to register the client chain assets supported by exoCore.It's called by genesis configuration now,however it will be called by the governance in the future
+// It provides a function to register the client chain assets supported by Exocore.
+// New assets may be registered via ExocoreGateway, which uses precompiles to call this function.
+// If an asset with the provided assetID already exists, it will return an error.
 func (k Keeper) SetStakingAssetInfo(ctx sdk.Context, info *assetstype.StakingAssetInfo) (err error) {
 	if info.AssetBasicInfo.Decimals > assetstype.MaxDecimal {
 		return errorsmod.Wrapf(assetstype.ErrInvalidInputParameter, "the decimal is greater than the MaxDecimal,decimal:%v,MaxDecimal:%v", info.AssetBasicInfo.Decimals, assetstype.MaxDecimal)
@@ -44,19 +46,39 @@ func (k Keeper) SetStakingAssetInfo(ctx sdk.Context, info *assetstype.StakingAss
 		return errorsmod.Wrapf(assetstype.ErrInvalidInputParameter, "the total staking amount is negative, StakingTotalAmount:%v", info.StakingTotalAmount)
 	}
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), assetstype.KeyPrefixReStakingAssetInfo)
-	// key := common.HexToAddress(incentive.Contract)
-	bz := k.cdc.MustMarshal(info)
-
 	_, assetID := assetstype.GetStakerIDAndAssetIDFromStr(info.AssetBasicInfo.LayerZeroChainID, "", info.AssetBasicInfo.Address)
+	if store.Has([]byte(assetID)) {
+		return assetstype.ErrRegisterDuplicateAssetID.Wrapf(
+			"the asset has already been registered,assetID:%v,LayerZeroChainID:%v,ClientChainAssetAddr:%v",
+			assetID, info.AssetBasicInfo.LayerZeroChainID, info.AssetBasicInfo.Address,
+		)
+	}
+	bz := k.cdc.MustMarshal(info)
 	store.Set([]byte(assetID), bz)
 	return nil
 }
 
+// IsStakingAsset checks if the assetID is a staking asset.
 func (k Keeper) IsStakingAsset(ctx sdk.Context, assetID string) bool {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), assetstype.KeyPrefixReStakingAssetInfo)
 	return store.Has([]byte(assetID))
 }
 
+// UpdateStakingAssetMetaInfo updates the meta information stored against a provided assetID.
+// If the assetID does not exist, it returns an error.
+func (k Keeper) UpdateStakingAssetMetaInfo(ctx sdk.Context, assetID string, metainfo string) error {
+	info, err := k.GetStakingAssetInfo(ctx, assetID)
+	if err != nil {
+		return err
+	}
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), assetstype.KeyPrefixReStakingAssetInfo)
+	info.AssetBasicInfo.MetaInfo = metainfo
+	bz := k.cdc.MustMarshal(info)
+	store.Set([]byte(assetID), bz)
+	return nil
+}
+
+// GetStakingAssetInfo returns the asset information stored against a provided assetID.
 func (k Keeper) GetStakingAssetInfo(ctx sdk.Context, assetID string) (info *assetstype.StakingAssetInfo, err error) {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), assetstype.KeyPrefixReStakingAssetInfo)
 	value := store.Get([]byte(assetID))
@@ -69,6 +91,7 @@ func (k Keeper) GetStakingAssetInfo(ctx sdk.Context, assetID string) (info *asse
 	return &ret, nil
 }
 
+// GetAssetsDecimal returns the decimal of all the provided assets.
 func (k Keeper) GetAssetsDecimal(ctx sdk.Context, assets map[string]interface{}) (decimals map[string]uint32, err error) {
 	if assets == nil {
 		return nil, errorsmod.Wrap(assetstype.ErrInputPointerIsNil, "assets is nil")

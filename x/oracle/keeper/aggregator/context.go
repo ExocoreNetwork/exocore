@@ -23,8 +23,18 @@ type roundInfo struct {
 	nextRoundID uint64
 	// indicate if this round is open for collecting prices or closed in either condition that success with a consensused price or not
 	// 1: open, 2: closed
-	status int32
+	status roundStatus
 }
+
+// roundStatus is an enum type to indicate the status of a roundInfo
+type roundStatus int32
+
+const (
+	// roundStatusOpen indicates the round is open for collecting prices
+	roundStatusOpen roundStatus = iota + 1
+	// roundStatusClosed indicates the round is closed, either success with a consensused price or not
+	roundStatusClosed
+)
 
 // AggregatorContext keeps memory cache for state params, validatorset, and updatedthese values as they updated on chain. And it keeps the information to track all tokenFeeders' status and data collection
 // nolint
@@ -117,7 +127,7 @@ func (agc *AggregatorContext) checkMsg(msg *types.MsgCreatePrice) error {
 
 	// check feeder is active
 	feederContext := agc.rounds[msg.FeederID]
-	if feederContext == nil || feederContext.status != 1 {
+	if feederContext == nil || feederContext.status != roundStatusOpen {
 		// feederId does not exist or not alive
 		return errors.New("context not exist or not available")
 	}
@@ -155,7 +165,7 @@ func (agc *AggregatorContext) FillPrice(msg *types.MsgCreatePrice) (*PriceItemKV
 
 	if listFilled := feederWorker.do(msg); listFilled != nil {
 		if finalPrice := feederWorker.aggregate(); finalPrice != nil {
-			agc.rounds[msg.FeederID].status = 2
+			agc.rounds[msg.FeederID].status = roundStatusClosed
 			feederWorker.seal()
 			return &PriceItemKV{agc.params.GetTokenFeeder(msg.FeederID).TokenID, types.PriceTimeRound{
 				Price:   finalPrice.String(),
@@ -188,12 +198,12 @@ func (agc *AggregatorContext) NewCreatePrice(_ sdk.Context, msg *types.MsgCreate
 // returns: 1st successful sealed, need to be written to KVStore, 2nd: failed sealed tokenID, use previous price to write to KVStore
 func (agc *AggregatorContext) SealRound(ctx sdk.Context, force bool) (success []*PriceItemKV, failed []uint64, sealed []uint64) {
 	for feederID, round := range agc.rounds {
-		if round.status == 1 {
+		if round.status == roundStatusOpen {
 			feeder := agc.params.GetTokenFeeder(feederID)
 			// TODO: for mode=1, we don't do aggregate() here, since if it donesn't success in the transaction execution stage, it won't success here
 			// but it's not always the same for other modes, switch modes
 			switch common.Mode {
-			case 1:
+			case types.ConsensusModeASAP:
 				expired := feeder.EndBlock > 0 && uint64(ctx.BlockHeight()) >= feeder.EndBlock
 				outOfWindow := uint64(ctx.BlockHeight())-round.basedBlock >= uint64(common.MaxNonce)
 				if expired || outOfWindow || force {
@@ -201,7 +211,7 @@ func (agc *AggregatorContext) SealRound(ctx sdk.Context, force bool) (success []
 					if expired {
 						delete(agc.rounds, feederID)
 					} else {
-						round.status = 2
+						round.status = roundStatusClosed
 					}
 					// TODO: optimize operformance
 					sealed = append(sealed, feederID)
@@ -251,9 +261,9 @@ func (agc *AggregatorContext) PrepareRoundEndBlock(block uint64) (newRoundFeeder
 			}
 			if left >= uint64(common.MaxNonce) {
 				// since do sealround properly before prepareRound, this only possible happens in node restart, and nonce has been taken care of in kvStore
-				round.status = 2
+				round.status = roundStatusClosed
 			} else {
-				round.status = 1
+				round.status = roundStatusOpen
 				if left == 0 {
 					// set nonce for corresponding feederID for new roud start
 					newRoundFeederIDs = append(newRoundFeederIDs, feederIDUint64)
@@ -265,14 +275,14 @@ func (agc *AggregatorContext) PrepareRoundEndBlock(block uint64) (newRoundFeeder
 			if left == 0 {
 				round.basedBlock = latestBasedblock
 				round.nextRoundID = latestNextRoundID
-				round.status = 1
+				round.status = roundStatusOpen
 				// set nonce for corresponding feederID for new roud start
 				newRoundFeederIDs = append(newRoundFeederIDs, feederIDUint64)
 				// drop previous worker
 				delete(agc.aggregators, feederIDUint64)
-			} else if round.status == 1 && left >= uint64(common.MaxNonce) {
+			} else if round.status == roundStatusOpen && left >= uint64(common.MaxNonce) {
 				// this shouldn't happen, if do sealround properly before prepareRound, basically for test only
-				round.status = 2
+				round.status = roundStatusClosed
 				// TODO: just modify the status here, since sealRound should do all the related seal actions already when parepare invoked
 			}
 		}

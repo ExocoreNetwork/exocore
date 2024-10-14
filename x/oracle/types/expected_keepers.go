@@ -22,3 +22,7 @@ type BankKeeper interface {
 type DelegationKeeper interface {
 	UpdateNSTBalance(ctx sdk.Context, stakerID, assetID string, amount sdkmath.Int) error
 }
+
+type AssetsKeeper interface {
+	GetAssetsDecimal(ctx sdk.Context, assets map[string]interface{}) (decimals map[string]uint32, err error)
+}

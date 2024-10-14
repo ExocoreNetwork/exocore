@@ -112,6 +112,7 @@ func (k Keeper) mustValidateFields() {
 	types.PanicIfNil(k.operatorKeeper, "operatorKeeper")
 	types.PanicIfNil(k.delegationKeeper, "delegationKeeper")
 	types.PanicIfNil(k.restakingKeeper, "restakingKeeper")
+	types.PanicIfNil(k.avsKeeper, "avsKeeper")
 }
 
 // Add the function to get detail information through the operatorKeeper within the dogfood
