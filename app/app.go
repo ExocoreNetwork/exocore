@@ -585,6 +585,7 @@ func NewExocoreApp(
 		appCodec, keys[oracleTypes.StoreKey], memKeys[oracleTypes.MemStoreKey],
 		app.GetSubspace(oracleTypes.ModuleName), app.StakingKeeper,
 		&app.DelegationKeeper,
+		&app.AssetsKeeper,
 	)
 
 	// the SDK slashing module is used to slash validators in the case of downtime. it tracks
@@ -675,9 +676,9 @@ func NewExocoreApp(
 		app.GetSubspace(evmtypes.ModuleName),
 	)
 
-	// the AVS manager keeper is the AVS registry. it allows registered operators to add or
-	// remove AVSs. this keeper is initialized after the EVM keeper because it depends on the EVM keeper
-	// to set a lookup from codeHash to code, at genesis.
+	// the AVS manager keeper is the AVS registry. this keeper is initialized after the EVM
+	// keeper because it depends on the EVM keeper to set a lookup from codeHash to code,
+	// at genesis.
 	app.AVSManagerKeeper = avsManagerKeeper.NewKeeper(
 		appCodec, keys[avsManagerTypes.StoreKey],
 		&app.OperatorKeeper,

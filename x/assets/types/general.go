@@ -44,7 +44,7 @@ const (
 	WithdrawLST
 	DepositNST
 	WithdrawNST
-	WithDrawReward
+	WithdrawReward
 	DelegateTo
 	UndelegateFrom
 	Slash

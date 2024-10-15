@@ -27,10 +27,11 @@ func (k *Keeper) SetOperatorInfo(
 		return errorsmod.Wrap(err, "SetOperatorInfo: error occurred when parse acc address from Bech32")
 	}
 	// if already registered, this request should go to EditOperator.
+	// TODO: EditOperator needs to be implemented.
 	if k.IsOperator(ctx, opAccAddr) {
 		return errorsmod.Wrap(
 			operatortypes.ErrOperatorAlreadyExists,
-			fmt.Sprintf("SetOperatorInfo: operator already exists, address: %suite", opAccAddr),
+			fmt.Sprintf("SetOperatorInfo: operator already exists, address: %s", opAccAddr),
 		)
 	}
 	// TODO: add minimum commission rate module parameter and check that commission exceeds it.

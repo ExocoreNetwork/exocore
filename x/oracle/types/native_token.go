@@ -4,9 +4,8 @@ const maxSize = 100
 
 func NewStakerInfo(stakerAddr, validatorPubkey string) *StakerInfo {
 	return &StakerInfo{
-		StakerAddr:  stakerAddr,
-		StakerIndex: 0,
-		// TODO: need bridge information
+		StakerAddr:          stakerAddr,
+		StakerIndex:         0,
 		ValidatorPubkeyList: []string{validatorPubkey},
 		BalanceList:         make([]*BalanceInfo, 0, 1),
 	}

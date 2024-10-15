@@ -22,7 +22,7 @@ var (
 		"the amount isn't positive",
 	)
 
-	OperatorAddrIsNotAccAddr = errorsmod.Register(
+	ErrOperatorAddrIsNotAccAddr = errorsmod.Register(
 		ModuleName, 6,
 		"the operator address isn't a valid acc addr",
 	)

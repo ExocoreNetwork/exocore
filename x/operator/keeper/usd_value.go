@@ -60,7 +60,7 @@ func (k *Keeper) InitOperatorUSDValue(ctx sdk.Context, avsAddr, operatorAddr str
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), operatortypes.KeyPrefixUSDValueForOperator)
 	var key []byte
 	if operatorAddr == "" {
-		return errorsmod.Wrap(operatortypes.ErrParameterInvalid, "UpdateOperatorUSDValue the operatorAddr is empty")
+		return errorsmod.Wrap(operatortypes.ErrParameterInvalid, "InitOperatorUSDValue the operatorAddr is empty")
 	}
 	key = assetstype.GetJoinedStoreKey(avsAddr, operatorAddr)
 	if store.Has(key) {
@@ -85,7 +85,7 @@ func (k *Keeper) DeleteOperatorUSDValue(ctx sdk.Context, avsAddr, operatorAddr s
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), operatortypes.KeyPrefixUSDValueForOperator)
 	var key []byte
 	if operatorAddr == "" {
-		return errorsmod.Wrap(operatortypes.ErrParameterInvalid, "UpdateOperatorUSDValue the operatorAddr is empty")
+		return errorsmod.Wrap(operatortypes.ErrParameterInvalid, "DeleteOperatorUSDValue the operatorAddr is empty")
 	}
 	key = assetstype.GetJoinedStoreKey(avsAddr, operatorAddr)
 	store.Delete(key)
@@ -400,17 +400,13 @@ func (k *Keeper) CalculateUSDValueForOperator(
 func (k Keeper) GetOrCalculateOperatorUSDValues(
 	ctx sdk.Context,
 	operator sdk.AccAddress,
-	chainIDWithoutRevision string,
+	avsAddr string,
 ) (optedUSDValues operatortypes.OperatorOptedUSDValue, err error) {
-	isAvs, avsAddrString := k.avsKeeper.IsAVSByChainID(ctx, chainIDWithoutRevision)
-	if !isAvs {
-		return operatortypes.OperatorOptedUSDValue{}, errorsmod.Wrap(operatortypes.ErrUnknownChainID, fmt.Sprintf("GetOrCalculateOperatorUSDValues: chainIDWithoutRevision is %s", chainIDWithoutRevision))
-	}
 	// the usd values will be deleted if the operator opts out, so recalculate the
 	// voting power to set the tokens and shares for this case.
-	if !k.IsOptedIn(ctx, operator.String(), avsAddrString) {
+	if !k.IsOptedIn(ctx, operator.String(), avsAddr) {
 		// get assets supported by the AVS
-		assets, err := k.avsKeeper.GetAVSSupportedAssets(ctx, avsAddrString)
+		assets, err := k.avsKeeper.GetAVSSupportedAssets(ctx, avsAddr)
 		if err != nil {
 			return operatortypes.OperatorOptedUSDValue{}, err
 		}
@@ -433,7 +429,7 @@ func (k Keeper) GetOrCalculateOperatorUSDValues(
 		optedUSDValues.SelfUSDValue = stakingInfo.SelfStaking
 		optedUSDValues.TotalUSDValue = stakingInfo.Staking
 	} else {
-		optedUSDValues, err = k.GetOperatorOptedUSDValue(ctx, avsAddrString, operator.String())
+		optedUSDValues, err = k.GetOperatorOptedUSDValue(ctx, avsAddr, operator.String())
 		if err != nil {
 			return operatortypes.OperatorOptedUSDValue{}, err
 		}

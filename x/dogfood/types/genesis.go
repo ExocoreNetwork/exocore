@@ -100,7 +100,7 @@ func (gs GenesisState) Validate() error {
 	}
 
 	// we don't know the current epoch, since this is stateless validation.
-	// to check epoochs aren't duplicated.
+	// to check epochs aren't duplicated.
 	epochs := make(map[int64]struct{}, len(gs.OptOutExpiries))
 	// to check that there is no duplicate address - not by per epoch but overall.
 	addrsMap := make(map[string]struct{})

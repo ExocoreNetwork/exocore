@@ -23,7 +23,12 @@ const (
 	IndexRecentMsgKey = "IndexRecentMsg/value/"
 )
 
-var ParamsKey = []byte{0x11}
+var (
+	// ParamsKey defines the key to store the params in store
+	ParamsKey = []byte{0x11}
+	// BlockKey stores the last validator update block
+	BlockKey = []byte{0x0}
+)
 
 func KeyPrefix(p string) []byte {
 	return []byte(p)

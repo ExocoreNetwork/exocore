@@ -39,7 +39,7 @@ func getRewardParamsFromEventLog(log *ethtypes.Log) (*RewardParams, error) {
 	if err != nil {
 		return nil, errorsmod.Wrap(err, "error occurred when binary read action")
 	}
-	if action != types.WithDrawReward {
+	if action != types.WithdrawReward {
 		// not handle the actions that isn't deposit
 		return nil, nil
 	}
