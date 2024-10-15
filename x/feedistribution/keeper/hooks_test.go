@@ -10,9 +10,9 @@ import (
 
 	utiltx "github.com/ExocoreNetwork/exocore/testutil/tx"
 	keytypes "github.com/ExocoreNetwork/exocore/types/keys"
+	"github.com/ExocoreNetwork/exocore/utils"
 	assetskeeper "github.com/ExocoreNetwork/exocore/x/assets/keeper"
 	assetstypes "github.com/ExocoreNetwork/exocore/x/assets/types"
-	avstypes "github.com/ExocoreNetwork/exocore/x/avs/types"
 	delegationtypes "github.com/ExocoreNetwork/exocore/x/delegation/types"
 	operatorkeeper "github.com/ExocoreNetwork/exocore/x/operator/keeper"
 	operatortypes "github.com/ExocoreNetwork/exocore/x/operator/types"
@@ -39,7 +39,7 @@ func (suite *KeeperTestSuite) TestEpochHooks() {
 			continue
 		}
 		validatorDetail, found := suite.App.StakingKeeper.ValidatorByConsAddrForChainID(
-			suite.Ctx, sdk.GetConsAddress(pk), avstypes.ChainIDWithoutRevision(suite.Ctx.ChainID()),
+			suite.Ctx, sdk.GetConsAddress(pk), utils.ChainIDWithoutRevision(suite.Ctx.ChainID()),
 		)
 		if !found {
 			suite.Ctx.Logger().Error("Operator address not found; skipping", "consAddress", sdk.GetConsAddress(pk), "i", i)
@@ -73,7 +73,7 @@ func (suite *KeeperTestSuite) prepare() {
 	suite.CheckLengthOfValidatorUpdates(0, nil, "register operator but don't opt in")
 
 	// opt-in with a key
-	chainIDWithoutRevision := avstypes.ChainIDWithoutRevision(suite.Ctx.ChainID())
+	chainIDWithoutRevision := utils.ChainIDWithoutRevision(suite.Ctx.ChainID())
 	_, avsAddress := suite.App.AVSManagerKeeper.IsAVSByChainID(suite.Ctx, chainIDWithoutRevision)
 	key := utiltx.GenerateConsensusKey()
 	_, err = suite.OperatorMsgServer.OptIntoAVS(sdk.WrapSDKContext(suite.Ctx), &operatortypes.OptIntoAVSReq{

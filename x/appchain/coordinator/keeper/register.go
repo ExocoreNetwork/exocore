@@ -42,7 +42,7 @@ func (k Keeper) AddSubscriberChain(
 		UnbondingPeriod:   uint64(unbondingEpochs), // estimated
 		MinSelfDelegation: req.MinSelfDelegationUsd,
 		EpochIdentifier:   req.EpochIdentifier,
-		ChainID:           req.ChainID,
+		ChainID:           req.ChainID, // use the one with the version intentionally
 		// TODO: remove the owner role and make it controllable by subscriber-governance
 		AvsOwnerAddress: []string{req.FromAddress},
 	}); err != nil {

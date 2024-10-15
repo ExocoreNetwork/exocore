@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	keytypes "github.com/ExocoreNetwork/exocore/types/keys"
-	avstypes "github.com/ExocoreNetwork/exocore/x/avs/types"
+	"github.com/ExocoreNetwork/exocore/utils"
 	delegationtypes "github.com/ExocoreNetwork/exocore/x/delegation/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -37,7 +37,7 @@ func (wrapper DelegationHooksWrapper) AfterDelegation(
 func (wrapper DelegationHooksWrapper) AfterUndelegationStarted(
 	ctx sdk.Context, operator sdk.AccAddress, recordKey []byte,
 ) error {
-	chainIDWithoutRevision := avstypes.ChainIDWithoutRevision(ctx.ChainID())
+	chainIDWithoutRevision := utils.ChainIDWithoutRevision(ctx.ChainID())
 	var unbondingCompletionEpoch int64
 	if wrapper.keeper.operatorKeeper.IsOperatorRemovingKeyFromChainID(
 		ctx, operator, chainIDWithoutRevision,

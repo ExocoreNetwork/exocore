@@ -7,7 +7,6 @@ import (
 	"github.com/ExocoreNetwork/exocore/utils"
 	commontypes "github.com/ExocoreNetwork/exocore/x/appchain/common/types"
 	"github.com/ExocoreNetwork/exocore/x/appchain/coordinator/types"
-	avstypes "github.com/ExocoreNetwork/exocore/x/avs/types"
 	abci "github.com/cometbft/cometbft/abci/types"
 	tmtypes "github.com/cometbft/cometbft/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -16,6 +15,43 @@ import (
 	commitmenttypes "github.com/cosmos/ibc-go/v7/modules/core/23-commitment/types"
 	ibctmtypes "github.com/cosmos/ibc-go/v7/modules/light-clients/07-tendermint"
 )
+
+// ActivateScheduledChains activates the scheduled chains for the given epoch.
+func (k Keeper) ActivateScheduledChains(ctx sdk.Context, epochIdentifier string, epochNumber int64) {
+	executable := k.GetPendingSubChains(ctx, epochIdentifier, uint64(epochNumber))
+	for _, subscriber := range executable.List {
+		cctx, writeFn, err := k.CreateClientForSubscriberInCachedCtx(ctx, subscriber)
+		if err != nil {
+			k.Logger(ctx).Error(
+				"error creating client for subscriber",
+				"chainID", subscriber.ChainID,
+				"error", err,
+			)
+			_, addr := k.avsKeeper.IsAVSByChainID(ctx, subscriber.ChainID)
+			if err := k.avsKeeper.DeleteAVSInfo(ctx, addr); err != nil {
+				// should never happen
+				k.Logger(ctx).Error(
+					"subscriber AVS not deleted",
+					"chainID", subscriber,
+					"error", err,
+				)
+			}
+			continue
+		}
+		// copy over the events from the cached ctx
+		ctx.EventManager().EmitEvents(cctx.EventManager().Events())
+		writeFn()
+		k.Logger(ctx).Info(
+			"subscriber chain started",
+			"chainID", subscriber,
+			// we start at the current block and do not allow scheduling. this is the same
+			// as any other AVS.
+			"spawn time", ctx.BlockTime().UTC(),
+		)
+	}
+	// clear pending queue, including those that errored out.
+	k.ClearPendingSubChains(ctx, epochIdentifier, uint64(epochNumber))
+}
 
 // CreateClientForSubscriberInCachedCtx is a wrapper function around CreateClientForSubscriber.
 func (k Keeper) CreateClientForSubscriberInCachedCtx(
@@ -37,7 +73,7 @@ func (k Keeper) CreateClientForSubscriber(
 	subscriberParams := req.SubscriberParams
 	// we always deploy a new client for the subscriber chain for our module
 	// technically, the below can never happen but it is guarded in ICS-20 and therefore, here.
-	if _, found := k.GetClientForChain(ctx, chainID); found {
+	if _, found := k.GetClientForChain(ctx, chainID); found { // IBC related
 		// client already exists
 		return types.ErrDuplicateSubChain.Wrapf("chainID: %s", chainID)
 	}
@@ -47,7 +83,7 @@ func (k Keeper) CreateClientForSubscriber(
 	clientState.ChainId = chainID
 	// TODO(mm): Make this configurable for switchover use case
 	clientState.LatestHeight = clienttypes.Height{
-		RevisionNumber: clienttypes.ParseChainID(chainID),
+		RevisionNumber: clienttypes.ParseChainID(chainID), // IBC related
 		RevisionHeight: 1,
 	}
 	subscriberUnbondingPeriod := subscriberParams.UnbondingPeriod
@@ -71,9 +107,6 @@ func (k Keeper) CreateClientForSubscriber(
 	}
 	// this state can be pruned after the initial handshake occurs.
 	k.SetSubscriberGenesis(ctx, chainID, subscriberGenesis)
-	k.SetSubSlashFractionDowntime(ctx, chainID, subscriberParams.SlashFractionDowntime)
-	k.SetSubSlashFractionDoubleSign(ctx, chainID, subscriberParams.SlashFractionDoubleSign)
-	k.SetSubDowntimeJailDuration(ctx, chainID, subscriberParams.DowntimeJailDuration)
 	consensusState := ibctmtypes.NewConsensusState(
 		ctx.BlockTime(),
 		commitmenttypes.NewMerkleRoot([]byte(ibctmtypes.SentinelRoot)),
@@ -92,7 +125,17 @@ func (k Keeper) CreateClientForSubscriber(
 	// assume we start with a value of 2 and we are giving 4 full epochs for initialization.
 	// so when epoch 6 ends, the timeout ends.
 	initTimeoutPeriod.EpochNumber += uint64(epochInfo.CurrentEpoch) + 1
+	// lookup from timeout to chainID
 	k.AppendChainToInitTimeout(ctx, initTimeoutPeriod, chainID)
+	// reverse lookup from chainID to timeout
+	k.SetChainInitTimeout(ctx, chainID, initTimeoutPeriod)
+
+	// if the chain doesn't initialize in time, the following items will be cleared.
+	// same for timeout or error.
+	k.SetSubSlashFractionDowntime(ctx, chainID, subscriberParams.SlashFractionDowntime)
+	k.SetSubSlashFractionDoubleSign(ctx, chainID, subscriberParams.SlashFractionDoubleSign)
+	k.SetSubDowntimeJailDuration(ctx, chainID, subscriberParams.DowntimeJailDuration)
+	k.SetMaxValidatorsForChain(ctx, chainID, req.MaxValidators)
 
 	k.Logger(ctx).Info(
 		"subscriber chain registered (client created)",
@@ -131,7 +174,6 @@ func (k Keeper) MakeSubscriberGenesis(
 	params := k.GetParams(ctx)
 	chainID := req.ChainID
 	k.Logger(ctx).Info("Creating genesis state for subscriber chain", "chainID", chainID)
-	chainIDWithoutRevision := avstypes.ChainIDWithoutRevision(chainID)
 	coordinatorUnbondingPeriod := k.stakingKeeper.UnbondingTime(ctx)
 	// client state
 	clientState := params.TemplateClient
@@ -158,9 +200,9 @@ func (k Keeper) MakeSubscriberGenesis(
 			err, chainID,
 		)
 	}
-	operators, keys := k.operatorKeeper.GetActiveOperatorsForChainID(ctx, chainIDWithoutRevision)
+	operators, keys := k.operatorKeeper.GetActiveOperatorsForChainID(ctx, chainID)
 	powers, err := k.operatorKeeper.GetVotePowerForChainID(
-		ctx, operators, chainIDWithoutRevision,
+		ctx, operators, chainID,
 	)
 	if err != nil {
 		// the `err` includes the `chainID` and hence no need to log it again
@@ -188,10 +230,21 @@ func (k Keeper) MakeSubscriberGenesis(
 			break
 		}
 		wrappedKey := keys[i]
+		validator, err := commontypes.NewSubscriberValidator(
+			wrappedKey.ToConsAddr(), power, wrappedKey.ToSdkKey(),
+		)
+		if err != nil {
+			// cannot happen, but just in case add this check.
+			// simply skip the validator if it does.
+			continue
+		}
 		validatorUpdates = append(validatorUpdates, abci.ValidatorUpdate{
 			PubKey: *wrappedKey.ToTmProtoKey(),
 			Power:  power,
 		})
+		// at the time of genesis, all validators are stored since there is no
+		// existing validator set to take a diff with.
+		k.SetSubscriberValidatorForChain(ctx, chainID, validator)
 	}
 	if len(validatorUpdates) == 0 {
 		return nil, nil, errorsmod.Wrapf(

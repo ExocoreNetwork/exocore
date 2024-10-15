@@ -80,6 +80,20 @@ func (k *Keeper) GetEpochEndAVSs(ctx sdk.Context, epochIdentifier string, ending
 	return avsList
 }
 
+// GetEpochEndChainIDs returns a list of chainIDs for AVSs which are scheduled to start at the end of the
+// current epoch, or the beginning of the next one. The chainIDs used are without the revision number.
+func (k Keeper) GetEpochEndChainIDs(ctx sdk.Context, epochIdentifier string, endingEpochNumber int64) []string {
+	avsList := k.GetEpochEndAVSs(ctx, epochIdentifier, endingEpochNumber)
+	var chainIDs []string
+	for _, avsAddr := range avsList {
+		chainID, found := k.GetChainIDByAVSAddr(ctx, avsAddr)
+		if found {
+			chainIDs = append(chainIDs, chainID)
+		}
+	}
+	return chainIDs
+}
+
 // GetAVSInfoByTaskAddress returns the AVS  which containing this task address
 // A task contract address can only be used by one avs
 // TODO:this function is frequently used while its implementation iterates over existing avs to find the target avs by task contract address,  we should use a reverse mapping to avoid iteration
@@ -125,13 +139,15 @@ func (k *Keeper) GetTaskStatisticalEpochEndAVSs(ctx sdk.Context, epochIdentifier
 // AssetIDs, EpochsUntilUnbonded, EpochIdentifier, MinSelfDelegation and StartingEpoch.
 // This will ensure compatibility with all of the related AVS functions, like
 // GetEpochEndAVSs, GetAVSSupportedAssets, and GetAVSMinimumSelfDelegation.
+// The caller must use a chainID without the revision number if the AVS is intended
+// to outlive the upgrades, for example, the x/dogfood AVS. The same cannot be said
+// for x/appchain AVSs wherein the post-upgrade operators may not be the same.
 func (k Keeper) RegisterAVSWithChainID(
 	oCtx sdk.Context, params *types.AVSRegisterOrDeregisterParams,
 ) (avsAddr common.Address, err error) {
 	// guard against errors
 	ctx, writeFunc := oCtx.CacheContext()
 	// remove the version number and validate
-	params.ChainID = types.ChainIDWithoutRevision(params.ChainID)
 	if len(params.ChainID) == 0 {
 		return common.Address{}, errorsmod.Wrap(types.ErrNotNull, "RegisterAVSWithChainID: chainID is null")
 	}

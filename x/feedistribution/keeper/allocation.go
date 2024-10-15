@@ -4,7 +4,7 @@ import (
 	"sort"
 
 	"cosmossdk.io/math"
-	avstypes "github.com/ExocoreNetwork/exocore/x/avs/types"
+	"github.com/ExocoreNetwork/exocore/utils"
 	"github.com/ExocoreNetwork/exocore/x/feedistribution/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
@@ -47,7 +47,7 @@ func (k Keeper) AllocateTokens(ctx sdk.Context, totalPreviousPower int64) error 
 			continue
 		}
 		validatorDetail, found := k.StakingKeeper.ValidatorByConsAddrForChainID(
-			ctx, sdk.GetConsAddress(pk), avstypes.ChainIDWithoutRevision(ctx.ChainID()),
+			ctx, sdk.GetConsAddress(pk), utils.ChainIDWithoutRevision(ctx.ChainID()),
 		)
 		if !found {
 			logger.Error("Operator address not found; skipping", "consAddress", sdk.GetConsAddress(pk), "i", i)

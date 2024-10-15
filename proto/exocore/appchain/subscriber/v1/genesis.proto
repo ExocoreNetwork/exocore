@@ -4,11 +4,35 @@ package exocore.appchain.subscriber.v1;
 
 import "exocore/appchain/common/v1/common.proto";
 import "gogoproto/gogo.proto";
+import "google/protobuf/timestamp.proto";
 
 option go_package = "github.com/ExocoreNetwork/exocore/x/appchain/subscriber/types";
 
 // GenesisState is the genesis state for the appchain subscriber module.
 message GenesisState {
-  // Params is the parameters for the appchain subscriber module.
+  // The first two fields are word-for-word pulled from `common.proto`, to be
+  // filled by the coordinator module (or an export).
+  // params is the parameters for the appchain subscriber module.
   exocore.appchain.common.v1.SubscriberParams params = 1 [(gogoproto.nullable) = false];
+  // coordinator is the coordinator information for the subscriber.
+  exocore.appchain.common.v1.CoordinatorInfo coordinator = 2 [ (gogoproto.nullable) = false ];
+  // Below are the IBC parameters
+  // coordinator_client_id is the client id of the coordinator chain.
+  string coordinator_client_id = 3 [ (gogoproto.customname) = "CoordinatorClientID" ];
+  // coordinator_channel_id is the channel id of the coordinator chain.
+  string coordinator_channel_id = 4 [ (gogoproto.customname) = "CoordinatorChannelID" ];
+  // operational parameters that are to be exported can go here.
+}
+
+// MaturingVSCPacket represents a vsc packet that is maturing internal to the
+// subscriber module, where it has not yet relayed a VSCMatured packet back.
+// While it is technically feasible to store this just as a key in the state,
+// keeping it as a separate type allows exporting the genesis data.
+// The key used is prefix + time + vscId.
+message MaturingVSCPacket {
+  // vsc_id is the id of the VSC that is maturing.
+  uint64 vsc_id = 1 [ (gogoproto.customname) = "ValidatorSetChangeID" ];
+  // maturity_time is the time at which the VSC will mature.
+  google.protobuf.Timestamp maturity_time = 2
+      [ (gogoproto.stdtime) = true, (gogoproto.nullable) = false ];
 }

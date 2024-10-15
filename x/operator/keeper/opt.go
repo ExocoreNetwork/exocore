@@ -113,12 +113,12 @@ func (k *Keeper) OptOut(ctx sdk.Context, operatorAddress sdk.AccAddress, avsAddr
 		return delegationtypes.ErrOperatorIsFrozen
 	}
 	// check if it is the chain-type AVS
-	chainIDWithoutRevision, isChainAvs := k.avsKeeper.GetChainIDByAVSAddr(ctx, avsAddr)
+	chainID, isChainAvs := k.avsKeeper.GetChainIDByAVSAddr(ctx, avsAddr)
 	// set up the deferred function to remove key and write cache
 	defer func() {
 		if err == nil && isChainAvs {
 			// store.Delete... doesn't fail
-			k.InitiateOperatorKeyRemovalForChainID(ctx, operatorAddress, chainIDWithoutRevision)
+			k.InitiateOperatorKeyRemovalForChainID(ctx, operatorAddress, chainID)
 		}
 	}()
 

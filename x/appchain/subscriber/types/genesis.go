@@ -10,7 +10,9 @@ func DefaultGenesis() *GenesisState {
 }
 
 // NewGenesis creates a new genesis state with the provided parameters and
-// data.
+// data. Since most of the genesis fields are filled by the coordinator,
+// the subscriber module only needs to fill the subscriber params.
+// Even those will be overwritten.
 func NewGenesis(params commontypes.SubscriberParams) *GenesisState {
 	return &GenesisState{Params: params}
 }

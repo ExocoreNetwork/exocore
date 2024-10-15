@@ -238,7 +238,7 @@ func (suite *BaseTestSuite) SetupWithGenesisValSet(genAccs []authtypes.GenesisAc
 	suite.Require().NotNil(pubKey)
 	pubKey2 := testutiltx.GenerateConsensusKey()
 	suite.Require().NotNil(pubKey2)
-	chainIDWithoutRevision := avstypes.ChainIDWithoutRevision(utils.DefaultChainID)
+	chainIDWithoutRevision := utils.ChainIDWithoutRevision(utils.DefaultChainID)
 	operatorConsKeys := []operatortypes.OperatorConsKeyRecord{
 		{
 			OperatorAddress: operator1.String(),
