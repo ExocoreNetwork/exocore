@@ -16,8 +16,10 @@ func DefaultGenesis() *GenesisState {
 		IndexRecentMsg:       nil,
 		RecentMsgList:        []RecentMsg{},
 		RecentParamsList:     []RecentParams{},
+		Params:               DefaultParams(),
+		StakerInfosAssets:    []StakerInfosAssets{},
+		StakerListAssets:     []StakerListAssets{},
 		// this line is used by starport scaffolding # genesis/types/default
-		Params: DefaultParams(),
 	}
 }
 

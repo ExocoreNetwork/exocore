@@ -129,7 +129,7 @@ func (p Precompile) AggregateSignatures(
 
 	aggregatedSig, err := blst.AggregateCompressedSignatures(sigsBz)
 	if err != nil {
-		return nil, fmt.Errorf("failed to aggregate public keys")
+		return nil, fmt.Errorf("failed to aggregate signatures")
 	}
 
 	return method.Outputs.Pack(aggregatedSig.Marshal())

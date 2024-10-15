@@ -14,8 +14,8 @@ IAssets constant ASSETS_CONTRACT = IAssets(ASSETS_PRECOMPILE_ADDRESS);
 interface IAssets {
 
     /// TRANSACTIONS
-    /// @dev deposit the client chain assets, mainly LSTs, for the staker,
-    /// that will change the state in deposit module
+    /// @dev deposit the client chain assets, only LSTs, for the staker,
+    /// that will change the state in assets module
     /// Note that this address cannot be a module account.
     /// @param clientChainID is the layerZero chainID if it is supported.
     //  It might be allocated by Exocore when the client chain isn't supported
@@ -30,9 +30,8 @@ interface IAssets {
         uint256 opAmount
     ) external returns (bool success, uint256 latestAssetState);
 
-    /// TRANSACTIONS
     /// @dev deposit the client chain assets, native staking tokens, for the staker,
-    /// that will change the state in deposit module
+    /// that will change the state in assets module
     /// Note that this address cannot be a module account.
     /// @param clientChainID is the layerZero chainID if it is supported.
     //  It might be allocated by Exocore when the client chain isn't supported
@@ -47,7 +46,7 @@ interface IAssets {
         uint256 opAmount
     ) external returns (bool success, uint256 latestAssetState);
 
-    /// @dev withdraw LST To the staker, that will change the state in withdraw module
+    /// @dev withdraw LST To the staker, that will change the state in assets module
     /// Note that this address cannot be a module account.
     /// @param clientChainID is the layerZero chainID if it is supported.
     //  It might be allocated by Exocore when the client chain isn't supported
@@ -62,7 +61,7 @@ interface IAssets {
         uint256 opAmount
     ) external returns (bool success, uint256 latestAssetState);
 
-    /// @dev withdraw NST To the staker, that will change the state in withdraw module
+    /// @dev withdraw NST To the staker, that will change the state in assets module
     /// Note that this address cannot be a module account.
     /// @param clientChainID is the layerZero chainID if it is supported.
     //  It might be allocated by Exocore when the client chain isn't supported

@@ -3,6 +3,8 @@ package common
 import (
 	"math/big"
 	"sort"
+
+	"github.com/ExocoreNetwork/exocore/x/oracle/types"
 )
 
 var (
@@ -18,7 +20,7 @@ var (
 	MaxDetID int32 = 5
 
 	// consensus mode: v1: as soon as possbile
-	Mode int32 = 1
+	Mode types.ConsensusMode = types.ConsensusModeASAP
 )
 
 type Set[T comparable] struct {

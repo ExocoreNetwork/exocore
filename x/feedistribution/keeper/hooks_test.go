@@ -81,7 +81,7 @@ func (suite *KeeperTestSuite) prepare() {
 		AvsAddress:    avsAddress,
 		PublicKeyJSON: key.ToJSON(),
 	})
-	suite.NoError(err)
+	suite.Error(err)
 	// opted in but not enough self-delegation
 	suite.CheckLengthOfValidatorUpdates(0, nil, "opt in but no delegation")
 
@@ -157,6 +157,13 @@ func (suite *KeeperTestSuite) prepare() {
 		assetDecimals,
 		0, // price decimals
 	)
+	// Opt in again once the self-delegation requirement is met.
+	_, err = suite.OperatorMsgServer.OptIntoAVS(sdk.WrapSDKContext(suite.Ctx), &operatortypes.OptIntoAVSReq{
+		FromAddress:   operatorAddressString,
+		AvsAddress:    avsAddress,
+		PublicKeyJSON: key.ToJSON(),
+	})
+	suite.NoError(err)
 	suite.CheckLengthOfValidatorUpdates(
 		1, []int64{totalAmountInUSD.TruncateInt64()}, "delegate above min",
 	)
