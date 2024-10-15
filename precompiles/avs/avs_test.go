@@ -57,11 +57,6 @@ func (suite *AVSManagerPrecompileSuite) TestIsTransaction() {
 			true,
 		},
 		{
-			avs.MethodSubmitProof,
-			suite.precompile.Methods[avs.MethodSubmitProof].Name,
-			true,
-		},
-		{
 			avs.MethodCreateAVSTask,
 			suite.precompile.Methods[avs.MethodCreateAVSTask].Name,
 			true,
