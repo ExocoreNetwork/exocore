@@ -20,7 +20,7 @@ func (k *Keeper) EndBlock(
 	)
 	if err != nil {
 		// When encountering an error while retrieving pending undelegation, skip the undelegation at the given height without causing the node to stop running.
-		k.Logger(originalCtx).Error("Error in GetPendingUndelegationRecords during the delegation's EndBlock execution", "error", err)
+		logger.Error("Error in GetPendingUndelegationRecords during the delegation's EndBlock execution", "error", err)
 		return []abci.ValidatorUpdate{}
 	}
 	if len(records) == 0 {
