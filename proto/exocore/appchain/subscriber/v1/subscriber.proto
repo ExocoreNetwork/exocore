@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+package exocore.appchain.subscriber.v1;
+
+import "cosmos_proto/cosmos.proto";
+import "gogoproto/gogo.proto";
+import "google/protobuf/any.proto";
+
+option go_package = "github.com/ExocoreNetwork/exocore/x/appchain/subscriber/types";
+
+// SubscriberChainValidator is a validator structure on the subscriber chain.
+// The name is verbose intentionally.
+message SubscriberChainValidator {
+  // address, as derived from the consensus key. No correlation with the operator
+  // address on Exocore.
+  bytes cons_address = 1;
+  // power is the vote power of the validator
+  int64 power = 2;
+  // pubkey is the consensus public key of the validator, as a Protobuf Any.
+  // this type is chosen to match the x/staking/validator type.
+  google.protobuf.Any pubkey = 3 [
+    (cosmos_proto.accepts_interface) = "cosmos.crypto.PubKey",
+    (gogoproto.moretags) = "yaml:\"consensus_pubkey\""
+  ];
+}
+

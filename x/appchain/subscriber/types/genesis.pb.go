@@ -8,15 +8,19 @@ import (
 	types "github.com/ExocoreNetwork/exocore/x/appchain/common/types"
 	_ "github.com/cosmos/gogoproto/gogoproto"
 	proto "github.com/cosmos/gogoproto/proto"
+	github_com_cosmos_gogoproto_types "github.com/cosmos/gogoproto/types"
+	_ "google.golang.org/protobuf/types/known/timestamppb"
 	io "io"
 	math "math"
 	math_bits "math/bits"
+	time "time"
 )
 
 // Reference imports to suppress errors if they are not otherwise used.
 var _ = proto.Marshal
 var _ = fmt.Errorf
 var _ = math.Inf
+var _ = time.Kitchen
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the proto package it is being compiled against.
@@ -26,8 +30,17 @@ const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
 // GenesisState is the genesis state for the appchain subscriber module.
 type GenesisState struct {
-	// Params is the parameters for the appchain subscriber module.
+	// The first two fields are word-for-word pulled from `common.proto`, to be
+	// filled by the coordinator module (or an export).
+	// params is the parameters for the appchain subscriber module.
 	Params types.SubscriberParams `protobuf:"bytes,1,opt,name=params,proto3" json:"params"`
+	// coordinator is the coordinator information for the subscriber.
+	Coordinator types.CoordinatorInfo `protobuf:"bytes,2,opt,name=coordinator,proto3" json:"coordinator"`
+	// Below are the IBC parameters
+	// coordinator_client_id is the client id of the coordinator chain.
+	CoordinatorClientID string `protobuf:"bytes,3,opt,name=coordinator_client_id,json=coordinatorClientId,proto3" json:"coordinator_client_id,omitempty"`
+	// coordinator_channel_id is the channel id of the coordinator chain.
+	CoordinatorChannelID string `protobuf:"bytes,4,opt,name=coordinator_channel_id,json=coordinatorChannelId,proto3" json:"coordinator_channel_id,omitempty"`
 }
 
 func (m *GenesisState) Reset()         { *m = GenesisState{} }
@@ -70,8 +83,89 @@ func (m *GenesisState) GetParams() types.SubscriberParams {
 	return types.SubscriberParams{}
 }
 
+func (m *GenesisState) GetCoordinator() types.CoordinatorInfo {
+	if m != nil {
+		return m.Coordinator
+	}
+	return types.CoordinatorInfo{}
+}
+
+func (m *GenesisState) GetCoordinatorClientID() string {
+	if m != nil {
+		return m.CoordinatorClientID
+	}
+	return ""
+}
+
+func (m *GenesisState) GetCoordinatorChannelID() string {
+	if m != nil {
+		return m.CoordinatorChannelID
+	}
+	return ""
+}
+
+// MaturingVSCPacket represents a vsc packet that is maturing internal to the
+// subscriber module, where it has not yet relayed a VSCMatured packet back.
+// While it is technically feasible to store this just as a key in the state,
+// keeping it as a separate type allows exporting the genesis data.
+// The key used is prefix + time + vscId.
+type MaturingVSCPacket struct {
+	// vsc_id is the id of the VSC that is maturing.
+	ValidatorSetChangeID uint64 `protobuf:"varint,1,opt,name=vsc_id,json=vscId,proto3" json:"vsc_id,omitempty"`
+	// maturity_time is the time at which the VSC will mature.
+	MaturityTime time.Time `protobuf:"bytes,2,opt,name=maturity_time,json=maturityTime,proto3,stdtime" json:"maturity_time"`
+}
+
+func (m *MaturingVSCPacket) Reset()         { *m = MaturingVSCPacket{} }
+func (m *MaturingVSCPacket) String() string { return proto.CompactTextString(m) }
+func (*MaturingVSCPacket) ProtoMessage()    {}
+func (*MaturingVSCPacket) Descriptor() ([]byte, []int) {
+	return fileDescriptor_f608de439fd2c5db, []int{1}
+}
+func (m *MaturingVSCPacket) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *MaturingVSCPacket) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_MaturingVSCPacket.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *MaturingVSCPacket) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MaturingVSCPacket.Merge(m, src)
+}
+func (m *MaturingVSCPacket) XXX_Size() int {
+	return m.Size()
+}
+func (m *MaturingVSCPacket) XXX_DiscardUnknown() {
+	xxx_messageInfo_MaturingVSCPacket.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_MaturingVSCPacket proto.InternalMessageInfo
+
+func (m *MaturingVSCPacket) GetValidatorSetChangeID() uint64 {
+	if m != nil {
+		return m.ValidatorSetChangeID
+	}
+	return 0
+}
+
+func (m *MaturingVSCPacket) GetMaturityTime() time.Time {
+	if m != nil {
+		return m.MaturityTime
+	}
+	return time.Time{}
+}
+
 func init() {
 	proto.RegisterType((*GenesisState)(nil), "exocore.appchain.subscriber.v1.GenesisState")
+	proto.RegisterType((*MaturingVSCPacket)(nil), "exocore.appchain.subscriber.v1.MaturingVSCPacket")
 }
 
 func init() {
@@ -79,22 +173,35 @@ func init() {
 }
 
 var fileDescriptor_f608de439fd2c5db = []byte{
-	// 232 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xe2, 0xd2, 0x49, 0xad, 0xc8, 0x4f,
-	0xce, 0x2f, 0x4a, 0xd5, 0x4f, 0x2c, 0x28, 0x48, 0xce, 0x48, 0xcc, 0xcc, 0xd3, 0x2f, 0x2e, 0x4d,
-	0x2a, 0x4e, 0x2e, 0xca, 0x4c, 0x4a, 0x2d, 0xd2, 0x2f, 0x33, 0xd4, 0x4f, 0x4f, 0xcd, 0x4b, 0x2d,
-	0xce, 0x2c, 0xd6, 0x2b, 0x28, 0xca, 0x2f, 0xc9, 0x17, 0x92, 0x83, 0xaa, 0xd6, 0x83, 0xa9, 0xd6,
-	0x43, 0xa8, 0xd6, 0x2b, 0x33, 0x94, 0x52, 0xc7, 0x30, 0x2d, 0x39, 0x3f, 0x37, 0x37, 0x3f, 0x0f,
-	0x64, 0x12, 0x84, 0x05, 0x31, 0x48, 0x4a, 0x24, 0x3d, 0x3f, 0x3d, 0x1f, 0xcc, 0xd4, 0x07, 0xb1,
-	0x20, 0xa2, 0x4a, 0x51, 0x5c, 0x3c, 0xee, 0x10, 0xfb, 0x82, 0x4b, 0x12, 0x4b, 0x52, 0x85, 0xbc,
-	0xb8, 0xd8, 0x0a, 0x12, 0x8b, 0x12, 0x73, 0x8b, 0x25, 0x18, 0x15, 0x18, 0x35, 0xb8, 0x8d, 0x74,
-	0xf4, 0x30, 0xec, 0x87, 0x9a, 0x5a, 0x66, 0xa8, 0x17, 0x0c, 0x77, 0x49, 0x00, 0x58, 0x8f, 0x13,
-	0xcb, 0x89, 0x7b, 0xf2, 0x0c, 0x41, 0x50, 0x13, 0x9c, 0xc2, 0x4f, 0x3c, 0x92, 0x63, 0xbc, 0xf0,
-	0x48, 0x8e, 0xf1, 0xc1, 0x23, 0x39, 0xc6, 0x09, 0x8f, 0xe5, 0x18, 0x2e, 0x3c, 0x96, 0x63, 0xb8,
-	0xf1, 0x58, 0x8e, 0x21, 0xca, 0x36, 0x3d, 0xb3, 0x24, 0xa3, 0x34, 0x09, 0x64, 0x94, 0xbe, 0x2b,
-	0xc4, 0x7c, 0xbf, 0xd4, 0x92, 0xf2, 0xfc, 0xa2, 0x6c, 0x7d, 0x98, 0x77, 0x2a, 0xb0, 0x06, 0x4f,
-	0x49, 0x65, 0x41, 0x6a, 0x71, 0x12, 0x1b, 0xd8, 0xed, 0xc6, 0x80, 0x00, 0x00, 0x00, 0xff, 0xff,
-	0x3c, 0xba, 0x2f, 0x3b, 0x4a, 0x01, 0x00, 0x00,
+	// 448 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x7c, 0x92, 0x41, 0x6f, 0xd3, 0x30,
+	0x14, 0xc7, 0x9b, 0x51, 0x2a, 0xf0, 0xc6, 0x81, 0xac, 0x40, 0xd5, 0x43, 0x32, 0xed, 0xc2, 0x24,
+	0x26, 0x5b, 0x85, 0x33, 0x97, 0xb6, 0x08, 0x05, 0xc4, 0x34, 0x25, 0x68, 0x48, 0x5c, 0x2a, 0xc7,
+	0xf1, 0x52, 0x6b, 0x8d, 0x1d, 0xd9, 0x6e, 0xd8, 0x3e, 0x05, 0xfb, 0x58, 0x3b, 0x70, 0xd8, 0x91,
+	0x53, 0x41, 0xe9, 0x17, 0x41, 0xb6, 0x13, 0x56, 0x54, 0xb4, 0xdb, 0xf3, 0xf3, 0xff, 0xfd, 0xfc,
+	0xf4, 0xff, 0x1b, 0x1c, 0xd3, 0x4b, 0x41, 0x84, 0xa4, 0x08, 0x97, 0x25, 0x99, 0x63, 0xc6, 0x91,
+	0x5a, 0xa6, 0x8a, 0x48, 0x96, 0x52, 0x89, 0xaa, 0x11, 0xca, 0x29, 0xa7, 0x8a, 0x29, 0x58, 0x4a,
+	0xa1, 0x85, 0x1f, 0x34, 0x6a, 0xd8, 0xaa, 0xe1, 0x9d, 0x1a, 0x56, 0xa3, 0xe1, 0xcb, 0x2d, 0x1a,
+	0x11, 0x45, 0x21, 0xb8, 0x21, 0xb9, 0xca, 0x81, 0x86, 0xfd, 0x5c, 0xe4, 0xc2, 0x96, 0xc8, 0x54,
+	0x4d, 0x37, 0xcc, 0x85, 0xc8, 0x17, 0x14, 0xd9, 0x53, 0xba, 0x3c, 0x47, 0x9a, 0x15, 0x54, 0x69,
+	0x5c, 0x94, 0x4e, 0x70, 0xf8, 0x63, 0x07, 0xec, 0xbd, 0x77, 0x1b, 0x25, 0x1a, 0x6b, 0xea, 0x7f,
+	0x00, 0xbd, 0x12, 0x4b, 0x5c, 0xa8, 0x81, 0x77, 0xe0, 0x1d, 0xed, 0xbe, 0x3e, 0x86, 0x5b, 0x1b,
+	0x36, 0xef, 0x56, 0x23, 0x98, 0xfc, 0xdd, 0xf5, 0xd4, 0xce, 0x8c, 0xbb, 0x37, 0xab, 0xb0, 0x13,
+	0x37, 0x04, 0x3f, 0x01, 0xbb, 0x44, 0x08, 0x99, 0x31, 0x8e, 0xb5, 0x90, 0x83, 0x1d, 0x0b, 0x7c,
+	0x75, 0x1f, 0x70, 0x72, 0x27, 0x8f, 0xf8, 0xb9, 0x68, 0x78, 0x9b, 0x14, 0xff, 0x23, 0x78, 0xb6,
+	0x71, 0x9c, 0x91, 0x05, 0xa3, 0x5c, 0xcf, 0x58, 0x36, 0x78, 0x70, 0xe0, 0x1d, 0x3d, 0x1e, 0xbf,
+	0xa8, 0x57, 0xe1, 0xfe, 0x06, 0x66, 0x62, 0xef, 0xa3, 0x69, 0xbc, 0x4f, 0xb6, 0x9a, 0x99, 0x7f,
+	0x02, 0x9e, 0xff, 0x03, 0x9b, 0x63, 0xce, 0xe9, 0xc2, 0xd0, 0xba, 0x96, 0x36, 0xa8, 0x57, 0x61,
+	0x7f, 0x93, 0xe6, 0x04, 0xd1, 0x34, 0xee, 0x93, 0xed, 0x6e, 0x76, 0xf8, 0xdd, 0x03, 0x4f, 0x3f,
+	0x61, 0xbd, 0x94, 0x8c, 0xe7, 0x67, 0xc9, 0xe4, 0x14, 0x93, 0x0b, 0xaa, 0x7d, 0x04, 0x7a, 0x95,
+	0x22, 0x86, 0x6a, 0x3c, 0xed, 0x3a, 0xea, 0x19, 0x5e, 0xb0, 0xcc, 0x4c, 0x27, 0x54, 0x1b, 0x40,
+	0x4e, 0xa3, 0x69, 0xfc, 0xb0, 0x52, 0x24, 0xca, 0xfc, 0x08, 0x3c, 0x29, 0x2c, 0x45, 0x5f, 0xcd,
+	0x4c, 0x62, 0x8d, 0x75, 0x43, 0xe8, 0xe2, 0x84, 0x6d, 0x9c, 0xf0, 0x73, 0x1b, 0xe7, 0xf8, 0x91,
+	0x71, 0xea, 0xfa, 0x57, 0xe8, 0xc5, 0x7b, 0xed, 0xa8, 0xb9, 0x1c, 0x7f, 0xb9, 0xa9, 0x03, 0xef,
+	0xb6, 0x0e, 0xbc, 0xdf, 0x75, 0xe0, 0x5d, 0xaf, 0x83, 0xce, 0xed, 0x3a, 0xe8, 0xfc, 0x5c, 0x07,
+	0x9d, 0xaf, 0x6f, 0x73, 0xa6, 0xe7, 0xcb, 0xd4, 0xb8, 0x8f, 0xde, 0xb9, 0x48, 0x4e, 0xa8, 0xfe,
+	0x26, 0xe4, 0x05, 0x6a, 0x3f, 0xdd, 0xe5, 0x7f, 0x3f, 0xb1, 0xbe, 0x2a, 0xa9, 0x4a, 0x7b, 0x76,
+	0x89, 0x37, 0x7f, 0x02, 0x00, 0x00, 0xff, 0xff, 0x44, 0xfd, 0x3d, 0x44, 0xf0, 0x02, 0x00, 0x00,
 }
 
 func (m *GenesisState) Marshal() (dAtA []byte, err error) {
@@ -117,6 +224,30 @@ func (m *GenesisState) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	_ = i
 	var l int
 	_ = l
+	if len(m.CoordinatorChannelID) > 0 {
+		i -= len(m.CoordinatorChannelID)
+		copy(dAtA[i:], m.CoordinatorChannelID)
+		i = encodeVarintGenesis(dAtA, i, uint64(len(m.CoordinatorChannelID)))
+		i--
+		dAtA[i] = 0x22
+	}
+	if len(m.CoordinatorClientID) > 0 {
+		i -= len(m.CoordinatorClientID)
+		copy(dAtA[i:], m.CoordinatorClientID)
+		i = encodeVarintGenesis(dAtA, i, uint64(len(m.CoordinatorClientID)))
+		i--
+		dAtA[i] = 0x1a
+	}
+	{
+		size, err := m.Coordinator.MarshalToSizedBuffer(dAtA[:i])
+		if err != nil {
+			return 0, err
+		}
+		i -= size
+		i = encodeVarintGenesis(dAtA, i, uint64(size))
+	}
+	i--
+	dAtA[i] = 0x12
 	{
 		size, err := m.Params.MarshalToSizedBuffer(dAtA[:i])
 		if err != nil {
@@ -127,6 +258,42 @@ func (m *GenesisState) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	}
 	i--
 	dAtA[i] = 0xa
+	return len(dAtA) - i, nil
+}
+
+func (m *MaturingVSCPacket) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *MaturingVSCPacket) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *MaturingVSCPacket) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	n3, err3 := github_com_cosmos_gogoproto_types.StdTimeMarshalTo(m.MaturityTime, dAtA[i-github_com_cosmos_gogoproto_types.SizeOfStdTime(m.MaturityTime):])
+	if err3 != nil {
+		return 0, err3
+	}
+	i -= n3
+	i = encodeVarintGenesis(dAtA, i, uint64(n3))
+	i--
+	dAtA[i] = 0x12
+	if m.ValidatorSetChangeID != 0 {
+		i = encodeVarintGenesis(dAtA, i, uint64(m.ValidatorSetChangeID))
+		i--
+		dAtA[i] = 0x8
+	}
 	return len(dAtA) - i, nil
 }
 
@@ -148,6 +315,30 @@ func (m *GenesisState) Size() (n int) {
 	var l int
 	_ = l
 	l = m.Params.Size()
+	n += 1 + l + sovGenesis(uint64(l))
+	l = m.Coordinator.Size()
+	n += 1 + l + sovGenesis(uint64(l))
+	l = len(m.CoordinatorClientID)
+	if l > 0 {
+		n += 1 + l + sovGenesis(uint64(l))
+	}
+	l = len(m.CoordinatorChannelID)
+	if l > 0 {
+		n += 1 + l + sovGenesis(uint64(l))
+	}
+	return n
+}
+
+func (m *MaturingVSCPacket) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.ValidatorSetChangeID != 0 {
+		n += 1 + sovGenesis(uint64(m.ValidatorSetChangeID))
+	}
+	l = github_com_cosmos_gogoproto_types.SizeOfStdTime(m.MaturityTime)
 	n += 1 + l + sovGenesis(uint64(l))
 	return n
 }
@@ -217,6 +408,205 @@ func (m *GenesisState) Unmarshal(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			if err := m.Params.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Coordinator", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowGenesis
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthGenesis
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthGenesis
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.Coordinator.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 3:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field CoordinatorClientID", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowGenesis
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthGenesis
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthGenesis
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.CoordinatorClientID = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 4:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field CoordinatorChannelID", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowGenesis
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthGenesis
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthGenesis
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.CoordinatorChannelID = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipGenesis(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthGenesis
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *MaturingVSCPacket) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowGenesis
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: MaturingVSCPacket: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: MaturingVSCPacket: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field ValidatorSetChangeID", wireType)
+			}
+			m.ValidatorSetChangeID = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowGenesis
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.ValidatorSetChangeID |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field MaturityTime", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowGenesis
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthGenesis
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthGenesis
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := github_com_cosmos_gogoproto_types.StdTimeUnmarshal(&m.MaturityTime, dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex

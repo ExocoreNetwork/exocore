@@ -4,10 +4,10 @@ import (
 	"context"
 	"errors"
 
+	"github.com/ExocoreNetwork/exocore/utils"
 	assetstype "github.com/ExocoreNetwork/exocore/x/assets/types"
 
 	keytypes "github.com/ExocoreNetwork/exocore/types/keys"
-	avstypes "github.com/ExocoreNetwork/exocore/x/avs/types"
 	"github.com/ExocoreNetwork/exocore/x/operator/types"
 	tmprotocrypto "github.com/cometbft/cometbft/proto/tendermint/crypto"
 	"github.com/cosmos/cosmos-sdk/store/prefix"
@@ -56,7 +56,7 @@ func (k *Keeper) QueryOperatorConsKeyForChainID(
 	if err != nil {
 		return nil, err
 	}
-	chainIDWithoutRevision := avstypes.ChainIDWithoutRevision(req.Chain)
+	chainIDWithoutRevision := utils.ChainIDWithoutRevision(req.Chain)
 	found, key, err := k.GetOperatorConsKeyForChainID(
 		ctx, addr, chainIDWithoutRevision,
 	)
@@ -83,7 +83,7 @@ func (k Keeper) QueryOperatorConsAddressForChainID(
 	if err != nil {
 		return nil, err
 	}
-	chainIDWithoutRevision := avstypes.ChainIDWithoutRevision(req.Chain)
+	chainIDWithoutRevision := utils.ChainIDWithoutRevision(req.Chain)
 	found, wrappedKey, err := k.GetOperatorConsKeyForChainID(
 		ctx, addr, chainIDWithoutRevision,
 	)
@@ -107,7 +107,7 @@ func (k Keeper) QueryAllOperatorConsKeysByChainID(
 ) (*types.QueryAllOperatorConsKeysByChainIDResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 	res := make([]*types.OperatorConsKeyPair, 0)
-	chainIDWithoutRevision := avstypes.ChainIDWithoutRevision(req.Chain)
+	chainIDWithoutRevision := utils.ChainIDWithoutRevision(req.Chain)
 	chainPrefix := types.ChainIDAndAddrKey(
 		types.BytePrefixForChainIDAndOperatorToConsKey,
 		chainIDWithoutRevision, nil,
@@ -144,7 +144,7 @@ func (k Keeper) QueryAllOperatorConsAddrsByChainID(
 ) (*types.QueryAllOperatorConsAddrsByChainIDResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 	res := make([]*types.OperatorConsAddrPair, 0)
-	chainIDWithoutRevision := avstypes.ChainIDWithoutRevision(req.Chain)
+	chainIDWithoutRevision := utils.ChainIDWithoutRevision(req.Chain)
 	chainPrefix := types.ChainIDAndAddrKey(
 		types.BytePrefixForChainIDAndOperatorToConsKey,
 		chainIDWithoutRevision, nil,
@@ -203,7 +203,7 @@ func (k *Keeper) QueryOperatorSlashInfo(goCtx context.Context, req *types.QueryO
 	ctx := sdk.UnwrapSDKContext(goCtx)
 	res := make([]*types.OperatorSlashInfoByID, 0)
 
-	slashPrefix := types.AppendMany(types.KeyPrefixOperatorSlashInfo, assetstype.GetJoinedStoreKeyForPrefix(req.Details.OperatorAddr, req.Details.AVSAddress))
+	slashPrefix := utils.AppendMany(types.KeyPrefixOperatorSlashInfo, assetstype.GetJoinedStoreKeyForPrefix(req.Details.OperatorAddr, req.Details.AVSAddress))
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), slashPrefix)
 	pageRes, err := query.Paginate(store, req.Pagination, func(key []byte, value []byte) error {
 		ret := &types.OperatorSlashInfo{}

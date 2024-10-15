@@ -40,7 +40,7 @@ type SubscriberParams struct {
 	// the rewards from the subscriber to the coordinator. It is used in the event
 	// that a channel between coordinator and subscriber exists prior to the
 	// provision of security from Exocore to the appchain. Until a changeover
-	// process is implemented, it is currently unused. (TODO). The advantage
+	// process is implemented, it is currently unused (TODO). The advantage
 	// of reusing a channel that was already in place is that the coin denomination
 	// which contains a hash of the channel name will remain unchanged.
 	DistributionTransmissionChannel string `protobuf:"bytes,2,opt,name=distribution_transmission_channel,json=distributionTransmissionChannel,proto3" json:"distribution_transmission_channel,omitempty"`
@@ -259,7 +259,7 @@ type CoordinatorInfo struct {
 	ClientState *_07_tendermint.ClientState `protobuf:"bytes,1,opt,name=client_state,json=clientState,proto3" json:"client_state,omitempty"`
 	// consensus_state is the consensus state of the coordinator chain.
 	ConsensusState *_07_tendermint.ConsensusState `protobuf:"bytes,2,opt,name=consensus_state,json=consensusState,proto3" json:"consensus_state,omitempty"`
-	// initial_val_set is the initial validator set of the coordinator chain.
+	// initial_val_set is the initial validator set of the subscriber chain.
 	InitialValSet []types.ValidatorUpdate `protobuf:"bytes,3,rep,name=initial_val_set,json=initialValSet,proto3" json:"initial_val_set"`
 }
 

@@ -2,7 +2,7 @@ package keeper
 
 import (
 	keytypes "github.com/ExocoreNetwork/exocore/types/keys"
-	avstypes "github.com/ExocoreNetwork/exocore/x/avs/types"
+	"github.com/ExocoreNetwork/exocore/utils"
 	operatortypes "github.com/ExocoreNetwork/exocore/x/operator/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -48,7 +48,7 @@ func (h OperatorHooksWrapper) AfterOperatorKeyReplaced(
 	// 3. X epochs later, the reverse lookup of old cons addr + chain id -> operator addr
 	// should be cleared.
 	consAddr := oldKey.ToConsAddr()
-	if chainID == avstypes.ChainIDWithoutRevision(ctx.ChainID()) {
+	if chainID == utils.ChainIDWithoutRevision(ctx.ChainID()) {
 		// is the oldKey already active? if not, we should not do anything.
 		// this can happen if we opt in with a key, then replace it with another key
 		// during the same epoch.
@@ -80,7 +80,7 @@ func (h OperatorHooksWrapper) AfterOperatorKeyRemovalInitiated(
 	// keys from the chain.
 	// 2. X epochs later, the removal is marked complete in the operator module.
 	consAddr := key.ToConsAddr()
-	if chainID == avstypes.ChainIDWithoutRevision(ctx.ChainID()) {
+	if chainID == utils.ChainIDWithoutRevision(ctx.ChainID()) {
 		_, found := h.keeper.GetExocoreValidator(ctx, consAddr)
 		if found {
 			h.keeper.SetOptOutInformation(ctx, operator)

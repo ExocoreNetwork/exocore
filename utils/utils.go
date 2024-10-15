@@ -7,6 +7,8 @@ import (
 
 	ibcclienttypes "github.com/cosmos/ibc-go/v7/modules/core/02-client/types"
 
+	abci "github.com/cometbft/cometbft/abci/types"
+
 	"github.com/evmos/evmos/v16/crypto/ethsecp256k1"
 	"golang.org/x/exp/constraints"
 	"golang.org/x/xerrors"
@@ -209,4 +211,54 @@ func SortByPower(
 		sortedPowers[i] = powers[idx]
 	}
 	return sortedOperatorAddrs, sortedPubKeys, sortedPowers
+}
+
+// AccumulateChanges accumulates the current and new validator updates and returns
+// a list of unique validator updates. The list is sorted by power in descending order.
+func AccumulateChanges(
+	currentChanges, newChanges []abci.ValidatorUpdate,
+) []abci.ValidatorUpdate {
+	// get only unique updates
+	m := make(map[string]abci.ValidatorUpdate)
+	for _, change := range currentChanges {
+		m[change.PubKey.String()] = change
+	}
+	for _, change := range newChanges {
+		m[change.PubKey.String()] = change
+	}
+
+	// convert to list
+	out := make([]abci.ValidatorUpdate, 0, len(m))
+	for _, update := range m {
+		out = append(out, update)
+	}
+
+	// The list of tendermint updates should hash the same across all consensus nodes
+	// that means it is necessary to sort for determinism.
+	sort.Slice(out, func(i, j int) bool {
+		if out[i].Power != out[j].Power {
+			return out[i].Power > out[j].Power
+		}
+		return out[i].PubKey.String() > out[j].PubKey.String()
+	})
+
+	return out
+}
+
+// AppendMany appends a variable number of byte slices together
+func AppendMany(byteses ...[]byte) (out []byte) {
+	for _, bytes := range byteses {
+		out = append(out, bytes...)
+	}
+	return out
+}
+
+// ChainIDWithoutRevision returns the chainID without the revision number.
+// For example, "exocoretestnet_233-1" returns "exocoretestnet_233".
+func ChainIDWithoutRevision(chainID string) string {
+	if !ibcclienttypes.IsRevisionFormat(chainID) {
+		return chainID
+	}
+	splitStr := strings.Split(chainID, "-")
+	return splitStr[0]
 }

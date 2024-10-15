@@ -7,7 +7,6 @@ import (
 	"github.com/ExocoreNetwork/exocore/utils"
 	commontypes "github.com/ExocoreNetwork/exocore/x/appchain/common/types"
 	"github.com/ExocoreNetwork/exocore/x/appchain/coordinator/types"
-	avstypes "github.com/ExocoreNetwork/exocore/x/avs/types"
 	abci "github.com/cometbft/cometbft/abci/types"
 	tmtypes "github.com/cometbft/cometbft/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -92,7 +91,10 @@ func (k Keeper) CreateClientForSubscriber(
 	// assume we start with a value of 2 and we are giving 4 full epochs for initialization.
 	// so when epoch 6 ends, the timeout ends.
 	initTimeoutPeriod.EpochNumber += uint64(epochInfo.CurrentEpoch) + 1
+	// lookup from timeout to chainID
 	k.AppendChainToInitTimeout(ctx, initTimeoutPeriod, chainID)
+	// reverse lookup from chainID to timeout
+	k.SetChainInitTimeout(ctx, chainID, initTimeoutPeriod)
 
 	k.Logger(ctx).Info(
 		"subscriber chain registered (client created)",
@@ -131,7 +133,7 @@ func (k Keeper) MakeSubscriberGenesis(
 	params := k.GetParams(ctx)
 	chainID := req.ChainID
 	k.Logger(ctx).Info("Creating genesis state for subscriber chain", "chainID", chainID)
-	chainIDWithoutRevision := avstypes.ChainIDWithoutRevision(chainID)
+	chainIDWithoutRevision := utils.ChainIDWithoutRevision(chainID)
 	coordinatorUnbondingPeriod := k.stakingKeeper.UnbondingTime(ctx)
 	// client state
 	clientState := params.TemplateClient

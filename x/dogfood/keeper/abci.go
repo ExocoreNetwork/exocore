@@ -4,7 +4,6 @@ import (
 	"cosmossdk.io/math"
 	keytypes "github.com/ExocoreNetwork/exocore/types/keys"
 	"github.com/ExocoreNetwork/exocore/utils"
-	avstypes "github.com/ExocoreNetwork/exocore/x/avs/types"
 	abci "github.com/cometbft/cometbft/abci/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -20,7 +19,7 @@ func (k Keeper) EndBlock(ctx sdk.Context) []abci.ValidatorUpdate {
 		return []abci.ValidatorUpdate{}
 	}
 	defer k.ClearEpochEnd(ctx)
-	chainIDWithoutRevision := avstypes.ChainIDWithoutRevision(ctx.ChainID())
+	chainIDWithoutRevision := utils.ChainIDWithoutRevision(ctx.ChainID())
 	// start by clearing the previous consensus keys for the chain.
 	// each AVS can have a separate epoch and hence this function is a part of this module
 	// and not the operator module.
