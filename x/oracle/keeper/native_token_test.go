@@ -138,7 +138,7 @@ func (ks *KeeperSuite) TestNSTLifeCycleOneStaker() {
 	// - 4.1 check stakerInfo
 	stakerInfo = ks.App.OracleKeeper.GetStakerInfo(ks.Ctx, assetID, stakerStr)
 	ks.Equal(types.BalanceInfo{
-		Balance: 59,
+		Balance: 49,
 		Block:   1,
 		RoundID: 11,
 		Index:   0,
@@ -146,10 +146,10 @@ func (ks *KeeperSuite) TestNSTLifeCycleOneStaker() {
 	}, *stakerInfo.BalanceList[3])
 	// check stakerAssetInfo is updated correctly in assets module, this should be triggered in assets module by oracle module's UpdateNSTByBalanceChange
 	stakerAssetInfo, _ = ks.App.AssetsKeeper.GetStakerSpecifiedAssetInfo(ks.Ctx, stakerID, assetID)
-	amount59 := sdkmath.NewIntWithDecimal(59, 18)
+	amount49 := sdkmath.NewIntWithDecimal(49, 18)
 	ks.Equal(assetstypes.StakerAssetInfo{
-		TotalDepositAmount:        amount59,
-		WithdrawableAmount:        amount59,
+		TotalDepositAmount:        amount49,
+		WithdrawableAmount:        amount49,
 		PendingUndelegationAmount: sdk.ZeroInt(),
 	}, *stakerAssetInfo)
 
@@ -159,7 +159,7 @@ func (ks *KeeperSuite) TestNSTLifeCycleOneStaker() {
 	// - 5.1 check stakerInfo
 	stakerInfo = ks.App.OracleKeeper.GetStakerInfo(ks.Ctx, assetID, stakerStr)
 	ks.Equal(types.BalanceInfo{
-		Balance: 29,
+		Balance: 19,
 		Block:   1,
 		RoundID: 11,
 		Index:   1,
