@@ -440,8 +440,8 @@ func (k Keeper) RaiseAndResolveChallenge(ctx sdk.Context, params *ChallengeParam
 	return k.SetTaskChallengedInfo(ctx, params.TaskID, params.OperatorAddress.String(), params.CallerAddress,
 		params.TaskContractAddress)
 }
-func (k Keeper) SubmitTaskResult(ctx sdk.Context, params *TaskResultParams) error {
 
+func (k Keeper) SubmitTaskResult(ctx sdk.Context, params *TaskResultParams) error {
 	result := &types.TaskResultInfo{
 		TaskId:              params.TaskID,
 		OperatorAddress:     params.OperatorAddress,

@@ -3,8 +3,9 @@ package avs
 
 import (
 	"fmt"
-	operatortypes "github.com/ExocoreNetwork/exocore/x/operator/types"
 	"slices"
+
+	operatortypes "github.com/ExocoreNetwork/exocore/x/operator/types"
 
 	errorsmod "cosmossdk.io/errors"
 
@@ -31,7 +32,7 @@ const (
 	MethodOperatorSubmitTask        = "operatorSubmitTask"
 )
 
-// AVSInfoRegister register the avs related information and change the state in avs keeper module.
+// RegisterAVS AVSInfoRegister register the avs related information and change the state in avs keeper module.
 func (p Precompile) RegisterAVS(
 	ctx sdk.Context,
 	_ common.Address,
@@ -100,6 +101,7 @@ func (p Precompile) DeregisterAVS(
 	}
 	return method.Outputs.Pack(true)
 }
+
 func (p Precompile) UpdateAVS(
 	ctx sdk.Context,
 	_ common.Address,
