@@ -32,11 +32,11 @@ func (k Keeper) GetPrices(
 	val.TokenID = tokenID
 	val.NextRoundID = nextRoundID
 	var i uint64
-	// i := max(1, nextRoundID-uint64(common.MaxSizePrices))
-	if i = nextRoundID - uint64(common.MaxSizePrices); i < 1 {
+	if nextRoundID <= uint64(common.MaxSizePrices) {
 		i = 1
 		val.PriceList = make([]*types.PriceTimeRound, nextRoundID)
 	} else {
+		i = nextRoundID - uint64(common.MaxSizePrices)
 		val.PriceList = make([]*types.PriceTimeRound, common.MaxSizePrices)
 	}
 	// 0 roundId is reserved, expect the roundid corresponds to the slice index
