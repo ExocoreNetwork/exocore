@@ -153,6 +153,20 @@ func (p Precompile) Run(evm *vm.EVM, contract *vm.Contract, readOnly bool) (bz [
 			ctx.Logger().Error("internal error when calling avs precompile", "module", "avs precompile", "method", method.Name, "err", err)
 			bz, err = method.Outputs.Pack(false)
 		}
+
+	case MethodRegisterOperatorToExocore:
+		bz, err = p.Challenge(ctx, evm.Origin, contract, stateDB, method, args)
+		if err != nil {
+			ctx.Logger().Error("internal error when calling avs precompile", "module", "avs precompile", "method", method.Name, "err", err)
+			bz, err = method.Outputs.Pack(false)
+		}
+
+	case MethodOperatorSubmitTask:
+		bz, err = p.Challenge(ctx, evm.Origin, contract, stateDB, method, args)
+		if err != nil {
+			ctx.Logger().Error("internal error when calling avs precompile", "module", "avs precompile", "method", method.Name, "err", err)
+			bz, err = method.Outputs.Pack(false)
+		}
 	}
 
 	if err != nil {
@@ -175,7 +189,8 @@ func (p Precompile) Run(evm *vm.EVM, contract *vm.Contract, readOnly bool) (bz [
 func (Precompile) IsTransaction(methodID string) bool {
 	switch methodID {
 	case MethodRegisterAVS, MethodDeregisterAVS, MethodUpdateAVS, MethodRegisterOperatorToAVS,
-		MethodDeregisterOperatorFromAVS, MethodCreateAVSTask, MethodRegisterBLSPublicKey, MethodChallenge:
+		MethodDeregisterOperatorFromAVS, MethodCreateAVSTask, MethodRegisterBLSPublicKey, MethodChallenge,
+		MethodRegisterOperatorToExocore, MethodOperatorSubmitTask:
 		return true
 	case MethodGetRegisteredPubkey, MethodGetOptinOperators, MethodGetAVSUSDValue, MethodGetOperatorOptedUSDValue:
 		return false
