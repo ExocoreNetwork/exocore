@@ -30,6 +30,8 @@ type Keeper struct {
 	banker       bankkeeper.Keeper
 	distributor  types.Distributor
 	avsKeeper    avsKeeper.Keeper
+
+	authority string
 }
 
 func NewKeeper(
@@ -37,12 +39,14 @@ func NewKeeper(
 	storeKey storetypes.StoreKey,
 	assetsKeeper assetsKeeper.Keeper,
 	avsKeeper avsKeeper.Keeper,
+	authority string,
 ) Keeper {
 	return Keeper{
 		cdc:          cdc,
 		storeKey:     storeKey,
 		assetsKeeper: assetsKeeper,
 		avsKeeper:    avsKeeper,
+		authority:    authority,
 	}
 }
 

@@ -21,17 +21,21 @@ type Keeper struct {
 
 	// other keepers
 	assetsKeeper keeper.Keeper
+
+	authority string
 }
 
 func NewKeeper(
 	cdc codec.BinaryCodec,
 	storeKey storetypes.StoreKey,
 	assetsKeeper keeper.Keeper,
+	authority string,
 ) Keeper {
 	return Keeper{
 		cdc:          cdc,
 		storeKey:     storeKey,
 		assetsKeeper: assetsKeeper,
+		authority:    authority,
 	}
 }
 

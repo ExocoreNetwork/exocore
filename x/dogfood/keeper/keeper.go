@@ -40,7 +40,12 @@ type (
 )
 
 // NewKeeper creates a new dogfood keeper.
-func NewKeeper(cdc codec.BinaryCodec, storeKey storetypes.StoreKey, epochsKeeper types.EpochsKeeper, operatorKeeper types.OperatorKeeper, delegationKeeper keeper.Keeper, restakingKeeper types.AssetsKeeper, avsKeeper types.AVSKeeper, authority string) Keeper {
+func NewKeeper(
+	cdc codec.BinaryCodec, storeKey storetypes.StoreKey,
+	epochsKeeper types.EpochsKeeper, operatorKeeper types.OperatorKeeper,
+	delegationKeeper keeper.Keeper, restakingKeeper types.AssetsKeeper,
+	avsKeeper types.AVSKeeper, authority string,
+) Keeper {
 	k := Keeper{
 		cdc:              cdc,
 		storeKey:         storeKey,
