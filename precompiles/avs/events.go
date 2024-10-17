@@ -26,8 +26,17 @@ func (p Precompile) EmitCreateAVSTaskEvent(ctx sdk.Context, stateDB vm.StateDB, 
 	var err error
 
 	// Pack the arguments to be used as the Data field
-	arguments := event.Inputs[0:8]
-	packed, err := arguments.Pack(task.TaskID, task.TaskContractAddress, task.TaskName, task.Hash, task.TaskResponsePeriod, task.TaskChallengePeriod, task.ThresholdPercentage, task.TaskStatisticalPeriod)
+	arguments := event.Inputs[0:9]
+	packed, err := arguments.Pack(
+		common.HexToAddress(task.CallerAddress),
+		task.TaskID,
+		common.HexToAddress(task.TaskContractAddress),
+		task.TaskName,
+		task.Hash,
+		task.TaskResponsePeriod,
+		task.TaskChallengePeriod,
+		task.ThresholdPercentage,
+		task.TaskStatisticalPeriod)
 	if err != nil {
 		return err
 	}

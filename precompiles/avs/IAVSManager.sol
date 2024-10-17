@@ -28,6 +28,51 @@ interface IAVSManager {
     event TaskSubmittedByOperator(address indexed sender, uint64 taskID, string taskResponse,
         string blsSignature, string taskContractAddress, string stage, bool success);
 
+    struct AVSInfo {
+        string name;
+        string avsAddress;
+        uint64 minStakeAmount;
+        string taskAddr;
+        string slashAddr;
+        string rewardAddr;
+        string[] avsOwnerAddress;
+        string[] assetIDs;
+        uint64 avsUnbondingPeriod;
+        uint64 minSelfDelegation;
+        string epochIdentifier;
+        uint64 minOptInOperators;
+        uint64 minTotalStakeAmount;
+        uint64 startingEpoch;
+        string chainId;
+        string avsReward;
+        string avsSlash;
+        AssetReward[] assetRewardAmountEpochBasis;
+    }
+    struct QueryAVSInfoResponse {
+        AVSInfo info;
+    }
+    struct AssetReward {
+        string assetID;
+        int64 amountEpochBasis;
+    }
+    struct TaskInfo {
+        string taskContractAddress;
+        string name;
+        bytes hash;
+        uint64 taskId;
+        uint64 taskResponsePeriod;
+        uint64 taskStatisticalPeriod;
+        uint64 taskChallengePeriod;
+        uint64 thresholdPercentage;
+        uint64 startingEpoch;
+        uint64 actualThreshold;
+        string[] optInOperators;
+        string[] signedOperators;
+        string[] noSignedOperators;
+        string[] errSignedOperators;
+        string taskTotalPower;
+        // OperatorActivePowerList is not defined here as it's not clear from the provided message
+    }
     /// @dev Register AVS contract to EXO.
     /// @param sender The external address for calling this method.
     /// @param avsName The name of AVS.
@@ -212,7 +257,7 @@ interface IAVSManager {
     /// @param avsAddr The address of the avs
     function getAVSInfo(
         address avsAddr
-    ) external view returns (bool, uint32[] memory);
+    ) external view returns (QueryAVSInfoResponse memory info);
 
     /// @dev getTaskInfo  is a function to query task info.
     /// @param taskAddr The address of the avs task

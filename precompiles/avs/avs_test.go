@@ -66,6 +66,21 @@ func (suite *AVSManagerPrecompileSuite) TestIsTransaction() {
 			suite.precompile.Methods[avs.MethodRegisterBLSPublicKey].Name,
 			true,
 		},
+		{
+			avs.MethodChallenge,
+			suite.precompile.Methods[avs.MethodChallenge].Name,
+			true,
+		},
+		{
+			avs.MethodRegisterOperatorToExocore,
+			suite.precompile.Methods[avs.MethodRegisterOperatorToExocore].Name,
+			true,
+		},
+		{
+			avs.MethodOperatorSubmitTask,
+			suite.precompile.Methods[avs.MethodOperatorSubmitTask].Name,
+			true,
+		},
 	}
 
 	for _, tc := range testCases {
@@ -76,7 +91,7 @@ func (suite *AVSManagerPrecompileSuite) TestIsTransaction() {
 }
 
 func (suite *AVSManagerPrecompileSuite) TestRegisterAVS() {
-	avsName, operatorAddress, slashAddress, rewardAddress := "avsTest", "exo18cggcpvwspnd5c6ny8wrqxpffj5zmhklprtnph", "0xDF907c29719154eb9872f021d21CAE6E5025d7aB", "0xDF907c29719154eb9872f021d21CAE6E5025d7aB"
+	avsName, slashAddress, rewardAddress := "avsTest", "0xDF907c29719154eb9872f021d21CAE6E5025d7aB", "0xDF907c29719154eb9872f021d21CAE6E5025d7aB"
 	avsOwnerAddress := []string{
 		sdk.AccAddress(suite.Address.Bytes()).String(),
 		sdk.AccAddress(utiltx.GenerateAddress().Bytes()).String(),
@@ -88,16 +103,6 @@ func (suite *AVSManagerPrecompileSuite) TestRegisterAVS() {
 	epochIdentifier := epochstypes.DayEpochID
 	params := []uint64{2, 3, 4, 4}
 
-	registerOperator := func() {
-		registerReq := &operatortypes.RegisterOperatorReq{
-			FromAddress: operatorAddress,
-			Info: &operatortypes.OperatorInfo{
-				EarningsAddr: operatorAddress,
-			},
-		}
-		_, err := suite.OperatorMsgServer.RegisterOperator(sdk.WrapSDKContext(suite.Ctx), registerReq)
-		suite.NoError(err)
-	}
 	commonMalleate := func() (common.Address, []byte) {
 		input, err := suite.precompile.Pack(
 			avs.MethodRegisterAVS,
@@ -132,7 +137,6 @@ func (suite *AVSManagerPrecompileSuite) TestRegisterAVS() {
 		{
 			name: "pass for avs-registered",
 			malleate: func() (common.Address, []byte) {
-				registerOperator()
 				return commonMalleate()
 			},
 			readOnly:    false,
@@ -193,7 +197,14 @@ func (suite *AVSManagerPrecompileSuite) TestRegisterAVS() {
 
 			// Run precompiled contract
 			bz, err := suite.precompile.Run(evm, contract, tc.readOnly)
-
+			suite.CommitAfter(time.Hour*24 + time.Nanosecond)
+			suite.CommitAfter(time.Hour*24 + time.Nanosecond)
+			suite.CommitAfter(time.Hour*24 + time.Nanosecond)
+			suite.CommitAfter(time.Hour*24 + time.Nanosecond)
+			suite.CommitAfter(time.Hour*24 + time.Nanosecond)
+			suite.CommitAfter(time.Hour*24 + time.Nanosecond)
+			suite.CommitAfter(time.Hour*24 + time.Nanosecond)
+			suite.CommitAfter(time.Hour*24 + time.Nanosecond)
 			// Check results
 			if tc.expPass {
 				suite.Require().NoError(err, "expected no error when running the precompile")
@@ -210,7 +221,7 @@ func (suite *AVSManagerPrecompileSuite) TestRegisterAVS() {
 func (suite *AVSManagerPrecompileSuite) TestDeregisterAVS() {
 	avsName := "avsTest"
 	commonMalleate := func() (common.Address, []byte) {
-		// prepare the call input for delegation test
+		// prepare the call input for avs test
 		input, err := suite.precompile.Pack(
 			avs.MethodDeregisterAVS,
 			suite.Address,
@@ -474,8 +485,8 @@ func (suite *AVSManagerPrecompileSuite) TestRegisterOperatorToAVS() {
 		{
 			name: "pass for operator opt-in avs",
 			malleate: func() (common.Address, []byte) {
-				suite.TestRegisterAVS()
 				registerOperator()
+				suite.TestRegisterAVS()
 				avsAddr, intput := commonMalleate()
 				asset := suite.Assets[0]
 				_, defaultAssetID := assetstypes.GetStakerIDAndAssetIDFromStr(asset.LayerZeroChainID, "", asset.Address)
@@ -717,7 +728,7 @@ func (suite *AVSManagerPrecompileSuite) TestRunRegTaskInfo() {
 		suite.Require().NoError(err, "failed to pack input")
 		return suite.Address, input
 	}
-	successRet, err := suite.precompile.Methods[avs.MethodCreateAVSTask].Outputs.Pack(true)
+	successRet, err := suite.precompile.Methods[avs.MethodCreateAVSTask].Outputs.Pack(true, uint64(1))
 	suite.Require().NoError(err)
 	testcases := []struct {
 		name        string
