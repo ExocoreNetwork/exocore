@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"sort"
 	"strconv"
+	"strings"
 
 	"github.com/ethereum/go-ethereum/crypto"
 
@@ -24,7 +25,7 @@ func (k Keeper) SetTaskInfo(ctx sdk.Context, task *types.TaskInfo) (err error) {
 		return types.ErrInvalidAddr
 	}
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefixAVSTaskInfo)
-	infoKey := assetstype.GetJoinedStoreKey(task.TaskContractAddress, strconv.FormatUint(task.TaskId, 10))
+	infoKey := assetstype.GetJoinedStoreKey(strings.ToLower(task.TaskContractAddress), strconv.FormatUint(task.TaskId, 10))
 	bz := k.cdc.MustMarshal(task)
 	store.Set(infoKey, bz)
 	return nil
@@ -35,7 +36,7 @@ func (k *Keeper) GetTaskInfo(ctx sdk.Context, taskID, taskContractAddress string
 		return nil, types.ErrInvalidAddr
 	}
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefixAVSTaskInfo)
-	infoKey := assetstype.GetJoinedStoreKey(taskContractAddress, taskID)
+	infoKey := assetstype.GetJoinedStoreKey(strings.ToLower(taskContractAddress), taskID)
 	value := store.Get(infoKey)
 	if value == nil {
 		return nil, errorsmod.Wrap(types.ErrNoKeyInTheStore,
@@ -49,7 +50,7 @@ func (k *Keeper) GetTaskInfo(ctx sdk.Context, taskID, taskContractAddress string
 
 func (k *Keeper) IsExistTask(ctx sdk.Context, taskID, taskContractAddress string) bool {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefixAVSTaskInfo)
-	infoKey := assetstype.GetJoinedStoreKey(taskContractAddress, taskID)
+	infoKey := assetstype.GetJoinedStoreKey(strings.ToLower(taskContractAddress), taskID)
 
 	return store.Has(infoKey)
 }
@@ -213,7 +214,7 @@ func (k *Keeper) SetTaskResultInfo(
 				fmt.Sprintf("SetTaskResultInfo:submit  too late, CurrentEpoch:%d", epoch.CurrentEpoch),
 			)
 		}
-		infoKey := assetstype.GetJoinedStoreKey(info.OperatorAddress, info.TaskContractAddress,
+		infoKey := assetstype.GetJoinedStoreKey(strings.ToLower(info.OperatorAddress), strings.ToLower(info.TaskContractAddress),
 			strconv.FormatUint(info.TaskId, 10))
 		store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefixTaskResult)
 		bz := k.cdc.MustMarshal(info)
@@ -274,7 +275,7 @@ func (k *Keeper) SetTaskResultInfo(
 			)
 		}
 
-		infoKey := assetstype.GetJoinedStoreKey(info.OperatorAddress, info.TaskContractAddress, strconv.FormatUint(info.TaskId, 10))
+		infoKey := assetstype.GetJoinedStoreKey(strings.ToLower(info.OperatorAddress), strings.ToLower(info.TaskContractAddress), strconv.FormatUint(info.TaskId, 10))
 
 		store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefixTaskResult)
 		bz := k.cdc.MustMarshal(info)
@@ -289,7 +290,7 @@ func (k *Keeper) SetTaskResultInfo(
 }
 
 func (k *Keeper) IsExistTaskResultInfo(ctx sdk.Context, operatorAddress, taskContractAddress string, taskID uint64) bool {
-	infoKey := assetstype.GetJoinedStoreKey(operatorAddress, taskContractAddress,
+	infoKey := assetstype.GetJoinedStoreKey(strings.ToLower(operatorAddress), strings.ToLower(taskContractAddress),
 		strconv.FormatUint(taskID, 10))
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefixTaskResult)
 	return store.Has(infoKey)
@@ -300,7 +301,7 @@ func (k *Keeper) GetTaskResultInfo(ctx sdk.Context, operatorAddress, taskContrac
 		return nil, types.ErrInvalidAddr
 	}
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefixTaskResult)
-	infoKey := assetstype.GetJoinedStoreKey(operatorAddress, taskContractAddress,
+	infoKey := assetstype.GetJoinedStoreKey(strings.ToLower(operatorAddress), strings.ToLower(taskContractAddress),
 		strconv.FormatUint(taskID, 10))
 	value := store.Get(infoKey)
 	if value == nil {
@@ -359,7 +360,7 @@ func (k *Keeper) SetTaskChallengedInfo(
 	ctx sdk.Context, taskID uint64, operatorAddress, challengeAddr string,
 	taskAddr common.Address,
 ) (err error) {
-	infoKey := assetstype.GetJoinedStoreKey(operatorAddress, taskAddr.String(),
+	infoKey := assetstype.GetJoinedStoreKey(strings.ToLower(operatorAddress), strings.ToLower(taskAddr.String()),
 		strconv.FormatUint(taskID, 10))
 
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefixTaskChallengeResult)
@@ -373,7 +374,7 @@ func (k *Keeper) SetTaskChallengedInfo(
 }
 
 func (k *Keeper) IsExistTaskChallengedInfo(ctx sdk.Context, operatorAddress, taskContractAddress string, taskID uint64) bool {
-	infoKey := assetstype.GetJoinedStoreKey(operatorAddress, taskContractAddress,
+	infoKey := assetstype.GetJoinedStoreKey(strings.ToLower(operatorAddress), strings.ToLower(taskContractAddress),
 		strconv.FormatUint(taskID, 10))
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefixTaskChallengeResult)
 	return store.Has(infoKey)
@@ -384,7 +385,7 @@ func (k *Keeper) GetTaskChallengedInfo(ctx sdk.Context, operatorAddress, taskCon
 		return "", types.ErrInvalidAddr
 	}
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefixTaskChallengeResult)
-	infoKey := assetstype.GetJoinedStoreKey(operatorAddress, taskContractAddress,
+	infoKey := assetstype.GetJoinedStoreKey(strings.ToLower(operatorAddress), strings.ToLower(taskContractAddress),
 		strconv.FormatUint(taskID, 10))
 	value := store.Get(infoKey)
 	if value == nil {

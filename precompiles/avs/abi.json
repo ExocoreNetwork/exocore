@@ -3,16 +3,228 @@
 		"anonymous": false,
 		"inputs": [
 			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "sender",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"internalType": "string",
+				"name": "avsName",
+				"type": "string"
+			},
+			{
+				"indexed": false,
+				"internalType": "bool",
+				"name": "success",
+				"type": "bool"
+			}
+		],
+		"name": "AVSDeregistered",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "sender",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"internalType": "string",
+				"name": "avsName",
+				"type": "string"
+			},
+			{
+				"indexed": false,
+				"internalType": "bool",
+				"name": "success",
+				"type": "bool"
+			}
+		],
+		"name": "AVSRegistered",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "sender",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"internalType": "string",
+				"name": "avsName",
+				"type": "string"
+			},
+			{
+				"indexed": false,
+				"internalType": "bool",
+				"name": "success",
+				"type": "bool"
+			}
+		],
+		"name": "AVSUpdated",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "sender",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"internalType": "bytes",
+				"name": "taskHash",
+				"type": "bytes"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint64",
+				"name": "taskID",
+				"type": "uint64"
+			},
+			{
+				"indexed": false,
+				"internalType": "bytes",
+				"name": "taskResponseHash",
+				"type": "bytes"
+			},
+			{
+				"indexed": false,
+				"internalType": "string",
+				"name": "operatorAddress",
+				"type": "string"
+			},
+			{
+				"indexed": false,
+				"internalType": "bool",
+				"name": "success",
+				"type": "bool"
+			}
+		],
+		"name": "ChallengeInitiated",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "sender",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"internalType": "bool",
+				"name": "success",
+				"type": "bool"
+			}
+		],
+		"name": "OperatorJoined",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "sender",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"internalType": "bool",
+				"name": "success",
+				"type": "bool"
+			}
+		],
+		"name": "OperatorOuted",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "sender",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"internalType": "string",
+				"name": "metaInfo",
+				"type": "string"
+			},
+			{
+				"indexed": false,
+				"internalType": "bool",
+				"name": "success",
+				"type": "bool"
+			}
+		],
+		"name": "OperatorRegisteredToExocore",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "sender",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"internalType": "string",
+				"name": "name",
+				"type": "string"
+			},
+			{
+				"indexed": false,
+				"internalType": "bool",
+				"name": "success",
+				"type": "bool"
+			}
+		],
+		"name": "PublicKeyRegistered",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "sender",
+				"type": "address"
+			},
+			{
 				"indexed": false,
 				"internalType": "uint64",
 				"name": "taskId",
 				"type": "uint64"
 			},
 			{
-				"indexed": false,
-				"internalType": "string",
+				"indexed": true,
+				"internalType": "address",
 				"name": "taskContractAddress",
-				"type": "string"
+				"type": "address"
 			},
 			{
 				"indexed": false,
@@ -52,6 +264,55 @@
 			}
 		],
 		"name": "TaskCreated",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "sender",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint64",
+				"name": "taskID",
+				"type": "uint64"
+			},
+			{
+				"indexed": false,
+				"internalType": "string",
+				"name": "taskResponse",
+				"type": "string"
+			},
+			{
+				"indexed": false,
+				"internalType": "string",
+				"name": "blsSignature",
+				"type": "string"
+			},
+			{
+				"indexed": false,
+				"internalType": "string",
+				"name": "taskContractAddress",
+				"type": "string"
+			},
+			{
+				"indexed": false,
+				"internalType": "string",
+				"name": "stage",
+				"type": "string"
+			},
+			{
+				"indexed": false,
+				"internalType": "bool",
+				"name": "success",
+				"type": "bool"
+			}
+		],
+		"name": "TaskSubmittedByOperator",
 		"type": "event"
 	},
 	{
@@ -137,6 +398,11 @@
 				"internalType": "bool",
 				"name": "success",
 				"type": "bool"
+			},
+			{
+				"internalType": "uint64",
+				"name": "taskID",
+				"type": "uint64"
 			}
 		],
 		"stateMutability": "nonpayable",
@@ -183,6 +449,25 @@
 			}
 		],
 		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "avsAddr",
+				"type": "address"
+			}
+		],
+		"name": "getAVSInfo",
+		"outputs": [
+			{
+				"internalType": "string",
+				"name": "epochIdentifier",
+				"type": "string"
+			}
+		],
+		"stateMutability": "view",
 		"type": "function"
 	},
 	{
@@ -244,7 +529,7 @@
 				"type": "string[]"
 			}
 		],
-		"stateMutability": "nonpayable",
+		"stateMutability": "view",
 		"type": "function"
 	},
 	{
@@ -263,7 +548,94 @@
 				"type": "bytes"
 			}
 		],
-		"stateMutability": "pure",
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "taskAddr",
+				"type": "address"
+			},
+			{
+				"internalType": "uint64",
+				"name": "taskID",
+				"type": "uint64"
+			}
+		],
+		"name": "getTaskInfo",
+		"outputs": [
+			{
+				"internalType": "uint64[]",
+				"name": "info",
+				"type": "uint64[]"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "string",
+				"name": "operatorAddr",
+				"type": "string"
+			}
+		],
+		"name": "isOperator",
+		"outputs": [
+			{
+				"internalType": "bool",
+				"name": "",
+				"type": "bool"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "sender",
+				"type": "address"
+			},
+			{
+				"internalType": "uint64",
+				"name": "taskID",
+				"type": "uint64"
+			},
+			{
+				"internalType": "bytes",
+				"name": "taskResponse",
+				"type": "bytes"
+			},
+			{
+				"internalType": "bytes",
+				"name": "blsSignature",
+				"type": "bytes"
+			},
+			{
+				"internalType": "address",
+				"name": "taskContractAddress",
+				"type": "address"
+			},
+			{
+				"internalType": "string",
+				"name": "stage",
+				"type": "string"
+			}
+		],
+		"name": "operatorSubmitTask",
+		"outputs": [
+			{
+				"internalType": "bool",
+				"name": "success",
+				"type": "bool"
+			}
+		],
+		"stateMutability": "nonpayable",
 		"type": "function"
 	},
 	{
@@ -401,32 +773,17 @@
 	{
 		"inputs": [
 			{
-				"internalType": "string",
-				"name": "taskId",
-				"type": "string"
+				"internalType": "address",
+				"name": "sender",
+				"type": "address"
 			},
 			{
 				"internalType": "string",
-				"name": "taskContractAddress",
+				"name": "metaInfo",
 				"type": "string"
-			},
-			{
-				"internalType": "string",
-				"name": "aggregator",
-				"type": "string"
-			},
-			{
-				"internalType": "string",
-				"name": "avsAddress",
-				"type": "string"
-			},
-			{
-				"internalType": "bytes",
-				"name": "operatorStatus",
-				"type": "bytes"
 			}
 		],
-		"name": "submitProof",
+		"name": "registerOperatorToExocore",
 		"outputs": [
 			{
 				"internalType": "bool",

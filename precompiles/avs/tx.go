@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"slices"
 
+	operatortypes "github.com/ExocoreNetwork/exocore/x/operator/types"
+
 	errorsmod "cosmossdk.io/errors"
 
 	exocmn "github.com/ExocoreNetwork/exocore/precompiles/common"
@@ -26,14 +28,16 @@ const (
 	MethodCreateAVSTask             = "createTask"
 	MethodRegisterBLSPublicKey      = "registerBLSPublicKey"
 	MethodChallenge                 = "challenge"
+	MethodRegisterOperatorToExocore = "registerOperatorToExocore"
+	MethodOperatorSubmitTask        = "operatorSubmitTask"
 )
 
-// AVSInfoRegister register the avs related information and change the state in avs keeper module.
+// RegisterAVS AVSInfoRegister register the avs related information and change the state in avs keeper module.
 func (p Precompile) RegisterAVS(
 	ctx sdk.Context,
 	_ common.Address,
 	contract *vm.Contract,
-	_ vm.StateDB,
+	stateDB vm.StateDB,
 	method *abi.Method,
 	args []interface{},
 ) ([]byte, error) {
@@ -55,7 +59,9 @@ func (p Precompile) RegisterAVS(
 		fmt.Println("Failed to update AVS info", err)
 		return nil, err
 	}
-
+	if err = p.EmitAVSRegistered(ctx, stateDB, avsParams); err != nil {
+		return nil, err
+	}
 	return method.Outputs.Pack(true)
 }
 
@@ -63,7 +69,7 @@ func (p Precompile) DeregisterAVS(
 	ctx sdk.Context,
 	_ common.Address,
 	contract *vm.Contract,
-	_ vm.StateDB,
+	stateDB vm.StateDB,
 	method *abi.Method,
 	args []interface{},
 ) ([]byte, error) {
@@ -90,6 +96,9 @@ func (p Precompile) DeregisterAVS(
 	if err != nil {
 		return nil, err
 	}
+	if err = p.EmitAVSDeregistered(ctx, stateDB, avsParams); err != nil {
+		return nil, err
+	}
 	return method.Outputs.Pack(true)
 }
 
@@ -97,7 +106,7 @@ func (p Precompile) UpdateAVS(
 	ctx sdk.Context,
 	_ common.Address,
 	contract *vm.Contract,
-	_ vm.StateDB,
+	stateDB vm.StateDB,
 	method *abi.Method,
 	args []interface{},
 ) ([]byte, error) {
@@ -122,6 +131,9 @@ func (p Precompile) UpdateAVS(
 		return nil, err
 	}
 
+	if err = p.EmitAVSUpdated(ctx, stateDB, avsParams); err != nil {
+		return nil, err
+	}
 	return method.Outputs.Pack(true)
 }
 
@@ -129,7 +141,7 @@ func (p Precompile) BindOperatorToAVS(
 	ctx sdk.Context,
 	_ common.Address,
 	contract *vm.Contract,
-	_ vm.StateDB,
+	stateDB vm.StateDB,
 	method *abi.Method,
 	args []interface{},
 ) ([]byte, error) {
@@ -149,6 +161,9 @@ func (p Precompile) BindOperatorToAVS(
 	if err != nil {
 		return nil, err
 	}
+	if err = p.EmitOperatorJoined(ctx, stateDB, operatorParams); err != nil {
+		return nil, err
+	}
 	return method.Outputs.Pack(true)
 }
 
@@ -156,7 +171,7 @@ func (p Precompile) UnbindOperatorToAVS(
 	ctx sdk.Context,
 	_ common.Address,
 	contract *vm.Contract,
-	_ vm.StateDB,
+	stateDB vm.StateDB,
 	method *abi.Method,
 	args []interface{},
 ) ([]byte, error) {
@@ -173,6 +188,9 @@ func (p Precompile) UnbindOperatorToAVS(
 	operatorParams.Action = avskeeper.DeRegisterAction
 	err := p.avsKeeper.OperatorOptAction(ctx, operatorParams)
 	if err != nil {
+		return nil, err
+	}
+	if err = p.EmitOperatorOuted(ctx, stateDB, operatorParams); err != nil {
 		return nil, err
 	}
 	return method.Outputs.Pack(true)
@@ -192,14 +210,14 @@ func (p Precompile) CreateAVSTask(
 		return nil, err
 	}
 	params.TaskContractAddress = contract.CallerAddress.String()
-	err = p.avsKeeper.CreateAVSTask(ctx, params)
+	taskID, err := p.avsKeeper.CreateAVSTask(ctx, params)
 	if err != nil {
 		return nil, err
 	}
-	if err = p.EmitCreateAVSTaskEvent(ctx, stateDB, params); err != nil {
+	if err = p.EmitTaskCreated(ctx, stateDB, params); err != nil {
 		return nil, err
 	}
-	return method.Outputs.Pack(true)
+	return method.Outputs.Pack(true, taskID)
 }
 
 // Challenge Middleware uses exocore's default avstask template to create tasks in avstask module.
@@ -207,7 +225,7 @@ func (p Precompile) Challenge(
 	ctx sdk.Context,
 	_ common.Address,
 	contract *vm.Contract,
-	_ vm.StateDB,
+	stateDB vm.StateDB,
 	method *abi.Method,
 	args []interface{},
 ) ([]byte, error) {
@@ -255,6 +273,9 @@ func (p Precompile) Challenge(
 		return nil, err
 	}
 
+	if err = p.EmitChallengeInitiated(ctx, stateDB, challengeParams); err != nil {
+		return nil, err
+	}
 	return method.Outputs.Pack(true)
 }
 
@@ -263,7 +284,7 @@ func (p Precompile) RegisterBLSPublicKey(
 	ctx sdk.Context,
 	_ common.Address,
 	_ *vm.Contract,
-	_ vm.StateDB,
+	stateDB vm.StateDB,
 	method *abi.Method,
 	args []interface{},
 ) ([]byte, error) {
@@ -305,5 +326,108 @@ func (p Precompile) RegisterBLSPublicKey(
 		return nil, err
 	}
 
+	if err = p.EmitPublicKeyRegistered(ctx, stateDB, blsParams); err != nil {
+		return nil, err
+	}
+	return method.Outputs.Pack(true)
+}
+
+// RegisterOperatorToExocore operator register.
+func (p Precompile) RegisterOperatorToExocore(
+	ctx sdk.Context,
+	_ common.Address,
+	_ *vm.Contract,
+	stateDB vm.StateDB,
+	method *abi.Method,
+	args []interface{},
+) ([]byte, error) {
+	if len(args) != len(p.ABI.Methods[MethodRegisterOperatorToExocore].Inputs) {
+		return nil, fmt.Errorf(cmn.ErrInvalidNumberOfArgs, len(p.ABI.Methods[MethodRegisterOperatorToExocore].Inputs), len(args))
+	}
+	operatorParams := &avskeeper.OperatorParams{}
+	callerAddress, ok := args[0].(common.Address)
+	if !ok || (callerAddress == common.Address{}) {
+		return nil, fmt.Errorf(exocmn.ErrContractInputParaOrType, 0, "common.Address", callerAddress)
+	}
+	operatorParams.CallerAddress = sdk.AccAddress(callerAddress[:]).String()
+
+	OperatorMetaInfo, ok := args[1].(string)
+	if !ok || OperatorMetaInfo == "" {
+		return nil, fmt.Errorf(exocmn.ErrContractInputParaOrType, 1, "string", OperatorMetaInfo)
+	}
+	operatorParams.OperatorMetaInfo = OperatorMetaInfo
+	info := operatortypes.OperatorInfo{
+		OperatorMetaInfo: OperatorMetaInfo,
+	}
+	err := p.avsKeeper.GetOperatorKeeper().SetOperatorInfo(ctx, operatorParams.CallerAddress, &info)
+	if err != nil {
+		return nil, err
+	}
+
+	if err = p.EmitOperatorRegisteredToExocore(ctx, stateDB, operatorParams); err != nil {
+		return nil, err
+	}
+	return method.Outputs.Pack(true)
+}
+
+// OperatorSubmitTask operator submit results
+func (p Precompile) OperatorSubmitTask(
+	ctx sdk.Context,
+	_ common.Address,
+	contract *vm.Contract,
+	stateDB vm.StateDB,
+	method *abi.Method,
+	args []interface{},
+) ([]byte, error) {
+	if len(args) != len(p.ABI.Methods[MethodOperatorSubmitTask].Inputs) {
+		return nil, fmt.Errorf(cmn.ErrInvalidNumberOfArgs, len(p.ABI.Methods[MethodOperatorSubmitTask].Inputs), len(args))
+	}
+	resultParams := &avskeeper.TaskResultParams{}
+	resultParams.TaskContractAddress = contract.CallerAddress
+	callerAddress, ok := args[0].(common.Address)
+	if !ok || (callerAddress == common.Address{}) {
+		return nil, fmt.Errorf(exocmn.ErrContractInputParaOrType, 0, "common.Address", callerAddress)
+	}
+	resultParams.CallerAddress = sdk.AccAddress(callerAddress[:]).String()
+
+	taskID, ok := args[1].(uint64)
+	if !ok {
+		return nil, fmt.Errorf(exocmn.ErrContractInputParaOrType, 1, "uint64", taskID)
+	}
+	resultParams.TaskID = taskID
+
+	taskResponse, ok := args[2].([]byte)
+	if !ok {
+		return nil, fmt.Errorf(exocmn.ErrContractInputParaOrType, 2, "[]byte", taskResponse)
+	}
+	resultParams.TaskResponse = taskResponse
+
+	blsSignature, ok := args[3].([]byte)
+	if !ok {
+		return nil, fmt.Errorf(exocmn.ErrContractInputParaOrType, 3, "[]byte", blsSignature)
+	}
+	resultParams.BlsSignature = blsSignature
+
+	taskAddr, ok := args[4].(common.Address)
+	if !ok || (taskAddr == common.Address{}) {
+		return nil, fmt.Errorf(exocmn.ErrContractInputParaOrType, 4, "common.Address", taskAddr)
+	}
+	resultParams.TaskContractAddress = taskAddr
+
+	stage, ok := args[5].(string)
+	if !ok || stage == "" {
+		return nil, fmt.Errorf(exocmn.ErrContractInputParaOrType, 5, "string", stage)
+	}
+	resultParams.Stage = stage
+
+	resultParams.OperatorAddress = resultParams.CallerAddress
+	err := p.avsKeeper.SubmitTaskResult(ctx, resultParams)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := p.EmitTaskSubmittedByOperator(ctx, stateDB, resultParams); err != nil {
+		return nil, err
+	}
 	return method.Outputs.Pack(true)
 }

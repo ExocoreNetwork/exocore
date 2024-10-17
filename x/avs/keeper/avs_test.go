@@ -105,7 +105,7 @@ func (suite *AVSTestSuite) TestUpdateAVSInfo_DeRegister() {
 		AvsOwnerAddress:   avsOwnerAddress,
 		AssetID:           assetID,
 		MinSelfDelegation: uint64(10),
-		UnbondingPeriod:   uint64(7),
+		UnbondingPeriod:   uint64(2),
 		SlashContractAddr: slashAddress,
 		EpochIdentifier:   epochstypes.DayEpochID,
 	}
@@ -119,7 +119,10 @@ func (suite *AVSTestSuite) TestUpdateAVSInfo_DeRegister() {
 	suite.NoError(err)
 	info, err := suite.App.AVSManagerKeeper.GetAVSInfo(suite.Ctx, avsAddres)
 	suite.Equal(avsAddres, info.GetInfo().AvsAddress)
-
+	suite.CommitAfter(48*time.Hour + time.Nanosecond)
+	suite.CommitAfter(48*time.Hour + time.Nanosecond)
+	suite.CommitAfter(48*time.Hour + time.Nanosecond)
+	suite.CommitAfter(48*time.Hour + time.Nanosecond)
 	avsParams.Action = avstypes.DeRegisterAction
 	avsParams.CallerAddress = "exo13h6xg79g82e2g2vhjwg7j4r2z2hlncelwutkjr"
 	err = suite.App.AVSManagerKeeper.UpdateAVSInfo(suite.Ctx, avsParams)
