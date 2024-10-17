@@ -133,7 +133,7 @@
 				"type": "bool"
 			}
 		],
-		"name": "OperatorDeregistered",
+		"name": "OperatorJoined",
 		"type": "event"
 	},
 	{
@@ -152,7 +152,7 @@
 				"type": "bool"
 			}
 		],
-		"name": "OperatorRegistered",
+		"name": "OperatorOuted",
 		"type": "event"
 	},
 	{

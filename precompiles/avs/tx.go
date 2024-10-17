@@ -36,7 +36,7 @@ func (p Precompile) RegisterAVS(
 	ctx sdk.Context,
 	_ common.Address,
 	contract *vm.Contract,
-	_ vm.StateDB,
+	stateDB vm.StateDB,
 	method *abi.Method,
 	args []interface{},
 ) ([]byte, error) {
@@ -58,7 +58,9 @@ func (p Precompile) RegisterAVS(
 		fmt.Println("Failed to update AVS info", err)
 		return nil, err
 	}
-
+	if err = p.EmitAVSRegistered(ctx, stateDB, avsParams); err != nil {
+		return nil, err
+	}
 	return method.Outputs.Pack(true)
 }
 
@@ -66,7 +68,7 @@ func (p Precompile) DeregisterAVS(
 	ctx sdk.Context,
 	_ common.Address,
 	contract *vm.Contract,
-	_ vm.StateDB,
+	stateDB vm.StateDB,
 	method *abi.Method,
 	args []interface{},
 ) ([]byte, error) {
@@ -93,14 +95,16 @@ func (p Precompile) DeregisterAVS(
 	if err != nil {
 		return nil, err
 	}
+	if err = p.EmitAVSDeregistered(ctx, stateDB, avsParams); err != nil {
+		return nil, err
+	}
 	return method.Outputs.Pack(true)
 }
-
 func (p Precompile) UpdateAVS(
 	ctx sdk.Context,
 	_ common.Address,
 	contract *vm.Contract,
-	_ vm.StateDB,
+	stateDB vm.StateDB,
 	method *abi.Method,
 	args []interface{},
 ) ([]byte, error) {
@@ -125,6 +129,9 @@ func (p Precompile) UpdateAVS(
 		return nil, err
 	}
 
+	if err = p.EmitAVSUpdated(ctx, stateDB, avsParams); err != nil {
+		return nil, err
+	}
 	return method.Outputs.Pack(true)
 }
 
@@ -132,7 +139,7 @@ func (p Precompile) BindOperatorToAVS(
 	ctx sdk.Context,
 	_ common.Address,
 	contract *vm.Contract,
-	_ vm.StateDB,
+	stateDB vm.StateDB,
 	method *abi.Method,
 	args []interface{},
 ) ([]byte, error) {
@@ -152,6 +159,9 @@ func (p Precompile) BindOperatorToAVS(
 	if err != nil {
 		return nil, err
 	}
+	if err = p.EmitOperatorJoined(ctx, stateDB, operatorParams); err != nil {
+		return nil, err
+	}
 	return method.Outputs.Pack(true)
 }
 
@@ -159,7 +169,7 @@ func (p Precompile) UnbindOperatorToAVS(
 	ctx sdk.Context,
 	_ common.Address,
 	contract *vm.Contract,
-	_ vm.StateDB,
+	stateDB vm.StateDB,
 	method *abi.Method,
 	args []interface{},
 ) ([]byte, error) {
@@ -176,6 +186,9 @@ func (p Precompile) UnbindOperatorToAVS(
 	operatorParams.Action = avskeeper.DeRegisterAction
 	err := p.avsKeeper.OperatorOptAction(ctx, operatorParams)
 	if err != nil {
+		return nil, err
+	}
+	if err = p.EmitOperatorOuted(ctx, stateDB, operatorParams); err != nil {
 		return nil, err
 	}
 	return method.Outputs.Pack(true)
@@ -199,7 +212,7 @@ func (p Precompile) CreateAVSTask(
 	if err != nil {
 		return nil, err
 	}
-	if err = p.EmitCreateAVSTaskEvent(ctx, stateDB, params); err != nil {
+	if err = p.EmitTaskCreated(ctx, stateDB, params); err != nil {
 		return nil, err
 	}
 	return method.Outputs.Pack(true, taskID)
@@ -210,7 +223,7 @@ func (p Precompile) Challenge(
 	ctx sdk.Context,
 	_ common.Address,
 	contract *vm.Contract,
-	_ vm.StateDB,
+	stateDB vm.StateDB,
 	method *abi.Method,
 	args []interface{},
 ) ([]byte, error) {
@@ -258,6 +271,9 @@ func (p Precompile) Challenge(
 		return nil, err
 	}
 
+	if err = p.EmitChallengeInitiated(ctx, stateDB, challengeParams); err != nil {
+		return nil, err
+	}
 	return method.Outputs.Pack(true)
 }
 
@@ -266,7 +282,7 @@ func (p Precompile) RegisterBLSPublicKey(
 	ctx sdk.Context,
 	_ common.Address,
 	_ *vm.Contract,
-	_ vm.StateDB,
+	stateDB vm.StateDB,
 	method *abi.Method,
 	args []interface{},
 ) ([]byte, error) {
@@ -308,6 +324,9 @@ func (p Precompile) RegisterBLSPublicKey(
 		return nil, err
 	}
 
+	if err = p.EmitPublicKeyRegistered(ctx, stateDB, blsParams); err != nil {
+		return nil, err
+	}
 	return method.Outputs.Pack(true)
 }
 
@@ -316,7 +335,7 @@ func (p Precompile) RegisterOperatorToExocore(
 	ctx sdk.Context,
 	_ common.Address,
 	_ *vm.Contract,
-	_ vm.StateDB,
+	stateDB vm.StateDB,
 	method *abi.Method,
 	args []interface{},
 ) ([]byte, error) {
@@ -343,6 +362,9 @@ func (p Precompile) RegisterOperatorToExocore(
 		return nil, err
 	}
 
+	if err = p.EmitOperatorRegisteredToExocore(ctx, stateDB, operatorParams); err != nil {
+		return nil, err
+	}
 	return method.Outputs.Pack(true)
 }
 
@@ -351,7 +373,7 @@ func (p Precompile) OperatorSubmitTask(
 	ctx sdk.Context,
 	_ common.Address,
 	contract *vm.Contract,
-	_ vm.StateDB,
+	stateDB vm.StateDB,
 	method *abi.Method,
 	args []interface{},
 ) ([]byte, error) {
@@ -396,5 +418,8 @@ func (p Precompile) OperatorSubmitTask(
 		return nil, err
 	}
 
+	if err = p.EmitTaskSubmittedByOperator(ctx, stateDB, resultParams); err != nil {
+		return nil, err
+	}
 	return method.Outputs.Pack(true)
 }

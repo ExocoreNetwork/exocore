@@ -16,8 +16,8 @@ interface IAVSManager {
     event AVSRegistered(address indexed sender, string avsName, bool success);
     event AVSUpdated(address indexed sender, string avsName, bool success);
     event AVSDeregistered(address indexed sender, string avsName, bool success);
-    event OperatorRegistered(address indexed sender, bool success);
-    event OperatorDeregistered(address indexed sender, bool success);
+    event OperatorJoined(address indexed sender, bool success);
+    event OperatorOuted(address indexed sender, bool success);
     event TaskCreated(address indexed sender,uint64 taskId,address indexed taskContractAddress,string name,bytes hash,
         uint64 taskResponsePeriod,uint64 taskChallengePeriod,uint64 thresholdPercentage,uint64 taskStatisticalPeriod
     );
