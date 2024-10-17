@@ -14,16 +14,6 @@ import (
 	"github.com/ethereum/go-ethereum/common/hexutil"
 )
 
-// deposit: update staker's totalDeposit
-// withdoraw: update staker's totalDeposit
-// delegate: update operator's price, operator's totalAmount, operator's totalShare, staker's share
-// undelegate: update operator's price, operator's totalAmount, operator's totalShare, staker's share
-// msg(refund or slash on beaconChain): update staker's price, operator's price
-
-const (
-	NSTETHASSETID = "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee_0x65"
-)
-
 // SetStakerInfos set stakerInfos for the specific assetID
 func (k Keeper) SetStakerInfos(ctx sdk.Context, assetID string, stakerInfos []*types.StakerInfo) {
 	store := ctx.KVStore(k.storeKey)
@@ -31,10 +21,6 @@ func (k Keeper) SetStakerInfos(ctx sdk.Context, assetID string, stakerInfos []*t
 		bz := k.cdc.MustMarshal(stakerInfo)
 		store.Set(types.NativeTokenStakerKey(assetID, stakerInfo.StakerAddr), bz)
 	}
-}
-
-var maxEffectiveBalance = map[string]int{
-	NSTETHASSETID: 32,
 }
 
 // GetStakerInfo returns details about staker for native-restaking under asset of assetID
@@ -132,7 +118,16 @@ func (k Keeper) GetAllStakerListAssets(ctx sdk.Context) (ret []types.StakerListA
 	return ret
 }
 
+// UpdateValidatorListForStaker invoked when deposit/withdraw happedn for an NST asset
+// deposit wiil increase the staker's balance with a new validatorPubkey added into that staker's validatorList
+// withdraw will decrease the staker's balanec with a vadlidatorPubkey removed from that staker's validatorList
 func (k Keeper) UpdateNSTValidatorListForStaker(ctx sdk.Context, assetID, stakerAddr, validatorPubkey string, amount sdkmath.Int) error {
+	_, decimalInt, err := k.getDecimal(ctx, assetID)
+	if err != nil {
+		return err
+	}
+	// transfer amount into integer, for restaking the effective balance should always be whole unit
+	amountInt64 := amount.Quo(decimalInt).Int64()
 	// emit an event to tell that a staker's validator list has changed
 	ctx.EventManager().EmitEvent(sdk.NewEvent(
 		types.EventTypeCreatePrice,
@@ -146,7 +141,7 @@ func (k Keeper) UpdateNSTValidatorListForStaker(ctx sdk.Context, assetID, staker
 		stakerInfo = types.NewStakerInfo(stakerAddr, validatorPubkey)
 	} else {
 		k.cdc.MustUnmarshal(value, stakerInfo)
-		if amount.IsPositive() {
+		if amountInt64 > 0 {
 			// deopsit add a new validator into staker's validatorList
 			stakerInfo.ValidatorPubkeyList = append(stakerInfo.ValidatorPubkeyList, validatorPubkey)
 		}
@@ -159,7 +154,7 @@ func (k Keeper) UpdateNSTValidatorListForStaker(ctx sdk.Context, assetID, staker
 		newBalance.Index++
 	}
 	newBalance.Block = uint64(ctx.BlockHeight())
-	if amount.IsPositive() {
+	if amountInt64 > 0 {
 		newBalance.Change = types.Action_ACTION_DEPOSIT
 	} else {
 		// TODO: check if this validator has withdraw all its asset and then we can move it out from the staker's validatorList
@@ -174,19 +169,8 @@ func (k Keeper) UpdateNSTValidatorListForStaker(ctx sdk.Context, assetID, staker
 		}
 	}
 
-	decimal, decimalInt, err := k.getDecimal(ctx, assetID)
-	if err != nil {
-		return err
-	}
-
-	// the amount should be checked by caller
-	// in case of nstETH, deposit should be equal to 32e18 as the maxeffectivebalance
-	efbUnit := sdkmath.NewIntWithDecimal(int64(maxEffectiveBalance[assetID]), decimal)
-	if amount.GTE(efbUnit) {
-		newBalance.Balance += int64(maxEffectiveBalance[assetID])
-	} else {
-		newBalance.Balance += amount.Quo(decimalInt).Int64()
-	}
+	// TODO: should caller need extra check to make sure the amount is interger of unit
+	newBalance.Balance += amountInt64
 
 	keyStakerList := types.NativeTokenStakerListKey(assetID)
 	valueStakerList := store.Get(keyStakerList)
@@ -210,7 +194,7 @@ func (k Keeper) UpdateNSTValidatorListForStaker(ctx sdk.Context, assetID, staker
 		}
 	}
 	if !exists {
-		if !amount.IsPositive() {
+		if amountInt64 <= 0 {
 			return errors.New("remove unexist validator")
 		}
 		stakerList.StakerAddrs = append(stakerList.StakerAddrs, stakerAddr)
@@ -242,6 +226,8 @@ func (k Keeper) UpdateNSTValidatorListForStaker(ctx sdk.Context, assetID, staker
 	return nil
 }
 
+// TODO: currently we limit the change for a single staker no more than 16, this suites for beaconchain.
+// may need to be upgraded to be compatible with other chains like solana
 // UpdateNSTByBalanceChange updates balance info for staker under native-restaking asset of assetID when its balance changed by slash/refund on the source chain (beacon chain for eth)
 func (k Keeper) UpdateNSTByBalanceChange(ctx sdk.Context, assetID string, rawData []byte, roundID uint64) error {
 	_, chainID, _ := assetstypes.ParseID(assetID)
@@ -257,9 +243,7 @@ func (k Keeper) UpdateNSTByBalanceChange(ctx sdk.Context, assetID string, rawDat
 		return err
 	}
 	store := ctx.KVStore(k.storeKey)
-	for _, stakerAddr := range sl.StakerAddrs {
-		// if stakerAddr is not in stakerChanges, then the change would be set to 0 which is expected
-		change := stakerChanges[stakerAddr]
+	for stakerAddr, change := range stakerChanges {
 		key := types.NativeTokenStakerKey(assetID, stakerAddr)
 		value := store.Get(key)
 		if value == nil {
@@ -268,9 +252,12 @@ func (k Keeper) UpdateNSTByBalanceChange(ctx sdk.Context, assetID string, rawDat
 		stakerInfo := &types.StakerInfo{}
 		k.cdc.MustUnmarshal(value, stakerInfo)
 		newBalance := types.BalanceInfo{}
-		if length := len(stakerInfo.BalanceList); length > 0 {
-			newBalance = *(stakerInfo.BalanceList[length-1])
+		length := len(stakerInfo.BalanceList)
+		// length should always be greater than 0 since the staker must deposit first, then we can update balance change
+		if length <= 0 {
+			return errors.New("UpdateBalane should not be executed on an empty balanceList")
 		}
+		newBalance = *(stakerInfo.BalanceList[length-1])
 		newBalance.Block = uint64(ctx.BlockHeight())
 		if newBalance.RoundID == roundID {
 			newBalance.Index++
@@ -279,35 +266,31 @@ func (k Keeper) UpdateNSTByBalanceChange(ctx sdk.Context, assetID string, rawDat
 			newBalance.Index = 0
 		}
 		newBalance.Change = types.Action_ACTION_SLASH_REFUND
-		// balance update are based on initial/max effective balance: 32
-		maxBalance := maxEffectiveBalance[assetID] * (len(stakerInfo.ValidatorPubkeyList))
-		balance := maxBalance + change
-		// there's one case that this delta might be more than previous Balance
-		// staker's validatorlist: {v1, v2, v3, v5}
-		// in one same block: withdraw v2, v3, v5, balance of v2, v3, v5 all be slashed by -16
-		// => amount: 32*4->32(by withdraw), the validatorList of feeder will be updated on next block, so it will report the balance change of v5: -16 as in the staker's balance change, result to: 32*4->32-> 32-16*3 = -16
-		// we will just ingore this misbehavior introduced by synchronize-issue, and this will be correct in next block/round
-		if balance > maxBalance || balance <= 0 {
-			// balance should not be able to be reduced to 0 by balance change
-			return errors.New("effective balance should never exceeds 32 for one validator and should be positive")
+		newBalance.Balance += int64(change)
+		decimal, _, err := k.getDecimal(ctx, assetID)
+		if err != nil {
+			return err
+		}
+		if err = k.delegationKeeper.UpdateNSTBalance(ctx, getStakerID(stakerAddr, chainID), assetID, sdkmath.NewIntWithDecimal(int64(change), decimal)); err != nil {
+			return err
 		}
 
-		if delta := int64(balance) - newBalance.Balance; delta != 0 {
-			decimal, _, err := k.getDecimal(ctx, assetID)
-			if err != nil {
-				return err
-			}
-			if err := k.delegationKeeper.UpdateNSTBalance(ctx, getStakerID(stakerAddr, chainID), assetID, sdkmath.NewIntWithDecimal(delta, decimal)); err != nil {
-				return err
-			}
-			newBalance.Balance = int64(balance)
-		}
-		//	newBalance.Balance += int64(change)
 		stakerInfo.Append(&newBalance)
 		bz := k.cdc.MustMarshal(stakerInfo)
 		store.Set(key, bz)
 	}
 	return nil
+}
+
+// TODO: set a persistent state to track this number
+// GetNSTTotalIndex returns the count of how many time the NST balance of assetID has been changed including sources of deposit/withdraw, balanceChange
+func (k Keeper) GetNSTTotalIndex(ctx sdk.Context, assetID string) int64 {
+	stakerInfos := k.GetStakerInfos(ctx, assetID)
+	totalIndex := int64(0)
+	for _, stakerInfo := range stakerInfos {
+		totalIndex += int64(len(stakerInfo.BalanceList))
+	}
+	return totalIndex
 }
 
 func (k Keeper) getDecimal(ctx sdk.Context, assetID string) (int, sdkmath.Int, error) {

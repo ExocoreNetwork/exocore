@@ -6,13 +6,16 @@ import (
 	"strconv"
 	"time"
 
+	"crypto/sha256"
+
 	"github.com/ExocoreNetwork/exocore/x/oracle/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 const (
-	layout          = "2006-01-02 15:04:05"
-	maxFutureOffset = 5 * time.Second
+	layout            = "2006-01-02 15:04:05"
+	maxFutureOffset   = 5 * time.Second
+	maxEventPriceSize = 64
 )
 
 // CreatePrice proposes price for new round of specific tokenFeeder
@@ -63,10 +66,18 @@ func (ms msgServer) CreatePrice(goCtx context.Context, msg *types.MsgCreatePrice
 		decimalStr := strconv.FormatInt(int64(newItem.PriceTR.Decimal), 10)
 		tokenIDStr := strconv.FormatUint(newItem.TokenID, 10)
 		roundIDStr := strconv.FormatUint(newItem.PriceTR.RoundID, 10)
+		priceFormat := "price"
+		if len(newItem.PriceTR.Price) > maxEventPriceSize {
+			// This is mainly used for NST since they might have a string with big size to indicate the changes for stakers
+			hashPrice := sha256.Sum256([]byte(newItem.PriceTR.Price))
+			newItem.PriceTR.Price = string(hashPrice[:])
+			priceFormat = "hash"
+		}
 		ctx.EventManager().EmitEvent(sdk.NewEvent(
 			types.EventTypeCreatePrice,
 			sdk.NewAttribute(types.AttributeKeyRoundID, roundIDStr),
-			sdk.NewAttribute(types.AttributeKeyFinalPrice, tokenIDStr+"_"+roundIDStr+"_"+newItem.PriceTR.Price+"_"+decimalStr),
+			// [tokenIDStr]_[roundIDStr]_[price]_[decimal]_price/hash
+			sdk.NewAttribute(types.AttributeKeyFinalPrice, tokenIDStr+"_"+roundIDStr+"_"+newItem.PriceTR.Price+"_"+decimalStr+"_"+priceFormat),
 			sdk.NewAttribute(types.AttributeKeyPriceUpdated, types.AttributeValuePriceUpdatedSuccess)),
 		)
 		if !ctx.IsCheckTx() {
