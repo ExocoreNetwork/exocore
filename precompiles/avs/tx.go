@@ -341,8 +341,8 @@ func (p Precompile) RegisterOperatorToExocore(
 	method *abi.Method,
 	args []interface{},
 ) ([]byte, error) {
-	if len(args) != len(p.ABI.Methods[MethodRegisterOperatorToAVS].Inputs) {
-		return nil, fmt.Errorf(cmn.ErrInvalidNumberOfArgs, len(p.ABI.Methods[MethodRegisterOperatorToAVS].Inputs), len(args))
+	if len(args) != len(p.ABI.Methods[MethodRegisterOperatorToExocore].Inputs) {
+		return nil, fmt.Errorf(cmn.ErrInvalidNumberOfArgs, len(p.ABI.Methods[MethodRegisterOperatorToExocore].Inputs), len(args))
 	}
 	operatorParams := &avskeeper.OperatorParams{}
 	callerAddress, ok := args[0].(common.Address)
@@ -408,9 +408,15 @@ func (p Precompile) OperatorSubmitTask(
 	}
 	resultParams.BlsSignature = blsSignature
 
-	stage, ok := args[4].(string)
+	taskAddr, ok := args[4].(common.Address)
+	if !ok || (taskAddr == common.Address{}) {
+		return nil, fmt.Errorf(exocmn.ErrContractInputParaOrType, 4, "common.Address", taskAddr)
+	}
+	resultParams.TaskContractAddress = taskAddr
+
+	stage, ok := args[5].(string)
 	if !ok || stage == "" {
-		return nil, fmt.Errorf(exocmn.ErrContractInputParaOrType, 4, "string", stage)
+		return nil, fmt.Errorf(exocmn.ErrContractInputParaOrType, 5, "string", stage)
 	}
 	resultParams.Stage = stage
 
@@ -420,7 +426,7 @@ func (p Precompile) OperatorSubmitTask(
 		return nil, err
 	}
 
-	if err = p.EmitTaskSubmittedByOperator(ctx, stateDB, resultParams); err != nil {
+	if err := p.EmitTaskSubmittedByOperator(ctx, stateDB, resultParams); err != nil {
 		return nil, err
 	}
 	return method.Outputs.Pack(true)

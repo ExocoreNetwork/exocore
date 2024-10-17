@@ -462,120 +462,9 @@
 		"name": "getAVSInfo",
 		"outputs": [
 			{
-				"components": [
-					{
-						"components": [
-							{
-								"internalType": "string",
-								"name": "name",
-								"type": "string"
-							},
-							{
-								"internalType": "string",
-								"name": "avsAddress",
-								"type": "string"
-							},
-							{
-								"internalType": "uint64",
-								"name": "minStakeAmount",
-								"type": "uint64"
-							},
-							{
-								"internalType": "string",
-								"name": "taskAddr",
-								"type": "string"
-							},
-							{
-								"internalType": "string",
-								"name": "slashAddr",
-								"type": "string"
-							},
-							{
-								"internalType": "string",
-								"name": "rewardAddr",
-								"type": "string"
-							},
-							{
-								"internalType": "string[]",
-								"name": "avsOwnerAddress",
-								"type": "string[]"
-							},
-							{
-								"internalType": "string[]",
-								"name": "assetIDs",
-								"type": "string[]"
-							},
-							{
-								"internalType": "uint64",
-								"name": "avsUnbondingPeriod",
-								"type": "uint64"
-							},
-							{
-								"internalType": "uint64",
-								"name": "minSelfDelegation",
-								"type": "uint64"
-							},
-							{
-								"internalType": "string",
-								"name": "epochIdentifier",
-								"type": "string"
-							},
-							{
-								"internalType": "uint64",
-								"name": "minOptInOperators",
-								"type": "uint64"
-							},
-							{
-								"internalType": "uint64",
-								"name": "minTotalStakeAmount",
-								"type": "uint64"
-							},
-							{
-								"internalType": "uint64",
-								"name": "startingEpoch",
-								"type": "uint64"
-							},
-							{
-								"internalType": "string",
-								"name": "chainId",
-								"type": "string"
-							},
-							{
-								"internalType": "string",
-								"name": "avsReward",
-								"type": "string"
-							},
-							{
-								"internalType": "string",
-								"name": "avsSlash",
-								"type": "string"
-							},
-							{
-								"components": [
-									{
-										"internalType": "string",
-										"name": "assetID",
-										"type": "string"
-									},
-									{
-										"internalType": "int64",
-										"name": "amountEpochBasis",
-										"type": "int64"
-									}
-								],
-								"internalType": "struct IAVSManager.AssetReward[]",
-								"name": "assetRewardAmountEpochBasis",
-								"type": "tuple[]"
-							}
-						],
-						"internalType": "struct IAVSManager.AVSInfo",
-						"name": "info",
-						"type": "tuple"
-					}
-				],
-				"internalType": "struct IAVSManager.QueryAVSInfoResponse",
-				"name": "info",
-				"type": "tuple"
+				"internalType": "string",
+				"name": "epochIdentifier",
+				"type": "string"
 			}
 		],
 		"stateMutability": "view",
@@ -595,88 +484,6 @@
 				"internalType": "uint256",
 				"name": "amount",
 				"type": "uint256"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "taskAddr",
-				"type": "address"
-			},
-			{
-				"internalType": "uint64",
-				"name": "taskID",
-				"type": "uint64"
-			},
-			{
-				"internalType": "string",
-				"name": "operatorAddr",
-				"type": "string"
-			}
-		],
-		"name": "getChallengeInfo",
-		"outputs": [
-			{
-				"internalType": "bool",
-				"name": "",
-				"type": "bool"
-			},
-			{
-				"internalType": "uint32[]",
-				"name": "",
-				"type": "uint32[]"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "string",
-				"name": "operatorAddr",
-				"type": "string"
-			}
-		],
-		"name": "getOperatorAssetInfos",
-		"outputs": [
-			{
-				"internalType": "bool",
-				"name": "",
-				"type": "bool"
-			},
-			{
-				"internalType": "uint32[]",
-				"name": "",
-				"type": "uint32[]"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "string",
-				"name": "operatorAddr",
-				"type": "string"
-			}
-		],
-		"name": "getOperatorInfo",
-		"outputs": [
-			{
-				"internalType": "bool",
-				"name": "",
-				"type": "bool"
-			},
-			{
-				"internalType": "uint32[]",
-				"name": "",
-				"type": "uint32[]"
 			}
 		],
 		"stateMutability": "view",
@@ -755,24 +562,14 @@
 				"internalType": "uint64",
 				"name": "taskID",
 				"type": "uint64"
-			},
-			{
-				"internalType": "string",
-				"name": "operatorAddr",
-				"type": "string"
 			}
 		],
-		"name": "getSubmitTaskResult",
+		"name": "getTaskInfo",
 		"outputs": [
 			{
-				"internalType": "bool",
-				"name": "",
-				"type": "bool"
-			},
-			{
-				"internalType": "uint32[]",
-				"name": "",
-				"type": "uint32[]"
+				"internalType": "uint64[]",
+				"name": "info",
+				"type": "uint64[]"
 			}
 		],
 		"stateMutability": "view",
@@ -781,27 +578,17 @@
 	{
 		"inputs": [
 			{
-				"internalType": "address",
-				"name": "taskAddr",
-				"type": "address"
-			},
-			{
-				"internalType": "uint64",
-				"name": "taskID",
-				"type": "uint64"
+				"internalType": "string",
+				"name": "operatorAddr",
+				"type": "string"
 			}
 		],
-		"name": "getTaskInfo",
+		"name": "isOperator",
 		"outputs": [
 			{
 				"internalType": "bool",
 				"name": "",
 				"type": "bool"
-			},
-			{
-				"internalType": "uint32[]",
-				"name": "",
-				"type": "uint32[]"
 			}
 		],
 		"stateMutability": "view",

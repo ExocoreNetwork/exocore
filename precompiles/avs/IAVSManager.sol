@@ -28,33 +28,7 @@ interface IAVSManager {
     event TaskSubmittedByOperator(address indexed sender, uint64 taskID, string taskResponse,
         string blsSignature, string taskContractAddress, string stage, bool success);
 
-    struct AVSInfo {
-        string name;
-        string avsAddress;
-        uint64 minStakeAmount;
-        string taskAddr;
-        string slashAddr;
-        string rewardAddr;
-        string[] avsOwnerAddress;
-        string[] assetIDs;
-        uint64 avsUnbondingPeriod;
-        uint64 minSelfDelegation;
-        string epochIdentifier;
-        uint64 minOptInOperators;
-        uint64 minTotalStakeAmount;
-        uint64 startingEpoch;
-        string chainId;
-        string avsReward;
-        string avsSlash;
-        AssetReward[] assetRewardAmountEpochBasis;
-    }
-    struct QueryAVSInfoResponse {
-        AVSInfo info;
-    }
-    struct AssetReward {
-        string assetID;
-        int64 amountEpochBasis;
-    }
+
     struct TaskInfo {
         string taskContractAddress;
         string name;
@@ -257,7 +231,7 @@ interface IAVSManager {
     /// @param avsAddr The address of the avs
     function getAVSInfo(
         address avsAddr
-    ) external view returns (QueryAVSInfoResponse memory info);
+    ) external view returns (string memory epochIdentifier);
 
     /// @dev getTaskInfo  is a function to query task info.
     /// @param taskAddr The address of the avs task
@@ -265,38 +239,12 @@ interface IAVSManager {
     function getTaskInfo(
         address taskAddr,
         uint64 taskID
-    ) external view returns (bool, uint32[] memory);
+    ) external view returns (uint64[] memory info);
 
-    /// @dev getChallengeInfo  is a function to query challenge info.
-    /// @param taskAddr The address of the avs task
-    /// @param taskID The id of task.
+    /// @dev isOperator checks if the given address is registered as an operator on exocore.
     /// @param operatorAddr The address of the operator
-    function getChallengeInfo(
-        address taskAddr,
-        uint64 taskID,
+    function isOperator(
         string memory operatorAddr
-    ) external view returns (bool, uint32[] memory);
-
-    /// @dev getSubmitTaskResult  is a function to query result info.
-    /// @param taskAddr The address of the avs task
-    /// @param taskID The id of task.
-    /// @param operatorAddr The address of the operator
-    function getSubmitTaskResult(
-        address taskAddr,
-        uint64 taskID,
-        string memory operatorAddr
-    ) external view returns (bool, uint32[] memory);
-
-    /// @dev getOperatorInfo  is a function to query operator info.
-    /// @param operatorAddr The address of the operator
-    function getOperatorInfo(
-        string memory operatorAddr
-    ) external view returns (bool, uint32[] memory);
-
-    /// @dev getOperatorAssetInfos  is a function to query operator asset  info.
-    /// @param operatorAddr The address of the operator
-    function getOperatorAssetInfos(
-        string memory operatorAddr
-    ) external view returns (bool, uint32[] memory);
+    ) external view returns (bool);
 
  }

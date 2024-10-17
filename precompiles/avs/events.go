@@ -301,7 +301,7 @@ func (p Precompile) EmitOperatorRegisteredToExocore(ctx sdk.Context, stateDB vm.
 	var err error
 
 	// Pack the arguments to be used as the Data field
-	arguments := event.Inputs[0:2]
+	arguments := event.Inputs[0:3]
 	packed, err := arguments.Pack(
 		common.HexToAddress(params.CallerAddress),
 		params.OperatorMetaInfo,
@@ -332,7 +332,7 @@ func (p Precompile) EmitTaskSubmittedByOperator(ctx sdk.Context, stateDB vm.Stat
 	var err error
 
 	// Pack the arguments to be used as the Data field
-	arguments := event.Inputs[0:6]
+	arguments := event.Inputs[0:7]
 	packed, err := arguments.Pack(
 		common.HexToAddress(params.CallerAddress),
 		params.TaskID,
