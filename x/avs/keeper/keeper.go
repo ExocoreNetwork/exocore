@@ -340,6 +340,24 @@ func (k Keeper) GetAVSInfo(ctx sdk.Context, addr string) (*types.QueryAVSInfoRes
 	return res, nil
 }
 
+func (k *Keeper) GetAllAVSInfos(ctx sdk.Context) ([]types.AVSInfo, error) {
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefixAVSInfo)
+	iterator := sdk.KVStorePrefixIterator(store, nil)
+	defer iterator.Close()
+
+	var ret []types.AVSInfo
+	for ; iterator.Valid(); iterator.Next() {
+		var avsInfo types.AVSInfo
+		err := k.cdc.Unmarshal(iterator.Value(), &avsInfo)
+		if err != nil {
+			return nil, fmt.Errorf("unmarshaling AVSInfo: %w", err)
+		}
+		ret = append(ret, avsInfo)
+	}
+
+	return ret, nil
+}
+
 func (k *Keeper) IsAVS(ctx sdk.Context, addr string) (bool, error) {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefixAVSInfo)
 	return store.Has(common.HexToAddress(addr).Bytes()), nil
