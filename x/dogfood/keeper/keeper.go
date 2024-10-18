@@ -118,6 +118,10 @@ func (k Keeper) mustValidateFields() {
 	types.PanicIfNil(k.delegationKeeper, "delegationKeeper")
 	types.PanicIfNil(k.restakingKeeper, "restakingKeeper")
 	types.PanicIfNil(k.avsKeeper, "avsKeeper")
+	// ensure authority is a valid bech32 address
+	if _, err := sdk.AccAddressFromBech32(k.authority); err != nil {
+		panic(fmt.Sprintf("authority address %s is invalid: %s", k.authority, err))
+	}
 }
 
 // Add the function to get detail information through the operatorKeeper within the dogfood

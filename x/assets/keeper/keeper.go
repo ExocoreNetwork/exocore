@@ -1,6 +1,8 @@
 package keeper
 
 import (
+	"fmt"
+
 	assetstype "github.com/ExocoreNetwork/exocore/x/assets/types"
 	"github.com/cosmos/cosmos-sdk/codec"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
@@ -26,6 +28,10 @@ func NewKeeper(
 	dk delegationKeeper,
 	authority string,
 ) Keeper {
+	// ensure authority is a valid bech32 address
+	if _, err := sdk.AccAddressFromBech32(authority); err != nil {
+		panic(fmt.Sprintf("authority address %s is invalid: %s", authority, err))
+	}
 	return Keeper{
 		storeKey:     storeKey,
 		cdc:          cdc,

@@ -41,6 +41,10 @@ func NewKeeper(
 	avsKeeper avsKeeper.Keeper,
 	authority string,
 ) Keeper {
+	// ensure authority is a valid bech32 address
+	if _, err := sdk.AccAddressFromBech32(authority); err != nil {
+		panic(fmt.Sprintf("authority address %s is invalid: %s", authority, err))
+	}
 	return Keeper{
 		cdc:          cdc,
 		storeKey:     storeKey,
