@@ -5,6 +5,7 @@ import (
 
 	sdkmath "cosmossdk.io/math"
 	assetstypes "github.com/ExocoreNetwork/exocore/x/assets/types"
+	"github.com/ExocoreNetwork/exocore/x/oracle/keeper/common"
 	"github.com/ExocoreNetwork/exocore/x/oracle/types"
 	"github.com/cosmos/cosmos-sdk/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -30,14 +31,20 @@ func (k Keeper) GetPrices(
 
 	val.TokenID = tokenID
 	val.NextRoundID = nextRoundID
-	val.PriceList = make([]*types.PriceTimeRound, nextRoundID)
+	var i uint64
+	if nextRoundID <= uint64(common.MaxSizePrices) {
+		i = 1
+		val.PriceList = make([]*types.PriceTimeRound, nextRoundID)
+	} else {
+		i = nextRoundID - uint64(common.MaxSizePrices)
+		val.PriceList = make([]*types.PriceTimeRound, common.MaxSizePrices)
+	}
 	// 0 roundId is reserved, expect the roundid corresponds to the slice index
 	val.PriceList[0] = &types.PriceTimeRound{}
-	for i := uint64(1); i < nextRoundID; i++ {
+	for ; i < nextRoundID; i++ {
 		b := store.Get(types.PricesRoundKey(i))
 		val.PriceList[i] = &types.PriceTimeRound{}
 		if b != nil {
-			// should always be true since we don't delete prices from history round
 			k.cdc.MustUnmarshal(b, val.PriceList[i])
 			found = true
 		}
