@@ -191,7 +191,9 @@ func (k *Keeper) GetOptedInAVSForOperator(ctx sdk.Context, operatorAddr string) 
 		if err != nil {
 			return nil, err
 		}
-		avsList = append(avsList, keys[1])
+		if k.IsOptedIn(ctx, keys[0], keys[1]) {
+			avsList = append(avsList, keys[1])
+		}
 	}
 	return avsList, nil
 }
@@ -235,7 +237,7 @@ func (k *Keeper) GetOptedInOperatorListByAVS(ctx sdk.Context, avsAddr string) ([
 		if err != nil {
 			return nil, err
 		}
-		if avsAddr == keys[1] {
+		if avsAddr == keys[1] && k.IsOptedIn(ctx, keys[0], keys[1]) {
 			operatorList = append(operatorList, keys[0])
 		}
 	}

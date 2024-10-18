@@ -187,3 +187,22 @@ func (k Keeper) GetChainIDByAVSAddr(ctx sdk.Context, avsAddr string) (string, bo
 	}
 	return string(bz), true
 }
+
+// GetAllChainIdInfos returns a slice containing all chain id information.
+func (k *Keeper) GetAllChainIDInfos(ctx sdk.Context) ([]types.ChainIDInfo, error) {
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefixAVSAddressToChainID)
+	iterator := sdk.KVStorePrefixIterator(store, nil)
+	defer iterator.Close()
+
+	ret := make([]types.ChainIDInfo, 0)
+	for ; iterator.Valid(); iterator.Next() {
+		key := string(iterator.Key())
+		chainID := iterator.Value()
+
+		ret = append(ret, types.ChainIDInfo{
+			AvsAddress: key,
+			ChainId:    string(chainID),
+		})
+	}
+	return ret, nil
+}

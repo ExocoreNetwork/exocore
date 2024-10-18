@@ -47,6 +47,24 @@ func (k *Keeper) GetTaskInfo(ctx sdk.Context, taskID, taskContractAddress string
 	return &ret, nil
 }
 
+func (k Keeper) GetAllTaskInfos(ctx sdk.Context) ([]types.TaskInfo, error) {
+	var taskInfos []types.TaskInfo
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefixAVSTaskInfo)
+	iterator := sdk.KVStorePrefixIterator(store, nil)
+	defer iterator.Close()
+
+	for ; iterator.Valid(); iterator.Next() {
+		var taskInfo types.TaskInfo
+		err := k.cdc.Unmarshal(iterator.Value(), &taskInfo)
+		if err != nil {
+			return nil, errorsmod.Wrap(err, "failed to unmarshal task info")
+		}
+		taskInfos = append(taskInfos, taskInfo)
+	}
+
+	return taskInfos, nil
+}
+
 func (k *Keeper) IsExistTask(ctx sdk.Context, taskID, taskContractAddress string) bool {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefixAVSTaskInfo)
 	infoKey := assetstype.GetJoinedStoreKey(taskContractAddress, taskID)
@@ -81,6 +99,25 @@ func (k *Keeper) GetOperatorPubKey(ctx sdk.Context, addr string) (pub *types.Bls
 	ret := types.BlsPubKeyInfo{}
 	k.cdc.MustUnmarshal(value, &ret)
 	return &ret, nil
+}
+
+func (k *Keeper) GetAllBlsPubKeys(ctx sdk.Context) ([]types.BlsPubKeyInfo, error) {
+	var pubKeys []types.BlsPubKeyInfo
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefixOperatePub)
+
+	iterator := sdk.KVStorePrefixIterator(store, nil)
+	defer iterator.Close()
+
+	for ; iterator.Valid(); iterator.Next() {
+		var pubKey types.BlsPubKeyInfo
+		err := k.cdc.Unmarshal(iterator.Value(), &pubKey)
+		if err != nil {
+			return nil, errorsmod.Wrap(err, "GetAllBlsPubKeys: failed to unmarshal pubkey")
+		}
+		pubKeys = append(pubKeys, pubKey)
+	}
+
+	return pubKeys, nil
 }
 
 func (k *Keeper) IsExistPubKey(ctx sdk.Context, addr string) bool {
@@ -124,6 +161,28 @@ func (k Keeper) GetTaskID(ctx sdk.Context, taskAddr common.Address) uint64 {
 	}
 	store.Set(taskAddr.Bytes(), sdk.Uint64ToBigEndian(id))
 	return id
+}
+
+func (k Keeper) SetTaskID(ctx sdk.Context, taskAddr common.Address, id uint64) {
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefixLatestTaskNum)
+	store.Set(taskAddr.Bytes(), sdk.Uint64ToBigEndian(id))
+}
+
+// GetAllTaskNums returns a map containing all task addresses and their corresponding task IDs.
+func (k *Keeper) GetAllTaskNums(ctx sdk.Context) ([]types.TaskID, error) {
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefixLatestTaskNum)
+	iterator := sdk.KVStorePrefixIterator(store, nil)
+	defer iterator.Close()
+	ret := make([]types.TaskID, 0)
+	for ; iterator.Valid(); iterator.Next() {
+		taskAddr := sdk.AccAddress(iterator.Key())
+		id := sdk.BigEndianToUint64(iterator.Value())
+		ret = append(ret, types.TaskID{
+			TaskAddr: taskAddr.String(),
+			TaskId:   id,
+		})
+	}
+	return ret, nil
 }
 
 // SetTaskResultInfo is used to store the operator's sign task information.
@@ -315,6 +374,24 @@ func (k *Keeper) GetTaskResultInfo(ctx sdk.Context, operatorAddress, taskContrac
 	return &ret, nil
 }
 
+// GetAllTaskResultInfos returns a slice containing all task result information.
+func (k *Keeper) GetAllTaskResultInfos(ctx sdk.Context) ([]types.TaskResultInfo, error) {
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefixTaskResult)
+	iterator := sdk.KVStorePrefixIterator(store, nil)
+	defer iterator.Close()
+
+	ret := make([]types.TaskResultInfo, 0)
+	for ; iterator.Valid(); iterator.Next() {
+		task := types.TaskResultInfo{}
+		err := k.cdc.Unmarshal(iterator.Value(), &task)
+		if err != nil {
+			return nil, errorsmod.Wrap(err, "GetAllTaskResultInfos: failed to unmarshal task result info")
+		}
+		ret = append(ret, task)
+	}
+	return ret, nil
+}
+
 // IterateResultInfo iterate through task result info
 func (k Keeper) IterateResultInfo(ctx sdk.Context, fn func(index int64, info types.TaskResultInfo) (stop bool)) {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefixTaskResult)
@@ -372,6 +449,19 @@ func (k *Keeper) SetTaskChallengedInfo(
 	return nil
 }
 
+func (k *Keeper) SetAllTaskChallengedInfo(ctx sdk.Context, states []types.ChallengeInfo) error {
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefixTaskChallengeResult)
+	for i := range states {
+		state := states[i]
+		bz, err := sdk.AccAddressFromBech32(state.ChallengeAddr)
+		if err != nil {
+			return err
+		}
+		store.Set([]byte(state.Key), bz)
+	}
+	return nil
+}
+
 func (k *Keeper) IsExistTaskChallengedInfo(ctx sdk.Context, operatorAddress, taskContractAddress string, taskID uint64) bool {
 	infoKey := assetstype.GetJoinedStoreKey(operatorAddress, taskContractAddress,
 		strconv.FormatUint(taskID, 10))
@@ -393,4 +483,23 @@ func (k *Keeper) GetTaskChallengedInfo(ctx sdk.Context, operatorAddress, taskCon
 	}
 
 	return common.Bytes2Hex(value), nil
+}
+
+// GetAllChallengeInfos returns a slice containing all challenge information.
+func (k *Keeper) GetAllChallengeInfos(ctx sdk.Context) ([]types.ChallengeInfo, error) {
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefixTaskChallengeResult)
+	iterator := sdk.KVStorePrefixIterator(store, nil)
+	defer iterator.Close()
+
+	ret := make([]types.ChallengeInfo, 0)
+	for ; iterator.Valid(); iterator.Next() {
+		key := string(iterator.Key())
+		challengeAddr := sdk.AccAddress(iterator.Value())
+
+		ret = append(ret, types.ChallengeInfo{
+			Key:           key,
+			ChallengeAddr: challengeAddr.String(),
+		})
+	}
+	return ret, nil
 }
