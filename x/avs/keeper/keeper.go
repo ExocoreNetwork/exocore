@@ -133,7 +133,7 @@ func (k Keeper) UpdateAVSInfo(ctx sdk.Context, params *types.AVSRegisterOrDeregi
 
 		// If avs DeRegisterAction check UnbondingPeriod
 		// #nosec G115
-		if epoch.CurrentEpoch-int64(avsInfo.GetInfo().StartingEpoch) <= int64(avsInfo.Info.AvsUnbondingPeriod) {
+		if epoch.CurrentEpoch-int64(avsInfo.GetInfo().StartingEpoch) > int64(avsInfo.Info.AvsUnbondingPeriod) {
 			return errorsmod.Wrap(types.ErrUnbondingPeriod, fmt.Sprintf("not qualified to deregister %s", avsInfo))
 		}
 
