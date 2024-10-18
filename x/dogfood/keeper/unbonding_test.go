@@ -3,9 +3,9 @@ package keeper_test
 import (
 	sdkmath "cosmossdk.io/math"
 	utiltx "github.com/ExocoreNetwork/exocore/testutil/tx"
+	"github.com/ExocoreNetwork/exocore/utils"
 	assetskeeper "github.com/ExocoreNetwork/exocore/x/assets/keeper"
 	assetstypes "github.com/ExocoreNetwork/exocore/x/assets/types"
-	avstypes "github.com/ExocoreNetwork/exocore/x/avs/types"
 	delegationtypes "github.com/ExocoreNetwork/exocore/x/delegation/types"
 	operatortypes "github.com/ExocoreNetwork/exocore/x/operator/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -67,7 +67,7 @@ func (suite *KeeperTestSuite) TestUndelegations() {
 	suite.NoError(err)
 	// opt in
 	oldKey := utiltx.GenerateConsensusKey()
-	chainIDWithoutRevision := avstypes.ChainIDWithoutRevision(suite.Ctx.ChainID())
+	chainIDWithoutRevision := utils.ChainIDWithoutRevision(suite.Ctx.ChainID())
 	_, avsAddress := suite.App.AVSManagerKeeper.IsAVSByChainID(suite.Ctx, chainIDWithoutRevision)
 	_, err = suite.OperatorMsgServer.OptIntoAVS(
 		sdk.WrapSDKContext(suite.Ctx),
@@ -228,7 +228,7 @@ func (suite *KeeperTestSuite) TestUndelegationEdgeCases() {
 	suite.CheckLengthOfValidatorUpdates(0, []int64{}, "undelegate without opt in")
 	// opt in
 	oldKey := utiltx.GenerateConsensusKey()
-	chainIDWithoutRevision := avstypes.ChainIDWithoutRevision(suite.Ctx.ChainID())
+	chainIDWithoutRevision := utils.ChainIDWithoutRevision(suite.Ctx.ChainID())
 	_, avsAddress := suite.App.AVSManagerKeeper.IsAVSByChainID(suite.Ctx, chainIDWithoutRevision)
 	_, err = suite.OperatorMsgServer.OptIntoAVS(
 		sdk.WrapSDKContext(suite.Ctx),

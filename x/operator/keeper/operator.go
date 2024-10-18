@@ -196,6 +196,20 @@ func (k *Keeper) GetOptedInAVSForOperator(ctx sdk.Context, operatorAddr string) 
 	return avsList, nil
 }
 
+func (k Keeper) GetChainIDsForOperator(ctx sdk.Context, operatorAddr string) ([]string, error) {
+	addrs, err := k.GetOptedInAVSForOperator(ctx, operatorAddr)
+	if err != nil {
+		return nil, err
+	}
+	chainIDs := make([]string, 0, len(addrs))
+	for _, addr := range addrs {
+		if chainID, found := k.avsKeeper.GetChainIDByAVSAddr(ctx, addr); found {
+			chainIDs = append(chainIDs, chainID)
+		}
+	}
+	return chainIDs, nil
+}
+
 func (k *Keeper) SetAllOptedInfo(ctx sdk.Context, optedStates []operatortypes.OptedState) error {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), operatortypes.KeyPrefixOperatorOptedAVSInfo)
 	for i := range optedStates {

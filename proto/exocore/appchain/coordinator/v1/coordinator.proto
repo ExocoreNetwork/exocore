@@ -2,6 +2,7 @@ syntax = "proto3";
 
 package exocore.appchain.coordinator.v1;
 
+import "exocore/appchain/common/v1/wire.proto";
 import "exocore/appchain/coordinator/v1/tx.proto";
 import "gogoproto/gogo.proto";
 
@@ -21,3 +22,21 @@ message ChainIDs {
   repeated string list = 1;
 }
 
+// ConsensusAddresses is a list of consensus addresses.
+message ConsensusAddresses {
+  // list is the list of consensus addresses.
+  repeated bytes list = 1;
+}
+
+// ValidatorSetChangePackets is a helper structure to store a list of packets
+message ValidatorSetChangePackets {
+  // list is the list of packets to be sent to the subscriber chain.
+  repeated .exocore.appchain.common.v1.ValidatorSetChangePacketData list = 1
+  [(gogoproto.nullable) = false];
+}
+
+// UndelegationRecordKeys is a collection of undelegation record keys.
+message UndelegationRecordKeys {
+  // list is the list of undelegation record keys.
+  repeated bytes list = 1;
+}

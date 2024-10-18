@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	keytypes "github.com/ExocoreNetwork/exocore/types/keys"
+	"github.com/ExocoreNetwork/exocore/utils"
 	avstypes "github.com/ExocoreNetwork/exocore/x/avs/types"
 	"github.com/ExocoreNetwork/exocore/x/dogfood/types"
 	abci "github.com/cometbft/cometbft/abci/types"
@@ -36,7 +37,7 @@ func (k Keeper) InitGenesis(
 	var err error
 	// the avs module will remove the revision by itself, but we do it here anyway because we need it
 	// to look up operator registration status after this - which is keyed by chainID without revision.
-	chainIDWithoutRevision := avstypes.ChainIDWithoutRevision(ctx.ChainID())
+	chainIDWithoutRevision := utils.ChainIDWithoutRevision(ctx.ChainID())
 	if avsAddr, err = k.avsKeeper.RegisterAVSWithChainID(ctx, &avstypes.AVSRegisterOrDeregisterParams{
 		AvsName:           chainIDWithoutRevision,
 		AssetID:           genState.Params.AssetIDs,

@@ -17,6 +17,8 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	"github.com/ExocoreNetwork/exocore/x/dogfood/types"
+
+	"github.com/ExocoreNetwork/exocore/utils"
 )
 
 type (
@@ -111,13 +113,13 @@ func (k Keeper) ClearEpochEnd(ctx sdk.Context) {
 }
 
 func (k Keeper) mustValidateFields() {
-	types.PanicIfNil(k.storeKey, "storeKey")
-	types.PanicIfNil(k.cdc, "cdc")
-	types.PanicIfNil(k.epochsKeeper, "epochsKeeper")
-	types.PanicIfNil(k.operatorKeeper, "operatorKeeper")
-	types.PanicIfNil(k.delegationKeeper, "delegationKeeper")
-	types.PanicIfNil(k.restakingKeeper, "restakingKeeper")
-	types.PanicIfNil(k.avsKeeper, "avsKeeper")
+	utils.PanicIfNil(k.storeKey, "storeKey")
+	utils.PanicIfNil(k.cdc, "cdc")
+	utils.PanicIfNil(k.epochsKeeper, "epochsKeeper")
+	utils.PanicIfNil(k.operatorKeeper, "operatorKeeper")
+	utils.PanicIfNil(k.delegationKeeper, "delegationKeeper")
+	utils.PanicIfNil(k.restakingKeeper, "restakingKeeper")
+	utils.PanicIfNil(k.avsKeeper, "avsKeeper")
 	// ensure authority is a valid bech32 address
 	if _, err := sdk.AccAddressFromBech32(k.authority); err != nil {
 		panic(fmt.Sprintf("authority address %s is invalid: %s", k.authority, err))

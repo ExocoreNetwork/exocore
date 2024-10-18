@@ -1,4 +1,4 @@
-package dogfood
+package subscriber
 
 import (
 	"context"
@@ -163,10 +163,50 @@ func (AppModule) ConsensusVersion() uint64 { return 1 }
 
 // BeginBlock contains the logic that is automatically triggered at the beginning of each block
 func (am AppModule) BeginBlock(ctx sdk.Context, _ abci.RequestBeginBlock) {
-	am.keeper.BeginBlock(ctx)
+	channelID, found := am.keeper.GetCoordinatorChannel(ctx)
+	if found && am.keeper.IsChannelClosed(ctx, channelID) {
+		// we are now PoA
+		am.keeper.Logger(ctx).
+			Error("coordinator channel is closed, we are now PoA", "channelId", channelID)
+	}
+
+	// get height of the yet-to-be-made block
+	height := ctx.BlockHeight()
+	// this should either be the last known vscId
+	// or the one set by the last processed vsc packet
+	// since that processing applies to the next block
+	vscID := am.keeper.GetValsetUpdateIDForHeight(ctx, height)
+	am.keeper.SetValsetUpdateIDForHeight(ctx, height+1, vscID)
+	am.keeper.Logger(ctx).Debug(
+		"block height was mapped to vscID",
+		"height", height, "vscID", vscID,
+	)
+
+	am.keeper.TrackHistoricalInfo(ctx)
 }
 
 // EndBlock contains the logic that is automatically triggered at the end of each block
 func (am AppModule) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.ValidatorUpdate {
-	return am.keeper.EndBlock(ctx)
+	// send rewards to coordinator
+	am.keeper.EndBlockSendRewards(ctx)
+
+	// queue maturity packets to coordinator
+	am.keeper.QueueVscMaturedPackets(ctx)
+	// remember that slash packets are queued in the subscriber module
+	// by the slashing and evidence modules when a slashing event is observed by them
+
+	// broadcast queued packets to coordinator
+	am.keeper.SendPackets(ctx)
+
+	// apply validator changes and then delete them
+	data := am.keeper.GetPendingChanges(ctx)
+	if len(data.ValidatorUpdates) == 0 {
+		return []abci.ValidatorUpdate{}
+	}
+	updates := am.keeper.ApplyValidatorChanges(ctx, data.ValidatorUpdates)
+	am.keeper.DeletePendingChanges(ctx)
+	if len(updates) > 0 {
+		am.keeper.Logger(ctx).Info("applying validator updates", "updates", updates)
+	}
+	return updates
 }

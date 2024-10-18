@@ -2,16 +2,16 @@ package keeper
 
 import (
 	"strings"
+	"time"
 
-	"github.com/ExocoreNetwork/exocore/utils"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 
 	errorsmod "cosmossdk.io/errors"
 	sdkmath "cosmossdk.io/math"
 
+	"github.com/ExocoreNetwork/exocore/utils"
 	assetstype "github.com/ExocoreNetwork/exocore/x/assets/types"
-	avstypes "github.com/ExocoreNetwork/exocore/x/avs/types"
 	delegationtype "github.com/ExocoreNetwork/exocore/x/delegation/types"
 	"github.com/ExocoreNetwork/exocore/x/operator/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -186,7 +186,8 @@ func (k Keeper) SlashWithInfractionReason(
 	ctx sdk.Context, addr sdk.AccAddress, infractionHeight, power int64,
 	slashFactor sdk.Dec, infraction stakingtypes.Infraction,
 ) sdkmath.Int {
-	chainID := avstypes.ChainIDWithoutRevision(ctx.ChainID())
+	// for x/dogfood, we use the chainIDWithoutRevision as the chainID
+	chainID := utils.ChainIDWithoutRevision(ctx.ChainID())
 	isAvs, avsAddr := k.avsKeeper.IsAVSByChainID(ctx, chainID)
 	if !isAvs {
 		k.Logger(ctx).Error("the chainID is not supported by AVS", "chainID", chainID)
@@ -264,4 +265,24 @@ func (k Keeper) Jail(ctx sdk.Context, consAddr sdk.ConsAddress, chainID string) 
 // Unjail an operator
 func (k Keeper) Unjail(ctx sdk.Context, consAddr sdk.ConsAddress, chainID string) {
 	k.SetJailedState(ctx, consAddr, chainID, false)
+}
+
+// ApplySlashForHeight is a function used by x/appchain/coordinator to slash an operator
+// based on the historical power and the current assets state. The slashing is made for the
+// provided avsAddress.
+func (k Keeper) ApplySlashForHeight(
+	ctx sdk.Context, operatorAccAddress sdk.AccAddress, avsAddress string,
+	height uint64, fraction sdk.Dec, infraction stakingtypes.Infraction,
+	jailDuration time.Duration,
+) error {
+	k.Logger(ctx).Info(
+		"ApplySlashForHeight",
+		"operatorAccAddress", operatorAccAddress,
+		"avsAddress", avsAddress,
+		"height", height,
+		"fraction", fraction,
+		"infraction", infraction,
+		"jailDuration", jailDuration,
+	)
+	return nil
 }

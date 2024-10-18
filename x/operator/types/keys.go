@@ -3,12 +3,12 @@ package types
 import (
 	"math"
 
+	"github.com/ExocoreNetwork/exocore/utils"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	"golang.org/x/xerrors"
 
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	"github.com/ethereum/go-ethereum/common"
-
-	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 // constants
@@ -104,8 +104,8 @@ func init() {
 }
 
 func AddrAndChainIDKey(prefix byte, addr sdk.AccAddress, chainID string) []byte {
-	partialKey := ChainIDWithLenKey(chainID)
-	return AppendMany(
+	partialKey := utils.ChainIDWithLenKey(chainID)
+	return utils.AppendMany(
 		// Append the prefix
 		[]byte{prefix},
 		// Append the addr bytes first so we can iterate over all chain ids
@@ -117,8 +117,8 @@ func AddrAndChainIDKey(prefix byte, addr sdk.AccAddress, chainID string) []byte 
 }
 
 func ChainIDAndAddrKey(prefix byte, chainID string, addr sdk.AccAddress) []byte {
-	partialKey := ChainIDWithLenKey(chainID)
-	return AppendMany(
+	partialKey := utils.ChainIDWithLenKey(chainID)
+	return utils.AppendMany(
 		// Append the prefix
 		[]byte{prefix},
 		// Append the partialKey so that we can look for any operator keys
@@ -198,17 +198,21 @@ func KeyForChainIDAndOperatorToConsKey(chainID string, addr sdk.AccAddress) []by
 }
 
 func KeyForChainIDAndConsKeyToOperator(chainID string, addr sdk.ConsAddress) []byte {
-	return AppendMany(
+	return utils.AppendMany(
 		[]byte{BytePrefixForChainIDAndConsKeyToOperator},
-		ChainIDWithLenKey(chainID),
+		utils.ChainIDWithLenKey(chainID),
 		addr,
 	)
 }
 
 func KeyForOperatorKeyRemovalForChainID(addr sdk.AccAddress, chainID string) []byte {
-	return AppendMany(
-		[]byte{BytePrefixForOperatorKeyRemovalForChainID}, addr,
-		ChainIDWithLenKey(chainID),
+	return utils.AppendMany(
+		[]byte{BytePrefixForOperatorKeyRemovalForChainID},
+		addr,
+		// TODO: it may be possible to just use the chainID here without the length.
+		// This is because the chainID is at the end of the key and we can just iterate
+		// over all keys with the same operator address.
+		utils.ChainIDWithLenKey(chainID),
 	)
 }
 
