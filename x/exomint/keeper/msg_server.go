@@ -35,7 +35,7 @@ func (k Keeper) UpdateParams(
 		)
 	}
 	k.Logger(c).Info(
-		"UpdateParams request from arbitrary address",
+		"UpdateParams request",
 		"authority", k.authority,
 		"params.Authority", msg.Authority,
 	)

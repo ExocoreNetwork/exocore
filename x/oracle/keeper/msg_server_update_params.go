@@ -21,7 +21,7 @@ func (ms msgServer) UpdateParams(goCtx context.Context, msg *types.MsgUpdatePara
 	}
 
 	ms.Keeper.Logger(ctx).Info(
-		"UpdateParams request from arbitrary address",
+		"UpdateParams request",
 		"authority", ms.Keeper.authority,
 		"params.AUthority", msg.Authority,
 	)

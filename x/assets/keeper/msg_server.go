@@ -21,7 +21,7 @@ func (k Keeper) UpdateParams(ctx context.Context, params *assetstype.MsgUpdatePa
 		)
 	}
 	c.Logger().Info(
-		"UpdateParams request from arbitrary address",
+		"UpdateParams request",
 		"authority", k.authority,
 		"params.AUthority", params.Authority,
 	)

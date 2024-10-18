@@ -23,7 +23,7 @@ func (k msgServer) UpdateParams(goCtx context.Context, req *types.MsgUpdateParam
 	}
 
 	k.Logger().Info(
-		"UpdateParams request from arbitrary address",
+		"UpdateParams request",
 		"authority", k.authority,
 		"params.Authority", req.Authority,
 	)
