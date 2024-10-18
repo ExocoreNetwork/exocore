@@ -2,8 +2,11 @@ package avs
 
 import (
 	"fmt"
+	"strconv"
+	"strings"
 
 	exocmn "github.com/ExocoreNetwork/exocore/precompiles/common"
+	avstype "github.com/ExocoreNetwork/exocore/x/avs/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
@@ -16,6 +19,10 @@ const (
 	MethodGetOptinOperators        = "getOptInOperators"
 	MethodGetAVSUSDValue           = "getAVSUSDValue"
 	MethodGetOperatorOptedUSDValue = "getOperatorOptedUSDValue"
+
+	MethodGetAVSInfo  = "getAVSInfo"
+	MethodGetTaskInfo = "getTaskInfo"
+	MethodIsOperator  = "isOperator"
 )
 
 func (p Precompile) GetRegisteredPubkey(
@@ -54,7 +61,7 @@ func (p Precompile) GetOptedInOperatorAccAddrs(
 		return nil, fmt.Errorf(exocmn.ErrContractInputParaOrType, 0, "string", addr)
 	}
 
-	list, err := p.avsKeeper.GetOptInOperators(ctx, addr.String())
+	list, err := p.avsKeeper.GetOperatorKeeper().GetOptedInOperatorListByAVS(ctx, addr.String())
 	if err != nil {
 		return nil, err
 	}
@@ -105,4 +112,86 @@ func (p Precompile) GetOperatorOptedUSDValue(
 		return nil, err
 	}
 	return method.Outputs.Pack(amount.ActiveUSDValue.BigInt())
+}
+
+func (p Precompile) GetAVSInfo(
+	ctx sdk.Context,
+	_ *vm.Contract,
+	method *abi.Method,
+	args []interface{},
+) ([]byte, error) {
+	if len(args) != len(p.ABI.Methods[MethodGetAVSInfo].Inputs) {
+		return nil, fmt.Errorf(cmn.ErrInvalidNumberOfArgs, len(p.ABI.Methods[MethodGetAVSInfo].Inputs), len(args))
+	}
+	// the key is set using the operator's acc address so the same logic should apply here
+	addr, ok := args[0].(common.Address)
+	if !ok {
+		return nil, fmt.Errorf(exocmn.ErrContractInputParaOrType, 0, "common.Address", addr)
+	}
+
+	avs, err := p.avsKeeper.QueryAVSInfo(ctx, &avstype.QueryAVSInfoReq{AVSAddress: addr.String()})
+	if err != nil {
+		// if the avs does not exist, return empty array
+		if strings.Contains(err.Error(), avstype.ErrNoKeyInTheStore.Error()) {
+			return method.Outputs.Pack("")
+		}
+		return nil, err
+	}
+
+	return method.Outputs.Pack(avs.GetInfo().EpochIdentifier)
+}
+
+func (p Precompile) IsOperator(
+	ctx sdk.Context,
+	_ *vm.Contract,
+	method *abi.Method,
+	args []interface{},
+) ([]byte, error) {
+	if len(args) != len(p.ABI.Methods[MethodIsOperator].Inputs) {
+		return nil, fmt.Errorf(cmn.ErrInvalidNumberOfArgs, len(p.ABI.Methods[MethodIsOperator].Inputs), len(args))
+	}
+	operatorAddr, ok := args[0].(string)
+	if !ok {
+		return nil, fmt.Errorf(exocmn.ErrContractInputParaOrType, 0, "string", operatorAddr)
+	}
+
+	param, err := sdk.AccAddressFromBech32(operatorAddr)
+	if err != nil {
+		return nil, err
+	}
+	flag := p.avsKeeper.GetOperatorKeeper().IsOperator(ctx, param)
+
+	return method.Outputs.Pack(flag)
+}
+
+func (p Precompile) GetTaskInfo(
+	ctx sdk.Context,
+	_ *vm.Contract,
+	method *abi.Method,
+	args []interface{},
+) ([]byte, error) {
+	if len(args) != len(p.ABI.Methods[MethodGetTaskInfo].Inputs) {
+		return nil, fmt.Errorf(cmn.ErrInvalidNumberOfArgs, len(p.ABI.Methods[MethodGetTaskInfo].Inputs), len(args))
+	}
+	// the key is set using the operator's acc address so the same logic should apply here
+	addr, ok := args[0].(common.Address)
+	if !ok {
+		return nil, fmt.Errorf(exocmn.ErrContractInputParaOrType, 0, "common.Address", addr)
+	}
+	taskID, ok := args[1].(uint64)
+	if !ok {
+		return nil, fmt.Errorf(exocmn.ErrContractInputParaOrType, 1, "uint64", taskID)
+	}
+
+	task, err := p.avsKeeper.QueryAVSTaskInfo(ctx, &avstype.QueryAVSTaskInfoReq{TaskAddr: addr.String(), TaskId: strconv.FormatUint(taskID, 10)})
+	if err != nil {
+		// if the avs does not exist, return empty array
+		if strings.Contains(err.Error(), avstype.ErrNoKeyInTheStore.Error()) {
+			return method.Outputs.Pack("")
+		}
+		return nil, err
+	}
+	info := []uint64{task.StartingEpoch, task.TaskResponsePeriod, task.TaskStatisticalPeriod}
+
+	return method.Outputs.Pack(info)
 }

@@ -133,8 +133,13 @@ func (p Precompile) Run(evm *vm.EVM, contract *vm.Contract, readOnly bool) (bz [
 		}
 	case MethodGetOptinOperators:
 		bz, err = p.GetOptedInOperatorAccAddrs(ctx, contract, method, args)
-	case MethodGetRegisteredPubkey:
-		bz, err = p.GetRegisteredPubkey(ctx, contract, method, args)
+	case MethodGetAVSInfo:
+		bz, err = p.GetAVSInfo(ctx, contract, method, args)
+	case MethodGetTaskInfo:
+		bz, err = p.GetTaskInfo(ctx, contract, method, args)
+	case MethodIsOperator:
+		bz, err = p.IsOperator(ctx, contract, method, args)
+
 	case MethodGetAVSUSDValue:
 		bz, err = p.GetAVSUSDValue(ctx, contract, method, args)
 		if err != nil {
@@ -149,6 +154,20 @@ func (p Precompile) Run(evm *vm.EVM, contract *vm.Contract, readOnly bool) (bz [
 		}
 	case MethodChallenge:
 		bz, err = p.Challenge(ctx, evm.Origin, contract, stateDB, method, args)
+		if err != nil {
+			ctx.Logger().Error("internal error when calling avs precompile", "module", "avs precompile", "method", method.Name, "err", err)
+			bz, err = method.Outputs.Pack(false)
+		}
+
+	case MethodRegisterOperatorToExocore:
+		bz, err = p.RegisterOperatorToExocore(ctx, evm.Origin, contract, stateDB, method, args)
+		if err != nil {
+			ctx.Logger().Error("internal error when calling avs precompile", "module", "avs precompile", "method", method.Name, "err", err)
+			bz, err = method.Outputs.Pack(false)
+		}
+
+	case MethodOperatorSubmitTask:
+		bz, err = p.OperatorSubmitTask(ctx, evm.Origin, contract, stateDB, method, args)
 		if err != nil {
 			ctx.Logger().Error("internal error when calling avs precompile", "module", "avs precompile", "method", method.Name, "err", err)
 			bz, err = method.Outputs.Pack(false)
@@ -175,7 +194,8 @@ func (p Precompile) Run(evm *vm.EVM, contract *vm.Contract, readOnly bool) (bz [
 func (Precompile) IsTransaction(methodID string) bool {
 	switch methodID {
 	case MethodRegisterAVS, MethodDeregisterAVS, MethodUpdateAVS, MethodRegisterOperatorToAVS,
-		MethodDeregisterOperatorFromAVS, MethodCreateAVSTask, MethodRegisterBLSPublicKey, MethodChallenge:
+		MethodDeregisterOperatorFromAVS, MethodCreateAVSTask, MethodRegisterBLSPublicKey, MethodChallenge,
+		MethodRegisterOperatorToExocore, MethodOperatorSubmitTask:
 		return true
 	case MethodGetRegisteredPubkey, MethodGetOptinOperators, MethodGetAVSUSDValue, MethodGetOperatorOptedUSDValue:
 		return false

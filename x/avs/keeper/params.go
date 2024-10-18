@@ -101,3 +101,21 @@ type ChallengeParams struct {
 	TaskResponseHash    []byte         `json:"task_response_hash"`
 	CallerAddress       string         `json:"caller_address"`
 }
+
+type TaskResultParams struct {
+	OperatorAddress     string         `json:"operator_address"`
+	TaskResponseHash    string         `json:"task_response_hash"`
+	TaskResponse        []byte         `json:"task_response"`
+	BlsSignature        []byte         `json:"bls_signature"`
+	TaskContractAddress common.Address `json:"task_contract_address"`
+	TaskID              uint64         `json:"task_id"`
+	Stage               string         `json:"stage"`
+	CallerAddress       string         `json:"caller_address"`
+}
+
+type OperatorParams struct {
+	EarningsAddr     string `json:"earnings_addr"`
+	ApproveAddr      string `son:"approve_addr"`
+	OperatorMetaInfo string `json:"operator_meta_info"`
+	CallerAddress    string `json:"caller_address"`
+}
