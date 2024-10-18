@@ -34,6 +34,11 @@ func (k Keeper) UpdateParams(
 			k.authority, msg.Authority,
 		)
 	}
+	k.Logger(c).Info(
+		"UpdateParams request from arbitrary address",
+		"authority", k.authority,
+		"params.Authority", msg.Authority,
+	)
 	prevParams := k.GetParams(c)
 	nextParams := msg.Params
 	// stateless validations

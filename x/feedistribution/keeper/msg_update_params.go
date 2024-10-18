@@ -22,6 +22,12 @@ func (k msgServer) UpdateParams(goCtx context.Context, req *types.MsgUpdateParam
 		)
 	}
 
+	k.Logger().Info(
+		"UpdateParams request from arbitrary address",
+		"authority", k.authority,
+		"params.Authority", req.Authority,
+	)
+
 	// validate the existence of the epoch (stateful)
 	epochIdentifier := req.Params.EpochIdentifier
 	_, found := k.epochsKeeper.GetEpochInfo(ctx, epochIdentifier)

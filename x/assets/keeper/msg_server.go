@@ -20,6 +20,11 @@ func (k Keeper) UpdateParams(ctx context.Context, params *assetstype.MsgUpdatePa
 			k.authority, params.Authority,
 		)
 	}
+	c.Logger().Info(
+		"UpdateParams request from arbitrary address",
+		"authority", k.authority,
+		"params.AUthority", params.Authority,
+	)
 	err := k.SetParams(c, &params.Params)
 	if err != nil {
 		return nil, err
